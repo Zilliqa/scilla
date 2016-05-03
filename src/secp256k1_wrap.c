@@ -1,8 +1,25 @@
 #include <caml/mlvalues.h>
 #include <caml/fail.h>
+#include <caml/memory.h>
+#include <caml/alloc.h>
+#include <caml/custom.h>
 
 #include <stdio.h>
 #include <secp256k1.h>
+
+
+/* Helper */
+#define Val_none Val_int(0)
+
+static value
+Val_some (value v)
+{   
+    CAMLparam1 (v);
+    CAMLlocal1 (some);
+    some = caml_alloc (1, 0);
+    Store_field (some, 0, v);
+    CAMLreturn (some);
+}
 
 
 /* Create a new secp256k1 context */
@@ -19,12 +36,15 @@ ml_secp256k1_context_create (value ml_flags)
 			flags = SECP256K1_CONTEXT_SIGN;
 			break;
 		case 2:
-			flags = SECP256K1_CONTEXT_NONE;
+			flags = SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY;
 			break;
+			
+		default:
+			flags = SECP256K1_CONTEXT_NONE;
 	};
 
 	/* Create and return context */
-	secp256k1_context *ctx = secp256k1_context_create (flags);	
+	secp256k1_context *ctx = secp256k1_context_create (flags);
 	return (value) ctx;
 }
 
@@ -35,11 +55,11 @@ ml_secp256k1_context_randomize (value ml_context, value ml_seed)
 {
 	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
 	int r = secp256k1_context_randomize (ctx, (unsigned char *) String_val(ml_seed));
-	
+
 	if (r) 
 		return Val_some ((value) (ctx));
 	else
-		return Val_int (0);	
+		return Val_none;	
 }
 
 
@@ -73,7 +93,7 @@ ml_secp256k1_ec_pubkey_create (value ml_context, value ml_seckey) {
 	if (r) 
 		return Val_some ((value) ((secp256k1_pubkey *) &pubkey));
 	else
-		return Val_int (0);	
+		return Val_none;	
 }
 
 
@@ -103,7 +123,7 @@ ml_secp256k1_ecdsa_sign (value ml_context, value ml_msg, value ml_seckey) {
 	if (r) 
 		return Val_some ((value) ((secp256k1_ecdsa_signature *) &sign));
 	else
-		return Val_int (0);	
+		return Val_none;	
 }
 
 
@@ -112,5 +132,5 @@ CAMLprim value
 ml_secp256k1_ecdsa_signature_to_string (value ml_signature) {
 	secp256k1_ecdsa_signature *sign = (secp256k1_ecdsa_signature *) (ml_signature);
 	
-	return Val_string (sign->data);
+	return caml_copy_string ((const char *) sign->data);
 }

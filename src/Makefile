@@ -2,7 +2,7 @@ secp256k1_wrap.o: secp256k1_wrap.c
 	ocamlc -c $<
 
 secp256k1_ml.so: secp256k1_wrap.o
-	ocamlmklib  -o  secp256k1_ml  $<
+	ocamlmklib  -o  secp256k1_ml -lsecp256k1 $<
 
 secp256k1.mli: secp256k1.ml
 	ocamlc -i $< > $@
@@ -27,3 +27,4 @@ clean:
 	
 all:
 	make secp256k1.cmxa
+	make secp256k1.cma
