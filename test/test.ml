@@ -18,13 +18,14 @@ let res = Secp256k1.ecdsa_verify ctx sign msg pub in
 (* Invalid signature *)		
 let msg = "CF80CD8AED482D5D1527D7DC72FCEFF84E6326592848447D2DC0B0E87DFC9A91" in
 let sign = "3044022079BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F817980220294F14E883B3F525B5367756C2A11EF6CF84B730B36C17CB0C56F0AAB2C98589" in
-let pub = "040A629506E1B65CD9D2E0BA9C75DF9C4FED0DB16DC9625ED14397F0AFC836FAE595DC53F8B0EFE61E703075BD9B143BAC75EC0E19F82A2208CAEB32BE53414C40" in
+let pub = "040a629506e1b65cd9d2e0ba9c75df9c4fed0db16dc9625ed14397f0afc836fae595dc53f8b0efe61e703075bd9b143bac75ec0e19f82a2208caeb32be53414c40" in
 let ctx = Secp256k1.context_create Secp256k1.CONTEXT_VERIFY in
 let res = Secp256k1.ecdsa_verify ctx sign msg pub in
 	match res with
 	| true -> Printf.printf "Oh snap, is true\n%!"
 	| false -> Printf.printf "Is false, right!\n%!"
 ;;
+
 
 
 (* Pubkey creation *)
@@ -42,11 +43,12 @@ match pub with
 ;;
 
 
+
 (* Sign positive *)
 let ctx = Secp256k1.context_create Secp256k1.CONTEXT_SIGN in
 let msg = "CF80CD8AED482D5D1527D7DC72FCEFF84E6326592848447D2DC0B0E87DFC9A90" in
 let sec = "67E56582298859DDAE725F972992A07C6C4FB9F62A8FFF58CE3CA926A1063530" in
-let validsign = "30440220182A108E1448DC8F1FB467D06A0F3BB8EA0533584CB954EF8DA112F1D60E39A202201C66F36DA211C087F3AF88B50EDF4F9BDAA6CF5FD6817E74DCA34DB12390C6E9" in
+let validsign = "30440220182a108e1448dc8f1fb467d06a0f3bb8ea0533584cb954ef8da112f1d60e39a202201c66f36da211c087f3af88b50edf4f9bdaa6cf5fd6817e74dca34db12390c6e9" in
 let sign = Secp256k1.ecdsa_sign ctx msg sec in
 match sign with 
 | Some (signature) -> 
@@ -56,3 +58,4 @@ match sign with
 		Printf.printf "Wrong signature \n%s\n%s\n%!" signature validsign
 | None -> Printf.printf "Fail\n%!"
 ;;
+

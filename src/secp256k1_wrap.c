@@ -152,7 +152,8 @@ ml_secp256k1_ecdsa_verify (value ml_context, value ml_signature, value ml_msg, v
 	
 	/* Transform signature to ecdsa signature */
 	secp256k1_ecdsa_signature sign; 
-	secp256k1_ecdsa_signature_parse_compact (ctx, &sign, hex_to_binary (String_val(ml_signature)));
+	size_t size = 72;
+	secp256k1_ecdsa_signature_parse_der (ctx, &sign, hex_to_binary (String_val(ml_signature)), size);
 
 	r = secp256k1_ecdsa_verify (ctx, &sign, msg, &pubkey);
 	return Val_int (r);
@@ -173,11 +174,12 @@ ml_secp256k1_ecdsa_sign (value ml_context, value ml_msg, value ml_seckey) {
 	
 	int r = secp256k1_ecdsa_sign (ctx, &sign, msg, seckey, NULL, NULL);
 
-	unsigned char serialized[64];
-	secp256k1_ecdsa_signature_serialize_compact(ctx, serialized, &sign);
+	size_t size = 72;
+	unsigned char serialized[size];
+	secp256k1_ecdsa_signature_serialize_der(ctx, serialized, &size, &sign);
 	
 	if (r) 
-		return Val_some (caml_copy_string (binary_to_hex (serialized, 64)));
+		return Val_some (caml_copy_string (binary_to_hex (serialized, size)));
 	else
 		return Val_none;	
 }
