@@ -1,6 +1,18 @@
 open Printf;;
 open Secp256k1;;
 
+let msg = "CF80CD8AED482D5D1527D7DC72FCEFF84E6326592848447D2DC0B0E87DFC9A90" in
+let sign = "3044022079BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F817980220294F14E883B3F525B5367756C2A11EF6CF84B730B36C17CB0C56F0AAB2C98589" in
+let pub = "040A629506E1B65CD9D2E0BA9C75DF9C4FED0DB16DC9625ED14397F0AFC836FAE595DC53F8B0EFE61E703075BD9B143BAC75EC0E19F82A2208CAEB32BE53414C40" in
+let ctx = Secp256k1.context_create Secp256k1.CONTEXT_VERIFY in
+let res = Secp256k1.ecdsa_verify ctx sign msg pub in
+	match res with
+	| true -> Printf.printf "Is true, right!"
+	| false -> Printf.printf "Oh snap, is false"
+;;
+
+
+(*
 let ctx = Secp256k1.context_create Secp256k1.CONTEXT_SIGN in
 	Printf.printf "Created context\n%!";
 	let ctxdup = Secp256k1.context_clone ctx in
@@ -20,3 +32,4 @@ let ctx = Secp256k1.context_create Secp256k1.CONTEXT_SIGN in
 			| None -> Printf.printf "Failed"
 			;
 		;;
+*)		

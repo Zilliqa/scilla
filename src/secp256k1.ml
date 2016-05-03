@@ -1,6 +1,6 @@
 type t;;
-type pubkey;;
-type ecdsa_signature;;
+type pubkey = string;;
+type ecdsa_signature = string;;
 	
 type cflag = CONTEXT_VERIFY | CONTEXT_SIGN | CONTEXT_SIGNVERIFY | CONTEXT_NONE ;;
 
@@ -14,25 +14,7 @@ external context_randomize	: t
 	= "ml_secp256k1_context_randomize";;
 
 
-(* Public key *)
-external ec_pubkey_to_string : t
-	-> pubkey
-	-> bool
-	-> string option
-	= "ml_secp256k1_ec_pubkey_to_string";;
-	
-external ec_pubkey_serialize : t
-	-> pubkey
-	-> bool 			(* compressed *) 
-	-> string option
-	= "ml_secp256k1_ec_pubkey_serialize";;
-	
-	
-external ec_pubkey_parse : t 
-	-> string
-	-> pubkey option
-	= "ml_secp256k1_ec_pubkey_parse";;
-
+(* Public key *)	
 external ec_pubkey_create : t 
 	-> string 				(* seckey *)
 	-> pubkey option
@@ -40,19 +22,7 @@ external ec_pubkey_create : t
 
 		
 (* ECDSA *)	
-external ecdsa_signature_serialize_compact :  t 
-	-> ecdsa_signature 
-	-> string 
-	= "ml_secp256k1_ecdsa_signature_serialize_compact";;
-	
-	
-external ecdsa_signature_serialize_der :  t 
-	-> ecdsa_signature 
-	-> string option
-	= "ml_secp256k1_ecdsa_signature_serialize_der";;
-
-
-external ecsda_verify	: t 
+external ecdsa_verify	: t 
 	-> ecdsa_signature 	(* signature *)
 	-> string 			(* message *)
 	-> pubkey 			(* pubkey *)
@@ -60,18 +30,9 @@ external ecsda_verify	: t
 	= "ml_secp256k1_ecdsa_verify";;
 
 
-external ecsda_sign : t 
+external ecdsa_sign : t 
 	-> string 			(* message *)
 	-> string 			(* seckey *)
 	-> ecdsa_signature option
 	= "ml_secp256k1_ecdsa_sign";;
 		
-			
-		
-(*external seckey_verify
-external privkey_tweak_mul
-external privkey_tweak_add
-external pubkey_tweak_mul
-external pubkey_tweak_add
-external create_ecdh_secret
-external schnorr_sign*)
