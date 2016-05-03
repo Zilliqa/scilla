@@ -1,6 +1,6 @@
-*.so
-*.o
-*.cmx
-*.cmi
-*.cmxa
-*.a
+src/*.so
+src/*.o
+src/*.cmx
+src/*.cmi
+src/*.cmxa
+src/*.a
