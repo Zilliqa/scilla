@@ -1,6 +1,5 @@
 *.so
 *.o
-*.mli
 *.cmx
 *.cmi
 *.cmxa
