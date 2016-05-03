@@ -173,8 +173,11 @@ ml_secp256k1_ecdsa_sign (value ml_context, value ml_msg, value ml_seckey) {
 	
 	int r = secp256k1_ecdsa_sign (ctx, &sign, msg, seckey, NULL, NULL);
 
+	unsigned char serialized[64];
+	secp256k1_ecdsa_signature_serialize_compact(ctx, serialized, &sign);
+	
 	if (r) 
-		return Val_some ((value) ((secp256k1_ecdsa_signature *) &sign));
+		return Val_some (caml_copy_string (binary_to_hex (serialized, 64)));
 	else
 		return Val_none;	
 }
