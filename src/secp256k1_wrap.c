@@ -45,7 +45,6 @@ char *binary_to_hex (unsigned char *bin, size_t len) {
 	char *pos = hex;
     
 	for(count = 0; count < len; count ++) {
-		printf ("%02x", bin[count]);
 		sprintf(pos, "%02x", bin[count]);
 		pos += 2;
 	}
@@ -170,7 +169,7 @@ ml_secp256k1_ecdsa_signature_to_string (value ml_signature) {
 }
 
 
-/* Convert a public key to string */
+/* Convert a public key to serialized bytes */
 CAMLprim value
 ml_secp256k1_ec_pubkey_serialize (value ml_context, value ml_pubkey, value ml_compressed) {
 	secp256k1_pubkey *pk = (secp256k1_pubkey *) (ml_pubkey);
@@ -194,7 +193,7 @@ ml_secp256k1_ec_pubkey_serialize (value ml_context, value ml_pubkey, value ml_co
 }
 
 
-/* Convert a string to pubkey */
+/* Convert serialized bytes to pubkey */
 CAMLprim value
 ml_secp256k1_ec_pubkey_parse (value ml_context, value ml_spub) {
 	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
@@ -210,6 +209,30 @@ ml_secp256k1_ec_pubkey_parse (value ml_context, value ml_spub) {
 		return Val_none;
 }
 
+/* Convert pubkey to readable string  */
+CAMLprim value
+ml_secp256k1_ec_pubkey_to_string (value ml_context, value ml_pubkey, value ml_compressed) {
+	secp256k1_pubkey *pk = (secp256k1_pubkey *) (ml_pubkey);
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
+	int compressed = Int_val (ml_compressed);
+	size_t size = 65;
+	int flag = SECP256K1_EC_UNCOMPRESSED;
+	
+	if (compressed) {
+		size = 33;
+		flag = SECP256K1_EC_COMPRESSED;
+	}
+	
+	char *dstr = (char *) malloc (size);
+	int r = secp256k1_ec_pubkey_serialize (ctx, dstr, &size, pk, flag);
+	
+	char *str = (char *) binary_to_hex (dstr, size);
+
+	if (r) 
+		return Val_some ((value) (caml_copy_string (str)));
+	else
+		return Val_none;	
+}
 
 
 

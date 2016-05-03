@@ -9,12 +9,18 @@ external context_create 			: cflag -> t = "ml_secp256k1_context_create";;
 external context_destroy 			: t -> unit = "ml_secp256k1_context_destroy";;
 external context_clone 				: t -> t = "ml_secp256k1_context_clone";;
 external context_randomize	: t 
-	-> string 			(* Seed *)
+	-> string 			(* seed *)
 	-> t option
 	= "ml_secp256k1_context_randomize";;
 
 
 (* Public key *)
+external ec_pubkey_to_string : t
+	-> pubkey
+	-> bool
+	-> string option
+	= "ml_secp256k1_ec_pubkey_to_string";;
+	
 external ec_pubkey_serialize : t
 	-> pubkey
 	-> bool 			(* compressed *) 
