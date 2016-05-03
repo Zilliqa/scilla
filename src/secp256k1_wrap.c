@@ -4,6 +4,8 @@
 #include <caml/alloc.h>
 #include <caml/custom.h>
 
+#include <malloc.h>
+#include <string.h>
 #include <stdio.h>
 #include <secp256k1.h>
 
@@ -19,6 +21,36 @@ Val_some (value v)
     some = caml_alloc (1, 0);
     Store_field (some, 0, v);
     CAMLreturn (some);
+}
+
+unsigned char *hex_to_binary (char *hex) {
+	unsigned len = strlen (hex);
+	unsigned char *data = (unsigned char *) malloc (len / 2);	
+	char *pos = hex;
+    
+	size_t count = 0;
+
+    for(count = 0; count < len; count++) {
+        sscanf(pos, "%2hhx", &data[count]);
+        pos += 2;
+    }
+	
+	return data;
+}
+
+
+char *binary_to_hex (unsigned char *bin, size_t len) {
+	size_t count = 0;
+	char *hex = (char *) malloc (len * 2);
+	char *pos = hex;
+    
+	for(count = 0; count < len; count ++) {
+		printf ("%02x", bin[count]);
+		sprintf(pos, "%02x", bin[count]);
+		pos += 2;
+	}
+
+	return hex;
 }
 
 
@@ -53,8 +85,9 @@ ml_secp256k1_context_create (value ml_flags)
 CAMLprim value 
 ml_secp256k1_context_randomize (value ml_context, value ml_seed) 
 {
-	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
-	int r = secp256k1_context_randomize (ctx, (unsigned char *) String_val(ml_seed));
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
+	unsigned char *sdata = hex_to_binary (String_val(ml_seed));
+	int r = secp256k1_context_randomize (ctx, sdata);
 
 	if (r) 
 		return Val_some ((value) (ctx));
@@ -87,8 +120,9 @@ CAMLprim value
 ml_secp256k1_ec_pubkey_create (value ml_context, value ml_seckey) {
 	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
 	secp256k1_pubkey pubkey;
+	unsigned char *seckey = hex_to_binary (String_val(ml_seckey));
 	
-	int r = secp256k1_ec_pubkey_create (ctx, &pubkey, (unsigned char *) String_val (ml_seckey));
+	int r = secp256k1_ec_pubkey_create (ctx, &pubkey, seckey);
 	
 	if (r) 
 		return Val_some ((value) ((secp256k1_pubkey *) &pubkey));
@@ -132,5 +166,78 @@ CAMLprim value
 ml_secp256k1_ecdsa_signature_to_string (value ml_signature) {
 	secp256k1_ecdsa_signature *sign = (secp256k1_ecdsa_signature *) (ml_signature);
 	
-	return caml_copy_string ((const char *) sign->data);
+	return caml_copy_string (binary_to_hex (sign->data, 64));
+}
+
+
+/* Convert a public key to string */
+CAMLprim value
+ml_secp256k1_ec_pubkey_serialize (value ml_context, value ml_pubkey, value ml_compressed) {
+	secp256k1_pubkey *pk = (secp256k1_pubkey *) (ml_pubkey);
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
+	int compressed = Int_val (ml_compressed);
+	size_t size = 65;
+	int flag = SECP256K1_EC_UNCOMPRESSED;
+	
+	if (compressed) {
+		size = 33;
+		flag = SECP256K1_EC_COMPRESSED;
+	}
+	
+	char *str = (char *) malloc (size);
+	int r = secp256k1_ec_pubkey_serialize (ctx, str, &size, pk, flag);
+
+	if (r) 
+		return Val_some ((value) (caml_copy_string (str)));
+	else
+		return Val_none;	
+}
+
+
+/* Convert a string to pubkey */
+CAMLprim value
+ml_secp256k1_ec_pubkey_parse (value ml_context, value ml_spub) {
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
+	char *spub = (char *) ml_spub;
+	char *str = (char *) malloc (64);
+	size_t size = 64;
+	secp256k1_pubkey pubkey;
+	int r = secp256k1_ec_pubkey_parse (ctx, &pubkey, str, size);
+
+	if (r) 
+		return Val_some ((value) ((secp256k1_pubkey *) &pubkey));
+	else
+		return Val_none;
+}
+
+
+
+
+/* ECDSA signature serialize compact */
+CAMLprim value
+ml_secp256k1_ecdsa_signature_serialize_compact (value ml_context, value ml_sign) {
+	secp256k1_ecdsa_signature *signature = (secp256k1_ecdsa_signature *) (ml_sign);
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
+
+	char *str = (char *) malloc (64);
+	secp256k1_ecdsa_signature_serialize_compact (ctx, str, signature);
+
+	return caml_copy_string (str);
+}
+
+
+/* ECDSA signature serialize der */
+CAMLprim value
+ml_secp256k1_ecdsa_signature_serialize_der (value ml_context, value ml_sign) {
+	secp256k1_ecdsa_signature *signature = (secp256k1_ecdsa_signature *) (ml_sign);
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
+
+	char *str = (char *) malloc (128);
+	size_t olen = 128;
+	int r = secp256k1_ecdsa_signature_serialize_der (ctx, str, &olen, signature);
+
+	if (r) 
+		return Val_some (caml_copy_string (str));
+	else
+		return Val_none;
 }

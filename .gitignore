@@ -4,3 +4,5 @@ src/*.cmx
 src/*.cmi
 src/*.cmxa
 src/*.a
+src/*.cma
+src/*.cmo
