@@ -25,7 +25,7 @@ Val_some (value v)
 
 unsigned char *hex_to_binary (char *hex) {
 	unsigned len = strlen (hex);
-	unsigned char *data = (unsigned char *) malloc (len / 2);	
+	unsigned char *data = (unsigned char *) malloc (len);	
 	char *pos = hex;
     
 	size_t count = 0;
@@ -120,7 +120,7 @@ ml_secp256k1_ec_pubkey_create (value ml_context, value ml_seckey) {
 	/* Create the publickey */
 	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
 	secp256k1_pubkey pubkey;
-	unsigned char *seckey = hex_to_binary (String_val(ml_seckey));
+	unsigned char *seckey = (unsigned char *) hex_to_binary (String_val(ml_seckey));
 	
 	int r = secp256k1_ec_pubkey_create (ctx, &pubkey, seckey);
 	
@@ -128,9 +128,9 @@ ml_secp256k1_ec_pubkey_create (value ml_context, value ml_seckey) {
 	
 	/* Convert to string */
 	size_t size = 65;
-	unsigned char *output = malloc (size);
+	unsigned char *output = (unsigned char *) malloc (size);	
 	r = secp256k1_ec_pubkey_serialize(ctx, output, &size, &pubkey, SECP256K1_EC_UNCOMPRESSED);
-
+	
 	if (r) 
 		return Val_some (caml_copy_string (binary_to_hex (output, size)));
 	else
@@ -145,14 +145,14 @@ ml_secp256k1_ecdsa_verify (value ml_context, value ml_signature, value ml_msg, v
 	
 	/* Transform pubkey string to pubkey */
 	secp256k1_pubkey pubkey;
-	int r = secp256k1_ec_pubkey_parse(ctx, &pubkey, hex_to_binary (ml_pubkey), 65);
+	int r = secp256k1_ec_pubkey_parse(ctx, &pubkey, hex_to_binary (String_val(ml_pubkey)), 65);
 	
 	/* Transform msg to binary */
 	unsigned char *msg = (unsigned char *) (hex_to_binary (ml_msg));
 	
 	/* Transform signature to ecdsa signature */
 	secp256k1_ecdsa_signature sign; 
-	secp256k1_ecdsa_signature_parse_compact (ctx, &sign, hex_to_binary (ml_signature));
+	secp256k1_ecdsa_signature_parse_compact (ctx, &sign, hex_to_binary (String_val(ml_signature)));
 
 	r = secp256k1_ecdsa_verify (ctx, &sign, msg, &pubkey);
 	return Val_int (r);
@@ -162,10 +162,14 @@ ml_secp256k1_ecdsa_verify (value ml_context, value ml_signature, value ml_msg, v
 /* Sign a message with ECDSA */
 CAMLprim value
 ml_secp256k1_ecdsa_sign (value ml_context, value ml_msg, value ml_seckey) {
-	unsigned char *msg = (unsigned char *) (ml_msg);
-	unsigned char *seckey = (unsigned char *) (ml_seckey);
 	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
 	secp256k1_ecdsa_signature sign;
+
+	/* Transform seckey to binary */
+	unsigned char *seckey = (unsigned char *) (hex_to_binary (String_val(ml_seckey)));
+	
+	/* Transform msg to binary */
+	unsigned char *msg = (unsigned char *) (hex_to_binary (String_val(ml_msg)));
 	
 	int r = secp256k1_ecdsa_sign (ctx, &sign, msg, seckey, NULL, NULL);
 

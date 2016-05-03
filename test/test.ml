@@ -9,8 +9,8 @@ let pub = "040A629506E1B65CD9D2E0BA9C75DF9C4FED0DB16DC9625ED14397F0AFC836FAE595D
 let ctx = Secp256k1.context_create Secp256k1.CONTEXT_VERIFY in
 let res = Secp256k1.ecdsa_verify ctx sign msg pub in
 	match res with
-	| true -> Printf.printf "Is true, right!\n"
-	| false -> Printf.printf "Oh snap, is false\n"
+	| true -> Printf.printf "Is true, right!\n%!"
+	| false -> Printf.printf "Oh snap, is false\n%!"
 ;;
 
 
@@ -22,6 +22,22 @@ let pub = "040A629506E1B65CD9D2E0BA9C75DF9C4FED0DB16DC9625ED14397F0AFC836FAE595D
 let ctx = Secp256k1.context_create Secp256k1.CONTEXT_VERIFY in
 let res = Secp256k1.ecdsa_verify ctx sign msg pub in
 	match res with
-	| true -> Printf.printf "Oh snap, is true\n"
-	| false -> Printf.printf "Is false, right!\n"
+	| true -> Printf.printf "Oh snap, is true\n%!"
+	| false -> Printf.printf "Is false, right!\n%!"
+;;
+
+
+(* Pubkey creation *)
+(*04C591A8FF19AC9C4E4E5793673B83123437E975285E7B442F4EE2654DFFCA5E2D2103ED494718C697AC9AEBCFD19612E224DB46661011863ED2FC54E71861E2A6*)
+let ctx = Secp256k1.context_create Secp256k1.CONTEXT_SIGN in
+let sec = "67E56582298859DDAE725F972992A07C6C4FB9F62A8FFF58CE3CA926A1063530" in
+let pubtrue = "04c591a8ff19ac9c4e4e5793673b83123437e975285e7b442f4ee2654dffca5e2d2103ed494718c697ac9aebcfd19612e224db46661011863ed2fc54e71861e2a6" in
+let pub = Secp256k1.ec_pubkey_create ctx sec in
+match pub with 
+| Some (pub) -> 
+	if pub = pubtrue then 
+		Printf.printf "Pubkey match\n%!"
+	else
+		Printf.printf "Wrong pubkey \n%s\n%s\n%!" pub pubtrue
+| None -> Printf.printf "Error\n%!"
 ;;
