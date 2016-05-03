@@ -147,7 +147,6 @@ ml_secp256k1_ecdsa_verify (value ml_context, value ml_signature, value ml_msg, v
 	secp256k1_pubkey pubkey;
 	int r = secp256k1_ec_pubkey_parse(ctx, &pubkey, hex_to_binary (ml_pubkey), 65);
 	
-	
 	/* Transform msg to binary */
 	unsigned char *msg = (unsigned char *) (hex_to_binary (ml_msg));
 	
