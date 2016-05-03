@@ -34,8 +34,12 @@ CAMLprim value
 ml_secp256k1_context_randomize (value ml_context, value ml_seed) 
 {
 	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
-	secp256k1_context_randomize (ctx, (unsigned char *) String_val(ml_seed));
-	return (value) ctx;
+	int r = secp256k1_context_randomize (ctx, (unsigned char *) String_val(ml_seed));
+	
+	if (r) 
+		return Val_some ((value) (ctx));
+	else
+		return Val_int (0);	
 }
 
 
@@ -75,7 +79,7 @@ ml_secp256k1_ec_pubkey_create (value ml_context, value ml_seckey) {
 
 /* Verify an ecdsa signature */
 CAMLprim value
-ml_secp256_ecdsa_verify (value ml_context, value ml_signature, value ml_msg, value ml_pubkey) {
+ml_secp256k1_ecdsa_verify (value ml_context, value ml_signature, value ml_msg, value ml_pubkey) {
 	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
 	secp256k1_pubkey *pubkey = (secp256k1_pubkey *) (ml_pubkey);
 	secp256k1_ecdsa_signature *sign = (secp256k1_ecdsa_signature *) (ml_signature);
@@ -83,4 +87,30 @@ ml_secp256_ecdsa_verify (value ml_context, value ml_signature, value ml_msg, val
 	
 	int r = secp256k1_ecdsa_verify (ctx, sign, msg, pubkey);
 	return Val_int (r);
+}
+
+
+/* Sign a message with ECDSA */
+CAMLprim value
+ml_secp256k1_ecdsa_sign (value ml_context, value ml_msg, value ml_seckey) {
+	unsigned char *msg = (unsigned char *) (ml_msg);
+	unsigned char *seckey = (unsigned char *) (ml_seckey);
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
+	secp256k1_ecdsa_signature sign;
+	
+	int r = secp256k1_ecdsa_sign (ctx, &sign, msg, seckey, NULL, NULL);
+
+	if (r) 
+		return Val_some ((value) ((secp256k1_ecdsa_signature *) &sign));
+	else
+		return Val_int (0);	
+}
+
+
+/* Convert a signature object to string */
+CAMLprim value
+ml_secp256k1_ecdsa_signature_to_string (value ml_signature) {
+	secp256k1_ecdsa_signature *sign = (secp256k1_ecdsa_signature *) (ml_signature);
+	
+	return Val_string (sign->data);
 }
