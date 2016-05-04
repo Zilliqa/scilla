@@ -1,0 +1,38 @@
+<html><head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Secp256k1" rel="Chapter" href="Secp256k1.html"><title>Secp256k1</title>
+</head>
+<body>
+<code class="code"><span class="keyword">sig</span><br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;pubkey&nbsp;=&nbsp;string<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;ecdsa_signature&nbsp;=&nbsp;string<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;cflag&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">CONTEXT_VERIFY</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">CONTEXT_SIGN</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">CONTEXT_SIGNVERIFY</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">CONTEXT_NONE</span><br>
+&nbsp;&nbsp;<span class="keyword">external</span>&nbsp;context_create&nbsp;:&nbsp;<span class="constructor">Secp256k1</span>.cflag&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Secp256k1</span>.t<br>
+&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="string">"ml_secp256k1_context_create"</span><br>
+&nbsp;&nbsp;<span class="keyword">external</span>&nbsp;context_destroy&nbsp;:&nbsp;<span class="constructor">Secp256k1</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="string">"ml_secp256k1_context_destroy"</span><br>
+&nbsp;&nbsp;<span class="keyword">external</span>&nbsp;context_clone&nbsp;:&nbsp;<span class="constructor">Secp256k1</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Secp256k1</span>.t<br>
+&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="string">"ml_secp256k1_context_clone"</span><br>
+&nbsp;&nbsp;<span class="keyword">external</span>&nbsp;context_randomize&nbsp;:&nbsp;<span class="constructor">Secp256k1</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Secp256k1</span>.t&nbsp;option<br>
+&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="string">"ml_secp256k1_context_randomize"</span><br>
+&nbsp;&nbsp;<span class="keyword">external</span>&nbsp;ec_pubkey_create&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Secp256k1</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Secp256k1</span>.pubkey&nbsp;option<br>
+&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="string">"ml_secp256k1_ec_pubkey_create"</span><br>
+&nbsp;&nbsp;<span class="keyword">external</span>&nbsp;ecdsa_verify&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Secp256k1</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Secp256k1</span>.ecdsa_signature&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Secp256k1</span>.pubkey&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool<br>
+&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="string">"ml_secp256k1_ecdsa_verify"</span><br>
+&nbsp;&nbsp;<span class="keyword">external</span>&nbsp;ecdsa_sign&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Secp256k1</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Secp256k1</span>.ecdsa_signature&nbsp;option<br>
+&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="string">"ml_secp256k1_ecdsa_sign"</span><br>
+<span class="keyword">end</span></code></body></html>

@@ -9,3 +9,6 @@ test:
 
 test-clean:
 	cd test && make clean
+	
+doc-html:
+	ocamldoc -d doc -html src/secp256k1.mli

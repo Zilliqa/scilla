@@ -1,0 +1,18 @@
+opam-version: "1.2"
+name: "secp256k1-ml"
+version: "0.1"
+maintainer: "Davide Gessa <gessadavide@gmail.com>"
+authors: "Davide Gessa <gessadavide@gmail.com>"
+homepage: "https://github.com/dakk/secp256k1-ml"
+bug-reports: "https://github.com/dakk/secp256k1-ml/issues"
+license: "MIT"
+dev-repo: "https://github.com/dakk/secp256k1-ml"
+build: [
+  ["./configure" "--prefix=%{prefix}%"]
+  [make]
+]
+install: [make "install"]
+remove: ["ocamlfind" "remove" "secp256k1-ml"]
+depends: [
+  "ocamlfind" {build}
+]
