@@ -152,7 +152,7 @@ ml_secp256k1_ecdsa_verify (value ml_context, value ml_signature, value ml_msg, v
 	
 	/* Transform signature to ecdsa signature */
 	secp256k1_ecdsa_signature sign; 
-	size_t size = 72;
+	size_t size = strlen (ml_signature) / 2;
 	secp256k1_ecdsa_signature_parse_der (ctx, &sign, hex_to_binary (String_val(ml_signature)), size);
 
 	r = secp256k1_ecdsa_verify (ctx, &sign, msg, &pubkey);
