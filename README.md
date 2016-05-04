@@ -15,3 +15,8 @@ All exchanged data (pubkey, signature, seckey) are represented as hex strings.
 ## Contributions
 
 You can improve this wrapper by submitting a pull request.
+
+
+## Donation
+
+BTC: 13TRVwiqLMveg9aPAmZgcAix5ogKVgpe4T
