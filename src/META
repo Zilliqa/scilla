@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 4aa23d90b140effb3458fce63efa176a)
-version = "0.1"
+# DO NOT EDIT (digest: 3b8c1a010d5e38e50c99e94d3c9a006a)
+version = "0.1.3"
 description = "Elliptic curve library secp256k1 wrapper"
 requires = "unix"
 archive(byte) = "secp256k1.cma"
