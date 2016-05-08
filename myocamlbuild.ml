@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 6e2b2fb59e9a94235e818f19e3d91d25) *)
+(* DO NOT EDIT (digest: a7a1d2959d3e4d8cd7a09200daf8fbe4) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -778,7 +778,7 @@ let package_default =
           (["oasis_library_secp256k1_cclib"; "ocamlmklib"; "c"],
             [(OASISExpr.EBool true, S [A "-lsecp256k1"])])
        ];
-     includes = []
+     includes = [("test", ["src"])]
   }
   ;;
 

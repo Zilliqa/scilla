@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 837780a09f8ae88c259321945832312f)
+# DO NOT EDIT (digest: 9ccc5f14bb0243aabaa05a0d84f57bdd)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -26,4 +26,10 @@ true: annot, bin_annot
 <src/secp256k1.{cma,cmxa}>: use_libsecp256k1_stubs
 <src/*.ml{,i,y}>: pkg_unix
 "src/secp256k1_wrap.c": pkg_unix
+# Executable test
+"test/test.native": pkg_unix
+"test/test.native": use_secp256k1
+<test/*.ml{,i,y}>: pkg_unix
+<test/*.ml{,i,y}>: use_secp256k1
+"test/test.native": custom
 # OASIS_STOP

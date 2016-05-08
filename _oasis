@@ -17,3 +17,12 @@ Library secp256k1
   CCOpt: -O
   CCLib: -lsecp256k1
 
+
+Executable test
+  Path:         test
+  MainIs:       test.ml
+  Custom:       true
+  BuildDepends: secp256k1
+  Install:      false
+  CompiledObject: native
+
