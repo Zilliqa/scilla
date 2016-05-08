@@ -1,7 +1,7 @@
 # OASIS_START
-# DO NOT EDIT (digest: 3b8c1a010d5e38e50c99e94d3c9a006a)
-version = "0.1.3"
-description = "Elliptic curve library secp256k1 wrapper"
+# DO NOT EDIT (digest: 8a9aecc979b4819954fc64cab49ab91e)
+version = "0.1.4"
+description = "Elliptic curve library secp256k1 wrapper for Ocaml"
 requires = "unix"
 archive(byte) = "secp256k1.cma"
 archive(byte, plugin) = "secp256k1.cma"

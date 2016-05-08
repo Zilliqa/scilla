@@ -1,10 +1,10 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: d982a039448a86e8dda8fd4529f8d5c5) *)
+(* DO NOT EDIT (digest: 9c78acb2708e94a1cc19ffaed6bebdac) *)
 
-secp256k1 - Elliptic curve library secp256k1 wrapper
-====================================================
+secp256k1 - Elliptic curve library secp256k1 wrapper for Ocaml
+==============================================================
 
-Elliptic curve library secp256k1 wrapper
+Elliptic curve library secp256k1 wrapper for Ocaml
 
 See the file [INSTALL.txt](INSTALL.txt) for building and installation
 instructions.
