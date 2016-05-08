@@ -1,0 +1,29 @@
+# OASIS_START
+# DO NOT EDIT (digest: 837780a09f8ae88c259321945832312f)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
+# useless stuff for the build process
+true: annot, bin_annot
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library secp256k1
+"src/secp256k1.cmxs": use_secp256k1
+<src/*.ml{,i,y}>: oasis_library_secp256k1_ccopt
+"src/secp256k1_wrap.c": oasis_library_secp256k1_ccopt
+<src/secp256k1.{cma,cmxa}>: oasis_library_secp256k1_cclib
+"src/libsecp256k1_stubs.lib": oasis_library_secp256k1_cclib
+"src/dllsecp256k1_stubs.dll": oasis_library_secp256k1_cclib
+"src/libsecp256k1_stubs.a": oasis_library_secp256k1_cclib
+"src/dllsecp256k1_stubs.so": oasis_library_secp256k1_cclib
+<src/secp256k1.{cma,cmxa}>: use_libsecp256k1_stubs
+<src/*.ml{,i,y}>: pkg_unix
+"src/secp256k1_wrap.c": pkg_unix
+# OASIS_STOP

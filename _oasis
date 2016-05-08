@@ -1,0 +1,19 @@
+OASISFormat: 0.3
+Name:        secp256k1
+Version:     0.1
+Authors:     Davide Gessa <gessadavide@gmail.com>
+License:     MIT
+BuildTools:  ocamlbuild, ocamldoc
+Plugins:     META (0.3), DevFiles (0.3), StdFiles (0.3)
+
+Synopsis: Elliptic curve library secp256k1 wrapper
+Description: Elliptic curve library secp256k1 wrapper
+
+Library secp256k1
+  Path:    src
+  Modules: Secp256k1
+  CSources: secp256k1_wrap.c
+  BuildDepends: unix
+  CCOpt: -O
+  CCLib: -lsecp256k1
+

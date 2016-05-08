@@ -9,10 +9,7 @@ license: "MIT"
 dev-repo: "https://github.com/dakk/secp256k1-ml"
 build: [
   ["./configure" "--prefix=%{prefix}%"]
-  [make]
+  ["make" "all"]
 ]
 install: [make "install"]
-remove: ["ocamlfind" "remove" "secp256k1-ml"]
-depends: [
-  "ocamlfind" {build}
-]
+remove: ["secp256k1-ml"]

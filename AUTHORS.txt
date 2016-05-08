@@ -1,0 +1,8 @@
+(* OASIS_START *)
+(* DO NOT EDIT (digest: 0a90e34055028032e28bcb7b20bd2154) *)
+
+Authors of secp256k1:
+
+* Davide Gessa <gessadavide@gmail.com>
+
+(* OASIS_STOP *)
