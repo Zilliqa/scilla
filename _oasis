@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        secp256k1
-Version:     0.1
+Version:     0.1.2
 Authors:     Davide Gessa <gessadavide@gmail.com>
 License:     MIT
 BuildTools:  ocamlbuild, ocamldoc, ocamlfind
