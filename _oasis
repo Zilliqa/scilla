@@ -3,7 +3,7 @@ Name:        secp256k1
 Version:     0.1
 Authors:     Davide Gessa <gessadavide@gmail.com>
 License:     MIT
-BuildTools:  ocamlbuild, ocamldoc
+BuildTools:  ocamlbuild, ocamldoc, ocamlfind
 Plugins:     META (0.3), DevFiles (0.3), StdFiles (0.3)
 
 Synopsis: Elliptic curve library secp256k1 wrapper
