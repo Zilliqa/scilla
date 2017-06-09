@@ -15,7 +15,7 @@
 
 static value
 Val_some (value v)
-{   
+{
     CAMLparam1 (v);
     CAMLlocal1 (some);
     some = caml_alloc (1, 0);
@@ -25,16 +25,16 @@ Val_some (value v)
 
 unsigned char *hex_to_binary (char *hex) {
 	unsigned len = strlen (hex);
-	unsigned char *data = (unsigned char *) malloc (len);	
+	unsigned char *data = (unsigned char *) malloc (len);
 	char *pos = hex;
-    
+
 	size_t count = 0;
 
     for(count = 0; count < len; count++) {
         sscanf(pos, "%2hhx", &data[count]);
         pos += 2;
     }
-	
+
 	return data;
 }
 
@@ -43,7 +43,7 @@ char *binary_to_hex (unsigned char *bin, size_t len) {
 	size_t count = 0;
 	char *hex = (char *) malloc (len * 2);
 	char *pos = hex;
-    
+
 	for(count = 0; count < len; count ++) {
 		sprintf(pos, "%02x", bin[count]);
 		pos += 2;
@@ -69,7 +69,7 @@ ml_secp256k1_context_create (value ml_flags)
 		case 2:
 			flags = SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY;
 			break;
-			
+
 		default:
 			flags = SECP256K1_CONTEXT_NONE;
 	};
@@ -81,77 +81,77 @@ ml_secp256k1_context_create (value ml_flags)
 
 
 /* Randomize the context */
-CAMLprim value 
-ml_secp256k1_context_randomize (value ml_context, value ml_seed) 
+CAMLprim value
+ml_secp256k1_context_randomize (value ml_context, value ml_seed)
 {
 	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
 	unsigned char *sdata = hex_to_binary (String_val(ml_seed));
 	int r = secp256k1_context_randomize (ctx, sdata);
 
-	if (r) 
+	if (r)
 		return Val_some ((value) (ctx));
 	else
-		return Val_none;	
+		return Val_none;
 }
 
 
 /* Clone the context */
-CAMLprim value 
-ml_secp256k1_context_clone (value ml_context) 
+CAMLprim value
+ml_secp256k1_context_clone (value ml_context)
 {
-	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
 	secp256k1_context *ctx2 = secp256k1_context_clone (ctx);
 	return (value) ctx2;
 }
 
 /* Destroy the context */
-CAMLprim value 
-ml_secp256k1_context_destroy (value ml_context) 
+CAMLprim value
+ml_secp256k1_context_destroy (value ml_context)
 {
-	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
 	secp256k1_context_destroy (ctx);
 	return Val_unit;
 }
 
 
 /* Create public key */
-CAMLprim value 
+CAMLprim value
 ml_secp256k1_ec_pubkey_create (value ml_context, value ml_seckey) {
 	/* Create the publickey */
-	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
 	secp256k1_pubkey pubkey;
 	unsigned char *seckey = (unsigned char *) hex_to_binary (String_val(ml_seckey));
-	
+
 	int r = secp256k1_ec_pubkey_create (ctx, &pubkey, seckey);
-	
+
 	if (!r) return Val_none;
-	
+
 	/* Convert to string */
 	size_t size = 65;
-	unsigned char *output = (unsigned char *) malloc (size);	
+	unsigned char *output = (unsigned char *) malloc (size);
 	r = secp256k1_ec_pubkey_serialize(ctx, output, &size, &pubkey, SECP256K1_EC_UNCOMPRESSED);
-	
-	if (r) 
+
+	if (r)
 		return Val_some (caml_copy_string (binary_to_hex (output, size)));
 	else
-		return Val_none;	
+		return Val_none;
 }
 
 
 /* Verify an ecdsa signature */
 CAMLprim value
 ml_secp256k1_ecdsa_verify (value ml_context, value ml_signature, value ml_msg, value ml_pubkey) {
-	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
-	
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
+
 	/* Transform pubkey string to pubkey */
 	secp256k1_pubkey pubkey;
 	int r = secp256k1_ec_pubkey_parse(ctx, &pubkey, hex_to_binary (String_val(ml_pubkey)), 65);
-	
+
 	/* Transform msg to binary */
 	unsigned char *msg = (unsigned char *) (hex_to_binary (ml_msg));
-	
+
 	/* Transform signature to ecdsa signature */
-	secp256k1_ecdsa_signature sign; 
+	secp256k1_ecdsa_signature sign;
 	size_t size = strlen (ml_signature) / 2;
 	secp256k1_ecdsa_signature_parse_der (ctx, &sign, hex_to_binary (String_val(ml_signature)), size);
 
@@ -163,25 +163,23 @@ ml_secp256k1_ecdsa_verify (value ml_context, value ml_signature, value ml_msg, v
 /* Sign a message with ECDSA */
 CAMLprim value
 ml_secp256k1_ecdsa_sign (value ml_context, value ml_msg, value ml_seckey) {
-	secp256k1_context *ctx = (secp256k1_context *) (ml_context);	
+	secp256k1_context *ctx = (secp256k1_context *) (ml_context);
 	secp256k1_ecdsa_signature sign;
 
 	/* Transform seckey to binary */
 	unsigned char *seckey = (unsigned char *) (hex_to_binary (String_val(ml_seckey)));
-	
+
 	/* Transform msg to binary */
 	unsigned char *msg = (unsigned char *) (hex_to_binary (String_val(ml_msg)));
-	
+
 	int r = secp256k1_ecdsa_sign (ctx, &sign, msg, seckey, NULL, NULL);
 
 	size_t size = 72;
 	unsigned char serialized[size];
 	secp256k1_ecdsa_signature_serialize_der(ctx, serialized, &size, &sign);
-	
-	if (r) 
+
+	if (r)
 		return Val_some (caml_copy_string (binary_to_hex (serialized, size)));
 	else
-		return Val_none;	
+		return Val_none;
 }
-
-
