@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "secp256k1"
-version: "0.2"
+version: "0.2.0"
 maintainer: "Davide Gessa <gessadavide@gmail.com>"
 authors: [
   "Davide Gessa <gessadavide@gmail.com>"
