@@ -84,7 +84,7 @@ end
 
 module Sign : sig
   type t
-  (** Opaque data structured that holds a parsed ECDSA signature. *)
+  (** Opaque data structure that holds a parsed ECDSA signature. *)
 
   val compare : t -> t -> int
 
