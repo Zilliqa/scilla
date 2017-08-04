@@ -118,6 +118,8 @@ module RecoverableSign : sig
   (** Opaque data structure that holds a parsed ECDSA recoverable
       signature. *)
 
+  val compare : t -> t -> int
+
   val of_compact : Context.t -> buffer -> int -> t option
   val of_compact_exn : Context.t -> buffer -> int -> t
   (** Parse an ECDSA recoverable signature in compact (64 bytes)

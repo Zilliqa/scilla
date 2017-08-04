@@ -143,6 +143,8 @@ end
 module RecoverableSign = struct
   type t = buffer
 
+  let compare = BA.compare
+
   external parse :
     Context.t -> buffer -> int -> t = "ml_secp256k1_ecdsa_recoverable_signature_parse_compact"
 
