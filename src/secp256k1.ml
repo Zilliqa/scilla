@@ -154,6 +154,11 @@ module RecoverableSign = struct
     | None -> failwith "RecoverableSign.of_compact_exn"
     | Some signature -> signature
 
+  external serialize :
+    Context.t -> t -> (buffer * int) = "ml_secp256k1_ecdsa_recoverable_signature_serialize_compact"
+
+  let to_compact ctx sign = serialize ctx sign
+
   external sign :
     Context.t -> Secret.t -> buffer -> t = "ml_secp256k1_ecdsa_sign_recoverable"
 
