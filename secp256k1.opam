@@ -5,6 +5,7 @@ maintainer: "Davide Gessa <gessadavide@gmail.com>"
 authors: [
   "Davide Gessa <gessadavide@gmail.com>"
   "Vincent Bernardoff <vb@luminar.eu.org>"
+  "Yoichi Hirai <i@yoichihirai.com>"
 ]
 
 homepage: "https://github.com/dakk/secp256k1-ml"
