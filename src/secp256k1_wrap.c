@@ -7,6 +7,7 @@
 
 #include <string.h>
 #include <secp256k1.h>
+#include <secp256k1_recovery.h>
 
 /* Accessing the secp256k1_context * part of an OCaml custom block */
 #define Context_val(v) (*((secp256k1_context **) Data_custom_val(v)))
@@ -263,6 +264,29 @@ ml_secp256k1_ecdsa_signature_serialize(value ml_context, value ml_signature, val
                                 NULL,
                                 size);
     memcpy(Caml_ba_data_val(result), buf, size);
+
+    CAMLreturn (result);
+}
+
+CAMLprim value
+ml_secp256k1_ecdsa_recoverable_signature_parse_compact (value ml_context, value ml_buf, value ml_recid) {
+    CAMLparam3 (ml_context, ml_buf, ml_recid);
+    CAMLlocal1 (result);
+    int ret;
+
+    secp256k1_ecdsa_recoverable_signature sign;
+    ret = secp256k1_ecdsa_recoverable_signature_parse_compact (Context_val (ml_context),
+                                                               &sign,
+                                                               Caml_ba_data_val(ml_buf),
+                                                               Int_val(ml_recid));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ecdsa_recoverable_signature_parse_compact");
+
+    result = caml_ba_alloc_dims(CAML_BA_UINT8 | CAML_BA_C_LAYOUT, 1,
+                                NULL,
+                                sizeof(secp256k1_ecdsa_recoverable_signature));
+    memcpy(Caml_ba_data_val(result), sign.data, sizeof(secp256k1_ecdsa_recoverable_signature));
 
     CAMLreturn (result);
 }

@@ -139,3 +139,19 @@ module Sign = struct
       invalid_arg "Sign.verify: msg must be 32 bytes long" ;
     verify ctx pubkey msg signature
 end
+
+module RecoverableSign = struct
+  type t = buffer
+
+  external parse :
+    Context.t -> buffer -> int -> t = "ml_secp256k1_ecdsa_recoverable_signature_parse_compact"
+
+  let of_compact ctx buf recid =
+    try Some (parse ctx buf recid) with _ -> None
+
+  let of_compact_exn ctx buf recid =
+    match of_compact ctx buf recid with
+    | None -> failwith "RecoverableSign.of_compact_exn"
+    | Some signature -> signature
+
+end

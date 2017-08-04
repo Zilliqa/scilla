@@ -112,3 +112,15 @@ module Sign : sig
       signatures, only ECDSA signatures in lower-S form are
       accepted. *)
 end
+
+module RecoverableSign : sig
+  type t
+  (** Opaque data structure that holds a parsed ECDSA recoverable
+      signature. *)
+
+  val of_compact : Context.t -> buffer -> int -> t option
+  val of_compact_exn : Context.t -> buffer -> int -> t
+  (** Parse an ECDSA recoverable signature in compact (64 bytes)
+      format. Buffer must be 64 bytes.  The third argument is the
+      recovery id. *)
+end
