@@ -7,6 +7,7 @@
 
 #include <string.h>
 #include <secp256k1.h>
+#include <secp256k1_recovery.h>
 
 /* Accessing the secp256k1_context * part of an OCaml custom block */
 #define Context_val(v) (*((secp256k1_context **) Data_custom_val(v)))
@@ -263,6 +264,132 @@ ml_secp256k1_ecdsa_signature_serialize(value ml_context, value ml_signature, val
                                 NULL,
                                 size);
     memcpy(Caml_ba_data_val(result), buf, size);
+
+    CAMLreturn (result);
+}
+
+CAMLprim value
+ml_secp256k1_ecdsa_recoverable_signature_parse_compact (value ml_context, value ml_buf, value ml_recid) {
+    CAMLparam3 (ml_context, ml_buf, ml_recid);
+    CAMLlocal1 (result);
+    int ret;
+
+    secp256k1_ecdsa_recoverable_signature sign;
+    ret = secp256k1_ecdsa_recoverable_signature_parse_compact (Context_val (ml_context),
+                                                               &sign,
+                                                               Caml_ba_data_val(ml_buf),
+                                                               Int_val(ml_recid));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ecdsa_recoverable_signature_parse_compact");
+
+    result = caml_ba_alloc_dims(CAML_BA_UINT8 | CAML_BA_C_LAYOUT, 1,
+                                NULL,
+                                sizeof(secp256k1_ecdsa_recoverable_signature));
+    memcpy(Caml_ba_data_val(result), sign.data, sizeof(secp256k1_ecdsa_recoverable_signature));
+
+    CAMLreturn (result);
+}
+
+CAMLprim value
+ml_secp256k1_ecdsa_sign_recoverable (value ml_context, value ml_seckey, value ml_msg) {
+    CAMLparam3(ml_context, ml_seckey, ml_msg);
+    CAMLlocal1 (result);
+
+    secp256k1_ecdsa_recoverable_signature sign;
+    int ret;
+
+    ret = secp256k1_ecdsa_sign_recoverable (Context_val (ml_context),
+                                            &sign,
+                                            Caml_ba_data_val(ml_msg),
+                                            Caml_ba_data_val(ml_seckey),
+                                            NULL, NULL);
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ecdsa_sign_recoverable");
+
+    result = caml_ba_alloc_dims(CAML_BA_UINT8 | CAML_BA_C_LAYOUT, 1,
+                                NULL,
+                                sizeof(secp256k1_ecdsa_recoverable_signature));
+    memcpy(Caml_ba_data_val(result), sign.data, sizeof(secp256k1_ecdsa_recoverable_signature));
+
+    CAMLreturn (result);
+}
+
+CAMLprim value
+ml_secp256k1_ecdsa_recoverable_signature_serialize_compact(value ml_context, value ml_signature) {
+    CAMLparam2 (ml_context, ml_signature);
+    CAMLlocal3 (result_tuple, result_buffer, result_recid);
+
+    int ret;
+    int recid;
+    size_t size = 64;
+    unsigned char buf[size];
+    ret = secp256k1_ecdsa_recoverable_signature_serialize_compact(Context_val (ml_context),
+                                                                  buf,
+                                                                  &recid,
+                                                                  Caml_ba_data_val(ml_signature));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ecdsa_recoverable_signature_serialize_compact");
+
+    result_buffer = caml_ba_alloc_dims(CAML_BA_UINT8 | CAML_BA_C_LAYOUT, 1,
+                                      NULL,
+                                      size);
+    memcpy(Caml_ba_data_val(result_buffer), buf, size);
+
+    result_recid = Val_int(recid);
+
+    result_tuple = caml_alloc_tuple(2);
+    Store_field(result_tuple, 0, result_buffer);
+    Store_field(result_tuple, 1, result_recid);
+
+    CAMLreturn (result_tuple);
+}
+
+CAMLprim value
+ml_secp256k1_ecdsa_recoverable_signature_convert(value ml_context, value ml_signature) {
+    CAMLparam2 (ml_context, ml_signature);
+    CAMLlocal1 (result);
+
+    int ret;
+    secp256k1_ecdsa_signature sign;
+
+    ret = secp256k1_ecdsa_recoverable_signature_convert (Context_val (ml_context),
+                                                         &sign,
+                                                         Caml_ba_data_val(ml_signature));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ecdsa_recoverable_signature_convert");
+
+    result = caml_ba_alloc_dims(CAML_BA_UINT8 | CAML_BA_C_LAYOUT, 1,
+                                NULL,
+                                sizeof(secp256k1_ecdsa_signature));
+    memcpy(Caml_ba_data_val(result), sign.data, sizeof(secp256k1_ecdsa_signature));
+
+    CAMLreturn (result);
+}
+
+CAMLprim value
+ml_secp256k1_ecdsa_recover(value ml_context, value ml_signature, value ml_msg) {
+    CAMLparam3 (ml_context, ml_signature, ml_msg);
+    CAMLlocal1 (result);
+
+    secp256k1_pubkey pubkey;
+    int ret;
+
+    ret = secp256k1_ecdsa_recover(Context_val (ml_context),
+                                  &pubkey,
+                                  Caml_ba_data_val(ml_signature),
+                                  Caml_ba_data_val(ml_msg));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ecdsa_recover");
+
+    result = caml_ba_alloc_dims(CAML_BA_UINT8 | CAML_BA_C_LAYOUT, 1,
+                                NULL,
+                                sizeof(secp256k1_pubkey));
+    memcpy(Caml_ba_data_val(result), pubkey.data, sizeof(secp256k1_pubkey));
 
     CAMLreturn (result);
 }

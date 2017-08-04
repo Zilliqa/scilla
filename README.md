@@ -5,7 +5,7 @@ only a subset of functionalities are available:
 
 - Context: create, clone, destroy, randomize
 - Elliptic curve: public key creation
-- ECDSA: verify, sign
+- ECDSA: verify, sign, recover
 
 
 All exchanged data (pubkey, signature, seckey) are represented as hex strings.

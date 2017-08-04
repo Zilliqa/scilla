@@ -139,3 +139,47 @@ module Sign = struct
       invalid_arg "Sign.verify: msg must be 32 bytes long" ;
     verify ctx pubkey msg signature
 end
+
+module RecoverableSign = struct
+  type t = buffer
+
+  let compare = BA.compare
+
+  external parse :
+    Context.t -> buffer -> int -> t = "ml_secp256k1_ecdsa_recoverable_signature_parse_compact"
+
+  let of_compact ctx buf recid =
+    try Some (parse ctx buf recid) with _ -> None
+
+  let of_compact_exn ctx buf recid =
+    match of_compact ctx buf recid with
+    | None -> failwith "RecoverableSign.of_compact_exn"
+    | Some signature -> signature
+
+  external serialize :
+    Context.t -> t -> (buffer * int) = "ml_secp256k1_ecdsa_recoverable_signature_serialize_compact"
+
+  let to_compact ctx sign = serialize ctx sign
+
+  external convert :
+    Context.t -> t -> Sign.t = "ml_secp256k1_ecdsa_recoverable_signature_convert"
+
+  let convert ctx sign = convert ctx sign
+
+  external sign :
+    Context.t -> Secret.t -> buffer -> t = "ml_secp256k1_ecdsa_sign_recoverable"
+
+  let sign ctx ~seckey ~msg =
+    if BA.length msg <> 32 then
+      invalid_arg "RecoverableSign.sign: msg must be 32 bytes long" ;
+    sign ctx seckey msg
+
+  external recover :
+    Context.t -> t -> buffer -> Public.t = "ml_secp256k1_ecdsa_recover"
+
+  let recover ctx sign ~msg =
+    if BA.length msg <> 32 then
+      invalid_arg "RecoverableSign.recover: msg must be 32 bytes long" ;
+    recover ctx sign msg
+
+end

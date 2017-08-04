@@ -84,7 +84,7 @@ end
 
 module Sign : sig
   type t
-  (** Opaque data structured that holds a parsed ECDSA signature. *)
+  (** Opaque data structure that holds a parsed ECDSA signature. *)
 
   val compare : t -> t -> int
 
@@ -111,4 +111,33 @@ module Sign : sig
   (** Verify an ECDSA signature. To avoid accepting malleable
       signatures, only ECDSA signatures in lower-S form are
       accepted. *)
+end
+
+module RecoverableSign : sig
+  type t
+  (** Opaque data structure that holds a parsed ECDSA recoverable
+      signature. *)
+
+  val compare : t -> t -> int
+
+  val of_compact : Context.t -> buffer -> int -> t option
+  val of_compact_exn : Context.t -> buffer -> int -> t
+  (** Parse an ECDSA recoverable signature in compact (64 bytes)
+      format. Buffer must be 64 bytes.  The third argument is the
+      recovery id. *)
+
+  val to_compact : Context.t -> t -> buffer * int
+  (** Serialize an ECDSA recoverable signature in compact (64 bytes)
+      format. The returned int is the recovery id. *)
+
+  val convert : Context.t -> t -> Sign.t
+  (** Convert an ECDSA recoverable signature into an ECDSA signature *)
+
+  val sign : Context.t -> seckey:Secret.t -> msg:buffer -> t
+  (** Create an ECDSA recoverable signature. Buffer must contain
+      a 32-byte message hash. *)
+
+  val recover : Context.t -> t -> msg:buffer -> Public.t
+  (** Recover an ECDSA public key from a signature. Buffer must contain
+      a 32-byte message hash. *)
 end
