@@ -290,3 +290,28 @@ ml_secp256k1_ecdsa_recoverable_signature_parse_compact (value ml_context, value 
 
     CAMLreturn (result);
 }
+
+CAMLprim value
+ml_secp256k1_ecdsa_sign_recoverable (value ml_context, value ml_seckey, value ml_msg) {
+    CAMLparam3(ml_context, ml_seckey, ml_msg);
+    CAMLlocal1 (result);
+
+    secp256k1_ecdsa_recoverable_signature sign;
+    int ret;
+
+    ret = secp256k1_ecdsa_sign_recoverable (Context_val (ml_context),
+                                            &sign,
+                                            Caml_ba_data_val(ml_msg),
+                                            Caml_ba_data_val(ml_seckey),
+                                            NULL, NULL);
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ecdsa_sign_recoverable");
+
+    result = caml_ba_alloc_dims(CAML_BA_UINT8 | CAML_BA_C_LAYOUT, 1,
+                                NULL,
+                                sizeof(secp256k1_ecdsa_recoverable_signature));
+    memcpy(Caml_ba_data_val(result), sign.data, sizeof(secp256k1_ecdsa_recoverable_signature));
+
+    CAMLreturn (result);
+}

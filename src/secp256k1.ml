@@ -154,4 +154,12 @@ module RecoverableSign = struct
     | None -> failwith "RecoverableSign.of_compact_exn"
     | Some signature -> signature
 
+  external sign :
+    Context.t -> Secret.t -> buffer -> t = "ml_secp256k1_ecdsa_sign_recoverable"
+
+  let sign ctx ~seckey ~msg =
+    if BA.length msg <> 32 then
+      invalid_arg "RecoverableSign.sign: msg must be 32 bytes long" ;
+    sign ctx seckey msg
+
 end
