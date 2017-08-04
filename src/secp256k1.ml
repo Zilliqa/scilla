@@ -172,4 +172,12 @@ module RecoverableSign = struct
       invalid_arg "RecoverableSign.sign: msg must be 32 bytes long" ;
     sign ctx seckey msg
 
+  external recover :
+    Context.t -> t -> buffer -> Public.t = "ml_secp256k1_ecdsa_recover"
+
+  let recover ctx sign ~msg =
+    if BA.length msg <> 32 then
+      invalid_arg "RecoverableSign.recover: msg must be 32 bytes long" ;
+    recover ctx sign msg
+
 end

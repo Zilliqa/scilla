@@ -134,4 +134,8 @@ module RecoverableSign : sig
   val sign : Context.t -> seckey:Secret.t -> msg:buffer -> t
   (** Create an ECDSA recoverable signature. Buffer must contain
       a 32-byte message hash. *)
+
+  val recover : Context.t -> t -> msg:buffer -> Public.t
+  (** Recover an ECDSA public key from a signature. Buffer must contain
+      a 32-byte message hash. *)
 end
