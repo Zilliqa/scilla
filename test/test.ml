@@ -81,6 +81,21 @@ let test_sign octx =
   let sign = Sign.sign ctx ~msg ~seckey in
   assert_equal 0 (Sign.compare sign validsign)
 
+let test_recover octx =
+  let ctx = Context.create [Sign] in
+  let msg = buffer_of_string (`Hex "CF80CD8AED482D5D1527D7DC72FCEFF84E6326592848447D2DC0B0E87DFC9A90") in
+  let seckey = sk_of_string ctx (`Hex "67E56582298859DDAE725F972992A07C6C4FB9F62A8FFF58CE3CA926A1063530") in
+  let pubkey = Public.of_secret ctx seckey in
+  let recoverable_sign = RecoverableSign.sign ctx seckey msg in
+  let usual_sign = RecoverableSign.convert ctx recoverable_sign in
+  let verify_ctx = Context.create [Verify] in
+  assert (Sign.verify verify_ctx pubkey msg usual_sign);
+  let (compact, recid) = RecoverableSign.to_compact verify_ctx recoverable_sign in
+  let parsed = RecoverableSign.of_compact_exn verify_ctx compact recid in
+  assert_equal 0 (RecoverableSign.compare parsed recoverable_sign);
+  let recovered = RecoverableSign.recover verify_ctx recoverable_sign msg in
+  assert_equal 0 (Public.compare recovered pubkey)
+
 let suite =
   "secp256k1" >::: [
     "signature_of_string" >:: test_signature_of_string ;
@@ -89,6 +104,7 @@ let suite =
     "public_module" >:: test_public_module ;
     "pubkey_creation" >:: test_pubkey_creation ;
     "sign" >:: test_sign ;
+    "recover" >:: test_recover ;
   ]
 
 let () = run_test_tt_main suite
