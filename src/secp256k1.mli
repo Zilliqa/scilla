@@ -128,6 +128,9 @@ module RecoverableSign : sig
   (** Serialize an ECDSA recoverable signature in compact (64 bytes)
       format. The returned int is the recovery id. *)
 
+  val convert : Context.t -> t -> Sign.t
+  (** Convert an ECDSA recoverable signature into an ECDSA signature *)
+
   val sign : Context.t -> seckey:Secret.t -> msg:buffer -> t
   (** Create an ECDSA recoverable signature. Buffer must contain
       a 32-byte message hash. *)

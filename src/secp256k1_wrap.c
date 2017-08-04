@@ -346,3 +346,26 @@ ml_secp256k1_ecdsa_recoverable_signature_serialize_compact(value ml_context, val
 
     CAMLreturn (result_tuple);
 }
+
+CAMLprim value
+ml_secp256k1_ecdsa_recoverable_signature_convert(value ml_context, value ml_signature) {
+    CAMLparam2 (ml_context, ml_signature);
+    CAMLlocal1 (result);
+
+    int ret;
+    secp256k1_ecdsa_signature sign;
+
+    ret = secp256k1_ecdsa_recoverable_signature_convert (Context_val (ml_context),
+                                                         &sign,
+                                                         Caml_ba_data_val(ml_signature));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ecdsa_recoverable_signature_convert");
+
+    result = caml_ba_alloc_dims(CAML_BA_UINT8 | CAML_BA_C_LAYOUT, 1,
+                                NULL,
+                                sizeof(secp256k1_ecdsa_signature));
+    memcpy(Caml_ba_data_val(result), sign.data, sizeof(secp256k1_ecdsa_signature));
+
+    CAMLreturn (result);
+}

@@ -159,6 +159,11 @@ module RecoverableSign = struct
 
   let to_compact ctx sign = serialize ctx sign
 
+  external convert :
+    Context.t -> t -> Sign.t = "ml_secp256k1_ecdsa_recoverable_signature_convert"
+
+  let convert ctx sign = convert ctx sign
+
   external sign :
     Context.t -> Secret.t -> buffer -> t = "ml_secp256k1_ecdsa_sign_recoverable"
 
