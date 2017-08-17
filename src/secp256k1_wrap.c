@@ -15,7 +15,6 @@
 CAMLprim void
 ml_secp256k1_context_destroy (value ml_ctx)
 {
-    CAMLparam1 (ml_ctx);
     secp256k1_context_destroy (Context_val (ml_ctx));
 }
 
