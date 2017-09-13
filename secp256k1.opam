@@ -27,5 +27,4 @@ depends: [
   "base-bigarray"
 ]
 
-depexts: [
-]
+depexts: []
