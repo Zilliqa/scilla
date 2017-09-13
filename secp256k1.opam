@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "secp256k1"
-version: "0.3.0"
+version: "0.3.1"
 maintainer: "Davide Gessa <gessadavide@gmail.com>"
 authors: [
   "Davide Gessa <gessadavide@gmail.com>"
@@ -23,12 +23,9 @@ depends: [
   "configurator" {build & >= "v0.9.1"}
   "hex" {test & >= "1.1.1"}
   "ounit" {test & >= "2.2.2"}
+  "conf-secp256k1"
   "base-bigarray"
 ]
 
 depexts: [
-  [["ubuntu"] ["libsecp256k1-dev" "libsecp256k1"]]
-  [["gentoo"] ["libsecp256k1"]]
-  [["debian"] ["libsecp256k1-dev" "libsecp256k1"]]
-  [["archlinux"] ["libsecp256k1-git"]]
 ]
