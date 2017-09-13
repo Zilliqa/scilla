@@ -1,5 +1,9 @@
 # libsecp256k1 wrapper for OCaml
 
+[![Build Status](https://travis-ci.org/dakk/secp256k1-ml.svg)](https://travis-ci.org/dakk/secp256k1-ml)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/dakk/bitcoinml/blob/master/LICENSE)
+
+
 This library wrap the secp256k1 EC(DSA) library into an OCaml library. At the moment
 only a subset of functionalities are available:
 
