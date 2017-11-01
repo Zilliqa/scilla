@@ -39,7 +39,7 @@ let test_valid_signature octx =
       (`Hex "3044022079BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F817980220294F14E883B3F525B5367756C2A11EF6CF84B730B36C17CB0C56F0AAB2C98589") in
   let pubkey = pk_of_string ctx
       (`Hex "040A629506E1B65CD9D2E0BA9C75DF9C4FED0DB16DC9625ED14397F0AFC836FAE595DC53F8B0EFE61E703075BD9B143BAC75EC0E19F82A2208CAEB32BE53414C40") in
-  assert_equal true (Sign.verify ctx ~signature ~msg ~pubkey)
+  assert_equal true (Sign.verify ctx ~signature ~pubkey msg)
 
 let test_invalid_signature octx =
   let ctx = Context.create [Verify] in
@@ -49,7 +49,7 @@ let test_invalid_signature octx =
       (`Hex "3044022079BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F817980220294F14E883B3F525B5367756C2A11EF6CF84B730B36C17CB0C56F0AAB2C98589") in
   let pubkey = pk_of_string ctx
       (`Hex "040a629506e1b65cd9d2e0ba9c75df9c4fed0db16dc9625ed14397f0afc836fae595dc53f8b0efe61e703075bd9b143bac75ec0e19f82a2208caeb32be53414c40") in
-  assert_equal false (Sign.verify ctx ~signature ~msg ~pubkey)
+  assert_equal false (Sign.verify ctx ~signature ~pubkey msg)
 
 let test_public_module octx =
   let pubtrue_hex =
@@ -78,7 +78,7 @@ let test_sign octx =
   let msg = buffer_of_string (`Hex "CF80CD8AED482D5D1527D7DC72FCEFF84E6326592848447D2DC0B0E87DFC9A90") in
   let seckey = sk_of_string ctx (`Hex "67E56582298859DDAE725F972992A07C6C4FB9F62A8FFF58CE3CA926A1063530") in
   let validsign = signature_of_string ctx (`Hex "30440220182a108e1448dc8f1fb467d06a0f3bb8ea0533584cb954ef8da112f1d60e39a202201c66f36da211c087f3af88b50edf4f9bdaa6cf5fd6817e74dca34db12390c6e9") in
-  let sign = Sign.sign ctx ~msg ~seckey in
+  let sign = Sign.sign ctx ~seckey msg in
   assert_equal 0 (Sign.compare sign validsign)
 
 let test_recover octx =
@@ -89,9 +89,9 @@ let test_recover octx =
   let recoverable_sign = RecoverableSign.sign ctx seckey msg in
   let usual_sign = RecoverableSign.convert ctx recoverable_sign in
   let verify_ctx = Context.create [Verify] in
-  assert (Sign.verify verify_ctx pubkey msg usual_sign);
+  assert (Sign.verify verify_ctx pubkey usual_sign msg);
   let (compact, recid) = RecoverableSign.to_compact verify_ctx recoverable_sign in
-  let parsed = RecoverableSign.of_compact_exn verify_ctx compact recid in
+  let parsed = RecoverableSign.of_compact_exn verify_ctx compact ~recid in
   assert_equal 0 (RecoverableSign.compare parsed recoverable_sign);
   let recovered = RecoverableSign.recover verify_ctx recoverable_sign msg in
   assert_equal 0 (Public.compare recovered pubkey)

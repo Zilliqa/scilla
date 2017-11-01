@@ -53,12 +53,19 @@ module Secret : sig
   type t
   (** Opaque type of a valid ECDSA secret key. *)
 
+  val length : int
+  (** Size of a secp256k1 secret key in bytes (32). *)
+
   val compare : t -> t -> int
 
-  val of_bytes : Context.t -> buffer -> t option
-  val of_bytes_exn : Context.t -> buffer -> t
+  val of_bytes : Context.t -> ?pos:int -> buffer -> t option
+  val of_bytes_exn : Context.t -> ?pos:int -> buffer -> t
   (** Verify an ECDSA secret key. Buffer must be 32 bytes long. *)
 
+  val to_bytes : t -> buffer
+
+  val write : buffer -> ?pos:int -> t -> unit
+  (** [write buf ?pos key] writes [key] at [buf] starting at [pos]. *)
 end
 
 module Public : sig
@@ -68,18 +75,22 @@ module Public : sig
 
   val compare : t -> t -> int
 
-  val of_bytes : Context.t -> buffer -> t option
-  val of_bytes_exn : Context.t -> buffer -> t
+  val of_bytes : Context.t -> ?pos:int -> buffer -> t option
+  val of_bytes_exn : Context.t -> ?pos:int -> buffer -> t
   (** Parse a variable-length public key. This function supports
       parsing compressed (33 bytes, header byte 0x02 or 0x03),
       uncompressed (65 bytes, header byte 0x04), or hybrid (65 bytes,
       header byte 0x06 or 0x07) format public keys. *)
 
+  val of_secret : Context.t -> Secret.t -> t
+  (** Compute the public key for a secret key. *)
+
   val to_bytes : ?compress:bool -> Context.t -> t -> buffer
   (** Serialize a pubkey object into a serialized byte sequence. *)
 
-  val of_secret : Context.t -> Secret.t -> t
-  (** Compute the public key for a secret key. *)
+  val write : ?compress:bool -> Context.t -> buffer -> ?pos:int -> t -> unit
+  (** [write ?compress ctx buf ?pos key] writes [key] at [but]
+     starting at [pos]. *)
 end
 
 module Sign : sig
@@ -88,13 +99,13 @@ module Sign : sig
 
   val compare : t -> t -> int
 
-  val of_compact : Context.t -> buffer -> t option
-  val of_compact_exn : Context.t -> buffer -> t
+  val of_compact : Context.t -> ?pos:int -> buffer -> t option
+  val of_compact_exn : Context.t -> ?pos:int -> buffer -> t
   (** Parse an ECDSA signature in compact (64 bytes) format. Buffer
       must be 64 bytes long. *)
 
-  val of_der : Context.t -> buffer -> t option
-  val of_der_exn : Context.t -> buffer -> t
+  val of_der : Context.t -> ?pos:int -> buffer -> t option
+  val of_der_exn : Context.t -> ?pos:int -> buffer -> t
   (** Parse a DER ECDSA signature. *)
 
   val to_compact : Context.t -> t -> buffer
@@ -103,11 +114,27 @@ module Sign : sig
   val to_der : Context.t -> t -> buffer
   (** Serialize an ECDSA signature in DER format. *)
 
-  val sign : Context.t -> seckey:Secret.t -> msg:buffer -> t
+  val write_compact : Context.t -> buffer -> ?pos:int -> t -> int
+  (** [write_compact ctx buf ?pos signature] writes [signature] at [buf]
+     starting at [pos] in compact format. *)
+
+  val write_der : Context.t -> buffer -> ?pos:int -> t -> int
+  (** [write_der ctx buf ?pos signature] writes [signature] at [buf]
+     starting at [pos] in DER format. *)
+
+  val sign : Context.t -> seckey:Secret.t -> ?pos:int -> buffer -> t
   (** Create an ECDSA signature. The created signature is always in
       lower-S form. Buffer must contain a 32-byte message hash. *)
 
-  val verify : Context.t -> pubkey:Public.t -> msg:buffer -> signature:t -> bool
+  val write_sign : Context.t -> seckey:Secret.t ->
+    outbuf:buffer -> ?outpos:int ->
+    inbuf:buffer -> ?inpos:int -> unit -> unit
+  (** [write_sign ctx ~seckey ~outbuf ~outpos ~inbuf ~inpos ()] signs
+     the message at [inbuf] starting at [inpos] and writes the
+     signature at [outbuf] starting at [outpos] using [seckey] *)
+
+  val verify :
+    Context.t -> pubkey:Public.t -> signature:t -> ?pos:int -> buffer -> bool
   (** Verify an ECDSA signature. To avoid accepting malleable
       signatures, only ECDSA signatures in lower-S form are
       accepted. *)
@@ -120,8 +147,8 @@ module RecoverableSign : sig
 
   val compare : t -> t -> int
 
-  val of_compact : Context.t -> buffer -> int -> t option
-  val of_compact_exn : Context.t -> buffer -> int -> t
+  val of_compact : Context.t -> recid:int -> ?pos:int -> buffer -> t option
+  val of_compact_exn : Context.t -> recid:int -> ?pos:int -> buffer -> t
   (** Parse an ECDSA recoverable signature in compact (64 bytes)
       format. Buffer must be 64 bytes.  The third argument is the
       recovery id. *)
@@ -130,14 +157,26 @@ module RecoverableSign : sig
   (** Serialize an ECDSA recoverable signature in compact (64 bytes)
       format. The returned int is the recovery id. *)
 
+  val write_compact : Context.t -> buffer -> ?pos:int -> t -> int
+  (** [write_compact ctx buf ?pos signature] writes [signature] at [buf]
+      starting at [pos] in compact format. *)
+
   val convert : Context.t -> t -> Sign.t
   (** Convert an ECDSA recoverable signature into an ECDSA signature *)
 
-  val sign : Context.t -> seckey:Secret.t -> msg:buffer -> t
+  val sign : Context.t -> seckey:Secret.t -> ?pos:int -> buffer -> t
   (** Create an ECDSA recoverable signature. Buffer must contain
       a 32-byte message hash. *)
 
-  val recover : Context.t -> t -> msg:buffer -> Public.t
+  val write_sign :
+    Context.t -> seckey:Secret.t ->
+    outbuf:buffer -> ?outpos:int ->
+    inbuf:buffer -> ?inpos:int -> unit -> unit
+  (** [write_sign ctx ~seckey ~outbuf ~outpos ~inbuf ~inpos ()] signs
+     the message at [inbuf] starting at [inpos] and writes the
+     signature at [outbuf] starting at [outpos] using [seckey] *)
+
+  val recover : Context.t -> t -> ?pos:int -> buffer -> Public.t
   (** Recover an ECDSA public key from a signature. Buffer must contain
       a 32-byte message hash. *)
 end
