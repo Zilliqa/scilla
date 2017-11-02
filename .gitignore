@@ -1,8 +1,3 @@
 _build
 *.install
 **/.merlin
-secp256*
-setup.data
-setup.log
-test.native
-*.clib
