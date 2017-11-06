@@ -97,6 +97,47 @@ ml_secp256k1_ec_seckey_verify (value ml_context, value ml_seckey) {
     CAMLreturn(Val_bool (ret));
 }
 
+CAMLprim value
+ml_secp256k1_ec_privkey_negate(value ml_context, value ml_sk) {
+    CAMLparam2 (ml_context, ml_sk);
+
+    int ret = secp256k1_ec_privkey_negate(Context_val (ml_context),
+                                          Caml_ba_data_val(ml_sk));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ec_privkey_negate");
+
+    CAMLreturn(Val_unit);
+}
+
+CAMLprim value
+ml_secp256k1_ec_privkey_tweak_add(value ml_context, value ml_sk, value ml_tweak) {
+    CAMLparam3 (ml_context, ml_sk, ml_tweak);
+
+    int ret = secp256k1_ec_privkey_tweak_add(Context_val (ml_context),
+                                            Caml_ba_data_val(ml_sk),
+                                            Caml_ba_data_val(ml_tweak));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ec_privkey_tweak_add");
+
+    CAMLreturn(Val_unit);
+}
+
+CAMLprim value
+ml_secp256k1_ec_privkey_tweak_mul(value ml_context, value ml_sk, value ml_tweak) {
+    CAMLparam3 (ml_context, ml_sk, ml_tweak);
+
+    int ret = secp256k1_ec_privkey_tweak_mul(Context_val (ml_context),
+                                            Caml_ba_data_val(ml_sk),
+                                            Caml_ba_data_val(ml_tweak));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ec_privkey_tweak_mul");
+
+    CAMLreturn(Val_unit);
+}
+
 /* Create public key */
 CAMLprim value
 ml_secp256k1_ec_pubkey_create (value ml_context, value ml_buf, value ml_seckey) {
@@ -145,6 +186,71 @@ ml_secp256k1_ec_pubkey_parse(value ml_context, value ml_buf, value ml_pk) {
 
     if (!ret)
         caml_failwith ("ml_secp256k1_ec_pubkey_parse");
+
+    CAMLreturn(Val_unit);
+}
+
+CAMLprim value
+ml_secp256k1_ec_pubkey_negate(value ml_context, value ml_pk) {
+    CAMLparam2 (ml_context, ml_pk);
+
+    int ret = secp256k1_ec_pubkey_negate(Context_val (ml_context),
+                                         Caml_ba_data_val(ml_pk));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ec_pubkey_negate");
+
+    CAMLreturn(Val_unit);
+}
+
+CAMLprim value
+ml_secp256k1_ec_pubkey_tweak_add(value ml_context, value ml_pk, value ml_tweak) {
+    CAMLparam3 (ml_context, ml_pk, ml_tweak);
+
+    int ret = secp256k1_ec_pubkey_tweak_add(Context_val (ml_context),
+                                            Caml_ba_data_val(ml_pk),
+                                            Caml_ba_data_val(ml_tweak));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ec_pubkey_tweak_add");
+
+    CAMLreturn(Val_unit);
+}
+
+CAMLprim value
+ml_secp256k1_ec_pubkey_tweak_mul(value ml_context, value ml_pk, value ml_tweak) {
+    CAMLparam3 (ml_context, ml_pk, ml_tweak);
+
+    int ret = secp256k1_ec_pubkey_tweak_mul(Context_val (ml_context),
+                                            Caml_ba_data_val(ml_pk),
+                                            Caml_ba_data_val(ml_tweak));
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ec_pubkey_tweak_mul");
+
+    CAMLreturn(Val_unit);
+}
+
+CAMLprim value
+ml_secp256k1_ec_pubkey_combine(value ml_context, value ml_out, value ml_pks) {
+    CAMLparam3 (ml_context, ml_out, ml_pks);
+
+    int size = 0;
+    const secp256k1_pubkey* pks[1024] = {0};
+
+    while(Field(ml_pks, 1) != Val_unit) {
+        pks[size] = Caml_ba_data_val(Field(ml_pks, 0));
+        size++;
+        ml_pks = Field(ml_pks, 1);
+    }
+
+    int ret = secp256k1_ec_pubkey_combine(Context_val (ml_context),
+                                          Caml_ba_data_val(ml_out),
+                                          pks,
+                                          size);
+
+    if (!ret)
+        caml_failwith ("ml_secp256k1_ec_pubkey_combine");
 
     CAMLreturn(Val_unit);
 }

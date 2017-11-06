@@ -7,11 +7,11 @@ let signature_of_string ctx s =
 
 let pk_of_string ctx s =
   let { Cstruct.buffer } = Hex.to_cstruct s in
-  Public.of_bytes_exn ctx buffer
+  Public.read_exn ctx buffer
 
 let sk_of_string ctx s =
   let { Cstruct.buffer } = Hex.to_cstruct s in
-  Secret.of_bytes_exn ctx buffer
+  Secret.read_exn ctx buffer
 
 let buffer_of_string s =
   let { Cstruct.buffer } = Hex.to_cstruct s in
@@ -55,7 +55,7 @@ let test_public_module octx =
   let pubtrue_hex =
     `Hex "04c591a8ff19ac9c4e4e5793673b83123437e975285e7b442f4ee2654dffca5e2d2103ed494718c697ac9aebcfd19612e224db46661011863ed2fc54e71861e2a6" in
   let pubtrue = buffer_of_string pubtrue_hex in
-  let pub = Public.of_bytes_exn ctx pubtrue in
+  let pub = Public.read_exn ctx pubtrue in
   let pub_serialized =
     Public.to_bytes ~compress:false ctx pub |>
     Cstruct.of_bigarray |>
@@ -65,7 +65,7 @@ let test_public_module octx =
 let test_pubkey_creation octx =
   let seckey = buffer_of_string (`Hex "67E56582298859DDAE725F972992A07C6C4FB9F62A8FFF58CE3CA926A1063530") in
   let pubtrue = `Hex "04c591a8ff19ac9c4e4e5793673b83123437e975285e7b442f4ee2654dffca5e2d2103ed494718c697ac9aebcfd19612e224db46661011863ed2fc54e71861e2a6" in
-  let seckey = Secret.of_bytes_exn ctx seckey in
+  let seckey = Secret.read_exn ctx seckey in
   let pubkey = Public.of_secret ctx seckey in
   let pubkey_serialized =
     Public.to_bytes ~compress:false ctx pubkey |>

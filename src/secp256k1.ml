@@ -58,21 +58,22 @@ module Secret = struct
 
   let compare = BA.compare
 
-  let of_bytes ctx ?(pos=0) buf =
+  let read ctx ?(pos=0) buf =
     let buflen = BA.length buf in
     if pos < 0 || pos > buflen - length then
       invalid_arg "Secret.of_bytes: pos < 0 or pos + 32 > buflen" ;
     let buf = BA.sub buf pos length in
     match verify ctx buf with
-    | true -> Some buf
+    | true ->
+      let t = BA.create 32 in
+      BA.blit buf t ;
+      Some buf
     | false -> None
 
-  let of_bytes_exn ctx ?pos buf =
-    match of_bytes ctx buf with
+  let read_exn ctx ?pos buf =
+    match read ctx buf with
     | None -> failwith "Secret.of_bytes_exn"
     | Some sk -> sk
-
-  let to_bytes t = t
 
   let write buf ?(pos=0) t =
     let buflen = BA.length buf in
@@ -80,6 +81,37 @@ module Secret = struct
       invalid_arg "Secret.write: pos < 0 or pos + 32 > buflen" ;
     let buf = BA.sub buf pos length in
     BA.blit t buf
+
+  let copy t =
+    let t' = BA.create length in
+    BA.blit t t' ;
+    t'
+
+  let to_bytes = copy
+
+  external negate_inplace :
+    Context.t -> buffer -> unit = "ml_secp256k1_ec_privkey_negate"
+  external add_tweak_inplace :
+    Context.t -> buffer -> buffer -> unit = "ml_secp256k1_ec_privkey_tweak_add"
+  external mul_tweak_inplace :
+    Context.t -> buffer -> buffer -> unit = "ml_secp256k1_ec_privkey_tweak_mul"
+
+  let negate ctx t =
+    let t' = copy t in
+    negate_inplace ctx t' ;
+    t'
+
+  let op_tweak f ctx t ?(pos=0) buf =
+    let buflen = BA.length buf in
+    if pos < 0 || pos > buflen - 32 then
+      invalid_arg "Secret.add_tweak: pos < 0 or pos > buflen - 32" ;
+    let buf = BA.sub buf pos 32 in
+    let t' = copy t in
+    f ctx t' buf ;
+    t'
+
+  let add_tweak = op_tweak add_tweak_inplace
+  let mul_tweak = op_tweak mul_tweak_inplace
 end
 
 module Public = struct
@@ -92,7 +124,7 @@ module Public = struct
   external parse :
     Context.t -> buffer -> buffer -> unit = "ml_secp256k1_ec_pubkey_parse"
 
-  external write :
+  external serialize :
     Context.t -> buffer -> t -> unit = "ml_secp256k1_ec_pubkey_serialize"
 
   external create :
@@ -103,7 +135,7 @@ module Public = struct
     create ctx buf seckey ;
     buf
 
-  let of_bytes ctx ?(pos=0) inbuf =
+  let read ctx ?(pos=0) inbuf =
     let pklen = BA.length inbuf in
     if pos < 0 || pos > pklen - 33 then
       invalid_arg "Public.of_bytes: pos < 0 or pos > buflen - 33" ;
@@ -116,14 +148,19 @@ module Public = struct
       Some outbuf
     with _ -> None
 
-  let of_bytes_exn ctx ?pos buf =
-    match of_bytes ctx ?pos buf with
+  let read_exn ctx ?pos buf =
+    match read ctx ?pos buf with
     | None -> failwith "Public.of_bytes_exn"
     | Some pk -> pk
 
+  let copy t =
+    let t' = BA.create length in
+    BA.blit t t' ;
+    t'
+
   let to_bytes ?(compress=true) ctx t =
     let buf = BA.create (if compress then 33 else 65) in
-    write ctx buf t ;
+    serialize ctx buf t ;
     buf
 
   let write ?(compress=true) ctx buf ?(pos=0) t =
@@ -132,7 +169,41 @@ module Public = struct
       invalid_arg "Public.write: pos < 0 or pos > buflen - (33|65)" ;
     let len = if compress then 33 else 65 in
     let buf = BA.sub buf pos len in
-    write ctx buf t
+    serialize ctx buf t
+
+  external negate_inplace :
+    Context.t -> buffer -> unit = "ml_secp256k1_ec_pubkey_negate"
+  external add_tweak_inplace :
+    Context.t -> buffer -> buffer -> unit = "ml_secp256k1_ec_pubkey_tweak_add"
+  external mul_tweak_inplace :
+    Context.t -> buffer -> buffer -> unit = "ml_secp256k1_ec_pubkey_tweak_mul"
+  external combine :
+    Context.t -> buffer -> buffer list -> unit = "ml_secp256k1_ec_pubkey_combine"
+
+  let negate ctx t =
+    let t' = copy t in
+    negate_inplace ctx t' ;
+    t'
+
+  let op_tweak f ctx t ?(pos=0) buf =
+    let buflen = BA.length buf in
+    if pos < 0 || pos > buflen - 32 then
+      invalid_arg "Secret.add_tweak: pos < 0 or pos > buflen - 32" ;
+    let buf = BA.sub buf pos 32 in
+    let t' = copy t in
+    f ctx t' buf ;
+    t'
+
+  let add_tweak = op_tweak add_tweak_inplace
+  let mul_tweak = op_tweak mul_tweak_inplace
+
+  let combine ctx pks =
+    let nb_pks = List.length pks in
+    if nb_pks = 0 || nb_pks > 1024 then
+      invalid_arg "Public.combine: please provide between 1 and 1024 pks" ;
+    let ret = BA.create length in
+    combine ctx ret pks ;
+    ret
 end
 
 module Sign = struct
