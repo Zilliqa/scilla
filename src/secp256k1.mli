@@ -90,9 +90,9 @@ module Public : sig
   val of_secret : Context.t -> Secret.t -> t
   (** Compute the public key for a secret key. *)
 
-  val write : ?compress:bool -> Context.t -> buffer -> ?pos:int -> t -> unit
-  (** [write ?compress ctx buf ?pos key] writes [key] at [but]
-      starting at [pos]. *)
+  val write : ?compress:bool -> Context.t -> buffer -> ?pos:int -> t -> int
+  (** [write ?compress ctx buf ?pos key] writes [key] at [buf]
+      starting at [pos], and returns the number of bytes written. *)
 
   val copy : t -> t
   val to_bytes : ?compress:bool -> Context.t -> t -> buffer
@@ -139,10 +139,11 @@ module Sign : sig
 
   val write_sign : Context.t -> seckey:Secret.t ->
     outbuf:buffer -> ?outpos:int ->
-    inbuf:buffer -> ?inpos:int -> unit -> unit
+    inbuf:buffer -> ?inpos:int -> unit -> int
   (** [write_sign ctx ~seckey ~outbuf ~outpos ~inbuf ~inpos ()] signs
      the message at [inbuf] starting at [inpos] and writes the
-     signature at [outbuf] starting at [outpos] using [seckey] *)
+     signature at [outbuf] starting at [outpos] using [seckey], and
+     returns the number of bytes written. *)
 
   val verify :
     Context.t -> pubkey:Public.t -> signature:t -> ?pos:int -> buffer -> bool
@@ -182,12 +183,13 @@ module RecoverableSign : sig
   val write_sign :
     Context.t -> seckey:Secret.t ->
     outbuf:buffer -> ?outpos:int ->
-    inbuf:buffer -> ?inpos:int -> unit -> unit
+    inbuf:buffer -> ?inpos:int -> unit -> int
   (** [write_sign ctx ~seckey ~outbuf ~outpos ~inbuf ~inpos ()] signs
      the message at [inbuf] starting at [inpos] and writes the
-     signature at [outbuf] starting at [outpos] using [seckey] *)
+     signature at [outbuf] starting at [outpos] using [seckey], and
+     returns the number of bytes written. *)
 
-  val recover : Context.t -> t -> ?pos:int -> buffer -> Public.t
+  val recover : Context.t -> t -> ?pos:int -> buffer -> Public.t option
   (** Recover an ECDSA public key from a signature. Buffer must contain
       a 32-byte message hash. *)
 end

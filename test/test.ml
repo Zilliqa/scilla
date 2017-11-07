@@ -93,8 +93,9 @@ let test_recover octx =
   let (compact, recid) = RecoverableSign.to_compact verify_ctx recoverable_sign in
   let parsed = RecoverableSign.of_compact_exn verify_ctx compact ~recid in
   assert_equal 0 (RecoverableSign.compare parsed recoverable_sign);
-  let recovered = RecoverableSign.recover verify_ctx recoverable_sign msg in
-  assert_equal 0 (Public.compare recovered pubkey)
+  match RecoverableSign.recover verify_ctx recoverable_sign msg with
+  | None -> assert false
+  | Some recovered -> assert_equal 0 (Public.compare recovered pubkey)
 
 let suite =
   "secp256k1" >::: [
