@@ -58,14 +58,19 @@ module Secret : sig
 
   val compare : t -> t -> int
 
-  val of_bytes : Context.t -> ?pos:int -> buffer -> t option
-  val of_bytes_exn : Context.t -> ?pos:int -> buffer -> t
-  (** Verify an ECDSA secret key. Buffer must be 32 bytes long. *)
-
-  val to_bytes : t -> buffer
+  val read : Context.t -> ?pos:int -> buffer -> t option
+  val read_exn : Context.t -> ?pos:int -> buffer -> t
+  (** Verify an ECDSA secret key. At least 32 bytes must be read. *)
 
   val write : buffer -> ?pos:int -> t -> unit
   (** [write buf ?pos key] writes [key] at [buf] starting at [pos]. *)
+
+  val copy : t -> t
+  val to_bytes : t -> buffer
+
+  val negate : Context.t -> t -> t
+  val add_tweak : Context.t -> t -> ?pos:int -> buffer -> t
+  val mul_tweak : Context.t -> t -> ?pos:int -> buffer -> t
 end
 
 module Public : sig
@@ -75,8 +80,8 @@ module Public : sig
 
   val compare : t -> t -> int
 
-  val of_bytes : Context.t -> ?pos:int -> buffer -> t option
-  val of_bytes_exn : Context.t -> ?pos:int -> buffer -> t
+  val read : Context.t -> ?pos:int -> buffer -> t option
+  val read_exn : Context.t -> ?pos:int -> buffer -> t
   (** Parse a variable-length public key. This function supports
       parsing compressed (33 bytes, header byte 0x02 or 0x03),
       uncompressed (65 bytes, header byte 0x04), or hybrid (65 bytes,
@@ -85,12 +90,18 @@ module Public : sig
   val of_secret : Context.t -> Secret.t -> t
   (** Compute the public key for a secret key. *)
 
+  val write : ?compress:bool -> Context.t -> buffer -> ?pos:int -> t -> int
+  (** [write ?compress ctx buf ?pos key] writes [key] at [buf]
+      starting at [pos], and returns the number of bytes written. *)
+
+  val copy : t -> t
   val to_bytes : ?compress:bool -> Context.t -> t -> buffer
   (** Serialize a pubkey object into a serialized byte sequence. *)
 
-  val write : ?compress:bool -> Context.t -> buffer -> ?pos:int -> t -> unit
-  (** [write ?compress ctx buf ?pos key] writes [key] at [but]
-     starting at [pos]. *)
+  val negate : Context.t -> t -> t
+  val add_tweak : Context.t -> t -> ?pos:int -> buffer -> t
+  val mul_tweak : Context.t -> t -> ?pos:int -> buffer -> t
+  val combine : Context.t -> t list -> t
 end
 
 module Sign : sig
@@ -128,10 +139,11 @@ module Sign : sig
 
   val write_sign : Context.t -> seckey:Secret.t ->
     outbuf:buffer -> ?outpos:int ->
-    inbuf:buffer -> ?inpos:int -> unit -> unit
+    inbuf:buffer -> ?inpos:int -> unit -> int
   (** [write_sign ctx ~seckey ~outbuf ~outpos ~inbuf ~inpos ()] signs
      the message at [inbuf] starting at [inpos] and writes the
-     signature at [outbuf] starting at [outpos] using [seckey] *)
+     signature at [outbuf] starting at [outpos] using [seckey], and
+     returns the number of bytes written. *)
 
   val verify :
     Context.t -> pubkey:Public.t -> signature:t -> ?pos:int -> buffer -> bool
@@ -171,12 +183,13 @@ module RecoverableSign : sig
   val write_sign :
     Context.t -> seckey:Secret.t ->
     outbuf:buffer -> ?outpos:int ->
-    inbuf:buffer -> ?inpos:int -> unit -> unit
+    inbuf:buffer -> ?inpos:int -> unit -> int
   (** [write_sign ctx ~seckey ~outbuf ~outpos ~inbuf ~inpos ()] signs
      the message at [inbuf] starting at [inpos] and writes the
-     signature at [outbuf] starting at [outpos] using [seckey] *)
+     signature at [outbuf] starting at [outpos] using [seckey], and
+     returns the number of bytes written. *)
 
-  val recover : Context.t -> t -> ?pos:int -> buffer -> Public.t
+  val recover : Context.t -> t -> ?pos:int -> buffer -> Public.t option
   (** Recover an ECDSA public key from a signature. Buffer must contain
       a 32-byte message hash. *)
 end

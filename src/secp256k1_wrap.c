@@ -68,10 +68,8 @@ CAMLprim value
 ml_secp256k1_context_randomize (value ml_context, value ml_seed)
 {
     CAMLparam2 (ml_context, ml_seed);
-    int ret = secp256k1_context_randomize (Context_val (ml_context),
-                                           (const unsigned char*) String_val(ml_seed));
-
-    CAMLreturn (Val_bool (ret));
+    CAMLreturn(Val_bool(secp256k1_context_randomize(Context_val (ml_context),
+                                                    (const unsigned char*) String_val(ml_seed))));
 }
 
 
@@ -91,10 +89,34 @@ ml_secp256k1_context_clone (value ml_context)
 CAMLprim value
 ml_secp256k1_ec_seckey_verify (value ml_context, value ml_seckey) {
     CAMLparam2(ml_context, ml_seckey);
-    int ret = secp256k1_ec_seckey_verify(Context_val (ml_context),
-                                         Caml_ba_data_val(ml_seckey));
+    CAMLreturn(Val_bool(secp256k1_ec_seckey_verify(Context_val (ml_context),
+                                                   Caml_ba_data_val(ml_seckey))));
+}
 
-    CAMLreturn(Val_bool (ret));
+CAMLprim value
+ml_secp256k1_ec_privkey_negate(value ml_context, value ml_sk) {
+    CAMLparam2 (ml_context, ml_sk);
+    int ret = secp256k1_ec_privkey_negate(Context_val (ml_context),
+                                          Caml_ba_data_val(ml_sk));
+    CAMLreturn(Val_unit);
+}
+
+CAMLprim value
+ml_secp256k1_ec_privkey_tweak_add(value ml_context, value ml_sk, value ml_tweak) {
+    CAMLparam3 (ml_context, ml_sk, ml_tweak);
+
+    CAMLreturn(Val_bool(secp256k1_ec_privkey_tweak_add(Context_val (ml_context),
+                                                       Caml_ba_data_val(ml_sk),
+                                                       Caml_ba_data_val(ml_tweak))));
+}
+
+CAMLprim value
+ml_secp256k1_ec_privkey_tweak_mul(value ml_context, value ml_sk, value ml_tweak) {
+    CAMLparam3 (ml_context, ml_sk, ml_tweak);
+
+    CAMLreturn(Val_bool(secp256k1_ec_privkey_tweak_mul(Context_val (ml_context),
+                                                       Caml_ba_data_val(ml_sk),
+                                                       Caml_ba_data_val(ml_tweak))));
 }
 
 /* Create public key */
@@ -102,16 +124,9 @@ CAMLprim value
 ml_secp256k1_ec_pubkey_create (value ml_context, value ml_buf, value ml_seckey) {
     CAMLparam3 (ml_context, ml_buf, ml_seckey);
 
-    int ret;
-
-    ret = secp256k1_ec_pubkey_create (Context_val (ml_context),
-                                      Caml_ba_data_val(ml_buf),
-                                      Caml_ba_data_val(ml_seckey));
-
-    if (!ret)
-        caml_failwith ("ml_secp256k1_ec_pubkey_create");
-
-    CAMLreturn(Val_unit);
+    CAMLreturn(Val_bool(secp256k1_ec_pubkey_create (Context_val (ml_context),
+                                                   Caml_ba_data_val(ml_buf),
+                                                   Caml_ba_data_val(ml_seckey))));
 }
 
 CAMLprim value
@@ -122,53 +137,85 @@ ml_secp256k1_ec_pubkey_serialize (value ml_context, value ml_buf, value ml_pubke
     unsigned int flags =
         size == 33 ? SECP256K1_EC_COMPRESSED : SECP256K1_EC_UNCOMPRESSED;
 
-    int ret = secp256k1_ec_pubkey_serialize(Context_val (ml_context),
-                                            Caml_ba_data_val(ml_buf),
-                                            &size,
-                                            Caml_ba_data_val(ml_pubkey),
-                                            flags);
+    secp256k1_ec_pubkey_serialize(Context_val (ml_context),
+                                  Caml_ba_data_val(ml_buf),
+                                  &size,
+                                  Caml_ba_data_val(ml_pubkey),
+                                  flags);
 
-    if (!ret)
-        caml_failwith ("ml_secp256k1_ec_pubkey_serialize");
-
-    CAMLreturn(Val_unit);
+    CAMLreturn(Val_int(size));
 }
 
 CAMLprim value
 ml_secp256k1_ec_pubkey_parse(value ml_context, value ml_buf, value ml_pk) {
     CAMLparam3 (ml_context, ml_buf, ml_pk);
 
-    int ret = secp256k1_ec_pubkey_parse(Context_val (ml_context),
-                                        Caml_ba_data_val(ml_buf),
-                                        Caml_ba_data_val(ml_pk),
-                                        Caml_ba_array_val(ml_pk)->dim[0]);
+    CAMLreturn(Val_bool(secp256k1_ec_pubkey_parse(Context_val (ml_context),
+                                                 Caml_ba_data_val(ml_buf),
+                                                 Caml_ba_data_val(ml_pk),
+                                                 Caml_ba_array_val(ml_pk)->dim[0])));
+}
 
-    if (!ret)
-        caml_failwith ("ml_secp256k1_ec_pubkey_parse");
-
+CAMLprim value
+ml_secp256k1_ec_pubkey_negate(value ml_context, value ml_pk) {
+    CAMLparam2 (ml_context, ml_pk);
+    int ret = secp256k1_ec_pubkey_negate(Context_val (ml_context),
+                                         Caml_ba_data_val(ml_pk));
     CAMLreturn(Val_unit);
 }
 
 CAMLprim value
-ml_secp256k1_ecdsa_signature_parse (value ml_context, value ml_buf, value ml_sig, value ml_compact) {
-    CAMLparam4 (ml_context, ml_buf, ml_sig, ml_compact);
+ml_secp256k1_ec_pubkey_tweak_add(value ml_context, value ml_pk, value ml_tweak) {
+    CAMLparam3 (ml_context, ml_pk, ml_tweak);
 
-    int ret;
+    CAMLreturn(Val_bool(secp256k1_ec_pubkey_tweak_add(Context_val (ml_context),
+                                                      Caml_ba_data_val(ml_pk),
+                                                      Caml_ba_data_val(ml_tweak))));
+}
 
-    if (Bool_val (ml_compact))
-        ret = secp256k1_ecdsa_signature_parse_compact (Context_val (ml_context),
-                                                       Caml_ba_data_val(ml_buf),
-                                                       Caml_ba_data_val(ml_sig));
-    else
-        ret = secp256k1_ecdsa_signature_parse_der (Context_val (ml_context),
-                                                   Caml_ba_data_val(ml_buf),
-                                                   Caml_ba_data_val(ml_sig),
-                                                   Caml_ba_array_val(ml_sig)->dim[0]);
+CAMLprim value
+ml_secp256k1_ec_pubkey_tweak_mul(value ml_context, value ml_pk, value ml_tweak) {
+    CAMLparam3 (ml_context, ml_pk, ml_tweak);
 
-    if (!ret)
-        caml_failwith ("ml_secp256k1_ecdsa_signature_parse");
+    CAMLreturn(Val_bool(secp256k1_ec_pubkey_tweak_mul(Context_val (ml_context),
+                                                      Caml_ba_data_val(ml_pk),
+                                                      Caml_ba_data_val(ml_tweak))));
+}
 
-    CAMLreturn (Val_unit);
+CAMLprim value
+ml_secp256k1_ec_pubkey_combine(value ml_context, value ml_out, value ml_pks) {
+    CAMLparam3 (ml_context, ml_out, ml_pks);
+
+    int size = 0;
+    const secp256k1_pubkey* pks[1024] = {0};
+
+    while(Field(ml_pks, 1) != Val_unit) {
+        pks[size] = Caml_ba_data_val(Field(ml_pks, 0));
+        size++;
+        ml_pks = Field(ml_pks, 1);
+    }
+
+    CAMLreturn(Val_int(secp256k1_ec_pubkey_combine(Context_val (ml_context),
+                                                   Caml_ba_data_val(ml_out),
+                                                   pks,
+                                                   size)));
+}
+
+CAMLprim value
+ml_secp256k1_ecdsa_signature_parse_compact (value ml_context, value ml_buf, value ml_sig) {
+    CAMLparam3 (ml_context, ml_buf, ml_sig);
+    CAMLreturn(Val_bool(secp256k1_ecdsa_signature_parse_compact (Context_val (ml_context),
+                                                                Caml_ba_data_val(ml_buf),
+                                                                Caml_ba_data_val(ml_sig))));
+}
+
+CAMLprim value
+ml_secp256k1_ecdsa_signature_parse_der (value ml_context, value ml_buf, value ml_sig) {
+    CAMLparam3 (ml_context, ml_buf, ml_sig);
+    CAMLreturn(Val_bool(secp256k1_ecdsa_signature_parse_der (Context_val (ml_context),
+                                                            Caml_ba_data_val(ml_buf),
+                                                            Caml_ba_data_val(ml_sig),
+                                                            Caml_ba_array_val(ml_sig)->dim[0])));
 }
 
 /* Verify an ecdsa signature */
@@ -176,137 +223,95 @@ CAMLprim value
 ml_secp256k1_ecdsa_verify (value ml_context, value ml_pubkey, value ml_msg, value ml_signature) {
     CAMLparam4 (ml_context, ml_signature, ml_msg, ml_pubkey);
 
-    int ret = secp256k1_ecdsa_verify (Context_val (ml_context),
-                                      Caml_ba_data_val(ml_signature),
-                                      Caml_ba_data_val(ml_msg),
-                                      Caml_ba_data_val(ml_pubkey));
-
-    CAMLreturn(Val_bool (ret));
+    CAMLreturn(Val_bool(secp256k1_ecdsa_verify (Context_val (ml_context),
+                                                Caml_ba_data_val(ml_signature),
+                                                Caml_ba_data_val(ml_msg),
+                                                Caml_ba_data_val(ml_pubkey))));
 }
 
 
 /* Sign a message with ECDSA */
 CAMLprim value
 ml_secp256k1_ecdsa_sign (value ml_context, value ml_buf, value ml_seckey, value ml_msg) {
-    CAMLparam4(ml_context, ml_buf, ml_msg, ml_seckey);
+    CAMLparam4(ml_context, ml_buf, ml_seckey, ml_msg);
 
-    int ret;
-
-    ret = secp256k1_ecdsa_sign (Context_val (ml_context),
-                                Caml_ba_data_val(ml_buf),
-                                Caml_ba_data_val(ml_msg),
-                                Caml_ba_data_val(ml_seckey),
-                                NULL, NULL);
-
-    if (!ret)
-        caml_failwith ("ml_secp256k1_ecdsa_sign");
-
-    CAMLreturn(Val_unit);
+    CAMLreturn(Val_bool(secp256k1_ecdsa_sign (Context_val (ml_context),
+                                              Caml_ba_data_val(ml_buf),
+                                              Caml_ba_data_val(ml_msg),
+                                              Caml_ba_data_val(ml_seckey),
+                                              NULL, NULL)));
 }
 
 CAMLprim value
-ml_secp256k1_ecdsa_signature_serialize(value ml_context, value ml_buf, value ml_signature, value ml_compact) {
-    CAMLparam4 (ml_context, ml_buf, ml_signature, ml_compact);
+ml_secp256k1_ecdsa_signature_serialize_der(value ml_context, value ml_buf, value ml_signature) {
+    CAMLparam3 (ml_context, ml_buf, ml_signature);
 
-    int ret;
     size_t size = Caml_ba_array_val(ml_buf)->dim[0];
+    int ret = secp256k1_ecdsa_signature_serialize_der(Context_val (ml_context),
+                                                      Caml_ba_data_val(ml_buf),
+                                                      &size,
+                                                      Caml_ba_data_val(ml_signature));
 
-    ret = Bool_val(ml_compact) ?
-        secp256k1_ecdsa_signature_serialize_compact(Context_val (ml_context),
-                                                    Caml_ba_data_val(ml_buf),
-                                                    Caml_ba_data_val(ml_signature))
-        :
-        secp256k1_ecdsa_signature_serialize_der(Context_val (ml_context),
+    CAMLreturn(ret == 0 ? Val_int(ret) : Val_int(size));
+}
+
+CAMLprim value
+ml_secp256k1_ecdsa_signature_serialize_compact(value ml_context, value ml_buf, value ml_signature) {
+    CAMLparam3 (ml_context, ml_buf, ml_signature);
+
+    secp256k1_ecdsa_signature_serialize_compact(Context_val (ml_context),
                                                 Caml_ba_data_val(ml_buf),
-                                                &size,
                                                 Caml_ba_data_val(ml_signature));
-
-    if (!ret)
-        caml_failwith ("ml_secp256k1_ecdsa_signature_serialize");
-
-
-    CAMLreturn (Bool_val(ml_compact) ? Val_int(64) : Val_int(size));
+    CAMLreturn (Val_unit);
 }
 
 CAMLprim value
 ml_secp256k1_ecdsa_recoverable_signature_parse_compact (value ml_context, value ml_buf, value ml_signature, value ml_recid) {
     CAMLparam4 (ml_context, ml_buf, ml_signature, ml_recid);
-    int ret;
 
-    ret = secp256k1_ecdsa_recoverable_signature_parse_compact (Context_val (ml_context),
-                                                               Caml_ba_data_val(ml_buf),
-                                                               Caml_ba_data_val(ml_signature),
-                                                               Int_val(ml_recid));
-
-    if (!ret)
-        caml_failwith ("ml_secp256k1_ecdsa_recoverable_signature_parse_compact");
-
-    CAMLreturn(Val_unit);
+    CAMLreturn(Val_bool(secp256k1_ecdsa_recoverable_signature_parse_compact (Context_val (ml_context),
+                                                                             Caml_ba_data_val(ml_buf),
+                                                                             Caml_ba_data_val(ml_signature),
+                                                                             Int_val(ml_recid))));
 }
 
 CAMLprim value
 ml_secp256k1_ecdsa_sign_recoverable (value ml_context, value ml_buf, value ml_seckey, value ml_msg) {
     CAMLparam4(ml_context, ml_buf, ml_seckey, ml_msg);
-    int ret;
 
-    ret = secp256k1_ecdsa_sign_recoverable (Context_val (ml_context),
-                                            Caml_ba_data_val(ml_buf),
-                                            Caml_ba_data_val(ml_msg),
-                                            Caml_ba_data_val(ml_seckey),
-                                            NULL, NULL);
-
-    if (!ret)
-        caml_failwith ("ml_secp256k1_ecdsa_sign_recoverable");
-
-    CAMLreturn(Val_unit);
+    CAMLreturn(Val_bool(secp256k1_ecdsa_sign_recoverable (Context_val (ml_context),
+                                                          Caml_ba_data_val(ml_buf),
+                                                          Caml_ba_data_val(ml_msg),
+                                                          Caml_ba_data_val(ml_seckey),
+                                                          NULL, NULL)));
 }
 
 CAMLprim value
 ml_secp256k1_ecdsa_recoverable_signature_serialize_compact(value ml_context, value ml_buf, value ml_signature) {
     CAMLparam3 (ml_context, ml_buf, ml_signature);
-    int ret;
     int recid;
 
-    ret = secp256k1_ecdsa_recoverable_signature_serialize_compact(Context_val (ml_context),
-                                                                  Caml_ba_data_val(ml_buf),
-                                                                  &recid,
-                                                                  Caml_ba_data_val(ml_signature));
-
-    if (!ret)
-        caml_failwith ("ml_secp256k1_ecdsa_recoverable_signature_serialize_compact");
-
+    secp256k1_ecdsa_recoverable_signature_serialize_compact(Context_val (ml_context),
+                                                            Caml_ba_data_val(ml_buf),
+                                                            &recid,
+                                                            Caml_ba_data_val(ml_signature));
     CAMLreturn(Val_int(recid));
 }
 
 CAMLprim value
 ml_secp256k1_ecdsa_recoverable_signature_convert(value ml_context, value ml_buf, value ml_signature) {
     CAMLparam3 (ml_context, ml_buf, ml_signature);
-
-    int ret;
-
-    ret = secp256k1_ecdsa_recoverable_signature_convert (Context_val (ml_context),
-                                                         Caml_ba_data_val(ml_buf),
-                                                         Caml_ba_data_val(ml_signature));
-
-    if (!ret)
-        caml_failwith ("ml_secp256k1_ecdsa_recoverable_signature_convert");
-
+    secp256k1_ecdsa_recoverable_signature_convert (Context_val (ml_context),
+                                                   Caml_ba_data_val(ml_buf),
+                                                   Caml_ba_data_val(ml_signature));
     CAMLreturn(Val_unit);
 }
 
 CAMLprim value
 ml_secp256k1_ecdsa_recover(value ml_context, value ml_buf, value ml_signature, value ml_msg) {
     CAMLparam4 (ml_context, ml_buf, ml_signature, ml_msg);
-
-    int ret;
-
-    ret = secp256k1_ecdsa_recover(Context_val (ml_context),
-                                  Caml_ba_data_val(ml_buf),
-                                  Caml_ba_data_val(ml_signature),
-                                  Caml_ba_data_val(ml_msg));
-
-    if (!ret)
-        caml_failwith ("ml_secp256k1_ecdsa_recover");
-
-    CAMLreturn(Val_unit);
+    CAMLreturn(Val_bool(secp256k1_ecdsa_recover(Context_val (ml_context),
+                                                Caml_ba_data_val(ml_buf),
+                                                Caml_ba_data_val(ml_signature),
+                                                Caml_ba_data_val(ml_msg))));
 }
