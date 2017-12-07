@@ -101,17 +101,18 @@ module Secret = struct
     negate_inplace ctx t' ;
     t'
 
-  let op_tweak f ctx t ?(pos=0) buf =
+  let op_tweak name f ctx t ?(pos=0) buf =
     let buflen = BA.length buf in
     if pos < 0 || pos > buflen - 32 then
       invalid_arg "Secret.add_tweak: pos < 0 or pos > buflen - 32" ;
     let buf = BA.sub buf pos 32 in
     let t' = copy t in
-    f ctx t' buf ;
+    if not (f ctx t' buf) then
+      failwith (Printf.sprintf "Secret.%s: operation failed" name) ;
     t'
 
-  let add_tweak = op_tweak add_tweak_inplace
-  let mul_tweak = op_tweak mul_tweak_inplace
+  let add_tweak = op_tweak "add_tweak" add_tweak_inplace
+  let mul_tweak = op_tweak "mul_tweak" mul_tweak_inplace
 end
 
 module Public = struct
@@ -183,17 +184,18 @@ module Public = struct
     negate_inplace ctx t' ;
     t'
 
-  let op_tweak f ctx t ?(pos=0) buf =
+  let op_tweak name f ctx t ?(pos=0) buf =
     let buflen = BA.length buf in
     if pos < 0 || pos > buflen - 32 then
       invalid_arg "Secret.add_tweak: pos < 0 or pos > buflen - 32" ;
     let buf = BA.sub buf pos 32 in
     let t' = copy t in
-    f ctx t' buf ;
+    if not (f ctx t' buf) then
+      failwith (Printf.sprintf "Public.%s: operation failed" name) ;
     t'
 
-  let add_tweak = op_tweak add_tweak_inplace
-  let mul_tweak = op_tweak mul_tweak_inplace
+  let add_tweak = op_tweak "add_tweak" add_tweak_inplace
+  let mul_tweak = op_tweak "mul_tweak" mul_tweak_inplace
 
   let combine ctx pks =
     let nb_pks = List.length pks in
