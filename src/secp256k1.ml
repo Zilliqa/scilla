@@ -138,17 +138,17 @@ module Public = struct
   let read ctx ?(pos=0) inbuf =
     let pklen = BA.length inbuf in
     if pos < 0 || pos > pklen - 33 then
-      invalid_arg "Public.of_bytes: pos < 0 or pos > buflen - 33" ;
+      invalid_arg "Public.read: pos < 0 or pos > buflen - 33" ;
     let inbuf = BA.(sub inbuf pos (length inbuf)) in
     if BA.(length inbuf < 33) then
-      invalid_arg "Public.of_bytes: input must be at least 33 bytes long" ;
+      invalid_arg "Public.read: input must be at least 33 bytes long" ;
     let outbuf = BA.create length in
     if (parse ctx outbuf inbuf) then Some outbuf
     else None
 
   let read_exn ctx ?pos buf =
     match read ctx ?pos buf with
-    | None -> failwith "Public.of_bytes_exn"
+    | None -> failwith "Public.read_exn"
     | Some pk -> pk
 
   let copy t =
