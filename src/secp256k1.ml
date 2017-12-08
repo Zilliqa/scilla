@@ -164,8 +164,10 @@ module Public = struct
 
   let write ?(compress=true) ctx buf ?(pos=0) t =
     let buflen = BA.length buf in
-    if pos < 0 || (compress && pos > buflen - 33) || pos > buflen - 65 then
-      invalid_arg "Public.write: pos < 0 or pos > buflen - (33|65)" ;
+    if pos < 0
+    || (compress && pos > buflen - 33)
+    || (not compress && pos > buflen - 65) then
+      invalid_arg (Printf.sprintf "Public.write: pos=%d, buflen=%d" pos buflen) ;
     let len = if compress then 33 else 65 in
     let buf = BA.sub buf pos len in
     serialize ctx buf t

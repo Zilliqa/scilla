@@ -67,6 +67,14 @@ let test_pubkey_creation octx =
   let pubtrue = `Hex "04c591a8ff19ac9c4e4e5793673b83123437e975285e7b442f4ee2654dffca5e2d2103ed494718c697ac9aebcfd19612e224db46661011863ed2fc54e71861e2a6" in
   let seckey = Secret.read_exn ctx seckey in
   let pubkey = Public.of_secret ctx seckey in
+  let buf_pk_comp = Cstruct.create 33 in
+  let buf_pk_uncomp = Cstruct.create 65 in
+  let nb_written = Public.write ~compress:true ctx buf_pk_comp.buffer pubkey in
+  assert_equal 33 nb_written ;
+  let nb_written = Public.write ~compress:false ctx buf_pk_uncomp.buffer pubkey in
+  assert_equal 65 nb_written ;
+  let nb_written = Public.write ~compress:true ctx buf_pk_uncomp.buffer ~pos:32 pubkey in
+  assert_equal 33 nb_written ;
   let pubkey_serialized =
     Public.to_bytes ~compress:false ctx pubkey |>
     Cstruct.of_bigarray |>
