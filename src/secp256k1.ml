@@ -101,17 +101,18 @@ module Secret = struct
     negate_inplace ctx t' ;
     t'
 
-  let op_tweak f ctx t ?(pos=0) buf =
+  let op_tweak name f ctx t ?(pos=0) buf =
     let buflen = BA.length buf in
     if pos < 0 || pos > buflen - 32 then
       invalid_arg "Secret.add_tweak: pos < 0 or pos > buflen - 32" ;
     let buf = BA.sub buf pos 32 in
     let t' = copy t in
-    f ctx t' buf ;
+    if not (f ctx t' buf) then
+      failwith (Printf.sprintf "Secret.%s: operation failed" name) ;
     t'
 
-  let add_tweak = op_tweak add_tweak_inplace
-  let mul_tweak = op_tweak mul_tweak_inplace
+  let add_tweak = op_tweak "add_tweak" add_tweak_inplace
+  let mul_tweak = op_tweak "mul_tweak" mul_tweak_inplace
 end
 
 module Public = struct
@@ -138,17 +139,17 @@ module Public = struct
   let read ctx ?(pos=0) inbuf =
     let pklen = BA.length inbuf in
     if pos < 0 || pos > pklen - 33 then
-      invalid_arg "Public.of_bytes: pos < 0 or pos > buflen - 33" ;
+      invalid_arg "Public.read: pos < 0 or pos > buflen - 33" ;
     let inbuf = BA.(sub inbuf pos (length inbuf)) in
     if BA.(length inbuf < 33) then
-      invalid_arg "Public.of_bytes: input must be at least 33 bytes long" ;
+      invalid_arg "Public.read: input must be at least 33 bytes long" ;
     let outbuf = BA.create length in
     if (parse ctx outbuf inbuf) then Some outbuf
     else None
 
   let read_exn ctx ?pos buf =
     match read ctx ?pos buf with
-    | None -> failwith "Public.of_bytes_exn"
+    | None -> failwith "Public.read_exn"
     | Some pk -> pk
 
   let copy t =
@@ -163,8 +164,10 @@ module Public = struct
 
   let write ?(compress=true) ctx buf ?(pos=0) t =
     let buflen = BA.length buf in
-    if pos < 0 || (compress && pos > buflen - 33) || pos > buflen - 65 then
-      invalid_arg "Public.write: pos < 0 or pos > buflen - (33|65)" ;
+    if pos < 0
+    || (compress && pos > buflen - 33)
+    || (not compress && pos > buflen - 65) then
+      invalid_arg (Printf.sprintf "Public.write: pos=%d, buflen=%d" pos buflen) ;
     let len = if compress then 33 else 65 in
     let buf = BA.sub buf pos len in
     serialize ctx buf t
@@ -183,17 +186,18 @@ module Public = struct
     negate_inplace ctx t' ;
     t'
 
-  let op_tweak f ctx t ?(pos=0) buf =
+  let op_tweak name f ctx t ?(pos=0) buf =
     let buflen = BA.length buf in
     if pos < 0 || pos > buflen - 32 then
       invalid_arg "Secret.add_tweak: pos < 0 or pos > buflen - 32" ;
     let buf = BA.sub buf pos 32 in
     let t' = copy t in
-    f ctx t' buf ;
+    if not (f ctx t' buf) then
+      failwith (Printf.sprintf "Public.%s: operation failed" name) ;
     t'
 
-  let add_tweak = op_tweak add_tweak_inplace
-  let mul_tweak = op_tweak mul_tweak_inplace
+  let add_tweak = op_tweak "add_tweak" add_tweak_inplace
+  let mul_tweak = op_tweak "mul_tweak" mul_tweak_inplace
 
   let combine ctx pks =
     let nb_pks = List.length pks in
