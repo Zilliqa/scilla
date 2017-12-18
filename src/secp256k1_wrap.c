@@ -98,6 +98,8 @@ ml_secp256k1_ec_privkey_negate(value ml_context, value ml_sk) {
     CAMLparam2 (ml_context, ml_sk);
     int ret = secp256k1_ec_privkey_negate(Context_val (ml_context),
                                           Caml_ba_data_val(ml_sk));
+    if (ret != 1)
+        caml_failwith ("ml_secp256k1_ec_privkey_negate");
     CAMLreturn(Val_unit);
 }
 
@@ -161,6 +163,8 @@ ml_secp256k1_ec_pubkey_negate(value ml_context, value ml_pk) {
     CAMLparam2 (ml_context, ml_pk);
     int ret = secp256k1_ec_pubkey_negate(Context_val (ml_context),
                                          Caml_ba_data_val(ml_pk));
+    if (ret != 1)
+        caml_failwith ("ml_secp256k1_ec_pubkey_negate");
     CAMLreturn(Val_unit);
 }
 
