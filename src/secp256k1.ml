@@ -17,6 +17,8 @@ module BA = struct
   let compare a b =
     compare_rec a b 0 (length a) (length b)
 
+  let equal a b = compare a b = 0
+
   let create len =
     Bigarray.(create char c_layout len)
 end
@@ -63,7 +65,7 @@ module Secret = struct
 
   type t = buffer
 
-  let compare = BA.compare
+  let equal = BA.equal
 
   let read ctx ?(pos=0) buf =
     let buflen = BA.length buf in
@@ -127,7 +129,7 @@ module Public = struct
 
   let length = 64
 
-  let compare = BA.compare
+  let equal = BA.equal
 
   external parse : Context.t -> buffer -> buffer -> bool =
     "ec_pubkey_parse" [@@noalloc]
@@ -218,7 +220,7 @@ end
 module Sign = struct
   type t = buffer
 
-  let compare = BA.compare
+  let equal = BA.equal
 
   let length = 64
 
@@ -311,7 +313,7 @@ module RecoverableSign = struct
 
   let length = 65
 
-  let compare = BA.compare
+  let equal = BA.equal
 
   external parse : Context.t -> buffer -> buffer -> int -> bool =
     "ecdsa_recoverable_signature_parse_compact" [@@noalloc]

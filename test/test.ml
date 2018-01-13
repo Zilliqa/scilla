@@ -87,7 +87,7 @@ let test_sign octx =
   let seckey = sk_of_string ctx (`Hex "67E56582298859DDAE725F972992A07C6C4FB9F62A8FFF58CE3CA926A1063530") in
   let validsign = signature_of_string ctx (`Hex "30440220182a108e1448dc8f1fb467d06a0f3bb8ea0533584cb954ef8da112f1d60e39a202201c66f36da211c087f3af88b50edf4f9bdaa6cf5fd6817e74dca34db12390c6e9") in
   let sign = Sign.sign ctx ~seckey msg in
-  assert_equal 0 (Sign.compare sign validsign)
+  assert_equal true (Sign.equal sign validsign)
 
 let test_recover octx =
   let ctx = Context.create [Sign] in
@@ -100,10 +100,10 @@ let test_recover octx =
   assert (Sign.verify verify_ctx pubkey usual_sign msg);
   let (compact, recid) = RecoverableSign.to_compact verify_ctx recoverable_sign in
   let parsed = RecoverableSign.of_compact_exn verify_ctx compact ~recid in
-  assert_equal 0 (RecoverableSign.compare parsed recoverable_sign);
+  assert_equal true (RecoverableSign.equal parsed recoverable_sign);
   match RecoverableSign.recover verify_ctx recoverable_sign msg with
   | None -> assert false
-  | Some recovered -> assert_equal 0 (Public.compare recovered pubkey)
+  | Some recovered -> assert_equal true (Public.equal recovered pubkey)
 
 let suite =
   "secp256k1" >::: [

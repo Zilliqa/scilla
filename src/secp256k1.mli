@@ -56,7 +56,7 @@ module Secret : sig
   val length : int
   (** Size of a secp256k1 secret key in bytes (32). *)
 
-  val compare : t -> t -> int
+  val equal : t -> t -> bool
 
   val read : Context.t -> ?pos:int -> buffer -> t option
   val read_exn : Context.t -> ?pos:int -> buffer -> t
@@ -78,7 +78,7 @@ module Public : sig
   (** Opaque data structure that holds a parsed and valid public
       key. *)
 
-  val compare : t -> t -> int
+  val equal : t -> t -> bool
 
   val read : Context.t -> ?pos:int -> buffer -> t option
   val read_exn : Context.t -> ?pos:int -> buffer -> t
@@ -108,7 +108,7 @@ module Sign : sig
   type t
   (** Opaque data structure that holds a parsed ECDSA signature. *)
 
-  val compare : t -> t -> int
+  val equal : t -> t -> bool
 
   val of_compact : Context.t -> ?pos:int -> buffer -> t option
   val of_compact_exn : Context.t -> ?pos:int -> buffer -> t
@@ -157,7 +157,7 @@ module RecoverableSign : sig
   (** Opaque data structure that holds a parsed ECDSA recoverable
       signature. *)
 
-  val compare : t -> t -> int
+  val equal : t -> t -> bool
 
   val of_compact : Context.t -> recid:int -> ?pos:int -> buffer -> t option
   val of_compact_exn : Context.t -> recid:int -> ?pos:int -> buffer -> t
