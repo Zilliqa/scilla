@@ -2,8 +2,8 @@ type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Arr
 
 module Context : sig
   type flag =
-    | Sign
     | Verify
+    | Sign
     (** which parts of the context to initialize. *)
 
   type t

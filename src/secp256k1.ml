@@ -24,23 +24,30 @@ end
 type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
 module Context = struct
-
-  type flag = Sign | Verify
-
-  let int_of_flag = function
-    | Verify -> 1
-    | Sign -> 2
+  type flag =
+    | Verify
+    | Sign
 
   type t
 
-  external create : int -> t = "ml_secp256k1_context_create"
-  external clone : t -> t = "ml_secp256k1_context_clone"
-  external randomize : t -> buffer -> bool = "ml_secp256k1_context_randomize" [@@noalloc]
+  external flags : buffer -> int = "context_flags"
+  external create : int -> t = "context_create"
+  external clone : t -> t = "context_clone"
+  external randomize : t -> buffer -> bool = "context_randomize" [@@noalloc]
+  external get_16 : buffer -> int -> int = "%caml_bigstring_get16" [@@noalloc]
 
-  let create flags =
-    let flags =
-      List.fold_left flags ~init:0 ~f:(fun a f -> a lor (int_of_flag f)) in
-    create flags
+  let flags =
+    let buf = BA.create (3 * 2) in
+    let _ = flags buf in
+    buf
+
+  let int_of_flag = function
+    | Verify -> get_16 flags 2
+    | Sign -> get_16 flags 4
+
+  let create a =
+    List.fold_left a ~init:(get_16 flags 0) ~f:(fun a f -> a lor (int_of_flag f)) |>
+    create
 
   let randomize ctx buf =
     if BA.length buf <> 32 then
@@ -50,7 +57,7 @@ end
 
 module Secret = struct
   external verify : Context.t -> buffer -> bool =
-    "ml_secp256k1_ec_seckey_verify" [@@noalloc]
+    "ec_seckey_verify" [@@noalloc]
 
   let length = 32
 
@@ -90,11 +97,11 @@ module Secret = struct
   let to_bytes = copy
 
   external negate_inplace : Context.t -> buffer -> unit =
-    "ml_secp256k1_ec_privkey_negate" [@@noalloc]
+    "ec_privkey_negate" [@@noalloc]
   external add_tweak_inplace : Context.t -> buffer -> buffer -> bool =
-    "ml_secp256k1_ec_privkey_tweak_add" [@@noalloc]
+    "ec_privkey_tweak_add" [@@noalloc]
   external mul_tweak_inplace : Context.t -> buffer -> buffer -> bool =
-    "ml_secp256k1_ec_privkey_tweak_mul" [@@noalloc]
+    "ec_privkey_tweak_mul" [@@noalloc]
 
   let negate ctx t =
     let t' = copy t in
@@ -123,13 +130,13 @@ module Public = struct
   let compare = BA.compare
 
   external parse : Context.t -> buffer -> buffer -> bool =
-    "ml_secp256k1_ec_pubkey_parse" [@@noalloc]
+    "ec_pubkey_parse" [@@noalloc]
 
   external serialize : Context.t -> buffer -> t -> int =
-    "ml_secp256k1_ec_pubkey_serialize" [@@noalloc]
+    "ec_pubkey_serialize" [@@noalloc]
 
   external create : Context.t -> buffer -> Secret.t -> bool =
-    "ml_secp256k1_ec_pubkey_create" [@@noalloc]
+    "ec_pubkey_create" [@@noalloc]
 
   let of_secret ctx seckey =
     let buf = BA.create length in
@@ -173,13 +180,13 @@ module Public = struct
     serialize ctx buf t
 
   external negate_inplace : Context.t -> buffer -> unit =
-    "ml_secp256k1_ec_pubkey_negate" [@@noalloc]
+    "ec_pubkey_negate" [@@noalloc]
   external add_tweak_inplace : Context.t -> buffer -> buffer -> bool =
-    "ml_secp256k1_ec_pubkey_tweak_add" [@@noalloc]
+    "ec_pubkey_tweak_add" [@@noalloc]
   external mul_tweak_inplace : Context.t -> buffer -> buffer -> bool =
-    "ml_secp256k1_ec_pubkey_tweak_mul" [@@noalloc]
+    "ec_pubkey_tweak_mul" [@@noalloc]
   external combine : Context.t -> buffer -> buffer list -> bool =
-    "ml_secp256k1_ec_pubkey_combine" [@@noalloc]
+    "ec_pubkey_combine" [@@noalloc]
 
   let negate ctx t =
     let t' = copy t in
@@ -216,13 +223,13 @@ module Sign = struct
   let length = 64
 
   external parse_compact : Context.t -> buffer -> buffer -> bool =
-    "ml_secp256k1_ecdsa_signature_parse_compact" [@@noalloc]
+    "ecdsa_signature_parse_compact" [@@noalloc]
   external parse_der : Context.t -> buffer -> buffer -> bool =
-    "ml_secp256k1_ecdsa_signature_parse_der" [@@noalloc]
+    "ecdsa_signature_parse_der" [@@noalloc]
   external serialize_compact : Context.t -> buffer -> t -> unit =
-    "ml_secp256k1_ecdsa_signature_serialize_compact" [@@noalloc]
+    "ecdsa_signature_serialize_compact" [@@noalloc]
   external serialize_der : Context.t -> buffer -> t -> int =
-    "ml_secp256k1_ecdsa_signature_serialize_der" [@@noalloc]
+    "ecdsa_signature_serialize_der" [@@noalloc]
 
   let to_compact ctx t =
     let buf = BA.create length in
@@ -269,10 +276,10 @@ module Sign = struct
     | Some signature -> signature
 
   external sign : Context.t -> buffer -> Secret.t -> buffer -> bool =
-    "ml_secp256k1_ecdsa_sign" [@@noalloc]
+    "ecdsa_sign" [@@noalloc]
 
   external verify : Context.t -> Public.t -> buffer -> t -> bool =
-    "ml_secp256k1_ecdsa_verify" [@@noalloc]
+    "ecdsa_verify" [@@noalloc]
 
   let write_sign ctx ~seckey ~outbuf ?(outpos=0) ~inbuf ?(inpos=0) () =
     let inbuflen = BA.length inbuf in
@@ -307,7 +314,7 @@ module RecoverableSign = struct
   let compare = BA.compare
 
   external parse : Context.t -> buffer -> buffer -> int -> bool =
-    "ml_secp256k1_ecdsa_recoverable_signature_parse_compact" [@@noalloc]
+    "ecdsa_recoverable_signature_parse_compact" [@@noalloc]
 
   let of_compact ctx ~recid ?(pos=0) inbuf =
     let buflen = BA.length inbuf in
@@ -323,7 +330,7 @@ module RecoverableSign = struct
     | Some signature -> signature
 
   external serialize : Context.t -> buffer -> t -> int =
-    "ml_secp256k1_ecdsa_recoverable_signature_serialize_compact" [@@noalloc]
+    "ecdsa_recoverable_signature_serialize_compact" [@@noalloc]
 
   let to_compact ctx sign =
     let buf = BA.create 64 in
@@ -337,7 +344,7 @@ module RecoverableSign = struct
     serialize ctx (BA.sub buf pos Sign.length) sign
 
   external convert : Context.t -> buffer -> t -> unit =
-    "ml_secp256k1_ecdsa_recoverable_signature_convert" [@@noalloc]
+    "ecdsa_recoverable_signature_convert" [@@noalloc]
 
   let convert ctx sign =
     let buf = BA.create Sign.length in
@@ -345,7 +352,7 @@ module RecoverableSign = struct
     buf
 
   external sign : Context.t -> buffer -> Secret.t -> buffer -> bool =
-    "ml_secp256k1_ecdsa_sign_recoverable" [@@noalloc]
+    "ecdsa_sign_recoverable" [@@noalloc]
 
   let write_sign ctx ~seckey ~outbuf ?(outpos=0) ~inbuf ?(inpos=0) () =
     let inbuf_len = BA.length inbuf in
@@ -366,7 +373,7 @@ module RecoverableSign = struct
     else failwith "RecoverableSign.sign: internal error"
 
   external recover : Context.t -> buffer -> t -> buffer -> bool =
-    "ml_secp256k1_ecdsa_recover" [@@noalloc]
+    "ecdsa_recover" [@@noalloc]
 
   let recover ctx sign ?(pos=0) inbuf =
     let inbuflen = BA.length inbuf in
