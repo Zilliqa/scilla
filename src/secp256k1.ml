@@ -57,331 +57,414 @@ module Context = struct
     randomize ctx buf
 end
 
-module Secret = struct
-  external verify : Context.t -> buffer -> bool =
-    "ec_seckey_verify" [@@noalloc]
+module Key = struct
+  type secret
+  type public
+  type _ t =
+    | Sk : buffer -> secret t
+    | Pk : buffer -> public t
 
-  let length = 32
+  let to_buffer : type a. a t -> buffer = function
+    | Sk k -> k
+    | Pk k -> k
 
-  type t = buffer
+  let secret_bytes = 32
+  let public_bytes = 64
 
-  let equal = BA.equal
+  let length : type a. a t -> int = function
+    | Sk _ -> 32
+    | Pk _ -> 64
 
-  let read ctx ?(pos=0) buf =
-    let buflen = BA.length buf in
-    if pos < 0 || pos > buflen - length then
-      invalid_arg "Secret.of_bytes: pos < 0 or pos + 32 > buflen" ;
-    let buf = BA.sub buf pos length in
-    match verify ctx buf with
-    | true ->
-      let t = BA.create 32 in
-      BA.blit buf t ;
-      Some buf
-    | false -> None
+  let equal : type a. a t -> a t -> bool = fun a b ->
+    match a, b with
+    | Sk a, Sk b -> BA.equal a b
+    | Pk a, Pk b -> BA.equal a b
 
-  let read_exn ctx ?pos buf =
-    match read ctx buf with
-    | None -> failwith "Secret.of_bytes_exn"
-    | Some sk -> sk
+  let copy : type a. a t -> a t = function
+    | Sk k ->
+      let k' = BA.create secret_bytes in
+      BA.blit k k' ;
+      Sk k'
+    | Pk k ->
+      let k' = BA.create public_bytes in
+      BA.blit k k' ;
+      Pk k'
 
-  let write buf ?(pos=0) t =
-    let buflen = BA.length buf in
-    if pos < 0 || pos > buflen - length then
-      invalid_arg "Secret.write: pos < 0 or pos + 32 > buflen" ;
-    let buf = BA.sub buf pos length in
-    BA.blit t buf
-
-  let copy t =
-    let t' = BA.create length in
-    BA.blit t t' ;
-    t'
-
-  let to_bytes = copy
-
-  external negate_inplace : Context.t -> buffer -> unit =
+  external sk_negate_inplace : Context.t -> buffer -> unit =
     "ec_privkey_negate" [@@noalloc]
-  external add_tweak_inplace : Context.t -> buffer -> buffer -> bool =
+  external sk_add_tweak_inplace : Context.t -> buffer -> buffer -> bool =
     "ec_privkey_tweak_add" [@@noalloc]
-  external mul_tweak_inplace : Context.t -> buffer -> buffer -> bool =
+  external sk_mul_tweak_inplace : Context.t -> buffer -> buffer -> bool =
     "ec_privkey_tweak_mul" [@@noalloc]
-
-  let negate ctx t =
-    let t' = copy t in
-    negate_inplace ctx t' ;
-    t'
-
-  let op_tweak name f ctx t ?(pos=0) buf =
-    let buflen = BA.length buf in
-    if pos < 0 || pos > buflen - 32 then
-      invalid_arg "Secret.add_tweak: pos < 0 or pos > buflen - 32" ;
-    let buf = BA.sub buf pos 32 in
-    let t' = copy t in
-    if not (f ctx t' buf) then
-      failwith (Printf.sprintf "Secret.%s: operation failed" name) ;
-    t'
-
-  let add_tweak = op_tweak "add_tweak" add_tweak_inplace
-  let mul_tweak = op_tweak "mul_tweak" mul_tweak_inplace
-end
-
-module Public = struct
-  type t = buffer
-
-  let length = 64
-
-  let equal = BA.equal
-
-  external parse : Context.t -> buffer -> buffer -> bool =
-    "ec_pubkey_parse" [@@noalloc]
-
-  external serialize : Context.t -> buffer -> t -> int =
-    "ec_pubkey_serialize" [@@noalloc]
-
-  external create : Context.t -> buffer -> Secret.t -> bool =
-    "ec_pubkey_create" [@@noalloc]
-
-  let of_secret ctx seckey =
-    let buf = BA.create length in
-    if create ctx buf seckey then buf else
-      failwith "Public.of_secret: internal error"
-
-  let read ctx ?(pos=0) inbuf =
-    let pklen = BA.length inbuf in
-    if pos < 0 || pos > pklen - 33 then
-      invalid_arg "Public.read: pos < 0 or pos > buflen - 33" ;
-    let inbuf = BA.(sub inbuf pos (length inbuf)) in
-    if BA.(length inbuf < 33) then
-      invalid_arg "Public.read: input must be at least 33 bytes long" ;
-    let outbuf = BA.create length in
-    if (parse ctx outbuf inbuf) then Some outbuf
-    else None
-
-  let read_exn ctx ?pos buf =
-    match read ctx ?pos buf with
-    | None -> failwith "Public.read_exn"
-    | Some pk -> pk
-
-  let copy t =
-    let t' = BA.create length in
-    BA.blit t t' ;
-    t'
-
-  let to_bytes ?(compress=true) ctx t =
-    let buf = BA.create (if compress then 33 else 65) in
-    let _nb_written = serialize ctx buf t in
-    buf
-
-  let write ?(compress=true) ctx buf ?(pos=0) t =
-    let buflen = BA.length buf in
-    if pos < 0
-    || (compress && pos > buflen - 33)
-    || (not compress && pos > buflen - 65) then
-      invalid_arg (Printf.sprintf "Public.write: pos=%d, buflen=%d" pos buflen) ;
-    let len = if compress then 33 else 65 in
-    let buf = BA.sub buf pos len in
-    serialize ctx buf t
-
-  external negate_inplace : Context.t -> buffer -> unit =
+  external pk_negate_inplace : Context.t -> buffer -> unit =
     "ec_pubkey_negate" [@@noalloc]
-  external add_tweak_inplace : Context.t -> buffer -> buffer -> bool =
+  external pk_add_tweak_inplace : Context.t -> buffer -> buffer -> bool =
     "ec_pubkey_tweak_add" [@@noalloc]
-  external mul_tweak_inplace : Context.t -> buffer -> buffer -> bool =
+  external pk_mul_tweak_inplace : Context.t -> buffer -> buffer -> bool =
     "ec_pubkey_tweak_mul" [@@noalloc]
-  external combine : Context.t -> buffer -> buffer list -> bool =
+  external pk_combine : Context.t -> buffer -> buffer list -> bool =
     "ec_pubkey_combine" [@@noalloc]
 
-  let negate ctx t =
-    let t' = copy t in
-    negate_inplace ctx t' ;
-    t'
+  let negate_inplace :
+    type a. Context.t -> a t -> unit = fun ctx -> function
+    | Sk k -> sk_negate_inplace ctx k
+    | Pk k -> pk_negate_inplace ctx k
 
-  let op_tweak name f ctx t ?(pos=0) buf =
-    let buflen = BA.length buf in
-    if pos < 0 || pos > buflen - 32 then
-      invalid_arg "Secret.add_tweak: pos < 0 or pos > buflen - 32" ;
-    let buf = BA.sub buf pos 32 in
-    let t' = copy t in
-    if not (f ctx t' buf) then
-      failwith (Printf.sprintf "Public.%s: operation failed" name) ;
-    t'
+  let negate ctx k =
+    let k' = copy k in
+    negate_inplace ctx k' ;
+    k'
 
-  let add_tweak = op_tweak "add_tweak" add_tweak_inplace
-  let mul_tweak = op_tweak "mul_tweak" mul_tweak_inplace
+  let op_tweak :
+    type a. string -> (Context.t -> buffer -> buffer -> bool) ->
+    Context.t -> a t -> ?pos:int -> buffer -> buffer =
+    fun name f ctx k ?(pos=0) buf ->
+      let buflen = BA.length buf in
+      if pos < 0 || pos > buflen - 32 then
+        invalid_arg (Printf.sprintf "Key.%s: pos < 0 or pos > buflen - 32" name) ;
+      let buf = BA.sub buf pos 32 in
+      let k' = copy k |> to_buffer in
+      if not (f ctx k' buf) then
+        failwith (Printf.sprintf "Key.%s: operation failed" name) ;
+      k'
+
+  let add_tweak :
+    type a. Context.t -> a t -> ?pos:int -> buffer -> a t =
+    fun ctx k ?pos buf ->
+      match k with
+      | Sk _ -> Sk (op_tweak "add_tweak" sk_add_tweak_inplace ctx k ?pos buf)
+      | Pk _ -> Pk (op_tweak "add_tweak" pk_add_tweak_inplace ctx k ?pos buf)
+
+  let mul_tweak :
+    type a. Context.t -> a t -> ?pos:int -> buffer -> a t =
+    fun ctx k ?pos buf ->
+      match k with
+      | Sk _ -> Sk (op_tweak "mul_tweak" sk_mul_tweak_inplace ctx k ?pos buf)
+      | Pk _ -> Pk (op_tweak "mul_tweak" pk_mul_tweak_inplace ctx k ?pos buf)
+
+  external pk_parse : Context.t -> buffer -> buffer -> bool =
+    "ec_pubkey_parse" [@@noalloc]
+  external pk_serialize : Context.t -> buffer -> buffer -> int =
+    "ec_pubkey_serialize" [@@noalloc]
+  external pk_create : Context.t -> buffer -> buffer -> bool =
+    "ec_pubkey_create" [@@noalloc]
+
+  let neuterize :
+    type a. Context.t -> a t -> public t option = fun ctx -> function
+    | Pk pk -> Some (Pk pk)
+    | Sk sk ->
+      let pk = BA.create public_bytes in
+      if pk_create ctx pk sk then Some (Pk pk) else None
+
+  let neuterize_exn ctx k =
+    match neuterize ctx k with
+    | None -> invalid_arg "Key.neuterize_exn: invalid secret key"
+    | Some pk -> pk
+
+  let list_map_filter_opt ~f l =
+    List.fold_left ~init:[] ~f:begin fun a e ->
+      match f e with
+      | None -> a
+      | Some r -> r :: a
+    end l
 
   let combine ctx pks =
     let nb_pks = List.length pks in
-    if nb_pks = 0 || nb_pks > 1024 then
-      invalid_arg "Public.combine: please provide between 1 and 1024 pks" ;
-    let ret = BA.create length in
-    if combine ctx ret pks then ret
-    else failwith "Public.combine: the sum of the public keys is not valid."
+    if nb_pks = 0 || nb_pks > 1024 then None
+    else
+      let pk = BA.create public_bytes in
+      let pks = list_map_filter_opt ~f:begin fun k ->
+          match neuterize ctx k with
+          | None -> None
+          | Some (Pk k) -> Some k
+        end pks in
+      if pk_combine ctx pk pks then Some (Pk pk)
+      else None
+
+  let combine_exn ctx pks =
+    match combine ctx pks with
+    | None -> invalid_arg "Key.combine_exn: sum of pks is invalid"
+    | Some pk -> pk
+
+  external verify_sk : Context.t -> buffer -> bool =
+    "ec_seckey_verify" [@@noalloc]
+
+  let read_sk_exn ctx ?(pos=0) buf =
+    let buflen = BA.length buf in
+    if pos < 0 || pos > buflen - secret_bytes then
+      invalid_arg "Key.read_sk: pos < 0 or pos + 32 > buflen" ;
+    let buf = BA.sub buf pos secret_bytes in
+    match verify_sk ctx buf with
+    | true ->
+      let t = BA.create secret_bytes in
+      BA.blit buf t ;
+      Sk buf
+    | false -> invalid_arg "Key.read_sk_exn: secret key is invalid"
+
+  let read_sk ctx ?pos buf =
+    try Ok (read_sk_exn ctx buf) with
+    | Invalid_argument msg -> Error msg
+
+  let read_pk_exn ctx ?(pos=0) inbuf =
+    let pklen = BA.length inbuf in
+    if pos < 0 || pos > pklen - 33 then
+      invalid_arg "Key.read_pk: pos < 0 or pos > buflen - 33" ;
+    let inbuf = BA.(sub inbuf pos (length inbuf)) in
+    if BA.(length inbuf < 33) then
+      invalid_arg "Key.read_pk: input must be at least 33 bytes long" ;
+    let outbuf = BA.create public_bytes in
+    if (pk_parse ctx outbuf inbuf) then Pk outbuf
+    else invalid_arg "Key.read_pk_exn: public key is invalid"
+
+  let read_pk ctx ?pos buf =
+    try Ok (read_pk_exn ctx buf) with
+    | Invalid_argument msg -> Error msg
+
+  let write :
+    type a. ?compress:bool -> Context.t -> ?pos:int -> buffer -> a t -> int =
+    fun ?(compress=true) ctx ?(pos=0) buf -> function
+      | Sk sk ->
+        let buflen = BA.length buf in
+        if pos < 0 || pos > buflen - secret_bytes then
+          invalid_arg "Key.write (secret): pos < 0 or pos + 32 > buflen" ;
+        let buf = BA.sub buf pos secret_bytes in
+        BA.blit sk buf ;
+        secret_bytes
+      | Pk pk ->
+        let buflen = BA.length buf in
+        if pos < 0
+        || (compress && pos > buflen - 33)
+        || (not compress && pos > buflen - 65) then
+          invalid_arg (Printf.sprintf "Key.write (public): pos=%d, buflen=%d" pos buflen) ;
+        let len = if compress then 33 else 65 in
+        let buf = BA.sub buf pos len in
+        pk_serialize ctx buf pk
+
+  let to_bytes :
+    type a. ?compress:bool -> Context.t -> a t -> buffer =
+    fun ?(compress=true) ctx -> function
+      | Sk _ as sk ->
+        let buf = BA.create secret_bytes in
+        let _ = write ~compress ctx buf sk in
+        buf
+      | Pk _ as pk ->
+        let buf =
+          BA.create (1 + (if compress then secret_bytes else public_bytes)) in
+        let _ = write ~compress ctx buf pk in
+        buf
 end
 
 module Sign = struct
-  type t = buffer
+  type plain
+  type recoverable
+  type _ t =
+    | P : buffer -> plain t
+    | R : buffer -> recoverable t
 
-  let equal = BA.equal
+  let plain_bytes = 64
+  let recoverable_bytes = 65
+  let msg_bytes = 32
 
-  let length = 64
+  type msg = buffer
+
+  let msg_of_bytes ?(pos=0) buf =
+    try Some (BA.sub buf pos msg_bytes) with _ -> None
+  let msg_of_bytes_exn ?pos buf =
+    match msg_of_bytes ?pos buf with
+    | None -> invalid_arg "msg_of_bytes_exn"
+    | Some msg -> msg
+  let write_msg_exn ?(pos=0) buf msg =
+    let buflen = BA.length buf in
+    if pos < 0 || pos > buflen - msg_bytes then
+      invalid_arg "Sign.read_exn: pos < 0 or pos > buflen - 64" ;
+    BA.blit (BA.sub msg 0 msg_bytes) (BA.sub buf pos msg_bytes) ;
+    msg_bytes
+
+  let write_msg ?pos buf msg =
+    try Ok (write_msg_exn ?pos buf msg) with
+    | Invalid_argument msg -> Error msg
+
+  let msg_to_bytes msg = msg
+
+  let equal : type a. a t -> a t -> bool = fun a b ->
+    match a, b with
+    | P a, P b -> BA.equal a b
+    | R a, R b -> BA.equal a b
 
   external parse_compact : Context.t -> buffer -> buffer -> bool =
     "ecdsa_signature_parse_compact" [@@noalloc]
   external parse_der : Context.t -> buffer -> buffer -> bool =
     "ecdsa_signature_parse_der" [@@noalloc]
-  external serialize_compact : Context.t -> buffer -> t -> unit =
+  external serialize_compact : Context.t -> buffer -> buffer -> unit =
     "ecdsa_signature_serialize_compact" [@@noalloc]
-  external serialize_der : Context.t -> buffer -> t -> int =
+  external serialize_der : Context.t -> buffer -> buffer -> int =
     "ecdsa_signature_serialize_der" [@@noalloc]
+  external parse_recoverable : Context.t -> buffer -> buffer -> int -> bool =
+    "ecdsa_recoverable_signature_parse_compact" [@@noalloc]
+  external serialize_recoverable : Context.t -> buffer -> buffer -> int =
+    "ecdsa_recoverable_signature_serialize_compact" [@@noalloc]
 
-  let to_compact ctx t =
-    let buf = BA.create length in
-    serialize_compact ctx buf t ;
-    buf
+  let read_exn ctx ?(pos=0) buf =
+    let buflen = BA.length buf in
+    if pos < 0 || pos > buflen - plain_bytes then
+      invalid_arg "Sign.read_exn: pos < 0 or pos > buflen - 64" ;
+    let signature = BA.create plain_bytes in
+    if parse_compact ctx signature (BA.sub buf pos plain_bytes) then
+      P signature
+    else invalid_arg "Sign.read_exn: signature could not be parsed"
 
-  let to_der ctx t =
+  let read ctx ?pos buf =
+    try Ok (read_exn ctx buf) with
+    | Invalid_argument msg -> Error msg
+
+  let read_der_exn ctx ?(pos=0) buf =
+    let buflen = BA.length buf in
+    if pos < 0 || pos > buflen - plain_bytes then
+      invalid_arg "Sign.read_der: pos < 0 or pos > buflen - 72" ;
+    let signature = BA.create plain_bytes in
+    if parse_der ctx signature BA.(sub buf pos (length buf)) then
+      P signature
+    else invalid_arg "Sign.read_der_exn: signature could not be parsed"
+
+  let read_der ctx ?pos buf =
+    try Ok (read_der_exn ctx buf) with
+    | Invalid_argument msg -> Error msg
+
+  let read_recoverable_exn ctx ~recid ?(pos=0) buf =
+    let buflen = BA.length buf in
+    if pos < 0 || pos > buflen - plain_bytes then
+      invalid_arg "Sign.read_recoverable_exn: pos < 0 or pos > buflen - 64" ;
+    let signature = BA.create recoverable_bytes in
+    if parse_recoverable ctx signature (BA.sub buf pos plain_bytes) recid then (R signature)
+    else invalid_arg "Sign.read_recoverable_exn: signature could not be parsed"
+
+  let read_recoverable ctx ~recid ?pos buf =
+    try Ok (read_recoverable_exn ctx ~recid ?pos buf) with
+    | Invalid_argument msg -> Error msg
+
+  let write_exn :
+  type a. ?der:bool -> Context.t -> ?pos:int -> buffer -> a t -> int =
+    fun ?(der=false) ctx ?(pos=0) buf -> function
+      | P signature ->
+        let buf = BA.(sub buf pos (length buf)) in
+        if der then serialize_der ctx buf signature
+        else (serialize_compact ctx buf signature ; plain_bytes)
+      | R signature ->
+        let buflen = BA.length buf in
+        if pos < 0 || pos > buflen - plain_bytes then
+          invalid_arg "write: pos < 0 or pos > buflen - 64" ;
+        ignore (serialize_recoverable ctx (BA.sub buf pos plain_bytes) signature) ;
+        plain_bytes
+
+  let write ?der ctx ?pos buf signature =
+    try Ok (write_exn ?der ctx ?pos buf signature) with
+    | Invalid_argument msg -> Error msg
+
+  let to_bytes ?der ctx signature =
     let buf = BA.create 72 in
-    let len = serialize_der ctx buf t in
-    BA.sub buf 0 len
+    let nb_written = write_exn ?der ctx buf signature in
+    BA.sub buf 0 nb_written
 
-  let write compact ctx buf ?(pos=0) t =
-    let buf = BA.(sub buf pos (length buf)) in
-    if compact then (serialize_compact ctx buf t ; 64)
-    else serialize_der ctx buf t
+  let to_bytes_recid ctx (R signature) =
+    let buf = BA.create plain_bytes in
+    let recid = serialize_recoverable ctx buf signature in
+    buf, recid
 
-  let write_compact = write true
-  let write_der = write false
-
-  let of_compact ctx ?(pos=0) inbuf =
-    let buflen = BA.length inbuf in
-    if pos < 0 || pos > buflen - length then
-      invalid_arg "Sign.of_compact: pos < 0 or pos > buflen - 64" ;
-    let outbuf = BA.create length in
-    if parse_compact ctx outbuf (BA.sub inbuf pos length) then Some outbuf
-    else None
-
-  let of_compact_exn ctx ?pos buf =
-    match of_compact ctx buf with
-    | None -> failwith "Sign.of_compact_exn"
-    | Some signature -> signature
-
-  let of_der ctx ?(pos=0) inbuf =
-    let buflen = BA.length inbuf in
-    if pos < 0 || pos > buflen - length then
-      invalid_arg "Sign.of_der: pos < 0 or pos > buflen - 72" ;
-    let buf = BA.create length in
-    if parse_der ctx buf BA.(sub inbuf pos (length inbuf)) then Some buf
-    else None
-
-  let of_der_exn ctx ?pos buf =
-    match of_der ctx buf with
-    | None -> failwith "Sign.of_der_exn"
-    | Some signature -> signature
-
-  external sign : Context.t -> buffer -> Secret.t -> buffer -> bool =
+  external sign : Context.t -> buffer -> buffer -> buffer -> bool =
     "ecdsa_sign" [@@noalloc]
-
-  external verify : Context.t -> Public.t -> buffer -> t -> bool =
+  external verify : Context.t -> buffer -> buffer -> buffer -> bool =
     "ecdsa_verify" [@@noalloc]
 
-  let write_sign ctx ~seckey ~outbuf ?(outpos=0) ~inbuf ?(inpos=0) () =
-    let inbuflen = BA.length inbuf in
-    if inpos < 0 || inpos > inbuflen - 32 then
-      invalid_arg "Sign.sign: inpos < 0 or inpos > msglen - 32" ;
-    let outbuflen = BA.length outbuf in
-    if outpos < 0 || outpos > outbuflen - length then
+  let write_sign_exn ctx ~sk ~msg ?(pos=0) buf =
+    let buflen = BA.length buf in
+    if pos < 0 || pos > buflen - plain_bytes then
       invalid_arg "Sign.write_sign: outpos < 0 or outpos > outbuf - 64" ;
-    if sign ctx (BA.sub outbuf outpos length) seckey (BA.sub inbuf inpos 32) then 32
-    else failwith "Sign.sign: internal error"
+    if sign ctx (BA.sub buf pos plain_bytes) (Key.to_buffer sk) msg then plain_bytes
+    else invalid_arg
+        "Sign.write_sign: the nonce generation function failed, or the private key was invalid"
 
-  let sign ctx ~seckey ?(pos=0) inbuf =
-    let buflen = BA.length inbuf in
-    if pos < 0 || pos > buflen - 32 then
-      invalid_arg "Sign.sign: pos < 0 || pos > msglen - 32" ;
-    let outbuf = BA.create length in
-    if sign ctx outbuf seckey (BA.sub inbuf pos 32) then outbuf
-    else failwith "Sign.sign: internal error"
+  let write_sign ctx ~sk ~msg ?pos buf =
+    try Ok (write_sign_exn ctx ~sk ~msg ?pos buf) with
+    | Invalid_argument msg -> Error msg
 
-  let verify ctx ~pubkey ~signature ?(pos=0) msg =
+  let sign ctx ~sk ~msg =
+    let signature = BA.create plain_bytes in
+    match write_sign ctx ~sk ~msg signature with
+    | Error msg -> Error msg
+    | Ok _nb_written -> Ok (P signature)
+
+  let sign_exn ctx ~sk ~msg =
+    match sign ctx ~sk ~msg with
+    | Error msg -> invalid_arg msg
+    | Ok signature -> signature
+
+  external sign_recoverable : Context.t -> buffer -> buffer -> buffer -> bool =
+    "ecdsa_sign_recoverable" [@@noalloc]
+
+  let write_sign_recoverable_exn ctx ~sk ~msg ?(pos=0) buf =
+    let buflen = BA.length buf in
+    if pos < 0 || pos > buflen - recoverable_bytes then
+      invalid_arg "Sign.write_sign_recoverable_exn: \
+                   outpos < 0 or outpos > outbuflen - 65" ;
+    if sign_recoverable ctx
+        (BA.sub buf pos recoverable_bytes)
+        (Key.to_buffer sk) msg then recoverable_bytes
+    else invalid_arg
+      "Sign.write_sign_recoverable_exn: \
+       the nonce generation function failed, or the private key was invalid"
+
+  let write_sign_recoverable ctx ~sk ~msg ?pos buf =
+    try Ok (write_sign_recoverable_exn ctx ~sk ~msg ?pos buf) with
+    | Invalid_argument msg -> Error msg
+
+  let sign_recoverable ctx ~sk msg =
+    let signature = BA.create recoverable_bytes in
+    match write_sign_recoverable ctx ~sk ~msg signature with
+    | Error error -> Error error
+    | Ok _nb_written -> Ok (R signature)
+
+  let sign_recoverable_exn ctx ~sk msg =
+    match sign_recoverable ctx ~sk msg with
+    | Error msg -> invalid_arg msg
+    | Ok signature -> signature
+
+  external to_plain : Context.t -> buffer -> buffer -> unit =
+    "ecdsa_recoverable_signature_convert" [@@noalloc]
+
+  let to_plain ctx (R recoverable) =
+    let plain = BA.create plain_bytes in
+    to_plain ctx plain recoverable ;
+    P plain
+
+  let verify_plain_exn ctx ~pk ?(pos=0) msg signature =
     let msglen = BA.length msg in
     if pos < 0 || pos > msglen - 32 then
       invalid_arg "Sign.verify: msg must be at least 32 bytes long" ;
-    verify ctx pubkey (BA.sub msg pos 32) signature
-end
+    verify ctx (Key.to_buffer pk) (BA.sub msg pos 32) signature
 
-module RecoverableSign = struct
-  type t = buffer
+  let verify_exn :
+    type a. Context.t -> pk:Key.public Key.t -> msg:msg -> signature:a t -> bool =
+    fun ctx ~pk ~msg ~signature -> match signature with
+      | P signature -> verify_plain_exn ctx ~pk msg signature
+      | R signature as r ->
+        let P signature = to_plain ctx r in
+        verify_plain_exn ctx ~pk msg signature
 
-  let length = 65
+  let verify ctx ~pk ~msg ~signature =
+    try Ok (verify_exn ctx ~pk ~msg ~signature) with
+    | Invalid_argument msg -> Error msg
 
-  let equal = BA.equal
-
-  external parse : Context.t -> buffer -> buffer -> int -> bool =
-    "ecdsa_recoverable_signature_parse_compact" [@@noalloc]
-
-  let of_compact ctx ~recid ?(pos=0) inbuf =
-    let buflen = BA.length inbuf in
-    if pos < 0 || pos > buflen - Sign.length then
-      invalid_arg "RecoverableSign.of_compact: pos < 0 or pos > buflen - 64" ;
-    let buf = BA.create length in
-    if parse ctx buf (BA.sub inbuf pos Sign.length) recid then Some buf
-    else None
-
-  let of_compact_exn ctx ~recid ?pos inbuf =
-    match of_compact ctx ~recid ?pos inbuf with
-    | None -> failwith "RecoverableSign.of_compact_exn"
-    | Some signature -> signature
-
-  external serialize : Context.t -> buffer -> t -> int =
-    "ecdsa_recoverable_signature_serialize_compact" [@@noalloc]
-
-  let to_compact ctx sign =
-    let buf = BA.create 64 in
-    let recid = serialize ctx buf sign in
-    buf, recid
-
-  let write_compact ctx buf ?(pos=0) sign =
-    let buflen = BA.length buf in
-    if pos < 0 || pos > buflen - Sign.length then
-      invalid_arg "RecoverableSign.write_compact: pos < 0 or pos > buflen - 64" ;
-    serialize ctx (BA.sub buf pos Sign.length) sign
-
-  external convert : Context.t -> buffer -> t -> unit =
-    "ecdsa_recoverable_signature_convert" [@@noalloc]
-
-  let convert ctx sign =
-    let buf = BA.create Sign.length in
-    convert ctx buf sign ;
-    buf
-
-  external sign : Context.t -> buffer -> Secret.t -> buffer -> bool =
-    "ecdsa_sign_recoverable" [@@noalloc]
-
-  let write_sign ctx ~seckey ~outbuf ?(outpos=0) ~inbuf ?(inpos=0) () =
-    let inbuf_len = BA.length inbuf in
-    if inpos < 0 || inpos > inbuf_len - 32 then
-      invalid_arg "RecoverableSign.write_sign: inpos < 0 or inpos > inbuflen - 32" ;
-    let outbuf_len = BA.length outbuf in
-    if outpos < 0 || outpos > outbuf_len - length then
-      invalid_arg "RecoverableSign.write_sign: outpos < 0 or outpos > outbuflen - 65" ;
-    if sign ctx (BA.sub outbuf outpos length) seckey (BA.sub inbuf inpos 32) then 32
-    else failwith "RecoverableSign.write_sign: internal error"
-
-  let sign ctx ~seckey ?(pos=0) inbuf =
-    let inbuflen = BA.length inbuf in
-    if pos < 0 || pos > inbuflen - 32 then
-      invalid_arg "RecoverableSign.sign: buf must be at least 32 bytes long" ;
-    let outbuf = BA.create length in
-    if sign ctx outbuf seckey (BA.sub inbuf pos 32) then outbuf
-    else failwith "RecoverableSign.sign: internal error"
-
-  external recover : Context.t -> buffer -> t -> buffer -> bool =
+  external recover : Context.t -> buffer -> buffer -> buffer -> bool =
     "ecdsa_recover" [@@noalloc]
 
-  let recover ctx sign ?(pos=0) inbuf =
-    let inbuflen = BA.length inbuf in
-    if pos < 0 || pos > inbuflen - 32 then
-      invalid_arg "RecoverableSign.recover: pos < 0 or pos > msglen - 32" ;
-    let buf = BA.create Public.length in
-    if recover ctx buf sign (BA.sub inbuf pos 32) then Some buf
-    else None
+  let recover_exn ctx ~signature:(R signature) ~msg =
+    let pk = BA.create Key.public_bytes in
+    if recover ctx pk signature msg then Key.Pk pk
+    else
+      invalid_arg "Sign.recover: pk could not be recovered"
+
+  let recover ctx ~signature ~msg =
+    try Ok (recover_exn ctx ~signature ~msg) with
+    | Invalid_argument msg -> Error msg
 end
+
