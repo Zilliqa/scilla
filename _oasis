@@ -16,6 +16,8 @@ Executable "scilla"
   MainIs: main.ml
   Custom: true
   CompiledObject: best
+  BuildDepends:
+    ppx_sexp_conv
 
 BuildDepends:
  extlib
