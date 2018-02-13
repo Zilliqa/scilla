@@ -1,0 +1,24 @@
+Name: Scilla
+Version: 0.1
+Synopsis: Scilla
+Authors: Ilya Sergey <ilya.sergey@gmail.com>
+License: BSD-2-clause
+
+Description: Scilla is a an Intermediate Level Language for Smart Contracts
+Homepage: https://www.zilliqa.com
+
+OASISFormat: 0.4
+BuildTools: ocamlbuild
+Plugins: META (0.4), DevFiles (0.4)
+
+Executable "scilla"
+  Path: src/main
+  MainIs: main.ml
+  Custom: true
+  CompiledObject: best
+
+BuildDepends:
+ extlib
+
+PostBuildCommand: rm -rf bin; mkdir bin; mv main.native bin/main.native
+
