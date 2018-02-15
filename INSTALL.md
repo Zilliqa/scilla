@@ -8,9 +8,17 @@ Install the folowing dependencies for OCaml:
 * `jbuilder` build tool, can be installed via `opam install jbuilder`
 * `ocamlc`, version >= 4.05
 
-## Building the Project
+## Building and Running
 
 Just run `make` from the root folder
+
+To invoke a simple runner (subject to
+[ongoing implementation](./ROADMAP.md)), execute from the project
+root:
+
+```
+./_build/install/default/bin/scilla-runner resources/ resources/bool.sc 
+```
 
 ## Where to find binaries
 
