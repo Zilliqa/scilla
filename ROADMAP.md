@@ -26,5 +26,5 @@ Scilla Implementation Roadmap
 
 ## Verification and Analysis
 
-* [ ] Extraction of programs into Coq
+* [ ] Extraction of programs into Coq for [Scilla-Coq](https://github.com/ilyasergey/scilla-coq)
 * [ ] Synthesis from Scilla-Coq implementations
