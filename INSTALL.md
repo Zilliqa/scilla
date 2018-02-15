@@ -17,7 +17,7 @@ To invoke a simple runner (subject to
 root:
 
 ```
-./_build/install/default/bin/scilla-runner resources/ resources/bool.sc 
+./_build/install/default/bin/scilla-runner resources/bool.sc 
 ```
 
 ## Where to find binaries
