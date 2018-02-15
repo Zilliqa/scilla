@@ -29,6 +29,5 @@ exp :
 
 (* Parse expressions separated by semicolons *)    
 exps : 
-| e = exp { [e] }
 | EOF { [] }
 | e = exp SEMICOLON es=exps { e :: es }

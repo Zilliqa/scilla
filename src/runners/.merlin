@@ -1,6 +1,6 @@
 B ../../_build/default/src/lang
 B ../../_build/default/src/runners
-FLG -ppx '/Users/ilyaserge/Work/Dev/scilla/_build/default/.ppx/ppx_sexp_conv/ppx.exe --as-ppx'
+FLG -ppx '/Users/ilya/Work/Dev/scilla/_build/default/.ppx/ppx_sexp_conv/ppx.exe --as-ppx'
 FLG -w -40
 PKG base
 PKG base.caml
