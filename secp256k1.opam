@@ -23,7 +23,6 @@ depends: [
   "configurator" {build & >= "v0.9.1"}
   "hex" {test & >= "1.1.1"}
   "ounit" {test & >= "2.0.7"}
-  "conf-secp256k1"
   "base-bigarray"
 ]
 
