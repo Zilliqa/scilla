@@ -19,3 +19,5 @@ _build/
 setup.data
 setup.log
 bin/
+bin
+*.install

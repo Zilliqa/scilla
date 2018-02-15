@@ -1,5 +1,0 @@
-(jbuild_version 1)
-
-(executable
- ((name main)
-  (libraries (core scilla ppx_sexp_conv))))

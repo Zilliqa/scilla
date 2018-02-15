@@ -1,5 +1,6 @@
-B _build/default
-FLG -w -40 -open Scilla -w -40
+B ../../_build/default/src/lang
+FLG -ppx '/Users/ilyaserge/Work/Dev/scilla/_build/default/.ppx/ppx_sexp_conv/ppx.exe --as-ppx --cookie '\''library-name="scilla_lang"'\'''
+FLG -w -40
 PKG base
 PKG base.caml
 PKG base.md5
@@ -7,7 +8,6 @@ PKG base.shadow_stdlib
 PKG bigarray
 PKG bin_prot
 PKG bin_prot.shape
-PKG bytes
 PKG compiler-libs
 PKG compiler-libs.common
 PKG core
@@ -15,7 +15,6 @@ PKG core_kernel
 PKG core_kernel.base_for_tests
 PKG fieldslib
 PKG jane-street-headers
-PKG lwt
 PKG ocaml-compiler-libs.common
 PKG ocaml-compiler-libs.shadow
 PKG ocaml-migrate-parsetree
@@ -38,7 +37,6 @@ PKG ppx_sexp_conv
 PKG ppx_sexp_conv.expander
 PKG ppx_traverse_builtins
 PKG ppx_type_conv
-PKG re
 PKG result
 PKG sexplib
 PKG sexplib.0
@@ -50,4 +48,3 @@ PKG threads.posix
 PKG typerep
 PKG unix
 PKG variantslib
-S .

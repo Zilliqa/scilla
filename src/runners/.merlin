@@ -1,4 +1,6 @@
-B _build/default
+B ../../_build/default/src/lang
+B ../../_build/default/src/runners
+FLG -ppx '/Users/ilyaserge/Work/Dev/scilla/_build/default/.ppx/ppx_sexp_conv/ppx.exe --as-ppx'
 FLG -w -40
 PKG base
 PKG base.caml
@@ -47,3 +49,4 @@ PKG threads.posix
 PKG typerep
 PKG unix
 PKG variantslib
+S ../lang

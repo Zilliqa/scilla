@@ -1,0 +1,14 @@
+(jbuild_version 1)
+
+(ocamllex (SLexer))
+
+(menhir
+ ((modules (SParser))))
+
+(library
+ ((name scilla_lang) ; doesn't support '-' in the name
+  (public_name scilla-lang)
+  (wrapped false)
+  (libraries (core ppx_sexp_conv))
+  (preprocess (pps (ppx_sexp_conv)))
+  (synopsis "Scilla workbench implementation.")))

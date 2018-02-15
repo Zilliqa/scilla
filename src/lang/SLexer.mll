@@ -1,6 +1,6 @@
 {
 open Lexing
-open Parser
+open SParser
 
 exception Error of string
 
@@ -37,6 +37,6 @@ rule read =
   | ';'      { SEMICOLON }
   | aand     { AND }
   | oor      { OR }
-  | _ { raise (Error ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
+  | _ { raise (Error ("Unexpected character: " ^ Lexing.lexeme lexbuf)) }
   | eof      { EOF }
 

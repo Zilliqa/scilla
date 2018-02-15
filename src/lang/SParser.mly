@@ -1,7 +1,5 @@
 %{
-
   open Syntax
-
 %}
 
 %token AND
@@ -31,5 +29,6 @@ exp :
 
 (* Parse expressions separated by semicolons *)    
 exps : 
+| e = exp { [e] }
 | EOF { [] }
-| p = exp SEMICOLON ps=exps { p :: ps }
+| e = exp SEMICOLON es=exps { e :: es }
