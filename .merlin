@@ -1,7 +1,0 @@
-PKG num
-PKG core
-PKG batteries
-PKG sexplib
-S .
-S main
-S scilla
