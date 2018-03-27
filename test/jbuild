@@ -1,6 +1,6 @@
 (executable
  ((name test)
-  (libraries (secp256k1 hex oUnit))))
+  (libraries (secp256k1 hex alcotest))))
 
 (alias
  ((name    runtest)
