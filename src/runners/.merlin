@@ -49,4 +49,5 @@ PKG threads.posix
 PKG typerep
 PKG unix
 PKG variantslib
+S .
 S ../lang

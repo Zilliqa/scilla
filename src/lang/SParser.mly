@@ -8,7 +8,6 @@
 %token <string> VAR
 %token LPAREN
 %token RPAREN
-
 %token SEMICOLON
 %token EOF
 
@@ -30,4 +29,4 @@ exp :
 (* Parse expressions separated by semicolons *)    
 exps : 
 | EOF { [] }
-| e = exp SEMICOLON es=exps { e :: es }
+| e = exp SEMICOLON es = exps { e :: es }

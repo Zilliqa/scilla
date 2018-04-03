@@ -21,22 +21,22 @@ let float = digit* frac? exp?
 
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
-let id = ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
-
-let aand = '&' '&'
-let oor = '|' '|'
-
+let varid = ['a'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let cid =   ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let lcomment = "//" (_ # ['\r' '\n'])* newline
+  
 rule read =
   parse
-  | id as i  { VAR i }
-  | white    { read lexbuf }
-  | newline  { next_line lexbuf; read lexbuf }
-  | '~'      { NOT }      
-  | '('      { LPAREN }
-  | ')'      { RPAREN }
-  | ';'      { SEMICOLON }
-  | aand     { AND }
-  | oor      { OR }
-  | _ { raise (Error ("Unexpected character: " ^ Lexing.lexeme lexbuf)) }
-  | eof      { EOF }
+  | newline     { next_line lexbuf; read lexbuf }
+  | lcomment    { next_line lexbuf; read lexbuf }
+  | varid as i  { VAR i }
+  | white       { read lexbuf }
+  | "not"       { NOT }      
+  | '('         { LPAREN }
+  | ')'         { RPAREN }
+  | ';'         { SEMICOLON }
+  | "&&"        { AND }
+  | "||"        { OR }
+  | _           { raise (Error ("Unexpected character: " ^ Lexing.lexeme lexbuf)) }
+  | eof         { EOF }
 
