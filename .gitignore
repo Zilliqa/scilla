@@ -21,3 +21,4 @@ setup.log
 bin
 scilla
 *.install
+.merlin
