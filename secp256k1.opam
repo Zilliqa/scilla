@@ -22,7 +22,7 @@ depends: [
   "stdio" {build & >= "v0.9.0"}
   "configurator" {build & >= "v0.9.1"}
   "hex" {test & >= "1.1.1"}
-  "ounit" {test & >= "2.0.7"}
+  "alcotest" {test & >= "0.8.1"}
   "base-bigarray"
 ]
 
