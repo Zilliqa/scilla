@@ -37,7 +37,7 @@ let blk_leq =
 
 let one_msg = 
   fun (msg : message) => 
-   let nil_msg = Nil {message} in
+   let nil_msg = @Nil {message} in
    Cons {message} msg nil_msg
 
 let check_update = 

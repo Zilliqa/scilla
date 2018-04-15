@@ -30,6 +30,30 @@ library ZilGame
 
 (*  Here come definitions of auxiliary functions  *)
 
+let orb = 
+  fun (b : Bool) => fun (c : Bool) =>
+    match b with 
+    | True  => True
+    | False => match c with 
+               | False => False
+               | True  => True
+               end
+    end
+
+let one_msg = 
+  fun (msg : message) => 
+   let nil_msg = Nil {message} in
+   Cons {message} msg nil_msg
+
+let no_msg = Nil {message}
+
+let check_sender 
+  fun (s : address) =>
+  fun (a : address) =>
+  fun (b : address) =>
+  let b1 = builtin eq s a in
+  let b2 = builtin eq s b in
+  orb b1 b2
 
 (***************************************************)
 (*             The contract definition             *)
@@ -45,20 +69,43 @@ contract ZilGame
 field player_a_hash : option hash = None
 field player_b_hash : option hash = None
 field timer         : option (pair int bnum) = None
-field game_over     : bool = False
+field game_on     : bool = False
 
 transition Play
+  (sender: address, guess: hash)
+  let is_player = check_sender in
+  match is_player with
+  | False => send no_msg
+  | True  => 
+    (* Implement updating routine and determine the player *)
+    (* Determine whether can submit *)
+  end
+
 
 (* Players can submit their guesses *)
 
 end
 
-transition ClaimReward
 (* 
 Each player can try to reclaim their reward. This transition will
 check eligibility, solution quality, and the hash pre-image submitted
 (an integer value) and then will send the reward, ending the game
 *)
+transition ClaimReward
+  (sender: address, solution: int)
+  pa <- player_a_hash;
+  pb <- player_b_hash;
+  (* TODO: implement me *)
+  winner = determine_winner puzzle solution pa pb; 
+  bal <- balance;
+  (* TODO: implement me *)
+  msgs_done = form_msg winner bal game_on sender;
+  match msgs_done with
+  | And False msgs =>
+    game_on := False;
+    send msgs
+  | And True _ => send no_msg
+  end     
 end
 
 
