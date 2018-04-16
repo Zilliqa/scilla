@@ -20,6 +20,10 @@ Question: what primitive should we have in the language to check the
 current block number? Or should it be the previous block number? What
 is reasonable here?
 
+The language should provide access to the following blockchain parameters
+NUMBER      Get the last mined block's number
+BLOCKHASH   Get the hash of the last block 
+TIMESTAMP   Get the block's timestamp
 *)
 
 
