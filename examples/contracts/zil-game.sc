@@ -23,7 +23,7 @@ is reasonable here?
 The language should provide access to the following blockchain parameters
 NUMBER      Get the last mined block's number
 BLOCKHASH   Get the hash of the last block 
-TIMESTAMP   Get the block's timestamp
+TIMESTAMP   Get the last block's timestamp
 *)
 
 
