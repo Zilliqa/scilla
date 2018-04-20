@@ -181,7 +181,7 @@ field game_on       : bool = False
 transition Play
   (sender: address, guess: hash)
   tm_opt <- timer;
-  b <- & BLOCKNUM;
+  b <- & NUMBER;
   (* Check the timer *)
   match can_play tm_opt b with
   | False => 
@@ -234,7 +234,7 @@ check eligibility, solution quality, and the hash pre-image submitted
 transition ClaimReward
   (sender: address, solution: int)
   tm_opt <- timer;
-  b <- & BLOCKNUM;
+  b <- & NUMBER;
   (* Check the timer *)
   match time_to_claim tm_opt b with
   | False => 
