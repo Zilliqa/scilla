@@ -10,17 +10,13 @@
 open Sexplib.Std
 
 type expr = 
-    Var of string
-  | Not of expr
-  | And of expr * expr
-  | Or of expr * expr [@@deriving sexp]
+    Var  of string
+  | Constr of string
+   [@@deriving sexp]
 
-let rec exp_to_string e =
-  match e with
-    | Not p -> "~" ^ exp_to_string p
-    | And (p1, p2) -> "(" ^ exp_to_string p1 ^ " ∧ " ^ exp_to_string p2 ^ ")"
-    | Or (p1, p2) -> "(" ^ exp_to_string p1 ^ " ∨ " ^ exp_to_string p2 ^ ")"
-    | Var s -> s
-
-
-
+let rec exp_to_string e = match e with
+  | _ -> "expr"
+    
+(*     | And (p1, p2) -> "(" ^ exp_to_string p1 ^ " ∧ " ^ exp_to_string p2 ^ ")" *)
+(*     | Or (p1, p2) -> "(" ^ exp_to_string p1 ^ " ∨ " ^ exp_to_string p2 ^ ")" *)
+(*     | Var s -> s *)
