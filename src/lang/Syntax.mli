@@ -28,15 +28,20 @@ type 'rep pattern =
   | Constructor of 'rep pattern list 
 [@@deriving sexp]
 
+type 'rep literal = 
+  | IntLit of int
+  | BNum of int
+  | Address of string
+  | Sha256 of string
+  | EmpMap of 'rep typ * 'rep typ
+[@@deriving sexp]
+
 type 'rep expr =
   | Let of 'rep ident * 'rep typ option * 'rep expr * 'rep expr
   | Var of 'rep ident
-  | IntLit of int
-  | Address of string
-  | Sha256 of string
+  | Literal of 'rep literal
   | Message of ('rep ident * 'rep expr) list
-  | EmpMap
-  | Builtin of string * 'rep ident list 
+  | Builtin of 'rep ident * 'rep ident list 
   | Fun of 'rep ident * 'rep typ * 'rep expr
   | App of 'rep ident * 'rep ident list
   | TFun of 'rep ident * 'rep expr

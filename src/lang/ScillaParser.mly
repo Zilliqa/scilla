@@ -1,3 +1,13 @@
+(*
+ * Copyright (c) 2018 - present Zilliqa, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *)
+
+
 %{
   open Syntax
 %}
@@ -32,6 +42,7 @@
        
 (* Keywords *)    
 %token BUILTIN
+%token EMP
 %token LIBRARY
 %token FIELD
 %token LET
@@ -60,8 +71,10 @@
 
 exp:
 | f = simple_exp {f}    
-| LET; x = ID; EQ; f = simple_exp; IN; e = exp
-  {Let ((Ident (x, ())), None, f, e) }
+| LET; x = ID;
+  t = ioption(type_annot) 
+  EQ; f = simple_exp; IN; e = exp
+  {Let ((Ident (x, ())), t, f, e) }
                                              
 simple_exp :    
 (* Function *)    
@@ -76,20 +89,33 @@ simple_exp :
     in App ((Ident (f, ())), xs) }
 (* Atomic expression *)
 | a = atomic_exp {a} 
+(* TODO Built-in call *)
+| BUILTIN; b = ID; args = nonempty_list(ID)
+  { let xs = List.map (fun i -> Ident (i, ())) args
+    in Builtin ((Ident (b, ())), xs) }
+(* TODO: Match expression *)
+  
+(* TODO Message construction *)
 
+(* TODO: Patterns *)
+
+(* TODO: Statements *)
 
   
-    
+  
+type_annot:
+| COLON; t = typ {t}
+      
 typ :
 | t = CID { match t with
             | "Int" | "Hash" | "Address" -> PrimType t
             | s -> ADT (s, []) }   
 
 atomic_exp :
-| n = NUMLIT   { IntLit n }
+| n = NUMLIT   { Literal (IntLit n) }
 | i = ID       { Var (Ident (i, ())) }
-| a = ADDRESS  { Address a }
-| h = SHA3LIT  { Sha256 h }
+| a = ADDRESS  { Literal (Address a) }
+| h = SHA3LIT  { Literal (Sha256 h) }
         
 (* | NOT p = exp { Not p } *)
 (* | p1 = exp AND p2 = exp { And (p1, p2) }  *)
