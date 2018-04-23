@@ -9,8 +9,38 @@
 
 open Sexplib.Std
 
-type expr = 
-    Var  of string
-  | Constr of string
-   [@@deriving sexp]
+type 'rep ident =
+  | Ident of string * 'rep
+  [@@deriving sexp]
 
+type 'rep typ  =
+  | PrimType of string
+  | MapType of 'rep  typ * 'rep typ
+  | FunType of 'rep  typ * 'rep typ
+  | ADT of string * 'rep typ list
+  | TypeVar of string
+  | PolyFun of string * 'rep typ
+[@@deriving sexp]
+
+type 'rep pattern =
+  | Wildcard
+  | Binder of string
+  | Constructor of 'rep pattern list 
+[@@deriving sexp]
+
+type 'rep expr =
+  | Let of 'rep ident * 'rep typ option * 'rep expr * 'rep expr
+  | Var of 'rep ident
+  | IntLit of int
+  | Address of string
+  | Sha256 of string
+  | Message of ('rep ident * 'rep expr) list
+  | EmpMap
+  | Builtin of string * 'rep ident list 
+  | Fun of 'rep ident * 'rep typ * 'rep expr
+  | App of 'rep ident * 'rep ident list
+  | TFun of 'rep ident * 'rep expr
+  | TApp of 'rep ident * string list
+  | Constr of string * ('rep typ list) * ('rep expr list)
+  | Match of 'rep ident * ('rep pattern list)
+[@@deriving sexp]

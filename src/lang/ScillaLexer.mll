@@ -24,8 +24,8 @@ let newline = '\r' | '\n' | "\r\n"
 let id = ['a'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let cid =   ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let lcomment = "(*" (_ # ['\r' '\n'])* "*)" newline
-let sha3256 = ['a'-'f' '0'-'9']+
-let address = '0' 'x' sha3256                
+let sha3256 = '0' 'x' ['a'-'f' '0'-'9']+
+let address = 'a' sha3256                
                                          
 rule read =
   parse
@@ -34,10 +34,6 @@ rule read =
   | newline       { next_line lexbuf; read lexbuf }
   | lcomment      { next_line lexbuf; read lexbuf }
   | white         { read lexbuf }
-
-  (* Identifiers *)    
-  | id as i       { ID i }
-  | cid as i      { CID i }
 
   (* Numbers and hashes *)
   | posint as i   { NUMLIT (int_of_string i) }
@@ -58,7 +54,9 @@ rule read =
   | "transition"  { TRANSITION }      
   | "send"        { SEND }      
   | "field"       { FIELD }      
-                  
+  | "accept"      { ACCEPT }      
+
+
   (* Separators *)    
   | ';'           { SEMICOLON }
   | ':'           { COLON }
@@ -77,7 +75,11 @@ rule read =
   | ":="          { ASSIGN }                  
   | "@"           { AT }                  
   | "_"           { UNDERSCORE }                  
-                  
+
+  (* Identifiers *)    
+  | id as i       { ID i }
+  | cid as i      { CID i }
+
   (* Other tokens *)     
   | _             { raise (Error ("Unexpected character: " ^ Lexing.lexeme lexbuf)) }
   | eof           { EOF }

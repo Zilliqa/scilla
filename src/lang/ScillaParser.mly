@@ -40,10 +40,11 @@
 %token WITH
 %token END       
 %token FUN
-%token TFUN       
+%token TFUN
 %token CONTRACT       
 %token TRANSITION
 %token SEND
+%token ACCEPT
        
 (*  Other tokens *)
 %token EOF
@@ -53,14 +54,43 @@
 (* %left PLUS *)
 (* %nonassoc NEG *)
 
-%start <Syntax.expr list> exps
+%start <unit Syntax.expr list> exps
 
 %%
 
-exp :
-| i = ID  { Var i }
-| c = CID { Constr c }
+exp:
+| f = simple_exp {f}    
+| LET; x = ID; EQ; f = simple_exp; IN; e = exp
+  {Let ((Ident (x, ())), None, f, e) }
+                                             
+simple_exp :    
+(* Function *)    
+| FUN;
+  LPAREN; i = ID; COLON; t = typ; RPAREN;
+  ARROW; e = exp
+  { Fun (Ident (i, ()), t, e) } 
+(* Application *)  
+| f = ID;
+  args = nonempty_list(ID)
+  { let xs = List.map (fun i -> Ident (i, ())) args
+    in App ((Ident (f, ())), xs) }
+(* Atomic expression *)
+| a = atomic_exp {a} 
+
+
+  
     
+typ :
+| t = CID { match t with
+            | "Int" | "Hash" | "Address" -> PrimType t
+            | s -> ADT (s, []) }   
+
+atomic_exp :
+| n = NUMLIT   { IntLit n }
+| i = ID       { Var (Ident (i, ())) }
+| a = ADDRESS  { Address a }
+| h = SHA3LIT  { Sha256 h }
+        
 (* | NOT p = exp { Not p } *)
 (* | p1 = exp AND p2 = exp { And (p1, p2) }  *)
 (* | p1 = exp OR  p2 = exp { Or  (p1, p2) }  *)
