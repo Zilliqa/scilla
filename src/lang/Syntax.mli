@@ -10,9 +10,7 @@
 open Sexplib.Std
 
 type expr = 
-    Var of string
-  | Not of expr
-  | And of expr * expr
-  | Or of expr * expr [@@deriving sexp]
+    Var  of string
+  | Constr of string
+   [@@deriving sexp]
 
-val exp_to_string : expr -> string      

@@ -18,16 +18,16 @@ let print_position outx lexbuf =
   fprintf outx "%s:%d:%d" pos.pos_fname
     pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
 
-let parse_file filename =
+let parse_file parser filename =
   let inx = In_channel.create filename in
   let lexbuf = Lexing.from_channel inx in
   try
-    let exprs = SParser.exps SLexer.read lexbuf in
+    let exprs = parser ScillaLexer.read lexbuf in
     Some exprs
   with
-  | SLexer.Error msg ->
+  | ScillaLexer.Error msg ->
       fprintf stderr "%a: %s\n" print_position lexbuf msg;
       None
-  | SParser.Error ->
+  | ScillaParser.Error ->
       fprintf stderr "At offset %d: syntax error.\n%!" (Lexing.lexeme_start lexbuf);
       None

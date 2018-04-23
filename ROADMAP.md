@@ -8,21 +8,29 @@ Scilla Implementation Roadmap
 
 ## Front-End Compiler
 
+* [X] Basic lexer
 * [ ] Parser for expressions
-  * [X] basic expressions
-  * [ ] Arithemetics and binders
+  * [ ] Basic expressions
+  * [ ] Pattern matching
   * [ ] Constants
 * [ ] Parser for statements
   * [ ] Basic control flow
   * [ ] Blockchain interaction
 * [ ] Parser for the contract layout
-* [ ] Better error reporting (see Menhir docs)
-* [ ] Extraction of the parser into Coq (see Menhir docs)
-* [ ] Type checker
+* [ ] Parser for libraries
 
 ## Interpreter
 
+* [ ] Executing expressions
+  * [ ] CEK-like formalism
+* [ ] Implementation of hashing
 * [ ] Interaction with the blockchain
+* [ ] Serializing state
+* [ ] Searialising messages
+
+## Basic analyses
+
+* [ ] Type checker
 
 ## Verification and Analysis
 

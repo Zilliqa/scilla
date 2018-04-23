@@ -9,4 +9,5 @@
 
 open Syntax
 
-val parse_file : string -> expr list option
+val parse_file : ((Lexing.lexbuf -> ScillaParser.token) ->
+                  Lexing.lexbuf -> 'a) -> string -> 'a option

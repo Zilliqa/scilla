@@ -1,6 +1,8 @@
 Scilla: A Smart Contract Intermediate Level Language
 
-## Build requirements
+## Building and Running
+
+### Build requirements
 
 Install the folowing dependencies for OCaml:
 
@@ -8,9 +10,9 @@ Install the folowing dependencies for OCaml:
 * `jbuilder` build tool, can be installed via `opam install jbuilder`
 * `ocamlc`, version >= 4.05
 
-## Building and Running
+### Compiling the project
 
-Just run `make` from the root folder
+Just run `make clean; make` from the root folder
 
 To invoke a simple runner (subject to
 [ongoing implementation](./ROADMAP.md)), execute from the project
@@ -20,7 +22,7 @@ root:
 ./_build/install/default/bin/scilla-runner resources/bool.sc 
 ```
 
-## Where to find binaries
+### Where to find binaries
 
 * The runnables are put into the folder
 
@@ -35,3 +37,9 @@ The following extensions would be useful:
 * [tuareg](https://github.com/ocaml/tuareg) for syntax highlighting
 * [merlin](https://github.com/ocaml/merlin/wiki/emacs-from-scratch) for auto-completion
 * [ocp-indent](https://github.com/OCamlPro/ocp-indent) for smart indentation
+
+All thos libraries can be installed via OPAM, e.g.,
+
+```
+opam install merlin
+```
