@@ -1,0 +1,6 @@
+let c = 42 in
+let b : Address = a0xab234524fe45 in
+let z = builtin add c c in
+fun (x : Int) => fun (y : Bool) => y x z
+
+
