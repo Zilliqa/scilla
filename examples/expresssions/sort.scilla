@@ -1,0 +1,46 @@
+let sort = 
+  fun (ls : List Int) =>
+  let true = True in 
+  let false = False in 
+  let rec_int = @ list_rec Int in
+  let rec_int_int = @ rec_int Int in
+  let rec_int_pair = @ rec_int (Pair Bool (List Int)) in
+  let nil_int = Nil {Int} in 
+  let sink_down =
+    fun (e : Int) => fun (ls : List Int) =>
+      let init = And {Bool (List Int)} false nil_int in
+      let iter1 =
+        fun (h : Pair Bool (List Int)) =>
+	fun (t : List Int) =>
+	fun (res : Pair Bool (List Int)) =>
+	  let b    = fst res in
+     	  let rest = snd res in
+          match b with
+          | True =>
+	    let z = Cons {Int} h rest in
+	    And {Bool (List Int)} true z
+          | False =>
+              let bl = builtin lt h e in
+	      match bl with
+	      | True =>
+	      	let z = Cons {Int} e rest in
+	      	let z2 = Cons {Int} h z in
+	      	And {Bool (List Int)} true z2
+              | False =>
+	      let z = Cons {Int} h rest in
+	      And {Bool (List Int)} false z
+	      end
+	  end   
+      in
+      let res1 = rec_int_pair init iter1 ls in
+      let b0 = fst res1 in
+      let ls1 = snd res1 in
+      match b0 with
+      | True => ls1
+      | False => Cons {Int} e ls1
+      end
+  in
+  let iter2 = fun (h : Int) => fun (t : List Int) =>
+                fun (res : Int) => sink_down h res
+  in
+  rec_int_int iter2 nil_int ls

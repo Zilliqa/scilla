@@ -13,46 +13,50 @@ type 'rep ident =
   | Ident of string * 'rep
   [@@deriving sexp]
 
-type 'rep typ  =
+type typ  =
   | PrimType of string
-  | MapType of 'rep  typ * 'rep typ
-  | FunType of 'rep  typ * 'rep typ
-  | ADT of string * 'rep typ list
+  | MapType of typ * typ
+  | FunType of typ * typ
+  | ADT of string * typ list
   | TypeVar of string
-  | PolyFun of string * 'rep typ
+  | PolyFun of string * typ
 [@@deriving sexp]
 
-type 'rep pattern =
+type pattern =
   | Wildcard
   | Binder of string
-  | Constructor of 'rep pattern list 
+  | Constructor of string * (pattern list)
 [@@deriving sexp]
 
-type 'rep literal = 
+type literal = 
   | IntLit of int
   | BNum of int
   | Address of string
   | Sha256 of string
-  | EmpMap of 'rep typ * 'rep typ
+  | Map of literal * literal list
+[@@deriving sexp]
+
+type payload =
+  | MTag of string
+  | MLit of literal
+  | MVar of string
 [@@deriving sexp]
 
 type 'rep expr =
-  | Let of 'rep ident * 'rep typ option * 'rep expr * 'rep expr
+  | Let of 'rep ident * typ option * 'rep expr * 'rep expr
   | Var of 'rep ident
-  | Literal of 'rep literal
-  | Message of ('rep ident * 'rep expr) list
+  | Literal of literal
+  | Message of (string * payload) list
   | Builtin of 'rep ident * 'rep ident list 
-  | Fun of 'rep ident * 'rep typ * 'rep expr
+  | Fun of 'rep ident * typ * 'rep expr
   | App of 'rep ident * 'rep ident list
   | TFun of 'rep ident * 'rep expr
-  | TApp of 'rep ident * string list
-  | Constr of string * ('rep typ list) * ('rep expr list)
-  | Match of 'rep ident * ('rep pattern list)
+  | TApp of 'rep ident * typ list
+  | Constr of string * typ list * 'rep ident list
+  | Match of 'rep ident * (pattern * 'rep expr) list
 [@@deriving sexp]
 
-let rec exp_to_string e = match e with
-  | _ -> "expr"
-    
-(*     | And (p1, p2) -> "(" ^ exp_to_string p1 ^ " ∧ " ^ exp_to_string p2 ^ ")" *)
-(*     | Or (p1, p2) -> "(" ^ exp_to_string p1 ^ " ∨ " ^ exp_to_string p2 ^ ")" *)
-(*     | Var s -> s *)
+type 'rep lib_entry =
+  { lname : 'rep ident ;
+    lexp  : 'rep expr }
+[@@deriving sexp]

@@ -56,6 +56,7 @@
 %token TRANSITION
 %token SEND
 %token ACCEPT
+%token MAP
        
 (*  Other tokens *)
 %token EOF
@@ -65,10 +66,33 @@
 (* %left PLUS *)
 (* %nonassoc NEG *)
 
-%start <unit Syntax.expr list> exps
-
+%start <unit Syntax.expr> exp
+%start <unit Syntax.lib_entry list> library
+                                 
 %%
 
+(* Types *)
+typ :
+| d = CID; targs=list(targ)
+  { match targs with
+    | [] -> (match d with
+             | "Int" | "Hash" | "Address" -> PrimType d
+             | _ -> ADT (d, []))                       
+    | _ -> ADT (d, targs)
+  }   
+| MAP; k=targ; v = targ; { MapType (k, v) }
+(* TODO: Add other type annotations *)
+
+ctargs:
+| LBRACE; ts = list(targ); RBRACE { ts }
+                             
+targ :
+| LPAREN; t = typ; RPAREN; { t }
+| t = typ { t }
+
+  
+(* Expressions *)
+  
 exp:
 | f = simple_exp {f}    
 | LET; x = ID;
@@ -78,9 +102,7 @@ exp:
                                              
 simple_exp :    
 (* Function *)    
-| FUN;
-  LPAREN; i = ID; COLON; t = typ; RPAREN;
-  ARROW; e = exp
+| FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
   { Fun (Ident (i, ()), t, e) } 
 (* Application *)  
 | f = ID;
@@ -89,40 +111,72 @@ simple_exp :
     in App ((Ident (f, ())), xs) }
 (* Atomic expression *)
 | a = atomic_exp {a} 
-(* TODO Built-in call *)
+(* Built-in call *)
 | BUILTIN; b = ID; args = nonempty_list(ID)
   { let xs = List.map (fun i -> Ident (i, ())) args
     in Builtin ((Ident (b, ())), xs) }
-(* TODO: Match expression *)
-  
-(* TODO Message construction *)
+(* Message construction *)
+| LBRACE; es = separated_list(SEMICOLON, msg_entry)  RBRACE                            
+  { Message es } 
+(* Data constructor application *)
+| c = CID ts=option(ctargs) args=list(ID)
+  { let targs =
+      (match ts with
+       | None -> []
+       | Some ls -> ls) in
+    let xs = List.map (fun i -> Ident (i, ())) args in
+    Constr (c, targs, xs)
+  }
+(* Match expression *)
+| MATCH; x = ID; WITH; cs=list(pm_clause); END
+  { Match (Ident (x, ()), cs) }
+(* Type function *)
+| TFUN; i = ID ARROW; e = exp
+  { TFun (Ident (i, ()), e) } 
+(* Type application *)
+| AT; f = ID; targs = nonempty_list(targ)
+  { TApp ((Ident (f, ())), targs) }
 
-(* TODO: Patterns *)
-
-(* TODO: Statements *)
-
-  
-  
-type_annot:
-| COLON; t = typ {t}
-      
-typ :
-| t = CID { match t with
-            | "Int" | "Hash" | "Address" -> PrimType t
-            | s -> ADT (s, []) }   
-
-atomic_exp :
-| n = NUMLIT   { Literal (IntLit n) }
+  atomic_exp :
 | i = ID       { Var (Ident (i, ())) }
-| a = ADDRESS  { Literal (Address a) }
-| h = SHA3LIT  { Literal (Sha256 h) }
-        
-(* | NOT p = exp { Not p } *)
-(* | p1 = exp AND p2 = exp { And (p1, p2) }  *)
-(* | p1 = exp OR  p2 = exp { Or  (p1, p2) }  *)
-(* | LPAREN p = exp RPAREN { p } *)
+| l = lit      { Literal l } 
+               
+lit :        
+| n = NUMLIT   { IntLit n }
+| a = ADDRESS  { Address a }
+| h = SHA3LIT  { Sha256 h }  
 
-(* Parse expressions separated by semicolons *)    
+pattern:
+| UNDERSCORE { Wildcard }
+| x = ID {Binder x}
+| LPAREN; p = pattern RPAREN; { p }         
+| c = CID; ps = list(pattern) { Constructor (c, ps) }
+
+pm_clause:
+BAR ; p = pattern ; ARROW ; e = exp { p, e }                                  
+
+msg_entry :
+| i = ID; COLON;  l = lit { i, MLit l }
+| i = ID; COLON;  c = CID { i, MTag c }
+| i = ID; COLON;  v = ID { i,  MVar v }
+
+type_annot:
+| COLON; t = typ { t }
+
+libentry :
+| LET; n = ID; EQ; e= exp { {lname = Ident (n, ()); lexp = e } }
+
+library :                        
+| l = libentry; ls = library { l :: ls }
+| EOF { [] }
+         
 exps : 
 | EOF { [] }
 | e = exp es = exps { e :: es }
+
+                 
+(* TODO: Statements *)
+
+
+        
+                 

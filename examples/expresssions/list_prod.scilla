@@ -1,0 +1,14 @@
+let list_prod = 
+  fun (ls : List Int) => fun (acc : Int) =>
+    let iter =
+      fun (h : Int) => fun (t : List Int) => fun (res : Int) =>
+        let zero = 0 in
+        let b = builtin eq h zero in
+        match b with
+        | True => 0
+        | False => builtin mult h res
+        end
+    in
+    let rec_nat = @ list_rec Nat in
+    let rec_nat_nat = @ rec_nat Nat in
+    rec_nat_nat acc iter ls    

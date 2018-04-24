@@ -1,0 +1,9 @@
+let andb = 
+  fun (b : Int) => fun (c : Map Int Address) =>
+  match b with 
+  | False => False
+  | True  => match c with 
+             | False => False
+             | True  => True
+             end
+  end

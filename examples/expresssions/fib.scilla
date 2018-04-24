@@ -1,0 +1,15 @@
+let fib =
+  fun (n : Nat) =>
+  let iter_nat = @ nat_rec (Pair Nat Nat) in
+  let iter_fun =
+    fun (n: Nat) => fun (res : Pair Nat Nat) =>
+      match res with
+      | And x y => let z = add x y in
+                   And {Nat Nat} z x
+      end
+    in
+  let zero = Zero in
+  let one = Succ zero in
+  let init_val = And {Nat Nat} one zero in
+  let res = iter_nat init_val iter_fun n in
+  fst res

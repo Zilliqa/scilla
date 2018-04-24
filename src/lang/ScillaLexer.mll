@@ -55,7 +55,8 @@ rule read =
   | "send"        { SEND }      
   | "field"       { FIELD }      
   | "accept"      { ACCEPT }      
-  | "EMP"         { EMP }
+  | "Emp"         { EMP }
+  | "Map"         { MAP }
 
 
   (* Separators *)    
