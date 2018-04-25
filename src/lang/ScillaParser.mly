@@ -10,6 +10,7 @@
 
 %{
   open Syntax
+  let asId i = Ident (i, ())
 %}
 
 (* Identifiers *)    
@@ -67,6 +68,7 @@
 (* %nonassoc NEG *)
 
 %start <unit Syntax.expr> exp
+%start <unit Syntax.stmt list> stmts
 %start <unit Syntax.lib_entry list> library
                                  
 %%
@@ -90,8 +92,9 @@ targ :
 | LPAREN; t = typ; RPAREN; { t }
 | t = typ { t }
 
-  
-(* Expressions *)
+(***********************************************)
+(*                 Expressions                 *)
+(***********************************************)
   
 exp:
 | f = simple_exp {f}    
@@ -116,8 +119,7 @@ simple_exp :
   { let xs = List.map (fun i -> Ident (i, ())) args
     in Builtin ((Ident (b, ())), xs) }
 (* Message construction *)
-| LBRACE; es = separated_list(SEMICOLON, msg_entry)  RBRACE                            
-  { Message es } 
+| LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE                { Message es } 
 (* Data constructor application *)
 | c = CID ts=option(ctargs) args=list(ID)
   { let targs =
@@ -128,8 +130,8 @@ simple_exp :
     Constr (c, targs, xs)
   }
 (* Match expression *)
-| MATCH; x = ID; WITH; cs=list(pm_clause); END
-  { Match (Ident (x, ()), cs) }
+| MATCH; x = ID; WITH; cs=list(exp_pm_clause); END
+  { MatchExpr (Ident (x, ()), cs) }
 (* Type function *)
 | TFUN; i = ID ARROW; e = exp
   { TFun (Ident (i, ()), e) } 
@@ -148,23 +150,22 @@ lit :
 
 pattern:
 | UNDERSCORE { Wildcard }
-| x = ID {Binder x}
+| x = ID {Binder (Ident (x, ()))}
 | LPAREN; p = pattern RPAREN; { p }         
 | c = CID; ps = list(pattern) { Constructor (c, ps) }
 
-pm_clause:
-BAR ; p = pattern ; ARROW ; e = exp { p, e }                                  
-
+exp_pm_clause:
+| BAR ; p = pattern ; ARROW ; e = exp { p, e }                                  
 msg_entry :
 | i = ID; COLON;  l = lit { i, MLit l }
 | i = ID; COLON;  c = CID { i, MTag c }
-| i = ID; COLON;  v = ID { i,  MVar v }
+| i = ID; COLON;  v = ID { i,  MVar (asId v) }
 
 type_annot:
 | COLON; t = typ { t }
 
 libentry :
-| LET; n = ID; EQ; e= exp { {lname = Ident (n, ()); lexp = e } }
+| LET; n = ID; EQ; e= exp { {lname = asId n; lexp = e } }
 
 library :                        
 | l = libentry; ls = library { l :: ls }
@@ -174,7 +175,26 @@ exps :
 | EOF { [] }
 | e = exp es = exps { e :: es }
 
-                 
+(***********************************************)
+(*                 Statements                  *)
+(***********************************************)
+
+stmt:
+| l = ID; BIND; r = ID   { Load (asId l, asId r) }
+| l = ID; ASSIGN; r = ID { Store (asId l, asId r) }
+| l = ID; EQ; r = exp    { Bind (asId l, r) }
+| l=ID; BIND; AND; c=CID  { ReadFromBC (asId l, c) }
+| ACCEPT; a = ID         { AcceptPayment (asId a) }
+| SEND; m = ID;          { SendMsgs (asId m) }
+| MATCH; x = ID; WITH; cs=list(stmt_pm_clause); END
+  { MatchStmt (Ident (x, ()), cs) }
+
+stmt_pm_clause:
+| BAR ; p = pattern ; ARROW ;
+  ss = separated_list(SEMICOLON, stmt) { p, ss }                           
+stmts : 
+| ss = separated_list(SEMICOLON, stmt); EOF { ss }
+
 (* TODO: Statements *)
 
 

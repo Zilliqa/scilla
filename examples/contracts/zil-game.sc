@@ -183,7 +183,8 @@ transition Play
   tm_opt <- timer;
   b <- & NUMBER;
   (* Check the timer *)
-  match can_play tm_opt b with
+  c = can_play tm_opt b;
+  match c with
   | False => 
       msg  = {tag : Main; to : sender; amount : 0; 
               code : time_window_missed};
@@ -192,9 +193,10 @@ transition Play
   | True  => 
     isa = builtin eq sender player_a;
     isb = builtin eq sender player_b;
+    tt = True;
     match isa with
-    | True => 
-      game_on := True;
+    | True =>
+      game_on := t;
       ah <- player_a_hash;
       hopt = update_hash ah guess;
       player_a_hash := hopt;
@@ -207,10 +209,10 @@ transition Play
     | False =>
       match isb with 
       | True =>
-        game_on := True;
+        game_on := tt;
         bh <- player_b_hash;
         hopt = update_hash bh guess;
-        player_b_hash := hopt
+        player_b_hash := hopt;
         tm1 = update_timer tm_opt b;
         timer := tm1;
         msg  = {tag : Main; to : sender; amount : 0; 
@@ -221,7 +223,8 @@ transition Play
         msg  = {tag : Main; to : sender; amount : 0; 
                 code : not_a_player};
         msgs = one_msg msg;
-        send msgs        
+        send msgs
+      end	
     end
   end
 end
@@ -236,7 +239,8 @@ transition ClaimReward
   tm_opt <- timer;
   b <- & NUMBER;
   (* Check the timer *)
-  match time_to_claim tm_opt b with
+  ttc = time_to_claim tm_opt b;
+  match ttc with
   | False => 
       msg  = {tag : Main; to : sender; amount : 0; 
               code : too_early_to_claim};
@@ -257,12 +261,12 @@ transition ClaimReward
       bal <- & BALANCE;
       msg  = {tag : Main; to : winner; amount : bal; 
               code : here_is_the_reward};
-      game_on := False;
+      ff = False;	       
+      game_on := ff;
       msgs = one_msg msg;
       send msgs
-      end     
     end
-  end   
+  end
 end
 
 

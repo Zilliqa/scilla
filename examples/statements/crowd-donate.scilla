@@ -1,0 +1,28 @@
+  is_owner = builtin eq is_owner sender;
+  match is_owner with
+  | False => 
+    msg  = {tag : Main; to : sender; amount : 0; 
+            code : not_owner_code};
+    msgs = one_msg msg;
+    send msgs
+  | True => 
+    blk <- & Blk_number;
+    in_time = blk_leq blk max_block;
+    after_deadline = negb in_time;
+    match after_deadline with 
+    | False =>  
+      msg  = {tag : Main; to : sender; amount : 0; 
+              code : too_early_code};
+      msgs = one_msg msg;
+      send msgs
+    | True => 
+      (* Allow to withdraw independently of a goal *)
+      bal <- balance;
+      t = True;
+      funded := true;
+      msg  = {tag : Main; to : owner; amount : bal; 
+              code : get_funds_code};
+      msgs = one_msg msg;
+      send msgs
+    end
+  end   

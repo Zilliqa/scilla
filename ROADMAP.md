@@ -4,6 +4,7 @@ Scilla Implementation Roadmap
 
 * [X] Setup automatic builds
 * [X] Produce executable binaries
+* [ ] Remove boilerplate from runners via functors
 * [ ] Automatic test suite
 
 ## Front-End Compiler

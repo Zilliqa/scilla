@@ -1,0 +1,26 @@
+  blk <- & Blk_number;
+  in_time = blk_leq blk max_block;
+  match in_time with 
+  | True  => 
+    bs  <- backers;
+    res = check_update bs sender amount;
+    match res with
+    | None => 
+      msg = {tag : Main; to : sender; amount : 0; 
+              code : missed_deadline_code};
+      msgs = one_msg msg;
+      send msgs
+    | Some bs1 =>
+      backers := bs1; 
+      accept amount; 
+      msg  = {tag : Main; to : sender; amount : 0; 
+              code : accepted_code};
+      msgs = one_msg msg;
+      send msgs     
+     end  
+  | False => 
+    msg  = {tag : Main; to : sender; amount : 0; 
+            code : already_backed_code};
+    msgs = one_msg msg;
+    send msgs
+  end 

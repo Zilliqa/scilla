@@ -1,9 +1,9 @@
 (jbuild_version 1)
 
 (executables
- ((names (scilla_runner scilla_exp_eval))
-  (public_names (scilla-runner scilla-exp-eval))
-  (modules (scilla_runner scilla_exp_eval))
+ ((names (scilla_runner scilla_exp_eval scilla_stmt_parse))
+  (public_names (scilla-runner scilla-exp-eval scilla-stmt-parse))
+  (modules (scilla_runner scilla_exp_eval scilla_stmt_parse))
   (libraries (core scilla-lang ppx_sexp_conv))
   (preprocess (pps (ppx_sexp_conv)))
   (package scilla-runner)))

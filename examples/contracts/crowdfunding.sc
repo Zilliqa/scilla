@@ -81,16 +81,16 @@ field backers : map address nat = Emp;
 field funded : bool = False;
 
 transition Donate (sender: address, amount: nat)
-  blk <- & blk_number;
+  blk <- & Blk_number;
   in_time = blk_leq blk max_block;
   match in_time with 
   | True  => 
     bs  <- backers;
-    let res = check_update bs sender amount;
+    res = check_update bs sender amount;
     match res with
     | None => 
       msg  = {tag : Main; to : sender; amount : 0; 
-              code : missed_deadline_code}
+              code : missed_deadline_code};
       msgs = one_msg msg;
       send msgs
     | Some bs1 =>
@@ -107,9 +107,10 @@ transition Donate (sender: address, amount: nat)
     msgs = one_msg msg;
     send msgs
   end 
+end
 
 transition GetFunds (sender: address)
-  let is_owner = builtin eq is_owner sender;
+  is_owner = builtin eq is_owner sender;
   match is_owner with
   | False => 
     msg  = {tag : Main; to : sender; amount : 0; 
@@ -117,7 +118,7 @@ transition GetFunds (sender: address)
     msgs = one_msg msg;
     send msgs
   | True => 
-    blk <- & blk_number;
+    blk <- & Blk_number;
     in_time = blk_leq blk max_block;
     after_deadline = negb in_time;
     match after_deadline with 
@@ -136,5 +137,6 @@ transition GetFunds (sender: address)
       send msgs
     end
   end   
+end
 
 (* transition ClaimBack *)

@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2018 - present Zilliqa, Inc.
+ * Copyright (c) 2018 - present , Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD style license found in the
@@ -22,10 +22,10 @@ type typ  =
   | PolyFun of string * typ
 [@@deriving sexp]
 
-type pattern =
+type 'rep pattern =
   | Wildcard
-  | Binder of string
-  | Constructor of string * (pattern list)
+  | Binder of 'rep ident
+  | Constructor of string * ('rep pattern list)
 [@@deriving sexp]
 
 type literal = 
@@ -36,27 +36,57 @@ type literal =
   | Map of literal * literal list
 [@@deriving sexp]
 
-type payload =
+type 'rep payload =
   | MTag of string
   | MLit of literal
-  | MVar of string
+  | MVar of 'rep ident
 [@@deriving sexp]
 
 type 'rep expr =
   | Let of 'rep ident * typ option * 'rep expr * 'rep expr
   | Var of 'rep ident
   | Literal of literal
-  | Message of (string * payload) list
+  | Message of (string * 'rep payload) list
   | Builtin of 'rep ident * 'rep ident list 
   | Fun of 'rep ident * typ * 'rep expr
   | App of 'rep ident * 'rep ident list
   | TFun of 'rep ident * 'rep expr
   | TApp of 'rep ident * typ list
   | Constr of string * typ list * 'rep ident list
-  | Match of 'rep ident * (pattern * 'rep expr) list
+  | MatchExpr of 'rep ident * ('rep pattern * 'rep expr) list
 [@@deriving sexp]
 
+type 'rep stmt =
+  | Load of 'rep ident * 'rep ident
+  | Store of 'rep ident * 'rep ident
+  | Bind of 'rep ident * 'rep expr
+  | ReadFromBC of 'rep ident * string
+  | AcceptPayment of 'rep ident
+  | SendMsgs of 'rep ident
+  | MatchStmt of 'rep ident * ('rep pattern * 'rep stmt list) list
+  | Event of 'rep ident
+  | Throw of 'rep ident
+[@@deriving sexp]
+
+type 'rep transition = 
+  { tname : 'rep ident;
+    targs : ('rep ident  * typ) list;
+    tbody : 'rep stmt list }
+
 type 'rep lib_entry =
-  { lname : 'rep ident ;
+  { lname : 'rep ident;
     lexp  : 'rep expr }
 [@@deriving sexp]
+
+type 'rep contract =
+  { cname   : 'rep ident;
+    cparams : ('rep ident  * typ) list;
+    cfields : ('rep ident * typ * 'rep expr) list;
+    ctrans  : 'rep transition list; }
+
+(* Contrac module: libary + contract definiton *)
+type 'rep cmodule =
+  { cname : 'rep ident;
+    libs  : 'rep lib_entry list;
+    ctr   : 'rep contract }
+
