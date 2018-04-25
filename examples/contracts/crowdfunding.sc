@@ -29,35 +29,29 @@ let negb = fun (b : Bool) =>
   | False => True
   end
 
-let blk_leq =
-  fun (blk1 : bnum) => (blk2 : bnum) =>
-  let bc1 = builtin blt blk1 blk2_block in 
-  let bc2 = builtin eq blk1 blk2 in 
-  orb bc1 bc2
-
 let one_msg = 
-  fun (msg : message) => 
-   let nil_msg = @Nil {message} in
-   Cons {message} msg nil_msg
+  fun (msg : Message) => 
+   let nil_msg = Nil {Message} in
+   Cons {Message} msg nil_msg
 
 let check_update = 
-  fun (bs : map address nat) =>
-    fun (sender : address) =>
-      fun (amount : nat) =>
+  fun (bs : Map Address Int) =>
+    fun (sender : Address) =>
+      fun (amount : Int) =>
   let c = builtin contains bs sender in
   match c with 
   | False => 
     let bs1 = builtin put bs sender amount in
-    Some bs1 
-  | True  => None 
+    Some {Map Address Int} bs1 
+  | True  => None {Map Address Int}
+  end
 
-let nat_leq = 
-  fun (n : nat) => fun (m : nat) => 
-    let i1 = builtin toInt n in
-    let i2 = builtin toInt m in 
-    let b1 = builtin lt i1 i2 in
-    let b2 = builtin eq i1 i2 in
-    orb b1 b2 
+let blk_leq =
+  fun (blk1 : BNum) =>
+  fun (blk2 : BNum) =>
+  let bc1 = builtin blt blk1 blk2 in 
+  let bc2 = builtin eq blk1 blk2 in 
+  orb bc1 bc2
 
 let accepted_code = 1
 let missed_deadline_code = 2
@@ -72,16 +66,16 @@ let get_funds_code  = 6
 contract Crowdfunding
 
 (*  Parameters *)
- (owner     : address,
-  max_block : bnum,
-  goal      : int)
+(owner     : Address,
+ max_block : BNum,
+ goal      : Int)
 
 (* Mutable fields *)
-field backers : map address nat = Emp;
-field funded : bool = False;
+field backers : Map Address Int = Emp 
+field funded : Bool = False
 
-transition Donate (sender: address, amount: nat)
-  blk <- & Blk_number;
+transition Donate (sender: Address, amount: Int)
+  blk <- & BLOCKNUMBER;
   in_time = blk_leq blk max_block;
   match in_time with 
   | True  => 
@@ -109,7 +103,7 @@ transition Donate (sender: address, amount: nat)
   end 
 end
 
-transition GetFunds (sender: address)
+transition GetFunds (sender: Address)
   is_owner = builtin eq is_owner sender;
   match is_owner with
   | False => 
@@ -118,7 +112,7 @@ transition GetFunds (sender: address)
     msgs = one_msg msg;
     send msgs
   | True => 
-    blk <- & Blk_number;
+    blk <- & BLOCKNUMBER;
     in_time = blk_leq blk max_block;
     after_deadline = negb in_time;
     match after_deadline with 
@@ -130,7 +124,8 @@ transition GetFunds (sender: address)
     | True => 
       (* Allow to withdraw independently of a goal *)
       bal <- balance;
-      funded := True;
+      tt = True;
+      funded := tt;
       msg  = {tag : Main; to : owner; amount : bal; 
               code : get_funds_code};
       msgs = one_msg msg;

@@ -18,7 +18,7 @@ open Syntax
 
 let () =
   let filename = Sys.argv.(1) in
-  match FrontEndParser.parse_file ScillaParser.library filename with
+  match FrontEndParser.parse_file ScillaParser.exp filename with
     | Some exprs ->
       (* List.iter (fun e -> printf "%s \n" (sexp_of_expr e |> Sexplib.Sexp.to_string)) exprs *)
         printf "%s\n" "Failed to parse input file."

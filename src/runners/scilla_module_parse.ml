@@ -14,10 +14,8 @@ open Syntax
 
 let () =
   let filename = Sys.argv.(1) in
-  match FrontEndParser.parse_file ScillaParser.library filename with
-    | Some libs ->
-        List.iter (fun l -> printf "%s \n"
-                      (sexp_of_lib_entry sexp_of_unit l |> Sexplib.Sexp.to_string)) libs
+  match FrontEndParser.parse_file ScillaParser.cmodule filename with
+    | Some cs -> printf "%s \n" (sexp_of_cmodule sexp_of_unit cs |> Sexplib.Sexp.to_string)
     | None ->
       printf "%s\n" "Failed to parse input file."
   

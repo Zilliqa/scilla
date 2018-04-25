@@ -14,7 +14,7 @@ open Syntax
 
 let () =
   let filename = Sys.argv.(1) in
-  match FrontEndParser.parse_file ScillaParser.stmts filename with
+  match FrontEndParser.parse_file ScillaParser.stmts_term filename with
     | Some stmts ->
         List.iter (fun l -> printf "%s \n"
              (sexp_of_stmt sexp_of_unit l |> Sexplib.Sexp.to_string)) stmts

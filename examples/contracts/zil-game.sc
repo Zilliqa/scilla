@@ -1,32 +1,3 @@
-(*
-ZilGame contract implements the following game:
-
-1. Two players, A and B submit hashes of some integer values without
-   revealing the pre-images.
-
-2. After the first player has submitted, the timer starts for the second
-   one, so the submission can be only made within 5 (or so) blocks
-   after the first one, to guarantee some fairness. The second
-   submitted solution is rejected is he missed the deadline.
-
-3. Each of the players can then try to claim their reward via the
-   ClaimReward transition. The winner is determined based on how close
-   the solution is to the puzzle (wee need distance on hashes).
-   The players must submit their pre-images to claim the reward, and
-   it must match. If the player who submitted second failed to submit,
-   the winner is the first one automatically.
- 
-Question: what primitive should we have in the language to check the
-current block number? Or should it be the previous block number? What
-is reasonable here?
-
-The language should provide access to the following blockchain parameters
-NUMBER      Get the last mined block's number
-BLOCKHASH   Get the hash of the last block 
-TIMESTAMP   Get the last block's timestamp
-*)
-
-
 (***************************************************)
 (*               Associated library                *)
 (***************************************************)
@@ -59,43 +30,43 @@ let negb = fun (b : Bool) =>
   end
 
 let one_msg = 
-  fun (msg : message) => 
-   let nil_msg = Nil {message} in
-   Cons {message} msg nil_msg
+  fun (msg : Message) => 
+   let nil_msg = Nil {Message} in
+   Cons {Message} msg nil_msg
 
-let no_msg = Nil {message}
+let no_msg = Nil {Message}
 
 let update_hash = 
-  fun (oh : option hash) =>
-  fun (h : hash) =>
+  fun (oh : Option Hash) =>
+  fun (h : Hash) =>
   match oh with
-  | Some x => Some x
-  | None   => Some h
+  | Some x => Some {Hash} x
+  | None   => Some {Hash} h
   end
 
 let update_timer = 
-  fun (tm : option bnum) =>
-  fun (b : bnum) =>
+  fun (tm : Option BNum) =>
+  fun (b : BNum) =>
   match tm with
-  | Some x => Some x
-  | None   => 
-    let b1 = builtin badd b 11 in
-    Some b1
+  | Some x => Some {BNum} x
+  | None   =>
+    let window = 11 in
+    let b1 = builtin badd b window in
+    Some {BNum} b1
   end
 
 (* b is within the time window *)
 let can_play = 
-  fun (tm : option bnum) =>
-  fun (b : bnum) =>
+  fun (tm : Option BNum) =>
+  fun (b : BNum) =>
   match tm with
   | None => True
-  | Some b1 =>
-    builtin blt b b1
+  | Some b1 => builtin blt b b1
   end     
 
 let time_to_claim = 
-  fun (tm : option bnum) =>
-  fun (b : bnum) =>
+  fun (tm : Option BNum) =>
+  fun (b : BNum) =>
   match tm with
   | None => False
   | Some b1 =>
@@ -104,12 +75,12 @@ let time_to_claim =
   end     
 
 let check_validity = 
-  fun (a        : address) =>
-  fun (solution : int) =>
-  fun (pa       : address) =>
-  fun (pb       : address) =>
-  fun (guess_a  : option hash) =>
-  fun (guess_b  : option hash) =>
+  fun (a        : Address) =>
+  fun (solution : Int) =>
+  fun (pa       : Address) =>
+  fun (pb       : Address) =>
+  fun (guess_a  : Option Hash) =>
+  fun (guess_b  : Option Hash) =>
   let ca = builtin eq pa a in
   let cb = builtin eq pb a in
   let xa = And ca guess_a in 
@@ -122,19 +93,21 @@ let check_validity =
     match xb with
     | And True (Some g) =>
       let h = builtin sha256_hash solution in
-      builtin eq h g 
-  | False => False
+      builtin eq h g
+    | _ => False  
+    end  
+  | _ => False
+  end  
 
-(* In the case of equali results, or no results *)
-(* the prise goes to the owner *)
+(* In the case of equal results, or no results the prise goes to the owner *)
 let determine_winner = 
-  fun (puzzle   : hash) =>
-  fun (guess_a  : option hash) =>
-  fun (guess_b  : option hash) =>
-  fun (pa       : address) =>
-  fun (pb       : address) =>
-  fun (oa       : address) =>
-  let gab = And guess_a guess_b in
+  fun (puzzle   : Hash) =>
+  fun (guess_a  : Option Hash) =>
+  fun (guess_b  : Option Hash) =>
+  fun (pa       : Address) =>
+  fun (pb       : Address) =>
+  fun (oa       : Address) =>
+  let gab = And { (Option Hash) (Option Hash) } guess_a guess_b in
   match gab with
   | And (Some ga) (Some gb) =>
     let d1 = builtin dist puzzle ga in
@@ -165,23 +138,21 @@ let here_is_the_reward = 6
 (*             The contract definition             *)
 (***************************************************)
 contract ZilGame 
-  (owner    : address,
-   player_a : address,
-   player_b : address,
-   puzzle   : hash)
+  (owner    : Address,
+   player_a : Address,
+   player_b : Address,
+   puzzle   : Hash)
 
-(* Initial balance is not stated explicitly:   *)
-(* it's initialized when creating the contract *)
+(* Initial balance is not stated explicitly: it's initialized when creating the contract. *)
 
-field player_a_hash : option hash = None
-field player_b_hash : option hash = None
-field timer         : option bum  = None
-field game_on       : bool = False
+field player_a_hash : Option Hash = None {Hash}
+field player_b_hash : Option Hash = None {Hash}
+field timer         : Option BNum  = None {BNum}
+field game_on       : Bool = False
 
-transition Play
-  (sender: address, guess: hash)
+transition Play (sender: Address, guess: Hash)
   tm_opt <- timer;
-  b <- & NUMBER;
+  b <- & BLOCKNUMBER;
   (* Check the timer *)
   c = can_play tm_opt b;
   match c with
@@ -229,15 +200,10 @@ transition Play
   end
 end
 
-(* 
-Each player can try to reclaim their reward. This transition will
-check eligibility, solution quality, and the hash pre-image submitted
-(an integer value) and then will send the reward, ending the game
-*)
 transition ClaimReward
-  (sender: address, solution: int)
+  (sender: Address, solution: Int)
   tm_opt <- timer;
-  b <- & NUMBER;
+  b <- & BLOCKNUMBER;
   (* Check the timer *)
   ttc = time_to_claim tm_opt b;
   match ttc with

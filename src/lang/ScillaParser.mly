@@ -10,7 +10,12 @@
 
 %{
   open Syntax
+
   let asId i = Ident (i, ())
+
+  let toType d = match d with
+      | "Int" | "Hash" | "Address" | "BNum" | "Message" -> PrimType d
+      | _ -> ADT (d, [])
 %}
 
 (* Identifiers *)    
@@ -68,8 +73,8 @@
 (* %nonassoc NEG *)
 
 %start <unit Syntax.expr> exp
-%start <unit Syntax.stmt list> stmts
-%start <unit Syntax.lib_entry list> library
+%start <unit Syntax.stmt list> stmts_term
+%start <unit Syntax.cmodule> cmodule
                                  
 %%
 
@@ -77,18 +82,20 @@
 typ :
 | d = CID; targs=list(targ)
   { match targs with
-    | [] -> (match d with
-             | "Int" | "Hash" | "Address" -> PrimType d
-             | _ -> ADT (d, []))                       
+    | [] -> toType d                       
     | _ -> ADT (d, targs)
   }   
 | MAP; k=targ; v = targ; { MapType (k, v) }
 (* TODO: Add other type annotations *)
 
 ctargs:
-| LBRACE; ts = list(targ); RBRACE { ts }
+| LBRACE; ts = list(ctarg); RBRACE { ts }
                              
 targ :
+| LPAREN; t = typ; RPAREN; { t }
+| d = CID { toType d }
+
+ctarg :
 | LPAREN; t = typ; RPAREN; { t }
 | t = typ { t }
 
@@ -146,7 +153,8 @@ simple_exp :
 lit :        
 | n = NUMLIT   { IntLit n }
 | a = ADDRESS  { Address a }
-| h = SHA3LIT  { Sha256 h }  
+| h = SHA3LIT  { Sha256 h }
+| EMP          { Map [] }
 
 pattern:
 | UNDERSCORE { Wildcard }
@@ -164,16 +172,11 @@ msg_entry :
 type_annot:
 | COLON; t = typ { t }
 
-libentry :
-| LET; n = ID; EQ; e= exp { {lname = asId n; lexp = e } }
-
-library :                        
-| l = libentry; ls = library { l :: ls }
-| EOF { [] }
-         
+(*
 exps : 
 | EOF { [] }
 | e = exp es = exps { e :: es }
+*)
 
 (***********************************************)
 (*                 Statements                  *)
@@ -193,10 +196,47 @@ stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;
   ss = separated_list(SEMICOLON, stmt) { p, ss }                           
 stmts : 
-| ss = separated_list(SEMICOLON, stmt); EOF { ss }
+| ss = separated_list(SEMICOLON, stmt) { ss }
 
-(* TODO: Statements *)
+stmts_term: 
+| ss = stmts; EOF { ss }
 
+(***********************************************)
+(*            Contracts and Modules            *)
+(***********************************************)
 
-        
-                 
+param_pair:
+| n = ID; COLON; t = typ { asId n, t }
+
+transition:
+| TRANSITION; t = CID;
+  LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
+  ss = stmts;
+  END;
+  { { tname = asId t;
+      tparams = params;
+      tbody = ss } }
+
+field:
+| FIELD; f = ID; COLON; t=typ;
+  EQ; rhs = exp
+  { asId f, t, rhs }
+
+contract:
+| CONTRACT; c = CID;
+  LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
+  fs = list(field);
+  ts = list(transition)
+  { { cname   = asId c;
+      cparams = params;
+      cfields = fs;
+      ctrans  = ts } }
+
+libentry :
+| LET; ns = ID; EQ; e= exp { { lname = asId ns; lexp = e } }
+
+cmodule:
+| LIBRARY; n = CID; ls = list(libentry); c = contract; EOF
+  { { cname = asId n;
+      libs = ls;
+      contr = c } }

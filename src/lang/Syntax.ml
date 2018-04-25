@@ -33,7 +33,10 @@ type literal =
   | BNum of int
   | Address of string
   | Sha256 of string
-  | Map of literal * literal list
+  (* A dynamic map of literals *)    
+  | Map of (literal * literal) list
+  (* A constructor in HNF *)      
+  | ADTValue of string * typ list * literal list
 [@@deriving sexp]
 
 type 'rep payload =
@@ -69,9 +72,10 @@ type 'rep stmt =
 [@@deriving sexp]
 
 type 'rep transition = 
-  { tname : 'rep ident;
-    targs : ('rep ident  * typ) list;
-    tbody : 'rep stmt list }
+  { tname   : 'rep ident;
+    tparams : ('rep ident  * typ) list;
+    tbody   : 'rep stmt list }
+[@@deriving sexp]
 
 type 'rep lib_entry =
   { lname : 'rep ident;
@@ -83,10 +87,12 @@ type 'rep contract =
     cparams : ('rep ident  * typ) list;
     cfields : ('rep ident * typ * 'rep expr) list;
     ctrans  : 'rep transition list; }
+[@@deriving sexp]
 
 (* Contrac module: libary + contract definiton *)
 type 'rep cmodule =
   { cname : 'rep ident;
     libs  : 'rep lib_entry list;
-    ctr   : 'rep contract }
+    contr : 'rep contract }
+[@@deriving sexp]
 
