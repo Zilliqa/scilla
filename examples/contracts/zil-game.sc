@@ -88,7 +88,7 @@ let can_play =
   fun (tm : option bnum) =>
   fun (b : bnum) =>
   match tm with
-  | case None => True
+  | None => True
   | Some b1 =>
     builtin blt b b1
   end     
@@ -97,9 +97,9 @@ let time_to_claim =
   fun (tm : option bnum) =>
   fun (b : bnum) =>
   match tm with
-  | case None => False
+  | None => False
   | Some b1 =>
-    let c1 = builtin blt b b1
+    let c1 = builtin blt b b1 in
     negb c1
   end     
 
@@ -208,7 +208,7 @@ transition Play
       match isb with 
       | True =>
         game_on := True;
-        bh <- player_a_hash;
+        bh <- player_b_hash;
         hopt = update_hash bh guess;
         player_b_hash := hopt
         tm1 = update_timer tm_opt b;
@@ -245,7 +245,7 @@ transition ClaimReward
   | True  => 
     pa <- player_a_hash;
     pb <- player_b_hash;
-    is_valid = check_validity address solution player_a player_b pa pb;
+    is_valid = check_validity sender solution player_a player_b pa pb;
     match is_valid with
     | False =>
       msg  = {tag : Main; to : sender; amount : 0; 
@@ -253,7 +253,7 @@ transition ClaimReward
       msgs = one_msg msg;
       send msgs        
     | True  =>
-      winner = determine_winner puzzle solution pa pb player_a player_b owner; 
+      winner = determine_winner puzzle pa pb player_a player_b owner; 
       bal <- & BALANCE;
       msg  = {tag : Main; to : winner; amount : bal; 
               code : here_is_the_reward};
