@@ -10,6 +10,14 @@ Install the folowing dependencies for OCaml:
 * `jbuilder` build tool, can be installed via `opam install jbuilder`
 * `ocamlc`, version >= 4.05
 
+The package dependencies can be installed via `opam` as follows:
+
+```
+opam install ocaml-migrate-parsetree
+opam install core cryptokit ppx_sexp_conv yojson
+opam install menhir 
+```
+
 ### Compiling the project
 
 Just run `make clean; make` from the root folder
@@ -19,7 +27,7 @@ To invoke a simple runner (subject to
 root:
 
 ```
-./_build/install/default/bin/scilla-runner resources/bool.sc 
+./_build/install/default/bin/scilla-module-parser examples/contracts/zil-game.scilla 
 ```
 
 ### Where to find binaries
