@@ -1,4 +1,4 @@
-Scilla: A Smart Contract Intermediate Level Language
+# Scilla: A Smart Contract Intermediate Level Language
 
 ## Project structure
 
