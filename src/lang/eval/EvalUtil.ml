@@ -44,7 +44,7 @@ module Env = struct
   let empty = []
               
   let bind e k v =
-    (k, v) :: List.filter ~f:(fun z -> not @@ (fst z = k)) e
+    (k, v) :: List.filter ~f:(fun z -> fst z <> k) e
                                                                 
   let lookup e k =
     match List.find ~f:(fun z -> fst z = k) e with 
