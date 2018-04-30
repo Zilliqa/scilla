@@ -6,9 +6,9 @@
  ((modules (ScillaParser))))
 
 (library
- ((name scilla_lang) ; doesn't support '-' in the name
-  (public_name scilla-lang)
+ ((name scilla_syntax) ; doesn't support '-' in the name
+  (public_name scilla-syntax)
   (wrapped false)
-  (libraries (core ppx_sexp_conv yojson cryptokit))
+  (libraries (core ppx_sexp_conv yojson))
   (preprocess (pps (ppx_sexp_conv)))
   (synopsis "Scilla workbench implementation.")))

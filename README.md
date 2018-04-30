@@ -28,12 +28,18 @@ opam install menhir
 
 Just run `make clean; make` from the root folder
 
-To invoke a simple runner (subject to
+To invoke a simple parsertest (subject to
 [ongoing implementation](./ROADMAP.md)), execute from the project
 root:
 
 ```
-./_build/install/default/bin/scilla-module-parser examples/contracts/zil-game.scilla 
+./bin/scilla-module-parser examples/contracts/zil-game.scilla 
+```
+
+or, to evaluate an expression:
+
+```
+./bin/eval-runner examples/eval/exp/let.scilla 
 ```
 
 ### Where to find binaries

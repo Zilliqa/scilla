@@ -7,11 +7,14 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *)
 
+open Core
 open Sexplib.Std
 
 type 'rep ident =
   | Ident of string * 'rep
-  [@@deriving sexp]
+[@@deriving sexp]
+
+let get_id i = match i with Ident (x, _) -> x
 
 type typ  =
   | PrimType of string
@@ -37,6 +40,7 @@ type literal =
   | Map of (literal * literal) list
   (* A constructor in HNF *)      
   | ADTValue of string * typ list * literal list
+  | Msg of (string * literal) list
 [@@deriving sexp]
 
 type 'rep payload =
@@ -89,7 +93,7 @@ type 'rep contract =
     ctrans  : 'rep transition list; }
 [@@deriving sexp]
 
-(* Contrac module: libary + contract definiton *)
+(* Contract module: libary + contract definiton *)
 type 'rep cmodule =
   { cname : 'rep ident;
     libs  : 'rep lib_entry list;

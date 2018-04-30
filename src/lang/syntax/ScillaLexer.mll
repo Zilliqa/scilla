@@ -65,8 +65,6 @@ rule read =
   | '|'           { BAR }
   | '('           { LPAREN }
   | ')'           { RPAREN }
-  | '<'           { LANGLE }
-  | '>'           { RANGLE }
   | "{"           { LBRACE }
   | "}"           { RBRACE }
   | ","           { COMMA }
@@ -77,6 +75,8 @@ rule read =
   | ":="          { ASSIGN }                  
   | "@"           { AT }                  
   | "_"           { UNDERSCORE }                  
+  (* | '<'           { LANGLE }
+   * | '>'           { RANGLE } *)
 
   (* Identifiers *)    
   | id as i       { ID i }

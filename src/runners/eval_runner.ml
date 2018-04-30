@@ -11,14 +11,18 @@
 open Printf
 open Sexplib.Std
 open Syntax
+open EvalUtil
+
 
 let () =
   let filename = Sys.argv.(1) in
-  match FrontEndParser.parse_file ScillaParser.stmts_term filename with
-    | Some stmts ->
-        List.iter (fun l -> printf "%s \n"
-             (sexp_of_stmt sexp_of_unit l |> Sexplib.Sexp.to_string)) stmts
-    | None ->
+  match FrontEndParser.parse_file ScillaParser.exps filename with
+  | Some (e :: _) ->
+      let env = Env.empty in
+      let res = Eval.exp_eval e env in
+      printf "%s\n" (pp_result res)
+        
+  | Some [] | None ->
       printf "%s\n" "Failed to parse input file."
   
 

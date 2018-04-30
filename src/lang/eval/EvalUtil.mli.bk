@@ -1,0 +1,25 @@
+(*
+ * Copyright (c) 2018 - present Zilliqa, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *)
+
+open Syntax
+open Core
+open Result.Let_syntax
+
+val fail : string -> ('a, string) result
+val pure : 'a -> ('a, string) result
+
+module Env : sig
+  type ident = string
+  type t = string * literal Core.List.t [@@deriving sexp]
+
+  (* val update : t -> ident -> Syntax.literal -> t *)
+  val lookup : t -> ident -> (Syntax.literal, string) result
+
+  (* More functions to come *)
+end

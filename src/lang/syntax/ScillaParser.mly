@@ -38,13 +38,13 @@
 %token UNDERSCORE
 %token LBRACE       
 %token RBRACE
-%token LANGLE
-%token RANGLE
 %token COMMA
 %token EQ
 %token AND
 %token BIND
 %token ASSIGN
+(* %token LANGLE
+ * %token RANGLE *)       
        
 (* Keywords *)    
 %token BUILTIN
@@ -72,7 +72,7 @@
 (* %left PLUS *)
 (* %nonassoc NEG *)
 
-%start <unit Syntax.expr> exp
+%start <unit Syntax.expr list> exps
 %start <unit Syntax.stmt list> stmts_term
 %start <unit Syntax.cmodule> cmodule
                                  
@@ -172,11 +172,10 @@ msg_entry :
 type_annot:
 | COLON; t = typ { t }
 
-(*
+
 exps : 
 | EOF { [] }
 | e = exp es = exps { e :: es }
-*)
 
 (***********************************************)
 (*                 Statements                  *)
