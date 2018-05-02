@@ -38,4 +38,9 @@ let rec exp_eval e env = match e with
 
   (* TODO: implement remaining clauses *)      
 
-  | _ -> fail @@ "Expression " ^ (expr_str e) ^ " is not supported yet"
+  | _ -> 
+    let l = expr_loc e in
+        match l with
+        | Some l1 -> fail @@ "Expression in line " ^ 
+            Int.to_string l1.lnum ^ " " ^ (expr_str e) ^ " is not supported yet"
+        | None -> fail @@ "Expression " ^ (expr_str e) ^ " is not supported yet"
