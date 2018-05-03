@@ -14,7 +14,7 @@ open Result.Let_syntax
 open EvalUtil
 
 let expr_str e =
-  sexp_of_expr sexp_of_unit e
+  sexp_of_expr sexp_of_loc e
   |> Sexplib.Sexp.to_string
 
 (* A monadic big-step evaluator for Scilla expressions *)

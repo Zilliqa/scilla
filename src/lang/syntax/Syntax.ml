@@ -30,11 +30,11 @@ let dummy_loc =
   toLoc Lexing.dummy_pos
 
 type 'rep ident =
-  | Ident of string * loc * 'rep
+  | Ident of string * 'rep
 [@@deriving sexp]
 
-let get_id i = match i with Ident (x, _, _) -> x
-let get_loc i = match i with Ident (_, l, _) -> l
+let get_id i = match i with Ident (x, _) -> x
+let get_loc i : loc = match i with Ident (_, l) -> l
 
 type typ  =
   | PrimType of string
