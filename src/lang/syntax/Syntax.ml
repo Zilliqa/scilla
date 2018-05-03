@@ -124,11 +124,15 @@ let stmt_loc (s : 'rep stmt) : loc option =
   match s with
   | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
   | MatchStmt (i, _)
-  | AcceptPayment i | SendMsgs i -> Some (get_loc i)
+  | AcceptPayment i | SendMsgs i -> 
+    let l = get_loc i in
+      if (l.cnum <> -1) then Some l else None
   | _ -> None
 
 let expr_loc (e : 'rep expr) : loc option =
   match e with
   | Fun (i, _, _) | App (i, _) | Builtin (i, _)
-  | MatchExpr (i, _) | TFun (i, _) | TApp (i, _) -> Some (get_loc i)
+  | MatchExpr (i, _) | TFun (i, _) | TApp (i, _) -> 
+    let l = get_loc i in
+      if (l.cnum <> -1) then Some l else None
   | _ -> None
