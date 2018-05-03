@@ -58,10 +58,10 @@ The following extensions would be useful:
 * [merlin](https://github.com/ocaml/merlin/wiki/emacs-from-scratch) for auto-completion
 * [ocp-indent](https://github.com/OCamlPro/ocp-indent) for smart indentation
 
-All thos libraries can be installed via OPAM, e.g.,
+All thos libraries can be installed via [opem-user-setup](https://github.com/OCamlPro/opam-user-setup):
 
 ```
-opam install merlin
+opam install user-setup
 ```
 
 ## Roadmap
