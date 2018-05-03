@@ -38,7 +38,7 @@ module Env = struct
     pp_value v = match v with
     | ValLit l -> sexp_of_literal l |> Sexplib.Sexp.to_string
     | ValClosure (f, t, e, env) ->
-        (sexp_of_expr sexp_of_unit (Fun (f, t, e)) |> Sexplib.Sexp.to_string)
+        (sexp_of_expr sexp_of_loc (Fun (f, t, e)) |> Sexplib.Sexp.to_string)
         ^ ", " ^ (pp env)  
 
   let empty = []
@@ -58,7 +58,7 @@ end
 let pp_result r = match r with
   | Error s -> s
   | Ok (e, env) ->
-      (Env.sexp_of_value sexp_of_unit e |> Sexplib.Sexp.to_string)
+      (Env.sexp_of_value sexp_of_loc e |> Sexplib.Sexp.to_string)
       ^ ",\n" ^
       (Env.pp env)
 

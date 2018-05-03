@@ -14,7 +14,7 @@ open Result.Let_syntax
 open EvalUtil
 
 let expr_str e =
-  sexp_of_expr sexp_of_unit e
+  sexp_of_expr sexp_of_loc e
   |> Sexplib.Sexp.to_string
 
 (* A monadic big-step evaluator for Scilla expressions *)
@@ -38,4 +38,9 @@ let rec exp_eval e env = match e with
 
   (* TODO: implement remaining clauses *)      
 
-  | _ -> fail @@ "Expression " ^ (expr_str e) ^ " is not supported yet"
+  | _ -> 
+    let l = expr_loc e in
+        match l with
+        | Some l1 -> fail @@ "Expression in line " ^ 
+            Int.to_string l1.lnum ^ " " ^ (expr_str e) ^ " is not supported yet"
+        | None -> fail @@ "Expression " ^ (expr_str e) ^ " is not supported yet"

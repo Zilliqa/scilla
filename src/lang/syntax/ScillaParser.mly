@@ -11,7 +11,8 @@
 %{
   open Syntax
 
-  let asId i = Ident (i, ())
+  let asId i = Ident (i, dummy_loc)
+  let asIdL i loc = Ident(i, loc)
 
   let toType d = match d with
       | "Int" | "Hash" | "Address" | "BNum" | "Message" -> PrimType d
@@ -72,9 +73,9 @@
 (* %left PLUS *)
 (* %nonassoc NEG *)
 
-%start <unit Syntax.expr list> exps
-%start <unit Syntax.stmt list> stmts_term
-%start <unit Syntax.cmodule> cmodule
+%start <Syntax.loc Syntax.expr list> exps
+%start <Syntax.loc Syntax.stmt list> stmts_term
+%start <Syntax.loc Syntax.cmodule> cmodule
                                  
 %%
 
@@ -108,23 +109,23 @@ exp:
 | LET; x = ID;
   t = ioption(type_annot) 
   EQ; f = simple_exp; IN; e = exp
-  {Let ((Ident (x, ())), t, f, e) }
+  {Let ((Ident (x, toLoc $startpos)), t, f, e) }
                                              
 simple_exp :    
 (* Function *)    
 | FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
-  { Fun (Ident (i, ()), t, e) } 
+  { Fun (Ident (i, toLoc $startpos), t, e) } 
 (* Application *)  
 | f = ID;
   args = nonempty_list(ID)
-  { let xs = List.map (fun i -> Ident (i, ())) args
-    in App ((Ident (f, ())), xs) }
+  { let xs = List.map (fun i -> Ident (i, toLoc $startpos)) args
+    in App ((Ident (f, toLoc $startpos)), xs) }
 (* Atomic expression *)
 | a = atomic_exp {a} 
 (* Built-in call *)
 | BUILTIN; b = ID; args = nonempty_list(ID)
-  { let xs = List.map (fun i -> Ident (i, ())) args
-    in Builtin ((Ident (b, ())), xs) }
+  { let xs = List.map (fun i -> Ident (i, dummy_loc)) args
+    in Builtin ((Ident (b, toLoc $startpos)), xs) }
 (* Message construction *)
 | LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE                { Message es } 
 (* Data constructor application *)
@@ -133,21 +134,21 @@ simple_exp :
       (match ts with
        | None -> []
        | Some ls -> ls) in
-    let xs = List.map (fun i -> Ident (i, ())) args in
+    let xs = List.map (fun i -> Ident (i, toLoc $startpos)) args in
     Constr (c, targs, xs)
   }
 (* Match expression *)
 | MATCH; x = ID; WITH; cs=list(exp_pm_clause); END
-  { MatchExpr (Ident (x, ()), cs) }
+  { MatchExpr (Ident (x, toLoc $startpos), cs) }
 (* Type function *)
 | TFUN; i = ID ARROW; e = exp
-  { TFun (Ident (i, ()), e) } 
+  { TFun (Ident (i, toLoc $startpos), e) } 
 (* Type application *)
 | AT; f = ID; targs = nonempty_list(targ)
-  { TApp ((Ident (f, ())), targs) }
+  { TApp ((Ident (f, toLoc $startpos)), targs) }
 
   atomic_exp :
-| i = ID       { Var (Ident (i, ())) }
+| i = ID       { Var (Ident (i, toLoc $startpos)) }
 | l = lit      { Literal l } 
                
 lit :        
@@ -158,7 +159,7 @@ lit :
 
 pattern:
 | UNDERSCORE { Wildcard }
-| x = ID {Binder (Ident (x, ()))}
+| x = ID {Binder (Ident (x, toLoc $startpos))}
 | LPAREN; p = pattern RPAREN; { p }         
 | c = CID; ps = list(pattern) { Constructor (c, ps) }
 
@@ -182,14 +183,14 @@ exps :
 (***********************************************)
 
 stmt:
-| l = ID; BIND; r = ID   { Load (asId l, asId r) }
-| l = ID; ASSIGN; r = ID { Store (asId l, asId r) }
-| l = ID; EQ; r = exp    { Bind (asId l, r) }
-| l=ID; BIND; AND; c=CID  { ReadFromBC (asId l, c) }
-| ACCEPT; a = ID         { AcceptPayment (asId a) }
-| SEND; m = ID;          { SendMsgs (asId m) }
+| l = ID; BIND; r = ID   { Load (asIdL l (toLoc $startpos($2)), asId r) }
+| l = ID; ASSIGN; r = ID { Store (asIdL l (toLoc $startpos($2)), asId r) }
+| l = ID; EQ; r = exp    { Bind (asIdL l (toLoc $startpos($2)), r) }
+| l=ID; BIND; AND; c=CID  { ReadFromBC (asIdL l (toLoc $startpos($2)), c) }
+| ACCEPT; a = ID         { AcceptPayment (asIdL a (toLoc $startpos)) }
+| SEND; m = ID;          { SendMsgs (asIdL m (toLoc $startpos)) }
 | MATCH; x = ID; WITH; cs=list(stmt_pm_clause); END
-  { MatchStmt (Ident (x, ()), cs) }
+  { MatchStmt (Ident (x, toLoc $startpos), cs) }
 
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;
@@ -212,7 +213,7 @@ transition:
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
   ss = stmts;
   END;
-  { { tname = asId t;
+  { { tname = asIdL t (toLoc $startpos);
       tparams = params;
       tbody = ss } }
 
@@ -226,7 +227,7 @@ contract:
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
   fs = list(field);
   ts = list(transition)
-  { { cname   = asId c;
+  { { cname   = asIdL c (toLoc $startpos);
       cparams = params;
       cfields = fs;
       ctrans  = ts } }
@@ -236,6 +237,6 @@ libentry :
 
 cmodule:
 | LIBRARY; n = CID; ls = list(libentry); c = contract; EOF
-  { { cname = asId n;
+  { { cname = asIdL n (toLoc $startpos);
       libs = ls;
       contr = c } }

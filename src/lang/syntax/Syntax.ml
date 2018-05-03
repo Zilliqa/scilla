@@ -10,11 +10,31 @@
 open Core
 open Sexplib.Std
 
+(* Location info, since Lexing.position does not support sexp *)
+type loc = {
+  fname : string; (* file name *)
+  lnum : int;     (* line number *)
+  bol : int;      (* beginning of line *)
+  cnum : int;     (* column number *)
+}
+[@@deriving sexp]
+
+let toLoc (p : Lexing.position) : loc = {
+  fname = p.pos_fname;
+  lnum = p.pos_lnum; 
+  bol = p.pos_bol; 
+  cnum = p.pos_cnum;
+}
+
+let dummy_loc =
+  toLoc Lexing.dummy_pos
+
 type 'rep ident =
   | Ident of string * 'rep
 [@@deriving sexp]
 
 let get_id i = match i with Ident (x, _) -> x
+let get_loc i : loc = match i with Ident (_, l) -> l
 
 type typ  =
   | PrimType of string
@@ -100,3 +120,19 @@ type 'rep cmodule =
     contr : 'rep contract }
 [@@deriving sexp]
 
+let stmt_loc (s : 'rep stmt) : loc option = 
+  match s with
+  | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
+  | MatchStmt (i, _)
+  | AcceptPayment i | SendMsgs i -> 
+    let l = get_loc i in
+      if (l.cnum <> -1) then Some l else None
+  | _ -> None
+
+let expr_loc (e : 'rep expr) : loc option =
+  match e with
+  | Fun (i, _, _) | App (i, _) | Builtin (i, _)
+  | MatchExpr (i, _) | TFun (i, _) | TApp (i, _) -> 
+    let l = get_loc i in
+      if (l.cnum <> -1) then Some l else None
+  | _ -> None
