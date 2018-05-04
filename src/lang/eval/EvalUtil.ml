@@ -47,10 +47,12 @@ module Env = struct
     (k, v) :: List.filter ~f:(fun z -> fst z <> k) e
                                                                 
   let lookup e k =
-    match List.find ~f:(fun z -> fst z = k) e with 
+    let i = get_id k in
+    match List.find ~f:(fun z -> fst z = i) e with 
     | Some x -> pure @@ snd x
-    | None -> fail @@ "Indentifier \"" ^ k ^
-                      "\" is unbound in environment:\n" ^ (pp e)
+    | None -> fail @@ "Indentifier \"" ^ i ^
+          "\" at " ^ get_loc_str (get_loc k) ^ 
+              " is unbound in environment:\n" ^ (pp e)
                                                         
 end
 

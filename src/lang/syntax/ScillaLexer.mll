@@ -4,12 +4,6 @@ open ScillaParser
 
 exception Error of string
 
-let next_line lexbuf =
-  let pos = lexbuf.lex_curr_p in
-  lexbuf.lex_curr_p <-
-    { pos with pos_bol = lexbuf.lex_curr_pos;
-               pos_lnum = pos.pos_lnum + 1
-    }
 }
 
 let digit = ['0'-'9']
@@ -31,8 +25,8 @@ rule read =
   parse
 
   (* Whitespaces *)    
-  | newline       { next_line lexbuf; read lexbuf }
-  | lcomment      { next_line lexbuf; read lexbuf }
+  | newline       { new_line lexbuf; read lexbuf }
+  | lcomment      { new_line lexbuf; read lexbuf }
   | white         { read lexbuf }
 
   (* Numbers and hashes *)

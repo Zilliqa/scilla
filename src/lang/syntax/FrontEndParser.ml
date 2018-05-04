@@ -15,19 +15,20 @@ open Lexing
 
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
-  fprintf outx "%s:%d:%d" pos.pos_fname
+  fprintf outx "file %s: line %d, position %d." pos.pos_fname
     pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
 
 let parse_file parser filename =
   let inx = In_channel.create filename in
   let lexbuf = Lexing.from_channel inx in
+  lexbuf.lex_curr_p  <- { lexbuf.lex_curr_p with pos_fname = filename };
   try
     let exprs = parser ScillaLexer.read lexbuf in
     Some exprs
   with
   | ScillaLexer.Error msg ->
-      fprintf stderr "%a: %s\n" print_position lexbuf msg;
+      fprintf stderr "Syntax error in %a: %s\n" print_position lexbuf msg;
       None
   | ScillaParser.Error ->
-      fprintf stderr "At offset %d: syntax error.\n%!" (Lexing.lexeme_start lexbuf);
+        fprintf stderr "Syntax error in %a\n" print_position lexbuf;
       None
