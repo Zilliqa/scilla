@@ -15,7 +15,7 @@ open Lexing
 
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
-  fprintf outx "file %s line %d column %d" pos.pos_fname
+  fprintf outx "file %s: line %d, position %d." pos.pos_fname
     pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
 
 let parse_file parser filename =
