@@ -24,7 +24,7 @@ let rec exp_eval e env = match e with
       pure (Env.ValLit l, env)
 
   | Var i ->
-      let%bind v = Env.lookup env (get_id i) in
+      let%bind v = Env.lookup env i in
       pure @@ (v, env)
 
   | Let (i, t, lhs, rhs) ->

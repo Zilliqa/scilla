@@ -35,6 +35,10 @@ type 'rep ident =
 
 let get_id i = match i with Ident (x, _) -> x
 let get_loc i : loc = match i with Ident (_, l) -> l
+let get_loc_str (l : loc) : string =
+  l.fname ^ ":" ^ Int.to_string l.lnum ^ 
+      ":" ^ Int.to_string (l.cnum - l.bol + 1)
+
 
 type typ  =
   | PrimType of string
