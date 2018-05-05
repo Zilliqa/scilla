@@ -40,7 +40,7 @@ module Env = struct
         ^ ", " ^ (pp env)  
 
   let empty = []
-              
+
   let bind e k v =
     (k, v) :: List.filter ~f:(fun z -> fst z <> k) e
                                                                 
@@ -48,10 +48,59 @@ module Env = struct
     let i = get_id k in
     match List.find ~f:(fun z -> fst z = i) e with 
     | Some x -> pure @@ snd x
-    | None -> fail @@ "Indentifier \"" ^ i ^
-          "\" at " ^ get_loc_str (get_loc k) ^ 
-              " is not bound in environment:\n" ^ (pp e)
-                                                        
+    | None -> fail @@ sprintf
+        "Indentifier \"%s\" at %s is not bound in environment:\n%s"
+        i (get_loc_str (get_loc k)) (pp e)
+end
+
+module State = struct
+
+    (* Mutable state and operations with it *)
+  type 'rep t = {
+    (* Immutable variables *)
+    env : 'rep Env.t;
+    (* Contract fields *)
+    fields : (string * literal) list;
+    (* Contract balance *)
+    balance : Big_int.big_int;
+    (* Blockchain state *)
+    blockchain_state : (string * literal) list;
+    (* Emitted messages *)
+    msgs : literal list;
+    (* Emitted events *)
+    events : (string * string) list
+  }
+
+  let pp_fields s =
+    let ps = List.map s
+        ~f:(fun (k, v) -> sprintf " [%s -> %s]" k
+               (sexp_of_literal v |> Sexplib.Sexp.to_string)) in
+    let cs = String.concat ~sep:",\n " ps in
+    sprintf "{%s }" cs
+  
+  (* TODO: Implement state pretty-printer *)
+  
+  let store st k l =
+    let s = st.fields in
+    match List.find s ~f:(fun (z, _) -> z = k) with
+    | Some (_, _) -> pure @@
+        {st with
+         fields = (k, l) :: List.filter ~f:(fun z -> fst z <> k) s}
+    | None -> fail @@ sprintf
+          "No field \"%s\" in fields:\n%s" k (pp_fields s)
+
+  let load st k =
+    let s = st.fields in
+    let i = get_id k in
+    match List.find ~f:(fun z -> fst z = i) s with 
+    | Some x -> pure @@ snd x
+    | None -> fail @@ sprintf
+        "No field \"%s\" in state:\n%s" i (pp_fields s)
+
+  let bind st k v =
+    let e = st.env in
+    {st with env = (k, v) :: List.filter ~f:(fun z -> fst z <> k) e}
+
 end
 
 (* Printing result *)

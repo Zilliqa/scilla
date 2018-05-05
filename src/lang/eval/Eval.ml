@@ -155,3 +155,16 @@ and try_apply_as_closure v arg =
       let env1 = Env.bind env (get_id formal) arg in
       let%bind (v, _) = exp_eval body env1 in
       pure v
+
+let rec stmt_eval state stmts =
+  match stmts with
+  | [] -> pure state
+  | s :: sts -> (match s with
+      | Load (x, r) ->
+          let%bind l = State.load state r in
+          let state' = State.bind state (get_id x) (Env.ValLit l) in
+          stmt_eval state' sts
+
+      (* TODO: implement the rest of the commands *)  
+      | _ -> fail "FIXME"
+    )

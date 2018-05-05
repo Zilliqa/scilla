@@ -102,11 +102,11 @@ type 'rep stmt =
   | Load of 'rep ident * 'rep ident
   | Store of 'rep ident * 'rep ident
   | Bind of 'rep ident * 'rep expr
+  | MatchStmt of 'rep ident * ('rep pattern * 'rep stmt list) list
   | ReadFromBC of 'rep ident * string
   | AcceptPayment of 'rep ident
   | SendMsgs of 'rep ident
-  | MatchStmt of 'rep ident * ('rep pattern * 'rep stmt list) list
-  | Event of 'rep ident
+  | Event of string * string
   | Throw of 'rep ident
 [@@deriving sexp]
 
