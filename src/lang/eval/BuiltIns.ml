@@ -24,6 +24,8 @@ let builtin_fail name ls =
 module UsefulLiterals = struct
   let ttrue = ADTValue ("True", [], [])
   let ffalse = ADTValue ("False", [], [])
+
+  let to_Bool b = if b then ttrue else ffalse
 end
 
 
@@ -33,7 +35,7 @@ module Int = struct
   
   let eq ls = match ls with
     | [IntLit x; IntLit y] ->
-        pure @@ (if x = y then ttrue else ffalse)
+        pure @@ to_Bool (x = y)
     | _ -> builtin_fail "Int.eq" ls
 
   let add ls = match ls with
@@ -48,6 +50,24 @@ module Int = struct
     | [IntLit x; IntLit y] -> pure @@ IntLit (x * y)
     | _ -> builtin_fail "Int.mul" ls  
 end
+
+(* Maps *)
+module Maps = struct
+  open UsefulLiterals
+  
+  let contains ls = match ls with
+    | [Map entries; key] ->
+        let res = List.exists entries ~f:(fun (k, v) -> k = key) in
+        pure @@ to_Bool res
+    | _ -> builtin_fail "Map.contains" ls
+
+  (* TODO: implement put *)
+
+  (* TODO: implement get *)
+
+  
+end
+
 
 (* Working with addresses *)
 module Address = struct
@@ -70,14 +90,22 @@ module BuiltInDictionary = struct
     ("add", ["Int"; "Int"], Int.add);
     ("sub", ["Int"; "Int"], Int.sub);
     ("mul", ["Int"; "Int"], Int.mul);
-    
+
+    (* TODO: generalize for any type! *)
+    ("contains", ["Map"; "Int"], Maps.contains);
     (* TODO: add other built-ins *)
   ]
+
+  let tags_match expected argtypes =
+    (* TODO: Generalise me! *)
+    expected = argtypes
   
   (* Dictionary lookup *)
   let find_builtin_op opname argtypes =
     match List.find built_in_dict
-            ~f:(fun (n, args, _) -> n = opname && args = argtypes) with
+            ~f:(fun (n, args, _) ->
+                n = opname &&
+                tags_match args argtypes) with
     | None ->
         fail @@ sprintf "Cannot find built-in with name \"%s\" and arguments %s."
           opname ("(" ^ (String.concat ~sep:", " argtypes) ^ ")")
