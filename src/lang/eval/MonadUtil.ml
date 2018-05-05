@@ -24,6 +24,14 @@ let rec mapM ~f ls = match ls with
        | _, (Error _ as err) -> err)
   | [] -> Ok []
 
+(* Try all variants in the list, pick the first successful one *)
+let rec tryM ~f ls ~msg = match ls with
+  | x :: ls' ->
+      (match f x  with
+       | Ok z -> Ok (x, z)
+       | Error _ -> tryM ~f:f ls' ~msg)
+  | [] -> Error msg
+
 let liftPair2 x m = match m with
   | Ok z -> Ok (x, z)
   | Error _ as err -> err

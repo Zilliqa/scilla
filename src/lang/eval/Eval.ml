@@ -13,6 +13,7 @@ open Core
 open Result.Let_syntax
 open EvalUtil
 open MonadUtil
+open PatternMatching
 
 let expr_str e =
   sexp_of_expr sexp_of_loc e
@@ -104,7 +105,18 @@ let rec exp_eval e env = match e with
       let lit = ADTValue (cname, ts, arg_literals) in
       pure (Env.ValLit lit, env)
 
-  (* TODO: Pattern matching *)
+  | MatchExpr (x, clauses) ->
+      let%bind v = Env.lookup env x in
+      (* Get the branch and the bindings *)
+      let%bind ((_, e_branch), bnds) =
+        tryM clauses
+          ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
+                  (Env.pp_value v) (expr_str e))
+          ~f:(fun (p, e') -> match_with_pattern v p) in
+      (* Update the environment for the branch *)
+      let env' = List.fold_left bnds ~init:env
+          ~f:(fun z (i, w) -> Env.bind z (get_id i) w) in
+      exp_eval e_branch env'      
 
   (* TODO: Maps and operations on them operations *)
         
