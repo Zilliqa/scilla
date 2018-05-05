@@ -62,7 +62,7 @@ type literal =
   | BNum of int
   | Address of string
   | Sha256 of string
-  (* Message: and associative array *)    
+  (* Message: an associative array *)    
   | Msg of (string * literal) list
   (* A dynamic map of literals *)    
   | Map of (literal * literal) list
@@ -149,3 +149,16 @@ let expr_loc (e : 'rep expr) : loc option =
     let l = get_loc i in
       if (l.cnum <> -1) then Some l else None
   | _ -> None
+
+(* TODO: replace with proper type inference *)
+let literal_tag l = match l with
+  | StringLit _ -> "String"
+  | IntLit _ -> "Int"
+  | BNum _ -> "BNum"
+  | Address _ -> "Address"
+  | Sha256 _ -> "Hash"
+  | Msg _ -> "Message"
+  | Map _ -> "Map"
+  | ADTValue _ -> "ADT"
+
+

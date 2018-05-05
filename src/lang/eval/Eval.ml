@@ -14,6 +14,11 @@ open Result.Let_syntax
 open EvalUtil
 open MonadUtil
 open PatternMatching
+open BuiltIns
+
+(***************************************************)
+(*                    Utilities                    *)      
+(***************************************************)    
 
 let expr_str e =
   sexp_of_expr sexp_of_loc e
@@ -31,8 +36,16 @@ let sanitize_literal l =
   else fail @@ sprintf "Cannot serialize literal %s"
                (sexp_of_literal l |> Sexplib.Sexp.to_string)
 
-(* Applying a value, which is supposed to be a closure *)
-      
+let vals_to_literals vals =
+  mapM vals ~f:(fun arg -> match arg with
+      | Env.ValLit l -> pure l
+      | Env.ValClosure _ ->
+          fail @@
+          sprintf "Closure arguments in ADT are not supported: %s."
+            (Env.pp_value arg))
+
+(***************************************************)
+
 (* A monadic big-step evaluator for Scilla expressions *)
 let rec exp_eval e env = match e with
 
@@ -95,13 +108,7 @@ let rec exp_eval e env = match e with
       let%bind args =
         mapM actuals ~f:(fun arg -> Env.lookup env arg) in
       (* Make sure we only pass "pure" literals, not closures *)
-      let%bind arg_literals =
-        mapM args ~f:(fun arg -> match arg with
-            | Env.ValLit l -> pure l
-            | Env.ValClosure _ ->
-                fail @@
-                sprintf "Closure arguments in ADT are not supported: %s."
-                  (Env.pp_value arg)) in
+      let%bind arg_literals = vals_to_literals args in
       let lit = ADTValue (cname, ts, arg_literals) in
       pure (Env.ValLit lit, env)
 
@@ -118,10 +125,16 @@ let rec exp_eval e env = match e with
           ~f:(fun z (i, w) -> Env.bind z (get_id i) w) in
       exp_eval e_branch env'      
 
-  (* TODO: Maps and operations on them operations *)
-        
-  (* TODO: Built-ins and hashing *)
+  | Builtin (i, actuals) ->
+      let opname = get_id i in
+      let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
+      let%bind arg_literals = vals_to_literals args in
+      let tags = List.map arg_literals ~f:literal_tag in
+      let%bind op = BuiltInDictionary.find_builtin_op opname tags in
+      let%bind res = op arg_literals in 
+      pure (Env.ValLit res, env)
 
+  (* TODO: Implement type term operations *)
   | _ -> 
       match expr_loc e with
       | Some l1 -> fail @@
@@ -142,4 +155,3 @@ and try_apply_as_closure v arg =
       let env1 = Env.bind env (get_id formal) arg in
       let%bind (v, _) = exp_eval body env1 in
       pure v
-          

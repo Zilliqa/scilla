@@ -1,0 +1,10 @@
+(* Expected result: 1 *)
+let a = 42 in
+let b = 44 in
+let two = 2 in
+let c = builtin sub b two in
+let d = builtin eq a c in
+match d with 
+| False => 0
+| True  => 1
+end	    
