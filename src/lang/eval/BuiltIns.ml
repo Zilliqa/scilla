@@ -22,10 +22,14 @@ let builtin_fail name ls =
     name (print_literal_list ls)
     
 module UsefulLiterals = struct
-  let ttrue = ADTValue ("True", [], [])
-  let ffalse = ADTValue ("False", [], [])
+  let true_lit = ADTValue ("True", [], [])
+  let false_lit = ADTValue ("False", [], [])
 
-  let to_Bool b = if b then ttrue else ffalse
+  (* TODO: implement typing! *)
+  let some_lit l = ADTValue ("Some", [], [l])
+  let none_lit = ADTValue ("None", [], [])
+
+  let to_Bool b = if b then true_lit else false_lit
 end
 
 
@@ -49,6 +53,11 @@ module Int = struct
   let mul ls = match ls with
     | [IntLit x; IntLit y] -> pure @@ IntLit (x * y)
     | _ -> builtin_fail "Int.mul" ls  
+
+  let lt ls = match ls with
+    | [IntLit x; IntLit y] -> pure @@ to_Bool (x < y)
+    | _ -> builtin_fail "Int.lt" ls  
+
 end
 
 (* Maps *)
@@ -61,17 +70,54 @@ module Maps = struct
         pure @@ to_Bool res
     | _ -> builtin_fail "Map.contains" ls
 
-  (* TODO: implement put *)
+  let put ls = match ls with
+    | [Map entries; key; value] ->
+        let filtered =
+          List.filter entries ~f:(fun (k, v) -> k <> key) in
+        pure @@ Map ((key, value) :: filtered) 
+    | _ -> builtin_fail "Map.put" ls
 
-  (* TODO: implement get *)
+  let remove ls = match ls with
+    | [Map entries; key] ->
+        let res = List.filter entries ~f:(fun (k, v) -> k <> key) in
+        pure @@ Map res
+    | _ -> builtin_fail "Map.remove" ls
 
-  
+  let get ls = match ls with
+    | [Map entries; key] ->
+        let res = List.find entries ~f:(fun (k, v) -> k = key) in
+        pure (match res with
+            | None -> none_lit
+            | Some (_, v) -> some_lit v)
+    | _ -> builtin_fail "Map.contains" ls
+
 end
 
+(* Working with block numbers *)
+module BNum = struct
+  open UsefulLiterals
+  
+  let eq ls = match ls with
+    | [BNum x; BNum y] ->
+        pure @@ to_Bool (x = y)
+    | _ -> builtin_fail "BNum.eq" ls
+
+  let blt ls = match ls with
+    | [BNum x; BNum y] ->
+        pure @@ to_Bool (x < y)
+    | _ -> builtin_fail "BNum.blt" ls
+
+end
 
 (* Working with addresses *)
 module Address = struct
-    (* TODO *)
+  open UsefulLiterals
+
+  let eq ls = match ls with
+    | [Address x; Address y] ->
+        pure @@ to_Bool (x = y)
+    | _ -> builtin_fail "Address.eq" ls
+
 end
 
 (* Hashing *)
@@ -83,31 +129,46 @@ end
 module BuiltInDictionary = struct 
   type built_in_op_type = literal list -> (literal, string) result
 
-  
-
+  (* All built-in functions *)
+      
   let built_in_dict = [
-    ("eq", ["Int"; "Int"], Int.eq);
+    (* Integers *)
+    ("eq",  ["Int"; "Int"], Int.eq);
     ("add", ["Int"; "Int"], Int.add);
     ("sub", ["Int"; "Int"], Int.sub);
     ("mul", ["Int"; "Int"], Int.mul);
+    ("lt",  ["Int"; "Int"], Int.lt);
 
-    (* TODO: generalize for any type! *)
-    ("contains", ["Map"; "Int"], Maps.contains);
-    (* TODO: add other built-ins *)
+    (* Block numbers *)
+    ("eq",  ["BNum"; "BNum"], BNum.eq);
+    ("blt", ["BNum"; "BNum"], BNum.blt);
+
+    (* Addresses *)
+    ("eq",  ["Address"; "Address"], BNum.eq);
+
+    (* Maps *)
+    ("contains", ["Map"; "Any"], Maps.contains);
+    ("put", ["Map"; "Any"; "Any"], Maps.put);
+    ("get", ["Map"; "Any"], Maps.get);
+    ("remove", ["Map"; "Any"], Maps.remove);
   ]
 
-  let tags_match expected argtypes =
-    (* TODO: Generalise me! *)
-    expected = argtypes
+  let rec tags_match expected argtypes =
+    match expected, argtypes with
+    | e::es, a::args
+      when e = a || e = "Any" -> tags_match es args
+    | [], [] -> true
+    | _ -> false
   
   (* Dictionary lookup *)
   let find_builtin_op opname argtypes =
     match List.find built_in_dict
-            ~f:(fun (n, args, _) ->
+            ~f:(fun (n, expected, _) ->
                 n = opname &&
-                tags_match args argtypes) with
+                tags_match expected argtypes) with
     | None ->
-        fail @@ sprintf "Cannot find built-in with name \"%s\" and arguments %s."
+        fail @@
+        sprintf "Cannot find built-in with name \"%s\" and arguments %s."
           opname ("(" ^ (String.concat ~sep:", " argtypes) ^ ")")
     | Some (_, _, op) -> pure op
 end

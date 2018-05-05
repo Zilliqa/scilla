@@ -49,6 +49,7 @@
        
 (* Keywords *)    
 %token BUILTIN
+%token BLOCK
 %token EMP
 %token LIBRARY
 %token FIELD
@@ -152,6 +153,8 @@ simple_exp :
 | l = lit      { Literal l } 
                
 lit :        
+| BLOCK;
+  n = NUMLIT   { BNum n }
 | n = NUMLIT   { IntLit n }
 | a = ADDRESS  { Address a }
 | h = SHA3LIT  { Sha256 h }

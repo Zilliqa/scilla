@@ -59,6 +59,8 @@ let already_backed_code  = 3
 let not_owner_code  = 4
 let too_early_code  = 5
 let get_funds_code  = 6
+let cannot_reclaim_code = 7
+let reclaimed_code = 8
   
 (***************************************************)
 (*             The contract definition             *)
@@ -114,16 +116,18 @@ transition GetFunds (sender: Address)
   | True => 
     blk <- & BLOCKNUMBER;
     in_time = blk_leq blk max_block;
-    after_deadline = negb in_time;
-    match after_deadline with 
+    c1 = negb in_time;
+    bal <- balance;
+    c2 = builtin lt balance goal;
+    c3 = negb c2;
+    c4 = andb c1 c3;
+    match c4 with 
     | False =>  
       msg  = {tag : Main; to : sender; amount : 0; 
               code : too_early_code};
       msgs = one_msg msg;
       send msgs
     | True => 
-      (* Allow to withdraw independently of a goal *)
-      bal <- balance;
       tt = True;
       funded := tt;
       msg  = {tag : Main; to : owner; amount : bal; 
@@ -135,3 +139,47 @@ transition GetFunds (sender: Address)
 end
 
 (* transition ClaimBack *)
+transition ClaimBack (sender: Address)
+  blk <- & BLOCKNUMBER;
+  after_deadline = builtin blt max_block blk;
+  match after_deadline with
+  | False =>
+      msg  = {tag : Main; to : sender; amount : 0; 
+              code : too_early_code};
+      msgs = one_msg msg;
+      send msgs
+  | True =>
+    bs <- backers;
+    bal <- balance;
+    (* Goal has not been reached *)
+    f <- funded;
+    c1 = builtin lt bal goal;
+    c2 = builtin contains bs sender;
+    c3 = negb f;
+    c4 = andb c1 c2;
+    c5 = andb c3 c4;
+    match c5 with
+    | False =>
+        msg  = {tag : Main; to : sender; amount : 0; 
+                code : cannot_reclaim_code};
+        msgs = one_msg msg;
+        send msgs
+    | True =>
+      res = builtin get bs sender;
+      match res with
+      | None =>
+          msg  = {tag : Main; to : sender; amount : 0; 
+                  code : cannot_reclaim_code};
+          msgs = one_msg msg;
+          send msgs
+      | Some v =>
+          bs1 = builtin remove cs sender;
+	  backers := bs1;
+          msg  = {tag : Main; to : sender; amount : v; 
+                  code : reclaimed_code};
+          msgs = one_msg msg;
+          send msgs
+      end
+    end
+  end  
+end

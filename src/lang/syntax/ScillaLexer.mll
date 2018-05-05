@@ -36,6 +36,7 @@ rule read =
                   
   (* Keywords *)          
   | "builtin"     { BUILTIN }      
+  | "block"       { BLOCK }      
   | "library"     { LIBRARY }
   | "let"         { LET }
   | "in"          { IN }
