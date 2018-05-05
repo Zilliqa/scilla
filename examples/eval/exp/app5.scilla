@@ -1,0 +1,28 @@
+(* Expected answer *)
+(* (ValLit(IntLit 55)) *)
+
+let check_update = 
+  fun (bs : Map Address Int) =>
+    fun (sender : Address) =>
+      fun (amount : Int) =>
+  let c = builtin contains bs sender in
+  match c with 
+  | False => 
+    let bs1 = builtin put bs sender amount in
+    Some {Map Address Int} bs1 
+  | True  => None {Map Address Int}
+  end
+in
+let bs = Emp in
+let a  = a0x134234 in
+let amt = 55 in
+let res = check_update bs a amt in
+match res with
+| None => None
+| Some m =>
+    let v = builtin get m a in
+    match v with
+    | None => None
+    | Some v => v
+    end
+end    
