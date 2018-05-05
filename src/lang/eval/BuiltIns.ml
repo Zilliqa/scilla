@@ -46,19 +46,31 @@ module Int = struct
 
   (* Check for overflows! *)
   let add ls = match ls with
-    | [IntLit x; IntLit y] -> pure @@ IntLit (x + y)
+    | [IntLit x; IntLit y] -> pure (
+        let i1 = big_int_of_string x in
+        let i2 = big_int_of_string y in
+        IntLit (string_of_big_int (add_big_int i1 i2)))
     | _ -> builtin_fail "Int.add" ls
 
   let sub ls = match ls with
-    | [IntLit x; IntLit y] -> pure @@ IntLit (x - y)
+    | [IntLit x; IntLit y] -> pure (
+        let i1 = big_int_of_string x in
+        let i2 = big_int_of_string y in
+        IntLit (string_of_big_int (sub_big_int i1 i2)))
     | _ -> builtin_fail "Int.sub" ls
 
   let mul ls = match ls with
-    | [IntLit x; IntLit y] -> pure @@ IntLit (x * y)
+    | [IntLit x; IntLit y] -> pure (
+        let i1 = big_int_of_string x in
+        let i2 = big_int_of_string y in
+        IntLit (string_of_big_int (mult_big_int i1 i2)))
     | _ -> builtin_fail "Int.mul" ls  
 
   let lt ls = match ls with
-    | [IntLit x; IntLit y] -> pure @@ to_Bool (x < y)
+    | [IntLit x; IntLit y] -> pure (
+        let i1 = big_int_of_string x in
+        let i2 = big_int_of_string y in
+        to_Bool (lt_big_int i1 i2))
     | _ -> builtin_fail "Int.lt" ls  
 
 end
@@ -106,16 +118,20 @@ module BNum = struct
     | _ -> builtin_fail "BNum.eq" ls
 
   let blt ls = match ls with
-    | [BNum x; BNum y] ->
-        pure @@ to_Bool (x < y)
+    | [BNum x; BNum y] -> pure (
+        let i1 = big_int_of_string x in
+        let i2 = big_int_of_string y in
+        to_Bool (lt_big_int i1 i2))
     | _ -> builtin_fail "BNum.blt" ls
 
   let badd ls = match ls with
     | [BNum x; IntLit y] ->
-        if y >= 0
-        then pure @@ BNum (x + y)
+        let i1 = big_int_of_string x in
+        let i2 = big_int_of_string y in
+        if ge_big_int i2 (big_int_of_int 0)
+        then pure @@ BNum (string_of_big_int (add_big_int i1 i2))
         else fail @@ sprintf
-            "Cannot add a negative value (%d) to a block." y
+            "Cannot add a negative value (%s) to a block." y
     | _ -> builtin_fail "BNum.badd" ls
 
   
@@ -165,7 +181,7 @@ module Hashing = struct
         let i2 = big_int_of_hash y in
         let dist = abs_big_int (sub_big_int i1 i2) in
         (try
-           let i = IntLit (int_of_big_int dist) in
+           let i = IntLit (string_of_big_int dist) in
            pure i
          with
          | Failure _ -> fail @@

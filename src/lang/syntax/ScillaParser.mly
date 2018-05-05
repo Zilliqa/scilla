@@ -154,8 +154,8 @@ simple_exp :
                
 lit :        
 | BLOCK;
-  n = NUMLIT   { BNum n }
-| n = NUMLIT   { IntLit n }
+  n = NUMLIT   { BNum (string_of_int n) }
+| n = NUMLIT   { IntLit (string_of_int n) }
 | a = ADDRESS  { Address a }
 | h = SHA3LIT  { Sha256 h }
 | EMP          { Map [] }

@@ -1,5 +1,5 @@
 (* Expected answer *)
-(* (ValLit(Sha256"'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")) *)
+(* (ValLit(ADTValue True()())) *)
 
 let k1 = 1 in
 let k2 = 2 in
@@ -10,6 +10,12 @@ let m0 = Emp in
 let m1 = builtin put m0 k1 v1 in
 let m2 = builtin put m1 k2 v2 in
 
+let h0 = builtin sha256hash m0 in
 let h1 = builtin sha256hash m1 in
 let h2 = builtin sha256hash m2 in
-builtin dist h1 h2
+
+let d1 = builtin dist h0 h1 in
+let d2 = builtin dist h1 h2 in
+let d3 = builtin dist h2 h1 in
+let c = builtin lt d3 d1 in
+c

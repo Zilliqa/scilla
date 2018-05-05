@@ -10,7 +10,7 @@
 open Core
 open Sexplib.Std
 open Yojson
-open Big_int 
+open Big_int
 
 (* Location info, since Lexing.position does not support sexp *)
 type loc = {
@@ -60,8 +60,8 @@ type 'rep pattern =
 
 type literal =
   | StringLit of string
-  | IntLit of int
-  | BNum of int
+  | IntLit of string
+  | BNum of string
   | Address of string
   | Sha256 of string
   (* Message: an associative array *)    
