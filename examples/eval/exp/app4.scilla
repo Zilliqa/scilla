@@ -1,0 +1,10 @@
+(* Expected result: 2 *)
+let x = 42 in
+let f = fun (z : Int) =>
+    let b = x in
+    fun (c : Int) => z
+in
+let a = 1 in
+let d = 2 in
+let g = f d in
+g a

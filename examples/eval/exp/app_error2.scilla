@@ -1,0 +1,10 @@
+(* Expected result: *)
+(* Not a functional value: (IntLit 1) *)
+let x = 42 in
+let f = fun (z : Int) =>
+    let b = z x in
+    fun (c : Int) => z
+in
+let a = 1 in
+let d = 2 in
+f a

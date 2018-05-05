@@ -30,7 +30,8 @@ let sanitize_literal l =
   else fail @@ sprintf "Cannot serialize literal %s"
                (sexp_of_literal l |> Sexplib.Sexp.to_string)
 
-
+(* Applying a value, which is supposed to be a closure *)
+      
 (* A monadic big-step evaluator for Scilla expressions *)
 let rec exp_eval e env = match e with
 
@@ -58,11 +59,11 @@ let rec exp_eval e env = match e with
              (* Closures are not storable *)
              | ValClosure _ as v ->
                  fail @@ sprintf
-                 "Cannot store a closure\n%s\nin a message\n%s\nwith a binding %s."
+                   "Cannot store a closure\n%s\nas %s\nin a message\n%s."
                    (Env.pp_value v)
+                   (get_id i)
                    (sexp_of_expr sexp_of_loc  m |>
-                    Sexplib.Sexp.to_string)
-                   (get_id i))
+                    Sexplib.Sexp.to_string))
       in
       let%bind payload_resolved =
         (* Make sure we resolve all the payload *)
@@ -70,10 +71,27 @@ let rec exp_eval e env = match e with
       pure (Env.ValLit (Msg payload_resolved), env)
 
   | Fun (f, t, body) ->
-      let clo = Env.ValClosure (f, t, e, env) in
+      let clo = Env.ValClosure (f, t, body, env) in
       pure (clo, env)
 
-  (* TODO: Function applications *)
+  | App (f, actuals) ->
+      (* Resolve the actuas *)
+      let%bind args =
+        mapM actuals ~f:(fun arg -> Env.lookup env arg) in
+      let%bind ff = Env.lookup env f in
+      (* Apply iteratively, also evaluating the bodies *)      
+      let%bind fully_applied =
+        List.fold_left args ~init:(pure ff)
+          ~f:(fun res arg ->
+              let%bind v = res in
+              (* printf "\n";
+               * printf "Value to be applied: %s\n" (Env.pp_value v);
+               * printf "Argument: %s\n\n" (Env.pp_value arg);
+               * printf "\n"; *)
+              try_apply_as_closure v arg) in
+      
+      
+      pure(fully_applied, env)          
 
   (* TODO: Constructor applications *)
 
@@ -84,8 +102,23 @@ let rec exp_eval e env = match e with
   (* TODO: Built-ins and hashing *)
 
   | _ -> 
-    let l = expr_loc e in
-        match l with
-        | Some l1 -> fail @@ "Expression in line " ^ 
-            Int.to_string l1.lnum ^ " " ^ (expr_str e) ^ " is not supported yet"
-        | None -> fail @@ "Expression " ^ (expr_str e) ^ " is not supported yet"
+      match expr_loc e with
+      | Some l1 -> fail @@
+          sprintf "Expression in line %s: %s  is not supported yet."
+            (Int.to_string l1.lnum) (expr_str e)
+      | None -> fail @@
+          sprintf  "Expression in line %s is not supported yet."
+            (expr_str e)
+
+(* Applying a function *)
+and try_apply_as_closure v arg =
+  match v with
+  | Env.ValLit _ ->
+      fail @@
+      sprintf "Not a functional value: %s."
+        (Env.pp_value v)
+  | Env.ValClosure (formal, _, body, env) ->
+      let env1 = Env.bind env (get_id formal) arg in
+      let%bind (v, _) = exp_eval body env1 in
+      pure v
+          
