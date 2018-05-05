@@ -75,29 +75,38 @@ let rec exp_eval e env = match e with
       pure (clo, env)
 
   | App (f, actuals) ->
-      (* Resolve the actuas *)
+      (* Resolve the actuals *)
       let%bind args =
         mapM actuals ~f:(fun arg -> Env.lookup env arg) in
       let%bind ff = Env.lookup env f in
-      (* Apply iteratively, also evaluating the bodies *)      
+      (* Apply iteratively, also evaluating curried lambdas *)      
       let%bind fully_applied =
         List.fold_left args ~init:(pure ff)
           ~f:(fun res arg ->
               let%bind v = res in
-              (* printf "\n";
-               * printf "Value to be applied: %s\n" (Env.pp_value v);
-               * printf "Argument: %s\n\n" (Env.pp_value arg);
-               * printf "\n"; *)
+              (* printf "Value to be applied: %s\n" (Env.pp_value v); *)
+              (* printf "Argument: %s\n\n" (Env.pp_value arg); *)
               try_apply_as_closure v arg) in
-      
-      
       pure(fully_applied, env)          
 
-  (* TODO: Constructor applications *)
+  | Constr (cname, ts, actuals) ->
+      (* Resolve the actuals *)
+      let%bind args =
+        mapM actuals ~f:(fun arg -> Env.lookup env arg) in
+      (* Make sure we only pass "pure" literals, not closures *)
+      let%bind arg_literals =
+        mapM args ~f:(fun arg -> match arg with
+            | Env.ValLit l -> pure l
+            | Env.ValClosure _ ->
+                fail @@
+                sprintf "Closure arguments in ADT are not supported: %s."
+                  (Env.pp_value arg)) in
+      let lit = ADTValue (cname, ts, arg_literals) in
+      pure (Env.ValLit lit, env)
 
   (* TODO: Pattern matching *)
 
-  (* TODO: Map operations *)
+  (* TODO: Maps and operations on them operations *)
         
   (* TODO: Built-ins and hashing *)
 

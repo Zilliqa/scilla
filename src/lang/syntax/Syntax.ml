@@ -86,11 +86,11 @@ type 'rep expr =
   | Var of 'rep ident
   | Let of 'rep ident * typ option * 'rep expr * 'rep expr
   | Message of (string * 'rep payload) list
-  | Constr of string * typ list * 'rep ident list
   | Fun of 'rep ident * typ * 'rep expr
   | App of 'rep ident * 'rep ident list
-  | Builtin of 'rep ident * 'rep ident list 
+  | Constr of string * typ list * 'rep ident list
   | MatchExpr of 'rep ident * ('rep pattern * 'rep expr) list
+  | Builtin of 'rep ident * 'rep ident list 
   (* Advanced features: to be added in Scilla 0.2 *)                 
   | TFun of 'rep ident * 'rep expr
   | TApp of 'rep ident * typ list

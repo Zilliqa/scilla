@@ -1,0 +1,5 @@
+let a = 12 in
+let x = a in
+let t = True in
+let y = Some {Int} x in
+y
