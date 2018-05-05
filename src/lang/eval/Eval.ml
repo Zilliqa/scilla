@@ -23,6 +23,7 @@ let is_serializable_literal l = match l with
   | Msg _ | ADTValue _ | Map _ -> false
   | _ -> true
 
+(* Sanitize before storing into a message *)
 let sanitize_literal l =
   if is_serializable_literal l
   then pure l
@@ -54,6 +55,7 @@ let rec exp_eval e env = match e with
             let%bind v = Env.lookup env i in
             (match v with
              | ValLit l -> sanitize_literal l
+             (* Closures are not storable *)
              | ValClosure _ as v ->
                  fail @@ sprintf
                  "Cannot store a closure\n%s\nin a message\n%s\nwith a binding %s."
