@@ -65,8 +65,8 @@ let rec exp_eval e env = match e with
                    (get_id i))
       in
       let%bind payload_resolved =
-        mapM bs
-          ~f:(fun (s, pld) -> mapPair2 s @@ resolve pld) in
+        (* Make sure we resolve all the payload *)
+        mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ resolve pld) in
       pure (Env.ValLit (Msg payload_resolved), env)
 
   | Fun (f, t, body) ->

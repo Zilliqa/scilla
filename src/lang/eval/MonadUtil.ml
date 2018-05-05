@@ -24,11 +24,11 @@ let rec mapM ~f ls = match ls with
        |  _, (Error _ as err) -> err)
   | [] -> Ok []
 
-let mapPair2 x m = match m with
+let liftPair2 x m = match m with
   | Ok z -> Ok (x, z)
   | Error _ as err -> err
 
-let mapPair1 m x = match m with
+let liftPair1 m x = match m with
   | Ok z -> Ok (z, x)
   | Error _ as err -> err
 
