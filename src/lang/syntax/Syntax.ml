@@ -10,6 +10,7 @@
 open Core
 open Sexplib.Std
 open Yojson
+open Big_int 
 
 (* Location info, since Lexing.position does not support sexp *)
 type loc = {
@@ -40,6 +41,7 @@ let get_loc_str (l : loc) : string =
   l.fname ^ ":" ^ Int.to_string l.lnum ^ 
       ":" ^ Int.to_string (l.cnum - l.bol + 1)
 
+type bigint = Big_int.big_int
 
 type typ  =
   | PrimType of string

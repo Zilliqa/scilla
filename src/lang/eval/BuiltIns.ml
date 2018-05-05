@@ -11,6 +11,8 @@ open Syntax
 open Core
 open Result.Let_syntax
 open MonadUtil
+open Big_int
+
 
 let print_literal_list ls =
   let ps = List.map ls
@@ -149,9 +151,28 @@ module Hashing = struct
     | [l] ->
         let lstr = sexp_of_literal l |> Sexplib.Sexp.to_string in
         let lhash_str = hash_string hash_fun lstr in
-        pure @@ Sha256 lhash_str
+        pure @@ Sha256 lhash_str 
     | _ -> builtin_fail "Hashing.sha256hash" ls
 
+  let big_int_of_hash h =
+    let s = match Hex.of_string h with
+      | `Hex s -> "0x" ^ s
+    in Big_int.big_int_of_string s
+  
+  let dist ls = match ls with
+    | [Sha256 x; Sha256 y] ->
+        let i1 = big_int_of_hash x in
+        let i2 = big_int_of_hash y in
+        let dist = abs_big_int (sub_big_int i1 i2) in
+        (try
+           let i = IntLit (int_of_big_int dist) in
+           pure i
+         with
+         | Failure _ -> fail @@
+             sprintf "Could not convert big int %s to int."
+               (string_of_big_int dist))
+    | _ -> builtin_fail "Hashing.eq" ls
+  
 end
 
 (***************************************)
@@ -181,6 +202,7 @@ module BuiltInDictionary = struct
 
     (* Hashes *)
     ("eq", ["Hash"; "Hash"], Hashing.eq);
+    ("dist", ["Hash"; "Hash"], Hashing.dist);
     ("sha256hash", ["Any"], Hashing.sha256hash);
 
     (* Maps *)
