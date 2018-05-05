@@ -21,7 +21,7 @@ let rec mapM ~f ls = match ls with
       (match f x, mapM ~f:f ls' with
        | Ok z, Ok zs -> Ok (z :: zs)
        | Error z as err, _ -> err
-       |  _, (Error _ as err) -> err)
+       | _, (Error _ as err) -> err)
   | [] -> Ok []
 
 let liftPair2 x m = match m with

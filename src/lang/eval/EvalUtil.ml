@@ -50,7 +50,7 @@ module Env = struct
     | Some x -> pure @@ snd x
     | None -> fail @@ "Indentifier \"" ^ i ^
           "\" at " ^ get_loc_str (get_loc k) ^ 
-              " is unbound in environment:\n" ^ (pp e)
+              " is not bound in environment:\n" ^ (pp e)
                                                         
 end
 

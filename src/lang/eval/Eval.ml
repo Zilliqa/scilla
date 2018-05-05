@@ -73,9 +73,9 @@ let rec exp_eval e env = match e with
       let clo = Env.ValClosure (f, t, e, env) in
       pure (clo, env)
 
-  (* TODO: Constructor applications *)
-
   (* TODO: Function applications *)
+
+  (* TODO: Constructor applications *)
 
   (* TODO: Pattern matching *)
 

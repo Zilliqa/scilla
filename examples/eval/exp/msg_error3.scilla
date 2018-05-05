@@ -1,0 +1,7 @@
+let x = 42 in
+let ff = fun (z : Int) => x in
+let y = x in
+let a = y in
+let m1 = {tag : Main; amount : x; code: a} in
+let m2 = {tag : Main; amount : x; mmm: o} in
+m2

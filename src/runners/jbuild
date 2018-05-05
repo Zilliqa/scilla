@@ -4,6 +4,9 @@
  ((names (scilla_runner eval_runner scilla_module_parse))
   (public_names (scilla-runner eval-runner scilla-module-parse))
   (modules (scilla_runner eval_runner scilla_module_parse))
-  (libraries (core scilla-syntax scilla-eval ppx_sexp_conv))
-  (preprocess (pps (ppx_sexp_conv)))
+
+  (libraries (core ppx_sexp_conv ppx_deriving ppx_deriving_yojson
+              ppx_let yojson cryptokit
+              scilla-syntax scilla-eval))
+  (preprocess (pps (ppx_sexp_conv ppx_let ppx_deriving.show ppx_deriving_yojson)))
   (package scilla-runner)))

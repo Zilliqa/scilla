@@ -9,6 +9,7 @@
 
 open Core
 open Sexplib.Std
+open Yojson
 
 (* Location info, since Lexing.position does not support sexp *)
 type loc = {
@@ -70,10 +71,15 @@ type literal =
 [@@deriving sexp]
 
 type 'rep payload =
-  | MTag of string
+  | MTag of string 
   | MLit of literal
   | MVar of 'rep ident
 [@@deriving sexp]
+
+(* type units =
+ * | Metric   [@name "metric"]
+ * | Imperial [@name "imperial"]
+ * [@@deriving yojson] *)
 
 type 'rep expr =
   | Literal of literal

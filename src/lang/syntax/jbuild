@@ -9,6 +9,11 @@
  ((name scilla_syntax) ; doesn't support '-' in the name
   (public_name scilla-syntax)
   (wrapped false)
-  (libraries (core ppx_sexp_conv yojson))
-  (preprocess (pps (ppx_sexp_conv)))
+  (libraries (core ppx_sexp_conv
+              ppx_deriving.show
+              ppx_deriving_yojson.runtime
+              yojson))
+  (preprocess (pps (ppx_sexp_conv
+                    ppx_deriving.show
+                    ppx_deriving_yojson)))
   (synopsis "Scilla workbench implementation.")))
