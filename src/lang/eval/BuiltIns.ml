@@ -42,6 +42,7 @@ module Int = struct
         pure @@ to_Bool (x = y)
     | _ -> builtin_fail "Int.eq" ls
 
+  (* Check for overflows! *)
   let add ls = match ls with
     | [IntLit x; IntLit y] -> pure @@ IntLit (x + y)
     | _ -> builtin_fail "Int.add" ls
@@ -107,6 +108,15 @@ module BNum = struct
         pure @@ to_Bool (x < y)
     | _ -> builtin_fail "BNum.blt" ls
 
+  let badd ls = match ls with
+    | [BNum x; IntLit y] ->
+        if y >= 0
+        then pure @@ BNum (x + y)
+        else fail @@ sprintf
+            "Cannot add a negative value (%d) to a block." y
+    | _ -> builtin_fail "BNum.badd" ls
+
+  
 end
 
 (* Working with addresses *)
@@ -117,15 +127,37 @@ module Address = struct
     | [Address x; Address y] ->
         pure @@ to_Bool (x = y)
     | _ -> builtin_fail "Address.eq" ls
-
 end
 
 (* Hashing *)
 module Hashing = struct
-  (* TODO *)
+  open UsefulLiterals
+  open Cryptokit
+
+  (* TODO: discuss this with our Crypto gurus *)
+  let hexkey = "0102023645234090a0b0c0d0e0f10111463335161718191a1b1c1d1e1f20"
+
+  let hash_fun =
+    MAC.hmac_sha256 @@ transform_string (Hexa.decode()) hexkey
+
+  let eq ls = match ls with
+    | [Sha256 x; Sha256 y] ->
+        pure @@ to_Bool (x = y)
+    | _ -> builtin_fail "Hashing.eq" ls
+
+  let sha256hash ls = match ls with
+    | [l] ->
+        let lstr = sexp_of_literal l |> Sexplib.Sexp.to_string in
+        let lhash_str = hash_string hash_fun lstr in
+        pure @@ Sha256 lhash_str
+    | _ -> builtin_fail "Hashing.sha256hash" ls
+
 end
 
-(* Dictionaries *)
+(***************************************)
+(*        Built-in  Dictionariy        *)
+(***************************************)
+
 module BuiltInDictionary = struct 
   type built_in_op_type = literal list -> (literal, string) result
 
@@ -142,9 +174,14 @@ module BuiltInDictionary = struct
     (* Block numbers *)
     ("eq",  ["BNum"; "BNum"], BNum.eq);
     ("blt", ["BNum"; "BNum"], BNum.blt);
-
+    ("blt", ["BNum"; "Int"],  BNum.badd);
+    
     (* Addresses *)
     ("eq",  ["Address"; "Address"], BNum.eq);
+
+    (* Hashes *)
+    ("eq", ["Hash"; "Hash"], Hashing.eq);
+    ("sha256hash", ["Any"], Hashing.sha256hash);
 
     (* Maps *)
     ("contains", ["Map"; "Any"], Maps.contains);
