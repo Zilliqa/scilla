@@ -24,6 +24,11 @@ let expr_str e =
   sexp_of_expr sexp_of_loc e
   |> Sexplib.Sexp.to_string
 
+let stmt_str s =
+  sexp_of_stmt sexp_of_loc s
+  |> Sexplib.Sexp.to_string
+
+
 (* Serializable literals *)
 let is_serializable_literal l = match l with
   | Msg _ | ADTValue _ | Map _ -> false
@@ -156,6 +161,10 @@ and try_apply_as_closure v arg =
       let%bind (v, _) = exp_eval body env1 in
       pure v
 
+
+(*******************************************************)
+(* A monadic big-step evaluator for Scilla statemnts   *)
+(*******************************************************)
 let rec stmt_eval state stmts =
   match stmts with
   | [] -> pure state
@@ -164,6 +173,28 @@ let rec stmt_eval state stmts =
           let%bind l = State.load state r in
           let state' = State.bind state (get_id x) (Env.ValLit l) in
           stmt_eval state' sts
+      | Store (x, r) ->
+          let%bind l = State.load state r in
+          let%bind state' = State.store state (get_id x) l in
+          stmt_eval state' sts
+      | Bind (x, e) ->
+          let%bind (lval, _) = exp_eval e state.env in
+          let state' = State.bind state (get_id x) lval in
+          stmt_eval state' sts
+      | MatchStmt (x, clauses) ->
+          let%bind v = Env.lookup state.env x in 
+          let%bind ((_, branch_stmts), bnds) =
+            tryM clauses
+              ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
+                      (Env.pp_value v) (stmt_str s))
+              ~f:(fun (p, e') -> match_with_pattern v p) in 
+          (* Update the environment for the branch *)
+          let state' = List.fold_left bnds ~init:state
+              ~f:(fun z (i, w) -> State.bind z (get_id i) w) in
+          let%bind state'' = stmt_eval state' branch_stmts in
+          (* Restore initial immutable bindings *)
+          let cont_state = {state'' with env = state.env} in
+          stmt_eval cont_state sts
 
       (* TODO: implement the rest of the commands *)  
       | _ -> fail "FIXME"

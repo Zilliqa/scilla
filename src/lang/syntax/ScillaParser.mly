@@ -128,7 +128,8 @@ simple_exp :
   { let xs = List.map (fun i -> Ident (i, dummy_loc)) args
     in Builtin ((Ident (b, toLoc $startpos)), xs) }
 (* Message construction *)
-| LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE                { Message es } 
+| LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE
+  { Message es } 
 (* Data constructor application *)
 | c = CID ts=option(ctargs) args=list(ID)
   { let targs =
@@ -171,7 +172,7 @@ exp_pm_clause:
 msg_entry :
 | i = ID; COLON;  l = lit { i, MLit l }
 | i = ID; COLON;  c = CID { i, MTag c }
-| i = ID; COLON;  v = ID { i,  MVar (asId v) }
+| i = ID; COLON;  v = ID  { i,  MVar (asId v) }
 
 type_annot:
 | COLON; t = typ { t }
@@ -189,7 +190,7 @@ stmt:
 | l = ID; BIND; r = ID   { Load (asIdL l (toLoc $startpos($2)), asId r) }
 | l = ID; ASSIGN; r = ID { Store (asIdL l (toLoc $startpos($2)), asId r) }
 | l = ID; EQ; r = exp    { Bind (asIdL l (toLoc $startpos($2)), r) }
-| l=ID; BIND; AND; c=CID  { ReadFromBC (asIdL l (toLoc $startpos($2)), c) }
+| l=ID; BIND; AND; c=CID { ReadFromBC (asIdL l (toLoc $startpos($2)), c) }
 | ACCEPT; a = ID         { AcceptPayment (asIdL a (toLoc $startpos)) }
 | SEND; m = ID;          { SendMsgs (asIdL m (toLoc $startpos)) }
 | MATCH; x = ID; WITH; cs=list(stmt_pm_clause); END

@@ -101,6 +101,8 @@ module State = struct
     let e = st.env in
     {st with env = (k, v) :: List.filter ~f:(fun z -> fst z <> k) e}
 
+  
+
 end
 
 (* Printing result *)
