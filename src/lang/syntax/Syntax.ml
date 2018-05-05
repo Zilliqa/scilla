@@ -55,16 +55,18 @@ type 'rep pattern =
   | Constructor of string * ('rep pattern list)
 [@@deriving sexp]
 
-type literal = 
+type literal =
+  | StringLit of string
   | IntLit of int
   | BNum of int
   | Address of string
   | Sha256 of string
+  (* Message: and associative array *)    
+  | Msg of (string * literal) list
   (* A dynamic map of literals *)    
   | Map of (literal * literal) list
   (* A constructor in HNF *)      
   | ADTValue of string * typ list * literal list
-  | Msg of (string * literal) list
 [@@deriving sexp]
 
 type 'rep payload =
@@ -74,17 +76,18 @@ type 'rep payload =
 [@@deriving sexp]
 
 type 'rep expr =
-  | Let of 'rep ident * typ option * 'rep expr * 'rep expr
-  | Var of 'rep ident
   | Literal of literal
+  | Var of 'rep ident
+  | Let of 'rep ident * typ option * 'rep expr * 'rep expr
   | Message of (string * 'rep payload) list
-  | Builtin of 'rep ident * 'rep ident list 
+  | Constr of string * typ list * 'rep ident list
   | Fun of 'rep ident * typ * 'rep expr
   | App of 'rep ident * 'rep ident list
+  | Builtin of 'rep ident * 'rep ident list 
+  | MatchExpr of 'rep ident * ('rep pattern * 'rep expr) list
+  (* Advanced features: to be added in Scilla 0.2 *)                 
   | TFun of 'rep ident * 'rep expr
   | TApp of 'rep ident * typ list
-  | Constr of string * typ list * 'rep ident list
-  | MatchExpr of 'rep ident * ('rep pattern * 'rep expr) list
 [@@deriving sexp]
 
 type 'rep stmt =

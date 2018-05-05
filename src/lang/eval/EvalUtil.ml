@@ -10,19 +10,17 @@
 open Syntax
 open Core
 open Result.Let_syntax
-
-(* Monadic evaluation results *)
-let fail s = Error s
-let pure e = return e
-
+open MonadUtil
 
 (* Environments *)
 module Env = struct
   type ident = string
 
+  (* Environment *)
   type 'rep t =
     (string * 'rep value) list
   and
+  (* Fully reduced value *)
   'rep value =
     | ValLit of literal
     | ValClosure of 'rep Syntax.ident * typ * 'rep expr * 'rep t
@@ -63,4 +61,3 @@ let pp_result r = match r with
       (Env.sexp_of_value sexp_of_loc e |> Sexplib.Sexp.to_string)
       ^ ",\n" ^
       (Env.pp env)
-
