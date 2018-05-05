@@ -83,16 +83,16 @@ let check_validity =
   fun (guess_b  : Option Hash) =>
   let ca = builtin eq pa a in
   let cb = builtin eq pb a in
-  let xa = And ca guess_a in 
-  let xb = And cb guess_b in 
+  let xa = And {Bool (Option Hash)} ca guess_a in 
+  let xb = And {Bool (Option Hash)} cb guess_b in 
   match xa with
   | And True (Some g) =>
-    let h = builtin hash solution in
+    let h = builtin sha256hash solution in
     builtin eq h g 
   | _ =>
     match xb with
     | And True (Some g) =>
-      let h = builtin sha256_hash solution in
+      let h = builtin sha256hash solution in
       builtin eq h g
     | _ => False  
     end  

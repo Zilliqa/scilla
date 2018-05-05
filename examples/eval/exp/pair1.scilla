@@ -1,0 +1,17 @@
+(* Expected result *)
+(* (ValLit(IntLit 3)) *)
+
+let a = 1 in
+let b = 2 in
+let n  = None {Int} in
+let o1 = Some {Int} a in
+let o2 = Some {Int} b in
+let p1 = And {(Option Int) (Option Int)} o1 o2 in
+let p2 = And {(Option Int) (Option Int)} o1 n in
+let p3 = And {(Option Int) (Option Int)} n o2 in
+
+match p1 with
+  | And None None => 100    
+  | And (Some x) (Some y) =>
+    builtin add x y
+end
