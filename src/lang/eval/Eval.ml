@@ -176,6 +176,10 @@ let rec stmt_eval conf stmts =
           let%bind (lval, _) = exp_eval e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
           stmt_eval conf' sts
+      | ReadFromBC (x, bf) ->
+          let%bind l = Configuration.bc_lookup conf bf in
+          let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
+          stmt_eval conf' sts                            
       | MatchStmt (x, clauses) ->
           let%bind v = Env.lookup conf.env x in 
           let%bind ((_, branch_stmts), bnds) =
@@ -256,7 +260,7 @@ let init_contract libs cparams cfields args init_bal  =
   if not (valid_args && valid_params)
   then fail @@ sprintf
       "Mismatch between the vector of arguments:\n%s\nand expected parameters%s\n"
-      (Configuration.pp_literal_map args) (pp_cparams cparams)
+      (pp_literal_map args) (pp_cparams cparams)
   else
     (* Init parameters *)
     let params = List.map args ~f:(fun (n, l) -> (n, Env.ValLit l)) in
@@ -311,13 +315,13 @@ let check_and_restrict tparams entries =
   if not (valid_entries && uniq_entries)
   then fail @@ sprintf
       "Mismatch b/w message entries:\n%s\nand expected transition parameters%s\n"
-      (Configuration.pp_literal_map entries) (pp_cparams tparams)
+      (pp_literal_map entries) (pp_cparams tparams)
   else
     let env_filtered = List.filter entries
-        ~f:(fun (n, _) ->
-            not (List.exists tparams (fun (p, _) -> (get_id p) = n))) in
+           ~f:(fun (n, _) ->
+               List.exists tparams (fun (p, _) -> (get_id p) = n)) in
     pure env_filtered
-
+      
 (* Get the environment, incoming amount and body to execute*)
 let prepare_for_message contr m =
   match m with
@@ -344,7 +348,11 @@ let process_message contr cstate bstate m =
   let actual_env = List.fold_left tenv ~init:env
       ~f:(fun e (n, l) -> Env.bind e n (Env.ValLit l)) in
   let open Configuration in
-  (* Create configuration *)
+
+  (* printf "\nTransition-specific tenv:\n%s\n\n" (pp_literal_map tenv);
+   * printf "\nAbout to execute in env:\n%s\n\n" (Env.pp actual_env); *)
+
+  (* Create configuration *)  
   let conf = {
     env = actual_env;
     fields = fields;

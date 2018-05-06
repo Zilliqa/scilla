@@ -187,7 +187,7 @@ module Hashing = struct
          | Failure _ -> fail @@
              sprintf "Could not convert big int %s to int."
                (string_of_big_int dist))
-    | _ -> builtin_fail "Hashing.eq" ls
+    | _ -> builtin_fail "Hashing.dist" ls
   
 end
 
@@ -211,10 +211,10 @@ module BuiltInDictionary = struct
     (* Block numbers *)
     ("eq",  ["BNum"; "BNum"], BNum.eq);
     ("blt", ["BNum"; "BNum"], BNum.blt);
-    ("blt", ["BNum"; "Int"],  BNum.badd);
+    ("badd", ["BNum"; "Int"],  BNum.badd);
     
     (* Addresses *)
-    ("eq",  ["Address"; "Address"], BNum.eq);
+    ("eq",  ["Address"; "Address"], Address.eq);
 
     (* Hashes *)
     ("eq", ["Hash"; "Hash"], Hashing.eq);

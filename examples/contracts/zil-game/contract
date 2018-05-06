@@ -167,7 +167,7 @@ transition Play (sender: Address, guess: Hash)
     tt = True;
     match isa with
     | True =>
-      game_on := t;
+      game_on := tt;
       ah <- player_a_hash;
       hopt = update_hash ah guess;
       player_a_hash := hopt;
@@ -224,7 +224,7 @@ transition ClaimReward
       send msgs        
     | True  =>
       winner = determine_winner puzzle pa pb player_a player_b owner; 
-      bal <- & BALANCE;
+      bal <- balance;
       msg  = {tag : Main; to : winner; amount : bal; 
               code : here_is_the_reward};
       ff = False;	       

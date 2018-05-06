@@ -3,7 +3,9 @@
 (executables
  ((names (scilla_runner eval_runner))
   (public_names (scilla-runner eval-runner))
-  (modules (scilla_runner eval_runner))
+  (modules (scilla_runner
+            eval_runner
+            TestRunnerInputs))
   (libraries (core
               angstrom
               ppx_sexp_conv ppx_deriving

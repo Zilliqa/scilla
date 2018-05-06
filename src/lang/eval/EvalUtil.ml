@@ -14,6 +14,20 @@ open MonadUtil
 
 let balance_id = "balance"
 
+  (*  Pretty-printing *)
+
+let pp_literal_map s =
+  let ps = List.map s
+      ~f:(fun (k, v) -> sprintf " [%s -> %s]" k (pp_literal v)) in
+  let cs = String.concat ~sep:",\n " ps in
+  sprintf "{%s }" cs
+    
+let pp_literal_list ls =
+  let ps = List.map ls
+      ~f:(fun l -> sprintf " %s" (pp_literal l)) in
+  let cs = String.concat ~sep:",\n " ps in
+  sprintf "[ %s]" cs
+    
 (*****************************************************)
 (* Update-only execution environment for expressions *)
 (*****************************************************)
@@ -59,6 +73,20 @@ end
 
 
 (**************************************************)
+(*                 Blockchain State               *)
+(**************************************************)
+module BlockchainState = struct
+  type t = (string * literal) list
+
+  let lookup e k =
+    match List.find ~f:(fun z -> fst z = k) e with 
+    | Some x -> pure @@ snd x
+    | None -> fail @@ sprintf
+        "No value for key \"%s\" at in the blockchain state:\n%s"
+        k (pp_literal_map e)  
+end
+
+(**************************************************)
 (*          Runtime contract configuration        *)
 (**************************************************)
 module Configuration = struct
@@ -72,7 +100,7 @@ module Configuration = struct
     (* Contract balance *)
     balance : Big_int.big_int;
     (* Blockchain state *)
-    blockchain_state : (string * literal) list;
+    blockchain_state : BlockchainState.t;
     (* Available incoming funds *)
     incoming_funds : Big_int.big_int;
     (* Emitted messages *)
@@ -81,20 +109,6 @@ module Configuration = struct
     events : (string * string) list
   }
 
-  (*  Pretty-printing *)
-
-  let pp_literal_map s =
-    let ps = List.map s
-        ~f:(fun (k, v) -> sprintf " [%s -> %s]" k (pp_literal v)) in
-    let cs = String.concat ~sep:",\n " ps in
-    sprintf "{%s }" cs
-
-  let pp_literal_list ls =
-    let ps = List.map ls
-        ~f:(fun l -> sprintf " %s" (pp_literal l)) in
-    let cs = String.concat ~sep:",\n " ps in
-    sprintf "[ %s]" cs
-    
   let pp conf =
     let pp_env = Env.pp conf.env in
     let pp_fields = pp_literal_map conf.fields in
@@ -142,6 +156,8 @@ module Configuration = struct
     {st with env = (k, v) :: List.filter ~f:(fun z -> fst z <> k) e}
 
   let lookup st k = Env.lookup st.env k
+
+  let bc_lookup st k = BlockchainState.lookup st.blockchain_state k
 
   let accept_incoming st =
     let open Big_int in
@@ -215,7 +231,7 @@ module ContractState = struct
   (* Pretty-printing *)
   let pp cstate =
     let pp_params = Env.pp cstate.env in
-    let pp_fields = Configuration.pp_literal_map cstate.fields in
+    let pp_fields = pp_literal_map cstate.fields in
     let pp_balance = Big_int.string_of_big_int cstate.balance in
     sprintf "Contract State:\nParameters and libraries =\n%s\nMutable fields = \n%s\nBalance = %s\n"
       pp_params pp_fields pp_balance
@@ -234,39 +250,41 @@ module MessagePayload = struct
   let amount_label = "amount"
   let sender_label = "sender"
 
-  
   let get_tag es =
     match List.find es ~f:(fun (l, p) -> l = tag_label) with
     | None -> fail @@ sprintf "No \"tag\" field in message [%s]."
-          (Configuration.pp_literal_map es)
-    | Some (_, p) -> match p with
-      | StringLit s -> pure s
-      | _ -> fail @@ sprintf "Wrong value of the entry with \"ta\": %s."
-          (pp_literal p)
+          (pp_literal_map es)
+    | Some (_, p) ->
+        (match p with
+         | StringLit s -> pure s
+         | _ -> fail @@ sprintf "Wrong value of the entry with \"ta\": %s."
+               (pp_literal p))
 
   let get_sender es =
     match List.find es ~f:(fun (l, p) -> l = sender_label) with
     | None -> fail @@ sprintf "No \"sender\" field in message [%s]."
-          (Configuration.pp_literal_map es)
-    | Some (_, p) -> match p with
-      | Address _ as a -> pure a
-      | _ -> fail @@ sprintf "Wrong value of the entry with \"ta\": %s."
-          (pp_literal p)
+          (pp_literal_map es)
+    | Some (_, p) ->
+        (match p with
+         | Address _ as a -> pure a
+         | _ -> fail @@ sprintf "Wrong value of the entry with \"ta\": %s."
+               (pp_literal p))
   
   let get_amount es =
     match List.find es ~f:(fun (l, p) -> l = amount_label) with
     | None -> fail @@ sprintf "No \"amount\" field in message [%s]."
-          (Configuration.pp_literal_map es)
-    | Some (_, p) -> match p with
-      | IntLit s ->
-          (try
-             pure (big_int_of_string s)
-           with
-           | Failure _ -> fail @@
-               sprintf "Could not convert string %s to big int." s)
-      | _ -> fail @@ sprintf "Wrong value of the entry with \"amount\": %s."
-          (pp_literal p)
-    
+          (pp_literal_map es)
+    | Some (_, p) ->
+        (match p with
+         | IntLit s ->
+             (try
+                pure (big_int_of_string s)
+              with
+              | Failure _ -> fail @@
+                  sprintf "Could not convert string %s to big int." s)
+         | _ -> fail @@ sprintf "Wrong value of the entry with \"amount\": %s."
+               (pp_literal p))
+        
   let get_other_entries es =
     List.filter es ~f:(fun (l, _) -> l <> tag_label)
   
