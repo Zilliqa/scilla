@@ -58,6 +58,12 @@ type 'rep pattern =
   | Constructor of string * ('rep pattern list)
 [@@deriving sexp]
 
+(* FIXME: Both integers and block numbers are encoded as strings,
+ * in order to accommodate big_ints. The reason why I didn't use
+ * big_ints is because for some reason the sexp pre-processor does
+ * not support them. Once we write a custom pretty-printer for
+ * literals and expressions, there will be no need for this atrocity,
+ * and we can switch back to big ints. *)       
 type literal =
   | StringLit of string
   | IntLit of string
