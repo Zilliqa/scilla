@@ -38,15 +38,18 @@ Once the probject is built you can try the following things:
 ./bin/eval-runner examples/eval/exp/let.scilla 
 ```
 
-* To run a simulation:
+* To run a step-based simulation:
 
 ```
-./bin/scilla-runner crowdfunding
+./bin/scilla-runner crowdfunding n
 ```
-or
+  or
 ```
-./bin/scilla-runner zil-game
+./bin/scilla-runner zil-game n
 ```
+where `n` is a number `0-4` for the number of "steps" to execute the
+protocol (the messages and blockchain states are provided for only so
+many steps in the simulation).
 
 ### Where to find binaries
 
