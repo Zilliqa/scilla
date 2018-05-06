@@ -32,14 +32,7 @@ To build the project, run `make clean; make` from the root folder.
 
 Once the probject is built you can try the following things:
 
-* To invoke a simple parser test (subject to
-[ongoing implementation](./ROADMAP.md)), execute from the project
-root:
-
-```
-./bin/scilla-module-parser examples/contracts/zil-game/contract
-```
-* To evaluate an expression:
+* To evaluate a standalone closed expression:
 
 ```
 ./bin/eval-runner examples/eval/exp/let.scilla 

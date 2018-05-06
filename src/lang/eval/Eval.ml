@@ -204,6 +204,10 @@ let rec stmt_eval conf stmts =
             (stmt_str s)
     )
 
+(*******************************************************)
+(*              Contract initialization                *)
+(*******************************************************)
+
 (* Initializing libraries of a contract *)
 let init_libraries libs =
   let init_lib_entry env {lname = id; lexp = e } = (
@@ -268,10 +272,23 @@ let init_module md args init_bal =
   let%bind cstate =
     init_contract libs cparams cfields args init_bal in
   pure (contr, cstate)
+
+(*******************************************************)
+(*               Message processing                    *)
+(*******************************************************)
+
+let preprocess_message es = ""
+
+let prepare_for_message m contr =
+  match m with
+  | Msg entries ->
+      fail "???"
+  | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal m)
+
     
-(* TOOD: Implement the following routines:
-* Parse primitive input for contract
+(* TODO: Implement the following routines:
 * Validate and parse message
 * Run a transition for a message and produce updated contract state
+*)
 
- *)
+
