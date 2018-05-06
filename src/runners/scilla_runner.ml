@@ -51,7 +51,7 @@ let check_extract_cstate name res = match res with
        cstate)
 
 (*****************************************************)
-(*      Pretty-printing a result of interaction      *)
+(*   Running the simularion and printing results     *)
 (*****************************************************)
 
 let check_after_step name res bstate m =
@@ -92,9 +92,7 @@ let rec make_step_loop ctr name cstate num_steps i =
 After compilinig, run from the project root folder:
 
 bin/scilla-runner crowdfunding n
-
-or 
-
+  or 
 bin/scilla-runner zil-game n
 
 where "n" is a number 0-5 for the number of "steps" to execute the protocol.
@@ -128,14 +126,20 @@ let () =
       check_libs libs mod_path;
  
       (* 2. Initializing the contract with arguments matching its parameters *)
+
+      (* Retrieving initial parameters from the mock file TestRunnerInputs *)
       let (args, init_bal) = get_init_args name in
+      (* Initializing the contract's state *)
       let init_res = init_module cmod args init_bal in
-      (* Print stats after the initialization *)
-      (* Will throw exception if unsiccessful *)
+      (* Prints stats after the initialization and returns the initial state *)
+      (* Will throw an exception if unsuccessful. *)
       let cstate0 = check_extract_cstate name init_res in
+
+      (* Contract code *)
       let ctr = cmod.contr in
 
-      (* 3. Stepping a number of times from the inital state;  *)
+      (* 3. Stepping a number of times from the inital state via
+            provided messages and blockchain states.  *)
       make_step_loop ctr name cstate0 num_iter 0;
 
       
