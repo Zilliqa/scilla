@@ -58,9 +58,10 @@ let missed_deadline_code = 2
 let already_backed_code  = 3
 let not_owner_code  = 4
 let too_early_code  = 5
-let get_funds_code  = 6
-let cannot_reclaim_code = 7
-let reclaimed_code = 8
+let got_funds_code  = 6
+let cannot_get_funds  = 7
+let cannot_reclaim_code = 8
+let reclaimed_code = 9
   
 (***************************************************)
 (*             The contract definition             *)
@@ -86,7 +87,7 @@ transition Donate (sender: Address, amount: Int)
     match res with
     | None => 
       msg  = {tag : Main; to : sender; amount : 0; 
-              code : missed_deadline_code};
+              code : already_backed_code};
       msgs = one_msg msg;
       send msgs
     | Some bs1 =>
@@ -99,7 +100,7 @@ transition Donate (sender: Address, amount: Int)
      end  
   | False => 
     msg  = {tag : Main; to : sender; amount : 0; 
-            code : already_backed_code};
+            code : missed_dealine_code};
     msgs = one_msg msg;
     send msgs
   end 
@@ -124,14 +125,14 @@ transition GetFunds (sender: Address)
     match c4 with 
     | False =>  
       msg  = {tag : Main; to : sender; amount : 0; 
-              code : too_early_code};
+              code : cannot_get_funds};
       msgs = one_msg msg;
       send msgs
     | True => 
       tt = True;
       funded := tt;
       msg  = {tag : Main; to : owner; amount : bal; 
-              code : get_funds_code};
+              code : got_funds_code};
       msgs = one_msg msg;
       send msgs
     end

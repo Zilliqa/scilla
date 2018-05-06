@@ -233,7 +233,7 @@ module ContractState = struct
     let pp_params = Env.pp cstate.env in
     let pp_fields = pp_literal_map cstate.fields in
     let pp_balance = Big_int.string_of_big_int cstate.balance in
-    sprintf "Contract State:\nParameters and libraries =\n%s\nMutable fields = \n%s\nBalance = %s\n"
+    sprintf "Contract State:\nImmutable parameters and libraries =\n%s\nMutable fields = \n%s\nBalance = %s\n"
       pp_params pp_fields pp_balance
 
 end

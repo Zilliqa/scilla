@@ -53,7 +53,7 @@ From the project root, execute
 ```
 ./bin/scilla-runner zil-game n
 ```
-where `n` is a number `0-4` for the number of "steps" to execute the
+where `n` is a number `0-5` for the number of "steps" to execute the
 protocol (the messages and blockchain states are provided for only so
 many steps in the simulation).
 

@@ -35,7 +35,7 @@ let check_libs libs name =
          (String.concat ~sep:", " (List.map (List.rev res) ~f:fst))
          name
    | Error err ->
-       (printf "Failed to initialize libraries:\n%s\n" err;
+       (printf "\nFailed to initialize libraries:\n%s\n" err;
         raise @@ EvalError "Execution stopped")
 
 (****************************************************)
@@ -46,7 +46,7 @@ let check_extract_cstate name res = match res with
       (printf "Failed to initialize fields:\n%s\n" err;
        raise @@ EvalError "Execution stopped")
   | Ok (_, cstate) ->
-      (printf "[Initializing %s's fields]: Success!\n%s\n"
+      (printf "[Initializing %s's fields]\nSuccess!\n%s\n"
          name (ContractState.pp cstate);
        cstate)
 
@@ -67,7 +67,7 @@ let check_after_step name res bstate m =
 
 let make_step ctr name cstate i  =
   let (bstate, m) = get_context name i in
-  printf "[Regular Execution Step %i] About to handle:\n" i;
+  printf "[Simulated execution, step %i]\nAbout to handle:\n" (i+1);
   printf "%s\nin a Blockchain State:\n%s.\n"
     (pp_literal m) (pp_literal_map bstate);
   let step_result = handle_message ctr cstate bstate m in
@@ -97,7 +97,7 @@ or
 
 bin/scilla-runner zil-game n
 
-where "n" is a number 0-4 for the number of "steps" to execute the protocol.
+where "n" is a number 0-5 for the number of "steps" to execute the protocol.
 
 *)
 
@@ -107,8 +107,8 @@ let () =
   let name = if arg_size > 1 then Sys.argv.(1) else "crowdfunding" in
   (* Number of steps *)
   let num_iter = if arg_size > 2 then int_of_string Sys.argv.(2) else 1 in
-  (if num_iter > 4
-   then raise (EvalError "We didn't prepare data for some many steps! Pick a smaller number [1..4].") else ());
+  (if num_iter > 5
+   then raise (EvalError "We didn't prepare data for so many simulation steps! Pick a smaller number [0..5].") else ());
 
   (* Retrieve the contract *)
   let mod_path = sprintf "examples%scontracts%s%s"

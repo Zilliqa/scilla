@@ -16,19 +16,22 @@ open MonadUtil
 open EvalUtil
 
 (****************************************************)
-(*        Inputs for bootstrapping the contract     *)
+(*        Inputs for bootstrapping the contracts    *)
 (****************************************************)
 
+(* Initial arguments for crowdfunding *)
 let crowdfunding_owner = "a0x134234"
   
 let crowdfunding_init_args =
   let init_bal = Big_int.zero_big_int in
   [
     ("owner", Address crowdfunding_owner);
-    ("max_block", BNum "200");
-    ("goal", IntLit "5000")
+    ("max_block", BNum "199");
+    ("goal", IntLit "500")
   ], init_bal
 
+
+(* Initial arguments for zil-game *)
 let player_a = "a0x253454234"
 let player_b = "a0x6734523432"
 
@@ -103,6 +106,7 @@ let cf_get_funds =
 let cf_msgs_bcs =
   [(get_bc_state 0, cf_donate1);
    (get_bc_state 0, cf_donate2);
+   (get_bc_state 0, cf_donate2);
    (get_bc_state 1, cf_get_funds);
    (get_bc_state 2, cf_claim1);]
 
@@ -152,7 +156,8 @@ let zg_claim2 =
 (* Blockchain states and incoming messages for zil-game *)
 let zg_msgs_bcs =
   [(get_bc_state 0, zg_play1);
-   (get_bc_state 0, zg_play2);
+   (get_bc_state 0, zg_claim1);
+   (get_bc_state 1, zg_play2);
    (get_bc_state 1, zg_claim1);
    (get_bc_state 2, zg_claim2)]
 
