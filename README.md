@@ -32,13 +32,19 @@ To build the project, run `make clean; make` from the root folder.
 
 Once the probject is built you can try the following things:
 
-* To evaluate a standalone closed expression:
+### Evaluating a standalone closed expression:
+
+From the project root, execute
 
 ```
 ./bin/eval-runner examples/eval/exp/let.scilla 
 ```
 
-* To run a step-based simulation:
+Instead of `let.scilla` you might want to try any idfferent file in `examples/eval/exp`.
+
+### Running a step-based simulation
+
+From the project root, execute
 
 ```
 ./bin/scilla-runner crowdfunding n
