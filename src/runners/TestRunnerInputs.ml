@@ -87,14 +87,16 @@ let cf_donate2 =
 
 let cf_claim1 =
   Msg [
-    ("tag", StringLit "Claim");
+    ("tag", StringLit "ClaimBack");
     ("sender", Address "a0x37534234");
+    ("amount", IntLit "0");
   ]
 
 let cf_get_funds =
   Msg [
     ("tag", StringLit "GetFunds");
     ("sender", Address "a0x134234");
+    ("amount", IntLit "0");
   ]
 
 (* Blockchain states and incoming messages for crowdfunding *)

@@ -65,14 +65,24 @@ let check_after_step name res bstate m =
        printf "Emitted messages:\n%s\n\n" (pp_literal_list outs);
        cstate, outs)
 
-let make_step ctr name cstate num_steps i  =
+let make_step ctr name cstate i  =
   let (bstate, m) = get_context name i in
-  printf "[Regular Execution Step %i] About to handle:\n%s\nin a Blockchain State: %s.\n"
-    i (pp_literal m) (pp_literal_map bstate);
+  printf "[Regular Execution Step %i] About to handle:\n" i;
+  printf "%s\nin a Blockchain State: %s.\n"
+    (pp_literal m) (pp_literal_map bstate);
   let step_result = process_message ctr cstate bstate m in
   let (cstate', _) =
     check_after_step name step_result bstate m in
   cstate'
+
+(* Recursively execute multiple steps *)
+let rec make_step_loop ctr name cstate num_steps i =
+  if i >= 0 && i < num_steps
+  then
+    let cstate' = make_step ctr name cstate i in
+    make_step_loop ctr name cstate' num_steps (i + 1)
+  else
+    printf "\nEvalutaion complete!"
 
 (****************************************************)
 (*              Main demo procedure                 *)
@@ -93,8 +103,10 @@ let () =
   let arg_size = Array.length Sys.argv in
   (* Contract module name *)
   let name = if arg_size > 1 then Sys.argv.(1) else "crowdfunding" in
-  (* Number of interactions *)
-  let num_iter = if arg_size > 2 then int_of_string Sys.argv.(2) else 0 in
+  (* Number of steps *)
+  let num_iter = if arg_size > 2 then int_of_string Sys.argv.(2) else 1 in
+  (if num_iter > 4
+   then raise (EvalError "We didn't prepare data for some many steps! Pick a smaller number [1..4].") else ());
 
   (* Retrieve the contract *)
   let mod_path = sprintf "examples%scontracts%s%s"
@@ -121,10 +133,7 @@ let () =
       let cstate0 = check_extract_cstate name init_res in
       let ctr = cmod.contr in
 
-      (* 3. Stepping from the current state 
-            just for one first message and given BC state *)
-      make_step ctr name cstate0 1 0;
+      (* 3. Stepping a number of times from the inital state;  *)
+      make_step_loop ctr name cstate0 num_iter 0;
 
-      (* TODO: make a loop *)
-      ()
       

@@ -106,7 +106,7 @@ transition Donate (sender: Address, amount: Int)
 end
 
 transition GetFunds (sender: Address)
-  is_owner = builtin eq is_owner sender;
+  is_owner = builtin eq owner sender;
   match is_owner with
   | False => 
     msg  = {tag : Main; to : sender; amount : 0; 
@@ -118,7 +118,7 @@ transition GetFunds (sender: Address)
     in_time = blk_leq blk max_block;
     c1 = negb in_time;
     bal <- balance;
-    c2 = builtin lt balance goal;
+    c2 = builtin lt bal goal;
     c3 = negb c2;
     c4 = andb c1 c3;
     match c4 with 
