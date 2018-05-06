@@ -328,10 +328,43 @@ let prepare_for_message contr m =
       pure (tenv, incoming_amount, tbody)
   | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal m)
 
-    
-(* TODO: Implement the following routines:
-* Validate and parse message
-* Run a transition for a message and produce updated contract state
+(* 
+Process message:
+* contr : Syntax.contract - code of the contract (containing transitions)
+* cstate : ContractState.t - current contract state
+* bstate : (string * literal) list - blockchain state
+* m : Syntax.literal - incoming message 
 *)
+        
+let process_message contr cstate bstate m =
+  let%bind (tenv, incoming_funds, stmts) = prepare_for_message contr m in
+  let open ContractState in
+  let {env; fields; balance} = cstate in
+  (* Add all values to the contract environment *)
+  let actual_env = List.fold_left tenv ~init:env
+      ~f:(fun e (n, l) -> Env.bind e n (Env.ValLit l)) in
+  let open Configuration in
+  (* Create configuration *)
+  let conf = {
+    env = actual_env;
+    fields = fields;
+    balance = balance;
+    blockchain_state = bstate;
+    incoming_funds = incoming_funds;
+    emitted = [];
+    events = [];
+  } in
 
+  (* Finally, run the evaluator for statements *)
+  let%bind conf' = stmt_eval conf stmts in
+  let cstate' = {
+    env = cstate.env;
+    fields = conf'.fields;
+    balance = conf'.balance
+  } in
+  let new_msgs = conf'.emitted in
+  let new_events = conf'.events in
 
+  (*Return new contract state, messages and events *)
+  pure (cstate', new_msgs, new_events)
+    

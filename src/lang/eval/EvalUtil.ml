@@ -230,11 +230,6 @@ module MessagePayload = struct
 
   open Big_int
 
-  type t = {
-    amount : big_int;
-    payload : (string * literal) list;
-  }
-
   let tag_label = "tag"
   let amount_label = "amount"
   let sender_label = "sender"
