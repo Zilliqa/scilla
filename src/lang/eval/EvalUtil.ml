@@ -12,7 +12,9 @@ open Core
 open Result.Let_syntax
 open MonadUtil
 
-(* Environments *)
+(*****************************************************)
+(* Update-only execution environment for expressions *)
+(*****************************************************)
 module Env = struct
   type ident = string
 
@@ -53,9 +55,15 @@ module Env = struct
         i (get_loc_str (get_loc k)) (pp e)
 end
 
-module State = struct
 
-    (* Mutable state and operations with it *)
+(**************************************************)
+(*          Runtime contract configuration        *)
+(**************************************************)
+module Configuration = struct
+
+  let balance_id = "balance"
+
+  (* Runtime contract configuration and operations with it *)
   type 'rep t = {
     (* Immutable variables *)
     env : 'rep Env.t;
@@ -65,50 +73,123 @@ module State = struct
     balance : Big_int.big_int;
     (* Blockchain state *)
     blockchain_state : (string * literal) list;
+    (* Available incoming funds *)
+    incoming_funds : Big_int.big_int;
     (* Emitted messages *)
-    msgs : literal list;
+    emitted : literal list;
     (* Emitted events *)
     events : (string * string) list
   }
 
-  let pp_fields s =
+  (*  Pretty-printing *)
+
+  let pp_literal_map s =
     let ps = List.map s
-        ~f:(fun (k, v) -> sprintf " [%s -> %s]" k
-               (sexp_of_literal v |> Sexplib.Sexp.to_string)) in
+        ~f:(fun (k, v) -> sprintf " [%s -> %s]" k (pp_literal v)) in
     let cs = String.concat ~sep:",\n " ps in
     sprintf "{%s }" cs
+
+  let pp_literal_list ls =
+    let ps = List.map ls
+        ~f:(fun l -> sprintf " %s" (pp_literal l)) in
+    let cs = String.concat ~sep:",\n " ps in
+    sprintf "[ %s]" cs
+    
+  let pp conf =
+    let pp_env = Env.pp conf.env in
+    let pp_fields = pp_literal_map conf.fields in
+    let pp_balance = Big_int.string_of_big_int conf.balance in
+    let pp_bc_conf = pp_literal_map conf.blockchain_state in
+    let pp_in_funds = Big_int.string_of_big_int conf.incoming_funds in
+    let pp_emitted = pp_literal_list conf.emitted in
+    let pp_events = String.concat ~sep:", " @@
+        List.map conf.events (fun (e, b) -> sprintf "<%s, %s>" e b)
+    in sprintf "Confuration\nEnv =\n%s\nFields =\n%s\nBalance =%s\nBlockchain conf =\n%s\nIncoming funds = %s\nEmitted Messages =\n%s\nEmitted events =\n%s\n"
+      pp_env pp_fields pp_balance pp_bc_conf pp_in_funds pp_emitted pp_events
+
+  (*  Manipulations with configuartion *)
   
-  (* TODO: Implement state pretty-printer *)
-  
-  let store st k l =
-    let s = st.fields in
-    match List.find s ~f:(fun (z, _) -> z = k) with
-    | Some (_, _) -> pure @@
-        {st with
-         fields = (k, l) :: List.filter ~f:(fun z -> fst z <> k) s}
-    | None -> fail @@ sprintf
-          "No field \"%s\" in fields:\n%s" k (pp_fields s)
+  let store st k v =
+    match v with 
+    | Env.ValClosure _ ->
+        fail @@ sprintf "Cannot store a closure below into a field %s:\n%s"
+          k (Env.pp_value v)
+    | Env.ValLit l ->
+        (let s = st.fields in
+         match List.find s ~f:(fun (z, _) -> z = k) with
+         | Some (_, _) -> pure @@
+             {st with
+              fields = (k, l) :: List.filter ~f:(fun z -> fst z <> k) s}
+         | None -> fail @@ sprintf
+               "No field \"%s\" in fields:\n%s" k (pp_literal_map s))
 
   let load st k =
-    let s = st.fields in
     let i = get_id k in
-    match List.find ~f:(fun z -> fst z = i) s with 
-    | Some x -> pure @@ snd x
-    | None -> fail @@ sprintf
-        "No field \"%s\" in state:\n%s" i (pp_fields s)
+    if i = balance_id
+    then
+      (* Balance is a special case *)   
+      pure @@ IntLit (Big_int.string_of_big_int st.balance)
+    else
+      (* Evenrything else is from fields *)
+      let s = st.fields in
+      match List.find ~f:(fun z -> fst z = i) s with 
+      | Some x -> pure @@ snd x
+      | None -> fail @@ sprintf
+            "No field \"%s\" in field map:\n%s" i (pp_literal_map s)
 
   let bind st k v =
     let e = st.env in
     {st with env = (k, v) :: List.filter ~f:(fun z -> fst z <> k) e}
 
-  
+  let lookup st k = Env.lookup st.env k
 
+  let accept_incoming st =
+    let open Big_int in
+    let incoming' = st.incoming_funds in
+    if ge_big_int incoming' zero_big_int
+    then
+      let balance = add_big_int st.balance incoming' in
+      let incoming_funds = zero_big_int in
+      pure @@ {st with balance; incoming_funds}
+    else
+      fail @@ sprintf "Incoming balance is negaitve (somehow):%s."
+        (string_of_big_int incoming')
+
+  (* Check that message is well-formed before adding to the sending pool *)
+  let rec validate_messages ls =
+    (* TODO: implement more checks *)
+    let validate_msg_payload pl =
+      let has_tag = List.exists pl ~f:(fun (k, _) -> k = "tag") in      
+      if has_tag then pure true
+      else fail @@ sprintf "Message contents have no \"tag\" field:\n[%s]"
+          (pp_literal_map pl)
+    in
+    match ls with
+      | (Msg pl) :: tl ->
+          let%bind _ = validate_msg_payload pl in
+          validate_messages tl
+      | [] -> pure true
+      | m :: tl -> fail @@ sprintf "This is not a message:\n%s" (pp_literal m)
+
+  (* Convert Scilla list to OCaml list *)
+  let get_list_literal v =
+      let rec convert_to_list = (function
+        | ADTValue ("Nil", _, []) -> pure []
+        | ADTValue ("Cons", _, [h; t]) ->
+            let%bind rest = convert_to_list t in
+            pure @@ h :: rest
+        | l -> fail @@ sprintf "The literal is not a list:\n%s" (pp_literal l))
+      in       
+      match v with
+      | Env.ValClosure _ as v ->
+          fail @@
+          sprintf "Value should be a list of messages, but is a closure:\n%s"
+            (Env.pp_value v)
+      | Env.ValLit l -> convert_to_list l 
+
+  let send_messages conf ms =
+    let%bind ls = get_list_literal ms in
+    let old_emitted = conf.emitted in
+    let emitted = old_emitted @ ls in
+    pure {conf with emitted}
 end
-
-(* Printing result *)
-let pp_result r = match r with
-  | Error s -> s
-  | Ok (e, env) ->
-      (Env.sexp_of_value sexp_of_loc e |> Sexplib.Sexp.to_string)
-      ^ ",\n" ^
-      (Env.pp env)

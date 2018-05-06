@@ -78,6 +78,8 @@ type literal =
   | ADTValue of string * typ list * literal list
 [@@deriving sexp]
 
+let pp_literal l = sexp_of_literal l |> Sexplib.Sexp.to_string
+
 type 'rep payload =
   | MTag of string 
   | MLit of literal
@@ -110,7 +112,7 @@ type 'rep stmt =
   | Bind of 'rep ident * 'rep expr
   | MatchStmt of 'rep ident * ('rep pattern * 'rep stmt list) list
   | ReadFromBC of 'rep ident * string
-  | AcceptPayment of 'rep ident
+  | AcceptPayment
   | SendMsgs of 'rep ident
   | Event of string * string
   | Throw of 'rep ident
@@ -145,7 +147,7 @@ let stmt_loc (s : 'rep stmt) : loc option =
   match s with
   | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
   | MatchStmt (i, _)
-  | AcceptPayment i | SendMsgs i -> 
+  | SendMsgs i -> 
     let l = get_loc i in
       if (l.cnum <> -1) then Some l else None
   | _ -> None

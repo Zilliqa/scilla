@@ -91,7 +91,7 @@ transition Donate (sender: Address, amount: Int)
       send msgs
     | Some bs1 =>
       backers := bs1; 
-      accept amount; 
+      accept; 
       msg  = {tag : Main; to : sender; amount : 0; 
               code : accepted_code};
       msgs = one_msg msg;

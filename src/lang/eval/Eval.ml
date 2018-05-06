@@ -28,6 +28,10 @@ let stmt_str s =
   sexp_of_stmt sexp_of_loc s
   |> Sexplib.Sexp.to_string
 
+(* Printing result *)
+let pp_result r = match r with
+  | Error s -> s
+  | Ok (e, env) -> sprintf "%s,\n%s" (Env.pp_value e) (Env.pp env)
 
 (* Serializable literals *)
 let is_serializable_literal l = match l with
@@ -75,7 +79,7 @@ let rec exp_eval e env = match e with
             let%bind v = Env.lookup env i in
             (match v with
              | ValLit l -> sanitize_literal l
-             (* Closures are not storable *)
+             (* Closures are not sendable by messages *)
              | ValClosure _ as v ->
                  fail @@ sprintf
                    "Cannot store a closure\n%s\nas %s\nin a message\n%s."
@@ -165,37 +169,46 @@ and try_apply_as_closure v arg =
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla statemnts   *)
 (*******************************************************)
-let rec stmt_eval state stmts =
+let rec stmt_eval conf stmts =
   match stmts with
-  | [] -> pure state
+  | [] -> pure conf
   | s :: sts -> (match s with
       | Load (x, r) ->
-          let%bind l = State.load state r in
-          let state' = State.bind state (get_id x) (Env.ValLit l) in
-          stmt_eval state' sts
+          let%bind l = Configuration.load conf r in
+          let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
+          stmt_eval conf' sts
       | Store (x, r) ->
-          let%bind l = State.load state r in
-          let%bind state' = State.store state (get_id x) l in
-          stmt_eval state' sts
+          let%bind v = Configuration.lookup conf r in
+          let%bind conf' = Configuration.store conf (get_id x) v in
+          stmt_eval conf' sts
       | Bind (x, e) ->
-          let%bind (lval, _) = exp_eval e state.env in
-          let state' = State.bind state (get_id x) lval in
-          stmt_eval state' sts
+          let%bind (lval, _) = exp_eval e conf.env in
+          let conf' = Configuration.bind conf (get_id x) lval in
+          stmt_eval conf' sts
       | MatchStmt (x, clauses) ->
-          let%bind v = Env.lookup state.env x in 
+          let%bind v = Env.lookup conf.env x in 
           let%bind ((_, branch_stmts), bnds) =
             tryM clauses
               ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
                       (Env.pp_value v) (stmt_str s))
               ~f:(fun (p, e') -> match_with_pattern v p) in 
           (* Update the environment for the branch *)
-          let state' = List.fold_left bnds ~init:state
-              ~f:(fun z (i, w) -> State.bind z (get_id i) w) in
-          let%bind state'' = stmt_eval state' branch_stmts in
+          let conf' = List.fold_left bnds ~init:conf
+              ~f:(fun z (i, w) -> Configuration.bind z (get_id i) w) in
+          let%bind conf'' = stmt_eval conf' branch_stmts in
           (* Restore initial immutable bindings *)
-          let cont_state = {state'' with env = state.env} in
-          stmt_eval cont_state sts
+          let cont_conf = {conf'' with env = conf.env} in
+          stmt_eval cont_conf sts
+      | AcceptPayment ->
+          let%bind conf' = Configuration.accept_incoming conf in
+          stmt_eval conf' sts
+      (* Caution emitting messages does not change balance immediately! *)      
+      | SendMsgs ms ->
+          let%bind ms_resolved = Configuration.lookup conf ms in
+          let%bind conf' = Configuration.send_messages conf ms_resolved in
+          stmt_eval conf' sts
 
-      (* TODO: implement the rest of the commands *)  
-      | _ -> fail "FIXME"
+      (* TODO: Implement the rest *)
+      | _ -> fail @@ sprintf "The statement %s is not supported yet."
+            (stmt_str s)
     )
