@@ -1,12 +1,13 @@
 (jbuild_version 1)
 
 (executables
- ((names (scilla_runner eval_runner scilla_module_parse))
-  (public_names (scilla-runner eval-runner scilla-module-parse))
-  (modules (scilla_runner eval_runner scilla_module_parse))
-
-  (libraries (core ppx_sexp_conv ppx_deriving ppx_deriving_yojson
+ ((names (scilla_runner eval_runner))
+  (public_names (scilla-runner eval-runner))
+  (modules (scilla_runner eval_runner))
+  (libraries (core
+              angstrom
+              ppx_sexp_conv ppx_deriving
               ppx_let yojson cryptokit
               scilla-syntax scilla-eval))
-  (preprocess (pps (ppx_sexp_conv ppx_let ppx_deriving.show ppx_deriving_yojson)))
+  (preprocess (pps (ppx_sexp_conv ppx_let ppx_deriving.show)))
   (package scilla-runner)))

@@ -53,23 +53,19 @@ let vals_to_literals vals =
           sprintf "Closure arguments in ADT are not supported: %s."
             (Env.pp_value arg))
 
-(***************************************************)
-
+(*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
+(*******************************************************)
 let rec exp_eval e env = match e with
-
   | Literal l ->
       pure (Env.ValLit l, env)
-
   | Var i ->
       let%bind v = Env.lookup env i in
       pure @@ (v, env)
-
   | Let (i, t, lhs, rhs) ->
       let%bind (lval, _) = exp_eval lhs env in
       let env' = Env.bind env (get_id i) lval in
       exp_eval rhs env'
-
   | Message bs as m ->
       (* Resolve all message payload *)
       let resolve pld = match pld with
@@ -92,11 +88,9 @@ let rec exp_eval e env = match e with
         (* Make sure we resolve all the payload *)
         mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ resolve pld) in
       pure (Env.ValLit (Msg payload_resolved), env)
-
   | Fun (f, t, body) ->
       let clo = Env.ValClosure (f, t, body, env) in
       pure (clo, env)
-
   | App (f, actuals) ->
       (* Resolve the actuals *)
       let%bind args =
@@ -111,7 +105,6 @@ let rec exp_eval e env = match e with
               (* printf "Argument: %s\n\n" (Env.pp_value arg); *)
               try_apply_as_closure v arg) in
       pure(fully_applied, env)          
-
   | Constr (cname, ts, actuals) ->
       (* Resolve the actuals *)
       let%bind args =
@@ -120,7 +113,6 @@ let rec exp_eval e env = match e with
       let%bind arg_literals = vals_to_literals args in
       let lit = ADTValue (cname, ts, arg_literals) in
       pure (Env.ValLit lit, env)
-
   | MatchExpr (x, clauses) ->
       let%bind v = Env.lookup env x in
       (* Get the branch and the bindings *)
@@ -133,7 +125,6 @@ let rec exp_eval e env = match e with
       let env' = List.fold_left bnds ~init:env
           ~f:(fun z (i, w) -> Env.bind z (get_id i) w) in
       exp_eval e_branch env'      
-
   | Builtin (i, actuals) ->
       let opname = get_id i in
       let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
@@ -212,3 +203,75 @@ let rec stmt_eval conf stmts =
       | _ -> fail @@ sprintf "The statement %s is not supported yet."
             (stmt_str s)
     )
+
+(* Initializing libraries of a contract *)
+let init_libraries libs =
+  let init_lib_entry env {lname = id; lexp = e } = (
+    let%bind (v, _) = exp_eval e env in
+    let env' = Env.bind env (get_id id) v in
+    pure env') in
+  List.fold_left libs ~init:(pure [])
+    ~f:(fun eres lentry ->
+        let%bind env = eres in
+        init_lib_entry env lentry)
+
+let validate_init_bal b =
+  let open Big_int in
+  if ge_big_int b zero_big_int
+  then pure b
+  else fail @@
+    sprintf "Negative initial balance: %s." (string_of_big_int b)
+
+(* Initialize fields in a constant environment *)
+let init_fields env fs =
+  (* Initialize a field in aconstant enfirontment *)
+  let init_field fname _t fexp =
+    let%bind (v, _) = exp_eval fexp env in
+    match v with
+    | Env.ValClosure _ ->
+        fail @@ sprintf "Closure cannot be stored in a field %s." fname
+    | Env.ValLit l -> pure (fname, l)
+  in
+  mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
+
+(* TODO: implement type-checking *)
+let init_contract libs cparams cfields args init_bal  =
+  (* Initialize libraries *)
+  let%bind libenv = init_libraries libs in
+  let pnames = List.map cparams ~f:(fun (i, t) -> get_id i) in
+  let valid_args = List.for_all pnames ~f:(fun p ->
+      let selector = fun a -> fst a = p in
+      let ex = List.exists args ~f:selector in
+      let uniq = (List.count args ~f:selector) = 1 in
+      (* printf "Param: %s, exists: %b, uniq: %b\n" p ex uniq; *)
+      ex && uniq) in
+  if not valid_args
+  then fail @@ sprintf
+      "Mismatch between the vector of arguments:\n%s\nand expected parameters%s\n"
+      (Configuration.pp_literal_map args) (pp_cparams cparams)
+  else
+    (* Init parameters *)
+    let params = List.map args ~f:(fun (n, l) -> (n, Env.ValLit l)) in
+    (* Fold params into already initialized libraries, possibly shadowing *)
+    let env = List.fold_left ~init:libenv params 
+        ~f:(fun e (p, v) -> Env.bind e p v) in
+    let%bind fields = init_fields env cfields in
+    let%bind balance = validate_init_bal init_bal in
+    let open ContractState in
+    let cstate = {env; fields; balance} in
+    pure cstate
+
+(* Initialize a module with given arguments and initial balance *)
+let init_module md args init_bal =
+  let {cname ; libs; contr} = md in
+  let {cname; cparams; cfields; ctrans} = contr in
+  let%bind cstate =
+    init_contract libs cparams cfields args init_bal in
+  pure (contr, cstate)
+    
+(* TOOD: Implement the following routines:
+* Parse primitive input for contract
+* Validate and parse message
+* Run a transition for a message and produce updated contract state
+
+ *)

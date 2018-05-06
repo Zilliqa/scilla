@@ -12,6 +12,8 @@ open Core
 open Result.Let_syntax
 open MonadUtil
 
+let balance_id = "balance"
+
 (*****************************************************)
 (* Update-only execution environment for expressions *)
 (*****************************************************)
@@ -37,9 +39,9 @@ module Env = struct
   and
     pp_value v = match v with
     | ValLit l -> sexp_of_literal l |> Sexplib.Sexp.to_string
-    | ValClosure (f, t, e, env) ->
-        (sexp_of_expr sexp_of_loc (Fun (f, t, e)) |> Sexplib.Sexp.to_string)
-        ^ ", " ^ (pp env)  
+    | ValClosure (f, t, e, env) -> "<closure>"
+        (* (sexp_of_expr sexp_of_loc (Fun (f, t, e)) |> Sexplib.Sexp.to_string)
+         * ^ ", " ^ (pp env)   *)
 
   let empty = []
 
@@ -60,8 +62,6 @@ end
 (*          Runtime contract configuration        *)
 (**************************************************)
 module Configuration = struct
-
-  let balance_id = "balance"
 
   (* Runtime contract configuration and operations with it *)
   type 'rep t = {
@@ -193,3 +193,48 @@ module Configuration = struct
     let emitted = old_emitted @ ls in
     pure {conf with emitted}
 end
+
+(*****************************************************)
+(*         Contract state after initialization       *)
+(*****************************************************)
+
+module ContractState = struct
+
+  type init_args = (string * literal) list 
+
+  (* Runtime contract configuration and operations with it *)
+  type 'rep t = {
+    (* Immutable parameters *)
+    env : 'rep Env.t;
+    (* Contract fields *)
+    fields : (string * literal) list;
+    (* Contract balance *)
+    balance : Big_int.big_int;
+  }
+
+  (* Pretty-printing *)
+  let pp cstate =
+    let pp_params = Env.pp cstate.env in
+    let pp_fields = Configuration.pp_literal_map cstate.fields in
+    let pp_balance = Big_int.string_of_big_int cstate.balance in
+    sprintf "Contract State:\nParameters and libraries =\n%s\nMutable fields = \n%s\nBalance = %s\n"
+      pp_params pp_fields pp_balance
+
+end
+
+(*****************************************************)
+(*                Message payload                    *)
+(*****************************************************)
+
+module MessagePayload = struct
+
+  open Big_int
+
+  type t = {
+    amount : big_int;
+    payload : (string * literal) list;
+  }
+  
+end
+
+

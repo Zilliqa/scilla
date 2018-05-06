@@ -136,6 +136,12 @@ type 'rep contract =
     ctrans  : 'rep transition list; }
 [@@deriving sexp]
 
+let pp_cparams ps =
+  let cs = List.map ps ~f:(fun (i, t) ->
+      get_id i ^ " : " ^
+      (sexp_of_typ t |> Sexplib.Sexp.to_string)) in
+  "[" ^ (String.concat ~sep:", " cs) ^ "]"
+
 (* Contract module: libary + contract definiton *)
 type 'rep cmodule =
   { cname : 'rep ident;

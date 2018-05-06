@@ -24,22 +24,33 @@ opam install core cryptokit ppx_sexp_conv yojson
 opam install menhir 
 ```
 
-### Compiling the project
+### Compiling and Running
 
-Just run `make clean; make` from the root folder
+To build the project, run `make clean; make` from the root folder.
 
-To invoke a simple parsertest (subject to
+Once the probject is built you can try the following things:
+
+* To invoke a simple parser test (subject to
 [ongoing implementation](./ROADMAP.md)), execute from the project
 root:
 
 ```
-./bin/scilla-module-parser examples/contracts/zil-game.scilla 
+./bin/scilla-module-parser examples/contracts/zil-game/contract
 ```
-
-or, to evaluate an expression:
+* To evaluate an expression:
 
 ```
 ./bin/eval-runner examples/eval/exp/let.scilla 
+```
+
+* To run a simulation:
+
+```
+./bin/scilla-runner crowdfunding
+```
+or
+```
+./bin/scilla-runner zil-game
 ```
 
 ### Where to find binaries
