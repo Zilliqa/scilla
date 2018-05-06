@@ -91,11 +91,13 @@ let rec make_step_loop ctr name cstate num_steps i =
 
 After compilinig, run from the project root folder:
 
-bin/scilla-runner crowdfunding
+bin/scilla-runner crowdfunding n
 
 or 
 
-bin/scilla-runner zil-game
+bin/scilla-runner zil-game n
+
+where "n" is a number 0-4 for the number of "steps" to execute the protocol.
 
 *)
 
