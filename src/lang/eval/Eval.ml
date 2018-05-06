@@ -243,13 +243,17 @@ let init_contract libs cparams cfields args init_bal  =
   (* Initialize libraries *)
   let%bind libenv = init_libraries libs in
   let pnames = List.map cparams ~f:(fun (i, t) -> get_id i) in
-  let valid_args = List.for_all pnames ~f:(fun p ->
-      let selector = fun a -> fst a = p in
-      let ex = List.exists args ~f:selector in
-      let uniq = (List.count args ~f:selector) = 1 in
+  let valid_args = List.for_all args ~f:(fun a ->
+      (* For each argument there is a parameter *)
+      let ex = List.exists pnames ~f:(fun p -> p = fst a) in
+      (* Each argument name occurrs once *)
+      let uniq = (List.count args ~f:(fun e -> fst e = fst a)) = 1 in
       (* printf "Param: %s, exists: %b, uniq: %b\n" p ex uniq; *)
       ex && uniq) in
-  if not valid_args
+  let valid_params = List.for_all pnames ~f:(fun p ->
+      (* For each parameter there is an argument *)
+      List.exists args ~f:(fun a -> p = fst a)) in  
+  if not (valid_args && valid_params)
   then fail @@ sprintf
       "Mismatch between the vector of arguments:\n%s\nand expected parameters%s\n"
       (Configuration.pp_literal_map args) (pp_cparams cparams)
@@ -277,12 +281,51 @@ let init_module md args init_bal =
 (*               Message processing                    *)
 (*******************************************************)
 
-let preprocess_message es = ""
+(* Extract necessary bits from the message *)
+let preprocess_message es =
+  let%bind tag = MessagePayload.get_tag es in
+  let%bind amount = MessagePayload.get_amount es in
+  let other = MessagePayload.get_other_entries es in
+  pure (tag, amount, other)
 
-let prepare_for_message m contr =
+(* Retrieve transition based on the tag *)
+let get_transition ctr tag =
+  let ts = ctr.ctrans in
+  match List.find ts ~f:(fun t -> (get_id t.tname) = tag) with
+  | None -> fail @@ sprintf
+        "No contract transition for tag %s found." tag
+  | Some t ->
+      let params = t.tparams in
+      let body = t.tbody in
+      pure (params, body)
+
+(* Restrict message entries to the transition parameters *)
+(* TODO: Check runtime types *)
+let check_and_restrict tparams entries =
+  (* There as an entry for each parameter *)
+  let valid_entries = List.for_all tparams
+      ~f:(fun p -> List.exists entries ~f:(fun e -> fst e = (get_id (fst p)))) in
+  (* Each entry name is unique *)
+  let uniq_entries = List.for_all entries
+      ~f:(fun e -> (List.count entries ~f:(fun e' -> fst e = fst e')) = 1) in
+  if not (valid_entries && uniq_entries)
+  then fail @@ sprintf
+      "Mismatch b/w message entries:\n%s\nand expected transition parameters%s\n"
+      (Configuration.pp_literal_map entries) (pp_cparams tparams)
+  else
+    let env_filtered = List.filter entries
+        ~f:(fun (n, _) ->
+            not (List.exists tparams (fun (p, _) -> (get_id p) = n))) in
+    pure env_filtered
+
+(* Get the environment, incoming amount and body to execute*)
+let prepare_for_message contr m =
   match m with
   | Msg entries ->
-      fail "???"
+      let%bind (tag, incoming_amount, other) = preprocess_message entries in
+      let%bind (tparams, tbody) = get_transition contr tag in
+      let%bind tenv = check_and_restrict tparams other in
+      pure (tenv, incoming_amount, tbody)
   | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal m)
 
     

@@ -36,9 +36,9 @@ let zil_game_init_args =
   "'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000" in
   [
     ("owner",    Address "a0x1342345563");
+    ("puzzle", Sha256 hs);
     ("player_a", Address "a0x253454234");
     ("player_b", Address "a0x6734523432");
-    ("puzzle", Sha256 hs)
   ], init_bal
 
 let init_args = [

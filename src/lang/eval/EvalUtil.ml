@@ -234,6 +234,46 @@ module MessagePayload = struct
     amount : big_int;
     payload : (string * literal) list;
   }
+
+  let tag_label = "tag"
+  let amount_label = "amount"
+  let sender_label = "sender"
+
+  
+  let get_tag es =
+    match List.find es ~f:(fun (l, p) -> l = tag_label) with
+    | None -> fail @@ sprintf "No \"tag\" field in message [%s]."
+          (Configuration.pp_literal_map es)
+    | Some (_, p) -> match p with
+      | StringLit s -> pure s
+      | _ -> fail @@ sprintf "Wrong value of the entry with \"ta\": %s."
+          (pp_literal p)
+
+  let get_sender es =
+    match List.find es ~f:(fun (l, p) -> l = sender_label) with
+    | None -> fail @@ sprintf "No \"sender\" field in message [%s]."
+          (Configuration.pp_literal_map es)
+    | Some (_, p) -> match p with
+      | Address _ as a -> pure a
+      | _ -> fail @@ sprintf "Wrong value of the entry with \"ta\": %s."
+          (pp_literal p)
+  
+  let get_amount es =
+    match List.find es ~f:(fun (l, p) -> l = amount_label) with
+    | None -> fail @@ sprintf "No \"amount\" field in message [%s]."
+          (Configuration.pp_literal_map es)
+    | Some (_, p) -> match p with
+      | IntLit s ->
+          (try
+             pure (big_int_of_string s)
+           with
+           | Failure _ -> fail @@
+               sprintf "Could not convert string %s to big int." s)
+      | _ -> fail @@ sprintf "Wrong value of the entry with \"amount\": %s."
+          (pp_literal p)
+    
+  let get_other_entries es =
+    List.filter es ~f:(fun (l, _) -> l <> tag_label)
   
 end
 
