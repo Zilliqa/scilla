@@ -68,9 +68,9 @@ let check_after_step name res bstate m =
 let make_step ctr name cstate i  =
   let (bstate, m) = get_context name i in
   printf "[Regular Execution Step %i] About to handle:\n" i;
-  printf "%s\nin a Blockchain State: %s.\n"
+  printf "%s\nin a Blockchain State:\n%s.\n"
     (pp_literal m) (pp_literal_map bstate);
-  let step_result = process_message ctr cstate bstate m in
+  let step_result = handle_message ctr cstate bstate m in
   let (cstate', _) =
     check_after_step name step_result bstate m in
   cstate'

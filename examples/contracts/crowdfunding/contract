@@ -173,7 +173,7 @@ transition ClaimBack (sender: Address)
           msgs = one_msg msg;
           send msgs
       | Some v =>
-          bs1 = builtin remove cs sender;
+          bs1 = builtin remove bs sender;
 	  backers := bs1;
           msg  = {tag : Main; to : sender; amount : v; 
                   code : reclaimed_code};

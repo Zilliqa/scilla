@@ -103,8 +103,8 @@ let cf_get_funds =
 let cf_msgs_bcs =
   [(get_bc_state 0, cf_donate1);
    (get_bc_state 0, cf_donate2);
-   (get_bc_state 1, cf_claim1);
-   (get_bc_state 2, cf_get_funds)]
+   (get_bc_state 1, cf_get_funds);
+   (get_bc_state 2, cf_claim1);]
 
 (****************************************************)
 (*       Incoming messages for zil-game             *)

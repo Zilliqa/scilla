@@ -278,7 +278,12 @@ module MessagePayload = struct
         (match p with
          | IntLit s ->
              (try
-                pure (big_int_of_string s)
+                let i = big_int_of_string s in
+                let open Big_int in
+                if ge_big_int i zero_big_int
+                then pure (big_int_of_string s)
+                else
+                  fail @@ sprintf "Amount should be non-negative: %s" s
               with
               | Failure _ -> fail @@
                   sprintf "Could not convert string %s to big int." s)
