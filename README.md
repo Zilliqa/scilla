@@ -32,7 +32,7 @@ To build the project, run `make clean; make` from the root folder.
 
 Once the probject is built you can try the following things:
 
-### Evaluating a standalone closed expression:
+#### Evaluating a standalone closed expression:
 
 From the project root, execute
 
@@ -42,7 +42,7 @@ From the project root, execute
 
 Instead of `let.scilla` you might want to try any idfferent file in `examples/eval/exp`.
 
-### Running a step-based simulation
+#### Running a step-based simulation
 
 From the project root, execute
 
