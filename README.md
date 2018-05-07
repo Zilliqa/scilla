@@ -23,7 +23,6 @@ opam install ocaml-migrate-parsetree
 opam install core cryptokit ppx_sexp_conv yojson
 opam install angstrom hex ppx_deriving ppx_deriving_yojson
 opam install menhir
-
 ```
 
 ### Compiling and Running
