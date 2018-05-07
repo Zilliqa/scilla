@@ -1,0 +1,7 @@
+(IntLit 42),
+{ [x -> (IntLit 42)],
+  [c -> (ADTValue Some((ADT Option((PrimType Int))))((ADTValue Some((PrimType Int))((IntLit 42)))))],
+  [b -> (ADTValue True()())],
+  [z -> (IntLit 3)],
+  [y -> (ADTValue Some((PrimType Int))((IntLit 42)))],
+  [v -> (IntLit 42)] }

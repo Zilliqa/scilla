@@ -1,0 +1,6 @@
+Failed execution:
+Cannot store a closure
+<closure>
+as ff
+in a message
+(Message((tag(MTag Main))(amount(MVar(Ident x((fname"")(lnum 0)(bol 0)(cnum -1)))))(code(MVar(Ident ff((fname"")(lnum 0)(bol 0)(cnum -1))))))).

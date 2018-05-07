@@ -1,0 +1,5 @@
+<closure>,
+{ [d -> (IntLit 2)],
+  [a -> (IntLit 1)],
+  [f -> <closure>],
+  [x -> (IntLit 42)] }

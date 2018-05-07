@@ -1,0 +1,9 @@
+(IntLit 60),
+{ [p3 -> (ADTValue And((ADT Option((PrimType Int)))(ADT Option((PrimType Int))))((ADTValue None((PrimType Int))())(ADTValue Some((PrimType Int))((IntLit 2)))))],
+  [p2 -> (ADTValue And((ADT Option((PrimType Int)))(ADT Option((PrimType Int))))((ADTValue Some((PrimType Int))((IntLit 1)))(ADTValue None((PrimType Int))())))],
+  [p1 -> (ADTValue And((ADT Option((PrimType Int)))(ADT Option((PrimType Int))))((ADTValue Some((PrimType Int))((IntLit 1)))(ADTValue Some((PrimType Int))((IntLit 2)))))],
+  [o2 -> (ADTValue Some((PrimType Int))((IntLit 2)))],
+  [o1 -> (ADTValue Some((PrimType Int))((IntLit 1)))],
+  [n -> (ADTValue None((PrimType Int))())],
+  [b -> (IntLit 2)],
+  [a -> (IntLit 1)] }

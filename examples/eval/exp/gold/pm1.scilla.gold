@@ -1,0 +1,3 @@
+(IntLit 2),
+{ [c -> (ADTValue False()())],
+  [b -> (ADTValue True()())] }
