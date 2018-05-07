@@ -65,6 +65,18 @@ many steps in the simulation).
 $PROJECT_DIR/_build/install/default/bin
 ```
 
+### Running the testsuite
+
+The test-suite is driven by a bash script in examples/runtests-driver.sh which
+looks for files named "runtests.sh" in sub-directories and executes them. It
+passes along useful variables to the sub-scripts, such as where to output temp
+files and where the executables can be found.
+
+```
+cd examples/
+bash runtests-driver.sh
+```
+
 ## Using Ocaml with Emacs
 
 The following extensions would be useful:
