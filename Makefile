@@ -17,7 +17,7 @@ utop: all
 
 # Build and run tests
 test: all
-	./bin/scilla-interpreter
+	bash examples/runtests-driver.sh
 
 # Clean up
 clean:

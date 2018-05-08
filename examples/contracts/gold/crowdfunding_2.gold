@@ -1,0 +1,104 @@
+
+[Parsing]:
+Contract module [examples/contracts/crowdfunding] is successfully parsed.
+
+[Initializing libraries]:
+andb, orb, negb, one_msg, check_update, blk_leq, accepted_code, missed_deadline_code, already_backed_code, not_owner_code, too_early_code, got_funds_code, cannot_get_funds, cannot_reclaim_code, reclaimed_code
+
+Libraries for [examples/contracts/crowdfunding] are on. All seems fine so far!
+
+[Initializing crowdfunding's fields]
+Success!
+Contract State:
+Immutable parameters and libraries =
+{ [goal -> (IntLit 500)],
+  [max_block -> (BNum 199)],
+  [owner -> (Address a0x134234)],
+  [reclaimed_code -> (IntLit 9)],
+  [cannot_reclaim_code -> (IntLit 8)],
+  [cannot_get_funds -> (IntLit 7)],
+  [got_funds_code -> (IntLit 6)],
+  [too_early_code -> (IntLit 5)],
+  [not_owner_code -> (IntLit 4)],
+  [already_backed_code -> (IntLit 3)],
+  [missed_deadline_code -> (IntLit 2)],
+  [accepted_code -> (IntLit 1)],
+  [blk_leq -> <closure>],
+  [check_update -> <closure>],
+  [one_msg -> <closure>],
+  [negb -> <closure>],
+  [orb -> <closure>],
+  [andb -> <closure>] }
+Mutable fields = 
+{ [backers -> (Map())],
+  [funded -> (ADTValue False()())] }
+Balance = 0
+
+[Simulated execution, step 1]
+About to handle:
+(Msg((tag(StringLit Donate))(sender(Address a0x37534234))(amount(IntLit 100))))
+in a Blockchain State:
+{ [BLOCKNUMBER -> (BNum 100)] }.
+Success! Here's what we got:
+Contract State:
+Immutable parameters and libraries =
+{ [goal -> (IntLit 500)],
+  [max_block -> (BNum 199)],
+  [owner -> (Address a0x134234)],
+  [reclaimed_code -> (IntLit 9)],
+  [cannot_reclaim_code -> (IntLit 8)],
+  [cannot_get_funds -> (IntLit 7)],
+  [got_funds_code -> (IntLit 6)],
+  [too_early_code -> (IntLit 5)],
+  [not_owner_code -> (IntLit 4)],
+  [already_backed_code -> (IntLit 3)],
+  [missed_deadline_code -> (IntLit 2)],
+  [accepted_code -> (IntLit 1)],
+  [blk_leq -> <closure>],
+  [check_update -> <closure>],
+  [one_msg -> <closure>],
+  [negb -> <closure>],
+  [orb -> <closure>],
+  [andb -> <closure>] }
+Mutable fields = 
+{ [backers -> (Map(((Address a0x37534234)(IntLit 100))))],
+  [funded -> (ADTValue False()())] }
+Balance = 100
+Emitted messages:
+[  (Msg((tag(StringLit Main))(to(Address a0x37534234))(amount(IntLit 0))(code(IntLit 1))))]
+
+[Simulated execution, step 2]
+About to handle:
+(Msg((tag(StringLit Donate))(sender(Address a0x3641945))(amount(IntLit 200))))
+in a Blockchain State:
+{ [BLOCKNUMBER -> (BNum 100)] }.
+Success! Here's what we got:
+Contract State:
+Immutable parameters and libraries =
+{ [goal -> (IntLit 500)],
+  [max_block -> (BNum 199)],
+  [owner -> (Address a0x134234)],
+  [reclaimed_code -> (IntLit 9)],
+  [cannot_reclaim_code -> (IntLit 8)],
+  [cannot_get_funds -> (IntLit 7)],
+  [got_funds_code -> (IntLit 6)],
+  [too_early_code -> (IntLit 5)],
+  [not_owner_code -> (IntLit 4)],
+  [already_backed_code -> (IntLit 3)],
+  [missed_deadline_code -> (IntLit 2)],
+  [accepted_code -> (IntLit 1)],
+  [blk_leq -> <closure>],
+  [check_update -> <closure>],
+  [one_msg -> <closure>],
+  [negb -> <closure>],
+  [orb -> <closure>],
+  [andb -> <closure>] }
+Mutable fields = 
+{ [backers -> (Map(((Address a0x3641945)(IntLit 200))((Address a0x37534234)(IntLit 100))))],
+  [funded -> (ADTValue False()())] }
+Balance = 300
+Emitted messages:
+[  (Msg((tag(StringLit Main))(to(Address a0x3641945))(amount(IntLit 0))(code(IntLit 1))))]
+
+
+Evalutaion complete!

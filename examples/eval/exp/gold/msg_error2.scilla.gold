@@ -1,0 +1,2 @@
+Failed execution:
+Cannot serialize literal (Msg((tag(StringLit Main))(amount(IntLit 42))(code(IntLit 42))))

@@ -1,0 +1,5 @@
+(ADTValue Some((PrimType Int))((IntLit 12))),
+{ [y -> (ADTValue Some((PrimType Int))((IntLit 12)))],
+  [t -> (ADTValue True()())],
+  [x -> (IntLit 12)],
+  [a -> (IntLit 12)] }

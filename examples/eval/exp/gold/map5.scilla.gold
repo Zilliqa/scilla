@@ -1,0 +1,11 @@
+(ADTValue Some()((IntLit 239))),
+{ [m3 -> (Map(((IntLit 1)(IntLit 112))((IntLit 2)(IntLit 239))))],
+  [m2 -> (Map(((IntLit 2)(IntLit 239))((IntLit 1)(IntLit 42))))],
+  [m1 -> (Map(((IntLit 1)(IntLit 42))))],
+  [m0 -> (Map())],
+  [v3 -> (IntLit 112)],
+  [v2 -> (IntLit 239)],
+  [v1 -> (IntLit 42)],
+  [k3 -> (IntLit 3)],
+  [k2 -> (IntLit 2)],
+  [k1 -> (IntLit 1)] }

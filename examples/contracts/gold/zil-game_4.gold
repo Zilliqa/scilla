@@ -1,0 +1,195 @@
+
+[Parsing]:
+Contract module [examples/contracts/zil-game] is successfully parsed.
+
+[Initializing libraries]:
+andb, orb, negb, one_msg, no_msg, update_hash, update_timer, can_play, time_to_claim, check_validity, determine_winner, solution_submitted, time_window_missed, not_a_player, too_early_to_claim, wrong_sender_or_solution, here_is_the_reward
+
+Libraries for [examples/contracts/zil-game] are on. All seems fine so far!
+
+[Initializing zil-game's fields]
+Success!
+Contract State:
+Immutable parameters and libraries =
+{ [player_b -> (Address a0x6734523432)],
+  [player_a -> (Address a0x253454234)],
+  [puzzle -> (Sha256"'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")],
+  [owner -> (Address a0x1342345563)],
+  [here_is_the_reward -> (IntLit 6)],
+  [wrong_sender_or_solution -> (IntLit 5)],
+  [too_early_to_claim -> (IntLit 4)],
+  [not_a_player -> (IntLit 3)],
+  [time_window_missed -> (IntLit 2)],
+  [solution_submitted -> (IntLit 1)],
+  [determine_winner -> <closure>],
+  [check_validity -> <closure>],
+  [time_to_claim -> <closure>],
+  [can_play -> <closure>],
+  [update_timer -> <closure>],
+  [update_hash -> <closure>],
+  [no_msg -> (ADTValue Nil((PrimType Message))())],
+  [one_msg -> <closure>],
+  [negb -> <closure>],
+  [orb -> <closure>],
+  [andb -> <closure>] }
+Mutable fields = 
+{ [player_a_hash -> (ADTValue None((PrimType Hash))())],
+  [player_b_hash -> (ADTValue None((PrimType Hash))())],
+  [timer -> (ADTValue None((PrimType BNum))())],
+  [game_on -> (ADTValue False()())] }
+Balance = 500
+
+[Simulated execution, step 1]
+About to handle:
+(Msg((tag(StringLit Play))(sender(Address a0x253454234))(guess(Sha256"'=vB\007\147\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000"))(amount(IntLit 0))))
+in a Blockchain State:
+{ [BLOCKNUMBER -> (BNum 100)] }.
+Success! Here's what we got:
+Contract State:
+Immutable parameters and libraries =
+{ [player_b -> (Address a0x6734523432)],
+  [player_a -> (Address a0x253454234)],
+  [puzzle -> (Sha256"'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")],
+  [owner -> (Address a0x1342345563)],
+  [here_is_the_reward -> (IntLit 6)],
+  [wrong_sender_or_solution -> (IntLit 5)],
+  [too_early_to_claim -> (IntLit 4)],
+  [not_a_player -> (IntLit 3)],
+  [time_window_missed -> (IntLit 2)],
+  [solution_submitted -> (IntLit 1)],
+  [determine_winner -> <closure>],
+  [check_validity -> <closure>],
+  [time_to_claim -> <closure>],
+  [can_play -> <closure>],
+  [update_timer -> <closure>],
+  [update_hash -> <closure>],
+  [no_msg -> (ADTValue Nil((PrimType Message))())],
+  [one_msg -> <closure>],
+  [negb -> <closure>],
+  [orb -> <closure>],
+  [andb -> <closure>] }
+Mutable fields = 
+{ [timer -> (ADTValue Some((PrimType BNum))((BNum 111)))],
+  [player_a_hash -> (ADTValue Some((PrimType Hash))((Sha256"'=vB\007\147\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")))],
+  [game_on -> (ADTValue True()())],
+  [player_b_hash -> (ADTValue None((PrimType Hash))())] }
+Balance = 500
+Emitted messages:
+[  (Msg((tag(StringLit Main))(to(Address a0x253454234))(amount(IntLit 0))(code(IntLit 1))))]
+
+[Simulated execution, step 2]
+About to handle:
+(Msg((tag(StringLit ClaimReward))(sender(Address a0x253454234))(solution(IntLit 42))(amount(IntLit 0))))
+in a Blockchain State:
+{ [BLOCKNUMBER -> (BNum 100)] }.
+Success! Here's what we got:
+Contract State:
+Immutable parameters and libraries =
+{ [player_b -> (Address a0x6734523432)],
+  [player_a -> (Address a0x253454234)],
+  [puzzle -> (Sha256"'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")],
+  [owner -> (Address a0x1342345563)],
+  [here_is_the_reward -> (IntLit 6)],
+  [wrong_sender_or_solution -> (IntLit 5)],
+  [too_early_to_claim -> (IntLit 4)],
+  [not_a_player -> (IntLit 3)],
+  [time_window_missed -> (IntLit 2)],
+  [solution_submitted -> (IntLit 1)],
+  [determine_winner -> <closure>],
+  [check_validity -> <closure>],
+  [time_to_claim -> <closure>],
+  [can_play -> <closure>],
+  [update_timer -> <closure>],
+  [update_hash -> <closure>],
+  [no_msg -> (ADTValue Nil((PrimType Message))())],
+  [one_msg -> <closure>],
+  [negb -> <closure>],
+  [orb -> <closure>],
+  [andb -> <closure>] }
+Mutable fields = 
+{ [timer -> (ADTValue Some((PrimType BNum))((BNum 111)))],
+  [player_a_hash -> (ADTValue Some((PrimType Hash))((Sha256"'=vB\007\147\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")))],
+  [game_on -> (ADTValue True()())],
+  [player_b_hash -> (ADTValue None((PrimType Hash))())] }
+Balance = 500
+Emitted messages:
+[  (Msg((tag(StringLit Main))(to(Address a0x253454234))(amount(IntLit 0))(code(IntLit 4))))]
+
+[Simulated execution, step 3]
+About to handle:
+(Msg((tag(StringLit Play))(sender(Address a0x6734523432))(guess(Sha256"'=vB\007\147\226\237\205&\153\015\222\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000"))(amount(IntLit 0))))
+in a Blockchain State:
+{ [BLOCKNUMBER -> (BNum 200)] }.
+Success! Here's what we got:
+Contract State:
+Immutable parameters and libraries =
+{ [player_b -> (Address a0x6734523432)],
+  [player_a -> (Address a0x253454234)],
+  [puzzle -> (Sha256"'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")],
+  [owner -> (Address a0x1342345563)],
+  [here_is_the_reward -> (IntLit 6)],
+  [wrong_sender_or_solution -> (IntLit 5)],
+  [too_early_to_claim -> (IntLit 4)],
+  [not_a_player -> (IntLit 3)],
+  [time_window_missed -> (IntLit 2)],
+  [solution_submitted -> (IntLit 1)],
+  [determine_winner -> <closure>],
+  [check_validity -> <closure>],
+  [time_to_claim -> <closure>],
+  [can_play -> <closure>],
+  [update_timer -> <closure>],
+  [update_hash -> <closure>],
+  [no_msg -> (ADTValue Nil((PrimType Message))())],
+  [one_msg -> <closure>],
+  [negb -> <closure>],
+  [orb -> <closure>],
+  [andb -> <closure>] }
+Mutable fields = 
+{ [timer -> (ADTValue Some((PrimType BNum))((BNum 111)))],
+  [player_a_hash -> (ADTValue Some((PrimType Hash))((Sha256"'=vB\007\147\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")))],
+  [game_on -> (ADTValue True()())],
+  [player_b_hash -> (ADTValue None((PrimType Hash))())] }
+Balance = 500
+Emitted messages:
+[  (Msg((tag(StringLit Main))(to(Address a0x6734523432))(amount(IntLit 0))(code(IntLit 2))))]
+
+[Simulated execution, step 4]
+About to handle:
+(Msg((tag(StringLit ClaimReward))(sender(Address a0x253454234))(solution(IntLit 42))(amount(IntLit 0))))
+in a Blockchain State:
+{ [BLOCKNUMBER -> (BNum 200)] }.
+Success! Here's what we got:
+Contract State:
+Immutable parameters and libraries =
+{ [player_b -> (Address a0x6734523432)],
+  [player_a -> (Address a0x253454234)],
+  [puzzle -> (Sha256"'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")],
+  [owner -> (Address a0x1342345563)],
+  [here_is_the_reward -> (IntLit 6)],
+  [wrong_sender_or_solution -> (IntLit 5)],
+  [too_early_to_claim -> (IntLit 4)],
+  [not_a_player -> (IntLit 3)],
+  [time_window_missed -> (IntLit 2)],
+  [solution_submitted -> (IntLit 1)],
+  [determine_winner -> <closure>],
+  [check_validity -> <closure>],
+  [time_to_claim -> <closure>],
+  [can_play -> <closure>],
+  [update_timer -> <closure>],
+  [update_hash -> <closure>],
+  [no_msg -> (ADTValue Nil((PrimType Message))())],
+  [one_msg -> <closure>],
+  [negb -> <closure>],
+  [orb -> <closure>],
+  [andb -> <closure>] }
+Mutable fields = 
+{ [timer -> (ADTValue Some((PrimType BNum))((BNum 111)))],
+  [player_a_hash -> (ADTValue Some((PrimType Hash))((Sha256"'=vB\007\147\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")))],
+  [game_on -> (ADTValue True()())],
+  [player_b_hash -> (ADTValue None((PrimType Hash))())] }
+Balance = 500
+Emitted messages:
+[  (Msg((tag(StringLit Main))(to(Address a0x253454234))(amount(IntLit 0))(code(IntLit 5))))]
+
+
+Evalutaion complete!

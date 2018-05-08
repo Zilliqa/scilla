@@ -1,0 +1,5 @@
+(IntLit 84),
+{ [a -> (IntLit 84)],
+  [y -> (IntLit 84)],
+  [f -> <closure>],
+  [x -> (IntLit 42)] }
