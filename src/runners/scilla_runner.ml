@@ -99,6 +99,10 @@ where "n" is a number 0-5 for the number of "steps" to execute the protocol.
 
 *)
 
+let input_init_json filename = 
+  let open JSON.StateInput in
+    get_json_data filename , Big_int.zero_big_int
+
 let () =
   let arg_size = Array.length Sys.argv in
   (* Contract module name *)
@@ -112,6 +116,7 @@ let () =
   let mod_path = sprintf "examples%scontracts%s%s"
       Filename.dir_sep Filename.dir_sep name in
   let filename = mod_path ^ Filename.dir_sep ^ "contract" in
+  let initjsonname = mod_path ^ Filename.dir_sep ^ "init.json" in
   let parse_module =
     FrontEndParser.parse_file ScillaParser.cmodule filename in
   match parse_module with
@@ -127,8 +132,8 @@ let () =
  
       (* 2. Initializing the contract with arguments matching its parameters *)
 
-      (* Retrieving initial parameters from the mock file TestRunnerInputs *)
-      let (args, init_bal) = get_init_args name in
+      (* Retrieve initial parameters from init.json for this contract *)
+      let (args, init_bal) = input_init_json initjsonname in
       (* Initializing the contract's state *)
       let init_res = init_module cmod args init_bal in
       (* Prints stats after the initialization and returns the initial state *)

@@ -1,0 +1,17 @@
+[
+    {
+        "vname" : "owner",
+        "type" : "Address", 
+        "value" : "a0x134234"
+    },
+    {
+        "vname" : "max_block",
+        "type" : "BNum" ,
+        "value" : "199"
+    },
+    { 
+        "vname" : "goal",
+        "type" : "Int",
+        "value" : "500"
+    }
+]

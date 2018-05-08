@@ -1,0 +1,22 @@
+[
+    {
+        "vname" : "owner",
+        "type" : "Address",
+        "value" : "a0x1342345563"
+    },
+    {
+        "vname" : "puzzle",
+        "type" : "Sha256",
+        "value" : "0x6a2s2ca222dff252a2f2s268e"
+    },
+    {
+        "vname" : "player_a",
+        "type" : "Address",
+        "value" : "a0x253454234"
+    },
+    {
+        "vname" : "player_b",
+        "type" :  "Address",
+        "value" :  "a0x6734523432"
+    }
+]
