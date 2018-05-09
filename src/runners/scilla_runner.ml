@@ -84,6 +84,20 @@ let rec make_step_loop ctr name cstate num_steps i =
   else
     printf "\nEvalutaion complete!"
 
+let input_init_json filename = 
+  let open JSON.StateInput in
+  let states = get_json_data filename in
+  let match_balance ((vname : string), _) : bool = vname = "_balance" in
+  let bal_lit = match List.find states ~f:match_balance with
+    | Some (_, lit) -> lit
+    | None -> IntLit("0") in
+  let bal_int = match bal_lit with
+    | IntLit (x) -> Int.of_string x
+    | _ -> 0 in
+  let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
+     no_bal_states, Big_int.big_int_of_int bal_int
+
+
 (****************************************************)
 (*              Main demo procedure                 *)
 (****************************************************)
@@ -98,16 +112,6 @@ bin/scilla-runner zil-game n
 where "n" is a number 0-5 for the number of "steps" to execute the protocol.
 
 *)
-
-let input_init_json filename = 
-  let open JSON.StateInput in
-    (* Hack to get different starting balance. This is
-     * to keep in sync with the values from TestRunnerInputs *)
-    if ExtString.String.exists filename "crowd"
-    then
-      get_json_data filename , Big_int.zero_big_int
-    else
-      get_json_data filename , Big_int.big_int_of_int 500
 
 let () =
   let arg_size = Array.length Sys.argv in
