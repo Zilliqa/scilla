@@ -1,0 +1,3 @@
+(ADTValue False()()),
+{ [b -> (Address 0xafcdeabcde123456789012345678901234567890)],
+  [a -> (Address 0xffcdeabcde123456789012345678901234567890)] }
