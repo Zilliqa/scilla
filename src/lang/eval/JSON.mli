@@ -14,12 +14,16 @@
  **    "value" : "value of the variable as a string"
  **)
 
-module StateInput : sig
+module ContractState : sig
 
   (** 
   **  Returns a list of (vname:string,value:literal) items
   **  from the json in the input filename. Invalid inputs in the json are ignored 
   **)
   val get_json_data : string -> (string * Syntax.literal) list
+  (** Prints a list of state variables (string, literal)
+   ** as a json to the specified output filename.Afl_instrument
+   **)
+  val put_json_data : ?pp:bool -> string -> ((string * Syntax.literal) list) -> unit
 
 end

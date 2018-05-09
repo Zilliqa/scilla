@@ -85,7 +85,7 @@ let rec make_step_loop ctr name cstate num_steps i =
     printf "\nEvalutaion complete!"
 
 let input_init_json filename = 
-  let open JSON.StateInput in
+  let open JSON.ContractState in
   let states = get_json_data filename in
   let match_balance ((vname : string), _) : bool = vname = "_balance" in
   let bal_lit = match List.find states ~f:match_balance with
