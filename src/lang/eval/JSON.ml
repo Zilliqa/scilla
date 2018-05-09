@@ -11,25 +11,21 @@ open Syntax
 open Core
 open Yojson
 
-let jobj_to_statevar (json : Basic.json) =
+let jobj_to_statevar json =
   let open Basic.Util in
   let n = member "vname" json |> to_string in
   let t = member "type" json |> to_string in
   let v = member "value" json |> to_string in
-  let tt = match t with
+  (match t with
     (* see Syntax.literal_tag *)
     | "String" -> Some (StringLit(v))
     | "Int" -> Some (IntLit(v))
     | "BNum" -> Some (BNum(v))
     | "Address" -> Some (Address(v))
     | "Sha256" -> Some (Sha256(v))
-    | _ -> None
-    in 
-  match tt with
-    | Some ttt -> Some (n, ttt)
-    | None -> None
+    | _ -> None) |> Option.map ~f:(fun x -> (n, x))
 
-let state_to_json (state : (string*literal)) : Basic.json =
+let state_to_json state : Basic.json =
   let (vname, lit) = state in
   `Assoc [ 
     ("vname", `String vname) ; 
@@ -37,7 +33,7 @@ let state_to_json (state : (string*literal)) : Basic.json =
     ("value", `String (pp_literal lit))
   ]
 
-let rec slist_to_json (l : (string * literal) list) j = 
+let rec slist_to_json l j = 
   match l with
   | [] -> j
   | s :: remaining -> 
@@ -50,27 +46,25 @@ module ContractState = struct
 
 (** Returns a list of (vname:string,value:literal) items
     Invalid inputs in the json are ignored **)
- let get_json_data (filename : string) : (string * literal) list =
+let get_json_data filename  =
   let json = Basic.from_file filename in
   (* input json is a list of key/value pairs *)
   let jlist = json |> Basic.Util.to_list in
   (* map the json list to a tuple (name,type,value) option *)
   let olist = List.map jlist ~f:jobj_to_statevar in
-  let filtered_list = List.filter olist ~f:(fun o -> match o with | Some x -> true | None -> false) in
-  List.map filtered_list ~f:(fun o -> match o with | Some x -> x | None -> assert false)
+  let filtered_list = List.filter olist ~f:Option.is_some in
+  List.map filtered_list ~f:(function Some x -> x | None -> assert false)
 
 (** Prints a list of state variables (string, literal)
-    as a json to the specified output filename. 
+    as a json to the specified output filename.
     pp enables pretty printing. **)
-let put_json_data ?(pp=false) (filename : string) (states : (string * literal) list ) : unit =
+let put_json_data ?(pp = false) filename states =
   let jsonl = slist_to_json states [] in
   let json = `List jsonl in
   if pp
   then
-    let str = Basic.pretty_to_string json in
-      let channel = Out_channel.create filename in
-        Out_channel.output_string channel str;
-        Out_channel.close channel;
+    Out_channel.with_file filename ~f:(fun channel -> 
+        Basic.pretty_to_string json |> Out_channel.output_string channel)
   else
     Basic.to_file filename json
 
