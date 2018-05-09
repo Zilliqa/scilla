@@ -14,7 +14,7 @@ let check_update =
   end
 in
 let bs = Emp in
-let a  = a0x134234 in
+let a  = 0x1234567890123456789012345678901234abcdef in
 let amt = 55 in
 let res = check_update bs a amt in
 match res with

@@ -11,10 +11,10 @@ Libraries for [examples/contracts/zil-game] are on. All seems fine so far!
 Success!
 Contract State:
 Immutable parameters and libraries =
-{ [player_b -> (Address a0x6734523432)],
-  [player_a -> (Address a0x253454234)],
-  [puzzle -> (Sha256"'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")],
-  [owner -> (Address a0x1342345563)],
+{ [player_b -> (Address 0xffcdeabcde123456789012345678901234567890)],
+  [player_a -> (Address 0xabcdeabcde123456789012345678901234567890)],
+  [puzzle -> (Sha256 0x123456789012345678901234567890123456789012345678901234567890abcd)],
+  [owner -> (Address 0x1234567890123456789012345678901234567890)],
   [here_is_the_reward -> (IntLit 6)],
   [wrong_sender_or_solution -> (IntLit 5)],
   [too_early_to_claim -> (IntLit 4)],
@@ -41,16 +41,16 @@ Balance = 500
 
 [Simulated execution, step 1]
 About to handle:
-(Msg((tag(StringLit Play))(sender(Address a0x253454234))(guess(Sha256"'=vB\007\147\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000"))(amount(IntLit 0))))
+(Msg((tag(StringLit Play))(sender(Address 0xabcdeabcde123456789012345678901234567890))(guess(Sha256 0x123456789012345678901234567890123456789012345678901234567890abff))(amount(IntLit 0))))
 in a Blockchain State:
 { [BLOCKNUMBER -> (BNum 100)] }.
 Success! Here's what we got:
 Contract State:
 Immutable parameters and libraries =
-{ [player_b -> (Address a0x6734523432)],
-  [player_a -> (Address a0x253454234)],
-  [puzzle -> (Sha256"'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")],
-  [owner -> (Address a0x1342345563)],
+{ [player_b -> (Address 0xffcdeabcde123456789012345678901234567890)],
+  [player_a -> (Address 0xabcdeabcde123456789012345678901234567890)],
+  [puzzle -> (Sha256 0x123456789012345678901234567890123456789012345678901234567890abcd)],
+  [owner -> (Address 0x1234567890123456789012345678901234567890)],
   [here_is_the_reward -> (IntLit 6)],
   [wrong_sender_or_solution -> (IntLit 5)],
   [too_early_to_claim -> (IntLit 4)],
@@ -70,25 +70,25 @@ Immutable parameters and libraries =
   [andb -> <closure>] }
 Mutable fields = 
 { [timer -> (ADTValue Some((PrimType BNum))((BNum 111)))],
-  [player_a_hash -> (ADTValue Some((PrimType Hash))((Sha256"'=vB\007\147\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")))],
+  [player_a_hash -> (ADTValue Some((PrimType Hash))((Sha256 0x123456789012345678901234567890123456789012345678901234567890abff)))],
   [game_on -> (ADTValue True()())],
   [player_b_hash -> (ADTValue None((PrimType Hash))())] }
 Balance = 500
 Emitted messages:
-[  (Msg((tag(StringLit Main))(to(Address a0x253454234))(amount(IntLit 0))(code(IntLit 1))))]
+[  (Msg((tag(StringLit Main))(to(Address 0xabcdeabcde123456789012345678901234567890))(amount(IntLit 0))(code(IntLit 1))))]
 
 [Simulated execution, step 2]
 About to handle:
-(Msg((tag(StringLit ClaimReward))(sender(Address a0x253454234))(solution(IntLit 42))(amount(IntLit 0))))
+(Msg((tag(StringLit ClaimReward))(sender(Address 0xabcdeabcde123456789012345678901234567890))(solution(IntLit 42))(amount(IntLit 0))))
 in a Blockchain State:
 { [BLOCKNUMBER -> (BNum 100)] }.
 Success! Here's what we got:
 Contract State:
 Immutable parameters and libraries =
-{ [player_b -> (Address a0x6734523432)],
-  [player_a -> (Address a0x253454234)],
-  [puzzle -> (Sha256"'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")],
-  [owner -> (Address a0x1342345563)],
+{ [player_b -> (Address 0xffcdeabcde123456789012345678901234567890)],
+  [player_a -> (Address 0xabcdeabcde123456789012345678901234567890)],
+  [puzzle -> (Sha256 0x123456789012345678901234567890123456789012345678901234567890abcd)],
+  [owner -> (Address 0x1234567890123456789012345678901234567890)],
   [here_is_the_reward -> (IntLit 6)],
   [wrong_sender_or_solution -> (IntLit 5)],
   [too_early_to_claim -> (IntLit 4)],
@@ -108,25 +108,25 @@ Immutable parameters and libraries =
   [andb -> <closure>] }
 Mutable fields = 
 { [timer -> (ADTValue Some((PrimType BNum))((BNum 111)))],
-  [player_a_hash -> (ADTValue Some((PrimType Hash))((Sha256"'=vB\007\147\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")))],
+  [player_a_hash -> (ADTValue Some((PrimType Hash))((Sha256 0x123456789012345678901234567890123456789012345678901234567890abff)))],
   [game_on -> (ADTValue True()())],
   [player_b_hash -> (ADTValue None((PrimType Hash))())] }
 Balance = 500
 Emitted messages:
-[  (Msg((tag(StringLit Main))(to(Address a0x253454234))(amount(IntLit 0))(code(IntLit 4))))]
+[  (Msg((tag(StringLit Main))(to(Address 0xabcdeabcde123456789012345678901234567890))(amount(IntLit 0))(code(IntLit 4))))]
 
 [Simulated execution, step 3]
 About to handle:
-(Msg((tag(StringLit Play))(sender(Address a0x6734523432))(guess(Sha256"'=vB\007\147\226\237\205&\153\015\222\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000"))(amount(IntLit 0))))
+(Msg((tag(StringLit Play))(sender(Address 0xffcdeabcde123456789012345678901234567890))(guess(Sha256 0x123456789012345678901234567890123456789012345678901234567890ab12))(amount(IntLit 0))))
 in a Blockchain State:
 { [BLOCKNUMBER -> (BNum 200)] }.
 Success! Here's what we got:
 Contract State:
 Immutable parameters and libraries =
-{ [player_b -> (Address a0x6734523432)],
-  [player_a -> (Address a0x253454234)],
-  [puzzle -> (Sha256"'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")],
-  [owner -> (Address a0x1342345563)],
+{ [player_b -> (Address 0xffcdeabcde123456789012345678901234567890)],
+  [player_a -> (Address 0xabcdeabcde123456789012345678901234567890)],
+  [puzzle -> (Sha256 0x123456789012345678901234567890123456789012345678901234567890abcd)],
+  [owner -> (Address 0x1234567890123456789012345678901234567890)],
   [here_is_the_reward -> (IntLit 6)],
   [wrong_sender_or_solution -> (IntLit 5)],
   [too_early_to_claim -> (IntLit 4)],
@@ -146,12 +146,12 @@ Immutable parameters and libraries =
   [andb -> <closure>] }
 Mutable fields = 
 { [timer -> (ADTValue Some((PrimType BNum))((BNum 111)))],
-  [player_a_hash -> (ADTValue Some((PrimType Hash))((Sha256"'=vB\007\147\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")))],
+  [player_a_hash -> (ADTValue Some((PrimType Hash))((Sha256 0x123456789012345678901234567890123456789012345678901234567890abff)))],
   [game_on -> (ADTValue True()())],
   [player_b_hash -> (ADTValue None((PrimType Hash))())] }
 Balance = 500
 Emitted messages:
-[  (Msg((tag(StringLit Main))(to(Address a0x6734523432))(amount(IntLit 0))(code(IntLit 2))))]
+[  (Msg((tag(StringLit Main))(to(Address 0xffcdeabcde123456789012345678901234567890))(amount(IntLit 0))(code(IntLit 2))))]
 
 
 Evalutaion complete!

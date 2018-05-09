@@ -11,10 +11,10 @@ Libraries for [examples/contracts/zil-game] are on. All seems fine so far!
 Success!
 Contract State:
 Immutable parameters and libraries =
-{ [player_b -> (Address a0x6734523432)],
-  [player_a -> (Address a0x253454234)],
-  [puzzle -> (Sha256"'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000")],
-  [owner -> (Address a0x1342345563)],
+{ [player_b -> (Address 0xffcdeabcde123456789012345678901234567890)],
+  [player_a -> (Address 0xabcdeabcde123456789012345678901234567890)],
+  [puzzle -> (Sha256 0x123456789012345678901234567890123456789012345678901234567890abcd)],
+  [owner -> (Address 0x1234567890123456789012345678901234567890)],
   [here_is_the_reward -> (IntLit 6)],
   [wrong_sender_or_solution -> (IntLit 5)],
   [too_early_to_claim -> (IntLit 4)],
