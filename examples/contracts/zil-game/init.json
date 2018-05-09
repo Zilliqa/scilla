@@ -2,21 +2,21 @@
     {
         "vname" : "owner",
         "type" : "Address",
-        "value" : "a0x1342345563"
+        "value" : "a0x1abc23c2e23254aafccd"
     },
     {
         "vname" : "puzzle",
         "type" : "Sha256",
-        "value" : "0x6a2s2ca222dff252a2f2s268e"
+        "value" : "0xfbad56c2e23554aafccd6532ab478c6d"
     },
     {
         "vname" : "player_a",
         "type" : "Address",
-        "value" : "a0x253454234"
+        "value" : "a0x6a2e2ca222dff252a2f2"
     },
     {
         "vname" : "player_b",
         "type" :  "Address",
-        "value" :  "a0x6734523432"
+        "value" :  "a0x5b2c2ca215dff252a2a2"
     }
 ]

@@ -3,6 +3,7 @@
 # It is expected that the caller of this sript sets the following variable
 # $SCILLA_RUNNER: to point to the path of scilla-runner executable.
 # $SCILLA_TMP: to a directory where output temporary files can be created.
+# $UPDATE_GOLD: should the gold be updated upon failure? 0/1
 
 if [ ! -f $SCILLA_RUNNER ]
 then
@@ -36,6 +37,12 @@ do
     if ! cmp -s "gold/${file}.gold" "${SCILLA_TMP}/${file}.output"
     then
         echo "Test failed: $file"
+
+        if [[ $UPDATE_GOLD -eq 1 ]]
+        then
+            echo "Updating gold for $file".
+            cp "${SCILLA_TMP}/${file}.output" "gold/${file}.gold"
+        fi
     fi
 
     # Next state test
@@ -60,6 +67,12 @@ do
     if ! cmp -s "gold/${file}.gold" "${SCILLA_TMP}/${file}.output"
     then
         echo "Test failed: $file"
+
+        if [[ $UPDATE_GOLD -eq 1 ]]
+        then
+            echo "Updating gold for $file".
+            cp "${SCILLA_TMP}/${file}.output" "gold/${file}.gold"
+        fi
     fi
 
     # Next state test

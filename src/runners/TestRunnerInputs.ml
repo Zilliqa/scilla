@@ -20,7 +20,7 @@ open EvalUtil
 (****************************************************)
 
 (* Initial arguments for crowdfunding *)
-let crowdfunding_owner = "a0x134234"
+let crowdfunding_owner = "a0x1abc2342e23256abfccd"
   
 let crowdfunding_init_args =
   let init_bal = Big_int.zero_big_int in
@@ -32,15 +32,14 @@ let crowdfunding_init_args =
 
 
 (* Initial arguments for zil-game *)
-let player_a = "a0x253454234"
-let player_b = "a0x6734523432"
+let player_a = "a0x6a2e2ca222dff252a2f2"
+let player_b = "a0x5b2c2ca215dff252a2a2"
 
 let zil_game_init_args =
   let init_bal = Big_int.big_int_of_int 500 in
-  let hs =
-  "'=vB\007\146\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000" in
+  let hs = "0x1abc23c2e23254aafccd" in
   [
-    ("owner",    Address "a0x1342345563");
+    ("owner",    Address "a0x1abc23c2e23254aafccd");
     ("puzzle", Sha256 hs);
     ("player_a", Address player_a);
     ("player_b", Address player_b);

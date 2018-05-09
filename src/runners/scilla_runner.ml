@@ -101,7 +101,13 @@ where "n" is a number 0-5 for the number of "steps" to execute the protocol.
 
 let input_init_json filename = 
   let open JSON.StateInput in
-    get_json_data filename , Big_int.zero_big_int
+    (* Hack to get different starting balance. This is
+     * to keep in sync with the values from TestRunnerInputs *)
+    if ExtString.String.exists filename "crowd"
+    then
+      get_json_data filename , Big_int.zero_big_int
+    else
+      get_json_data filename , Big_int.big_int_of_int 500
 
 let () =
   let arg_size = Array.length Sys.argv in

@@ -3,6 +3,7 @@
 # It is expected that the caller of this sript sets the following variable
 # $EVAL_RUNNER: to point to the path of eval-runner executable.
 # $SCILLA_TMP: to a directory where output temporary files can be created.
+# $UPDATE_GOLD: should the gold be updated upon failure? 0/1
 
 if [ ! -f $EVAL_RUNNER ]
 then
@@ -31,6 +32,12 @@ do
     then
         echo "Test failed: $testf"
         succ=0
+
+        if [[ $UPDATE_GOLD -eq 1 ]]
+        then
+            echo "Updating gold for $testf".
+            cp "${SCILLA_TMP}/${testf}.output" "gold/${testf}.gold"
+        fi
     fi
 
 done

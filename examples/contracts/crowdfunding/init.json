@@ -2,7 +2,7 @@
     {
         "vname" : "owner",
         "type" : "Address", 
-        "value" : "a0x134234"
+        "value" : "a0x1abc2342e23256abfccd"
     },
     {
         "vname" : "max_block",
