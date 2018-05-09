@@ -97,7 +97,7 @@ let cf_claim1 =
 let cf_get_funds =
   Msg [
     ("tag", StringLit "GetFunds");
-    ("sender", Address "a0x134234");
+    ("sender", Address "a0x1abc2342e23256abfccd");
     ("amount", IntLit "0");
   ]
 

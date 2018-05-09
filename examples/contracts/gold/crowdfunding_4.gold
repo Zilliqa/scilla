@@ -135,7 +135,7 @@ Emitted messages:
 
 [Simulated execution, step 4]
 About to handle:
-(Msg((tag(StringLit GetFunds))(sender(Address a0x134234))(amount(IntLit 0))))
+(Msg((tag(StringLit GetFunds))(sender(Address a0x1abc2342e23256abfccd))(amount(IntLit 0))))
 in a Blockchain State:
 { [BLOCKNUMBER -> (BNum 200)] }.
 Success! Here's what we got:
@@ -164,7 +164,7 @@ Mutable fields =
   [funded -> (ADTValue False()())] }
 Balance = 300
 Emitted messages:
-[  (Msg((tag(StringLit Main))(to(Address a0x134234))(amount(IntLit 0))(code(IntLit 4))))]
+[  (Msg((tag(StringLit Main))(to(Address a0x1abc2342e23256abfccd))(amount(IntLit 0))(code(IntLit 7))))]
 
 
 Evalutaion complete!
