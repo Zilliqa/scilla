@@ -14,8 +14,8 @@ let f_input_blockchain = ref ""
 let f_output = ref ""
 let f_input = ref ""
 
-let usage = "-init init.json -istate input_state.json" ^
-    " -iblockchain input_blockchain.json -imessage input_message.json" ^
+let usage = "-init init.json [-istate input_state.json]" ^
+    " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
     " -o output.json -i input.scilla" 
 
 exception CliError of string
@@ -23,10 +23,14 @@ exception CliError of string
 let print_usage () = 
   Printf.fprintf stderr "Usage: %s %s\n" Sys.argv.(0) usage
 
-let validate =
+let validate () =
+  (* init.json is mandatory *)
   (if (not (Sys.file_exists !f_input_init) ||
-    not (Sys.file_exists !f_input_state) ||
-    not (Sys.file_exists !f_input_message) ||
+    (* input_state.json is not mandatory, but if provided, should be valid *)
+    ((!f_input_state <> "") && not (Sys.file_exists !f_input_state)) ||
+    (* input_message.json is not mandatory, but if provided, should be valid *)
+    ((!f_input_message <> "") && not (Sys.file_exists !f_input_message)) ||
+    (* input_blockchain.json is mandatory *)
     not (Sys.file_exists !f_input_blockchain))
   then 
      (print_usage ();
@@ -47,4 +51,4 @@ let validate =
   ] in 
   let ignore_anon s = () in
   let () = Arg.parse speclist ignore_anon ("Usage: "^usage) in
-    validate
+    validate ()
