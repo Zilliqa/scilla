@@ -39,7 +39,7 @@ let validate () =
     ()
   )
 
- let parse =
+ let parse () =
   let speclist = [
     ("-init", Arg.String (fun x -> f_input_init := x), "Path to initialization json");
     ("-istate", Arg.String (fun x -> f_input_state := x), "Path to state input json");
