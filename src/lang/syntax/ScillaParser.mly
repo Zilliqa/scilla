@@ -17,6 +17,9 @@
   let toType d = match d with
       | "Int" | "Hash" | "Address" | "BNum" | "Message" -> PrimType d
       | _ -> ADT (d, [])
+  
+  let address_length = 40
+  let hash_length = 64
 %}
 
 (* Identifiers *)    
@@ -24,9 +27,8 @@
 %token <string> CID
 
 (* Numbers and hashes *)
-%token <int> NUMLIT
-%token <string> SHA3LIT
-%token <string> ADDRESS
+%token <Big_int.big_int> NUMLIT
+%token <string> HEXLIT
                   
 (* Separators *)    
 %token SEMICOLON
@@ -155,10 +157,16 @@ simple_exp :
                
 lit :        
 | BLOCK;
-  n = NUMLIT   { BNum (string_of_int n) }
-| n = NUMLIT   { IntLit (string_of_int n) }
-| a = ADDRESS  { Address a }
-| h = SHA3LIT  { Sha256 h }
+  n = NUMLIT   { BNum (Big_int.string_of_big_int n) }
+| n = NUMLIT   { IntLit (Big_int.string_of_big_int n) }
+| h = HEXLIT   { 
+  let l = String.length h in
+  if l = (address_length + 2) 
+  then Address h 
+  else if l = (hash_length + 2)
+  then Sha256 h
+  else raise Error @@ Core.sprintf "Wrong hex string size (%s): %d." h l
+}
 | EMP          { Map [] }
 
 pattern:

@@ -1,6 +1,7 @@
 {
 open Lexing
 open ScillaParser
+open Big_int
 
 exception Error of string
 
@@ -18,8 +19,7 @@ let newline = '\r' | '\n' | "\r\n"
 let id = ['a'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let cid =   ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let lcomment = "(*" (_ # ['\r' '\n'])* "*)" newline
-let sha3256 = '0' 'x' ['a'-'f' '0'-'9']+
-let address = 'a' sha3256                
+let hex = '0' 'x' ['a'-'f' '0'-'9']+
                                          
 rule read =
   parse
@@ -30,9 +30,8 @@ rule read =
   | white         { read lexbuf }
 
   (* Numbers and hashes *)
-  | posint as i   { NUMLIT (int_of_string i) }
-  | sha3256 as i  { SHA3LIT i }
-  | address as i  { ADDRESS i }                 
+  | posint as i   { NUMLIT (big_int_of_string i) }
+  | hex    as i   { HEXLIT i }
                   
   (* Keywords *)          
   | "builtin"     { BUILTIN }      

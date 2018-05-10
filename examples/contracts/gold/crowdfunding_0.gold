@@ -13,7 +13,7 @@ Contract State:
 Immutable parameters and libraries =
 { [goal -> (IntLit 500)],
   [max_block -> (BNum 199)],
-  [owner -> (Address a0x1abc2342e23256abfccd)],
+  [owner -> (Address 0x1234567890123456789012345678901234567890)],
   [reclaimed_code -> (IntLit 9)],
   [cannot_reclaim_code -> (IntLit 8)],
   [cannot_get_funds -> (IntLit 7)],

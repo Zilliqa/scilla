@@ -20,26 +20,26 @@ open EvalUtil
 (****************************************************)
 
 (* Initial arguments for crowdfunding *)
-let crowdfunding_owner = "a0x1abc2342e23256abfccd"
+let owner = "0x1234567890123456789012345678901234567890"
   
 let crowdfunding_init_args =
   let init_bal = Big_int.zero_big_int in
   [
-    ("owner", Address crowdfunding_owner);
+    ("owner", Address owner);
     ("max_block", BNum "199");
     ("goal", IntLit "500")
   ], init_bal
 
 
 (* Initial arguments for zil-game *)
-let player_a = "a0x6a2e2ca222dff252a2f2"
-let player_b = "a0x5b2c2ca215dff252a2a2"
+let player_a = "0xabcdeabcde123456789012345678901234567890"
+let player_b = "0xffcdeabcde123456789012345678901234567890"
 
 let zil_game_init_args =
   let init_bal = Big_int.big_int_of_int 500 in
-  let hs = "0x1abc23c2e23254aafccd" in
+  let hs = "0x123456789012345678901234567890123456789012345678901234567890abcd" in
   [
-    ("owner",    Address "a0x1abc23c2e23254aafccd");
+    ("owner",    Address owner);
     ("puzzle", Sha256 hs);
     ("player_a", Address player_a);
     ("player_b", Address player_b);
@@ -76,28 +76,28 @@ let get_bc_state i = List.nth_exn bc_states i
 let cf_donate1 =
   Msg [
     ("tag", StringLit "Donate");
-    ("sender", Address "a0x37534234");
+    ("sender", Address "0x12345678901234567890123456789012345678ab");
     ("amount", IntLit "100");
   ]
 
 let cf_donate2 =
   Msg [
     ("tag", StringLit "Donate");
-    ("sender", Address "a0x3641945");
+    ("sender", Address "0x12345678901234567890123456789012345678cd");
     ("amount", IntLit "200");
   ]
 
 let cf_claim1 =
   Msg [
     ("tag", StringLit "ClaimBack");
-    ("sender", Address "a0x37534234");
+    ("sender", Address "0x12345678901234567890123456789012345678ab");
     ("amount", IntLit "0");
   ]
 
 let cf_get_funds =
   Msg [
     ("tag", StringLit "GetFunds");
-    ("sender", Address "a0x1abc2342e23256abfccd");
+    ("sender", Address "0x12345678901234567890123456789012345678cd");
     ("amount", IntLit "0");
   ]
 
@@ -115,10 +115,9 @@ let cf_msgs_bcs =
 
 (* TODO: fiddle with hashes *)
 let hs1 =
-  "'=vB\007\147\226\237\205&\153\015\221\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000"
+  "0x123456789012345678901234567890123456789012345678901234567890abff"
 
-let hs2 =
-  "'=vB\007\147\226\237\205&\153\015\222\2034p\144\t\169T\145,\1411\222\142O\017?\191.\000"
+let hs2 = "0x123456789012345678901234567890123456789012345678901234567890ab12"
 
 let zg_play1 =
   Msg [

@@ -13,7 +13,7 @@ Contract State:
 Immutable parameters and libraries =
 { [goal -> (IntLit 500)],
   [max_block -> (BNum 199)],
-  [owner -> (Address a0x1abc2342e23256abfccd)],
+  [owner -> (Address 0x1234567890123456789012345678901234567890)],
   [reclaimed_code -> (IntLit 9)],
   [cannot_reclaim_code -> (IntLit 8)],
   [cannot_get_funds -> (IntLit 7)],
@@ -36,7 +36,7 @@ Balance = 0
 
 [Simulated execution, step 1]
 About to handle:
-(Msg((tag(StringLit Donate))(sender(Address a0x37534234))(amount(IntLit 100))))
+(Msg((tag(StringLit Donate))(sender(Address 0x12345678901234567890123456789012345678ab))(amount(IntLit 100))))
 in a Blockchain State:
 { [BLOCKNUMBER -> (BNum 100)] }.
 Success! Here's what we got:
@@ -44,7 +44,7 @@ Contract State:
 Immutable parameters and libraries =
 { [goal -> (IntLit 500)],
   [max_block -> (BNum 199)],
-  [owner -> (Address a0x1abc2342e23256abfccd)],
+  [owner -> (Address 0x1234567890123456789012345678901234567890)],
   [reclaimed_code -> (IntLit 9)],
   [cannot_reclaim_code -> (IntLit 8)],
   [cannot_get_funds -> (IntLit 7)],
@@ -61,11 +61,11 @@ Immutable parameters and libraries =
   [orb -> <closure>],
   [andb -> <closure>] }
 Mutable fields = 
-{ [backers -> (Map(((Address a0x37534234)(IntLit 100))))],
+{ [backers -> (Map(((Address 0x12345678901234567890123456789012345678ab)(IntLit 100))))],
   [funded -> (ADTValue False()())] }
 Balance = 100
 Emitted messages:
-[  (Msg((tag(StringLit Main))(to(Address a0x37534234))(amount(IntLit 0))(code(IntLit 1))))]
+[  (Msg((tag(StringLit Main))(to(Address 0x12345678901234567890123456789012345678ab))(amount(IntLit 0))(code(IntLit 1))))]
 
 
 Evalutaion complete!

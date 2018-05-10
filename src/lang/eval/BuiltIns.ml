@@ -152,11 +152,9 @@ module Hashing = struct
   open UsefulLiterals
   open Cryptokit
 
-  (* TODO: discuss this with our Crypto gurus *)
-  let hexkey = "0102023645234090a0b0c0d0e0f10111463335161718191a1b1c1d1e1f20"
-
-  let hash_fun =
-    MAC.hmac_sha256 @@ transform_string (Hexa.decode()) hexkey
+  let hex s = transform_string (Hexa.decode()) s
+  let tohex s = transform_string (Hexa.encode()) s
+  let hash s = hash_string (Hash.sha2 256) s
 
   let eq ls = match ls with
     | [Sha256 x; Sha256 y] ->
@@ -166,13 +164,14 @@ module Hashing = struct
   let sha256hash ls = match ls with
     | [l] ->
         let lstr = sexp_of_literal l |> Sexplib.Sexp.to_string in
-        let lhash_str = hash_string hash_fun lstr in
-        pure @@ Sha256 lhash_str 
+        let lhash = hash lstr in
+        let lhash_hex = "0x" ^ tohex lhash in 
+        pure @@ Sha256 lhash_hex
     | _ -> builtin_fail "Hashing.sha256hash" ls
 
   let big_int_of_hash h =
     let s = match Hex.of_string h with
-      | `Hex s -> "0x" ^ s
+      | `Hex s -> s
     in Big_int.big_int_of_string s
   
   let dist ls = match ls with
