@@ -11,26 +11,80 @@ open Syntax
 open Core
 open Yojson
 
+let rec mapvalues_from_json ktype vtype l = 
+  let open Basic.Util in
+  match l with
+  | first :: remaining ->
+      let kval = member "key" first |> to_string in
+      let vval = member "val" first |> to_string in
+      let keylit = 
+        (match ktype with
+        | "String" -> Some (StringLit(kval))
+        | "Int" -> Some (IntLit(kval))
+        | "BNum" -> Some (BNum(kval))
+        | "Address" -> Some (Address(kval))
+        | "Sha256" -> Some (Sha256(kval))
+        | _ -> None) in
+      let vallit = 
+        (match vtype with
+        | "String" -> Some (StringLit(vval))
+        | "Int" -> Some (IntLit(vval))
+        | "BNum" -> Some (BNum(vval))
+        | "Address" -> Some (Address(vval))
+        | "Sha256" -> Some (Sha256(vval))
+        | _ -> None) in
+      let vlist = mapvalues_from_json ktype vtype remaining in
+      ( if keylit = None || vallit = None 
+        then
+          vlist
+        else
+          let kl = 
+            match keylit with | Some x -> x | None -> assert false in
+          let vl =
+            match vallit with | Some x -> x | None -> assert false in
+              (kl, vl) :: vlist
+      )
+  | [] -> []
+
 let jobj_to_statevar json =
   let open Basic.Util in
   let n = member "vname" json |> to_string in
   let t = member "type" json |> to_string in
-  let v = member "value" json |> to_string in
-  (match t with
-    (* see Syntax.literal_tag *)
-    | "String" -> Some (StringLit(v))
-    | "Int" -> Some (IntLit(v))
-    | "BNum" -> Some (BNum(v))
-    | "Address" -> Some (Address(v))
-    | "Sha256" -> Some (Sha256(v))
-    | _ -> None) |> Option.map ~f:(fun x -> (n, x))
+  if t <> "Map"
+  then
+    let v = member "value" json |> to_string in
+    (match t with
+      (* see Syntax.literal_tag *)
+      | "String" -> Some (StringLit(v))
+      | "Int" -> Some (IntLit(v))
+      | "BNum" -> Some (BNum(v))
+      | "Address" -> Some (Address(v))
+      | "Sha256" -> Some (Sha256(v))
+      | _ -> None) |> Option.map ~f:(fun x -> (n, x))
+  else
+    (* Handle Map separately. Map is a `List of `Assoc jsons, with
+     * the first `Assoc specifying the map's from/to types. *)
+    let v = member "value" json in
+      match v with
+      | `Null -> None
+      | `List vli ->
+         (match vli with 
+          | first :: remaining ->
+              let ktype = member "keyType" first |> to_string in
+              let vtype = member "valType" first |> to_string in
+              let kvallist = mapvalues_from_json ktype vtype remaining in
+                Some (n, Map (kvallist))
+          | _ -> None
+         )
+      | _ -> assert false
+    
 
 let rec mapvalues_to_json m = 
   match m with
   | Map (kv :: remaining) ->
     let (k, v) = kv in
-    let kjson = "from", (literal_to_json k) in
-    let vjson = "to", (literal_to_json v) in
+    let kjson = "key", (literal_to_json k) in
+    let vjson = "val", (literal_to_json v) in
     let kv_json = `Assoc (kjson :: vjson :: []) in
       kv_json :: (mapvalues_to_json (Map remaining))
   | Map ([]) -> []
@@ -42,9 +96,9 @@ and literal_to_json lit =
   | Map [] -> `Null
   | Map (kv :: remaining) ->
     let (k, v) = kv in
-    let kjson = "from", `String (literal_tag k) in
-    let vjson =  "to", `String (literal_tag v) in
-    let mtype_json : Yojson.json = `Assoc (kjson :: vjson :: []) in
+    let kjson = "keyType", `String (literal_tag k) in
+    let vjson =  "ValType", `String (literal_tag v) in
+    let mtype_json = `Assoc (kjson :: vjson :: []) in
     let kv_json = mapvalues_to_json (Map (kv :: remaining)) in
     (* The output state variable for a map has the from/to type
      * as the first map entry and the actual entries follow *)
@@ -77,7 +131,7 @@ let get_json_data filename  =
   let json = Basic.from_file filename in
   (* input json is a list of key/value pairs *)
   let jlist = json |> Basic.Util.to_list in
-  (* map the json list to a tuple (name,type,value) option *)
+  (* map the json list to a tuple (vname,value) option *)
   let olist = List.map jlist ~f:jobj_to_statevar in
   let filtered_list = List.filter olist ~f:Option.is_some in
   List.map filtered_list ~f:(function Some x -> x | None -> assert false)
