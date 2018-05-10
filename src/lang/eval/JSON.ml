@@ -25,12 +25,39 @@ let jobj_to_statevar json =
     | "Sha256" -> Some (Sha256(v))
     | _ -> None) |> Option.map ~f:(fun x -> (n, x))
 
-let state_to_json state : Basic.json =
+let rec mapvalues_to_json m = 
+  match m with
+  | Map (kv :: remaining) ->
+    let (k, v) = kv in
+    let kjson = "from", (literal_to_json k) in
+    let vjson = "to", (literal_to_json v) in
+    let kv_json = `Assoc (kjson :: vjson :: []) in
+      kv_json :: (mapvalues_to_json (Map remaining))
+  | Map ([]) -> []
+  | _ -> assert false
+
+and literal_to_json lit = 
+  match lit with
+  | StringLit (x) | IntLit (x)| BNum (x) | Address (x) | Sha256 (x) -> `String (x)
+  | Map [] -> `Null
+  | Map (kv :: remaining) ->
+    let (k, v) = kv in
+    let kjson = "from", `String (literal_tag k) in
+    let vjson =  "to", `String (literal_tag v) in
+    let mtype_json : Yojson.json = `Assoc (kjson :: vjson :: []) in
+    let kv_json = mapvalues_to_json (Map (kv :: remaining)) in
+    (* The output state variable for a map has the from/to type
+     * as the first map entry and the actual entries follow *)
+      `List (mtype_json :: kv_json)
+  | ADTValue _ (* Handle ADT *)
+  | _ -> `Null
+
+let state_to_json state =
   let (vname, lit) = state in
   `Assoc [ 
     ("vname", `String vname) ; 
     ("type", `String (literal_tag lit));
-    ("value", `String (pp_literal lit))
+    ("value", (literal_to_json lit))
   ]
 
 let rec slist_to_json l j = 
@@ -64,8 +91,8 @@ let put_json_data ?(pp = false) filename states =
   if pp
   then
     Out_channel.with_file filename ~f:(fun channel -> 
-        Basic.pretty_to_string json |> Out_channel.output_string channel)
+        pretty_to_string json |> Out_channel.output_string channel)
   else
-    Basic.to_file filename json
+    to_file filename json
 
 end
