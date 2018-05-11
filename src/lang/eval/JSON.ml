@@ -19,31 +19,24 @@ let rec mapvalues_from_json ktype vtype l =
       let vval = member "val" first |> to_string in
       let keylit = 
         (match ktype with
-        | "String" -> Some (StringLit(kval))
-        | "Int" -> Some (IntLit(kval))
-        | "BNum" -> Some (BNum(kval))
-        | "Address" -> Some (Address(kval))
-        | "Sha256" -> Some (Sha256(kval))
+        | "String" -> Some (StringLit kval)
+        | "Int" -> Some (IntLit kval)
+        | "BNum" -> Some (BNum kval)
+        | "Address" -> Some (Address kval)
+        | "Sha256" -> Some (Sha256 kval)
         | _ -> None) in
       let vallit = 
         (match vtype with
-        | "String" -> Some (StringLit(vval))
-        | "Int" -> Some (IntLit(vval))
-        | "BNum" -> Some (BNum(vval))
-        | "Address" -> Some (Address(vval))
-        | "Sha256" -> Some (Sha256(vval))
+        | "String" -> Some (StringLit vval)
+        | "Int" -> Some (IntLit vval)
+        | "BNum" -> Some (BNum vval)
+        | "Address" -> Some (Address vval)
+        | "Sha256" -> Some (Sha256 vval)
         | _ -> None) in
       let vlist = mapvalues_from_json ktype vtype remaining in
-      ( if keylit = None || vallit = None 
-        then
-          vlist
-        else
-          let kl = 
-            match keylit with | Some x -> x | None -> assert false in
-          let vl =
-            match vallit with | Some x -> x | None -> assert false in
-              (kl, vl) :: vlist
-      )
+      (match keylit, vallit with
+       | Some kl, Some vl -> (kl, vl) :: vlist
+       | _ -> vlist)
   | [] -> []
 
 let jobj_to_statevar json =
@@ -79,16 +72,15 @@ let jobj_to_statevar json =
       | _ -> assert false
     
 
-let rec mapvalues_to_json m = 
-  match m with
-  | Map (kv :: remaining) ->
+let rec mapvalues_to_json ms = 
+  match ms with
+  | kv :: remaining ->
     let (k, v) = kv in
     let kjson = "key", (literal_to_json k) in
     let vjson = "val", (literal_to_json v) in
     let kv_json = `Assoc (kjson :: vjson :: []) in
-      kv_json :: (mapvalues_to_json (Map remaining))
-  | Map ([]) -> []
-  | _ -> assert false
+      kv_json :: (mapvalues_to_json remaining)
+  | [] -> []
 
 and literal_to_json lit = 
   match lit with
@@ -99,7 +91,7 @@ and literal_to_json lit =
     let kjson = "keyType", `String (literal_tag k) in
     let vjson =  "ValType", `String (literal_tag v) in
     let mtype_json = `Assoc (kjson :: vjson :: []) in
-    let kv_json = mapvalues_to_json (Map (kv :: remaining)) in
+    let kv_json = mapvalues_to_json (kv :: remaining) in
     (* The output state variable for a map has the from/to type
      * as the first map entry and the actual entries follow *)
       `List (mtype_json :: kv_json)
