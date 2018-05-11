@@ -12,6 +12,24 @@
  **    "vname" : "variable name"
  **    "type" : "valid scilla type"
  **    "value" : "value of the variable as a string"
+ ** Map variables are encoded with the "type" being set to "Map"
+ ** and the actual keyType/valType and key/val being encoded as:
+        "vname" : "backers",
+        "type" : "Map",  
+        "value" :
+        [
+      	 {
+           “keyType” : “Address”,
+      	   “valType” : “Int”
+         },
+         {
+           “key” : “a0x32a3aa32456f”,
+           “val” : “100”
+        },
+       ]
+    i.e., the "value" for Maps is an array of key/val pairs, with
+    the first such pair being an exception, used to store the
+    types of the key/val, specified as "keyType" and "valType".
  **)
 
 module ContractState : sig
