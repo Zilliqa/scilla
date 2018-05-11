@@ -18,13 +18,13 @@
         "type" : "Map",  
         "value" :
         [
-      	 {
-           “keyType” : “Address”,
-      	   “valType” : “Int”
+         {
+           "keyType" : "Address",
+           "valType" : "Int"
          },
          {
-           “key” : "0x1234567890123456789012345678901234567890”,
-           “val” : “100”
+           "key" : "0x1234567890123456789012345678901234567890",
+           "val" : "100"
         },
        ]
     i.e., the "value" for Maps is an array of key/val pairs, with
