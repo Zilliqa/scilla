@@ -134,7 +134,7 @@ let get_json_data filename  =
   (* map the json list to a tuple (vname,value) option *)
   let olist = List.map jlist ~f:jobj_to_statevar in
   let filtered_list = List.filter olist ~f:Option.is_some in
-  List.map filtered_list ~f:(function Some x -> x | None -> assert false)
+    List.map filtered_list ~f:(function Some x -> x | None -> assert false)
 
 (** Prints a list of state variables (string, literal)
     as a json to the specified output filename.
@@ -192,5 +192,23 @@ let message_to_jstring ?(pp = false) message =
     Basic.pretty_to_string json
   else
     Basic.to_string json
+
+end
+
+module BlockChainState = struct
+
+  (**  Returns a list of (vname:string,value:literal) items
+   **  from the json in the input filename. Invalid inputs in the json are ignored.
+   **  This is different from ContractState only w.r.t. validating that all
+   **  all variables are from a pre-determined set of actual block chain state. **)
+let get_json_data filename  =
+  let json = Basic.from_file filename in
+  (* input json is a list of key/value pairs *)
+  let jlist = json |> Basic.Util.to_list in
+  (* map the json list to a tuple (vname,value) option *)
+  let olist = List.map jlist ~f:jobj_to_statevar in
+  let filtered_list = List.filter olist ~f:Option.is_some in
+    List.map filtered_list ~f:(function Some x -> x | None -> assert false)
+  (* TODO: Validate for only block chain variables *)
 
 end

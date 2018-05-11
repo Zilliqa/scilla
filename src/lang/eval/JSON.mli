@@ -90,3 +90,15 @@ module Message : sig
   val message_to_jstring : ?pp:bool -> ((string * Syntax.literal) list) -> string
 
 end
+
+module BlockChainState : sig
+
+  (** 
+   **  Returns a list of (vname:string,value:literal) items
+   **  from the json in the input filename. Invalid inputs in the json are ignored.
+   **  This is different from ContractState only w.r.t. validating that all
+   **  all variables are from a pre-determined set of actual block chain state.
+   **)
+  val get_json_data : string -> (string * Syntax.literal) list
+
+end
