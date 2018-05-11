@@ -12,7 +12,7 @@ open Core
 open Result.Let_syntax
 open MonadUtil
 
-let balance_id = "balance"
+let balance = "balance"
 
   (*  Pretty-printing *)
 
@@ -139,7 +139,7 @@ module Configuration = struct
 
   let load st k =
     let i = get_id k in
-    if i = balance_id
+    if i = balance
     then
       (* Balance is a special case *)   
       pure @@ IntLit (Big_int.string_of_big_int st.balance)
@@ -250,46 +250,37 @@ module MessagePayload = struct
   let amount_label = "amount"
   let sender_label = "sender"
 
-  let get_tag es =
-    match List.find es ~f:(fun (l, p) -> l = tag_label) with
-    | None -> fail @@ sprintf "No \"tag\" field in message [%s]."
-          (pp_literal_map es)
+  let get_value_for_entry lab f es = 
+    match List.find es ~f:(fun (l, p) -> l = lab) with
+    | None -> fail @@ sprintf "No \"%s\" field in message [%s]."
+          lab (pp_literal_map es)
     | Some (_, p) ->
-        (match p with
-         | StringLit s -> pure s
-         | _ -> fail @@ sprintf "Wrong value of the entry with \"ta\": %s."
-               (pp_literal p))
+        (match f p with 
+         | Some x -> x
+         | None -> fail @@ sprintf "Wrong value of the entry \"%s\": %s."
+               lab (pp_literal p)) 
 
-  let get_sender es =
-    match List.find es ~f:(fun (l, p) -> l = sender_label) with
-    | None -> fail @@ sprintf "No \"sender\" field in message [%s]."
-          (pp_literal_map es)
-    | Some (_, p) ->
-        (match p with
-         | Address _ as a -> pure a
-         | _ -> fail @@ sprintf "Wrong value of the entry with \"ta\": %s."
-               (pp_literal p))
+  let get_tag = get_value_for_entry tag_label
+      (function StringLit s -> Some (pure s) | _ -> None)
+
+  let get_sender = get_value_for_entry sender_label
+      (function Address _ as a -> Some (pure a) | _ -> None)
+
+  let get_amount = get_value_for_entry amount_label
+      (function 
+        | IntLit s ->
+            (try
+               let i = big_int_of_string s in
+               let open Big_int in
+               if ge_big_int i zero_big_int
+               then Some (pure (big_int_of_string s))
+               else
+                 Some (fail @@ sprintf "Amount should be non-negative: %s" s)
+             with
+              | Failure _ -> Some (fail @@
+                  sprintf "Could not convert string %s to big int." s))
+        | _ -> None)
   
-  let get_amount es =
-    match List.find es ~f:(fun (l, p) -> l = amount_label) with
-    | None -> fail @@ sprintf "No \"amount\" field in message [%s]."
-          (pp_literal_map es)
-    | Some (_, p) ->
-        (match p with
-         | IntLit s ->
-             (try
-                let i = big_int_of_string s in
-                let open Big_int in
-                if ge_big_int i zero_big_int
-                then pure (big_int_of_string s)
-                else
-                  fail @@ sprintf "Amount should be non-negative: %s" s
-              with
-              | Failure _ -> fail @@
-                  sprintf "Could not convert string %s to big int." s)
-         | _ -> fail @@ sprintf "Wrong value of the entry with \"amount\": %s."
-               (pp_literal p))
-        
   let get_other_entries es =
     List.filter es ~f:(fun (l, _) -> l <> tag_label)
   
