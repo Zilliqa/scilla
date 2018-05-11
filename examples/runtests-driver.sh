@@ -3,6 +3,9 @@
 #  $SCILLA_RUNNER: pointer to the scilla-runner executable
 #  $EVAL_RUNNER: pointer to the eval-runner executable
 #  $SCILLA_TMP: pointer to a tmp directory for outputs
+#  $UPDATE_GOLD: should the gold be updated upon failure? 0/1
+#                This should only be set when all tests pass,
+#                that require actual update.
 
 # Switch to directory in which this file is present.
 orig_dir=${PWD}

@@ -84,6 +84,20 @@ let rec make_step_loop ctr name cstate num_steps i =
   else
     printf "\nEvalutaion complete!"
 
+let input_init_json filename = 
+  let open JSON.ContractState in
+  let states = get_json_data filename in
+  let match_balance ((vname : string), _) : bool = vname = "_balance" in
+  let bal_lit = match List.find states ~f:match_balance with
+    | Some (_, lit) -> lit
+    | None -> IntLit("0") in
+  let bal_int = match bal_lit with
+    | IntLit (x) -> Int.of_string x
+    | _ -> 0 in
+  let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
+     no_bal_states, Big_int.big_int_of_int bal_int
+
+
 (****************************************************)
 (*              Main demo procedure                 *)
 (****************************************************)
@@ -112,6 +126,7 @@ let () =
   let mod_path = sprintf "examples%scontracts%s%s"
       Filename.dir_sep Filename.dir_sep name in
   let filename = mod_path ^ Filename.dir_sep ^ "contract" in
+  let initjsonname = mod_path ^ Filename.dir_sep ^ "init.json" in
   let parse_module =
     FrontEndParser.parse_file ScillaParser.cmodule filename in
   match parse_module with
@@ -127,8 +142,8 @@ let () =
  
       (* 2. Initializing the contract with arguments matching its parameters *)
 
-      (* Retrieving initial parameters from the mock file TestRunnerInputs *)
-      let (args, init_bal) = get_init_args name in
+      (* Retrieve initial parameters from init.json for this contract *)
+      let (args, init_bal) = input_init_json initjsonname in
       (* Initializing the contract's state *)
       let init_res = init_module cmod args init_bal in
       (* Prints stats after the initialization and returns the initial state *)
