@@ -126,6 +126,7 @@ where "n" is a number 0-5 for the number of "steps" to execute the protocol.
 *)
 
 let () =
+  (* let () = Cli.parse () in *)
   let arg_size = Array.length Sys.argv in
   (* Contract module name *)
   let name = if arg_size > 1 then Sys.argv.(1) else "crowdfunding" in
