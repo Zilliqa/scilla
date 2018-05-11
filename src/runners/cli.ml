@@ -31,7 +31,9 @@ let validate () =
     (* input_message.json is not mandatory, but if provided, should be valid *)
     ((!f_input_message <> "") && not (Sys.file_exists !f_input_message)) ||
     (* input_blockchain.json is mandatory *)
-    not (Sys.file_exists !f_input_blockchain))
+    not (Sys.file_exists !f_input_blockchain) ||
+    (* input and output files are mandatory *)
+    not (Sys.file_exists !f_input) || !f_output = "")
   then 
      (print_usage ();
      raise (CliError "Invalid command line input"))
