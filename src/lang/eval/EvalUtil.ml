@@ -252,7 +252,7 @@ module MessagePayload = struct
 
   let get_value_for_entry lab f es = 
     match List.find es ~f:(fun (l, p) -> l = lab) with
-    | None -> fail @@ sprintf "No \"%s\" field in message [%s]."
+    | None -> fail @@ sprintf "No field \"%s\" in message [%s]."
           lab (pp_literal_map es)
     | Some (_, p) ->
         (match f p with 
