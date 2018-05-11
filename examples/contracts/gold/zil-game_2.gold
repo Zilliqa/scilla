@@ -41,7 +41,7 @@ Balance = 500
 
 [Simulated execution, step 1]
 About to handle:
-(Msg((tag(StringLit Play))(sender(Address 0xabcdeabcde123456789012345678901234567890))(guess(Sha256 0x123456789012345678901234567890123456789012345678901234567890abff))(amount(IntLit 0))))
+(Msg((_tag(StringLit Play))(sender(Address 0xabcdeabcde123456789012345678901234567890))(guess(Sha256 0x123456789012345678901234567890123456789012345678901234567890abff))(_amount(IntLit 0))))
 in a Blockchain State:
 { [BLOCKNUMBER -> (BNum 100)] }.
 Success! Here's what we got:
@@ -75,11 +75,23 @@ Mutable fields =
   [player_b_hash -> (ADTValue None((PrimType Hash))())] }
 Balance = 500
 Emitted messages:
-[  (Msg((tag(StringLit Main))(to(Address 0xabcdeabcde123456789012345678901234567890))(amount(IntLit 0))(code(IntLit 1))))]
+[  (Msg((_tag(StringLit Main))(to(Address 0xabcdeabcde123456789012345678901234567890))(_amount(IntLit 0))(code(IntLit 1))))]
 
+{
+  "_tag": { "vname": "_tag", "type": "String", "value": "Main" },
+  "_amount": { "vname": "_amount", "type": "Int", "value": "0" },
+  "params": [
+    {
+      "vname": "to",
+      "type": "Address",
+      "value": "0xabcdeabcde123456789012345678901234567890"
+    },
+    { "vname": "code", "type": "Int", "value": "1" }
+  ]
+}
 [Simulated execution, step 2]
 About to handle:
-(Msg((tag(StringLit ClaimReward))(sender(Address 0xabcdeabcde123456789012345678901234567890))(solution(IntLit 42))(amount(IntLit 0))))
+(Msg((_tag(StringLit ClaimReward))(sender(Address 0xabcdeabcde123456789012345678901234567890))(solution(IntLit 42))(_amount(IntLit 0))))
 in a Blockchain State:
 { [BLOCKNUMBER -> (BNum 100)] }.
 Success! Here's what we got:
@@ -113,7 +125,19 @@ Mutable fields =
   [player_b_hash -> (ADTValue None((PrimType Hash))())] }
 Balance = 500
 Emitted messages:
-[  (Msg((tag(StringLit Main))(to(Address 0xabcdeabcde123456789012345678901234567890))(amount(IntLit 0))(code(IntLit 4))))]
+[  (Msg((_tag(StringLit Main))(to(Address 0xabcdeabcde123456789012345678901234567890))(_amount(IntLit 0))(code(IntLit 4))))]
 
+{
+  "_tag": { "vname": "_tag", "type": "String", "value": "Main" },
+  "_amount": { "vname": "_amount", "type": "Int", "value": "0" },
+  "params": [
+    {
+      "vname": "to",
+      "type": "Address",
+      "value": "0xabcdeabcde123456789012345678901234567890"
+    },
+    { "vname": "code", "type": "Int", "value": "4" }
+  ]
+}
 
 Evalutaion complete!

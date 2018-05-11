@@ -114,12 +114,12 @@ let state_to_json state =
     ("value", (literal_to_json lit))
   ]
 
-let rec slist_to_json l j = 
+let rec slist_to_json l = 
   match l with
-  | [] -> j
+  | [] -> []
   | s :: remaining -> 
     let sj = state_to_json s in
-    let remj = slist_to_json remaining j in
+    let remj = slist_to_json remaining in
       sj :: remj
 
 
@@ -140,7 +140,7 @@ let get_json_data filename  =
     as a json to the specified output filename.
     pp enables pretty printing. **)
 let put_json_data ?(pp = false) filename states =
-  let jsonl = slist_to_json states [] in
+  let jsonl = slist_to_json states in
   let json = `List jsonl in
   if pp
   then
@@ -148,5 +148,49 @@ let put_json_data ?(pp = false) filename states =
         pretty_to_string json |> Out_channel.output_string channel)
   else
     to_file filename json
+
+end
+
+module Message = struct
+
+(** Parses and returns a list of (pname,pval), with
+  "_tag" and "_amount" at the beginning of this list.
+  Invalid inputs in the json are ignored **)
+let get_json_data filename =
+  let open Basic.Util in
+  let json = Basic.from_file filename in
+  let tags = member "_tag" json |> to_string in
+  let amounts = member "_amount" json |> to_string in
+  (* Make tag and amount into a literal *)
+  let tag = ("_tag", StringLit(tags)) in
+  let amount = ("_amount", IntLit(amounts)) in
+  let pjlist = member "params" json |> to_list in
+  let plist = List.map pjlist ~f:jobj_to_statevar in
+  let filtered_list = List.filter plist ~f:Option.is_some in
+  let params = List.map filtered_list ~f:(function Some x -> x | None -> assert false) in
+    tag :: amount :: params
+
+  (** 
+   ** Prints a message (string, literal) as a json to the 
+   ** and returns the string. pp enables pretty printing.
+   ** The difference b/w this and the one in ContractState 
+   ** is that this has a mandatory "_tag" and "_amount" field,
+   ** with the actual params themselves in an array json with
+   ** name "params" (as described in comment in .mli file).
+   **)
+let message_to_jstring ?(pp = false) message =
+  (* extract out "_tag" and "_amount" parts of the message *)
+  let taglit = List.find_exn message ~f:(fun (x, _) -> x = "_tag") in
+  let amountlit = List.find_exn message ~f:(fun (x, _) -> x = "_amount") in
+  let tagj = state_to_json taglit in
+  let amountj = state_to_json amountlit in
+  (* Get a list without either of these components *)
+  let filtered_list = List.filter message ~f:(fun (x, _) -> not ((x = "_tag") || (x = "_amount"))) in
+  let json = `Assoc [("_tag", tagj); ("_amount", amountj) ; ("params", `List (slist_to_json filtered_list))] in
+  if pp
+  then
+    Basic.pretty_to_string json
+  else
+    Basic.to_string json
 
 end

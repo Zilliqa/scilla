@@ -54,6 +54,17 @@ let check_extract_cstate name res = match res with
 (*   Running the simularion and printing results     *)
 (*****************************************************)
 
+let rec print_message mlist =
+  match mlist with
+  | [] -> ()
+  | a :: b ->
+    (match a with
+      | Msg m ->
+        (printf "%s\n" (JSON.Message.message_to_jstring ~pp:true m) ;
+        print_message b)
+      | _ -> ()
+    )
+
 let check_after_step name res bstate m =
   match res with
   | Error err ->
@@ -63,6 +74,7 @@ let check_after_step name res bstate m =
       (printf "Success! Here's what we got:\n";
        printf "%s" (ContractState.pp cstate);
        printf "Emitted messages:\n%s\n\n" (pp_literal_list outs);
+       print_message outs;
        cstate, outs)
 
 let make_step ctr name cstate i  =

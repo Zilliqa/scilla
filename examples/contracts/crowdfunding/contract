@@ -37,11 +37,11 @@ let one_msg =
 let check_update = 
   fun (bs : Map Address Int) =>
     fun (sender : Address) =>
-      fun (amount : Int) =>
+      fun (_amount : Int) =>
   let c = builtin contains bs sender in
   match c with 
   | False => 
-    let bs1 = builtin put bs sender amount in
+    let bs1 = builtin put bs sender _amount in
     Some {Map Address Int} bs1 
   | True  => None {Map Address Int}
   end
@@ -77,29 +77,29 @@ contract Crowdfunding
 field backers : Map Address Int = Emp 
 field funded : Bool = False
 
-transition Donate (sender: Address, amount: Int)
+transition Donate (sender: Address, _amount: Int)
   blk <- & BLOCKNUMBER;
   in_time = blk_leq blk max_block;
   match in_time with 
   | True  => 
     bs  <- backers;
-    res = check_update bs sender amount;
+    res = check_update bs sender _amount;
     match res with
     | None => 
-      msg  = {tag : Main; to : sender; amount : 0; 
+      msg  = {_tag : Main; to : sender; _amount : 0; 
               code : already_backed_code};
       msgs = one_msg msg;
       send msgs
     | Some bs1 =>
       backers := bs1; 
       accept; 
-      msg  = {tag : Main; to : sender; amount : 0; 
+      msg  = {_tag : Main; to : sender; _amount : 0; 
               code : accepted_code};
       msgs = one_msg msg;
       send msgs     
      end  
   | False => 
-    msg  = {tag : Main; to : sender; amount : 0; 
+    msg  = {_tag : Main; to : sender; _amount : 0; 
             code : missed_dealine_code};
     msgs = one_msg msg;
     send msgs
@@ -110,7 +110,7 @@ transition GetFunds (sender: Address)
   is_owner = builtin eq owner sender;
   match is_owner with
   | False => 
-    msg  = {tag : Main; to : sender; amount : 0; 
+    msg  = {_tag : Main; to : sender; _amount : 0; 
             code : not_owner_code};
     msgs = one_msg msg;
     send msgs
@@ -124,14 +124,14 @@ transition GetFunds (sender: Address)
     c4 = andb c1 c3;
     match c4 with 
     | False =>  
-      msg  = {tag : Main; to : sender; amount : 0; 
+      msg  = {_tag : Main; to : sender; _amount : 0; 
               code : cannot_get_funds};
       msgs = one_msg msg;
       send msgs
     | True => 
       tt = True;
       funded := tt;
-      msg  = {tag : Main; to : owner; amount : bal; 
+      msg  = {_tag : Main; to : owner; _amount : bal; 
               code : got_funds_code};
       msgs = one_msg msg;
       send msgs
@@ -145,7 +145,7 @@ transition ClaimBack (sender: Address)
   after_deadline = builtin blt max_block blk;
   match after_deadline with
   | False =>
-      msg  = {tag : Main; to : sender; amount : 0; 
+      msg  = {_tag : Main; to : sender; _amount : 0; 
               code : too_early_code};
       msgs = one_msg msg;
       send msgs
@@ -161,7 +161,7 @@ transition ClaimBack (sender: Address)
     c5 = andb c3 c4;
     match c5 with
     | False =>
-        msg  = {tag : Main; to : sender; amount : 0; 
+        msg  = {_tag : Main; to : sender; _amount : 0; 
                 code : cannot_reclaim_code};
         msgs = one_msg msg;
         send msgs
@@ -169,14 +169,14 @@ transition ClaimBack (sender: Address)
       res = builtin get bs sender;
       match res with
       | None =>
-          msg  = {tag : Main; to : sender; amount : 0; 
+          msg  = {_tag : Main; to : sender; _amount : 0; 
                   code : cannot_reclaim_code};
           msgs = one_msg msg;
           send msgs
       | Some v =>
           bs1 = builtin remove bs sender;
 	  backers := bs1;
-          msg  = {tag : Main; to : sender; amount : v; 
+          msg  = {_tag : Main; to : sender; _amount : v; 
                   code : reclaimed_code};
           msgs = one_msg msg;
           send msgs

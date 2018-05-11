@@ -157,7 +157,7 @@ transition Play (sender: Address, guess: Hash)
   c = can_play tm_opt b;
   match c with
   | False => 
-      msg  = {tag : Main; to : sender; amount : 0; 
+      msg  = {_tag : Main; to : sender; _amount : 0; 
               code : time_window_missed};
       msgs = one_msg msg;
       send msgs        
@@ -173,7 +173,7 @@ transition Play (sender: Address, guess: Hash)
       player_a_hash := hopt;
       tm1 = update_timer tm_opt b;
       timer := tm1;
-      msg  = {tag : Main; to : sender; amount : 0; 
+      msg  = {_tag : Main; to : sender; _amount : 0; 
               code : solution_submitted};
       msgs = one_msg msg;
       send msgs        
@@ -186,12 +186,12 @@ transition Play (sender: Address, guess: Hash)
         player_b_hash := hopt;
         tm1 = update_timer tm_opt b;
         timer := tm1;
-        msg  = {tag : Main; to : sender; amount : 0; 
+        msg  = {_tag : Main; to : sender; _amount : 0; 
                 code : solution_submitted};
         msgs = one_msg msg;
         send msgs        
       | False => 
-        msg  = {tag : Main; to : sender; amount : 0; 
+        msg  = {_tag : Main; to : sender; _amount : 0; 
                 code : not_a_player};
         msgs = one_msg msg;
         send msgs
@@ -208,7 +208,7 @@ transition ClaimReward
   ttc = time_to_claim tm_opt b;
   match ttc with
   | False => 
-      msg  = {tag : Main; to : sender; amount : 0; 
+      msg  = {_tag : Main; to : sender; _amount : 0; 
               code : too_early_to_claim};
       msgs = one_msg msg;
       send msgs        
@@ -218,14 +218,14 @@ transition ClaimReward
     is_valid = check_validity sender solution player_a player_b pa pb;
     match is_valid with
     | False =>
-      msg  = {tag : Main; to : sender; amount : 0; 
+      msg  = {_tag : Main; to : sender; _amount : 0; 
               code : wrong_sender_or_solution};
       msgs = one_msg msg;
       send msgs        
     | True  =>
       winner = determine_winner puzzle pa pb player_a player_b owner; 
       bal <- balance;
-      msg  = {tag : Main; to : winner; amount : bal; 
+      msg  = {_tag : Main; to : winner; _amount : bal; 
               code : here_is_the_reward};
       ff = False;	       
       game_on := ff;

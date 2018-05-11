@@ -246,8 +246,8 @@ module MessagePayload = struct
 
   open Big_int
 
-  let tag_label = "tag"
-  let amount_label = "amount"
+  let tag_label = "_tag"
+  let amount_label = "_amount"
   let sender_label = "sender"
 
   let get_tag es =

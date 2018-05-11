@@ -75,30 +75,30 @@ let get_bc_state i = List.nth_exn bc_states i
 
 let cf_donate1 =
   Msg [
-    ("tag", StringLit "Donate");
+    ("_tag", StringLit "Donate");
     ("sender", Address "0x12345678901234567890123456789012345678ab");
-    ("amount", IntLit "100");
+    ("_amount", IntLit "100");
   ]
 
 let cf_donate2 =
   Msg [
-    ("tag", StringLit "Donate");
+    ("_tag", StringLit "Donate");
     ("sender", Address "0x12345678901234567890123456789012345678cd");
-    ("amount", IntLit "200");
+    ("_amount", IntLit "200");
   ]
 
 let cf_claim1 =
   Msg [
-    ("tag", StringLit "ClaimBack");
+    ("_tag", StringLit "ClaimBack");
     ("sender", Address "0x12345678901234567890123456789012345678ab");
-    ("amount", IntLit "0");
+    ("_amount", IntLit "0");
   ]
 
 let cf_get_funds =
   Msg [
-    ("tag", StringLit "GetFunds");
+    ("_tag", StringLit "GetFunds");
     ("sender", Address "0x12345678901234567890123456789012345678cd");
-    ("amount", IntLit "0");
+    ("_amount", IntLit "0");
   ]
 
 (* Blockchain states and incoming messages for crowdfunding *)
@@ -121,34 +121,34 @@ let hs2 = "0x123456789012345678901234567890123456789012345678901234567890ab12"
 
 let zg_play1 =
   Msg [
-    ("tag", StringLit "Play");
+    ("_tag", StringLit "Play");
     ("sender", Address player_a);
     ("guess", Sha256 hs1);    
-    ("amount", IntLit "0");
+    ("_amount", IntLit "0");
   ]
 
 let zg_play2 =
   Msg [
-    ("tag", StringLit "Play");
+    ("_tag", StringLit "Play");
     ("sender", Address player_b);
     ("guess", Sha256 hs2);    
-    ("amount", IntLit "0");
+    ("_amount", IntLit "0");
   ]
 
 let zg_claim1 =
   Msg [
-    ("tag", StringLit "ClaimReward");
+    ("_tag", StringLit "ClaimReward");
     ("sender", Address player_a);
     ("solution", IntLit "42");    
-    ("amount", IntLit "0");
+    ("_amount", IntLit "0");
   ]
 
 let zg_claim2 =
   Msg [
-    ("tag", StringLit "ClaimReward");
+    ("_tag", StringLit "ClaimReward");
     ("sender", Address player_b);
     ("solution", IntLit "43");    
-    ("amount", IntLit "0");
+    ("_amount", IntLit "0");
   ]
 
 (* Blockchain states and incoming messages for zil-game *)
