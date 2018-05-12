@@ -23,7 +23,7 @@ let rec mapvalues_from_json ktype vtype l =
         | "Int" -> Some (IntLit kval)
         | "BNum" -> Some (BNum kval)
         | "Address" -> Some (Address kval)
-        | "Sha256" -> Some (Sha256 kval)
+        | "Hash" -> Some (Sha256 kval)
         | _ -> None) in
       let vallit = 
         (match vtype with
@@ -31,7 +31,7 @@ let rec mapvalues_from_json ktype vtype l =
         | "Int" -> Some (IntLit vval)
         | "BNum" -> Some (BNum vval)
         | "Address" -> Some (Address vval)
-        | "Sha256" -> Some (Sha256 vval)
+        | "Hash" -> Some (Sha256 vval)
         | _ -> None) in
       let vlist = mapvalues_from_json ktype vtype remaining in
       (match keylit, vallit with
@@ -39,26 +39,40 @@ let rec mapvalues_from_json ktype vtype l =
        | _ -> vlist)
   | [] -> []
 
+let rec json_to_adtargs tjs ajs =
+  let open Basic.Util in
+  match tjs, ajs with
+  | (tj :: tr), (aj :: ar) ->
+      let tjs = to_string tj in
+      let ajs = to_string aj in
+      let argS = 
+      (match tjs with
+        | "String" -> Some (StringLit ajs)
+        | "Int" -> Some (IntLit ajs)
+        | "BNum" -> Some (BNum ajs)
+        | "Address" -> Some (Address ajs)
+        | "Hash" -> Some (Sha256 ajs)
+        | _ -> None
+      ) in
+      Printf.printf "tjs:%s\n" tjs;
+      Printf.printf "Hello: %s\n" (Bool.to_string (Option.is_some argS));
+      let (trem, arem) = json_to_adtargs tr ar in
+      (match argS with
+        | Some l -> ((PrimType tjs) :: trem, l :: arem)
+        | None -> [], []
+      )
+  | _ -> [], []
+
 let jobj_to_statevar json =
   let open Basic.Util in
   let n = member "vname" json |> to_string in
   let t = member "type" json |> to_string in
-  if t <> "Map"
-  then
-    let v = member "value" json |> to_string in
-    (match t with
-      (* see Syntax.literal_tag *)
-      | "String" -> Some (StringLit(v))
-      | "Int" -> Some (IntLit(v))
-      | "BNum" -> Some (BNum(v))
-      | "Address" -> Some (Address(v))
-      | "Sha256" -> Some (Sha256(v))
-      | _ -> None) |> Option.map ~f:(fun x -> (n, x))
-  else
+  match t with
+  | "Map" ->
     (* Handle Map separately. Map is a `List of `Assoc jsons, with
      * the first `Assoc specifying the map's from/to types. *)
     let v = member "value" json in
-      match v with
+    (match v with
       | `List vli ->
          (match vli with 
           | first :: remaining ->
@@ -69,6 +83,28 @@ let jobj_to_statevar json =
           | _ -> None
          )
       | _ -> None
+    )
+  | "ADT" ->
+    let v = member "value" json in
+    (match v with
+      | `Assoc adt ->
+          let constr = member "constructor" v |> to_string in
+          let argtypes = member "argtypes" v |> to_list in
+          let arguments = member "arguments" v |> to_list in
+          let (tlist, arglit) = json_to_adtargs argtypes arguments in
+            Some (n, ADTValue (constr, tlist, arglit))
+      | _ -> None
+    )
+  | _ ->  
+    let v = member "value" json |> to_string in
+    (match t with
+      (* see Syntax.literal_tag *)
+      | "String" -> Some (StringLit(v))
+      | "Int" -> Some (IntLit(v))
+      | "BNum" -> Some (BNum(v))
+      | "Address" -> Some (Address(v))
+      | "Hash" -> Some (Sha256(v))
+      | _ -> None) |> Option.map ~f:(fun x -> (n, x))
 
 let typ_to_string t = 
   match t with
@@ -101,7 +137,7 @@ and literal_to_json lit =
   | Map (kv :: remaining) ->
     let (k, v) = kv in
     let kjson = "keyType", `String (literal_tag k) in
-    let vjson =  "ValType", `String (literal_tag v) in
+    let vjson =  "valType", `String (literal_tag v) in
     let mtype_json = `Assoc (kjson :: vjson :: []) in
     let kv_json = mapvalues_to_json (kv :: remaining) in
     (* The output state variable for a map has the from/to type
