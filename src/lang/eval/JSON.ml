@@ -59,7 +59,6 @@ let jobj_to_statevar json =
      * the first `Assoc specifying the map's from/to types. *)
     let v = member "value" json in
       match v with
-      | `Null -> None
       | `List vli ->
          (match vli with 
           | first :: remaining ->
@@ -69,7 +68,7 @@ let jobj_to_statevar json =
                 Some (n, Map (kvallist))
           | _ -> None
          )
-      | _ -> assert false
+      | _ -> None
     
 
 let rec mapvalues_to_json ms = 
