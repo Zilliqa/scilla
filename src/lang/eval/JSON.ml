@@ -69,7 +69,12 @@ let jobj_to_statevar json =
           | _ -> None
          )
       | _ -> None
-    
+
+let typ_to_string t = 
+  match t with
+  | PrimType t -> t
+  (* TODO: Support other typ *)
+  | _ -> "Unknown"
 
 let rec mapvalues_to_json ms = 
   match ms with
@@ -80,6 +85,14 @@ let rec mapvalues_to_json ms =
     let kv_json = `Assoc (kjson :: vjson :: []) in
       kv_json :: (mapvalues_to_json remaining)
   | [] -> []
+
+and adtargs_to_json tlist vlist =
+  match tlist, vlist with
+  | t1 :: tn, v1 :: vn ->
+    let (j1, j2) = `String (typ_to_string t1) , literal_to_json v1 in
+    let (jtn, jvn)= adtargs_to_json tn vn in
+      (j1 :: jtn), (j2 :: jvn)
+  | _ -> ([], [])
 
 and literal_to_json lit = 
   match lit with
@@ -94,7 +107,13 @@ and literal_to_json lit =
     (* The output state variable for a map has the from/to type
      * as the first map entry and the actual entries follow *)
       `List (mtype_json :: kv_json)
-  | ADTValue _ (* Handle ADT *)
+  | ADTValue (n, t, v) ->
+      let (argtl, argl) = adtargs_to_json t v in
+        `Assoc [
+          ("constructor", `String n);
+          ("argtypes", `List argtl);
+          ("arguments", `List argl)
+        ]
   | _ -> `Null
 
 let state_to_json state =
