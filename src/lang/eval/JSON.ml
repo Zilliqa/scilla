@@ -124,8 +124,8 @@ let get_json_data filename  =
   let jlist = json |> Basic.Util.to_list in
   (* map the json list to a tuple (vname,value) option *)
   let olist = List.map jlist ~f:jobj_to_statevar in
-  let filtered_list = List.filter olist ~f:Option.is_some in
-  List.map filtered_list ~f:(function Some x -> x | None -> assert false)
+  List.fold_right olist ~init:[]
+    ~f:(fun o z -> match o with Some x -> x :: z | None -> z)
 
 (** Prints a list of state variables (string, literal)
     as a json to the specified output filename.
