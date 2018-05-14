@@ -191,18 +191,23 @@ let get_json_data filename  =
   let filtered_list = List.filter olist ~f:Option.is_some in
     List.map filtered_list ~f:(function Some x -> x | None -> assert false)
 
-(** Prints a list of state variables (string, literal)
-    as a json to the specified output filename.
-    pp enables pretty printing. **)
-let put_json_data ?(pp = false) filename states =
+(* Get a json object from given states *)
+let state_to_json states = 
   let jsonl = slist_to_json states in
-  let json = `List jsonl in
+    `List jsonl
+
+(** 
+  ** Prints a list of state variables (string, literal)
+  ** as a json and returns it as a string.
+  ** pp enables pretty printing.
+  **)
+let state_to_string ?(pp = false) states =
+  let json = state_to_json states in
   if pp
   then
-    Out_channel.with_file filename ~f:(fun channel -> 
-        pretty_to_string json |> Out_channel.output_string channel)
+    pretty_to_string json
   else
-    to_file filename json
+    to_string json
 
 end
 
@@ -225,15 +230,8 @@ let get_json_data filename =
   let params = List.map filtered_list ~f:(function Some x -> x | None -> assert false) in
     tag :: amount :: params
 
-  (** 
-   ** Prints a message (string, literal) as a json to the 
-   ** and returns the string. pp enables pretty printing.
-   ** The difference b/w this and the one in ContractState 
-   ** is that this has a mandatory "_tag" and "_amount" field,
-   ** with the actual params themselves in an array json with
-   ** name "params" (as described in comment in .mli file).
-   **)
-let message_to_jstring ?(pp = false) message =
+(* Same as message_to_jstring, but instead gives out raw json, not it's string *)
+let message_to_json message =
   (* extract out "_tag" and "_amount" parts of the message *)
   let (_, taglit) = List.find_exn message ~f:(fun (x, _) -> x = "_tag") in
   let (_, amountlit) = List.find_exn message ~f:(fun (x, _) -> x = "_amount") in
@@ -241,15 +239,25 @@ let message_to_jstring ?(pp = false) message =
   let amounts = get_int_literal amountlit in
   (* Get a list without either of these components *)
   let filtered_list = List.filter message ~f:(fun (x, _) -> not ((x = "_tag") || (x = "_amount"))) in
-  let json = `Assoc [("_tag", `String (BatOption.get tags)); 
-                     ("_amount", `String (BatOption.get amounts));
-                     ("params", `List (slist_to_json filtered_list))] 
-              in
+    `Assoc [("_tag", `String (BatOption.get tags)); 
+                 ("_amount", `String (BatOption.get amounts));
+                 ("params", `List (slist_to_json filtered_list))] 
+
+  (** 
+  ** Prints a message (string, literal) as a json to the 
+  ** and returns the string. pp enables pretty printing.
+  ** The difference b/w this and the one in ContractState 
+  ** is that this has a mandatory "_tag" and "_amount" field,
+  ** with the actual params themselves in an array json with
+  ** name "params" (as described in comment in .mli file).
+  **)
+let message_to_jstring ?(pp = false) message =
+  let j = message_to_json message in
   if pp
   then
-    Basic.pretty_to_string json
+    Basic.pretty_to_string j
   else
-    Basic.to_string json
+    Basic.to_string j
 
 end
 

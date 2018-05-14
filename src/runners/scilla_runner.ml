@@ -112,10 +112,22 @@ let input_state_json filename =
 
 (* Add balance to output json and print it out *)
 
-let output_state_json filename (cstate : 'rep EvalUtil.ContractState.t) : unit =
+let output_state_json (cstate : 'rep EvalUtil.ContractState.t) =
   let ballit = ("_balance", IntLit(Big_int.string_of_big_int cstate.balance)) in
   let concatlist = List.cons ballit cstate.fields in
-  JSON.ContractState.put_json_data ~pp:true !Cli.f_output concatlist;;
+    JSON.ContractState.state_to_json concatlist;;
+
+let output_message_json mlist =
+  match mlist with
+  (* TODO: What should we do with  more than one output message? *)
+  | first_message :: [] -> 
+    (match first_message with 
+     | Msg m ->
+        JSON.Message.message_to_json m
+     | _ -> `Null
+    )
+  (* There will be at least one output message *)
+  | _ -> assert false
 
 (****************************************************)
 (*              Main demo procedure                 *)
@@ -167,6 +179,11 @@ let () =
       printf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg);
       printf "In a Blockchain State:\n%s\n" (pp_literal_map bstate);
       let step_result = handle_message ctr cstate bstate m in
-      let (cstate', _) =
+      let (cstate', mlist) =
         check_after_step !Cli.f_input step_result bstate m in
-      output_state_json !Cli.f_output cstate';
+      
+      let osj = output_state_json cstate' in
+      let omj = output_message_json mlist in
+      let output_json = `Assoc [("message", omj) ; ("states", osj)] in
+        Out_channel.with_file !Cli.f_output ~f:(fun channel -> 
+          Yojson.pretty_to_string output_json |> Out_channel.output_string channel)

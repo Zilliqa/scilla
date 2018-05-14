@@ -40,10 +40,13 @@ module ContractState : sig
   val get_json_data : string -> (string * Syntax.literal) list
   (** 
    ** Prints a list of state variables (string, literal)
-   ** as a json to the specified output filename.
+   ** as a json and returns it as a string.
    ** pp enables pretty printing.
    **)
-  val put_json_data : ?pp:bool -> string -> ((string * Syntax.literal) list) -> unit
+  val state_to_string : ?pp:bool -> ((string * Syntax.literal) list) -> string
+
+  (* Get a json object from given states *)
+  val state_to_json : ((string * Syntax.literal) list) -> Yojson.json
 
 end
 
@@ -88,6 +91,8 @@ module Message : sig
    ** name "params" (as described in comment in .mli file).
    **)
   val message_to_jstring : ?pp:bool -> ((string * Syntax.literal) list) -> string
+  (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
+  val message_to_json : ((string * Syntax.literal) list) -> Yojson.json
 
 end
 
