@@ -18,10 +18,5 @@
         "vname" : "player_b",
         "type" :  "Address",
         "value" :  "0xffcdeabcde123456789012345678901234567890"
-    },
-    { 
-        "vname" : "_balance",
-        "type" : "Int",
-        "value" : "500"
     }
 ]

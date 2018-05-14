@@ -5,8 +5,8 @@
     {
       "vname": "sender",
       "type": "Address",
-      "value": "0xabcdeabcde123456789012345678901234567890"
+      "value": "0xffcdeabcde123456789012345678901234567890"
     },
-    { "vname": "solution", "type": "Int", "value": "42" }
+    { "vname": "solution", "type": "Int", "value": "43" }
   ]
 }

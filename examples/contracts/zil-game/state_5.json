@@ -28,5 +28,10 @@
     "vname": "player_b_hash",
     "type": "ADT",
     "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+  },
+  {
+    "vname": "_balance",
+    "type": "Int",
+    "value": "500"
   }
 ]

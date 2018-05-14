@@ -96,7 +96,8 @@ let rec make_step_loop ctr name cstate num_steps i =
   else
     printf "\nEvalutaion complete!"
 
-let input_init_json filename = 
+(* Parse the input state json and extract out _balance separately *)
+let input_state_json filename = 
   let open JSON.ContractState in
   let states = get_json_data filename in
   let match_balance ((vname : string), _) : bool = vname = "_balance" in
@@ -109,6 +110,12 @@ let input_init_json filename =
   let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
      no_bal_states, Big_int.big_int_of_int bal_int
 
+(* Add balance to output json and print it out *)
+
+let output_state_json filename (cstate : 'rep EvalUtil.ContractState.t) : unit =
+  let ballit = ("_balance", IntLit(Big_int.string_of_big_int cstate.balance)) in
+  let concatlist = List.cons ballit cstate.fields in
+  JSON.ContractState.put_json_data ~pp:true !Cli.f_output concatlist;;
 
 (****************************************************)
 (*              Main demo procedure                 *)
@@ -126,48 +133,40 @@ where "n" is a number 0-5 for the number of "steps" to execute the protocol.
 *)
 
 let () =
-  (* let () = Cli.parse () in *)
-  let arg_size = Array.length Sys.argv in
-  (* Contract module name *)
-  let name = if arg_size > 1 then Sys.argv.(1) else "crowdfunding" in
-  (* Number of steps *)
-  let num_iter = if arg_size > 2 then int_of_string Sys.argv.(2) else 1 in
-  (if num_iter > 5
-   then raise (EvalError "We didn't prepare data for so many simulation steps! Pick a smaller number [0..5].") else ());
-
-  (* Retrieve the contract *)
-  let mod_path = sprintf "examples%scontracts%s%s"
-      Filename.dir_sep Filename.dir_sep name in
-  let filename = mod_path ^ Filename.dir_sep ^ "contract" in
-  let initjsonname = mod_path ^ Filename.dir_sep ^ "init.json" in
+  let () = Cli.parse () in
   let parse_module =
-    FrontEndParser.parse_file ScillaParser.cmodule filename in
+    FrontEndParser.parse_file ScillaParser.cmodule !Cli.f_input in
   match parse_module with
   | None -> printf "%s\n" "Failed to parse input file."
   | Some cmod ->
       printf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
-        mod_path;
+        !Cli.f_input;
       (* Now initialize it *)
       let libs = cmod.libs in
 
-      (* 1. Checking initialized libraries! *)
-      check_libs libs mod_path;
+      (* Checking initialized libraries! *)
+      check_libs libs !Cli.f_input;
  
-      (* 2. Initializing the contract with arguments matching its parameters *)
+      (* Retrieve initial parameters *)
+      let initargs = JSON.ContractState.get_json_data !Cli.f_input_init in
+      (* Retrieve state variables *)
+      let (curargs, cur_bal) = input_state_json !Cli.f_input_state in
 
-      (* Retrieve initial parameters from init.json for this contract *)
-      let (args, init_bal) = input_init_json initjsonname in
+      let bstate = JSON.BlockChainState.get_json_data !Cli.f_input_blockchain in
+      let mmsg = JSON.Message.get_json_data !Cli.f_input_message in
+      let m = Msg mmsg in
+
       (* Initializing the contract's state *)
-      let init_res = init_module cmod args init_bal in
+      let init_res = init_module cmod initargs curargs cur_bal in
       (* Prints stats after the initialization and returns the initial state *)
       (* Will throw an exception if unsuccessful. *)
-      let cstate0 = check_extract_cstate name init_res in
-
+      let cstate = check_extract_cstate !Cli.f_input init_res in
       (* Contract code *)
       let ctr = cmod.contr in
 
-      (* 3. Stepping a number of times from the inital state via
-            provided messages and blockchain states.  *)
-      make_step_loop ctr name cstate0 num_iter 0;
-
-      
+      printf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg);
+      printf "In a Blockchain State:\n%s\n" (pp_literal_map bstate);
+      let step_result = handle_message ctr cstate bstate m in
+      let (cstate', _) =
+        check_after_step !Cli.f_input step_result bstate m in
+      output_state_json !Cli.f_output cstate';

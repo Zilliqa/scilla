@@ -1,6 +1,6 @@
 {
-    "_tag": "Donate",
-    "_amount": "100",
+    "_tag": "ClaimBack",
+    "_amount": "0",
     "params": [
       {
         "vname": "sender",

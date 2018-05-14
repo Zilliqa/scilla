@@ -1,6 +1,6 @@
 {
-    "_tag": "GetFunds",
-    "_amount": "0",
+    "_tag": "Donate",
+    "_amount": "200",
     "params": [
       {
         "vname": "sender",

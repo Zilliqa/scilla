@@ -1,13 +1,13 @@
 
 [Parsing]:
-Contract module [examples/contracts/zil-game] is successfully parsed.
+Contract module [examples/contracts/zil-game/contract] is successfully parsed.
 
 [Initializing libraries]:
 andb, orb, negb, one_msg, no_msg, update_hash, update_timer, can_play, time_to_claim, check_validity, determine_winner, solution_submitted, time_window_missed, not_a_player, too_early_to_claim, wrong_sender_or_solution, here_is_the_reward
 
-Libraries for [examples/contracts/zil-game] are on. All seems fine so far!
+Libraries for [examples/contracts/zil-game/contract] are on. All seems fine so far!
 
-[Initializing zil-game's fields]
+[Initializing examples/contracts/zil-game/contract's fields]
 Success!
 Contract State:
 Immutable parameters and libraries =
@@ -33,17 +33,16 @@ Immutable parameters and libraries =
   [orb -> <closure>],
   [andb -> <closure>] }
 Mutable fields = 
-{ [player_a_hash -> (ADTValue None((PrimType Hash))())],
-  [player_b_hash -> (ADTValue None((PrimType Hash))())],
-  [timer -> (ADTValue None((PrimType BNum))())],
+{ [player_a_hash -> (ADTValue None()())],
+  [player_b_hash -> (ADTValue None()())],
+  [timer -> (ADTValue None()())],
   [game_on -> (ADTValue False()())] }
 Balance = 500
 
-[Simulated execution, step 1]
-About to handle:
-(Msg((_tag(StringLit Play))(sender(Address 0xabcdeabcde123456789012345678901234567890))(guess(Sha256 0x123456789012345678901234567890123456789012345678901234567890abff))(_amount(IntLit 0))))
-in a Blockchain State:
-{ [BLOCKNUMBER -> (BNum 100)] }.
+Executing message:
+{"_tag":"Play","_amount":"0","params":[{"vname":"sender","type":"Address","value":"0xabcdeabcde123456789012345678901234567890"},{"vname":"guess","type":"Hash","value":"0x123456789012345678901234567890123456789012345678901234567890abff"}]}
+In a Blockchain State:
+{ [BLOCKNUMBER -> (BNum 100)] }
 Success! Here's what we got:
 Contract State:
 Immutable parameters and libraries =
@@ -72,14 +71,14 @@ Mutable fields =
 { [timer -> (ADTValue Some((PrimType BNum))((BNum 111)))],
   [player_a_hash -> (ADTValue Some((PrimType Hash))((Sha256 0x123456789012345678901234567890123456789012345678901234567890abff)))],
   [game_on -> (ADTValue True()())],
-  [player_b_hash -> (ADTValue None((PrimType Hash))())] }
+  [player_b_hash -> (ADTValue None()())] }
 Balance = 500
 Emitted messages:
 [  (Msg((_tag(StringLit Main))(to(Address 0xabcdeabcde123456789012345678901234567890))(_amount(IntLit 0))(code(IntLit 1))))]
 
 {
-  "_tag": { "vname": "_tag", "type": "String", "value": "Main" },
-  "_amount": { "vname": "_amount", "type": "Int", "value": "0" },
+  "_tag": "Main",
+  "_amount": "0",
   "params": [
     {
       "vname": "to",
@@ -89,5 +88,3 @@ Emitted messages:
     { "vname": "code", "type": "Int", "value": "1" }
   ]
 }
-
-Evalutaion complete!
