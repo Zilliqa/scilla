@@ -168,6 +168,15 @@ let rec slist_to_json l =
     let remj = slist_to_json remaining in
       sj :: remj
 
+let get_string_literal l =
+  match l with
+  | StringLit sl -> Some sl
+  | _ -> None
+
+  let get_int_literal l =
+  match l with
+  | IntLit il -> Some il
+  | _ -> None
 
 module ContractState = struct
 
@@ -226,13 +235,16 @@ let get_json_data filename =
    **)
 let message_to_jstring ?(pp = false) message =
   (* extract out "_tag" and "_amount" parts of the message *)
-  let taglit = List.find_exn message ~f:(fun (x, _) -> x = "_tag") in
-  let amountlit = List.find_exn message ~f:(fun (x, _) -> x = "_amount") in
-  let tagj = state_to_json taglit in
-  let amountj = state_to_json amountlit in
+  let (_, taglit) = List.find_exn message ~f:(fun (x, _) -> x = "_tag") in
+  let (_, amountlit) = List.find_exn message ~f:(fun (x, _) -> x = "_amount") in
+  let tags = get_string_literal taglit in
+  let amounts = get_int_literal amountlit in
   (* Get a list without either of these components *)
   let filtered_list = List.filter message ~f:(fun (x, _) -> not ((x = "_tag") || (x = "_amount"))) in
-  let json = `Assoc [("_tag", tagj); ("_amount", amountj) ; ("params", `List (slist_to_json filtered_list))] in
+  let json = `Assoc [("_tag", `String (BatOption.get tags)); 
+                     ("_amount", `String (BatOption.get amounts));
+                     ("params", `List (slist_to_json filtered_list))] 
+              in
   if pp
   then
     Basic.pretty_to_string json
