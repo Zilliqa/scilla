@@ -1,0 +1,22 @@
+[
+  {
+    "vname": "player_a_hash",
+    "type": "ADT",
+    "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+  },
+  {
+    "vname": "player_b_hash",
+    "type": "ADT",
+    "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+  },
+  {
+    "vname": "timer",
+    "type": "ADT",
+    "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+  },
+  {
+    "vname": "game_on",
+    "type": "ADT",
+    "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+  }
+]
