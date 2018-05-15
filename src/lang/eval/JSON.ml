@@ -173,7 +173,7 @@ let get_string_literal l =
   | StringLit sl -> Some sl
   | _ -> None
 
-  let get_int_literal l =
+let get_int_literal l =
   match l with
   | IntLit il -> Some il
   | _ -> None
