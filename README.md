@@ -52,6 +52,13 @@ From the project root, execute
 ```
 ./bin/scilla-runner -init examples/contracts/zil-game/init.json -istate examples/contracts/zil-game/state_5.json -iblockchain examples/contracts/zil-game/blockchain_5.json -imessage examples/contracts/zil-game/message_5.json -o examples/contracts/zil-game/output_5.json -i examples/contracts/zil-game/contract
 ```
+
+Alternatively, use the easyrun script as below:
+
+```
+./easyrun.sh crowdfunding 1
+```
+
 where `n` is a number `0-5` for the number of "steps" to execute the
 protocol (the messages and blockchain states are provided for only so
 many steps in the simulation).
