@@ -226,8 +226,8 @@ let get_json_data filename =
   let amount = ("_amount", IntLit(amounts)) in
   let pjlist = member "params" json |> to_list in
   let plist = List.map pjlist ~f:jobj_to_statevar in
-  let filtered_list = List.filter plist ~f:Option.is_some in
-  let params = List.map filtered_list ~f:(function Some x -> x | None -> assert false) in
+  let params = List.fold_right plist ~init:[]
+    ~f:(fun o z -> match o with Some x -> x :: z | None -> z) in
     tag :: amount :: params
 
 (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
@@ -273,8 +273,8 @@ let get_json_data filename  =
   let jlist = json |> Basic.Util.to_list in
   (* map the json list to a tuple (vname,value) option *)
   let olist = List.map jlist ~f:jobj_to_statevar in
-  let filtered_list = List.filter olist ~f:Option.is_some in
-    List.map filtered_list ~f:(function Some x -> x | None -> assert false)
+    List.fold_right olist ~init:[]
+      ~f:(fun o z -> match o with Some x -> x :: z | None -> z)
   (* TODO: Validate for only block chain variables *)
 
 end
