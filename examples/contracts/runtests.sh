@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # It is expected that the caller of this sript sets the following variable
 # $SCILLA_RUNNER: to point to the path of scilla-runner executable.
