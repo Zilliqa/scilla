@@ -127,7 +127,7 @@ let output_message_json mlist =
      | _ -> `Null
     )
   (* There will be at least one output message *)
-  | _ -> assert false
+  | _ -> `Null
 
 (****************************************************)
 (*              Main demo procedure                 *)
