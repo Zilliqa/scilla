@@ -1,0 +1,11 @@
+(jbuild_version 1)
+
+(executable
+ (
+  (name scilla_testsuite)
+  (package scilla-testsuite)
+  (public_name scilla-testsuite)
+  (preprocess (pps (ppx_sexp_conv ppx_let ppx_deriving.show)))
+  (libraries (core oUnit))
+ )
+)

@@ -17,7 +17,7 @@ utop: all
 
 # Build and run tests
 test: all
-	bash examples/runtests-driver.sh
+	./bin/scilla-testsuite
 
 # Clean up
 clean:
