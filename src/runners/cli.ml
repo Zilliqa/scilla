@@ -14,7 +14,7 @@ let f_input_blockchain = ref ""
 let f_output = ref ""
 let f_input = ref ""
 
-let usage = "scilla-runner-init init.json [-istate input_state.json]" ^
+let usage = "-init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
     " -o output.json -i input.scilla" 
 
@@ -64,12 +64,12 @@ type ioFiles = {
 
 let parse () =
   let speclist = [
-    ("-init       ", Arg.String (fun x -> f_input_init := x), "Path to initialization json");
-    ("-istate     ", Arg.String (fun x -> f_input_state := x), "Path to state input json");
-    ("-imessage   ", Arg.String (fun x -> f_input_message := x), "Path to message input json");
+    ("-init", Arg.String (fun x -> f_input_init := x), "Path to initialization json");
+    ("-istate", Arg.String (fun x -> f_input_state := x), "Path to state input json");
+    ("-imessage", Arg.String (fun x -> f_input_message := x), "Path to message input json");
     ("-iblockchain", Arg.String (fun x -> f_input_blockchain := x), "Path to blockchain input json");
-    ("-o          ", Arg.String (fun x -> f_output := x), "Path to output json");
-    ("-i          ", Arg.String (fun x -> f_input := x), "Path to scilla contract");
+    ("-o", Arg.String (fun x -> f_output := x), "Path to output json");
+    ("-i", Arg.String (fun x -> f_input := x), "Path to scilla contract");
   ] in 
   let ignore_anon s = () in
   let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
