@@ -145,34 +145,34 @@ where "n" is a number 0-5 for the number of "steps" to execute the protocol.
 *)
 
 let () =
-  let () = Cli.parse () in
+  let cli = Cli.parse () in
   let parse_module =
-    FrontEndParser.parse_file ScillaParser.cmodule !Cli.f_input in
+    FrontEndParser.parse_file ScillaParser.cmodule cli.input in
   match parse_module with
   | None -> printf "%s\n" "Failed to parse input file."
   | Some cmod ->
       printf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
-        !Cli.f_input;
+        cli.input;
       (* Now initialize it *)
       let libs = cmod.libs in
 
       (* Checking initialized libraries! *)
-      check_libs libs !Cli.f_input;
+      check_libs libs cli.input;
  
       (* Retrieve initial parameters *)
-      let initargs = JSON.ContractState.get_json_data !Cli.f_input_init in
+      let initargs = JSON.ContractState.get_json_data cli.input_init in
       (* Retrieve state variables *)
-      let (curargs, cur_bal) = input_state_json !Cli.f_input_state in
+      let (curargs, cur_bal) = input_state_json cli.input_state in
 
-      let bstate = JSON.BlockChainState.get_json_data !Cli.f_input_blockchain in
-      let mmsg = JSON.Message.get_json_data !Cli.f_input_message in
+      let bstate = JSON.BlockChainState.get_json_data cli.input_blockchain in
+      let mmsg = JSON.Message.get_json_data cli.input_message in
       let m = Msg mmsg in
 
       (* Initializing the contract's state *)
       let init_res = init_module cmod initargs curargs cur_bal in
       (* Prints stats after the initialization and returns the initial state *)
       (* Will throw an exception if unsuccessful. *)
-      let cstate = check_extract_cstate !Cli.f_input init_res in
+      let cstate = check_extract_cstate cli.input init_res in
       (* Contract code *)
       let ctr = cmod.contr in
 
@@ -180,10 +180,10 @@ let () =
       printf "In a Blockchain State:\n%s\n" (pp_literal_map bstate);
       let step_result = handle_message ctr cstate bstate m in
       let (cstate', mlist) =
-        check_after_step !Cli.f_input step_result bstate m in
+        check_after_step cli.input step_result bstate m in
       
       let osj = output_state_json cstate' in
       let omj = output_message_json mlist in
       let output_json = `Assoc [("message", omj) ; ("states", osj)] in
-        Out_channel.with_file !Cli.f_output ~f:(fun channel -> 
+        Out_channel.with_file cli.output ~f:(fun channel -> 
           Yojson.pretty_to_string output_json |> Out_channel.output_string channel)
