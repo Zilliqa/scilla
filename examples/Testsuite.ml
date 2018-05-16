@@ -8,6 +8,8 @@ let main =
 
   (* Add calls to new tests from here *)
   let contract_tests = Testcontracts.add_tests bin_dir examples_dir in
+  let exp_tests = Testexp.add_tests bin_dir examples_dir in
 
+  let all_tests = "all_tests" >::: [contract_tests;exp_tests] in
   (* Run all tests *)
-  run_test_tt_main contract_tests
+  run_test_tt_main all_tests
