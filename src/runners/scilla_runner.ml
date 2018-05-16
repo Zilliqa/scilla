@@ -168,7 +168,7 @@ let () =
       then
         (* Initializing the contract, nothing to do *)
         (printf "\nContract initialized successfully\n";
-          (`List [], `List []))
+          (`Null, `List []))
       else
         (* Not initialization, execute transition specified in the message *)
         (let mmsg = JSON.Message.get_json_data cli.input_message in
