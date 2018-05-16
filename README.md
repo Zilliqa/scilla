@@ -73,15 +73,24 @@ $PROJECT_DIR/_build/install/default/bin
 
 ### Running the testsuite
 
-The test-suite is driven by a bash script in examples/runtests-driver.sh which
-looks for files named "runtests.sh" in sub-directories and executes them. It
-passes along useful variables to the sub-scripts, such as where to output temp
-files and where the executables can be found.
+The testsuite is based on the OUnit2 framework and is driven by the
+main module in examples/Testsuite.ml. Currently there are two types of tests
+run in the testsuite. "contracts" tests run a full transition on a contract with
+all input data provided. "eval" tests only test expression evaluation. To add
+more tests of either of these kinds, look for the corresponding ml files in their
+examples/ directory and add accordingly.
+
+To run the testsuite:
 
 ```
-cd examples/
-bash runtests-driver.sh
+make test
 ```
+
+To run the testsuite executable manually from bin/testsuite, you have to provide
+the parameters "-bin-dir" and "-examples-dir", which must be absolute paths to
+the directory containing scilla-runner, eval-runner and the examples/ directory
+containng the tests. Relative paths may  not work.
+
 
 ## Using Ocaml with Emacs
 
