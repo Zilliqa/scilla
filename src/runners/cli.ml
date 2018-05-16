@@ -19,34 +19,35 @@ let usage = "-init init.json [-istate input_state.json]" ^
     " -o output.json -i input.scilla" 
 
 let print_usage () = 
-  Printf.fprintf stderr "Usage: %s %s\n" Sys.argv.(0) usage
+  Printf.fprintf stderr "Mandatory and optional flags:\n%s %s\n" Sys.argv.(0) usage
 
 let validate () =
   let msg = 
     (* init.json is mandatory *)
-    if not (Sys.file_exists !f_input_init) then "Invalid initialization file\n" else "" in
+    (if not (Sys.file_exists !f_input_init) 
+     then "Invalid initialization file\n" else "") in
   let msg1 = 
     (* input_state.json is not mandatory, but if provided, should be valid *)
-    if ((!f_input_state <> "") && not (Sys.file_exists !f_input_state)) 
-      then msg ^ "Invalid input contract state\n" else msg in
+    (if ((!f_input_state <> "") && not (Sys.file_exists !f_input_state)) 
+     then msg ^ "Invalid input contract state\n" else msg) in
   let msg2 = 
-      (* input_message.json is not mandatory, but if provided, should be valid *)
-    if ((!f_input_message <> "") && not (Sys.file_exists !f_input_message))
-      then msg1 ^ "Invalid input message\n" else msg1 in
+    (* input_message.json is not mandatory, but if provided, should be valid *)
+    (if ((!f_input_message <> "") && not (Sys.file_exists !f_input_message))
+     then msg1 ^ "Invalid input message\n" else msg1) in
   let msg3 = 
-      (* input_blockchain.json is mandatory *)
-      if not (Sys.file_exists !f_input_blockchain)
-        then msg2 ^ "Invalid input blockchain state\n" else msg2 in
+    (* input_blockchain.json is mandatory *)
+    (if not (Sys.file_exists !f_input_blockchain)
+     then msg2 ^ "Invalid input blockchain state\n" else msg2) in
   let msg4 = 
     (* input file is mandatory *)
-    if not ((Sys.file_exists !f_input))
-      then msg3 ^ "Invalid input contract file\n" else msg3 in
+    (if not ((Sys.file_exists !f_input))
+     then msg3 ^ "Invalid input contract file\n" else msg3) in
   let msg5 = 
     (* output file is mandatory *)
-     if !f_output = "" then msg4 ^ "Output file not specified\n" else msg4 in
+    (if !f_output = "" then msg4 ^ "Output file not specified\n" else msg4) in
   if msg5 <> ""
   then
-     (print_usage ();
+    (print_usage ();
      Printf.fprintf stderr "%s\n" msg5;
      exit 1)
   else 
@@ -71,7 +72,7 @@ let parse () =
     ("-i", Arg.String (fun x -> f_input := x), "Path to scilla contract");
   ] in 
   let ignore_anon s = () in
-  let () = Arg.parse speclist ignore_anon ("Usage: "^usage) in
+  let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
   let () = validate () in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input}
