@@ -17,7 +17,7 @@ utop: all
 
 # Build and run tests
 test: all
-	./bin/scilla-testsuite
+	./bin/testsuite
 
 # Clean up
 clean:

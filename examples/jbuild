@@ -2,10 +2,10 @@
 
 (executable
  (
-  (name scilla_testsuite)
-  (package scilla-testsuite)
-  (public_name scilla-testsuite)
+  (name testsuite)
+  (package testsuite)
+  (public_name testsuite)
   (preprocess (pps (ppx_sexp_conv ppx_let ppx_deriving.show)))
-  (libraries (core oUnit))
+  (libraries (core oUnit testcontracts))
  )
 )
