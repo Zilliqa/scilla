@@ -161,29 +161,40 @@ let () =
  
       (* Retrieve initial parameters *)
       let initargs = JSON.ContractState.get_json_data cli.input_init in
-      (* Retrieve state variables *)
-      let (curargs, cur_bal) = input_state_json cli.input_state in
-
+      (* Retrieve block chain state  *)
       let bstate = JSON.BlockChainState.get_json_data cli.input_blockchain in
-      let mmsg = JSON.Message.get_json_data cli.input_message in
-      let m = Msg mmsg in
+      let (output_msg_json, output_state_json) = 
+      if cli.input_message = ""
+      then
+        (* Initializing the contract, nothing to do *)
+        (printf "\nContract initialized successfully\n";
+          (`List [], `List []))
+      else
+        (* Not initialization, execute transition specified in the message *)
+        (let mmsg = JSON.Message.get_json_data cli.input_message in
+        let m = Msg mmsg in
 
-      (* Initializing the contract's state *)
-      let init_res = init_module cmod initargs curargs cur_bal in
-      (* Prints stats after the initialization and returns the initial state *)
-      (* Will throw an exception if unsuccessful. *)
-      let cstate = check_extract_cstate cli.input init_res in
-      (* Contract code *)
-      let ctr = cmod.contr in
+        (* Retrieve state variables *)
+        let (curargs, cur_bal) = input_state_json cli.input_state in
 
-      printf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg);
-      printf "In a Blockchain State:\n%s\n" (pp_literal_map bstate);
-      let step_result = handle_message ctr cstate bstate m in
-      let (cstate', mlist) =
-        check_after_step cli.input step_result bstate m in
+        (* Initializing the contract's state *)
+        let init_res = init_module cmod initargs curargs cur_bal in
+        (* Prints stats after the initialization and returns the initial state *)
+        (* Will throw an exception if unsuccessful. *)
+        let cstate = check_extract_cstate cli.input init_res in
+        (* Contract code *)
+        let ctr = cmod.contr in
+
+        printf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg);
+        printf "In a Blockchain State:\n%s\n" (pp_literal_map bstate);
+        let step_result = handle_message ctr cstate bstate m in
+        let (cstate', mlist) =
+          check_after_step cli.input step_result bstate m in
       
-      let osj = output_state_json cstate' in
-      let omj = output_message_json mlist in
-      let output_json = `Assoc [("message", omj) ; ("states", osj)] in
+        let osj = output_state_json cstate' in
+        let omj = output_message_json mlist in
+          (omj, osj))
+      in
+      let output_json = `Assoc [("message", output_msg_json) ; ("states", output_state_json)] in
         Out_channel.with_file cli.output ~f:(fun channel -> 
           Yojson.pretty_to_string output_json |> Out_channel.output_string channel)
