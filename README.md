@@ -20,7 +20,7 @@ The package dependencies can be installed via `opam` as follows:
 
 ```
 opam install ocaml-migrate-parsetree
-opam install core cryptokit ppx_sexp_conv yojson
+opam install core cryptokit ppx_sexp_conv yojson batteries
 opam install angstrom hex ppx_deriving ppx_deriving_yojson
 opam install menhir
 ```
@@ -41,17 +41,24 @@ From the project root, execute
 
 Instead of `let.scilla` you might want to try any idfferent file in `examples/eval/exp`.
 
-#### Running a step-based simulation
+#### Executing a simple transition
 
 From the project root, execute
 
 ```
-./bin/scilla-runner crowdfunding n
+./bin/scilla-runner -init examples/contracts/crowdfunding/init.json -istate examples/contracts/crowdfunding/state_4.json -iblockchain examples/contracts/crowdfunding/blockchain_4.json -imessage examples/contracts/crowdfunding/message_4.json -o examples/contracts/crowdfunding/output_4.json -i examples/contracts/crowdfunding/contract
 ```
   or
 ```
-./bin/scilla-runner zil-game n
+./bin/scilla-runner -init examples/contracts/zil-game/init.json -istate examples/contracts/zil-game/state_5.json -iblockchain examples/contracts/zil-game/blockchain_5.json -imessage examples/contracts/zil-game/message_5.json -o examples/contracts/zil-game/output_5.json -i examples/contracts/zil-game/contract
 ```
+
+Alternatively, use the easyrun script as below:
+
+```
+./easyrun.sh crowdfunding 1
+```
+
 where `n` is a number `0-5` for the number of "steps" to execute the
 protocol (the messages and blockchain states are provided for only so
 many steps in the simulation).

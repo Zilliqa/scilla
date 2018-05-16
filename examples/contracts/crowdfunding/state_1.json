@@ -1,0 +1,13 @@
+[
+  { "vname": "backers", "type": "Map", "value": null },
+  {
+    "vname": "funded",
+    "type": "ADT",
+    "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+  },
+  {
+    "vname": "_balance",
+    "type": "Int",
+    "value": "0"
+  }
+]

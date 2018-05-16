@@ -7,11 +7,13 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *)
 
-val f_input_init : string ref
-val f_input_state : string ref
-val f_input_message : string ref
-val f_input_blockchain : string ref
-val f_output : string ref
-val f_input : string ref
+type ioFiles = {
+    input_init : string;
+    input_state : string;
+    input_message : string;
+    input_blockchain : string;
+    output : string;
+    input : string
+}
 
-val parse : unit -> unit
+val parse : unit -> ioFiles

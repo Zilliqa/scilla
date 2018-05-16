@@ -13,10 +13,5 @@
         "vname" : "goal",
         "type" : "Int",
         "value" : "500"
-    },
-    { 
-        "vname" : "_balance",
-        "type" : "Int",
-        "value" : "0"
     }
 ]

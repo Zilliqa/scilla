@@ -1,0 +1,16 @@
+[
+  { "vname": "_balance", "type": "Int", "value": "200" },
+  {
+    "vname": "backers",
+    "type": "Map",
+    "value": [
+      { "keyType": "Address", "valType": "Int" },
+      { "key": "0x12345678901234567890123456789012345678cd", "val": "200" }
+    ]
+  },
+  {
+    "vname": "funded",
+    "type": "ADT",
+    "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+  }
+]

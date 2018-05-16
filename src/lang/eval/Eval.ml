@@ -273,13 +273,26 @@ let init_contract libs cparams cfields args init_bal  =
     let cstate = {env; fields; balance} in
     pure cstate
 
+
+
+(* Combine initialized state with info from current state *)
+let create_cur_state_fields initcstate curcstate =
+    (* Get only those fields from initcstate that are not in curcstate *)
+    let filtered_init = List.filter initcstate 
+        ~f:(fun (s, _) -> not (List.exists curcstate 
+            ~f:(fun (s1, _) -> s = s1))) in
+        (* Combine filtered list and curcstate *)
+        filtered_init @ curcstate
+    
 (* Initialize a module with given arguments and initial balance *)
-let init_module md args init_bal =
+let init_module md initargs curargs init_bal =
   let {cname ; libs; contr} = md in
   let {cname; cparams; cfields; ctrans} = contr in
-  let%bind cstate =
-    init_contract libs cparams cfields args init_bal in
-  pure (contr, cstate)
+  let%bind initcstate =
+    init_contract libs cparams cfields initargs init_bal in
+  let curfields = create_cur_state_fields initcstate.fields curargs in
+  let cstate = { initcstate with fields = curfields } in
+    pure (contr, cstate)
 
 (*******************************************************)
 (*               Message processing                    *)
