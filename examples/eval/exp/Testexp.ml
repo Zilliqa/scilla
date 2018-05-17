@@ -27,7 +27,9 @@ let stream_to_string (s : char Stream.t) =
  * TODO: How to generate this list dynamically? We know the actual
  * test directory only through "examplesdir test_ctxt", and test_ctxt
  * is available only to the actual test function, not the test generation
- * function. 
+ * function. The only way to make it on-the-fly is for the test itself
+ * to scan the dir, which would put all these as one test, instead of
+ * treating them separately. That would be bad for reporting failures.
  *)
 let explist = [
   "addr.scilla"; "app5.scilla"; "builtin1.scilla"; "cons.scilla";
