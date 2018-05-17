@@ -1,0 +1,9 @@
+(jbuild_version 1)
+
+(library
+ (
+  (name testexp)
+  (wrapped false)
+  (libraries (core oUnit))
+ )
+)
