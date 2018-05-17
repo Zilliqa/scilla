@@ -10,7 +10,7 @@ let load_file f =
   let s = Bytes.create n in
   really_input ic s 0 n;
   close_in ic;
-  (s)
+  Bytes.to_string s
   
 (* 
  * Build tests to invoke scilla-runner with the right arguments, for
