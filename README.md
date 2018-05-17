@@ -22,7 +22,7 @@ The package dependencies can be installed via `opam` as follows:
 opam install ocaml-migrate-parsetree
 opam install core cryptokit ppx_sexp_conv yojson batteries
 opam install angstrom hex ppx_deriving ppx_deriving_yojson
-opam install menhir
+opam install menhir oUnit
 ```
 
 ### Compiling and Running
