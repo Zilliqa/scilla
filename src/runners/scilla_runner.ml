@@ -160,7 +160,8 @@ let () =
       let (output_msg_json, output_state_json) = 
       if cli.input_message = ""
       then
-        (* Initializing the contract, nothing to do *)
+        (* Initializing the contract's state, just for checking things. *)
+        let _ = init_module cmod initargs [] (Big_int.big_int_of_int 0) in
         (printf "\nContract initialized successfully\n";
           (`Null, `List []))
       else
