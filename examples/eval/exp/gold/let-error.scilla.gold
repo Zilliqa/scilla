@@ -1,5 +1,5 @@
 Failed execution:
-Indentifier "oops" at /home/vaivaswatha/c/scilla/examples/eval/exp/let-error.scilla:4:9 is not bound in environment:
+Indentifier "oops" at eval/exp/let-error.scilla:4:9 is not bound in environment:
 { [y -> (IntLit 42)],
   [f -> <closure>],
   [x -> (IntLit 42)] }

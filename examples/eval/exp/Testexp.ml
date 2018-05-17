@@ -50,17 +50,17 @@ let rec build_exp_tests bindir examplesdir el =
   | f :: r ->
     let test = f  >:: (fun test_ctxt ->
       let evalbin = bindir test_ctxt ^ Filename.dir_sep ^ "eval-runner" in
-      let dir = examplesdir test_ctxt ^ Filename.dir_sep ^ "eval" ^ 
-        Filename.dir_sep ^ "exp" ^ Filename.dir_sep in
-      let input_file = dir ^ f in
+      let dir = examplesdir test_ctxt in
+      let input_file = "eval" ^ Filename.dir_sep ^ "exp" ^ Filename.dir_sep ^ f in
       (* Verify standard output of execution with gold file *)
-      let goldoutput_file = dir ^ "gold" ^ Filename.dir_sep ^ f ^ ".gold" in
+      let goldoutput_file = dir ^ Filename.dir_sep ^ "eval" ^ Filename.dir_sep ^ "exp" ^ 
+              Filename.dir_sep ^ "gold" ^ Filename.dir_sep ^ f ^ ".gold" in
       let output_verifier s =
         let output = stream_to_string s in
         let gold_output = load_file goldoutput_file in
           assert_equal ~printer:(fun s -> s) gold_output output
       in
-      assert_command ~foutput:output_verifier ~ctxt:test_ctxt evalbin (input_file::[])) in
+      assert_command ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (input_file::[])) in
     test :: build_exp_tests bindir examplesdir r
 
 let add_tests bindir examplesdir =
