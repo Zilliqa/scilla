@@ -5,18 +5,13 @@ let i_to_s i =
 
 (* load an entire file to memory *)
 let load_file f =
-  let ic = open_in f in
-  let n = in_channel_length ic in
-  let s = Bytes.create n in
-  really_input ic s 0 n;
-  close_in ic;
-  Bytes.to_string s
-  
+    Core.In_channel.read_all f
+
 (* 
  * Build tests to invoke scilla-runner with the right arguments, for
  * multiple test cases, each suffixed with _i up to _n (both inclusive)
  *)
-let rec build_contract_tests bindir examplesdir name i n =
+let rec build_contract_tests bindir testsdir name i n =
   if (i > n) 
     then [] 
   else
@@ -24,7 +19,7 @@ let rec build_contract_tests bindir examplesdir name i n =
     (* function to run scilla-runner and check exit code *)
       (fun test_ctxt ->
         (* Files for the contract are in examples/contract/(crowdfunding|zil-game|etc). *)
-        let dir = examplesdir test_ctxt ^ Filename.dir_sep ^ "contracts" ^ Filename.dir_sep ^
+        let dir = testsdir test_ctxt ^ Filename.dir_sep ^ "contracts" ^ Filename.dir_sep ^
           name ^ Filename.dir_sep in
         let tmpdir = bracket_tmpdir test_ctxt in 
         let output_file = tmpdir ^ Filename.dir_sep ^ name ^ "_output_"
@@ -45,10 +40,10 @@ let rec build_contract_tests bindir examplesdir name i n =
            assert_equal ~ctxt:test_ctxt ~msg:"Output json mismatch" g o);
       ) 
       in
-      test :: (build_contract_tests bindir examplesdir name (i+1) n)
+      test :: (build_contract_tests bindir testsdir name (i+1) n)
 
 
-let add_tests bindir examplesdir =
-    let crowdfundingtests = "crowdfunding" >:::(build_contract_tests bindir examplesdir "crowdfunding" 1 5) in
-    let zilgametests = "zil-game" >:::(build_contract_tests bindir examplesdir "zil-game" 1 5) in
+let add_tests bindir testsdir =
+    let crowdfundingtests = "crowdfunding" >:::(build_contract_tests bindir testsdir "crowdfunding" 1 5) in
+    let zilgametests = "zil-game" >:::(build_contract_tests bindir testsdir "zil-game" 1 5) in
       "contract_tests" >::: [crowdfundingtests;zilgametests]

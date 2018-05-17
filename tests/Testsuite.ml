@@ -2,13 +2,13 @@ open OUnit2
 
 let main =
   let bin_dir_default = (Sys.getcwd () ^ Filename.dir_sep ^ "bin") in
-  let examples_dir_default = (Sys.getcwd () ^ Filename.dir_sep ^ "examples") in
+  let tests_dir_default = (Sys.getcwd () ^ Filename.dir_sep ^ "tests") in
   let bin_dir = Conf.make_string "bin_dir" bin_dir_default "directory containing binaries" in
-  let examples_dir = Conf.make_string "examples_dir" examples_dir_default "directory containing examples" in
+  let tests_dir = Conf.make_string "tests_dir" tests_dir_default "directory containing tests" in
 
   (* Add calls to new tests from here *)
-  let contract_tests = Testcontracts.add_tests bin_dir examples_dir in
-  let exp_tests = Testexp.add_tests bin_dir examples_dir in
+  let contract_tests = Testcontracts.add_tests bin_dir tests_dir in
+  let exp_tests = Testexp.add_tests bin_dir tests_dir in
 
   let all_tests = "all_tests" >::: [contract_tests;exp_tests] in
   (* Run all tests *)

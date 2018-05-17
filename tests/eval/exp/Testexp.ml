@@ -5,12 +5,7 @@ let i_to_s i =
 
 (* load an entire file to memory *)
 let load_file f =
-  let ic = open_in f in
-  let n = in_channel_length ic in
-  let s = Bytes.create n in
-  really_input ic s 0 n;
-  close_in ic;
-  Bytes.to_string s
+    Core.In_channel.read_all f
 
 let string_of_chars chars = 
   let buf = Buffer.create 16 in
@@ -25,7 +20,7 @@ let stream_to_string (s : char Stream.t) =
 
 (* 
  * TODO: How to generate this list dynamically? We know the actual
- * test directory only through "examplesdir test_ctxt", and test_ctxt
+ * test directory only through "testsdir test_ctxt", and test_ctxt
  * is available only to the actual test function, not the test generation
  * function. The only way to make it on-the-fly is for the test itself
  * to scan the dir, which would put all these as one test, instead of
@@ -44,13 +39,13 @@ let explist = [
   "msg.scilla"; "pair3.scilla"; "pm_app.scilla"
 ]
 
-let rec build_exp_tests bindir examplesdir el =
+let rec build_exp_tests bindir testsdir el =
   match el with
   | [] -> []
   | f :: r ->
     let test = f  >:: (fun test_ctxt ->
       let evalbin = bindir test_ctxt ^ Filename.dir_sep ^ "eval-runner" in
-      let dir = examplesdir test_ctxt in
+      let dir = testsdir test_ctxt in
       let input_file = "eval" ^ Filename.dir_sep ^ "exp" ^ Filename.dir_sep ^ f in
       (* Verify standard output of execution with gold file *)
       let goldoutput_file = dir ^ Filename.dir_sep ^ "eval" ^ Filename.dir_sep ^ "exp" ^ 
@@ -61,8 +56,8 @@ let rec build_exp_tests bindir examplesdir el =
           assert_equal ~printer:(fun s -> s) gold_output output
       in
       assert_command ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (input_file::[])) in
-    test :: build_exp_tests bindir examplesdir r
+    test :: build_exp_tests bindir testsdir r
 
-let add_tests bindir examplesdir =
-  let exptests = build_exp_tests bindir examplesdir explist in
+let add_tests bindir testsdir =
+  let exptests = build_exp_tests bindir testsdir explist in
     "exptests" >::: exptests
