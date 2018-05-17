@@ -140,9 +140,23 @@ let () =
       check_libs libs cli.input;
  
       (* Retrieve initial parameters *)
-      let initargs = JSON.ContractState.get_json_data cli.input_init in
+      let initargs = 
+        try 
+          JSON.ContractState.get_json_data cli.input_init
+        with
+        | JSON.Member_not_found s -> 
+            printf "Failed to parse json %s: %s\n" cli.input_init s;
+            exit 1
+      in
       (* Retrieve block chain state  *)
-      let bstate = JSON.BlockChainState.get_json_data cli.input_blockchain in
+      let bstate = 
+      try
+        JSON.BlockChainState.get_json_data cli.input_blockchain 
+      with
+        | JSON.Member_not_found s -> 
+            printf "Failed to parse json %s: %s\n" cli.input_blockchain s;
+            exit 1
+      in
       let (output_msg_json, output_state_json) = 
       if cli.input_message = ""
       then
@@ -151,11 +165,25 @@ let () =
           (`Null, `List []))
       else
         (* Not initialization, execute transition specified in the message *)
-        (let mmsg = JSON.Message.get_json_data cli.input_message in
+        (let mmsg = 
+        try
+          JSON.Message.get_json_data cli.input_message 
+        with
+        | JSON.Member_not_found s -> 
+            printf "Failed to parse json %s: %s\n" cli.input_message s;
+            exit 1
+        in
         let m = Msg mmsg in
 
         (* Retrieve state variables *)
-        let (curargs, cur_bal) = input_state_json cli.input_state in
+        let (curargs, cur_bal) = 
+        try
+          input_state_json cli.input_state
+        with
+        | JSON.Member_not_found s -> 
+            printf "Failed to parse json %s: %s\n" cli.input_state s;
+            exit 1
+        in
 
         (* Initializing the contract's state *)
         let init_res = init_module cmod initargs curargs cur_bal in

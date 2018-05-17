@@ -11,12 +11,21 @@ open Syntax
 open Core
 open Yojson
 
+exception Member_not_found of string
+
+let member_exn m j =
+  let open Basic.Util in
+  let v = member m j in
+  match v with
+  | `Null -> raise (Member_not_found ("Member '" ^ m ^ "' not found in json"))
+  | j -> j
+
 let rec mapvalues_from_json ktype vtype l = 
   let open Basic.Util in
   match l with
   | first :: remaining ->
-      let kval = member "key" first |> to_string in
-      let vval = member "val" first |> to_string in
+      let kval = member_exn "key" first |> to_string in
+      let vval = member_exn "val" first |> to_string in
       let keylit = 
         (match ktype with
         | "String" -> Some (StringLit kval)
@@ -54,8 +63,6 @@ let rec json_to_adtargs tjs ajs =
         | "Hash" -> Some (Sha256 ajs)
         | _ -> None
       ) in
-      Printf.printf "tjs:%s\n" tjs;
-      Printf.printf "Hello: %s\n" (Bool.to_string (Option.is_some argS));
       let (trem, arem) = json_to_adtargs tr ar in
       (match argS with
         | Some l -> ((PrimType tjs) :: trem, l :: arem)
@@ -65,8 +72,8 @@ let rec json_to_adtargs tjs ajs =
 
 let jobj_to_statevar json =
   let open Basic.Util in
-  let n = member "vname" json |> to_string in
-  let t = member "type" json |> to_string in
+  let n = member_exn "vname" json |> to_string in
+  let t = member_exn "type" json |> to_string in
   match t with
   | "Map" ->
     (* Handle Map separately. Map is a `List of `Assoc jsons, with
@@ -76,8 +83,8 @@ let jobj_to_statevar json =
       | `List vli ->
          (match vli with 
           | first :: remaining ->
-              let ktype = member "keyType" first |> to_string in
-              let vtype = member "valType" first |> to_string in
+              let ktype = member_exn "keyType" first |> to_string in
+              let vtype = member_exn "valType" first |> to_string in
               let kvallist = mapvalues_from_json ktype vtype remaining in
                 Some (n, Map (kvallist))
           | _ -> None
@@ -85,18 +92,18 @@ let jobj_to_statevar json =
       | _ -> None
     )
   | "ADT" ->
-    let v = member "value" json in
+    let v = member_exn "value" json in
     (match v with
       | `Assoc adt ->
-          let constr = member "constructor" v |> to_string in
-          let argtypes = member "argtypes" v |> to_list in
-          let arguments = member "arguments" v |> to_list in
+          let constr = member_exn "constructor" v |> to_string in
+          let argtypes = member_exn "argtypes" v |> to_list in
+          let arguments = member_exn "arguments" v |> to_list in
           let (tlist, arglit) = json_to_adtargs argtypes arguments in
             Some (n, ADTValue (constr, tlist, arglit))
       | _ -> None
     )
   | _ ->  
-    let v = member "value" json |> to_string in
+    let v = member_exn "value" json |> to_string in
     (match t with
       (* see Syntax.literal_tag *)
       | "String" -> Some (StringLit(v))
@@ -219,12 +226,12 @@ module Message = struct
 let get_json_data filename =
   let open Basic.Util in
   let json = Basic.from_file filename in
-  let tags = member "_tag" json |> to_string in
-  let amounts = member "_amount" json |> to_string in
+  let tags = member_exn "_tag" json |> to_string in
+  let amounts = member_exn "_amount" json |> to_string in
   (* Make tag and amount into a literal *)
   let tag = ("_tag", StringLit(tags)) in
   let amount = ("_amount", IntLit(amounts)) in
-  let pjlist = member "params" json |> to_list in
+  let pjlist = member_exn "params" json |> to_list in
   let plist = List.map pjlist ~f:jobj_to_statevar in
   let params = List.fold_right plist ~init:[]
     ~f:(fun o z -> match o with Some x -> x :: z | None -> z) in
