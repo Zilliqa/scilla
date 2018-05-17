@@ -44,8 +44,6 @@ let explist = [
   "msg.scilla"; "pair3.scilla"; "pm_app.scilla"
 ]
 
-let string_printer s = s
-
 let rec build_exp_tests bindir examplesdir el =
   match el with
   | [] -> []
@@ -60,7 +58,7 @@ let rec build_exp_tests bindir examplesdir el =
       let output_verifier s =
         let output = stream_to_string s in
         let gold_output = load_file goldoutput_file in
-          assert_equal ~printer:string_printer gold_output output
+          assert_equal ~printer:(fun s -> s) gold_output output
       in
       assert_command ~foutput:output_verifier ~ctxt:test_ctxt evalbin (input_file::[])) in
     test :: build_exp_tests bindir examplesdir r
