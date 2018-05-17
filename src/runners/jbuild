@@ -5,8 +5,7 @@
   (public_names (scilla-runner eval-runner))
   (modules (scilla_runner
             eval_runner
-            cli
-            TestRunnerInputs))
+            cli))
   (libraries (core
               angstrom
               ppx_sexp_conv ppx_deriving

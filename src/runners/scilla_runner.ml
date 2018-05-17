@@ -16,7 +16,6 @@ open Result.Let_syntax
 open MonadUtil
 open EvalUtil
 open Eval
-open TestRunnerInputs
 
 exception EvalError of string
 
@@ -76,25 +75,6 @@ let check_after_step name res bstate m =
        printf "Emitted messages:\n%s\n\n" (pp_literal_list outs);
        print_message outs;
        cstate, outs)
-
-let make_step ctr name cstate i  =
-  let (bstate, m) = get_context name i in
-  printf "[Simulated execution, step %i]\nAbout to handle:\n" (i+1);
-  printf "%s\nin a Blockchain State:\n%s.\n"
-    (pp_literal m) (pp_literal_map bstate);
-  let step_result = handle_message ctr cstate bstate m in
-  let (cstate', _) =
-    check_after_step name step_result bstate m in
-  cstate'
-
-(* Recursively execute multiple steps *)
-let rec make_step_loop ctr name cstate num_steps i =
-  if i >= 0 && i < num_steps
-  then
-    let cstate' = make_step ctr name cstate i in
-    make_step_loop ctr name cstate' num_steps (i + 1)
-  else
-    printf "\nEvalutaion complete!"
 
 (* Parse the input state json and extract out _balance separately *)
 let input_state_json filename = 
