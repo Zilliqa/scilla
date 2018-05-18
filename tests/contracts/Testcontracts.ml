@@ -42,8 +42,32 @@ let rec build_contract_tests bindir testsdir name i n =
       in
       test :: (build_contract_tests bindir testsdir name (i+1) n)
 
+let build_contract_init_test bindir testsdir name =
+  name ^ "_" ^ "init" >::
+  (fun test_ctxt ->
+    (* Files for the contract are in examples/contract/(crowdfunding|zil-game|etc). *)
+    let dir = testsdir test_ctxt ^ Filename.dir_sep ^ "contracts" ^ Filename.dir_sep ^
+      name ^ Filename.dir_sep in
+      let tmpdir = bracket_tmpdir test_ctxt in 
+      let output_file = tmpdir ^ Filename.dir_sep ^ name ^ "_init_output.json" in
+      let args = ["-init"; dir ^ "init.json";
+                  "-i"; dir ^ "contract";
+                  "-o"; output_file;
+                  "-iblockchain"; dir ^ "blockchain_1.json";]
+            in
+      let scillabin = bindir test_ctxt ^ Filename.dir_sep ^ "scilla-runner" in
+        (* Ensure that the executable exists with 0 *)
+        (assert_command test_ctxt scillabin args;
+          let goldoutput_file = dir ^ "init_output.json" in
+          let g = load_file goldoutput_file in
+          let o = load_file output_file in
+          (* Compare output.json with a gold output in the contract directory *)
+          assert_equal ~ctxt:test_ctxt ~msg:"Output json mismatch" g o);
+      ) 
 
 let add_tests bindir testsdir =
     let crowdfundingtests = "crowdfunding" >:::(build_contract_tests bindir testsdir "crowdfunding" 1 5) in
+    let cfinit_test = "crowdfunding_init" >:(build_contract_init_test bindir testsdir "crowdfunding") in
     let zilgametests = "zil-game" >:::(build_contract_tests bindir testsdir "zil-game" 1 5) in
-      "contract_tests" >::: [crowdfundingtests;zilgametests]
+    let zginit_test = "zil-game_init" >:(build_contract_init_test bindir testsdir "zil-game") in
+      "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test]
