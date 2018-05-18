@@ -38,21 +38,21 @@ Once the probject is built you can try the following things:
 From the project root, execute
 
 ```
-./bin/eval-runner examples/eval/exp/let.scilla 
+./bin/eval-runner tests/eval/exp/let.scilla 
 ```
 
-Instead of `let.scilla` you might want to try any idfferent file in `examples/eval/exp`.
+Instead of `let.scilla` you might want to try any idfferent file in `tests/eval/exp`.
 
 #### Executing a simple transition
 
 From the project root, execute
 
 ```
-./bin/scilla-runner -init examples/contracts/crowdfunding/init.json -istate examples/contracts/crowdfunding/state_4.json -iblockchain examples/contracts/crowdfunding/blockchain_4.json -imessage examples/contracts/crowdfunding/message_4.json -o examples/contracts/crowdfunding/output_4.json -i examples/contracts/crowdfunding/contract
+./bin/scilla-runner -init tests/contracts/crowdfunding/init.json -istate tests/contracts/crowdfunding/state_4.json -iblockchain tests/contracts/crowdfunding/blockchain_4.json -imessage tests/contracts/crowdfunding/message_4.json -o tests/contracts/crowdfunding/output_4.json -i tests/contracts/crowdfunding/contract
 ```
   or
 ```
-./bin/scilla-runner -init examples/contracts/zil-game/init.json -istate examples/contracts/zil-game/state_5.json -iblockchain examples/contracts/zil-game/blockchain_5.json -imessage examples/contracts/zil-game/message_5.json -o examples/contracts/zil-game/output_5.json -i examples/contracts/zil-game/contract
+./bin/scilla-runner -init tests/contracts/zil-game/init.json -istate tests/contracts/zil-game/state_5.json -iblockchain tests/contracts/zil-game/blockchain_5.json -imessage tests/contracts/zil-game/message_5.json -o tests/contracts/zil-game/output_5.json -i tests/contracts/zil-game/contract
 ```
 
 Alternatively, use the easyrun script as below:
@@ -76,11 +76,11 @@ $PROJECT_DIR/_build/install/default/bin
 ### Running the testsuite
 
 The testsuite is based on the OUnit2 framework and is driven by the
-main module in examples/Testsuite.ml. Currently there are two types of tests
+main module in tests/Testsuite.ml. Currently there are two types of tests
 run in the testsuite. "contracts" tests run a full transition on a contract with
 all input data provided. "eval" tests only test expression evaluation. To add
 more tests of either of these kinds, look for the corresponding ml files in their
-examples/ directory and add accordingly.
+tests/ directory and add accordingly.
 
 To run the testsuite:
 
@@ -89,8 +89,8 @@ make test
 ```
 
 To run the testsuite executable manually from bin/testsuite, you have to provide
-the parameters "-bin-dir" and "-examples-dir", which must be absolute paths to
-the directory containing scilla-runner, eval-runner and the examples/ directory
+the parameters "-bin-dir" and "-tests-dir", which must be absolute paths to
+the directory containing scilla-runner, eval-runner and the tests/ directory
 containng the tests. Relative paths may  not work.
 
 
