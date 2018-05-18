@@ -144,7 +144,7 @@ let () =
         try 
           JSON.ContractState.get_json_data cli.input_init
         with
-        | JSON.Member_not_found s -> 
+        | JSON.Invalid_json s -> 
             printf "Failed to parse json %s: %s\n" cli.input_init s;
             exit 1
       in
@@ -153,7 +153,7 @@ let () =
       try
         JSON.BlockChainState.get_json_data cli.input_blockchain 
       with
-        | JSON.Member_not_found s -> 
+        | JSON.Invalid_json s -> 
             printf "Failed to parse json %s: %s\n" cli.input_blockchain s;
             exit 1
       in
@@ -170,7 +170,7 @@ let () =
         try
           JSON.Message.get_json_data cli.input_message 
         with
-        | JSON.Member_not_found s -> 
+        | JSON.Invalid_json s -> 
             printf "Failed to parse json %s: %s\n" cli.input_message s;
             exit 1
         in
@@ -181,7 +181,7 @@ let () =
         try
           input_state_json cli.input_state
         with
-        | JSON.Member_not_found s -> 
+        | JSON.Invalid_json s -> 
             printf "Failed to parse json %s: %s\n" cli.input_state s;
             exit 1
         in

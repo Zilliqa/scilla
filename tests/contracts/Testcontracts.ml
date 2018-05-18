@@ -65,9 +65,45 @@ let build_contract_init_test bindir testsdir name =
           assert_equal ~ctxt:test_ctxt ~msg:"Output json mismatch" g o);
       ) 
 
+let build_misc_tests bindir testsdir =
+  let scillabin bindir test_ctxt =
+    bindir test_ctxt ^ Filename.dir_sep ^ "scilla-runner" in
+  let output_file test_ctxt name =
+    bracket_tmpdir test_ctxt ^ Filename.dir_sep ^ name in
+  let tests_dir_file testsdir test_ctxt name =
+    testsdir test_ctxt ^ "Filename.dir_sep" ^ "contracts" ^ Filename.dir_sep ^ name in
+
+  (* Test for exit 1 on bad json *)
+  let test1 = 
+    "misc_test_badjson_1" >::
+      (fun test_ctxt ->
+        let args = ["-init"; tests_dir_file testsdir test_ctxt "init_bad1.json";
+                    "-i"; tests_dir_file testsdir test_ctxt "contract";
+                    "-o"; output_file test_ctxt "init_bad1_output.json";
+                    "-iblockchain"; tests_dir_file testsdir test_ctxt "blockchain_1.json"]
+        in
+        let expected_code : Unix.process_status = WEXITED 1 in
+          assert_command ~exit_code:expected_code ~ctxt:test_ctxt (scillabin bindir test_ctxt) args
+      ) in
+
+    let test2 = 
+    "misc_test_badjson_2" >::
+      (fun test_ctxt ->
+        let args = ["-init"; tests_dir_file testsdir test_ctxt "init_bad1.json";
+                    "-i"; tests_dir_file testsdir test_ctxt "contract";
+                    "-o"; output_file test_ctxt "init_bad2_output.json";
+                    "-iblockchain"; tests_dir_file testsdir test_ctxt "blockchain_1.json"]
+        in
+        let expected_code : Unix.process_status = WEXITED 1 in
+          assert_command ~exit_code:expected_code ~ctxt:test_ctxt (scillabin bindir test_ctxt) args
+      ) in
+
+      [test1;test2]
+
 let add_tests bindir testsdir =
     let crowdfundingtests = "crowdfunding" >:::(build_contract_tests bindir testsdir "crowdfunding" 1 5) in
     let cfinit_test = "crowdfunding_init" >:(build_contract_init_test bindir testsdir "crowdfunding") in
     let zilgametests = "zil-game" >:::(build_contract_tests bindir testsdir "zil-game" 1 5) in
     let zginit_test = "zil-game_init" >:(build_contract_init_test bindir testsdir "zil-game") in
-      "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test]
+    let misc_tests = "misc_tests" >::: build_misc_tests bindir testsdir in
+      "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;misc_tests]

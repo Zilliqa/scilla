@@ -108,4 +108,4 @@ module BlockChainState : sig
 
 end
 
-exception Member_not_found of string
+exception Invalid_json of string

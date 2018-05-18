@@ -11,14 +11,39 @@ open Syntax
 open Core
 open Yojson
 
-exception Member_not_found of string
+exception Invalid_json of string
+let addr_len = 40
+let hash_len = 64
 
 let member_exn m j =
   let open Basic.Util in
   let v = member m j in
   match v with
-  | `Null -> raise (Member_not_found ("Member '" ^ m ^ "' not found in json"))
+  | `Null -> raise (Invalid_json ("Member '" ^ m ^ "' not found in json"))
   | j -> j
+
+let lit_exn n =
+  let s, re, l = 
+    match n with
+    | IntLit l | BNum l ->
+      l, Str.regexp "[0-9]+$", 0
+    | Address a ->
+        a, Str.regexp "0x[0-9a-f]+$", addr_len+2
+    | Sha256 s ->
+        s, Str.regexp "0x[0-9a-f]+$", hash_len+2
+    | StringLit s -> s, Str.regexp ".*", 0
+    | _ -> "", Str.regexp "", 0
+  in
+  if (Str.string_match re s 0)
+  then
+    (if l <> 0 && (String.length s) <> l
+     then
+      raise (Invalid_json ("Invalid " ^ literal_tag n ^ " : " ^ s ^ " in json"))
+     else
+      n
+    )
+  else
+    raise (Invalid_json ("Invalid " ^ literal_tag n ^ " : " ^ s ^ " in json"))
 
 let rec mapvalues_from_json ktype vtype l = 
   let open Basic.Util in
@@ -28,19 +53,19 @@ let rec mapvalues_from_json ktype vtype l =
       let vval = member_exn "val" first |> to_string in
       let keylit = 
         (match ktype with
-        | "String" -> Some (StringLit kval)
-        | "Int" -> Some (IntLit kval)
-        | "BNum" -> Some (BNum kval)
-        | "Address" -> Some (Address kval)
-        | "Hash" -> Some (Sha256 kval)
+        | "String" -> Some (lit_exn(StringLit kval))
+        | "Int" -> Some (lit_exn(IntLit kval))
+        | "BNum" -> Some (lit_exn(BNum kval))
+        | "Address" -> Some (lit_exn(Address kval))
+        | "Hash" -> Some (lit_exn(Sha256 kval))
         | _ -> None) in
       let vallit = 
         (match vtype with
-        | "String" -> Some (StringLit vval)
-        | "Int" -> Some (IntLit vval)
-        | "BNum" -> Some (BNum vval)
-        | "Address" -> Some (Address vval)
-        | "Hash" -> Some (Sha256 vval)
+        | "String" -> Some (lit_exn(StringLit vval))
+        | "Int" -> Some (lit_exn(IntLit vval))
+        | "BNum" -> Some (lit_exn(BNum vval))
+        | "Address" -> Some (lit_exn(Address vval))
+        | "Hash" -> Some (lit_exn(Sha256 vval))
         | _ -> None) in
       let vlist = mapvalues_from_json ktype vtype remaining in
       (match keylit, vallit with
@@ -56,11 +81,11 @@ let rec json_to_adtargs tjs ajs =
       let ajs = to_string aj in
       let argS = 
       (match tjs with
-        | "String" -> Some (StringLit ajs)
-        | "Int" -> Some (IntLit ajs)
-        | "BNum" -> Some (BNum ajs)
-        | "Address" -> Some (Address ajs)
-        | "Hash" -> Some (Sha256 ajs)
+        | "String" -> Some (lit_exn(StringLit ajs))
+        | "Int" -> Some (lit_exn(IntLit ajs))
+        | "BNum" -> Some (lit_exn(BNum ajs))
+        | "Address" -> Some (lit_exn(Address ajs))
+        | "Hash" -> Some (lit_exn(Sha256 ajs))
         | _ -> None
       ) in
       let (trem, arem) = json_to_adtargs tr ar in
@@ -106,11 +131,11 @@ let jobj_to_statevar json =
     let v = member_exn "value" json |> to_string in
     (match t with
       (* see Syntax.literal_tag *)
-      | "String" -> Some (StringLit(v))
-      | "Int" -> Some (IntLit(v))
-      | "BNum" -> Some (BNum(v))
-      | "Address" -> Some (Address(v))
-      | "Hash" -> Some (Sha256(v))
+      | "String" -> Some (lit_exn(StringLit v))
+      | "Int" -> Some (lit_exn(IntLit v))
+      | "BNum" -> Some (lit_exn(BNum v))
+      | "Address" -> Some (lit_exn(Address v))
+      | "Hash" -> Some (lit_exn(Sha256 v))
       | _ -> None) |> Option.map ~f:(fun x -> (n, x))
 
 let typ_to_string t = 
