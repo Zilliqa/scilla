@@ -16,6 +16,8 @@ Install the folowing dependencies for OCaml:
 * `jbuilder` build tool, can be installed via `opam install jbuilder`
 * `ocamlc`, version >= 4.05
 
+Setup OCaml using the instructions [here](https://github.com/realworldocaml/book/wiki/Installation-Instructions). Make sure you have switched (using `opam switch`) to a version not older than the one specified above.
+
 The package dependencies can be installed via `opam` as follows:
 
 ```
