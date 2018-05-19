@@ -45,10 +45,15 @@ let validate () =
   let msg5 = 
     (* output file is mandatory *)
     (if !f_output = "" then msg4 ^ "Output file not specified\n" else msg4) in
-  if msg5 <> ""
+  let msg6 =
+    (* input_message.json and input_state.json can either both be there or both absent *)
+    if (!f_input_message = "") <> (!f_input_state = "") 
+      then msg5 ^ "Input message and input state can both be present or both absent\n"
+      else msg5 in
+  if msg6 <> ""
   then
     (print_usage ();
-     Printf.fprintf stderr "%s\n" msg5;
+     Printf.fprintf stderr "%s\n" msg6;
      exit 1)
   else 
     ()

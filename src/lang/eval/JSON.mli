@@ -107,3 +107,5 @@ module BlockChainState : sig
   val get_json_data : string -> (string * Syntax.literal) list
 
 end
+
+exception Invalid_json of string
