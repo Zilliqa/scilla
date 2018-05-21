@@ -79,12 +79,13 @@ $PROJECT_DIR/_build/install/default/bin
 
 ### Running the testsuite
 
-The testsuite is based on the OUnit2 framework and is driven by the
-main module in tests/Testsuite.ml. Currently there are two types of tests
-run in the testsuite. "contracts" tests run a full transition on a contract with
-all input data provided. "eval" tests only test expression evaluation. To add
-more tests of either of these kinds, look for the corresponding ml files in their
-tests/ directory and add accordingly.
+The testsuite is based on the `OUnit2` framework and is driven by the
+main module in `tests/Testsuite.ml`. Currently there are two types of
+tests run in the testsuite. `contracts` tests run a full transition on
+a contract with all input data provided. `eval` tests only test
+expression evaluation. To add more tests of either of these kinds,
+look for the corresponding `.ml` files in their tests/directory and add
+accordingly.
 
 To run the testsuite:
 
@@ -106,7 +107,7 @@ To obtain a list of tests available:
 To run an individual test(s), for example:
 
 ```
-./bin/testsuite  -print-cli true -only-test all_tests:0:contract_tests:4:misc_tests:0:misc_test_badjson_1
+./bin/testsuite -print-cli true -only-test all_tests:0:contract_tests:4:misc_tests:0:misc_test_badjson_1
 ```
 
 The `-print-cli true` argument print the command line that was used to run the test.
