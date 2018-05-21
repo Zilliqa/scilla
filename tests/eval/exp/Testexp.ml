@@ -39,7 +39,7 @@ let explist = [
   "msg.scilla"; "pair3.scilla"; "pm_app.scilla"
 ]
 
-let rec build_exp_tests bindir testsdir el =
+let rec build_exp_tests bindir testsdir pcli el =
   match el with
   | [] -> []
   | f :: r ->
@@ -56,8 +56,8 @@ let rec build_exp_tests bindir testsdir el =
           assert_equal ~printer:(fun s -> s) gold_output output
       in
       assert_command ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (input_file::[])) in
-    test :: build_exp_tests bindir testsdir r
+    test :: build_exp_tests bindir testsdir pcli r
 
-let add_tests bindir testsdir =
-  let exptests = build_exp_tests bindir testsdir explist in
+let add_tests bindir testsdir pcli =
+  let exptests = build_exp_tests bindir testsdir pcli explist in
     "exptests" >::: exptests

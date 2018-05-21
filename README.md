@@ -97,6 +97,19 @@ the parameters "-bin-dir" and "-tests-dir", which must be absolute paths to
 the directory containing scilla-runner, eval-runner and the tests/ directory
 containng the tests. Relative paths may  not work.
 
+To obtain a list of tests available:
+
+```
+./bin/testsuite -list-test
+```
+
+To run an individual test(s), for example:
+
+```
+./bin/testsuite  -print-cli true -only-test all_tests:0:contract_tests:4:misc_tests:0:misc_test_badjson_1
+```
+
+The `-print-cli true` argument print the command line that was used to run the test.
 
 ## Using Ocaml with Emacs
 
