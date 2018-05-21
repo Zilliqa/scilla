@@ -104,7 +104,9 @@ To obtain a list of tests available:
 ./bin/testsuite -list-test
 ```
 
-To run an individual test(s), for example:
+To run an individual test(s), for example
+`all_tests:0:contract_tests:4:misc_tests:0:misc_test_badjson_1`
+(one of the tests from the list obtained via `./bin/testsuite -list-test`):
 
 ```
 ./bin/testsuite -print-cli true -only-test all_tests:0:contract_tests:4:misc_tests:0:misc_test_badjson_1
