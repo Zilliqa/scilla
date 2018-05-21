@@ -25,7 +25,7 @@ let rec build_contract_tests bindir testsdir name i n =
         let output_file = tmpdir ^ Filename.dir_sep ^ name ^ "_output_"
                     ^ (i_to_s  i) ^ ".json" in
         let args = ["-init"; dir ^ "init.json"; 
-              "-i"; dir ^ "contract";
+              "-i"; dir ^ "contract.scilla";
               "-o"; output_file;
               "-imessage"; dir ^ "message_" ^ (i_to_s i) ^ ".json";
               "-istate" ; dir ^ "state_" ^ (i_to_s i) ^ ".json";
@@ -51,7 +51,7 @@ let build_contract_init_test bindir testsdir name =
       let tmpdir = bracket_tmpdir test_ctxt in 
       let output_file = tmpdir ^ Filename.dir_sep ^ name ^ "_init_output.json" in
       let args = ["-init"; dir ^ "init.json";
-                  "-i"; dir ^ "contract";
+                  "-i"; dir ^ "contract.scilla";
                   "-o"; output_file;
                   "-iblockchain"; dir ^ "blockchain_1.json";]
             in
@@ -78,7 +78,7 @@ let build_misc_tests bindir testsdir =
     "misc_test_badjson_1" >::
       (fun test_ctxt ->
         let args = ["-init"; tests_dir_file testsdir test_ctxt "init_bad1.json";
-                    "-i"; tests_dir_file testsdir test_ctxt "contract";
+                    "-i"; tests_dir_file testsdir test_ctxt "contract.scilla";
                     "-o"; output_file test_ctxt "init_bad1_output.json";
                     "-iblockchain"; tests_dir_file testsdir test_ctxt "blockchain_1.json"]
         in
@@ -90,7 +90,7 @@ let build_misc_tests bindir testsdir =
     "misc_test_badjson_2" >::
       (fun test_ctxt ->
         let args = ["-init"; tests_dir_file testsdir test_ctxt "init_bad1.json";
-                    "-i"; tests_dir_file testsdir test_ctxt "contract";
+                    "-i"; tests_dir_file testsdir test_ctxt "contract.scilla";
                     "-o"; output_file test_ctxt "init_bad2_output.json";
                     "-iblockchain"; tests_dir_file testsdir test_ctxt "blockchain_1.json"]
         in
