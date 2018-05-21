@@ -79,12 +79,13 @@ $PROJECT_DIR/_build/install/default/bin
 
 ### Running the testsuite
 
-The testsuite is based on the OUnit2 framework and is driven by the
-main module in tests/Testsuite.ml. Currently there are two types of tests
-run in the testsuite. "contracts" tests run a full transition on a contract with
-all input data provided. "eval" tests only test expression evaluation. To add
-more tests of either of these kinds, look for the corresponding ml files in their
-tests/ directory and add accordingly.
+The testsuite is based on the `OUnit2` framework and is driven by the
+main module in `tests/Testsuite.ml`. Currently there are two types of
+tests run in the testsuite. `contracts` tests run a full transition on
+a contract with all input data provided. `eval` tests only test
+expression evaluation. To add more tests of either of these kinds,
+look for the corresponding `.ml` files in their tests/directory and add
+accordingly.
 
 To run the testsuite:
 
@@ -94,9 +95,25 @@ make test
 
 To run the testsuite executable manually from bin/testsuite, you have to provide
 the parameters "-bin-dir" and "-tests-dir", which must be absolute paths to
-the directory containing scilla-runner, eval-runner and the tests/ directory
+the directory containing scilla-runner, eval-runner and the tests/directory
 containng the tests. Relative paths may  not work.
 
+To obtain a list of tests available:
+
+```
+./bin/testsuite -list-test
+```
+
+To run an individual test(s), for example
+`all_tests:1:exptests:14:let.scilla`
+(one of the tests from the list obtained via `./bin/testsuite -list-test`):
+
+```
+./bin/testsuite -only-test all_tests:1:exptests:14:let.scilla -print-cli true 
+```
+
+The optional `-print-cli true` argument is to produce the command line
+that has been used to run the test.
 
 ## Using Ocaml with Emacs
 
