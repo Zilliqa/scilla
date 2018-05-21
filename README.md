@@ -95,7 +95,7 @@ make test
 
 To run the testsuite executable manually from bin/testsuite, you have to provide
 the parameters "-bin-dir" and "-tests-dir", which must be absolute paths to
-the directory containing scilla-runner, eval-runner and the tests/ directory
+the directory containing scilla-runner, eval-runner and the tests/directory
 containng the tests. Relative paths may  not work.
 
 To obtain a list of tests available:
@@ -105,14 +105,15 @@ To obtain a list of tests available:
 ```
 
 To run an individual test(s), for example
-`all_tests:0:contract_tests:4:misc_tests:0:misc_test_badjson_1`
+`all_tests:1:exptests:14:let.scilla`
 (one of the tests from the list obtained via `./bin/testsuite -list-test`):
 
 ```
-./bin/testsuite -print-cli true -only-test all_tests:0:contract_tests:4:misc_tests:0:misc_test_badjson_1
+./bin/testsuite -only-test all_tests:1:exptests:14:let.scilla -print-cli true 
 ```
 
-The `-print-cli true` argument print the command line that was used to run the test.
+The optional `-print-cli true` argument is to produce the command line
+that has been used to run the test.
 
 ## Using Ocaml with Emacs
 
