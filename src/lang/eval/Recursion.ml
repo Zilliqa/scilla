@@ -14,44 +14,69 @@ open MonadUtil
 open Big_int
 open EvalUtil
 
-module NatRec = struct
+module NatRec = struct 
 
 (* Recursion principles for built-in ADTs *)
 let nat_type = ADT ("nat", [])
 
-let f0_id = Ident ("f0", dummy_loc)
-let fn_id = Ident ("fn", dummy_loc)
 let n1_id = (Ident ("n1", dummy_loc))
 let res_id = (Ident ("res", dummy_loc))
 
-let nat_fix_id = Ident ("nat_fix", dummy_loc)
-let nat_fix_formal = Ident ("n", dummy_loc)
-let nat_fix = Fixpoint (
-    nat_fix_id,
-    nat_fix_formal,
-    nat_type,
-    MatchExpr (nat_fix_formal, [
-    (Constructor ("Zero", []), Var f0_id);
-    (Constructor ("Succ", [Binder n1_id]),
-     Let (res_id, None, App (nat_fix_id, [n1_id]),
-          App (fn_id, [n1_id; res_id])))]))
+let f0_formal = Ident ("f0", dummy_loc)
+let fn_formal = Ident ("fn", dummy_loc)
+let n_formal = Ident ("n", dummy_loc)
 
-(* So far, only for natural numbers *)
-(* let nat_rec_typ =
-  FunType(nat_type,
-          FunType(FunType(nat_type, nat_type),
-                 FunType(nat_type, nat_type))) *)
+module Foldr = struct
 
-let nat_rec =
-  Env.ValClosure (f0_id, nat_type,
-       Fun (fn_id, FunType (nat_type, nat_type),
-           nat_fix), Env.empty)
+let fold = Ident ("foldr_g", dummy_loc)
+let fold_fix = Env.ValFix (
+    fold,
+    nat_type, (* TODO: Generalise! *)
+    Fun (fn_formal,
+         (FunType (nat_type, FunType (nat_type, nat_type))),
+          Fun (f0_formal,
+               nat_type,
+               Fun(n_formal,
+                   nat_type,
+                   MatchExpr (n_formal, [
+                       (Constructor ("Zero", []), Var f0_formal);
+                       (Constructor ("Succ", [Binder n1_id]), 
+                        Let (res_id, None, App (fold, [fn_formal; f0_formal; n1_id]),
+                             App (fn_formal, [n1_id; res_id])))])                   
+                  ))),
+  Env.empty)            
 
-let nat_rec_id = "nat_rec"
+let id = "nat_foldr"
+end
+
+
+module Foldl = struct
+let fold = Ident ("foldl_g", dummy_loc)
+let fold_fix = Env.ValFix (
+    fold,
+    nat_type, (* TODO: Generalise! *)
+    Fun (fn_formal,
+         (FunType (nat_type, FunType (nat_type, nat_type))),
+          Fun (f0_formal,
+               nat_type,
+               Fun(n_formal,
+                   nat_type,
+                   MatchExpr (n_formal, [
+                       (Constructor ("Zero", []), Var f0_formal);
+                       (Constructor ("Succ", [Binder n1_id]), 
+                        Let (res_id, None, App (fn_formal, [f0_formal; n1_id]),
+                             App (fold, [fn_formal; res_id; n1_id])))])                   
+                  ))),
+  Env.empty)            
+
+let id = "nat_foldl"
+end
 
 end
 
-let recursion_principles =
+let recursion_principles = 
  [
-   (NatRec.nat_rec_id, NatRec.nat_rec)
+   (NatRec.Foldr.id, NatRec.Foldr.fold_fix);
+   (NatRec.Foldl.id, NatRec.Foldl.fold_fix);
  ]
+
