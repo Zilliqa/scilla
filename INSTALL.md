@@ -23,6 +23,12 @@ opam switch -y 4.06.1
 opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit jbuilder
 ```
 
+The above three commands can, alternatively, be run using the make target `opamdep`
+
+```
+make opamdep
+```
+
 Finally, opam environment needs to be set in your shell. This can be done as:
 
 ```
