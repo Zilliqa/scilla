@@ -51,16 +51,7 @@
     ))
 
 ;;; Indentation
-
-(defun scilla-indent-line ()
-  "Indent current line of scilla code."
-  (interactive)
-  (let ((savep (> (current-column) (current-indentation)))
-        (indent (condition-case nil (max (scilla-calculate-indentation) 0)
-                  (error 0))))
-    (if savep
-        (save-excursion (indent-line-to indent))
-      (indent-line-to indent))))
+;; TODO
 
 (defun scilla-calculate-indentation ()
   "Return the column to which the current line should be indented.")
