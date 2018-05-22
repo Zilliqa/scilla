@@ -27,9 +27,8 @@ opam install angstrom hex ppx_deriving ppx_deriving_yojson
 opam install menhir oUnit
 ```
 
-Alternatively, run "ubuntu-setup.sh" to setup Ubuntu for building Scilla.
-
-* `./ubuntu-setup.sh`
+Platform specific instructions for setting up your system for building Scilla can be
+found in [INSTALL](./INSTALL.md)
 
 ### Compiling and Running
 
