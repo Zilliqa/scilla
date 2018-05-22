@@ -10,26 +10,8 @@
 
 ### Build requirements
 
-Install the folowing dependencies for OCaml:
-
-* `opam`, package manager for OCaml, version >= 1.2'
-* `jbuilder` build tool, can be installed via `opam install jbuilder`
-* `ocamlc`, version >= 4.05
-
-Setup OCaml using the instructions [here](https://github.com/realworldocaml/book/wiki/Installation-Instructions). Make sure you have switched (using `opam switch`) to a version not older than the one specified above.
-
-The package dependencies can be installed via `opam` as follows:
-
-```
-opam install ocaml-migrate-parsetree
-opam install core cryptokit ppx_sexp_conv yojson batteries
-opam install angstrom hex ppx_deriving ppx_deriving_yojson
-opam install menhir oUnit
-```
-
-Alternatively, run "ubuntu-setup.sh" to setup Ubuntu for building Scilla.
-
-* `./ubuntu-setup.sh`
+Platform specific instructions for setting up your system for building Scilla can be
+found in [INSTALL](./INSTALL.md)
 
 ### Compiling and Running
 

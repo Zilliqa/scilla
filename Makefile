@@ -25,3 +25,8 @@ clean:
 	jbuilder clean
 # Remove remaining files/folders ignored by git as defined in .gitignore (-X).
 	git clean -dfXq
+
+opamdep:
+	opam init -y
+	opam switch -y 4.06.0
+	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit jbuilder
