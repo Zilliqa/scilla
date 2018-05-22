@@ -19,7 +19,7 @@ opam packages using the commands listed below:
 
 ```
 opam init -y
-opam switch -y 4.06.1
+opam switch -y 4.06.0
 opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit jbuilder
 ```
 
