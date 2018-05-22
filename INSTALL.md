@@ -1,5 +1,10 @@
 ## Platform setup for building Scilla
 
+Setup OCaml using the instructions
+[here](https://github.com/realworldocaml/book/wiki/Installation-Instructions). Make
+sure you have switched (using `opam switch`) to a version not older
+than the one specified above.
+
 ### Ubuntu
 
 Required ubuntu packages can be installed as below:
@@ -14,7 +19,7 @@ opam packages using the commands listed below:
 
 ```
 opam init -y
-opam switch -y 4.05.0
+opam switch -y 4.06.1
 opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit jbuilder
 ```
 
@@ -32,6 +37,11 @@ to setup the environment for your current shell.
 eval `opam config env`
 ```
 
-### MacOS
+### Mac OS X
 
-TODO
+The dependencies can be installed via [Homebrew](https://brew.sh/):
+
+```
+brew install ocaml opam pkg-config
+opam switch -y 4.06.1
+```
