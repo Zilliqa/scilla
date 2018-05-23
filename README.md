@@ -97,30 +97,12 @@ To run an individual test(s), for example
 The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
 
-## Using Ocaml with Emacs
-
-The following extensions would be useful:
-
-* [tuareg](https://github.com/ocaml/tuareg) for syntax highlighting
-* [merlin](https://github.com/ocaml/merlin/wiki/emacs-from-scratch) for auto-completion
-* [ocp-indent](https://github.com/OCamlPro/ocp-indent) for smart indentation
-
-All those libraries can be installed via [opem-user-setup](https://github.com/OCamlPro/opam-user-setup):
-
-```
-opam install user-setup
-```
-
 ## Emacs mode for Scilla
 
 An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode/scilla.el).
 Add the following line to your ~/.emacs file to load this mode for files ending with .scilla.
 
 ```
+;; Scilla mode
 (load-file "/path/to/scilla.el")
 ```
-
-## Roadmap
-
-Check the working [Notes](./ROADMAP.md)
-

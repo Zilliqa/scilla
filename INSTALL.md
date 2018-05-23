@@ -1,4 +1,8 @@
-## Platform setup for building Scilla
+# Building and Developing Scilla
+
+Please, read the instructions below if you intend to hack on Scilla implementation.
+
+## Platform-specific setup for building Scilla
 
 Setup OCaml using the instructions
 [here](https://github.com/realworldocaml/book/wiki/Installation-Instructions). Make
@@ -50,4 +54,19 @@ The dependencies can be installed via [Homebrew](https://brew.sh/):
 ```
 brew install ocaml opam pkg-config
 opam switch -y 4.06.1
+```
+
+## Using Ocaml with Emacs
+
+As Scilla is written in [OCaml](https://ocaml.org/), the following extensions would be
+useful for working on this codebase:
+
+* [tuareg](https://github.com/ocaml/tuareg) for syntax highlighting
+* [merlin](https://github.com/ocaml/merlin/wiki/emacs-from-scratch) for auto-completion
+* [ocp-indent](https://github.com/OCamlPro/ocp-indent) for smart indentation
+
+All those libraries can be installed via [opem-user-setup](https://github.com/OCamlPro/opam-user-setup):
+
+```
+opam install user-setup
 ```
