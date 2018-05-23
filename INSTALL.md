@@ -7,7 +7,7 @@ Please, read the instructions below if you intend to hack on Scilla implementati
 Setup OCaml using the instructions
 [here](https://github.com/realworldocaml/book/wiki/Installation-Instructions). Make
 sure you have switched (using `opam switch`) to a version not older
-than the one specified above.
+than the one specified below.
 
 ### Ubuntu
 
