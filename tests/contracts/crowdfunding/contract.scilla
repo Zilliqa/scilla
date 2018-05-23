@@ -178,7 +178,7 @@ transition ClaimBack (sender: Address)
         send msgs
       | Some v =>
         bs1 = builtin remove bs sender;
-	      backers := bs1;
+        backers := bs1;
         msg  = {_tag : Main; to : sender; _amount : v; 
                 code : reclaimed_code};
         msgs = one_msg msg;
