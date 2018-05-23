@@ -117,6 +117,7 @@ An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode
 Add the following line to your ~/.emacs file to load this mode for files ending with .scilla.
 
 ```
+;; Scilla mode
 (load-file "/path/to/scilla.el")
 ```
 
