@@ -4,23 +4,26 @@
 library Crowdfunding
 
 let andb = 
-  fun (b : Bool) => fun (c : Bool) =>
-    match b with 
-    | False => False
-    | True  => match c with 
-               | False => False
-               | True  => True
-               end
-    end
+  fun (b : Bool) =>
+    fun (c : Bool) =>
+      match b with 
+      | False => False
+      | True  =>
+        match c with 
+        | False => False
+        | True  => True
+        end
+      end
 
 let orb = 
   fun (b : Bool) => fun (c : Bool) =>
     match b with 
     | True  => True
-    | False => match c with 
-               | False => False
-               | True  => True
-               end
+    | False =>
+      match c with 
+      | False => False
+      | True  => True
+      end
     end
 
 let negb = fun (b : Bool) => 
@@ -31,27 +34,27 @@ let negb = fun (b : Bool) =>
 
 let one_msg = 
   fun (msg : Message) => 
-   let nil_msg = Nil {Message} in
-   Cons {Message} msg nil_msg
+    let nil_msg = Nil {Message} in
+      Cons {Message} msg nil_msg
 
 let check_update = 
   fun (bs : Map Address Int) =>
     fun (sender : Address) =>
       fun (_amount : Int) =>
-  let c = builtin contains bs sender in
-  match c with 
-  | False => 
-    let bs1 = builtin put bs sender _amount in
-    Some {Map Address Int} bs1 
-  | True  => None {Map Address Int}
-  end
+        let c = builtin contains bs sender in
+          match c with 
+          | False => 
+            let bs1 = builtin put bs sender _amount in
+              Some {Map Address Int} bs1 
+          | True  => None {Map Address Int}
+          end
 
 let blk_leq =
   fun (blk1 : BNum) =>
   fun (blk2 : BNum) =>
-  let bc1 = builtin blt blk1 blk2 in 
-  let bc2 = builtin eq blk1 blk2 in 
-  orb bc1 bc2
+    let bc1 = builtin blt blk1 blk2 in 
+      let bc2 = builtin eq blk1 blk2 in 
+        orb bc1 bc2
 
 let accepted_code = 1
 let missed_deadline_code = 2
@@ -145,10 +148,10 @@ transition ClaimBack (sender: Address)
   after_deadline = builtin blt max_block blk;
   match after_deadline with
   | False =>
-      msg  = {_tag : Main; to : sender; _amount : 0; 
-              code : too_early_code};
-      msgs = one_msg msg;
-      send msgs
+    msg  = {_tag : Main; to : sender; _amount : 0; 
+            code : too_early_code};
+    msgs = one_msg msg;
+    send msgs
   | True =>
     bs <- backers;
     bal <- balance;
@@ -161,25 +164,25 @@ transition ClaimBack (sender: Address)
     c5 = andb c3 c4;
     match c5 with
     | False =>
-        msg  = {_tag : Main; to : sender; _amount : 0; 
-                code : cannot_reclaim_code};
-        msgs = one_msg msg;
-        send msgs
+      msg  = {_tag : Main; to : sender; _amount : 0; 
+              code : cannot_reclaim_code};
+      msgs = one_msg msg;
+      send msgs
     | True =>
       res = builtin get bs sender;
       match res with
       | None =>
-          msg  = {_tag : Main; to : sender; _amount : 0; 
-                  code : cannot_reclaim_code};
-          msgs = one_msg msg;
-          send msgs
+        msg  = {_tag : Main; to : sender; _amount : 0; 
+                code : cannot_reclaim_code};
+        msgs = one_msg msg;
+        send msgs
       | Some v =>
-          bs1 = builtin remove bs sender;
-	  backers := bs1;
-          msg  = {_tag : Main; to : sender; _amount : v; 
-                  code : reclaimed_code};
-          msgs = one_msg msg;
-          send msgs
+        bs1 = builtin remove bs sender;
+	      backers := bs1;
+        msg  = {_tag : Main; to : sender; _amount : v; 
+                code : reclaimed_code};
+        msgs = one_msg msg;
+        send msgs
       end
     end
   end  
