@@ -111,6 +111,15 @@ All those libraries can be installed via [opem-user-setup](https://github.com/OC
 opam install user-setup
 ```
 
+## Emacs mode for Scilla
+
+An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode/scilla.el).
+Add the following line to your ~/.emacs file to load this mode for files ending with .scilla.
+
+```
+(load-file "/path/to/scilla.el")
+```
+
 ## Roadmap
 
 Check the working [Notes](./ROADMAP.md)
