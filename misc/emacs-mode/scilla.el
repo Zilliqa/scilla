@@ -61,6 +61,9 @@
 ;;             indent forward
 ;; Rule 3: If previous line has "end|send": indent back
 ;; Rule 4: If line begins with "|", find matching "match" and indent to that.
+;; Rule 5: If previous line has "{" but not "}", indent forward and if
+;;         previous line has "}" but not "{",
+;;         find matching "{" and indent to that line
 ;; Else: Same as previous line.
 
 (defun scilla-indent-line ()
@@ -73,7 +76,7 @@
       (save-excursion
         (progn
           ;; Match Rule 4
-          (if (and (not indented) (looking-at "[ \t]*[|]"))
+          (if (looking-at "[ \t]*[|]")
               (let ((ends-seen 0) (matches-seen 0) (lines-seen 0))
                 (while (and (not indented) (< lines-seen 100))
                    (progn
@@ -108,6 +111,33 @@
                 ;;(message "rule 3 matched")
                 (setq cur-indent (- (current-indentation) default-tab-width))
                 (setq indented 1)
+                )
+            )
+          ;; Match Rule 5
+          (if (and (not indented) (looking-at ".*{.*[^}]") (not (looking-at "^.*}.*$")))
+              (progn
+                ;; (message "Rule 5 matched. \"{\" seen in previous line.")
+                ;; Find location of "{".
+                (re-search-forward "{")
+                (setq cur-indent (current-column ))
+                (setq indented 1)
+                )
+            (if (looking-at "[^{]*}")
+                ;; We have a "}". Search upwards for "{"
+                (let ((num-lines 0))
+                  (while (and (not indented) (< num-lines 100))
+                    (progn
+                      (forward-line -1)
+                      (if (looking-at ".*{")
+                          (progn
+                            ;; (message "Rule 5 matched. Indenting to \"}\" found.")
+                            (setq cur-indent (current-indentation))
+                            (setq indented 1)
+                            )
+                        )
+                      )
+                    )
+                  )
                 )
             )
           ;; No match, just set to previous line.
