@@ -161,7 +161,10 @@ let () =
       if cli.input_message = ""
       then
         (* Initializing the contract's state, just for checking things. *)
-        let _ = init_module cmod initargs [] (Big_int.big_int_of_int 0) in
+        let init_res = init_module cmod initargs [] (Big_int.big_int_of_int 0) in
+        (* Prints stats after the initialization and returns the initial state *)
+        (* Will throw an exception if unsuccessful. *)
+        let _ = check_extract_cstate cli.input init_res in
         (printf "\nContract initialized successfully\n";
           (`Null, `List []))
       else
