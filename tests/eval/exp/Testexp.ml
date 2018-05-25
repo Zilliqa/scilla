@@ -36,7 +36,7 @@ let explist = [
   "map1.scilla"; "map5.scilla"; "msg_error.scilla"; "pair2.scilla";
   "pm3.scilla"; "app4.scilla"; "app.scilla"; "builtin_error1.scilla";
   "hash2.scilla"; "let-builtin.scilla"; "map2.scilla"; "map6.scilla";
-  "msg.scilla"; "pair3.scilla"; "pm_app.scilla"
+  "msg.scilla"; "pair3.scilla"; "pm_app.scilla"; "pm_nesting.scilla" 
 ]
 
 let rec build_exp_tests bindir testsdir pcli el =
