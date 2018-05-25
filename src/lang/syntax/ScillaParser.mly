@@ -172,8 +172,13 @@ lit :
 pattern:
 | UNDERSCORE { Wildcard }
 | x = ID {Binder (Ident (x, toLoc $startpos))}
+| c = CID; ps = list(arg_pattern) { Constructor (c, ps) }
+
+arg_pattern:
+| UNDERSCORE { Wildcard }
+| x = ID {Binder (Ident (x, toLoc $startpos))}
+| c = CID;  { Constructor (c, []) }
 | LPAREN; p = pattern RPAREN; { p }         
-| c = CID; ps = list(pattern) { Constructor (c, ps) }
 
 exp_pm_clause:
 | BAR ; p = pattern ; ARROW ; e = exp { p, e }                                  

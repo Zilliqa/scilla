@@ -72,7 +72,7 @@ module DataTypeDictionary = struct
     targs = ["a"; "b"];
     tconstr = [c_and];
     tmap = [
-      ("And", [(0, TypeVar "a"); (0, TypeVar "b")])
+      ("And", [(0, TypeVar "a"); (1, TypeVar "b")])
     ]
   }
 

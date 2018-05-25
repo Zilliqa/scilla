@@ -1,0 +1,9 @@
+(* Expected result: (IntLit 42) *)
+
+let v = 42 in
+let x = True in
+let y = Some {Int} v in
+let p = And x y in
+match p with
+| And True (Some g) => g
+end

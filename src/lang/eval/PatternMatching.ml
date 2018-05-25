@@ -35,7 +35,6 @@ let rec match_with_pattern v p = match p with
           ctr.cname ctr.arity (List.length ps)
       (* Pattern is well-formed, processing the value *)    
       else (match v with
-
           | Env.ValLit (ADTValue (cn', ts', ls'))
             when cn' = ctr.cname &&
                  (List.length ls') = ctr.arity  ->
