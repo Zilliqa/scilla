@@ -18,6 +18,22 @@ open Filename
 let debug_level = ref Debug_None
 let log_file = ref ""
 
+let rec get_highest_numbered_log files =
+  match files with
+  | [] ->
+    0
+  | file :: files' ->
+    let found = Str.string_match (Str.regexp "scilla-runner-\\([0-9]+\\)\\.log") file 0 in
+    let substr = Str.matched_string file in
+    if found
+    then
+      let numstr = Str.matched_group 1 substr in
+      let num = Core.int_of_string numstr in
+      let num' = get_highest_numbered_log files' in
+        Core.Int.max num num'
+    else
+      0
+
 (* Given a directory, look for consecutively named files
  * scilla-runner-[0-9]+.log and return the next in sequence *)
 let create_log_filename dir =
@@ -25,7 +41,9 @@ let create_log_filename dir =
      not (Sys.is_directory dir)
   then
     Unix.mkdir dir 0o766; (* Arbitrary *)
-  dir ^ dir_sep ^ "scilla-runner.log"
+  let files = Sys.readdir dir in
+  let num = get_highest_numbered_log (Array.to_list files) in
+  dir ^ dir_sep ^ "scilla-runner-" ^ Core.Int.to_string (num+1) ^ ".log"
 
 let get_debug_level () =
   !debug_level
