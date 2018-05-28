@@ -1,6 +1,6 @@
 (IntLit 42),
 { [g -> (IntLit 42)],
-  [p -> (ADTValue And()((ADTValue True()())(ADTValue Some((PrimType Int))((IntLit 42)))))],
+  [p -> (ADTValue Pair()((ADTValue True()())(ADTValue Some((PrimType Int))((IntLit 42)))))],
   [y -> (ADTValue Some((PrimType Int))((IntLit 42)))],
   [x -> (ADTValue True()())],
   [v -> (IntLit 42)] }

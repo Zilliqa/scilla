@@ -65,19 +65,19 @@ module DataTypeDictionary = struct
     ]
   }
 
-  (* Pairs *)
-  let c_and = { cname = "And"; arity = 2 }
-  let t_pair = {
+  (* Products (Pairs) *)
+  let c_pair = { cname = "Pair"; arity = 2 }
+  let t_product = {
     tname = "Pair";
     targs = ["a"; "b"];
-    tconstr = [c_and];
+    tconstr = [c_pair];
     tmap = [
       ("And", [(0, TypeVar "a"); (1, TypeVar "b")])
     ]
   }
 
   type t = adt list  
-  let dict = [t_bool; t_option; t_list; t_pair]
+  let dict = [t_bool; t_option; t_list; t_product]
 
   let lookup_constructor cn =
     match List.find dict

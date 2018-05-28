@@ -6,12 +6,12 @@ let b = 2 in
 let n  = None {Int} in
 let o1 = Some {Int} a in
 let o2 = Some {Int} b in
-let p1 = And {(Option Int) (Option Int)} o1 o2 in
-let p2 = And {(Option Int) (Option Int)} o1 n in
-let p3 = And {(Option Int) (Option Int)} n o2 in
+let p1 = Pair {(Option Int) (Option Int)} o1 o2 in
+let p2 = Pair {(Option Int) (Option Int)} o1 n in
+let p3 = Pair {(Option Int) (Option Int)} n o2 in
 
 match p2 with
-  | And None None => 100
-  | And (Some x) (Some y) => builtin add x y
-  | And (Some x) None => x
+  | Pair None None => 100
+  | Pair (Some x) (Some y) => builtin add x y
+  | Pair (Some x) None => x
 end
