@@ -16,7 +16,7 @@ open Result.Let_syntax
 open MonadUtil
 open EvalUtil
 open Eval
-open DbgMsg
+open DebugMessage
 
 (****************************************************)
 (*          Checking initialized libraries          *)

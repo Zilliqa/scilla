@@ -18,7 +18,7 @@ fi
 
 cdir="tests/contracts/$contract"
 
-./bin/scilla-runner -init ${cdir}/init.json -istate ${cdir}/state_${i}.json -imessage ${cdir}/message_${i}.json -o ${cdir}/output_${i}.json -iblockchain ${cdir}/blockchain_${i}.json -i ${cdir}/contract
+./bin/scilla-runner -init ${cdir}/init.json -istate ${cdir}/state_${i}.json -imessage ${cdir}/message_${i}.json -o ${cdir}/output_${i}.json -iblockchain ${cdir}/blockchain_${i}.json -i ${cdir}/contract.scilla
 
 echo "output.json emitted by interpreter:"
 cat ${cdir}/output_${i}.json
