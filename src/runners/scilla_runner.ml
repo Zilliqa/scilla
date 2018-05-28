@@ -16,8 +16,7 @@ open Result.Let_syntax
 open MonadUtil
 open EvalUtil
 open Eval
-
-exception EvalError of string
+open DbgMsg
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -28,53 +27,43 @@ let check_libs libs name =
    (* Are libraries ok? *)
    match ls with
    | Ok res ->
-       printf
+       plog (sprintf
          "\n[Initializing libraries]:\n%s\n\nLibraries for [%s] are on. All seems fine so far!\n\n"
          (* (Env.pp res) *)
          (String.concat ~sep:", " (List.map (List.rev res) ~f:fst))
-         name
+         name)
    | Error err ->
-       (printf "\nFailed to initialize libraries:\n%s\n" err;
-        raise @@ EvalError "Execution stopped")
+      perr (sprintf "\nFailed to initialize libraries:\n%s\n" err);
+      perr "Execution stopped"
 
 (****************************************************)
 (*     Checking initialized contract state          *)
 (****************************************************)
 let check_extract_cstate name res = match res with
   | Error err ->
-      (printf "Failed to initialize fields:\n%s\n" err;
-       raise @@ EvalError "Execution stopped")
+      perr (sprintf "Failed to initialize fields:\n%s\n" err);
+      perr "Execution stopped";
+      exit 1
   | Ok (_, cstate) ->
-      (printf "[Initializing %s's fields]\nSuccess!\n%s\n"
-         name (ContractState.pp cstate);
-       cstate)
+      plog (sprintf "[Initializing %s's fields]\nSuccess!\n%s\n"
+         name (ContractState.pp cstate));
+      cstate
 
 (*****************************************************)
 (*   Running the simularion and printing results     *)
 (*****************************************************)
 
-let rec print_message mlist =
-  match mlist with
-  | [] -> ()
-  | a :: b ->
-    (match a with
-      | Msg m ->
-        (printf "%s\n" (JSON.Message.message_to_jstring ~pp:true m) ;
-        print_message b)
-      | _ -> ()
-    )
-
 let check_after_step name res bstate m =
   match res with
   | Error err ->
-      (printf "Failed to execute transition:\n%s\n" err;
-       raise @@ EvalError "Execution halted")
+      perr (sprintf "Failed to execute transition:\n%s\n" err);
+      perr "Execution halted";
+      exit 1
   | Ok (cstate, outs, _) ->
-      (printf "Success! Here's what we got:\n";
-       printf "%s" (ContractState.pp cstate);
-       printf "Emitted messages:\n%s\n\n" (pp_literal_list outs);
-       print_message outs;
-       cstate, outs)
+      plog (sprintf "Success! Here's what we got:\n" ^
+            sprintf "%s" (ContractState.pp cstate) ^
+            sprintf "Emitted messages:\n%s\n\n" (pp_literal_list outs));
+       (cstate, outs)
 
 (* Parse the input state json and extract out _balance separately *)
 let input_state_json filename = 
@@ -109,30 +98,15 @@ let output_message_json mlist =
   (* There will be at least one output message *)
   | _ -> `Null
 
-(****************************************************)
-(*              Main demo procedure                 *)
-(****************************************************)
-(* HOW TO RUN ME
-
-After compilinig, run from the project root folder:
-
-bin/scilla-runner crowdfunding n
-  or 
-bin/scilla-runner zil-game n
-
-where "n" is a number 0-5 for the number of "steps" to execute the protocol.
-
-*)
-
 let () =
   let cli = Cli.parse () in
   let parse_module =
     FrontEndParser.parse_file ScillaParser.cmodule cli.input in
   match parse_module with
-  | None -> printf "%s\n" "Failed to parse input file."
+  | None -> plog (sprintf "%s\n" "Failed to parse input file.")
   | Some cmod ->
-      printf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
-        cli.input;
+      plog (sprintf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" cli.input);
+
       (* Now initialize it *)
       let libs = cmod.libs in
 
@@ -145,7 +119,7 @@ let () =
           JSON.ContractState.get_json_data cli.input_init
         with
         | JSON.Invalid_json s -> 
-            printf "Failed to parse json %s: %s\n" cli.input_init s;
+            perr (sprintf "Failed to parse json %s: %s\n" cli.input_init s);
             exit 1
       in
       (* Retrieve block chain state  *)
@@ -154,7 +128,7 @@ let () =
         JSON.BlockChainState.get_json_data cli.input_blockchain 
       with
         | JSON.Invalid_json s -> 
-            printf "Failed to parse json %s: %s\n" cli.input_blockchain s;
+            perr (sprintf "Failed to parse json %s: %s\n" cli.input_blockchain s);
             exit 1
       in
       let (output_msg_json, output_state_json) = 
@@ -165,7 +139,7 @@ let () =
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
         let _ = check_extract_cstate cli.input init_res in
-        (printf "\nContract initialized successfully\n";
+        (plog (sprintf "\nContract initialized successfully\n");
           (`Null, `List []))
       else
         (* Not initialization, execute transition specified in the message *)
@@ -174,7 +148,7 @@ let () =
           JSON.Message.get_json_data cli.input_message 
         with
         | JSON.Invalid_json s -> 
-            printf "Failed to parse json %s: %s\n" cli.input_message s;
+            perr (sprintf "Failed to parse json %s: %s\n" cli.input_message s);
             exit 1
         in
         let m = Msg mmsg in
@@ -185,7 +159,7 @@ let () =
           input_state_json cli.input_state
         with
         | JSON.Invalid_json s -> 
-            printf "Failed to parse json %s: %s\n" cli.input_state s;
+            perr (sprintf "Failed to parse json %s: %s\n" cli.input_state s);
             exit 1
         in
 
@@ -197,8 +171,8 @@ let () =
         (* Contract code *)
         let ctr = cmod.contr in
 
-        printf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg);
-        printf "In a Blockchain State:\n%s\n" (pp_literal_map bstate);
+        plog (sprintf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg));
+        plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
         let step_result = handle_message ctr cstate bstate m in
         let (cstate', mlist) =
           check_after_step cli.input step_result bstate m in
