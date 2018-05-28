@@ -83,15 +83,15 @@ let check_validity =
   fun (guess_b  : Option Hash) =>
   let ca = builtin eq pa a in
   let cb = builtin eq pb a in
-  let xa = And {Bool (Option Hash)} ca guess_a in 
-  let xb = And {Bool (Option Hash)} cb guess_b in 
+  let xa = Pair {Bool (Option Hash)} ca guess_a in 
+  let xb = Pair {Bool (Option Hash)} cb guess_b in 
   match xa with
-  | And True (Some g) =>
+  | Pair True (Some g) =>
     let h = builtin sha256hash solution in
     builtin eq h g 
   | _ =>
     match xb with
-    | And True (Some g) =>
+    | Pair True (Some g) =>
       let h = builtin sha256hash solution in
       builtin eq h g
     | _ => False  
@@ -107,9 +107,9 @@ let determine_winner =
   fun (pa       : Address) =>
   fun (pb       : Address) =>
   fun (oa       : Address) =>
-  let gab = And { (Option Hash) (Option Hash) } guess_a guess_b in
+  let gab = Pair { (Option Hash) (Option Hash) } guess_a guess_b in
   match gab with
-  | And (Some ga) (Some gb) =>
+  | Pair (Some ga) (Some gb) =>
     let d1 = builtin dist puzzle ga in
     let d2 = builtin dist puzzle gb in
     let c1 = builtin lt d1 d2 in
@@ -122,9 +122,9 @@ let determine_winner =
       | True  => oa
       end
     end
-  | And (Some _) None => pa
-  | And None (Some _) => pb
-  | And None None     => oa
+  | Pair (Some _) None => pa
+  | Pair None (Some _) => pb
+  | Pair None None     => oa
   end
 
 let solution_submitted = 1
