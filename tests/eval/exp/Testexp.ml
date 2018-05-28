@@ -46,10 +46,10 @@ let rec build_exp_tests bindir testsdir pcli el =
     let test = f  >:: (fun test_ctxt ->
       let evalbin = bindir test_ctxt ^ Filename.dir_sep ^ "eval-runner" in
       let dir = testsdir test_ctxt in
-      let input_file = "eval" ^ Filename.dir_sep ^ "exp" ^ Filename.dir_sep ^ f in
+      let input_file = String.concat Filename.dir_sep ["eval"; "exp"; f] in
       (* Verify standard output of execution with gold file *)
-      let goldoutput_file = dir ^ Filename.dir_sep ^ "eval" ^ Filename.dir_sep ^ "exp" ^ 
-              Filename.dir_sep ^ "gold" ^ Filename.dir_sep ^ f ^ ".gold" in
+      let goldoutput_file = 
+        String.concat Filename.dir_sep [dir; "eval"; "exp"; "gold"; f ^ ".gold" ] in
       let output_verifier s =
         let output = stream_to_string s in
         let gold_output = load_file goldoutput_file in
