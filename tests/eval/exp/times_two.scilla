@@ -1,0 +1,12 @@
+let zero = Zero in
+let one  = Succ zero in
+let two  = Succ one in
+let three = Succ two in
+let f0 = 0 in
+let fn =
+  fun (n : Nat) =>
+  fun (z : Int) =>
+    let t = 2 in
+    builtin add z t
+in
+nat_rec f0 fn three
