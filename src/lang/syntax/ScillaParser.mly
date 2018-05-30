@@ -26,6 +26,9 @@
 %token <string> ID
 %token <string> CID
 
+(* Strings *)    
+%token <string> STRING
+
 (* Numbers and hashes *)
 %token <Big_int.big_int> NUMLIT
 %token <string> HEXLIT
@@ -167,6 +170,7 @@ lit :
   then Sha256 h
   else raise Error @@ Core.sprintf "Wrong hex string size (%s): %d." h l
 }
+| s = STRING   { StringLit s }
 | EMP          { Map [] }
 
 pattern:

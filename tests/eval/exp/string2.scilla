@@ -1,0 +1,4 @@
+(* Expected: (StringLit"def\t") *)
+let s = "abc\n" in
+let t = "def\t" in
+t
