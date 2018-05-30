@@ -165,7 +165,6 @@ contract ZilGame
 field player_a_hash : Option Hash = None {Hash}
 field player_b_hash : Option Hash = None {Hash}
 field timer         : Option BNum  = None {BNum}
-field game_on       : Bool = False
 
 transition Play (sender: Address, guess: Hash)
   tm_opt <- timer;
@@ -184,7 +183,6 @@ transition Play (sender: Address, guess: Hash)
     tt = True;
     match isa with
     | True =>
-      game_on := tt;
       ah <- player_a_hash;
       hopt = update_hash ah guess;
       player_a_hash := hopt;
@@ -197,7 +195,6 @@ transition Play (sender: Address, guess: Hash)
     | False =>
       match isb with 
       | True =>
-        game_on := tt;
         bh <- player_b_hash;
         hopt = update_hash bh guess;
         player_b_hash := hopt;
@@ -245,7 +242,6 @@ transition ClaimReward
       msg  = {_tag : Main; to : winner; _amount : bal; 
               code : here_is_the_reward};
       ff = False;	       
-      game_on := ff;
       msgs = one_msg msg;
       send msgs
     end
