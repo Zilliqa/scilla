@@ -1,0 +1,62 @@
+library CrowdFundingInvoke
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+      Cons {Message} msg nil_msg
+
+  
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract CrowdFundingInvoke
+
+(*  Parameters *)
+(cfaddr     : Address) (* address of the crowdfunding contract *)
+
+(* Mutable fields *)
+(* callers only keeps track of who all called Invoke. No real use *)
+field callers : Map Address Int = Emp
+
+(* How should String matching be done? *)
+(* transition Invoke (sender: Address, _amount: Int, trans : String) *)
+(*   bal <- balance; *)
+(*   s = sender; *)
+(*   match trans with *)
+(*   | Donate => *)
+(*     msg = {_tag : Donate; to : cfaddr; _amount : bal; sender : s }; *)
+(*     msgs = one_msg msg; *)
+(*     send msgs *)
+(*   | ClaimBack => *)
+(*     msg = {_tag : ClaimBack; to : cfaddr; _amount : 0; sender : s}; *)
+(*     msgs = one_msg msg; *)
+(*     send msgs *)
+(*   | GetFunds => *)
+(*     msg = {_tag : GetFunds; to : cfaddr; _amount : 0; sender : s}; *)
+(*     msgs = one_msg msg; *)
+(*     send msgs *)
+(*   | _ => *)
+(*     msg = {_tag : Main; to : sender ; _amount : 0}; *)
+(*     msgs = one_msg msg; *)
+(*     send msgs *)
+(*   end *)
+(* end *)
+
+transition InvokeDonate (sender: Address, _amount: Int)
+  bal <- balance;
+  msg = {_tag : Donate; to : cfaddr; _amount : bal};
+  msgs = one_msg msg;
+  send msgs
+end
+
+transition InvokeGetFunds (sender: Address, _amount: Int)
+  msg = {_tag : GetFunds; to : cfaddr; _amount : 0};
+  msgs = one_msg msg;
+  send msgs
+end
+
+transition InvokeClaimBack (sender: Address, _amount: Int)
+  msg = {_tag : ClaimBack; to : cfaddr; _amount : 0};
+  msgs = one_msg msg;
+  send msgs
+end

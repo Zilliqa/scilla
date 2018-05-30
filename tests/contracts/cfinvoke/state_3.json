@@ -1,0 +1,8 @@
+[
+    { "vname": "callers", "type": "Map", "value": null },
+    {
+        "vname": "_balance",
+        "type": "Int",
+        "value": "122"
+    }
+]
