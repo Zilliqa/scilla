@@ -97,7 +97,23 @@ let check_validity =
     | _ => False  
     end  
   | _ => False
-  end  
+  end
+
+(* Owner can withdraw balance if deadline has passed *)
+let can_withdraw =
+  fun (timer : Option BNum) =>
+    fun (b : BNum) =>
+      match timer with
+      | Some tm =>
+        let window = 10 in
+        let deadline = builtin badd tm window in
+          let can = builtin blt deadline b in
+            match can with
+            | True => True
+            | False => False
+            end
+      | None => False
+      end
 
 (* In the case of equal results, or no results the prise goes to the owner *)
 let determine_winner = 
@@ -133,6 +149,7 @@ let not_a_player = 3
 let too_early_to_claim = 4
 let wrong_sender_or_solution = 5
 let here_is_the_reward = 6
+let cannot_withdraw = 7
 
 (***************************************************)
 (*             The contract definition             *)
@@ -235,4 +252,21 @@ transition ClaimReward
   end
 end
 
-
+transition Withdraw (sender : Address)
+  tm_opt <- timer;
+  b <- &BLOCKNUMBER;
+  cw = can_withdraw tm_opt b;
+  is_owner = builtin eq owner sender;
+  bal <- balance;
+  good_to_go = andb cw is_owner;
+  match good_to_go with
+  | True =>
+    msg = {_tag : Main; to : owner; _amount : bal; code : here_is_the_reward};
+    msgs = one_msg msg;
+    send msgs
+  | False =>
+    msg = {_tag : Main; to : sender; _amount : 0; code : cannot_withdraw};
+    msgs = one_msg msg;
+    send msgs
+  end
+end

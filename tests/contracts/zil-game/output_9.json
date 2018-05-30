@@ -1,0 +1,47 @@
+{
+  "message": {
+    "_tag": "Main",
+    "_amount": "0",
+    "params": [
+      {
+        "vname": "to",
+        "type": "Address",
+        "value": "0x1234567890123456789012345678901234567890"
+      },
+      { "vname": "code", "type": "Int", "value": "7" }
+    ]
+  },
+  "states": [
+    { "vname": "_balance", "type": "Int", "value": "500" },
+    {
+      "vname": "timer",
+      "type": "ADT",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "BNum" ],
+        "arguments": [ "111" ]
+      }
+    },
+    {
+      "vname": "player_a_hash",
+      "type": "ADT",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "Hash" ],
+        "arguments": [
+          "0x25a1f113ec3aebd67ebf8cac5025ff8fdf34a7686a94e65278c9a881baf9755e"
+        ]
+      }
+    },
+    {
+      "vname": "game_on",
+      "type": "ADT",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "player_b_hash",
+      "type": "ADT",
+      "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+    }
+  ]
+}
