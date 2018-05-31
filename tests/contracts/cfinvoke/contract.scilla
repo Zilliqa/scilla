@@ -19,44 +19,37 @@ contract CrowdFundingInvoke
 field callers : Map Address Int = Emp
 
 (* How should String matching be done? *)
-(* transition Invoke (sender: Address, _amount: Int, trans : String) *)
-(*   bal <- balance; *)
-(*   s = sender; *)
-(*   match trans with *)
-(*   | Donate => *)
-(*     msg = {_tag : Donate; to : cfaddr; _amount : bal; sender : s }; *)
-(*     msgs = one_msg msg; *)
-(*     send msgs *)
-(*   | ClaimBack => *)
-(*     msg = {_tag : ClaimBack; to : cfaddr; _amount : 0; sender : s}; *)
-(*     msgs = one_msg msg; *)
-(*     send msgs *)
-(*   | GetFunds => *)
-(*     msg = {_tag : GetFunds; to : cfaddr; _amount : 0; sender : s}; *)
-(*     msgs = one_msg msg; *)
-(*     send msgs *)
-(*   | _ => *)
-(*     msg = {_tag : Main; to : sender ; _amount : 0}; *)
-(*     msgs = one_msg msg; *)
-(*     send msgs *)
-(*   end *)
-(* end *)
-
-transition InvokeDonate (sender: Address, _amount: Int)
+transition Invoke (sender: Address, trans : String)
   bal <- balance;
-  msg = {_tag : Donate; to : cfaddr; _amount : bal};
-  msgs = one_msg msg;
-  send msgs
-end
-
-transition InvokeGetFunds (sender: Address, _amount: Int)
-  msg = {_tag : GetFunds; to : cfaddr; _amount : 0};
-  msgs = one_msg msg;
-  send msgs
-end
-
-transition InvokeClaimBack (sender: Address, _amount: Int)
-  msg = {_tag : ClaimBack; to : cfaddr; _amount : 0};
-  msgs = one_msg msg;
-  send msgs
+  s = sender;
+  donate_s = "Donate";
+  is_donate = builtin eq trans donate_s;
+  match is_donate with
+  | True =>
+    msg = {_tag : Donate; to : cfaddr; _amount : bal};
+    msgs = one_msg msg;
+    send msgs
+  | False =>
+    claimback_s = "ClaimBack";
+    is_claimback = builtin eq trans claimback_s;
+    match is_claimback with
+    | True =>
+      msg = {_tag : ClaimBack; to : cfaddr; _amount : 0};
+      msgs = one_msg msg;
+      send msgs
+    | False =>
+      getfunds_s = "GetFunds";
+      is_getfunds = builtin eq trans getfunds_s;
+      match is_getfunds with
+      | True =>
+        msg = {_tag : GetFunds; to : cfaddr; _amount : 0};
+        msgs = one_msg msg;
+        send msgs
+      | False =>
+        msg = {_tag : Main; to : sender ; _amount : 0};
+        msgs = one_msg msg;
+        send msgs
+      end
+    end
+  end
 end
