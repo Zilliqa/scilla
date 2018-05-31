@@ -35,8 +35,8 @@
 
 (defvar scilla-font-lock-keywords
   `(
+    ("\(\\*.*\\*\)" 0 font-lock-comment-face t)
     ;; stuff between double quotes
-    ("\(\\*.*\\*\)" . font-lock-comment-face)
     ("\"\\.\\*\\?" . font-lock-string-face)
     ;; ; : , ; { } =>  @ $ = are all special elements
     ;; (":\\|,\\|;\\|{\\|}\\|=>\\|@\\|$\\|=" . font-lock-keyword-face)

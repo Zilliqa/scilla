@@ -114,7 +114,7 @@ let build_misc_tests bindir testsdir pcli =
 let add_tests bindir testsdir pcli = 
     let crowdfundingtests = "crowdfunding" >:::(build_contract_tests bindir testsdir pcli "crowdfunding" 1 5) in
     let cfinit_test = "crowdfunding_init" >:(build_contract_init_test bindir testsdir pcli "crowdfunding") in
-    let zilgametests = "zil-game" >:::(build_contract_tests bindir testsdir pcli "zil-game" 1 6) in
+    let zilgametests = "zil-game" >:::(build_contract_tests bindir testsdir pcli "zil-game" 1 9) in
     let zginit_test = "zil-game_init" >:(build_contract_init_test bindir testsdir pcli "zil-game") in
     let misc_tests = "misc_tests" >::: build_misc_tests bindir testsdir pcli in
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;misc_tests]

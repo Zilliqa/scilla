@@ -1,0 +1,3 @@
+(StringLit"def\t"),
+{ [t -> (StringLit"def\t")],
+  [s -> (StringLit"abc\n")] }

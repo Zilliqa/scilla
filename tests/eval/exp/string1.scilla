@@ -1,0 +1,10 @@
+(* Expected: (Map(((IntLit 2)(StringLit def))((IntLit 1)(StringLit abc)))) *)
+
+let k1 = 1 in
+let k2 = 2 in
+let s = "abc" in
+let t = "def" in
+let m0 = Emp in
+let m1 = builtin put m0 k1 s in
+let m2 = builtin put m1 k2 t in
+m2
