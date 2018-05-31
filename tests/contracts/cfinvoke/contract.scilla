@@ -18,7 +18,6 @@ contract CrowdFundingInvoke
 (* callers only keeps track of who all called Invoke. No real use *)
 field callers : Map Address Int = Emp
 
-(* How should String matching be done? *)
 transition Invoke (sender: Address, trans : String)
   bal <- balance;
   s = sender;

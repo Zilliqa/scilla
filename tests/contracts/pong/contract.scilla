@@ -1,0 +1,39 @@
+library PingPong
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+      Cons {Message} msg nil_msg
+
+let game_over = 0
+let calling_ping = 1
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract Pong
+
+(* Immutable parameter *)
+(pingAddr : Address,
+ pongAddr : Address)
+
+(* Mutable fields *)
+field count : Int = 4
+
+transition Pong (sender: Address)
+  one = 1;
+  cnt <- count;
+  is_game_over = builtin lt cnt one;
+  match is_game_over with
+  | True =>
+    msg = {_tag : Main; to : pingAddr; _amount : 0};
+    msgs = one_msg msg;
+    send msgs
+  | False =>
+    deccount = builtin sub cnt one;
+    count := deccount;
+    msg = {_tag : Ping; to : pingAddr; _amount : 0};
+    msgs = one_msg msg;
+    send msgs
+  end
+end

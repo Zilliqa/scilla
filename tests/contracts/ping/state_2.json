@@ -1,0 +1,12 @@
+[
+    {
+        "vname" : "count",
+        "type" : "Int",
+        "value" : "2"
+    },
+    {
+        "vname": "_balance",
+        "type": "Int",
+        "value": "0"
+    }
+]
