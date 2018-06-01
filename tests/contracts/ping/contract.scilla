@@ -49,6 +49,5 @@ end
 
 transition SetPongAddr (sender: Address, pongAddr : Address)
   paOpt = Some {Address} pongAddr;
-  pong_addr := paOpt;
-  accept
+  pong_addr := paOpt
 end
