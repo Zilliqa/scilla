@@ -49,6 +49,5 @@ end
 
 transition SetPingAddr (sender: Address, pingAddr : Address)
   paOpt = Some {Address} pingAddr;
-  ping_addr := paOpt;
-  accept
+  ping_addr := paOpt
 end
