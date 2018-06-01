@@ -13,7 +13,6 @@ open Result.Let_syntax
 open MonadUtil
 open Big_int
 
-
 let print_literal_list ls =
   let ps = List.map ls
       ~f:(fun l -> sexp_of_literal l |> Sexplib.Sexp.to_string) in

@@ -12,5 +12,71 @@ open Core
 open Result.Let_syntax
 open MonadUtil
 open Big_int
+open EvalUtil
+
+module NatRec = struct 
 
 (* Recursion principles for built-in ADTs *)
+let nat_type = ADT ("nat", [])
+
+let n1_id = (Ident ("n1", dummy_loc))
+let res_id = (Ident ("res", dummy_loc))
+
+let f0_formal = Ident ("f0", dummy_loc)
+let fn_formal = Ident ("fn", dummy_loc)
+let n_formal = Ident ("n", dummy_loc)
+
+module Foldr = struct
+
+let fold = Ident ("foldr_g", dummy_loc)
+let fold_fix = Env.ValFix (
+    fold,
+    nat_type, (* TODO: Generalise! *)
+    Fun (fn_formal,
+         (FunType (nat_type, FunType (nat_type, nat_type))),
+          Fun (f0_formal,
+               nat_type,
+               Fun(n_formal,
+                   nat_type,
+                   MatchExpr (n_formal, [
+                       (Constructor ("Zero", []), Var f0_formal);
+                       (Constructor ("Succ", [Binder n1_id]), 
+                        Let (res_id, None, App (fold, [fn_formal; f0_formal; n1_id]),
+                             App (fn_formal, [n1_id; res_id])))])                   
+                  ))),
+  Env.empty)            
+
+let id = "nat_foldr"
+end
+
+
+module Foldl = struct
+let fold = Ident ("foldl_g", dummy_loc)
+let fold_fix = Env.ValFix (
+    fold,
+    nat_type, (* TODO: Generalise! *)
+    Fun (fn_formal,
+         (FunType (nat_type, FunType (nat_type, nat_type))),
+          Fun (f0_formal,
+               nat_type,
+               Fun(n_formal,
+                   nat_type,
+                   MatchExpr (n_formal, [
+                       (Constructor ("Zero", []), Var f0_formal);
+                       (Constructor ("Succ", [Binder n1_id]), 
+                        Let (res_id, None, App (fn_formal, [f0_formal; n1_id]),
+                             App (fold, [fn_formal; res_id; n1_id])))])                   
+                  ))),
+  Env.empty)            
+
+let id = "nat_foldl"
+end
+
+end
+
+let recursion_principles = 
+ [
+   (NatRec.Foldr.id, NatRec.Foldr.fold_fix);
+   (NatRec.Foldl.id, NatRec.Foldl.fold_fix);
+ ]
+

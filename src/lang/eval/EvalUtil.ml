@@ -42,17 +42,22 @@ module Env = struct
   'rep value =
     | ValLit of literal
     | ValClosure of 'rep Syntax.ident * typ * 'rep expr * 'rep t
+    | ValFix of 'rep Syntax.ident * typ * 'rep expr * 'rep t
   [@@deriving sexp]
 
   (* Pretty-printing *)
   let rec pp e =
-    let ps = List.map e
+    (* Do not print fixpoints *)
+    let e_no_fix = List.filter e
+        ~f:(function | (_, ValFix _) -> false | _ -> true) in
+    let ps = List.map e_no_fix
         ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ (pp_value v) ^ "]") in
     let cs = String.concat ~sep:",\n " ps in
     "{" ^ cs ^ " }"
   and
     pp_value v = match v with
     | ValLit l -> sexp_of_literal l |> Sexplib.Sexp.to_string
+    | ValFix _ -> "<fixpoint>"
     | ValClosure (f, t, e, env) -> "<closure>"
         (* (sexp_of_expr sexp_of_loc (Fun (f, t, e)) |> Sexplib.Sexp.to_string)
          * ^ ", " ^ (pp env)   *)
@@ -61,6 +66,9 @@ module Env = struct
 
   let bind e k v =
     (k, v) :: List.filter ~f:(fun z -> fst z <> k) e
+
+  let bind_all e kvs = 
+    List.fold_left ~init:e ~f:(fun z (k, v) -> bind z k v) kvs
                                                                 
   let lookup e k =
     let i = get_id k in
@@ -125,7 +133,7 @@ module Configuration = struct
   
   let store st k v =
     match v with 
-    | Env.ValClosure _ ->
+    | Env.ValClosure _ | Env.ValFix _ ->
         fail @@ sprintf "Cannot store a closure below into a field %s:\n%s"
           k (Env.pp_value v)
     | Env.ValLit l ->
@@ -197,7 +205,7 @@ module Configuration = struct
         | l -> fail @@ sprintf "The literal is not a list:\n%s" (pp_literal l))
       in       
       match v with
-      | Env.ValClosure _ as v ->
+      | (Env.ValFix _ | Env.ValClosure _) as v ->
           fail @@
           sprintf "Value should be a list of messages, but is a closure:\n%s"
             (Env.pp_value v)

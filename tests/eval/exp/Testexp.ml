@@ -37,7 +37,9 @@ let explist = [
   "pm3.scilla"; "app4.scilla"; "app.scilla"; "builtin_error1.scilla";
   "hash2.scilla"; "let-builtin.scilla"; "map2.scilla"; "map6.scilla";
   "msg.scilla"; "pair3.scilla"; "pm_app.scilla"; "pm_nesting.scilla";
-  "string1.scilla"; "string2.scilla"; "string_error1.scilla" 
+  "string1.scilla"; "string2.scilla"; "string_error1.scilla";
+  "nat_eq.scilla"; "nat_eq_false.scilla"; "times_two.scilla";
+  "fib.scilla"
 ]
 
 let rec build_exp_tests bindir testsdir pcli el =
@@ -54,7 +56,8 @@ let rec build_exp_tests bindir testsdir pcli el =
       let output_verifier s =
         let output = stream_to_string s in
         let gold_output = load_file goldoutput_file in
-          assert_equal ~printer:(fun s -> s) gold_output output
+        assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o))
+          ~printer:(fun s -> s) gold_output output
       in
       (if (pcli test_ctxt) then (Printf.printf "\nUsing CLI: %s %s\n" "eval-runner" input_file));
       assert_command ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (input_file::[])) in
