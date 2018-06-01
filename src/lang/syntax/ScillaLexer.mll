@@ -18,6 +18,7 @@ let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 let id = ['a'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let cid =   ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let tid =   '\'' ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*                     
 let lcomment = "(*" (_ # ['\r' '\n'])* "*)" newline
 let hex = '0' 'x' ['a'-'f' '0'-'9']+
                                          
@@ -34,6 +35,7 @@ rule read =
   | hex    as i   { HEXLIT i }
                   
   (* Keywords *)          
+  | "forall"      { FORALL }      
   | "builtin"     { BUILTIN }      
   | "block"       { BLOCK }      
   | "library"     { LIBRARY }
@@ -56,6 +58,7 @@ rule read =
   (* Separators *)    
   | ';'           { SEMICOLON }
   | ':'           { COLON }
+  | '.'           { PERIOD }      
   | '|'           { BAR }
   | '('           { LPAREN }
   | ')'           { RPAREN }
@@ -63,6 +66,7 @@ rule read =
   | "}"           { RBRACE }
   | ","           { COMMA }
   | "=>"          { ARROW }                  
+  | "->"          { TARROW }                  
   | "="           { EQ }                  
   | "&"           { AND }                  
   | "<-"          { BIND }                  
@@ -74,6 +78,7 @@ rule read =
   (* Identifiers *)    
   | id as i       { ID i }
   | cid as i      { CID i }
+  | tid as i      { TID i }
 
   (* Other tokens *)     
   | _             { raise (Error ("Unexpected character: " ^ Lexing.lexeme lexbuf)) }

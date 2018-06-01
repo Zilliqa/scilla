@@ -1,0 +1,10 @@
+(IntLit 21),
+{ [fib -> <closure>],
+  [seven -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))))))))))],
+  [six -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))))))))],
+  [five -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))))))],
+  [four -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))))],
+  [three -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))],
+  [two -> (ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))],
+  [one -> (ADTValue Succ()((ADTValue Zero()())))],
+  [zero -> (ADTValue Zero()())] }

@@ -86,11 +86,6 @@ type 'rep payload =
   | MVar of 'rep ident
 [@@deriving sexp]
 
-(* type units =
- * | Metric   [@name "metric"]
- * | Imperial [@name "imperial"]
- * [@@deriving yojson] *)
-
 type 'rep expr =
   | Literal of literal
   | Var of 'rep ident
@@ -104,6 +99,8 @@ type 'rep expr =
   (* Advanced features: to be added in Scilla 0.2 *)                 
   | TFun of 'rep ident * 'rep expr
   | TApp of 'rep ident * typ list
+  (* Fixpoint combinator: used to implement recursion principles *)                 
+  | Fixpoint of 'rep ident * typ * 'rep expr
 [@@deriving sexp]
 
 type 'rep stmt =

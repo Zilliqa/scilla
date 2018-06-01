@@ -2,4 +2,7 @@ Failed execution:
 Indentifier "oops" at eval/exp/let-error.scilla:4:9 is not bound in environment:
 { [y -> (IntLit 42)],
   [f -> <closure>],
-  [x -> (IntLit 42)] }
+  [x -> (IntLit 42)],
+  [list_foldr -> <type_closure>],
+  [list_foldl -> <type_closure>],
+  [nat_fold -> <type_closure>] }

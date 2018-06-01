@@ -19,16 +19,32 @@ let print_position outx lexbuf =
     pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
 
 let parse_file parser filename =
-  let inx = In_channel.create filename in
-  let lexbuf = Lexing.from_channel inx in
-  lexbuf.lex_curr_p  <- { lexbuf.lex_curr_p with pos_fname = filename };
+  In_channel.with_file filename ~f:(fun inx ->
+      let lexbuf = Lexing.from_channel inx in
+      lexbuf.lex_curr_p  <- { lexbuf.lex_curr_p with pos_fname = filename };
+      try
+        let exprs = parser ScillaLexer.read lexbuf in
+        Some exprs
+      with
+      | ScillaLexer.Error msg ->
+          fprintf stderr "Syntax error in %a: %s\n" print_position lexbuf msg;
+          None
+      | ScillaParser.Error ->
+          fprintf stderr "Syntax error in %a\n" print_position lexbuf;
+          None)
+    
+let parse_string parser s =
+  let lexbuf = Lexing.from_string s in
+  lexbuf.lex_curr_p  <- { lexbuf.lex_curr_p with pos_fname = "Prelude" };
   try
     let exprs = parser ScillaLexer.read lexbuf in
     Some exprs
   with
   | ScillaLexer.Error msg ->
-      fprintf stderr "Syntax error in %a: %s\n" print_position lexbuf msg;
+      printf "Lexical error in %a: %s\n" print_position lexbuf msg;
+      fprintf stderr "Lexical in %a: %s\n" print_position lexbuf msg;
       None
   | ScillaParser.Error ->
-        fprintf stderr "Syntax error in %a\n" print_position lexbuf;
+      printf "Syntax error in %a\n" print_position lexbuf;
+      fprintf stderr "Syntax error in %a\n" print_position lexbuf;
       None
