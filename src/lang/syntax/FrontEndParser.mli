@@ -11,3 +11,6 @@ open Syntax
 
 val parse_file : ((Lexing.lexbuf -> ScillaParser.token) ->
                   Lexing.lexbuf -> 'a) -> string -> 'a option
+
+val parse_string : ((Lexing.lexbuf -> ScillaParser.token) ->
+                  Lexing.lexbuf -> 'a) -> string -> 'a option

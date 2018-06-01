@@ -25,6 +25,7 @@
 (* Identifiers *)    
 %token <string> ID
 %token <string> CID
+%token <string> TID
 
 (* Strings *)    
 %token <string> STRING
@@ -40,11 +41,13 @@
 %token LPAREN
 %token RPAREN
 %token ARROW
+%token TARROW
 %token AT
 %token UNDERSCORE
 %token LBRACE       
 %token RBRACE
 %token COMMA
+%token PERIOD
 %token EQ
 %token AND
 %token BIND
@@ -54,6 +57,7 @@
        
 (* Keywords *)    
 %token BUILTIN
+%token FORALL
 %token BLOCK
 %token EMP
 %token LIBRARY
@@ -80,12 +84,16 @@
 (* %nonassoc NEG *)
 
 %start <Syntax.loc Syntax.expr list> exps
+%start <Syntax.typ list> types
 %start <Syntax.loc Syntax.stmt list> stmts_term
 %start <Syntax.loc Syntax.cmodule> cmodule
-                                 
+
+                                     
 %%
 
-(* Types *)
+(***********************************************)
+(*                  Types                      *)
+(***********************************************)
 typ :
 | d = CID; targs=list(targ)
   { match targs with
@@ -93,18 +101,14 @@ typ :
     | _ -> ADT (d, targs)
   }   
 | MAP; k=targ; v = targ; { MapType (k, v) }
-(* TODO: Add other type annotations *)
-
-ctargs:
-| LBRACE; ts = list(ctarg); RBRACE { ts }
-                             
-targ :
+| t1 = targ; TARROW; t2 = typ; {FunType (t1, t2) }
+| FORALL; tv = TID; PERIOD; t = typ; {PolyFun (tv, t)}
+| t = TID; { TypeVar t }        
+                                  
+targ:
 | LPAREN; t = typ; RPAREN; { t }
-| d = CID { toType d }
-
-ctarg :
-| LPAREN; t = typ; RPAREN; { t }
-| t = typ { t }
+| d = CID; { toType d }
+| t = TID; { TypeVar t }        
 
 (***********************************************)
 (*                 Expressions                 *)
@@ -148,7 +152,7 @@ simple_exp :
 | MATCH; x = ID; WITH; cs=list(exp_pm_clause); END
   { MatchExpr (Ident (x, toLoc $startpos), cs) }
 (* Type function *)
-| TFUN; i = CID ARROW; e = exp
+| TFUN; i = TID ARROW; e = exp
   { TFun (Ident (i, toLoc $startpos), e) } 
 (* Type application *)
 | AT; f = ID; targs = nonempty_list(targ)
@@ -173,6 +177,13 @@ lit :
 | s = STRING   { StringLit s }
 | EMP          { Map [] }
 
+ctargs:
+| LBRACE; ts = list(ctarg); RBRACE { ts }
+                             
+ctarg :
+| LPAREN; t = typ; RPAREN; { t }
+| t = typ { t }
+
 pattern:
 | UNDERSCORE { Wildcard }
 | x = ID {Binder (Ident (x, toLoc $startpos))}
@@ -194,10 +205,13 @@ msg_entry :
 type_annot:
 | COLON; t = typ { t }
 
-
 exps : 
 | EOF { [] }
-| e = exp es = exps { e :: es }
+| e = exp; es = exps { e :: es }
+
+types : 
+| EOF { [] }
+| t = typ; ts = types {t :: ts}
 
 (***********************************************)
 (*                 Statements                  *)
