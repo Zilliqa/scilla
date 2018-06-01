@@ -101,8 +101,8 @@ let rec exp_eval e env = match e with
         List.fold_left args ~init:(pure ff)
           ~f:(fun res arg ->
               let%bind v = res in
-              (* printf "Value to be applied: %s\n" (Env.pp_value v); *)
-              (* printf "Argument: %s\n\n" (Env.pp_value arg); *)
+              (* printf "Value to be applied: %s\n" (Env.pp_value v);
+               * printf "Argument: %s\n\n" (Env.pp_value arg); *)
               try_apply_as_closure v arg) in
       pure(fully_applied, env)          
   | Constr (cname, ts, actuals) ->
@@ -133,8 +133,8 @@ let rec exp_eval e env = match e with
       let%bind op = BuiltInDictionary.find_builtin_op opname tags in
       let%bind res = op arg_literals in 
       pure (Env.ValLit res, env)
-  | Fixpoint (f, formal, t, body) ->
-      let fix = Env.ValFix (f, formal, t, body, env) in
+  | Fixpoint (f, t, body) ->
+      let fix = Env.ValFix (f, t, body, env) in
       pure (fix, env)
 
 
@@ -156,12 +156,18 @@ and try_apply_as_closure v arg =
   | Env.ValClosure (formal, _, body, env) ->
       let env1 = Env.bind env (get_id formal) arg in
       let%bind (v, _) = exp_eval body env1 in
+      (* printf "Resulting value: %s\n\n" (Env.pp_value v); *)
       pure v
-  | Env.ValFix (f, formal, _, body, env) ->
-      let env1 = Env.bind env (get_id formal) arg in
-      let env2 = Env.bind env1 (get_id f) v in
-      let%bind (v, _) = exp_eval body env2 in
-      pure v
+  | Env.ValFix (g, _, body, env) ->
+      let env1 = Env.bind env (get_id g) v in
+      let%bind (v, _) = exp_eval body env1 in
+      (match v with
+       | Env.ValClosure (formal, _, cbody, cenv) ->
+           let env2 = Env.bind cenv (get_id formal) arg in
+           let%bind (v, _) = exp_eval cbody env2 in
+           (* printf "Resulting value: %s\n\n" (Env.pp_value v); *)
+           pure v
+       | _ ->  fail @@ sprintf "A fixpoint should take a function as a body")
 
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla statemnts   *)

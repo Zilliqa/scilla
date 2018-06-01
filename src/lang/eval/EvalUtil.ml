@@ -42,12 +42,15 @@ module Env = struct
   'rep value =
     | ValLit of literal
     | ValClosure of 'rep Syntax.ident * typ * 'rep expr * 'rep t
-    | ValFix of 'rep Syntax.ident * 'rep Syntax.ident * typ * 'rep expr * 'rep t
+    | ValFix of 'rep Syntax.ident * typ * 'rep expr * 'rep t
   [@@deriving sexp]
 
   (* Pretty-printing *)
   let rec pp e =
-    let ps = List.map e
+    (* Do not print fixpoints *)
+    let e_no_fix = List.filter e
+        ~f:(function | (_, ValFix _) -> false | _ -> true) in
+    let ps = List.map e_no_fix
         ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ (pp_value v) ^ "]") in
     let cs = String.concat ~sep:",\n " ps in
     "{" ^ cs ^ " }"
@@ -64,7 +67,7 @@ module Env = struct
   let bind e k v =
     (k, v) :: List.filter ~f:(fun z -> fst z <> k) e
 
-  let bind_all e kvs =
+  let bind_all e kvs = 
     List.fold_left ~init:e ~f:(fun z (k, v) -> bind z k v) kvs
                                                                 
   let lookup e k =
