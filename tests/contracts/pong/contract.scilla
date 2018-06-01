@@ -13,16 +13,17 @@ let calling_ping = 1
 (***************************************************)
 contract Pong
 
-(* Immutable parameter *)
-(pingAddr : Address,
- pongAddr : Address)
+(* No immutable parameters *)
+()
 
 (* Mutable fields *)
 field count : Int = 4
+field ping_addr : Address = 0
 
 transition Pong (sender: Address)
   one = 1;
   cnt <- count;
+  pingAddr <- ping_addr;
   is_game_over = builtin lt cnt one;
   match is_game_over with
   | True =>
@@ -36,4 +37,9 @@ transition Pong (sender: Address)
     msgs = one_msg msg;
     send msgs
   end
+end
+
+transition SetPingAddr (sender: Address, pingAddr : Address)
+  ping_addr := pingAddr;
+  accept
 end
