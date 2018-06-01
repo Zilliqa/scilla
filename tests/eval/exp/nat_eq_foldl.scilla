@@ -5,7 +5,7 @@ let three = Succ two in
 let four = Succ three in
 
 let nat_prev = fun (n: Nat) =>
-	match n with
+  match n with
 	| Succ n1 => Some {Nat} n1
 	| Zero => None {Nat}
 	end in
@@ -31,4 +31,4 @@ let nat_eq = fun (n : Nat) => fun (m : Nat) =>
 
 in
 
-nat_eq four three
+nat_eq four four

@@ -18,12 +18,12 @@ let is_some_zero = fun (n: Nat) =>
 
 let nat_eq = fun (n : Nat) => fun (m : Nat) =>
   let z = Some {Nat} m in
-		let f = fun (res : Option Nat) => fun (n : Nat) =>
+		let f = fun (n : Nat) => fun (res : Option Nat) =>
       match res with
       | None => None
       | Some m1 => nat_prev m1
 			end in
-  let e = nat_foldl f z n in
+  let e = nat_foldr f z n in
   match e with
   | Some Zero => True
   | _ => False

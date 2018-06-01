@@ -9,4 +9,4 @@ let fn =
     let t = 2 in 
     builtin mul z t 
 in  
-nat_foldl fn f0 three
+nat_fold fn f0 three

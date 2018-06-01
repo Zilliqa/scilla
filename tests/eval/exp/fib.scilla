@@ -11,7 +11,7 @@ let seven = Succ six in
 
 let fib = fun (n : Nat) =>
   let iter_fun =
-    fun (n: Nat) => fun (res : Product Int Int) =>
+    fun (res : Product Int Int) => fun (n: Nat) =>
       match res with
       | Pair x y => let z = builtin add x y in
       Pair {Int Int} z x
@@ -20,7 +20,7 @@ let fib = fun (n : Nat) =>
   let zero = 0 in
   let one = 1 in
   let init_val = Pair {Int Int} one zero in
-  let res = nat_foldr iter_fun init_val n in
+  let res = nat_fold iter_fun init_val n in
 	match res with
 	|	Pair x y => x
 	end
