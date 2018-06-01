@@ -1,0 +1,3 @@
+(IntLit 42),
+{ [n -> (IntLit 42)],
+  [id_int -> <closure>] }

@@ -148,7 +148,7 @@ simple_exp :
 | MATCH; x = ID; WITH; cs=list(exp_pm_clause); END
   { MatchExpr (Ident (x, toLoc $startpos), cs) }
 (* Type function *)
-| TFUN; i = ID ARROW; e = exp
+| TFUN; i = CID ARROW; e = exp
   { TFun (Ident (i, toLoc $startpos), e) } 
 (* Type application *)
 | AT; f = ID; targs = nonempty_list(targ)

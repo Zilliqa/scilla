@@ -26,49 +26,57 @@ let f0_formal = Ident ("f0", dummy_loc)
 let fn_formal = Ident ("fn", dummy_loc)
 let n_formal = Ident ("n", dummy_loc)
 
+let tvar = Ident("T", dummy_loc)
+let tid = get_id tvar
 
 (* Adopted one, as flod_left and fold_right are equivalent for
  * natural numbers *)
 module Foldl = struct
-let fold = Ident ("foldl_g", dummy_loc)
-let fold_fix = Env.ValFix (
-    fold,
-    nat_type, (* TODO: Generalise! *)
+let g = Ident ("foldl_g", dummy_loc)
+let fold_fix = Fixpoint (
+    g,
+    FunType((FunType (TypeVar tid, FunType (nat_type, TypeVar tid))),
+            FunType(TypeVar tid,
+                    FunType(nat_type, TypeVar tid))),
     Fun (fn_formal,
-         (FunType (nat_type, FunType (nat_type, nat_type))),
-          Fun (f0_formal,
-               nat_type,
-               Fun(n_formal,
-                   nat_type,
-                   MatchExpr (n_formal, [
-                       (Constructor ("Zero", []), Var f0_formal);
-                       (Constructor ("Succ", [Binder n1_id]), 
+         FunType (TypeVar tid, FunType (nat_type, TypeVar tid)),
+         Fun (f0_formal,
+              TypeVar tid,
+              Fun(n_formal,
+                  nat_type,
+                  MatchExpr (n_formal, [
+                      (Constructor ("Zero", []), Var f0_formal);
+                      (Constructor ("Succ", [Binder n1_id]), 
                         Let (res_id, None, App (fn_formal, [f0_formal; n1_id]),
-                             App (fold, [fn_formal; res_id; n1_id])))])                   
-                  ))),
-  Env.empty)            
+                             App (g, [fn_formal; res_id; n1_id])))])                   
+                 ))))            
 
 let id = "nat_fold"
+
+let fold = Env.ValTypeClosure(tvar, fold_fix, Env.empty)
+
 end
 
 module Foldr = struct
 
-let fold = Ident ("foldr_g", dummy_loc)
+let g = Ident ("foldr_g", dummy_loc)
 let fold_fix = Env.ValFix (
-    fold,
-    nat_type, (* TODO: Generalise! *)
+    g,
+    FunType((FunType (nat_type, FunType (TypeVar tid, TypeVar tid))),
+            FunType(TypeVar tid,
+                    FunType(nat_type, TypeVar tid))),
     Fun (fn_formal,
-         (FunType (nat_type, FunType (nat_type, nat_type))),
-          Fun (f0_formal,
-               nat_type,
-               Fun(n_formal,
-                   nat_type,
-                   MatchExpr (n_formal, [
-                       (Constructor ("Zero", []), Var f0_formal);
-                       (Constructor ("Succ", [Binder n1_id]), 
-                        Let (res_id, None, App (fold, [fn_formal; f0_formal; n1_id]),
-                             App (fn_formal, [n1_id; res_id])))])                   
-                  ))),
+         FunType (nat_type, FunType (TypeVar tid, TypeVar tid)),
+         Fun (f0_formal,
+              nat_type,
+              Fun(n_formal,
+                  nat_type,
+                  MatchExpr (n_formal, [
+                      (Constructor ("Zero", []), Var f0_formal);
+                      (Constructor ("Succ", [Binder n1_id]), 
+                       Let (res_id, None, App (g, [fn_formal; f0_formal; n1_id]),
+                            App (fn_formal, [n1_id; res_id])))])                   
+                 ))),
   Env.empty)            
 
 let id = "nat_foldr"
@@ -79,6 +87,6 @@ end
 
 let recursion_principles = 
  [
-   (NatRec.Foldl.id, NatRec.Foldl.fold_fix)
+   (NatRec.Foldl.id, NatRec.Foldl.fold)
  ]
 

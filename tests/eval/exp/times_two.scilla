@@ -2,11 +2,13 @@ let zero = Zero in
 let one  = Succ zero in 
 let two  = Succ one in
 let three = Succ two in
+let folder = @nat_fold Int in
 let f0 = 1 in
 let fn = 
   fun (z : Int) =>
   fun (n : Nat) => 		
     let t = 2 in 
     builtin mul z t 
-in  
-nat_fold fn f0 three
+in
+		
+folder fn f0 three

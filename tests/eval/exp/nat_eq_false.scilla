@@ -23,7 +23,8 @@ let nat_eq = fun (n : Nat) => fun (m : Nat) =>
       | None => None
       | Some m1 => nat_prev m1
 			end in
-  let e = nat_fold f z n in
+	let folder = @nat_fold (Option Nat)	in
+  let e = folder f z n in
   match e with
   | Some Zero => True
   | _ => False

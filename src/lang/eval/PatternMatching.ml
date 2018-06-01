@@ -18,7 +18,7 @@ open MonadUtil
 let rec match_with_pattern v p = match p with
   | Wildcard -> pure @@ []
   | Binder x -> (match v with
-      | Env.ValClosure _ | Env.ValFix _ ->
+      | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
           fail @@ sprintf "Cannot pattern match a function:\n%s"
             (Env.pp_value v)
       | Env.ValLit _ ->
