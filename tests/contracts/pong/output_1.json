@@ -7,7 +7,8 @@
         "vname": "to",
         "type": "Address",
         "value": "0x1992d4dfafd282e8a8b3c776eb9fc907d321e21a"
-      }
+      },
+      { "vname": "code", "type": "Int", "value": "1" }
     ]
   },
   "states": [
@@ -15,8 +16,12 @@
     { "vname": "count", "type": "Int", "value": "2" },
     {
       "vname": "ping_addr",
-      "type": "Address",
-      "value": "0x1992d4dfafd282e8a8b3c776eb9fc907d321e21a"
+      "type": "ADT",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "Address" ],
+        "arguments": [ "0x1992d4dfafd282e8a8b3c776eb9fc907d321e21a" ]
+      }
     }
   ]
 }
