@@ -1,6 +1,7 @@
 (IntLit 8),
 { [fn -> <closure>],
   [f0 -> (IntLit 1)],
+  [folder -> <fixpoint>],
   [three -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))],
   [two -> (ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))],
   [one -> (ADTValue Succ()((ADTValue Zero()())))],

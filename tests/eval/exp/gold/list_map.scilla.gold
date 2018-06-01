@@ -7,4 +7,5 @@
   [two -> (IntLit 2)],
   [one -> (IntLit 1)],
   [f -> <closure>],
-  [int_map -> <closure>] }
+  [int_map -> <closure>],
+  [list_map -> <type_closure>] }

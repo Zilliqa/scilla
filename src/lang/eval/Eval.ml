@@ -20,6 +20,8 @@ open BuiltIns
 (*                    Utilities                    *)      
 (***************************************************)    
 
+let reserved_names = List.map ~f:fst Recursion.recursion_principles
+
 let expr_str e =
   sexp_of_expr sexp_of_loc e
   |> Sexplib.Sexp.to_string
@@ -31,7 +33,11 @@ let stmt_str s =
 (* Printing result *)
 let pp_result r = match r with
   | Error s -> s
-  | Ok (e, env) -> sprintf "%s,\n%s" (Env.pp_value e) (Env.pp env)
+  | Ok (e, env) ->
+      let filter_prelude = fun (k, v) ->
+        not (List.mem reserved_names k ~equal:(fun s1 s2 -> s1 = s2))
+      in
+      sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
 
 (* Serializable literals *)
 let is_serializable_literal l = match l with
@@ -408,9 +414,6 @@ let handle_message contr cstate bstate m =
   let actual_env = List.fold_left tenv ~init:env
       ~f:(fun e (n, l) -> Env.bind e n (Env.ValLit l)) in
   let open Configuration in
-
-  (* printf "\nTransition-specific tenv:\n%s\n\n" (pp_literal_map tenv);
-   * printf "\nAbout to execute in env:\n%s\n\n" (Env.pp actual_env); *)
 
   (* Create configuration *)  
   let conf = {

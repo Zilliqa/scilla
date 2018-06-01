@@ -47,24 +47,22 @@ module Env = struct
   [@@deriving sexp]
 
   (* Pretty-printing *)
-  let rec pp e =
-    (* FIXME: Do not print folds *)
-    let e_no_fix = List.filter e
-        ~f:(function
-            | (_, ValFix _) | (_, ValTypeClosure _) -> false
-            | _ -> true) in
-    let ps = List.map e_no_fix
-        ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ (pp_value v) ^ "]") in
-    let cs = String.concat ~sep:",\n " ps in
-    "{" ^ cs ^ " }"
-  and
-    pp_value v = match v with
+  let pp_value v = match v with
     | ValLit l -> sexp_of_literal l |> Sexplib.Sexp.to_string
     | ValFix _ -> "<fixpoint>"
     | ValTypeClosure _ -> "<type_closure>"
     | ValClosure (f, t, e, env) -> "<closure>"
         (* (sexp_of_expr sexp_of_loc (Fun (f, t, e)) |> Sexplib.Sexp.to_string)
          * ^ ", " ^ (pp env)   *)
+
+  let rec pp ?f:(f = fun (v : (string * 'rep value)) -> true) e =
+    (* FIXME: Do not print folds *)
+    let e_filtered = List.filter e ~f:f in
+    let ps = List.map e_filtered
+        ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ (pp_value v) ^ "]") in
+    let cs = String.concat ~sep:",\n " ps in
+    "{" ^ cs ^ " }"
+  
 
   let empty = []
 
