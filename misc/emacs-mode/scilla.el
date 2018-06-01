@@ -72,7 +72,7 @@
   (beginning-of-line)
   (if (bobp)  ; Check for rule 1
       (indent-line-to 0)
-    (let ((indented nil) cur-indent)
+    (let ((indented nil) cur-indent (cur-line (+ (count-lines 1 (point)) 1)))
       (save-excursion
         (progn
           ;; Match Rule 4
@@ -82,10 +82,10 @@
                    (progn
                      (if (looking-at "[ \t]*end") (setq ends-seen (+ ends-seen 1)))
                      (if (looking-at "[ \t]*match")(setq matches-seen (+ matches-seen 1)))
-                     ;;(message "%d matches and %d ends seen" matches-seen ends-seen)
+                     ;; (message "Line %d: %d matches and %d ends seen" cur-line matches-seen ends-seen)
                      (if (> matches-seen ends-seen)
                          (progn
-                           ;;(message "rule 4 matched")
+                           ;; (message "Line %d: rule 4 matched" cur-line)
                            (setq cur-indent (current-indentation))
                            (setq indented 1)
                            )
@@ -100,7 +100,7 @@
           ;; Match Rule 2
           (if (and (not indented) (looking-at "[ \t]*\\(transition\\|let.*\\(=\\|in\\)[ \t]*$\\|.*=>[ \t]*$\\)"))
               (progn
-                ;;(message "rule 2 matched")
+                ;; (message "Line %d: rule 2 matched" cur-line)
                 (setq cur-indent (+ (current-indentation) default-tab-width))
                 (setq indented 1)
                 )
@@ -108,21 +108,21 @@
           ;; Match Rule 3
           (if (and (not indented) (looking-at "[ \t]*s?end"))
               (progn
-                ;;(message "rule 3 matched")
+                ;; (message "Line %d: rule 3 matched" cur-line)
                 (setq cur-indent (- (current-indentation) default-tab-width))
                 (setq indented 1)
                 )
             )
           ;; Match Rule 5
-          (if (and (not indented) (looking-at ".*{.*[^}]") (not (looking-at "^.*}.*$")))
+          (if (and (not indented) (looking-at ".*{.*") (not (looking-at "^.*}.*$")))
               (progn
-                ;; (message "Rule 5 matched. \"{\" seen in previous line.")
+                ;; (message "Line %d: Rule 5a matched. \"{\" seen in previous line." cur-line)
                 ;; Find location of "{".
                 (re-search-forward "{")
                 (setq cur-indent (current-column ))
                 (setq indented 1)
                 )
-            (if (looking-at "[^{]*}")
+            (if (and (not indented) (looking-at "^.*}.*$") (not (looking-at ".*{.*")))
                 ;; We have a "}". Search upwards for "{"
                 (let ((num-lines 0))
                   (while (and (not indented) (< num-lines 100))
@@ -130,7 +130,7 @@
                       (forward-line -1)
                       (if (looking-at ".*{")
                           (progn
-                            ;; (message "Rule 5 matched. Indenting to \"}\" found.")
+                            ;; (message "Line %d: Rule 5b matched. Indenting to \"{\" found." cur-line)
                             (setq cur-indent (current-indentation))
                             (setq indented 1)
                             )
@@ -143,7 +143,7 @@
           ;; No match, just set to previous line.
           (if (not indented)
               (progn
-                ;;(message "no match, setting to previous line")
+                ;; (message "Line %d: no match, setting to previous line" cur-line)
                 (setq cur-indent (current-indentation))
                 (setq indented 1)
                 )
