@@ -56,14 +56,16 @@
 (setq default-tab-width 2)
 
 ;; Rule 1: Beginning of buffer: column 0
-;; Rule 2: Previous line contains "(let * (in|=))|transition" or
-;;         ends with "=>":
+;; Rule 2: Previous line contains "(let.*=|transition)"
 ;;             indent forward
 ;; Rule 3: If previous line has "end|send": indent back
 ;; Rule 4: If line begins with "|", find matching "match" and indent to that.
 ;; Rule 5: If previous line has "{" but not "}", indent forward and if
 ;;         previous line has "}" but not "{",
 ;;         find matching "{" and indent to that line
+;; Rule 6: If previous line contains "(let.*in|.*=>) and current
+;;         but current line is not let/fun (correspondingly):
+;;            indent forward.
 ;; Else: Same as previous line.
 
 (defun scilla-indent-line ()
@@ -72,7 +74,7 @@
   (beginning-of-line)
   (if (bobp)  ; Check for rule 1
       (indent-line-to 0)
-    (let ((indented nil) cur-indent (cur-line (+ (count-lines 1 (point)) 1)))
+    (let ((indented nil) cur-indent (cur-line (+ (count-lines 1 (point)) 1)) (cur-is nil))
       (save-excursion
         (progn
           ;; Match Rule 4
@@ -96,14 +98,41 @@
                    )
                 )
             )
+          (if (looking-at "[ \t]*let")
+              (setq cur-is 'let)
+            (if (looking-at "[ \t]*fun")
+                (setq cur-is 'fun)
+              )
+            )
           (forward-line -1)
           ;; Match Rule 2
-          (if (and (not indented) (looking-at "[ \t]*\\(transition\\|let.*\\(=\\|in\\)[ \t]*$\\|.*=>[ \t]*$\\)"))
+          (if (and (not indented) (looking-at "[ \t]*\\(transition\\|let.*=[ \t]*$\\)"))
               (progn
                 ;; (message "Line %d: rule 2 matched" cur-line)
                 (setq cur-indent (+ (current-indentation) default-tab-width))
                 (setq indented 1)
                 )
+            )
+          ;; Match Rule 6
+          (let ((prev-is nil))
+            (progn
+              (if (looking-at "[ \t]*let.*in[ \t]*$")
+                  (setq prev-is 'let)
+                )
+              (if (looking-at ".*=>[ \t]*$")
+                  (setq prev-is 'eqgt)
+                )
+              (if (or
+                   (and (not indented) (eq prev-is 'let) (not (eq cur-is 'let)))
+                   (and (not indented) (eq prev-is 'eqgt) (not (eq cur-is 'fun)))
+                   )
+                  (progn
+                    (message "Line %d: rule 6 matched" cur-line)
+                    (setq cur-indent (+ (current-indentation) default-tab-width))
+                    (setq indented 1)
+                    )
+                )
+              )
             )
           ;; Match Rule 3
           (if (and (not indented) (looking-at "[ \t]*s?end"))

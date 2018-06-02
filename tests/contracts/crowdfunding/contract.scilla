@@ -5,15 +5,15 @@ library Crowdfunding
 
 let andb = 
   fun (b : Bool) =>
-    fun (c : Bool) =>
-      match b with 
+  fun (c : Bool) =>
+    match b with 
+    | False => False
+    | True  =>
+      match c with 
       | False => False
-      | True  =>
-        match c with 
-        | False => False
-        | True  => True
-        end
+      | True  => True
       end
+    end
 
 let orb = 
   fun (b : Bool) => fun (c : Bool) =>
@@ -39,22 +39,22 @@ let one_msg =
 
 let check_update = 
   fun (bs : Map Address Int) =>
-    fun (sender : Address) =>
-      fun (_amount : Int) =>
-        let c = builtin contains bs sender in
-          match c with 
-          | False => 
-            let bs1 = builtin put bs sender _amount in
-              Some {Map Address Int} bs1 
-          | True  => None {Map Address Int}
-          end
+  fun (sender : Address) =>
+  fun (_amount : Int) =>
+    let c = builtin contains bs sender in
+      match c with 
+      | False => 
+        let bs1 = builtin put bs sender _amount in
+          Some {Map Address Int} bs1 
+      | True  => None {Map Address Int}
+      end
 
 let blk_leq =
   fun (blk1 : BNum) =>
   fun (blk2 : BNum) =>
     let bc1 = builtin blt blk1 blk2 in 
-      let bc2 = builtin eq blk1 blk2 in 
-        orb bc1 bc2
+    let bc2 = builtin eq blk1 blk2 in 
+      orb bc1 bc2
 
 let accepted_code = 1
 let missed_deadline_code = 2
@@ -100,7 +100,7 @@ transition Donate (sender: Address, _amount: Int)
               code : accepted_code};
       msgs = one_msg msg;
       send msgs     
-     end  
+    end  
   | False => 
     msg  = {_tag : Main; to : sender; _amount : 0; 
             code : missed_dealine_code};

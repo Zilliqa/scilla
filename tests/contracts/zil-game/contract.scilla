@@ -7,20 +7,22 @@ let andb =
   fun (b : Bool) => fun (c : Bool) =>
     match b with 
     | False => False
-    | True  => match c with 
-               | False => False
-               | True  => True
-               end
+    | True  =>
+      match c with 
+      | False => False
+      | True  => True
+      end
     end
 
 let orb = 
   fun (b : Bool) => fun (c : Bool) =>
     match b with 
     | True  => True
-    | False => match c with 
-               | False => False
-               | True  => True
-               end
+    | False =>
+      match c with 
+      | False => False
+      | True  => True
+      end
     end
 
 let negb = fun (b : Bool) => 
@@ -31,48 +33,48 @@ let negb = fun (b : Bool) =>
 
 let one_msg = 
   fun (msg : Message) => 
-   let nil_msg = Nil {Message} in
-   Cons {Message} msg nil_msg
+    let nil_msg = Nil {Message} in
+      Cons {Message} msg nil_msg
 
 let no_msg = Nil {Message}
 
 let update_hash = 
   fun (oh : Option Hash) =>
   fun (h : Hash) =>
-  match oh with
-  | Some x => Some {Hash} x
-  | None   => Some {Hash} h
-  end
+    match oh with
+    | Some x => Some {Hash} x
+    | None   => Some {Hash} h
+    end
 
 let update_timer = 
   fun (tm : Option BNum) =>
   fun (b : BNum) =>
-  match tm with
-  | Some x => Some {BNum} x
-  | None   =>
-    let window = 11 in
-    let b1 = builtin badd b window in
-    Some {BNum} b1
-  end
+    match tm with
+    | Some x => Some {BNum} x
+    | None   =>
+      let window = 11 in
+      let b1 = builtin badd b window in
+        Some {BNum} b1
+    end
 
 (* b is within the time window *)
 let can_play = 
   fun (tm : Option BNum) =>
   fun (b : BNum) =>
-  match tm with
-  | None => True
-  | Some b1 => builtin blt b b1
-  end     
+    match tm with
+    | None => True
+    | Some b1 => builtin blt b b1
+    end     
 
 let time_to_claim = 
   fun (tm : Option BNum) =>
   fun (b : BNum) =>
-  match tm with
-  | None => False
-  | Some b1 =>
-    let c1 = builtin blt b b1 in
-    negb c1
-  end     
+    match tm with
+    | None => False
+    | Some b1 =>
+      let c1 = builtin blt b b1 in
+        negb c1
+    end     
 
 let check_validity = 
   fun (a        : Address) =>
@@ -81,39 +83,39 @@ let check_validity =
   fun (pb       : Address) =>
   fun (guess_a  : Option Hash) =>
   fun (guess_b  : Option Hash) =>
-  let ca = builtin eq pa a in
-  let cb = builtin eq pb a in
-  let xa = Pair {Bool (Option Hash)} ca guess_a in 
-  let xb = Pair {Bool (Option Hash)} cb guess_b in 
-  match xa with
-  | Pair True (Some g) =>
-    let h = builtin sha256hash solution in
-    builtin eq h g 
-  | _ =>
-    match xb with
-    | Pair True (Some g) =>
-      let h = builtin sha256hash solution in
-      builtin eq h g
-    | _ => False  
-    end  
-  | _ => False
-  end
+    let ca = builtin eq pa a in
+    let cb = builtin eq pb a in
+    let xa = Pair {Bool (Option Hash)} ca guess_a in 
+    let xb = Pair {Bool (Option Hash)} cb guess_b in 
+      match xa with
+      | Pair True (Some g) =>
+        let h = builtin sha256hash solution in
+          builtin eq h g 
+      | _ =>
+        match xb with
+        | Pair True (Some g) =>
+          let h = builtin sha256hash solution in
+            builtin eq h g
+        | _ => False  
+        end  
+      | _ => False
+      end
 
 (* Owner can withdraw balance if deadline has passed *)
 let can_withdraw =
   fun (timer : Option BNum) =>
-    fun (b : BNum) =>
-      match timer with
-      | Some tm =>
-        let window = 10 in
-        let deadline = builtin badd tm window in
-          let can = builtin blt deadline b in
-            match can with
-            | True => True
-            | False => False
-            end
-      | None => False
-      end
+  fun (b : BNum) =>
+    match timer with
+    | Some tm =>
+      let window = 10 in
+      let deadline = builtin badd tm window in
+      let can = builtin blt deadline b in
+        match can with
+        | True => True
+        | False => False
+        end
+    | None => False
+    end
 
 (* In the case of equal results, or no results the prise goes to the owner *)
 let determine_winner = 
@@ -123,25 +125,25 @@ let determine_winner =
   fun (pa       : Address) =>
   fun (pb       : Address) =>
   fun (oa       : Address) =>
-  let gab = Pair { (Option Hash) (Option Hash) } guess_a guess_b in
-  match gab with
-  | Pair (Some ga) (Some gb) =>
-    let d1 = builtin dist puzzle ga in
-    let d2 = builtin dist puzzle gb in
-    let c1 = builtin lt d1 d2 in
-    match c1 with 
-    | True => pa
-    | False => 
-      let c2 = builtin eq d1 d2 in
-      match c2 with 
-      | False => pb
-      | True  => oa
+    let gab = Pair { (Option Hash) (Option Hash) } guess_a guess_b in
+      match gab with
+      | Pair (Some ga) (Some gb) =>
+        let d1 = builtin dist puzzle ga in
+        let d2 = builtin dist puzzle gb in
+        let c1 = builtin lt d1 d2 in
+          match c1 with 
+          | True => pa
+          | False => 
+            let c2 = builtin eq d1 d2 in
+              match c2 with 
+              | False => pb
+              | True  => oa
+              end
+            end
+      | Pair (Some _) None => pa
+      | Pair None (Some _) => pb
+      | Pair None None     => oa
       end
-    end
-  | Pair (Some _) None => pa
-  | Pair None (Some _) => pb
-  | Pair None None     => oa
-  end
 
 let solution_submitted = 1
 let time_window_missed = 2
@@ -173,10 +175,10 @@ transition Play (sender: Address, guess: Hash)
   c = can_play tm_opt b;
   match c with
   | False => 
-      msg  = {_tag : Main; to : sender; _amount : 0; 
-              code : time_window_missed};
-      msgs = one_msg msg;
-      send msgs        
+    msg  = {_tag : Main; to : sender; _amount : 0; 
+            code : time_window_missed};
+    msgs = one_msg msg;
+    send msgs        
   | True  => 
     isa = builtin eq sender player_a;
     isb = builtin eq sender player_b;
@@ -222,10 +224,10 @@ transition ClaimReward
   ttc = time_to_claim tm_opt b;
   match ttc with
   | False => 
-      msg  = {_tag : Main; to : sender; _amount : 0; 
-              code : too_early_to_claim};
-      msgs = one_msg msg;
-      send msgs        
+    msg  = {_tag : Main; to : sender; _amount : 0; 
+            code : too_early_to_claim};
+    msgs = one_msg msg;
+    send msgs        
   | True  => 
     pa <- player_a_hash;
     pb <- player_b_hash;
