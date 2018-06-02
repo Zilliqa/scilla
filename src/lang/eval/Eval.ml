@@ -20,6 +20,8 @@ open BuiltIns
 (*                    Utilities                    *)      
 (***************************************************)    
 
+let reserved_names = List.map ~f:fst Recursion.recursion_principles
+
 let expr_str e =
   sexp_of_expr sexp_of_loc e
   |> Sexplib.Sexp.to_string
@@ -31,7 +33,11 @@ let stmt_str s =
 (* Printing result *)
 let pp_result r = match r with
   | Error s -> s
-  | Ok (e, env) -> sprintf "%s,\n%s" (Env.pp_value e) (Env.pp env)
+  | Ok (e, env) ->
+      let filter_prelude = fun (k, v) ->
+        not (List.mem reserved_names k ~equal:(fun s1 s2 -> s1 = s2))
+      in
+      sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
 
 (* Serializable literals *)
 let is_serializable_literal l = match l with
@@ -48,7 +54,7 @@ let sanitize_literal l =
 let vals_to_literals vals =
   mapM vals ~f:(fun arg -> match arg with
       | Env.ValLit l -> pure l
-      | Env.ValClosure _ ->
+      | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
           fail @@
           sprintf "Closure arguments in ADT are not supported: %s."
             (Env.pp_value arg))
@@ -76,7 +82,7 @@ let rec exp_eval e env = match e with
             (match v with
              | ValLit l -> sanitize_literal l
              (* Closures are not sendable by messages *)
-             | ValClosure _ as v ->
+             | (ValClosure _ | ValFix _ | ValTypeClosure _) as v ->
                  fail @@ sprintf
                    "Cannot store a closure\n%s\nas %s\nin a message\n%s."
                    (Env.pp_value v)
@@ -88,8 +94,8 @@ let rec exp_eval e env = match e with
         (* Make sure we resolve all the payload *)
         mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ resolve pld) in
       pure (Env.ValLit (Msg payload_resolved), env)
-  | Fun (f, t, body) ->
-      let clo = Env.ValClosure (f, t, body, env) in
+  | Fun (arg, t, body) ->
+      let clo = Env.ValClosure (arg, t, body, env) in
       pure (clo, env)
   | App (f, actuals) ->
       (* Resolve the actuals *)
@@ -101,10 +107,10 @@ let rec exp_eval e env = match e with
         List.fold_left args ~init:(pure ff)
           ~f:(fun res arg ->
               let%bind v = res in
-              (* printf "Value to be applied: %s\n" (Env.pp_value v); *)
-              (* printf "Argument: %s\n\n" (Env.pp_value arg); *)
+              (* printf "Value to be applied: %s\n" (Env.pp_value v);
+               * printf "Argument: %s\n\n" (Env.pp_value arg); *)
               try_apply_as_closure v arg) in
-      pure(fully_applied, env)          
+      pure (fully_applied, env)          
   | Constr (cname, ts, actuals) ->
       (* Resolve the actuals *)
       let%bind args =
@@ -133,28 +139,58 @@ let rec exp_eval e env = match e with
       let%bind op = BuiltInDictionary.find_builtin_op opname tags in
       let%bind res = op arg_literals in 
       pure (Env.ValLit res, env)
-
-  (* TODO: Implement type term operations *)
-  | _ -> 
-      match expr_loc e with
-      | Some l1 -> fail @@
-          sprintf "Expression in line %s: %s  is not supported yet."
-            (Int.to_string l1.lnum) (expr_str e)
-      | None -> fail @@
-          sprintf  "Expression in line %s is not supported yet."
-            (expr_str e)
+  | Fixpoint (f, t, body) ->
+      let fix = Env.ValFix (f, t, body, env) in
+      pure (fix, env)
+  | TFun (tvar, body) ->
+      let tclo = Env.ValTypeClosure (tvar, body, env) in
+      pure (tclo, env)
+  | TApp (tf, arg_types) ->
+      let%bind ff = Env.lookup env tf in
+      let%bind fully_applied =
+        List.fold_left arg_types ~init:(pure ff)
+          ~f:(fun res arg_type -> let%bind v = res in
+              try_apply_as_type_closure v arg_type) in
+      pure (fully_applied, env)          
+  (* | _ -> 
+   *     match expr_loc e with
+   *     | Some l1 -> fail @@
+   *         sprintf "Expression in line %s: %s  is not supported yet."
+   *           (Int.to_string l1.lnum) (expr_str e)
+   *     | None -> fail @@
+   *         sprintf  "Expression in line %s is not supported yet."
+   *           (expr_str e) *)
 
 (* Applying a function *)
 and try_apply_as_closure v arg =
   match v with
   | Env.ValLit _ ->
-      fail @@
-      sprintf "Not a functional value: %s."
-        (Env.pp_value v)
+      fail @@ sprintf "Not a functional value: %s." (Env.pp_value v)
   | Env.ValClosure (formal, _, body, env) ->
       let env1 = Env.bind env (get_id formal) arg in
       let%bind (v, _) = exp_eval body env1 in
       pure v
+  | Env.ValFix (g, _, body, env) ->
+      let env1 = Env.bind env (get_id g) v in
+      let%bind (v, _) = exp_eval body env1 in
+      (match v with
+       | Env.ValClosure (formal, _, cbody, cenv) ->
+           let env2 = Env.bind cenv (get_id formal) arg in
+           let%bind (v, _) = exp_eval cbody env2 in
+           (* printf "Resulting value: %s\n\n" (Env.pp_value v); *)
+           pure v
+       | _ ->  fail @@ sprintf "A fixpoint should take a function as a body")
+  | Env.ValTypeClosure _ ->
+      fail @@ sprintf "Cannot apply a type closure to a value argument: %s." (Env.pp_value arg)
+
+and try_apply_as_type_closure v arg_type =
+  match v with
+  | Env.ValTypeClosure (_tv, body, env) ->
+      (* TODO: implement type substitution *)
+      let%bind (v, _) = exp_eval body env in
+      pure v      
+  | _ ->
+      fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)
 
 
 (*******************************************************)
@@ -236,7 +272,7 @@ let init_fields env fs =
   let init_field fname _t fexp =
     let%bind (v, _) = exp_eval fexp env in
     match v with
-    | Env.ValClosure _ ->
+    | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
         fail @@ sprintf "Closure cannot be stored in a field %s." fname
     | Env.ValLit l -> pure (fname, l)
   in
@@ -378,9 +414,6 @@ let handle_message contr cstate bstate m =
   let actual_env = List.fold_left tenv ~init:env
       ~f:(fun e (n, l) -> Env.bind e n (Env.ValLit l)) in
   let open Configuration in
-
-  (* printf "\nTransition-specific tenv:\n%s\n\n" (pp_literal_map tenv);
-   * printf "\nAbout to execute in env:\n%s\n\n" (Env.pp actual_env); *)
 
   (* Create configuration *)  
   let conf = {

@@ -10,6 +10,8 @@
 open Syntax
 open Core
 open MonadUtil
+open Recursion
+open EvalUtil
 
 (* A tagged constructor *)
 type constructor = {
@@ -27,6 +29,8 @@ type adt = {
 
   (* Mapping for constructors' types *)
   tmap     : (string * (int * typ) list) list;
+
+  (* recur    : Syntax.loc Env.value *)
 }
 
 module DataTypeDictionary = struct
@@ -39,6 +43,17 @@ module DataTypeDictionary = struct
     tconstr = [c_true; c_false];
     tmap = []
   }
+
+  (* Natural numbers *)
+  let c_zero = { cname = "Zero"; arity = 0 }
+  let c_succ = { cname = "Succ"; arity = 1 }
+  let t_nat = {
+    tname = "Nat";
+    targs = [];
+    tconstr = [c_zero; c_succ];
+    tmap = [("Succ", [(0, ADT ("Nat", []))])]
+  }
+
   
   (* Option *)
   let c_some = { cname = "Some"; arity = 1 }
@@ -77,7 +92,7 @@ module DataTypeDictionary = struct
   }
 
   type t = adt list  
-  let dict = [t_bool; t_option; t_list; t_product]
+  let dict = [t_bool; t_nat; t_option; t_list; t_product]
 
   let lookup_constructor cn =
     match List.find dict

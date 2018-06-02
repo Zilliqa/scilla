@@ -1,0 +1,11 @@
+(ADTValue Cons((TypeVar 'B))((IntLit 5)(ADTValue Cons((TypeVar 'B))((IntLit 10)(ADTValue Cons((TypeVar 'B))((IntLit 15)(ADTValue Nil((TypeVar 'B))()))))))),
+{ [l3 -> (ADTValue Cons((PrimType Int))((IntLit 1)(ADTValue Cons((PrimType Int))((IntLit 2)(ADTValue Cons((PrimType Int))((IntLit 3)(ADTValue Nil()())))))))],
+  [l2 -> (ADTValue Cons((PrimType Int))((IntLit 2)(ADTValue Cons((PrimType Int))((IntLit 3)(ADTValue Nil()())))))],
+  [l1 -> (ADTValue Cons((PrimType Int))((IntLit 3)(ADTValue Nil()())))],
+  [nil -> (ADTValue Nil()())],
+  [three -> (IntLit 3)],
+  [two -> (IntLit 2)],
+  [one -> (IntLit 1)],
+  [f -> <closure>],
+  [int_map -> <closure>],
+  [list_map -> <type_closure>] }

@@ -1,0 +1,10 @@
+(ADTValue False()()),
+{ [nat_eq -> <closure>],
+  [is_some_zero -> <closure>],
+  [nat_prev -> <closure>],
+  [four -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))))],
+  [three -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))],
+  [two -> (ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))],
+  [one -> (ADTValue Succ()((ADTValue Zero()())))],
+  [zero -> (ADTValue Zero()())] }
+

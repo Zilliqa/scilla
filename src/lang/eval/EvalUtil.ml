@@ -42,25 +42,35 @@ module Env = struct
   'rep value =
     | ValLit of literal
     | ValClosure of 'rep Syntax.ident * typ * 'rep expr * 'rep t
+    | ValTypeClosure of 'rep Syntax.ident * 'rep expr * 'rep t                      
+    | ValFix of 'rep Syntax.ident * typ * 'rep expr * 'rep t
   [@@deriving sexp]
 
   (* Pretty-printing *)
-  let rec pp e =
-    let ps = List.map e
-        ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ (pp_value v) ^ "]") in
-    let cs = String.concat ~sep:",\n " ps in
-    "{" ^ cs ^ " }"
-  and
-    pp_value v = match v with
+  let pp_value v = match v with
     | ValLit l -> sexp_of_literal l |> Sexplib.Sexp.to_string
+    | ValFix _ -> "<fixpoint>"
+    | ValTypeClosure _ -> "<type_closure>"
     | ValClosure (f, t, e, env) -> "<closure>"
         (* (sexp_of_expr sexp_of_loc (Fun (f, t, e)) |> Sexplib.Sexp.to_string)
          * ^ ", " ^ (pp env)   *)
+
+  let rec pp ?f:(f = fun (v : (string * 'rep value)) -> true) e =
+    (* FIXME: Do not print folds *)
+    let e_filtered = List.filter e ~f:f in
+    let ps = List.map e_filtered
+        ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ (pp_value v) ^ "]") in
+    let cs = String.concat ~sep:",\n " ps in
+    "{" ^ cs ^ " }"
+  
 
   let empty = []
 
   let bind e k v =
     (k, v) :: List.filter ~f:(fun z -> fst z <> k) e
+
+  let bind_all e kvs = 
+    List.fold_left ~init:e ~f:(fun z (k, v) -> bind z k v) kvs
                                                                 
   let lookup e k =
     let i = get_id k in
@@ -125,7 +135,7 @@ module Configuration = struct
   
   let store st k v =
     match v with 
-    | Env.ValClosure _ ->
+    | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
         fail @@ sprintf "Cannot store a closure below into a field %s:\n%s"
           k (Env.pp_value v)
     | Env.ValLit l ->
@@ -197,7 +207,7 @@ module Configuration = struct
         | l -> fail @@ sprintf "The literal is not a list:\n%s" (pp_literal l))
       in       
       match v with
-      | Env.ValClosure _ as v ->
+      | (Env.ValFix _ | Env.ValClosure _ | Env.ValTypeClosure _ ) as v ->
           fail @@
           sprintf "Value should be a list of messages, but is a closure:\n%s"
             (Env.pp_value v)

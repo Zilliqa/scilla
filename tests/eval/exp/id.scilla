@@ -1,0 +1,4 @@
+let id = tfun 'X => fun (x: 'X) => x in
+let id_int = @id Int in
+let n = 42 in		
+id_int n	
