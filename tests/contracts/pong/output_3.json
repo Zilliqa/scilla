@@ -18,6 +18,6 @@
       "type": "ADT",
       "value": { "constructor": "None", "argtypes": [], "arguments": [] }
     },
-    { "vname": "count", "type": "Int", "value": "4" }
+    { "vname": "count", "type": "Int", "value": "2" }
   ]
 }

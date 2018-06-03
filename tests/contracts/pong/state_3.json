@@ -2,7 +2,7 @@
     {
         "vname" : "count",
         "type" : "Int",
-        "value" : "4"
+        "value" : "2"
     },
     {
         "vname": "_balance",

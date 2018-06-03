@@ -18,7 +18,7 @@ contract Pong
 ()
 
 (* Mutable fields *)
-field count : Int = 4
+field count : Int = 2
 field ping_addr : Option Address = None {Address}
 
 transition Pong (sender: Address)

@@ -13,7 +13,7 @@
   },
   "states": [
     { "vname": "_balance", "type": "Int", "value": "0" },
-    { "vname": "count", "type": "Int", "value": "3" },
+    { "vname": "count", "type": "Int", "value": "1" },
     {
       "vname": "pong_addr",
       "type": "ADT",
