@@ -52,7 +52,7 @@
 
 ;;; Indentation
 ;; Set to use only spaces for indentation, no tabs.
-(setq indent-tabs-mode nil)
+(setq-default indent-tabs-mode nil)
 (setq default-tab-width 2)
 
 ;; Rule 1: Beginning of buffer: column 0
