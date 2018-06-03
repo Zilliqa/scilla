@@ -66,6 +66,7 @@
 ;; Rule 6: If previous line contains "*=>[ \t]*$"
 ;;         but current line is not fun:
 ;;            indent forward.
+;; Rule 7: If line beings with "end", find matching "match/transition"
 ;; Else: Same as previous line.
 
 (defun scilla-indent-line ()
@@ -97,6 +98,27 @@
                      (setq lines-seen (+ lines-seen 1))
                      )
                    )
+                )
+            )
+          ;; Match Rule 7
+          (if (looking-at "[ \t]*end")
+              (let ((ends-seen 0) (matches-seen 0) (lines-seen 0))
+                (while (and (not indented) (< lines-seen 1000))
+                  (progn
+                    (forward-line -1)
+                    (setq lines-seen (+ lines-seen 1))
+                    (if (looking-at "[ \t]*end") (setq ends-seen (+ ends-seen 1)))
+                    (if (looking-at "[ \t]*\\(match\\|transition\\)")(setq matches-seen (+ matches-seen 1)))
+                    ;; (message "Line %d: %d matches and %d ends seen" cur-line matches-seen ends-seen)
+                    (if (> matches-seen ends-seen)
+                        (progn
+                          ;; (message "Line %d: rule 7 matched" cur-line)
+                          (setq cur-indent (current-indentation))
+                          (setq indented 1)
+                          )
+                      )
+                    )
+                  )
                 )
             )
           (if (looking-at "[ \t]*fun")
