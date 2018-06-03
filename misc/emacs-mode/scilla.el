@@ -71,6 +71,7 @@
 (defun scilla-indent-line ()
   "Return the column to which the current line should be indented."
   (interactive)
+  (setq cur-col (current-column))
   (beginning-of-line)
   (if (bobp)  ; Check for rule 1
       (indent-line-to 0)
@@ -127,7 +128,7 @@
                    (and (not indented) (eq prev-is 'eqgt) (not (eq cur-is 'fun)))
                    )
                   (progn
-                    (message "Line %d: rule 6 matched" cur-line)
+                    ;; (message "Line %d: rule 6 matched" cur-line)
                     (setq cur-indent (+ (current-indentation) default-tab-width))
                     (setq indented 1)
                     )
@@ -180,9 +181,20 @@
           )
         )
       ;; Take action.
-      (if indented
-          (indent-line-to cur-indent)
-        (indent-line-to 0))
+      (let ((d))
+        (progn
+          (setq d (- cur-col (current-indentation)))
+          (if indented
+              (indent-line-to cur-indent)
+            (indent-line-to 0)
+            )
+          (forward-char d)
+          ;; If we're before the first non-white character, move forward
+          (if (< (current-column) cur-indent)
+              (move-to-column cur-indent)
+            )
+          )
+        )
       )
     )
   )
