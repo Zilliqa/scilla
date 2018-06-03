@@ -34,7 +34,7 @@ let negb = fun (b : Bool) =>
 let one_msg = 
   fun (msg : Message) => 
     let nil_msg = Nil {Message} in
-      Cons {Message} msg nil_msg
+    Cons {Message} msg nil_msg
 
 let no_msg = Nil {Message}
 
@@ -54,7 +54,7 @@ let update_timer =
     | None   =>
       let window = 11 in
       let b1 = builtin badd b window in
-        Some {BNum} b1
+      Some {BNum} b1
     end
 
 (* b is within the time window *)
@@ -73,7 +73,7 @@ let time_to_claim =
     | None => False
     | Some b1 =>
       let c1 = builtin blt b b1 in
-        negb c1
+      negb c1
     end     
 
 let check_validity = 
@@ -87,19 +87,19 @@ let check_validity =
     let cb = builtin eq pb a in
     let xa = Pair {Bool (Option Hash)} ca guess_a in 
     let xb = Pair {Bool (Option Hash)} cb guess_b in 
-      match xa with
+    match xa with
+    | Pair True (Some g) =>
+      let h = builtin sha256hash solution in
+      builtin eq h g 
+    | _ =>
+      match xb with
       | Pair True (Some g) =>
         let h = builtin sha256hash solution in
-          builtin eq h g 
-      | _ =>
-        match xb with
-        | Pair True (Some g) =>
-          let h = builtin sha256hash solution in
-            builtin eq h g
-        | _ => False  
-        end  
-      | _ => False
-      end
+        builtin eq h g
+      | _ => False  
+      end  
+    | _ => False
+    end
 
 (* Owner can withdraw balance if deadline has passed *)
 let can_withdraw =
@@ -110,10 +110,10 @@ let can_withdraw =
       let window = 10 in
       let deadline = builtin badd tm window in
       let can = builtin blt deadline b in
-        match can with
-        | True => True
-        | False => False
-        end
+      match can with
+      | True => True
+      | False => False
+      end
     | None => False
     end
 
@@ -126,24 +126,24 @@ let determine_winner =
   fun (pb       : Address) =>
   fun (oa       : Address) =>
     let gab = Pair { (Option Hash) (Option Hash) } guess_a guess_b in
-      match gab with
-      | Pair (Some ga) (Some gb) =>
-        let d1 = builtin dist puzzle ga in
-        let d2 = builtin dist puzzle gb in
-        let c1 = builtin lt d1 d2 in
-          match c1 with 
-          | True => pa
-          | False => 
-            let c2 = builtin eq d1 d2 in
-              match c2 with 
-              | False => pb
-              | True  => oa
-              end
-            end
-      | Pair (Some _) None => pa
-      | Pair None (Some _) => pb
-      | Pair None None     => oa
+    match gab with
+    | Pair (Some ga) (Some gb) =>
+      let d1 = builtin dist puzzle ga in
+      let d2 = builtin dist puzzle gb in
+      let c1 = builtin lt d1 d2 in
+      match c1 with 
+      | True => pa
+      | False => 
+        let c2 = builtin eq d1 d2 in
+        match c2 with 
+        | False => pb
+        | True  => oa
+        end
       end
+    | Pair (Some _) None => pa
+    | Pair None (Some _) => pb
+    | Pair None None     => oa
+    end
 
 let solution_submitted = 1
 let time_window_missed = 2
@@ -157,7 +157,7 @@ let cannot_withdraw = 7
 (*             The contract definition             *)
 (***************************************************)
 contract ZilGame 
-  (owner    : Address,
+(owner    : Address,
    player_a : Address,
    player_b : Address,
    puzzle   : Hash)

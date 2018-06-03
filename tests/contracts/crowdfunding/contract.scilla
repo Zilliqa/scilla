@@ -35,26 +35,26 @@ let negb = fun (b : Bool) =>
 let one_msg = 
   fun (msg : Message) => 
     let nil_msg = Nil {Message} in
-      Cons {Message} msg nil_msg
-
+    Cons {Message} msg nil_msg
+    
 let check_update = 
   fun (bs : Map Address Int) =>
   fun (sender : Address) =>
   fun (_amount : Int) =>
     let c = builtin contains bs sender in
-      match c with 
-      | False => 
-        let bs1 = builtin put bs sender _amount in
-          Some {Map Address Int} bs1 
-      | True  => None {Map Address Int}
-      end
+    match c with 
+    | False => 
+      let bs1 = builtin put bs sender _amount in
+      Some {Map Address Int} bs1 
+    | True  => None {Map Address Int}
+    end
 
 let blk_leq =
   fun (blk1 : BNum) =>
   fun (blk2 : BNum) =>
     let bc1 = builtin blt blk1 blk2 in 
     let bc2 = builtin eq blk1 blk2 in 
-      orb bc1 bc2
+    orb bc1 bc2
 
 let accepted_code = 1
 let missed_deadline_code = 2

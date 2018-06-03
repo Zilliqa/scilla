@@ -63,8 +63,8 @@
 ;; Rule 5: If previous line has "{" but not "}", indent forward and if
 ;;         previous line has "}" but not "{",
 ;;         find matching "{" and indent to that line
-;; Rule 6: If previous line contains "(let.*in|.*=>) and current
-;;         but current line is not let/fun (correspondingly):
+;; Rule 6: If previous line contains "*=>[ \t]*$"
+;;         but current line is not fun:
 ;;            indent forward.
 ;; Else: Same as previous line.
 
@@ -99,11 +99,8 @@
                    )
                 )
             )
-          (if (looking-at "[ \t]*let")
-              (setq cur-is 'let)
-            (if (looking-at "[ \t]*fun")
-                (setq cur-is 'fun)
-              )
+          (if (looking-at "[ \t]*fun")
+              (setq cur-is 'fun)
             )
           (forward-line -1)
           ;; Match Rule 2
@@ -115,25 +112,15 @@
                 )
             )
           ;; Match Rule 6
-          (let ((prev-is nil))
-            (progn
-              (if (looking-at "[ \t]*let.*in[ \t]*$")
-                  (setq prev-is 'let)
+          (if (and
+               (looking-at ".*=>[ \t]*$")
+               (not (eq cur-is 'fun))
+               )
+              (progn
+                ;; (message "Line %d: rule 6 matched" cur-line)
+                (setq cur-indent (+ (current-indentation) default-tab-width))
+                (setq indented 1)
                 )
-              (if (looking-at ".*=>[ \t]*$")
-                  (setq prev-is 'eqgt)
-                )
-              (if (or
-                   (and (not indented) (eq prev-is 'let) (not (eq cur-is 'let)))
-                   (and (not indented) (eq prev-is 'eqgt) (not (eq cur-is 'fun)))
-                   )
-                  (progn
-                    ;; (message "Line %d: rule 6 matched" cur-line)
-                    (setq cur-indent (+ (current-indentation) default-tab-width))
-                    (setq indented 1)
-                    )
-                )
-              )
             )
           ;; Match Rule 3
           (if (and (not indented) (looking-at "[ \t]*s?end"))
