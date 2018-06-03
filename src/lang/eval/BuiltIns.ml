@@ -33,6 +33,15 @@ module UsefulLiterals = struct
   let to_Bool b = if b then true_lit else false_lit
 end
 
+(* String operations *)
+module String = struct
+  open UsefulLiterals
+
+  let eq ls = match ls with
+  | [StringLit x; StringLit y] ->
+    pure @@ to_Bool (x = y)
+  | _ -> builtin_fail "String.eq" ls
+end
 
 (* Integer operation *)
 module Int = struct
@@ -199,6 +208,9 @@ module BuiltInDictionary = struct
   (* All built-in functions *)
       
   let built_in_dict = [
+    (* Strings *)
+    ("eq", ["String"; "String"], String.eq);
+
     (* Integers *)
     ("eq",  ["Int"; "Int"], Int.eq);
     ("add", ["Int"; "Int"], Int.add);
@@ -242,6 +254,6 @@ module BuiltInDictionary = struct
     | None ->
         fail @@
         sprintf "Cannot find built-in with name \"%s\" and arguments %s."
-          opname ("(" ^ (String.concat ~sep:", " argtypes) ^ ")")
+          opname ("(" ^ (Core.String.concat ~sep:", " argtypes) ^ ")")
     | Some (_, _, op) -> pure op
 end

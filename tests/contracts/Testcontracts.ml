@@ -116,5 +116,9 @@ let add_tests bindir testsdir pcli =
     let cfinit_test = "crowdfunding_init" >:(build_contract_init_test bindir testsdir pcli "crowdfunding") in
     let zilgametests = "zil-game" >:::(build_contract_tests bindir testsdir pcli "zil-game" 1 9) in
     let zginit_test = "zil-game_init" >:(build_contract_init_test bindir testsdir pcli "zil-game") in
+    let cfinvoketests = "cfinvoke" >:::(build_contract_tests bindir testsdir pcli "cfinvoke" 1 3) in
+    let pingtests = "ping" >:::(build_contract_tests bindir testsdir pcli "ping" 0 3) in
+    let pongtests = "pong" >:::(build_contract_tests bindir testsdir pcli "pong" 0 3) in
     let misc_tests = "misc_tests" >::: build_misc_tests bindir testsdir pcli in
-      "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;misc_tests]
+      "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;
+                    misc_tests;pingtests;pongtests]
