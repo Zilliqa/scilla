@@ -1,0 +1,34 @@
+{
+  "message": {
+    "_tag": "Main",
+    "_amount": "0",
+    "params": [
+      {
+        "vname": "to",
+        "type": "Address",
+        "value": "0x1234567890123456789012345678901234567890"
+      },
+      {
+        "vname": "message",
+        "type": "String",
+        "value": "Balance transferred"
+      }
+    ]
+  },
+  "states": [
+    { "vname": "_balance", "type": "Int", "value": "0" },
+    {
+      "vname": "balances",
+      "type": "Map",
+      "value": [
+        { "keyType": "Address", "valType": "Int" },
+        { "key": "0x44345678901234567890123456789012345678cd", "val": "20" },
+        {
+          "key": "0x1234567890123456789012345678901234567890",
+          "val": "9980"
+        }
+      ]
+    },
+    { "vname": "allowed", "type": "Map", "value": null }
+  ]
+}

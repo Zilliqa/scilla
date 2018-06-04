@@ -1,0 +1,174 @@
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+library ERC20
+
+let andb = 
+  fun (b : Bool) => fun (c : Bool) =>
+    match b with 
+    | False => False
+    | True  => match c with 
+               | False => False
+               | True  => True
+               end
+    end
+
+let orb = 
+  fun (b : Bool) => fun (c : Bool) =>
+    match b with 
+    | True  => True
+    | False => match c with 
+               | False => False
+               | True  => True
+               end
+    end
+
+let negb = fun (b : Bool) => 
+  match b with
+  | True => False
+  | False => True
+  end
+
+let one_msg = 
+  fun (msg : Message) => 
+  let nil_msg = Nil {Message} in
+  Cons {Message} msg nil_msg
+
+let no_msg = Nil {Message}
+
+let min_int =
+  fun (a : Int) => fun (b : Int) =>
+  let alt = builtin lt a b in
+  match alt with
+  | True =>
+    a
+  | False =>
+    b
+  end
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract ERC20
+(owner : Address,
+ total_tokens : Int)
+
+(* Initial balance is not stated explicitly: it's initialized when creating the contract. *)
+
+field balances : Map Address Int =
+  let m = Emp in
+    builtin put m owner total_tokens
+field allowed : Map Address (Map Address Int) = Emp
+
+transition BalanceOf (sender : Address, tokenOwner : Address)
+  bl <- balances;
+  val = builtin get bl tokenOwner;
+  match val with
+  | Some v =>
+    msg = { _tag : "Main"; to : sender; _amount : 0; bal : v };
+    msgs = one_msg msg;
+    send msgs
+  | None =>
+    msg = { _tag : "Main"; to : sender; _amount : 0; bal : 0 };
+    msgs = one_msg msg;
+    send msgs
+  end
+end
+
+transition TotalSupply (sender : Address)
+  msg = { _tag : "Main"; to : sender; _amount : 0; total_tokens : total_tokens};
+  msgs = one_msg msg;
+  send msgs
+end
+
+transition Transfer (sender : Address, to : Address, tokens : Int)
+  bl <- balances;
+  bal = builtin get bl sender;
+  match bal with
+  | Some b =>
+    val = min_int b tokens;
+    (* subtract val from sender and add it to to *)
+    new_sender_bal = builtin sub b val;
+    new_balances = builtin put bl sender new_sender_bal;
+    to_bal = builtin get bl to;
+    match to_bal with
+    | Some x =>
+      new_to_bal = builtin add x val;
+      new_balances2 = builtin put new_balances to new_to_bal;
+      balances := new_balances2
+    | None =>
+      new_balances3 = builtin put new_balances to val;
+      balances := new_balances3
+    end;
+    msg = { _tag : "Main"; to : sender; _amount : 0; transferred : val };
+    msgs = one_msg msg;
+    send msgs
+  | None =>
+    msg = { _tag : "Main"; to : sender; _amount : 0; transferred : 0 };
+    msgs = one_msg msg;
+    send msgs
+  end
+end
+
+transition TransferFrom (sender : Address, from : Address, to : Address, tokens : Int)
+  bl <- balances;
+  m = "Transfer not allowed";
+  bal = builtin get bl from;
+  (* Check if sender has been authorized by "from" *)
+  allowed_from = builtin get allowed from;
+  match allowed_from with
+  | Some m =>
+    (* How many tokens has sender been authorized to transfer, by "from" *)
+    sender_allowed_from = builtin get m sender;
+    all = Pair {Option(Int) Option(Int)} bal sender_allowed_from;
+    match all with
+    | Pair (Some a) (Some b) =>
+      (* We can only transfer the minimum of available or authorized tokens *)
+      t = min_int a b;
+      amount = t tokens;
+      (* amount is what we should subtract from "from" and add to "to" *)
+      new_from_bal = builtin add a amount;
+      balances_1 = builtin put bl from amount;
+      balances := balances_1;
+      to_bal = builtin get bl to;
+      match to_bal with
+      | Some tb =>
+        to_bal_new = builtin add to_bal amount;
+        balances_2 = builtin put bl to to_bal_new;
+        balances := balances_2;
+        send no_msg
+      | None =>
+        (* "to" has no balance. So just set it to amount *)
+        balances_3 = builtin put bl to amount;
+        blanaces := balances_3;
+        send no_msg
+      end
+    | Pair None None =>
+      msg = { _tag : "Main"; to : sender; _amount : 0; message : m };
+      msgs = one_msg msg;
+      send msgs
+    end
+  | None =>
+    msg = { _tag : "Main"; to : sender; _amount : 0; message : m };
+    msgs = one_msg msg;
+    send msgs
+  end
+end
+
+transition Approve (sender : Address, spender : Address, tokens : Int)
+  sender_map = builtin get allowed sender;
+  match sender_map with
+  | Some m =>
+    allowed_to_spender = builtin put m spender tokens;
+    allowed_new = builtin put allowed sender allowed_to_spender;
+    allowed := allowed;
+    send no_msg
+  | None =>
+    allowed_to_spender =
+      let m = Emp in
+        builtin put m spender tokens;
+    allowed_new = builtin put allowed sender allowed_to_spender;
+    allowed := allowed;
+    send no_msg
+  end
+end
