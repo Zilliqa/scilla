@@ -192,12 +192,14 @@
       ;; Take action.
       (let ((d))
         (progn
-          (setq d (- cur-col cur-indent))
+          (setq d (- cur-col (current-indentation)))
           (if indented
               (indent-line-to cur-indent)
             (indent-line-to 0)
             )
-          (forward-char d)
+          (if (> d 0)
+              (forward-char d)
+            )
           ;; If we're before the first non-white character, move forward
           (if (< (current-column) cur-indent)
               (move-to-column cur-indent)
