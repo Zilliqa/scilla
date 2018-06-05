@@ -156,19 +156,43 @@ transition TransferFrom (sender : Address, from : Address, to : Address, tokens 
 end
 
 transition Approve (sender : Address, spender : Address, tokens : Int)
-  sender_map = builtin get allowed sender;
+  al <- allowed;
+  sender_map = builtin get al sender;
   match sender_map with
   | Some m =>
     allowed_to_spender = builtin put m spender tokens;
-    allowed_new = builtin put allowed sender allowed_to_spender;
-    allowed := allowed;
+    allowed_new = builtin put al sender allowed_to_spender;
+    allowed := allowed_new;
     send no_msg
   | None =>
     allowed_to_spender =
       let m = Emp in
         builtin put m spender tokens;
-    allowed_new = builtin put allowed sender allowed_to_spender;
-    allowed := allowed;
+    allowed_new = builtin put al sender allowed_to_spender;
+    allowed := allowed_new;
     send no_msg
+  end
+end
+
+transition Allowance (sender : Address, tokenOwner : Address, spender : Address)
+  al <- allowed;
+  towner_map = builtin get al tokenOwner;
+  match towner_map with
+  | Some m =>
+    spender_allowance = builtin get m spender;
+    match spender_allowance with
+    | Some n =>
+      msg = { _tag : "Main"; to : sender; _amount : 0; allowed : n };
+      msgs = one_msg msg;
+      send msgs
+    | None =>
+      msg = { _tag : "Main"; to : sender; _amount : 0; allowed : 0 };
+      msgs = one_msg msg;
+      send msgs
+    end
+  | None =>
+    msg = { _tag : "Main"; to : sender; _amount : 0; allowed : 0 };
+    msgs = one_msg msg;
+    send msgs
   end
 end
