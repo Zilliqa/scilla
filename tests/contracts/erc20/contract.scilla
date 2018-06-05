@@ -112,10 +112,11 @@ end
 
 transition TransferFrom (sender : Address, from : Address, to : Address, tokens : Int)
   bl <- balances;
+  al <- allowed;
   m = "Transfer not allowed";
   bal = builtin get bl from;
   (* Check if sender has been authorized by "from" *)
-  allowed_from = builtin get allowed from;
+  allowed_from = builtin get al from;
   match allowed_from with
   | Some m =>
     (* How many tokens has sender been authorized to transfer, by "from" *)
@@ -125,24 +126,29 @@ transition TransferFrom (sender : Address, from : Address, to : Address, tokens 
     | Pair (Some a) (Some b) =>
       (* We can only transfer the minimum of available or authorized tokens *)
       t = min_int a b;
-      amount = t tokens;
+      amount = min_int t tokens;
       (* amount is what we should subtract from "from" and add to "to" *)
-      new_from_bal = builtin add a amount;
-      balances_1 = builtin put bl from amount;
+      new_from_bal = builtin sub a amount;
+      balances_1 = builtin put bl from new_from_bal;
       balances := balances_1;
       to_bal = builtin get bl to;
       match to_bal with
       | Some tb =>
-        to_bal_new = builtin add to_bal amount;
-        balances_2 = builtin put bl to to_bal_new;
+        to_bal_new = builtin add tb amount;
+        balances_2 = builtin put balances_1 to to_bal_new;
         balances := balances_2;
         send no_msg
       | None =>
         (* "to" has no balance. So just set it to amount *)
-        balances_3 = builtin put bl to amount;
-        blanaces := balances_3;
+        balances_3 = builtin put balances_1 to amount;
+        balances := balances_3;
         send no_msg
-      end
+      end;
+      (* reduce "allowed" by "amount" *)
+      new_allowed = builtin sub b amount;
+      new_m = builtin put m sender new_allowed;
+      new_allowed = builtin put al from new_m;
+      allowed := new_allowed
     | Pair None None =>
       msg = { _tag : "Main"; to : sender; _amount : 0; message : m };
       msgs = one_msg msg;
