@@ -157,10 +157,12 @@ let cannot_withdraw = 7
 (*             The contract definition             *)
 (***************************************************)
 contract ZilGame 
-(owner    : Address,
-   player_a : Address,
-   player_b : Address,
-   puzzle   : Hash)
+(
+owner    : Address,
+player_a : Address,
+player_b : Address,
+puzzle   : Hash
+)
 
 (* Initial balance is not stated explicitly: it's initialized when creating the contract. *)
 
