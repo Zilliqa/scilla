@@ -171,9 +171,7 @@ transition Approve (sender : Address, spender : Address, tokens : Int)
     allowed := allowed_new;
     send no_msg
   | None =>
-    allowed_to_spender =
-      let m = Emp in
-        builtin put m spender tokens;
+    allowed_to_spender = let m = Emp in builtin put m spender tokens;
     allowed_new = builtin put al sender allowed_to_spender;
     allowed := allowed_new;
     send no_msg
