@@ -64,6 +64,9 @@ type 'rep pattern =
  * not support them. Once we write a custom pretty-printer for
  * literals and expressions, there will be no need for this atrocity,
  * and we can switch back to big ints. *)       
+type mtype = typ * typ
+[@@deriving sexp]
+
 type literal =
   | StringLit of string
   | IntLit of string
@@ -73,7 +76,7 @@ type literal =
   (* Message: an associative array *)    
   | Msg of (string * literal) list
   (* A dynamic map of literals *)    
-  | Map of (literal * literal) list
+  | Map of mtype * (literal * literal) list
   (* A constructor in HNF *)      
   | ADTValue of string * typ list * literal list
 [@@deriving sexp]

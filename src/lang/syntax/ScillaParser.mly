@@ -175,7 +175,8 @@ lit :
   else raise Error @@ Core.sprintf "Wrong hex string size (%s): %d." h l
 }
 | s = STRING   { StringLit s }
-| EMP          { Map [] }
+(* TODO: fix me *)
+| EMP          { Map ((toType "Int", toType "Int"), []) }
 
 ctargs:
 | LBRACE; ts = list(ctarg); RBRACE { ts }
