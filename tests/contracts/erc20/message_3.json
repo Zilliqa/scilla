@@ -1,0 +1,22 @@
+{
+    "_tag" : "Transfer",
+    "_amount" : "0",
+    "params" : [
+        {
+            "vname": "sender",
+            "type": "Address",
+            "value": "0x1234567890123456789012345678901234567890"
+        },
+        {
+            "vname": "to",
+            "type": "Address",
+            "value": "0x44345678901234567890123456789012345678cd"
+        },
+        {
+            "vname": "tokens",
+            "type": "Int",
+            "value": "10001"
+        }
+
+    ]
+}
