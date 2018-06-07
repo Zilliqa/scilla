@@ -45,34 +45,6 @@ let lit_exn n =
   else
     raise (Invalid_json ("Invalid " ^ literal_tag n ^ " : " ^ s ^ " in json"))
 
-let rec mapvalues_from_json ktype vtype l = 
-  let open Basic.Util in
-  match l with
-  | first :: remaining ->
-      let kval = member_exn "key" first |> to_string in
-      let vval = member_exn "val" first |> to_string in
-      let keylit = 
-        (match ktype with
-        | "String" -> Some (lit_exn(StringLit kval))
-        | "Int" -> Some (lit_exn(IntLit kval))
-        | "BNum" -> Some (lit_exn(BNum kval))
-        | "Address" -> Some (lit_exn(Address kval))
-        | "Hash" -> Some (lit_exn(Sha256 kval))
-        | _ -> None) in
-      let vallit = 
-        (match vtype with
-        | "String" -> Some (lit_exn(StringLit vval))
-        | "Int" -> Some (lit_exn(IntLit vval))
-        | "BNum" -> Some (lit_exn(BNum vval))
-        | "Address" -> Some (lit_exn(Address vval))
-        | "Hash" -> Some (lit_exn(Sha256 vval))
-        | _ -> None) in
-      let vlist = mapvalues_from_json ktype vtype remaining in
-      (match keylit, vallit with
-       | Some kl, Some vl -> (kl, vl) :: vlist
-       | _ -> vlist)
-  | [] -> []
-
 let rec json_to_adtargs tjs ajs =
   let open Basic.Util in
   match tjs, ajs with
@@ -80,20 +52,83 @@ let rec json_to_adtargs tjs ajs =
       let tjs = to_string tj in
       let ajs = to_string aj in
       let argS = 
-      (match tjs with
-        | "String" -> Some (lit_exn(StringLit ajs))
-        | "Int" -> Some (lit_exn(IntLit ajs))
-        | "BNum" -> Some (lit_exn(BNum ajs))
-        | "Address" -> Some (lit_exn(Address ajs))
-        | "Hash" -> Some (lit_exn(Sha256 ajs))
-        | _ -> None
-      ) in
+        (match tjs with
+         | "String" -> Some (lit_exn(StringLit ajs))
+         | "Int" -> Some (lit_exn(IntLit ajs))
+         | "BNum" -> Some (lit_exn(BNum ajs))
+         | "Address" -> Some (lit_exn(Address ajs))
+         | "Hash" -> Some (lit_exn(Sha256 ajs))
+         | _ -> None
+        ) in
       let (trem, arem) = json_to_adtargs tr ar in
       (match argS with
-        | Some l -> ((PrimType tjs) :: trem, l :: arem)
-        | None -> [], []
+       | Some l -> ((PrimType tjs) :: trem, l :: arem)
+       | None -> [], []
       )
   | _ -> [], []
+
+let rec read_adt_json j =
+  let open Basic.Util in
+  match j with
+  | `Assoc adt ->
+      let constr = member_exn "constructor" j |> to_string in
+      let argtypes = member_exn "argtypes" j |> to_list in
+      let arguments = member_exn "arguments" j |> to_list in
+      let (tlist, arglit) = json_to_adtargs argtypes arguments in
+      Some (ADTValue (constr, tlist, arglit))
+  | _ -> None
+
+(* Map is a `List of `Assoc jsons, with
+ * the first `Assoc specifying the map's from/to types.*)
+and read_map_json j =
+  let open Basic.Util in
+  match j with
+  | `List vli ->
+      (match vli with 
+       | first :: remaining ->
+           let ktype = member_exn "keyType" first |> to_string in
+           let vtype = member_exn "valType" first |> to_string in
+           let kvallist = mapvalues_from_json ktype vtype remaining in
+           Some (Map kvallist)
+       | _ -> None
+      )
+  | _ -> None
+
+and mapvalues_from_json ktype vtype l = 
+  let open Basic.Util in
+  match l with
+  | first :: remaining ->
+      let kval = member_exn "key" first |> to_string in
+      let keylit = 
+        (match ktype with
+         | "String" -> Some (lit_exn(StringLit kval))
+         | "Int" -> Some (lit_exn(IntLit kval))
+         | "BNum" -> Some (lit_exn(BNum kval))
+         | "Address" -> Some (lit_exn(Address kval))
+         | "Hash" -> Some (lit_exn(Sha256 kval))
+         | _ -> None) in
+        let vjson = member_exn "val" first in
+      let vallit =
+         (match vtype with
+          | "Map" ->
+            read_map_json vjson
+          | "ADT" ->
+            read_adt_json vjson
+          | _ ->
+            let vval = vjson |> to_string in
+            (match vtype with
+             | "String" -> Some (lit_exn(StringLit vval))
+             | "Int" -> Some (lit_exn(IntLit vval))
+             | "BNum" -> Some (lit_exn(BNum vval))
+             | "Address" -> Some (lit_exn(Address vval))
+             | "Hash" -> Some (lit_exn(Sha256 vval))
+             | _ -> None)
+         ) in
+        let vlist = mapvalues_from_json ktype vtype remaining in
+        (match keylit, vallit with
+         | Some kl, Some vl -> (kl, vl) :: vlist
+         | _ -> vlist)
+  | [] -> []
 
 let jobj_to_statevar json =
   let open Basic.Util in
@@ -104,28 +139,21 @@ let jobj_to_statevar json =
     (* Handle Map separately. Map is a `List of `Assoc jsons, with
      * the first `Assoc specifying the map's from/to types. *)
     let v = member "value" json in
-    (match v with
-      | `List vli ->
-         (match vli with 
-          | first :: remaining ->
-              let ktype = member_exn "keyType" first |> to_string in
-              let vtype = member_exn "valType" first |> to_string in
-              let kvallist = mapvalues_from_json ktype vtype remaining in
-                Some (n, Map (kvallist))
-          | _ -> None
-         )
-      | _ -> None
+    let vl = read_map_json v in
+    (match vl with
+    | Some vlm ->
+        Some (n, vlm)
+    | None ->
+        None
     )
   | "ADT" ->
     let v = member_exn "value" json in
-    (match v with
-      | `Assoc adt ->
-          let constr = member_exn "constructor" v |> to_string in
-          let argtypes = member_exn "argtypes" v |> to_list in
-          let arguments = member_exn "arguments" v |> to_list in
-          let (tlist, arglit) = json_to_adtargs argtypes arguments in
-            Some (n, ADTValue (constr, tlist, arglit))
-      | _ -> None
+    let vl = read_adt_json v in
+    (match vl with
+    | Some vlm ->
+        Some (n, vlm)
+    | None ->
+        None
     )
   | _ ->  
     let v = member_exn "value" json |> to_string in

@@ -122,7 +122,7 @@ module Maps = struct
         pure (match res with
             | None -> none_lit
             | Some (_, v) -> some_lit v)
-    | _ -> builtin_fail "Map.contains" ls
+    | _ -> builtin_fail "Map.get" ls
 
 end
 

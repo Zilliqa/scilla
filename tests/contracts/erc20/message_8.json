@@ -1,0 +1,21 @@
+{
+    "_tag" : "Allowance",
+    "_amount" : "0",
+    "params" : [
+        {
+            "vname": "sender",
+            "type": "Address",
+            "value": "0x64345678901234567890123456789012345678cd"
+        },
+        {
+            "vname": "tokenOwner",
+            "type": "Address",
+            "value": "0x1234567890123456789012345678901234567890"
+        },
+        {
+            "vname": "spender",
+            "type": "Address",
+            "value": "0x54345678901234567890123456789012345678cd"
+        }
+    ]
+}
