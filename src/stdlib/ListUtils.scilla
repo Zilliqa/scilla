@@ -1,0 +1,36 @@
+library ListUtils
+
+(* ('A -> 'B) -> List 'A -> List 'B *)
+(* Apply (f : 'A -> 'B) to every element of List 'A *)
+(* to generate List 'B. *)
+let list_map = tfun 'A => tfun 'B =>
+  fun (f : 'A -> 'B) => fun (l : List 'A) =>
+  let folder = @list_foldl 'A 'B in
+  let init = Nil {'B} in
+  let iter = fun (z : 'B) => fun (h : 'A) =>
+    let h1 = f h in
+    Cons {'B} h1 z
+  in
+    folder iter init l
+
+(* ('A -> Bool) -> List 'A -> List 'A *)
+(* Preserving the order of elements in (l : List 'A),  *)
+(* return new list containing only those elements *)
+(* that satisfy the function f. *)
+let list_filter =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A (List 'A) in
+    let init = Nil {'A} in
+    let iter =
+      fun (z : List 'A) => fun (h : 'A) =>
+        let h1 = f h in
+        match h1 with
+        | True =>
+          Cons {List 'A} h z
+        | False =>
+          z
+        end
+     in
+       folder iter init l
