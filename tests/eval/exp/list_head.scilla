@@ -1,4 +1,4 @@
-let list_first_option =
+let list_head =
   tfun 'A =>
   fun (l : List 'A) =>
     let iter = fun (i : Option 'A) => fun (j : 'A) =>
@@ -14,7 +14,7 @@ let list_first_option =
       folder iter init l
 in
 
-let int_first = @list_first_option Int in
+let int_head = @list_head Int in
 
 let one = 1 in
 let two = 2 in
@@ -24,4 +24,4 @@ let nil = Nil in
 let l1 = Cons {Int} two nil in
 let l2 = Cons {Int} three l1 in
 let l3 = Cons {Int} one l2 in
-int_first l3
+int_head l3

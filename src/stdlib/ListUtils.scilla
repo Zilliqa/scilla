@@ -36,8 +36,8 @@ let list_filter =
        folder iter init l
 
 (* (List 'A) -> (Option 'A) *)
-(* Return the first element of a list as Some 'A, None otherwise *)
-let list_first_option =
+(* Return the head element of a list as Some 'A, None otherwise *)
+let list_head =
   tfun 'A =>
   fun (l : List 'A) =>
     let iter = fun (i : Option 'A) => fun (j : 'A) =>
@@ -51,3 +51,4 @@ let list_first_option =
     let init = None in
     let folder = @list_foldl 'A (Option 'A) in
       folder iter init l
+

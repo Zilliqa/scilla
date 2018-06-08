@@ -6,5 +6,5 @@
   [three -> (IntLit 3)],
   [two -> (IntLit 2)],
   [one -> (IntLit 1)],
-  [int_first -> <closure>],
-  [list_first_option -> <type_closure>] }
+  [int_head -> <closure>],
+  [list_head -> <type_closure>] }
