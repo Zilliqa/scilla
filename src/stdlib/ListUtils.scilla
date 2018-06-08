@@ -40,15 +40,22 @@ let list_filter =
 let list_head =
   tfun 'A =>
   fun (l : List 'A) =>
-    let iter = fun (i : Option 'A) => fun (j : 'A) =>
-      match i with
-      | Some a =>
-        i
-      | None =>
-        Some {'A} j
-      end
-    in
-    let init = None in
-    let folder = @list_foldl 'A (Option 'A) in
-      folder iter init l
+    match l with
+    | Cons h t =>
+      Some h
+    | Nil =>
+      None
+    end
+in
 
+(* (List 'A) -> (Option List 'A) *)
+(* Return the list except for the head *)
+let list_tail =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some t
+    | Nil =>
+      None
+    end
