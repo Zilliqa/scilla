@@ -1,0 +1,10 @@
+(ADTValue Some((TypeVar 'A))((IntLit 2))),
+{ [l3 -> (ADTValue Cons((PrimType Int))((IntLit 1)(ADTValue Cons((PrimType Int))((IntLit 3)(ADTValue Cons((PrimType Int))((IntLit 2)(ADTValue Nil()())))))))],
+  [l2 -> (ADTValue Cons((PrimType Int))((IntLit 3)(ADTValue Cons((PrimType Int))((IntLit 2)(ADTValue Nil()())))))],
+  [l1 -> (ADTValue Cons((PrimType Int))((IntLit 2)(ADTValue Nil()())))],
+  [nil -> (ADTValue Nil()())],
+  [three -> (IntLit 3)],
+  [two -> (IntLit 2)],
+  [one -> (IntLit 1)],
+  [int_first -> <closure>],
+  [list_first_option -> <type_closure>] }
