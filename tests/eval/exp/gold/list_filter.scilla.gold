@@ -1,0 +1,13 @@
+(ADTValue Cons((ADT List((TypeVar 'A))))((IntLit 11)(ADTValue Cons((ADT List((TypeVar 'A))))((IntLit 10)(ADTValue Nil((TypeVar 'A))()))))),
+{ [l4 -> (ADTValue Cons((PrimType Int))((IntLit 11)(ADTValue Cons((PrimType Int))((IntLit 2)(ADTValue Cons((PrimType Int))((IntLit 10)(ADTValue Cons((PrimType Int))((IntLit 1)(ADTValue Nil()())))))))))],
+  [l3 -> (ADTValue Cons((PrimType Int))((IntLit 2)(ADTValue Cons((PrimType Int))((IntLit 10)(ADTValue Cons((PrimType Int))((IntLit 1)(ADTValue Nil()())))))))],
+  [l2 -> (ADTValue Cons((PrimType Int))((IntLit 10)(ADTValue Cons((PrimType Int))((IntLit 1)(ADTValue Nil()())))))],
+  [l1 -> (ADTValue Cons((PrimType Int))((IntLit 1)(ADTValue Nil()())))],
+  [nil -> (ADTValue Nil()())],
+  [eleven -> (IntLit 11)],
+  [ten -> (IntLit 10)],
+  [two -> (IntLit 2)],
+  [one -> (IntLit 1)],
+  [f -> <closure>],
+  [int_filter -> <closure>],
+  [list_filter -> <type_closure>] }
