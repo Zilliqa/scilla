@@ -73,7 +73,7 @@ module ListRec = struct
     (* Parentheses around (List 'A) are important for the parser! *)
     let fix_type = parse_type "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
     let fix_arg = parse_expr ( 
-        "fun (f : 'A -> 'B -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
+        "fun (f : 'B -> 'A -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
         "match l with " ^
         " | Nil => z " ^
         " | Cons h t => let res = f z h in " ^
