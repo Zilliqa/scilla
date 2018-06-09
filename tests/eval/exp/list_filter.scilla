@@ -2,10 +2,11 @@ let list_filter =
   tfun 'A =>
   fun (f : 'A -> Bool) =>
   fun (l : List 'A) =>
-    let folder = @list_foldl 'A (List 'A) in
+    let folder = @list_foldr 'A (List 'A) in
     let init = Nil {'A} in
     let iter =
-      fun (z : List 'A) => fun (h : 'A) =>
+      fun (h : 'A) =>
+      fun (z : List 'A) =>
         let h1 = f h in
         match h1 with
         | True =>
