@@ -108,6 +108,5 @@ let recursion_principles =
    (NatRec.Foldl.id, NatRec.Foldl.fold);
    (ListRec.Foldl.id, ListRec.Foldl.fold);
    (ListRec.Foldr.id, ListRec.Foldr.fold);
-
  ]
 
