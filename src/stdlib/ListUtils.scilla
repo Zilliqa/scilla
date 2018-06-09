@@ -28,7 +28,7 @@ let list_filter =
         let h1 = f h in
         match h1 with
         | True =>
-          Cons {List 'A} h z
+          Cons {'A} h z
         | False =>
           z
         end
@@ -46,7 +46,6 @@ let list_head =
     | Nil =>
       None
     end
-in
 
 (* (List 'A) -> (Option List 'A) *)
 (* Return the list except for the head *)
@@ -59,3 +58,4 @@ let list_tail =
     | Nil =>
       None
     end
+
