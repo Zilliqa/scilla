@@ -1,8 +1,8 @@
 let list_map = tfun 'A => tfun 'B =>
   fun (f : 'A -> 'B) => fun (l : List 'A) =>
-  let folder = @list_foldl 'A 'B in
+  let folder = @list_foldr 'A 'B in
   let init = Nil {'B} in
-  let iter = fun (z : 'B) => fun (h : 'A) =>
+  let iter = fun (h : 'A) => fun (z : List 'B) =>
     let h1 = f h in
     Cons {'B} h1 z  		
 	in folder iter init l
@@ -21,5 +21,6 @@ let nil = Nil in
 let l1 = Cons {Int} three nil in
 let l2 = Cons {Int} two l1 in
 let l3 = Cons {Int} one l2 in
+let l4 = Cons {Int} three l3 in
 
-int_map f l3
+int_map f l4
