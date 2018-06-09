@@ -68,23 +68,23 @@ module ListRec = struct
   let g = Ident ("g", dummy_loc)      
   let avar = Ident("'A", dummy_loc)
   let bvar = Ident("'B", dummy_loc)
-  
+
   module Foldl = struct
     (* Parentheses around (List 'A) are important for the parser! *)
     let fix_type = parse_type "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
     let fix_arg = parse_expr ( 
-        "fun (f : 'B -> 'A -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
+        "fun (f : 'A -> 'B -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
         "match l with " ^
         " | Nil => z " ^
-        " | Cons h t => let res = g f z t in " ^
-        "   f res h " ^
+        " | Cons h t => let res = f z h in " ^
+        "   g f res t " ^
         "end"
       )
     let fold_fix = Fixpoint (g, fix_type, fix_arg)
     let id = "list_foldl"      
     let fold = Env.ValTypeClosure(avar, TFun (bvar, fold_fix), Env.empty)
   end
-
+  
   module Foldr = struct
     (* Parentheses around (List 'A) are important for the parser! *)
     let fix_type = parse_type "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
@@ -92,8 +92,8 @@ module ListRec = struct
         "fun (f : 'A -> 'B -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
         "match l with " ^
         " | Nil => z " ^
-        " | Cons h t => let res = f h z in " ^
-        "   g f res t " ^
+        " | Cons h t => let res = g f z t in " ^
+        "   f h res " ^
         "end"
       )
     let fold_fix = Fixpoint (g, fix_type, fix_arg)
@@ -108,6 +108,5 @@ let recursion_principles =
    (NatRec.Foldl.id, NatRec.Foldl.fold);
    (ListRec.Foldl.id, ListRec.Foldl.fold);
    (ListRec.Foldr.id, ListRec.Foldr.fold);
-
  ]
 
