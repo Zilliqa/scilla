@@ -15,9 +15,14 @@ open Core
 open DebugMessage
 
 let () =
-  let parse_module =
-    FrontEndParser.parse_file ScillaParser.cmodule Sys.argv.(1) in
-  match parse_module with
-  | None -> plog (sprintf "%s\n" "Failed to parse input file.")
-  | Some cmod ->
+  if (Array.length Sys.argv) <> 2
+  then
+    (perr (sprintf "Usage: %s foo.scilla\n" Sys.argv.(0));
+    exit 1)
+  else
+    let parse_module =
+      FrontEndParser.parse_file ScillaParser.cmodule Sys.argv.(1) in
+    match parse_module with
+    | None -> plog (sprintf "%s\n" "Failed to parse input file.")
+    | Some cmod ->
       plog (sprintf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" Sys.argv.(1));
