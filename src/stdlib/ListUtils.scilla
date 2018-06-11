@@ -106,3 +106,75 @@ let list_flatten =
         app h z
     in
       folder iter init l
+
+(* List 'A -> Int *)
+(* Number of elements in list *)
+let list_length =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    let folder = @list_foldr 'A Int in
+    let init = 0 in
+    let iter =
+      fun (h : 'A) =>
+      fun (z : Int) =>
+        let one = 1 in
+          builtin add one z
+     in
+       folder iter init l
+
+(* Helper function for list_eq. Not for public use. *)
+(* Returns Some Nil on successul match. None otherwise. *)
+let list_eq_helper =
+  tfun 'A =>
+  fun (eq : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    let folder = @list_foldl 'A (Option (List 'A)) in
+    let init = Some l2 in
+    let iter =
+      fun (z : Option (List 'A)) =>
+      fun (h1 : 'A) =>
+        match z with
+        | Some ll2 =>
+          let headF = @list_head 'A in
+          let h2o = headF ll2 in
+          match h2o with
+          | Some h2 =>
+            let eqb = eq h1 h2 in
+            match eqb with
+            | True =>
+              let tailF = @list_tail 'A in
+              tailF ll2
+            | False =>
+              None
+            end
+          | None =>
+            None
+          end
+        | None =>
+          None
+        end
+    in
+      folder iter init l1
+
+(* ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool *)
+(* Return true iff two lists compare equal. *)
+(* Comparison is performed using the "f" function provided. *)
+let list_eq =
+  tfun 'A =>
+  fun (f : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    let eqh = @list_eq_helper 'A in
+    let res = eqh f l1 l2 in
+    match res with
+    | Some l =>
+      match l with
+      | Nil =>
+        True
+      | _ =>
+        False
+      end
+    | _ =>
+      False
+    end
