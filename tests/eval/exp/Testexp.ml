@@ -42,7 +42,8 @@ let explist = [
   "fib.scilla"; "id.scilla"; "hof2.scilla"; "hof3.scilla";
   "list_map.scilla"; "list_product.scilla"; "builtin-strings.scilla";
   "list_filter.scilla"; "list_head.scilla"; "list_tail.scilla";
-  "list_tail1.scilla"; "list_tail2.scilla"; "list_append.scilla"
+  "list_tail1.scilla"; "list_tail2.scilla"; "list_append.scilla";
+  "list_reverse.scilla"
 ]
 
 let rec build_exp_tests bindir testsdir pcli el =
