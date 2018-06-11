@@ -1,10 +1,11 @@
 (jbuild_version 1)
 
 (executables
- ((names (scilla_runner eval_runner))
-  (public_names (scilla-runner eval-runner))
+ ((names (scilla_runner eval_runner scilla_checker))
+  (public_names (scilla-runner eval-runner scilla-checker))
   (modules (scilla_runner
             eval_runner
+            scilla_checker
             cli))
   (libraries (core
               angstrom
