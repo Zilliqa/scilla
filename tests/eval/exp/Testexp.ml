@@ -40,7 +40,11 @@ let explist = [
   "string1.scilla"; "string2.scilla"; "string_error1.scilla";
   "nat_eq_foldl.scilla"; "nat_eq_false.scilla"; "times_two.scilla";
   "fib.scilla"; "id.scilla"; "hof2.scilla"; "hof3.scilla";
-  "list_map.scilla"; "list_product.scilla"
+  "list_map.scilla"; "list_product.scilla"; "builtin-strings.scilla";
+  "list_filter.scilla"; "list_head.scilla"; "list_tail.scilla";
+  "list_tail1.scilla"; "list_tail2.scilla"; "list_append.scilla";
+  "list_reverse.scilla"; "list_flatten.scilla"; "list_length.scilla";
+  "list_eq.scilla"
 ]
 
 let rec build_exp_tests bindir testsdir pcli el =

@@ -1,0 +1,30 @@
+let list_append =
+  tfun 'A =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    (* Fold right over l1 and keep prepending elements to l2 *)
+    (* l2 is the initial accumulator *)
+    let folder = @list_foldr 'A (List 'A) in
+    let init = l2 in
+    let iter =
+      fun (h : 'A) =>
+      fun (z : List 'A) =>
+        Cons {'A} h z
+    in
+      folder iter init l1
+in
+
+let int_append = @list_append Int in
+
+let one = 1 in
+let two = 2 in
+let ten = 10 in
+let eleven = 11 in
+
+let nil = Nil in
+let l1 = Cons {Int} eleven nil in
+let l2 = Cons {Int} ten l1 in
+let l3 = Cons {Int} two l2 in
+let l4 = Cons {Int} one l3 in
+
+int_append  l4 l2

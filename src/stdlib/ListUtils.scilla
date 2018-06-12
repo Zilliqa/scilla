@@ -1,0 +1,180 @@
+library ListUtils
+
+(* ('A -> 'B) -> List 'A -> List 'B *)
+(* Apply (f : 'A -> 'B) to every element of List 'A *)
+(* to generate List 'B. *)
+let list_map = tfun 'A => tfun 'B =>
+  fun (f : 'A -> 'B) => fun (l : List 'A) =>
+  let folder = @list_foldl 'A 'B in
+  let init = Nil {'B} in
+  let iter = fun (z : 'B) => fun (h : 'A) =>
+    let h1 = f h in
+    Cons {'B} h1 z
+  in
+    folder iter init l
+
+(* ('A -> Bool) -> List 'A -> List 'A *)
+(* Preserving the order of elements in (l : List 'A),  *)
+(* return new list containing only those elements *)
+(* that satisfy the function f. *)
+let list_filter =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldr 'A (List 'A) in
+    let init = Nil {'A} in
+    let iter =
+      fun (h : 'A) =>
+      fun (z : List 'A) =>
+        let h1 = f h in
+        match h1 with
+        | True =>
+          Cons {'A} h z
+        | False =>
+          z
+        end
+     in
+       folder iter init l
+
+(* (List 'A) -> (Option 'A) *)
+(* Return the head element of a list as Some 'A, None otherwise *)
+let list_head =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some h
+    | Nil =>
+      None
+    end
+
+(* (List 'A) -> (Option List 'A) *)
+(* Return the list except for the head *)
+let list_tail =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some t
+    | Nil =>
+      None
+    end
+
+(* (List 'A -> List 'A ->  List 'A) *)
+(* Append the second list to the first one and return a new List *)
+let list_append =
+  tfun 'A =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    (* Fold right over l1 and keep prepending elements to l2 *)
+    (* l2 is the initial accumulator *)
+    let folder = @list_foldr 'A (List 'A) in
+    let init = l2 in
+    let iter =
+      fun (h : 'A) =>
+      fun (z : List 'A) =>
+        Cons {'A} h z
+    in
+      folder iter init l1
+
+(* (List 'A -> List 'A) *)
+(* Return the reverse of the argument list *)
+let list_reverse =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A (List 'A) in
+    let init = Nil in
+    let iter =
+      fun (z : List 'A) =>
+      fun (h : 'A) =>
+        Cons {'A} h z
+    in
+      folder iter init l
+
+(* (List List 'A) -> List 'A *)
+(* Concatenate a list of lists. The elements of the argument are all *)
+(* concatenated together (in the same order) to give the result. *)
+let list_flatten =
+  tfun 'A =>
+  fun (l : List List 'A) =>
+    let folder = @list_foldr (List List 'A) (List 'A) in
+    let init = Nil in
+    let iter =
+      fun (h : List 'A) =>
+      fun (z : List 'A) =>
+        let app = @list_append 'A in
+        app h z
+    in
+      folder iter init l
+
+(* List 'A -> Int *)
+(* Number of elements in list *)
+let list_length =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    let folder = @list_foldr 'A Int in
+    let init = 0 in
+    let iter =
+      fun (h : 'A) =>
+      fun (z : Int) =>
+        let one = 1 in
+          builtin add one z
+     in
+       folder iter init l
+
+(* Helper function for list_eq. Not for public use. *)
+(* Returns Some Nil on successul match. None otherwise. *)
+let list_eq_helper =
+  tfun 'A =>
+  fun (eq : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    let folder = @list_foldl 'A (Option (List 'A)) in
+    let init = Some l2 in
+    let iter =
+      fun (z : Option (List 'A)) =>
+      fun (h1 : 'A) =>
+        match z with
+        | Some ll2 =>
+          let headF = @list_head 'A in
+          let h2o = headF ll2 in
+          match h2o with
+          | Some h2 =>
+            let eqb = eq h1 h2 in
+            match eqb with
+            | True =>
+              let tailF = @list_tail 'A in
+              tailF ll2
+            | False =>
+              None
+            end
+          | None =>
+            None
+          end
+        | None =>
+          None
+        end
+    in
+      folder iter init l1
+
+(* ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool *)
+(* Return true iff two lists compare equal. *)
+(* Comparison is performed using the "f" function provided. *)
+let list_eq =
+  tfun 'A =>
+  fun (f : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    let eqh = @list_eq_helper 'A in
+    let res = eqh f l1 l2 in
+    match res with
+    | Some l =>
+      match l with
+      | Nil =>
+        True
+      | _ =>
+        False
+      end
+    | _ =>
+      False
+    end

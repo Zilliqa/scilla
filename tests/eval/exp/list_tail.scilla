@@ -1,0 +1,22 @@
+let list_tail =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some t
+    | Nil =>
+      None
+    end
+in
+
+let int_rest = @list_tail Int in
+
+let one = 1 in
+let two = 2 in
+let three = 3 in
+let nil = Nil in
+
+let l1 = Cons {Int} three nil in
+let l2 = Cons {Int} two l1 in
+let l3 = Cons {Int} one l2 in
+int_rest l3

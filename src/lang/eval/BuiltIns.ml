@@ -41,6 +41,16 @@ module String = struct
   | [StringLit x; StringLit y] ->
     pure @@ to_Bool (x = y)
   | _ -> builtin_fail "String.eq" ls
+
+  let concat ls = match ls with
+  | [StringLit x; StringLit y] ->
+    pure @@ StringLit (x ^ y)
+  | _ -> builtin_fail "String.concat" ls
+
+  let substr ls = match ls with
+  | [StringLit x; IntLit s; IntLit e] ->
+      pure @@ StringLit (Core.String.sub x (int_of_string s) (int_of_string e))
+  | _ -> builtin_fail "String.substr" ls
 end
 
 (* Integer operation *)
@@ -210,6 +220,8 @@ module BuiltInDictionary = struct
   let built_in_dict = [
     (* Strings *)
     ("eq", ["String"; "String"], String.eq);
+    ("concat", ["String"; "String"], String.concat);
+    ("substr", ["String"; "Int"; "Int"], String.substr);
 
     (* Integers *)
     ("eq",  ["Int"; "Int"], Int.eq);
