@@ -180,7 +180,7 @@ let list_eq =
     end
 
 (* ('A -> 'A -> Bool) -> 'A -> List 'A -> Bool *)
-(* Return true iff "m" is in the list "l", as compared by function "f". *)
+(* Return True iff "m" is in the list "l", as compared by function "f". *)
 let list_mem =
   tfun 'A =>
   fun (f : 'A -> 'A -> Bool) =>
@@ -200,3 +200,25 @@ let list_mem =
         end
     in
       folder iter init l
+
+(* ('A -> Bool) -> List 'A -> Bool *)
+(* Return True iff all elements of list "l" satisfy predicate "f". *)
+let list_forall =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A Bool in
+    let init = True in
+    let iter =
+      fun (z : Bool) =>
+      fun (h : 'A) =>
+        let res = f h in
+        match res with
+        | False =>
+          False
+        | True =>
+          z
+        end
+    in
+    folder iter init l
+
