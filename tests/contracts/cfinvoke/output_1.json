@@ -2,13 +2,8 @@
   "message": {
     "_tag": "Donate",
     "_amount": "122",
-    "params": [
-      {
-        "vname": "to",
-        "type": "Address",
-        "value": "0x8992d4dfafd282e8a8b3c776eb9fc907d321e21a"
-      }
-    ]
+    "_recipient": "0x8992d4dfafd282e8a8b3c776eb9fc907d321e21a",
+    "params": []
   },
   "states": [
     { "vname": "_balance", "type": "Int", "value": "0" },

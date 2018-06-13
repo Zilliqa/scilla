@@ -1,11 +1,6 @@
 {
   "_tag": "Withdraw",
   "_amount": "0",
-  "params": [
-    {
-      "vname": "sender",
-      "type": "Address",
-      "value": "0xabcdeabcde123456789012345678901234567890"
-    }
-  ]
+  "_sender": "0xabcdeabcde123456789012345678901234567890",
+  "params": []
 }

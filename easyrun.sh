@@ -3,20 +3,22 @@
 function print_usage
 if [ $# != 3 ]
 then
-    echo "Usage: $0 [crowdfunding|zil-game] [1-5]"
+    echo "Usage: $0 contract-name test_number"
 fi
 
 contract=$1
 i=$2
 
-if [[ $contract != "crowdfunding" && $contract != "zil-game" ||
-      $i -lt 1 || $i -gt 5 ]]
-then
-   print_usage
-   exit 1
-fi
 
 cdir="tests/contracts/$contract"
+
+if [[ ! -f ${cdir}/state_${i}.json ||
+      ! -d ${cdir} ]]
+then
+    echo "Test $contract $i does not exist"
+    print_usage
+    exit 1
+fi
 
 ./bin/scilla-runner -init ${cdir}/init.json -istate ${cdir}/state_${i}.json -imessage ${cdir}/message_${i}.json -o ${cdir}/output_${i}.json -iblockchain ${cdir}/blockchain_${i}.json -i ${cdir}/contract.scilla
 

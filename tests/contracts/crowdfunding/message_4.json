@@ -1,11 +1,6 @@
 {
     "_tag": "GetFunds",
     "_amount": "0",
-    "params": [
-      {
-        "vname": "sender",
-        "type": "Address",
-        "value": "0x12345678901234567890123456789012345678cd"
-      }
-    ]
+    "_sender": "0x12345678901234567890123456789012345678cd",
+    "params": []
 }

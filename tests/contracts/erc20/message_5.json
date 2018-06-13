@@ -1,12 +1,8 @@
 {
     "_tag" : "Approve",
     "_amount" : "0",
+    "_sender" : "0x1234567890123456789012345678901234567890",
     "params" : [
-        {
-            "vname": "sender",
-            "type": "Address",
-            "value": "0x1234567890123456789012345678901234567890"
-        },
         {
             "vname": "spender",
             "type": "Address",

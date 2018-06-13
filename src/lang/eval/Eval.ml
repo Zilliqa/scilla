@@ -352,9 +352,17 @@ let get_transition ctr tag =
       let body = t.tbody in
       pure (params, body)
 
+let append_implict_transition_params tparams =
+    let sender_id = asId MessagePayload.sender_label in
+    let sender = (sender_id, PrimType("Address")) in
+    let amount_id = asId MessagePayload.amount_label in
+    let amount = (amount_id, PrimType("Int")) in
+        amount :: sender :: tparams
+
 (* Restrict message entries to the transition parameters *)
 (* TODO: Check runtime types *)
-let check_and_restrict tparams entries =
+let check_and_restrict tparams_o entries =
+  let tparams = append_implict_transition_params tparams_o in
   (* There as an entry for each parameter *)
   let valid_entries = List.for_all tparams
       ~f:(fun p -> List.exists entries ~f:(fun e -> fst e = (get_id (fst p)))) in
@@ -383,7 +391,7 @@ let prepare_for_message contr m =
 
 (* Subtract the amounts to be transferred *)
 let post_process_msgs cstate outs =
-  (* Evey outgoing message should carry an "amount" tag *)
+  (* Evey outgoing message should carry an "_amount" tag *)
   let%bind amounts = mapM outs ~f:(fun l -> match l with
       | Msg es -> MessagePayload.get_amount es
       | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal l)) in

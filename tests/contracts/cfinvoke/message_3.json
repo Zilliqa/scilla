@@ -1,12 +1,8 @@
 {
     "_tag": "Invoke",
     "_amount": "0",
+    "_sender": "0x12345678901234567890123456789012345678ab",
     "params": [
-      {
-        "vname": "sender",
-        "type": "Address",
-        "value": "0x12345678901234567890123456789012345678ab"
-      },
       {
         "vname": "trans",
         "type": "String",

@@ -1,12 +1,8 @@
 {
   "_tag": "Play",
   "_amount": "0",
+  "_sender": "0xffcdeabcde123456789012345678901234567890",
   "params": [
-    {
-      "vname": "sender",
-      "type": "Address",
-      "value": "0xffcdeabcde123456789012345678901234567890"
-    },
     {
       "vname": "guess",
       "type": "Hash",
