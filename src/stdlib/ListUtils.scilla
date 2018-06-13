@@ -222,3 +222,24 @@ let list_forall =
     in
     folder iter init l
 
+(* ('A -> Bool) -> List 'A -> Bool *)
+(* Return True iff at least one element of list "l" satisfy predicate "f". *)
+let list_exists =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A Bool in
+    let init = False in
+    let iter =
+      fun (z : Bool) =>
+      fun (h : 'A) =>
+        let res = f h in
+        match res with
+        | True =>
+          True
+        | False =>
+          z
+        end
+    in
+      folder iter init l
+
