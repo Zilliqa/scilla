@@ -44,7 +44,7 @@ let explist = [
   "list_filter.scilla"; "list_head.scilla"; "list_tail.scilla";
   "list_tail1.scilla"; "list_tail2.scilla"; "list_append.scilla";
   "list_reverse.scilla"; "list_flatten.scilla"; "list_length.scilla";
-  "list_eq.scilla"
+  "list_eq.scilla"; "list_mem.scilla"
 ]
 
 let rec build_exp_tests bindir testsdir pcli el =

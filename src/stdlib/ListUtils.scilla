@@ -178,3 +178,25 @@ let list_eq =
     | _ =>
       False
     end
+
+(* ('A -> 'A -> Bool) -> 'A -> List 'A -> Bool *)
+(* Return true iff "m" is in the list "l", as compared by function "f". *)
+let list_mem =
+  tfun 'A =>
+  fun (f : 'A -> 'A -> Bool) =>
+  fun (m : 'A) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A Bool in
+    let init = False in
+    let iter =
+      fun (z : Bool) =>
+      fun (h : 'A) =>
+        let res = f h m in
+        match res with
+        | True =>
+          True
+        | False =>
+          z
+        end
+    in
+      folder iter init l
