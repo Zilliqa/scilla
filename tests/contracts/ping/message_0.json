@@ -1,12 +1,8 @@
 {
     "_tag": "SetPongAddr",
     "_amount": "0",
+    "_sender": "0xab92d4dfafd282e8a8b3c776eb9fc907d321e21a",
     "params": [
-      {
-        "vname": "sender",
-        "type": "Address",
-        "value": "0xab92d4dfafd282e8a8b3c776eb9fc907d321e21a"
-      },
       {
         "vname": "pongAddr",
         "type": "Address",

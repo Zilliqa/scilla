@@ -21,7 +21,7 @@ contract Pong
 field count : Int = 2
 field ping_addr : Option Address = None {Address}
 
-transition Pong (sender: Address)
+transition Pong ()
   one = 1;
   paOpt <- ping_addr;
   match paOpt with
@@ -30,24 +30,24 @@ transition Pong (sender: Address)
     is_game_over = builtin lt cnt one;
     match is_game_over with
     | True =>
-      msg = {_tag : Main; to : sender; _amount : 0; code : game_over};
+      msg = {_tag : Main; _recipient : _sender; _amount : 0; code : game_over};
       msgs = one_msg msg;
       send msgs
     | False =>
       deccount = builtin sub cnt one;
       count := deccount;
-      msg = {_tag : Ping; to : pingAddr; _amount : 0; code : calling_ping};
+      msg = {_tag : Ping; _recipient : pingAddr; _amount : 0; code : calling_ping};
       msgs = one_msg msg;
       send msgs
     end
   | None =>
-    msg = {_tag : Main; to : sender; _amount : 0 ; code : addr_not_set};
+    msg = {_tag : Main; _recipient : _sender; _amount : 0 ; code : addr_not_set};
     msgs = one_msg msg;
     send msgs
   end
 end
 
-transition SetPingAddr (sender: Address, pingAddr : Address)
+transition SetPingAddr (pingAddr : Address)
   paOpt = Some {Address} pingAddr;
   ping_addr := paOpt
 end
