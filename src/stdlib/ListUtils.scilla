@@ -369,3 +369,32 @@ let list_sort =
       | Pair x y =>
         x
       end
+
+(* ('A -> Bool) -> 'A -> 'A *)
+(* Return Some a, where "a" is the first element of *)
+(* "l" that satisfies the predicate "f". *)
+(* Return None iff none of the elements in "l" satisfy "f". *)
+let list_find =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A (Option 'A) in
+    let init = None in
+    let iter =
+      fun (z : Option 'A) =>
+      fun (h : 'A) =>
+        match z with
+        | Some a =>
+          z
+        | None =>
+          let r = f h in
+          match r with
+          | True =>
+            Some h
+          | False =>
+            None
+          end
+        end
+     in
+       folder iter init l
+
