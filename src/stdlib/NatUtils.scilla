@@ -1,0 +1,44 @@
+(* Nat -> Option Nat *)
+let nat_prev = fun (n: Nat) =>
+  match n with
+	| Succ n1 => Some {Nat} n1
+	| Zero => None {Nat}
+	end
+
+(* Nat -> Bool *)
+let is_some_zero = fun (n: Nat) =>
+	match n with
+  | Some Zero => True
+  | _ => False
+	end
+
+(* Nat -> Nat -> Bool *)
+let nat_eq = fun (n : Nat) => fun (m : Nat) =>
+  let z = Some {Nat} m in
+		let f = fun (res : Option Nat) => fun (n : Nat) =>
+      match res with
+      | None => None
+      | Some m1 => nat_prev m1
+			end in
+	let folder = @nat_fold (Option Nat) in
+  let e = folder f z n in
+  match e with
+  | Some Zero => True
+  | _ => False
+	end
+
+(* Nat -> Int *)
+let nat_to_int =
+  fun (n : Nat) =>
+		let f =
+      fun (z : Int) =>
+      fun (n : Nat) =>
+        match n with
+        | _ =>
+          let one_int = 1 in
+          builtin add z one_int
+        end
+    in
+	  let folder = @nat_fold Int in
+    let zero_int = 0 in
+      folder f zero_int n
