@@ -321,13 +321,22 @@ let list_max =
 
 (* ('A -> 'A -> Bool) -> List 'A -> Option 'A *)
 (* Stable sort the input list "l". *)
-(* "flt" performs "less-than" comparison *)
-(* "feq" performs "equal-to" comparison *)
+(* "f" returns 0 if a == b, positive if a > b and negative if a < b *)
 let list_sort =
   tfun 'A =>
-  fun (flt_h : 'A -> 'A -> Bool) =>
-  fun (feq_h : 'A -> 'A -> Bool) =>
+  fun (f : 'A -> 'A -> Int) =>
   fun (l_h : List 'A) =>
+    (* Let us define a lesser_than and equals function for easier use. *)
+    let flt_h = fun (a : 'A) => fun (b : 'A) =>
+      let r = f a b in
+      let zero = 0 in
+        builtin lt r zero
+    in
+    let feq_h = fun (a : 'A) => fun (b : 'A) =>
+      let r = f a b in
+      let zero = 0 in
+        builtin eq r zero
+    in
     let list_sort_helper =
       tfun 'A =>
       fun (flt : 'A -> 'A -> Bool) =>

@@ -91,13 +91,22 @@ in
 
 (* ('A -> 'A -> Bool) -> List 'A -> Option 'A *)
 (* Stable sort the input list "l". *)
-(* "flt" performs "less-than" comparison *)
-(* "feq" performs "equal-to" comparison *)
+(* "f" returns 0 if a == b, positive if a > b and negative if a < b *)
 let list_sort =
   tfun 'A =>
-  fun (flt_h : 'A -> 'A -> Bool) =>
-  fun (feq_h : 'A -> 'A -> Bool) =>
+  fun (f : 'A -> 'A -> Int) =>
   fun (l_h : List 'A) =>
+    (* Let us define a lesser_than and equals function for easier use. *)
+    let flt_h = fun (a : 'A) => fun (b : 'A) =>
+      let r = f a b in
+      let zero = 0 in
+        builtin lt r zero
+    in
+    let feq_h = fun (a : 'A) => fun (b : 'A) =>
+      let r = f a b in
+      let zero = 0 in
+        builtin eq r zero
+    in
     let list_sort_helper =
       tfun 'A =>
       fun (flt : 'A -> 'A -> Bool) =>
@@ -142,15 +151,21 @@ let list_sort =
 in
 
 let int_sort = @list_sort Int in
-let flt =
+
+(* if (a == b) 0 else if (a < b) -1 else +1 *)
+let f_compare =
   fun (a : Int) =>
   fun (b : Int) =>
-    builtin lt a b
-in
-let feq =
-  fun (a : Int) =>
-  fun (b : Int) =>
-    builtin eq a b
+    let lt = builtin lt a b in
+    match lt with
+    | True => -1
+    | False =>
+      let eq = builtin eq a b in
+      match eq with
+      | True => 0
+      | False => 1
+      end
+    end
 in
 
 let zero = 0 in
@@ -169,18 +184,18 @@ let l5 = Cons {Int} two l4 in
 let l6 = Cons {Int} three l5 in
 
 (* res1 = 1 2 2 2 3 3 4 *)
-let res1 = int_sort flt feq l6 in
+let res1 = int_sort f_compare l6 in
 
 let n1 = Cons {Int} three nil in
 let n2 = Cons {Int} two n1 in
 let n3 = Cons {Int} one n2 in
 
 (* 1 2 3 *)
-let res2 = int_sort flt feq n3 in
+let res2 = int_sort f_compare n3 in
 
 let m1 = Cons {Int} one nil in
 let m2 = Cons {Int} two m1 in
 let m3 = Cons {Int} three m2 in
 
 (* 1 2 3 *)
-int_sort flt feq m3
+int_sort f_compare m3
