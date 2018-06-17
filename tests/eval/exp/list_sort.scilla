@@ -1,0 +1,85 @@
+let list_sort =
+  (* Insertion sort *)
+  tfun 'A =>
+  fun (flt : 'A -> 'A -> Bool) =>
+  fun (ls : List 'A) =>
+    let true = True in 
+    let false = False in
+    let rec_A_A = @list_foldr 'A (List 'A) in
+    let rec_A_Pair = @list_foldr 'A (Pair Bool (List 'A))  in
+    let nil_A = Nil {'A} in 
+    let sink_down =
+      fun (e : 'A) => fun (ls : List 'A) =>
+        let init = Pair {Bool (List 'A)} false nil_A in
+        let iter1 =
+          fun (h : 'A) =>
+          fun (res : Pair Bool (List 'A)) =>
+            match res with
+            | Pair True rest =>
+              let z = Cons {'A} h rest in
+              Pair {Bool (List 'A)} true z
+            | Pair False rest =>
+              let bl = flt h e in
+              match bl with
+              | True =>
+                let z = Cons {'A} e rest in
+                let z2 = Cons {'A} h z in
+                Pair {Bool (List 'A)} true z2
+              | False =>
+                let z = Cons {'A} h rest in
+                Pair {Bool (List 'A)} false z
+              end
+            end   
+        in
+        let res1 = rec_A_Pair iter1 init ls in
+        match res1 with
+        | Pair True ls1 => ls1
+        | Pair False ls1 => Cons {'A} e ls1
+        end
+    in
+    let iter2 =
+      fun (h : 'A) =>
+      fun (res : List 'A) =>
+        sink_down h res
+    in 
+      rec_A_A iter2 nil_A ls
+in
+    
+let int_sort = @list_sort Int in
+
+let flt =
+  fun (a : Int) => fun (b : Int) =>
+    builtin lt a b
+in
+
+let zero = 0 in
+let one = 1 in
+let two = 2 in
+let three = 3 in
+let four = 4 in
+
+let nil = Nil in
+let l0 = Cons {Int} two nil in
+let l1 = Cons {Int} four l0 in
+let l2 = Cons {Int} three l1 in
+let l3 = Cons {Int} two l2 in
+let l4 = Cons {Int} one l3 in
+let l5 = Cons {Int} two l4 in
+let l6 = Cons {Int} three l5 in
+
+(* res1 = 1 2 2 2 3 3 4 *)
+let res1 = int_sort flt l6 in
+
+let n1 = Cons {Int} three nil in
+let n2 = Cons {Int} two n1 in
+let n3 = Cons {Int} one n2 in
+
+(* 1 2 3 *)
+let res2 = int_sort flt n3 in
+
+let m1 = Cons {Int} one nil in
+let m2 = Cons {Int} two m1 in
+let m3 = Cons {Int} three m2 in
+
+(* 1 2 3 *)
+int_sort flt m3

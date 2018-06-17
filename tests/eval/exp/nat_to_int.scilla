@@ -1,0 +1,23 @@
+let nat_to_int =
+  fun (n : Nat) =>
+		let f =
+      fun (z : Int) =>
+      fun (n : Nat) =>
+        match n with
+        | _ =>
+          let one_int = 1 in
+          builtin add z one_int
+        end
+    in
+	  let folder = @nat_fold Int in
+    let zero_int = 0 in
+      folder f zero_int n
+in
+
+let zero = Zero in
+let one = Succ zero in
+let two = Succ one in
+let three = Succ two in
+
+let res1 = nat_to_int zero in
+nat_to_int three

@@ -1,0 +1,117 @@
+let list_head =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some h
+    | Nil =>
+      None
+    end
+in
+
+let list_tail =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some t
+    | Nil =>
+      None
+    end
+in
+
+let list_reverse =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A (List 'A) in
+    let init = Nil in
+    let iter =
+      fun (z : List 'A) =>
+      fun (h : 'A) =>
+        Cons {'A} h z
+    in
+      folder iter init l
+in
+  
+let list_zip_with =
+  tfun 'A =>
+  tfun 'B =>
+  tfun 'C =>
+  fun (f : 'A -> 'B -> 'C) =>
+  fun (m1 : List 'A) =>
+  fun (m2 : List 'B) =>
+    let list_zip_helper =
+      tfun 'A =>
+      tfun 'B =>
+      tfun 'C =>
+      fun (g : 'A -> 'B -> 'C) =>
+      fun (l1 : List 'A) =>
+      fun (l2 : List 'B) =>
+        let folder = @list_foldl 'A (Pair (List 'C) (List 'B)) in
+        let nil = Nil in
+        let init = Pair {(List 'C) (List 'B)} nil l2 in
+        let iter =
+          fun (z : Pair (List 'C) (List 'B)) =>
+          fun (h : 'A) =>
+            match z with
+            | Pair r b =>
+              (* Get b's head, pair it with h and add to r. *)
+              let header = @list_head 'B in
+              let tailer = @list_tail 'B in
+              let bhead = header b in
+              match bhead with
+              | Some bel =>
+                let newp = g h bel in
+                let newp_concat = Cons {'C} newp r in
+                let btail = tailer b in
+                let newb =
+                  match btail with
+                  | Some t =>
+                    t
+                  | None =>
+                    nil
+                  end
+                in
+                Pair {(List 'C) (List 'B)} newp_concat newb
+              | None =>
+                z
+              end
+            end
+          in
+            folder iter init l1
+    in
+      let zipper = @list_zip_helper 'A 'B 'C in
+      let res = zipper f m1 m2 in
+      match res with
+      | Pair x y =>
+        let reverser = @list_reverse 'C in
+          reverser x
+      end
+in
+    
+let int_zip = @list_zip_with Int Int Int in
+
+let f =
+  fun (a : Int) => fun (b : Int) =>
+    builtin add a b
+in
+    
+let one = 1 in
+let two = 2 in
+let three = 3 in
+let four = 4 in
+
+let nil = Nil in
+let l0 = Cons {Int} four nil in
+let l1 = Cons {Int} three l0 in
+let l2 = Cons {Int} two l1 in
+let l3 = Cons {Int} one l2 in
+
+(* (1+1);(2+2);(3+3);(4+4) *)
+let res1 = int_zip f l3 l3 in
+
+(* (1+2);(2+3);(3+4) *)
+let res2 = int_zip f l3 l2 in
+
+(* (2+1);(3+2);(4+3) *)
+int_zip f l2 l3

@@ -1,0 +1,49 @@
+let list_find =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A (Option 'A) in
+    let init = None in
+    let iter =
+      fun (z : Option 'A) =>
+      fun (h : 'A) =>
+        match z with
+        | Some a =>
+          z
+        | None =>
+          let r = f h in
+          match r with
+          | True =>
+            Some h
+          | False =>
+            None
+          end
+        end
+     in
+       folder iter init l
+in
+
+let int_find = @list_find Int in
+(* Is given value equal to 5? *)
+let f = fun (i : Int) =>
+  let five = 5 in
+  builtin eq five i in
+
+let one = 1 in
+let two = 2 in
+let five = 5 in
+let ten = 10 in
+let eleven = 11 in
+
+let nil = Nil in
+let l1 = Cons {Int} one nil in
+let l2 = Cons {Int} ten l1 in
+let l3 = Cons {Int} two l2 in
+let l4 = Cons {Int} eleven l3 in
+let l5 = Cons {Int} five l4 in
+
+(* Some 5 *)
+let res1 = int_find f l5 in
+
+(* None *)
+int_find f l4

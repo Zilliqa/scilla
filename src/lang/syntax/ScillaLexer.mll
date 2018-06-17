@@ -31,7 +31,7 @@ rule read =
   | white         { read lexbuf }
 
   (* Numbers and hashes *)
-  | posint as i   { NUMLIT (big_int_of_string i) }
+  | int as i   { NUMLIT (big_int_of_string i) }
   | hex    as i   { HEXLIT i }
                   
   (* Keywords *)          
