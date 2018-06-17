@@ -1,94 +1,3 @@
-let list_reverse =
-  tfun 'A =>
-  fun (l : List 'A) =>
-    let folder = @list_foldl 'A (List 'A) in
-    let init = Nil in
-    let iter =
-      fun (z : List 'A) =>
-      fun (h : 'A) =>
-        Cons {'A} h z
-    in
-      folder iter init l
-in
-
-(* ('A -> 'A -> Bool) -> 'A -> List 'A -> List 'A *)
-(* Returns the input list "l", in order, excluding the first occurrence *)
-(* of an element in it that compares equal to "a" (as compared by "f") *)
-let list_skip_once =
-  tfun 'A =>
-  fun (ff : 'A -> 'A -> Bool) =>
-  fun (aa : 'A) =>
-  fun (ll : List 'A) =>
-    let skip_once_helper =
-      tfun 'A =>
-      fun (f : 'A -> 'A -> Bool) =>
-      fun (a : 'A) =>
-      fun (l : List 'A) =>
-        let folder = @list_foldl 'A (Pair Bool (List 'A)) in
-        let false = False in
-        let nil = Nil in
-        let init = Pair {Bool (List 'A)} false nil in
-        let iter =
-          fun (z : Pair Bool (List 'A)) =>
-          fun (h : 'A) =>
-            match z with
-            | Pair True x =>
-              let true = True in
-              let newl = Cons {'A} h x in
-              Pair {Bool (List 'A)} true newl
-            | Pair False x =>
-              let res = f h a in
-              match res with
-              | True =>
-                let true = True in
-                Pair {Bool (List 'A)} true x
-              | False =>
-                let false = False in
-                let newl = Cons {'A} h x in
-                Pair {Bool (List 'A)} false newl
-              end
-            end
-      in
-        folder iter init l
-    in
-    let helper = @skip_once_helper 'A in
-    let res = helper ff aa ll in
-    match res with
-    | Pair _ x =>
-      let reverser = @list_reverse 'A in
-      reverser x
-    end
-in
-
-(* ('A -> 'A -> Bool) -> List 'A -> Option 'A *)
-(* Returns Some maximum element of List 'A, as compared *)
-(* by the "lesser-than" comparison function "f". *)
-(* Return None iff the input list is empty. *)
-let list_max =
-  tfun 'A =>
-  fun (f : 'A -> 'A -> Bool) =>
-  fun (l : List 'A) =>
-    let folder = @list_foldl 'A (Option 'A) in
-    let init = None in
-    let iter =
-      fun (z : Option 'A) =>
-      fun (h : 'A) =>
-        match z with
-        | Some zz =>
-          let lt = f zz h in
-          match lt with
-          | True =>
-            Some h
-          | False =>
-            z
-          end
-        | None =>
-          Some h
-        end
-    in
-      folder iter init l
-in
-
 let list_head =
   tfun 'A =>
   fun (l : List 'A) =>
@@ -177,81 +86,61 @@ in
 let list_int_eq = list_int_eq_t int_eq in
 
 let list_sort =
+  (* Insertion sort *)
   tfun 'A =>
-  fun (f : 'A -> 'A -> Int) =>
-  fun (l_h : List 'A) =>
-    (* Let us define a lesser_than and equals function for easier use. *)
-    let flt_h = fun (a : 'A) => fun (b : 'A) =>
-      let r = f a b in
-      let zero = 0 in
-        builtin lt r zero
-    in
-    let feq_h = fun (a : 'A) => fun (b : 'A) =>
-      let r = f a b in
-      let zero = 0 in
-        builtin eq r zero
-    in
-    let list_sort_helper =
-      tfun 'A =>
-      fun (flt : 'A -> 'A -> Bool) =>
-      fun (feq : 'A -> 'A -> Bool) =>
-      fun (l : List 'A) =>
-        (* The accumulator is a pair of lists. The first one is empty *)
-        (* initially while the second one is "l" initially. After "n" *)
-        (* steps, the first one will contain the sorted list and second *)
-        (* one will be empty. Each step shifts the largest element. *)
-        let folder = @list_foldl 'A (Pair (List 'A) (List 'A)) in
-        let nil = Nil in
-        let init = Pair {(List 'A) (List 'A)} nil l in
-        let iter =
-          fun (z : Pair (List 'A) (List 'A)) =>
+  fun (flt : 'A -> 'A -> Bool) =>
+  fun (ls : List 'A) =>
+    let true = True in 
+    let false = False in
+    let rec_A_A = @list_foldr 'A (List 'A) in
+    let rec_A_Pair = @list_foldr 'A (Pair Bool (List 'A))  in
+    let nil_A = Nil {'A} in 
+    let sink_down =
+      fun (e : 'A) => fun (ls : List 'A) =>
+        let init = Pair {Bool (List 'A)} false nil_A in
+        let iter1 =
           fun (h : 'A) =>
-            let maxer = @list_max 'A in
-            let skipper = @list_skip_once 'A in
-            match z with
-            | Pair x y =>
-              let max_el_opt = maxer flt y in
-              let max_el =
-                match max_el_opt with
-                | Some m =>
-                  m
-                | None =>
-                  h                 (* this will never happen *)
-                end
-              in
-              let new_y = skipper feq max_el y in
-              let new_x = Cons {'A} max_el x in
-              Pair {(List 'A) (List 'A)} new_x new_y
-            end
-      in
-        folder iter init l
+          fun (res : Pair Bool (List 'A)) =>
+            match res with
+            | Pair True rest =>
+              let z = Cons {'A} h rest in
+              Pair {Bool (List 'A)} true z
+            | Pair False rest =>
+              let bl = flt h e in
+              match bl with
+              | True =>
+                let z = Cons {'A} e rest in
+                let z2 = Cons {'A} h z in
+                Pair {Bool (List 'A)} true z2
+              | False =>
+                let z = Cons {'A} h rest in
+                Pair {Bool (List 'A)} false z
+              end
+            end   
+        in
+        let res1 = rec_A_Pair iter1 init ls in
+        match res1 with
+        | Pair True ls1 => ls1
+        | Pair False ls1 => Cons {'A} e ls1
+        end
     in
-      let helper = @list_sort_helper 'A in
-      let res = helper flt_h feq_h l_h in
-      match res with
-      | Pair x y =>
-        x
-      end
+    let iter2 =
+      fun (h : 'A) =>
+      fun (res : List 'A) =>
+        sink_down h res
+    in 
+      rec_A_A iter2 nil_A ls
 in
 
 let int_sort_t = @list_sort Int in
 
-let f_compare =
+let flt =
   fun (a : Int) =>
   fun (b : Int) =>
-    let lt = builtin lt a b in
-    match lt with
-    | True => -1
-    | False =>
-      let eq = builtin eq a b in
-      match eq with
-      | True => 0
-      | False => 1
-      end
-    end
-  in
-
-let int_sort = int_sort_t f_compare in
+    builtin lt a b
+in
+    
+let int_sort = int_sort_t flt in
 
 let zero = 0 in
 let one = 1 in
