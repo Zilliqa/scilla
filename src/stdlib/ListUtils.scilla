@@ -356,6 +356,7 @@ let list_sort =
             let skipper = @list_skip_once 'A in
             match z with
             | Pair x y =>
+              (* Pick the largest element in "y" *)
               let max_el_opt = maxer flt y in
               let max_el =
                 match max_el_opt with
@@ -365,6 +366,8 @@ let list_sort =
                   h                 (* this will never happen *)
                 end
               in
+              (* We've picked the largest element in "y". Remove that from "y"*)
+              (* push it to the sorted list "x" being accummulated. *)
               let new_y = skipper feq max_el y in
               let new_x = Cons {'A} max_el x in
               Pair {(List 'A) (List 'A)} new_x new_y
