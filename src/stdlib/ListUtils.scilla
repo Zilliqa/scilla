@@ -475,4 +475,43 @@ let list_to_map =
         end
     in
       folder iter init l
-in
+
+(* Int -> List 'A -> Option 'A *)
+(* Returns (Some 'A) if n'th element exists in list. None otherwise *)
+let list_nth =
+  tfun 'A =>
+  fun (n_h : Int) =>
+  fun (l_h : List 'A) =>
+    let list_nth_helper =
+      tfun 'A =>
+      fun (n : Int) =>
+      fun (l : List 'A) =>
+        let folder = @list_foldl 'A (Pair Int (Option 'A)) in
+        let zero = 0 in
+        let none = None in
+        let init = Pair {Int (Option 'A)} zero none in
+        let iter =
+          fun (z : Pair (Int (Option 'A))) =>
+          fun (h : 'A) =>
+            match z with
+            | Pair i oe =>
+              let one = 1 in
+              let nexti = builtin add i one in
+              let this = builtin eq n i in
+              match this with
+              | True =>
+                let someh = Some h in
+                Pair {Int (Option 'A)} nexti someh
+              | False =>
+                Pair {Int (Option 'A)} nexti oe
+              end
+            end
+          in
+          folder iter init l
+    in
+    let nth = @list_nth_helper 'A in
+    let res = nth n_h l_h in
+    match res with
+    | Pair i oe =>
+      oe
+    end

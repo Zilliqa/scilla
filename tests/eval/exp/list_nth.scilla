@@ -1,0 +1,65 @@
+(* Returns (Some 'A) if n'th element exists in list. None otherwise *)
+let list_nth =
+  tfun 'A =>
+  fun (n_h : Int) =>
+  fun (l_h : List 'A) =>
+    let list_nth_helper =
+      tfun 'A =>
+      fun (n : Int) =>
+      fun (l : List 'A) =>
+        let folder = @list_foldl 'A (Pair Int (Option 'A)) in
+        let zero = 0 in
+        let none = None in
+        let init = Pair {Int (Option 'A)} zero none in
+        let iter =
+          fun (z : Pair (Int (Option 'A))) =>
+          fun (h : 'A) =>
+            match z with
+            | Pair i oe =>
+              let one = 1 in
+              let nexti = builtin add i one in
+              let this = builtin eq n i in
+              match this with
+              | True =>
+                let someh = Some h in
+                Pair {Int (Option 'A)} nexti someh
+              | False =>
+                Pair {Int (Option 'A)} nexti oe
+              end
+            end
+          in
+          folder iter init l
+    in
+    let nth = @list_nth_helper 'A in
+    let res = nth n_h l_h in
+    match res with
+    | Pair i oe =>
+      oe
+    end
+in
+  
+let int_nth = @list_nth Int in
+
+let zero = 0 in
+let one = 1 in
+let two = 2 in
+let three = 3 in
+let ten = 10 in
+let eleven = 11 in
+
+let nil = Nil in
+let l1 = Cons {Int} eleven nil in
+let l2 = Cons {Int} ten l1 in
+let l3 = Cons {Int} two l2 in
+let l4 = Cons {Int} one l3 in
+
+(* list[0] = Some 1 *)
+let res1 = int_nth zero l4 in
+(* list[1] = Some 2 *)
+let res2 = int_nth one l4 in
+(* list[2] = Some 10 *)
+let res3 = int_nth two l4 in
+(* list[3] = Some 11 *)
+let res4 = int_nth three l4 in
+(* list[10] = None *)
+int_nth ten l4
