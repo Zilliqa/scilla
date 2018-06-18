@@ -8,14 +8,117 @@
  *)
 
 open Core
-open Sexplib.Std
-open Yojson
-open Big_int
 open Syntax
+open Result.Let_syntax
+open MonadUtil
 
-(* TODO:
 
-1. Implement type substitution in types
-2. 1. Implement type substitution in expressions
+(****************************************************************)
+(*                Inferred types and qualifiers                 *)
+(****************************************************************)
 
- *)
+type 'rep inferred_type = {
+  tp   : typ;
+  qual : 'rep
+} [@@deriving sexp]
+
+module type QualifiedTypes = sig
+  type t
+  val mk_qualified_type : typ -> t inferred_type      
+end
+
+
+(****************************************************************)
+(*                   Typing environments                        *)
+(****************************************************************)
+module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
+  (* Resolving results *)
+  type resolve_result
+  val rr_loc : resolve_result -> loc
+  val rr_typ : resolve_result -> Q.t inferred_type
+  val rr_pp  : resolve_result -> string
+  val mk_qual_tp : typ -> Q.t inferred_type
+  
+  module TEnv : sig
+    type t
+    (* Make new type environment *)
+    val mk : t
+    (* Add to type environment *)
+    val addT : t -> loc ident -> typ -> t
+    (* Resolve the identifier *)
+    val resolveT : ?lopt:(loc option) -> t -> string -> (resolve_result, string) result
+    (* Copy the environment *)
+    val copy : t -> t
+    (* Convert to list *)
+    val to_list : t -> (string * resolve_result) list
+    (* Print the type environment *)
+    val pp : ?f:(string * resolve_result -> bool) -> t -> string        
+  end
+end
+
+
+(* Typing environment, parameterised by a qualifier *)
+module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
+  type resolve_result = {qt : Q.t inferred_type; loc : loc }
+  let rr_loc rr = rr.loc
+  let rr_typ rr = rr.qt
+  (*  TODO: Also print location *)
+  let rr_pp  rr = (rr_typ rr).tp |> pp_typ
+  let mk_qual_tp tp =  Q.mk_qualified_type tp
+                        
+  module TEnv = struct
+    type t = {
+      tenv  : (string, resolve_result) Hashtbl.t;
+      tvars : (string, loc) Hashtbl.t
+    }
+      
+    let mk =
+      let t1 = Hashtbl.create (module String) ~growth_allowed:true ~size:50 in
+      let t2 = Hashtbl.create (module String) ~growth_allowed:true ~size:10 in
+      {tenv = t1; tvars = t2}
+      
+    let addT env id tp =
+      let _ = Hashtbl.add env.tenv (get_id id)
+          {qt = Q.mk_qualified_type tp; loc = get_loc id} in
+      env 
+
+    let to_list env =
+      Hashtbl.fold env.tenv ~init:[]
+        ~f:(fun ~key ~data z -> (key, data) :: z)
+        
+    let pp ?f:(f = fun _ -> true) env  =
+      let lst = List.filter (to_list env) ~f:f in
+      let ps = List.map lst
+          ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ (rr_pp v) ^ "]") in
+      let cs = String.concat ~sep:",\n " ps in
+      "{" ^ cs ^ " }"
+
+    let resolveT ?lopt:(lopt = None) env id =
+      match Hashtbl.find env.tenv id with
+      | Some r -> pure r
+      | None ->
+          let loc_str = (match None with
+              | Some l -> sprintf " at a location [%s]" (get_loc_str l)
+              | None -> "") in
+          fail @@ sprintf
+            "Couldn't resolve the identifier %s%s in the type environment\n%s"
+            id loc_str (pp env)
+
+    let copy e = {
+      tenv = Hashtbl.copy e.tenv;
+      tvars = Hashtbl.copy e.tvars
+    }
+
+  end
+end
+
+
+(****************************************************************)
+(*               Specific instantiations                        *)
+(****************************************************************)
+
+module PlainTypes : QualifiedTypes = struct
+  type t = unit
+  let mk_qualified_type t = {tp = t; qual = ()}
+end
+

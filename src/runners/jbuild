@@ -1,10 +1,11 @@
 (jbuild_version 1)
 
 (executables
- ((names (scilla_runner eval_runner scilla_checker))
-  (public_names (scilla-runner eval-runner scilla-checker))
+ ((names (scilla_runner eval_runner type_checker scilla_checker))
+  (public_names (scilla-runner eval-runner type-checker scilla-checker))
   (modules (scilla_runner
             eval_runner
+            type_checker
             scilla_checker
             cli))
   (libraries (core

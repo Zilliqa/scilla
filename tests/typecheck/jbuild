@@ -2,7 +2,7 @@
 
 (library
  (
-  (name testcontracts)
+  (name testtypes)
   (wrapped false)
   (libraries (core oUnit testutil))
  )
