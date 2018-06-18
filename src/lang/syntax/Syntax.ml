@@ -183,15 +183,3 @@ let literal_tag l = match l with
   | Msg _ -> "Message"
   | Map _ -> "Map"
   | ADTValue _ -> "ADT"
-
-(****************************************************)
-(*            Auxiliary functions                   *)    
-(****************************************************)
-
-let toType d = match d with
-  | "Int" | "Hash" | "Address" | "BNum" | "Message" | "String" -> PrimType d
-  | _ -> ADT (d, [])
-
-let isPrimType t = match t with
-    | PrimType _ -> true
-    | _ -> false
