@@ -35,6 +35,9 @@ type 'rep ident =
   | Ident of string * 'rep
 [@@deriving sexp]
 
+let asId i = Ident (i, dummy_loc)
+let asIdL i loc = Ident(i, loc)
+
 let get_id i = match i with Ident (x, _) -> x
 let get_loc i : loc = match i with Ident (_, l) -> l
 let get_loc_str (l : loc) : string =

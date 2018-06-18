@@ -1,17 +1,12 @@
 {
     "_tag": "SetPingAddr",
     "_amount": "0",
+    "_sender": "0xab92d4dfafd282e8a8b3c776eb9fc907d321e21a",
     "params": [
-      {
-        "vname": "sender",
-        "type": "Address",
-        "value": "0xab92d4dfafd282e8a8b3c776eb9fc907d321e21a"
-      },
       {
         "vname": "pingAddr",
         "type": "Address",
         "value": "0x1992d4dfafd282e8a8b3c776eb9fc907d321e21a"
       }
-
     ]
 }

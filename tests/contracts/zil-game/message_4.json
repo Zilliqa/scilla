@@ -1,12 +1,8 @@
 {
   "_tag": "ClaimReward",
   "_amount": "0",
+  "_sender": "0xabcdeabcde123456789012345678901234567890",
   "params": [
-    {
-      "vname": "sender",
-      "type": "Address",
-      "value": "0xabcdeabcde123456789012345678901234567890"
-    },
     { "vname": "solution", "type": "Int", "value": "42" }
   ]
 }

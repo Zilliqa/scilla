@@ -1,0 +1,48 @@
+let list_exists =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A Bool in
+    let init = False in
+    let iter =
+      fun (z : Bool) =>
+      fun (h : 'A) =>
+        let res = f h in
+        match res with
+        | True =>
+          True
+        | False =>
+          z
+        end
+    in
+      folder iter init l
+in
+
+let int_exists = @list_exists Int in
+let f =
+  fun (a : Int) =>
+    let three = 3 in
+    builtin lt a three
+in
+let g =
+  fun (a : Int) =>
+    let five = 5 in
+    builtin lt five a
+in
+
+let zero = 0 in
+let one = 1 in
+let two = 2 in
+let three = 3 in
+let four = 4 in
+
+let nil = Nil in
+let l1 = Cons {Int} four nil in
+let l2 = Cons {Int} three l1 in
+let l3 = Cons {Int} two l2 in
+let l4 = Cons {Int} one l3 in
+
+(* test if exists < 3 (true) *)
+let res1 = int_exists f l4 in
+(* test if exists > 5 (false) *)
+int_exists g l4

@@ -1,0 +1,29 @@
+let list_length =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    let folder = @list_foldr 'A Int in
+    let init = 0 in
+    let iter =
+      fun (h : 'A) =>
+      fun (z : Int) =>
+        let one = 1 in
+          builtin add one z
+     in
+       folder iter init l
+in
+
+let int_length = @list_length Int in
+
+let one = 1 in
+let two = 2 in
+let ten = 10 in
+let eleven = 11 in
+
+let nil = Nil in
+let l1 = Cons {Int} one nil in
+let l2 = Cons {Int} ten l1 in
+let l3 = Cons {Int} two l2 in
+let l4 = Cons {Int} eleven l3 in
+let emp_length = int_length nil in
+let l1_length = int_length l1 in
+int_length l4

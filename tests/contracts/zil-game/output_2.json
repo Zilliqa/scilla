@@ -2,14 +2,8 @@
   "message": {
     "_tag": "Main",
     "_amount": "0",
-    "params": [
-      {
-        "vname": "to",
-        "type": "Address",
-        "value": "0xabcdeabcde123456789012345678901234567890"
-      },
-      { "vname": "code", "type": "Int", "value": "4" }
-    ]
+    "_recipient": "0xabcdeabcde123456789012345678901234567890",
+    "params": [ { "vname": "code", "type": "Int", "value": "4" } ]
   },
   "states": [
     { "vname": "_balance", "type": "Int", "value": "500" },

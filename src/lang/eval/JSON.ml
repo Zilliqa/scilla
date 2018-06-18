@@ -10,6 +10,7 @@
 open Syntax
 open Core
 open Yojson
+open EvalUtil.MessagePayload
 
 exception Invalid_json of string
 let addr_len = 40
@@ -238,6 +239,11 @@ let get_int_literal l =
   | IntLit il -> Some il
   | _ -> None
 
+let get_address_literal l =
+  match l with
+  | Address al -> Some al
+  | _ -> None
+
 module ContractState = struct
 
 (** Returns a list of (vname:string,value:literal) items
@@ -279,28 +285,36 @@ module Message = struct
 let get_json_data filename =
   let open Basic.Util in
   let json = Basic.from_file filename in
-  let tags = member_exn "_tag" json |> to_string in
-  let amounts = member_exn "_amount" json |> to_string in
-  (* Make tag and amount into a literal *)
-  let tag = ("_tag", StringLit(tags)) in
-  let amount = ("_amount", IntLit(amounts)) in
+  let tags = member_exn tag_label json |> to_string in
+  let amounts = member_exn amount_label json |> to_string in
+  let senders = member_exn sender_label json |> to_string in
+  (* Make tag, amount and sender into a literal *)
+  let tag = (tag_label, StringLit(tags)) in
+  let amount = (amount_label, IntLit(amounts)) in
+  let sender = (sender_label, Address(senders)) in
   let pjlist = member_exn "params" json |> to_list in
   let plist = List.map pjlist ~f:jobj_to_statevar in
   let params = List.fold_right plist ~init:[]
     ~f:(fun o z -> match o with Some x -> x :: z | None -> z) in
-    tag :: amount :: params
+    tag :: amount :: sender :: params
 
 (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
 let message_to_json message =
-  (* extract out "_tag" and "_amount" parts of the message *)
-  let (_, taglit) = List.find_exn message ~f:(fun (x, _) -> x = "_tag") in
-  let (_, amountlit) = List.find_exn message ~f:(fun (x, _) -> x = "_amount") in
+  (* extract out "_tag", "_amount" and "_recipient" parts of the message *)
+  let (_, taglit) = List.find_exn message ~f:(fun (x, _) -> x = tag_label) in
+  let (_, amountlit) = List.find_exn message ~f:(fun (x, _) -> x = amount_label) in
+  (* Message_to_json may be used to print both output and input message. Choose label accordingly. *)
+  let (toORfrom, tofromlit) = List.find_exn message ~f:(fun (x, _) -> x = recipient_label || x = sender_label) in
+  let tofrom_label = if toORfrom = recipient_label then recipient_label else sender_label in
   let tags = get_string_literal taglit in
   let amounts = get_int_literal amountlit in
-  (* Get a list without either of these components *)
-  let filtered_list = List.filter message ~f:(fun (x, _) -> not ((x = "_tag") || (x = "_amount"))) in
-    `Assoc [("_tag", `String (BatOption.get tags)); 
-                 ("_amount", `String (BatOption.get amounts));
+  let tofroms = get_address_literal tofromlit in
+  (* Get a list without any of these components *)
+  let filtered_list = List.filter message 
+      ~f:(fun (x, _) -> not ((x = tag_label) || (x = amount_label) || (x = recipient_label))) in
+    `Assoc [(tag_label, `String (BatOption.get tags)); 
+                 (amount_label, `String (BatOption.get amounts));
+                 (tofrom_label, `String (BatOption.get tofroms));
                  ("params", `List (slist_to_json filtered_list))] 
 
   (** 

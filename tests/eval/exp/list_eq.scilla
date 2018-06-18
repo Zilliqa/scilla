@@ -1,0 +1,106 @@
+let list_head =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some h
+    | Nil =>
+      None
+    end
+in
+  
+let list_tail =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some t
+    | Nil =>
+      None
+    end
+in
+  
+(* Returns Some Nil on successul match. None otherwise. *)
+let list_eq_helper =
+  tfun 'A =>
+  fun (eq : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    let folder = @list_foldl 'A (Option (List 'A)) in
+    let init = Some l2 in
+    let iter =
+      fun (z : Option (List 'A)) =>
+      fun (h1 : 'A) =>
+        match z with
+        | Some ll2 =>
+          let headF = @list_head 'A in
+          let h2o = headF ll2 in
+          match h2o with
+          | Some h2 =>
+            let eqb = eq h1 h2 in
+            match eqb with
+            | True =>
+              let tailF = @list_tail 'A in
+              tailF ll2
+            | False =>
+              None
+            end
+          | None =>
+            None
+          end
+        | None =>
+          None
+        end
+    in
+      folder iter init l1
+in
+
+let list_eq =
+  tfun 'A =>
+  fun (f : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    let eqh = @list_eq_helper 'A in
+    let res = eqh f l1 l2 in
+    match res with
+    | Some l =>
+      match l with
+      | Nil =>
+        True
+      | _ =>
+        False
+      end
+    | _ =>
+      False
+    end
+in
+  
+let int_eq = @list_eq Int in
+
+let one = 1 in
+let two = 2 in
+let ten = 10 in
+let eleven = 11 in
+
+let nil = Nil in
+let l1 = Cons {Int} eleven nil in
+let l2 = Cons {Int} ten l1 in
+let l3 = Cons {Int} two l2 in
+let l4 = Cons {Int} one l3 in
+
+let f =
+  fun (a : Int) =>
+  fun (b : Int) =>
+    builtin eq a b
+in
+
+let r1 = int_eq f nil l4 in
+let r2 = int_eq f l4 nil in
+let r3 = int_eq f l1 nil in
+let r4 = int_eq f nil l1 in
+let r5 = int_eq f nil nil in
+let r6 = int_eq f l1 l1 in
+let r7 = int_eq f l1 l2 in
+let r8 = int_eq f l2 l1 in
+
+int_eq f l4 l4

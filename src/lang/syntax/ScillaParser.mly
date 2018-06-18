@@ -11,13 +11,10 @@
 %{
   open Syntax
 
-  let asId i = Ident (i, dummy_loc)
-  let asIdL i loc = Ident(i, loc)
-
   let toType d = match d with
       | "Int" | "Hash" | "Address" | "BNum" | "Message" -> PrimType d
       | _ -> ADT (d, [])
-  
+
   let address_length = 40
   let hash_length = 64
 %}
