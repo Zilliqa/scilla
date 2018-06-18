@@ -167,11 +167,18 @@ let jobj_to_statevar json =
       | "Hash" -> Some (lit_exn(Sha256 v))
       | _ -> None) |> Option.map ~f:(fun x -> (n, x))
 
-let typ_to_string t = 
+let rec typ_to_string t = 
   match t with
   | PrimType t -> t
-  (* TODO: Support other typ *)
-  | _ -> "Unknown"
+  | MapType (kt, vt) ->
+      sprintf "Map (%s) (%s)" (typ_to_string kt) (typ_to_string vt )
+  | ADT (name, targs) ->
+      let tns = List.map targs
+          ~f:(fun t -> sprintf "(%s)" (typ_to_string t)) in
+      sprintf "ADT %s (%s)" name (String.concat ~sep:", " tns)
+
+  (* TODO: Support other types *)
+  | _ -> "Unsupported"
 
 let rec mapvalues_to_json ms = 
   match ms with
@@ -191,17 +198,14 @@ and adtargs_to_json tlist vlist =
       (j1 :: jtn), (j2 :: jvn)
   | _ -> ([], [])
 
-(* FIXME: serialize map types *)
 and literal_to_json lit = 
   match lit with
   | StringLit (x) | IntLit (x)| BNum (x) | Address (x) | Sha256 (x) -> `String (x)
-  | Map (_, []) -> `Null
-  | Map (_, kv :: remaining) ->
-    let (k, v) = kv in
-    let kjson = "keyType", `String (literal_tag k) in
-    let vjson =  "valType", `String (literal_tag v) in
+  | Map ((kt, vt), kvs) ->
+    let kjson = "keyType", `String (typ_to_string kt) in
+    let vjson =  "valType", `String (typ_to_string vt) in
     let mtype_json = `Assoc (kjson :: vjson :: []) in
-    let kv_json = mapvalues_to_json (kv :: remaining) in
+    let kv_json = mapvalues_to_json kvs in
     (* The output state variable for a map has the from/to type
      * as the first map entry and the actual entries follow *)
       `List (mtype_json :: kv_json)
