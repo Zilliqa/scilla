@@ -90,7 +90,7 @@ and read_map_json j =
            let ktype = member_exn "keyType" first |> to_string in
            let vtype = member_exn "valType" first |> to_string in
            let kvallist = mapvalues_from_json ktype vtype remaining in
-           Some (Map kvallist)
+           Some (Map ((toType ktype, toType vtype), kvallist))
        | _ -> None
       )
   | _ -> None
@@ -191,11 +191,12 @@ and adtargs_to_json tlist vlist =
       (j1 :: jtn), (j2 :: jvn)
   | _ -> ([], [])
 
+(* FIXME: serialize map types *)
 and literal_to_json lit = 
   match lit with
   | StringLit (x) | IntLit (x)| BNum (x) | Address (x) | Sha256 (x) -> `String (x)
-  | Map [] -> `Null
-  | Map (kv :: remaining) ->
+  | Map (_, []) -> `Null
+  | Map (_, kv :: remaining) ->
     let (k, v) = kv in
     let kjson = "keyType", `String (literal_tag k) in
     let vjson =  "valType", `String (literal_tag v) in

@@ -16,7 +16,7 @@ contract CrowdFundingInvoke
 
 (* Mutable fields *)
 (* callers only keeps track of who all called Invoke. No real use *)
-field callers : Map Address Int = Emp
+field callers : Map Address Int = Emp Address Int
 
 transition Invoke (trans : String)
   bal <- balance;

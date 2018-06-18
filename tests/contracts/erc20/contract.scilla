@@ -56,9 +56,9 @@ contract ERC20
 (* Initial balance is not stated explicitly: it's initialized when creating the contract. *)
 
 field balances : Map Address Int =
-  let m = Emp in
+  let m = Emp Address Int in
     builtin put m owner total_tokens
-field allowed : Map Address (Map Address Int) = Emp
+field allowed : Map Address (Map Address Int) = Emp Address (Map Address Int)
 
 transition BalanceOf (tokenOwner : Address)
   bl <- balances;
@@ -171,7 +171,7 @@ transition Approve (spender : Address, tokens : Int)
     allowed := allowed_new;
     send no_msg
   | None =>
-    allowed_to_spender = let m = Emp in builtin put m spender tokens;
+    allowed_to_spender = let m = Emp Address Int in builtin put m spender tokens;
     allowed_new = builtin put al _sender allowed_to_spender;
     allowed := allowed_new;
     send no_msg

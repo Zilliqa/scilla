@@ -55,6 +55,8 @@ type typ  =
   | PolyFun of string * typ
 [@@deriving sexp]
 
+let pp_typ t = sexp_of_typ t |> Sexplib.Sexp.to_string
+
 type 'rep pattern =
   | Wildcard
   | Binder of 'rep ident
@@ -66,7 +68,9 @@ type 'rep pattern =
  * big_ints is because for some reason the sexp pre-processor does
  * not support them. Once we write a custom pretty-printer for
  * literals and expressions, there will be no need for this atrocity,
- * and we can switch back to big ints. *)       
+ * and we can switch back to big ints. *)
+
+(* The first component is a primitive type *)
 type mtype = typ * typ
 [@@deriving sexp]
 
@@ -180,4 +184,14 @@ let literal_tag l = match l with
   | Map _ -> "Map"
   | ADTValue _ -> "ADT"
 
+(****************************************************)
+(*            Auxiliary functions                   *)    
+(****************************************************)
 
+let toType d = match d with
+  | "Int" | "Hash" | "Address" | "BNum" | "Message" | "String" -> PrimType d
+  | _ -> ADT (d, [])
+
+let isPrimType t = match t with
+    | PrimType _ -> true
+    | _ -> false
