@@ -11,6 +11,6 @@
               angstrom
               ppx_sexp_conv ppx_deriving
               ppx_let yojson cryptokit
-              scilla-syntax scilla-eval))
+              scilla-base scilla-eval))
   (preprocess (pps (ppx_sexp_conv ppx_let ppx_deriving.show)))
   (package scilla-runner)))
