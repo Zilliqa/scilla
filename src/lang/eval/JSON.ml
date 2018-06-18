@@ -27,7 +27,7 @@ let lit_exn n =
   let s, re, l = 
     match n with
     | IntLit l | BNum l ->
-      l, Str.regexp "[0-9]+$", 0
+      l, Str.regexp "-?[0-9]+$", 0
     | Address a ->
         a, Str.regexp "0x[0-9a-f]+$", addr_len+2
     | Sha256 s ->
