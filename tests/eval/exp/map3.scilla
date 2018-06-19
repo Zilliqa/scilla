@@ -8,7 +8,7 @@ let v1 = 42 in
 let v2 = 239 in
 let v3 = 112 in
 
-let m0 = Emp in
+let m0 = Emp Int Int in
 let m1 = builtin put m0 k1 v1 in
 let m2 = builtin put m1 k2 v2 in
 let m3 = builtin put m2 k1 v3 in

@@ -19,6 +19,10 @@
         { "key": "0x1234567890123456789012345678901234567890", "val": "0" }
       ]
     },
-    { "vname": "allowed", "type": "Map", "value": null }
+    {
+      "vname": "allowed",
+      "type": "Map",
+      "value": [ { "keyType": "Address", "valType": "Map (Address) (Int)" } ]
+    }
   ]
 }

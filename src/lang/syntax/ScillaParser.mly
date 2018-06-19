@@ -11,12 +11,13 @@
 %{
   open Syntax
 
-  let toType d = match d with
-      | "Int" | "Hash" | "Address" | "BNum" | "Message" -> PrimType d
-      | _ -> ADT (d, [])
-
   let address_length = 40
   let hash_length = 64
+
+  let to_type d = match d with
+  | "Int" | "Hash" | "Address" | "BNum" | "Message" | "String" -> PrimType d
+  | _ -> ADT (d, [])
+
 %}
 
 (* Identifiers *)    
@@ -94,7 +95,7 @@
 typ :
 | d = CID; targs=list(targ)
   { match targs with
-    | [] -> toType d                       
+    | [] -> to_type d                       
     | _ -> ADT (d, targs)
   }   
 | MAP; k=targ; v = targ; { MapType (k, v) }
@@ -104,7 +105,7 @@ typ :
                                   
 targ:
 | LPAREN; t = typ; RPAREN; { t }
-| d = CID; { toType d }
+| d = CID; { to_type d }
 | t = TID; { TypeVar t }        
 
 (***********************************************)
@@ -172,7 +173,15 @@ lit :
   else raise Error @@ Core.sprintf "Wrong hex string size (%s): %d." h l
 }
 | s = STRING   { StringLit s }
-| EMP          { Map [] }
+| EMP; kt = targ; vt = targ
+{
+  Map ((kt, vt), [])
+  (* if isPrimType kt
+   * then Map ((kt, vt), [])
+   * else
+   *   raise Error @@ Core.sprintf "Non-primitive type (%s) cannot be a map key."
+   *                    (pp_typ kt) *)
+}
 
 ctargs:
 | LBRACE; ts = list(ctarg); RBRACE { ts }

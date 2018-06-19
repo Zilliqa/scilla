@@ -45,7 +45,8 @@ let rec build_contract_tests bindir testsdir pcli name i n =
            let g = load_file goldoutput_file in
            let o = load_file output_file in
            (* Compare output.json with a gold output in the contract directory *)
-           assert_equal ~ctxt:test_ctxt ~msg:"Output json mismatch" g o);
+           assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o)) ~ctxt:test_ctxt
+             ~msg:(Core.sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g) g o);
       ) 
       in
       test :: (build_contract_tests bindir testsdir pcli name (i+1) n)
@@ -71,7 +72,8 @@ let build_contract_init_test bindir testsdir pcli name =
           let g = load_file goldoutput_file in
           let o = load_file output_file in
           (* Compare output.json with a gold output in the contract directory *)
-          assert_equal ~ctxt:test_ctxt ~msg:"Output json mismatch" g o);
+          assert_equal ~ctxt:test_ctxt ~msg:"Output json mismatch"
+            ~cmp:(fun e o -> (String.trim e) = (String.trim o)) g o);
       ) 
 
 let build_misc_tests bindir testsdir pcli =

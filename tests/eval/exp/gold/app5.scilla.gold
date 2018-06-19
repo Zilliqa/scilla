@@ -1,8 +1,8 @@
 (IntLit 55),
 { [v -> (IntLit 55)],
-  [m -> (Map(((Address 0x1234567890123456789012345678901234abcdef)(IntLit 55))))],
-  [res -> (ADTValue Some((MapType(PrimType Address)(PrimType Int)))((Map(((Address 0x1234567890123456789012345678901234abcdef)(IntLit 55))))))],
+  [m -> (Map((PrimType Address)(PrimType Int))(((Address 0x1234567890123456789012345678901234abcdef)(IntLit 55))))],
+  [res -> (ADTValue Some((MapType(PrimType Address)(PrimType Int)))((Map((PrimType Address)(PrimType Int))(((Address 0x1234567890123456789012345678901234abcdef)(IntLit 55))))))],
   [amt -> (IntLit 55)],
   [a -> (Address 0x1234567890123456789012345678901234abcdef)],
-  [bs -> (Map())],
+  [bs -> (Map((PrimType Address)(PrimType Int))())],
   [check_update -> <closure>] }

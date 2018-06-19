@@ -11,6 +11,6 @@ let main =
   let contract_tests = Testcontracts.add_tests bin_dir tests_dir print_cli in
   let exp_tests = Testexp.add_tests bin_dir tests_dir print_cli in
 
-  let all_tests = "all_tests" >::: [contract_tests;exp_tests] in
+  let all_tests = "all_tests" >::: [exp_tests; contract_tests] in
   (* Run all tests *)
   run_test_tt_main all_tests

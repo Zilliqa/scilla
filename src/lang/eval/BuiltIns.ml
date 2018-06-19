@@ -98,26 +98,27 @@ module Maps = struct
   open UsefulLiterals
   
   let contains ls = match ls with
-    | [Map entries; key] ->
+    | [Map (_, entries); key] ->
         let res = List.exists entries ~f:(fun (k, v) -> k = key) in
         pure @@ to_Bool res
     | _ -> builtin_fail "Map.contains" ls
 
+  (* FIXME: Runtime type checking *)
   let put ls = match ls with
-    | [Map entries; key; value] ->
+    | [Map (tm, entries); key; value] ->
         let filtered =
           List.filter entries ~f:(fun (k, v) -> k <> key) in
-        pure @@ Map ((key, value) :: filtered) 
+        pure @@ Map (tm, ((key, value) :: filtered)) 
     | _ -> builtin_fail "Map.put" ls
 
   let remove ls = match ls with
-    | [Map entries; key] ->
+    | [Map (tm, entries); key] ->
         let res = List.filter entries ~f:(fun (k, v) -> k <> key) in
-        pure @@ Map res
+        pure @@ Map (tm, res)
     | _ -> builtin_fail "Map.remove" ls
 
   let get ls = match ls with
-    | [Map entries; key] ->
+    | [Map (tm, entries); key] ->
         let res = List.find entries ~f:(fun (k, v) -> k = key) in
         pure (match res with
             | None -> none_lit
