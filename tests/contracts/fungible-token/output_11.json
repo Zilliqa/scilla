@@ -3,13 +3,7 @@
     "_tag": "Main",
     "_amount": "0",
     "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [
-      {
-        "vname": "err_msg",
-        "type": "String",
-        "value": "Invalid input parameter(s)"
-      }
-    ]
+    "params": [ { "vname": "err_msg", "type": "Int", "value": "1" } ]
   },
   "states": [
     { "vname": "_balance", "type": "Int", "value": "0" },

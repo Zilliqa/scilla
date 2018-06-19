@@ -23,7 +23,7 @@ let min_int =
     b
   end
 
-let invalid_input = "Invalid input parameter(s)"
+let invalid_input = 1
 
 (***************************************************)
 (*             The contract definition             *)
