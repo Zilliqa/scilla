@@ -15,11 +15,3 @@ ZilGame contract implements the following game:
    it must match. If the player who submitted second failed to submit,
    the winner is the first one automatically.
  
-Question: what primitive should we have in the language to check the
-current block number? Or should it be the previous block number? What
-is reasonable here?
-
-The language should provide access to the following blockchain parameters
-BLOCKNUMBER Get the last mined block's number
-BLOCKHASH   Get the hash of the last block 
-TIMESTAMP   Get the last block's timestamp

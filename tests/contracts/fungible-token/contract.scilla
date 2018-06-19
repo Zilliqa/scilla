@@ -1,7 +1,10 @@
+(* This contract implements a fungible token interface a la ERC20 *)
+
+
 (***************************************************)
 (*               Associated library                *)
 (***************************************************)
-library ERC20
+library FungibleToken
 
 let one_msg = 
   fun (msg : Message) => 
@@ -25,7 +28,8 @@ let invalid_input = "Invalid input parameter(s)"
 (***************************************************)
 (*             The contract definition             *)
 (***************************************************)
-contract ERC20
+
+contract FungibleToken
 (owner : Address,
  total_tokens : Int)
 

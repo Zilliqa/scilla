@@ -121,7 +121,8 @@ let add_tests bindir testsdir pcli =
     let cfinvoketests = "cfinvoke" >:::(build_contract_tests bindir testsdir pcli "cfinvoke" 1 3) in
     let pingtests = "ping" >:::(build_contract_tests bindir testsdir pcli "ping" 0 3) in
     let pongtests = "pong" >:::(build_contract_tests bindir testsdir pcli "pong" 0 3) in
-    let erc20tests = "erc20" >:::(build_contract_tests bindir testsdir pcli "erc20" 0 11) in
+    let fungibletokentests = "fungible-token" >:::(build_contract_tests bindir
+    testsdir pcli "fungible-token" 0 11) in
     let misc_tests = "misc_tests" >::: build_misc_tests bindir testsdir pcli in
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;
-                    misc_tests;pingtests;pongtests;erc20tests]
+                    misc_tests;pingtests;pongtests;fungibletokentests]
