@@ -7,6 +7,10 @@
   },
   "states": [
     { "vname": "_balance", "type": "Int", "value": "122" },
-    { "vname": "callers", "type": "Map", "value": null }
+    {
+      "vname": "callers",
+      "type": "Map",
+      "value": [ { "keyType": "Address", "valType": "Int" } ]
+    }
   ]
 }

@@ -77,7 +77,7 @@ contract Crowdfunding
  goal      : Int)
 
 (* Mutable fields *)
-field backers : Map Address Int = Emp 
+field backers : Map Address Int = Emp Address Int
 field funded : Bool = False
 
 transition Donate ()

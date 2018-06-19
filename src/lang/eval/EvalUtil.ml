@@ -27,6 +27,17 @@ let pp_literal_list ls =
       ~f:(fun l -> sprintf " %s" (pp_literal l)) in
   let cs = String.concat ~sep:",\n " ps in
   sprintf "[ %s]" cs
+
+let parse_expr s =
+  match FrontEndParser.parse_string ScillaParser.exps s with
+  | Some [e] -> e
+  | _ -> raise ScillaParser.Error
+           
+let parse_type s =
+  match FrontEndParser.parse_string ScillaParser.types s with
+  | Some [t] -> t
+  | _ -> raise ScillaParser.Error
+
     
 (*****************************************************)
 (* Update-only execution environment for expressions *)

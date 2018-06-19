@@ -55,6 +55,8 @@ type typ  =
   | PolyFun of string * typ
 [@@deriving sexp]
 
+let pp_typ t = sexp_of_typ t |> Sexplib.Sexp.to_string
+
 type 'rep pattern =
   | Wildcard
   | Binder of 'rep ident
@@ -66,7 +68,12 @@ type 'rep pattern =
  * big_ints is because for some reason the sexp pre-processor does
  * not support them. Once we write a custom pretty-printer for
  * literals and expressions, there will be no need for this atrocity,
- * and we can switch back to big ints. *)       
+ * and we can switch back to big ints. *)
+
+(* The first component is a primitive type *)
+type mtype = typ * typ
+[@@deriving sexp]
+
 type literal =
   | StringLit of string
   | IntLit of string
@@ -76,7 +83,7 @@ type literal =
   (* Message: an associative array *)    
   | Msg of (string * literal) list
   (* A dynamic map of literals *)    
-  | Map of (literal * literal) list
+  | Map of mtype * (literal * literal) list
   (* A constructor in HNF *)      
   | ADTValue of string * typ list * literal list
 [@@deriving sexp]
@@ -176,5 +183,3 @@ let literal_tag l = match l with
   | Msg _ -> "Message"
   | Map _ -> "Map"
   | ADTValue _ -> "ADT"
-
-

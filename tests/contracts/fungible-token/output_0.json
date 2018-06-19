@@ -18,6 +18,10 @@
         }
       ]
     },
-    { "vname": "allowed", "type": "Map", "value": null }
+    {
+      "vname": "allowed",
+      "type": "Map",
+      "value": [ { "keyType": "Address", "valType": "Map (Address) (Int)" } ]
+    }
   ]
 }

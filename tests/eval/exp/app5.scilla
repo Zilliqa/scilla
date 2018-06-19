@@ -13,7 +13,7 @@ let check_update =
   | True  => None {Map Address Int}
   end
 in
-let bs = Emp in
+let bs = Emp Address Int in
 let a  = 0x1234567890123456789012345678901234abcdef in
 let amt = 55 in
 let res = check_update bs a amt in

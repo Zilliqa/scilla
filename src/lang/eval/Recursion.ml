@@ -16,16 +16,6 @@ open EvalUtil
 
 (* Recursion principles for built-in ADTs *)
 
-let parse_expr s =
-  match FrontEndParser.parse_string ScillaParser.exps s with
-  | Some [e] -> e
-  | _ -> raise ScillaParser.Error
-           
-let parse_type s =
-  match FrontEndParser.parse_string ScillaParser.types s with
-  | Some [t] -> t
-  | _ -> raise ScillaParser.Error
-
 (* Folding over natural numbers *)
 module NatRec = struct
   let g = Ident ("g", dummy_loc)      

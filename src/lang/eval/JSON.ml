@@ -46,6 +46,16 @@ let lit_exn n =
   else
     raise (Invalid_json ("Invalid " ^ literal_tag n ^ " : " ^ s ^ " in json"))
 
+let lit_with_typ_exn json =
+  let wrap_lit_exn f = Some (lit_exn (f (to_string json))) in function
+    | "String" -> wrap_lit_exn (fun x -> StringLit x)
+    | "Int" -> wrap_lit_exn (fun x -> StringLit x)
+    | "BNum" -> wrap_lit_exn (fun x -> BNum x)
+    | "Address" -> wrap_lit_exn (fun x -> Address x)
+    | "Hash" -> wrap_lit_exn (fun x -> Sha256 x)                  
+    | _ -> None  
+ 
+  
 let rec json_to_adtargs tjs ajs =
   let open Basic.Util in
   match tjs, ajs with
@@ -89,43 +99,46 @@ and read_map_json j =
        | first :: remaining ->
            let ktype = member_exn "keyType" first |> to_string in
            let vtype = member_exn "valType" first |> to_string in
-           let kvallist = mapvalues_from_json ktype vtype remaining in
-           Some (Map kvallist)
+           let parse_exn t = 
+              (try EvalUtil.parse_type t
+               with _ ->
+                 raise (Invalid_json (sprintf "Invalid type in json:\n%s" t)))
+           in
+           let kt = parse_exn ktype in
+           let vt = parse_exn vtype in
+           let kvallist = mapvalues_from_json kt vt remaining in           
+           Some (Map ((kt, vt), kvallist))
        | _ -> None
       )
   | _ -> None
 
-and mapvalues_from_json ktype vtype l = 
+and mapvalues_from_json kt vt l = 
   let open Basic.Util in
   match l with
   | first :: remaining ->
-      let kval = member_exn "key" first |> to_string in
+      let kjson = member_exn "key" first in
       let keylit = 
-        (match ktype with
-         | "String" -> Some (lit_exn(StringLit kval))
-         | "Int" -> Some (lit_exn(IntLit kval))
-         | "BNum" -> Some (lit_exn(BNum kval))
-         | "Address" -> Some (lit_exn(Address kval))
-         | "Hash" -> Some (lit_exn(Sha256 kval))
+        (match kt with
+         | PrimType "String" -> Some (lit_exn(StringLit (kjson |> to_string)))
+         | PrimType "Int" -> Some (lit_exn(IntLit (kjson |> to_string)))
+         | PrimType "BNum" -> Some (lit_exn(BNum (kjson |> to_string)))
+         | PrimType "Address" -> Some (lit_exn(Address (kjson |> to_string)))
+         | PrimType "Hash" -> Some (lit_exn(Sha256 (kjson |> to_string)))
          | _ -> None) in
-        let vjson = member_exn "val" first in
+      let vjson = member_exn "val" first in
       let vallit =
-         (match vtype with
-          | "Map" ->
-            read_map_json vjson
-          | "ADT" ->
+        (match vt with
+         | PrimType "String" -> Some (lit_exn(StringLit (vjson |> to_string)))
+         | PrimType "Int" -> Some (lit_exn(IntLit (vjson |> to_string)))
+         | PrimType "BNum" -> Some (lit_exn(BNum (vjson |> to_string)))
+         | PrimType "Address" -> Some (lit_exn(Address (vjson |> to_string)))
+         | PrimType "Hash" -> Some (lit_exn(Sha256 (vjson |> to_string)))
+         | MapType _ ->
+              read_map_json vjson
+          | ADT _ ->
             read_adt_json vjson
-          | _ ->
-            let vval = vjson |> to_string in
-            (match vtype with
-             | "String" -> Some (lit_exn(StringLit vval))
-             | "Int" -> Some (lit_exn(IntLit vval))
-             | "BNum" -> Some (lit_exn(BNum vval))
-             | "Address" -> Some (lit_exn(Address vval))
-             | "Hash" -> Some (lit_exn(Sha256 vval))
-             | _ -> None)
-         ) in
-        let vlist = mapvalues_from_json ktype vtype remaining in
+          | _ -> None) in
+        let vlist = mapvalues_from_json kt vt remaining in
         (match keylit, vallit with
          | Some kl, Some vl -> (kl, vl) :: vlist
          | _ -> vlist)
@@ -167,11 +180,18 @@ let jobj_to_statevar json =
       | "Hash" -> Some (lit_exn(Sha256 v))
       | _ -> None) |> Option.map ~f:(fun x -> (n, x))
 
-let typ_to_string t = 
+let rec typ_to_string t = 
   match t with
   | PrimType t -> t
-  (* TODO: Support other typ *)
-  | _ -> "Unknown"
+  | MapType (kt, vt) ->
+      sprintf "Map (%s) (%s)" (typ_to_string kt) (typ_to_string vt )
+  | ADT (name, targs) ->
+      let tns = List.map targs
+          ~f:(fun t -> sprintf "(%s)" (typ_to_string t)) in
+      sprintf "ADT %s (%s)" name (String.concat ~sep:", " tns)
+
+  (* TODO: Support other types *)
+  | _ -> "Unsupported"
 
 let rec mapvalues_to_json ms = 
   match ms with
@@ -194,13 +214,11 @@ and adtargs_to_json tlist vlist =
 and literal_to_json lit = 
   match lit with
   | StringLit (x) | IntLit (x)| BNum (x) | Address (x) | Sha256 (x) -> `String (x)
-  | Map [] -> `Null
-  | Map (kv :: remaining) ->
-    let (k, v) = kv in
-    let kjson = "keyType", `String (literal_tag k) in
-    let vjson =  "valType", `String (literal_tag v) in
+  | Map ((kt, vt), kvs) ->
+    let kjson = "keyType", `String (typ_to_string kt) in
+    let vjson =  "valType", `String (typ_to_string vt) in
     let mtype_json = `Assoc (kjson :: vjson :: []) in
-    let kv_json = mapvalues_to_json (kv :: remaining) in
+    let kv_json = mapvalues_to_json kvs in
     (* The output state variable for a map has the from/to type
      * as the first map entry and the actual entries follow *)
       `List (mtype_json :: kv_json)
