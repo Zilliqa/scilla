@@ -1,6 +1,11 @@
 [
     { "vname": "_balance", "type": "Int", "value": "0" },
     {
+        "vname": "allowed",
+        "type": "Map",
+        "value": [ { "keyType": "Address", "valType": "Map (Address) (Int)" } ]
+    },
+    {
         "vname": "balances",
         "type": "Map",
         "value": [
@@ -10,6 +15,5 @@
                 "val": "10000"
             }
         ]
-    },
-    { "vname": "allowed", "type": "Map", "value": null }
+    }
 ]
