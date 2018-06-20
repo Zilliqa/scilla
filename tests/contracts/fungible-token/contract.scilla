@@ -128,7 +128,7 @@ transition TransferFrom (from : Address, to : Address, tokens : Int)
         new_from_bal = builtin sub a amount;
         balances_1 = builtin put bl from new_from_bal;
         balances := balances_1;
-        to_bal = builtin get bl to;
+        to_bal = builtin get balances_1 to;
         match to_bal with
         | Some tb =>
           to_bal_new = builtin add tb amount;
