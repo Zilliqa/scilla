@@ -1,0 +1,14 @@
+{
+  "message": {
+    "_tag": "Main",
+    "_amount": "0",
+    "_recipient": "0x1234567890123456789012345678901234567890",
+    "params": [
+      { "vname": "welcome_msg", "type": "String", "value": "HelloWorld" }
+    ]
+  },
+  "states": [
+    { "vname": "_balance", "type": "Int", "value": "0" },
+    { "vname": "msgstr", "type": "String", "value": "HelloWorld" }
+  ]
+}
