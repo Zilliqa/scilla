@@ -15,7 +15,8 @@
   let hash_length = 64
 
   let to_type d = match d with
-  | "Int" | "Hash" | "Address" | "BNum" | "Message" | "String" -> PrimType d
+  | "Hash" | "Address" | "BNum" | "Message" | "String" -> PrimType d
+  | "Int32" | "Int64" | "Int128" | "Uint32" | "Uint64" | "Uint128" -> PrimType d
   | _ -> ADT (d, [])
 
 %}
@@ -163,7 +164,16 @@ simple_exp :
 lit :        
 | BLOCK;
   n = NUMLIT   { BNum (Big_int.string_of_big_int n) }
-| n = NUMLIT   { IntLit (Big_int.string_of_big_int n) }
+| i = TID;
+  n = NUMLIT   {
+    let string_of_n = Big_int.string_of_big_int n in
+    let intlit = build_int i string_of_n in
+    match intlit with
+    | Some l ->
+        l
+    | None ->
+        raise Error @@ Core.sprintf "Invalid integer literal %s" string_of_n
+  }
 | h = HEXLIT   { 
   let l = String.length h in
   if l = (address_length + 2) 

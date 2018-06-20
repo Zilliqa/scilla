@@ -163,7 +163,7 @@ module Configuration = struct
     if i = balance
     then
       (* Balance is a special case *)   
-      pure @@ IntLit (Big_int.string_of_big_int st.balance)
+      pure @@ UintLit (128, (Big_int.string_of_big_int st.balance))
     else
       (* Evenrything else is from fields *)
       let s = st.fields in
@@ -290,7 +290,7 @@ module MessagePayload = struct
 
   let get_amount = get_value_for_entry amount_label
       (function 
-        | IntLit s ->
+        | UintLit (ws, s) ->
             (try
                let i = big_int_of_string s in
                let open Big_int in

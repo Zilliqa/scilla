@@ -76,7 +76,10 @@ type mtype = typ * typ
 
 type literal =
   | StringLit of string
-  | IntLit of string
+  (* (bid-width, value) *)
+  | IntLit of int * string
+  (* (bid-width, value) *)
+  | UintLit of int * string
   | BNum of string
   | Address of string
   | Sha256 of string
@@ -176,10 +179,24 @@ let expr_loc (e : 'rep expr) : loc option =
 (* TODO: replace with proper type inference *)
 let literal_tag l = match l with
   | StringLit _ -> "String"
-  | IntLit _ -> "Int"
+  | IntLit (w, _) -> "Int" ^ (Int.to_string w)
+  | UintLit (w,_) -> "Uint" ^ (Int.to_string w)
   | BNum _ -> "BNum"
   | Address _ -> "Address"
   | Sha256 _ -> "Hash"
   | Msg _ -> "Message"
   | Map _ -> "Map"
   | ADTValue _ -> "ADT"
+
+(* Given an integer type (as string) and the value (as string),
+   build IntLit or UintLit out of it. TODO: Validate. *)
+let build_int t v = 
+  match t with
+  | "Int32" -> Some (IntLit(32, v))
+  | "Int64" -> Some (IntLit(64, v))
+  | "Int128" -> Some (IntLit(128, v))
+  | "Uint32" -> Some (UintLit(32, v))
+  | "Uint64" -> Some (UintLit(64, v))
+  | "Uint128" -> Some (UintLit(128, v))
+  | _ -> None
+

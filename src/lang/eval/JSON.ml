@@ -26,8 +26,11 @@ let member_exn m j =
 let lit_exn n =
   let s, re, l = 
     match n with
-    | IntLit l | BNum l ->
+    | IntLit (wl, l) ->
+      (* TODO: Add checks *)
       l, Str.regexp "-?[0-9]+$", 0
+    | BNum l ->
+      l, Str.regexp "?[0-9]+$", 0
     | Address a ->
         a, Str.regexp "0x[0-9a-f]+$", addr_len+2
     | Sha256 s ->
@@ -65,11 +68,11 @@ let rec json_to_adtargs tjs ajs =
       let argS = 
         (match tjs with
          | "String" -> Some (lit_exn(StringLit ajs))
-         | "Int" -> Some (lit_exn(IntLit ajs))
          | "BNum" -> Some (lit_exn(BNum ajs))
          | "Address" -> Some (lit_exn(Address ajs))
          | "Hash" -> Some (lit_exn(Sha256 ajs))
-         | _ -> None
+         (* See if it is an Int/Uint type. *)
+         | _ -> build_int tjs ajs
         ) in
       let (trem, arem) = json_to_adtargs tr ar in
       (match argS with
@@ -120,24 +123,29 @@ and mapvalues_from_json kt vt l =
       let keylit = 
         (match kt with
          | PrimType "String" -> Some (lit_exn(StringLit (kjson |> to_string)))
-         | PrimType "Int" -> Some (lit_exn(IntLit (kjson |> to_string)))
          | PrimType "BNum" -> Some (lit_exn(BNum (kjson |> to_string)))
          | PrimType "Address" -> Some (lit_exn(Address (kjson |> to_string)))
          | PrimType "Hash" -> Some (lit_exn(Sha256 (kjson |> to_string)))
-         | _ -> None) in
+         | PrimType i -> (* Try for Int/Uint types *)
+                build_int i (to_string kjson)
+         | _ -> None
+         ) in
       let vjson = member_exn "val" first in
       let vallit =
         (match vt with
          | PrimType "String" -> Some (lit_exn(StringLit (vjson |> to_string)))
-         | PrimType "Int" -> Some (lit_exn(IntLit (vjson |> to_string)))
          | PrimType "BNum" -> Some (lit_exn(BNum (vjson |> to_string)))
          | PrimType "Address" -> Some (lit_exn(Address (vjson |> to_string)))
          | PrimType "Hash" -> Some (lit_exn(Sha256 (vjson |> to_string)))
          | MapType _ ->
               read_map_json vjson
-          | ADT _ ->
+         | ADT _ ->
             read_adt_json vjson
-          | _ -> None) in
+         | PrimType i -> (* Try for Int/Uint types *)
+                build_int i (to_string vjson)
+         | _ -> None
+          
+          ) in
         let vlist = mapvalues_from_json kt vt remaining in
         (match keylit, vallit with
          | Some kl, Some vl -> (kl, vl) :: vlist
@@ -174,11 +182,12 @@ let jobj_to_statevar json =
     (match t with
       (* see Syntax.literal_tag *)
       | "String" -> Some (lit_exn(StringLit v))
-      | "Int" -> Some (lit_exn(IntLit v))
       | "BNum" -> Some (lit_exn(BNum v))
       | "Address" -> Some (lit_exn(Address v))
       | "Hash" -> Some (lit_exn(Sha256 v))
-      | _ -> None) |> Option.map ~f:(fun x -> (n, x))
+      | i -> (* Try for Int/Uint types *)
+          build_int i v
+      ) |> Option.map ~f:(fun x -> (n, x))
 
 let rec typ_to_string t = 
   match t with
@@ -213,7 +222,8 @@ and adtargs_to_json tlist vlist =
 
 and literal_to_json lit = 
   match lit with
-  | StringLit (x) | IntLit (x)| BNum (x) | Address (x) | Sha256 (x) -> `String (x)
+  | StringLit (x) | BNum (x) | Address (x) | Sha256 (x) -> `String (x)
+  | IntLit (wx, x) | UintLit (wx, x) -> `String (x)
   | Map ((kt, vt), kvs) ->
     let kjson = "keyType", `String (typ_to_string kt) in
     let vjson =  "valType", `String (typ_to_string vt) in
@@ -252,9 +262,9 @@ let get_string_literal l =
   | StringLit sl -> Some sl
   | _ -> None
 
-let get_int_literal l =
+let get_uint_literal l =
   match l with
-  | IntLit il -> Some il
+  | UintLit (wil, il) -> Some il
   | _ -> None
 
 let get_address_literal l =
@@ -308,7 +318,7 @@ let get_json_data filename =
   let senders = member_exn sender_label json |> to_string in
   (* Make tag, amount and sender into a literal *)
   let tag = (tag_label, StringLit(tags)) in
-  let amount = (amount_label, IntLit(amounts)) in
+  let amount = (amount_label, UintLit(128, amounts)) in
   let sender = (sender_label, Address(senders)) in
   let pjlist = member_exn "params" json |> to_list in
   let plist = List.map pjlist ~f:jobj_to_statevar in
@@ -325,7 +335,7 @@ let message_to_json message =
   let (toORfrom, tofromlit) = List.find_exn message ~f:(fun (x, _) -> x = recipient_label || x = sender_label) in
   let tofrom_label = if toORfrom = recipient_label then recipient_label else sender_label in
   let tags = get_string_literal taglit in
-  let amounts = get_int_literal amountlit in
+  let amounts = get_uint_literal amountlit in
   let tofroms = get_address_literal tofromlit in
   (* Get a list without any of these components *)
   let filtered_list = List.filter message 

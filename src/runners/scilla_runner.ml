@@ -72,9 +72,9 @@ let input_state_json filename =
   let match_balance ((vname : string), _) : bool = vname = "_balance" in
   let bal_lit = match List.find states ~f:match_balance with
     | Some (_, lit) -> lit
-    | None -> IntLit("0") in
+    | None -> IntLit(128, "0") in
   let bal_int = match bal_lit with
-    | IntLit (x) -> Int.of_string x
+    | IntLit (wx, x) -> Int.of_string x
     | _ -> 0 in
   let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
      no_bal_states, Big_int.big_int_of_int bal_int
@@ -82,7 +82,7 @@ let input_state_json filename =
 (* Add balance to output json and print it out *)
 
 let output_state_json (cstate : 'rep EvalUtil.ContractState.t) =
-  let ballit = ("_balance", IntLit(Big_int.string_of_big_int cstate.balance)) in
+  let ballit = ("_balance", IntLit(128, Big_int.string_of_big_int cstate.balance)) in
   let concatlist = List.cons ballit cstate.fields in
     JSON.ContractState.state_to_json concatlist;;
 

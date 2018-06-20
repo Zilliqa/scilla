@@ -9,6 +9,7 @@
 
 open Syntax
 open Core
+open Stdint
 open Result.Let_syntax
 open MonadUtil
 open Big_int
@@ -48,7 +49,7 @@ module String = struct
   | _ -> builtin_fail "String.concat" ls
 
   let substr ls = match ls with
-  | [StringLit x; IntLit s; IntLit e] ->
+  | [StringLit x; UintLit (_,s); UintLit (_,e)] ->
       pure @@ StringLit (Core.String.sub x (int_of_string s) (int_of_string e))
   | _ -> builtin_fail "String.substr" ls
 end
@@ -58,34 +59,50 @@ module Int = struct
   open UsefulLiterals
   
   let eq ls = match ls with
-    | [IntLit x; IntLit y] ->
+    | [IntLit (wx, x); IntLit (wy, y)] ->
+      if (wx <> wy) 
+      then 
+        builtin_fail "Int.eq" ls
+      else
         pure @@ to_Bool (x = y)
     | _ -> builtin_fail "Int.eq" ls
 
   (* Check for overflows! *)
   let add ls = match ls with
-    | [IntLit x; IntLit y] -> pure (
+    | [IntLit (wx, x); IntLit (wy, y)] -> 
+      if (wx <> wy) then
+        builtin_fail "Int.add" ls
+      else pure (
         let i1 = big_int_of_string x in
         let i2 = big_int_of_string y in
-        IntLit (string_of_big_int (add_big_int i1 i2)))
+        IntLit (wx, (string_of_big_int (add_big_int i1 i2))))
     | _ -> builtin_fail "Int.add" ls
 
   let sub ls = match ls with
-    | [IntLit x; IntLit y] -> pure (
+    | [IntLit (wx, x); IntLit (wy, y)] -> 
+      if (wx <> wy) then
+        builtin_fail "Int.sub" ls
+      else pure (
         let i1 = big_int_of_string x in
         let i2 = big_int_of_string y in
-        IntLit (string_of_big_int (sub_big_int i1 i2)))
+        IntLit (wx, (string_of_big_int (sub_big_int i1 i2))))
     | _ -> builtin_fail "Int.sub" ls
 
   let mul ls = match ls with
-    | [IntLit x; IntLit y] -> pure (
+    | [IntLit (wx, x); IntLit (wy, y)] -> 
+      if (wx <> wy) then
+        builtin_fail "Int.mul" ls
+      else pure (
         let i1 = big_int_of_string x in
         let i2 = big_int_of_string y in
-        IntLit (string_of_big_int (mult_big_int i1 i2)))
+        IntLit (wx, (string_of_big_int (mult_big_int i1 i2))))
     | _ -> builtin_fail "Int.mul" ls  
 
   let lt ls = match ls with
-    | [IntLit x; IntLit y] -> pure (
+    | [IntLit (wx, x); IntLit (wy, y)] -> 
+      if (wx <> wy) then
+        builtin_fail "Int.div" ls
+      else pure (
         let i1 = big_int_of_string x in
         let i2 = big_int_of_string y in
         to_Bool (lt_big_int i1 i2))
@@ -144,7 +161,7 @@ module BNum = struct
     | _ -> builtin_fail "BNum.blt" ls
 
   let badd ls = match ls with
-    | [BNum x; IntLit y] ->
+    | [BNum x; IntLit (wy, y)] ->
         let i1 = big_int_of_string x in
         let i2 = big_int_of_string y in
         if ge_big_int i2 (big_int_of_int 0)
@@ -199,7 +216,7 @@ module Hashing = struct
         let i2 = big_int_of_hash y in
         let dist = abs_big_int (sub_big_int i1 i2) in
         (try
-           let i = IntLit (string_of_big_int dist) in
+           let i = IntLit (128,(string_of_big_int dist)) in
            pure i
          with
          | Failure _ -> fail @@
@@ -253,8 +270,17 @@ module BuiltInDictionary = struct
 
   let rec tags_match expected argtypes =
     match expected, argtypes with
-    | e::es, a::args
-      when e = a || e = "Any" -> tags_match es args
+    | e::es, a::args ->
+      if e = a || e = "Any" then
+       tags_match es args
+      else
+        let int_type_rexp = Str.regexp "Int\\(32\\|64\\|128\\)" in
+        let int_m = Str.string_match int_type_rexp a 0 in
+        if int_m && e = "Int"
+        then
+          tags_match es args
+        else
+          false
     | [], [] -> true
     | _ -> false
   
