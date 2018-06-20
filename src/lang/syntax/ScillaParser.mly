@@ -172,7 +172,7 @@ lit :
     | Some l ->
         l
     | None ->
-        raise Error @@ Core.sprintf "Invalid integer literal %s" string_of_n
+        raise (SyntaxError (Core.sprintf "Invalid integer literal %s" string_of_n))
   }
 | h = HEXLIT   { 
   let l = String.length h in
@@ -180,7 +180,7 @@ lit :
   then Address h 
   else if l = (hash_length + 2)
   then Sha256 h
-  else raise Error @@ Core.sprintf "Wrong hex string size (%s): %d." h l
+  else raise (SyntaxError (Core.sprintf "Wrong hex string size (%s): %d." h l))
 }
 | s = STRING   { StringLit s }
 | EMP; kt = targ; vt = targ
@@ -189,8 +189,8 @@ lit :
   (* if isPrimType kt
    * then Map ((kt, vt), [])
    * else
-   *   raise Error @@ Core.sprintf "Non-primitive type (%s) cannot be a map key."
-   *                    (pp_typ kt) *)
+   *   raise (SyntaxError (Core.sprintf "Non-primitive type (%s) cannot be a map key."
+   *                    (pp_typ kt))) *)
 }
 
 ctargs:

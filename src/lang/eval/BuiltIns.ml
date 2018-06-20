@@ -13,6 +13,7 @@ open Stdint
 open Result.Let_syntax
 open MonadUtil
 open Big_int
+open Stdint
 
 let print_literal_list ls =
   let ps = List.map ls
@@ -22,7 +23,7 @@ let print_literal_list ls =
 let builtin_fail name ls =
   fail @@ sprintf "Cannot apply built-in %s to a list of arguments:%s."
     name (print_literal_list ls)
-    
+
 module UsefulLiterals = struct
   let true_lit = ADTValue ("True", [], [])
   let false_lit = ADTValue ("False", [], [])
@@ -107,6 +108,62 @@ module Int = struct
         let i2 = big_int_of_string y in
         to_Bool (lt_big_int i1 i2))
     | _ -> builtin_fail "Int.lt" ls  
+
+end
+
+(* Unsigned integer operation *)
+module Uint = struct
+  open UsefulLiterals
+  
+  let eq ls = match ls with
+    | [UintLit (wx, x); UintLit (wy, y)] ->
+      if (wx <> wy) 
+      then 
+        builtin_fail "Uint.eq" ls
+      else
+        pure @@ to_Bool (x = y)
+    | _ -> builtin_fail "Uint.eq" ls
+
+  (* Check for overflows! *)
+  let add ls = match ls with
+    | [UintLit (wx, x); UintLit (wy, y)] -> 
+      if (wx <> wy) then
+        builtin_fail "Uint.add" ls
+      else pure (
+        let i1 = big_int_of_string x in
+        let i2 = big_int_of_string y in
+        UintLit (wx, (string_of_big_int (add_big_int i1 i2))))
+    | _ -> builtin_fail "Uint.add" ls
+
+  let sub ls = match ls with
+    | [UintLit (wx, x); UintLit (wy, y)] -> 
+      if (wx <> wy) then
+        builtin_fail "Uint.sub" ls
+      else pure (
+        let i1 = big_int_of_string x in
+        let i2 = big_int_of_string y in
+        UintLit (wx, (string_of_big_int (sub_big_int i1 i2))))
+    | _ -> builtin_fail "Uint.sub" ls
+
+  let mul ls = match ls with
+    | [UintLit (wx, x); UintLit (wy, y)] -> 
+      if (wx <> wy) then
+        builtin_fail "Uint.mul" ls
+      else pure (
+        let i1 = big_int_of_string x in
+        let i2 = big_int_of_string y in
+        UintLit (wx, (string_of_big_int (mult_big_int i1 i2))))
+    | _ -> builtin_fail "Uint.mul" ls  
+
+  let lt ls = match ls with
+    | [UintLit (wx, x); UintLit (wy, y)] -> 
+      if (wx <> wy) then
+        builtin_fail "Uint.div" ls
+      else pure (
+        let i1 = big_int_of_string x in
+        let i2 = big_int_of_string y in
+        to_Bool (lt_big_int i1 i2))
+    | _ -> builtin_fail "Uint.lt" ls  
 
 end
 
@@ -248,6 +305,13 @@ module BuiltInDictionary = struct
     ("mul", ["Int"; "Int"], Int.mul);
     ("lt",  ["Int"; "Int"], Int.lt);
 
+    (* Unsigned integers *)
+    ("eq",  ["Uint"; "Uint"], Uint.eq);
+    ("add", ["Uint"; "Uint"], Uint.add);
+    ("sub", ["Uint"; "Uint"], Uint.sub);
+    ("mul", ["Uint"; "Uint"], Uint.mul);
+    ("lt",  ["Uint"; "Uint"], Uint.lt);
+
     (* Block numbers *)
     ("eq",  ["BNum"; "BNum"], BNum.eq);
     ("blt", ["BNum"; "BNum"], BNum.blt);
@@ -271,16 +335,13 @@ module BuiltInDictionary = struct
   let rec tags_match expected argtypes =
     match expected, argtypes with
     | e::es, a::args ->
-      if e = a || e = "Any" then
-       tags_match es args
-      else
-        let int_type_rexp = Str.regexp "Int\\(32\\|64\\|128\\)" in
-        let int_m = Str.string_match int_type_rexp a 0 in
-        if int_m && e = "Int"
-        then
-          tags_match es args
-        else
-          false
+      if e = a || e = "Any" || 
+         is_int_type a && e = "Int" || 
+         is_uint_type a && e = "Uint"
+      then
+        tags_match es args
+      else 
+        false
     | [], [] -> true
     | _ -> false
   

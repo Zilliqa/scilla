@@ -27,8 +27,9 @@ let lit_exn n =
   let s, re, l = 
     match n with
     | IntLit (wl, l) ->
-      (* TODO: Add checks *)
       l, Str.regexp "-?[0-9]+$", 0
+    | UintLit (wl, l) ->
+      l, Str.regexp "[0-9]+$", 0
     | BNum l ->
       l, Str.regexp "?[0-9]+$", 0
     | Address a ->
@@ -44,7 +45,17 @@ let lit_exn n =
      then
       raise (Invalid_json ("Invalid " ^ literal_tag n ^ " : " ^ s ^ " in json"))
      else
-      n
+      (match n with
+      | IntLit (wl, l) | UintLit (wl, l) ->
+        (* detailed validation for integer literals *)
+        if validate_int_literal n
+        then
+          n
+        else
+          raise (Invalid_json ("Invalid integer literal " ^ literal_tag n ^ " : " ^ s ^ " in json"))
+      | _ ->
+        n
+      )
     )
   else
     raise (Invalid_json ("Invalid " ^ literal_tag n ^ " : " ^ s ^ " in json"))
@@ -52,10 +63,10 @@ let lit_exn n =
 let lit_with_typ_exn json =
   let wrap_lit_exn f = Some (lit_exn (f (to_string json))) in function
     | "String" -> wrap_lit_exn (fun x -> StringLit x)
-    | "Int" -> wrap_lit_exn (fun x -> StringLit x)
     | "BNum" -> wrap_lit_exn (fun x -> BNum x)
     | "Address" -> wrap_lit_exn (fun x -> Address x)
-    | "Hash" -> wrap_lit_exn (fun x -> Sha256 x)                  
+    | "Hash" -> wrap_lit_exn (fun x -> Sha256 x)
+    (* TODO: Something for IntX/UintX types *)
     | _ -> None  
  
   
