@@ -398,14 +398,16 @@ module Hashing = struct
     | [Sha256 x; Sha256 y] ->
         let i1 = big_int_of_hash x in
         let i2 = big_int_of_hash y in
-        let dist = abs_big_int (sub_big_int i1 i2) in
-        (try
-           let i = IntLit (128,(string_of_big_int dist)) in
-           pure i
-         with
-         | Failure _ -> fail @@
-             sprintf "Could not convert big int %s to int."
-               (string_of_big_int dist))
+        (* TODO: Implement Uint256 *)
+        let two128 = power_big_int_positive_big_int (big_int_of_int 2) (big_int_of_int 128) in
+        let i1' = mod_big_int i1 two128 in
+        let i2' = mod_big_int i2 two128 in
+        let dist = abs_big_int (sub_big_int i1' i2') in
+        let i = build_int "Uint128" (string_of_big_int dist) in
+        (match i with
+        | Some ui -> pure ui
+        | None -> builtin_fail "Hashing.dist: Error building Uint128 from hash distance" ls
+        )
     | _ -> builtin_fail "Hashing.dist" ls
   
 end
