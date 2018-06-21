@@ -11,6 +11,7 @@ open Syntax
 open Core
 open Result.Let_syntax
 open MonadUtil
+open Stdint
 
 let balance = "balance"
 
@@ -119,11 +120,11 @@ module Configuration = struct
     (* Contract fields *)
     fields : (string * literal) list;
     (* Contract balance *)
-    balance : Big_int.big_int;
+    balance : uint128;
     (* Blockchain state *)
     blockchain_state : BlockchainState.t;
     (* Available incoming funds *)
-    incoming_funds : Big_int.big_int;
+    incoming_funds : uint128;
     (* Emitted messages *)
     emitted : literal list;
     (* Emitted events *)
@@ -133,9 +134,9 @@ module Configuration = struct
   let pp conf =
     let pp_env = Env.pp conf.env in
     let pp_fields = pp_literal_map conf.fields in
-    let pp_balance = Big_int.string_of_big_int conf.balance in
+    let pp_balance = Uint128.to_string conf.balance in
     let pp_bc_conf = pp_literal_map conf.blockchain_state in
-    let pp_in_funds = Big_int.string_of_big_int conf.incoming_funds in
+    let pp_in_funds = Uint128.to_string conf.incoming_funds in
     let pp_emitted = pp_literal_list conf.emitted in
     let pp_events = String.concat ~sep:", " @@
         List.map conf.events (fun (e, b) -> sprintf "<%s, %s>" e b)
@@ -163,7 +164,7 @@ module Configuration = struct
     if i = balance
     then
       (* Balance is a special case *)   
-      pure @@ UintLit (128, (Big_int.string_of_big_int st.balance))
+      pure @@ UintLit (128, (Uint128.to_string st.balance))
     else
       (* Evenrything else is from fields *)
       let s = st.fields in
@@ -183,14 +184,14 @@ module Configuration = struct
   let accept_incoming st =
     let open Big_int in
     let incoming' = st.incoming_funds in
-    if ge_big_int incoming' zero_big_int
+    if (Uint128.compare incoming' Uint128.zero) > 0
     then
-      let balance = add_big_int st.balance incoming' in
-      let incoming_funds = zero_big_int in
+      let balance = Uint128.add st.balance incoming' in
+      let incoming_funds = Uint128.zero in
       pure @@ {st with balance; incoming_funds}
     else
       fail @@ sprintf "Incoming balance is negaitve (somehow):%s."
-        (string_of_big_int incoming')
+        (Uint128.to_string incoming')
 
   (* Check that message is well-formed before adding to the sending pool *)
   let rec validate_messages ls =
@@ -246,14 +247,14 @@ module ContractState = struct
     (* Contract fields *)
     fields : (string * literal) list;
     (* Contract balance *)
-    balance : Big_int.big_int;
+    balance : uint128;
   }
 
   (* Pretty-printing *)
   let pp cstate =
     let pp_params = Env.pp cstate.env in
     let pp_fields = pp_literal_map cstate.fields in
-    let pp_balance = Big_int.string_of_big_int cstate.balance in
+    let pp_balance = Uint128.to_string cstate.balance in
     sprintf "Contract State:\nImmutable parameters and libraries =\n%s\nMutable fields = \n%s\nBalance = %s\n"
       pp_params pp_fields pp_balance
 
@@ -292,15 +293,15 @@ module MessagePayload = struct
       (function 
         | UintLit (ws, s) ->
             (try
-               let i = big_int_of_string s in
-               let open Big_int in
-               if ge_big_int i zero_big_int
-               then Some (pure (big_int_of_string s))
+               let open Uint128 in
+               let i = of_string s in
+               if (compare i zero) >= 0
+               then Some (pure (of_string s))
                else
                  Some (fail @@ sprintf "Amount should be non-negative: %s" s)
              with
               | Failure _ -> Some (fail @@
-                  sprintf "Could not convert string %s to big int." s))
+                  sprintf "Could not convert string %s to Stdint.Uint128." s))
         | _ -> None)
   
   let get_other_entries es =

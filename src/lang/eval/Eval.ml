@@ -15,6 +15,7 @@ open EvalUtil
 open MonadUtil
 open PatternMatching
 open BuiltIns
+open Stdint
 
 (***************************************************)
 (*                    Utilities                    *)      
@@ -259,13 +260,6 @@ let init_libraries libs =
         let%bind env = eres in
         init_lib_entry env lentry)
 
-let validate_init_bal b =
-  let open Big_int in
-  if ge_big_int b zero_big_int
-  then pure b
-  else fail @@
-    sprintf "Negative initial balance: %s." (string_of_big_int b)
-
 (* Initialize fields in a constant environment *)
 let init_fields env fs =
   (* Initialize a field in aconstant enfirontment *)
@@ -304,7 +298,7 @@ let init_contract libs cparams cfields args init_bal  =
     let env = List.fold_left ~init:libenv params 
         ~f:(fun e (p, v) -> Env.bind e p v) in
     let%bind fields = init_fields env cfields in
-    let%bind balance = validate_init_bal init_bal in
+    let balance = init_bal in
     let open ContractState in
     let cstate = {env; fields; balance} in
     pure cstate
@@ -395,16 +389,16 @@ let post_process_msgs cstate outs =
   let%bind amounts = mapM outs ~f:(fun l -> match l with
       | Msg es -> MessagePayload.get_amount es
       | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal l)) in
-  let open Big_int in
-  let to_be_transferred = List.fold_left amounts ~init:zero_big_int
-      ~f:(fun z a -> add_big_int z a) in
+  let open Uint128 in
+  let to_be_transferred = List.fold_left amounts ~init:zero
+      ~f:(fun z a -> Uint128.add z a) in
   let open ContractState in
-  if lt_big_int cstate.balance to_be_transferred
+  if (compare cstate.balance to_be_transferred) < 0
   then fail @@ sprintf
       "The balance is too low (%s) to transfer all the funds in the messages (%s)"
-      (string_of_big_int cstate.balance) (string_of_big_int to_be_transferred)
+      (to_string cstate.balance) (to_string to_be_transferred)
   else
-    let balance = sub_big_int cstate.balance to_be_transferred in
+    let balance = sub cstate.balance to_be_transferred in
     pure {cstate with balance}
 
 (* 
