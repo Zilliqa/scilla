@@ -1,4 +1,4 @@
-(* This contract implements a simple HelloWorld contract.*)
+(* HelloWorld contract *)
 
 
 (***************************************************)
@@ -20,22 +20,22 @@ let not_owner_code  = 1
 contract HelloWorld
 (owner: Address)
 
-field msgstr : String = "HelloWorld"
+field msgstr : String = "Hello World"
 
-transition SayHello ()
+transition SayHello()
 	is_owner = builtin eq owner _sender;
-  	match is_owner with
-  	| False => 
- 	  msg  = {_tag : Main; _recipient : _sender; _amount : 0; 
-              code : not_owner_code};
-      msgs = one_msg msg;
-      send msgs
-	| True =>
-	  greet <- msgstr;
-      msg = {_tag : Main; _recipient : _sender; _amount : 0; welcome_msg : greet};
-      msgs = one_msg msg;
-      send msgs
-    end
-end 
+  match is_owner with
+  | False =>
+    msg = {_tag : Main; _recipient : _sender; _amount : 0; code : not_owner_code};
+    msgs = one_msg msg;
+    send msgs
+  | True =>
+    greeting <- msgstr;
+    msg = {_tag : Main; _recipient : _sender; _amount : 0; welcome_msg : greeting};
+    msgs = one_msg msg;
+    send msgs
+  end
+end
+ 
 
 
