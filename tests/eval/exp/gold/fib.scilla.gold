@@ -1,4 +1,4 @@
-(IntLit 21),
+(IntLit 32 21),
 { [fib -> <closure>],
   [seven -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))))))))))],
   [six -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))))))))],

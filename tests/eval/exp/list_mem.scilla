@@ -19,25 +19,25 @@ let list_mem =
       folder iter init l
 in
 
-let int_mem = @list_mem Int in
+let int_mem = @list_mem Int32 in
 let f =
-  fun (a : Int) =>
-  fun (b : Int) =>
+  fun (a : Int32) =>
+  fun (b : Int32) =>
     builtin eq a b
 in
 
-let zero = 0 in
-let one = 1 in
-let two = 2 in
-let three = 3 in
-let four = 4 in
-let five = 5 in
+let zero = Int32 0 in
+let one = Int32 1 in
+let two = Int32 2 in
+let three = Int32 3 in
+let four = Int32 4 in
+let five = Int32 5 in
 
 let nil = Nil in
-let l1 = Cons {Int} four nil in
-let l2 = Cons {Int} three l1 in
-let l3 = Cons {Int} two l2 in
-let l4 = Cons {Int} one l3 in
+let l1 = Cons {Int32} four nil in
+let l2 = Cons {Int32} three l1 in
+let l3 = Cons {Int32} two l2 in
+let l4 = Cons {Int32} one l3 in
 
 let res1 = int_mem f zero l4 in
 let res2 = int_mem f one l4 in

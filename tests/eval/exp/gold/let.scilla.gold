@@ -1,5 +1,5 @@
-(IntLit 42),
-{ [a -> (IntLit 42)],
-  [y -> (IntLit 42)],
+(IntLit 32 42),
+{ [a -> (IntLit 32 42)],
+  [y -> (IntLit 32 42)],
   [f -> <closure>],
-  [x -> (IntLit 42)] }
+  [x -> (IntLit 32 42)] }

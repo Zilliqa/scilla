@@ -1,2 +1,2 @@
 Failed execution:
-Cannot find built-in with name "hack" and arguments (Int, Int).
+Cannot find built-in with name "hack" and arguments (Int32, Int32).

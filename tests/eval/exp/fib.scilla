@@ -17,8 +17,8 @@ let fib = fun (n : Nat) =>
       Pair {Int Int} z x
       end
     in
-  let zero = 0 in
-  let one = 1 in
+  let zero = Int32 0 in
+  let one = Int32 1 in
   let init_val = Pair {Int Int} one zero in
   let typed_folder = @nat_fold (Product Int Int) in
 	let	folder = typed_folder iter_fun init_val in		

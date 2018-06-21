@@ -1,8 +1,8 @@
-(Map((PrimType Int)(PrimType Int))(((IntLit 2)(IntLit 239))((IntLit 1)(IntLit 42)))),
-{ [m2 -> (Map((PrimType Int)(PrimType Int))(((IntLit 2)(IntLit 239))((IntLit 1)(IntLit 42))))],
-  [m1 -> (Map((PrimType Int)(PrimType Int))(((IntLit 1)(IntLit 42))))],
-  [m0 -> (Map((PrimType Int)(PrimType Int))())],
-  [v2 -> (IntLit 239)],
-  [v1 -> (IntLit 42)],
-  [k2 -> (IntLit 2)],
-  [k1 -> (IntLit 1)] }
+(Map((PrimType Uint64)(PrimType Uint64))(((UintLit 64 2)(UintLit 64 239))((UintLit 64 1)(UintLit 64 42)))),
+{ [m2 -> (Map((PrimType Uint64)(PrimType Uint64))(((UintLit 64 2)(UintLit 64 239))((UintLit 64 1)(UintLit 64 42))))],
+  [m1 -> (Map((PrimType Uint64)(PrimType Uint64))(((UintLit 64 1)(UintLit 64 42))))],
+  [m0 -> (Map((PrimType Uint64)(PrimType Uint64))())],
+  [v2 -> (UintLit 64 239)],
+  [v1 -> (UintLit 64 42)],
+  [k2 -> (UintLit 64 2)],
+  [k1 -> (UintLit 64 1)] }

@@ -1,18 +1,18 @@
 (* Expected result *)
-(* (ValLit(IntLit 60)) *)
+(* (IntLit 32 60) *)
 
-let a = 1 in
-let b = 2 in
-let n  = None {Int} in
-let o1 = Some {Int} a in
-let o2 = Some {Int} b in
-let p1 = And {(Option Int) (Option Int)} o1 o2 in
-let p2 = And {(Option Int) (Option Int)} o1 n in
-let p3 = And {(Option Int) (Option Int)} n o2 in
+let a = Int32 1 in
+let b = Int32 2 in
+let n  = None {Int32} in
+let o1 = Some {Int32} a in
+let o2 = Some {Int32} b in
+let p1 = And {(Option Int32) (Option Int32)} o1 o2 in
+let p2 = And {(Option Int32) (Option Int32)} o1 n in
+let p3 = And {(Option Int32) (Option Int32)} n o2 in
 
 match p3 with
-  | And None None => 100
+  | And None None => Int32 100
   | And (Some x) (Some y) => builtin add x y
   | And (Some x) None => x
-  | _ => 60
+  | _ => Int32 60
 end

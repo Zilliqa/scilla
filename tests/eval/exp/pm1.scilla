@@ -2,9 +2,9 @@
 let b = True in
 let c = False in
 match b with 
-    | False => 1
+    | False => Int32 1
     | True  => match c with 
-               | False => 2
-               | True  => 3
+               | False => Int32 2
+               | True  => Int32 3
                end
     end
