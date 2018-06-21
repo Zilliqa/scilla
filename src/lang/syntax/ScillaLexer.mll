@@ -36,7 +36,7 @@ rule read =
   | hex    as i   { HEXLIT i }
 
   (* Integer types *)
-  | intty as i { TID i }
+  | intty as i { CID i }
 
   (* Keywords *)          
   | "forall"      { FORALL }      

@@ -164,7 +164,7 @@ simple_exp :
 lit :        
 | BLOCK;
   n = NUMLIT   { BNum (Big_int.string_of_big_int n) }
-| i = TID;
+| i = CID;
   n = NUMLIT   {
     let string_of_n = Big_int.string_of_big_int n in
     let intlit = build_int i string_of_n in

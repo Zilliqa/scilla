@@ -423,7 +423,7 @@ module BuiltInDictionary = struct
     (* Strings *)
     ("eq", ["String"; "String"], String.eq);
     ("concat", ["String"; "String"], String.concat);
-    ("substr", ["String"; "Int"; "Int"], String.substr);
+    ("substr", ["String"; "Uint"; "Uint"], String.substr);
 
     (* Integers *)
     ("eq",  ["Int"; "Int"], Int.eq);
