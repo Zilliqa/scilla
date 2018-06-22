@@ -345,7 +345,7 @@ module BNum = struct
     | _ -> builtin_fail "BNum.blt" ls
 
   let badd ls = match ls with
-    | [BNum x; IntLit (wy, y)] ->
+    | [BNum x; UintLit (wy, y)] ->
         let i1 = big_int_of_string x in
         let i2 = big_int_of_string y in
         if ge_big_int i2 (big_int_of_int 0)
@@ -444,7 +444,7 @@ module BuiltInDictionary = struct
     (* Block numbers *)
     ("eq",  ["BNum"; "BNum"], BNum.eq);
     ("blt", ["BNum"; "BNum"], BNum.blt);
-    ("badd", ["BNum"; "Int"],  BNum.badd);
+    ("badd", ["BNum"; "Uint"],  BNum.badd);
     
     (* Addresses *)
     ("eq",  ["Address"; "Address"], Address.eq);
