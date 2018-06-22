@@ -6,12 +6,11 @@
     "params": []
   },
   "states": [
-    { "vname": "_balance", "type": "Int", "value": "122" },
+    { "vname": "_balance", "type": "Uint128", "value": "122" },
     {
       "vname": "callers",
       "type": "Map",
-      "value": [ { "keyType": "Address", "valType": "Int" } ]
+      "value": [ { "keyType": "Address", "valType": "Int32" } ]
     }
   ]
 }
-

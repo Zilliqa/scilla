@@ -3,15 +3,15 @@
     "_tag": "Main",
     "_amount": "0",
     "_recipient": "0x1992d4dfafd282e8a8b3c776eb9fc907d321e21a",
-    "params": [ { "vname": "code", "type": "Int", "value": "2" } ]
+    "params": [ { "vname": "code", "type": "Int32", "value": "2" } ]
   },
   "states": [
-    { "vname": "_balance", "type": "Int", "value": "0" },
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "ping_addr",
       "type": "ADT",
       "value": { "constructor": "None", "argtypes": [], "arguments": [] }
     },
-    { "vname": "count", "type": "Int", "value": "2" }
+    { "vname": "count", "type": "Int32", "value": "2" }
   ]
 }

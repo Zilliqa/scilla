@@ -1,12 +1,12 @@
 [
     {
         "vname" : "count",
-        "type" : "Int",
+        "type" : "Int32",
         "value" : "1"
     },
     {
         "vname": "_balance",
-        "type": "Int",
+        "type": "Uint128",
         "value": "0"
     },
     {

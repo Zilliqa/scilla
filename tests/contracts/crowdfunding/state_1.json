@@ -7,7 +7,7 @@
   },
   {
     "vname": "_balance",
-    "type": "Int",
+    "type": "Int128",
     "value": "0"
   }
 ]

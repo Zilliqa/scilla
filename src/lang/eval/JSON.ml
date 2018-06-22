@@ -74,9 +74,9 @@ let build_lit_exn t v =
     | "BNum" -> Some (lit_exn(BNum v))
     | "Address" -> Some (lit_exn(Address v))
     | "Hash" -> Some (lit_exn(Sha256 v))
-    | _ ->             
+    | _ ->
     (* See if it is an Int/Uint type. *)
-    if is_int_type t || is_uint_type t 
+    if is_int_type t || is_uint_type t
     then
       Some (build_int_exn t v)
     else

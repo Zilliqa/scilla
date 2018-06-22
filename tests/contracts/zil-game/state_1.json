@@ -16,7 +16,7 @@
   },
   {
     "vname": "_balance",
-    "type": "Int",
+    "type": "Uint128",
     "value": "500"
   }
 ]

@@ -2,7 +2,7 @@
     { "vname": "callers", "type": "Map", "value": null },
     {
         "vname": "_balance",
-        "type": "Int",
+        "type": "Uint128",
         "value": "122"
     }
 ]

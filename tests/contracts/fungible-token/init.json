@@ -6,7 +6,7 @@
     },
     {
         "vname" : "total_tokens",
-        "type" : "Int",
+        "type" : "Uint128",
         "value" : "10000"
     }
 ]

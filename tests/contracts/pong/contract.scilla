@@ -5,9 +5,9 @@ let one_msg =
     let nil_msg = Nil {Message} in
       Cons {Message} msg nil_msg
 
-let game_over = 0
-let calling_ping = 1
-let addr_not_set = 2
+let game_over = Int32 0
+let calling_ping = Int32 1
+let addr_not_set = Int32 2
 
 (***************************************************)
 (*             The contract definition             *)
@@ -18,11 +18,11 @@ contract Pong
 ()
 
 (* Mutable fields *)
-field count : Int = 2
+field count : Int32 = Int32 2
 field ping_addr : Option Address = None {Address}
 
 transition Pong ()
-  one = 1;
+  one = Int32 1;
   paOpt <- ping_addr;
   match paOpt with
   | Some pingAddr =>
@@ -30,18 +30,18 @@ transition Pong ()
     is_game_over = builtin lt cnt one;
     match is_game_over with
     | True =>
-      msg = {_tag : Main; _recipient : _sender; _amount : 0; code : game_over};
+      msg = {_tag : Main; _recipient : _sender; _amount : Uint128 0; code : game_over};
       msgs = one_msg msg;
       send msgs
     | False =>
       deccount = builtin sub cnt one;
       count := deccount;
-      msg = {_tag : Ping; _recipient : pingAddr; _amount : 0; code : calling_ping};
+      msg = {_tag : Ping; _recipient : pingAddr; _amount : Uint128 0; code : calling_ping};
       msgs = one_msg msg;
       send msgs
     end
   | None =>
-    msg = {_tag : Main; _recipient : _sender; _amount : 0 ; code : addr_not_set};
+    msg = {_tag : Main; _recipient : _sender; _amount : Uint128 0; code : addr_not_set};
     msgs = one_msg msg;
     send msgs
   end
