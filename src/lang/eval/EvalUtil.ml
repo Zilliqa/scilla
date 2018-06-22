@@ -13,7 +13,7 @@ open Result.Let_syntax
 open MonadUtil
 open Stdint
 
-let balance = "balance"
+let balance_label = "_balance"
 
   (*  Pretty-printing *)
 
@@ -161,7 +161,7 @@ module Configuration = struct
 
   let load st k =
     let i = get_id k in
-    if i = balance
+    if i = balance_label
     then
       (* Balance is a special case *)   
       pure @@ UintLit (128, (Uint128.to_string st.balance))

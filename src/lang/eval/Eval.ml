@@ -350,7 +350,7 @@ let append_implict_transition_params tparams =
     let sender_id = asId MessagePayload.sender_label in
     let sender = (sender_id, PrimType("Address")) in
     let amount_id = asId MessagePayload.amount_label in
-    let amount = (amount_id, PrimType("Int")) in
+    let amount = (amount_id, PrimType("Uint128")) in
         amount :: sender :: tparams
 
 (* Restrict message entries to the transition parameters *)

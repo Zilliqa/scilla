@@ -31,7 +31,7 @@ let lit_exn n =
     | UintLit (wl, l) ->
       l, Str.regexp "[0-9]+$", 0
     | BNum l ->
-      l, Str.regexp "?[0-9]+$", 0
+      l, Str.regexp "[0-9]+$", 0
     | Address a ->
         a, Str.regexp "0x[0-9a-f]+$", addr_len+2
     | Sha256 s ->
@@ -328,9 +328,11 @@ let get_json_data filename =
   let amounts = member_exn amount_label json |> to_string in
   let senders = member_exn sender_label json |> to_string in
   (* Make tag, amount and sender into a literal *)
-  let tag = (tag_label, StringLit(tags)) in
-  let amount = (amount_label, UintLit(128, amounts)) in
-  let sender = (sender_label, Address(senders)) in
+  let tag = (tag_label, lit_exn(StringLit(tags))) in
+  let amount_lit = build_int "Uint128" amounts in
+  if amount_lit = None then raise (Invalid_json "Invalid \"_amount\" value in json");
+  let amount = (amount_label, lit_exn (BatOption.get amount_lit)) in
+  let sender = (sender_label, lit_exn(Address(senders))) in
   let pjlist = member_exn "params" json |> to_list in
   let plist = List.map pjlist ~f:jobj_to_statevar in
   let params = List.fold_right plist ~init:[]
