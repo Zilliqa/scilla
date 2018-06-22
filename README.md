@@ -1,5 +1,5 @@
 # Scilla: A Smart Contract Intermediate Level Language
-![](https://github.com/Zilliqa/scilla/blob/master/imgs/scilla-logo-color.jpg)
+![](https://github.com/Zilliqa/scilla/blob/master/imgs/scilla-logo-color.jpg=200x200)
 
 
 ## Project structure
