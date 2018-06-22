@@ -60,31 +60,35 @@ let lit_exn n =
   else
     raise (Invalid_json ("Invalid " ^ literal_tag n ^ " : " ^ s ^ " in json"))
 
-let lit_with_typ_exn json =
-  let wrap_lit_exn f = Some (lit_exn (f (to_string json))) in function
-    | "String" -> wrap_lit_exn (fun x -> StringLit x)
-    | "BNum" -> wrap_lit_exn (fun x -> BNum x)
-    | "Address" -> wrap_lit_exn (fun x -> Address x)
-    | "Hash" -> wrap_lit_exn (fun x -> Sha256 x)
-    (* TODO: Something for IntX/UintX types *)
-    | _ -> None  
- 
-  
+  let build_int_exn t v =
+    let r = build_int t v in
+    match r with
+    | Some rs ->
+      rs
+    | None ->
+      raise (Invalid_json("Invalid integer type/value " ^ t ^ " " ^ v ^ " in json"))
+
+let build_lit_exn t v =
+    match t with
+    | "String" -> Some (lit_exn (StringLit v))
+    | "BNum" -> Some (lit_exn(BNum v))
+    | "Address" -> Some (lit_exn(Address v))
+    | "Hash" -> Some (lit_exn(Sha256 v))
+    | _ ->             
+    (* See if it is an Int/Uint type. *)
+    if is_int_type t || is_uint_type t 
+    then
+      Some (build_int_exn t v)
+    else
+      None
+
 let rec json_to_adtargs tjs ajs =
   let open Basic.Util in
   match tjs, ajs with
   | (tj :: tr), (aj :: ar) ->
       let tjs = to_string tj in
       let ajs = to_string aj in
-      let argS = 
-        (match tjs with
-         | "String" -> Some (lit_exn(StringLit ajs))
-         | "BNum" -> Some (lit_exn(BNum ajs))
-         | "Address" -> Some (lit_exn(Address ajs))
-         | "Hash" -> Some (lit_exn(Sha256 ajs))
-         (* See if it is an Int/Uint type. *)
-         | _ -> build_int tjs ajs
-        ) in
+      let argS = build_lit_exn tjs ajs in
       let (trem, arem) = json_to_adtargs tr ar in
       (match argS with
        | Some l -> ((PrimType tjs) :: trem, l :: arem)
@@ -138,7 +142,7 @@ and mapvalues_from_json kt vt l =
          | PrimType "Address" -> Some (lit_exn(Address (kjson |> to_string)))
          | PrimType "Hash" -> Some (lit_exn(Sha256 (kjson |> to_string)))
          | PrimType i -> (* Try for Int/Uint types *)
-                build_int i (to_string kjson)
+            Some (build_int_exn i (to_string kjson))
          | _ -> None
          ) in
       let vjson = member_exn "val" first in
@@ -149,11 +153,11 @@ and mapvalues_from_json kt vt l =
          | PrimType "Address" -> Some (lit_exn(Address (vjson |> to_string)))
          | PrimType "Hash" -> Some (lit_exn(Sha256 (vjson |> to_string)))
          | MapType _ ->
-              read_map_json vjson
+            read_map_json vjson
          | ADT _ ->
             read_adt_json vjson
          | PrimType i -> (* Try for Int/Uint types *)
-                build_int i (to_string vjson)
+            Some (build_int_exn i (to_string vjson))
          | _ -> None
           
           ) in
@@ -190,15 +194,8 @@ let jobj_to_statevar json =
     )
   | _ ->  
     let v = member_exn "value" json |> to_string in
-    (match t with
-      (* see Syntax.literal_tag *)
-      | "String" -> Some (lit_exn(StringLit v))
-      | "BNum" -> Some (lit_exn(BNum v))
-      | "Address" -> Some (lit_exn(Address v))
-      | "Hash" -> Some (lit_exn(Sha256 v))
-      | i -> (* Try for Int/Uint types *)
-          build_int i v
-      ) |> Option.map ~f:(fun x -> (n, x))
+    let tv = build_lit_exn t v in
+      Option.map ~f:(fun x -> (n, x)) tv
 
 let rec typ_to_string t = 
   match t with
@@ -329,9 +326,7 @@ let get_json_data filename =
   let senders = member_exn sender_label json |> to_string in
   (* Make tag, amount and sender into a literal *)
   let tag = (tag_label, lit_exn(StringLit(tags))) in
-  let amount_lit = build_int "Uint128" amounts in
-  if amount_lit = None then raise (Invalid_json "Invalid \"_amount\" value in json");
-  let amount = (amount_label, lit_exn (BatOption.get amount_lit)) in
+  let amount = (amount_label, build_int_exn "Uint128" amounts) in
   let sender = (sender_label, lit_exn(Address(senders))) in
   let pjlist = member_exn "params" json |> to_list in
   let plist = List.map pjlist ~f:jobj_to_statevar in
