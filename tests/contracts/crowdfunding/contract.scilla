@@ -103,7 +103,7 @@ transition Donate ()
     end  
   | False => 
     msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : missed_dealine_code};
+            code : missed_deadline_code};
     msgs = one_msg msg;
     send msgs
   end 
