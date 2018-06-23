@@ -391,7 +391,7 @@ let post_process_msgs cstate outs =
       | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal l)) in
   let open Uint128 in
   let to_be_transferred = List.fold_left amounts ~init:zero
-      ~f:(fun z a -> Uint128.add z a) in
+      ~f:(fun z a -> add z a) in
   let open ContractState in
   if (compare cstate.balance to_be_transferred) < 0
   then fail @@ sprintf
