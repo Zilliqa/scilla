@@ -1,0 +1,11 @@
+(* Expected result: Underflow *)
+let f =
+  fun (a : Uint32) =>
+  fun (b : Uint32) =>
+	  builtin add a b
+in
+(* Uint32.int_ax = 4294967295  *)
+let a = Uint32 4294967295 in
+let b = Uint32 1 in
+(* a * b *)
+f a b

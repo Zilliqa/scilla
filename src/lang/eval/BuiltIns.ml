@@ -200,27 +200,29 @@ module Int = struct
     | _ -> builtin_fail "Int.eq" ls
 
   let add ls = match ls with
-    | [IntLit (wx, x); IntLit (wy, y)] -> 
+    | [IntLit (wx, x); IntLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Int.add: type mismatch" ls
       else
-        (match wx with
+        (try match wx with
          | 32 ->
              pure (IntLit (wx, Int32Wrapper.safe_add x y))
          | 64 ->
              pure (IntLit (wx, Int64Wrapper.safe_add x y))
          | 128 ->
              pure (IntLit (wx, Int128Wrapper.safe_add x y))
-        | _ -> builtin_fail "Int.add: unsupported Int type" ls
+         | _ -> builtin_fail "Int.add: unsupported Int type" ls
+         with | IntOverflow | IntUnderflow ->
+           builtin_fail "Int.add: an overflow/underflow occurred" ls
         )
     | _ -> builtin_fail "Int.add" ls
 
   let sub ls = match ls with
-    | [IntLit (wx, x); IntLit (wy, y)] -> 
+    | [IntLit (wx, x); IntLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Int.sub: type mismatch" ls
       else
-        (match wx with
+        (try match wx with
          | 32 ->
              pure (IntLit (wx, Int32Wrapper.safe_sub x y))
          | 64 ->
@@ -228,37 +230,43 @@ module Int = struct
          | 128 ->
              pure (IntLit (wx, Int128Wrapper.safe_sub x y))
          | _ -> builtin_fail "Int.sub: unsupported Int type" ls
+         with | IntOverflow | IntUnderflow ->
+           builtin_fail "Int.sub: an overflow/underflow occurred" ls
         )
     | _ -> builtin_fail "Int.sub" ls
 
   let mul ls = match ls with
-    | [IntLit (wx, x); IntLit (wy, y)] -> 
+    | [IntLit (wx, x); IntLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Int.mul: type mistmatch" ls
       else 
-        (match wx with
+        (try match wx with
          | 32 ->
              pure (IntLit (wx, Int32Wrapper.safe_mul x y))
          | 64 ->
              pure (IntLit (wx, Int64Wrapper.safe_mul x y ))
          | 128 ->
              pure (IntLit (wx, Int128Wrapper.safe_mul x y))
-        | _ -> builtin_fail "Int.mul: unsupported Int type" ls
+         | _ -> builtin_fail "Int.mul: unsupported Int type" ls
+         with | IntOverflow | IntUnderflow ->
+           builtin_fail "Int.mul: an overflow/underflow occurred" ls
         )
-    | _ -> builtin_fail "Int.mul" ls  
+    | _ -> builtin_fail "Int.mul" ls
 
   let lt ls = match ls with
-    | [IntLit (wx, x); IntLit (wy, y)] -> 
+    | [IntLit (wx, x); IntLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Int.lt: type mismatch" ls
       else 
-        (match wx with
+        (try match wx with
         | 32 -> pure (to_Bool (Int32Wrapper.safe_lt x y))
         | 64 -> pure (to_Bool (Int64Wrapper.safe_lt x y))
         | 128 -> pure (to_Bool (Int128Wrapper.safe_lt x y))
         | _ -> builtin_fail "Int.lt: unsupported Int type" ls
+        with | IntOverflow | IntUnderflow ->
+          builtin_fail "Int.lt: an overflow/underflow occurred" ls
         )
-    | _ -> builtin_fail "Int.lt" ls  
+    | _ -> builtin_fail "Int.lt" ls
 
 end
 
@@ -276,41 +284,47 @@ module Uint = struct
     | _ -> builtin_fail "Uint.eq" ls
 
   let add ls = match ls with
-    | [UintLit (wx, x); UintLit (wy, y)] -> 
+    | [UintLit (wx, x); UintLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Uint.add: type mismatch" ls
       else
-        (match wx with
+        (try match wx with
         | 32 -> pure (UintLit (wx, Uint32Wrapper.safe_add x y))
         | 64 -> pure (UintLit (wx, Uint64Wrapper.safe_add x y))
         | 128 -> pure (UintLit (wx, Uint128Wrapper.safe_add x y))
         | _ -> builtin_fail "Uint.add: unsupported Uint type" ls
+        with | IntOverflow | IntUnderflow ->
+          builtin_fail "Uint.add: an overflow/underflow occurred" ls
         )
     | _ -> builtin_fail "Uint.add" ls
 
   let sub ls = match ls with
-    | [UintLit (wx, x); UintLit (wy, y)] -> 
+    | [UintLit (wx, x); UintLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Uint.sub: type mismatch" ls
       else
-        (match wx with
+        (try match wx with
         | 32 -> pure (UintLit (wx, Uint32Wrapper.safe_sub x y))
         | 64 -> pure (UintLit (wx, Uint64Wrapper.safe_sub x y))
         | 128 -> pure (UintLit (wx, Uint128Wrapper.safe_sub x y))
         | _ -> builtin_fail "Uint.sub: unsupported Uint type" ls
+        with | IntOverflow | IntUnderflow ->
+          builtin_fail "Uint.sub: an overflow/underflow occurred" ls
         )
     | _ -> builtin_fail "Uint.sub" ls
 
   let mul ls = match ls with
-    | [UintLit (wx, x); UintLit (wy, y)] -> 
+    | [UintLit (wx, x); UintLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Uint.mul: type mistmatch" ls
       else 
-        (match wx with
+        (try match wx with
         | 32 -> pure (UintLit (wx, Uint32Wrapper.safe_mul x y))
         | 64 -> pure (UintLit (wx, Uint64Wrapper.safe_mul  x y ))
         | 128 -> pure (UintLit (wx, Uint128Wrapper.safe_mul  x y))
         | _ -> builtin_fail "Uint.mul: unsupported Uint type" ls
+        with | IntOverflow | IntUnderflow ->
+          builtin_fail "Uint.mul: an overflow/underflow occurred" ls
         )
     | _ -> builtin_fail "Uint.mul" ls  
 
@@ -319,11 +333,13 @@ module Uint = struct
       if (wx <> wy) then
         builtin_fail "Uint.lt: type mismatch" ls
       else 
-        (match wx with
+        (try match wx with
         | 32 -> pure (to_Bool (Uint32Wrapper.safe_lt x y))
         | 64 -> pure (to_Bool (Uint64Wrapper.safe_lt x y))
         | 128 -> pure (to_Bool (Uint128Wrapper.safe_lt x y))
         | _ -> builtin_fail "Uint.lt: unsupported Uint type" ls
+        with | IntOverflow | IntUnderflow ->
+          builtin_fail "Uint.lt: an overflow/underflow occurred" ls
         )
     | _ -> builtin_fail "Uint.lt" ls  
 end

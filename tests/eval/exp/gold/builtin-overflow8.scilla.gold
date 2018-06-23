@@ -1,0 +1,3 @@
+Failed execution:
+Cannot apply built-in Uint.sub: an overflow/underflow occurred to a list of arguments:(UintLit 32 0),
+ (UintLit 32 1).

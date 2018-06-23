@@ -48,7 +48,10 @@ let explist = [
   "list_exists.scilla"; "list_sort.scilla"; "list_find.scilla";
   "list_zip.scilla"; "list_zip_with.scilla"; "list_unzip.scilla";
   "nat_to_int.scilla"; "list_to_map.scilla"; "list_sort_eq.scilla";
-  "list_nth.scilla"
+  "list_nth.scilla"; "builtin-overflow1.scilla"; "builtin-overflow2.scilla";
+  "builtin-overflow3.scilla"; "builtin-overflow4.scilla"; "builtin-overflow5.scilla";
+  "builtin-overflow6.scilla"; "builtin-overflow7.scilla"; "builtin-overflow8.scilla";
+  "builtin-overflow9.scilla";
 ]
 
 let rec build_exp_tests bindir testsdir pcli el =
