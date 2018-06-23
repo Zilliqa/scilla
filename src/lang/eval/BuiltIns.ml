@@ -27,30 +27,6 @@ let builtin_fail name ls =
   fail @@ sprintf "Cannot apply built-in %s to a list of arguments:%s."
     name (print_literal_list ls)
 
-module StdIntWrapper = struct
-type 'I gi = { compare : 'I -> 'I -> int;
-               of_string : string ->'I;
-               to_string : 'I -> string }
-let int32gi = { compare = Int32.compare;
-                of_string = Int32.of_string;
-                to_string = Int32.to_string }
-let int64gi = { compare = Int64.compare;
-                of_string = Int64.of_string;
-                to_string = Int64.to_string } 
-let int128gi = { compare = Int128.compare;
-                 of_string = Int128.of_string;
-                 to_string = Int128.to_string }
-let uint32gi = { compare = Uint32.compare;
-                 of_string = Uint32.of_string;
-                 to_string = Uint32.to_string }
-let uint64gi = { compare = Uint64.compare;
-                 of_string = Uint64.of_string;
-                 to_string = Uint64.to_string } 
-let uint128gi = { compare = Uint128.compare;
-                  of_string = Uint128.of_string;
-                  to_string = Uint128.to_string } 
-end
-
 module UsefulLiterals = struct
   let true_lit = ADTValue ("True", [], [])
   let false_lit = ADTValue ("False", [], [])
@@ -82,16 +58,28 @@ module String = struct
   | _ -> builtin_fail "String.substr" ls
 end
 
-(* Integer operation *)
-module Int = struct
-  open UsefulLiterals
+(*******************************************************)
+(* Manipulating with arbitrary integer representations *)
+(*******************************************************)
+module type IntRep = sig
+  type t
+  val compare : t -> t -> int
+  val of_string : string -> t
+  val to_string : t -> string
+  val add: t -> t -> t
+  val sub: t -> t -> t
+  val mul: t -> t -> t
+  val abs: t -> t
+  val zero: t
+end
 
-  open StdIntWrapper
-
-  let safe_add (f : 'I gi) (add : 'I -> 'I -> 'I) (zero : 'I) astr bstr =
-    let a = f.of_string astr in
-    let b = f.of_string bstr in
-    let r = add a b in
+module StdIntWrapper(R: IntRep) = struct
+  open R
+  
+  let safe_add astr bstr =
+    let a = R.of_string astr in
+    let b = R.of_string bstr in
+    let r = R.add a b in
     (* if a > 0 && b > 0 && r < 0 then we have an overflow*)
     if ((compare a zero) > 0 && (compare b zero) > 0 && (compare r zero) < 0) 
       then raise IntOverflow
@@ -99,12 +87,12 @@ module Int = struct
     else if ((compare a zero) < 0 && (compare b zero) < 0 && (compare r zero) > 0) 
       then raise IntUnderflow
     else
-      f.to_string r
+      R.to_string r
 
-  let safe_sub (f : 'I gi) (sub : 'I -> 'I -> 'I) (zero : 'I) astr bstr =
-    let a = f.of_string astr in
-    let b = f.of_string bstr in
-    let r = sub a b in
+  let safe_sub astr bstr =
+    let a = R.of_string astr in
+    let b = R.of_string bstr in
+    let r = R.sub a b in
     (* if a > 0 && b < 0 && r < 0 then we have an overflow *)
     if ((compare a zero) > 0 && (compare b zero) < 0 && (compare r zero) < 0) 
       then raise IntOverflow
@@ -112,22 +100,43 @@ module Int = struct
     else if ((compare a zero) < 0 && (compare b zero) > 0 && (compare r zero) > 0) 
       then raise IntUnderflow
     else
-      f.to_string r
+      R.to_string r
 
-  let safe_mul (f : 'I gi) (mul : 'I -> 'I -> 'I) (abs : 'I -> 'I) astr bstr  =
-    let a = f.of_string astr in
-    let b = f.of_string bstr in
+  let safe_mul astr bstr  =
+    let open R in
+    let a = of_string astr in
+    let b = of_string bstr in
     let r = mul a b in
     (* if abr(r) < abs(a) || abs(r) < abs(b) then we have an overflow *)
     if ((compare (abs r) (abs a)) < 0 || (compare (abs r) (abs b)) < 0)
       then raise IntOverflow
     else
-      f.to_string r
+      to_string r
 
-  let safe_lt (f : 'I gi) astr bstr =
-    let a = f.of_string astr in
-    let b = f.of_string bstr in
+  let safe_lt astr bstr =
+    let open R in
+    let a = of_string astr in
+    let b = of_string bstr in
     if (compare a b) < 0 then true else false
+
+end
+
+(* Instantiating the functors *)
+module Int32Wrapper = StdIntWrapper(Int32)
+module Int64Wrapper = StdIntWrapper(Int64)
+module Int128Wrapper = StdIntWrapper(Int128)
+module Uint32Wrapper = StdIntWrapper(Uint32)
+module Uint64Wrapper = StdIntWrapper(Uint64)
+module Uint128Wrapper = StdIntWrapper(Uint128)
+
+type int_type = IntT | UintT
+
+(*******************************************************)
+(*******************************************************)
+
+(* Integer operations *)
+module Int = struct
+  open UsefulLiterals
 
   let eq ls = match ls with
     | [IntLit (wx, x); IntLit (wy, y)] ->
@@ -144,9 +153,12 @@ module Int = struct
         builtin_fail "Int.add: type mismatch" ls
       else
         (match wx with
-        | 32 -> pure (IntLit (wx, safe_add int32gi Int32.add Int32.zero x y))
-        | 64 -> pure (IntLit (wx, safe_add int64gi Int64.add Int64.zero x y))
-        | 128 -> pure (IntLit (wx, safe_add int128gi Int128.add Int128.zero x y))
+         | 32 ->
+             pure (IntLit (wx, Int32Wrapper.safe_add x y))
+         | 64 ->
+             pure (IntLit (wx, Int64Wrapper.safe_add x y))
+         | 128 ->
+             pure (IntLit (wx, Int128Wrapper.safe_add x y))
         | _ -> builtin_fail "Int.add: unsupported Int type" ls
         )
     | _ -> builtin_fail "Int.add" ls
@@ -157,10 +169,13 @@ module Int = struct
         builtin_fail "Int.sub: type mismatch" ls
       else
         (match wx with
-        | 32 -> pure (IntLit (wx, safe_sub int32gi Int32.sub Int32.zero x y))
-        | 64 -> pure (IntLit (wx, safe_sub int64gi Int64.sub Int64.zero x y))
-        | 128 -> pure (IntLit (wx, safe_sub int128gi Int128.sub Int128.zero x y))
-        | _ -> builtin_fail "Int.sub: unsupported Int type" ls
+         | 32 ->
+             pure (IntLit (wx, Int32Wrapper.safe_sub x y))
+         | 64 ->
+             pure (IntLit (wx, Int64Wrapper.safe_sub x y))
+         | 128 ->
+             pure (IntLit (wx, Int128Wrapper.safe_sub x y))
+         | _ -> builtin_fail "Int.sub: unsupported Int type" ls
         )
     | _ -> builtin_fail "Int.sub" ls
 
@@ -170,9 +185,12 @@ module Int = struct
         builtin_fail "Int.mul: type mistmatch" ls
       else 
         (match wx with
-        | 32 -> pure (IntLit (wx, safe_mul int32gi Int32.mul Int32.abs x y))
-        | 64 -> pure (IntLit (wx, safe_mul int64gi Int64.mul Int64.abs x y ))
-        | 128 -> pure (IntLit (wx, safe_mul int128gi Int128.mul Int128.abs x y))
+         | 32 ->
+             pure (IntLit (wx, Int32Wrapper.safe_mul x y))
+         | 64 ->
+             pure (IntLit (wx, Int64Wrapper.safe_mul x y ))
+         | 128 ->
+             pure (IntLit (wx, Int128Wrapper.safe_mul x y))
         | _ -> builtin_fail "Int.mul: unsupported Int type" ls
         )
     | _ -> builtin_fail "Int.mul" ls  
@@ -183,9 +201,9 @@ module Int = struct
         builtin_fail "Int.lt: type mismatch" ls
       else 
         (match wx with
-        | 32 -> pure (to_Bool (safe_lt int32gi x y))
-        | 64 -> pure (to_Bool (safe_lt int64gi x y))
-        | 128 -> pure (to_Bool (safe_lt int128gi x y))
+        | 32 -> pure (to_Bool (Int32Wrapper.safe_lt x y))
+        | 64 -> pure (to_Bool (Int64Wrapper.safe_lt x y))
+        | 128 -> pure (to_Bool (Int128Wrapper.safe_lt x y))
         | _ -> builtin_fail "Int.lt: unsupported Int type" ls
         )
     | _ -> builtin_fail "Int.lt" ls  
@@ -195,43 +213,6 @@ end
 (* Unsigned integer operation *)
 module Uint = struct
   open UsefulLiterals
-  open StdIntWrapper
-
-  let safe_add (f : 'I gi) (add : 'I -> 'I -> 'I) astr bstr =
-    let a = f.of_string astr in
-    let b = f.of_string bstr in
-    let r = add a b in
-    (* if r < a || r < b then we have an overflow *)
-    if ((compare r a) < 0 || (compare r b) < 0)
-      then raise IntOverflow
-    else
-      f.to_string r
-
-  let safe_sub (f : 'I gi) (sub : 'I -> 'I -> 'I) astr bstr =
-    let a = f.of_string astr in
-    let b = f.of_string bstr in
-    let r = sub a b in
-    (* if a < b then we have an underflow *)
-    if (compare a b) < 0
-      then raise IntUnderflow
-    else
-      f.to_string r
-
-  let safe_mul (f : 'I gi) (mul : 'I -> 'I -> 'I) astr bstr  =
-    let a = f.of_string astr in
-    let b = f.of_string bstr in
-    let r = mul a b in
-    (* if r < a || r < b then we have an overflow *)
-    if ((compare r a) < 0 || (compare r b) < 0)
-      then raise IntOverflow
-    else
-      f.to_string r
-
-  let safe_lt (f : 'I gi) astr bstr =
-    let a = f.of_string astr in
-    let b = f.of_string bstr in
-    if (compare a b) < 0 then true else false
-
   let eq ls = match ls with
     | [UintLit (wx, x); UintLit (wy, y)] ->
       if (wx <> wy) 
@@ -247,9 +228,9 @@ module Uint = struct
         builtin_fail "Uint.add: type mismatch" ls
       else
         (match wx with
-        | 32 -> pure (UintLit (wx, safe_add uint32gi Uint32.add x y))
-        | 64 -> pure (UintLit (wx, safe_add uint64gi Uint64.add x y))
-        | 128 -> pure (UintLit (wx, safe_add uint128gi Uint128.add x y))
+        | 32 -> pure (UintLit (wx, Uint32Wrapper.safe_add x y))
+        | 64 -> pure (UintLit (wx, Uint64Wrapper.safe_add x y))
+        | 128 -> pure (UintLit (wx, Uint128Wrapper.safe_add x y))
         | _ -> builtin_fail "Uint.add: unsupported Uint type" ls
         )
     | _ -> builtin_fail "Uint.add" ls
@@ -260,9 +241,9 @@ module Uint = struct
         builtin_fail "Uint.sub: type mismatch" ls
       else
         (match wx with
-        | 32 -> pure (UintLit (wx, safe_sub uint32gi Uint32.sub x y))
-        | 64 -> pure (UintLit (wx, safe_sub uint64gi Uint64.sub x y))
-        | 128 -> pure (UintLit (wx, safe_sub uint128gi Uint128.sub x y))
+        | 32 -> pure (UintLit (wx, Uint32Wrapper.safe_sub x y))
+        | 64 -> pure (UintLit (wx, Uint64Wrapper.safe_sub x y))
+        | 128 -> pure (UintLit (wx, Uint128Wrapper.safe_sub x y))
         | _ -> builtin_fail "Uint.sub: unsupported Uint type" ls
         )
     | _ -> builtin_fail "Uint.sub" ls
@@ -273,9 +254,9 @@ module Uint = struct
         builtin_fail "Uint.mul: type mistmatch" ls
       else 
         (match wx with
-        | 32 -> pure (UintLit (wx, safe_mul uint32gi Uint32.mul x y))
-        | 64 -> pure (UintLit (wx, safe_mul uint64gi Uint64.mul x y ))
-        | 128 -> pure (UintLit (wx, safe_mul uint128gi Uint128.mul x y))
+        | 32 -> pure (UintLit (wx, Uint32Wrapper.safe_mul x y))
+        | 64 -> pure (UintLit (wx, Uint64Wrapper.safe_mul  x y ))
+        | 128 -> pure (UintLit (wx, Uint128Wrapper.safe_mul  x y))
         | _ -> builtin_fail "Uint.mul: unsupported Uint type" ls
         )
     | _ -> builtin_fail "Uint.mul" ls  
@@ -286,9 +267,9 @@ module Uint = struct
         builtin_fail "Uint.lt: type mismatch" ls
       else 
         (match wx with
-        | 32 -> pure (to_Bool (safe_lt uint32gi x y))
-        | 64 -> pure (to_Bool (safe_lt uint64gi x y))
-        | 128 -> pure (to_Bool (safe_lt uint128gi x y))
+        | 32 -> pure (to_Bool (Uint32Wrapper.safe_lt x y))
+        | 64 -> pure (to_Bool (Uint64Wrapper.safe_lt x y))
+        | 128 -> pure (to_Bool (Uint128Wrapper.safe_lt x y))
         | _ -> builtin_fail "Uint.lt: unsupported Uint type" ls
         )
     | _ -> builtin_fail "Uint.lt" ls  
