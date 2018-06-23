@@ -1,0 +1,44 @@
+{
+  "message": {
+    "_tag": "Main",
+    "_amount": "0",
+    "_recipient": "0x64345678901234567890123456789012345678cd",
+    "params": [ { "vname": "err_msg", "type": "Int", "value": "1" } ]
+  },
+  "states": [
+    { "vname": "_balance", "type": "Int", "value": "0" },
+    {
+      "vname": "allowed",
+      "type": "Map",
+      "value": [
+        { "keyType": "Address", "valType": "Map (Address) (Int)" },
+        {
+          "key": "0x1234567890123456789012345678901234567890",
+          "val": [
+            { "keyType": "Address", "valType": "Int" },
+            {
+              "key": "0x64345678901234567890123456789012345678cd",
+              "val": "600"
+            },
+            {
+              "key": "0x54345678901234567890123456789012345678cd",
+              "val": "500"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "vname": "balances",
+      "type": "Map",
+      "value": [
+        { "keyType": "Address", "valType": "Int" },
+        { "key": "0x44345678901234567890123456789012345678cd", "val": "20" },
+        {
+          "key": "0x1234567890123456789012345678901234567890",
+          "val": "9980"
+        }
+      ]
+    }
+  ]
+}
