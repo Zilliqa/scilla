@@ -69,17 +69,19 @@ module type IntRep = sig
   val add: t -> t -> t
   val sub: t -> t -> t
   val mul: t -> t -> t
+  val div: t -> t -> t
   val abs: t -> t
   val zero: t
+  val min_int: t
 end
 
 module StdIntWrapper(R: IntRep) = struct
   open R
   
   let safe_add astr bstr =
-    let a = R.of_string astr in
-    let b = R.of_string bstr in
-    let r = R.add a b in
+    let a = of_string astr in
+    let b = of_string bstr in
+    let r = add a b in
     (* if a > 0 && b > 0 && r < 0 then we have an overflow*)
     if ((compare a zero) > 0 && (compare b zero) > 0 && (compare r zero) < 0) 
       then raise IntOverflow
@@ -87,11 +89,11 @@ module StdIntWrapper(R: IntRep) = struct
     else if ((compare a zero) < 0 && (compare b zero) < 0 && (compare r zero) > 0) 
       then raise IntUnderflow
     else
-      R.to_string r
+      to_string r
 
   let safe_sub astr bstr =
-    let a = R.of_string astr in
-    let b = R.of_string bstr in
+    let a = of_string astr in
+    let b = of_string bstr in
     let r = R.sub a b in
     (* if a > 0 && b < 0 && r < 0 then we have an overflow *)
     if ((compare a zero) > 0 && (compare b zero) < 0 && (compare r zero) < 0) 
@@ -100,21 +102,71 @@ module StdIntWrapper(R: IntRep) = struct
     else if ((compare a zero) < 0 && (compare b zero) > 0 && (compare r zero) > 0) 
       then raise IntUnderflow
     else
-      R.to_string r
+      to_string r
 
   let safe_mul astr bstr  =
-    let open R in
     let a = of_string astr in
     let b = of_string bstr in
     let r = mul a b in
-    (* if abr(r) < abs(a) || abs(r) < abs(b) then we have an overflow *)
-    if ((compare (abs r) (abs a)) < 0 || (compare (abs r) (abs b)) < 0)
-      then raise IntOverflow
+    (* http://www.informit.com/articles/article.aspx?p=1959565&seqNum=13 *)
+    (* if b < 0 && a = int_min OR if b != 0 && r / b != a *)
+    if (compare b zero) < 0 && a = min_int then raise IntOverflow else
+    if compare b zero <> 0
+    then
+      let d = div r b in
+      if (compare d a <> 0)
+        then raise IntOverflow
+      else
+        to_string r
     else
       to_string r
 
   let safe_lt astr bstr =
-    let open R in
+    let a = of_string astr in
+    let b = of_string bstr in
+    if (compare a b) < 0 then true else false
+
+end
+
+module StdUintWrapper(R: IntRep) = struct
+  open R
+
+  let safe_add astr bstr =
+    let a = of_string astr in
+    let b = of_string bstr in
+    let r = add a b in
+    (* if r < a || r < b then we have an overflow *)
+    if ((compare r a) < 0 || (compare r b) < 0)
+      then raise IntOverflow
+    else
+      to_string r
+
+  let safe_sub astr bstr =
+    let a = of_string astr in
+    let b = of_string bstr in
+    let r = sub a b in
+    (* if a < b then we have an underflow *)
+    if (compare a b) < 0
+      then raise IntUnderflow
+    else
+      to_string r
+
+  let safe_mul astr bstr  =
+    let a = of_string astr in
+    let b = of_string bstr in
+    let r = mul a b in
+    (* if b != 0 && r / b != a *)
+    if compare b zero <> 0
+    then
+      let d = div r b in
+      if (compare d a <> 0)
+        then raise IntOverflow
+      else
+        to_string r
+    else
+      to_string r
+
+  let safe_lt astr bstr =
     let a = of_string astr in
     let b = of_string bstr in
     if (compare a b) < 0 then true else false
@@ -125,9 +177,9 @@ end
 module Int32Wrapper = StdIntWrapper(Int32)
 module Int64Wrapper = StdIntWrapper(Int64)
 module Int128Wrapper = StdIntWrapper(Int128)
-module Uint32Wrapper = StdIntWrapper(Uint32)
-module Uint64Wrapper = StdIntWrapper(Uint64)
-module Uint128Wrapper = StdIntWrapper(Uint128)
+module Uint32Wrapper = StdUintWrapper(Uint32)
+module Uint64Wrapper = StdUintWrapper(Uint64)
+module Uint128Wrapper = StdUintWrapper(Uint128)
 
 type int_type = IntT | UintT
 
@@ -213,6 +265,7 @@ end
 (* Unsigned integer operation *)
 module Uint = struct
   open UsefulLiterals
+
   let eq ls = match ls with
     | [UintLit (wx, x); UintLit (wy, y)] ->
       if (wx <> wy) 

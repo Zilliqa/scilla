@@ -295,7 +295,7 @@ module MessagePayload = struct
             (try
                let open Uint128 in
                let i = of_string s in
-               if (compare i zero) >= 0
+               if (compare i zero) >= 0 && ws = 128
                then Some (pure i)
                else
                  Some (fail @@ sprintf "Amount should be non-negative: %s" s)
