@@ -18,29 +18,29 @@ let list_exists =
       folder iter init l
 in
 
-let int_exists = @list_exists Int in
+let int_exists = @list_exists Int128 in
 let f =
-  fun (a : Int) =>
-    let three = 3 in
+  fun (a : Int128) =>
+    let three = Int128 3 in
     builtin lt a three
 in
 let g =
-  fun (a : Int) =>
-    let five = 5 in
+  fun (a : Int128) =>
+    let five = Int128 5 in
     builtin lt five a
 in
 
-let zero = 0 in
-let one = 1 in
-let two = 2 in
-let three = 3 in
-let four = 4 in
+let zero = Int128 0 in
+let one = Int128 1 in
+let two = Int128 2 in
+let three = Int128 3 in
+let four = Int128 4 in
 
 let nil = Nil in
-let l1 = Cons {Int} four nil in
-let l2 = Cons {Int} three l1 in
-let l3 = Cons {Int} two l2 in
-let l4 = Cons {Int} one l3 in
+let l1 = Cons {Int128} four nil in
+let l2 = Cons {Int128} three l1 in
+let l3 = Cons {Int128} two l2 in
+let l4 = Cons {Int128} one l3 in
 
 (* test if exists < 3 (true) *)
 let res1 = int_exists f l4 in

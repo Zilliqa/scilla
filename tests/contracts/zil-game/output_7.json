@@ -3,10 +3,10 @@
     "_tag": "Main",
     "_amount": "500",
     "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [ { "vname": "code", "type": "Int", "value": "6" } ]
+    "params": [ { "vname": "code", "type": "Int32", "value": "6" } ]
   },
   "states": [
-    { "vname": "_balance", "type": "Int", "value": "0" },
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "timer",
       "type": "ADT",
@@ -23,7 +23,7 @@
         "constructor": "Some",
         "argtypes": [ "Hash" ],
         "arguments": [
-          "0x25a1f113ec3aebd67ebf8cac5025ff8fdf34a7686a94e65278c9a881baf9755e"
+          "0xe25c8fc34e419385c94dd12af11310a90b81c0ce9bc6f4a8058c6eb3bbfa4bba"
         ]
       }
     },

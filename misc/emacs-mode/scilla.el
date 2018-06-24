@@ -18,7 +18,8 @@
   '("False" "True" "Some" "None"))
 
 (defvar scilla-types
-  '("String" "Int" "BNum" "Address" "Hash" "Message" "Map" "ADT"))
+  '("String" "Int32" "Int64" "Int128" "Uint32" "Uint64" "Uint128"
+    "BNum" "Address" "Hash" "Message" "Map" "ADT"))
 
 (defvar scilla-keywords
   '("builtin" "block" "library" "let" "in" "match" "with" "end"

@@ -3,10 +3,10 @@
     "_tag": "Main",
     "_amount": "0",
     "_recipient": "0xffcdeabcde123456789012345678901234567890",
-    "params": [ { "vname": "code", "type": "Int", "value": "2" } ]
+    "params": [ { "vname": "code", "type": "Int32", "value": "2" } ]
   },
   "states": [
-    { "vname": "_balance", "type": "Int", "value": "500" },
+    { "vname": "_balance", "type": "Uint128", "value": "500" },
     {
       "vname": "timer",
       "type": "ADT",

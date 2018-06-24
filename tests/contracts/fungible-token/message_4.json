@@ -10,7 +10,7 @@
         },
         {
             "vname": "tokens",
-            "type": "Int",
+            "type": "Uint128",
             "value": "500"
         }
     ]

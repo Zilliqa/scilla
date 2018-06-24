@@ -10,8 +10,7 @@
 open Core
 open Lexing
 
-(* exception Scanning_error of Lexing.position * string *)
-(* exception Syntax_error of Lexing.position *)
+(* TODO: Use DebugMessage perr/pout instead of fprintf. *)
 
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
@@ -26,7 +25,8 @@ let parse_file parser filename =
         let exprs = parser ScillaLexer.read lexbuf in
         Some exprs
       with
-      | ScillaLexer.Error msg ->
+      | ScillaLexer.Error msg 
+      | Syntax.SyntaxError msg ->
           fprintf stderr "Syntax error in %a: %s\n" print_position lexbuf msg;
           None
       | ScillaParser.Error ->
@@ -40,7 +40,8 @@ let parse_string parser s =
     let exprs = parser ScillaLexer.read lexbuf in
     Some exprs
   with
-  | ScillaLexer.Error msg ->
+  | ScillaLexer.Error msg
+  | Syntax.SyntaxError msg ->
       printf "Lexical error in %a: %s\n" print_position lexbuf msg;
       fprintf stderr "Lexical in %a: %s\n" print_position lexbuf msg;
       None

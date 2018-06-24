@@ -1,21 +1,21 @@
 (* Expected answer *)
-(* (ValLit(IntLit 55)) *)
+(* IntLit 32 55) *)
 
 let check_update = 
   fun (bs : Map Address Int) =>
     fun (sender : Address) =>
-      fun (amount : Int) =>
+      fun (amount : Int32) =>
   let c = builtin contains bs sender in
   match c with 
   | False => 
     let bs1 = builtin put bs sender amount in
-    Some {Map Address Int} bs1 
-  | True  => None {Map Address Int}
+    Some {Map Address Int32} bs1 
+  | True  => None {Map Address Int32}
   end
 in
-let bs = Emp Address Int in
+let bs = Emp Address Int32 in
 let a  = 0x1234567890123456789012345678901234abcdef in
-let amt = 55 in
+let amt = Int32 55 in
 let res = check_update bs a amt in
 match res with
 | None => None

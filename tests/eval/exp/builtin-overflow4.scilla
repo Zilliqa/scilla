@@ -1,0 +1,11 @@
+(* Expected result: Invalid integer literal *)
+let f =
+  fun (a : Int32) =>
+  fun (b : Int32) =>
+	  builtin mul a b
+in
+(* Int32.int_min = -2147483648  *)
+let a = Int32 -2147483649 in
+let b = Int32 1 in
+(* a * b *)
+f a b

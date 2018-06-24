@@ -1,5 +1,5 @@
 (* Expected result: *)
-(* (ValLit(ADTValue False()())) *)
+(* (ADTValue False()()) *)
 let andb = 
   fun (b : Bool) => fun (c : Bool) =>
     match b with 

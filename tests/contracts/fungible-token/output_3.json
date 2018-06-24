@@ -3,15 +3,17 @@
     "_tag": "Main",
     "_amount": "0",
     "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [ { "vname": "transferred", "type": "Int", "value": "10000" } ]
+    "params": [
+      { "vname": "transferred", "type": "Uint128", "value": "10000" }
+    ]
   },
   "states": [
-    { "vname": "_balance", "type": "Int", "value": "0" },
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "balances",
       "type": "Map",
       "value": [
-        { "keyType": "Address", "valType": "Int" },
+        { "keyType": "Address", "valType": "Uint128" },
         {
           "key": "0x44345678901234567890123456789012345678cd",
           "val": "10000"
@@ -22,7 +24,9 @@
     {
       "vname": "allowed",
       "type": "Map",
-      "value": [ { "keyType": "Address", "valType": "Map (Address) (Int)" } ]
+      "value": [
+        { "keyType": "Address", "valType": "Map (Address) (Uint128)" }
+      ]
     }
   ]
 }

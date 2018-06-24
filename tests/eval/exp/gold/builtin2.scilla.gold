@@ -1,6 +1,6 @@
-(IntLit 1),
+(IntLit 64 1),
 { [d -> (ADTValue True()())],
-  [c -> (IntLit 42)],
-  [two -> (IntLit 2)],
-  [b -> (IntLit 44)],
-  [a -> (IntLit 42)] }
+  [c -> (IntLit 64 42)],
+  [two -> (IntLit 64 2)],
+  [b -> (IntLit 64 44)],
+  [a -> (IntLit 64 42)] }

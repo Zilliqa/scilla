@@ -1,6 +1,6 @@
-(Msg((tag(StringLit Main))(value(IntLit 5)))),
-{ [m -> (Msg((tag(StringLit Main))(value(IntLit 5))))],
-  [msgs -> (ADTValue Cons((PrimType Message))((Msg((tag(StringLit Main))(value(IntLit 5))))(ADTValue Nil((PrimType Message))())))],
-  [msg -> (Msg((tag(StringLit Main))(value(IntLit 5))))],
+(Msg((tag(StringLit Main))(value(IntLit 32 5)))),
+{ [m -> (Msg((tag(StringLit Main))(value(IntLit 32 5))))],
+  [msgs -> (ADTValue Cons((PrimType Message))((Msg((tag(StringLit Main))(value(IntLit 32 5))))(ADTValue Nil((PrimType Message))())))],
+  [msg -> (Msg((tag(StringLit Main))(value(IntLit 32 5))))],
   [one_msg -> <closure>],
   [nil_msg -> (ADTValue Nil((PrimType Message))())] }

@@ -1,8 +1,8 @@
-(Sha256 0x14efabe93a60fd86d931d3e18c890ca9daa40b901e429665e1048708378a2ac4),
-{ [m2 -> (Map((PrimType Int)(PrimType Int))(((IntLit 2)(IntLit 239))((IntLit 1)(IntLit 42))))],
-  [m1 -> (Map((PrimType Int)(PrimType Int))(((IntLit 1)(IntLit 42))))],
-  [m0 -> (Map((PrimType Int)(PrimType Int))())],
-  [v2 -> (IntLit 239)],
-  [v1 -> (IntLit 42)],
-  [k2 -> (IntLit 2)],
-  [k1 -> (IntLit 1)] }
+(Sha256 0x5de797a7250adee90dea7eb69fa04b49e8cad470030d04df4766d8adcb0ba828),
+{ [m2 -> (Map((PrimType Int32)(PrimType Int32))(((IntLit 32 2)(IntLit 32 239))((IntLit 32 1)(IntLit 32 42))))],
+  [m1 -> (Map((PrimType Int32)(PrimType Int32))(((IntLit 32 1)(IntLit 32 42))))],
+  [m0 -> (Map((PrimType Int32)(PrimType Int32))())],
+  [v2 -> (IntLit 32 239)],
+  [v1 -> (IntLit 32 42)],
+  [k2 -> (IntLit 32 2)],
+  [k1 -> (IntLit 32 1)] }

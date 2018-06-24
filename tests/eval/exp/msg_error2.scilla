@@ -1,4 +1,4 @@
-let x = 42 in
+let x = Int32 42 in
 let ff = fun (z : Int) => x in
 let y = x in
 let a = y in

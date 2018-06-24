@@ -1,4 +1,4 @@
-let x = 42 in
+let x = Int32 42 in
 let f = fun (z : Int) => builtin add x z in
 let y = f x in
 let a = y in

@@ -1,8 +1,8 @@
-(* Expected result: (IntLit 42) *)
+(* Expected result: (IntLit 32 42) *)
 
-let v = 42 in
+let v = Int32 42 in
 let x = True in
-let y = Some {Int} v in
+let y = Some {Int32} v in
 let p = Pair x y in
 match p with
 | Pair True (Some g) => g

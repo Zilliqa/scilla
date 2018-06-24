@@ -11,6 +11,9 @@ open Core
 open Sexplib.Std
 open Yojson
 open Big_int
+open Stdint
+
+exception SyntaxError of string
 
 (* Location info, since Lexing.position does not support sexp *)
 type loc = {
@@ -76,7 +79,10 @@ type mtype = typ * typ
 
 type literal =
   | StringLit of string
-  | IntLit of string
+  (* (bid-width, value) *)
+  | IntLit of int * string
+  (* (bid-width, value) *)
+  | UintLit of int * string
   | BNum of string
   | Address of string
   | Sha256 of string
@@ -176,10 +182,57 @@ let expr_loc (e : 'rep expr) : loc option =
 (* TODO: replace with proper type inference *)
 let literal_tag l = match l with
   | StringLit _ -> "String"
-  | IntLit _ -> "Int"
+  | IntLit (w, _) -> "Int" ^ (Int.to_string w)
+  | UintLit (w,_) -> "Uint" ^ (Int.to_string w)
   | BNum _ -> "BNum"
   | Address _ -> "Address"
   | Sha256 _ -> "Hash"
   | Msg _ -> "Message"
   | Map _ -> "Map"
   | ADTValue _ -> "ADT"
+
+(* Validate Int* and Uint* literals (wx, x), whether the
+   string x they contain can be represented in wx bits  *)
+let validate_int_literal i =
+  try
+    match i with
+    | IntLit (wx, x) ->
+      (match wx with
+      | 32 -> Int32.to_string (Int32.of_string x) = x
+      | 64 -> Int64.to_string (Int64.of_string x) = x
+      | 128 -> Int128.to_string (Int128.of_string x) = x
+      | _ -> false
+      )
+    | UintLit (wx, x) ->
+      (match wx with
+      | 32 -> Uint32.to_string (Uint32.of_string x) = x
+      | 64 -> Uint64.to_string (Uint64.of_string x) = x
+      | 128 -> Uint128.to_string (Uint128.of_string x) = x
+      | _ -> false
+      )
+    | _ -> false
+  with
+  | _ -> false
+
+(* Given an integer type (as string) and the value (as string),
+   build IntLit or UintLit out of it. TODO: Validate. *)
+let build_int t v = 
+  let validator_wrapper l = 
+    if validate_int_literal l then Some l else None
+  in
+  match t with
+  | "Int32" -> validator_wrapper (IntLit(32, v))
+  | "Int64" -> validator_wrapper (IntLit(64, v))
+  | "Int128" -> validator_wrapper (IntLit(128, v))
+  | "Uint32" -> validator_wrapper (UintLit(32, v))
+  | "Uint64" -> validator_wrapper (UintLit(64, v))
+  | "Uint128" -> validator_wrapper (UintLit(128, v))
+  | _ -> None
+
+let is_int_type = function
+  | "Int32" | "Int64" | "Int128" -> true
+  | _ -> false
+
+let is_uint_type = function
+  | "Uint32" | "Uint64" | "Uint128" -> true
+  | _ -> false

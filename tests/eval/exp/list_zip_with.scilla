@@ -89,23 +89,23 @@ let list_zip_with =
       end
 in
     
-let int_zip = @list_zip_with Int Int Int in
+let int_zip = @list_zip_with Uint128 Uint128 Uint128 in
 
 let f =
-  fun (a : Int) => fun (b : Int) =>
+  fun (a : Uint128) => fun (b : Uint128) =>
     builtin add a b
 in
     
-let one = 1 in
-let two = 2 in
-let three = 3 in
-let four = 4 in
+let one = Uint128 1 in
+let two = Uint128 2 in
+let three = Uint128 3 in
+let four = Uint128 4 in
 
 let nil = Nil in
-let l0 = Cons {Int} four nil in
-let l1 = Cons {Int} three l0 in
-let l2 = Cons {Int} two l1 in
-let l3 = Cons {Int} one l2 in
+let l0 = Cons {Uint128} four nil in
+let l1 = Cons {Uint128} three l0 in
+let l2 = Cons {Uint128} two l1 in
+let l3 = Cons {Uint128} one l2 in
 
 (* (1+1);(2+2);(3+3);(4+4) *)
 let res1 = int_zip f l3 l3 in
