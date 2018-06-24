@@ -79,9 +79,9 @@ type mtype = typ * typ
 
 type literal =
   | StringLit of string
-  (* (bid-width, value) *)
+  (* (bit-width, value) *)
   | IntLit of int * string
-  (* (bid-width, value) *)
+  (* (bit-width, value) *)
   | UintLit of int * string
   | BNum of string
   | Address of string
