@@ -1,1 +1,1 @@
-(FunType(PrimType Int)(PrimType Int))
+(FunType(PrimType Int32)(PrimType Int32))

@@ -1,1 +1,1 @@
-fun (x : Int) => x
+fun (x : Int32) => x

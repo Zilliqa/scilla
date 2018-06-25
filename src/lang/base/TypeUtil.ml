@@ -12,6 +12,7 @@ open Sexplib.Std
 open Yojson
 open Big_int
 open Syntax
+open MonadUtil
 
 (****************************************************************)
 (*                  Type substitutions                          *)
@@ -149,8 +150,8 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
     }
       
     let mk =
-      let t1 = Hashtbl.create (module String) ~growth_allowed:true ~size:50 in
-      let t2 = Hashtbl.create (module String) ~growth_allowed:true ~size:10 in
+      let t1 = Hashtbl.create 50 in
+      let t2 = Hashtbl.create 10 in
       {tenv = t1; tvars = t2}
       
     let addT env id tp =
@@ -159,8 +160,7 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       env 
 
     let to_list env =
-      Hashtbl.fold env.tenv ~init:[]
-        ~f:(fun ~key ~data z -> (key, data) :: z)
+      Hashtbl.fold (fun key data z -> (key, data) :: z) env.tenv []
         
     let pp ?f:(f = fun _ -> true) env  =
       let lst = List.filter (to_list env) ~f:f in
@@ -170,7 +170,7 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       "{" ^ cs ^ " }"
 
     let resolveT ?lopt:(lopt = None) env id =
-      match Hashtbl.find env.tenv id with
+      match Hashtbl.find_opt env.tenv id with
       | Some r -> pure r
       | None ->
           let loc_str = (match None with
