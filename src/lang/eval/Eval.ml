@@ -401,6 +401,16 @@ let post_process_msgs cstate outs =
     let balance = sub cstate.balance to_be_transferred in
     pure {cstate with balance}
 
+let rec append_accepted_state msgs accepted =
+  let f m =
+    match m with
+    | Msg m' ->
+      let s = Bool.to_string accepted in
+      let i = (MessagePayload.accepted_label, StringLit s) in
+        Msg (i :: m')
+    | _ -> m (* Not a message. Is this possible? *)
+  in
+    List.map ~f:f msgs
 (* 
 Handle message:
 * contr : Syntax.contract - code of the contract (containing transitions)
@@ -422,6 +432,7 @@ let handle_message contr cstate bstate m =
     env = actual_env;
     fields = fields;
     balance = balance;
+    accepted = false;
     blockchain_state = bstate;
     incoming_funds = incoming_funds;
     emitted = [];
@@ -436,10 +447,11 @@ let handle_message contr cstate bstate m =
     balance = conf'.balance
   } in
   let new_msgs = conf'.emitted in
+  let new_msgs' = append_accepted_state new_msgs conf'.accepted in
   let new_events = conf'.events in
   (* Make sure that we aren't too generous and subract funds *)
-  let%bind cstate'' = post_process_msgs cstate' new_msgs in
+  let%bind cstate'' = post_process_msgs cstate' new_msgs' in
 
   (*Return new contract state, messages and events *)
-  pure (cstate'', new_msgs, new_events)
+  pure (cstate'', new_msgs', new_events)
     
