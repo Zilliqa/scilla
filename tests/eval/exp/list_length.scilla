@@ -19,7 +19,7 @@ let two = Int32 2 in
 let ten = Int32 10 in
 let eleven = Int32 11 in
 
-let nil = Nil in
+let nil = Nil {Int32} in
 let l1 = Cons {Int32} one nil in
 let l2 = Cons {Int32} ten l1 in
 let l3 = Cons {Int32} two l2 in

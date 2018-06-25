@@ -1,0 +1,3 @@
+(ADTValue None((PrimType Int128))()),
+{ [tf_applied -> (ADTValue None((PrimType Int128))())],
+  [tf -> <type_closure>] }

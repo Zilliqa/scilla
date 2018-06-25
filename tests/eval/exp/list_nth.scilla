@@ -9,7 +9,7 @@ let list_nth =
       fun (l : List 'A) =>
         let folder = @list_foldl 'A (Pair Int32 (Option 'A)) in
         let zero = Int32 0 in
-        let none = None in
+        let none = None {'A} in
         let init = Pair {Int32 (Option 'A)} zero none in
         let iter =
           fun (z : Pair (Int32 (Option 'A))) =>
@@ -21,7 +21,7 @@ let list_nth =
               let this = builtin eq n i in
               match this with
               | True =>
-                let someh = Some h in
+                let someh = Some {'A} h in
                 Pair {Int32 (Option 'A)} nexti someh
               | False =>
                 Pair {Int32 (Option 'A)} nexti oe
@@ -47,7 +47,7 @@ let three = Int32 3 in
 let ten = Int32 10 in
 let eleven = Int32 11 in
 
-let nil = Nil in
+let nil = Nil {Int32} in
 let l1 = Cons {Int32} eleven nil in
 let l2 = Cons {Int32} ten l1 in
 let l3 = Cons {Int32} two l2 in

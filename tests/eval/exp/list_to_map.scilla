@@ -32,7 +32,7 @@ let pair2 = Pair {String Int64} twos two in
 let pair3 = Pair {String Int64} threes three in
 let pair4 = Pair {String Int64} fours four in
 
-let nil = Nil in
+let nil = Nil {Pair (String Int64)} in
 let l1 = Cons {Pair (String Int64)} pair4 nil in
 let l2 = Cons {Pair (String Int64)} pair3 l1 in
 let l3 = Cons {Pair (String Int64)} pair2 l2 in

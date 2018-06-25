@@ -33,7 +33,7 @@ let three = Int32 3 in
 let four = Int32 4 in
 let five = Int32 5 in
 
-let nil = Nil in
+let nil = Nil {Int32} in
 let l1 = Cons {Int32} four nil in
 let l2 = Cons {Int32} three l1 in
 let l3 = Cons {Int32} two l2 in

@@ -3,9 +3,9 @@ let list_head =
   fun (l : List 'A) =>
     match l with
     | Cons h t =>
-      Some h
+      Some {'A} h
     | Nil =>
-      None
+      None {'A}
     end
 in
 
@@ -14,9 +14,9 @@ let list_tail =
   fun (l : List 'A) =>
     match l with
     | Cons h t =>
-      Some t
+      Some {'A} t
     | Nil =>
-      None
+      None {'A}
     end
 in
 
@@ -24,7 +24,7 @@ let list_reverse =
   tfun 'A =>
   fun (l : List 'A) =>
     let folder = @list_foldl 'A (List 'A) in
-    let init = Nil in
+    let init = Nil {'A} in
     let iter =
       fun (z : List 'A) =>
       fun (h : 'A) =>
@@ -48,7 +48,7 @@ let list_zip_with =
       fun (l1 : List 'A) =>
       fun (l2 : List 'B) =>
         let folder = @list_foldl 'A (Pair (List 'C) (List 'B)) in
-        let nil = Nil in
+        let nil = Nil {'C} in
         let init = Pair {(List 'C) (List 'B)} nil l2 in
         let iter =
           fun (z : Pair (List 'C) (List 'B)) =>
@@ -101,7 +101,7 @@ let two = Uint128 2 in
 let three = Uint128 3 in
 let four = Uint128 4 in
 
-let nil = Nil in
+let nil = Nil {Uint128} in
 let l0 = Cons {Uint128} four nil in
 let l1 = Cons {Uint128} three l0 in
 let l2 = Cons {Uint128} two l1 in
