@@ -12,11 +12,15 @@ let one_msg =
 contract CrowdFundingInvoke
 
 (*  Parameters *)
-(cfaddr     : Address) (* address of the crowdfunding contract *)
+(cfaddr     : Address, (* address of the crowdfunding contract *)
+ owner      : Address) (* address of the owner of this contract *)
 
-(* Mutable fields *)
-(* callers only keeps track of who all called Invoke. No real use *)
-field callers : Map Address Int32 = Emp Address Int32
+transition Main ()
+  accept;
+  msg = {_tag : ""; _recipient : owner; _amount : _amount};
+  msgs = one_msg msg;
+  send msgs
+end
 
 transition Invoke (trans : String)
   bal <- _balance;

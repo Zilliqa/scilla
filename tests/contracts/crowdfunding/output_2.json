@@ -1,6 +1,6 @@
 {
   "message": {
-    "_tag": "Main",
+    "_tag": "",
     "_amount": "0",
     "_recipient": "0x12345678901234567890123456789012345678cd",
     "params": [ { "vname": "code", "type": "Int32", "value": "1" } ]
