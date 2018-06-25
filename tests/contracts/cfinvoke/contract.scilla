@@ -18,6 +18,13 @@ contract CrowdFundingInvoke
 (* callers only keeps track of who all called Invoke. No real use *)
 field callers : Map Address Int32 = Emp Address Int32
 
+transition Main ()
+  msg = {_tag : ""; _recipient : _sender; _amount : Uint128 0};
+  msgs = one_msg msg;
+  send msgs;
+  accept
+end
+
 transition Invoke (trans : String)
   bal <- _balance;
   s = _sender;
