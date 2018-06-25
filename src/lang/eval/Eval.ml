@@ -15,6 +15,7 @@ open EvalUtil
 open MonadUtil
 open PatternMatching
 open BuiltIns
+open Stdint
 
 (***************************************************)
 (*                    Utilities                    *)      
@@ -167,6 +168,7 @@ and try_apply_as_closure v arg =
   | Env.ValLit _ ->
       fail @@ sprintf "Not a functional value: %s." (Env.pp_value v)
   | Env.ValClosure (formal, _, body, env) ->
+      (* TODO: add runtime type-checking *)
       let env1 = Env.bind env (get_id formal) arg in
       let%bind (v, _) = exp_eval body env1 in
       pure v
@@ -185,9 +187,11 @@ and try_apply_as_closure v arg =
 
 and try_apply_as_type_closure v arg_type =
   match v with
-  | Env.ValTypeClosure (_tv, body, env) ->
-      (* TODO: implement type substitution *)
-      let%bind (v, _) = exp_eval body env in
+  | Env.ValTypeClosure (tv, body, env) ->
+      (* TODO: implement type substitution in TypeUtil.ml *)
+      let open TypeUtil in
+      let body_subst = subst_type_in_expr tv arg_type body in
+      let%bind (v, _) = exp_eval body_subst env in
       pure v      
   | _ ->
       fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)
@@ -259,13 +263,6 @@ let init_libraries libs =
         let%bind env = eres in
         init_lib_entry env lentry)
 
-let validate_init_bal b =
-  let open Big_int in
-  if ge_big_int b zero_big_int
-  then pure b
-  else fail @@
-    sprintf "Negative initial balance: %s." (string_of_big_int b)
-
 (* Initialize fields in a constant environment *)
 let init_fields env fs =
   (* Initialize a field in aconstant enfirontment *)
@@ -304,7 +301,7 @@ let init_contract libs cparams cfields args init_bal  =
     let env = List.fold_left ~init:libenv params 
         ~f:(fun e (p, v) -> Env.bind e p v) in
     let%bind fields = init_fields env cfields in
-    let%bind balance = validate_init_bal init_bal in
+    let balance = init_bal in
     let open ContractState in
     let cstate = {env; fields; balance} in
     pure cstate
@@ -356,7 +353,7 @@ let append_implict_transition_params tparams =
     let sender_id = asId MessagePayload.sender_label in
     let sender = (sender_id, PrimType("Address")) in
     let amount_id = asId MessagePayload.amount_label in
-    let amount = (amount_id, PrimType("Int")) in
+    let amount = (amount_id, PrimType("Uint128")) in
         amount :: sender :: tparams
 
 (* Restrict message entries to the transition parameters *)
@@ -395,18 +392,28 @@ let post_process_msgs cstate outs =
   let%bind amounts = mapM outs ~f:(fun l -> match l with
       | Msg es -> MessagePayload.get_amount es
       | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal l)) in
-  let open Big_int in
-  let to_be_transferred = List.fold_left amounts ~init:zero_big_int
-      ~f:(fun z a -> add_big_int z a) in
+  let open Uint128 in
+  let to_be_transferred = List.fold_left amounts ~init:zero
+      ~f:(fun z a -> add z a) in
   let open ContractState in
-  if lt_big_int cstate.balance to_be_transferred
+  if (compare cstate.balance to_be_transferred) < 0
   then fail @@ sprintf
       "The balance is too low (%s) to transfer all the funds in the messages (%s)"
-      (string_of_big_int cstate.balance) (string_of_big_int to_be_transferred)
+      (to_string cstate.balance) (to_string to_be_transferred)
   else
-    let balance = sub_big_int cstate.balance to_be_transferred in
+    let balance = sub cstate.balance to_be_transferred in
     pure {cstate with balance}
 
+let rec append_accepted_state msgs accepted =
+  let f m =
+    match m with
+    | Msg m' ->
+      let s = Bool.to_string accepted in
+      let i = (MessagePayload.accepted_label, StringLit s) in
+        Msg (i :: m')
+    | _ -> m (* Not a message. Is this possible? *)
+  in
+    List.map ~f:f msgs
 (* 
 Handle message:
 * contr : Syntax.contract - code of the contract (containing transitions)
@@ -428,6 +435,7 @@ let handle_message contr cstate bstate m =
     env = actual_env;
     fields = fields;
     balance = balance;
+    accepted = false;
     blockchain_state = bstate;
     incoming_funds = incoming_funds;
     emitted = [];
@@ -442,10 +450,11 @@ let handle_message contr cstate bstate m =
     balance = conf'.balance
   } in
   let new_msgs = conf'.emitted in
+  let new_msgs' = append_accepted_state new_msgs conf'.accepted in
   let new_events = conf'.events in
   (* Make sure that we aren't too generous and subract funds *)
-  let%bind cstate'' = post_process_msgs cstate' new_msgs in
+  let%bind cstate'' = post_process_msgs cstate' new_msgs' in
 
   (*Return new contract state, messages and events *)
-  pure (cstate'', new_msgs, new_events)
+  pure (cstate'', new_msgs', new_events)
     

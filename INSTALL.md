@@ -23,8 +23,8 @@ opam packages using the commands listed below:
 
 ```
 opam init -y
-opam switch -y 4.06.0
-opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit jbuilder
+opam switch -y 4.06.1
+opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit jbuilder stdint
 ```
 
 The above three commands can, alternatively, be run using the make target `opamdep`

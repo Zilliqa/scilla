@@ -15,7 +15,8 @@
   let hash_length = 64
 
   let to_type d = match d with
-  | "Int" | "Hash" | "Address" | "BNum" | "Message" | "String" -> PrimType d
+  | "Hash" | "Address" | "BNum" | "Message" | "String" -> PrimType d
+  | "Int32" | "Int64" | "Int128" | "Uint32" | "Uint64" | "Uint128" -> PrimType d
   | _ -> ADT (d, [])
 
 %}
@@ -163,14 +164,23 @@ simple_exp :
 lit :        
 | BLOCK;
   n = NUMLIT   { BNum (Big_int.string_of_big_int n) }
-| n = NUMLIT   { IntLit (Big_int.string_of_big_int n) }
+| i = CID;
+  n = NUMLIT   {
+    let string_of_n = Big_int.string_of_big_int n in
+    let intlit = build_int i string_of_n in
+    match intlit with
+    | Some l ->
+        l
+    | None ->
+        raise (SyntaxError (Core.sprintf "Invalid integer literal %s" string_of_n))
+  }
 | h = HEXLIT   { 
   let l = String.length h in
   if l = (address_length + 2) 
   then Address h 
   else if l = (hash_length + 2)
   then Sha256 h
-  else raise Error @@ Core.sprintf "Wrong hex string size (%s): %d." h l
+  else raise (SyntaxError (Core.sprintf "Wrong hex string size (%s): %d." h l))
 }
 | s = STRING   { StringLit s }
 | EMP; kt = targ; vt = targ
@@ -179,8 +189,8 @@ lit :
   (* if isPrimType kt
    * then Map ((kt, vt), [])
    * else
-   *   raise Error @@ Core.sprintf "Non-primitive type (%s) cannot be a map key."
-   *                    (pp_typ kt) *)
+   *   raise (SyntaxError (Core.sprintf "Non-primitive type (%s) cannot be a map key."
+   *                    (pp_typ kt))) *)
 }
 
 ctargs:
@@ -250,13 +260,17 @@ param_pair:
 | n = ID; COLON; t = typ { asId n, t }
 
 transition:
-| TRANSITION; t = CID;
+| TRANSITION; t = trans_id;
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
   ss = stmts;
   END;
   { { tname = asIdL t (toLoc $startpos);
       tparams = params;
       tbody = ss } }
+
+trans_id:
+| c = CID {c};
+| i = ID {i};
 
 field:
 | FIELD; f = ID; COLON; t=typ;

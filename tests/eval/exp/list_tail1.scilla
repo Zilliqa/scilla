@@ -3,19 +3,19 @@ let list_tail =
   fun (l : List 'A) =>
     match l with
     | Cons h t =>
-      Some t
+      Some {'A} t
     | Nil =>
-      None
+      None {'A}
     end
 in
 
-let int_rest = @list_tail Int in
+let int_rest = @list_tail Int64 in
 
-let one = 1 in
-let two = 2 in
-let three = 3 in
-let nil = Nil in
+let one = Int64 1 in
+let two = Int64 2 in
+let three = Int64 3 in
+let nil = Nil {Int64} in
 
-let l2 = Cons {Int} two nil in
-let l3 = Cons {Int} one l2 in
+let l2 = Cons {Int64} two nil in
+let l3 = Cons {Int64} one l2 in
 int_rest l3

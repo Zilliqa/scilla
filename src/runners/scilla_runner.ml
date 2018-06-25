@@ -17,6 +17,7 @@ open MonadUtil
 open EvalUtil
 open Eval
 open DebugMessage
+open Stdint
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -69,20 +70,20 @@ let check_after_step name res bstate m =
 let input_state_json filename = 
   let open JSON.ContractState in
   let states = get_json_data filename in
-  let match_balance ((vname : string), _) : bool = vname = "_balance" in
+  let match_balance ((vname : string), _) : bool = vname = EvalUtil.balance_label in
   let bal_lit = match List.find states ~f:match_balance with
     | Some (_, lit) -> lit
-    | None -> IntLit("0") in
+    | None -> UintLit(128, "0") in
   let bal_int = match bal_lit with
-    | IntLit (x) -> Int.of_string x
+    | UintLit (wx, x) -> Int.of_string x
     | _ -> 0 in
   let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
-     no_bal_states, Big_int.big_int_of_int bal_int
+     no_bal_states, Uint128.of_int bal_int
 
 (* Add balance to output json and print it out *)
 
 let output_state_json (cstate : 'rep EvalUtil.ContractState.t) =
-  let ballit = ("_balance", IntLit(Big_int.string_of_big_int cstate.balance)) in
+  let ballit = (EvalUtil.balance_label, UintLit(128, Uint128.to_string cstate.balance)) in
   let concatlist = List.cons ballit cstate.fields in
     JSON.ContractState.state_to_json concatlist;;
 
@@ -135,7 +136,7 @@ let () =
       if cli.input_message = ""
       then
         (* Initializing the contract's state, just for checking things. *)
-        let init_res = init_module cmod initargs [] (Big_int.big_int_of_int 0) in
+        let init_res = init_module cmod initargs [] Uint128.zero in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
         let _ = check_extract_cstate cli.input init_res in

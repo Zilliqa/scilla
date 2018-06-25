@@ -11,6 +11,10 @@ open Core
 open Big_int
 open Syntax
 
+val subst_type_in_type: 'a ident -> typ -> typ -> typ
+val subst_type_in_literal: 'a ident -> typ -> literal -> literal
+val subst_type_in_expr: 'a ident -> typ -> 'a expr -> 'a expr
+
 type 'rep inferred_type = {
   tp   : typ;
   qual : 'rep

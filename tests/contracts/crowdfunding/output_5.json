@@ -2,16 +2,17 @@
   "message": {
     "_tag": "Main",
     "_amount": "100",
+    "_accepted": "false",
     "_recipient": "0x12345678901234567890123456789012345678ab",
-    "params": [ { "vname": "code", "type": "Int", "value": "9" } ]
+    "params": [ { "vname": "code", "type": "Int32", "value": "9" } ]
   },
   "states": [
-    { "vname": "_balance", "type": "Int", "value": "200" },
+    { "vname": "_balance", "type": "Uint128", "value": "200" },
     {
       "vname": "backers",
       "type": "Map",
       "value": [
-        { "keyType": "Address", "valType": "Int" },
+        { "keyType": "Address", "valType": "Uint128" },
         { "key": "0x12345678901234567890123456789012345678cd", "val": "200" }
       ]
     },

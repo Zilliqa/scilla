@@ -3,9 +3,9 @@ let list_head =
   fun (l : List 'A) =>
     match l with
     | Cons h t =>
-      Some h
+      Some {'A} h
     | Nil =>
-      None
+      None {'A}
     end
 in
   
@@ -14,9 +14,9 @@ let list_tail =
   fun (l : List 'A) =>
     match l with
     | Cons h t =>
-      Some t
+      Some {'A} t
     | Nil =>
-      None
+      None {'A}
     end
 in
   
@@ -75,22 +75,22 @@ let list_eq =
     end
 in
   
-let int_eq = @list_eq Int in
+let int_eq = @list_eq Int64 in
 
-let one = 1 in
-let two = 2 in
-let ten = 10 in
-let eleven = 11 in
+let one = Int64 1 in
+let two = Int64 2 in
+let ten = Int64 10 in
+let eleven = Int64 11 in
 
-let nil = Nil in
-let l1 = Cons {Int} eleven nil in
-let l2 = Cons {Int} ten l1 in
-let l3 = Cons {Int} two l2 in
-let l4 = Cons {Int} one l3 in
+let nil = Nil {Int64} in
+let l1 = Cons {Int64} eleven nil in
+let l2 = Cons {Int64} ten l1 in
+let l3 = Cons {Int64} two l2 in
+let l4 = Cons {Int64} one l3 in
 
 let f =
-  fun (a : Int) =>
-  fun (b : Int) =>
+  fun (a : Int64) =>
+  fun (b : Int64) =>
     builtin eq a b
 in
 

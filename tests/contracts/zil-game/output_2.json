@@ -2,11 +2,12 @@
   "message": {
     "_tag": "Main",
     "_amount": "0",
+    "_accepted": "false",
     "_recipient": "0xabcdeabcde123456789012345678901234567890",
-    "params": [ { "vname": "code", "type": "Int", "value": "4" } ]
+    "params": [ { "vname": "code", "type": "Int32", "value": "4" } ]
   },
   "states": [
-    { "vname": "_balance", "type": "Int", "value": "500" },
+    { "vname": "_balance", "type": "Uint128", "value": "500" },
     {
       "vname": "timer",
       "type": "ADT",

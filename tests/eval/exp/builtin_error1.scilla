@@ -1,11 +1,11 @@
 (* Expected result: *)
-(* Cannot find built-in with name "hack" and arguments (Int, Int). *)
-let a = 42 in
-let b = 44 in
-let two = 2 in
+(* Cannot find built-in with name "hack" and arguments (Int32, Int32). *)
+let a = Int32 42 in
+let b = Int32 44 in
+let two = Int32 2 in
 let c = builtin sub b two in
 let d = builtin eq a c in
 match d with 
 | False => True
 | True  => builtin hack a b
-end	    
+end

@@ -3,6 +3,6 @@
   "_amount": "0",
   "_sender": "0xffcdeabcde123456789012345678901234567890",
   "params": [
-    { "vname": "solution", "type": "Int", "value": "43" }
+    { "vname": "solution", "type": "Int128", "value": "43" }
   ]
 }

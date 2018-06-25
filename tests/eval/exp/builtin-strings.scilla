@@ -25,7 +25,7 @@ let res2 = feq c d in
 let s1 = "scilla is awesome" in
 let s2 = fconcat s1 sep in
 let s3 = fconcat s2 b in
-let startp = 0 in
-let endp = 17 in
+let startp = Uint32 0 in
+let endp = Uint32 17 in
 let res = fsubstr s3 startp endp in
 res

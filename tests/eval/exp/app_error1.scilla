@@ -1,11 +1,11 @@
 (* Expected result: *)
-(* Not a functional value: (IntLit 2) *)
-let x = 42 in
-let f = fun (z : Int) =>
+(* Not a functional value: (IntLit 32 2) *)
+let x = Int32 42 in
+let f = fun (z : Int32) =>
     let b = x in
-    fun (c : Int) => z
+    fun (c : Int32) => z
 in
-let a = 1 in
-let d = 2 in
+let a = Int32 1 in
+let d = Int32 2 in
 let g = f d in
 g a a

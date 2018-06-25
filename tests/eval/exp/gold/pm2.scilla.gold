@@ -1,4 +1,4 @@
-(IntLit 3),
+(IntLit 32 3),
 { [c -> (ADTValue True()())],
   [b -> (ADTValue True()())],
-  [z -> (IntLit 3)] }
+  [z -> (IntLit 32 3)] }

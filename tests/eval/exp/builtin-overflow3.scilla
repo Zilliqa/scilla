@@ -1,0 +1,13 @@
+(* Expected result: Overflow *)
+let f =
+  fun (a : Int32) =>
+  fun (b : Int32) =>
+  fun (c : Int32) =>
+    let t = builtin mul b c in
+	  builtin add a t
+in
+let a = Int32 9 in
+let b = Int32 99999 in
+let c = Int32 99999 in
+(* (b * c) + a  *)
+f a b c

@@ -11,7 +11,7 @@
     },
     { 
         "vname" : "goal",
-        "type" : "Int",
+        "type" : "Uint128",
         "value" : "500"
     }
 ]

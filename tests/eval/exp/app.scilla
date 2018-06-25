@@ -1,9 +1,9 @@
 (* Expected result: 42 *)
-let x = 42 in
-let f = fun (z : Int) =>
+let x = Int64 42 in
+let f = fun (z : Int64) =>
     let b = x in
-    fun (c : Int) => b
+    fun (c : Int64) => b
 in
-let a = 1 in
-let d = 2 in
+let a = Int64 1 in
+let d = Int64 2 in
 f a d

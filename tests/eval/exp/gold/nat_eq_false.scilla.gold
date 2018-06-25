@@ -7,4 +7,3 @@
   [two -> (ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))],
   [one -> (ADTValue Succ()((ADTValue Zero()())))],
   [zero -> (ADTValue Zero()())] }
-

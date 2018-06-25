@@ -1,0 +1,10 @@
+(* Expected result: Underflow *)
+let f =
+  fun (a : Uint32) =>
+  fun (b : Uint32) =>
+	  builtin sub a b
+in
+let a = Uint32 0 in
+let b = Uint32 1 in
+(* a * b *)
+f a b

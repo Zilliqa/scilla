@@ -45,41 +45,41 @@ let list_sort =
       rec_A_A iter2 nil_A ls
 in
     
-let int_sort = @list_sort Int in
+let int_sort = @list_sort Uint64 in
 
 let flt =
-  fun (a : Int) => fun (b : Int) =>
+  fun (a : Uint64) => fun (b : Uint64) =>
     builtin lt a b
 in
 
-let zero = 0 in
-let one = 1 in
-let two = 2 in
-let three = 3 in
-let four = 4 in
+let zero = Uint64 0 in
+let one = Uint64 1 in
+let two = Uint64 2 in
+let three = Uint64 3 in
+let four = Uint64 4 in
 
-let nil = Nil in
-let l0 = Cons {Int} two nil in
-let l1 = Cons {Int} four l0 in
-let l2 = Cons {Int} three l1 in
-let l3 = Cons {Int} two l2 in
-let l4 = Cons {Int} one l3 in
-let l5 = Cons {Int} two l4 in
-let l6 = Cons {Int} three l5 in
+let nil = Nil {Uint64} in
+let l0 = Cons {Uint64} two nil in
+let l1 = Cons {Uint64} four l0 in
+let l2 = Cons {Uint64} three l1 in
+let l3 = Cons {Uint64} two l2 in
+let l4 = Cons {Uint64} one l3 in
+let l5 = Cons {Uint64} two l4 in
+let l6 = Cons {Uint64} three l5 in
 
 (* res1 = 1 2 2 2 3 3 4 *)
 let res1 = int_sort flt l6 in
 
-let n1 = Cons {Int} three nil in
-let n2 = Cons {Int} two n1 in
-let n3 = Cons {Int} one n2 in
+let n1 = Cons {Uint64} three nil in
+let n2 = Cons {Uint64} two n1 in
+let n3 = Cons {Uint64} one n2 in
 
 (* 1 2 3 *)
 let res2 = int_sort flt n3 in
 
-let m1 = Cons {Int} one nil in
-let m2 = Cons {Int} two m1 in
-let m3 = Cons {Int} three m2 in
+let m1 = Cons {Uint64} one nil in
+let m2 = Cons {Uint64} two m1 in
+let m3 = Cons {Uint64} three m2 in
 
 (* 1 2 3 *)
 int_sort flt m3
