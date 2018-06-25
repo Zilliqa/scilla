@@ -8,7 +8,7 @@
     ]
   },
   "states": [
-    { "vname": "_balance", "type": "Int", "value": "0" },
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
     { "vname": "msgstr", "type": "String", "value": "Hello World" }
   ]
 }
