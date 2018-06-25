@@ -260,13 +260,17 @@ param_pair:
 | n = ID; COLON; t = typ { asId n, t }
 
 transition:
-| TRANSITION; t = CID;
+| TRANSITION; t = trans_id;
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
   ss = stmts;
   END;
   { { tname = asIdL t (toLoc $startpos);
       tparams = params;
       tbody = ss } }
+
+trans_id:
+| c = CID {c};
+| i = ID {i};
 
 field:
 | FIELD; f = ID; COLON; t=typ;
