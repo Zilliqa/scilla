@@ -121,6 +121,8 @@ module Configuration = struct
     fields : (string * literal) list;
     (* Contract balance *)
     balance : uint128;
+    (* Was incoming money accepted? *)
+    accepted : bool;
     (* Blockchain state *)
     blockchain_state : BlockchainState.t;
     (* Available incoming funds *)
@@ -135,13 +137,15 @@ module Configuration = struct
     let pp_env = Env.pp conf.env in
     let pp_fields = pp_literal_map conf.fields in
     let pp_balance = Uint128.to_string conf.balance in
+    let pp_accepted = Bool.to_string conf.accepted in
     let pp_bc_conf = pp_literal_map conf.blockchain_state in
     let pp_in_funds = Uint128.to_string conf.incoming_funds in
     let pp_emitted = pp_literal_list conf.emitted in
     let pp_events = String.concat ~sep:", " @@
         List.map conf.events (fun (e, b) -> sprintf "<%s, %s>" e b)
-    in sprintf "Confuration\nEnv =\n%s\nFields =\n%s\nBalance =%s\nBlockchain conf =\n%s\nIncoming funds = %s\nEmitted Messages =\n%s\nEmitted events =\n%s\n"
-      pp_env pp_fields pp_balance pp_bc_conf pp_in_funds pp_emitted pp_events
+    in sprintf "Confuration\nEnv =\n%s\nFields =\n%s\nBalance =%s\nAccepted=%s\n\\
+    Blockchain conf =\n%s\nIncoming funds = %s\nEmitted Messages =\n%s\nEmitted events =\n%s\n"
+      pp_env pp_fields pp_balance pp_accepted pp_bc_conf pp_in_funds pp_emitted pp_events
 
   (*  Manipulations with configuartion *)
   
@@ -182,13 +186,13 @@ module Configuration = struct
   let bc_lookup st k = BlockchainState.lookup st.blockchain_state k
 
   let accept_incoming st =
-    let open Big_int in
     let incoming' = st.incoming_funds in
     if (Uint128.compare incoming' Uint128.zero) > 0
     then
       let balance = Uint128.add st.balance incoming' in
+      let accepted = true in
       let incoming_funds = Uint128.zero in
-      pure @@ {st with balance; incoming_funds}
+      pure @@ {st with balance; accepted; incoming_funds}
     else
       fail @@ sprintf "Incoming balance is negaitve (somehow):%s."
         (Uint128.to_string incoming')
@@ -266,12 +270,11 @@ end
 
 module MessagePayload = struct
 
-  open Big_int
-
   let tag_label = "_tag"
   let amount_label = "_amount"
   let sender_label = "_sender"
   let recipient_label = "_recipient"
+  let accepted_label = "_accepted"
 
   let get_value_for_entry lab f es = 
     match List.find es ~f:(fun (l, p) -> l = lab) with
