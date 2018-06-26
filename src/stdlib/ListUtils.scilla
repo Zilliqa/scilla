@@ -107,16 +107,16 @@ let list_flatten =
     in
       folder iter init l
 
-(* List 'A -> Int *)
+(* List 'A -> Int32 *)
 (* Number of elements in list *)
 let list_length =
   tfun 'A =>
   fun (l : List 'A) =>
-    let folder = @list_foldr 'A Int in
+    let folder = @list_foldr 'A Int32 in
     let init = 0 in
     let iter =
       fun (h : 'A) =>
-      fun (z : Int) =>
+      fun (z : Int32) =>
         let one = 1 in
           builtin add one z
      in
@@ -476,22 +476,22 @@ let list_to_map =
     in
       folder iter init l
 
-(* Int -> List 'A -> Option 'A *)
+(* Int32 -> List 'A -> Option 'A *)
 (* Returns (Some 'A) if n'th element exists in list. None otherwise *)
 let list_nth =
   tfun 'A =>
-  fun (n_h : Int) =>
+  fun (n_h : Int32) =>
   fun (l_h : List 'A) =>
     let list_nth_helper =
       tfun 'A =>
-      fun (n : Int) =>
+      fun (n : Int32) =>
       fun (l : List 'A) =>
-        let folder = @list_foldl 'A (Pair Int (Option 'A)) in
+        let folder = @list_foldl 'A (Pair Int32 (Option 'A)) in
         let zero = 0 in
         let none = None in
-        let init = Pair {Int (Option 'A)} zero none in
+        let init = Pair {Int32 (Option 'A)} zero none in
         let iter =
-          fun (z : Pair (Int (Option 'A))) =>
+          fun (z : Pair (Int32 (Option 'A))) =>
           fun (h : 'A) =>
             match z with
             | Pair i oe =>
@@ -501,9 +501,9 @@ let list_nth =
               match this with
               | True =>
                 let someh = Some h in
-                Pair {Int (Option 'A)} nexti someh
+                Pair {Int32 (Option 'A)} nexti someh
               | False =>
-                Pair {Int (Option 'A)} nexti oe
+                Pair {Int32 (Option 'A)} nexti oe
               end
             end
           in
