@@ -41,7 +41,7 @@ end
 
 transition getHello ()
     r <- welcome_msg;
-    msg = {_tag : Main; _recipient : _sender; _amount : Uint128 0; msg : r};
+    msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; msg : r};
     msgs = one_msg msg;
     send msgs
 end
