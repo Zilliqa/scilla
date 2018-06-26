@@ -25,3 +25,13 @@ let pout msg =
 let perr msg =
   Out_channel.output_string Out_channel.stderr msg;
   plog ("stderr: " ^ msg ^ "\n")
+
+(* Prints to trace file, if set, else to stdout. *)
+let ptrace msg =
+  let fname = GlobalConfig.get_trace_file() in
+  if fname <> ""
+  then
+    Out_channel.with_file fname ~append:true
+      ~f:(fun h -> Out_channel.output_string h msg)
+  else
+    Out_channel.output_string Out_channel.stdout msg;
