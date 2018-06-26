@@ -168,6 +168,7 @@ and try_apply_as_closure v arg =
   | Env.ValLit _ ->
       fail @@ sprintf "Not a functional value: %s." (Env.pp_value v)
   | Env.ValClosure (formal, _, body, env) ->
+      (* TODO: add runtime type-checking *)
       let env1 = Env.bind env (get_id formal) arg in
       let%bind (v, _) = exp_eval body env1 in
       pure v
@@ -186,9 +187,11 @@ and try_apply_as_closure v arg =
 
 and try_apply_as_type_closure v arg_type =
   match v with
-  | Env.ValTypeClosure (_tv, body, env) ->
-      (* TODO: implement type substitution *)
-      let%bind (v, _) = exp_eval body env in
+  | Env.ValTypeClosure (tv, body, env) ->
+      (* TODO: implement type substitution in TypeUtil.ml *)
+      let open TypeUtil in
+      let body_subst = subst_type_in_expr tv arg_type body in
+      let%bind (v, _) = exp_eval body_subst env in
       pure v      
   | _ ->
       fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)

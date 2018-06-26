@@ -2,7 +2,7 @@ let list_reverse =
   tfun 'A =>
   fun (l : List 'A) =>
     let folder = @list_foldl 'A (List 'A) in
-    let init = Nil in
+    let init = Nil {'A} in
     let iter =
       fun (z : List 'A) =>
       fun (h : 'A) =>
@@ -18,7 +18,7 @@ let two = Int32 2 in
 let ten = Int32 10 in
 let eleven = Int32 11 in
 
-let nil = Nil in
+let nil = Nil {Int32} in
 let l1 = Cons {Int32} eleven nil in
 let l2 = Cons {Int32} ten l1 in
 let l3 = Cons {Int32} two l2 in
