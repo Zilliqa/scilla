@@ -15,5 +15,6 @@ module Tests = TestUtil.DiffBasedTests(
     let runner = "type-checker"      
     let tests = [
       "fun.scilla";
+      "fun2.scilla";
     ]
   end)

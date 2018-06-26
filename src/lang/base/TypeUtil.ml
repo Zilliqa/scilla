@@ -123,13 +123,15 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     (* Add to type environment *)
     val addT : t -> loc ident -> typ -> t
     (* Resolve the identifier *)
-    val resolveT : ?lopt:(loc option) -> t -> string -> (resolve_result, string) result
+    val resolveT : 
+      ?lopt:(loc option) -> t -> string -> (resolve_result, string) result
     (* Copy the environment *)
     val copy : t -> t
     (* Convert to list *)
     val to_list : t -> (string * resolve_result) list
     (* Print the type environment *)
     val pp : ?f:(string * resolve_result -> bool) -> t -> string        
+    (* TODO: Add support for tvars *)
   end
 end
 
@@ -173,7 +175,7 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       match Hashtbl.find_opt env.tenv id with
       | Some r -> pure r
       | None ->
-          let loc_str = (match None with
+          let loc_str = (match lopt with
               | Some l -> sprintf " at a location [%s]" (get_loc_str l)
               | None -> "") in
           fail @@ sprintf

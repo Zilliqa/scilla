@@ -1,0 +1,3 @@
+Failed execution:
+Couldn't resolve the identifier y at a location [typecheck/fun2.scilla:1:20] in the type environment
+{ [x -> (PrimType Int32)] }

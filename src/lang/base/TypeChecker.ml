@@ -28,8 +28,11 @@ let rec get_type e tenv = match e with
       pure @@ mk_qual_tp (FunType (t, bt.tp))
 
   (* 1. Type-check primitive literals *)
-  (* 2. Type-check maps *)
-  (* 3. Type-check ADTs *)
+  (* 2. ADTs and pattern-matching *)
+  (* 3. Recursin principles (hard-coded) *)
+  (* 3. Built-ins // make this a functor taking built-in signatures *)
+  (* 4. Type-check maps *)
+  (* 5. Type-check ADTs *)
       
 
   (* TODO: Implement other expressions *)
