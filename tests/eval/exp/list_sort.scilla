@@ -58,7 +58,7 @@ let two = Uint64 2 in
 let three = Uint64 3 in
 let four = Uint64 4 in
 
-let nil = Nil in
+let nil = Nil {Uint64} in
 let l0 = Cons {Uint64} two nil in
 let l1 = Cons {Uint64} four l0 in
 let l2 = Cons {Uint64} three l1 in

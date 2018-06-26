@@ -3,7 +3,7 @@ let list_find =
   fun (f : 'A -> Bool) =>
   fun (l : List 'A) =>
     let folder = @list_foldl 'A (Option 'A) in
-    let init = None in
+    let init = None {'A} in
     let iter =
       fun (z : Option 'A) =>
       fun (h : 'A) =>
@@ -14,9 +14,9 @@ let list_find =
           let r = f h in
           match r with
           | True =>
-            Some h
+            Some {'A} h
           | False =>
-            None
+            None {'A}
           end
         end
      in
@@ -35,7 +35,7 @@ let five = Int64 5 in
 let ten = Int64 10 in
 let eleven = Int64 11 in
 
-let nil = Nil in
+let nil = Nil {Int64} in
 let l1 = Cons {Int64} one nil in
 let l2 = Cons {Int64} ten l1 in
 let l3 = Cons {Int64} two l2 in

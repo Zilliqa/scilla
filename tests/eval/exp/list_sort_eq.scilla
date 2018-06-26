@@ -3,9 +3,9 @@ let list_head =
   fun (l : List 'A) =>
     match l with
     | Cons h t =>
-      Some h
+      Some {'A} h
     | Nil =>
-      None
+      None {'A}
     end
 in
   
@@ -14,9 +14,9 @@ let list_tail =
   fun (l : List 'A) =>
     match l with
     | Cons h t =>
-      Some t
+      Some {'A} t
     | Nil =>
-      None
+      None {'A}
     end
 in
   
@@ -148,7 +148,7 @@ let two = Uint64 2 in
 let three = Uint64 3 in
 let four = Uint64 4 in
 
-let nil = Nil in
+let nil = Nil {Uint64} in
 let l0 = Cons {Uint64} two nil in
 let l1 = Cons {Uint64} one l0 in
 let l2 = Cons {Uint64} three l1 in

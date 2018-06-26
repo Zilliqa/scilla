@@ -36,7 +36,7 @@ let two = Int128 2 in
 let three = Int128 3 in
 let four = Int128 4 in
 
-let nil = Nil in
+let nil = Nil {Int128} in
 let l1 = Cons {Int128} four nil in
 let l2 = Cons {Int128} three l1 in
 let l3 = Cons {Int128} two l2 in
