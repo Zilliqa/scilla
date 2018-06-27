@@ -1,0 +1,34 @@
+{
+  "message": {
+    "_tag": "Main",
+    "_amount": "0",
+    "_accepted": "true",
+    "_recipient": "0x12345678901234567890123456789012345678ab",
+    "params": [ { "vname": "code", "type": "Int32", "value": "3" } ]
+  },
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "100" },
+    { "vname": "highestBid", "type": "Uint128", "value": "100" },
+    {
+      "vname": "highestBidder",
+      "type": "Address",
+      "value": "0x12345678901234567890123456789012345678ab"
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map",
+      "value": [
+        { "keyType": "Address", "valType": "Uint128" },
+        {
+          "key": { "constructor": "None", "argtypes": [], "arguments": [] },
+          "val": "0"
+        }
+      ]
+    },
+    {
+      "vname": "ended",
+      "type": "ADT",
+      "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+    }
+  ]
+}
