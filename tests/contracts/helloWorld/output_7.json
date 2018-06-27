@@ -1,2 +1,7 @@
 Failed to initialize fields:
-Malformed input state variables supplied
+Mismatch in input state variables:
+expected:
+{ [welcome_msg -> (StringLit"")] }
+provided:
+{ [welcome_msg -> (StringLit"Hello World")],
+  [welcome_msg -> (StringLit"Hello World")] }

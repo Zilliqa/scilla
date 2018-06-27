@@ -306,8 +306,6 @@ let init_contract libs cparams cfields args init_bal  =
     let cstate = {env; fields; balance} in
     pure cstate
 
-
-
 (* Combine initialized state with info from current state *)
 let create_cur_state_fields initcstate curcstate =
   (* If there's a field in curcstate that isn't in initcstate,
@@ -325,7 +323,8 @@ let create_cur_state_fields initcstate curcstate =
         (* Combine filtered list and curcstate *)
         pure (filtered_init @ curcstate)
   else
-    fail @@sprintf "Malformed input state variables supplied"
+    fail @@sprintf "Mismatch in input state variables:\nexpected:\n%s\nprovided:\n%s\n"
+                   (pp_literal_map initcstate) (pp_literal_map curcstate)
     
 (* Initialize a module with given arguments and initial balance *)
 let init_module md initargs curargs init_bal =
