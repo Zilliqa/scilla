@@ -138,7 +138,7 @@ let () =
       if cli.input_message = ""
       then
         (* Initializing the contract's state, just for checking things. *)
-        let init_res = init_module cmod initargs [] Uint128.zero in
+        let init_res = init_module cmod initargs [] Uint128.zero bstate in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
         let _ = check_extract_cstate cli.input init_res in
@@ -167,7 +167,7 @@ let () =
         in
 
         (* Initializing the contract's state *)
-        let init_res = init_module cmod initargs curargs cur_bal in
+        let init_res = init_module cmod initargs curargs cur_bal bstate in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
         let cstate = check_extract_cstate cli.input init_res in

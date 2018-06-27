@@ -249,6 +249,26 @@ let rec stmt_eval conf stmts =
     )
 
 (*******************************************************)
+(*              BlockchainState initialization                *)
+(*******************************************************)
+
+let check_blockchain_entries entries =
+  let expected = [
+      ("BLOCKNUMBER", BNum("0"))
+  ] in
+  (* every entry must be expected *)
+  let c1 = List.for_all entries ~f:(fun (s, _) ->
+    List.exists expected ~f:(fun (t, _) -> s = t)) in
+  (* everything expected must be entered *)
+  let c2 = List.for_all expected ~f:(fun (s, _) ->
+    List.exists entries ~f:(fun (t, _) -> s = t)) in
+  if c1 && c2 then
+    pure entries
+  else
+    fail @@sprintf "Mismatch in input blockchain variables:\nexpected:\n%s\nprovided:\n%s\n"
+      (pp_literal_map expected) (pp_literal_map entries)
+
+(*******************************************************)
 (*              Contract initialization                *)
 (*******************************************************)
 
@@ -327,12 +347,14 @@ let create_cur_state_fields initcstate curcstate =
                    (pp_literal_map initcstate) (pp_literal_map curcstate)
     
 (* Initialize a module with given arguments and initial balance *)
-let init_module md initargs curargs init_bal =
+let init_module md initargs curargs init_bal bstate =
   let {cname ; libs; contr} = md in
   let {cname; cparams; cfields; ctrans} = contr in
   let%bind initcstate =
     init_contract libs cparams cfields initargs init_bal in
   let%bind curfields = create_cur_state_fields initcstate.fields curargs in
+  (* blockchain input provided is only validated and not used here. *)
+  let%bind bstate' = check_blockchain_entries bstate in
   let cstate = { initcstate with fields = curfields } in
     pure (contr, cstate)
 
@@ -365,9 +387,9 @@ let append_implict_transition_params tparams =
     let amount = (amount_id, PrimType("Uint128")) in
         amount :: sender :: tparams
 
-(* Restrict message entries to the transition parameters *)
+(* Ensure match b/w transition defined params and passed arguments (entries) *)
 (* TODO: Check runtime types *)
-let check_and_restrict tparams_o entries =
+let check_message_entries tparams_o entries =
   let tparams = append_implict_transition_params tparams_o in
   (* There as an entry for each parameter *)
   let valid_entries = List.for_all tparams
@@ -383,10 +405,7 @@ let check_and_restrict tparams_o entries =
       "Mismatch b/w message entries:\n%s\nand expected transition parameters%s\n"
       (pp_literal_map entries) (pp_cparams tparams)
   else
-    let env_filtered = List.filter entries
-           ~f:(fun (n, _) ->
-               List.exists tparams (fun (p, _) -> (get_id p) = n)) in
-    pure env_filtered
+    pure entries
       
 (* Get the environment, incoming amount and body to execute*)
 let prepare_for_message contr m =
@@ -394,7 +413,7 @@ let prepare_for_message contr m =
   | Msg entries ->
       let%bind (tag, incoming_amount, other) = preprocess_message entries in
       let%bind (tparams, tbody) = get_transition contr tag in
-      let%bind tenv = check_and_restrict tparams other in
+      let%bind tenv = check_message_entries tparams other in
       pure (tenv, incoming_amount, tbody)
   | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal m)
 
