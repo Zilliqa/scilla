@@ -18,7 +18,7 @@ let rec print_args args =
  * Build tests to invoke scilla-runner with the right arguments, for
  * multiple test cases, each suffixed with _i up to _n (both inclusive)
  *)
-let rec build_contract_tests bindir testsdir pcli name i n =
+let rec build_contract_tests bindir testsdir pcli name ecode i n =
   if (i > n) 
     then [] 
   else
@@ -40,16 +40,17 @@ let rec build_contract_tests bindir testsdir pcli name i n =
         (if (pcli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));
         let scillabin = bindir test_ctxt ^ Filename.dir_sep ^ "scilla-runner" in
            (* Ensure that the executable exists with 0 *)
-          (assert_command test_ctxt scillabin args;
+          (assert_command ~exit_code:ecode ~ctxt:test_ctxt ~use_stderr:true scillabin args;
            let goldoutput_file = dir ^ "output_" ^ (i_to_s i) ^ ".json" in
            let g = load_file goldoutput_file in
-           let o = load_file output_file in
-           (* Compare output.json with a gold output in the contract directory *)
-           assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o)) ~ctxt:test_ctxt
-             ~msg:(Core.sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g) g o);
+           if ecode = WEXITED 0 then
+             let o = load_file output_file in
+             (* Compare output.json with a gold output in the contract directory *)
+             assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o)) ~ctxt:test_ctxt
+               ~msg:(Core.sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g) g o);
       ) 
       in
-      test :: (build_contract_tests bindir testsdir pcli name (i+1) n)
+      test :: (build_contract_tests bindir testsdir pcli name ecode (i+1) n)
 
 let build_contract_init_test bindir testsdir pcli name =
   name ^ "_" ^ "init" >::
@@ -114,16 +115,19 @@ let build_misc_tests bindir testsdir pcli =
       [test1;test2]
 
 let add_tests bindir testsdir pcli = 
-    let crowdfundingtests = "crowdfunding" >:::(build_contract_tests bindir testsdir pcli "crowdfunding" 1 5) in
+    let succ_code : Unix.process_status = WEXITED 0 in
+    let fail_code : Unix.process_status = WEXITED 1 in
+    let crowdfundingtests = "crowdfunding" >:::(build_contract_tests bindir testsdir pcli "crowdfunding" succ_code 1 5) in
     let cfinit_test = "crowdfunding_init" >:(build_contract_init_test bindir testsdir pcli "crowdfunding") in
-    let zilgametests = "zil-game" >:::(build_contract_tests bindir testsdir pcli "zil-game" 1 9) in
+    let zilgametests = "zil-game" >:::(build_contract_tests bindir testsdir pcli "zil-game" succ_code 1 9) in
     let zginit_test = "zil-game_init" >:(build_contract_init_test bindir testsdir pcli "zil-game") in
-    let cfinvoketests = "cfinvoke" >:::(build_contract_tests bindir testsdir pcli "cfinvoke" 1 4) in
-    let pingtests = "ping" >:::(build_contract_tests bindir testsdir pcli "ping" 0 3) in
-    let pongtests = "pong" >:::(build_contract_tests bindir testsdir pcli "pong" 0 3) in
-    let helloWorldtests = "helloWorld" >:::(build_contract_tests bindir testsdir pcli "helloWorld" 1 3) in
+    let cfinvoketests = "cfinvoke" >:::(build_contract_tests bindir testsdir pcli "cfinvoke" succ_code 1 4) in
+    let pingtests = "ping" >:::(build_contract_tests bindir testsdir pcli "ping" succ_code 0 3) in
+    let pongtests = "pong" >:::(build_contract_tests bindir testsdir pcli "pong" succ_code 0 3) in
+    let helloWorldtests = "helloWorld" >:::(build_contract_tests bindir testsdir pcli "helloWorld" succ_code 1 3) in
+    let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests bindir testsdir pcli "helloWorld" fail_code 4 8) in
     let fungibletokentests = "fungible-token" >:::(build_contract_tests bindir
-    testsdir pcli "fungible-token" 0 8) in
+    testsdir pcli "fungible-token" succ_code 0 8) in
     let misc_tests = "misc_tests" >::: build_misc_tests bindir testsdir pcli in
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;
-                    misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests]
+                    misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f]
