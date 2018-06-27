@@ -1,0 +1,19 @@
+addons:
+  apt:
+    packages:
+    - ocaml
+    - curl
+    - build-essential
+    - m4
+    - pkg-config
+    - zlib1g-dev
+    - libgmp-dev
+sudo: required
+before_install:
+- wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sudo sh -s /usr/local/bin
+- opam init -y
+- opam switch -y 4.06.0
+- opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit jbuilder stdint
+- eval `opam config env`
+script:
+- make test
