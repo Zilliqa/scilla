@@ -122,8 +122,9 @@ let add_tests bindir testsdir pcli =
     let pingtests = "ping" >:::(build_contract_tests bindir testsdir pcli "ping" 0 3) in
     let pongtests = "pong" >:::(build_contract_tests bindir testsdir pcli "pong" 0 3) in
     let helloWorldtests = "helloWorld" >:::(build_contract_tests bindir testsdir pcli "helloWorld" 1 3) in
+    let auctiontests = "auction" >:::(build_contract_tests bindir testsdir pcli "auction" 1 8) in
     let fungibletokentests = "fungible-token" >:::(build_contract_tests bindir
     testsdir pcli "fungible-token" 0 8) in
     let misc_tests = "misc_tests" >::: build_misc_tests bindir testsdir pcli in
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;
-                    misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests]
+                    misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;auctiontests]
