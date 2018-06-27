@@ -9,6 +9,7 @@ addons:
     - zlib1g-dev
     - libgmp-dev
     - aspcud
+    - bubblewrap
 sudo: required
 branches:
   only: 
