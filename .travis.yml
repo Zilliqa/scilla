@@ -1,6 +1,7 @@
 addons:
   apt:
     packages:
+    - ocaml
     - curl
     - build-essential
     - m4
