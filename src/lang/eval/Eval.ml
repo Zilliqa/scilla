@@ -314,7 +314,10 @@ let create_cur_state_fields initcstate curcstate =
      flag it as invalid input state *)
   let invalid = List.exists curcstate ~f:(fun (s, _) ->
     not (List.exists initcstate ~f:(fun (t, _) -> s = t))) in
-  if not invalid then
+  (* Each entry name is unique *)
+  let uniq_entries = List.for_all curcstate
+      ~f:(fun e -> (List.count curcstate ~f:(fun e' -> fst e = fst e')) = 1) in
+  if (not invalid) && uniq_entries then
     (* Get only those fields from initcstate that are not in curcstate *)
     let filtered_init = List.filter initcstate 
         ~f:(fun (s, _) -> not (List.exists curcstate 
@@ -322,7 +325,7 @@ let create_cur_state_fields initcstate curcstate =
         (* Combine filtered list and curcstate *)
         pure (filtered_init @ curcstate)
   else
-    fail @@sprintf "Invalid input state variables supplied"
+    fail @@sprintf "Malformed input state variables supplied"
     
 (* Initialize a module with given arguments and initial balance *)
 let init_module md initargs curargs init_bal =
@@ -370,10 +373,13 @@ let check_and_restrict tparams_o entries =
   (* There as an entry for each parameter *)
   let valid_entries = List.for_all tparams
       ~f:(fun p -> List.exists entries ~f:(fun e -> fst e = (get_id (fst p)))) in
+  (* There is a parameter for each entry *)
+  let valid_params = List.for_all entries
+      ~f:(fun (s, _) -> List.exists tparams ~f:(fun (i, _) -> s = get_id i)) in
   (* Each entry name is unique *)
   let uniq_entries = List.for_all entries
       ~f:(fun e -> (List.count entries ~f:(fun e' -> fst e = fst e')) = 1) in
-  if not (valid_entries && uniq_entries)
+  if not (valid_entries && uniq_entries && valid_params)
   then fail @@ sprintf
       "Mismatch b/w message entries:\n%s\nand expected transition parameters%s\n"
       (pp_literal_map entries) (pp_cparams tparams)
