@@ -310,12 +310,19 @@ let init_contract libs cparams cfields args init_bal  =
 
 (* Combine initialized state with info from current state *)
 let create_cur_state_fields initcstate curcstate =
+  (* If there's a field in curcstate that isn't in initcstate,
+     flag it as invalid input state *)
+  let invalid = List.exists curcstate ~f:(fun (s, _) ->
+    not (List.exists initcstate ~f:(fun (t, _) -> s = t))) in
+  if not invalid then
     (* Get only those fields from initcstate that are not in curcstate *)
     let filtered_init = List.filter initcstate 
         ~f:(fun (s, _) -> not (List.exists curcstate 
             ~f:(fun (s1, _) -> s = s1))) in
         (* Combine filtered list and curcstate *)
-        filtered_init @ curcstate
+        pure (filtered_init @ curcstate)
+  else
+    fail @@sprintf "Invalid input state variables supplied"
     
 (* Initialize a module with given arguments and initial balance *)
 let init_module md initargs curargs init_bal =
@@ -323,7 +330,7 @@ let init_module md initargs curargs init_bal =
   let {cname; cparams; cfields; ctrans} = contr in
   let%bind initcstate =
     init_contract libs cparams cfields initargs init_bal in
-  let curfields = create_cur_state_fields initcstate.fields curargs in
+  let%bind curfields = create_cur_state_fields initcstate.fields curargs in
   let cstate = { initcstate with fields = curfields } in
     pure (contr, cstate)
 
