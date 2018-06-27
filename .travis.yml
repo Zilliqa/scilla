@@ -10,12 +10,10 @@ addons:
     - pkg-config
     - zlib1g-dev
     - libgmp-dev
-
 before_install:
 - opam init -y
 - opam switch -y 4.06.0
 - opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit jbuilder stdint
-eval `opam config env`
-
+- eval `opam config env`
 script:
 - make test
