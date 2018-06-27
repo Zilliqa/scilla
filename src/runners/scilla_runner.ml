@@ -73,10 +73,12 @@ let input_state_json filename =
   let match_balance ((vname : string), _) : bool = vname = EvalUtil.balance_label in
   let bal_lit = match List.find states ~f:match_balance with
     | Some (_, lit) -> lit
-    | None -> UintLit(128, "0") in
+    | None -> raise (JSON.Invalid_json (EvalUtil.balance_label ^ " field missing"))
+  in
   let bal_int = match bal_lit with
     | UintLit (wx, x) -> Int.of_string x
-    | _ -> 0 in
+    | _ -> raise (JSON.Invalid_json (EvalUtil.balance_label ^ " invalid"))
+  in
   let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
      no_bal_states, Uint128.of_int bal_int
 
