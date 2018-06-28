@@ -29,7 +29,8 @@ transition Invoke (trans : String)
   is_donate = builtin eq trans donate_s;
   match is_donate with
   | True =>
-    msg = {_tag : Donate; _recipient : cfaddr; _amount : bal};
+    accept;
+    msg = {_tag : Donate; _recipient : cfaddr; _amount : _amount};
     msgs = one_msg msg;
     send msgs
   | False =>
