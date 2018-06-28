@@ -249,6 +249,26 @@ let rec stmt_eval conf stmts =
     )
 
 (*******************************************************)
+(*              BlockchainState initialization                *)
+(*******************************************************)
+
+let check_blockchain_entries entries =
+  let expected = [
+      ("BLOCKNUMBER", BNum("0"))
+  ] in
+  (* every entry must be expected *)
+  let c1 = List.for_all entries ~f:(fun (s, _) ->
+    List.exists expected ~f:(fun (t, _) -> s = t)) in
+  (* everything expected must be entered *)
+  let c2 = List.for_all expected ~f:(fun (s, _) ->
+    List.exists entries ~f:(fun (t, _) -> s = t)) in
+  if c1 && c2 then
+    pure entries
+  else
+    fail @@sprintf "Mismatch in input blockchain variables:\nexpected:\n%s\nprovided:\n%s\n"
+      (pp_literal_map expected) (pp_literal_map entries)
+
+(*******************************************************)
 (*              Contract initialization                *)
 (*******************************************************)
 
@@ -306,24 +326,35 @@ let init_contract libs cparams cfields args init_bal  =
     let cstate = {env; fields; balance} in
     pure cstate
 
-
-
 (* Combine initialized state with info from current state *)
 let create_cur_state_fields initcstate curcstate =
+  (* If there's a field in curcstate that isn't in initcstate,
+     flag it as invalid input state *)
+  let invalid = List.exists curcstate ~f:(fun (s, _) ->
+    not (List.exists initcstate ~f:(fun (t, _) -> s = t))) in
+  (* Each entry name is unique *)
+  let uniq_entries = List.for_all curcstate
+      ~f:(fun e -> (List.count curcstate ~f:(fun e' -> fst e = fst e')) = 1) in
+  if (not invalid) && uniq_entries then
     (* Get only those fields from initcstate that are not in curcstate *)
     let filtered_init = List.filter initcstate 
         ~f:(fun (s, _) -> not (List.exists curcstate 
             ~f:(fun (s1, _) -> s = s1))) in
         (* Combine filtered list and curcstate *)
-        filtered_init @ curcstate
+        pure (filtered_init @ curcstate)
+  else
+    fail @@sprintf "Mismatch in input state variables:\nexpected:\n%s\nprovided:\n%s\n"
+                   (pp_literal_map initcstate) (pp_literal_map curcstate)
     
 (* Initialize a module with given arguments and initial balance *)
-let init_module md initargs curargs init_bal =
+let init_module md initargs curargs init_bal bstate =
   let {cname ; libs; contr} = md in
   let {cname; cparams; cfields; ctrans} = contr in
   let%bind initcstate =
     init_contract libs cparams cfields initargs init_bal in
-  let curfields = create_cur_state_fields initcstate.fields curargs in
+  let%bind curfields = create_cur_state_fields initcstate.fields curargs in
+  (* blockchain input provided is only validated and not used here. *)
+  let%bind bstate' = check_blockchain_entries bstate in
   let cstate = { initcstate with fields = curfields } in
     pure (contr, cstate)
 
@@ -356,25 +387,25 @@ let append_implict_transition_params tparams =
     let amount = (amount_id, PrimType("Uint128")) in
         amount :: sender :: tparams
 
-(* Restrict message entries to the transition parameters *)
+(* Ensure match b/w transition defined params and passed arguments (entries) *)
 (* TODO: Check runtime types *)
-let check_and_restrict tparams_o entries =
+let check_message_entries tparams_o entries =
   let tparams = append_implict_transition_params tparams_o in
   (* There as an entry for each parameter *)
   let valid_entries = List.for_all tparams
       ~f:(fun p -> List.exists entries ~f:(fun e -> fst e = (get_id (fst p)))) in
+  (* There is a parameter for each entry *)
+  let valid_params = List.for_all entries
+      ~f:(fun (s, _) -> List.exists tparams ~f:(fun (i, _) -> s = get_id i)) in
   (* Each entry name is unique *)
   let uniq_entries = List.for_all entries
       ~f:(fun e -> (List.count entries ~f:(fun e' -> fst e = fst e')) = 1) in
-  if not (valid_entries && uniq_entries)
+  if not (valid_entries && uniq_entries && valid_params)
   then fail @@ sprintf
       "Mismatch b/w message entries:\n%s\nand expected transition parameters%s\n"
       (pp_literal_map entries) (pp_cparams tparams)
   else
-    let env_filtered = List.filter entries
-           ~f:(fun (n, _) ->
-               List.exists tparams (fun (p, _) -> (get_id p) = n)) in
-    pure env_filtered
+    pure entries
       
 (* Get the environment, incoming amount and body to execute*)
 let prepare_for_message contr m =
@@ -382,7 +413,7 @@ let prepare_for_message contr m =
   | Msg entries ->
       let%bind (tag, incoming_amount, other) = preprocess_message entries in
       let%bind (tparams, tbody) = get_transition contr tag in
-      let%bind tenv = check_and_restrict tparams other in
+      let%bind tenv = check_message_entries tparams other in
       pure (tenv, incoming_amount, tbody)
   | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal m)
 
