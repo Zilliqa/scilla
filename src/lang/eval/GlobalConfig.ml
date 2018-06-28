@@ -59,3 +59,24 @@ let get_log_file () =
 
 let set_log_file s =
   log_file := s
+
+(* Available trace levels *)
+type trace_kind =
+  | Trace_None
+  | Trace_Statement
+  | Trace_Expression
+
+let trace_level = ref Trace_None
+let trace_file = ref ""
+
+let get_trace_level () =
+  !trace_level
+
+let set_trace_level l =
+  trace_level := l
+
+let get_trace_file () =
+  !log_file
+
+let set_trace_file s =
+  trace_file := s
