@@ -8,6 +8,7 @@ addons:
     - pkg-config
     - zlib1g-dev
     - libgmp-dev
+    - aspcud
 sudo: required
 branches:
   only: 
