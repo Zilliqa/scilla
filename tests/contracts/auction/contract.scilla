@@ -154,7 +154,6 @@ end
 (* Transition 2: claiming money back *)
 transition Withdraw ()
   prs <- pendingReturns;
-  b = builtin contains prs _sender;
   pr = builtin get prs _sender;
   match pr with
   | None =>
