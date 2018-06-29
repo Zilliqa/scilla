@@ -32,12 +32,14 @@ docker:
 
 # Build a zilliqa-plus-scilla docker based on from zilliqa image ZILLIQA_IMAGE
 zilliqa-docker:
-	@[ -z "$(ZILLIQA_IMAGE)" ] && \
+	@if [ -z "$(ZILLIQA_IMAGE)" ]; \
+	then \
 		echo "ZILLIQA_IMAGE not specified" && \
 		echo "Usage:\n\tmake zilliqa-docker ZILLIQA_IMAGE=zilliqa:zilliqa" && \
 		echo "" && \
-		exit 1
-	docker build --build-arg=$(ZILLIQA_IMAGE) .
+		exit 1; \
+	fi
+	docker build --build-arg BASE_IMAGE=$(ZILLIQA_IMAGE) .
 
 opamdep:
 	opam init -y
