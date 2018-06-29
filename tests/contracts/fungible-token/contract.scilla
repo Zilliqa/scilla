@@ -85,7 +85,7 @@ transition Transfer (to : Address, tokens : Uint128)
       (* subtract tokens from _sender and add it to to *)
       new_sender_bal = builtin sub b tokens;
       new_balances = builtin put bl _sender new_sender_bal;
-      to_bal = builtin get bl to;
+      to_bal = builtin get new_balances to;
       match to_bal with
       | Some x =>
         new_to_bal = builtin add x tokens;
