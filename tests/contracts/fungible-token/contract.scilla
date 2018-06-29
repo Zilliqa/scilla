@@ -75,7 +75,6 @@ transition TotalSupply ()
 end
 
 transition Transfer (to : Address, tokens : Uint128)
-  zero = Uint128 0;
   bl <- balances;
   bal = builtin get bl _sender;
   match bal with
@@ -114,7 +113,6 @@ transition Transfer (to : Address, tokens : Uint128)
 end
 
 transition TransferFrom (from : Address, to : Address, tokens : Uint128)
-  zero = Uint128 0;
   bl <- balances;
   al <- allowed;
   m_disallowed = "Transfer not allowed";
@@ -173,7 +171,6 @@ transition TransferFrom (from : Address, to : Address, tokens : Uint128)
 end
 
 transition Approve (spender : Address, tokens : Uint128)
-  zero = Uint128 0;
   al <- allowed;
   sender_map = builtin get al _sender;
   match sender_map with
