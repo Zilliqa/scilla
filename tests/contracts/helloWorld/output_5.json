@@ -1,0 +1,6 @@
+Failed to initialize fields:
+Mismatch in input state variables:
+expected:
+{ [welcome_msg -> (StringLit"")] }
+provided:
+{ [Unknown -> (IntLit 32 420)] }
