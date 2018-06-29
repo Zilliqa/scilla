@@ -158,7 +158,7 @@ transition TransferFrom (from : Address, to : Address, tokens : Uint128)
         msgs = one_msg msg;
         send msgs
       end
-    | Pair None None =>
+    | _ =>
       msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; message : m_disallowed };
       msgs = one_msg msg;
       send msgs
