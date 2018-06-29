@@ -45,6 +45,8 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     val copy : t -> t
     (* Convert to list *)
     val to_list : t -> (string * resolve_result) list
+    (* Get type variables *)
+    val tvars : t -> (string * loc) list
     (* Print the type environment *)
     val pp : ?f:(string * resolve_result -> bool) -> t -> string        
   end

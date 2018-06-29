@@ -129,6 +129,8 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     val copy : t -> t
     (* Convert to list *)
     val to_list : t -> (string * resolve_result) list
+    (* Get type variables *)
+    val tvars : t -> (string * loc) list
     (* Print the type environment *)
     val pp : ?f:(string * resolve_result -> bool) -> t -> string        
     (* TODO: Add support for tvars *)
@@ -147,9 +149,11 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
                         
   module TEnv = struct
     type t = {
+      (* Typed identifiers *)
       tenv  : (string, resolve_result) Hashtbl.t;
+      (* Context for type variables and their locations *)
       tvars : (string, loc) Hashtbl.t
-    }
+    } 
       
     let mk =
       let t1 = Hashtbl.create 50 in
@@ -159,7 +163,10 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
     let addT env id tp =
       let _ = Hashtbl.add env.tenv (get_id id)
           {qt = Q.mk_qualified_type tp; loc = get_loc id} in
-      env 
+      env
+
+    let tvars env =
+      Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []
 
     let to_list env =
       Hashtbl.fold (fun key data z -> (key, data) :: z) env.tenv []
