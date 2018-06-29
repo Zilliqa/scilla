@@ -1,0 +1,6 @@
+Failed to initialize fields:
+Mismatch in input blockchain variables:
+expected:
+{ [BLOCKNUMBER -> (BNum 0)] }
+provided:
+{ [Unknown -> (BNum 100)] }

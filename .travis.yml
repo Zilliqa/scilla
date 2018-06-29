@@ -9,6 +9,9 @@ addons:
     - zlib1g-dev
     - libgmp-dev
     - aspcud
+cache:
+  directories:
+  - $HOME/.opam
 sudo: required
 branches:
   only: 

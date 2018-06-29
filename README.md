@@ -33,7 +33,7 @@ From the project root, execute
 ./bin/eval-runner tests/eval/exp/let.scilla 
 ```
 
-Instead of `let.scilla` you might want to try any idfferent file in `tests/eval/exp`.
+Instead of `let.scilla` you might want to try any dfferent file in `tests/eval/exp`.
 
 #### Executing a simple transition
 
