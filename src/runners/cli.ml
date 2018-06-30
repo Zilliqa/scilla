@@ -13,15 +13,25 @@ let f_input_message = ref ""
 let f_input_blockchain = ref ""
 let f_output = ref ""
 let f_input = ref ""
+let f_trace_file = ref ""
+let f_trace_level = ref ""
 
 let usage = "-init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
-    " -o output.json -i input.scilla" 
+    " -o output.json -i input.scilla [-tracefile filename] [-tracelevel none|stmt|exp ]" 
 
 let print_usage () = 
   Printf.fprintf stderr "Mandatory and optional flags:\n%s %s\n" Sys.argv.(0) usage
 
-let validate () =
+let process_trace () =
+  match !f_trace_level with
+  | "stmt" -> GlobalConfig.set_trace_level GlobalConfig.Trace_Statement;
+            GlobalConfig.set_trace_file !f_trace_file
+  | "exp" -> GlobalConfig.set_trace_level GlobalConfig.Trace_Expression;
+            GlobalConfig.set_trace_file !f_trace_file
+  | _ -> ()
+
+let validate_main () =
   let msg = 
     (* init.json is mandatory *)
     (if not (Sys.file_exists !f_input_init) 
@@ -75,9 +85,12 @@ let parse () =
     ("-iblockchain", Arg.String (fun x -> f_input_blockchain := x), "Path to blockchain input json");
     ("-o", Arg.String (fun x -> f_output := x), "Path to output json");
     ("-i", Arg.String (fun x -> f_input := x), "Path to scilla contract");
+    ("-tracefile", Arg.String (fun x -> f_trace_file := x), "Path to trace file. (prints to stdout if no file specified)");
+    ("-tracelevel", Arg.String (fun x -> f_trace_level := x), "Trace level: none|stmt|exp. (default none)");
   ] in 
   let ignore_anon s = () in
   let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
-  let () = validate () in
+  let () = process_trace() in
+  let () = validate_main () in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input}

@@ -1,6 +1,6 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
-.PHONY: default all utop test clean
+.PHONY: default all utop test clean docker zilliqa-docker
 
 default: all
 
@@ -26,7 +26,22 @@ clean:
 # Remove remaining files/folders ignored by git as defined in .gitignore (-X).
 	git clean -dfXq
 
+# Build a standalone scilla docker
+docker:
+	docker build .
+
+# Build a zilliqa-plus-scilla docker based on from zilliqa image ZILLIQA_IMAGE
+zilliqa-docker:
+	@if [ -z "$(ZILLIQA_IMAGE)" ]; \
+	then \
+		echo "ZILLIQA_IMAGE not specified" && \
+		echo "Usage:\n\tmake zilliqa-docker ZILLIQA_IMAGE=zilliqa:zilliqa" && \
+		echo "" && \
+		exit 1; \
+	fi
+	docker build --build-arg BASE_IMAGE=$(ZILLIQA_IMAGE) .
+
 opamdep:
 	opam init -y
 	opam switch -y 4.06.0
-	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit jbuilder
+	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit jbuilder stdint

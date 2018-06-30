@@ -1,5 +1,7 @@
 # Scilla: A Smart Contract Intermediate Level Language
 
+[![Build Status](https://travis-ci.com/Zilliqa/scilla.svg?token=7qzjATfZuxTQvRjMHPVQ&branch=master)](https://travis-ci.com/Zilliqa/scilla)
+
 <p align="center">
   <img src="https://github.com/Zilliqa/scilla/blob/master/imgs/scilla-logo-color.jpg" width="200" height="200">
 </p>
@@ -31,7 +33,7 @@ From the project root, execute
 ./bin/eval-runner tests/eval/exp/let.scilla 
 ```
 
-Instead of `let.scilla` you might want to try any idfferent file in `tests/eval/exp`.
+Instead of `let.scilla` you might want to try any dfferent file in `tests/eval/exp`.
 
 #### Executing a simple transition
 
