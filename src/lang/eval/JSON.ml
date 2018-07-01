@@ -11,6 +11,7 @@ open Syntax
 open Core
 open Yojson
 open EvalUtil.MessagePayload
+open Datatypes
 
 exception Invalid_json of string
 let addr_len = 40
@@ -198,17 +199,31 @@ let jobj_to_statevar json =
       Option.map ~f:(fun x -> (n, x)) tv
 
 let rec typ_to_string t = 
-  match t with
-  | PrimType t -> t
-  | MapType (kt, vt) ->
-      sprintf "Map (%s) (%s)" (typ_to_string kt) (typ_to_string vt )
-  | ADT (name, targs) ->
-      let tns = List.map targs
-          ~f:(fun t -> sprintf "(%s)" (typ_to_string t)) in
-      sprintf "ADT %s (%s)" name (String.concat ~sep:", " tns)
+match t with
+| PrimType t -> t
+| MapType (kt, vt) ->
+    sprintf "Map (%s) (%s)" (typ_to_string kt) (typ_to_string vt )
+| ADT (name, targs) ->
+    let tns = List.map targs
+        ~f:(fun t -> sprintf "(%s)" (typ_to_string t)) in
+    sprintf "%s %s" name (String.concat ~sep:", " tns)
 
-  (* TODO: Support other types *)
-  | _ -> "Unsupported"
+(* TODO: Support other types *)
+| _ -> "Unsupported"
+
+(* Given a literal, return its full type name *)
+let lit_typ_string l = match l with
+  | Map ((kt, vt), _) -> typ_to_string (MapType (kt, vt))
+  | ADTValue (name, tl, _) -> 
+    let r = DataTypeDictionary.lookup_constructor name in
+    (match r with
+    | Error emsg ->
+      raise (Invalid_json (emsg))
+    | Ok (t, _)->
+      typ_to_string (ADT (t.tname, tl))
+    )
+  | _ -> literal_tag l
+
 
 let rec mapvalues_to_json ms = 
   match ms with
@@ -233,13 +248,7 @@ and literal_to_json lit =
   | StringLit (x) | BNum (x) | Address (x) | Sha256 (x) -> `String (x)
   | IntLit (wx, x) | UintLit (wx, x) -> `String (x)
   | Map ((kt, vt), kvs) ->
-    let kjson = "keyType", `String (typ_to_string kt) in
-    let vjson =  "valType", `String (typ_to_string vt) in
-    let mtype_json = `Assoc (kjson :: vjson :: []) in
-    let kv_json = mapvalues_to_json kvs in
-    (* The output state variable for a map has the from/to type
-     * as the first map entry and the actual entries follow *)
-      `List (mtype_json :: kv_json)
+      `List (mapvalues_to_json kvs)
   | ADTValue (n, t, v) ->
       let (argtl, argl) = adtargs_to_json t v in
         `Assoc [
@@ -253,7 +262,7 @@ let state_to_json state =
   let (vname, lit) = state in
   `Assoc [ 
     ("vname", `String vname) ; 
-    ("type", `String (literal_tag lit));
+    ("type", `String (lit_typ_string lit));
     ("value", (literal_to_json lit))
   ]
 
