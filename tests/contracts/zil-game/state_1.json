@@ -2,17 +2,17 @@
   {
     "vname": "player_a_hash",
     "type": "Option (Hash)",
-    "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+    "value": { "constructor": "None", "argtypes": ["Hash"], "arguments": [] }
   },
   {
     "vname": "player_b_hash",
     "type": "Option (Hash)",
-    "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+    "value": { "constructor": "None", "argtypes": ["Hash"], "arguments": [] }
   },
   {
     "vname": "timer",
     "type": "Option (BNum)",
-    "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+    "value": { "constructor": "None", "argtypes": ["BNum"], "arguments": [] }
   },
   {
     "vname": "_balance",

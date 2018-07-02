@@ -105,6 +105,16 @@ let rec json_to_adtargs tjs ajs =
       )
   | _ -> [], []
 
+let rec json_to_adttyps tjs =
+  let open Basic.Util in
+  match tjs with
+  | (tj :: tr) ->
+      let tjs = to_string tj in
+      let t = parse_typ_exn tjs in
+      let trem = json_to_adttyps tr in
+      t :: trem
+  | _ -> []
+
 let rec read_adt_json name j =
   let open Basic.Util in
   let dt =
@@ -128,8 +138,9 @@ let rec read_adt_json name j =
         raise (Invalid_json ("ADT type " ^ dt.tname ^ " does not match constructor " ^ constr));
       let argtypes = member_exn "argtypes" j |> to_list in
       let arguments = member_exn "arguments" j |> to_list in
-      let (tlist, arglit) = json_to_adtargs argtypes arguments in
-      Some (ADTValue (constr, tlist, arglit))
+      let tlist = json_to_adttyps argtypes in
+      let (_, arglist) = json_to_adtargs argtypes arguments in
+      Some (ADTValue (constr, tlist, arglist))
   | _ -> None
 
 (* Map is a `List of `Assoc jsons, with
@@ -244,6 +255,14 @@ and adtargs_to_json tlist vlist =
       (j1 :: jtn), (j2 :: jvn)
   | _ -> ([], [])
 
+and adttyps_to_json tlist =
+  match tlist with
+  | t1 :: tn ->
+    let j1 = `String (typ_to_string t1) in
+    let jtn = adttyps_to_json tn in
+      (j1 :: jtn)
+  | _ -> []
+
 and literal_to_json lit = 
   match lit with
   | StringLit (x) | BNum (x) | Address (x) | Sha256 (x) -> `String (x)
@@ -251,7 +270,8 @@ and literal_to_json lit =
   | Map ((kt, vt), kvs) ->
       `List (mapvalues_to_json kvs)
   | ADTValue (n, t, v) ->
-      let (argtl, argl) = adtargs_to_json t v in
+      let argtl = adttyps_to_json t in
+      let (_, argl) = adtargs_to_json t v in
         `Assoc [
           ("constructor", `String n);
           ("argtypes", `List argtl);

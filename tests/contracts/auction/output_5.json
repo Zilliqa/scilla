@@ -16,7 +16,11 @@
     {
       "vname": "highestBidder",
       "type": "Option (Address)",
-      "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Address" ],
+        "arguments": []
+      }
     },
     { "vname": "highestBid", "type": "Uint128", "value": "0" },
     {

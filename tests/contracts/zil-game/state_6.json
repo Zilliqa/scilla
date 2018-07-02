@@ -22,7 +22,7 @@
   {
     "vname": "player_b_hash",
     "type": "Option (Hash)",
-    "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+    "value": { "constructor": "None", "argtypes": ["Hash"], "arguments": [] }
   },
   {
     "vname": "_balance",

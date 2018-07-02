@@ -30,8 +30,12 @@
     },
     {
       "vname": "player_b_hash",
-      "type": "Option ",
-      "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+      "type": "Option (Hash)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Hash" ],
+        "arguments": []
+      }
     }
   ]
 }
