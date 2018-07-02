@@ -90,17 +90,24 @@ let build_prim_lit_exn t v =
     | _ ->
       raise (Invalid_json ("JSON parsing: Invalid type for PrimType literal construction"))
 
-let rec json_to_adtargs tjs ajs =
+let json_to_adtargs cname tlist ajs =
   let open Basic.Util in
-  match tjs, ajs with
-  | (tj :: tr), (aj :: ar) ->
-      let tjs = to_string tj in
-      let t = parse_typ_exn tjs in
-      let ajs = to_string aj in
-      let argS = build_prim_lit_exn t ajs in
-      let (trem, arem) = json_to_adtargs tr ar in
-       ((PrimType tjs) :: trem, argS :: arem)
-  | _ -> [], []
+  match cname with
+  | "Some" -> 
+    let j = List.nth_exn ajs 0 in
+    let lit = build_prim_lit_exn (List.nth_exn tlist 0) (to_string j) in
+      ADTValue (cname, tlist, (lit::[]))
+  | "None" -> ADTValue (cname, tlist, [])
+  | "True" | "False" -> ADTValue (cname, [], []) 
+  | "Pair" ->
+    let j1 = List.nth_exn ajs 0 in
+    let lit1 = build_prim_lit_exn (List.nth_exn tlist 0) (to_string j1) in
+    let j2 = List.nth_exn ajs 1 in
+    let lit2 = build_prim_lit_exn (List.nth_exn tlist 1) (to_string j2) in
+      ADTValue (cname, tlist, (lit1::lit2::[]))
+  | _ -> (* TODO: Support Lists and Nats *)
+    raise (Invalid_json ("JSON parsing: Unsupported ADT type"))
+
 
 let rec json_to_adttyps tjs =
   let open Basic.Util in
@@ -136,8 +143,7 @@ let rec read_adt_json name j =
       let argtypes = member_exn "argtypes" j |> to_list in
       let arguments = member_exn "arguments" j |> to_list in
       let tlist = json_to_adttyps argtypes in
-      let (_, arglist) = json_to_adtargs argtypes arguments in
-      ADTValue (constr, tlist, arglist)
+        json_to_adtargs constr tlist arguments
   | _ -> raise (Invalid_json ("JSON parsing: error parsing ADT " ^ name))
 
 (* Map is a `List of `Assoc jsons, with
