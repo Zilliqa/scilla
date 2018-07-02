@@ -247,13 +247,13 @@ let rec mapvalues_to_json ms =
       kv_json :: (mapvalues_to_json remaining)
   | [] -> []
 
-and adtargs_to_json tlist vlist =
-  match tlist, vlist with
-  | t1 :: tn, v1 :: vn ->
-    let (j1, j2) = `String (typ_to_string t1) , literal_to_json v1 in
-    let (jtn, jvn)= adtargs_to_json tn vn in
-      (j1 :: jtn), (j2 :: jvn)
-  | _ -> ([], [])
+and adtargs_to_json vlist =
+  match vlist with
+  | v1 :: vn ->
+    let j2 = literal_to_json v1 in
+    let jvn= adtargs_to_json vn in
+      (j2 :: jvn)
+  | _ -> []
 
 and adttyps_to_json tlist =
   match tlist with
@@ -271,7 +271,7 @@ and literal_to_json lit =
       `List (mapvalues_to_json kvs)
   | ADTValue (n, t, v) ->
       let argtl = adttyps_to_json t in
-      let (_, argl) = adtargs_to_json t v in
+      let argl = adtargs_to_json v in
         `Assoc [
           ("constructor", `String n);
           ("argtypes", `List argtl);
