@@ -10,8 +10,6 @@
 open Syntax
 open Core
 open MonadUtil
-open Recursion
-open EvalUtil
 
 (* A tagged constructor *)
 type constructor = {
@@ -60,10 +58,10 @@ module DataTypeDictionary = struct
   let c_none = { cname = "None"; arity = 0 }
   let t_option = {
     tname = "Option";
-    targs = ["a"];
+    targs = ["'A"];
     tconstr = [c_some; c_none];
     tmap = [
-      ("Some", [(0, TypeVar "a")])
+      ("Some", [(0, TypeVar "'A")])
     ]
   }             
   
@@ -72,11 +70,11 @@ module DataTypeDictionary = struct
   let c_nil  = { cname = "Nil"; arity = 0 }
   let t_list = {
     tname = "List";
-    targs = ["a"];
+    targs = ["'A"];
     tconstr = [c_cons; c_nil];
     tmap = [
-      ("Cons", [(0, TypeVar "a");
-                (1, ADT ("List", [TypeVar "a"]))])
+      ("Cons", [(0, TypeVar "'A");
+                (1, ADT ("List", [TypeVar "'A"]))])
     ]
   }
 
@@ -84,10 +82,10 @@ module DataTypeDictionary = struct
   let c_pair = { cname = "Pair"; arity = 2 }
   let t_product = {
     tname = "Pair";
-    targs = ["a"; "b"];
+    targs = ["'A"; "'B"];
     tconstr = [c_pair];
     tmap = [
-      ("And", [(0, TypeVar "a"); (1, TypeVar "b")])
+      ("Pair", [(0, TypeVar "a"); (1, TypeVar "b")])
     ]
   }
 

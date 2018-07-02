@@ -6,8 +6,8 @@
  ((modules (ScillaParser))))
 
 (library
- ((name scilla_syntax) ; doesn't support '-' in the name
-  (public_name scilla-syntax)
+ ((name scilla_base) ; doesn't support '-' in the name
+  (public_name scilla-base)
   (wrapped false)
   (libraries (core ppx_sexp_conv
               num hex stdint
@@ -15,6 +15,7 @@
               ppx_deriving_yojson.runtime
               yojson))
   (preprocess (pps (ppx_sexp_conv
+                    ppx_let 
                     ppx_deriving.show
                     ppx_deriving_yojson)))
   (synopsis "Scilla workbench implementation.")))
