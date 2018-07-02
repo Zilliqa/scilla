@@ -108,6 +108,12 @@ let json_to_adtargs cname tlist ajs =
   | _ -> (* TODO: Support Lists and Nats *)
     raise (Invalid_json ("JSON parsing: Unsupported ADT type"))
 
+let verify_adt_typs_exn name tlist1 adt =
+  match adt with
+  | ADTValue (_, tlist2, _) ->
+    if tlist1 = tlist2 then ()
+    else raise (Invalid_json ("Type mismatch in parsing ADT " ^ name))
+  | _ -> raise (Invalid_json ("Type mismatch in parsing ADT " ^ name))
 
 let rec json_to_adttyps tjs =
   let open Basic.Util in
@@ -173,8 +179,10 @@ and mapvalues_from_json kt vt l =
         (match vt with
          | MapType (kt', vt') ->
             read_map_json kt' vt' vjson
-         | ADT (name, _) ->
-            read_adt_json name vjson
+         | ADT (name, tlist) ->
+            let vl = read_adt_json name vjson in
+            verify_adt_typs_exn name tlist vl;
+              vl
          | PrimType t ->
             build_prim_lit_exn vt (to_string vjson)
          | _ -> raise (Invalid_json ("Unknown type in Map value in JSON"))
@@ -193,9 +201,10 @@ let jobj_to_statevar json =
     let v = member "value" json in
     let vl = read_map_json kt vt v in
       (n, vl)
-  | ADT (name, _) ->
+  | ADT (name, tlist) ->
     let v = member_exn "value" json in
     let vl = read_adt_json name v in
+    verify_adt_typs_exn name tlist vl;
       (n, vl)
   | _ ->  
     let v = member_exn "value" json |> to_string in
