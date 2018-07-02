@@ -104,7 +104,14 @@ module DataTypeDictionary = struct
              sprintf "Data type %s must have constructor %s."
                dt.tname cn
          | Some ctr -> pure (dt, ctr))
-  
+
+  let lookup_name name =
+    match List.find dict ~f:(fun t -> t.tname = name) with
+    | None ->
+      fail @@ sprintf "ADT %s not found" name
+    | Some a ->
+      pure (a)
+
 end
 
 (* TODO: support user_defined data types *)

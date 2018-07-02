@@ -105,11 +105,27 @@ let rec json_to_adtargs tjs ajs =
       )
   | _ -> [], []
 
-let rec read_adt_json j =
+let rec read_adt_json name j =
   let open Basic.Util in
+  let dt =
+  (match DataTypeDictionary.lookup_name name with
+    | Error emsg ->
+      raise (Invalid_json(emsg))
+    | Ok r ->
+      r
+    ) in
   match j with
   | `Assoc adt ->
       let constr = member_exn "constructor" j |> to_string in
+      let dt' =
+      (match DataTypeDictionary.lookup_constructor constr with
+      | Error emsg ->
+        raise (Invalid_json(emsg))
+      | Ok (r, _) ->
+        r
+      ) in
+      if (dt <> dt') then
+        raise (Invalid_json ("ADT type " ^ dt.tname ^ " does not match constructor " ^ constr));
       let argtypes = member_exn "argtypes" j |> to_list in
       let arguments = member_exn "arguments" j |> to_list in
       let (tlist, arglit) = json_to_adtargs argtypes arguments in
@@ -142,8 +158,8 @@ and mapvalues_from_json kt vt l =
         (match vt with
          | MapType (kt', vt') ->
             read_map_json kt' vt' vjson
-         | ADT _ ->
-            read_adt_json vjson
+         | ADT (name, _) ->
+            read_adt_json name vjson
          | PrimType t ->
             build_prim_lit_exn vt (to_string vjson)
          | _ -> raise (Invalid_json ("Unknown type in Map value in JSON"))
@@ -169,9 +185,9 @@ let jobj_to_statevar json =
     | None ->
         None
     )
-  | ADT (_, _) ->
+  | ADT (name, _) ->
     let v = member_exn "value" json in
-    let vl = read_adt_json v in
+    let vl = read_adt_json name v in
     (match vl with
     | Some vlm ->
         Some (n, vlm)
