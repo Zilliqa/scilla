@@ -7,6 +7,8 @@
   (libraries (core
               angstrom stdint
               ppx_sexp_conv ppx_deriving batteries
-              ppx_let yojson cryptokit scilla-syntax))
-  (preprocess (pps (ppx_sexp_conv ppx_let ppx_deriving.show)))
+              ppx_let yojson cryptokit scilla-base))
+  (preprocess (pps (ppx_sexp_conv
+                    ppx_let
+                    ppx_deriving.show)))
   (synopsis "Scilla workbench implementation.")))

@@ -2,8 +2,8 @@
 
 (library
  (
-  (name testexp)
+  (name testutil)
   (wrapped false)
-  (libraries (core oUnit testutil))
+  (libraries (core oUnit))
  )
 )
