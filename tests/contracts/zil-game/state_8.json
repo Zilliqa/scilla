@@ -1,7 +1,7 @@
 [
   {
     "vname": "timer",
-    "type": "ADT",
+    "type": "Option (BNum)",
     "value": {
       "constructor": "Some",
       "argtypes": [ "BNum" ],
@@ -10,7 +10,7 @@
   },
   {
     "vname": "player_a_hash",
-    "type": "ADT",
+    "type": "Option (Hash)",
     "value": {
       "constructor": "Some",
       "argtypes": [ "Hash" ],
@@ -21,7 +21,7 @@
   },
   {
     "vname": "player_b_hash",
-    "type": "ADT",
+    "type": "Option (Hash)",
     "value": { "constructor": "None", "argtypes": [], "arguments": [] }
   },
   {

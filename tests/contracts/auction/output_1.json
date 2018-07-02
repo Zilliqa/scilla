@@ -11,7 +11,7 @@
     { "vname": "highestBid", "type": "Uint128", "value": "100" },
     {
       "vname": "highestBidder",
-      "type": "ADT",
+      "type": "Option (Address)",
       "value": {
         "constructor": "Some",
         "argtypes": [ "Address" ],
@@ -20,13 +20,13 @@
     },
     {
       "vname": "ended",
-      "type": "ADT",
+      "type": "Bool ",
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     },
     {
       "vname": "pendingReturns",
-      "type": "Map",
-      "value": [ { "keyType": "Address", "valType": "Uint128" } ]
+      "type": "Map (Address) (Uint128)",
+      "value": []
     }
   ]
 }

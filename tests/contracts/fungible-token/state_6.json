@@ -2,13 +2,11 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "allowed",
-      "type": "Map",
+      "type": "Map (Address) (Map (Address) (Uint128))",
       "value": [
-        { "keyType": "Address", "valType": "Map (Address) (Uint128)" },
         {
           "key": "0x1234567890123456789012345678901234567890",
           "val": [
-            { "keyType": "Address", "valType": "Uint128" },
             {
               "key": "0x64345678901234567890123456789012345678cd",
               "val": "600"
@@ -23,9 +21,8 @@
     },
     {
       "vname": "balances",
-      "type": "Map",
+      "type": "Map (Address) (Uint128)",
       "value": [
-        { "keyType": "Address", "valType": "Uint128" },
         { "key": "0x44345678901234567890123456789012345678cd", "val": "20" },
         {
           "key": "0x1234567890123456789012345678901234567890",
