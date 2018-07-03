@@ -53,7 +53,12 @@ The dependencies can be installed via [Homebrew](https://brew.sh/):
 
 ```
 brew install ocaml opam pkg-config
+opam init
 opam switch -y 4.06.1
+```
+Then run the following command to setup environment on current shell. 
+```
+eval `opam config env`
 ```
 
 ## Using Ocaml with Emacs
