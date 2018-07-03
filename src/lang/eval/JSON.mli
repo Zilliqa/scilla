@@ -108,4 +108,42 @@ module BlockChainState : sig
 
 end
 
+module ContractInfo : sig
+
+  (* Given a parsed contract, give a string JSON with these details:
+       { 
+         "name" : "foo",
+         "params" : [ 
+           { "name" : "param1",
+             "type" : "Int32" },
+           { "name" : "param2",
+             "type" : "String" }
+          ],
+          "fields" : [
+           { "name" : "field1",
+             "type" : "Int32" },
+           { "name" : "field2",
+             "type" : "String" }
+          ],
+          "transitions" : [
+            {
+              "name" : "bar",
+              "params" : [
+                {"name" : "barparam1", "type" : "Uint128"},
+                {"name" : "barparam2", "type" : "Uint128"},
+              ] 
+            },
+            {
+              "name" : "bar2",
+              "params" : [
+                {"name" : "bar1param1", "type" : "Uint128"},
+                {"name" : "bar1param2", "type" : "Uint128"},
+              ] 
+            }
+          ]
+        }
+  *)
+  val get_string : 'rep Syntax.contract -> string
+end
+
 exception Invalid_json of string

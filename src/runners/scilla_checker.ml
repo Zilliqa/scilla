@@ -26,3 +26,4 @@ let () =
     | None -> plog (sprintf "%s\n" "Failed to parse input file.")
     | Some cmod ->
       plog (sprintf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" Sys.argv.(1));
+      pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr))
