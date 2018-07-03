@@ -11,7 +11,7 @@
     },
     {
       "vname": "pong_addr",
-      "type": "ADT",
+      "type": "Option (Address)",
       "value": {
         "constructor": "Some",
         "argtypes": [ "Address" ],

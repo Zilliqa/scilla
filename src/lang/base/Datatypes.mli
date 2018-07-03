@@ -25,4 +25,5 @@ type adt = {
 module DataTypeDictionary : sig
   (* Hiding the actual data type dicionary *)
   val lookup_constructor : string -> (adt * constructor, string) result
+  val lookup_name : string -> (adt, string) result
 end

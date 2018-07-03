@@ -10,19 +10,23 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "ended",
-      "type": "ADT",
+      "type": "Bool ",
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     },
     {
       "vname": "highestBidder",
-      "type": "ADT",
-      "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+      "type": "Option (Address)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Address" ],
+        "arguments": []
+      }
     },
     { "vname": "highestBid", "type": "Uint128", "value": "0" },
     {
       "vname": "pendingReturns",
-      "type": "Map",
-      "value": [ { "keyType": "Address", "valType": "Uint128" } ]
+      "type": "Map (Address) (Uint128)",
+      "value": []
     }
   ]
 }

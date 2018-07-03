@@ -1,8 +1,8 @@
 [
-  { "vname": "backers", "type": "Map", "value": null },
+  { "vname": "backers", "type": "Map (Address) (Uint128)", "value": null },
   {
     "vname": "funded",
-    "type": "ADT",
+    "type": "Bool",
     "value": { "constructor": "False", "argtypes": [], "arguments": [] }
   },
   {

@@ -11,10 +11,16 @@ open Syntax
 open Core
 open Yojson
 open EvalUtil.MessagePayload
+open Datatypes
 
 exception Invalid_json of string
 let addr_len = 40
 let hash_len = 64
+
+let parse_typ_exn t = 
+  (try EvalUtil.parse_type t
+    with _ ->
+      raise (Invalid_json (sprintf "Invalid type in json:\n%s" t)))
 
 let member_exn m j =
   let open Basic.Util in
@@ -60,76 +66,103 @@ let lit_exn n =
   else
     raise (Invalid_json ("Invalid " ^ literal_tag n ^ " : " ^ s ^ " in json"))
 
-  let build_int_exn t v =
-    let r = build_int t v in
-    match r with
-    | Some rs ->
-      rs
-    | None ->
-      raise (Invalid_json("Invalid integer type/value " ^ t ^ " " ^ v ^ " in json"))
+let build_int_exn t v =
+  let r = build_int t v in
+  match r with
+  | Some rs ->
+    rs
+  | None ->
+    raise (Invalid_json("Invalid integer type/value " ^ t ^ " " ^ v ^ " in json"))
 
-let build_lit_exn t v =
+let build_prim_lit_exn t v =
     match t with
-    | "String" -> Some (lit_exn (StringLit v))
-    | "BNum" -> Some (lit_exn(BNum v))
-    | "Address" -> Some (lit_exn(Address v))
-    | "Hash" -> Some (lit_exn(Sha256 v))
+    | PrimType "String" -> lit_exn (StringLit v)
+    | PrimType "BNum" -> lit_exn(BNum v)
+    | PrimType "Address" -> lit_exn(Address v)
+    | PrimType "Hash" -> lit_exn(Sha256 v)
+    | PrimType i ->
+      (* See if it is an Int/Uint type. *)
+      if is_int_type i || is_uint_type i
+      then
+        build_int_exn i v
+      else
+        raise (Invalid_json ("Invalid PrimType " ^ i ^ " in JSON"))
     | _ ->
-    (* See if it is an Int/Uint type. *)
-    if is_int_type t || is_uint_type t
-    then
-      Some (build_int_exn t v)
-    else
-      None
+      raise (Invalid_json ("JSON parsing: Invalid type for PrimType literal construction"))
 
-let rec json_to_adtargs tjs ajs =
+let json_to_adtargs cname tlist ajs =
   let open Basic.Util in
-  match tjs, ajs with
-  | (tj :: tr), (aj :: ar) ->
+  match cname with
+  | "Some" -> 
+    let j = List.nth_exn ajs 0 in
+    let lit = build_prim_lit_exn (List.nth_exn tlist 0) (to_string j) in
+      ADTValue (cname, tlist, (lit::[]))
+  | "None" -> ADTValue (cname, tlist, [])
+  | "True" | "False" -> ADTValue (cname, [], []) 
+  | "Pair" ->
+    let j1 = List.nth_exn ajs 0 in
+    let lit1 = build_prim_lit_exn (List.nth_exn tlist 0) (to_string j1) in
+    let j2 = List.nth_exn ajs 1 in
+    let lit2 = build_prim_lit_exn (List.nth_exn tlist 1) (to_string j2) in
+      ADTValue (cname, tlist, (lit1::lit2::[]))
+  | _ -> (* TODO: Support Lists and Nats *)
+    raise (Invalid_json ("JSON parsing: Unsupported ADT type"))
+
+let verify_adt_typs_exn name tlist1 adt =
+  match adt with
+  | ADTValue (_, tlist2, _) ->
+    if tlist1 = tlist2 then ()
+    else raise (Invalid_json ("Type mismatch in parsing ADT " ^ name))
+  | _ -> raise (Invalid_json ("Type mismatch in parsing ADT " ^ name))
+
+let rec json_to_adttyps tjs =
+  let open Basic.Util in
+  match tjs with
+  | (tj :: tr) ->
       let tjs = to_string tj in
-      let ajs = to_string aj in
-      let argS = build_lit_exn tjs ajs in
-      let (trem, arem) = json_to_adtargs tr ar in
-      (match argS with
-       | Some l -> ((PrimType tjs) :: trem, l :: arem)
-       | None -> [], []
-      )
-  | _ -> [], []
+      let t = parse_typ_exn tjs in
+      let trem = json_to_adttyps tr in
+      t :: trem
+  | _ -> []
 
-let rec read_adt_json j =
+let rec read_adt_json name j =
   let open Basic.Util in
+  let dt =
+  (match DataTypeDictionary.lookup_name name with
+    | Error emsg ->
+      raise (Invalid_json(emsg))
+    | Ok r ->
+      r
+    ) in
   match j with
   | `Assoc adt ->
       let constr = member_exn "constructor" j |> to_string in
+      let dt' =
+      (match DataTypeDictionary.lookup_constructor constr with
+      | Error emsg ->
+        raise (Invalid_json(emsg))
+      | Ok (r, _) ->
+        r
+      ) in
+      if (dt <> dt') then
+        raise (Invalid_json ("ADT type " ^ dt.tname ^ " does not match constructor " ^ constr));
       let argtypes = member_exn "argtypes" j |> to_list in
       let arguments = member_exn "arguments" j |> to_list in
-      let (tlist, arglit) = json_to_adtargs argtypes arguments in
-      Some (ADTValue (constr, tlist, arglit))
-  | _ -> None
+      let tlist = json_to_adttyps argtypes in
+        json_to_adtargs constr tlist arguments
+  | _ -> raise (Invalid_json ("JSON parsing: error parsing ADT " ^ name))
 
 (* Map is a `List of `Assoc jsons, with
  * the first `Assoc specifying the map's from/to types.*)
-and read_map_json j =
+and read_map_json kt vt j =
   let open Basic.Util in
   match j with
   | `List vli ->
-      (match vli with 
-       | first :: remaining ->
-           let ktype = member_exn "keyType" first |> to_string in
-           let vtype = member_exn "valType" first |> to_string in
-           let parse_exn t = 
-              (try EvalUtil.parse_type t
-               with _ ->
-                 raise (Invalid_json (sprintf "Invalid type in json:\n%s" t)))
-           in
-           let kt = parse_exn ktype in
-           let vt = parse_exn vtype in
-           let kvallist = mapvalues_from_json kt vt remaining in           
-           Some (Map ((kt, vt), kvallist))
-       | _ -> None
-      )
-  | _ -> None
-
+     let kvallist = mapvalues_from_json kt vt vli in
+     Map ((kt, vt), kvallist)
+  | `Null -> Map ((kt, vt), [])
+  | _ -> raise (Invalid_json ("JSON parsing: error parsing Map"))
+ 
 and mapvalues_from_json kt vt l = 
   let open Basic.Util in
   match l with
@@ -137,78 +170,73 @@ and mapvalues_from_json kt vt l =
       let kjson = member_exn "key" first in
       let keylit = 
         (match kt with
-         | PrimType "String" -> Some (lit_exn(StringLit (kjson |> to_string)))
-         | PrimType "BNum" -> Some (lit_exn(BNum (kjson |> to_string)))
-         | PrimType "Address" -> Some (lit_exn(Address (kjson |> to_string)))
-         | PrimType "Hash" -> Some (lit_exn(Sha256 (kjson |> to_string)))
-         | PrimType i -> (* Try for Int/Uint types *)
-            Some (build_int_exn i (to_string kjson))
-         | _ -> None
+         | PrimType t ->
+            build_prim_lit_exn kt (to_string kjson)
+         | _ -> raise (Invalid_json ("Key in Map JSON is not a PrimType"))
          ) in
       let vjson = member_exn "val" first in
       let vallit =
         (match vt with
-         | PrimType "String" -> Some (lit_exn(StringLit (vjson |> to_string)))
-         | PrimType "BNum" -> Some (lit_exn(BNum (vjson |> to_string)))
-         | PrimType "Address" -> Some (lit_exn(Address (vjson |> to_string)))
-         | PrimType "Hash" -> Some (lit_exn(Sha256 (vjson |> to_string)))
-         | MapType _ ->
-            read_map_json vjson
-         | ADT _ ->
-            read_adt_json vjson
-         | PrimType i -> (* Try for Int/Uint types *)
-            Some (build_int_exn i (to_string vjson))
-         | _ -> None
-          
-          ) in
+         | MapType (kt', vt') ->
+            read_map_json kt' vt' vjson
+         | ADT (name, tlist) ->
+            let vl = read_adt_json name vjson in
+            verify_adt_typs_exn name tlist vl;
+              vl
+         | PrimType t ->
+            build_prim_lit_exn vt (to_string vjson)
+         | _ -> raise (Invalid_json ("Unknown type in Map value in JSON"))
+        ) in
         let vlist = mapvalues_from_json kt vt remaining in
-        (match keylit, vallit with
-         | Some kl, Some vl -> (kl, vl) :: vlist
-         | _ -> vlist)
+          (keylit, vallit) :: vlist
   | [] -> []
 
 let jobj_to_statevar json =
   let open Basic.Util in
   let n = member_exn "vname" json |> to_string in
-  let t = member_exn "type" json |> to_string in
+  let tstring = member_exn "type" json |> to_string in
+  let t = parse_typ_exn tstring in
   match t with
-  | "Map" ->
-    (* Handle Map separately. Map is a `List of `Assoc jsons, with
-     * the first `Assoc specifying the map's from/to types. *)
+  | MapType (kt, vt) ->
     let v = member "value" json in
-    let vl = read_map_json v in
-    (match vl with
-    | Some vlm ->
-        Some (n, vlm)
-    | None ->
-        None
-    )
-  | "ADT" ->
+    let vl = read_map_json kt vt v in
+      (n, vl)
+  | ADT (name, tlist) ->
     let v = member_exn "value" json in
-    let vl = read_adt_json v in
-    (match vl with
-    | Some vlm ->
-        Some (n, vlm)
-    | None ->
-        None
-    )
+    let vl = read_adt_json name v in
+    verify_adt_typs_exn name tlist vl;
+      (n, vl)
   | _ ->  
     let v = member_exn "value" json |> to_string in
-    let tv = build_lit_exn t v in
-      Option.map ~f:(fun x -> (n, x)) tv
+    let tv = build_prim_lit_exn t v in
+      (n, tv)
 
 let rec typ_to_string t = 
-  match t with
-  | PrimType t -> t
-  | MapType (kt, vt) ->
-      sprintf "Map (%s) (%s)" (typ_to_string kt) (typ_to_string vt )
-  | ADT (name, targs) ->
-      let tns = List.map targs
-          ~f:(fun t -> sprintf "(%s)" (typ_to_string t)) in
-      sprintf "ADT %s (%s)" name (String.concat ~sep:", " tns)
+match t with
+| PrimType t -> t
+| MapType (kt, vt) ->
+    sprintf "Map (%s) (%s)" (typ_to_string kt) (typ_to_string vt )
+| ADT (name, targs) ->
+    let tns = List.map targs
+        ~f:(fun t -> sprintf "(%s)" (typ_to_string t)) in
+    sprintf "%s %s" name (String.concat ~sep:" " tns)
 
-  (* TODO: Support other types *)
-  | _ -> "Unsupported"
+(* TODO: Support other types *)
+| _ -> "Unsupported"
+
+(* Given a literal, return its full type name *)
+let lit_typ_string l = match l with
+  | Map ((kt, vt), _) -> typ_to_string (MapType (kt, vt))
+  | ADTValue (name, tl, _) -> 
+    let r = DataTypeDictionary.lookup_constructor name in
+    (match r with
+    | Error emsg ->
+      raise (Invalid_json (emsg))
+    | Ok (t, _)->
+      typ_to_string (ADT (t.tname, tl))
+    )
+  | _ -> literal_tag l
+
 
 let rec mapvalues_to_json ms = 
   match ms with
@@ -220,28 +248,31 @@ let rec mapvalues_to_json ms =
       kv_json :: (mapvalues_to_json remaining)
   | [] -> []
 
-and adtargs_to_json tlist vlist =
-  match tlist, vlist with
-  | t1 :: tn, v1 :: vn ->
-    let (j1, j2) = `String (typ_to_string t1) , literal_to_json v1 in
-    let (jtn, jvn)= adtargs_to_json tn vn in
-      (j1 :: jtn), (j2 :: jvn)
-  | _ -> ([], [])
+and adtargs_to_json vlist =
+  match vlist with
+  | v1 :: vn ->
+    let j2 = literal_to_json v1 in
+    let jvn= adtargs_to_json vn in
+      (j2 :: jvn)
+  | _ -> []
+
+and adttyps_to_json tlist =
+  match tlist with
+  | t1 :: tn ->
+    let j1 = `String (typ_to_string t1) in
+    let jtn = adttyps_to_json tn in
+      (j1 :: jtn)
+  | _ -> []
 
 and literal_to_json lit = 
   match lit with
   | StringLit (x) | BNum (x) | Address (x) | Sha256 (x) -> `String (x)
   | IntLit (wx, x) | UintLit (wx, x) -> `String (x)
   | Map ((kt, vt), kvs) ->
-    let kjson = "keyType", `String (typ_to_string kt) in
-    let vjson =  "valType", `String (typ_to_string vt) in
-    let mtype_json = `Assoc (kjson :: vjson :: []) in
-    let kv_json = mapvalues_to_json kvs in
-    (* The output state variable for a map has the from/to type
-     * as the first map entry and the actual entries follow *)
-      `List (mtype_json :: kv_json)
+      `List (mapvalues_to_json kvs)
   | ADTValue (n, t, v) ->
-      let (argtl, argl) = adtargs_to_json t v in
+      let argtl = adttyps_to_json t in
+      let argl = adtargs_to_json v in
         `Assoc [
           ("constructor", `String n);
           ("argtypes", `List argtl);
@@ -253,7 +284,7 @@ let state_to_json state =
   let (vname, lit) = state in
   `Assoc [ 
     ("vname", `String vname) ; 
-    ("type", `String (literal_tag lit));
+    ("type", `String (lit_typ_string lit));
     ("value", (literal_to_json lit))
   ]
 
@@ -288,10 +319,7 @@ let get_json_data filename  =
   let json = Basic.from_file filename in
   (* input json is a list of key/value pairs *)
   let jlist = json |> Basic.Util.to_list in
-  (* map the json list to a tuple (vname,value) option *)
-  let olist = List.map jlist ~f:jobj_to_statevar in
-  List.fold_right olist ~init:[]
-    ~f:(fun o z -> match o with Some x -> x :: z | None -> z)
+    List.map jlist ~f:jobj_to_statevar
 
 (* Get a json object from given states *)
 let state_to_json states = 
@@ -329,9 +357,7 @@ let get_json_data filename =
   let amount = (amount_label, build_int_exn "Uint128" amounts) in
   let sender = (sender_label, lit_exn(Address(senders))) in
   let pjlist = member_exn "params" json |> to_list in
-  let plist = List.map pjlist ~f:jobj_to_statevar in
-  let params = List.fold_right plist ~init:[]
-    ~f:(fun o z -> match o with Some x -> x :: z | None -> z) in
+  let params = List.map pjlist ~f:jobj_to_statevar in
     tag :: amount :: sender :: params
 
 (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
@@ -381,18 +407,14 @@ end
 module BlockChainState = struct
 
   (**  Returns a list of (vname:string,value:literal) items
-   **  from the json in the input filename. Invalid inputs in the json are ignored.
-   **  This is different from ContractState only w.r.t. validating that all
-   **  all variables are from a pre-determined set of actual block chain state. **)
+   **  from the json in the input filename. **)
 let get_json_data filename  =
   let json = Basic.from_file filename in
   (* input json is a list of key/value pairs *)
   let jlist = json |> Basic.Util.to_list in
-  (* map the json list to a tuple (vname,value) option *)
-  let olist = List.map jlist ~f:jobj_to_statevar in
-    List.fold_right olist ~init:[]
-      ~f:(fun o z -> match o with Some x -> x :: z | None -> z)
-  (* TODO: Validate for only block chain variables *)
+    List.map jlist ~f:jobj_to_statevar
+  (* Validation against pre-defined block state variables
+     is done in `Eval.check_blockchain_entries`  *)
 
 end
 

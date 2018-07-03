@@ -130,9 +130,10 @@ let add_tests bindir testsdir pcli =
     let helloWorldtests = "helloWorld" >:::(build_contract_tests bindir testsdir pcli "helloWorld" succ_code 1 3) in
     let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests bindir testsdir pcli "helloWorld" fail_code 4 8) in
     let auctiontests = "auction" >:::(build_contract_tests bindir testsdir pcli "auction" succ_code 1 8) in
+    let mappairtests = "mappair" >:::(build_contract_tests bindir testsdir pcli "mappair" succ_code 1 1) in
 
     let fungibletokentests = "fungible-token" >:::(build_contract_tests bindir
     testsdir pcli "fungible-token" succ_code 0 8) in
     let misc_tests = "misc_tests" >::: build_misc_tests bindir testsdir pcli in
-      "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;
+      "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests;
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;auctiontests]
