@@ -1,0 +1,22 @@
+{
+  "name": "ZilGame",
+  "params": [
+    { "name": "owner", "type": "Address" },
+    { "name": "player_a", "type": "Address" },
+    { "name": "player_b", "type": "Address" },
+    { "name": "puzzle", "type": "Hash" }
+  ],
+  "fields": [
+    { "name": "player_a_hash", "type": "ADT Option ((Hash))" },
+    { "name": "player_b_hash", "type": "ADT Option ((Hash))" },
+    { "name": "timer", "type": "ADT Option ((BNum))" }
+  ],
+  "transitions": [
+    { "name": "Play", "params": [ { "name": "guess", "type": "Hash" } ] },
+    {
+      "name": "ClaimReward",
+      "params": [ { "name": "solution", "type": "Int128" } ]
+    },
+    { "name": "Withdraw", "params": [] }
+  ]
+}

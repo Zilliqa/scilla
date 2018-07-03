@@ -20,6 +20,11 @@ let () =
     (perr (sprintf "Usage: %s foo.scilla\n" Sys.argv.(0));
     exit 1)
   else
+    (* Testsuite runs this executable with cwd=tests and ends
+       up complaining about missing _build directory for logger.
+       So disable the logger.
+     *)
+    GlobalConfig.set_debug_level GlobalConfig.Debug_None;
     let parse_module =
       FrontEndParser.parse_file ScillaParser.cmodule Sys.argv.(1) in
     match parse_module with
