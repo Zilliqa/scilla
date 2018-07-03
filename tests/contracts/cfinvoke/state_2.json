@@ -1,5 +1,4 @@
 [
-    { "vname": "callers", "type": "Map", "value": null },
     {
         "vname": "_balance",
         "type": "Uint128",

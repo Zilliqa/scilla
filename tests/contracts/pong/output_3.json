@@ -10,8 +10,12 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "ping_addr",
-      "type": "ADT",
-      "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+      "type": "Option (Address)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Address" ],
+        "arguments": []
+      }
     },
     { "vname": "count", "type": "Int32", "value": "2" }
   ]

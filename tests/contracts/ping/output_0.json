@@ -4,7 +4,7 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "pong_addr",
-      "type": "ADT",
+      "type": "Option (Address)",
       "value": {
         "constructor": "Some",
         "argtypes": [ "Address" ],

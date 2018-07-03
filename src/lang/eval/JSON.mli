@@ -12,24 +12,6 @@
  **    "vname" : "variable name"
  **    "type" : "valid scilla type"
  **    "value" : "value of the variable as a string"
- ** Map variables are encoded with the "type" being set to "Map"
- ** and the actual keyType/valType and key/val being encoded as:
-        "vname" : "backers",
-        "type" : "Map",  
-        "value" :
-        [
-         {
-           "keyType" : "Address",
-           "valType" : "Int"
-         },
-         {
-           "key" : "0x1234567890123456789012345678901234567890",
-           "val" : "100"
-        },
-       ]
-    i.e., the "value" for Maps is an array of key/val pairs, with
-    the first such pair being an exception, used to store the
-    types of the key/val, specified as "keyType" and "valType".
  **)
 module ContractState : sig
 
@@ -50,26 +32,23 @@ module ContractState : sig
 
 end
 
-(** Message json parsing and printing. A message json has two mandatory
- *  fields "_tag" specifying the transition to be invoked and an "_amount"
- *  field, specifying amount to be transferred. These two are followed by
- *  an array of json objects for parameters to the transition. These parameters
+(** Message json parsing and printing. A message json has three mandatory
+ *  fields "_tag" specifying the transition to be invoked, an "_amount"
+ *  field, specifying amount to be transferred. and a "_sender" field
+ *  do convey the sender of the message. These two are followed by an
+ *  array of json objects for parameters to the transition. These parameters
  *  are encoded similar to the array of variables in ContractState. It is
  *  expected that the types of parameters match with those in the contract 
  *  definition.
     {
-      "_tag" : "Donate",
+      "_tag" : "foo",
+      "_sender" : "0x1234567890123456789012345678901234567890"
       "_amount": "100", 
       "params" :
       [
-    	  {
-          "vname" : "sender",
-          "type" : "Address", 
-          "value" : "0x1234567890123456789012345678901234567890"
-        },
         {
-          "vname" : "am",
-          "type" : "Int" ,
+          "vname" : "bar",
+          "type" : "Uint128" ,
           "value" : "100"
         }
       ]
@@ -78,15 +57,15 @@ end
 module Message : sig
 
 (** Parses and returns a list of (pname,pval), with
-  "_tag" and "_amount" at the beginning of this list.
+  "_tag", "_sender" and "_amount" at the beginning of this list.
   Invalid inputs in the json are ignored **)
   val get_json_data : string -> (string * Syntax.literal) list
 
   (** 
    ** Prints a message (string, literal) as a json to the 
    ** and returns the string. pp enables pretty printing.
-   ** The difference b/w this and the one in ContractState 
-   ** is that this has a mandatory "_tag" and "_amount" field,
+   ** The difference b/w this and the one in ContractState is that
+   ** this has a mandatory "_tag", "_sender" and "_amount" field,
    ** with the actual params themselves in an array json with
    ** name "params" (as described in comment in .mli file).
    **)
@@ -100,9 +79,7 @@ module BlockChainState : sig
 
   (** 
    **  Returns a list of (vname:string,value:literal) items
-   **  from the json in the input filename. Invalid inputs in the json are ignored.
-   **  This is different from ContractState only w.r.t. validating that all
-   **  all variables are from a pre-determined set of actual block chain state.
+   **  from the json in the input filename.
    **)
   val get_json_data : string -> (string * Syntax.literal) list
 

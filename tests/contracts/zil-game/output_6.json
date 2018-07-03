@@ -10,7 +10,7 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "timer",
-      "type": "ADT",
+      "type": "Option (BNum)",
       "value": {
         "constructor": "Some",
         "argtypes": [ "BNum" ],
@@ -19,7 +19,7 @@
     },
     {
       "vname": "player_a_hash",
-      "type": "ADT",
+      "type": "Option (Hash)",
       "value": {
         "constructor": "Some",
         "argtypes": [ "Hash" ],
@@ -30,8 +30,12 @@
     },
     {
       "vname": "player_b_hash",
-      "type": "ADT",
-      "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+      "type": "Option (Hash)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Hash" ],
+        "arguments": []
+      }
     }
   ]
 }

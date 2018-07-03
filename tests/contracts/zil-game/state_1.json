@@ -1,18 +1,18 @@
 [
   {
     "vname": "player_a_hash",
-    "type": "ADT",
-    "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+    "type": "Option (Hash)",
+    "value": { "constructor": "None", "argtypes": ["Hash"], "arguments": [] }
   },
   {
     "vname": "player_b_hash",
-    "type": "ADT",
-    "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+    "type": "Option (Hash)",
+    "value": { "constructor": "None", "argtypes": ["Hash"], "arguments": [] }
   },
   {
     "vname": "timer",
-    "type": "ADT",
-    "value": { "constructor": "None", "argtypes": [], "arguments": [] }
+    "type": "Option (BNum)",
+    "value": { "constructor": "None", "argtypes": ["BNum"], "arguments": [] }
   },
   {
     "vname": "_balance",

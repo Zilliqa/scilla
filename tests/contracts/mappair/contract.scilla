@@ -1,0 +1,31 @@
+library Test
+
+let no_msg = Nil {Message}
+
+contract Test
+(owner: Address)
+
+field gmap : Map Address (Pair (Int32) (Int32))  = Emp Address (Pair (Int32) (Int32))
+
+
+transition testMapPair ()
+  is_owner = builtin eq owner _sender;
+  match is_owner with
+  | False =>
+    gmap_tmp <- gmap;  
+    one = Int32 1;
+    two = Int32 2;
+    p = Pair {(Int32) (Int32)} one two;   
+    gmap_new = builtin put gmap_tmp _sender p;
+    gmap := gmap_new;  
+    send no_msg
+  | True =>
+    gmap_tmp <- gmap;  
+    three = Int32 3;
+    four = Int32 4;
+    p = Pair {(Int32) (Int32)} three four;   
+    gmap_new = builtin put gmap_tmp _sender p;
+    gmap := gmap_new;  
+    send no_msg
+  end
+end
