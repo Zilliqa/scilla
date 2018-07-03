@@ -7,7 +7,7 @@
   ],
   "fields": [
     { "name": "backers", "type": "Map (Address) (Uint128)" },
-    { "name": "funded", "type": "ADT Bool ()" }
+    { "name": "funded", "type": "Bool " }
   ],
   "transitions": [
     { "name": "Donate", "params": [] },

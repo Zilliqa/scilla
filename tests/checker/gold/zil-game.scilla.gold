@@ -7,9 +7,9 @@
     { "name": "puzzle", "type": "Hash" }
   ],
   "fields": [
-    { "name": "player_a_hash", "type": "ADT Option ((Hash))" },
-    { "name": "player_b_hash", "type": "ADT Option ((Hash))" },
-    { "name": "timer", "type": "ADT Option ((BNum))" }
+    { "name": "player_a_hash", "type": "Option (Hash)" },
+    { "name": "player_b_hash", "type": "Option (Hash)" },
+    { "name": "timer", "type": "Option (BNum)" }
   ],
   "transitions": [
     { "name": "Play", "params": [ { "name": "guess", "type": "Hash" } ] },

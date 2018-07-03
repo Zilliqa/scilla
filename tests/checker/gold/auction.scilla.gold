@@ -6,8 +6,8 @@
     { "name": "beneficiary", "type": "Address" }
   ],
   "fields": [
-    { "name": "ended", "type": "ADT Bool ()" },
-    { "name": "highestBidder", "type": "ADT Option ((Address))" },
+    { "name": "ended", "type": "Bool " },
+    { "name": "highestBidder", "type": "Option (Address)" },
     { "name": "highestBid", "type": "Uint128" },
     { "name": "pendingReturns", "type": "Map (Address) (Uint128)" }
   ],
