@@ -219,7 +219,7 @@ match t with
 | ADT (name, targs) ->
     let tns = List.map targs
         ~f:(fun t -> sprintf "(%s)" (typ_to_string t)) in
-    sprintf "%s %s" name (String.concat ~sep:", " tns)
+    sprintf "%s %s" name (String.concat ~sep:" " tns)
 
 (* TODO: Support other types *)
 | _ -> "Unsupported"
