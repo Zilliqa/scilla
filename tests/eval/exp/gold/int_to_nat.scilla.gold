@@ -1,0 +1,13 @@
+(ADTValue True()()),
+{ [res1 -> (ADTValue True()())],
+  [three_nat2 -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))],
+  [two_nat2 -> (ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))],
+  [one_nat2 -> (ADTValue Succ()((ADTValue Zero()())))],
+  [three_nat1 -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))],
+  [three_uint -> (UintLit 32 3)],
+  [zero_nat2 -> (ADTValue Zero()())],
+  [zero_nat1 -> (ADTValue Zero()())],
+  [zero_uint -> (UintLit 32 0)],
+  [nat_eq -> <closure>],
+  [is_some_zero -> <closure>],
+  [nat_prev -> <closure>] }

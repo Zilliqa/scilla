@@ -341,7 +341,27 @@ module Uint = struct
         with | IntOverflow | IntUnderflow ->
           builtin_fail "Uint.lt: an overflow/underflow occurred" ls
         )
-    | _ -> builtin_fail "Uint.lt" ls  
+    | _ -> builtin_fail "Uint.lt" ls
+
+  let to_nat ls = match ls with
+  | [UintLit (wx, x)] ->
+    (match wx with 
+    | 32 -> 
+      let zero = ADTValue ("Zero", [], []) in
+      let n = int_of_string x in
+      let rec nat_builder i =
+        (match i with
+        | 0 -> zero
+        | _ ->
+          let prev = nat_builder (i-1) in
+          let cur = ADTValue ("Succ", [], (prev::[])) in
+            cur
+        ) in
+      pure (nat_builder n)
+    (* Other integer widths can be in the library, using integer conversions. *)
+    | _ -> builtin_fail "Uint.to_nat only supported for Uint32" ls)
+  | _ -> builtin_fail "Uint.to_nat" ls
+
 end
 
 (* Maps *)
@@ -490,6 +510,7 @@ module BuiltInDictionary = struct
     ("sub", ["Uint"; "Uint"], Uint.sub);
     ("mul", ["Uint"; "Uint"], Uint.mul);
     ("lt",  ["Uint"; "Uint"], Uint.lt);
+    ("to_nat", ["Uint"], Uint.to_nat);
 
     (* Block numbers *)
     ("eq",  ["BNum"; "BNum"], BNum.eq);
