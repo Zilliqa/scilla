@@ -276,7 +276,7 @@ module Int = struct
         pure (ADTValue ("Some", PrimType("Int"^w)::[], lit::[]))
       else
         pure (ADTValue ("None", PrimType("Int"^w)::[], []))
-    | _ -> builtin_fail ("Uint.to_int"^w) ls
+    | _ -> builtin_fail ("Int.to_int"^w) ls
 
   let to_int32 ls = to_int_helper ls "32"
   let to_int64 ls = to_int_helper ls "64"
