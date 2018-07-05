@@ -394,6 +394,18 @@ module Maps = struct
             | Some (_, v) -> some_lit v)
     | _ -> builtin_fail "Map.get" ls
 
+  let to_list ls = match ls with
+  | [Map ((kt, vt), entries)] ->
+      (* The type of the output list will be "Pair (kt) (vt)" *)
+      let otyp = ADT ("Pair", (kt::vt::[])) in
+      let nil = ADTValue ("Nil", (otyp::[]), []) in
+      let ol = List.fold_left entries ~init:nil ~f: (fun accum (k, v) ->
+        let kv = ADTValue ("Pair", (kt::vt::[]), k::v::[]) in
+        let kvl = ADTValue ("Cons", (otyp::[]), (kv::accum::[])) in
+          kvl) in
+        pure (ol)
+  | _ -> builtin_fail "Map.to_list" ls
+
 end
 
 (* Working with block numbers *)
@@ -422,7 +434,6 @@ module BNum = struct
             "Cannot add a negative value (%s) to a block." y
     | _ -> builtin_fail "BNum.badd" ls
 
-  
 end
 
 (* Working with addresses *)
@@ -528,6 +539,7 @@ module BuiltInDictionary = struct
     ("put", ["Map"; "Any"; "Any"], Maps.put);
     ("get", ["Map"; "Any"], Maps.get);
     ("remove", ["Map"; "Any"], Maps.remove);
+    ("to_list", ["Map"], Maps.to_list);
   ]
 
   let rec tags_match expected argtypes =
