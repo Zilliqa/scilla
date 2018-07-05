@@ -1,5 +1,5 @@
-(IntLit 32 3),
-{ [res1 -> (IntLit 32 0)],
+(UintLit 32 3),
+{ [res1 -> (UintLit 32 0)],
   [three -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))],
   [two -> (ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))],
   [one -> (ADTValue Succ()((ADTValue Zero()())))],
