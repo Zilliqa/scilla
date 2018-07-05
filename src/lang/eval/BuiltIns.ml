@@ -348,15 +348,13 @@ module Uint = struct
     (match wx with 
     | 32 -> 
       let zero = ADTValue ("Zero", [], []) in
-      let n = int_of_string x in
-      let rec nat_builder i =
-        (match i with
-        | 0 -> zero
-        | _ ->
-          let prev = nat_builder (i-1) in
-          let cur = ADTValue ("Succ", [], (prev::[])) in
-            cur
-        ) in
+      let n = Uint32.of_string x in
+      let rec nat_builder (i : Uint32.t) =
+        if i = Uint32.zero then zero
+        else
+          let prev = nat_builder (Uint32.sub i Uint32.one) in
+            ADTValue ("Succ", [], (prev::[]))
+      in
       pure (nat_builder n)
     (* Other integer widths can be in the library, using integer conversions. *)
     | _ -> builtin_fail "Uint.to_nat only supported for Uint32" ls)
