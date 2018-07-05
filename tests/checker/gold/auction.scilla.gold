@@ -1,0 +1,19 @@
+{
+  "name": "OpenAuction",
+  "params": [
+    { "name": "auctionStart", "type": "BNum" },
+    { "name": "biddingTime", "type": "Uint128" },
+    { "name": "beneficiary", "type": "Address" }
+  ],
+  "fields": [
+    { "name": "ended", "type": "Bool " },
+    { "name": "highestBidder", "type": "Option (Address)" },
+    { "name": "highestBid", "type": "Uint128" },
+    { "name": "pendingReturns", "type": "Map (Address) (Uint128)" }
+  ],
+  "transitions": [
+    { "name": "Bid", "params": [] },
+    { "name": "Withdraw", "params": [] },
+    { "name": "AuctionEnd", "params": [] }
+  ]
+}
