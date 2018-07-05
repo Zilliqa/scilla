@@ -1,0 +1,11 @@
+(ADTValue Cons((ADT Pair((PrimType Int32)(PrimType Int32))))((ADTValue Pair((PrimType Int32)(PrimType Int32))((IntLit 32 1)(IntLit 32 42)))(ADTValue Cons((ADT Pair((PrimType Int32)(PrimType Int32))))((ADTValue Pair((PrimType Int32)(PrimType Int32))((IntLit 32 2)(IntLit 32 239)))(ADTValue Cons((ADT Pair((PrimType Int32)(PrimType Int32))))((ADTValue Pair((PrimType Int32)(PrimType Int32))((IntLit 32 3)(IntLit 32 112)))(ADTValue Nil((ADT Pair((PrimType Int32)(PrimType Int32))))()))))))),
+{ [m3 -> (Map((PrimType Int32)(PrimType Int32))(((IntLit 32 3)(IntLit 32 112))((IntLit 32 2)(IntLit 32 239))((IntLit 32 1)(IntLit 32 42))))],
+  [m2 -> (Map((PrimType Int32)(PrimType Int32))(((IntLit 32 2)(IntLit 32 239))((IntLit 32 1)(IntLit 32 42))))],
+  [m1 -> (Map((PrimType Int32)(PrimType Int32))(((IntLit 32 1)(IntLit 32 42))))],
+  [m0 -> (Map((PrimType Int32)(PrimType Int32))())],
+  [v3 -> (IntLit 32 112)],
+  [v2 -> (IntLit 32 239)],
+  [v1 -> (IntLit 32 42)],
+  [k3 -> (IntLit 32 3)],
+  [k2 -> (IntLit 32 2)],
+  [k1 -> (IntLit 32 1)] }
