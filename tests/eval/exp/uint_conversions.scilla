@@ -1,0 +1,14 @@
+let zero = Int32 0 in
+let one = Int32 1 in
+let minus_one = Int32 -1 in
+let big_num = Uint64 999999999999999999 in
+let big_num2 = Uint128 999999999999999999 in
+
+let res1 = builtin to_uint32 zero in (* Some 0 *)
+let res2 = builtin to_uint32 one in  (* Some 1 *)
+let res3 = builtin to_uint32 minus_one in (* None *)
+let res4 = builtin to_uint32 big_num in   (* None *)
+let res5 = builtin to_uint64 big_num2 in   (* Some big_num2 *)
+let res6 = builtin to_uint64 minus_one in   (* None *)
+
+Int32 0

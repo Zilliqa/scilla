@@ -1,0 +1,12 @@
+(IntLit 32 0),
+{ [res6 -> (ADTValue None((PrimType Uint64))())],
+  [res5 -> (ADTValue Some((PrimType Uint64))((UintLit 64 999999999999999999)))],
+  [res4 -> (ADTValue None((PrimType Uint32))())],
+  [res3 -> (ADTValue None((PrimType Uint32))())],
+  [res2 -> (ADTValue Some((PrimType Uint32))((UintLit 32 1)))],
+  [res1 -> (ADTValue Some((PrimType Uint32))((UintLit 32 0)))],
+  [big_num2 -> (UintLit 128 999999999999999999)],
+  [big_num -> (UintLit 64 999999999999999999)],
+  [minus_one -> (IntLit 32 -1)],
+  [one -> (IntLit 32 1)],
+  [zero -> (IntLit 32 0)] }
