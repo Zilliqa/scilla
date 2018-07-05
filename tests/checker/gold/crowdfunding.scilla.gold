@@ -1,0 +1,17 @@
+{
+  "name": "Crowdfunding",
+  "params": [
+    { "name": "owner", "type": "Address" },
+    { "name": "max_block", "type": "BNum" },
+    { "name": "goal", "type": "Uint128" }
+  ],
+  "fields": [
+    { "name": "backers", "type": "Map (Address) (Uint128)" },
+    { "name": "funded", "type": "Bool " }
+  ],
+  "transitions": [
+    { "name": "Donate", "params": [] },
+    { "name": "GetFunds", "params": [] },
+    { "name": "ClaimBack", "params": [] }
+  ]
+}

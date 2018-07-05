@@ -12,6 +12,7 @@ open Core
 
 (* Prints to log file *)
 let plog msg =
+  if get_debug_level () <> Debug_None then
   let fname = get_log_file () in
   Out_channel.with_file fname ~append:true
     ~f:(fun h -> Out_channel.output_string h msg)
