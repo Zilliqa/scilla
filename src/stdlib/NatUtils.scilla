@@ -42,3 +42,22 @@ let nat_to_int =
     let folder = @nat_fold Uint32 in
     let zero_int = Uint32 0 in
       folder f zero_int n
+
+let int_to_nat_helper =
+  tfun 'A =>
+  fun (n : 'A) =>
+    let m = builtin to_uint32 n in
+    match m with
+    | Some x =>
+      let res = builtin to_nat x in
+      Some {Nat} res
+    | None => None {Nat}
+    end
+
+(* UintX/IntX -> Option Nat *)
+let uint32_to_nat = @int_to_nat_helper Uint32
+let uint64_to_nat = @int_to_nat_helper Uint64
+let uint128_to_nat = @int_to_nat_helper Uint128
+let int32_to_nat = @int_to_nat_helper Int32
+let int64_to_nat = @int_to_nat_helper Int64
+let int128_to_nat = @int_to_nat_helper Int128

@@ -268,6 +268,20 @@ module Int = struct
         )
     | _ -> builtin_fail "Int.lt" ls
 
+  let to_int_helper ls w = match ls with
+    | [UintLit (wx, x)] | [IntLit(wx, x)] ->
+      let lit = IntLit(int_of_string w, x) in
+      if validate_int_literal lit
+      then
+        pure (ADTValue ("Some", PrimType("Int"^w)::[], lit::[]))
+      else
+        pure (ADTValue ("None", PrimType("Int"^w)::[], []))
+    | _ -> builtin_fail ("Int.to_int"^w) ls
+
+  let to_int32 ls = to_int_helper ls "32"
+  let to_int64 ls = to_int_helper ls "64"
+  let to_int128 ls = to_int_helper ls "128"
+
 end
 
 (* Unsigned integer operation *)
@@ -341,7 +355,39 @@ module Uint = struct
         with | IntOverflow | IntUnderflow ->
           builtin_fail "Uint.lt: an overflow/underflow occurred" ls
         )
-    | _ -> builtin_fail "Uint.lt" ls  
+    | _ -> builtin_fail "Uint.lt" ls
+
+  let to_uint_helper ls w = match ls with
+    | [UintLit (wx, x)] | [IntLit(wx, x)] ->
+      let lit = UintLit(int_of_string w, x) in
+      if validate_int_literal lit
+      then
+        pure (ADTValue ("Some", PrimType("Uint"^w)::[], lit::[]))
+      else
+        pure (ADTValue ("None", PrimType("Uint"^w)::[], []))
+    | _ -> builtin_fail ("Uint.to_uint"^w) ls
+
+  let to_uint32 ls = to_uint_helper ls "32"
+  let to_uint64 ls = to_uint_helper ls "64"
+  let to_uint128 ls = to_uint_helper ls "128"
+
+  let to_nat ls = match ls with
+  | [UintLit (wx, x)] ->
+    (match wx with 
+    | 32 -> 
+      let zero = ADTValue ("Zero", [], []) in
+      let n = Uint32.of_string x in
+      let rec nat_builder (i : Uint32.t) =
+        if i = Uint32.zero then zero
+        else
+          let prev = nat_builder (Uint32.sub i Uint32.one) in
+            ADTValue ("Succ", [], (prev::[]))
+      in
+      pure (nat_builder n)
+    (* Other integer widths can be in the library, using integer conversions. *)
+    | _ -> builtin_fail "Uint.to_nat only supported for Uint32" ls)
+  | _ -> builtin_fail "Uint.to_nat" ls
+
 end
 
 (* Maps *)
@@ -494,6 +540,9 @@ module BuiltInDictionary = struct
     ("sub", ["Int"; "Int"], Int.sub);
     ("mul", ["Int"; "Int"], Int.mul);
     ("lt",  ["Int"; "Int"], Int.lt);
+    ("to_int32", ["Any"], Int.to_int32);
+    ("to_int64", ["Any"], Int.to_int64);
+    ("to_int128", ["Any"], Int.to_int128);
 
     (* Unsigned integers *)
     ("eq",  ["Uint"; "Uint"], Uint.eq);
@@ -501,6 +550,10 @@ module BuiltInDictionary = struct
     ("sub", ["Uint"; "Uint"], Uint.sub);
     ("mul", ["Uint"; "Uint"], Uint.mul);
     ("lt",  ["Uint"; "Uint"], Uint.lt);
+    ("to_nat", ["Uint"], Uint.to_nat);
+    ("to_uint32", ["Any"], Uint.to_uint32);
+    ("to_uint64", ["Any"], Uint.to_uint64);
+    ("to_uint128", ["Any"], Uint.to_uint128);
 
     (* Block numbers *)
     ("eq",  ["BNum"; "BNum"], BNum.eq);
