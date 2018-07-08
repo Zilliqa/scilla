@@ -60,6 +60,7 @@
 %token BLOCK
 %token EMP
 %token LIBRARY
+%token IMPORT
 %token FIELD
 %token LET
 %token IN
@@ -86,8 +87,8 @@
 %start <Syntax.typ list> types
 %start <Syntax.loc Syntax.stmt list> stmts_term
 %start <Syntax.loc Syntax.cmodule> cmodule
+%start <Syntax.loc Syntax.library> lmodule
 
-                                     
 %%
 
 (***********************************************)
@@ -290,8 +291,21 @@ contract:
 libentry :
 | LET; ns = ID; EQ; e= exp { { lname = asId ns; lexp = e } }
 
+library :
+| LIBRARY; n = CID; ls = list(libentry);
+  { {lname = asIdL n (toLoc $startpos);
+     lentries = ls } }
+
+lmodule :
+| l = library; EOF { l }
+
+imports :
+| IMPORT; els = list(CID) { List.map (fun c -> asIdL c (toLoc $startpos)) els }
+| { [] }
+
 cmodule:
-| LIBRARY; n = CID; ls = list(libentry); c = contract; EOF
-  { { cname = asIdL n (toLoc $startpos);
+| els = imports; ls = library; c = contract; EOF
+  { { cname = ls.lname;
       libs = ls;
+      elibs = els;
       contr = c } }

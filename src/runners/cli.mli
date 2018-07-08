@@ -13,7 +13,8 @@ type ioFiles = {
     input_message : string;
     input_blockchain : string;
     output : string;
-    input : string
+    input : string;
+    libdirs : string list;
 }
 
 val parse : unit -> ioFiles
