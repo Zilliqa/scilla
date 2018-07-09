@@ -295,8 +295,15 @@ let init_fields env fs =
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
+let append_implict_contract_params tparams =
+    let creation_block_id = asId creation_block_label in
+    let creation_block = (creation_block_id, PrimType("BNum")) in
+        creation_block :: tparams
+
 (* TODO: implement type-checking *)
-let init_contract libs cparams cfields args init_bal  =
+let init_contract libs cparams' cfields args init_bal  =
+  (* All contracts take a few implicit parameters. *)
+  let cparams = append_implict_contract_params cparams' in
   (* Initialize libraries *)
   let%bind libenv = init_libraries libs in
   let pnames = List.map cparams ~f:(fun (i, t) -> get_id i) in
