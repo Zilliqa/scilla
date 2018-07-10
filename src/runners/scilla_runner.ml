@@ -23,8 +23,8 @@ open Stdint
 (*          Checking initialized libraries          *)
 (****************************************************)
 
-let check_libs libs name =
-   let ls = init_libraries libs in
+let check_libs clibs elibs name =
+   let ls = init_libraries clibs elibs in
    (* Are libraries ok? *)
    match ls with
    | Ok res ->
@@ -101,6 +101,27 @@ let output_message_json mlist =
   (* There will be at least one output message *)
   | _ -> `Null
 
+(* Parse external libraries. *)
+let import_libs names ldirs =
+  List.map names (fun id -> 
+    let name = get_id id in
+    let errmsg = (sprintf "%s. " ("Failed to import library " ^ name)) in
+    let dir = BatList.find_opt 
+      (fun d -> Caml.Sys.file_exists (d ^ Filename.dir_sep ^ name ^ ".scilla")) 
+      ldirs in
+    let f = match dir with
+      | None -> perr (errmsg ^ "Not found.\n") ; exit 1
+      | Some d -> d ^ Filename.dir_sep ^ name ^ ".scilla" in
+    try
+      let parse_lib = FrontEndParser.parse_file ScillaParser.lmodule f in
+      match parse_lib with
+      | None -> perr (errmsg ^ "Failed to parse.\n"); exit 1
+      | Some lib ->
+        plog (sprintf "%s\n" "Successfully imported external library " ^ name);
+        lib
+    with | _ -> perr (errmsg ^ "Failed to parse.\n"); exit 1
+    )
+
 let () =
   let cli = Cli.parse () in
   let parse_module =
@@ -110,11 +131,14 @@ let () =
   | Some cmod ->
       plog (sprintf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" cli.input);
 
-      (* Now initialize it *)
-      let libs = cmod.libs in
-
+      (* Parse external libraries. *)
+      let lib_dirs = (Filename.dirname cli.input::cli.libdirs) in
+      let elibs = import_libs cmod.elibs lib_dirs in
+      (* Contract library. *)
+      let clibs = cmod.libs in
+  
       (* Checking initialized libraries! *)
-      check_libs libs cli.input;
+      check_libs clibs elibs cli.input;
  
       (* Retrieve initial parameters *)
       let initargs = 
@@ -138,7 +162,7 @@ let () =
       if cli.input_message = ""
       then
         (* Initializing the contract's state, just for checking things. *)
-        let init_res = init_module cmod initargs [] Uint128.zero bstate in
+        let init_res = init_module cmod initargs [] Uint128.zero bstate elibs in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
         let _ = check_extract_cstate cli.input init_res in
@@ -167,7 +191,7 @@ let () =
         in
 
         (* Initializing the contract's state *)
-        let init_res = init_module cmod initargs curargs cur_bal bstate in
+        let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
         let cstate = check_extract_cstate cli.input init_res in
