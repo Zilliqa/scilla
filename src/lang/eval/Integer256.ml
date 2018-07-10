@@ -1,0 +1,244 @@
+open Stdint
+
+type uint256 = 
+  { high : uint128;
+    low  : uint128 }
+
+(* Get the lower 64b of a 128b value. *)
+let getlow (x : uint128) : uint128 =
+  Uint128.shift_right (Uint128.shift_left x 64) 64
+ 
+(* Get the higher 64b of a 128b value. *)
+let gethigh (x : uint128) : uint128 =
+  Uint128.shift_right x 64
+
+(* join 0A and 0B together into AB *)
+let highlow (a : uint128) (b : uint128) : uint128 =
+  Uint128.add (Uint128.shift_left a 64) (getlow b)
+
+(* https://stackoverflow.com/questions/1218149/arbitrary-precision-arithmetic-explanation *)
+(* https://github.com/calccrypto/uint256_t/blob/master/uint256_t.cpp *)
+module Uint256 = struct
+  type t = uint256
+  let zero = { high = Uint128.zero; low = Uint128.zero }
+  let one = { high = Uint128.zero; low = Uint128.one }
+  let max_int = { high = Uint128.max_int; low = Uint128.max_int }
+  let min_int = zero
+
+  let add a b =
+    let low = Uint128.add a.low b.low in
+    let carry = 
+      if (Uint128.compare low a.low) < 0 || (Uint128.compare low b.low) < 0
+        then Uint128.one else Uint128.zero in
+    let high = Uint128.add (Uint128.add a.high b.high) carry in
+      { high = high; low = low }
+
+  let sub a b =
+    let low = Uint128.sub a.low b.low in
+    let borrow =
+      if (Uint128.compare a.low b.low) < 0
+        then Uint128.one else Uint128.zero in
+    let high = Uint128.sub (Uint128.sub a.high b.high) borrow in
+      { high = high; low = low }
+
+  let shift_left a shift =
+    if shift >= 256 then zero else
+    if shift = 128 then { high = a.low; low = Uint128.zero } else
+    if shift = 0 then a else
+    if shift < 128 then 
+      let high = Uint128.add 
+        (Uint128.shift_left a.high shift)
+        (Uint128.shift_right a.low (128 - shift)) in
+      let low = Uint128.shift_left a.low shift in
+      { high = high; low = low }
+    else
+      (* shift is greater than 128 *)
+      { high = Uint128.shift_left a.low (shift - 128); low = Uint128.zero }
+
+  let shift_right a shift =
+    if shift >= 256 then zero else
+    if shift = 128 then { high = Uint128.zero; low = a.high } else
+    if shift = 0 then a else
+    if shift < 128 then
+      let high = Uint128.shift_right a.high shift in
+      let low = Uint128.add
+        (Uint128.shift_left a.high (128-shift))
+        (Uint128.shift_right a.low shift) in
+      { high = high; low = low }
+    else
+      (* shift is greater than 128 *)
+      { high = Uint128.zero; low = Uint128.shift_right a.high (shift - 128) }
+
+  (* For unsigned, logical and arithmetic right shifts are same. *)
+  let shift_right_logical = shift_right
+
+  let logand a b =
+    { high = Uint128.logand a.high b.high; low = Uint128.logand a.low b.low }
+
+  let logor a b =
+    { high = Uint128.logor a.high b.high; low = Uint128.logor a.low b.low }
+
+  let logxor a b =
+    { high = Uint128.logxor a.high b.high; low = Uint128.logxor a.low b.high }
+
+  let lognot a =
+    { high = Uint128.lognot a.high; low = Uint128.lognot a.low }
+
+  (* 
+   * (a : Uint256) * (b : Uint256) =
+   *
+   *                      a3   a2   a1   a0   *   b3   b2   b1   b0 
+   *                      -----------------------------------------
+   *                 c04  t03  t02  t01  t00  ;
+   *            c14  t13  t12  t11  t10   X   ;
+   *       c24  t23  t22  t21  t20   X    X   ;
+   *  c34  t33  t32  t31  t30   X    X    X   ;
+   *  --------------------------------------  ;
+   *                       r3   r2   r1   r0
+  *) 
+  let mul a b =
+    let a0 = getlow a.low in let a1 = gethigh a.low in
+    let a2 = getlow a.high in let a3 = gethigh a.high in
+    let b0 = getlow b.low in let b1 = gethigh b.low in
+    let b2 = getlow b.high in let b3 = gethigh b.high in
+    (* first row *)
+    let b0a0 = Uint128.mul b0 a0 in
+    let t00 = getlow b0a0 in
+    let b0a1 = Uint128.mul b0 a1 in
+    let s_b0a1 = Uint128.add (gethigh b0a0) b0a1 in
+    let t01 = getlow s_b0a1 in
+    let b0a2 = Uint128.mul b0 a2 in
+    let s_b0a2 = Uint128.add (gethigh s_b0a1) b0a2 in
+    let t02 = getlow s_b0a2 in
+    let b0a3 = Uint128.mul b0 a3 in
+    let s_b0a3 = Uint128.add (gethigh s_b0a2) b0a3 in
+    let t03 = getlow s_b0a3 in
+    (* second row *)
+    let b1a0 = Uint128.mul b1 a0 in
+    let t10 = getlow b1a0 in
+    let b1a1 = Uint128.mul b1 a1 in
+    let s_b1a1 = Uint128.add (gethigh b1a0) b1a1 in
+    let t11 = getlow s_b1a1 in
+    let b1a2 = Uint128.mul b1 a2 in
+    let s_b1a2 = Uint128.add (gethigh s_b1a1) b1a2 in
+    let t12 = getlow s_b1a2 in
+    (* third row *)
+    let b2a0 = Uint128.mul b2 a0 in
+    let t20 = getlow b2a0 in
+    let b2a1 = Uint128.mul b2 a1 in
+    let s_b2a1 = Uint128.add (gethigh b2a0) b2a1 in
+    let t21 = getlow s_b2a1 in
+    (* fourth row *)
+    let b3a0 = Uint128.mul b3 a0 in
+    let t30 = getlow b3a0 in
+    (* Now add the rows up *)
+    let r0 = t00 in
+    let s_r1 = Uint128.add t01 t10 in
+    let r1 = getlow s_r1 in
+    let s_r2 = Uint128.add (Uint128.add (Uint128.add t02 t11) t20) (gethigh s_r1) in
+    let r2 = getlow s_r2 in
+    let s_r3 = Uint128.add (Uint128.add (Uint128.add (Uint128.add t03 t12) t21) t30) (gethigh s_r2) in
+    let r3 = getlow s_r3 in
+      { high = highlow r3 r2; low = highlow r1 r0 }
+
+  (* Set bit i of a. i=0 will set the least significant bit. *)
+  let setbit a i =
+    logor (shift_left one i) a
+
+  (* Clear bit i of a. i=0 will clear the least significant bit. *)
+  let clearbit a i =
+    logand (lognot (setbit zero i)) a
+
+  (* Is the bit at position i set?, where i=0 is the least significant bit. *)
+  let isset a i =
+    compare (setbit a i) a = 0
+
+  (* 
+   * https://en.wikipedia.org/wiki/Division_algorithm#Integer_division_(unsigned)_with_remainder
+   *
+   *  if D = 0 then error(DivisionByZeroException) end
+   *  Q := 0                  -- Initialize quotient and remainder to zero
+   *  R := 0                     
+   *  for i := n − 1 .. 0 do  -- Where n is number of bits in N
+   *    R := R << 1           -- Left-shift R by 1 bit
+   *    R(0) := N(i)          -- Set the least-significant bit of R equal to bit i of the numerator
+   *    if R ≥ D then
+   *      R := R − D
+   *      Q(i) := 1
+   *    end
+   *  end
+  *)
+
+  let divrem a b =
+    if (compare b zero) = 0 then raise Division_by_zero else
+    (* If we can do 128b arithmetic, do it, hoping that it may be faster. *)
+    if (compare a.high Uint128.zero) = 0 && (compare b.high Uint128.zero) = 0
+    then ({ high = Uint128.zero; low = Uint128.div a.low b.low },
+          { high = Uint128.zero; low = Uint128.rem a.low b.low })
+    else
+    (* for i := n − 1 .. 0 *)
+    let rec divloop q r i =
+      (* loop terminate condition *)
+      if i < 0 then (q, r) else
+      (* R := R << 1 *)
+      let r' = shift_left r 1 in
+      (* R(0) := N(i) *)
+      let r'' = if isset a i then setbit r' 0 else clearbit r' 0 in
+      let (q', r''') = 
+        (* if R ≥ D then *)
+        if (compare r'' b) >= 0
+        (* R := R − D; Q(i) := 1 *)
+        then (setbit q i, sub r'' b)
+        else (q, r'') in
+      (* next iteration *)
+      divloop q' r''' (i-1)
+    in
+      divloop zero zero 255
+
+  let div a b =
+    let (q, _) = divrem a b in
+      q
+
+  let rem a b =
+    let (_, r) = divrem a b in
+      r
+
+  let abs a = a
+
+  let compare a b =
+    if Uint128.compare a.high b.high < 0 then -1 else
+    if Uint128.compare a.high b.high > 0 then 1 else
+    (* compare lower halfs *)
+      Uint128.compare a.low b.low
+
+  let of_string s =
+    let cl = Extlib.ExtString.String.to_list s in
+    List.fold_left (fun i c ->
+      let ten = { high = Uint128.zero; low = Uint128.of_string "10" } in
+      let m = mul i ten in
+      match c with
+      | '0' -> m
+      | '1' -> add m { high = Uint128.zero; low = Uint128.of_string "1" }
+      | '2' -> add m { high = Uint128.zero; low = Uint128.of_string "2" }
+      | '3' -> add m { high = Uint128.zero; low = Uint128.of_string "3" }
+      | '4' -> add m { high = Uint128.zero; low = Uint128.of_string "4" }
+      | '5' -> add m { high = Uint128.zero; low = Uint128.of_string "5" }
+      | '6' -> add m { high = Uint128.zero; low = Uint128.of_string "6" }
+      | '7' -> add m { high = Uint128.zero; low = Uint128.of_string "7" }
+      | '8' -> add m { high = Uint128.zero; low = Uint128.of_string "8" }
+      | '9' -> add m { high = Uint128.zero; low = Uint128.of_string "9" }
+      | _ -> raise (Failure ("Invalid Uint256 string: " ^ s))
+    ) zero cl
+
+  let to_string ui =
+    let ten = { high = Uint128.zero; low = Uint128.of_string "10" } in
+    let c = ["0";"1";"2";"3";"4";"5";"6";"7";"8";"9"] in
+    let rec app i s =
+      if (compare i zero) = 0 then s else
+      let s' = app (div i ten) s in
+      let d = Uint128.to_int (rem i ten).low in
+        s' ^ (List.nth c d)
+    in
+      app ui ""
+
+end

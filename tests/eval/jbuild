@@ -1,0 +1,9 @@
+(jbuild_version 1)
+
+(library
+ (
+  (name testinteger256)
+  (wrapped false)
+  (libraries (core oUnit testutil scilla-eval))
+ )
+)
