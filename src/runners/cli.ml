@@ -15,6 +15,7 @@ let f_output = ref ""
 let f_input = ref ""
 let f_trace_file = ref ""
 let f_trace_level = ref ""
+let d_libs = ref []
 
 let usage = "-init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
@@ -74,7 +75,8 @@ type ioFiles = {
     input_message : string;
     input_blockchain : string;
     output : string;
-    input : string
+    input : string;
+    libdirs : string list;
 }
 
 let parse () =
@@ -87,10 +89,12 @@ let parse () =
     ("-i", Arg.String (fun x -> f_input := x), "Path to scilla contract");
     ("-tracefile", Arg.String (fun x -> f_trace_file := x), "Path to trace file. (prints to stdout if no file specified)");
     ("-tracelevel", Arg.String (fun x -> f_trace_level := x), "Trace level: none|stmt|exp. (default none)");
+    ("-libdir", Arg.String (fun x -> d_libs := x::!d_libs), "Path to directory containing libraries");
   ] in 
   let ignore_anon s = () in
   let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
   let () = process_trace() in
   let () = validate_main () in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
-     input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input}
+     input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input;
+     libdirs = !d_libs}

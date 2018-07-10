@@ -142,6 +142,11 @@ type 'rep lib_entry =
     lexp  : 'rep expr }
 [@@deriving sexp]
 
+type 'rep library =
+  { lname : 'rep ident;
+    lentries : 'rep lib_entry list }
+[@@deriving sexp]
+  
 type 'rep contract =
   { cname   : 'rep ident;
     cparams : ('rep ident  * typ) list;
@@ -158,7 +163,8 @@ let pp_cparams ps =
 (* Contract module: libary + contract definiton *)
 type 'rep cmodule =
   { cname : 'rep ident;
-    libs  : 'rep lib_entry list;
+    libs  : 'rep library;     (* lib functions defined in the module *)
+    elibs : 'rep ident list;  (* list of imports / external libs *)
     contr : 'rep contract }
 [@@deriving sexp]
 

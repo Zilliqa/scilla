@@ -43,6 +43,7 @@ rule read =
   | "builtin"     { BUILTIN }      
   | "block"       { BLOCK }      
   | "library"     { LIBRARY }
+  | "import"      { IMPORT }
   | "let"         { LET }
   | "in"          { IN }
   | "match"       { MATCH }

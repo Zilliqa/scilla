@@ -17,6 +17,8 @@ let rec print_args args =
     (Printf.printf "%s " a;
     print_args b)
 
+let sep = Filename.dir_sep
+
 (* 
  * Build tests to invoke scilla-runner with the right arguments, for
  * multiple test cases, each suffixed with _i up to _n (both inclusive)
@@ -29,19 +31,21 @@ let rec build_contract_tests bindir testsdir pcli name ecode i n =
     (* function to run scilla-runner and check exit code *)
       (fun test_ctxt ->
         (* Files for the contract are in examples/contract/(crowdfunding|zil-game|etc). *)
-        let dir = testsdir test_ctxt ^ Filename.dir_sep ^ "contracts" ^ Filename.dir_sep ^
-          name ^ Filename.dir_sep in
+        let dir = testsdir test_ctxt ^ sep ^ "contracts" ^ sep ^
+          name ^ sep in
         let tmpdir = bracket_tmpdir test_ctxt in 
-        let output_file = tmpdir ^ Filename.dir_sep ^ name ^ "_output_"
+        let output_file = tmpdir ^ sep ^ name ^ "_output_"
                     ^ (i_to_s  i) ^ ".json" in
         let args = ["-init"; dir ^ "init.json"; 
               "-i"; dir ^ "contract.scilla";
+              (* stdlib is in src/stdlib *)
+              "-libdir"; "src" ^ sep ^ "stdlib";
               "-o"; output_file;
               "-imessage"; dir ^ "message_" ^ (i_to_s i) ^ ".json";
               "-istate" ; dir ^ "state_" ^ (i_to_s i) ^ ".json";
               "-iblockchain" ; dir ^ "blockchain_" ^ (i_to_s i) ^ ".json"] in
         (if (pcli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));
-        let scillabin = bindir test_ctxt ^ Filename.dir_sep ^ "scilla-runner" in
+        let scillabin = bindir test_ctxt ^ sep ^ "scilla-runner" in
            (* Ensure that the executable exists with 0 *)
           (assert_command ~exit_code:ecode ~ctxt:test_ctxt ~use_stderr:true scillabin args;
            let goldoutput_file = dir ^ "output_" ^ (i_to_s i) ^ ".json" in
@@ -59,17 +63,19 @@ let build_contract_init_test bindir testsdir pcli name =
   name ^ "_" ^ "init" >::
   (fun test_ctxt ->
     (* Files for the contract are in examples/contract/(crowdfunding|zil-game|etc). *)
-    let dir = testsdir test_ctxt ^ Filename.dir_sep ^ "contracts" ^ Filename.dir_sep ^
-      name ^ Filename.dir_sep in
+    let dir = testsdir test_ctxt ^ sep ^ "contracts" ^ sep ^
+      name ^ sep in
       let tmpdir = bracket_tmpdir test_ctxt in 
-      let output_file = tmpdir ^ Filename.dir_sep ^ name ^ "_init_output.json" in
+      let output_file = tmpdir ^ sep ^ name ^ "_init_output.json" in
       let args = ["-init"; dir ^ "init.json";
+                  (* stdlib is in src/stdlib *)
+                  "-libdir"; "src" ^ sep ^ "stdlib";
                   "-i"; dir ^ "contract.scilla";
                   "-o"; output_file;
                   "-iblockchain"; dir ^ "blockchain_1.json";]
             in
       (if (pcli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));
-      let scillabin = bindir test_ctxt ^ Filename.dir_sep ^ "scilla-runner" in
+      let scillabin = bindir test_ctxt ^ sep ^ "scilla-runner" in
         (* Ensure that the executable exists with 0 *)
         (assert_command test_ctxt scillabin args;
           let goldoutput_file = dir ^ "init_output.json" in
@@ -82,17 +88,18 @@ let build_contract_init_test bindir testsdir pcli name =
 
 let build_misc_tests bindir testsdir pcli =
   let scillabin bindir test_ctxt =
-    bindir test_ctxt ^ Filename.dir_sep ^ "scilla-runner" in
+    bindir test_ctxt ^ sep ^ "scilla-runner" in
   let output_file test_ctxt name =
-    bracket_tmpdir test_ctxt ^ Filename.dir_sep ^ name in
+    bracket_tmpdir test_ctxt ^ sep ^ name in
   let tests_dir_file testsdir test_ctxt name =
-    testsdir test_ctxt ^ "Filename.dir_sep" ^ "contracts" ^ Filename.dir_sep ^ name in
+    testsdir test_ctxt ^ sep ^ "contracts" ^ sep ^ "crowdfunding" ^ sep ^ name in
 
   (* Test for exit 1 on bad json *)
   let test1 = 
     "misc_test_badjson_1" >::
       (fun test_ctxt ->
         let args = ["-init"; tests_dir_file testsdir test_ctxt "init_bad1.json";
+                    "-libdir"; "src" ^ sep ^ "stdlib";
                     "-i"; tests_dir_file testsdir test_ctxt "contract.scilla";
                     "-o"; output_file test_ctxt "init_bad1_output.json";
                     "-iblockchain"; tests_dir_file testsdir test_ctxt "blockchain_1.json"]
@@ -106,6 +113,7 @@ let build_misc_tests bindir testsdir pcli =
     "misc_test_badjson_2" >::
       (fun test_ctxt ->
         let args = ["-init"; tests_dir_file testsdir test_ctxt "init_bad1.json";
+                    "-libdir"; "src" ^ sep ^ "stdlib";
                     "-i"; tests_dir_file testsdir test_ctxt "contract.scilla";
                     "-o"; output_file test_ctxt "init_bad2_output.json";
                     "-iblockchain"; tests_dir_file testsdir test_ctxt "blockchain_1.json"]

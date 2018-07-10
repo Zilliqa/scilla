@@ -272,8 +272,18 @@ let check_blockchain_entries entries =
 (*              Contract initialization                *)
 (*******************************************************)
 
+(* Combine external and contract lib functions. *)
+let combine_libs clibs elibs =
+  (* combine both the libs, with contract libs defined later 
+     (to hide same name external libs *)
+  let j = List.append elibs (clibs::[]) in
+  let libs = 
+    List.fold_right ~f:(fun l a -> List.append l.lentries a) ~init:[] j in
+  libs
+
 (* Initializing libraries of a contract *)
-let init_libraries libs =
+let init_libraries clibs elibs =
+  let libs = combine_libs clibs elibs in
   let init_lib_entry env {lname = id; lexp = e } = (
     let%bind (v, _) = exp_eval e env in
     let env' = Env.bind env (get_id id) v in
@@ -295,10 +305,17 @@ let init_fields env fs =
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
+let append_implict_contract_params tparams =
+    let creation_block_id = asId creation_block_label in
+    let creation_block = (creation_block_id, PrimType("BNum")) in
+        creation_block :: tparams
+
 (* TODO: implement type-checking *)
-let init_contract libs cparams cfields args init_bal  =
+let init_contract clibs elibs cparams' cfields args init_bal  =
+  (* All contracts take a few implicit parameters. *)
+  let cparams = append_implict_contract_params cparams' in
   (* Initialize libraries *)
-  let%bind libenv = init_libraries libs in
+  let%bind libenv = init_libraries clibs elibs in
   let pnames = List.map cparams ~f:(fun (i, t) -> get_id i) in
   let valid_args = List.for_all args ~f:(fun a ->
       (* For each argument there is a parameter *)
@@ -347,11 +364,11 @@ let create_cur_state_fields initcstate curcstate =
                    (pp_literal_map initcstate) (pp_literal_map curcstate)
     
 (* Initialize a module with given arguments and initial balance *)
-let init_module md initargs curargs init_bal bstate =
+let init_module md initargs curargs init_bal bstate elibs =
   let {cname ; libs; contr} = md in
   let {cname; cparams; cfields; ctrans} = contr in
   let%bind initcstate =
-    init_contract libs cparams cfields initargs init_bal in
+    init_contract libs elibs cparams cfields initargs init_bal in
   let%bind curfields = create_cur_state_fields initcstate.fields curargs in
   (* blockchain input provided is only validated and not used here. *)
   let%bind bstate' = check_blockchain_entries bstate in

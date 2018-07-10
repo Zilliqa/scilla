@@ -14,6 +14,7 @@ open MonadUtil
 open Stdint
 
 let balance_label = "_balance"
+let creation_block_label = "_creation_block"
 
   (*  Pretty-printing *)
 
