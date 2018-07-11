@@ -27,7 +27,8 @@ contract Token
 (owner : Address,
  name : String,
  symbol: String,
- totalSupply : Uint128)
+ totalSupply : Uint128,
+ _creation_block : BNum)
 
 (* Mutable fields *)
 field lastID_issued: Uint128 = Uint128 5
