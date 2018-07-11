@@ -113,11 +113,11 @@ let list_length =
   tfun 'A =>
   fun (l : List 'A) =>
     let folder = @list_foldr 'A Int32 in
-    let init = 0 in
+    let init = Int32 0 in
     let iter =
       fun (h : 'A) =>
       fun (z : Int32) =>
-        let one = 1 in
+        let one = Int32 1 in
           builtin add one z
      in
        folder iter init l
@@ -465,7 +465,7 @@ let list_to_map =
   tfun 'B =>
   fun (l : List Pair 'A 'B) =>
     let folder = @list_foldl (Pair 'A 'B) (Map 'A 'B) in
-    let init = Emp in
+    let init = Emp 'A 'B in
     let iter =
       fun (z : Map 'A 'B) =>
       fun (h : Pair 'A 'B) =>
@@ -487,20 +487,20 @@ let list_nth =
       fun (n : Int32) =>
       fun (l : List 'A) =>
         let folder = @list_foldl 'A (Pair Int32 (Option 'A)) in
-        let zero = 0 in
-        let none = None in
+        let zero = Int32 0 in
+        let none = None {'A} in
         let init = Pair {Int32 (Option 'A)} zero none in
         let iter =
           fun (z : Pair (Int32 (Option 'A))) =>
           fun (h : 'A) =>
             match z with
             | Pair i oe =>
-              let one = 1 in
+              let one = Int32 1 in
               let nexti = builtin add i one in
               let this = builtin eq n i in
               match this with
               | True =>
-                let someh = Some h in
+                let someh = Some {'A} h in
                 Pair {Int32 (Option 'A)} nexti someh
               | False =>
                 Pair {Int32 (Option 'A)} nexti oe
