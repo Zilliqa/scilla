@@ -1,0 +1,12 @@
+{
+    "_tag": "addMember",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678901234567890",
+    "params": [
+        {
+            "vname": "name",
+            "type": "String",
+            "value": "Bob"
+        }
+   ]
+}

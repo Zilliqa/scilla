@@ -1,0 +1,35 @@
+{
+  "message": {
+    "_tag": "Main",
+    "_amount": "0",
+    "_accepted": "false",
+    "_recipient": "0x1234567890123456789012345678901234567890",
+    "params": [
+      {
+        "vname": "name",
+        "type": "String",
+        "value": "Zilliqa Monster Hunting"
+      }
+    ]
+  },
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    { "vname": "lastID_issued", "type": "Uint128", "value": "5" },
+    { "vname": "ownerOf", "type": "Map (Uint128) (Address)", "value": [] },
+    {
+      "vname": "approvalMap",
+      "type": "Map (Uint128) (Address)",
+      "value": []
+    },
+    {
+      "vname": "balances",
+      "type": "Map (Address) (Uint128)",
+      "value": [
+        {
+          "key": "0x1234567890123456789012345678901234567890",
+          "val": "1337"
+        }
+      ]
+    }
+  ]
+}

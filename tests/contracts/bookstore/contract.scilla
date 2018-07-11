@@ -1,0 +1,125 @@
+(* Associated Library *)
+library BookStore
+
+let one_msg =
+  fun (msg: Message) =>
+  let nil_msg = Nil {Message} in
+  Cons {Message} msg nil_msg
+
+(* error codes library *)
+let code_book_not_found = Int32 1
+let code_book_found = Int32 2
+
+
+
+(* Contract Definition *)
+contract BookStore
+(owner: Address)
+
+field storeName : String = "Bob's Bookstore"
+field members: Map Int32 String = Emp Int32 String
+field lastID: Int32 = Int32 1
+field lastSKU: Int32 = Int32 100
+field bookInventory: Map Int32 (Map Int32 String) = Emp Int32 (Map Int32 String)
+
+(* transitions *)
+
+
+transition getStoreName()
+    res <- storeName;
+    msg = {_tag: "getStoreName"; _recipient: _sender; _amount: Uint128 0; msg: res};
+    msgs = one_msg msg;
+    send msgs
+end
+
+transition addMember(name: String)
+    mems <- members;
+    new_name = name;
+    new_id <- lastID;
+    add_mem = builtin put mems new_id new_name;
+    members := add_mem;
+    increment = let one = Int32 1 in builtin add one new_id;
+    lastID := increment;
+
+    msg = {_tag: "addMember"; _recipient: _sender; _amount: Uint128 0; msg: new_name};
+    msgs = one_msg msg;
+    send msgs 
+end
+
+transition addBook(bookname: String, author: String)
+    books <- bookInventory;
+    last_sku_id <- lastSKU;
+    (* new_sku_id = builtin add last_sku_id Int32 1; *)
+    new_sku_id = let one = Int32 1 in builtin add last_sku_id one;
+
+    (* constructs book model  *)
+    model_book = Emp Int32 String;
+    bookname_added = let one = Int32 1 in builtin put model_book one bookname;
+    author_added = let two = Int32 2 in builtin put bookname_added two author;
+
+    add_to_inventory = builtin put books new_sku_id author_added;
+
+    (* Change mutable fields once everything has been completed. *)
+    bookInventory := add_to_inventory; 
+    lastSKU := new_sku_id; 
+
+    msg = {_tag: "addBook"; _recipient: _sender; _amount: Uint128 0; msg: new_sku_id};
+    msgs = one_msg msg;
+    send msgs 
+end
+
+transition removeBook(sku_id: Int32)
+    
+    (* preconditions  *)
+    books <- bookInventory;
+    exist = builtin contains books sku_id;
+    match exist with
+    | False =>
+        removed = builtin remove books sku_id;
+        bookInventory := removed;
+
+        msg = {_tag: "removeBook"; _recipient: _sender; _amount: Uint128 0; code: code_book_not_found};
+        msgs = one_msg msg;
+        send msgs
+    | True =>
+        removed = builtin remove books sku_id;
+        bookInventory := removed;
+
+        msg = {_tag: "removeBook"; _recipient: _sender; _amount: Uint128 0; code: code_book_found};
+        msgs = one_msg msg;
+        send msgs
+    end
+end
+
+transition updateBook(sku_id: Int32, bookname: String, author: String)
+
+    (* preconditions  *)
+    books <- bookInventory;
+    exist = builtin contains books sku_id;
+    match exist with
+    | False =>
+        removed = builtin remove books sku_id;
+        bookInventory := removed;
+
+        msg = {_tag: "removeBook"; _recipient: _sender; _amount: Uint128 0; code: code_book_not_found};
+        msgs = one_msg msg;
+        send msgs
+    | True =>
+        (* constructs book model  *)
+        model_book = Emp Int32 String;
+        bookname_added = let one = Int32 1 in builtin put model_book one bookname;
+        author_added = let two = Int32 2 in builtin put bookname_added two author;
+
+        add_to_inventory = builtin put books sku_id author_added;
+
+        (* Change mutable fields once everything has been completed. *)
+        bookInventory := add_to_inventory; 
+
+        msg = {_tag: "updateBookTitle"; _recipient: _sender; _amount: Uint128 0; code: code_book_found};
+        msgs = one_msg msg;
+        send msgs
+    end
+
+
+end
+

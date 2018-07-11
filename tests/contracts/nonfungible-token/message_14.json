@@ -1,0 +1,12 @@
+{
+    "_tag": "takeOwnership",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678901234567892",
+    "params": [
+        {
+            "vname" : "_tokenId",
+            "type": "Uint128",
+            "value" : "5"
+        }
+   ]
+}

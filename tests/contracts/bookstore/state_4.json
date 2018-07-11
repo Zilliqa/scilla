@@ -1,0 +1,51 @@
+[
+    {
+        "vname": "_balance",
+        "type": "Uint128",
+        "value": "0"
+    },
+    {
+        "vname": "bookInventory",
+        "type": "Map (Int32) (Map (Int32) (String))",
+        "value": [
+            {
+                "key": "100",
+                "val": [
+                    {
+                        "key": "2",
+                        "val": "JKRowling"
+                    },
+                    {
+                        "key": "1",
+                        "val": "Harry Potter"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "vname": "lastSKU",
+        "type": "Int32",
+        "value": "101"
+    },
+    {
+        "vname": "lastID",
+        "type": "Int32",
+        "value": "2"
+    },
+    {
+        "vname": "members",
+        "type": "Map (Int32) (String)",
+        "value": [
+            {
+                "key": "1",
+                "val": "Alice"
+            }
+        ]
+    },
+    {
+        "vname": "storeName",
+        "type": "String",
+        "value": "Bob's Bookstore"
+    }
+]
