@@ -231,12 +231,14 @@ module Uint256 = struct
     ) zero cl
 
   let to_string ui =
+    if (compare ui zero) = 0 then "0" else
     let ten = { high = Uint128.zero; low = Uint128.of_string "10" } in
     let c = ["0";"1";"2";"3";"4";"5";"6";"7";"8";"9"] in
     let rec app i s =
       if (compare i zero) = 0 then s else
-      let s' = app (div i ten) s in
-      let d = Uint128.to_int (rem i ten).low in
+      let (q,r) = divrem i ten in
+      let s' = app q s in
+      let d = Uint128.to_int r.low in
         s' ^ (List.nth c d)
     in
       app ui ""
