@@ -19,7 +19,8 @@ let set_hello_code = Int32 2
 (***************************************************)
 
 contract HelloWorld
-(owner: Address)
+(owner: Address,
+ _creation_block: BNum)
 
 field welcome_msg : String = ""
 
