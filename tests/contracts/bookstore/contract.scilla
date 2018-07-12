@@ -27,10 +27,15 @@ field bookInventory: Map Int32 (Map Int32 String) = Emp Int32 (Map Int32 String)
 
 transition getStoreName()
     res <- storeName;
-    msg = {_tag: "getStoreName"; _recipient: _sender; _amount: Uint128 0; msg: res};
+    msg = {_tag: "Main"; _recipient: _sender; _amount: Uint128 0; msg: res};
     msgs = one_msg msg;
     send msgs
 end
+
+(* @notice: add member is an example. It is not used in other functions. *)
+(* @dev: in real contracts, a developer can use a members mapping to manage *)
+(* access controls to grant a user permission to perform certain actions *)
+(* (e.g. add/remove books) *)
 
 transition addMember(name: String)
     mems <- members;
@@ -41,7 +46,10 @@ transition addMember(name: String)
     increment = let one = Int32 1 in builtin add one new_id;
     lastID := increment;
 
-    msg = {_tag: "addMember"; _recipient: _sender; _amount: Uint128 0; msg: new_name};
+    msg = {_tag: "Main"; 
+            _recipient: _sender; 
+            _amount: Uint128 0; 
+            msg: new_name};
     msgs = one_msg msg;
     send msgs 
 end
@@ -49,7 +57,6 @@ end
 transition addBook(bookname: String, author: String)
     books <- bookInventory;
     last_sku_id <- lastSKU;
-    (* new_sku_id = builtin add last_sku_id Int32 1; *)
     new_sku_id = let one = Int32 1 in builtin add last_sku_id one;
 
     (* constructs book model  *)
@@ -63,7 +70,11 @@ transition addBook(bookname: String, author: String)
     bookInventory := add_to_inventory; 
     lastSKU := new_sku_id; 
 
-    msg = {_tag: "addBook"; _recipient: _sender; _amount: Uint128 0; msg: new_sku_id};
+    msg = {_tag: "Main"; 
+            _recipient: _sender; 
+            _amount: Uint128 0; 
+            msg: new_sku_id};
+
     msgs = one_msg msg;
     send msgs 
 end
@@ -78,14 +89,20 @@ transition removeBook(sku_id: Int32)
         removed = builtin remove books sku_id;
         bookInventory := removed;
 
-        msg = {_tag: "removeBook"; _recipient: _sender; _amount: Uint128 0; code: code_book_not_found};
+        msg = {_tag: "Main"; 
+                _recipient: _sender; 
+                _amount: Uint128 0; 
+                code: code_book_not_found};
         msgs = one_msg msg;
         send msgs
     | True =>
         removed = builtin remove books sku_id;
         bookInventory := removed;
 
-        msg = {_tag: "removeBook"; _recipient: _sender; _amount: Uint128 0; code: code_book_found};
+        msg = {_tag: "Main"; 
+            _recipient: _sender; 
+            _amount: Uint128 0; 
+            code: code_book_found};
         msgs = one_msg msg;
         send msgs
     end
@@ -101,21 +118,29 @@ transition updateBook(sku_id: Int32, bookname: String, author: String)
         removed = builtin remove books sku_id;
         bookInventory := removed;
 
-        msg = {_tag: "removeBook"; _recipient: _sender; _amount: Uint128 0; code: code_book_not_found};
+        msg = {_tag: "Main"; 
+                _recipient: _sender; 
+                _amount: Uint128 0; 
+                code: code_book_not_found};
         msgs = one_msg msg;
         send msgs
     | True =>
         (* constructs book model  *)
         model_book = Emp Int32 String;
-        bookname_added = let one = Int32 1 in builtin put model_book one bookname;
-        author_added = let two = Int32 2 in builtin put bookname_added two author;
+        bookname_added = 
+            let one = Int32 1 in builtin put model_book one bookname;
+        author_added = 
+            let two = Int32 2 in builtin put bookname_added two author;
 
         add_to_inventory = builtin put books sku_id author_added;
 
         (* Change mutable fields once everything has been completed. *)
         bookInventory := add_to_inventory; 
 
-        msg = {_tag: "updateBookTitle"; _recipient: _sender; _amount: Uint128 0; code: code_book_found};
+        msg = {_tag: "Main"; 
+                _recipient: _sender; 
+                _amount: Uint128 0; 
+                code: code_book_found};
         msgs = one_msg msg;
         send msgs
     end
