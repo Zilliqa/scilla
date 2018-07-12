@@ -3,7 +3,7 @@ Test Cases
 1. Get total supply: Returns total supply
 2. Get Name: Returns name of NFT
 3. Get symbol: returns name of symbol
-5. Transfer: When `_sender` is the `owner` of the contract. Proceeds to mine new token and assign it to `_to`.
+5. Transfer: When `_sender` is the `owner` of the contract. Proceeds to mine new token and assign it to `to`.
 5. Transfer: P2P transfer - previous owner sends the token to recipient. 
 6. Unauthorized transfer: When `_sender` is not the current owner. System should return invalid code
 7. OwnerOf: Token that is issued.

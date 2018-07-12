@@ -1,13 +1,3 @@
 [
-  { "vname": "_balance", "type": "Uint128", "value": "0" },
-  {
-    "vname": "balances",
-    "type": "Map (Address) (Uint128)",
-    "value": [
-      {
-        "key": "0x1234567890123456789012345678901234567890",
-        "val": "1337"
-      }
-    ]
-  }
+  { "vname": "_balance", "type": "Uint128", "value": "0" }
 ]

@@ -4,12 +4,12 @@
     "_sender" : "0x1234567890123456789012345678901234567891",
     "params": [
         {
-            "vname" : "_tokenId",
+            "vname" : "tokenId",
             "type": "Uint128",
             "value" : "5"
         },
         {
-            "vname" : "_to",
+            "vname" : "to",
             "type" : "Address",
             "value": "0x1234567890123456789012345678901234567892"
         }

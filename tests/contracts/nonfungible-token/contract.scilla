@@ -1,6 +1,7 @@
 (*Non-Fungible Tokens (For educational use, do not use in production)*)
-(*Compliant with ERC721 functions. *)
 (* ASSUMPTIONS: Tokens are issued in running sequence *)
+(* @dev: See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md *)
+
 
 
 (***************************************************)
@@ -67,9 +68,9 @@ transition symbol ()
     send msgs
 end
 
-transition transfer(_to : Address, _tokenId: Uint128)
+transition transfer(to : Address, tokenId: Uint128)
     lastid <- lastID_issued;
-    token_exists = builtin lt _tokenId lastid;
+    token_exists = builtin lt tokenId lastid;
     match token_exists with
     | False =>
         (* token has not been issued. Returns error *)
@@ -85,9 +86,9 @@ transition transfer(_to : Address, _tokenId: Uint128)
         | True =>
             (* _sender is the owner of the contract. *)
             (* Proceeds to mint new tokens for a recipient *)
-            _owner_of <- ownerOf;
-            m1 = builtin put _owner_of lastid _to;
-            ownerOf := m1; 
+            tmp_owner_of <- ownerOf;
+            new_owner_of = builtin put tmp_owner_of lastid to;
+            ownerOf := new_owner_of; 
             last_id_updated = let one = Uint128 1 in builtin add lastid one;
             lastID_issued:= last_id_updated;
         
@@ -100,7 +101,7 @@ transition transfer(_to : Address, _tokenId: Uint128)
         | False =>
             (* checks if current_owner == sender *)
             tmp_owner_of <- ownerOf;
-            current_owner = builtin get tmp_owner_of _tokenId;
+            current_owner = builtin get tmp_owner_of tokenId;
             match current_owner with
             | Some cr =>
                 (* Check if owner == sender *)
@@ -108,7 +109,7 @@ transition transfer(_to : Address, _tokenId: Uint128)
                 match _is_authorized with
                 | True =>
                     (* change ownership *)
-                    new_owner_of = builtin put tmp_owner_of _tokenId _to;
+                    new_owner_of = builtin put tmp_owner_of tokenId to;
                     ownerOf := new_owner_of; 
                     msg = {_tag: "Main"; 
                         _recipient: _sender; 
@@ -119,7 +120,7 @@ transition transfer(_to : Address, _tokenId: Uint128)
                 | False =>
                     (* Checks if _sender is approved to make the transaction *)
                     am <- approvalMap;
-                    approved_user = builtin get am _tokenId;
+                    approved_user = builtin get am tokenId;
                     match approved_user with
                     | Some v =>
                         
@@ -127,10 +128,10 @@ transition transfer(_to : Address, _tokenId: Uint128)
                         match is_sender_approved with
                         | True =>
                             (* Remove from the approval map *)
-                            new_am = builtin remove am _tokenId;
+                            new_am = builtin remove am tokenId;
                             approvalMap := new_am;
                             (* Approved user makes the transfer *)
-                            new_owner_of = builtin put tmp_owner_of _tokenId _to;
+                            new_owner_of = builtin put tmp_owner_of tokenId to;
                             ownerOf := new_owner_of;
                             msg = {_tag: "Main";
                                     _recipient: _sender; 
@@ -170,9 +171,9 @@ transition transfer(_to : Address, _tokenId: Uint128)
     end        
 end
 
-transition ownerOf (_tokenId : Uint128)
+transition ownerOf (tokenId : Uint128)
     _owner_of <- ownerOf;
-    current_owner = builtin get _owner_of _tokenId;
+    current_owner = builtin get _owner_of tokenId;
     match current_owner with
     | Some val =>
         msg = {_tag: "Main"; 
@@ -196,21 +197,21 @@ end
 (* This function approves or grants another entity permission to transfer token*)
 (* on the owner's behalf. This example assumes only one approval can be given *)
 (* for a token at any time. *)
-transition approve (_to : Address, _tokenId: Uint128 )
-    (* precondition 1: _to != _send   *)
-    sameid = builtin eq _sender _to;
+transition approve (to : Address, tokenId: Uint128 )
+    (* precondition 1: to != _send   *)
+    sameid = builtin eq _sender to;
     match sameid with
     | True =>
         msg = {_tag: "Main"; 
                 _recipient: _sender; 
                 _amount: Uint128 0; 
-                code: code_same_address_txn};
+                code: code_same_address_transaction};
         msgs = one_msg msg;
         send msgs
     | False =>
         (* precondition 2: _sender is the current owner*)
         _owner_of <- ownerOf;
-        current_owner = builtin get _owner_of _tokenId;
+        current_owner = builtin get _owner_of tokenId;
         match current_owner with
         | Some v =>
             is_authorized = builtin eq v _sender;
@@ -223,9 +224,9 @@ transition approve (_to : Address, _tokenId: Uint128 )
                 msgs = one_msg msg;
                 send msgs    
             | True =>    
-            (* add _to to the allowed map *)
+            (* add to to the allowed map *)
                 am <- approvalMap;
-                am1 = builtin put am _tokenId _to;
+                am1 = builtin put am tokenId to;
                 approvalMap := am1; 
                 msg = {_tag: "Main"; 
                     _recipient: _sender; 
@@ -247,10 +248,10 @@ transition approve (_to : Address, _tokenId: Uint128 )
     end 
 end
 
-transition takeOwnership (_tokenId : Uint128 )
+transition takeOwnership (tokenId : Uint128 )
     owner_of <- ownerOf;
     am <- approvalMap;
-    approved_user = builtin get am _tokenId;
+    approved_user = builtin get am tokenId;
     match approved_user with
     | Some v =>
         (* precondition: _sender must be approved *)
@@ -265,11 +266,11 @@ transition takeOwnership (_tokenId : Uint128 )
             send msgs    
         | True =>
             (* remove himself from the approval map *)
-            new_am_map = builtin remove am _tokenId;
+            new_am_map = builtin remove am tokenId;
             approvalMap := new_am_map;
             
             (* take ownership and change the owner map *)
-            new_map = builtin put owner_of  _tokenId _sender;
+            new_map = builtin put owner_of  tokenId _sender;
             ownerOf := new_map;
 
             msg = {_tag: "Main";
@@ -280,10 +281,8 @@ transition takeOwnership (_tokenId : Uint128 )
             send msgs
         
         end 
-    
-    
     | None =>
-        (* unauthorized transaction. *)
+        (* unauthorized transaction: User has not been approved by owner *)
         msg = {_tag: "Main"; 
                 _recipient: _sender; 
                 _amount : Uint128 0; 
