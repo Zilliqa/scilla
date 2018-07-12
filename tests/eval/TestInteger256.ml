@@ -48,11 +48,12 @@ open OUnit2
 open Integer256
 open Stdint
 
-let t1 = test_case (fun test_ctxt ->
+(* basic tests *)
+let t1_uint = test_case (fun test_ctxt ->
   let b = (Uint256.to_string Uint256.max_int) = uint256_max_str in
   assert_bool "Uint256.max_int invalid" b)
 
-let t2 = test_case (fun test_ctxt ->
+let t2_uint = test_case (fun test_ctxt ->
   let c = Uint256.of_string (Uint256.to_string Uint256.max_int) in
   let b = (compare Uint256.max_int c) = 0 in
   assert_bool "Uint256 string conversion fail" b)
@@ -73,6 +74,32 @@ module type IntRep = sig
   val min_int: t
   val max_int: t
 end
+
+(* inputs for unsigned integer operations. *)
+let binary_inputs_uint =
+  [
+    ("0", "0");
+    ("0", "1");
+    ("1", "1");
+    ("1", "2");
+    (* (0, max_int) *)
+    ("0", uint256_max_str);
+    (* (max_int, max_int) *)
+    (Uint256.to_string Uint256.max_int, uint256_max_str);
+    (* (max_int/2, "2") *)
+    ("57896044618658097711785492504343953926634992332820282019728792003956564819967", "2");
+    (* (max_int/4, "5") *)
+    ("28948022309329048855892746252171976963317496166410141009864396001978282409983", "5");
+    (* (max_int, 1) *)
+    (uint256_max_str, "1");
+    (* (max_int, 0) *)
+    (uint256_max_str, "0");
+    (* (Uint128.max_int, Uint128.max_int) *)
+    (Uint128.to_string Uint128.max_int, Uint128.to_string Uint128.max_int);
+    (* (Uint128.max_int / 4, Uint128.max_int * 8) *)
+    (Uint128.to_string (Uint128.div Uint128.max_int (Uint128.of_string "4")),
+      Uint128.to_string (Uint128.mul Uint128.max_int (Uint128.of_string "8")));
+  ]
 
 module IntTester (IR1 : IntRep) (IR2 : IntRep) = struct
 (* Create a test for binary op b/w two numbers represented as strings *)
@@ -115,53 +142,36 @@ let binary_test_create a b ops = test_case (fun test_ctxt ->
     assert_bool fail_str res
   )
 
+let rec binary_tests inputs = List.fold_left (fun tl (lhs, rhs) ->
+  let add = binary_test_create lhs rhs "add" in
+  let sub = binary_test_create lhs rhs "sub" in
+  let mul = binary_test_create lhs rhs "mul" in
+  let div = binary_test_create lhs rhs "div" in
+  let rem = binary_test_create lhs rhs "rem" in
+  let compare = binary_test_create rhs lhs "compare" in
+  (* repeat tests with LHS and RHS interchanged. *)
+  let add_rev = binary_test_create rhs lhs "add" in
+  let sub_rev = binary_test_create rhs lhs "sub" in
+  let mul_rev = binary_test_create rhs lhs "mul" in
+  let div_rev = binary_test_create rhs lhs "div" in
+  let rem_rev = binary_test_create rhs lhs "rem" in
+  let compare_rev = binary_test_create rhs lhs "compare" in
+    add::sub::mul::div::rem::compare::add_rev::sub_rev::mul_rev::div_rev::rem_rev::compare_rev::tl
+) [] inputs
+
 end
 
 module Uint256Tester = IntTester (Uint256) (Uint256_Emu)
+let list_uint256 = (Uint256Tester.binary_tests binary_inputs_uint)
+let uint256_tests_list = List.append (t1_uint::t2_uint::[]) list_uint256
+let uint256_tests = "uint256_tests" >::: uint256_tests_list
 
-let binary_inputs =
-  [
-    ("0", "0");
-    ("0", "1");
-    ("1", "1");
-    ("1", "2");
-    (* (0, max_int) *)
-    ("0", uint256_max_str);
-    (* (max_int, max_int) *)
-    (Uint256.to_string Uint256.max_int, uint256_max_str);
-    (* (max_int/2, "2") *)
-    ("57896044618658097711785492504343953926634992332820282019728792003956564819967", "2");
-    (* (max_int/4, "5") *)
-    ("28948022309329048855892746252171976963317496166410141009864396001978282409983", "5");
-    (* (max_int, 1) *)
-    (uint256_max_str, "1");
-    (* (max_int, 0) *)
-    (uint256_max_str, "0");
-    (* (Uint128.max_int, Uint128.max_int) *)
-    (Uint128.to_string Uint128.max_int, Uint128.to_string Uint128.max_int);
-    (* (Uint128.max_int / 4, Uint128.max_int * 8) *)
-    (Uint128.to_string (Uint128.div Uint128.max_int (Uint128.of_string "4")),
-      Uint128.to_string (Uint128.mul Uint128.max_int (Uint128.of_string "8")));
-  ]
-
-let rec binary_tests = List.fold_left (fun tl (lhs, rhs) ->
-  let add = Uint256Tester.binary_test_create lhs rhs "add" in
-  let sub = Uint256Tester.binary_test_create lhs rhs "sub" in
-  let mul = Uint256Tester.binary_test_create lhs rhs "mul" in
-  let div = Uint256Tester.binary_test_create lhs rhs "div" in
-  let rem = Uint256Tester.binary_test_create lhs rhs "rem" in
-  let compare = Uint256Tester.binary_test_create rhs lhs "compare" in
-  (* repeat tests with LHS and RHS interchanged. *)
-  let add_rev = Uint256Tester.binary_test_create rhs lhs "add" in
-  let sub_rev = Uint256Tester.binary_test_create rhs lhs "sub" in
-  let mul_rev = Uint256Tester.binary_test_create rhs lhs "mul" in
-  let div_rev = Uint256Tester.binary_test_create rhs lhs "div" in
-  let rem_rev = Uint256Tester.binary_test_create rhs lhs "rem" in
-  let compare_rev = Uint256Tester.binary_test_create rhs lhs "compare" in
-    add::sub::mul::div::rem::compare::add_rev::sub_rev::mul_rev::div_rev::rem_rev::compare_rev::tl
-) [] binary_inputs
-
-let uint256_tests_list = List.append (t1::t2::[]) binary_tests
+(* 
+module Int256Tester = IntTester (Int256) (Int256_Emu)
+let list_int256 = (Int256Tester.binary_tests binary_inputs_int)
+let int256_tests_list = List.append (t1_int::t2_int::[]) list_int256
+ *)
+ let int256_tests = "int256_tests" >::: [] (* TODO *)
 
 (* The test to be called from Testsuite. *)
-let uint256_tests = "uint256_tests" >::: uint256_tests_list
+let integer256_tests = "integer256_tests" >::: (uint256_tests::int256_tests::[])
