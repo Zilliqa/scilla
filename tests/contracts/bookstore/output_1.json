@@ -13,7 +13,7 @@
       "vname": "members",
       "type": "Map (Int32) (String)",
       "value": [
-        { "key": "2", "val": "Bob" },
+        { "key": "3", "val": "Bob" },
         { "key": "1", "val": "Alice" }
       ]
     },

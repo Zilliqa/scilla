@@ -7,9 +7,10 @@ let one_msg =
   Cons {Message} msg nil_msg
 
 (* error codes library *)
+let code_success = Int32 0
 let code_book_not_found = Int32 1
 let code_book_found = Int32 2
-
+let code_not_authorized = Int32 3
 
 
 (* Contract Definition *)
@@ -18,6 +19,7 @@ contract BookStore
 
 field storeName : String = "Bob's Bookstore"
 field members: Map Int32 String = Emp Int32 String
+(* lastID and lastSKU is the last ID issued *)
 field lastID: Int32 = Int32 1
 field lastSKU: Int32 = Int32 100
 field bookInventory: Map Int32 (Map Int32 String) = Emp Int32 (Map Int32 String)
@@ -38,23 +40,39 @@ end
 (* (e.g. add/remove books) *)
 
 transition addMember(name: String)
-    mems <- members;
-    new_name = name;
-    new_id <- lastID;
-    add_mem = builtin put mems new_id new_name;
-    members := add_mem;
-    increment = let one = Int32 1 in builtin add one new_id;
-    lastID := increment;
 
-    msg = {_tag: "Main"; 
-            _recipient: _sender; 
-            _amount: Uint128 0; 
-            msg: new_name};
-    msgs = one_msg msg;
-    send msgs 
+    is_authorized = builtin eq _sender owner;
+    match is_authorized with
+    | True => 
+        (* Only the owner can add member *)
+        mems <- members;
+        new_member_name = name;
+        last_id <- lastID;
+        new_id = let one = Int32 1 in
+                    builtin add one last_id;
+        add_mem =  builtin put mems new_id new_member_name;
+        members := add_mem;
+        lastID := new_id;
+
+        msg = {_tag: "Main"; 
+                _recipient: _sender; 
+                _amount: Uint128 0; 
+                msg: new_member_name};
+        msgs = one_msg msg;
+        send msgs 
+    | False =>
+        msg = {_tag: "Main";
+                _recipient: _sender;
+                _amount: Uint128 0;
+                code: code_not_authorized};
+        msgs = one_msg msg;
+        send msgs
+    end
 end
 
 transition addBook(bookname: String, author: String)
+
+    (* @dev: Preconditions can be set to allow only members to add a book *)
     books <- bookInventory;
     last_sku_id <- lastSKU;
     new_sku_id = let one = Int32 1 in builtin add last_sku_id one;
@@ -80,15 +98,13 @@ transition addBook(bookname: String, author: String)
 end
 
 transition removeBook(sku_id: Int32)
+    (* @dev: Preconditions can be set to allow only members to remove a book *)
     
     (* preconditions  *)
     books <- bookInventory;
     exist = builtin contains books sku_id;
     match exist with
     | False =>
-        removed = builtin remove books sku_id;
-        bookInventory := removed;
-
         msg = {_tag: "Main"; 
                 _recipient: _sender; 
                 _amount: Uint128 0; 
@@ -109,7 +125,8 @@ transition removeBook(sku_id: Int32)
 end
 
 transition updateBook(sku_id: Int32, bookname: String, author: String)
-
+    (* @dev: Preconditions can be set to allow only members to update a book *)
+   
     (* preconditions  *)
     books <- bookInventory;
     exist = builtin contains books sku_id;
