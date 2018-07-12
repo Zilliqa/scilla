@@ -1,5 +1,6 @@
-(*Non-Fungible Tokens (For educational use, do not use in production)*)
-(* ASSUMPTIONS: Tokens are issued in running sequence *)
+(* Non-Fungible Tokens Standard Basic Implementation                      *)
+(* Warning: This is a basic implementation. Do not use in production.     *)
+(* ASSUMPTIONS: Tokens are issued in running sequence                     *)
 (* @dev: See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md *)
 
 
@@ -68,7 +69,14 @@ transition symbol ()
     send msgs
 end
 
-transition transfer(to : Address, tokenId: Uint128)
+(* @notice Transfers the ownership of an NFT from one address to another address *)
+(* @param from The current owner of the NFT *)
+(* @param to The new owner *)
+(* @param tokenId The NFT to transfer *)
+(* @param data Additional data with no specified format, sent in call to `to`   *)
+
+
+transition transferFrom(from : Address, to : Address, tokenId: Uint128)
     lastid <- lastID_issued;
     token_exists = builtin lt tokenId lastid;
     match token_exists with
@@ -84,63 +92,102 @@ transition transfer(to : Address, tokenId: Uint128)
         is_owner = builtin eq owner _sender;
         match is_owner with
         | True =>
-            (* _sender is the owner of the contract. *)
-            (* Proceeds to mint new tokens for a recipient *)
-            tmp_owner_of <- ownerOf;
-            new_owner_of = builtin put tmp_owner_of lastid to;
-            ownerOf := new_owner_of; 
-            last_id_updated = let one = Uint128 1 in builtin add lastid one;
-            lastID_issued:= last_id_updated;
-        
-            msg = {_tag: "Main"; 
-                     _recipient: _sender;
-                     _amount : Uint128 0; 
-                     code: code_success};
-            msgs = one_msg msg;
-            send msgs
-        | False =>
-            (* checks if current_owner == sender *)
-            tmp_owner_of <- ownerOf;
-            current_owner = builtin get tmp_owner_of tokenId;
-            match current_owner with
-            | Some cr =>
-                (* Check if owner == sender *)
-                _is_authorized = builtin eq cr _sender;
-                match _is_authorized with
-                | True =>
-                    (* change ownership *)
-                    new_owner_of = builtin put tmp_owner_of tokenId to;
-                    ownerOf := new_owner_of; 
-                    msg = {_tag: "Main"; 
+            (* _sender is the owner of the contract. As owner, he can either *)
+            (* mint a new coin (if `from` is also from him) or act as an     *)
+            (* operator, whose role is to transfer tokens for other users    *)
+            
+            is_owner_minting = builtin eq from _sender;
+            match is_owner_minting with
+            | True =>
+                (* Proceeds to mint new tokens for a recipient *)
+                tmp_owner_of <- ownerOf;
+                new_owner_of = builtin put tmp_owner_of lastid to;
+                ownerOf := new_owner_of; 
+                last_id_updated = let one = Uint128 1 in builtin add lastid one;
+                lastID_issued:= last_id_updated;
+            
+                msg = {_tag: "Main"; 
+                         _recipient: _sender;
+                         _amount : Uint128 0; 
+                         code: code_success};
+                msgs = one_msg msg;
+                send msgs
+            | False =>
+                (* act as an operator, which means he can transfer tokens  *)
+                (* between two users (Case: For != owner's address         *)
+                (* Remove from the approval map *)
+                new_am = builtin remove am tokenId;
+                approvalMap := new_am;
+                (* Approved user makes the transfer *)
+                new_owner_of = builtin put tmp_owner_of tokenId to;
+                ownerOf := new_owner_of;
+                msg = {_tag: "Main";
                         _recipient: _sender; 
                         _amount : Uint128 0; 
-                        code: code_success};
-                    msgs = one_msg msg;
-                    send msgs    
-                | False =>
-                    (* Checks if _sender is approved to make the transaction *)
-                    am <- approvalMap;
-                    approved_user = builtin get am tokenId;
-                    match approved_user with
-                    | Some v =>
-                        
-                        is_sender_approved = builtin eq v _sender;
-                        match is_sender_approved with
-                        | True =>
-                            (* Remove from the approval map *)
-                            new_am = builtin remove am tokenId;
-                            approvalMap := new_am;
-                            (* Approved user makes the transfer *)
-                            new_owner_of = builtin put tmp_owner_of tokenId to;
-                            ownerOf := new_owner_of;
-                            msg = {_tag: "Main";
-                                    _recipient: _sender; 
-                                    _amount : Uint128 0; 
-                                    code : code_success};
-                            msgs = one_msg msg;
-                            send msgs    
-                        | False =>
-                        
+                        code : code_success};
+                msgs = one_msg msg;
+                send msgs    
+            end
+        | False =>
+            (* In this implementation, only the owner of the contract        *)
+            (* ("The Operator") can make transfer to                         *)
+            (* other users without being approved by the original tokenOwner *)
+            
+            (* Checks if _sender == from.  *)
+            
+            sender_eq_from = builtin eq _sender from;
+            match sender_eq_from with
+            | True =>
+                (* checks if current_owner == sender *)
+                tmp_owner_of <- ownerOf;
+                tokenOwner = builtin get tmp_owner_of tokenId;
+                match tokenOwner with
+                | Some cr =>
+                    (* Check if owner == sender *)
+                    _is_authorized = builtin eq cr _sender;
+                    match _is_authorized with
+                    | True =>
+                        (* change ownership *)
+                        new_owner_of = builtin put tmp_owner_of tokenId to;
+                        ownerOf := new_owner_of; 
+                        msg = {_tag: "Main"; 
+                            _recipient: _sender; 
+                            _amount : Uint128 0; 
+                            code: code_success};
+                        msgs = one_msg msg;
+                        send msgs    
+                    | False =>
+                        (* Checks if _sender is approved to make the transaction *)
+                        am <- approvalMap;
+                        approved_user = builtin get am tokenId;
+                        match approved_user with
+                        | Some v =>
+                            
+                            is_sender_approved = builtin eq v _sender;
+                            match is_sender_approved with
+                            | True =>
+                                (* Remove from the approval map *)
+                                new_am = builtin remove am tokenId;
+                                approvalMap := new_am;
+                                (* Approved user makes the transfer *)
+                                new_owner_of = builtin put tmp_owner_of tokenId to;
+                                ownerOf := new_owner_of;
+                                msg = {_tag: "Main";
+                                        _recipient: _sender; 
+                                        _amount : Uint128 0; 
+                                        code : code_success};
+                                msgs = one_msg msg;
+                                send msgs    
+                            | False =>
+                            
+                                msg = {_tag: "Main"; 
+                                        _recipient: _sender; 
+                                        _amount : Uint128 0; 
+                                        code: code_transaction_not_authorized};
+                                msgs = one_msg msg;
+                                send msgs    
+                            end
+                        | None =>
                             msg = {_tag: "Main"; 
                                     _recipient: _sender; 
                                     _amount : Uint128 0; 
@@ -148,29 +195,32 @@ transition transfer(to : Address, tokenId: Uint128)
                             msgs = one_msg msg;
                             send msgs    
                         end
-                    | None =>
-                        msg = {_tag: "Main"; 
-                                _recipient: _sender; 
-                                _amount : Uint128 0; 
-                                code: code_transaction_not_authorized};
-                        msgs = one_msg msg;
-                        send msgs    
-                    end
-                end         
-            | None =>
-                (* Code will never reach here. Have to make this more elegant *)
+                    end         
+                | None =>
+                    (* Code will never reach here. Have to make this more elegant *)
+                    msg = {_tag: "Main";
+                             _recipient: _sender; 
+                             _amount : Uint128 0; 
+                             code: code_unexpected_behavior};
+                    msgs = one_msg msg;
+                    send msgs    
+                end    
+            | False =>
+                (* User is not authorized to make the transaction *)
                 msg = {_tag: "Main";
-                         _recipient: _sender; 
-                         _amount : Uint128 0; 
-                         code: code_unexpected_behavior};
+                            _recipient: _sender; 
+                            _amount : Uint128 0; 
+                            code: code_transaction_not_authorized};
                 msgs = one_msg msg;
-                send msgs    
-            end    
-            
+                send msgs
+
+            end
         end
     end        
 end
 
+
+(* @notice Find the owner of an NFT *)
 transition ownerOf (tokenId : Uint128)
     _owner_of <- ownerOf;
     current_owner = builtin get _owner_of tokenId;
@@ -197,9 +247,9 @@ end
 (* This function approves or grants another entity permission to transfer token*)
 (* on the owner's behalf. This example assumes only one approval can be given *)
 (* for a token at any time. *)
-transition approve (to : Address, tokenId: Uint128 )
-    (* precondition 1: to != _send   *)
-    sameid = builtin eq _sender to;
+transition approve (approved : Address, tokenId: Uint128 )
+    (* precondition 1: _sender is not trying to approve himself  *)
+    sameid = builtin eq _sender approved;
     match sameid with
     | True =>
         msg = {_tag: "Main"; 
@@ -210,13 +260,14 @@ transition approve (to : Address, tokenId: Uint128 )
         send msgs
     | False =>
         (* precondition 2: _sender is the current owner*)
-        _owner_of <- ownerOf;
-        current_owner = builtin get _owner_of tokenId;
+        tmp_owner_of <- ownerOf;
+        current_owner = builtin get tmp_owner_of tokenId;
         match current_owner with
         | Some v =>
             is_authorized = builtin eq v _sender;
             match is_authorized with
             | False =>
+                (* Unauthorized transaction *)
                 msg = {_tag: "Main"; 
                     _recipient: _sender; 
                     _amount : Uint128 0; 
@@ -224,9 +275,9 @@ transition approve (to : Address, tokenId: Uint128 )
                 msgs = one_msg msg;
                 send msgs    
             | True =>    
-            (* add to to the allowed map *)
+                (* add to to the allowed map *)
                 am <- approvalMap;
-                am1 = builtin put am tokenId to;
+                am1 = builtin put am tokenId approved;
                 approvalMap := am1; 
                 msg = {_tag: "Main"; 
                     _recipient: _sender; 
@@ -236,11 +287,11 @@ transition approve (to : Address, tokenId: Uint128 )
                 send msgs
             end
         | None =>
-            (* TODO: Remove thisi, Unreachable statement. *)
+            (*  Token is not issued*)
             msg = {_tag: "Main"; 
                 _recipient: _sender; 
                 _amount: Uint128 0; 
-                msg: "Should not reach here."};
+                code: code_token_not_issued};
             msgs = one_msg msg;
             send msgs
            
