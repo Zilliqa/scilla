@@ -4,14 +4,14 @@
     "_amount": "0",
     "_accepted": "false",
     "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [ { "vname": "msg", "type": "Int32", "value": "102" } ]
+    "params": [ { "vname": "msg", "type": "Uint32", "value": "102" } ]
   },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    { "vname": "lastSKU", "type": "Int32", "value": "102" },
+    { "vname": "lastSKU", "type": "Uint32", "value": "102" },
     {
       "vname": "bookInventory",
-      "type": "Map (Int32) (Map (Int32) (String))",
+      "type": "Map (Uint32) (Map (Uint32) (String))",
       "value": [
         {
           "key": "102",
@@ -29,10 +29,10 @@
         }
       ]
     },
-    { "vname": "lastID", "type": "Int32", "value": "2" },
+    { "vname": "lastID", "type": "Uint32", "value": "2" },
     {
       "vname": "members",
-      "type": "Map (Int32) (String)",
+      "type": "Map (Uint32) (String)",
       "value": [ { "key": "1", "val": "Alice" } ]
     },
     { "vname": "storeName", "type": "String", "value": "Bob's Bookstore" }

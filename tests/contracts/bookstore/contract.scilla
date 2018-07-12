@@ -7,10 +7,10 @@ let one_msg =
   Cons {Message} msg nil_msg
 
 (* error codes library *)
-let code_success = Int32 0
-let code_book_not_found = Int32 1
-let code_book_found = Int32 2
-let code_not_authorized = Int32 3
+let code_success = Uint32 0
+let code_book_not_found = Uint32 1
+let code_book_found = Uint32 2
+let code_not_authorized = Uint32 3
 
 
 (* Contract Definition *)
@@ -18,11 +18,11 @@ contract BookStore
 (owner: Address)
 
 field storeName : String = "Bob's Bookstore"
-field members: Map Int32 String = Emp Int32 String
+field members: Map Uint32 String = Emp Uint32 String
 (* lastID and lastSKU is the last ID issued *)
-field lastID: Int32 = Int32 1
-field lastSKU: Int32 = Int32 100
-field bookInventory: Map Int32 (Map Int32 String) = Emp Int32 (Map Int32 String)
+field lastID: Uint32 = Uint32 1
+field lastSKU: Uint32 = Uint32 100
+field bookInventory: Map Uint32 (Map Uint32 String) = Emp Uint32 (Map Uint32 String)
 
 (* transitions *)
 
@@ -48,7 +48,7 @@ transition addMember(name: String)
         mems <- members;
         new_member_name = name;
         last_id <- lastID;
-        new_id = let one = Int32 1 in
+        new_id = let one = Uint32 1 in
                     builtin add one last_id;
         add_mem =  builtin put mems new_id new_member_name;
         members := add_mem;
@@ -75,12 +75,12 @@ transition addBook(bookname: String, author: String)
     (* @dev: Preconditions can be set to allow only members to add a book *)
     books <- bookInventory;
     last_sku_id <- lastSKU;
-    new_sku_id = let one = Int32 1 in builtin add last_sku_id one;
+    new_sku_id = let one = Uint32 1 in builtin add last_sku_id one;
 
     (* constructs book model  *)
-    model_book = Emp Int32 String;
-    bookname_added = let one = Int32 1 in builtin put model_book one bookname;
-    author_added = let two = Int32 2 in builtin put bookname_added two author;
+    model_book = Emp Uint32 String;
+    bookname_added = let one = Uint32 1 in builtin put model_book one bookname;
+    author_added = let two = Uint32 2 in builtin put bookname_added two author;
 
     add_to_inventory = builtin put books new_sku_id author_added;
 
@@ -97,7 +97,7 @@ transition addBook(bookname: String, author: String)
     send msgs 
 end
 
-transition removeBook(sku_id: Int32)
+transition removeBook(sku_id: Uint32)
     (* @dev: Preconditions can be set to allow only members to remove a book *)
     
     (* preconditions  *)
@@ -124,7 +124,7 @@ transition removeBook(sku_id: Int32)
     end
 end
 
-transition updateBook(sku_id: Int32, bookname: String, author: String)
+transition updateBook(sku_id: Uint32, bookname: String, author: String)
     (* @dev: Preconditions can be set to allow only members to update a book *)
    
     (* preconditions  *)
@@ -143,11 +143,11 @@ transition updateBook(sku_id: Int32, bookname: String, author: String)
         send msgs
     | True =>
         (* constructs book model  *)
-        model_book = Emp Int32 String;
+        model_book = Emp Uint32 String;
         bookname_added = 
-            let one = Int32 1 in builtin put model_book one bookname;
+            let one = Uint32 1 in builtin put model_book one bookname;
         author_added = 
-            let two = Int32 2 in builtin put bookname_added two author;
+            let two = Uint32 2 in builtin put bookname_added two author;
 
         add_to_inventory = builtin put books sku_id author_added;
 

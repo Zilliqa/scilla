@@ -6,7 +6,7 @@
     },
     {
         "vname": "bookInventory",
-        "type": "Map (Int32) (Map (Int32) (String))",
+        "type": "Map (Uint32) (Map (Uint32) (String))",
         "value": [
             {
                 "key": "100",
@@ -25,17 +25,17 @@
     },
     {
         "vname": "lastSKU",
-        "type": "Int32",
+        "type": "Uint32",
         "value": "101"
     },
     {
         "vname": "lastID",
-        "type": "Int32",
+        "type": "Uint32",
         "value": "2"
     },
     {
         "vname": "members",
-        "type": "Map (Int32) (String)",
+        "type": "Map (Uint32) (String)",
         "value": [
             {
                 "key": "1",

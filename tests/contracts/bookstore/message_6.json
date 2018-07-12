@@ -5,7 +5,7 @@
     "params": [
         {
             "vname": "sku_id",
-            "type": "Int32",
+            "type": "Uint32",
             "value": "102"
         },
         {

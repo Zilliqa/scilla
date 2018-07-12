@@ -1,9 +1,9 @@
 [
   { "vname": "_balance", "type": "Uint128", "value": "0" },
-  { "vname": "lastID", "type": "Int32", "value": "2" },
+  { "vname": "lastID", "type": "Uint32", "value": "2" },
   {
     "vname": "members",
-    "type": "Map (Int32) (String)",
+    "type": "Map (Uint32) (String)",
     "value": [ { "key": "1", "val": "Alice" } ]
   },
   { "vname": "storeName", "type": "String", "value": "Bob's Bookstore" }
