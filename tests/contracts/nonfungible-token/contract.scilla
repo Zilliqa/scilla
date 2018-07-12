@@ -32,9 +32,6 @@ contract Token
 
 (* Mutable fields *)
 field lastID_issued: Uint128 = Uint128 5
-field balances: Map Address Uint128 =
-    let m = Emp Address Uint128 in
-      builtin put m owner totalSupply
 field ownerOf: Map Uint128 Address = Emp Uint128 Address
 (* can only be called by current owner. *)
 (*Resets after every transfer of ownership *)
@@ -76,7 +73,7 @@ transition transfer(_to : Address, _tokenId: Uint128)
     match token_exists with
     | False =>
         (* token has not been issued. Returns error *)
-        msg = {_tag: "Transfer"; 
+        msg = {_tag: "Main"; 
                 _recipient: _sender; 
                 _amount : Uint128 0; 
                 code: code_token_not_issued};
@@ -102,8 +99,8 @@ transition transfer(_to : Address, _tokenId: Uint128)
             send msgs
         | False =>
             (* checks if current_owner == sender *)
-            _owner_of <- ownerOf;
-            current_owner = builtin get _owner_of _tokenId;
+            tmp_owner_of <- ownerOf;
+            current_owner = builtin get tmp_owner_of _tokenId;
             match current_owner with
             | Some cr =>
                 (* Check if owner == sender *)
@@ -111,8 +108,8 @@ transition transfer(_to : Address, _tokenId: Uint128)
                 match _is_authorized with
                 | True =>
                     (* change ownership *)
-                    m1 = builtin put _owner_of _tokenId _to;
-                    ownerOf := m1; 
+                    new_owner_of = builtin put tmp_owner_of _tokenId _to;
+                    ownerOf := new_owner_of; 
                     msg = {_tag: "Main"; 
                         _recipient: _sender; 
                         _amount : Uint128 0; 
@@ -133,8 +130,8 @@ transition transfer(_to : Address, _tokenId: Uint128)
                             new_am = builtin remove am _tokenId;
                             approvalMap := new_am;
                             (* Approved user makes the transfer *)
-                            m1 = builtin put _owner_of _tokenId _to;
-                            ownerOf := m1;
+                            new_owner_of = builtin put tmp_owner_of _tokenId _to;
+                            ownerOf := new_owner_of;
                             msg = {_tag: "Main";
                                     _recipient: _sender; 
                                     _amount : Uint128 0; 
@@ -293,27 +290,6 @@ transition takeOwnership (_tokenId : Uint128 )
                 code: code_transaction_not_authorized};
         msgs = one_msg msg;
         send msgs    
-    end
-end
-
-transition BalanceOf (tokenOwner : Address)
-    bl <- balances;
-    val = builtin get bl tokenOwner; 
-    match val with
-    | Some v =>
-      msg = {_tag: "Main"; 
-            _recipient : _sender; 
-            _amount: Uint128 0; 
-            bal: v };
-      msgs = one_msg msg;
-      send msgs 
-    | None =>
-      msg = {_tag: "Main"; 
-            _recipient : _sender; 
-            _amount: Uint128 0; 
-            bal : Uint128 0 };
-      msgs = one_msg msg;
-      send msgs
     end
 end
 
