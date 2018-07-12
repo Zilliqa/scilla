@@ -15,10 +15,11 @@ let one_msg =
 
 let no_msg = Nil {Message}
 
+let code_success = Uint32 0
 let code_transaction_not_authorized = Uint32 1
 let code_token_not_issued = Uint32 2
 let code_unexpected_behavior = Uint32 3
-
+let code_same_address_transaction = Uint32 4
 (***************************************************)
 (*             The contract definition             *)
 (***************************************************)
@@ -27,8 +28,7 @@ contract Token
 (owner : Address,
  name : String,
  symbol: String,
- totalSupply : Uint128,
- _creation_block : BNum)
+ totalSupply : Uint128)
 
 (* Mutable fields *)
 field lastID_issued: Uint128 = Uint128 5
@@ -45,19 +45,27 @@ field approvalMap : Map Uint128 Address = Emp Uint128 Address
 
 transition totalSupply ()
    msg = {_tag: "Main"; 
-            _recipient: _sender; _amount : Uint128 0; totalSupply: totalSupply};
+            _recipient: _sender; 
+            _amount : Uint128 0; 
+            totalSupply: totalSupply};
    msgs = one_msg msg; 
    send msgs
 end
 
 transition name ()
-    msg = {_tag: "Main"; _recipient: _sender; _amount : Uint128 0; name: name};
+    msg = {_tag: "Main"; 
+        _recipient: _sender;
+        _amount : Uint128 0; 
+        name: name};
     msgs = one_msg msg;
     send msgs
 end
 
 transition symbol ()
-    msg = {_tag: "Main"; _recipient: _sender; _amount : Uint128 0; symbol: symbol};
+    msg = {_tag: "Main"; 
+            _recipient: _sender; 
+            _amount : Uint128 0; 
+            symbol: symbol};
     msgs = one_msg msg;
     send msgs
 end
@@ -86,10 +94,10 @@ transition transfer(_to : Address, _tokenId: Uint128)
             last_id_updated = let one = Uint128 1 in builtin add lastid one;
             lastID_issued:= last_id_updated;
         
-            msg = {_tag: "Transfer: New token issued"; 
+            msg = {_tag: "Main"; 
                      _recipient: _sender;
                      _amount : Uint128 0; 
-                     msg: "Minted"};
+                     code: code_success};
             msgs = one_msg msg;
             send msgs
         | False =>
@@ -105,10 +113,10 @@ transition transfer(_to : Address, _tokenId: Uint128)
                     (* change ownership *)
                     m1 = builtin put _owner_of _tokenId _to;
                     ownerOf := m1; 
-                    msg = {_tag: "transfer: P2P Transfer Completed."; 
+                    msg = {_tag: "Main"; 
                         _recipient: _sender; 
                         _amount : Uint128 0; 
-                        msg: "Success"};
+                        code: code_success};
                     msgs = one_msg msg;
                     send msgs    
                 | False =>
@@ -127,15 +135,15 @@ transition transfer(_to : Address, _tokenId: Uint128)
                             (* Approved user makes the transfer *)
                             m1 = builtin put _owner_of _tokenId _to;
                             ownerOf := m1;
-                            msg = {_tag: "transfer: P2P Transfer (approved)";
+                            msg = {_tag: "Main";
                                     _recipient: _sender; 
                                     _amount : Uint128 0; 
-                                    msg: "Success"};
+                                    code : code_success};
                             msgs = one_msg msg;
                             send msgs    
                         | False =>
                         
-                            msg = {_tag: "transfer: Unauthorized transfer."; 
+                            msg = {_tag: "Main"; 
                                     _recipient: _sender; 
                                     _amount : Uint128 0; 
                                     code: code_transaction_not_authorized};
@@ -143,7 +151,7 @@ transition transfer(_to : Address, _tokenId: Uint128)
                             send msgs    
                         end
                     | None =>
-                        msg = {_tag: "transfer: Unauthorized transfer."; 
+                        msg = {_tag: "Main"; 
                                 _recipient: _sender; 
                                 _amount : Uint128 0; 
                                 code: code_transaction_not_authorized};
@@ -153,7 +161,7 @@ transition transfer(_to : Address, _tokenId: Uint128)
                 end         
             | None =>
                 (* Code will never reach here. Have to make this more elegant *)
-                msg = {_tag: "transfer: Function should not reach here.";
+                msg = {_tag: "Main";
                          _recipient: _sender; 
                          _amount : Uint128 0; 
                          code: code_unexpected_behavior};
@@ -170,12 +178,18 @@ transition ownerOf (_tokenId : Uint128)
     current_owner = builtin get _owner_of _tokenId;
     match current_owner with
     | Some val =>
-        msg = {_tag: "ownerOf: Owner found"; _recipient: _sender; _amount : Uint128 0; owner: val};
+        msg = {_tag: "Main"; 
+                _recipient: _sender; 
+                _amount : Uint128 0; 
+                owner: val};
         msgs = one_msg msg;
         send msgs    
         
     | None =>
-        msg = {_tag: "ownerOf: No owner found."; _recipient: _sender; _amount : Uint128 0; code: code_token_not_issued};
+        msg = {_tag: "Main"; 
+                _recipient: _sender; 
+                _amount : Uint128 0; 
+                code: code_token_not_issued};
         msgs = one_msg msg;
         send msgs    
     end        
@@ -190,10 +204,10 @@ transition approve (_to : Address, _tokenId: Uint128 )
     sameid = builtin eq _sender _to;
     match sameid with
     | True =>
-        msg = {_tag: "Func(approve): Same id error"; 
+        msg = {_tag: "Main"; 
                 _recipient: _sender; 
                 _amount: Uint128 0; 
-                msg: "Why would someone do this?"};
+                code: code_same_address_txn};
         msgs = one_msg msg;
         send msgs
     | False =>
@@ -205,7 +219,7 @@ transition approve (_to : Address, _tokenId: Uint128 )
             is_authorized = builtin eq v _sender;
             match is_authorized with
             | False =>
-                msg = {_tag: "Func(Approval): Unauthorized Transaction"; 
+                msg = {_tag: "Main"; 
                     _recipient: _sender; 
                     _amount : Uint128 0; 
                     code: code_transaction_not_authorized};
@@ -216,7 +230,7 @@ transition approve (_to : Address, _tokenId: Uint128 )
                 am <- approvalMap;
                 am1 = builtin put am _tokenId _to;
                 approvalMap := am1; 
-                msg = {_tag: "Approve: Approved granted"; 
+                msg = {_tag: "Main"; 
                     _recipient: _sender; 
                     _amount: Uint128 0; 
                     code: v};
@@ -225,7 +239,7 @@ transition approve (_to : Address, _tokenId: Uint128 )
             end
         | None =>
             (* TODO: Remove thisi, Unreachable statement. *)
-            msg = {_tag: "Func(Approve)"; 
+            msg = {_tag: "Main"; 
                 _recipient: _sender; 
                 _amount: Uint128 0; 
                 msg: "Should not reach here."};
@@ -246,7 +260,7 @@ transition takeOwnership (_tokenId : Uint128 )
         approved_user = builtin eq _sender v;
         match approved_user with
         | False =>
-            msg = {_tag: "transfer: Unauthorized transfer."; 
+            msg = {_tag: "Main"; 
                     _recipient: _sender; 
                     _amount : Uint128 0; 
                     code: code_transaction_not_authorized};
@@ -261,10 +275,10 @@ transition takeOwnership (_tokenId : Uint128 )
             new_map = builtin put owner_of  _tokenId _sender;
             ownerOf := new_map;
 
-            msg = {_tag: "takeOwnership";
+            msg = {_tag: "Main";
                    _recipient: _sender;
                    _amount : Uint128 0; 
-                   msg : "Success"};
+                   code: code_success};
             msgs = one_msg msg;
             send msgs
         
@@ -273,7 +287,7 @@ transition takeOwnership (_tokenId : Uint128 )
     
     | None =>
         (* unauthorized transaction. *)
-        msg = {_tag: "transfer: Unauthorized transfer."; 
+        msg = {_tag: "Main"; 
                 _recipient: _sender; 
                 _amount : Uint128 0; 
                 code: code_transaction_not_authorized};
@@ -287,11 +301,17 @@ transition BalanceOf (tokenOwner : Address)
     val = builtin get bl tokenOwner; 
     match val with
     | Some v =>
-      msg = {_tag: "Main"; _recipient : _sender; _amount: Uint128 0; bal: v };
+      msg = {_tag: "Main"; 
+            _recipient : _sender; 
+            _amount: Uint128 0; 
+            bal: v };
       msgs = one_msg msg;
       send msgs 
     | None =>
-      msg = {_tag: "Main"; _recipient : _sender; _amount: Uint128 0; bal : Uint128 0 };
+      msg = {_tag: "Main"; 
+            _recipient : _sender; 
+            _amount: Uint128 0; 
+            bal : Uint128 0 };
       msgs = one_msg msg;
       send msgs
     end
