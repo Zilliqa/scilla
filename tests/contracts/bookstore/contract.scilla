@@ -11,6 +11,7 @@ let code_success = Uint32 0
 let code_book_not_found = Uint32 1
 let code_book_found = Uint32 2
 let code_not_authorized = Uint32 3
+let code_invalid_params = Uint32 4
 
 
 (* Contract Definition *)
@@ -18,11 +19,22 @@ contract BookStore
 (owner: Address)
 
 field storeName : String = "Bob's Bookstore"
-field members: Map Uint32 String = Emp Uint32 String
+
+(* Membership data consists of three attributes: Address, Name and typeOfMember*)
+(* Equivalent member data in C++ struct *)
+(* struct Member {                                                    *)
+(*     Address address;                                               *)
+(*     String name;                                                   *)
+(*     Uint32 membershipType; // 0: Regular, 1: Premium, 2: Corporate *)
+(* }                                                                  *)
+
+field members: Map Address (Pair (String) (Uint32))
+                = Emp Address (Pair (String) (Uint32))
 (* lastID and lastSKU is the last ID issued *)
 field lastID: Uint32 = Uint32 1
 field lastSKU: Uint32 = Uint32 100
-field bookInventory: Map Uint32 (Map Uint32 String) = Emp Uint32 (Map Uint32 String)
+field bookInventory: Map Uint32 (Map Uint32 String) 
+                        = Emp Uint32 (Map Uint32 String)
 
 (* transitions *)
 
@@ -39,27 +51,37 @@ end
 (* access controls to grant a user permission to perform certain actions *)
 (* (e.g. add/remove books) *)
 
-transition addMember(name: String)
+transition addMember(name: String, addr: Address, memberType: Uint32)
 
     is_authorized = builtin eq _sender owner;
     match is_authorized with
     | True => 
         (* Only the owner can add member *)
-        mems <- members;
-        new_member_name = name;
-        last_id <- lastID;
-        new_id = let one = Uint32 1 in
-                    builtin add one last_id;
-        add_mem =  builtin put mems new_id new_member_name;
-        members := add_mem;
-        lastID := new_id;
+        
+        (* Check if membership type is valid. *)
+        valid_type = let three = Uint32 3 in
+                        builtin lt memberType three;
+        match valid_type with
+        | True =>
+            mems <- members;
+            p = Pair {String Uint32} name memberType;
+            add_mem = builtin put mems addr p;
+            members:= add_mem;
 
-        msg = {_tag: "Main"; 
-                _recipient: _sender; 
-                _amount: Uint128 0; 
-                msg: new_member_name};
-        msgs = one_msg msg;
-        send msgs 
+            msg = {_tag: "Main"; 
+                    _recipient: _sender; 
+                    _amount: Uint128 0; 
+                    code: code_success};
+            msgs = one_msg msg;
+            send msgs 
+        | False =>
+            msg = {_tag: "Main";
+                    _recipient: _sender;
+                    _amount: Uint128 0;
+                    code: code_invalid_params};
+            msgs = one_msg msg;
+            send msgs
+        end
     | False =>
         msg = {_tag: "Main";
                 _recipient: _sender;
@@ -132,9 +154,6 @@ transition updateBook(sku_id: Uint32, bookname: String, author: String)
     exist = builtin contains books sku_id;
     match exist with
     | False =>
-        removed = builtin remove books sku_id;
-        bookInventory := removed;
-
         msg = {_tag: "Main"; 
                 _recipient: _sender; 
                 _amount: Uint128 0; 
