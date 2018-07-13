@@ -335,7 +335,8 @@ module Int256 = struct
     let (_, r) = divrem a b in
       r
 
-  let abs a = a
+  let abs a =
+    if isneg a then neg a else a
 
   let compare a b =
     if isneg a && not (isneg b) then -1
