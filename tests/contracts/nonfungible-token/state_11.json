@@ -1,6 +1,6 @@
 [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    { "vname": "lastID_issued", "type": "Uint128", "value": "6" },
+    { "vname": "nextID", "type": "Uint128", "value": "6" },
     {
       "vname": "ownerOf",
       "type": "Map (Uint128) (Address)",

@@ -15,3 +15,17 @@ Test Cases
 13: Transfer Succeeds: `_sender` is not the owner, but he is authorized to make the transaction. 
 14: TakeOwnership: `_sender` successfully takes ownership of the token.
 15: TakeOwnership: `_sender` is not authorized to take ownership.
+16: Transfer: Owner repeats step 4. The recipient should now have two tokens under `ownedTokenCount`.
+17: Transfer: Owner acts as an Approval to facilitate transfer between Alice and Bob. Expected Result: Success
+18: BalanceOf:
+19: BalanceOf: 
+
+## Addresses 
+
+|---|---|
+|Address| Name |
+|---|---|
+|0x1234567890123456789012345678901234567890| Owner |
+|0x1234567890123456789012345678901234567891| Alice |
+|0x1234567890123456789012345678901234567892| Bob |
+|0x1234567890123456789012345678901234567899| Mallory |

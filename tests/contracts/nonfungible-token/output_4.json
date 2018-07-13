@@ -8,11 +8,20 @@
   },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    { "vname": "lastID_issued", "type": "Uint128", "value": "6" },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (Address) (Uint128)",
+      "value": [
+        { "key": "0x1234567890123456789012345678901234567891", "val": "3" }
+      ]
+    },
+    { "vname": "nextID", "type": "Uint128", "value": "8" },
     {
       "vname": "ownerOf",
       "type": "Map (Uint128) (Address)",
       "value": [
+        { "key": "7", "val": "0x1234567890123456789012345678901234567891" },
+        { "key": "6", "val": "0x1234567890123456789012345678901234567891" },
         { "key": "5", "val": "0x1234567890123456789012345678901234567891" }
       ]
     },

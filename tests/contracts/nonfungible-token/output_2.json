@@ -14,8 +14,13 @@
   },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    { "vname": "lastID_issued", "type": "Uint128", "value": "5" },
+    { "vname": "nextID", "type": "Uint128", "value": "5" },
     { "vname": "ownerOf", "type": "Map (Uint128) (Address)", "value": [] },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (Address) (Uint128)",
+      "value": []
+    },
     {
       "vname": "approvalMap",
       "type": "Map (Uint128) (Address)",

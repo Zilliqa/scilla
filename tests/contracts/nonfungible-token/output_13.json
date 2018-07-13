@@ -20,6 +20,11 @@
       "type": "Map (Uint128) (Address)",
       "value": []
     },
-    { "vname": "lastID_issued", "type": "Uint128", "value": "6" }
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (Address) (Uint128)",
+      "value": []
+    },
+    { "vname": "nextID", "type": "Uint128", "value": "6" }
   ]
 }

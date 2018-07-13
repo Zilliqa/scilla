@@ -3,8 +3,6 @@
 (* ASSUMPTIONS: Tokens are issued in running sequence                     *)
 (* @dev: See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md *)
 
-
-
 (***************************************************)
 (*               Associated library                *)
 (***************************************************)
@@ -33,8 +31,9 @@ contract Token
  totalSupply : Uint128)
 
 (* Mutable fields *)
-field lastID_issued: Uint128 = Uint128 5
+field nextID: Uint128 = Uint128 5
 field ownerOf: Map Uint128 Address = Emp Uint128 Address
+field ownedTokenCount: Map Address Uint128 = Emp Address Uint128
 (* can only be called by current owner. *)
 (*Resets after every transfer of ownership *)
 field approvalMap : Map Uint128 Address = Emp Uint128 Address
@@ -73,11 +72,9 @@ end
 (* @param from The current owner of the NFT *)
 (* @param to The new owner *)
 (* @param tokenId The NFT to transfer *)
-(* @param data Additional data with no specified format, sent in call to `to`   *)
-
 
 transition transferFrom(from : Address, to : Address, tokenId: Uint128)
-    lastid <- lastID_issued;
+    lastid <- nextID;
     token_exists = builtin lt tokenId lastid;
     match token_exists with
     | False =>
@@ -104,29 +101,118 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                 new_owner_of = builtin put tmp_owner_of lastid to;
                 ownerOf := new_owner_of; 
                 last_id_updated = let one = Uint128 1 in builtin add lastid one;
-                lastID_issued:= last_id_updated;
-            
-                msg = {_tag: "Main"; 
+                nextID:= last_id_updated;
+
+                (* add the minted token to the owner count *)
+                otc <- ownedTokenCount;
+                tmp = builtin get otc to;
+                match tmp with
+                | Some v => 
+                    (* Recipient already has some token. Add one to count *)
+                    new_num = let one = Uint128 1 in
+                                builtin add one v;
+                    new_otc = builtin put otc to new_num;
+                    ownedTokenCount := new_otc;
+                    msg = {_tag: "Main"; 
                          _recipient: _sender;
                          _amount : Uint128 0; 
                          code: code_success};
-                msgs = one_msg msg;
-                send msgs
+                    msgs = one_msg msg;
+                    send msgs
+                | None =>
+                    (* Recipient does not have any token. Make new entry *)
+                    new_otc = let one = Uint128 1 in 
+                                builtin put otc to one;
+                    ownedTokenCount := new_otc;
+                    msg = {_tag: "Main"; 
+                         _recipient: _sender;
+                         _amount : Uint128 0; 
+                         code: code_success};
+                    msgs = one_msg msg;
+                    send msgs
+                end
+                
             | False =>
                 (* act as an operator, which means he can transfer tokens  *)
                 (* between two users (Case: For != owner's address         *)
                 (* Remove from the approval map *)
+                am <- approvalMap;
                 new_am = builtin remove am tokenId;
                 approvalMap := new_am;
                 (* Approved user makes the transfer *)
+                tmp_owner_of <- ownerOf;
                 new_owner_of = builtin put tmp_owner_of tokenId to;
                 ownerOf := new_owner_of;
-                msg = {_tag: "Main";
-                        _recipient: _sender; 
-                        _amount : Uint128 0; 
-                        code : code_success};
-                msgs = one_msg msg;
-                send msgs    
+
+                (* add the minted token to the owner count *)
+                otc <- ownedTokenCount;
+                tmp = builtin get otc to;
+                match tmp with
+                | Some v => 
+                    (* Recipient already has some token. Add one to count *)
+                    new_num = let one = Uint128 1 in
+                                builtin add v one;
+                    new_otc = builtin put otc to new_num;
+
+                    (* decrement count for previous user *)
+                    tmp2 = builtin get otc from;
+                    match tmp2 with
+                    | Some k => 
+                        new_num_from = let one = Uint128 1 in
+                                        builtin sub k one;
+                        new_otc2 = builtin put new_otc from new_num_from;
+                        ownedTokenCount := new_otc2;
+                        msg = {_tag: "Main"; 
+                         _recipient: _sender;
+                         _amount : Uint128 0; 
+                         code: code_success};
+                        msgs = one_msg msg;
+                        send msgs
+                    | None =>
+                        (* statement should not reach here               *)
+                        (* The `from` must have token count, unless the  *)
+                        (* preconditions above does not hold             *)
+                        ownedTokenCount := new_otc;
+                        msg = {_tag: "Main"; 
+                         _recipient: _sender;
+                         _amount : Uint128 0; 
+                         code: code_unexpected_behavior};
+                        msgs = one_msg msg;
+                        send msgs
+                    end
+                   
+                | None =>
+                    (* Recipient does not have any token. Make new entry *)
+                    new_otc = let one = Uint128 1 in 
+                                builtin put otc to one;
+
+                    (* decrement count for previous user *)
+                    tmp2 = builtin get new_otc from;
+                    match tmp2 with
+                    | Some k => 
+                        new_num_from = let one = Uint128 1 in
+                                        builtin sub k one;
+                        new_otc2 = builtin put new_otc from new_num_from;
+                        ownedTokenCount := new_otc2;
+                        msg = {_tag: "Main"; 
+                         _recipient: _sender;
+                         _amount : Uint128 0; 
+                         code: code_success};
+                        msgs = one_msg msg;
+                        send msgs
+                    | None =>
+                        (* statement should not reach here               *)
+                        (* The `from` must have token count, unless the  *)
+                        (* preconditions above does not hold             *)
+                        ownedTokenCount := new_otc;
+                        msg = {_tag: "Main"; 
+                         _recipient: _sender;
+                         _amount : Uint128 0; 
+                         code: code_unexpected_behavior};
+                        msgs = one_msg msg;
+                        send msgs
+                    end
+                end
             end
         | False =>
             (* In this implementation, only the owner of the contract        *)
@@ -150,12 +236,76 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                         (* change ownership *)
                         new_owner_of = builtin put tmp_owner_of tokenId to;
                         ownerOf := new_owner_of; 
-                        msg = {_tag: "Main"; 
-                            _recipient: _sender; 
-                            _amount : Uint128 0; 
-                            code: code_success};
-                        msgs = one_msg msg;
-                        send msgs    
+
+                        (* safeChangeTokenCount() : Change the owner count *)
+                        otc <- ownedTokenCount;
+                        tmp = builtin get otc to;
+                        match tmp with
+                        | Some v => 
+                            (* Recipient already has some token. Add one to count *)
+                            new_num = let one = Uint128 1 in
+                                        builtin add v one;
+                            new_otc = builtin put otc to new_num;
+
+                            (* decrement count for previous user *)
+                            tmp2 = builtin get otc from;
+                            match tmp2 with
+                            | Some k => 
+                                new_num_from = let one = Uint128 1 in
+                                                builtin sub k one;
+                                new_otc2 = builtin put new_otc from new_num_from;
+                                ownedTokenCount := new_otc2;
+                                msg = {_tag: "Main"; 
+                                _recipient: _sender;
+                                _amount : Uint128 0; 
+                                code: code_success};
+                                msgs = one_msg msg;
+                                send msgs
+                            | None =>
+                                (* statement should not reach here               *)
+                                (* The `from` must have token count, unless the  *)
+                                (* preconditions above does not hold             *)
+                                ownedTokenCount := new_otc;
+                                msg = {_tag: "Main"; 
+                                _recipient: _sender;
+                                _amount : Uint128 0; 
+                                code: code_unexpected_behavior};
+                                msgs = one_msg msg;
+                                send msgs
+                            end
+                        
+                        | None =>
+                            (* Recipient does not have any token. Make new entry *)
+                            new_otc = let one = Uint128 1 in 
+                                        builtin put otc to one;
+
+                            (* decrement count for previous user *)
+                            tmp2 = builtin get new_otc from;
+                            match tmp2 with
+                            | Some k => 
+                                new_num_from = let one = Uint128 1 in
+                                                builtin sub k one;
+                                new_otc2 = builtin put new_otc from new_num_from;
+                                ownedTokenCount := new_otc2;
+                                msg = {_tag: "Main"; 
+                                _recipient: _sender;
+                                _amount : Uint128 0; 
+                                code: code_success};
+                                msgs = one_msg msg;
+                                send msgs
+                            | None =>
+                                (* statement should not reach here               *)
+                                (* The `from` must have token count, unless the  *)
+                                (* preconditions above does not hold             *)
+                                ownedTokenCount := new_otc;
+                                msg = {_tag: "Main"; 
+                                _recipient: _sender;
+                                _amount : Uint128 0; 
+                                code: code_unexpected_behavior};
+                                msgs = one_msg msg;
+                                send msgs
+                            end
+                        end                        
                     | False =>
                         (* Checks if _sender is approved to make the transaction *)
                         am <- approvalMap;
@@ -197,7 +347,7 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                         end
                     end         
                 | None =>
-                    (* Code will never reach here. Have to make this more elegant *)
+                    (* Code will never reach here. *)
                     msg = {_tag: "Main";
                              _recipient: _sender; 
                              _amount : Uint128 0; 
@@ -213,12 +363,10 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                             code: code_transaction_not_authorized};
                 msgs = one_msg msg;
                 send msgs
-
             end
         end
     end        
 end
-
 
 (* @notice Find the owner of an NFT *)
 transition ownerOf (tokenId : Uint128)
@@ -319,18 +467,104 @@ transition takeOwnership (tokenId : Uint128 )
             (* remove himself from the approval map *)
             new_am_map = builtin remove am tokenId;
             approvalMap := new_am_map;
-            
-            (* take ownership and change the owner map *)
-            new_map = builtin put owner_of  tokenId _sender;
-            ownerOf := new_map;
 
-            msg = {_tag: "Main";
-                   _recipient: _sender;
-                   _amount : Uint128 0; 
-                   code: code_success};
-            msgs = one_msg msg;
-            send msgs
-        
+            (* get current owner *)
+            getTokenOwner = builtin get owner_of tokenId;
+            match getTokenOwner with
+            | Some from =>
+                to = _sender;
+                (* safeChangeTokenCount(to, from) : Change the owner count *)
+                otc <- ownedTokenCount;
+                tmp = builtin get otc to;
+                match tmp with
+                | Some v => 
+                    (* Recipient already has some token. Add one to count *)
+                    new_num = let one = Uint128 1 in
+                                builtin add v one;
+                    new_otc = builtin put otc to new_num;
+
+                    (* decrement count for previous user *)
+                    tmp2 = builtin get otc from;
+                    match tmp2 with
+                    | Some k => 
+                        new_num_from = let one = Uint128 1 in
+                                        builtin sub k one;
+                        new_otc2 = builtin put new_otc from new_num_from;
+                        ownedTokenCount := new_otc2;
+
+                        (* take ownership and change the owner map *)
+                        new_map = builtin put owner_of  tokenId _sender;
+                        ownerOf := new_map;
+
+
+
+                        msg = {_tag: "Main"; 
+                        _recipient: _sender;
+                        _amount : Uint128 0; 
+                        code: code_success};
+                        msgs = one_msg msg;
+                        send msgs
+                    | None =>
+                        (* statement should not reach here               *)
+                        (* The `from` must have token count, unless the  *)
+                        (* preconditions above does not hold             *)
+                        ownedTokenCount := new_otc;
+                        msg = {_tag: "Main"; 
+                        _recipient: _sender;
+                        _amount : Uint128 0; 
+                        code: code_unexpected_behavior};
+                        msgs = one_msg msg;
+                        send msgs
+                    end
+                
+                | None =>
+                    (* Recipient does not have any token. Make new entry *)
+                    new_otc = let one = Uint128 1 in 
+                                builtin put otc to one;
+
+                    (* decrement count for previous user *)
+                    tmp2 = builtin get new_otc from;
+                    match tmp2 with
+                    | Some k => 
+                        new_num_from = let one = Uint128 1 in
+                                        builtin sub k one;
+                        new_otc2 = builtin put new_otc from new_num_from;
+                        ownedTokenCount := new_otc2;
+
+                        (* take ownership and change the owner map *)
+                        new_map = builtin put owner_of  tokenId _sender;
+                        ownerOf := new_map;
+
+                        msg = {_tag: "Main"; 
+                        _recipient: _sender;
+                        _amount : Uint128 0; 
+                        code: code_success};
+                        msgs = one_msg msg;
+                        send msgs
+                    | None =>
+                        (* statement should not reach here               *)
+                        (* The `from` must have token count, unless the  *)
+                        (* preconditions above does not hold             *)
+                        ownedTokenCount := new_otc;
+                        msg = {_tag: "Main"; 
+                        _recipient: _sender;
+                        _amount : Uint128 0; 
+                        code: code_unexpected_behavior};
+                        msgs = one_msg msg;
+                        send msgs
+                    end
+                end 
+            
+            | None =>
+                (* Transaction should not reach here. *)
+                msg = {_tag: "Main"; 
+                        _recipient: _sender; 
+                        _amount : Uint128 0; 
+                        code: code_transaction_not_authorized};
+                msgs = one_msg msg;
+                send msgs    
+            end
+
         end 
     | None =>
         (* unauthorized transaction: User has not been approved by owner *)
@@ -343,3 +577,27 @@ transition takeOwnership (tokenId : Uint128 )
     end
 end
 
+
+(* @notice Count all NFTs assigned to an owner *)
+transition balanceOf (addr: Address)
+
+    otc <- ownedTokenCount;
+    getBalanceOf = builtin get otc addr;
+    match getBalanceOf with
+    | Some userBalance =>
+        msg = {_tag: "Main"; 
+                _recipient: _sender; 
+                _amount: Uint128 0; 
+                balance: userBalance};
+        msgs = one_msg msg;
+        send msgs
+    | None =>
+        (* No entry means that the user does not have token *)
+        msg = {_tag: "Main"; 
+                _recipient: _sender; 
+                _amount: Uint128 0; 
+                balance: Uint128 0};
+        msgs = one_msg msg;
+        send msgs
+    end
+end
