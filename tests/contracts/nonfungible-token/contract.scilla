@@ -298,15 +298,14 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                                 new_otc2 = builtin put new_otc from new_num_from;
                                 ownedTokenCount := new_otc2;
                                 msg = {_tag: "Main"; 
-                                _recipient: _sender;
-                                _amount : Uint128 0; 
-                                code: code_success};
+                                    _recipient: _sender;
+                                    _amount : Uint128 0; 
+                                    code: code_success};
                                 msgs = one_msg msg;
                                 send msgs
                             | None =>
-                                (* statement should not reach here            *)
-                                (* The `from` address must have exisiting     *) 
-                                (* tokenCount                                 *)
+                                (* statement should not reach here *)
+
                                 ownedTokenCount := new_otc;
                                 msg = {_tag: "Main"; 
                                 _recipient: _sender;
@@ -322,7 +321,6 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                         approved_user = builtin get am tokenId;
                         match approved_user with
                         | Some v =>
-                            
                             is_sender_approved = builtin eq v _sender;
                             match is_sender_approved with
                             | True =>
@@ -340,7 +338,7 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                                 msgs = one_msg msg;
                                 send msgs    
                             | False =>
-                                (* Sender has not been approved by tokenOwner *)             
+                                (* Sender has not been approved by tokenOwner *)
                                 msg = {_tag: "Main"; 
                                         _recipient: _sender; 
                                         _amount : Uint128 0; 
