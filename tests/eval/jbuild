@@ -4,6 +4,6 @@
  (
   (name testinteger256)
   (wrapped false)
-  (libraries (core oUnit testutil scilla-eval))
+  (libraries (core oUnit testutil scilla-base))
  )
 )
