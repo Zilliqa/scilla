@@ -1,0 +1,10 @@
+(* Expected result: 142 *)
+let f = fun (z : Int256) =>
+    let b = Int256 40 in
+    fun (c : Int256) =>
+    	let t = builtin add b c in
+	builtin add z t
+in
+let a = Int256 100 in
+let b = Int256 2 in
+f a b

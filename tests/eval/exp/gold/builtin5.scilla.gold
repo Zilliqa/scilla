@@ -1,0 +1,4 @@
+(IntLit 256 142),
+{ [b -> (IntLit 256 2)],
+  [a -> (IntLit 256 100)],
+  [f -> <closure>] }

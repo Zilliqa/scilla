@@ -16,7 +16,7 @@
 
   let to_type d = match d with
   | "Hash" | "Address" | "BNum" | "Message" | "String" -> PrimType d
-  | "Int32" | "Int64" | "Int128" | "Uint32" | "Uint64" | "Uint128" -> PrimType d
+  | "Int32" | "Int64" | "Int128" | "Int256" | "Uint32" | "Uint64" | "Uint128" | "Uint256" -> PrimType d
   | _ -> ADT (d, [])
 
 %}
