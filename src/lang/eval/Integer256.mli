@@ -21,7 +21,6 @@ module Uint256 : sig
   val mul : t -> t -> t
   val div: t -> t -> t
   val rem: t -> t -> t
-  val abs: t -> t
   val compare : t -> t -> int
   val shift_left : t -> int -> t
   val shift_right : t -> int -> t
@@ -30,6 +29,38 @@ module Uint256 : sig
   val logor : t -> t -> t
   val logxor : t -> t -> t
   val lognot : t -> t
+
+  val abs: t -> t
+  val neg: t -> t
+
+  val of_string : string -> t
+  val to_string : t -> string
+end
+
+module Int256 : sig
+  type t
+
+  val zero : t
+  val one : t
+  val max_int : t
+  val min_int : t
+
+  val add : t -> t -> t
+  val sub : t -> t -> t
+  val mul : t -> t -> t
+  val div: t -> t -> t
+  val rem: t -> t -> t
+  val compare : t -> t -> int
+  val shift_left : t -> int -> t
+  val shift_right : t -> int -> t
+  val shift_right_logical : t -> int -> t
+  val logand : t -> t -> t
+  val logor : t -> t -> t
+  val logxor : t -> t -> t
+  val lognot : t -> t
+
+  val abs: t -> t
+  val neg: t -> t
 
   val of_string : string -> t
   val to_string : t -> string

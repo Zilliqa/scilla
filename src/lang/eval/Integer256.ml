@@ -205,6 +205,8 @@ module Uint256 = struct
 
   let abs a = a
 
+  let neg a = raise (Failure ("Cannot negate Uint256"))
+
   let compare a b =
     if Uint128.compare a.high b.high < 0 then -1 else
     if Uint128.compare a.high b.high > 0 then 1 else
@@ -242,5 +244,126 @@ module Uint256 = struct
         s' ^ (List.nth c d)
     in
       app ui ""
+
+end
+
+(*  https://github.com/andrenth/ocaml-stdint/blob/master/lib/int128_stubs.c *)
+module Int256 = struct
+  type t = uint256
+
+  let zero = { high = Uint128.zero; low = Uint128.zero }
+  let one = { high = Uint128.zero; low = Uint128.one }
+  let max_int = Uint256.clearbit Uint256.max_int 255
+  let min_int = Uint256.setbit zero 255
+
+  let add a b =
+    (* 2s complement will take care ! *)
+    Uint256.add a b
+
+  let sub a b =
+    (* 2s complement will take care ! *)
+    Uint256.sub a b
+
+  let shift_left a shift =
+    Uint256.shift_left a shift
+
+  let shift_right a shift =
+    Uint256.shift_right a shift
+
+  (* For signed, logical and arithmetic right shifts are different. *)
+  let shift_right_logical = shift_right
+
+  let logand a b =
+    Uint256.logand a b
+
+  let logor a b =
+    Uint256.logor a b
+
+  let logxor a b =
+    Uint256.logxor a a
+
+  let lognot a =
+    Uint256.lognot a
+
+  let mul a b =
+    (* 2s complement will take care ! *)
+    Uint256.mul a b
+
+  (* Set bit i of a. i=0 will set the least significant bit. *)
+  let setbit a i =
+    Uint256.setbit a i
+
+  (* Clear bit i of a. i=0 will clear the least significant bit. *)
+  let clearbit a i =
+    Uint256.clearbit a i
+
+  (* Is the bit at position i set?, where i=0 is the least significant bit. *)
+  let isset a i =
+    Uint256.isset a i
+  
+  let isneg a =
+    isset a 255
+
+  let neg a =
+    (* take 2s complement *)
+    add (lognot a) one
+
+  let divrem x y =
+    if isneg x then
+      let x' = neg x in
+      if isneg y then
+        let y' = neg y in
+        Uint256.divrem x' y'
+      else
+        let (q, r) = Uint256.divrem x' y in
+        (neg q, r)
+    else
+      if isneg y then
+        let y' = neg y in
+        let (q, r) = Uint256.divrem x y' in
+        (neg q, r)
+      else
+        Uint256.divrem x y
+
+  let div a b =
+    let (q, _) = divrem a b in
+      q
+
+  let rem a b =
+    let (_, r) = divrem a b in
+      r
+
+  let abs a = a
+
+  let compare a b =
+    if isneg a && not (isneg b) then -1
+    else if not (isneg a) && isneg b then 1
+    else Uint256.compare a b
+
+  let of_string s =
+    let (s', n) = 
+      if String.get s 0 = '-'
+           (* s' = s without the leading '-' *)
+      then (String.sub s 1 ((String.length s) - 1), true)
+      else (s, false)
+    in
+    let i = 
+      try
+        Uint256.of_string s'
+      with
+      | _ -> raise (Failure ("Invalid Int256 string: " ^ s))
+      in
+      if isneg i && i <> min_int then
+        (* if i is negative, then the number is too big.
+         * It can't be represented in 255 bits.
+         * Unless it's min_int. 2s complement has one extra 
+         * negative number representable, than number of positives. *)
+        raise (Failure ("Invalid Int256 string: " ^ s))
+      else
+        if n then neg i else i
+
+  let to_string i =
+    if isneg i then "-" ^ Uint256.to_string (neg i)
+    else Uint256.to_string i
 
 end

@@ -1,5 +1,7 @@
 
 let uint256_max_str = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+let int256_max_str =  "57896044618658097711785492504343953926634992332820282019728792003956564819967"
+let int256_min_str = "-57896044618658097711785492504343953926634992332820282019728792003956564819968"
 
 module Uint256_Emu = struct
    open Big_int
@@ -13,22 +15,18 @@ module Uint256_Emu = struct
   let of_string s = big_int_of_string s
   let to_string i = string_of_big_int i
 
-  let add a b =
+  let mod_unsigned a =
     (* modulo arithmetic for unsigned integers *)
-    mod_big_int (add_big_int a b) (add_big_int max_int one)
+    mod_big_int a (add_big_int max_int one)
+
+  let add a b =
+    mod_unsigned (add_big_int a b)
 
   let sub a b =
-    (* modulo arithmetic for unsigned integers *)
-    let c = sub_big_int a b in
-    if (compare_big_int c zero) < 0
-    (* if c < 0 then (max_int+c+1) *)
-    then add_big_int (add_big_int max_int c) one
-    else
-      c
+    mod_unsigned (sub_big_int a b)
 
   let mul a b =
-    (* modulo arithmetic for unsigned integers *)
-    mod_big_int (mult_big_int a b) (add_big_int max_int one)
+    mod_unsigned (mult_big_int a b)
 
   let div a b =
     div_big_int a b
@@ -39,8 +37,47 @@ module Uint256_Emu = struct
   let compare a b =
     compare_big_int a b
 
-  let abs a =
-    abs_big_int a
+end
+
+module Int256_Emu = struct
+   open Big_int
+   type t = big_int
+
+  let zero = zero_big_int
+  let one = add_int_big_int 1 zero
+  let max_int = big_int_of_string int256_max_str
+  let min_int = big_int_of_string int256_min_str
+
+  let of_string s = big_int_of_string s
+  let to_string i = string_of_big_int i
+
+  (* take module of result of some operation so that it is in range of Int256. *)
+  let mod_signed a =
+    let t = mod_big_int a (add_big_int Uint256_Emu.max_int one) in
+    if (compare_big_int t max_int) > 0 
+    then
+      (* negative *)
+      sub_big_int t (add_big_int Uint256_Emu.max_int one)
+    else
+      t
+
+  let add a b =
+    mod_signed (add_big_int a b)
+
+  let sub a b =
+    mod_signed (sub_big_int a b)
+
+  let mul a b =
+    mod_signed (mult_big_int a b)
+
+  let div a b =
+    div_big_int a b
+
+  let rem a b =
+    mod_big_int a b
+
+  let compare a b =
+    compare_big_int a b
 
 end
 
@@ -58,6 +95,20 @@ let t2_uint = test_case (fun test_ctxt ->
   let b = (compare Uint256.max_int c) = 0 in
   assert_bool "Uint256 string conversion fail" b)
 
+let t1_int = test_case (fun test_ctxt ->
+  let b = (Int256.to_string Int256.max_int) = int256_max_str in
+  assert_bool "Int256.max_int invalid" b)
+
+let t2_int = test_case (fun test_ctxt ->
+  let c = Int256.of_string (Int256.to_string Int256.max_int) in
+  let b = (compare Int256.max_int c) = 0 in
+  assert_bool "Int256 string conversion fail" b)
+
+let t3_int = test_case (fun test_ctxt ->
+  let c = Int256.of_string (Int256.to_string Int256.min_int) in
+  let b = (compare Int256.min_int c) = 0 in
+  assert_bool "Int256 string conversion fail" b)
+
 module type IntRep = sig
   type t
   val compare : t -> t -> int
@@ -68,7 +119,6 @@ module type IntRep = sig
   val mul: t -> t -> t
   val div: t -> t -> t
   val rem: t -> t -> t
-  val abs: t -> t
   val zero: t
   val one: t
   val min_int: t
@@ -99,6 +149,15 @@ let binary_inputs_uint =
     (* (Uint128.max_int / 4, Uint128.max_int * 8) *)
     (Uint128.to_string (Uint128.div Uint128.max_int (Uint128.of_string "4")),
       Uint128.to_string (Uint128.mul Uint128.max_int (Uint128.of_string "8")));
+  ]
+
+let binary_inputs_int =
+  [
+    ("0", "0");
+    ("0", "1");
+    ("0", "-1");
+    ("-2", "-3");
+    ("-4", "-2");
   ]
 
 module IntTester (IR1 : IntRep) (IR2 : IntRep) = struct
@@ -143,6 +202,7 @@ let binary_test_create a b ops = test_case (fun test_ctxt ->
   )
 
 let rec binary_tests inputs = List.fold_left (fun tl (lhs, rhs) ->
+  (* all operations for all inputs *)
   let add = binary_test_create lhs rhs "add" in
   let sub = binary_test_create lhs rhs "sub" in
   let mul = binary_test_create lhs rhs "mul" in
@@ -166,12 +226,10 @@ let list_uint256 = (Uint256Tester.binary_tests binary_inputs_uint)
 let uint256_tests_list = List.append (t1_uint::t2_uint::[]) list_uint256
 let uint256_tests = "uint256_tests" >::: uint256_tests_list
 
-(* 
 module Int256Tester = IntTester (Int256) (Int256_Emu)
 let list_int256 = (Int256Tester.binary_tests binary_inputs_int)
-let int256_tests_list = List.append (t1_int::t2_int::[]) list_int256
- *)
- let int256_tests = "int256_tests" >::: [] (* TODO *)
+let int256_tests_list = List.append (t1_int::t2_int::t3_int::[]) list_int256
+let int256_tests = "int256_tests" >::: [] (* int256_tests_list *)
 
 (* The test to be called from Testsuite. *)
 let integer256_tests = "integer256_tests" >::: (uint256_tests::int256_tests::[])
