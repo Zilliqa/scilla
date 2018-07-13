@@ -271,7 +271,8 @@ module Int256 = struct
     Uint256.shift_right a shift
 
   (* For signed, logical and arithmetic right shifts are different. *)
-  let shift_right_logical = shift_right
+  let shift_right_logical a shift =
+    raise (Failure "Int256: shift_right_logical not implemented")
 
   let logand a b =
     Uint256.logand a b
