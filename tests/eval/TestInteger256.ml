@@ -8,7 +8,7 @@ module Uint256_Emu = struct
    type t = big_int
 
   let zero = zero_big_int
-  let one = add_int_big_int 1 zero
+  let one = unit_big_int
   let max_int = big_int_of_string uint256_max_str
   let min_int = zero
 
@@ -44,7 +44,7 @@ module Int256_Emu = struct
    type t = big_int
 
   let zero = zero_big_int
-  let one = add_int_big_int 1 zero
+  let one = unit_big_int
   let max_int = big_int_of_string int256_max_str
   let min_int = big_int_of_string int256_min_str
 
@@ -70,11 +70,46 @@ module Int256_Emu = struct
   let mul a b =
     mod_signed (mult_big_int a b)
 
+  let isneg a =
+    sign_big_int a = -1
+
+  let divrem x y =
+    (* We want the OCaml standard for reminders, where
+     * reminder has the sign of the dividend. Big_int follows
+     * the convention that reminder is always positive.
+     *)
+    let divrem_impl x y =
+      if isneg x then
+        let x' = minus_big_int x in
+        if isneg y then
+          let y' = minus_big_int y in
+          let (q, r) = quomod_big_int x' y' in
+          (q, minus_big_int r)
+        else
+          let (q, r) = quomod_big_int x' y in
+          (minus_big_int q, minus_big_int r)
+      else
+        if isneg y then
+          let y' = minus_big_int y in
+          let (q, r) = quomod_big_int x y' in
+          (minus_big_int q, r)
+        else
+          quomod_big_int x y
+    in
+    (* A wrapper to ensure that divrem computation is valid. *)
+    let (q, r) = divrem_impl x y in
+    if compare_big_int x (add_big_int (mult_big_int y q) r) <> 0 then
+      raise (Failure "div/rem fail: N != D*q + r")
+    else
+      (q, r)
+
   let div a b =
-    div_big_int a b
+    let (q, _) = divrem a b in
+      q
 
   let rem a b =
-    mod_big_int a b
+    let (_, r) = divrem a b in
+      r
 
   let compare a b =
     compare_big_int a b
@@ -158,6 +193,21 @@ let binary_inputs_int =
     ("0", "-1");
     ("-2", "-3");
     ("-4", "-2");
+    ("-41", "21");
+    (* (0, max_int) *)
+    ("0", int256_max_str);
+    (* (max_int, max_int) *)
+    (Int256.to_string Int256.max_int, int256_max_str);
+    (* (max_int, min_int) *)
+    (Int256.to_string Int256.max_int, int256_min_str);
+    (* (min_int, min_int) *)
+    (Int256.to_string Int256.min_int, int256_min_str);
+    (* (min_int/4, max_int/5) *)
+    (Int256.to_string (Int256.div Int256.min_int (Int256.of_string "4")), 
+      Int256.to_string (Int256.div Int256.max_int (Int256.of_string "5")));
+    (* (min_int/411112256444332224444, max_int/566633221114444777777777777) *)
+    (Int256.to_string (Int256.div Int256.min_int (Int256.of_string "411112256444332224444")), 
+      Int256.to_string (Int256.div Int256.max_int (Int256.of_string "566633221114444777777777777")));
   ]
 
 module IntTester (IR1 : IntRep) (IR2 : IntRep) = struct
@@ -229,7 +279,7 @@ let uint256_tests = "uint256_tests" >::: uint256_tests_list
 module Int256Tester = IntTester (Int256) (Int256_Emu)
 let list_int256 = (Int256Tester.binary_tests binary_inputs_int)
 let int256_tests_list = List.append (t1_int::t2_int::t3_int::[]) list_int256
-let int256_tests = "int256_tests" >::: [] (* int256_tests_list *)
+let int256_tests = "int256_tests" >::: int256_tests_list
 
 (* The test to be called from Testsuite. *)
 let integer256_tests = "integer256_tests" >::: (uint256_tests::int256_tests::[])

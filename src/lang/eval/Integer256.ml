@@ -313,10 +313,11 @@ module Int256 = struct
       let x' = neg x in
       if isneg y then
         let y' = neg y in
-        Uint256.divrem x' y'
+        let (q, r) = Uint256.divrem x' y' in
+        (q, neg r)
       else
         let (q, r) = Uint256.divrem x' y in
-        (neg q, r)
+        (neg q, neg r)
     else
       if isneg y then
         let y' = neg y in
