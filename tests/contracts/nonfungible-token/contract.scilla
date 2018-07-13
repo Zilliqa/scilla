@@ -2,6 +2,8 @@
 (* Warning: This is a basic implementation. Do not use in production.     *)
 (* ASSUMPTIONS: Tokens are issued in running sequence                     *)
 (* @dev: See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md *)
+(* @dev: The standard for Nonfungible-token sets interface standards      *)
+(* @dev: It is up to the developer to design the implementation details   *)
 
 (***************************************************)
 (*               Associated library                *)
@@ -20,6 +22,8 @@ let code_transaction_not_authorized = Uint32 1
 let code_token_not_issued = Uint32 2
 let code_unexpected_behavior = Uint32 3
 let code_same_address_transaction = Uint32 4
+
+
 (***************************************************)
 (*             The contract definition             *)
 (***************************************************)
@@ -31,8 +35,10 @@ contract Token
  totalSupply : Uint128)
 
 (* Mutable fields *)
+
 field nextID: Uint128 = Uint128 5
 field ownerOf: Map Uint128 Address = Emp Uint128 Address
+(* Datastructure to keep track of token counts *)
 field ownedTokenCount: Map Address Uint128 = Emp Address Uint128
 (* can only be called by current owner. *)
 (*Resets after every transfer of ownership *)
@@ -41,15 +47,17 @@ field approvalMap : Map Uint128 Address = Emp Uint128 Address
 
 (* Transition *)
 
+(* @notice: Returns the totalSupply of tokens            *)
 transition totalSupply ()
-   msg = {_tag: "Main"; 
+    msg = {_tag: "Main"; 
             _recipient: _sender; 
             _amount : Uint128 0; 
             totalSupply: totalSupply};
-   msgs = one_msg msg; 
-   send msgs
+    msgs = one_msg msg; 
+    send msgs
 end
 
+(* @notice: Returns the name of the token *)
 transition name ()
     msg = {_tag: "Main"; 
         _recipient: _sender;
@@ -58,6 +66,8 @@ transition name ()
     msgs = one_msg msg;
     send msgs
 end
+
+(* @notice: Returns the symbol of the token *)
 
 transition symbol ()
     msg = {_tag: "Main"; 
@@ -256,9 +266,9 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                                 new_otc2 = builtin put new_otc from new_num_from;
                                 ownedTokenCount := new_otc2;
                                 msg = {_tag: "Main"; 
-                                _recipient: _sender;
-                                _amount : Uint128 0; 
-                                code: code_success};
+                                        _recipient: _sender;
+                                        _amount : Uint128 0; 
+                                        code: code_success};
                                 msgs = one_msg msg;
                                 send msgs
                             | None =>
@@ -294,9 +304,9 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                                 msgs = one_msg msg;
                                 send msgs
                             | None =>
-                                (* statement should not reach here               *)
-                                (* The `from` must have token count, unless the  *)
-                                (* preconditions above does not hold             *)
+                                (* statement should not reach here            *)
+                                (* The `from` address must have exisiting     *) 
+                                (* tokenCount                                 *)
                                 ownedTokenCount := new_otc;
                                 msg = {_tag: "Main"; 
                                 _recipient: _sender;
@@ -320,7 +330,8 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                                 new_am = builtin remove am tokenId;
                                 approvalMap := new_am;
                                 (* Approved user makes the transfer *)
-                                new_owner_of = builtin put tmp_owner_of tokenId to;
+                                new_owner_of = 
+                                        builtin put tmp_owner_of tokenId to;
                                 ownerOf := new_owner_of;
                                 msg = {_tag: "Main";
                                         _recipient: _sender; 
@@ -329,7 +340,7 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                                 msgs = one_msg msg;
                                 send msgs    
                             | False =>
-                            
+                                (* Sender has not been approved by tokenOwner *)             
                                 msg = {_tag: "Main"; 
                                         _recipient: _sender; 
                                         _amount : Uint128 0; 
@@ -338,6 +349,7 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                                 send msgs    
                             end
                         | None =>
+                            (* TokenOwner has not approved anyone *)
                             msg = {_tag: "Main"; 
                                     _recipient: _sender; 
                                     _amount : Uint128 0; 
@@ -369,6 +381,7 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
 end
 
 (* @notice Find the owner of an NFT *)
+(* @param: tokenId The tokenId of interest *)
 transition ownerOf (tokenId : Uint128)
     _owner_of <- ownerOf;
     current_owner = builtin get _owner_of tokenId;
@@ -382,6 +395,7 @@ transition ownerOf (tokenId : Uint128)
         send msgs    
         
     | None =>
+        (* Token is not issued *)
         msg = {_tag: "Main"; 
                 _recipient: _sender; 
                 _amount : Uint128 0; 
@@ -437,15 +451,21 @@ transition approve (approved : Address, tokenId: Uint128 )
         | None =>
             (*  Token is not issued*)
             msg = {_tag: "Main"; 
-                _recipient: _sender; 
-                _amount: Uint128 0; 
-                code: code_token_not_issued};
+                    _recipient: _sender; 
+                    _amount: Uint128 0; 
+                    code: code_token_not_issued};
             msgs = one_msg msg;
             send msgs
            
         end
     end 
 end
+
+(* @notice: This function allows a `_sender` to take ownership *)
+(*          if he has been approved by the original token owner *)
+(* @note: This function implementation-specific and not in ERC721 *)
+(* @dev: Returns error message if the `_sender` is not approved by *)
+(*      the original tokenOwner.                                  *)
 
 transition takeOwnership (tokenId : Uint128 )
     owner_of <- ownerOf;
@@ -496,12 +516,10 @@ transition takeOwnership (tokenId : Uint128 )
                         new_map = builtin put owner_of  tokenId _sender;
                         ownerOf := new_map;
 
-
-
                         msg = {_tag: "Main"; 
-                        _recipient: _sender;
-                        _amount : Uint128 0; 
-                        code: code_success};
+                            _recipient: _sender;
+                            _amount : Uint128 0; 
+                            code: code_success};
                         msgs = one_msg msg;
                         send msgs
                     | None =>
@@ -510,9 +528,9 @@ transition takeOwnership (tokenId : Uint128 )
                         (* preconditions above does not hold             *)
                         ownedTokenCount := new_otc;
                         msg = {_tag: "Main"; 
-                        _recipient: _sender;
-                        _amount : Uint128 0; 
-                        code: code_unexpected_behavior};
+                            _recipient: _sender;
+                            _amount : Uint128 0; 
+                            code: code_unexpected_behavior};
                         msgs = one_msg msg;
                         send msgs
                     end
@@ -526,6 +544,7 @@ transition takeOwnership (tokenId : Uint128 )
                     tmp2 = builtin get new_otc from;
                     match tmp2 with
                     | Some k => 
+                        
                         new_num_from = let one = Uint128 1 in
                                         builtin sub k one;
                         new_otc2 = builtin put new_otc from new_num_from;
@@ -578,7 +597,9 @@ transition takeOwnership (tokenId : Uint128 )
 end
 
 
-(* @notice Count all NFTs assigned to an owner *)
+(* @notice Count all NFTs assigned to an owner                          *)
+(* @dev if address cannot be found, this transition returns 0 instead of *)
+(*      error code                                                      *)
 transition balanceOf (addr: Address)
 
     otc <- ownedTokenCount;

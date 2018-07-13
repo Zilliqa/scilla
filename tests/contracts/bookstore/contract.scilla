@@ -1,4 +1,12 @@
-(* Associated Library *)
+(* Bookstore Contract *)
+(* This example contract demonstrates how a CRUD app can be built. *)
+(* Access controls logic is delibrately left out for simplicity. *)
+(* In production deployments, you will want to implement proper access *)
+(* control logic in your smart contract *)
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
 library BookStore
 
 let one_msg =
@@ -14,10 +22,13 @@ let code_not_authorized = Uint32 3
 let code_invalid_params = Uint32 4
 
 
-(* Contract Definition *)
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
 contract BookStore
 (owner: Address)
 
+(* storeName can be immutable if it won't ever be changed             *)
 field storeName : String = "Bob's Bookstore"
 
 (* Membership data consists of three attributes: Address, Name and typeOfMember*)
@@ -36,9 +47,10 @@ field lastSKU: Uint32 = Uint32 100
 field bookInventory: Map Uint32 (Map Uint32 String) 
                         = Emp Uint32 (Map Uint32 String)
 
-(* transitions *)
+(* ======== transitions ===============*)
 
 
+(* @notice: Returns store name of the Bookstore  *)
 transition getStoreName()
     res <- storeName;
     msg = {_tag: "Main"; _recipient: _sender; _amount: Uint128 0; msg: res};
@@ -63,8 +75,11 @@ transition addMember(name: String, addr: Address, memberType: Uint32)
                         builtin lt memberType three;
         match valid_type with
         | True =>
+            (* Adds new members with the memberType *)
             mems <- members;
+            (* First build the pair ADT *)
             p = Pair {String Uint32} name memberType;
+            (* Add the pair created to the map, with addr as the key *)
             add_mem = builtin put mems addr p;
             members:= add_mem;
 
@@ -75,6 +90,7 @@ transition addMember(name: String, addr: Address, memberType: Uint32)
             msgs = one_msg msg;
             send msgs 
         | False =>
+            (* Code for the membership type is invalid *)
             msg = {_tag: "Main";
                     _recipient: _sender;
                     _amount: Uint128 0;
@@ -83,6 +99,7 @@ transition addMember(name: String, addr: Address, memberType: Uint32)
             send msgs
         end
     | False =>
+        (* Unauthorized transaction *)
         msg = {_tag: "Main";
                 _recipient: _sender;
                 _amount: Uint128 0;
@@ -92,9 +109,18 @@ transition addMember(name: String, addr: Address, memberType: Uint32)
     end
 end
 
+(* @notice: Allows a `_sender` to add a book to the bookstore *)
+(* @dev   : Access controls are omitted for brevity. In production contracts, *)
+(*          you will want to implement proper access controls to allow only *)
+(*          an owner or member to add a book. *)
+(* @param: bookName : title of the book *)
+(* @param: author:     author of the book *)
+
 transition addBook(bookname: String, author: String)
 
     (* @dev: Preconditions can be set to allow only members to add a book *)
+    (* @dev: Access controls logic omitted for brevity *)
+
     books <- bookInventory;
     last_sku_id <- lastSKU;
     new_sku_id = let one = Uint32 1 in builtin add last_sku_id one;
@@ -119,9 +145,15 @@ transition addBook(bookname: String, author: String)
     send msgs 
 end
 
+(* @notice: Allows a `_sender` to remove a book from the bookstore *)
+(* @dev   : Access controls are omitted for brevity. In production contracts, *)
+(*          you will want to implement proper access controls to allow only *)
+(*          an owner or member to remove a book. *)
+
 transition removeBook(sku_id: Uint32)
     (* @dev: Preconditions can be set to allow only members to remove a book *)
-    
+    (* @dev: Access controls logic omitted for brevity *)
+
     (* preconditions  *)
     books <- bookInventory;
     exist = builtin contains books sku_id;
@@ -146,8 +178,14 @@ transition removeBook(sku_id: Uint32)
     end
 end
 
+(* @notice: Allows a `_sender` to remove a book from the bookstore *)
+(* @dev   : Access controls are omitted for brevity. In production contracts, *)
+(*          you will want to implement proper access controls to allow only *)
+(*          an owner or member to remove a book. *)
+
 transition updateBook(sku_id: Uint32, bookname: String, author: String)
     (* @dev: Preconditions can be set to allow only members to update a book *)
+    (* @dev: Access controls omitted for brevity *)
    
     (* preconditions  *)
     books <- bookInventory;
