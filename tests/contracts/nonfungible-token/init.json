@@ -1,0 +1,27 @@
+[
+    {
+        "vname" : "owner",
+        "type" : "Address", 
+        "value" : "0x1234567890123456789012345678901234567890"
+    },
+    {
+        "vname" : "totalSupply",
+        "type" : "Uint128",
+        "value" : "1337"
+    },
+    {
+        "vname" : "name",
+        "type" : "String", 
+        "value" : "Zilliqa Monster Hunting"
+    },
+    {
+        "vname" : "symbol",
+        "type" : "String",
+        "value" : "ZILMON"
+    },
+    {
+        "vname": "_creation_block",
+        "type" : "BNum",
+        "value" : "1"
+    }
+]

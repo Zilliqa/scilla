@@ -20,7 +20,6 @@ let set_hello_code = Int32 2
 
 contract HelloWorld
 (owner: Address)
-
 field welcome_msg : String = ""
 
 transition setHello (msg : String)

@@ -115,7 +115,8 @@ let build_misc_tests bindir testsdir pcli =
         let args = ["-init"; tests_dir_file testsdir test_ctxt "init_bad1.json";
                     "-libdir"; "src" ^ sep ^ "stdlib";
                     "-i"; tests_dir_file testsdir test_ctxt "contract.scilla";
-                    "-o"; output_file test_ctxt "init_bad2_output.json";
+                    "
+                    o"; output_file test_ctxt "init_bad2_output.json";
                     "-iblockchain"; tests_dir_file testsdir test_ctxt "blockchain_1.json"]
         in
         (if (pcli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));
@@ -139,9 +140,12 @@ let add_tests bindir testsdir pcli =
     let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests bindir testsdir pcli "helloWorld" fail_code 4 8) in
     let auctiontests = "auction" >:::(build_contract_tests bindir testsdir pcli "auction" succ_code 1 8) in
     let mappairtests = "mappair" >:::(build_contract_tests bindir testsdir pcli "mappair" succ_code 1 2) in
+    let bookstoretests = "bookstore" >:::(build_contract_tests bindir testsdir pcli "bookstore" succ_code 1 8) in
+    let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests bindir
+    testsdir pcli "nonfungible-token" succ_code 1 19) in
 
     let fungibletokentests = "fungible-token" >:::(build_contract_tests bindir
     testsdir pcli "fungible-token" succ_code 0 8) in
     let misc_tests = "misc_tests" >::: build_misc_tests bindir testsdir pcli in
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests;
-                             misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;auctiontests]
+                             misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;auctiontests;                             bookstoretests;nonfungibletokentests]

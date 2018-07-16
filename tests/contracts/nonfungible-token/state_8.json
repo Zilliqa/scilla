@@ -1,0 +1,12 @@
+[
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    { "vname": "nextID", "type": "Uint128", "value": "6" },
+    {
+      "vname": "ownerOf",
+      "type": "Map (Uint128) (Address)",
+      "value": [
+        { "key": "5", "val": "0x1234567890123456789012345678901234567891" }
+      ]
+    }
+  ]
+

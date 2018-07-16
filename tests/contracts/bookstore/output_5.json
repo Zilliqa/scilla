@@ -1,0 +1,32 @@
+{
+  "message": {
+    "_tag": "Main",
+    "_amount": "0",
+    "_accepted": "false",
+    "_recipient": "0x1234567890123456789012345678901234567890",
+    "params": [ { "vname": "code", "type": "Uint32", "value": "0" } ]
+  },
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "bookInventory",
+      "type": "Map (Uint32) (Pair (String) (String))",
+      "value": []
+    },
+    { "vname": "lastBookID", "type": "Uint32", "value": "101" },
+    {
+      "vname": "members",
+      "type": "Map (Address) (Pair (String) (Uint32))",
+      "value": [
+        {
+          "key": "0x1234567890123456789012345678901234567892",
+          "val": {
+            "constructor": "Pair",
+            "argtypes": [ "String", "Uint32" ],
+            "arguments": [ "Bob", "2" ]
+          }
+        }
+      ]
+    }
+  ]
+}

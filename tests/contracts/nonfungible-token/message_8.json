@@ -1,0 +1,12 @@
+{
+    "_tag": "ownerOf",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678901234567811",
+    "params": [
+        {
+            "vname" : "tokenId",
+            "type": "Uint128",
+            "value" : "9"
+        }
+   ]
+}
