@@ -1,10 +1,15 @@
 [
   { "vname": "_balance", "type": "Uint128", "value": "0" },
-  { "vname": "lastID", "type": "Uint32", "value": "2" },
+  { "vname": "storeName", "type": "String", "value": "Bob's Bookstore" },
   {
     "vname": "members",
-    "type": "Map (Uint32) (String)",
-    "value": [ { "key": "1", "val": "Alice" } ]
+    "type": "Map (Address) (Pair (String) (Uint32))",
+    "value": []
   },
-  { "vname": "storeName", "type": "String", "value": "Bob's Bookstore" }
+  { "vname": "lastBookID", "type": "Uint32", "value": "100" },
+  {
+    "vname": "bookInventory",
+    "type": "Map (Uint32) (Pair (String) (String))",
+    "value": []
+  }
 ]

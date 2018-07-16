@@ -4,36 +4,38 @@
     "_amount": "0",
     "_accepted": "false",
     "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [ { "vname": "msg", "type": "Uint32", "value": "102" } ]
+    "params": [ { "vname": "code", "type": "Uint32", "value": "0" } ]
   },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    { "vname": "lastSKU", "type": "Uint32", "value": "102" },
+    { "vname": "lastBookID", "type": "Uint32", "value": "101" },
     {
       "vname": "bookInventory",
-      "type": "Map (Uint32) (Map (Uint32) (String))",
+      "type": "Map (Uint32) (Pair (String) (String))",
       "value": [
         {
-          "key": "102",
-          "val": [
-            { "key": "2", "val": "George Orwell" },
-            { "key": "1", "val": "1984" }
-          ]
-        },
-        {
-          "key": "100",
-          "val": [
-            { "key": "2", "val": "JKRowling" },
-            { "key": "1", "val": "Harry Potter" }
-          ]
+          "key": "101",
+          "val": {
+            "constructor": "Pair",
+            "argtypes": [ "String", "String" ],
+            "arguments": [ "1984", "George Orwell" ]
+          }
         }
       ]
     },
-    { "vname": "lastID", "type": "Uint32", "value": "2" },
     {
       "vname": "members",
-      "type": "Map (Uint32) (String)",
-      "value": [ { "key": "1", "val": "Alice" } ]
+      "type": "Map (Address) (Pair (String) (Uint32))",
+      "value": [
+        {
+          "key": "0x1234567890123456789012345678901234567892",
+          "val": {
+            "constructor": "Pair",
+            "argtypes": [ "String", "Uint32" ],
+            "arguments": [ "Bob", "2" ]
+          }
+        }
+      ]
     },
     { "vname": "storeName", "type": "String", "value": "Bob's Bookstore" }
   ]

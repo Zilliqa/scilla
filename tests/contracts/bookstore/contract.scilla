@@ -41,11 +41,12 @@ field storeName : String = "Bob's Bookstore"
 
 field members: Map Address (Pair (String) (Uint32))
                 = Emp Address (Pair (String) (Uint32))
-(* lastID and lastSKU is the last ID issued *)
-field lastID: Uint32 = Uint32 1
-field lastSKU: Uint32 = Uint32 100
-field bookInventory: Map Uint32 (Map Uint32 String) 
-                        = Emp Uint32 (Map Uint32 String)
+(* lastBookID: last book ID issued *)
+field lastBookID: Uint32 = Uint32 100
+
+field bookInventory: Map Uint32 (Pair (String) (String))
+                    = Emp Uint32 (Pair (String) (String))
+
 
 (* ======== transitions ===============*)
 
@@ -65,11 +66,11 @@ end
 
 transition addMember(name: String, addr: Address, memberType: Uint32)
 
+    (* Access control: Checking if sender is the owner of the Contract *)
     is_authorized = builtin eq _sender owner;
     match is_authorized with
     | True => 
         (* Only the owner can add member *)
-        
         (* Check if membership type is valid. *)
         valid_type = let three = Uint32 3 in
                         builtin lt memberType three;
@@ -78,7 +79,7 @@ transition addMember(name: String, addr: Address, memberType: Uint32)
             (* Adds new members with the memberType *)
             mems <- members;
             (* First build the pair ADT *)
-            p = Pair {String Uint32} name memberType;
+            p = Pair {(String) (Uint32)} name memberType;
             (* Add the pair created to the map, with addr as the key *)
             add_mem = builtin put mems addr p;
             members:= add_mem;
@@ -116,30 +117,29 @@ end
 (* @param: bookName : title of the book *)
 (* @param: author:     author of the book *)
 
-transition addBook(bookname: String, author: String)
+transition addBook(book_title: String, author: String)
 
     (* @dev: Preconditions can be set to allow only members to add a book *)
     (* @dev: Access controls logic omitted for brevity *)
 
     books <- bookInventory;
-    last_sku_id <- lastSKU;
-    new_sku_id = let one = Uint32 1 in builtin add last_sku_id one;
+    last_book_id <- lastBookID;
+    new_book_id = let one = Uint32 1 in builtin add last_book_id one;
 
-    (* constructs book model  *)
-    model_book = Emp Uint32 String;
-    bookname_added = let one = Uint32 1 in builtin put model_book one bookname;
-    author_added = let two = Uint32 2 in builtin put bookname_added two author;
-
-    add_to_inventory = builtin put books new_sku_id author_added;
+    (* Creating a new Book Model *)
+    (* A new book model is a Pair of book_title and author *)
+    new_book = Pair {(String) (String)} book_title author;
+    (* Add the new book to the book_inventory Map, with BookID as the key*)
+    add_to_inventory = builtin put books new_book_id new_book;
 
     (* Change mutable fields once everything has been completed. *)
     bookInventory := add_to_inventory; 
-    lastSKU := new_sku_id; 
+    lastBookID := new_book_id; 
 
     msg = {_tag: "Main"; 
             _recipient: _sender; 
             _amount: Uint128 0; 
-            msg: new_sku_id};
+            code: code_success};
 
     msgs = one_msg msg;
     send msgs 
@@ -150,13 +150,13 @@ end
 (*          you will want to implement proper access controls to allow only *)
 (*          an owner or member to remove a book. *)
 
-transition removeBook(sku_id: Uint32)
+transition removeBook(book_id: Uint32)
     (* @dev: Preconditions can be set to allow only members to remove a book *)
     (* @dev: Access controls logic omitted for brevity *)
 
     (* preconditions  *)
     books <- bookInventory;
-    exist = builtin contains books sku_id;
+    exist = builtin contains books book_id;
     match exist with
     | False =>
         msg = {_tag: "Main"; 
@@ -166,13 +166,13 @@ transition removeBook(sku_id: Uint32)
         msgs = one_msg msg;
         send msgs
     | True =>
-        removed = builtin remove books sku_id;
+        removed = builtin remove books book_id;
         bookInventory := removed;
 
         msg = {_tag: "Main"; 
             _recipient: _sender; 
             _amount: Uint128 0; 
-            code: code_book_found};
+            code: code_success};
         msgs = one_msg msg;
         send msgs
     end
@@ -183,15 +183,16 @@ end
 (*          you will want to implement proper access controls to allow only *)
 (*          an owner or member to remove a book. *)
 
-transition updateBook(sku_id: Uint32, bookname: String, author: String)
+transition updateBook(book_id: Uint32, book_title: String, author: String)
     (* @dev: Preconditions can be set to allow only members to update a book *)
     (* @dev: Access controls omitted for brevity *)
    
     (* preconditions  *)
     books <- bookInventory;
-    exist = builtin contains books sku_id;
+    exist = builtin contains books book_id;
     match exist with
     | False =>
+        (* Book ID is not found in the records. *)
         msg = {_tag: "Main"; 
                 _recipient: _sender; 
                 _amount: Uint128 0; 
@@ -200,15 +201,14 @@ transition updateBook(sku_id: Uint32, bookname: String, author: String)
         send msgs
     | True =>
         (* constructs book model  *)
-        model_book = Emp Uint32 String;
-        bookname_added = 
-            let one = Uint32 1 in builtin put model_book one bookname;
-        author_added = 
-            let two = Uint32 2 in builtin put bookname_added two author;
+        (* Creating a new Book Model *)
+        (* A new book model is a Pair of book_title and author *)
+        new_book = Pair {String String} book_title author;
+        (* Add the new book to the book_inventory Map, with BookID as the key*)
+        
+        add_to_inventory = builtin put books book_id new_book;
 
-        add_to_inventory = builtin put books sku_id author_added;
-
-        (* Change mutable fields once everything has been completed. *)
+        (* Update the state of book inventory *)
         bookInventory := add_to_inventory; 
 
         msg = {_tag: "Main"; 
