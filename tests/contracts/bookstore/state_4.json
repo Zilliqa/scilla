@@ -14,7 +14,6 @@
         }
       ]
     },
-    { "vname": "storeName", "type": "String", "value": "Bob's Bookstore" },
     { "vname": "lastBookID", "type": "Uint32", "value": "100" },
     {
       "vname": "bookInventory",

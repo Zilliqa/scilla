@@ -1,6 +1,5 @@
 [
   { "vname": "_balance", "type": "Uint128", "value": "0" },
-  { "vname": "storeName", "type": "String", "value": "Bob's Bookstore" },
   {
     "vname": "members",
     "type": "Map (Address) (Pair (String) (Uint32))",

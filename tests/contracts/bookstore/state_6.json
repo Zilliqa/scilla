@@ -28,6 +28,5 @@
         }
       }
     ]
-  },
-  { "vname": "storeName", "type": "String", "value": "Bob's Bookstore" }
+  }
 ]
