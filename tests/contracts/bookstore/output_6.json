@@ -16,7 +16,7 @@
           "key": "101",
           "val": {
             "constructor": "Pair",
-            "argtypes": [ "String (String)" ],
+            "argtypes": [ "String", "String" ],
             "arguments": [ "Animal Farm", "George Orwell" ]
           }
         }

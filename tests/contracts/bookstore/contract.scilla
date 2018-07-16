@@ -219,7 +219,7 @@ transition updateBook(book_id: Uint32, book_title: String, author: String)
         (* constructs book model  *)
         (* Creating a new Book Model *)
         (* A new book model is a Pair of book_title and author *)
-        new_book = Pair {String String} book_title author;
+        new_book = Pair {(String) (String)} book_title author;
         (* Add the new book to the book_inventory Map, with BookID as the key*)
         
         add_to_inventory = builtin put books book_id new_book;
