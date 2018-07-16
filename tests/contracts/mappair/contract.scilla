@@ -1,4 +1,4 @@
-import ListUtils PairUtils
+import ListUtils PairUtils NatUtils
 
 library Test
 
@@ -33,6 +33,8 @@ field gpair : Pair (List(Int64)) (Option (Bool)) =
     let el = Nil {Int64} in
     let n = None {Bool} in
     Pair {(List(Int64)) (Option(Bool))} el n
+
+field gnat : Nat = Zero
 
 transition testMapPair ()
   is_owner = builtin eq owner _sender;
@@ -71,6 +73,16 @@ transition addNumToList(num: Int64)
   gpair := new_p;
   len = let my_list_length = @list_length Int64 in my_list_length l2;
   msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; listLength : len};
+  msgs = one_msg msg;
+  send msgs
+end
+
+transition incNat ()
+  n <- gnat;
+  m = Succ n;
+  gnat := m;
+  i = nat_to_int m;
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; nat : i};
   msgs = one_msg msg;
   send msgs
 end

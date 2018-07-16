@@ -38,6 +38,11 @@
       }
     },
     {
+      "vname": "gnat",
+      "type": "Nat ",
+      "value": { "constructor": "Zero", "argtypes": [], "arguments": [] }
+    },
+    {
       "vname": "gmap",
       "type": "Map (Address) (Pair (Int32) (Int32))",
       "value": [

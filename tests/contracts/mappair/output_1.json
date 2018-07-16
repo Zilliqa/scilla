@@ -27,6 +27,11 @@
           { "constructor": "None", "argtypes": [ "Bool " ], "arguments": [] }
         ]
       }
+    },
+    {
+      "vname": "gnat",
+      "type": "Nat ",
+      "value": { "constructor": "Zero", "argtypes": [], "arguments": [] }
     }
   ]
 }

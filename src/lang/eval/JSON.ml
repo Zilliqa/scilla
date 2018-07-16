@@ -142,7 +142,13 @@ let rec json_to_adtargs cname tlist ajs =
     (* We know that the "rest of the list" is an ADT. *)
     let lit2 = read_adt_json dt.tname j2 in
       ADTValue (cname, tlist, (lit1::lit2::[]))
-  | _ -> (* TODO: Support Lists and Nats *)
+  | "Zero" ->
+    ADTValue (cname, [], [])
+  | "Succ" ->
+    let j = List.nth_exn ajs 0 in (* successor of *)
+    let lit = read_adt_json dt.tname j in
+      ADTValue (cname, [], lit::[])
+  | _ ->
     raise (Invalid_json ("JSON parsing: Unsupported ADT type"))
 
 and read_adt_json name j =

@@ -1,3 +1,5 @@
+library NatUtils
+
 (* Nat -> Option Nat *)
 let nat_prev = fun (n: Nat) =>
   match n with
