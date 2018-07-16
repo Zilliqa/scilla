@@ -90,24 +90,6 @@ let build_prim_lit_exn t v =
     | _ ->
       raise (Invalid_json ("JSON parsing: Invalid type for PrimType literal construction"))
 
-let json_to_adtargs cname tlist ajs =
-  let open Basic.Util in
-  match cname with
-  | "Some" -> 
-    let j = List.nth_exn ajs 0 in
-    let lit = build_prim_lit_exn (List.nth_exn tlist 0) (to_string j) in
-      ADTValue (cname, tlist, (lit::[]))
-  | "None" -> ADTValue (cname, tlist, [])
-  | "True" | "False" -> ADTValue (cname, [], []) 
-  | "Pair" ->
-    let j1 = List.nth_exn ajs 0 in
-    let lit1 = build_prim_lit_exn (List.nth_exn tlist 0) (to_string j1) in
-    let j2 = List.nth_exn ajs 1 in
-    let lit2 = build_prim_lit_exn (List.nth_exn tlist 1) (to_string j2) in
-      ADTValue (cname, tlist, (lit1::lit2::[]))
-  | _ -> (* TODO: Support Lists and Nats *)
-    raise (Invalid_json ("JSON parsing: Unsupported ADT type"))
-
 let verify_adt_typs_exn name tlist1 adt =
   match adt with
   | ADTValue (_, tlist2, _) ->
@@ -125,7 +107,45 @@ let rec json_to_adttyps tjs =
       t :: trem
   | _ -> []
 
-let rec read_adt_json name j =
+let rec json_to_adtargs cname tlist ajs =
+  let open Basic.Util in
+  let dt =
+  (match DataTypeDictionary.lookup_constructor cname with
+  | Error emsg ->
+    raise (Invalid_json(emsg))
+  | Ok (r, _) ->
+    r
+  ) in
+  match cname with
+  | "Some" -> 
+    let j = List.nth_exn ajs 0 in
+    let t = List.nth_exn tlist 0 in
+    let lit = json_to_lit t j in
+      ADTValue (cname, tlist, (lit::[]))
+  | "None" -> ADTValue (cname, tlist, [])
+  | "True" | "False" -> ADTValue (cname, [], []) 
+  | "Pair" ->
+    let j1 = List.nth_exn ajs 0 in
+    let t1 = List.nth_exn tlist 0 in
+    let lit1 = json_to_lit t1 j1 in
+    let j2 = List.nth_exn ajs 1 in
+    let t2 = List.nth_exn tlist 1 in
+    let lit2 = json_to_lit t2 j2 in
+      ADTValue (cname, tlist, (lit1::lit2::[]))
+  | "Nil" ->
+    ADTValue (cname, tlist, [])
+  | "Cons" ->
+    let j1 = List.nth_exn ajs 0 in (* first element in the list *)
+    let j2 = List.nth_exn ajs 1 in (* rest of the list *)
+    let t = List.nth_exn tlist 0 in (* type of element of list *)
+    let lit1 = json_to_lit t j1 in
+    (* We know that the "rest of the list" is an ADT. *)
+    let lit2 = read_adt_json dt.tname j2 in
+      ADTValue (cname, tlist, (lit1::lit2::[]))
+  | _ -> (* TODO: Support Lists and Nats *)
+    raise (Invalid_json ("JSON parsing: Unsupported ADT type"))
+
+and read_adt_json name j =
   let open Basic.Util in
   let dt =
   (match DataTypeDictionary.lookup_name name with
@@ -191,25 +211,27 @@ and mapvalues_from_json kt vt l =
           (keylit, vallit) :: vlist
   | [] -> []
 
+and json_to_lit t v =
+  let open Basic.Util in
+  match t with
+  | MapType (kt, vt) ->
+    let vl = read_map_json kt vt v in
+      vl
+  | ADT (name, tlist) ->
+    let vl = read_adt_json name v in
+    verify_adt_typs_exn name tlist vl;
+      vl
+  | _ ->  
+    let tv = build_prim_lit_exn t (to_string v) in
+      tv
+
 let jobj_to_statevar json =
   let open Basic.Util in
   let n = member_exn "vname" json |> to_string in
   let tstring = member_exn "type" json |> to_string in
   let t = parse_typ_exn tstring in
-  match t with
-  | MapType (kt, vt) ->
-    let v = member "value" json in
-    let vl = read_map_json kt vt v in
-      (n, vl)
-  | ADT (name, tlist) ->
-    let v = member_exn "value" json in
-    let vl = read_adt_json name v in
-    verify_adt_typs_exn name tlist vl;
-      (n, vl)
-  | _ ->  
-    let v = member_exn "value" json |> to_string in
-    let tv = build_prim_lit_exn t v in
-      (n, tv)
+  let v = member_exn "value" json in
+    (n, json_to_lit t v)
 
 let rec typ_to_string t = 
 match t with
