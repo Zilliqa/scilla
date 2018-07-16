@@ -1,6 +1,13 @@
 (* Bookstore Contract *)
 (* This example contract demonstrates how a CRUD app can be built. *)
-(* Access controls logic is delibrately left out for simplicity. *)
+
+(* @note: Bookstore allows members to manage a shared repository of books. *)
+(* Bookstore has an owner, who can add members in. Members will be able *)
+(* to add, remove and update books in the store. Access controls logic is *)
+(* delibrately left out for brevity. But if you need examples, you can  *)
+(* refer to `addMember` transition to see how access controls can be implemented. *)
+
+
 (* In production deployments, you will want to implement proper access *)
 (* control logic in your smart contract *)
 
