@@ -24,3 +24,5 @@ The member is then stored in a data structure called `Map`, which indexes a list
 4. Add Book: `_sender` successfully add book
 5. Remove Book: `_sender` successfully removes book
 6. Update Book: `_sender` successfully updates book 
+7. Remove Book: Unsuccessful as book does not exist
+8. Update Book: Unsuccessful as book does not exist
