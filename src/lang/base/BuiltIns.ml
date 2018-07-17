@@ -618,9 +618,11 @@ module BuiltInDictionary = struct
     (* Hashes *)
     ("eq", ["Hash"; "Hash"], Hashing.eq);
     ("dist", ["Hash"; "Hash"], Hashing.dist);
+    (* TODO: provide elaborator, check well-formedness *)
     ("sha256hash", ["Any"], Hashing.sha256hash);
 
     (* Maps *)
+    (* TODO: provide elaborator, check well-formedness *)
     ("contains", ["Map"; "Any"], Maps.contains);
     ("put", ["Map"; "Any"; "Any"], Maps.put);
     ("get", ["Map"; "Any"], Maps.get);
