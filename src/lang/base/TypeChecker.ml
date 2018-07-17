@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2018 - present , Inc.
+ * Copyright (c) 2018 - present. 
+ * Zilliqa, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD style license found in the
