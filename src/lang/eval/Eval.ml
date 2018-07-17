@@ -135,11 +135,10 @@ let rec exp_eval e env = match e with
           ~f:(fun z (i, w) -> Env.bind z (get_id i) w) in
       exp_eval e_branch env'      
   | Builtin (i, actuals) ->
-      let opname = get_id i in
       let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
       let%bind arg_literals = vals_to_literals args in
       let%bind tps = mapM arg_literals ~f:literal_type in
-      let%bind (_, ret_typ, op) = BuiltInDictionary.find_builtin_op opname tps in
+      let%bind (_, ret_typ, op) = BuiltInDictionary.find_builtin_op i tps in
       let%bind res = op arg_literals ret_typ in 
       pure (Env.ValLit res, env)
   | Fixpoint (f, t, body) ->

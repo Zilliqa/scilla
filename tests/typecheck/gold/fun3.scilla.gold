@@ -1,2 +1,2 @@
 Failed execution:
-Cannot find built-in with name "add" and argument types [(PrimType Int32); (ADT Int54())].
+Cannot find built-in with name "add" and argument types [(PrimType Int32); (ADT Int54())] at location typecheck/fun3.scilla:2:21.

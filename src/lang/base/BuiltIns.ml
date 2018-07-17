@@ -827,7 +827,8 @@ module BuiltInDictionary = struct
 
 
   (* Dictionary lookup based on the operation name and type *)
-  let find_builtin_op opname argtypes =
+  let find_builtin_op op argtypes =
+    let opname = get_id op in
     let finder = (function (name, arity, optype, elab, exec) ->
         if name = opname && arity = List.length argtypes
         then
@@ -838,8 +839,8 @@ module BuiltInDictionary = struct
           pure (type_elab, res_type, exec)
         else fail @@ "Name or arity don't match") in
     let%bind (_, (type_elab, res_type, exec)) = tryM built_in_dict ~f:finder
-      ~msg:(sprintf "Cannot find built-in with name \"%s\" and argument types %s."
-              opname (pp_typ_list argtypes))
+      ~msg:(sprintf "Cannot find built-in with name \"%s\" and argument types %s at location %s."
+              opname (pp_typ_list argtypes) (get_loc op |> get_loc_str))
     in pure (type_elab, res_type, exec)
   
 end

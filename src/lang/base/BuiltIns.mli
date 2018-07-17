@@ -23,7 +23,7 @@ module BuiltInDictionary : sig
    * Executor for evaluating the operation      
    *)
   val find_builtin_op :
-    string -> typ list -> ((typ * typ * built_in_executor), string) result
+    loc ident -> typ list -> ((typ * typ * built_in_executor), string) result
 end
 
 (* The first parameter is a string type *)

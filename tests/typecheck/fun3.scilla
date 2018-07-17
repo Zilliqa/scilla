@@ -1,2 +1,2 @@
 fun (x : Int32) =>
-fun (y : Int54) => builtin add x y
+fun (y : Int54) =>  builtin add x y
