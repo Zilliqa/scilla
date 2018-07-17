@@ -28,20 +28,29 @@ let builtin_fail name ls =
   fail @@ sprintf "Cannot apply built-in %s to a list of arguments:%s."
     name (print_literal_list ls)
 
+
+
 module UsefulLiterals = struct
   let true_lit = ADTValue ("True", [], [])
   let false_lit = ADTValue ("False", [], [])
 
-  (* TODO: implement typing! *)
-  let some_lit l = ADTValue ("Some", [], [l])
+  let some_lit l =
+    let%bind t = literal_type l in
+    pure @@ ADTValue ("Some", [t], [l])
+
   let none_lit = ADTValue ("None", [], [])
 
   let to_Bool b = if b then true_lit else false_lit
 end
 
+
+
 (* String operations *)
 module String = struct
   open UsefulLiterals
+  open PrimTypes
+
+  (* let string_eq_type = FunType (string_typ, FunType (string_typ, )) *)
 
   let eq ls = match ls with
   | [StringLit x; StringLit y] ->
@@ -466,12 +475,13 @@ module Maps = struct
         pure @@ Map (tm, res)
     | _ -> builtin_fail "Map.remove" ls
 
+  (* Must take result type into the account *)
   let get ls = match ls with
     | [Map (tm, entries); key] ->
         let res = List.find entries ~f:(fun (k, v) -> k = key) in
-        pure (match res with
-            | None -> none_lit
-            | Some (_, v) -> some_lit v)
+        (match res with
+         | None -> pure @@ none_lit
+         | Some (_, v) -> some_lit v)
     | _ -> builtin_fail "Map.get" ls
 
   let to_list ls = match ls with
@@ -577,6 +587,10 @@ end
 
 module BuiltInDictionary = struct 
   type built_in_op_type = literal list -> (literal, string) result
+
+  type elaborator = literal list -> typ -> (typ, string) result
+  type executor = literal list -> (literal, string) result
+  type built_in_record = string * typ * elaborator * executor
 
   (* All built-in functions *)
       

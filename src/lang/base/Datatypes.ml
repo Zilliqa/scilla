@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2018 - present Zilliqa, Inc.
+ * Copyright (c) 2018 - present. 
+ * Zilliqa, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD style license found in the
@@ -10,6 +11,10 @@
 open Syntax
 open Core
 open MonadUtil
+
+(**********************************************************)
+(*                 Built-in Algebraic Data Types          *)
+(**********************************************************)
 
 (* A tagged constructor *)
 type constructor = {
@@ -110,7 +115,14 @@ module DataTypeDictionary = struct
     | None ->
       fail @@ sprintf "ADT %s not found" name
     | Some a ->
-      pure (a)
+        pure (a)
+
+  (* Some useful data type constructors *)
+  let bool_typ = ADT (t_bool.tname, [])
+  let nat_typ = ADT (t_nat.tname, [])
+  let option_typ t = ADT (t_option.tname, [t])
+  let list_typ t = ADT (t_option.tname, [t])
+  let pair_typ t s = ADT (t_option.tname, [t; s])
 
 end
 

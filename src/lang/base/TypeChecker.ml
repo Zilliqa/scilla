@@ -39,37 +39,3 @@ let rec get_type e tenv = match e with
 
   (* TODO: Implement other expressions *)
   | _ -> fail @@ "Failed to resolve the type"
-
-let literal_type l =
-  let open PrimTypes in 
-  match l with
-  | IntLit (32, _) -> pure int32_typ
-  | IntLit (64, _) -> pure int64_typ
-  | IntLit (128, _) -> pure int128_typ
-  | UintLit (32, _) -> pure uint32_typ
-  | UintLit (64, _) -> pure uint64_typ
-  | UintLit (128, _) -> pure uint128_typ
-  | IntLit(w, _) ->
-      fail @@ (sprintf "Wrong bit depth for integer: %i." w)
-  | UintLit(w, _) ->
-      fail @@ (sprintf "Wrong bit depth for unsigned integer: %i." w)
-  | StringLit _ -> pure string_typ
-  | BNum _ -> pure bnum_typ
-  | Address _ -> pure address_typ
-  | Sha256 _ -> pure hash_typ
-  | Msg _ -> pure msg_typ
-  | Map ((kt, vt), _) ->
-      if PrimTypes.is_prim_type kt
-      then pure (MapType (kt, vt))
-      else fail @@
-        (sprintf "Not a primitive map key tpye: %s." (pp_typ kt))        
-  | ADTValue (cname, ts, _) ->
-      let%bind (adt, _) = DataTypeDictionary.lookup_constructor cname in
-      let tparams = adt.targs in
-      let tname = adt.tname in
-      if not (List.length tparams = List.length ts)
-      then fail @@
-        sprintf "Wrong number of type parameters for ADT %s (%i) in constructor %s."
-          tname (List.length ts) cname
-      else
-        pure @@ ADT (tname, ts)

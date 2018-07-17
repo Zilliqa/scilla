@@ -59,3 +59,5 @@ end
 
 module PlainTypes : QualifiedTypes
 module MakeTEnv : MakeTEnvFunctor
+
+val literal_type : literal -> (typ, string) result
