@@ -296,6 +296,8 @@ let rec elab_tfun_with_args tf args = match tf, args with
       let tp' = subst_type_in_type n a tp in
       elab_tfun_with_args tp' args'
   | t, [] -> pure t
-  | _ -> fail @@ sprintf
+  | _ ->
+      let msg = sprintf
         "Cannot elaborate %s with type arguments %s." (pp_typ tf)
-        (pp_typ_list args)
+        (pp_typ_list args) in
+      fail msg

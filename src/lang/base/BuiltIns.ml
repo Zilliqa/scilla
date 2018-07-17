@@ -363,19 +363,32 @@ module Int = struct
         )
     | _ -> builtin_fail "Int.lt" ls
 
+  let mk_int_type w = match w with
+    | 32 -> pure int32_typ
+    | 64 -> pure int64_typ
+    | 128 -> pure int128_typ
+    | _ -> fail "Failed to convert" 
+
+  let to_int_arity = 1
+  let to_int_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (tvar "'B"))
+  let to_int_elab w t ts = match ts with
+    | [t] when is_int_type t || is_uint_type t ->
+        let%bind ityp = mk_int_type w in
+        elab_tfun_with_args to_int_type [t; ityp]
+    | _ -> fail "Failed to elaborate"
+  
   let to_int_helper ls w = match ls with
     | [UintLit (wx, x)] | [IntLit(wx, x)] ->
-      let lit = IntLit(int_of_string w, x) in
-      if validate_int_literal lit
-      then
-        pure (ADTValue ("Some", PrimType("Int"^w)::[], lit::[]))
-      else
-        pure (ADTValue ("None", PrimType("Int"^w)::[], []))
-    | _ -> builtin_fail ("Int.to_int"^w) ls
+        let lit = IntLit (w, x) in
+        let%bind ityp = mk_int_type w in
+        if validate_int_literal lit
+        then pure (ADTValue ("Some", [ityp], [lit]))
+        else pure (ADTValue ("None", [ityp], []))
+    | _ -> builtin_fail (sprintf "Int.to_int%i" w) ls
 
-  let to_int32 ls = to_int_helper ls "32"
-  let to_int64 ls = to_int_helper ls "64"
-  let to_int128 ls = to_int_helper ls "128"
+  let to_int32 ls _ = to_int_helper ls 32
+  let to_int64 ls _ = to_int_helper ls 64
+  let to_int128 ls _ = to_int_helper ls 128
 
 end
 
@@ -466,21 +479,41 @@ module Uint = struct
         )
     | _ -> builtin_fail "Uint.lt" ls
 
+  let mk_uint_type w = match w with
+    | 32 -> pure uint32_typ
+    | 64 -> pure uint64_typ
+    | 128 -> pure uint128_typ
+    | _ -> fail "Failed to convert" 
+
+  let to_uint_arity = 1
+  let to_uint_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (tvar "'B"))
+  let to_uint_elab w t ts = match ts with
+    | [t] when is_uint_type t || is_int_type t ->
+        let%bind ityp = mk_uint_type w in
+        elab_tfun_with_args to_uint_type [t; ityp]
+    | _ -> fail "Failed to elaborate"
+
   let to_uint_helper ls w = match ls with
     | [UintLit (wx, x)] | [IntLit(wx, x)] ->
-      let lit = UintLit(int_of_string w, x) in
-      if validate_int_literal lit
-      then
-        pure (ADTValue ("Some", PrimType("Uint"^w)::[], lit::[]))
-      else
-        pure (ADTValue ("None", PrimType("Uint"^w)::[], []))
-    | _ -> builtin_fail ("Uint.to_uint"^w) ls
+        let lit = UintLit (w, x) in
+        let%bind ityp = mk_uint_type w in
+        if validate_int_literal lit
+        then pure (ADTValue ("Some", [ityp], [lit]))
+        else pure (ADTValue ("None", [ityp], []))
+    | _ -> builtin_fail (sprintf "Uint.to_uint%i" w) ls
 
-  let to_uint32 ls = to_uint_helper ls "32"
-  let to_uint64 ls = to_uint_helper ls "64"
-  let to_uint128 ls = to_uint_helper ls "128"
+  let to_uint32 ls _ = to_uint_helper ls 32
+  let to_uint64 ls _ = to_uint_helper ls 64
+  let to_uint128 ls _ = to_uint_helper ls 128
 
-  let to_nat ls = match ls with
+  let to_nat_arity = 1
+  let to_nat_type = tfun_typ "'A" @@ (fun_typ (tvar "'A") nat_typ)
+  let to_nat_elab t ts = match ts with
+    | [t] when is_uint_type t ->
+        elab_tfun_with_args to_nat_type [t]
+    | _ -> fail "Failed to elaborate"
+
+  let to_nat ls _ = match ls with
   | [UintLit (wx, x)] ->
     (match wx with 
     | 32 -> 
@@ -776,10 +809,9 @@ module BuiltInDictionary = struct
     ("add", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.add);
     ("sub", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.sub);
     ("mul", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.mul);
-
-    (* ("to_int32", ["Any"], Int.to_int32);
-     * ("to_int64", ["Any"], Int.to_int64);
-     * ("to_int128", ["Any"], Int.to_int128); *)
+    ("to_int32", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 32, Int.to_int32);
+    ("to_int64", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 64, Int.to_int64);
+    ("to_int128", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 128, Int.to_int128);
 
     (* Unsigned integers *)
     ("eq", Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.eq);
@@ -787,12 +819,10 @@ module BuiltInDictionary = struct
     ("add", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.add);
     ("sub", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.sub);
     ("mul", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.mul);
-
-    (* 
-     * ("to_uint32", ["Any"], Uint.to_uint32);
-     * ("to_uint64", ["Any"], Uint.to_uint64);
-     * ("to_uint128", ["Any"], Uint.to_uint128); *)
-
+    ("to_uint32", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 32, Uint.to_uint32);
+    ("to_uint64", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 64, Uint.to_uint64);
+    ("to_uint128", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 128, Uint.to_uint128);
+    ("to_nat", Uint.to_nat_arity, Uint.to_nat_type, Uint.to_nat_elab, Uint.to_nat);
   ]
 
 
