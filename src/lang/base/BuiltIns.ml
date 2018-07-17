@@ -270,8 +270,22 @@ type int_type = IntT | UintT
 (* Integer operations *)
 module Int = struct
   open UsefulLiterals
+  open PrimTypes
+  open Datatypes.DataTypeDictionary
 
-  let eq ls = match ls with
+  let eq_arity = 2
+  let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
+  let eq_elab t ts = match ts with
+    | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args eq_type [i1]
+    | _ -> fail "Failed to elaborate"
+
+  let binop_arity = 2
+  let binop_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
+  let binop_elab t ts = match ts with
+    | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args binop_type [i1]
+    | _ -> fail "Failed to elaborate"
+
+  let eq ls _ = match ls with
     | [IntLit (wx, x); IntLit (wy, y)] ->
       if (wx <> wy) 
       then 
@@ -280,7 +294,7 @@ module Int = struct
         pure @@ to_Bool (x = y)
     | _ -> builtin_fail "Int.eq" ls
 
-  let add ls = match ls with
+  let add ls _ = match ls with
     | [IntLit (wx, x); IntLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Int.add: type mismatch" ls
@@ -298,7 +312,7 @@ module Int = struct
         )
     | _ -> builtin_fail "Int.add" ls
 
-  let sub ls = match ls with
+  let sub ls _  = match ls with
     | [IntLit (wx, x); IntLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Int.sub: type mismatch" ls
@@ -316,7 +330,7 @@ module Int = struct
         )
     | _ -> builtin_fail "Int.sub" ls
 
-  let mul ls = match ls with
+  let mul ls  _ = match ls with
     | [IntLit (wx, x); IntLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Int.mul: type mistmatch" ls
@@ -334,7 +348,7 @@ module Int = struct
         )
     | _ -> builtin_fail "Int.mul" ls
 
-  let lt ls = match ls with
+  let lt ls _ = match ls with
     | [IntLit (wx, x); IntLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Int.lt: type mismatch" ls
@@ -368,8 +382,22 @@ end
 (* Unsigned integer operation *)
 module Uint = struct
   open UsefulLiterals
+  open PrimTypes
+  open Datatypes.DataTypeDictionary
 
-  let eq ls = match ls with
+  let eq_arity = 2
+  let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
+  let eq_elab t ts = match ts with
+    | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args eq_type [i1]
+    | _ -> fail "Failed to elaborate"
+
+  let binop_arity = 2
+  let binop_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
+  let binop_elab t ts = match ts with
+    | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args binop_type [i1]
+    | _ -> fail "Failed to elaborate"
+  
+  let eq ls _ = match ls with
     | [UintLit (wx, x); UintLit (wy, y)] ->
       if (wx <> wy) 
       then 
@@ -378,7 +406,7 @@ module Uint = struct
         pure @@ to_Bool (x = y)
     | _ -> builtin_fail "Uint.eq" ls
 
-  let add ls = match ls with
+  let add ls _ = match ls with
     | [UintLit (wx, x); UintLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Uint.add: type mismatch" ls
@@ -393,7 +421,7 @@ module Uint = struct
         )
     | _ -> builtin_fail "Uint.add" ls
 
-  let sub ls = match ls with
+  let sub ls _ = match ls with
     | [UintLit (wx, x); UintLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Uint.sub: type mismatch" ls
@@ -408,7 +436,7 @@ module Uint = struct
         )
     | _ -> builtin_fail "Uint.sub" ls
 
-  let mul ls = match ls with
+  let mul ls _ = match ls with
     | [UintLit (wx, x); UintLit (wy, y)] ->
       if (wx <> wy) then
         builtin_fail "Uint.mul: type mistmatch" ls
@@ -423,7 +451,7 @@ module Uint = struct
         )
     | _ -> builtin_fail "Uint.mul" ls  
 
-  let lt ls = match ls with
+  let lt ls _ = match ls with
     | [UintLit (wx, x); UintLit (wy, y)] -> 
       if (wx <> wy) then
         builtin_fail "Uint.lt: type mismatch" ls
@@ -742,27 +770,29 @@ module BuiltInDictionary = struct
     ("remove", Maps.remove_arity, Maps.remove_type, Maps.remove_elab, Maps.remove);
     ("to_list", Maps.to_list_arity, Maps.to_list_type, Maps.to_list_elab, Maps.to_list);
     
-    (* 
-     * (\* Integers *\)
-     * ("eq",  ["Int"; "Int"], Int.eq);
-     * ("add", ["Int"; "Int"], Int.add);
-     * ("sub", ["Int"; "Int"], Int.sub);
-     * ("mul", ["Int"; "Int"], Int.mul);
-     * ("lt",  ["Int"; "Int"], Int.lt);
-     * ("to_int32", ["Any"], Int.to_int32);
+    (* Integers *)
+    ("eq", Int.eq_arity, Int.eq_type, Int.eq_elab, Int.eq);
+    ("lt", Int.eq_arity, Int.eq_type, Int.eq_elab, Int.lt);
+    ("add", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.add);
+    ("sub", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.sub);
+    ("mul", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.mul);
+
+    (* ("to_int32", ["Any"], Int.to_int32);
      * ("to_int64", ["Any"], Int.to_int64);
-     * ("to_int128", ["Any"], Int.to_int128);
-     * 
-     * (\* Unsigned integers *\)
-     * ("eq",  ["Uint"; "Uint"], Uint.eq);
-     * ("add", ["Uint"; "Uint"], Uint.add);
-     * ("sub", ["Uint"; "Uint"], Uint.sub);
-     * ("mul", ["Uint"; "Uint"], Uint.mul);
-     * ("lt",  ["Uint"; "Uint"], Uint.lt);
-     * ("to_nat", ["Uint"], Uint.to_nat);
+     * ("to_int128", ["Any"], Int.to_int128); *)
+
+    (* Unsigned integers *)
+    ("eq", Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.eq);
+    ("lt", Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.lt);
+    ("add", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.add);
+    ("sub", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.sub);
+    ("mul", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.mul);
+
+    (* 
      * ("to_uint32", ["Any"], Uint.to_uint32);
      * ("to_uint64", ["Any"], Uint.to_uint64);
      * ("to_uint128", ["Any"], Uint.to_uint128); *)
+
   ]
 
 
