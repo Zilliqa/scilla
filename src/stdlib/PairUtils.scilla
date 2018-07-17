@@ -1,0 +1,17 @@
+library PairUtils
+
+let fst =
+  tfun 'A =>
+  tfun 'B =>
+  fun (p : Pair ('A) ('B)) =>
+    match p with
+    | Pair a b => a
+    end
+
+let snd =
+  tfun 'A =>
+  tfun 'B =>
+  fun (p : Pair ('A) ('B)) =>
+    match p with
+    | Pair a b => b
+    end

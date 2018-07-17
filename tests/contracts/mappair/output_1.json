@@ -15,6 +15,23 @@
           }
         }
       ]
+    },
+    {
+      "vname": "gpair",
+      "type": "Pair (List (Int64)) (Option (Bool ))",
+      "value": {
+        "constructor": "Pair",
+        "argtypes": [ "List (Int64)", "Option (Bool )" ],
+        "arguments": [
+          { "constructor": "Nil", "argtypes": [ "Int64" ], "arguments": [] },
+          { "constructor": "None", "argtypes": [ "Bool " ], "arguments": [] }
+        ]
+      }
+    },
+    {
+      "vname": "gnat",
+      "type": "Nat ",
+      "value": { "constructor": "Zero", "argtypes": [], "arguments": [] }
     }
   ]
 }
