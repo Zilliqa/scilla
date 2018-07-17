@@ -1,4 +1,4 @@
-import ListUtils
+import ListUtils PairUtils NatUtils
 
 library Test
 
@@ -9,12 +9,32 @@ let one_msg =
     let nil_msg = Nil {Message} in
     Cons {Message} msg nil_msg
 
+let flip_obool =
+  fun (ob : Option (Bool)) =>
+    let t = True in
+    let f = False in
+    match ob with
+    | None => Some {Bool} t
+    | Some b =>
+      match b with
+      | True => Some {Bool} f
+      | False => Some {Bool} t
+      end
+    end
+
+let fst_f = @fst (List(Int64)) (Option (Bool))
+let snd_f = @snd (List(Int64)) (Option (Bool))
 
 contract Test
 (owner: Address)
 
 field gmap : Map Address (Pair (Int32) (Int32))  = Emp Address (Pair (Int32) (Int32))
+field gpair : Pair (List(Int64)) (Option (Bool)) =
+    let el = Nil {Int64} in
+    let n = None {Bool} in
+    Pair {(List(Int64)) (Option(Bool))} el n
 
+field gnat : Nat = Zero
 
 transition testMapPair ()
   is_owner = builtin eq owner _sender;
@@ -39,13 +59,30 @@ transition testMapPair ()
 end
 
 transition addNumToList(num: Int64)
-    (* Start of list declaration *)
-    nil = Nil{Int64};
-    l1 = let one = Int64 1 in Cons{Int64} one nil;
-    l2 = Cons{Int64} num l1;
-    l3 = let nine = Int64 9 in Cons{Int64} nine l2;
-    len = let my_list_length = @list_length Int64 in my_list_length l3;
-    msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; listLength : len};
-    msgs = one_msg msg;
-    send msgs
+  p <- gpair;
+  (* get first of pair = List (Int64) *)
+  l1 = fst_f p;
+  (* get second of pair = Option (Bool) *)
+  b = snd_f p;
+  (* have fun: flip the boolean *)
+  bflip = flip_obool b;
+  (* append num to the list *)
+  l2 = Cons{Int64} num l1;
+  (* Form updated pair *)
+  new_p = Pair {(List(Int64)) (Option(Bool))} l2 bflip;
+  gpair := new_p;
+  len = let my_list_length = @list_length Int64 in my_list_length l2;
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; listLength : len};
+  msgs = one_msg msg;
+  send msgs
+end
+
+transition incNat ()
+  n <- gnat;
+  m = Succ n;
+  gnat := m;
+  i = nat_to_int m;
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; nat : i};
+  msgs = one_msg msg;
+  send msgs
 end
