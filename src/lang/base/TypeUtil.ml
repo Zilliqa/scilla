@@ -104,10 +104,6 @@ module type QualifiedTypes = sig
   val mk_qualified_type : typ -> t inferred_type      
 end
 
-
-(****************************************************************)
-(*                   Typing environments                        *)
-(****************************************************************)
 module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
   (* Resolving results *)
   type resolve_result
@@ -122,6 +118,8 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     val mk : t
     (* Add to type environment *)
     val addT : t -> loc ident -> typ -> t
+    (* Add type variable to the environment *)
+    val addV : t -> loc ident -> t
     (* Resolve the identifier *)
     val resolveT : 
       ?lopt:(loc option) -> t -> string -> (resolve_result, string) result
@@ -133,10 +131,12 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     val tvars : t -> (string * loc) list
     (* Print the type environment *)
     val pp : ?f:(string * resolve_result -> bool) -> t -> string        
-    (* TODO: Add support for tvars *)
   end
 end
 
+(****************************************************************)
+(*                   Typing environments                        *)
+(****************************************************************)
 
 (* Typing environment, parameterised by a qualifier *)
 module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
@@ -165,12 +165,16 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
           {qt = Q.mk_qualified_type tp; loc = get_loc id} in
       env
 
+    let addV env id = 
+      let _ = Hashtbl.add env.tvars (get_id id) (get_loc id) in env
+
     let tvars env =
       Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []
 
     let to_list env =
       Hashtbl.fold (fun key data z -> (key, data) :: z) env.tenv []
         
+    (* TODO: Add support for tvars *)    
     let pp ?f:(f = fun _ -> true) env  =
       let lst = List.filter (to_list env) ~f:f in
       let ps = List.map lst

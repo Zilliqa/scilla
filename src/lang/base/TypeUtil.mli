@@ -15,11 +15,13 @@ val subst_type_in_type: 'a ident -> typ -> typ -> typ
 val subst_type_in_literal: 'a ident -> typ -> literal -> literal
 val subst_type_in_expr: 'a ident -> typ -> 'a expr -> 'a expr
 
+(* An inferred type with possible qualifiers *)
 type 'rep inferred_type = {
   tp   : typ;
   qual : 'rep
 } [@@deriving sexp]
 
+(* Qualifiers to type inference with additional information *)
 module type QualifiedTypes = sig
   type t
   val mk_qualified_type : typ -> t inferred_type      
@@ -39,6 +41,8 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     val mk : t
     (* Add to type environment *)
     val addT : t -> loc ident -> typ -> t
+    (* Add type variable to the environment *)
+    val addV : t -> loc ident -> t
     (* Resolve the identifier *)
     val resolveT : ?lopt:(loc option) -> t -> string -> (resolve_result, string) result
     (* Copy the environment *)

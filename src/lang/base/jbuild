@@ -13,6 +13,7 @@
               num hex stdint
               ppx_deriving.show
               ppx_deriving_yojson.runtime
+              cryptokit
               yojson))
   (preprocess (pps (ppx_sexp_conv
                     ppx_let 
