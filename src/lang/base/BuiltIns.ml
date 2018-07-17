@@ -670,11 +670,11 @@ module Maps = struct
         elab_tfun_with_args get_type [kt; vt]
     | _ -> fail "Failed to elaborate"
   (* Notice that get passes return type *)
-  let get ls rt = match ls with
-    | [Map (tm, entries); key] ->
+  let get ls rt = match ls, rt with
+    | [Map (tm, entries); key], ADT ("Option", [targ]) ->
         let res = List.find entries ~f:(fun (k, v) -> k = key) in
         (match res with
-         | None -> pure @@ none_lit rt
+         | None -> pure @@ none_lit targ
          | Some (_, v) -> some_lit v)
     | _ -> builtin_fail "Map.get" ls
 

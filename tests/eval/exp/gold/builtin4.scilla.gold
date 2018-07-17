@@ -1,3 +1,2 @@
 Failed execution:
-Cannot apply built-in Int.add: type mismatch to a list of arguments:(IntLit 64 100),
- (IntLit 32 42).
+Cannot find built-in with name "add" and argument types [(PrimType Int64); (PrimType Int32)].
