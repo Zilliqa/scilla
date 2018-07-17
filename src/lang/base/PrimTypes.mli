@@ -13,6 +13,9 @@ open Core
 open Syntax
 open Sexplib.Std
 
+val prim_types : typ list
+val is_prim_type : typ -> bool
+
 val int32_typ : typ
 val int64_typ : typ
 val int128_typ : typ
@@ -25,5 +28,3 @@ val address_typ : typ
 val hash_typ : typ
 val msg_typ : typ
 
-val prim_types : typ list
-val is_prim_type : typ -> bool

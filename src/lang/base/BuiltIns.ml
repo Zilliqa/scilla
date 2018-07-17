@@ -43,26 +43,32 @@ module UsefulLiterals = struct
   let to_Bool b = if b then true_lit else false_lit
 end
 
-
-
 (* String operations *)
 module String = struct
   open UsefulLiterals
   open PrimTypes
+  open Datatypes.DataTypeDictionary
 
   (* let string_eq_type = FunType (string_typ, FunType (string_typ, )) *)
 
-  let eq ls = match ls with
+  let eq_type = fun_typ string_typ @@ fun_typ string_typ bool_typ
+  let eq_arity = 2    
+  let eq ls _ = match ls with
   | [StringLit x; StringLit y] ->
     pure @@ to_Bool (x = y)
   | _ -> builtin_fail "String.eq" ls
 
-  let concat ls = match ls with
+  let concat_type = fun_typ string_typ @@ fun_typ string_typ string_typ    
+  let concat_arity = 2    
+  let concat ls _ = match ls with
   | [StringLit x; StringLit y] ->
     pure @@ StringLit (x ^ y)
   | _ -> builtin_fail "String.concat" ls
 
-  let substr ls = match ls with
+  let substr_type =
+    fun_typ string_typ @@ fun_typ uint32_typ @@ fun_typ uint32_typ string_typ
+  let substr_arity = 3    
+  let substr ls _ = match ls with
   | [StringLit x; UintLit (_,s); UintLit (_,e)] ->
       pure @@ StringLit (Core.String.sub x (int_of_string s) (int_of_string e))
   | _ -> builtin_fail "String.substr" ls
@@ -501,20 +507,28 @@ end
 (* Working with block numbers *)
 module BNum = struct
   open UsefulLiterals
-  
-  let eq ls = match ls with
+  open PrimTypes
+  open Datatypes.DataTypeDictionary
+
+  let eq_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ
+  let eq_arity = 2    
+  let eq ls _ = match ls with
     | [BNum x; BNum y] ->
         pure @@ to_Bool (x = y)
     | _ -> builtin_fail "BNum.eq" ls
 
-  let blt ls = match ls with
+  let blt_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ
+  let blt_arity = 2    
+  let blt ls _ = match ls with
     | [BNum x; BNum y] -> pure (
         let i1 = big_int_of_string x in
         let i2 = big_int_of_string y in
         to_Bool (lt_big_int i1 i2))
     | _ -> builtin_fail "BNum.blt" ls
 
-  let badd ls = match ls with
+  let badd_type = fun_typ bnum_typ @@ fun_typ uint32_typ bnum_typ
+  let badd_arity = 2    
+  let badd ls _ = match ls with
     | [BNum x; UintLit (wy, y)] ->
         let i1 = big_int_of_string x in
         let i2 = big_int_of_string y in
@@ -529,8 +543,12 @@ end
 (* Working with addresses *)
 module Address = struct
   open UsefulLiterals
-
-  let eq ls = match ls with
+  open PrimTypes
+  open Datatypes.DataTypeDictionary
+         
+  let eq_type = fun_typ address_typ @@ fun_typ address_typ bool_typ
+  let eq_arity = 2    
+  let eq ls _ = match ls with
     | [Address x; Address y] ->
         pure @@ to_Bool (x = y)
     | _ -> builtin_fail "Address.eq" ls
@@ -584,92 +602,120 @@ end
 (***************************************)
 (*        Built-in  Dictionariy        *)
 (***************************************)
+let elab_id = fun t _ -> pure t     
 
 module BuiltInDictionary = struct 
-  type built_in_op_type = literal list -> (literal, string) result
-
-  type elaborator = literal list -> typ -> (typ, string) result
-  type executor = literal list -> (literal, string) result
-  type built_in_record = string * typ * elaborator * executor
+  (* Elaborates the operation type based on the arguments types *)
+  type elaborator = typ -> typ list -> (typ, string) result
+      
+  (* Takes the expected type as an argument to elaborate the result *)
+  type built_in_executor = literal list -> typ -> (literal, string) result
+  (* A built-in record type:
+     * built-in name
+     * arity
+     * full, unelaborated type
+     * elaborator, refining the type based on argument 
+     * executor -- operational semantics of the built-in
+  *)
+  type built_in_record = string * int * typ * elaborator * built_in_executor
 
   (* All built-in functions *)
-      
-  let built_in_dict = [
+  let built_in_dict : built_in_record list = [
     (* Strings *)
-    ("eq", ["String"; "String"], String.eq);
-    ("concat", ["String"; "String"], String.concat);
-    ("substr", ["String"; "Uint"; "Uint"], String.substr);
+    ("eq", String.eq_arity, String.eq_type, elab_id, String.eq);
+    ("concat", String.concat_arity, String.concat_type, elab_id, String.concat);
+    (* TODO: add support for multi-depth uints via elaborators *)
+    ("substr", String.substr_arity, String.substr_type, elab_id, String.substr);
 
-    (* Integers *)
-    ("eq",  ["Int"; "Int"], Int.eq);
-    ("add", ["Int"; "Int"], Int.add);
-    ("sub", ["Int"; "Int"], Int.sub);
-    ("mul", ["Int"; "Int"], Int.mul);
-    ("lt",  ["Int"; "Int"], Int.lt);
-    ("to_int32", ["Any"], Int.to_int32);
-    ("to_int64", ["Any"], Int.to_int64);
-    ("to_int128", ["Any"], Int.to_int128);
-
-    (* Unsigned integers *)
-    ("eq",  ["Uint"; "Uint"], Uint.eq);
-    ("add", ["Uint"; "Uint"], Uint.add);
-    ("sub", ["Uint"; "Uint"], Uint.sub);
-    ("mul", ["Uint"; "Uint"], Uint.mul);
-    ("lt",  ["Uint"; "Uint"], Uint.lt);
-    ("to_nat", ["Uint"], Uint.to_nat);
-    ("to_uint32", ["Any"], Uint.to_uint32);
-    ("to_uint64", ["Any"], Uint.to_uint64);
-    ("to_uint128", ["Any"], Uint.to_uint128);
+    (* Addresses *)
+    ("eq", Address.eq_arity, Address.eq_type, elab_id, Address.eq);
 
     (* Block numbers *)
-    ("eq",  ["BNum"; "BNum"], BNum.eq);
-    ("blt", ["BNum"; "BNum"], BNum.blt);
-    ("badd", ["BNum"; "Uint"],  BNum.badd);
+    ("eq", BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq);
+    ("blt", BNum.blt_arity, BNum.blt_type, elab_id , BNum.eq);
+    (* TODO: add support for multi-depth uints via elaborators *)
+    ("badd", BNum.badd_arity, BNum.badd_type, elab_id , BNum.eq);
     
-    (* Addresses *)
-    ("eq",  ["Address"; "Address"], Address.eq);
+    (* 
+     * (\* Hashes *\)
+     * ("eq", ["Hash"; "Hash"], Hashing.eq);
+     * ("dist", ["Hash"; "Hash"], Hashing.dist);
+     * 
+     * (\* Integers *\)
+     * ("eq",  ["Int"; "Int"], Int.eq);
+     * ("add", ["Int"; "Int"], Int.add);
+     * ("sub", ["Int"; "Int"], Int.sub);
+     * ("mul", ["Int"; "Int"], Int.mul);
+     * ("lt",  ["Int"; "Int"], Int.lt);
+     * ("to_int32", ["Any"], Int.to_int32);
+     * ("to_int64", ["Any"], Int.to_int64);
+     * ("to_int128", ["Any"], Int.to_int128);
+     * 
+     * (\* Unsigned integers *\)
+     * ("eq",  ["Uint"; "Uint"], Uint.eq);
+     * ("add", ["Uint"; "Uint"], Uint.add);
+     * ("sub", ["Uint"; "Uint"], Uint.sub);
+     * ("mul", ["Uint"; "Uint"], Uint.mul);
+     * ("lt",  ["Uint"; "Uint"], Uint.lt);
+     * ("to_nat", ["Uint"], Uint.to_nat);
+     * ("to_uint32", ["Any"], Uint.to_uint32);
+     * ("to_uint64", ["Any"], Uint.to_uint64);
+     * ("to_uint128", ["Any"], Uint.to_uint128); *)
 
-    (* Hashes *)
-    ("eq", ["Hash"; "Hash"], Hashing.eq);
-    ("dist", ["Hash"; "Hash"], Hashing.dist);
-    (* TODO: provide elaborator, check well-formedness *)
-    ("sha256hash", ["Any"], Hashing.sha256hash);
-
-    (* Maps *)
-    (* TODO: provide elaborator, check well-formedness *)
-    ("contains", ["Map"; "Any"], Maps.contains);
-    ("put", ["Map"; "Any"; "Any"], Maps.put);
-    ("get", ["Map"; "Any"], Maps.get);
-    ("remove", ["Map"; "Any"], Maps.remove);
-    ("to_list", ["Map"], Maps.to_list);
+    (* (\* TODO: provide elaborator, check well-formedness *\)
+     * ("sha256hash", ["Any"], Hashing.sha256hash);
+     * 
+     * (\* Maps *\)
+     * (\* TODO: provide elaborator, check well-formedness *\)
+     * ("contains", ["Map"; "Any"], Maps.contains);
+     * ("put", ["Map"; "Any"; "Any"], Maps.put);
+     * ("get", ["Map"; "Any"], Maps.get);
+     * ("remove", ["Map"; "Any"], Maps.remove);
+     * ("to_list", ["Map"], Maps.to_list); *)
   ]
 
-  (* TODO: Refactor this abomination to use proper types! *)
-  let rec tags_match expected argtypes =
-    match expected, argtypes with
-    | e::es, a::args
-      when e = "Any" || 
-           is_int_type a && e = "Int" || 
-           is_uint_type a && e = "Uint" ->
-        tags_match es args
-    | "Map" :: es, (MapType _) :: args ->
-        tags_match es args
-    | e :: es, (PrimType a) :: args
-      when e = a ->
-        tags_match es args
-    | [], [] -> true
-    | _ -> false
+
+  let find_builtin_op opname argtypes =
+    let finder = (function (name, arity, optype, elab, exec) ->
+        if name = opname && arity = List.length argtypes
+        then
+          let%bind type_elab = elab optype argtypes in
+          let%bind res_type = fun_type_applies type_elab argtypes in
+          pure (res_type, exec)
+        else fail @@ "Name or arity don't match") in
+    let%bind (_, (res_type, exec)) = tryM built_in_dict ~f:finder
+      ~msg:(sprintf "Cannot find built-in with name \"%s\" and argument types %s."
+              opname (pp_typ_list argtypes))
+    in pure (res_type, exec)
   
   (* Dictionary lookup based on the operation name and type *)
-  let find_builtin_op opname argtypes =
-    match List.find built_in_dict
-            ~f:(fun (n, expected, _) ->
-                n = opname &&
-                tags_match expected argtypes) with
-    | None ->
-        let args = List.map ~f:pp_typ argtypes in
-        fail @@
-        sprintf "Cannot find built-in with name \"%s\" and arguments %s."
-          opname ("(" ^ (Core.String.concat ~sep:", " args) ^ ")")
-    | Some (_, _, op) -> pure op
 end
+
+
+  (* let rec tags_match expected argtypes =
+   *   match expected, argtypes with
+   *   | e::es, a::args
+   *     when e = "Any" || 
+   *          is_int_type a && e = "Int" || 
+   *          is_uint_type a && e = "Uint" ->
+   *       tags_match es args
+   *   | "Map" :: es, (MapType _) :: args ->
+   *       tags_match es args
+   *   | e :: es, (PrimType a) :: args
+   *     when e = a ->
+   *       tags_match es args
+   *   | [], [] -> true
+   *   | _ -> false *)
+
+
+  (* let find_builtin_op opname argtypes =
+   *   match List.find built_in_dict
+   *           ~f:(fun (n, expected, _) ->
+   *               n = opname &&
+   *               tags_match expected argtypes) with
+   *   | None ->
+   *       let args = List.map ~f:pp_typ argtypes in
+   *       fail @@
+   *       sprintf "Cannot find built-in with name \"%s\" and arguments %s."
+   *         opname ("(" ^ (Core.String.concat ~sep:", " args) ^ ")")
+   *   | Some (_, _, op) -> pure op *)

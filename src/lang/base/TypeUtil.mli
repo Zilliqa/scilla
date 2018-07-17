@@ -61,3 +61,15 @@ module PlainTypes : QualifiedTypes
 module MakeTEnv : MakeTEnvFunctor
 
 val literal_type : literal -> (typ, string) result
+
+(* Useful generic types *)
+val fun_typ : typ -> typ -> typ
+val tvar : string -> typ
+val tfun_typ : string -> typ -> typ
+val map_typ : typ -> typ -> typ
+
+(***************************************************)
+(*                        Utilities                *)
+(***************************************************)
+val fun_type_applies : typ -> typ list -> (typ, string) result
+val pp_typ_list : typ list -> string  

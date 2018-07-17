@@ -254,3 +254,36 @@ let literal_type l =
       else
         pure @@ ADT (tname, ts)
 
+(* Some useful data type constructors *)
+let fun_typ t s = FunType (t, s)
+let tvar i = TypeVar i
+let tfun_typ i t = PolyFun (i, t)
+let map_typ k v = MapType (k, v)
+
+(****************************************************************)
+(*             Utility function for matching types              *)
+(****************************************************************)
+
+let rec is_ground_type t = match t with 
+  | FunType (a, r) -> is_ground_type a && is_ground_type r
+  | MapType (k, v) -> is_ground_type k && is_ground_type v
+  | ADT (_, ts) -> List.for_all ~f:(fun t -> is_ground_type t) ts
+  | PolyFun _ -> false
+  | _ -> true
+
+let pp_typ_list ts =
+  let tss = List.map ~f:(fun t -> pp_typ t) ts in
+  sprintf "[%s]" (String.concat ~sep:"; " tss)
+
+(* 
+   Check that function type applies for a given arity n 
+   to a list of argument types. 
+   Returns the resul type of application or failure 
+*)
+let rec fun_type_applies ft argtypes = match ft, argtypes with
+  | FunType (argt, rest), a :: ats
+    when argt = a -> fun_type_applies rest ats 
+  | t, []  -> pure t
+  | _ -> fail @@  sprintf
+        "The type %s doesn't apply to the arguments %s." (pp_typ ft)
+        (pp_typ_list argtypes)

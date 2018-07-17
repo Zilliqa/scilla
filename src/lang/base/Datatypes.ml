@@ -117,13 +117,12 @@ module DataTypeDictionary = struct
     | Some a ->
         pure (a)
 
-  (* Some useful data type constructors *)
+
   let bool_typ = ADT (t_bool.tname, [])
   let nat_typ = ADT (t_nat.tname, [])
   let option_typ t = ADT (t_option.tname, [t])
   let list_typ t = ADT (t_option.tname, [t])
   let pair_typ t s = ADT (t_option.tname, [t; s])
-
 end
 
 (* TODO: support user_defined data types *)
