@@ -38,40 +38,9 @@ module UsefulLiterals = struct
     let%bind t = literal_type l in
     pure @@ ADTValue ("Some", [t], [l])
 
-  let none_lit = ADTValue ("None", [], [])
+  let none_lit t = ADTValue ("None", [t], [])
 
   let to_Bool b = if b then true_lit else false_lit
-end
-
-(* String operations *)
-module String = struct
-  open UsefulLiterals
-  open PrimTypes
-  open Datatypes.DataTypeDictionary
-
-  (* let string_eq_type = FunType (string_typ, FunType (string_typ, )) *)
-
-  let eq_type = fun_typ string_typ @@ fun_typ string_typ bool_typ
-  let eq_arity = 2    
-  let eq ls _ = match ls with
-  | [StringLit x; StringLit y] ->
-    pure @@ to_Bool (x = y)
-  | _ -> builtin_fail "String.eq" ls
-
-  let concat_type = fun_typ string_typ @@ fun_typ string_typ string_typ    
-  let concat_arity = 2    
-  let concat ls _ = match ls with
-  | [StringLit x; StringLit y] ->
-    pure @@ StringLit (x ^ y)
-  | _ -> builtin_fail "String.concat" ls
-
-  let substr_type =
-    fun_typ string_typ @@ fun_typ uint32_typ @@ fun_typ uint32_typ string_typ
-  let substr_arity = 3    
-  let substr ls _ = match ls with
-  | [StringLit x; UintLit (_,s); UintLit (_,e)] ->
-      pure @@ StringLit (Core.String.sub x (int_of_string s) (int_of_string e))
-  | _ -> builtin_fail "String.substr" ls
 end
 
 (* Validate Int* and Uint* literals (wx, x), whether the
@@ -124,6 +93,51 @@ let is_uint_type = function
            x = PrimTypes.uint64_typ ||
            x = PrimTypes.uint128_typ -> true
   | _ -> false
+
+(*******************************************************)
+(*******************************************************)
+(*******************************************************)
+    
+(* String operations *)
+module String = struct
+  open UsefulLiterals
+  open PrimTypes
+  open Datatypes.DataTypeDictionary
+
+  (* let string_eq_type = FunType (string_typ, FunType (string_typ, )) *)
+
+  let eq_arity = 2    
+  let eq_type = fun_typ string_typ @@ fun_typ string_typ bool_typ
+  let eq ls _ = match ls with
+  | [StringLit x; StringLit y] ->
+    pure @@ to_Bool (x = y)
+  | _ -> builtin_fail "String.eq" ls
+
+  let concat_arity = 2    
+  let concat_type = fun_typ string_typ @@ fun_typ string_typ string_typ    
+  let concat ls _ = match ls with
+  | [StringLit x; StringLit y] ->
+    pure @@ StringLit (x ^ y)
+  | _ -> builtin_fail "String.concat" ls
+
+  let substr_arity = 3    
+  let substr_type =
+    tfun_typ "'A" @@ tfun_typ "'B" @@ tfun_typ "'C" @@
+    (fun_typ (tvar "'A") @@ fun_typ (tvar "'B") @@ fun_typ (tvar "'C") string_typ)
+  (* Elaborator to run with arbitrary uints *)
+  let substr_elab t ts = match ts with
+    | [s; u1; u2]
+      when s = string_typ &&
+           is_uint_type u1 &&
+           is_uint_type u2 ->
+        elab_tfun_with_args substr_type ts
+    | _ -> fail "Failed to elaborate"
+             
+  let substr ls _ = match ls with
+  | [StringLit x; UintLit (_,s); UintLit (_,e)] ->
+      pure @@ StringLit (Core.String.sub x (int_of_string s) (int_of_string e))
+  | _ -> builtin_fail "String.substr" ls
+end
 
 (*******************************************************)
 (* Manipulating with arbitrary integer representations *)
@@ -457,54 +471,9 @@ module Uint = struct
 
 end
 
-(* Maps *)
-module Maps = struct
-  open UsefulLiterals
-  
-  let contains ls = match ls with
-    | [Map (_, entries); key] ->
-        let res = List.exists entries ~f:(fun (k, v) -> k = key) in
-        pure @@ to_Bool res
-    | _ -> builtin_fail "Map.contains" ls
-
-  (* FIXME: Runtime type checking *)
-  let put ls = match ls with
-    | [Map (tm, entries); key; value] ->
-        let filtered =
-          List.filter entries ~f:(fun (k, v) -> k <> key) in
-        pure @@ Map (tm, ((key, value) :: filtered)) 
-    | _ -> builtin_fail "Map.put" ls
-
-  let remove ls = match ls with
-    | [Map (tm, entries); key] ->
-        let res = List.filter entries ~f:(fun (k, v) -> k <> key) in
-        pure @@ Map (tm, res)
-    | _ -> builtin_fail "Map.remove" ls
-
-  (* Must take result type into the account *)
-  let get ls = match ls with
-    | [Map (tm, entries); key] ->
-        let res = List.find entries ~f:(fun (k, v) -> k = key) in
-        (match res with
-         | None -> pure @@ none_lit
-         | Some (_, v) -> some_lit v)
-    | _ -> builtin_fail "Map.get" ls
-
-  let to_list ls = match ls with
-  | [Map ((kt, vt), entries)] ->
-      (* The type of the output list will be "Pair (kt) (vt)" *)
-      let otyp = ADT ("Pair", (kt::vt::[])) in
-      let nil = ADTValue ("Nil", (otyp::[]), []) in
-      let ol = List.fold_left entries ~init:nil ~f: (fun accum (k, v) ->
-        let kv = ADTValue ("Pair", (kt::vt::[]), k::v::[]) in
-        let kvl = ADTValue ("Cons", (otyp::[]), (kv::accum::[])) in
-          kvl) in
-        pure (ol)
-  | _ -> builtin_fail "Map.to_list" ls
-
-end
-
+(***********************************************************)
 (* Working with block numbers *)
+(***********************************************************)
 module BNum = struct
   open UsefulLiterals
   open PrimTypes
@@ -526,8 +495,16 @@ module BNum = struct
         to_Bool (lt_big_int i1 i2))
     | _ -> builtin_fail "BNum.blt" ls
 
-  let badd_type = fun_typ bnum_typ @@ fun_typ uint32_typ bnum_typ
   let badd_arity = 2    
+  let badd_type =
+    tfun_typ "'A" @@ tfun_typ "'B" @@
+    (fun_typ (tvar "'A") @@ fun_typ (tvar "'B") bnum_typ)
+  (* Elaborator to run with arbitrary uints *)
+  let badd_elab t ts = match ts with
+    | [s; u] when s = bnum_typ && is_uint_type u ->
+        elab_tfun_with_args badd_type ts
+    | _ -> fail "Failed to elaborate"
+
   let badd ls _ = match ls with
     | [BNum x; UintLit (wy, y)] ->
         let i1 = big_int_of_string x in
@@ -540,7 +517,9 @@ module BNum = struct
 
 end
 
+(***********************************************************)
 (* Working with addresses *)
+(***********************************************************)
 module Address = struct
   open UsefulLiterals
   open PrimTypes
@@ -554,21 +533,33 @@ module Address = struct
     | _ -> builtin_fail "Address.eq" ls
 end
 
+(***********************************************************)
 (* Hashing *)
+(***********************************************************)
 module Hashing = struct
   open UsefulLiterals
   open Cryptokit
+  open PrimTypes
+  open Datatypes.DataTypeDictionary
+
 
   let hex s = transform_string (Hexa.decode()) s
   let tohex s = transform_string (Hexa.encode()) s
   let hash s = hash_string (Hash.sha2 256) s
 
-  let eq ls = match ls with
+  let eq_type = fun_typ hash_typ @@ fun_typ hash_typ bool_typ
+  let eq_arity = 2    
+  let eq ls _ = match ls with
     | [Sha256 x; Sha256 y] ->
         pure @@ to_Bool (x = y)
     | _ -> builtin_fail "Hashing.eq" ls
 
-  let sha256hash ls = match ls with
+  let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") hash_typ
+  let hash_arity = 1
+  let hash_elab t ts = match ts with
+    | [u]  -> elab_tfun_with_args hash_type ts
+    | _ -> fail "Failed to elaborate"
+  let sha256hash ls _ = match ls with
     | [l] ->
         let lstr = sexp_of_literal l |> Sexplib.Sexp.to_string in
         let lhash = hash lstr in
@@ -580,8 +571,10 @@ module Hashing = struct
     let s = match Hex.of_string h with
       | `Hex s -> s
     in Big_int.big_int_of_string s
-  
-  let dist ls = match ls with
+
+  let dist_type = fun_typ hash_typ @@ fun_typ hash_typ uint128_typ
+  let dist_arity = 2    
+  let dist ls _ = match ls with
     | [Sha256 x; Sha256 y] ->
         let i1 = big_int_of_hash x in
         let i2 = big_int_of_hash y in
@@ -595,27 +588,130 @@ module Hashing = struct
         | Some ui -> pure ui
         | None -> builtin_fail "Hashing.dist: Error building Uint128 from hash distance" ls
         )
-    | _ -> builtin_fail "Hashing.dist" ls
-  
+    | _ -> builtin_fail "Hashing.dist" ls  
 end
 
-(***************************************)
-(*        Built-in  Dictionariy        *)
-(***************************************)
-let elab_id = fun t _ -> pure t     
+(***********************************************************)
+(* Maps *)
+(***********************************************************)
+module Maps = struct
+  open UsefulLiterals
+  open Datatypes.DataTypeDictionary
+
+  let contains_arity = 2
+  let contains_type =
+    tfun_typ "'K" @@ tfun_typ "'V" @@
+    (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@ fun_typ (tvar "'K") bool_typ)
+  let contains_elab t ts = match ts with
+    | [MapType (kt, vt); u] when kt = u  ->
+        elab_tfun_with_args contains_type [kt; vt]
+    | _ -> fail "Failed to elaborate"
+  let contains ls _ = match ls with
+    | [Map (_, entries); key] ->
+        let res = List.exists entries ~f:(fun (k, v) -> k = key) in
+        pure @@ to_Bool res
+    | _ -> builtin_fail "Map.contains" ls
+
+  
+  let put_arity = 3
+  let put_type =
+    tfun_typ "'K" @@ tfun_typ "'V" @@
+    (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
+     fun_typ (tvar "'K") @@
+     fun_typ (tvar "'V") (map_typ (tvar "'K") (tvar "'V")))
+  let put_elab t ts = match ts with
+    | [MapType (kt, vt); kt'; vt'] when kt = kt' && vt = vt'  ->
+        elab_tfun_with_args put_type [kt; vt]
+    | _ -> fail "Failed to elaborate"
+  let put ls _ = match ls with
+    | [Map (tm, entries); key; value] ->
+        let filtered =
+          List.filter entries ~f:(fun (k, v) -> k <> key) in
+        pure @@ Map (tm, ((key, value) :: filtered)) 
+    | _ -> builtin_fail "Map.put" ls
+
+
+  (* Must take result type into the account *)
+  let get_arity = 2
+  let get_type =
+    tfun_typ "'K" @@ tfun_typ "'V" @@
+    (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
+     fun_typ (tvar "'K") (option_typ (tvar "'V")))
+  let get_elab t ts = match ts with
+    | [MapType (kt, vt); kt'] when kt = kt'  ->
+        elab_tfun_with_args get_type [kt; vt]
+    | _ -> fail "Failed to elaborate"
+  (* Notice that get passes return type *)
+  let get ls rt = match ls with
+    | [Map (tm, entries); key] ->
+        let res = List.find entries ~f:(fun (k, v) -> k = key) in
+        (match res with
+         | None -> pure @@ none_lit rt
+         | Some (_, v) -> some_lit v)
+    | _ -> builtin_fail "Map.get" ls
+
+  let remove_arity = 2
+  let remove_type =
+    tfun_typ "'K" @@ tfun_typ "'V" @@
+    (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
+     fun_typ (tvar "'K") (map_typ (tvar "'K") (tvar "'V")))
+  let remove_elab t ts = match ts with
+    | [MapType (kt, vt); u] when kt = u  ->
+        elab_tfun_with_args remove_type [kt; vt]
+    | _ -> fail "Failed to elaborate" 
+  let remove ls _ = match ls with
+    | [Map (tm, entries); key] ->
+        let res = List.filter entries ~f:(fun (k, v) -> k <> key) in
+        pure @@ Map (tm, res)
+    | _ -> builtin_fail "Map.remove" ls
+
+
+  let to_list_arity = 1
+  let to_list_type =
+    tfun_typ "'K" @@ tfun_typ "'V" @@
+    (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
+     (list_typ (pair_typ (tvar "'K") (tvar "'V"))))
+  let to_list_elab t ts = match ts with
+    | [MapType (kt, vt)]  -> elab_tfun_with_args to_list_type [kt; vt]
+    | _ -> fail "Failed to elaborate" 
+  let to_list ls rt = match ls with
+  | [Map ((kt, vt), entries)] ->
+      (* The type of the output list will be "Pair (kt) (vt)" *)
+      let otyp = pair_typ kt vt in
+      let nil = ADTValue ("Nil", (otyp::[]), []) in
+      let ol = List.fold_left entries ~init:nil
+          ~f: (fun accum (k, v) ->
+              let kv = ADTValue ("Pair", (kt::vt::[]), k::v::[]) in
+              let kvl = ADTValue ("Cons", (otyp::[]), (kv::accum::[]))
+              in kvl)
+      in pure (ol)
+  | _ -> builtin_fail "Map.to_list" ls
+
+end
+
+
+(* Identity elaborator *)
+let elab_id = fun t _ -> pure t
+
+(**********************************************************)
+(*                   Built-in  Dictionariy                *)
+(**********************************************************)
 
 module BuiltInDictionary = struct 
+
   (* Elaborates the operation type based on the arguments types *)
-  type elaborator = typ -> typ list -> (typ, string) result
-      
+  type elaborator = typ -> typ list -> (typ, string) result      
+
   (* Takes the expected type as an argument to elaborate the result *)
   type built_in_executor = literal list -> typ -> (literal, string) result
+
   (* A built-in record type:
      * built-in name
      * arity
      * full, unelaborated type
      * elaborator, refining the type based on argument 
-     * executor -- operational semantics of the built-in
+       to support polymorphism -- e.g., for ints and maps
+     * executor - operational semantics of the built-in
   *)
   type built_in_record = string * int * typ * elaborator * built_in_executor
 
@@ -624,23 +720,29 @@ module BuiltInDictionary = struct
     (* Strings *)
     ("eq", String.eq_arity, String.eq_type, elab_id, String.eq);
     ("concat", String.concat_arity, String.concat_type, elab_id, String.concat);
-    (* TODO: add support for multi-depth uints via elaborators *)
-    ("substr", String.substr_arity, String.substr_type, elab_id, String.substr);
+    ("substr", String.substr_arity, String.substr_type, String.substr_elab, String.substr);
 
     (* Addresses *)
     ("eq", Address.eq_arity, Address.eq_type, elab_id, Address.eq);
-
+    
     (* Block numbers *)
     ("eq", BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq);
-    ("blt", BNum.blt_arity, BNum.blt_type, elab_id , BNum.eq);
-    (* TODO: add support for multi-depth uints via elaborators *)
-    ("badd", BNum.badd_arity, BNum.badd_type, elab_id , BNum.eq);
+    ("blt", BNum.blt_arity, BNum.blt_type, elab_id , BNum.blt);
+    ("badd", BNum.badd_arity, BNum.badd_type, BNum.badd_elab , BNum.badd);
+
+    (* Hashes *)
+    ("eq", Hashing.eq_arity, Hashing.eq_type, elab_id, Hashing.eq);
+    ("dist", Hashing.dist_arity, Hashing.dist_type, elab_id , Hashing.dist);
+    ("sha256hash", Hashing.hash_arity, Hashing.hash_type,Hashing.hash_elab, Hashing.sha256hash);
+
+    (* Maps *)
+    ("contains", Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains);
+    ("put", Maps.put_arity, Maps.put_type, Maps.put_elab, Maps.put);
+    ("get", Maps.get_arity, Maps.get_type, Maps.get_elab, Maps.get);
+    ("remove", Maps.remove_arity, Maps.remove_type, Maps.remove_elab, Maps.remove);
+    ("to_list", Maps.to_list_arity, Maps.to_list_type, Maps.to_list_elab, Maps.to_list);
     
     (* 
-     * (\* Hashes *\)
-     * ("eq", ["Hash"; "Hash"], Hashing.eq);
-     * ("dist", ["Hash"; "Hash"], Hashing.dist);
-     * 
      * (\* Integers *\)
      * ("eq",  ["Int"; "Int"], Int.eq);
      * ("add", ["Int"; "Int"], Int.add);
@@ -661,61 +763,23 @@ module BuiltInDictionary = struct
      * ("to_uint32", ["Any"], Uint.to_uint32);
      * ("to_uint64", ["Any"], Uint.to_uint64);
      * ("to_uint128", ["Any"], Uint.to_uint128); *)
-
-    (* (\* TODO: provide elaborator, check well-formedness *\)
-     * ("sha256hash", ["Any"], Hashing.sha256hash);
-     * 
-     * (\* Maps *\)
-     * (\* TODO: provide elaborator, check well-formedness *\)
-     * ("contains", ["Map"; "Any"], Maps.contains);
-     * ("put", ["Map"; "Any"; "Any"], Maps.put);
-     * ("get", ["Map"; "Any"], Maps.get);
-     * ("remove", ["Map"; "Any"], Maps.remove);
-     * ("to_list", ["Map"], Maps.to_list); *)
   ]
 
 
+  (* Dictionary lookup based on the operation name and type *)
   let find_builtin_op opname argtypes =
     let finder = (function (name, arity, optype, elab, exec) ->
         if name = opname && arity = List.length argtypes
         then
+          (* First: elaborate based on argument types *)
           let%bind type_elab = elab optype argtypes in
+          (* Second: check applicability *)
           let%bind res_type = fun_type_applies type_elab argtypes in
-          pure (res_type, exec)
+          pure (type_elab, res_type, exec)
         else fail @@ "Name or arity don't match") in
-    let%bind (_, (res_type, exec)) = tryM built_in_dict ~f:finder
+    let%bind (_, (type_elab, res_type, exec)) = tryM built_in_dict ~f:finder
       ~msg:(sprintf "Cannot find built-in with name \"%s\" and argument types %s."
               opname (pp_typ_list argtypes))
-    in pure (res_type, exec)
+    in pure (type_elab, res_type, exec)
   
-  (* Dictionary lookup based on the operation name and type *)
 end
-
-
-  (* let rec tags_match expected argtypes =
-   *   match expected, argtypes with
-   *   | e::es, a::args
-   *     when e = "Any" || 
-   *          is_int_type a && e = "Int" || 
-   *          is_uint_type a && e = "Uint" ->
-   *       tags_match es args
-   *   | "Map" :: es, (MapType _) :: args ->
-   *       tags_match es args
-   *   | e :: es, (PrimType a) :: args
-   *     when e = a ->
-   *       tags_match es args
-   *   | [], [] -> true
-   *   | _ -> false *)
-
-
-  (* let find_builtin_op opname argtypes =
-   *   match List.find built_in_dict
-   *           ~f:(fun (n, expected, _) ->
-   *               n = opname &&
-   *               tags_match expected argtypes) with
-   *   | None ->
-   *       let args = List.map ~f:pp_typ argtypes in
-   *       fail @@
-   *       sprintf "Cannot find built-in with name \"%s\" and arguments %s."
-   *         opname ("(" ^ (Core.String.concat ~sep:", " args) ^ ")")
-   *   | Some (_, _, op) -> pure op *)

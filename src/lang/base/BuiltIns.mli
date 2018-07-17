@@ -13,8 +13,17 @@ open Result.Let_syntax
 open MonadUtil
 
 module BuiltInDictionary : sig
-  type built_in_executor = literal list -> typ -> (literal, string) result
-  val find_builtin_op : string -> typ list -> ((typ * built_in_executor), string) result
+  type built_in_executor =
+    literal list -> typ -> (literal, string) result
+
+  (*  
+   The return result is a triple:
+   * The full elaborated type of the operation, e.g., string -> Bool
+   * Its result type for given argument types, e.g., Bool
+   * Executor for evaluating the operation      
+   *)
+  val find_builtin_op :
+    string -> typ list -> ((typ * typ * built_in_executor), string) result
 end
 
 (* The first parameter is a string type *)
@@ -23,5 +32,5 @@ val validate_int_literal : literal -> bool
 val is_int_type : typ -> bool
 val is_uint_type : typ -> bool
 
-(* Elaborator for the built-in type *)
+(* Elaborator for the built-in typ *)
 val elab_id : typ -> typ list -> (typ, string) result

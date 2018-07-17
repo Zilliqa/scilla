@@ -35,25 +35,28 @@ let rec subst_type_in_type tvar tp tm = match tm with
       let rts = subst_type_in_type tvar tp rt in
       FunType (ats, rts)
   | TypeVar n as tv ->
-      if get_id tvar = n then tp else tv
+      if tvar = n then tp else tv
   | ADT (s, ts) ->
       let ts' = List.map ts ~f:(fun t -> subst_type_in_type tvar tp t) in
       ADT (s, ts')
   | PolyFun (arg, t) as pf -> 
-      if get_id tvar = arg then pf
+      if tvar = arg then pf
       else PolyFun (arg, subst_type_in_type tvar tp t)
+
+(* The same as above, but for a variable with locations *)
+let subst_type_in_type' tv = subst_type_in_type (get_id tv)
 
 let rec subst_type_in_literal tvar tp l = match l with
   | Map ((kt, vt), ls) -> 
-      let kts = subst_type_in_type tvar tp kt in
-      let vts = subst_type_in_type tvar tp vt in
+      let kts = subst_type_in_type' tvar tp kt in
+      let vts = subst_type_in_type' tvar tp vt in
       let ls' = List.map ls (fun (k, v) ->
         let k' = subst_type_in_literal tvar tp k in
         let v' = subst_type_in_literal tvar tp v in 
         (k', v')) in
       Map ((kts, vts), ls')
   | ADTValue (n, ts, ls) ->
-      let ts' = List.map ts ~f:(fun t -> subst_type_in_type tvar tp t) in
+      let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
       let ls' = List.map ls ~f:(fun l -> subst_type_in_literal tvar tp l) in
       ADTValue (n, ts', ls')
   | _ -> l
@@ -64,7 +67,7 @@ let rec subst_type_in_expr tvar tp e = match e with
   | Literal l -> Literal (subst_type_in_literal tvar tp l)
   | Var _ as v -> v
   | Fun (f, t, body) ->
-      let t_subst = subst_type_in_type tvar tp t in 
+      let t_subst = subst_type_in_type' tvar tp t in 
       let body_subst = subst_type_in_expr tvar tp body in
       Fun (f, t_subst, body_subst)
   | TFun (tv, body) as tf ->
@@ -74,12 +77,12 @@ let rec subst_type_in_expr tvar tp e = match e with
         let body_subst = subst_type_in_expr tvar tp body in
         TFun (tv, body_subst)
   | Constr (n, ts, es) ->
-      let ts' = List.map ts ~f:(fun t -> subst_type_in_type tvar tp t) in
+      let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
       Constr (n, ts', es)
   | App _ as app -> app
   | Builtin _ as bi -> bi
   | Let (i, tann, lhs, rhs) ->
-      let tann' = Option.map tann ~f:(fun t -> subst_type_in_type tvar tp t) in
+      let tann' = Option.map tann ~f:(fun t -> subst_type_in_type' tvar tp t) in
       let lhs' = subst_type_in_expr tvar tp lhs in
       let rhs' = subst_type_in_expr tvar tp rhs in
       Let (i, tann', lhs', rhs')
@@ -88,10 +91,10 @@ let rec subst_type_in_expr tvar tp e = match e with
       let cs' = List.map cs ~f:(fun (p, b) -> (p, subst_type_in_expr tvar tp b)) in
       MatchExpr(e, cs')
   | TApp (tf, tl) -> 
-      let tl' = List.map tl (fun t -> subst_type_in_type tvar tp t) in
+      let tl' = List.map tl (fun t -> subst_type_in_type' tvar tp t) in
       TApp (tf, tl')
   | Fixpoint (f, t, body) ->
-      let t' = subst_type_in_type tvar tp t in
+      let t' = subst_type_in_type' tvar tp t in
       let body' = subst_type_in_expr tvar tp body in
       Fixpoint (f, t', body')
 
@@ -284,6 +287,15 @@ let rec fun_type_applies ft argtypes = match ft, argtypes with
   | FunType (argt, rest), a :: ats
     when argt = a -> fun_type_applies rest ats 
   | t, []  -> pure t
-  | _ -> fail @@  sprintf
+  | _ -> fail @@ sprintf
         "The type %s doesn't apply to the arguments %s." (pp_typ ft)
         (pp_typ_list argtypes)
+
+let rec elab_tfun_with_args tf args = match tf, args with
+  | PolyFun (n, tp), a :: args' ->
+      let tp' = subst_type_in_type n a tp in
+      elab_tfun_with_args tp' args'
+  | t, [] -> pure t
+  | _ -> fail @@ sprintf
+        "Cannot elaborate %s with type arguments %s." (pp_typ tf)
+        (pp_typ_list args)

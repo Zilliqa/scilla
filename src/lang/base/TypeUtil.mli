@@ -12,7 +12,7 @@ open Core
 open Big_int
 open Syntax
 
-val subst_type_in_type: 'a ident -> typ -> typ -> typ
+val subst_type_in_type: string -> typ -> typ -> typ
 val subst_type_in_literal: 'a ident -> typ -> literal -> literal
 val subst_type_in_expr: 'a ident -> typ -> 'a expr -> 'a expr
 
@@ -72,4 +72,5 @@ val map_typ : typ -> typ -> typ
 (*                        Utilities                *)
 (***************************************************)
 val fun_type_applies : typ -> typ list -> (typ, string) result
+val elab_tfun_with_args : typ -> typ list -> (typ, string) result
 val pp_typ_list : typ list -> string  
