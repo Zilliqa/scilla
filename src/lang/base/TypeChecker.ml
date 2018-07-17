@@ -14,6 +14,7 @@ open Result.Let_syntax
 open MonadUtil
 open TypeUtil
 open Datatypes
+open BuiltIns
 
 (* Instantiated the type environment *)
 module SimpleTEnv = MakeTEnv(PlainTypes)
@@ -28,6 +29,14 @@ let rec get_type e tenv = match e with
       let tenv' = TEnv.addT (TEnv.copy tenv) arg t in
       let%bind bt = get_type body tenv' in
       pure @@ mk_qual_tp (FunType (t, bt.tp))
+  | Builtin (i, actuals) ->
+      let opname = get_id i in
+      let%bind tresults = mapM actuals
+          ~f:(fun arg -> TEnv.resolveT tenv (get_id arg) ~lopt:(Some (get_loc arg))) in
+      let targs = List.map tresults ~f:(fun rr -> (rr_typ rr).tp) in
+      let%bind (_, ret_typ, op) = BuiltInDictionary.find_builtin_op opname targs in
+      pure @@ mk_qual_tp ret_typ
+
 
   (* 1. Type-check primitive literals *)
   (* 2. ADTs and pattern-matching *)
