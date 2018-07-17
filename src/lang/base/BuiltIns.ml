@@ -755,7 +755,7 @@ end
 let elab_id = fun t _ -> pure t
 
 (**********************************************************)
-(*                   Built-in  Dictionariy                *)
+(*                   Built-in  Dictionary                *)
 (**********************************************************)
 
 module BuiltInDictionary = struct 
