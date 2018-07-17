@@ -12,6 +12,8 @@ open Core
 open Yojson
 open EvalUtil.MessagePayload
 open Datatypes
+open TypeUtil
+open BuiltIns
 
 exception Invalid_json of string
 let addr_len = 40
@@ -28,6 +30,36 @@ let member_exn m j =
   match v with
   | `Null -> raise (Invalid_json ("Member '" ^ m ^ "' not found in json"))
   | j -> j
+
+let rec typ_to_string t = 
+match t with
+| PrimType t -> t
+| MapType (kt, vt) ->
+    sprintf "Map (%s) (%s)" (typ_to_string kt) (typ_to_string vt )
+| ADT (name, targs) ->
+    let tns = List.map targs
+        ~f:(fun t -> sprintf "(%s)" (typ_to_string t)) in
+    sprintf "%s %s" name (String.concat ~sep:" " tns)
+(* TODO: Support other types *)
+| _ -> "Unsupported"
+
+(* Given a literal, return its full type name *)
+let lit_typ_string l = match l with
+  | Map ((kt, vt), _) -> typ_to_string (MapType (kt, vt))
+  | ADTValue (name, tl, _) -> 
+      let r = DataTypeDictionary.lookup_constructor name in
+      (match r with
+       | Error emsg ->
+           raise (Invalid_json (emsg))
+       | Ok (t, _)->
+           typ_to_string (ADT (t.tname, tl)))
+  | StringLit _ -> "String"
+  | IntLit (w, _) -> "Int" ^ (Int.to_string w)
+  | UintLit (w,_) -> "Uint" ^ (Int.to_string w)
+  | BNum _ -> "BNum"
+  | Address _ -> "Address"
+  | Sha256 _ -> "Hash"
+  | Msg _ -> "Message"
 
 let lit_exn n =
   let s, re, l = 
@@ -49,7 +81,7 @@ let lit_exn n =
   then
     (if l <> 0 && (String.length s) <> l
      then
-      raise (Invalid_json ("Invalid " ^ literal_tag n ^ " : " ^ s ^ " in json"))
+      raise (Invalid_json ("Invalid " ^ lit_typ_string n ^ " : " ^ s ^ " in json"))
      else
       (match n with
       | IntLit (wl, l) | UintLit (wl, l) ->
@@ -58,13 +90,13 @@ let lit_exn n =
         then
           n
         else
-          raise (Invalid_json ("Invalid integer literal " ^ literal_tag n ^ " : " ^ s ^ " in json"))
+          raise (Invalid_json ("Invalid integer literal " ^ lit_typ_string n ^ " : " ^ s ^ " in json"))
       | _ ->
         n
       )
     )
   else
-    raise (Invalid_json ("Invalid " ^ literal_tag n ^ " : " ^ s ^ " in json"))
+    raise (Invalid_json ("Invalid " ^ lit_typ_string n ^ " : " ^ s ^ " in json"))
 
 let build_int_exn t v =
   let r = build_int t v in
@@ -72,22 +104,17 @@ let build_int_exn t v =
   | Some rs ->
     rs
   | None ->
-    raise (Invalid_json("Invalid integer type/value " ^ t ^ " " ^ v ^ " in json"))
+    raise (Invalid_json("Invalid integer type/value " ^ (pp_typ t) ^ " " ^ v ^ " in json"))
 
 let build_prim_lit_exn t v =
-    match t with
-    | PrimType "String" -> lit_exn (StringLit v)
-    | PrimType "BNum" -> lit_exn(BNum v)
-    | PrimType "Address" -> lit_exn(Address v)
-    | PrimType "Hash" -> lit_exn(Sha256 v)
-    | PrimType i ->
-      (* See if it is an Int/Uint type. *)
-      if is_int_type i || is_uint_type i
-      then
-        build_int_exn i v
-      else
-        raise (Invalid_json ("Invalid PrimType " ^ i ^ " in JSON"))
-    | _ ->
+  let open PrimTypes in
+  match t with
+  | x when x = string_typ -> lit_exn (StringLit v)
+  | x when x = bnum_typ -> lit_exn(BNum v)
+  | x when x = address_typ -> lit_exn(Address v)
+  | x when x = hash_typ -> lit_exn(Sha256 v)
+  | x when is_int_type x || is_uint_type x -> build_int_exn x v
+  | _ ->
       raise (Invalid_json ("JSON parsing: Invalid type for PrimType literal construction"))
 
 let json_to_adtargs cname tlist ajs =
@@ -211,33 +238,6 @@ let jobj_to_statevar json =
     let tv = build_prim_lit_exn t v in
       (n, tv)
 
-let rec typ_to_string t = 
-match t with
-| PrimType t -> t
-| MapType (kt, vt) ->
-    sprintf "Map (%s) (%s)" (typ_to_string kt) (typ_to_string vt )
-| ADT (name, targs) ->
-    let tns = List.map targs
-        ~f:(fun t -> sprintf "(%s)" (typ_to_string t)) in
-    sprintf "%s %s" name (String.concat ~sep:" " tns)
-
-(* TODO: Support other types *)
-| _ -> "Unsupported"
-
-(* Given a literal, return its full type name *)
-let lit_typ_string l = match l with
-  | Map ((kt, vt), _) -> typ_to_string (MapType (kt, vt))
-  | ADTValue (name, tl, _) -> 
-    let r = DataTypeDictionary.lookup_constructor name in
-    (match r with
-    | Error emsg ->
-      raise (Invalid_json (emsg))
-    | Ok (t, _)->
-      typ_to_string (ADT (t.tname, tl))
-    )
-  | _ -> literal_tag l
-
-
 let rec mapvalues_to_json ms = 
   match ms with
   | kv :: remaining ->
@@ -354,7 +354,7 @@ let get_json_data filename =
   let senders = member_exn sender_label json |> to_string in
   (* Make tag, amount and sender into a literal *)
   let tag = (tag_label, lit_exn(StringLit(tags))) in
-  let amount = (amount_label, build_int_exn "Uint128" amounts) in
+  let amount = (amount_label, build_int_exn PrimTypes.uint128_typ amounts) in
   let sender = (sender_label, lit_exn(Address(senders))) in
   let pjlist = member_exn "params" json |> to_list in
   let params = List.map pjlist ~f:jobj_to_statevar in

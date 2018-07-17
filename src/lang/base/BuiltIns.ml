@@ -14,6 +14,7 @@ open Result.Let_syntax
 open MonadUtil
 open Big_int
 open Stdint
+open TypeUtil
 
 exception IntOverflow
 exception IntUnderflow
@@ -57,6 +58,57 @@ module String = struct
       pure @@ StringLit (Core.String.sub x (int_of_string s) (int_of_string e))
   | _ -> builtin_fail "String.substr" ls
 end
+
+(* Validate Int* and Uint* literals (wx, x), whether the
+   string x they contain can be represented in wx bits  *)
+let validate_int_literal i =
+  try
+    match i with
+    | IntLit (wx, x) ->
+      (match wx with
+      | 32 -> Int32.to_string (Int32.of_string x) = x
+      | 64 -> Int64.to_string (Int64.of_string x) = x
+      | 128 -> Int128.to_string (Int128.of_string x) = x
+      | _ -> false
+      )
+    | UintLit (wx, x) ->
+      (match wx with
+      | 32 -> Uint32.to_string (Uint32.of_string x) = x
+      | 64 -> Uint64.to_string (Uint64.of_string x) = x
+      | 128 -> Uint128.to_string (Uint128.of_string x) = x
+      | _ -> false
+      )
+    | _ -> false
+  with
+  | _ -> false
+
+(* Given an integer type (as string) and the value (as string),
+   build IntLit or UintLit out of it. TODO: Validate. *)
+let build_int t v =
+  let open PrimTypes in 
+  let validator_wrapper l = 
+    if validate_int_literal l then Some l else None
+  in
+  match t with
+  | x when x = int32_typ   -> validator_wrapper (IntLit(32, v))
+  | x when x = int64_typ   -> validator_wrapper (IntLit(64, v))
+  | x when x = int128_typ  -> validator_wrapper (IntLit(128, v))
+  | x when x = uint32_typ  -> validator_wrapper (UintLit(32, v))
+  | x when x = uint64_typ  -> validator_wrapper (UintLit(64, v))
+  | x when x = uint128_typ -> validator_wrapper (UintLit(128, v))
+  | _ -> None
+
+let is_int_type = function
+  | x when x = PrimTypes.int32_typ ||
+           x = PrimTypes.int64_typ ||
+           x = PrimTypes.int128_typ -> true
+  | _ -> false
+
+let is_uint_type = function
+  | x when x = PrimTypes.uint32_typ ||
+           x = PrimTypes.uint64_typ ||
+           x = PrimTypes.uint128_typ -> true
+  | _ -> false
 
 (*******************************************************)
 (* Manipulating with arbitrary integer representations *)
@@ -510,7 +562,7 @@ module Hashing = struct
         let i1' = mod_big_int i1 two128 in
         let i2' = mod_big_int i2 two128 in
         let dist = abs_big_int (sub_big_int i1' i2') in
-        let i = build_int "Uint128" (string_of_big_int dist) in
+        let i = build_int PrimTypes.uint128_typ (string_of_big_int dist) in
         (match i with
         | Some ui -> pure ui
         | None -> builtin_fail "Hashing.dist: Error building Uint128 from hash distance" ls
@@ -576,28 +628,32 @@ module BuiltInDictionary = struct
     ("to_list", ["Map"], Maps.to_list);
   ]
 
+  (* TODO: Refactor this abomination to use proper types! *)
   let rec tags_match expected argtypes =
     match expected, argtypes with
-    | e::es, a::args ->
-      if e = a || e = "Any" || 
-         is_int_type a && e = "Int" || 
-         is_uint_type a && e = "Uint"
-      then
+    | e::es, a::args
+      when e = "Any" || 
+           is_int_type a && e = "Int" || 
+           is_uint_type a && e = "Uint" ->
         tags_match es args
-      else 
-        false
+    | "Map" :: es, (MapType _) :: args ->
+        tags_match es args
+    | e :: es, (PrimType a) :: args
+      when e = a ->
+        tags_match es args
     | [], [] -> true
     | _ -> false
   
-  (* Dictionary lookup *)
+  (* Dictionary lookup based on the operation name and type *)
   let find_builtin_op opname argtypes =
     match List.find built_in_dict
             ~f:(fun (n, expected, _) ->
                 n = opname &&
                 tags_match expected argtypes) with
     | None ->
+        let args = List.map ~f:pp_typ argtypes in
         fail @@
         sprintf "Cannot find built-in with name \"%s\" and arguments %s."
-          opname ("(" ^ (Core.String.concat ~sep:", " argtypes) ^ ")")
+          opname ("(" ^ (Core.String.concat ~sep:", " args) ^ ")")
     | Some (_, _, op) -> pure op
 end

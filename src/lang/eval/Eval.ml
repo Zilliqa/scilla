@@ -16,6 +16,7 @@ open MonadUtil
 open PatternMatching
 open BuiltIns
 open Stdint
+open TypeUtil
 
 (***************************************************)
 (*                    Utilities                    *)      
@@ -136,8 +137,8 @@ let rec exp_eval e env = match e with
       let opname = get_id i in
       let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
       let%bind arg_literals = vals_to_literals args in
-      let tags = List.map arg_literals ~f:literal_tag in
-      let%bind op = BuiltInDictionary.find_builtin_op opname tags in
+      let%bind tps = mapM arg_literals ~f:TypeChecker.literal_type in
+      let%bind op = BuiltInDictionary.find_builtin_op opname tps in
       let%bind res = op arg_literals in 
       pure (Env.ValLit res, env)
   | Fixpoint (f, t, body) ->

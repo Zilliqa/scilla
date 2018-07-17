@@ -13,6 +13,9 @@ open Yojson
 open Big_int
 open Syntax
 open MonadUtil
+open Big_int
+open Stdint
+
 
 (****************************************************************)
 (*                  Type substitutions                          *)
