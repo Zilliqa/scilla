@@ -1,0 +1,3 @@
+Failed execution:
+Cannot apply built-in Uint.add: an overflow/underflow occurred to a list of arguments:(UintLit 256 115792089237316195423570985008687907853269984665640564039457584007913129639935),
+ (UintLit 256 1).
