@@ -33,6 +33,14 @@ let rec get_type e tenv = match e with
       let tenv' = TEnv.addT (TEnv.copy tenv) arg t in
       let%bind bt = get_type body tenv' in
       pure @@ mk_qual_tp (FunType (t, bt.tp))
+  | App (f, actuals) ->
+      let%bind fres = TEnv.resolveT tenv (get_id f) ~lopt:(Some (get_loc f)) in
+      let ftyp = (rr_typ fres).tp in
+      let%bind tresults = mapM actuals
+          ~f:(fun arg -> TEnv.resolveT tenv (get_id arg) ~lopt:(Some (get_loc arg))) in
+      let targs = List.map tresults ~f:(fun rr -> (rr_typ rr).tp) in
+      let%bind res_type = fun_type_applies ftyp targs in
+      pure @@ mk_qual_tp res_type
   | Builtin (i, actuals) ->
       let%bind tresults = mapM actuals
           ~f:(fun arg -> TEnv.resolveT tenv (get_id arg) ~lopt:(Some (get_loc arg))) in

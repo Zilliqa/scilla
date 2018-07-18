@@ -13,6 +13,7 @@ open Result.Let_syntax
 open MonadUtil
 open Big_int
 open EvalUtil
+open TypeUtil
 
 (* Recursion principles for built-in ADTs *)
 
@@ -24,7 +25,10 @@ module NatRec = struct
   (* Adopted one, as flod_left and fold_right are equivalent for
    * natural numbers *)
   module Foldl = struct
+    (* The type of the fixpoint argument *)
     let fix_type = parse_type "('T -> Nat -> 'T) -> 'T -> Nat -> 'T"
+    (* The type of the entire recursion primitive *)
+    let full_type = tfun_typ "'T" fix_type
     let fix_arg = parse_expr ( 
         "fun (fn : 'T -> Nat -> 'T) => fun (f0 : 'T) => fun (n: Nat) => " ^
         "match n with " ^
@@ -60,8 +64,10 @@ module ListRec = struct
   let bvar = Ident("'B", dummy_loc)
 
   module Foldl = struct
-    (* Parentheses around (List 'A) are important for the parser! *)
+    (* The type of the fixpoint argument *)
     let fix_type = parse_type "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
+    (* The type of the primitive *)
+    let full_type = tfun_typ "'A" (tfun_typ "'B" fix_type)
     let fix_arg = parse_expr ( 
         "fun (f : 'B -> 'A -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
         "match l with " ^
@@ -76,8 +82,10 @@ module ListRec = struct
   end
   
   module Foldr = struct
-    (* Parentheses around (List 'A) are important for the parser! *)
+    (* The type of the fixpoint argument *)
     let fix_type = parse_type "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
+    (* The type of the primitive *)
+    let full_type = tfun_typ "'A" (tfun_typ "'B" fix_type)        
     let fix_arg = parse_expr ( 
         "fun (f : 'A -> 'B -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
         "match l with " ^
@@ -95,8 +103,8 @@ end
 
 let recursion_principles = 
  [
-   (NatRec.Foldl.id, NatRec.Foldl.fold);
-   (ListRec.Foldl.id, ListRec.Foldl.fold);
-   (ListRec.Foldr.id, ListRec.Foldr.fold);
+   (NatRec.Foldl.id, NatRec.Foldl.fold, NatRec.Foldl.full_type);
+   (ListRec.Foldl.id, ListRec.Foldl.fold, ListRec.Foldl.full_type);
+   (ListRec.Foldr.id, ListRec.Foldr.fold, ListRec.Foldr.full_type);
  ]
 

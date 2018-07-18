@@ -71,6 +71,7 @@ val map_typ : typ -> typ -> typ
 (***************************************************)
 (*                        Utilities                *)
 (***************************************************)
+val type_equiv : typ -> typ -> bool
 val fun_type_applies : typ -> typ list -> (typ, string) result
 val elab_tfun_with_args : typ -> typ list -> (typ, string) result
 val pp_typ_list : typ list -> string  

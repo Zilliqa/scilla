@@ -8,6 +8,7 @@
  *)
 
 
+open Core
 open Printf
 open Sexplib.Std
 open Syntax
@@ -18,7 +19,8 @@ let () =
   let filename = Sys.argv.(1) in
   match FrontEndParser.parse_file ScillaParser.exps filename with
   | Some [e] ->
-      let env = Env.bind_all Env.empty recursion_principles in
+      let recs = List.map ~f:(fun (a, b, _) -> (a, b)) recursion_principles in
+      let env = Env.bind_all Env.empty recs in
       let res = Eval.exp_eval e env in
       (match res with
       | Ok (v, env) ->

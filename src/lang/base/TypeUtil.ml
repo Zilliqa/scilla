@@ -271,6 +271,11 @@ let map_typ k v = MapType (k, v)
 (*             Utility function for matching types              *)
 (****************************************************************)
 
+(* Type equivalence *)
+(* TODO: Generalise for up to alpha renaming of TVars *)
+let type_equiv t1 t2 =
+  t1 = t2
+
 let rec is_ground_type t = match t with 
   | FunType (a, r) -> is_ground_type a && is_ground_type r
   | MapType (k, v) -> is_ground_type k && is_ground_type v

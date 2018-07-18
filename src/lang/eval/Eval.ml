@@ -23,7 +23,7 @@ open TypeUtil
 (*                    Utilities                    *)      
 (***************************************************)    
 
-let reserved_names = List.map ~f:fst Recursion.recursion_principles
+let reserved_names = List.map ~f:fst3 Recursion.recursion_principles
 
 (* Printing result *)
 let pp_result r = match r with
@@ -281,7 +281,8 @@ let init_libraries clibs elibs =
     let%bind (v, _) = exp_eval e env in
     let env' = Env.bind env (get_id id) v in
     pure env') in
-  let env = Env.bind_all Env.empty Recursion.recursion_principles in
+  let (rids, rvals, _) = List.unzip3 Recursion.recursion_principles in
+  let env = Env.bind_all Env.empty (List.zip_exn rids rvals) in
   List.fold_left libs ~init:(pure env)
     ~f:(fun eres lentry ->
         let%bind env = eres in
