@@ -10,7 +10,7 @@
   (public_name scilla-base)
   (wrapped false)
   (libraries (core ppx_sexp_conv
-              num hex stdint
+              num hex stdint batteries
               ppx_deriving.show
               ppx_deriving_yojson.runtime
               yojson))

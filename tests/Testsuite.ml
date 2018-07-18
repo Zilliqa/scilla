@@ -25,8 +25,10 @@ let main =
   let exp_tests = Testexp.Tests.add_tests env in
   let type_tests = Testtypes.Tests.add_tests env in
   let checker_tests = Testchecker.Tests.add_tests env in
+  let integer256_tests = TestInteger256.integer256_tests in
 
-  let all_tests = "all_tests" >::: [type_tests; exp_tests; contract_tests; checker_tests] in
+  let all_tests = "all_tests" >::: [type_tests; exp_tests; contract_tests; 
+    checker_tests; integer256_tests] in
 
   (* Run all tests *)
   run_test_tt_main all_tests

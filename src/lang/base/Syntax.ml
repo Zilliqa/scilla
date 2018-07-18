@@ -12,6 +12,7 @@ open Sexplib.Std
 open Yojson
 open Big_int
 open Stdint
+open Integer256
 
 exception SyntaxError of string
 
@@ -207,6 +208,7 @@ let validate_int_literal i =
       | 32 -> Int32.to_string (Int32.of_string x) = x
       | 64 -> Int64.to_string (Int64.of_string x) = x
       | 128 -> Int128.to_string (Int128.of_string x) = x
+      | 256 -> Int256.to_string (Int256.of_string x) = x
       | _ -> false
       )
     | UintLit (wx, x) ->
@@ -214,6 +216,7 @@ let validate_int_literal i =
       | 32 -> Uint32.to_string (Uint32.of_string x) = x
       | 64 -> Uint64.to_string (Uint64.of_string x) = x
       | 128 -> Uint128.to_string (Uint128.of_string x) = x
+      | 256 -> Uint256.to_string (Uint256.of_string x) = x
       | _ -> false
       )
     | _ -> false
@@ -230,15 +233,17 @@ let build_int t v =
   | "Int32" -> validator_wrapper (IntLit(32, v))
   | "Int64" -> validator_wrapper (IntLit(64, v))
   | "Int128" -> validator_wrapper (IntLit(128, v))
+  | "Int256" -> validator_wrapper (IntLit(256, v))
   | "Uint32" -> validator_wrapper (UintLit(32, v))
   | "Uint64" -> validator_wrapper (UintLit(64, v))
   | "Uint128" -> validator_wrapper (UintLit(128, v))
+  | "Uint256" -> validator_wrapper (UintLit(256, v))
   | _ -> None
 
 let is_int_type = function
-  | "Int32" | "Int64" | "Int128" -> true
+  | "Int32" | "Int64" | "Int128" | "Int256" -> true
   | _ -> false
 
 let is_uint_type = function
-  | "Uint32" | "Uint64" | "Uint128" -> true
+  | "Uint32" | "Uint64" | "Uint128" | "Uint256" -> true
   | _ -> false
