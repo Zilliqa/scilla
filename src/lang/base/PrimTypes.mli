@@ -19,9 +19,11 @@ val is_prim_type : typ -> bool
 val int32_typ : typ
 val int64_typ : typ
 val int128_typ : typ
+val int256_typ : typ
 val uint32_typ : typ
 val uint64_typ : typ
 val uint128_typ : typ
+val uint256_typ : typ
 val string_typ : typ
 val bnum_typ : typ
 val address_typ : typ

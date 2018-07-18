@@ -15,6 +15,7 @@ open MonadUtil
 open Big_int
 open Stdint
 open TypeUtil
+open Integer256
 
 exception IntOverflow
 exception IntUnderflow
@@ -53,6 +54,7 @@ let validate_int_literal i =
       | 32 -> Int32.to_string (Int32.of_string x) = x
       | 64 -> Int64.to_string (Int64.of_string x) = x
       | 128 -> Int128.to_string (Int128.of_string x) = x
+      | 256 -> Int256.to_string (Int256.of_string x) = x
       | _ -> false
       )
     | UintLit (wx, x) ->
@@ -60,6 +62,7 @@ let validate_int_literal i =
       | 32 -> Uint32.to_string (Uint32.of_string x) = x
       | 64 -> Uint64.to_string (Uint64.of_string x) = x
       | 128 -> Uint128.to_string (Uint128.of_string x) = x
+      | 256 -> Uint256.to_string (Uint256.of_string x) = x
       | _ -> false
       )
     | _ -> false
@@ -77,21 +80,25 @@ let build_int t v =
   | x when x = int32_typ   -> validator_wrapper (IntLit(32, v))
   | x when x = int64_typ   -> validator_wrapper (IntLit(64, v))
   | x when x = int128_typ  -> validator_wrapper (IntLit(128, v))
+  | x when x = int256_typ  -> validator_wrapper (IntLit(256, v))
   | x when x = uint32_typ  -> validator_wrapper (UintLit(32, v))
   | x when x = uint64_typ  -> validator_wrapper (UintLit(64, v))
   | x when x = uint128_typ -> validator_wrapper (UintLit(128, v))
+  | x when x = uint256_typ -> validator_wrapper (UintLit(256, v))
   | _ -> None
 
 let is_int_type = function
   | x when x = PrimTypes.int32_typ ||
            x = PrimTypes.int64_typ ||
-           x = PrimTypes.int128_typ -> true
+           x = PrimTypes.int128_typ ||
+           x = PrimTypes.int256_typ -> true
   | _ -> false
 
 let is_uint_type = function
   | x when x = PrimTypes.uint32_typ ||
            x = PrimTypes.uint64_typ ||
-           x = PrimTypes.uint128_typ -> true
+           x = PrimTypes.uint128_typ ||
+           x = PrimTypes.uint256_typ -> true
   | _ -> false
 
 (*******************************************************)
@@ -258,9 +265,11 @@ end
 module Int32Wrapper = StdIntWrapper(Int32)
 module Int64Wrapper = StdIntWrapper(Int64)
 module Int128Wrapper = StdIntWrapper(Int128)
+module Int256Wrapper = StdIntWrapper(Int256)
 module Uint32Wrapper = StdUintWrapper(Uint32)
 module Uint64Wrapper = StdUintWrapper(Uint64)
 module Uint128Wrapper = StdUintWrapper(Uint128)
+module Uint256Wrapper = StdUintWrapper(Uint256)
 
 type int_type = IntT | UintT
 
@@ -306,6 +315,8 @@ module Int = struct
              pure (IntLit (wx, Int64Wrapper.safe_add x y))
          | 128 ->
              pure (IntLit (wx, Int128Wrapper.safe_add x y))
+         | 256 ->
+             pure (IntLit (wx, Int256Wrapper.safe_add x y))
          | _ -> builtin_fail "Int.add: unsupported Int type" ls
          with | IntOverflow | IntUnderflow ->
            builtin_fail "Int.add: an overflow/underflow occurred" ls
@@ -324,6 +335,8 @@ module Int = struct
              pure (IntLit (wx, Int64Wrapper.safe_sub x y))
          | 128 ->
              pure (IntLit (wx, Int128Wrapper.safe_sub x y))
+         | 256 ->
+             pure (IntLit (wx, Int256Wrapper.safe_sub x y))
          | _ -> builtin_fail "Int.sub: unsupported Int type" ls
          with | IntOverflow | IntUnderflow ->
            builtin_fail "Int.sub: an overflow/underflow occurred" ls
@@ -342,6 +355,8 @@ module Int = struct
              pure (IntLit (wx, Int64Wrapper.safe_mul x y ))
          | 128 ->
              pure (IntLit (wx, Int128Wrapper.safe_mul x y))
+         | 256 ->
+             pure (IntLit (wx, Int256Wrapper.safe_mul x y))
          | _ -> builtin_fail "Int.mul: unsupported Int type" ls
          with | IntOverflow | IntUnderflow ->
            builtin_fail "Int.mul: an overflow/underflow occurred" ls
@@ -357,6 +372,7 @@ module Int = struct
         | 32 -> pure (to_Bool (Int32Wrapper.safe_lt x y))
         | 64 -> pure (to_Bool (Int64Wrapper.safe_lt x y))
         | 128 -> pure (to_Bool (Int128Wrapper.safe_lt x y))
+        | 256 -> pure (to_Bool (Int256Wrapper.safe_lt x y))
         | _ -> builtin_fail "Int.lt: unsupported Int type" ls
         with | IntOverflow | IntUnderflow ->
           builtin_fail "Int.lt: an overflow/underflow occurred" ls
@@ -367,6 +383,7 @@ module Int = struct
     | 32 -> pure int32_typ
     | 64 -> pure int64_typ
     | 128 -> pure int128_typ
+    | 256 -> pure int256_typ
     | _ -> fail "Failed to convert" 
 
   let to_int_arity = 1
@@ -389,6 +406,7 @@ module Int = struct
   let to_int32 ls _ = to_int_helper ls 32
   let to_int64 ls _ = to_int_helper ls 64
   let to_int128 ls _ = to_int_helper ls 128
+  let to_int256 ls _ = to_int_helper ls 256
 
 end
 
@@ -428,6 +446,7 @@ module Uint = struct
         | 32 -> pure (UintLit (wx, Uint32Wrapper.safe_add x y))
         | 64 -> pure (UintLit (wx, Uint64Wrapper.safe_add x y))
         | 128 -> pure (UintLit (wx, Uint128Wrapper.safe_add x y))
+        | 256 -> pure (UintLit (wx, Uint256Wrapper.safe_add x y))
         | _ -> builtin_fail "Uint.add: unsupported Uint type" ls
         with | IntOverflow | IntUnderflow ->
           builtin_fail "Uint.add: an overflow/underflow occurred" ls
@@ -443,6 +462,7 @@ module Uint = struct
         | 32 -> pure (UintLit (wx, Uint32Wrapper.safe_sub x y))
         | 64 -> pure (UintLit (wx, Uint64Wrapper.safe_sub x y))
         | 128 -> pure (UintLit (wx, Uint128Wrapper.safe_sub x y))
+        | 256 -> pure (UintLit (wx, Uint256Wrapper.safe_sub x y))
         | _ -> builtin_fail "Uint.sub: unsupported Uint type" ls
         with | IntOverflow | IntUnderflow ->
           builtin_fail "Uint.sub: an overflow/underflow occurred" ls
@@ -458,6 +478,7 @@ module Uint = struct
         | 32 -> pure (UintLit (wx, Uint32Wrapper.safe_mul x y))
         | 64 -> pure (UintLit (wx, Uint64Wrapper.safe_mul  x y ))
         | 128 -> pure (UintLit (wx, Uint128Wrapper.safe_mul  x y))
+        | 256 -> pure (UintLit (wx, Uint256Wrapper.safe_mul  x y))
         | _ -> builtin_fail "Uint.mul: unsupported Uint type" ls
         with | IntOverflow | IntUnderflow ->
           builtin_fail "Uint.mul: an overflow/underflow occurred" ls
@@ -473,6 +494,7 @@ module Uint = struct
         | 32 -> pure (to_Bool (Uint32Wrapper.safe_lt x y))
         | 64 -> pure (to_Bool (Uint64Wrapper.safe_lt x y))
         | 128 -> pure (to_Bool (Uint128Wrapper.safe_lt x y))
+        | 256 -> pure (to_Bool (Uint256Wrapper.safe_lt x y))
         | _ -> builtin_fail "Uint.lt: unsupported Uint type" ls
         with | IntOverflow | IntUnderflow ->
           builtin_fail "Uint.lt: an overflow/underflow occurred" ls
@@ -483,6 +505,7 @@ module Uint = struct
     | 32 -> pure uint32_typ
     | 64 -> pure uint64_typ
     | 128 -> pure uint128_typ
+    | 256 -> pure uint256_typ                              
     | _ -> fail "Failed to convert" 
 
   let to_uint_arity = 1
@@ -505,7 +528,9 @@ module Uint = struct
   let to_uint32 ls _ = to_uint_helper ls 32
   let to_uint64 ls _ = to_uint_helper ls 64
   let to_uint128 ls _ = to_uint_helper ls 128
+  let to_uint256 ls _ = to_uint_helper ls 256
 
+  
   let to_nat_arity = 1
   let to_nat_type = tfun_typ "'A" @@ (fun_typ (tvar "'A") nat_typ)
   let to_nat_elab sc ts = match ts with
@@ -639,17 +664,16 @@ module Hashing = struct
     | [Sha256 x; Sha256 y] ->
         let i1 = big_int_of_hash x in
         let i2 = big_int_of_hash y in
-        (* TODO: Implement Uint256 *)
-        let two128 = power_big_int_positive_big_int (big_int_of_int 2) (big_int_of_int 128) in
-        let i1' = mod_big_int i1 two128 in
-        let i2' = mod_big_int i2 two128 in
+        let two256 = power_big_int_positive_big_int (big_int_of_int 2) (big_int_of_int 256) in
+        let i1' = mod_big_int i1 two256 in
+        let i2' = mod_big_int i2 two256 in
         let dist = abs_big_int (sub_big_int i1' i2') in
-        let i = build_int PrimTypes.uint128_typ (string_of_big_int dist) in
+        let i = build_int uint256_typ (string_of_big_int dist) in
         (match i with
         | Some ui -> pure ui
-        | None -> builtin_fail "Hashing.dist: Error building Uint128 from hash distance" ls
+        | None -> builtin_fail "Hashing.dist: Error building Uint256 from hash distance" ls
         )
-    | _ -> builtin_fail "Hashing.dist" ls  
+    | _ -> builtin_fail "Hashing.dist" ls
 end
 
 (***********************************************************)
@@ -750,6 +774,7 @@ module Maps = struct
 
 end
 
+
 (* Identity elaborator *)
 let elab_id = fun t _ -> pure t
 
@@ -811,7 +836,8 @@ module BuiltInDictionary = struct
     ("to_int32", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 32, Int.to_int32);
     ("to_int64", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 64, Int.to_int64);
     ("to_int128", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 128, Int.to_int128);
-
+    ("to_int256", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 256, Int.to_int256);
+    
     (* Unsigned integers *)
     ("eq", Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.eq);
     ("lt", Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.lt);
@@ -821,6 +847,7 @@ module BuiltInDictionary = struct
     ("to_uint32", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 32, Uint.to_uint32);
     ("to_uint64", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 64, Uint.to_uint64);
     ("to_uint128", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 128, Uint.to_uint128);
+    ("to_uint256", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 256, Uint.to_uint256);
     ("to_nat", Uint.to_nat_arity, Uint.to_nat_type, Uint.to_nat_elab, Uint.to_nat);
   ]
 

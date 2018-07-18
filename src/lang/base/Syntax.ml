@@ -13,6 +13,7 @@ open Sexplib.Std
 open Yojson
 open Big_int
 open Stdint
+open Integer256
 
 exception SyntaxError of string
 
@@ -189,4 +190,3 @@ let expr_loc (e : 'rep expr) : loc option =
     let l = get_loc i in
       if (l.cnum <> -1) then Some l else None
   | _ -> None
-

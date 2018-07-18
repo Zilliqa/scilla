@@ -19,7 +19,6 @@
   let to_type d = match d with
     | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x
     | _ -> ADT (d, [])
-         
 %}
 
 (* Identifiers *)    
