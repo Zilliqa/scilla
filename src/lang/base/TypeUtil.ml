@@ -241,11 +241,13 @@ let literal_type l =
   | Address _ -> pure address_typ
   | Sha256 _ -> pure hash_typ
   | Msg _ -> pure msg_typ
+  (* TODO: Add structural type checking *)
   | Map ((kt, vt), _) ->
       if PrimTypes.is_prim_type kt
       then pure (MapType (kt, vt))
       else fail @@
         (sprintf "Not a primitive map key tpye: %s." (pp_typ kt))        
+  (* TODO: Add structural type checking *)
   | ADTValue (cname, ts, _) ->
       let%bind (adt, _) = DataTypeDictionary.lookup_constructor cname in
       let tparams = adt.targs in

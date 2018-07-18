@@ -33,14 +33,13 @@ let rec get_type e tenv = match e with
       let%bind tresults = mapM actuals
           ~f:(fun arg -> TEnv.resolveT tenv (get_id arg) ~lopt:(Some (get_loc arg))) in
       let targs = List.map tresults ~f:(fun rr -> (rr_typ rr).tp) in
-      let%bind (_, ret_typ, op) = BuiltInDictionary.find_builtin_op i targs in
+      let%bind (_, ret_typ, _) = BuiltInDictionary.find_builtin_op i targs in
       pure @@ mk_qual_tp ret_typ
 
 
   (* 1. Type-check primitive literals *)
   (* 2. ADTs and pattern-matching *)
   (* 3. Recursin principles (hard-coded) *)
-  (* 3. Built-ins // make this a functor taking built-in signatures *)
   (* 4. Type-check maps *)
   (* 5. Type-check ADTs *)
       

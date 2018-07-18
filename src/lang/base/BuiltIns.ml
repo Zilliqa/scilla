@@ -276,13 +276,13 @@ module Int = struct
   let eq_arity = 2
   let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
   let eq_elab t ts = match ts with
-    | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args eq_type [i1]
+    | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args t [i1]
     | _ -> fail "Failed to elaborate"
 
   let binop_arity = 2
   let binop_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
   let binop_elab t ts = match ts with
-    | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args binop_type [i1]
+    | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args t [i1]
     | _ -> fail "Failed to elaborate"
 
   let eq ls _ = match ls with
@@ -371,10 +371,10 @@ module Int = struct
 
   let to_int_arity = 1
   let to_int_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (tvar "'B"))
-  let to_int_elab w t ts = match ts with
+  let to_int_elab w sc ts = match ts with
     | [t] when is_int_type t || is_uint_type t ->
         let%bind ityp = mk_int_type w in
-        elab_tfun_with_args to_int_type [t; ityp]
+        elab_tfun_with_args sc [t; ityp]
     | _ -> fail "Failed to elaborate"
   
   let to_int_helper ls w = match ls with
@@ -400,14 +400,14 @@ module Uint = struct
 
   let eq_arity = 2
   let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
-  let eq_elab t ts = match ts with
-    | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args eq_type [i1]
+  let eq_elab sc ts = match ts with
+    | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args sc [i1]
     | _ -> fail "Failed to elaborate"
 
   let binop_arity = 2
   let binop_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
-  let binop_elab t ts = match ts with
-    | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args binop_type [i1]
+  let binop_elab sc ts = match ts with
+    | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args sc [i1]
     | _ -> fail "Failed to elaborate"
   
   let eq ls _ = match ls with
@@ -487,10 +487,10 @@ module Uint = struct
 
   let to_uint_arity = 1
   let to_uint_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (tvar "'B"))
-  let to_uint_elab w t ts = match ts with
+  let to_uint_elab w sc ts = match ts with
     | [t] when is_uint_type t || is_int_type t ->
         let%bind ityp = mk_uint_type w in
-        elab_tfun_with_args to_uint_type [t; ityp]
+        elab_tfun_with_args sc [t; ityp]
     | _ -> fail "Failed to elaborate"
 
   let to_uint_helper ls w = match ls with
@@ -508,9 +508,9 @@ module Uint = struct
 
   let to_nat_arity = 1
   let to_nat_type = tfun_typ "'A" @@ (fun_typ (tvar "'A") nat_typ)
-  let to_nat_elab t ts = match ts with
+  let to_nat_elab sc ts = match ts with
     | [t] when is_uint_type t ->
-        elab_tfun_with_args to_nat_type [t]
+        elab_tfun_with_args sc [t]
     | _ -> fail "Failed to elaborate"
 
   let to_nat ls _ = match ls with
@@ -561,9 +561,9 @@ module BNum = struct
     tfun_typ "'A" @@ tfun_typ "'B" @@
     (fun_typ (tvar "'A") @@ fun_typ (tvar "'B") bnum_typ)
   (* Elaborator to run with arbitrary uints *)
-  let badd_elab t ts = match ts with
+  let badd_elab sc ts = match ts with
     | [s; u] when s = bnum_typ && is_uint_type u ->
-        elab_tfun_with_args badd_type ts
+        elab_tfun_with_args sc ts
     | _ -> fail "Failed to elaborate"
 
   let badd ls _ = match ls with
@@ -617,8 +617,8 @@ module Hashing = struct
 
   let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") hash_typ
   let hash_arity = 1
-  let hash_elab t ts = match ts with
-    | [u]  -> elab_tfun_with_args hash_type ts
+  let hash_elab sc ts = match ts with
+    | [u]  -> elab_tfun_with_args sc ts
     | _ -> fail "Failed to elaborate"
   let sha256hash ls _ = match ls with
     | [l] ->
@@ -663,9 +663,9 @@ module Maps = struct
   let contains_type =
     tfun_typ "'K" @@ tfun_typ "'V" @@
     (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@ fun_typ (tvar "'K") bool_typ)
-  let contains_elab t ts = match ts with
+  let contains_elab sc ts = match ts with
     | [MapType (kt, vt); u] when kt = u  ->
-        elab_tfun_with_args contains_type [kt; vt]
+        elab_tfun_with_args sc [kt; vt]
     | _ -> fail "Failed to elaborate"
   let contains ls _ = match ls with
     | [Map (_, entries); key] ->
@@ -680,9 +680,9 @@ module Maps = struct
     (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
      fun_typ (tvar "'K") @@
      fun_typ (tvar "'V") (map_typ (tvar "'K") (tvar "'V")))
-  let put_elab t ts = match ts with
+  let put_elab sc ts = match ts with
     | [MapType (kt, vt); kt'; vt'] when kt = kt' && vt = vt'  ->
-        elab_tfun_with_args put_type [kt; vt]
+        elab_tfun_with_args sc [kt; vt]
     | _ -> fail "Failed to elaborate"
   let put ls _ = match ls with
     | [Map (tm, entries); key; value] ->
@@ -698,9 +698,9 @@ module Maps = struct
     tfun_typ "'K" @@ tfun_typ "'V" @@
     (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
      fun_typ (tvar "'K") (option_typ (tvar "'V")))
-  let get_elab t ts = match ts with
+  let get_elab sc ts = match ts with
     | [MapType (kt, vt); kt'] when kt = kt'  ->
-        elab_tfun_with_args get_type [kt; vt]
+        elab_tfun_with_args sc [kt; vt]
     | _ -> fail "Failed to elaborate"
   (* Notice that get passes return type *)
   let get ls rt = match ls, rt with
@@ -716,9 +716,9 @@ module Maps = struct
     tfun_typ "'K" @@ tfun_typ "'V" @@
     (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
      fun_typ (tvar "'K") (map_typ (tvar "'K") (tvar "'V")))
-  let remove_elab t ts = match ts with
+  let remove_elab sc ts = match ts with
     | [MapType (kt, vt); u] when kt = u  ->
-        elab_tfun_with_args remove_type [kt; vt]
+        elab_tfun_with_args sc [kt; vt]
     | _ -> fail "Failed to elaborate" 
   let remove ls _ = match ls with
     | [Map (tm, entries); key] ->
@@ -732,8 +732,8 @@ module Maps = struct
     tfun_typ "'K" @@ tfun_typ "'V" @@
     (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
      (list_typ (pair_typ (tvar "'K") (tvar "'V"))))
-  let to_list_elab t ts = match ts with
-    | [MapType (kt, vt)]  -> elab_tfun_with_args to_list_type [kt; vt]
+  let to_list_elab sc ts = match ts with
+    | [MapType (kt, vt)]  -> elab_tfun_with_args sc [kt; vt]
     | _ -> fail "Failed to elaborate" 
   let to_list ls rt = match ls with
   | [Map ((kt, vt), entries)] ->
@@ -749,7 +749,6 @@ module Maps = struct
   | _ -> builtin_fail "Map.to_list" ls
 
 end
-
 
 (* Identity elaborator *)
 let elab_id = fun t _ -> pure t
