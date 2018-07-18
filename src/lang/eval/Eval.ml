@@ -291,6 +291,7 @@ let init_libraries clibs elibs =
     let env' = Env.bind env (get_id id) v in
     pure env') in
   let env = Env.bind_all Env.empty Recursion.recursion_principles in
+  DebugMessage.plog ("Loaded library functions: " ^ (Env.pp env));
   List.fold_left libs ~init:(pure env)
     ~f:(fun eres lentry ->
         let%bind env = eres in
