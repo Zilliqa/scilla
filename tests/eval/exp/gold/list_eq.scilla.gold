@@ -17,8 +17,4 @@
   [ten -> (IntLit 64 10)],
   [two -> (IntLit 64 2)],
   [one -> (IntLit 64 1)],
-  [int_eq -> <closure>],
-  [list_eq -> <type_closure>],
-  [list_eq_helper -> <type_closure>],
-  [list_tail -> <type_closure>],
-  [list_head -> <type_closure>] }
+  [int_eq -> <closure>] }

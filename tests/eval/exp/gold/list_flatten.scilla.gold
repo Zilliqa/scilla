@@ -14,6 +14,4 @@
   [three -> (IntLit 128 3)],
   [two -> (IntLit 128 2)],
   [one -> (IntLit 128 1)],
-  [int_flatten -> <closure>],
-  [list_flatten -> <type_closure>],
-  [list_append -> <type_closure>] }
+  [int_flatten -> <closure>] }

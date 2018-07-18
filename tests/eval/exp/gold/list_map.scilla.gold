@@ -8,5 +8,4 @@
   [two -> (UintLit 32 2)],
   [one -> (UintLit 32 1)],
   [f -> <closure>],
-  [int_map -> <closure>],
-  [list_map -> <type_closure>] }
+  [int_map -> <closure>] }

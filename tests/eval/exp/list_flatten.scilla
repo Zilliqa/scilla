@@ -1,32 +1,3 @@
-let list_append =
-  tfun 'A =>
-  fun (l1 : List 'A) =>
-  fun (l2 : List 'A) =>
-    (* Fold right over l1 and keep prepending elements to l2 *)
-    (* l2 is the initial accumulator *)
-    let folder = @list_foldr 'A (List 'A) in
-    let init = l2 in
-    let iter =
-      fun (h : 'A) =>
-      fun (z : List 'A) =>
-        Cons {'A} h z
-    in
-      folder iter init l1
-in
-
-let list_flatten =
-  tfun 'A =>
-  fun (l : List List 'A) =>
-    let folder = @list_foldr (List List 'A) (List 'A) in
-    let init = Nil {'A} in
-    let iter =
-      fun (h : List 'A) =>
-      fun (z : List 'A) =>
-        let app = @list_append 'A in
-        app h z
-    in
-      folder iter init l
-in
 
 let int_flatten = @list_flatten (List Int128) in
 

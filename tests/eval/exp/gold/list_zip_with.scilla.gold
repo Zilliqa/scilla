@@ -11,8 +11,4 @@
   [two -> (UintLit 128 2)],
   [one -> (UintLit 128 1)],
   [f -> <closure>],
-  [int_zip -> <closure>],
-  [list_zip_with -> <type_closure>],
-  [list_reverse -> <type_closure>],
-  [list_tail -> <type_closure>],
-  [list_head -> <type_closure>] }
+  [int_zip -> <closure>] }

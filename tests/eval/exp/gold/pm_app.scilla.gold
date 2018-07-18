@@ -1,4 +1,3 @@
 (ADTValue False()()),
 { [y -> (ADTValue False()())],
-  [x -> (ADTValue True()())],
-  [andb -> <closure>] }
+  [x -> (ADTValue True()())] }

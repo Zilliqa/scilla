@@ -32,11 +32,13 @@ let stmt_str s =
   |> Sexplib.Sexp.to_string
 
 (* Printing result *)
-let pp_result r = match r with
+let pp_result r exclude_names = 
+  let enames = List.append exclude_names reserved_names in
+  match r with
   | Error s -> s
   | Ok (e, env) ->
       let filter_prelude = fun (k, v) ->
-        not (List.mem reserved_names k ~equal:(fun s1 s2 -> s1 = s2))
+        not (List.mem enames k ~equal:(fun s1 s2 -> s1 = s2))
       in
       sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
 

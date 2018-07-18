@@ -12,5 +12,4 @@
   [three -> (IntLit 128 3)],
   [two -> (IntLit 128 2)],
   [one -> (IntLit 128 1)],
-  [int_unzip -> <closure>],
-  [list_unzip -> <type_closure>] }
+  [int_unzip -> <closure>] }

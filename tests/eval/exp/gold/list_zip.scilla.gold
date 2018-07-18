@@ -10,8 +10,4 @@
   [three -> (UintLit 32 3)],
   [two -> (UintLit 32 2)],
   [one -> (UintLit 32 1)],
-  [int_zip -> <closure>],
-  [list_zip -> <type_closure>],
-  [list_reverse -> <type_closure>],
-  [list_tail -> <type_closure>],
-  [list_head -> <type_closure>] }
+  [int_zip -> <closure>] }

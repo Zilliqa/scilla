@@ -27,24 +27,30 @@ let stream_to_string (s : char Stream.t) =
   let l = List.rev !result in
     string_of_chars l
 
+type tsuite_env = 
+  { bin_dir : test_ctxt -> string;
+    tests_dir : test_ctxt -> string;
+    stdlib_dir : test_ctxt -> string; 
+    print_cli : test_ctxt -> bool; }
 
 module type TestSuiteInput = sig
   val tests : string list
   val gold_path : string -> string -> string list
   val test_path : string -> string list
   val runner : string
+  val use_stdlib : bool
 end
 
 module DiffBasedTests(Input : TestSuiteInput) = struct
   open Input
 
-  let rec build_exp_tests bindir testsdir pcli el =
+  let rec build_exp_tests env el =
   match el with
   | [] -> []
   | f :: r ->
     let test = f  >:: (fun test_ctxt ->
-      let evalbin = bindir test_ctxt ^ Filename.dir_sep ^ runner in
-      let dir = testsdir test_ctxt in
+      let evalbin = env.bin_dir test_ctxt ^ Filename.dir_sep ^ runner in
+      let dir = env.tests_dir test_ctxt in
       let input_file = String.concat Filename.dir_sep (test_path f) in
       (* Verify standard output of execution with gold file *)
       let goldoutput_file = 
@@ -55,12 +61,18 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o))
           ~printer:(fun s -> s) gold_output output
       in
-      (if (pcli test_ctxt) then (Printf.printf "\nUsing CLI: %s %s\n" runner input_file));
-      assert_command ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (input_file::[])) in
-    test :: build_exp_tests bindir testsdir pcli r
+      let libdir = env.stdlib_dir test_ctxt in
+      let args = if use_stdlib then [libdir;input_file] else [input_file] in
+      (if (env.print_cli test_ctxt) then
+        if use_stdlib then
+          (Printf.printf "\nUsing CLI: %s %s %s\n" runner libdir input_file)
+        else
+          (Printf.printf "\nUsing CLI: %s %s\n" runner input_file));
+      assert_command ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (args)) in
+    test :: build_exp_tests env r
 
-  let add_tests bindir testsdir pcli =
-    let exptests = build_exp_tests bindir testsdir pcli tests in
+  let add_tests env =
+    let exptests = build_exp_tests env tests in
     "exptests" >::: exptests
     
 end
