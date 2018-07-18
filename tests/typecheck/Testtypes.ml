@@ -18,5 +18,6 @@ module Tests = TestUtil.DiffBasedTests(
       "fun1.scilla";
       "fun2.scilla";
       "fun3.scilla";
+      "addr.scilla";
     ]
   end)

@@ -137,6 +137,12 @@ type 'rep stmt =
   | Throw of 'rep ident
 [@@deriving sexp]
 
+let expr_str e =
+  sexp_of_expr sexp_of_loc e |> Sexplib.Sexp.to_string
+
+let stmt_str s =
+  sexp_of_stmt sexp_of_loc s |> Sexplib.Sexp.to_string
+
 type 'rep transition = 
   { tname   : 'rep ident;
     tparams : ('rep ident  * typ) list;
