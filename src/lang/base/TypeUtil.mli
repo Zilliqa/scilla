@@ -42,6 +42,8 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     val mk : t
     (* Add to type environment *)
     val addT : t -> loc ident -> typ -> t
+    (* Add to many type bindings *)
+    val addTs : t -> (loc ident * typ) list -> t
     (* Add type variable to the environment *)
     val addV : t -> loc ident -> t
     (* Resolve the identifier *)

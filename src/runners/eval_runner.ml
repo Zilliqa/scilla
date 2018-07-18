@@ -19,7 +19,7 @@ let () =
   let filename = Sys.argv.(1) in
   match FrontEndParser.parse_file ScillaParser.exps filename with
   | Some [e] ->
-      let recs = List.map ~f:(fun (a, b, _) -> (a, b)) recursion_principles in
+      let recs = List.map ~f:(fun (a, b, _) -> (get_id a, b)) recursion_principles in
       let env = Env.bind_all Env.empty recs in
       let res = Eval.exp_eval e env in
       (match res with

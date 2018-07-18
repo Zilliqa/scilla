@@ -15,12 +15,14 @@ open Big_int
 open EvalUtil
 open TypeUtil
 
+let mk_ident s = Ident (s, dummy_loc)      
+
 (* Recursion principles for built-in ADTs *)
 
 (* Folding over natural numbers *)
 module NatRec = struct
-  let g = Ident ("g", dummy_loc)      
-  let tvar = Ident("'T", dummy_loc)
+  let g = mk_ident "g"
+  let tvar = mk_ident "'T"
       
   (* Adopted one, as flod_left and fold_right are equivalent for
    * natural numbers *)
@@ -38,7 +40,7 @@ module NatRec = struct
         "end"
       )
     let fold_fix = Fixpoint (g, fix_type, fix_arg)                    
-    let id = "nat_fold"      
+    let id = mk_ident "nat_fold"      
     let fold = Env.ValTypeClosure(tvar, fold_fix, Env.empty)        
   end
 
@@ -53,15 +55,15 @@ module NatRec = struct
         "   fn n1 f0 " ^
         "end"
       )
-    let id = "nat_foldr"
+    let id = mk_ident "nat_foldr"
   end
 end
 
 (* Folding over lists *)
 module ListRec = struct
-  let g = Ident ("g", dummy_loc)      
-  let avar = Ident("'A", dummy_loc)
-  let bvar = Ident("'B", dummy_loc)
+  let g = mk_ident "g"
+  let avar = mk_ident "'A"
+  let bvar = mk_ident "'B"
 
   module Foldl = struct
     (* The type of the fixpoint argument *)
@@ -77,7 +79,7 @@ module ListRec = struct
         "end"
       )
     let fold_fix = Fixpoint (g, fix_type, fix_arg)
-    let id = "list_foldl"      
+    let id = mk_ident "list_foldl"      
     let fold = Env.ValTypeClosure(avar, TFun (bvar, fold_fix), Env.empty)
   end
   
@@ -95,7 +97,7 @@ module ListRec = struct
         "end"
       )
     let fold_fix = Fixpoint (g, fix_type, fix_arg)
-    let id = "list_foldr"      
+    let id = mk_ident "list_foldr"      
     let fold = Env.ValTypeClosure(avar, TFun (bvar, fold_fix), Env.empty)
   end
   

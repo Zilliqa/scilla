@@ -126,6 +126,8 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     val mk : t
     (* Add to type environment *)
     val addT : t -> loc ident -> typ -> t
+    (* Add to many type bindings *)
+    val addTs : t -> (loc ident * typ) list -> t      
     (* Add type variable to the environment *)
     val addV : t -> loc ident -> t
     (* Resolve the identifier *)
@@ -154,7 +156,7 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
   (*  TODO: Also print location *)
   let rr_pp  rr = (rr_typ rr).tp |> pp_typ
   let mk_qual_tp tp =  Q.mk_qualified_type tp
-                        
+      
   module TEnv = struct
     type t = {
       (* Typed identifiers *)
@@ -162,7 +164,7 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       (* Context for type variables and their locations *)
       tvars : (string, loc) Hashtbl.t
     } 
-      
+    
     let mk =
       let t1 = Hashtbl.create 50 in
       let t2 = Hashtbl.create 10 in
@@ -172,13 +174,16 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       let _ = Hashtbl.add env.tenv (get_id id)
           {qt = Q.mk_qualified_type tp; loc = get_loc id} in
       env
-
+        
+    let addTs env kvs = 
+      List.fold_left ~init:env ~f:(fun z (k, v) -> addT z k v) kvs
+        
     let addV env id = 
       let _ = Hashtbl.add env.tvars (get_id id) (get_loc id) in env
-
+        
     let tvars env =
       Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []
-
+        
     let to_list env =
       Hashtbl.fold (fun key data z -> (key, data) :: z) env.tenv []
         
