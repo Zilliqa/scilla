@@ -11,6 +11,7 @@
 open Syntax
 open Core
 open MonadUtil
+open Result.Let_syntax
 
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)
@@ -25,13 +26,15 @@ type constructor = {
 (* An Algebraic Data Type *)
 type adt = {
   tname    : string; (* type name *)
-  targs    : string list;    (* type parameters *)
+  tparams    : string list;    (* type parameters *)
 
   (* supported constructors *)
   tconstr  : constructor list;
 
-  (* Mapping for constructors' types *)
-  tmap     : (string * (int * typ) list) list;
+  (* Mapping for constructors' types
+     The arity of the constructor is the same as the length
+     of the list, so the types are mapped correspondingly. *)
+  tmap     : (string * (typ list)) list;
 
   (* recur    : Syntax.loc Env.value *)
 }
@@ -42,7 +45,7 @@ module DataTypeDictionary = struct
   let c_false = { cname = "False"; arity = 0 }
   let t_bool = {
     tname = "Bool";
-    targs = [];
+    tparams = [];
     tconstr = [c_true; c_false];
     tmap = []
   }
@@ -52,9 +55,9 @@ module DataTypeDictionary = struct
   let c_succ = { cname = "Succ"; arity = 1 }
   let t_nat = {
     tname = "Nat";
-    targs = [];
+    tparams = [];
     tconstr = [c_zero; c_succ];
-    tmap = [("Succ", [(0, ADT ("Nat", []))])]
+    tmap = [("Succ", [ADT ("Nat", [])])]
   }
 
   
@@ -63,10 +66,10 @@ module DataTypeDictionary = struct
   let c_none = { cname = "None"; arity = 0 }
   let t_option = {
     tname = "Option";
-    targs = ["'A"];
+    tparams = ["'A"];
     tconstr = [c_some; c_none];
     tmap = [
-      ("Some", [(0, TypeVar "'A")])
+      ("Some", [TypeVar "'A"])
     ]
   }             
   
@@ -75,11 +78,11 @@ module DataTypeDictionary = struct
   let c_nil  = { cname = "Nil"; arity = 0 }
   let t_list = {
     tname = "List";
-    targs = ["'A"];
+    tparams = ["'A"];
     tconstr = [c_cons; c_nil];
     tmap = [
-      ("Cons", [(0, TypeVar "'A");
-                (1, ADT ("List", [TypeVar "'A"]))])
+      ("Cons", [TypeVar "'A";
+                ADT ("List", [TypeVar "'A"])])
     ]
   }
 
@@ -87,16 +90,25 @@ module DataTypeDictionary = struct
   let c_pair = { cname = "Pair"; arity = 2 }
   let t_product = {
     tname = "Pair";
-    targs = ["'A"; "'B"];
+    tparams = ["'A"; "'B"];
     tconstr = [c_pair];
     tmap = [
-      ("Pair", [(0, TypeVar "a"); (1, TypeVar "b")])
+      ("Pair", [(TypeVar "'A"); (TypeVar "'B")])
     ]
   }
 
   type t = adt list  
   let dict = [t_bool; t_nat; t_option; t_list; t_product]
 
+  (*  Get ADT by name *)
+  let lookup_name name =
+    match List.find dict ~f:(fun t -> t.tname = name) with
+    | None ->
+      fail @@ sprintf "ADT %s not found" name
+    | Some a ->
+        pure (a)
+
+  (*  Get ADT by the constructor *)
   let lookup_constructor cn =
     match List.find dict
       ~f:(fun t -> let cns = t.tconstr in
@@ -109,14 +121,6 @@ module DataTypeDictionary = struct
              sprintf "Data type %s must have constructor %s."
                dt.tname cn
          | Some ctr -> pure (dt, ctr))
-
-  let lookup_name name =
-    match List.find dict ~f:(fun t -> t.tname = name) with
-    | None ->
-      fail @@ sprintf "ADT %s not found" name
-    | Some a ->
-        pure (a)
-
 
   let bool_typ = ADT (t_bool.tname, [])
   let nat_typ = ADT (t_nat.tname, [])

@@ -46,7 +46,9 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     val addTs : t -> (loc ident * typ) list -> t
     (* Add type variable to the environment *)
     val addV : t -> loc ident -> t
-    (* Resolve the identifier *)
+    (* Check type for well-formedness in the type environment *)
+    val is_wf_type : t -> typ -> (unit, string) result
+    (* Resolve the identifier *)    
     val resolveT : ?lopt:(loc option) -> t -> string -> (resolve_result, string) result
     (* Copy the environment *)
     val copy : t -> t
@@ -70,10 +72,18 @@ val tvar : string -> typ
 val tfun_typ : string -> typ -> typ
 val map_typ : typ -> typ -> typ
 
-(***************************************************)
-(*                        Utilities                *)
-(***************************************************)
+(****************************************************************)
+(*             Utility function for matching types              *)
+(****************************************************************)
+
 val type_equiv : typ -> typ -> bool
 val fun_type_applies : typ -> typ list -> (typ, string) result
 val elab_tfun_with_args : typ -> typ list -> (typ, string) result
 val pp_typ_list : typ list -> string  
+
+(****************************************************************)
+(*                        Working with ADTs                     *)
+(****************************************************************)
+
+(*  Get elaborated constructor type *)    
+val get_elab_constr_type : string -> typ list -> (typ, string) result  

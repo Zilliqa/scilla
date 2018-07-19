@@ -109,13 +109,21 @@ let rec exp_eval e env = match e with
               try_apply_as_closure v arg) in
       pure (fully_applied, env)          
   | Constr (cname, ts, actuals) ->
-      (* Resolve the actuals *)
-      let%bind args =
-        mapM actuals ~f:(fun arg -> Env.lookup env arg) in
-      (* Make sure we only pass "pure" literals, not closures *)
-      let%bind arg_literals = vals_to_literals args in
-      let lit = ADTValue (cname, ts, arg_literals) in
-      pure (Env.ValLit lit, env)
+      let open Datatypes.DataTypeDictionary in 
+      let%bind (adt, constr) = lookup_constructor cname in
+      let alen = List.length actuals in
+      if (constr.arity <> alen)
+      then fail @@ sprintf
+          "Constructor %s expects %d arguments, but got %d."
+          cname constr.arity alen
+      else
+        (* Resolve the actuals *)
+        let%bind args =
+          mapM actuals ~f:(fun arg -> Env.lookup env arg) in
+        (* Make sure we only pass "pure" literals, not closures *)
+        let%bind arg_literals = vals_to_literals args in
+        let lit = ADTValue (cname, ts, arg_literals) in
+        pure (Env.ValLit lit, env)
   | MatchExpr (x, clauses) ->
       let%bind v = Env.lookup env x in
       (* Get the branch and the bindings *)

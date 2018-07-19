@@ -108,7 +108,8 @@ typ :
 targ:
 | LPAREN; t = typ; RPAREN; { t }
 | d = CID; { to_type d }
-| t = TID; { TypeVar t }        
+| t = TID; { TypeVar t }
+| MAP; k=targ; v = targ; { MapType (k, v) }             
 
 (***********************************************)
 (*                 Expressions                 *)
@@ -195,12 +196,8 @@ lit :
 }
 
 ctargs:
-| LBRACE; ts = list(ctarg); RBRACE { ts }
+| LBRACE; ts = list(targ); RBRACE { ts }
                              
-ctarg :
-| LPAREN; t = typ; RPAREN; { t }
-| t = typ { t }
-
 pattern:
 | UNDERSCORE { Wildcard }
 | x = ID {Binder (Ident (x, toLoc $startpos))}

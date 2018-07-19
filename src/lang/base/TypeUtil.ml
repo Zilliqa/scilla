@@ -130,6 +130,8 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     val addTs : t -> (loc ident * typ) list -> t      
     (* Add type variable to the environment *)
     val addV : t -> loc ident -> t
+    (* Check type for well-formedness in the type environment *)
+    val is_wf_type : t -> typ -> (unit, string) result
     (* Resolve the identifier *)
     val resolveT : 
       ?lopt:(loc option) -> t -> string -> (resolve_result, string) result
@@ -186,6 +188,9 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
         
     let to_list env =
       Hashtbl.fold (fun key data z -> (key, data) :: z) env.tenv []
+
+    (* Check type for well-formedness in the type environment *)
+    let is_wf_type tenv t = pure ()
         
     (* TODO: Add support for tvars *)    
     let pp ?f:(f = fun _ -> true) env  =
@@ -257,7 +262,7 @@ let literal_type l =
   (* TODO: Add structural type checking *)
   | ADTValue (cname, ts, _) ->
       let%bind (adt, _) = DataTypeDictionary.lookup_constructor cname in
-      let tparams = adt.targs in
+      let tparams = adt.tparams in
       let tname = adt.tname in
       if not (List.length tparams = List.length ts)
       then fail @@
@@ -315,3 +320,30 @@ let rec elab_tfun_with_args tf args = match tf, args with
         "Cannot elaborate %s with type arguments %s." (pp_typ tf)
         (pp_typ_list args) in
       fail msg
+
+(****************************************************************)
+(*                        Working with ADTs                     *)
+(****************************************************************)
+
+(*  Get elaborated constructor type *)    
+let get_elab_constr_type cn targs =
+  let open Datatypes.DataTypeDictionary in
+  let%bind (adt, ctr) = lookup_constructor cn in
+  let plen = List.length adt.tparams in
+  let alen = List.length targs in
+  if plen <> alen
+  then fail @@ sprintf
+      "Constructor %s expects %d type arguments, but got %d." cn plen alen
+  else
+    let res_typ = ADT (adt.tname, targs) in
+    match List.find adt.tmap ~f:(fun (n, _) -> n = cn) with
+    | None -> pure res_typ
+    | Some (_, ctparams) ->
+        let tmap = List.zip_exn adt.tparams targs in
+        let ctparams_elab = List.fold_left tmap ~init:ctparams
+            ~f:(fun zmap (tv, tp) ->
+                List.map zmap ~f:(fun tm -> subst_type_in_type tv tp tm)) in
+        (* TODO: make function type *)
+        let ctyp = List.fold_right ctparams_elab ~init:res_typ
+            ~f:(fun ctp acc -> fun_typ ctp acc) in
+        pure ctyp

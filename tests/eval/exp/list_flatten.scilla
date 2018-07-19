@@ -19,7 +19,7 @@ let l5 = Cons {Int128} six nil in
 let l6 = Cons {Int128} five l5 in
 
 
-let ll1 = Cons {List Int128} l6 nil in
-let ll2 = Cons {List Int128} l4 ll1 in
+let ll1 = Cons {(List Int128)} l6 nil in
+let ll2 = Cons {(List Int128)} l4 ll1 in
 
 int_flatten ll2
