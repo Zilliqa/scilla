@@ -8,7 +8,6 @@
  *)
 
 
-open Core
 open Printf
 open Sexplib.Std
 open Syntax
