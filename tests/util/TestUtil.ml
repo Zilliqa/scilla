@@ -62,10 +62,10 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
           ~printer:(fun s -> s) gold_output output
       in
       let libdir = env.stdlib_dir test_ctxt in
-      let args = if use_stdlib then [libdir;input_file] else [input_file] in
+      let args = if use_stdlib then [input_file;libdir] else [input_file] in
       (if (env.print_cli test_ctxt) then
         if use_stdlib then
-          (Printf.printf "\nUsing CLI: %s %s %s\n" runner libdir input_file)
+          (Printf.printf "\nUsing CLI: %s %s %s\n" runner input_file libdir)
         else
           (Printf.printf "\nUsing CLI: %s %s\n" runner input_file));
       assert_command ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (args)) in

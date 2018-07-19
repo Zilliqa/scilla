@@ -28,3 +28,6 @@ val get_trace_level : unit -> trace_kind
 val set_trace_level : trace_kind -> unit
 val get_trace_file : unit -> string
 val set_trace_file : string -> unit
+
+(* Environment variable to look for stdlib *)
+val scilla_stdlib_path : string
