@@ -85,5 +85,8 @@ val pp_typ_list : typ list -> string
 (*                        Working with ADTs                     *)
 (****************************************************************)
 
+(*  Apply type substitution  *)
+val apply_subst : (string * typ) list -> typ -> typ
+
 (*  Get elaborated constructor type *)    
 val get_elab_constr_type : string -> typ list -> (typ, string) result  

@@ -325,6 +325,10 @@ let rec elab_tfun_with_args tf args = match tf, args with
 (*                        Working with ADTs                     *)
 (****************************************************************)
 
+let apply_subst tmap tp =
+  List.fold_left tmap ~init:tp
+    ~f:(fun acc_tp (tv, tp) -> subst_type_in_type tv tp acc_tp)
+
 (*  Get elaborated constructor type *)    
 let get_elab_constr_type cn targs =
   let open Datatypes.DataTypeDictionary in
@@ -340,9 +344,7 @@ let get_elab_constr_type cn targs =
     | None -> pure res_typ
     | Some (_, ctparams) ->
         let tmap = List.zip_exn adt.tparams targs in
-        let ctparams_elab = List.fold_left tmap ~init:ctparams
-            ~f:(fun zmap (tv, tp) ->
-                List.map zmap ~f:(fun tm -> subst_type_in_type tv tp tm)) in
+        let ctparams_elab = List.map ctparams ~f:(apply_subst tmap) in
         (* TODO: make function type *)
         let ctyp = List.fold_right ctparams_elab ~init:res_typ
             ~f:(fun ctp acc -> fun_typ ctp acc) in
