@@ -21,7 +21,8 @@ let cid =   ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let tid =   '\'' ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*                     
 let lcomment = "(*" (_ # ['\r' '\n'])* "*)" newline
 let hex = '0' 'x' ['a'-'f' '0'-'9']+
-let intty = "Int32"|"Int64"|"Int128"|"Int256"|"Uint32"|"Uint64"|"Uint128"|"Uint256"
+let intty = "Int32" | "Int64" | "Int128" | "Int256" | "Uint32" |
+            "Uint64" | "Uint128" | "Uint256"
                                          
 rule read =
   parse
@@ -32,11 +33,11 @@ rule read =
   | white         { read lexbuf }
 
   (* Numbers and hashes *)
-  | int as i   { NUMLIT (big_int_of_string i) }
+  | int as i      { NUMLIT (big_int_of_string i) }
   | hex    as i   { HEXLIT i }
 
   (* Integer types *)
-  | intty as i { CID i }
+  | intty as i    { CID i }
 
   (* Keywords *)          
   | "forall"      { FORALL }      

@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2018 - present Zilliqa, Inc.
+ * Copyright (c) 2018 - present. 
+ * Zilliqa, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD style license found in the
@@ -16,20 +17,13 @@ open MonadUtil
 open PatternMatching
 open BuiltIns
 open Stdint
+open TypeUtil
 
 (***************************************************)
 (*                    Utilities                    *)      
 (***************************************************)    
 
-let reserved_names = List.map ~f:fst Recursion.recursion_principles
-
-let expr_str e =
-  sexp_of_expr sexp_of_loc e
-  |> Sexplib.Sexp.to_string
-
-let stmt_str s =
-  sexp_of_stmt sexp_of_loc s
-  |> Sexplib.Sexp.to_string
+let reserved_names = List.map ~f:(fun x -> (get_id (fst3 x))) Recursion.recursion_principles
 
 (* Printing result *)
 let pp_result r exclude_names = 
@@ -135,12 +129,11 @@ let rec exp_eval e env = match e with
           ~f:(fun z (i, w) -> Env.bind z (get_id i) w) in
       exp_eval e_branch env'      
   | Builtin (i, actuals) ->
-      let opname = get_id i in
       let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
       let%bind arg_literals = vals_to_literals args in
-      let tags = List.map arg_literals ~f:literal_tag in
-      let%bind op = BuiltInDictionary.find_builtin_op opname tags in
-      let%bind res = op arg_literals in 
+      let%bind tps = mapM arg_literals ~f:literal_type in
+      let%bind (_, ret_typ, op) = BuiltInDictionary.find_builtin_op i tps in
+      let%bind res = op arg_literals ret_typ in 
       pure (Env.ValLit res, env)
   | Fixpoint (f, t, body) ->
       let fix = Env.ValFix (f, t, body, env) in
@@ -290,7 +283,8 @@ let init_libraries clibs elibs =
     let%bind (v, _) = exp_eval e env in
     let env' = Env.bind env (get_id id) v in
     pure env') in
-  let env = Env.bind_all Env.empty Recursion.recursion_principles in
+  let (rids, rvals, _) = List.unzip3 Recursion.recursion_principles in
+  let env = Env.bind_all Env.empty (List.zip_exn (List.map ~f:get_id rids) rvals) in
   DebugMessage.plog ("Loaded library functions: " ^ (Env.pp env));
   List.fold_left libs ~init:(pure env)
     ~f:(fun eres lentry ->

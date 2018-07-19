@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2018 - present , Inc.
+ * Copyright (c) 2018 - present. 
+ * Zilliqa, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD style license found in the
@@ -50,6 +51,8 @@ let get_loc_str (l : loc) : string =
 
 type bigint = Big_int.big_int
 
+(*******************************************************)
+                
 type typ  =
   | PrimType of string
   | MapType of typ * typ
@@ -60,6 +63,8 @@ type typ  =
 [@@deriving sexp]
 
 let pp_typ t = sexp_of_typ t |> Sexplib.Sexp.to_string
+
+(*******************************************************)
 
 type 'rep pattern =
   | Wildcard
@@ -132,6 +137,12 @@ type 'rep stmt =
   | Throw of 'rep ident
 [@@deriving sexp]
 
+let expr_str e =
+  sexp_of_expr sexp_of_loc e |> Sexplib.Sexp.to_string
+
+let stmt_str s =
+  sexp_of_stmt sexp_of_loc s |> Sexplib.Sexp.to_string
+
 type 'rep transition = 
   { tname   : 'rep ident;
     tparams : ('rep ident  * typ) list;
@@ -185,65 +196,3 @@ let expr_loc (e : 'rep expr) : loc option =
     let l = get_loc i in
       if (l.cnum <> -1) then Some l else None
   | _ -> None
-
-(* TODO: replace with proper type inference *)
-let literal_tag l = match l with
-  | StringLit _ -> "String"
-  | IntLit (w, _) -> "Int" ^ (Int.to_string w)
-  | UintLit (w,_) -> "Uint" ^ (Int.to_string w)
-  | BNum _ -> "BNum"
-  | Address _ -> "Address"
-  | Sha256 _ -> "Hash"
-  | Msg _ -> "Message"
-  | Map _ -> "Map"
-  | ADTValue _ -> "ADT"
-
-(* Validate Int* and Uint* literals (wx, x), whether the
-   string x they contain can be represented in wx bits  *)
-let validate_int_literal i =
-  try
-    match i with
-    | IntLit (wx, x) ->
-      (match wx with
-      | 32 -> Int32.to_string (Int32.of_string x) = x
-      | 64 -> Int64.to_string (Int64.of_string x) = x
-      | 128 -> Int128.to_string (Int128.of_string x) = x
-      | 256 -> Int256.to_string (Int256.of_string x) = x
-      | _ -> false
-      )
-    | UintLit (wx, x) ->
-      (match wx with
-      | 32 -> Uint32.to_string (Uint32.of_string x) = x
-      | 64 -> Uint64.to_string (Uint64.of_string x) = x
-      | 128 -> Uint128.to_string (Uint128.of_string x) = x
-      | 256 -> Uint256.to_string (Uint256.of_string x) = x
-      | _ -> false
-      )
-    | _ -> false
-  with
-  | _ -> false
-
-(* Given an integer type (as string) and the value (as string),
-   build IntLit or UintLit out of it. TODO: Validate. *)
-let build_int t v = 
-  let validator_wrapper l = 
-    if validate_int_literal l then Some l else None
-  in
-  match t with
-  | "Int32" -> validator_wrapper (IntLit(32, v))
-  | "Int64" -> validator_wrapper (IntLit(64, v))
-  | "Int128" -> validator_wrapper (IntLit(128, v))
-  | "Int256" -> validator_wrapper (IntLit(256, v))
-  | "Uint32" -> validator_wrapper (UintLit(32, v))
-  | "Uint64" -> validator_wrapper (UintLit(64, v))
-  | "Uint128" -> validator_wrapper (UintLit(128, v))
-  | "Uint256" -> validator_wrapper (UintLit(256, v))
-  | _ -> None
-
-let is_int_type = function
-  | "Int32" | "Int64" | "Int128" | "Int256" -> true
-  | _ -> false
-
-let is_uint_type = function
-  | "Uint32" | "Uint64" | "Uint128" | "Uint256" -> true
-  | _ -> false

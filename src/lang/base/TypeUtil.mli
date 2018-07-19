@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2018 - present , Inc.
+ * Copyright (c) 2018 - present. 
+ * Zilliqa, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD style license found in the
@@ -11,15 +12,17 @@ open Core
 open Big_int
 open Syntax
 
-val subst_type_in_type: 'a ident -> typ -> typ -> typ
+val subst_type_in_type: string -> typ -> typ -> typ
 val subst_type_in_literal: 'a ident -> typ -> literal -> literal
 val subst_type_in_expr: 'a ident -> typ -> 'a expr -> 'a expr
 
+(* An inferred type with possible qualifiers *)
 type 'rep inferred_type = {
   tp   : typ;
   qual : 'rep
 } [@@deriving sexp]
 
+(* Qualifiers to type inference with additional information *)
 module type QualifiedTypes = sig
   type t
   val mk_qualified_type : typ -> t inferred_type      
@@ -39,6 +42,10 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     val mk : t
     (* Add to type environment *)
     val addT : t -> loc ident -> typ -> t
+    (* Add to many type bindings *)
+    val addTs : t -> (loc ident * typ) list -> t
+    (* Add type variable to the environment *)
+    val addV : t -> loc ident -> t
     (* Resolve the identifier *)
     val resolveT : ?lopt:(loc option) -> t -> string -> (resolve_result, string) result
     (* Copy the environment *)
@@ -54,3 +61,19 @@ end
 
 module PlainTypes : QualifiedTypes
 module MakeTEnv : MakeTEnvFunctor
+
+val literal_type : literal -> (typ, string) result
+
+(* Useful generic types *)
+val fun_typ : typ -> typ -> typ
+val tvar : string -> typ
+val tfun_typ : string -> typ -> typ
+val map_typ : typ -> typ -> typ
+
+(***************************************************)
+(*                        Utilities                *)
+(***************************************************)
+val type_equiv : typ -> typ -> bool
+val fun_type_applies : typ -> typ list -> (typ, string) result
+val elab_tfun_with_args : typ -> typ list -> (typ, string) result
+val pp_typ_list : typ list -> string  

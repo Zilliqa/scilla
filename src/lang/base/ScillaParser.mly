@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2018 - present Zilliqa, Inc.
+ * Copyright (c) 2018 - present. 
+ * Zilliqa, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD style license found in the
@@ -10,15 +11,14 @@
 
 %{
   open Syntax
+  open BuiltIns
 
   let address_length = 40
   let hash_length = 64
 
   let to_type d = match d with
-  | "Hash" | "Address" | "BNum" | "Message" | "String" -> PrimType d
-  | "Int32" | "Int64" | "Int128" | "Int256" | "Uint32" | "Uint64" | "Uint128" | "Uint256" -> PrimType d
-  | _ -> ADT (d, [])
-
+    | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x
+    | _ -> ADT (d, [])
 %}
 
 (* Identifiers *)    
@@ -168,7 +168,7 @@ lit :
 | i = CID;
   n = NUMLIT   {
     let string_of_n = Big_int.string_of_big_int n in
-    let intlit = build_int i string_of_n in
+    let intlit = BuiltIns.build_int (to_type i) string_of_n in
     match intlit with
     | Some l ->
         l

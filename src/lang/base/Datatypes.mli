@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2018 - present Zilliqa, Inc.
+ * Copyright (c) 2018 - present. 
+ * Zilliqa, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD style license found in the
@@ -9,6 +10,10 @@
 
 open Syntax
 open Core
+
+(**********************************************************)
+(*                 Built-in Algebraic Data Types          *)
+(**********************************************************)
 
 type constructor = {
   cname : string; (* constructor name *)
@@ -26,4 +31,11 @@ module DataTypeDictionary : sig
   (* Hiding the actual data type dicionary *)
   val lookup_constructor : string -> (adt * constructor, string) result
   val lookup_name : string -> (adt, string) result
+
+  val bool_typ : typ
+  val nat_typ : typ
+  val option_typ : typ -> typ
+  val list_typ : typ -> typ
+  val pair_typ : typ -> typ -> typ
+
 end
