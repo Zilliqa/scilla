@@ -10,5 +10,4 @@
   [ten -> (IntLit 32 10)],
   [two -> (IntLit 32 2)],
   [one -> (IntLit 32 1)],
-  [int_length -> <closure>],
-  [list_length -> <type_closure>] }
+  [int_length -> <closure>] }

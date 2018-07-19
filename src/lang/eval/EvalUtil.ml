@@ -89,8 +89,8 @@ module Env = struct
     match List.find ~f:(fun z -> fst z = i) e with 
     | Some x -> pure @@ snd x
     | None -> fail @@ sprintf
-        "Identifier \"%s\" at %s is not bound in environment:\n%s"
-        i (get_loc_str (get_loc k)) (pp e)
+        "Identifier \"%s\" at %s is not bound in environment:\n"
+        i (get_loc_str (get_loc k))
 end
 
 

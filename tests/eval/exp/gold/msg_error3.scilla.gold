@@ -1,10 +1,3 @@
 Failed execution:
 Identifier "o" at :0:0 is not bound in environment:
-{ [m1 -> (Msg((tag(StringLit Main))(amount(IntLit 64 42))(code(IntLit 64 42))))],
-  [a -> (IntLit 64 42)],
-  [y -> (IntLit 64 42)],
-  [ff -> <closure>],
-  [x -> (IntLit 64 42)],
-  [list_foldr -> <type_closure>],
-  [list_foldl -> <type_closure>],
-  [nat_fold -> <type_closure>] }
+

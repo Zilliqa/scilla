@@ -13,15 +13,18 @@ open TestUtil
 let main =
   let bin_dir_default = (Sys.getcwd () ^ Filename.dir_sep ^ "bin") in
   let tests_dir_default = (Sys.getcwd () ^ Filename.dir_sep ^ "tests") in
+  let stdlib_dir_default = (Sys.getcwd() ^ Filename.dir_sep ^ "src" ^ Filename.dir_sep ^ "stdlib") in
   let bin_dir = Conf.make_string "bin_dir" bin_dir_default "directory containing binaries" in
   let tests_dir = Conf.make_string "tests_dir" tests_dir_default "directory containing tests" in
+  let stdlib_dir = Conf.make_string "stdlib_dir" stdlib_dir_default "directory containing stdlib" in
   let print_cli = Conf.make_bool "print_cli" false "print command line arguments used for test(s)" in
 
+  let env = { bin_dir = bin_dir; tests_dir = tests_dir; stdlib_dir = stdlib_dir; print_cli = print_cli } in
   (* Add calls to new tests from here *)
-  let contract_tests = Testcontracts.add_tests bin_dir tests_dir print_cli in
-  let exp_tests = Testexp.Tests.add_tests bin_dir tests_dir print_cli in
-  let type_tests = Testtypes.Tests.add_tests bin_dir tests_dir print_cli in
-  let checker_tests = Testchecker.Tests.add_tests bin_dir tests_dir print_cli in
+  let contract_tests = Testcontracts.add_tests env in
+  let exp_tests = Testexp.Tests.add_tests env in
+  let type_tests = Testtypes.Tests.add_tests env in
+  let checker_tests = Testchecker.Tests.add_tests env in
   let integer256_tests = TestInteger256.integer256_tests in
 
   let all_tests = "all_tests" >::: [type_tests; exp_tests; contract_tests; 

@@ -1,18 +1,3 @@
-let nat_to_int =
-  fun (n : Nat) =>
-		let f =
-      fun (z : Uint32) =>
-      fun (n : Nat) =>
-        match n with
-        | _ =>
-          let one_int = Uint32 1 in
-          builtin add z one_int
-        end
-    in
-	  let folder = @nat_fold Uint32 in
-    let zero_int = Uint32 0 in
-      folder f zero_int n
-in
 
 let zero = Zero in
 let one = Succ zero in

@@ -17,4 +17,5 @@ module Tests = TestUtil.DiffBasedTests(
       "fun.scilla";
       "fun2.scilla";
     ]
+    let use_stdlib = false
   end)

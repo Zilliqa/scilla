@@ -1,14 +1,3 @@
-let list_tail =
-  tfun 'A =>
-  fun (l : List 'A) =>
-    match l with
-    | Cons h t =>
-      Some {'A} t
-    | Nil =>
-      None {'A}
-    end
-in
-
 let int_rest = @list_tail Int64 in
 
 let one = Int64 1 in

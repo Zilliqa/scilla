@@ -17,11 +17,6 @@
   [int_sort -> <closure>],
   [flt -> <closure>],
   [int_sort_t -> <closure>],
-  [list_sort -> <type_closure>],
   [list_int_eq -> <closure>],
   [int_eq -> <closure>],
-  [list_int_eq_t -> <closure>],
-  [list_eq -> <type_closure>],
-  [list_eq_helper -> <type_closure>],
-  [list_tail -> <type_closure>],
-  [list_head -> <type_closure>] }
+  [list_int_eq_t -> <closure>] }

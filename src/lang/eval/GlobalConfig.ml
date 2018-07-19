@@ -80,3 +80,6 @@ let get_trace_file () =
 
 let set_trace_file s =
   trace_file := s
+
+(* Environment variable to look for stdlib *)
+let scilla_stdlib_path = "SCILLA_STDLIB_PATH"

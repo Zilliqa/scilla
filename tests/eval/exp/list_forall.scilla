@@ -1,22 +1,3 @@
-let list_forall =
-  tfun 'A =>
-  fun (f : 'A -> Bool) =>
-  fun (l : List 'A) =>
-    let folder = @list_foldl 'A Bool in
-    let init = True in
-    let iter =
-      fun (z : Bool) =>
-      fun (h : 'A) =>
-        let res = f h in
-        match res with
-        | False =>
-          False
-        | True =>
-          z
-        end
-    in
-      folder iter init l
-in
 
 let int_forall = @list_forall Int32 in
 let f =
