@@ -30,21 +30,22 @@ Once the probject is built you can try the following things:
 From the project root, execute
 
 ```
-./bin/eval-runner tests/eval/exp/let.scilla 
+./bin/eval-runner tests/eval/exp/let.scilla src/stdlib
 ```
 
-Instead of `let.scilla` you might want to try any dfferent file in `tests/eval/exp`.
+Instead of `let.scilla` you might want to try any dfferent file in `tests/eval/exp`. The second argument, which is a path
+to the Scilla standard library can alternatively be specified in the environment variable SCILLA_STDLIB_PATH
 
 #### Executing a simple transition
 
 From the project root, execute
 
 ```
-./bin/scilla-runner -init tests/contracts/crowdfunding/init.json -istate tests/contracts/crowdfunding/state_4.json -iblockchain tests/contracts/crowdfunding/blockchain_4.json -imessage tests/contracts/crowdfunding/message_4.json -o tests/contracts/crowdfunding/output_4.json -i tests/contracts/crowdfunding/contract
+./bin/scilla-runner -init tests/contracts/crowdfunding/init.json -istate tests/contracts/crowdfunding/state_4.json -iblockchain tests/contracts/crowdfunding/blockchain_4.json -imessage tests/contracts/crowdfunding/message_4.json -o tests/contracts/crowdfunding/output_4.json -i tests/contracts/crowdfunding/contract -libdir src/stdlib
 ```
   or
 ```
-./bin/scilla-runner -init tests/contracts/zil-game/init.json -istate tests/contracts/zil-game/state_5.json -iblockchain tests/contracts/zil-game/blockchain_5.json -imessage tests/contracts/zil-game/message_5.json -o tests/contracts/zil-game/output_5.json -i tests/contracts/zil-game/contract
+./bin/scilla-runner -init tests/contracts/zil-game/init.json -istate tests/contracts/zil-game/state_5.json -iblockchain tests/contracts/zil-game/blockchain_5.json -imessage tests/contracts/zil-game/message_5.json -o tests/contracts/zil-game/output_5.json -i tests/contracts/zil-game/contract -libdir src/stdlib
 ```
 
 Alternatively, use the easyrun script as below:

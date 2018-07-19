@@ -1,27 +1,3 @@
-let list_find =
-  tfun 'A =>
-  fun (f : 'A -> Bool) =>
-  fun (l : List 'A) =>
-    let folder = @list_foldl 'A (Option 'A) in
-    let init = None {'A} in
-    let iter =
-      fun (z : Option 'A) =>
-      fun (h : 'A) =>
-        match z with
-        | Some a =>
-          z
-        | None =>
-          let r = f h in
-          match r with
-          | True =>
-            Some {'A} h
-          | False =>
-            None {'A}
-          end
-        end
-     in
-       folder iter init l
-in
 
 let int_find = @list_find Int64 in
 (* Is given value equal to 5? *)

@@ -1,24 +1,5 @@
-let list_filter =
-  tfun 'A =>
-  fun (f : 'A -> Bool) =>
-  fun (l : List 'A) =>
-    let folder = @list_foldr 'A (List 'A) in
-    let init = Nil {'A} in
-    let iter =
-      fun (h : 'A) =>
-      fun (z : List 'A) =>
-        let h1 = f h in
-        match h1 with
-        | True =>
-          Cons {'A} h z
-        | False =>
-          z
-        end
-     in
-       folder iter init l
-in
-
 let int_filter = @list_filter Int32 in
+
 let f = fun (i : Int32) =>
   let five = Int32 5 in
   builtin lt five i in

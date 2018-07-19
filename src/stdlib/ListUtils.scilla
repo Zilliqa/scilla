@@ -5,13 +5,12 @@ library ListUtils
 (* to generate List 'B. *)
 let list_map = tfun 'A => tfun 'B =>
   fun (f : 'A -> 'B) => fun (l : List 'A) =>
-  let folder = @list_foldl 'A 'B in
+  let folder = @list_foldr 'A 'B in
   let init = Nil {'B} in
-  let iter = fun (z : 'B) => fun (h : 'A) =>
+  let iter = fun (h : 'A) => fun (z : List 'B) =>
     let h1 = f h in
-    Cons {'B} h1 z
-  in
-    folder iter init l
+    Cons {'B} h1 z  		
+	in folder iter init l
 
 (* ('A -> Bool) -> List 'A -> List 'A *)
 (* Preserving the order of elements in (l : List 'A),  *)
@@ -43,9 +42,9 @@ let list_head =
   fun (l : List 'A) =>
     match l with
     | Cons h t =>
-      Some h
+      Some {'A} h
     | Nil =>
-      None
+      None {'A}
     end
 
 (* (List 'A) -> (Option List 'A) *)
@@ -55,9 +54,9 @@ let list_tail =
   fun (l : List 'A) =>
     match l with
     | Cons h t =>
-      Some t
+      Some {'A} t
     | Nil =>
-      None
+      None {'A}
     end
 
 (* (List 'A -> List 'A ->  List 'A) *)
@@ -83,7 +82,7 @@ let list_reverse =
   tfun 'A =>
   fun (l : List 'A) =>
     let folder = @list_foldl 'A (List 'A) in
-    let init = Nil in
+    let init = Nil {'A} in
     let iter =
       fun (z : List 'A) =>
       fun (h : 'A) =>
@@ -98,7 +97,7 @@ let list_flatten =
   tfun 'A =>
   fun (l : List List 'A) =>
     let folder = @list_foldr (List List 'A) (List 'A) in
-    let init = Nil in
+    let init = Nil {'A} in
     let iter =
       fun (h : List 'A) =>
       fun (z : List 'A) =>
@@ -130,7 +129,7 @@ let list_eq_helper =
   fun (l1 : List 'A) =>
   fun (l2 : List 'A) =>
     let folder = @list_foldl 'A (Option (List 'A)) in
-    let init = Some l2 in
+    let init = Some {List 'A} l2 in
     let iter =
       fun (z : Option (List 'A)) =>
       fun (h1 : 'A) =>
@@ -146,13 +145,13 @@ let list_eq_helper =
               let tailF = @list_tail 'A in
               tailF ll2
             | False =>
-              None
+              None {List 'A}
             end
           | None =>
-            None
+            None {List 'A}
           end
         | None =>
-          None
+          None {List 'A}
         end
     in
       folder iter init l1
@@ -302,7 +301,7 @@ let list_find =
   fun (f : 'A -> Bool) =>
   fun (l : List 'A) =>
     let folder = @list_foldl 'A (Option 'A) in
-    let init = None in
+    let init = None {'A} in
     let iter =
       fun (z : Option 'A) =>
       fun (h : 'A) =>
@@ -313,9 +312,9 @@ let list_find =
           let r = f h in
           match r with
           | True =>
-            Some h
+            Some {'A} h
           | False =>
-            None
+            None {'A}
           end
         end
      in
@@ -336,7 +335,7 @@ let list_zip =
       fun (l1 : List 'A) =>
       fun (l2 : List 'B) =>
         let folder = @list_foldl 'A (Pair (List (Pair 'A 'B)) (List 'B)) in
-        let nil = Nil in
+        let nil = Nil {(Pair 'A 'B)} in
         let init = Pair {(List (Pair 'A 'B)) (List 'B)} nil l2 in
         let iter =
           fun (z : Pair (List (Pair 'A 'B)) (List 'B)) =>
@@ -395,7 +394,7 @@ let list_zip_with =
       fun (l1 : List 'A) =>
       fun (l2 : List 'B) =>
         let folder = @list_foldl 'A (Pair (List 'C) (List 'B)) in
-        let nil = Nil in
+        let nil = Nil {'C} in
         let init = Pair {(List 'C) (List 'B)} nil l2 in
         let iter =
           fun (z : Pair (List 'C) (List 'B)) =>
@@ -441,8 +440,9 @@ let list_unzip =
   tfun 'B =>
   fun (l : List Pair 'A 'B) =>
     let folder = @list_foldr (Pair 'A 'B) (Pair (List 'A) (List 'B)) in
-    let nil = Nil in
-    let init = Pair {(List 'A) (List 'B)} nil nil in
+    let nil1 = Nil {'A} in
+    let nil2 = Nil {'B} in
+    let init = Pair {(List 'A) (List 'B)} nil1 nil2 in
     let iter =
       fun (h : Pair 'A 'B) =>
       fun (z : Pair (List 'A) (List 'B)) =>

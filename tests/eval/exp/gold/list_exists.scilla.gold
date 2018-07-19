@@ -12,5 +12,4 @@
   [zero -> (IntLit 128 0)],
   [g -> <closure>],
   [f -> <closure>],
-  [int_exists -> <closure>],
-  [list_exists -> <type_closure>] }
+  [int_exists -> <closure>] }

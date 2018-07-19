@@ -26,11 +26,13 @@ open TypeUtil
 let reserved_names = List.map ~f:(fun x -> (get_id (fst3 x))) Recursion.recursion_principles
 
 (* Printing result *)
-let pp_result r = match r with
+let pp_result r exclude_names = 
+  let enames = List.append exclude_names reserved_names in
+  match r with
   | Error s -> s
   | Ok (e, env) ->
       let filter_prelude = fun (k, v) ->
-        not (List.mem reserved_names k ~equal:(fun s1 s2 -> s1 = s2))
+        not (List.mem enames k ~equal:(fun s1 s2 -> s1 = s2))
       in
       sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
 
@@ -283,6 +285,7 @@ let init_libraries clibs elibs =
     pure env') in
   let (rids, rvals, _) = List.unzip3 Recursion.recursion_principles in
   let env = Env.bind_all Env.empty (List.zip_exn (List.map ~f:get_id rids) rvals) in
+  DebugMessage.plog ("Loaded library functions: " ^ (Env.pp env));
   List.fold_left libs ~init:(pure env)
     ~f:(fun eres lentry ->
         let%bind env = eres in

@@ -12,5 +12,4 @@
   [zero -> (IntLit 32 0)],
   [g -> <closure>],
   [f -> <closure>],
-  [int_forall -> <closure>],
-  [list_forall -> <type_closure>] }
+  [int_forall -> <closure>] }

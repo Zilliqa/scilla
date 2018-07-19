@@ -12,5 +12,4 @@
   [two -> (IntLit 64 2)],
   [one -> (IntLit 64 1)],
   [f -> <closure>],
-  [int_find -> <closure>],
-  [list_find -> <type_closure>] }
+  [int_find -> <closure>] }

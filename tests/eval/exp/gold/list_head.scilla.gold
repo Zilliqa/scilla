@@ -1,4 +1,4 @@
-(ADTValue Some()((IntLit 32 1))),
+(ADTValue Some((PrimType Int32))((IntLit 32 1))),
 { [l3 -> (ADTValue Cons((PrimType Int32))((IntLit 32 1)(ADTValue Cons((PrimType Int32))((IntLit 32 2)(ADTValue Cons((PrimType Int32))((IntLit 32 3)(ADTValue Nil((PrimType Int32))())))))))],
   [l2 -> (ADTValue Cons((PrimType Int32))((IntLit 32 2)(ADTValue Cons((PrimType Int32))((IntLit 32 3)(ADTValue Nil((PrimType Int32))())))))],
   [l1 -> (ADTValue Cons((PrimType Int32))((IntLit 32 3)(ADTValue Nil((PrimType Int32))())))],
@@ -6,5 +6,4 @@
   [three -> (IntLit 32 3)],
   [two -> (IntLit 32 2)],
   [one -> (IntLit 32 1)],
-  [int_head -> <closure>],
-  [list_head -> <type_closure>] }
+  [int_head -> <closure>] }

@@ -8,5 +8,4 @@
   [ten -> (IntLit 32 10)],
   [two -> (IntLit 32 2)],
   [one -> (IntLit 32 1)],
-  [int_reverse -> <closure>],
-  [list_reverse -> <type_closure>] }
+  [int_reverse -> <closure>] }

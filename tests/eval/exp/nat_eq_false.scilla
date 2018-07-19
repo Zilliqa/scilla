@@ -4,32 +4,4 @@ let two  = Succ one in
 let three = Succ two in
 let four = Succ three in
 
-let nat_prev = fun (n: Nat) =>
-	match n with
-	| Succ n1 => Some {Nat} n1
-	| Zero => None {Nat}
-	end in
-
-let is_some_zero = fun (n: Nat) =>
-	match n with
-  | Some Zero => True
-  | _ => False
-	end in
-
-let nat_eq = fun (n : Nat) => fun (m : Nat) =>
-  let z = Some {Nat} m in
-		let f = fun (res : Option Nat) => fun (n : Nat) =>
-      match res with
-      | None => None
-      | Some m1 => nat_prev m1
-			end in
-	let folder = @nat_fold (Option Nat)	in
-  let e = folder f z n in
-  match e with
-  | Some Zero => True
-  | _ => False
-	end
-
-in
-
 nat_eq four three

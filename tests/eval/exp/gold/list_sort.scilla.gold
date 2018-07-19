@@ -21,5 +21,4 @@
   [one -> (UintLit 64 1)],
   [zero -> (UintLit 64 0)],
   [flt -> <closure>],
-  [int_sort -> <closure>],
-  [list_sort -> <type_closure>] }
+  [int_sort -> <closure>] }

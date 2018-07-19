@@ -21,4 +21,5 @@ module Tests = TestUtil.DiffBasedTests(
       "addr.scilla";
       "app.scilla";
     ]
+    let use_stdlib = false
   end)

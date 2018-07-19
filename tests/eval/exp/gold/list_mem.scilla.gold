@@ -14,5 +14,4 @@
   [one -> (IntLit 32 1)],
   [zero -> (IntLit 32 0)],
   [f -> <closure>],
-  [int_mem -> <closure>],
-  [list_mem -> <type_closure>] }
+  [int_mem -> <closure>] }

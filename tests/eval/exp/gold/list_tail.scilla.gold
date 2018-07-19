@@ -6,5 +6,4 @@
   [three -> (IntLit 32 3)],
   [two -> (IntLit 32 2)],
   [one -> (IntLit 32 1)],
-  [int_rest -> <closure>],
-  [list_tail -> <type_closure>] }
+  [int_rest -> <closure>] }
