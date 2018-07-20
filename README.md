@@ -1,6 +1,7 @@
 # Scilla: A Smart Contract Intermediate Level Language
 
 [![Build Status](https://travis-ci.com/Zilliqa/scilla.svg?token=7qzjATfZuxTQvRjMHPVQ&branch=master)](https://travis-ci.com/Zilliqa/scilla)
+[![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://raw.githubusercontent.com/Zilliqa/scilla/master/LICENSE)
 
 <p align="center">
   <img src="https://github.com/Zilliqa/scilla/blob/master/imgs/scilla-logo-color.jpg" width="200" height="200">
