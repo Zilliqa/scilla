@@ -68,13 +68,6 @@ field bookInventory: Map Uint32 (Pair (String) (String))
 (* ======== transitions ===============*)
 
 
-(* @notice: Returns store name of the Bookstore  *)
-transition getStoreName()
-    msg = {_tag: "Main"; _recipient: _sender; _amount: Uint128 0; msg: storeName};
-    msgs = one_msg msg;
-    send msgs
-end
-
 (* @notice: add member is an example. It is not used in other functions. *)
 (* @dev: in real contracts, a developer can use a members mapping to manage *)
 (* access controls to grant a user permission to perform certain actions *)
