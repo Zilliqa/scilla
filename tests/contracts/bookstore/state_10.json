@@ -1,5 +1,21 @@
+
 [
   { "vname": "_balance", "type": "Uint128", "value": "0" },
+  { "vname": "lastBookID", "type": "Uint32", "value": "1" },
+  {
+    "vname": "bookInventory",
+    "type": "Map (Uint32) (Pair (String) (String))",
+    "value": [
+      {
+        "key": "1",
+        "val": {
+          "constructor": "Pair",
+          "argtypes": [ "String", "String" ],
+          "arguments": [ "1984", "George Orwell" ]
+        }
+      }
+    ]
+  },
   {
     "vname": "members",
     "type": "Map (Address) (Pair (String) (Uint32))",
@@ -13,19 +29,5 @@
         }
       }
     ]
-  },
-  {
-    "vname": "lastBookID",
-    "type": "Option (Uint32)",
-    "value": {
-      "constructor": "None",
-      "argtypes": [ "Uint32" ],
-      "arguments": []
-    }
-  },
-  {
-    "vname": "bookInventory",
-    "type": "Map (Uint32) (Pair (String) (String))",
-    "value": []
   }
 ]

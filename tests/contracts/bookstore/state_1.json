@@ -1,14 +1,3 @@
 [
-  { "vname": "_balance", "type": "Uint128", "value": "0" },
-  {
-    "vname": "members",
-    "type": "Map (Address) (Pair (String) (Uint32))",
-    "value": []
-  },
-  { "vname": "lastBookID", "type": "Uint32", "value": "100" },
-  {
-    "vname": "bookInventory",
-    "type": "Map (Uint32) (Pair (String) (String))",
-    "value": []
-  }
+  { "vname": "_balance", "type": "Uint128", "value": "0" }
 ]

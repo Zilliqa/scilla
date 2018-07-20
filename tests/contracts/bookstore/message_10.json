@@ -6,17 +6,17 @@
         {
             "vname": "book_title",
             "type": "String",
-            "value": "1984"
+            "value": "IQ84"
         },
         {
             "vname": "author",
             "type": "String",
-            "value": "George Orwell"
+            "value": "Haruki Murakami"
         },
         {
             "vname": "bookID",
             "type": "Uint32",
-            "value": "1"
+            "value": "2"
         }
    ]
 }

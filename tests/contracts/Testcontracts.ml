@@ -140,7 +140,7 @@ let add_tests bindir testsdir pcli =
     let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests bindir testsdir pcli "helloWorld" fail_code 4 8) in
     let auctiontests = "auction" >:::(build_contract_tests bindir testsdir pcli "auction" succ_code 1 8) in
     let mappairtests = "mappair" >:::(build_contract_tests bindir testsdir pcli "mappair" succ_code 1 2) in
-    let bookstoretests = "bookstore" >:::(build_contract_tests bindir testsdir pcli "bookstore" succ_code 1 8) in
+    let bookstoretests = "bookstore" >:::(build_contract_tests bindir testsdir pcli "bookstore" succ_code 1 10) in
     let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests bindir
     testsdir pcli "nonfungible-token" succ_code 1 19) in
 
