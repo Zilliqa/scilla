@@ -43,8 +43,9 @@ let () =
     then
       match Sys.getenv_opt scilla_stdlib_path with
       | Some d -> d
-      | None -> printf "%s\n" ("Scilla stdlib not found. please set " ^ scilla_stdlib_path ^ 
-        " environment variable, or specify on the command line\n"); exit 1
+      | None -> printf "\n%s\n" ("A path to Scilla stdlib not found. Please set " ^ scilla_stdlib_path ^ 
+        " environment variable, or pass as the second command-line argument for this script.\n" ^
+        "Example:\n./bin/eval-runner list_sort.scilla ./src/stdlib/\n"); exit 1
     else
       Sys.argv.(2) in
   let filename = Sys.argv.(1) in
