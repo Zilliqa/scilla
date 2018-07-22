@@ -153,7 +153,9 @@ transition addBook(book_title: String, author: String, bookID: Uint32)
 
         (* Change mutable fields once everything has been completed. *)
         bookInventory := add_to_inventory; 
-        lastBookID := bookID; 
+
+        tmp = Some {Uint32} bookID;
+        lastBookID := tmp;
 
         msg = {_tag: "Main"; 
                 _recipient: _sender; 
@@ -198,7 +200,7 @@ transition removeBook(book_id: Uint32)
     end
 end
 
-(* @notice: Allows a `_sender` to remove a book from the bookstore *)
+(* @notice: Allows a `_sender` to update a book from the bookstore *)
 (* @dev   : Access controls are omitted for brevity. In production contracts, *)
 (*          you will want to implement proper access controls to allow only *)
 (*          an owner or member to remove a book. *)
