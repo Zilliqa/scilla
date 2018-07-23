@@ -52,7 +52,6 @@ let get_loc_str (l : loc) : string =
 type bigint = Big_int.big_int
 
 (*******************************************************)
-                
 type typ  =
   | PrimType of string
   | MapType of typ * typ

@@ -315,3 +315,12 @@ let rec elab_tfun_with_args tf args = match tf, args with
         "Cannot elaborate %s with type arguments %s." (pp_typ tf)
         (pp_typ_list args) in
       fail msg
+
+(****************************************************************)
+(*             Utility function for pattern matches             *)
+(****************************************************************)
+let is_catchall p =
+    match p with
+    | Wildcard -> true
+    | Binder _ -> true
+    | Constructor _ -> false
