@@ -4,7 +4,14 @@
     "_amount": "0",
     "_accepted": "false",
     "_recipient": "0x1234567890123456789012345678901234567891",
-    "params": [ { "vname": "code", "type": "Uint32", "value": "0" } ]
+    "params": [
+      {
+        "vname": "from",
+        "type": "Address",
+        "value": "0x1234567890123456789012345678901234567891"
+      },
+      { "vname": "newToken", "type": "Uint128", "value": "5" }
+    ]
   },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },

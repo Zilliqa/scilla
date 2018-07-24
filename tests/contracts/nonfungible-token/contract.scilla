@@ -122,25 +122,21 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                     new_num = let one = Uint128 1 in
                                 builtin add one v;
                     new_otc = builtin put otc to new_num;
-                    ownedTokenCount := new_otc;
-                    msg = {_tag: "Main"; 
-                         _recipient: _sender;
-                         _amount : Uint128 0; 
-                         code: code_success};
-                    msgs = one_msg msg;
-                    send msgs
+                    ownedTokenCount := new_otc                    
                 | None =>
                     (* Recipient does not have any token. Make new entry *)
                     new_otc = let one = Uint128 1 in 
                                 builtin put otc to one;
-                    ownedTokenCount := new_otc;
-                    msg = {_tag: "Main"; 
-                         _recipient: _sender;
-                         _amount : Uint128 0; 
-                         code: code_success};
-                    msgs = one_msg msg;
-                    send msgs
-                end
+                    ownedTokenCount := new_otc
+                end;
+                
+                msg = {_tag: "tokenFallback"; 
+                        _recipient: _sender;
+                        _amount : Uint128 0;
+                        from : from; 
+                        newToken: lastid};
+                msgs = one_msg msg;
+                send msgs
                 
             | False =>
                 (* act as an operator, which means he can transfer tokens  *)
@@ -175,7 +171,8 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                         msg = {_tag: "Main"; 
                          _recipient: _sender;
                          _amount : Uint128 0; 
-                         code: code_success};
+                         from: from;
+                         newToken: tokenId};
                         msgs = one_msg msg;
                         send msgs
                     | None =>
@@ -207,7 +204,8 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                         msg = {_tag: "Main"; 
                          _recipient: _sender;
                          _amount : Uint128 0; 
-                         code: code_success};
+                         from: from;
+                         newToken: tokenId};
                         msgs = one_msg msg;
                         send msgs
                     | None =>
@@ -268,7 +266,8 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                                 msg = {_tag: "Main"; 
                                         _recipient: _sender;
                                         _amount : Uint128 0; 
-                                        code: code_success};
+                                        from: from;
+                                        newToken: tokenId};
                                 msgs = one_msg msg;
                                 send msgs
                             | None =>
@@ -300,7 +299,8 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                                 msg = {_tag: "Main"; 
                                     _recipient: _sender;
                                     _amount : Uint128 0; 
-                                    code: code_success};
+                                    from: from;
+                                    newToken: tokenId};
                                 msgs = one_msg msg;
                                 send msgs
                             | None =>
@@ -334,7 +334,8 @@ transition transferFrom(from : Address, to : Address, tokenId: Uint128)
                                 msg = {_tag: "Main";
                                         _recipient: _sender; 
                                         _amount : Uint128 0; 
-                                        code : code_success};
+                                        from: from;
+                                        newToken: tokenId};
                                 msgs = one_msg msg;
                                 send msgs    
                             | False =>
