@@ -293,6 +293,15 @@ let rec is_ground_type t = match t with
   | PolyFun _ -> false
   | _ -> true
 
+let rec is_sendable_type t = match t with 
+  | FunType (a, r) -> false
+  | MapType (k, v) -> false
+  | TypeVar _ -> false
+  | ADT (_, ts) -> List.for_all ~f:(fun t -> is_sendable_type t) ts
+  | PolyFun _ -> false
+  | _ -> true
+
+
 let pp_typ_list ts =
   let tss = List.map ~f:(fun t -> pp_typ t) ts in
   sprintf "[%s]" (String.concat ~sep:"; " tss)

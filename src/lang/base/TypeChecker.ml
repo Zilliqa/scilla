@@ -117,13 +117,26 @@ let rec get_type e tenv = match e with
       let%bind res_type = elab_tfun_with_args tftyp arg_types in
       let%bind _ = TEnv.is_wf_type tenv res_type in
       pure @@ mk_qual_tp res_type
-
-  (* Messages *)      
-
-
-  (* TODO: Implement other expressions *)
-  | _ -> fail @@ sprintf
-      "Failed to resolve the type of the expresssion:\n%s\n" (expr_str e)
+  | Message bs ->
+      let open PrimTypes in 
+      let payload_type pld =
+        match pld with
+        | MTag s -> pure @@ mk_qual_tp string_typ
+        | MLit l -> get_type (Literal l) tenv
+        | MVar i ->
+            let%bind r = TEnv.resolveT tenv (get_id i)
+                ~lopt:(Some (get_loc i)) in
+            let rtp = (rr_typ r).tp in
+            if is_sendable_type rtp
+            then pure (rr_typ r)
+            else fail @@ sprintf
+              "Cannot send values of type %s." (pp_typ rtp)
+      in
+      let%bind typed_payloads =
+        (* Make sure we resolve all the payload *)
+        mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ payload_type pld)
+      in
+      pure @@ mk_qual_tp @@ msg_typ
 
 and app_type tenv ftyp actuals =
   (* Type-check function application *)  
