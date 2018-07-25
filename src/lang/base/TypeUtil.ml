@@ -398,7 +398,7 @@ let get_failure_msg e = match e with
       sprintf "[%s]: error in typing LHS of the binding `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)
   | MatchExpr (x, clauses) ->
-      sprintf "[%s]: error in typing pattern matching on `%s`:\n"
+      sprintf "[%s]: error in typing pattern matching on `%s` (or one of its branches):\n"
         (get_loc_str (get_loc x)) (get_id x)
   | TApp (tf, arg_types) ->
       sprintf "[%s]: error in typing type application of `%s`:\n"

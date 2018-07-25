@@ -92,15 +92,17 @@ let rec get_type e tenv = match e with
       if List.is_empty clauses
       then fail @@ sprintf
           "List of pattern matching clauses is empty:\n%s" (expr_str e)
-      else 
-        let%bind sctyp = TEnv.resolveT tenv (get_id x)
-            ~lopt:(Some (get_loc x)) in
-        let%bind cl_types = mapM clauses ~f:(fun (ptrn, ex) ->
-            type_check_match_branch tenv (rr_typ sctyp).tp ptrn ex) in
-        let%bind _ =
-          assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
+      else
+        wrap_err e (
+          let%bind sctyp = TEnv.resolveT tenv (get_id x)
+              ~lopt:(Some (get_loc x)) in
+          let%bind cl_types = mapM clauses ~f:(fun (ptrn, ex) ->
+              type_check_match_branch tenv (rr_typ sctyp).tp ptrn ex) in
+          let%bind _ =
+            assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
         (* Return the first type since all they are the same *)
-        pure @@ List.hd_exn cl_types
+          pure @@ List.hd_exn cl_types
+        )
   | Fixpoint (f, t, body) ->
       pure @@ mk_qual_tp t
   | TFun (tvar, body) ->
@@ -116,8 +118,6 @@ let rec get_type e tenv = match e with
       let%bind _ = TEnv.is_wf_type tenv res_type in
       pure @@ mk_qual_tp res_type
 
-
-  (* Type applications *)
   (* Messages *)      
 
 

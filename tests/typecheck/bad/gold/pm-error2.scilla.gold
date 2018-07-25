@@ -1,3 +1,4 @@
 Type checking failed:
 [typecheck/bad/pm-error2.scilla:3:1]: error in typing LHS of the binding `f`:
+[typecheck/bad/pm-error2.scilla:4:3]: error in typing pattern matching on `c` (or one of its branches):
 Types don't match: pattern uses a constructor of type Option, but value of type Bool is given.
