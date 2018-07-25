@@ -34,6 +34,8 @@ module DataTypeDictionary : sig
   val lookup_name : string -> (adt, string) result
   (*  Get ADT by the constructor  *)
   val lookup_constructor : string -> (adt * constructor, string) result
+  (* Get typing map for a constructor *)
+  val constr_tmap : adt -> string -> (typ list) option
   
   (*  Built-in ADTs  *)
   val bool_typ : typ

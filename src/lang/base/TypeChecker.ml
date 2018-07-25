@@ -60,7 +60,7 @@ let rec get_type e tenv = match e with
           "Constructor %s expects %d arguments, but got %d."
           cname constr.arity alen
       else
-        let%bind ftyp = get_elab_constr_type cname ts in
+        let%bind ftyp = elab_constr_type cname ts in
         (* Now type-check as a function application *)
         app_type tenv ftyp actuals
 

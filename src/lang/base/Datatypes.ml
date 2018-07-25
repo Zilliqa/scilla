@@ -122,11 +122,16 @@ module DataTypeDictionary = struct
                dt.tname cn
          | Some ctr -> pure (dt, ctr))
 
+  let constr_tmap adt cn = 
+    List.find adt.tmap ~f:(fun (n, _) -> n = cn) |> Option.map ~f:snd
+
   let bool_typ = ADT (t_bool.tname, [])
   let nat_typ = ADT (t_nat.tname, [])
   let option_typ t = ADT (t_option.tname, [t])
   let list_typ t = ADT (t_option.tname, [t])
   let pair_typ t s = ADT (t_product.tname, [t; s])
+
+  
 end
 
 (* TODO: support user_defined data types *)

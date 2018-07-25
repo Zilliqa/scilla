@@ -325,27 +325,53 @@ let rec elab_tfun_with_args tf args = match tf, args with
 (*                        Working with ADTs                     *)
 (****************************************************************)
 
-let apply_subst tmap tp =
+let apply_type_subst tmap tp =
   List.fold_left tmap ~init:tp
     ~f:(fun acc_tp (tv, tp) -> subst_type_in_type tv tp acc_tp)
 
-(*  Get elaborated constructor type *)    
-let get_elab_constr_type cn targs =
-  let open Datatypes.DataTypeDictionary in
-  let%bind (adt, ctr) = lookup_constructor cn in
+let validate_adt_params cn adt targs =
   let plen = List.length adt.tparams in
   let alen = List.length targs in
   if plen <> alen
   then fail @@ sprintf
       "Constructor %s expects %d type arguments, but got %d." cn plen alen
-  else
-    let res_typ = ADT (adt.tname, targs) in
-    match List.find adt.tmap ~f:(fun (n, _) -> n = cn) with
-    | None -> pure res_typ
-    | Some (_, ctparams) ->
-        let tmap = List.zip_exn adt.tparams targs in
-        let ctparams_elab = List.map ctparams ~f:(apply_subst tmap) in
-        (* TODO: make function type *)
-        let ctyp = List.fold_right ctparams_elab ~init:res_typ
-            ~f:(fun ctp acc -> fun_typ ctp acc) in
-        pure ctyp
+  else pure ()
+
+
+(*  Get elaborated constructor type *)    
+let elab_constr_type cn targs =
+  let open Datatypes.DataTypeDictionary in
+  let%bind (adt, ctr) = lookup_constructor cn in
+  let%bind _ = validate_adt_params cn adt targs in
+  let res_typ = ADT (adt.tname, targs) in
+  match List.find adt.tmap ~f:(fun (n, _) -> n = cn) with
+  | None -> pure res_typ
+  | Some (_, ctparams) ->
+      let tmap = List.zip_exn adt.tparams targs in
+      let ctparams_elab = List.map ctparams ~f:(apply_type_subst tmap) in
+      let ctyp = List.fold_right ctparams_elab ~init:res_typ
+          ~f:(fun ctp acc -> fun_typ ctp acc) in
+      pure ctyp
+        
+let extract_targs cn adt atyp = match atyp with
+  | ADT (name, targs) ->
+      if adt.tname = name
+      then
+        let%bind _ = validate_adt_params cn adt targs in
+        pure targs
+      else fail @@ sprintf
+           "Type names don't match: %s expected by %s given"
+           adt.tname name
+  | _ -> fail @@ sprintf
+        "Not an algebraic data type: %s" (pp_typ atyp)
+  
+let contr_pattern_arg_types atyp cn =
+  let open Datatypes.DataTypeDictionary in
+  let%bind (adt, ctr) = lookup_constructor cn in
+  let%bind targs = extract_targs cn adt atyp in
+  match constr_tmap adt cn with
+  | None -> pure []
+  | Some tms ->
+      let subst = List.zip_exn adt.tparams targs in
+      pure @@ List.map ~f:(apply_type_subst subst) tms 
+

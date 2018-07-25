@@ -86,7 +86,12 @@ val pp_typ_list : typ list -> string
 (****************************************************************)
 
 (*  Apply type substitution  *)
-val apply_subst : (string * typ) list -> typ -> typ
+val apply_type_subst : (string * typ) list -> typ -> typ
 
-(*  Get elaborated constructor type *)    
-val get_elab_constr_type : string -> typ list -> (typ, string) result  
+(*  Get elaborated type for a constructor and list of type arguments *)    
+val elab_constr_type : string -> typ list -> (typ, string) result  
+
+(* For a given instantiated ADT and a construtor name, get type *
+   assignemnts. This is the main working horse of type-checking
+   pattern-matching. *)    
+val contr_pattern_arg_types : typ -> string -> (typ list, string) result  
