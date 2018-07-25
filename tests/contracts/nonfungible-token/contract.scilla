@@ -8,7 +8,7 @@
 (***************************************************)
 (*               Associated library                *)
 (***************************************************)
-library Token
+library NonfungibleToken
 
 let one_msg = 
   fun (msg : Message) => 
@@ -28,7 +28,7 @@ let code_same_address_transaction = Uint32 4
 (*             The contract definition             *)
 (***************************************************)
 
-contract Token
+contract NonfungibleToken
 (owner : Address,
  name : String,
  symbol: String,
@@ -47,36 +47,10 @@ field approvalMap : Map Uint128 Address = Emp Uint128 Address
 
 (* Transition *)
 
-(* @notice: Returns the totalSupply of tokens            *)
-transition totalSupply ()
-    msg = {_tag: "Main"; 
-            _recipient: _sender; 
-            _amount : Uint128 0; 
-            totalSupply: totalSupply};
-    msgs = one_msg msg; 
-    send msgs
-end
+(*@dev: Getter methods for totalSupply, name and symbol are not included *)
+(*@dev: In scilla, these information is directly available with the JSONRPC *)
+(*@dev: Hence, spending gas to get these information will be pointless *)
 
-(* @notice: Returns the name of the token *)
-transition name ()
-    msg = {_tag: "Main"; 
-        _recipient: _sender;
-        _amount : Uint128 0; 
-        name: name};
-    msgs = one_msg msg;
-    send msgs
-end
-
-(* @notice: Returns the symbol of the token *)
-
-transition symbol ()
-    msg = {_tag: "Main"; 
-            _recipient: _sender; 
-            _amount : Uint128 0; 
-            symbol: symbol};
-    msgs = one_msg msg;
-    send msgs
-end
 
 (* @notice Transfers the ownership of an NFT from one address to another address *)
 (* @param from The current owner of the NFT *)

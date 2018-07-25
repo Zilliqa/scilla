@@ -142,7 +142,7 @@ let add_tests bindir testsdir pcli =
     let mappairtests = "mappair" >:::(build_contract_tests bindir testsdir pcli "mappair" succ_code 1 2) in
     let bookstoretests = "bookstore" >:::(build_contract_tests bindir testsdir pcli "bookstore" succ_code 1 10) in
     let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests bindir
-    testsdir pcli "nonfungible-token" succ_code 1 19) in
+    testsdir pcli "nonfungible-token" succ_code 4 19) in
 
     let fungibletokentests = "fungible-token" >:::(build_contract_tests bindir
     testsdir pcli "fungible-token" succ_code 0 8) in
