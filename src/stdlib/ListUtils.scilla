@@ -5,7 +5,7 @@ library ListUtils
 (* to generate List 'B. *)
 let list_map = tfun 'A => tfun 'B =>
   fun (f : 'A -> 'B) => fun (l : List 'A) =>
-  let folder = @list_foldr 'A 'B in
+  let folder = @list_foldr 'A (List 'B) in
   let init = Nil {'B} in
   let iter = fun (h : 'A) => fun (z : List 'B) =>
     let h1 = f h in
@@ -491,7 +491,7 @@ let list_nth =
         let none = None {'A} in
         let init = Pair {Int32 (Option 'A)} zero none in
         let iter =
-          fun (z : Pair (Int32 (Option 'A))) =>
+          fun (z : Pair Int32 (Option 'A)) =>
           fun (h : 'A) =>
             match z with
             | Pair i oe =>

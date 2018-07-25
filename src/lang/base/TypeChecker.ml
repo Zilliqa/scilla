@@ -58,9 +58,10 @@ let rec get_type e tenv = match e with
       let%bind bt = get_type body tenv' in
       pure @@ mk_qual_tp (FunType (t, bt.tp))
   | App (f, actuals) ->
-      let%bind fres = TEnv.resolveT tenv (get_id f) ~lopt:(Some (get_loc f)) in
+      let%bind fres = wrap_err e @@
+        TEnv.resolveT tenv (get_id f) ~lopt:(Some (get_loc f)) in
       let ftyp = (rr_typ fres).tp in
-      app_type tenv ftyp actuals
+      wrap_err e @@ app_type tenv ftyp actuals
   | Builtin (i, actuals) ->
       let%bind tresults = mapM actuals
           ~f:(fun arg -> TEnv.resolveT tenv (get_id arg)
@@ -70,8 +71,8 @@ let rec get_type e tenv = match e with
       let%bind _ = TEnv.is_wf_type tenv ret_typ in
       pure @@ mk_qual_tp ret_typ
   | Let (i, t, lhs, rhs) ->
-      (* TODO: Check that LHS matches ascribed type *)
-      let%bind ityp = get_type lhs tenv in
+      (* Poor man's error reporting *)
+      let%bind ityp = wrap_err e @@ get_type lhs tenv in
       let tenv' = TEnv.addT (TEnv.copy tenv) i ityp.tp in
       get_type rhs tenv'
   | Constr (cname, ts, actuals) ->

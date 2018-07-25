@@ -1,0 +1,4 @@
+Type checking failed:
+[typecheck/bad/map-error.scilla:1:1]: error in typing LHS of the binding `list_map`:
+[typecheck/bad/map-error.scilla:8:5]: error in typing aplication of `folder`:
+The type (FunType(FunType(TypeVar 'A)(FunType(TypeVar 'B)(TypeVar 'B)))(FunType(TypeVar 'B)(FunType(ADT List((TypeVar 'A)))(TypeVar 'B)))) doesn't apply to the arguments [(FunType(TypeVar 'A)(FunType(ADT List((TypeVar 'B)))(ADT List((TypeVar 'B))))); (ADT List((TypeVar 'B))); (ADT List((TypeVar 'A)))].

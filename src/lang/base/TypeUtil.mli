@@ -105,3 +105,11 @@ val contr_pattern_arg_types : typ -> string -> (typ list, string) result
 val validate_param_length : string -> int -> int -> (unit, string) result
 
 val assert_all_same_type : typ list -> (unit, string) result
+
+(****************************************************************)
+(*                  Better error reporting                      *)
+(****************************************************************)
+
+val wrap_with_info : string -> ('a, string) result -> ('a, string) result
+
+val wrap_err : loc expr -> ('a, string) result -> ('a, string) result

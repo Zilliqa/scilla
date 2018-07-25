@@ -1,0 +1,5 @@
+Type checking failed:
+[typecheck/bad/nth-error.scilla:1:1]: error in typing LHS of the binding `list_nth`:
+[typecheck/bad/nth-error.scilla:5:5]: error in typing LHS of the binding `list_nth_helper`:
+[typecheck/bad/nth-error.scilla:13:9]: error in typing LHS of the binding `iter`:
+Constructor Pair expects 2 type arguments, but got 1.

@@ -21,6 +21,9 @@ module Tests = TestUtil.DiffBasedTests(
       "list-error2.scilla";
       "pm-error1.scilla";
       "pm-error2.scilla";
+      "map-error.scilla";
+      "nth-error.scilla";
+      "folder-error.scilla";
     ]
     let use_stdlib = false
   end)

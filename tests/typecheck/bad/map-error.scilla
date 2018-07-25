@@ -1,0 +1,28 @@
+let list_map = tfun 'A => tfun 'B =>
+  fun (f : 'A -> 'B) => fun (l : List 'A) =>
+  let folder = @list_foldr 'A 'B in
+  let init = Nil {'B} in
+  let iter = fun (h : 'A) => fun (z : List 'B) =>
+    let h1 = f h in
+    Cons {'B} h1 z  		
+	in folder iter init l
+in 
+
+let int_map = @list_map Uint32 Uint32 in
+
+let f = fun (i : Uint32) =>
+  let five = Uint32 5 in
+	builtin mul i five in
+
+let one = Uint32 1 in
+let two = Uint32 2 in
+let three = Uint32 3 in
+
+let nil = Nil {Uint32} in
+let l1 = Cons {Uint32} three nil in
+let l2 = Cons {Uint32} two l1 in
+let l3 = Cons {Uint32} one l2 in
+let l4 = Cons {Uint32} three l3 in
+
+int_map f l4
+s

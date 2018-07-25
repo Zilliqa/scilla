@@ -385,3 +385,28 @@ let assert_all_same_type ts = match ts with
       | Some t' -> fail @@ sprintf
           "Not all types in the list %s are equivalent, e.g.:\n%s\nand\n%s"
           (pp_typ_list ts) (pp_typ t) (pp_typ t')
+
+(****************************************************************)
+(*                  Better error reporting                      *)
+(****************************************************************)
+
+let get_failure_msg e = match e with
+  | App (f, _) ->
+      sprintf "[%s]: error in typing aplication of `%s`:\n"
+        (get_loc_str (get_loc f)) (get_id f)
+  | Let (i, t, lhs, rhs) ->
+      sprintf "[%s]: error in typing LHS of the binding `%s`:\n"
+        (get_loc_str (get_loc i)) (get_id i)
+  | MatchExpr (x, clauses) ->
+      sprintf "[%s]: error in typing pattern matching on `%s`:\n"
+        (get_loc_str (get_loc x)) (get_id x)
+  | TApp (tf, arg_types) ->
+      sprintf "[%s]: error in typing type application of `%s`:\n"
+        (get_loc_str (get_loc tf)) (get_id tf)
+  | _ -> ""
+  
+let wrap_with_info msg res = match res with
+  | Ok _ -> res
+  | Error msg' -> Error (sprintf "%s%s" msg msg')
+
+let wrap_err e = wrap_with_info (get_failure_msg e)

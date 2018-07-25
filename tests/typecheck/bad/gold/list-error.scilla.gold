@@ -1,2 +1,3 @@
 Type checking failed:
+[typecheck/bad/list-error.scilla:20:1]: error in typing LHS of the binding `l4`:
 Constructor Cons expects 2 arguments, but got 1.
