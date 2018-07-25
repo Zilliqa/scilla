@@ -1,2 +1,2 @@
-Failed execution:
+Type checking failed:
 Constructor Cons expects 1 type arguments, but got 2.

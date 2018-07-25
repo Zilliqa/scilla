@@ -329,9 +329,7 @@ let apply_type_subst tmap tp =
   List.fold_left tmap ~init:tp
     ~f:(fun acc_tp (tv, tp) -> subst_type_in_type tv tp acc_tp)
 
-let validate_adt_params cn adt targs =
-  let plen = List.length adt.tparams in
-  let alen = List.length targs in
+let validate_param_length cn plen alen =
   if plen <> alen
   then fail @@ sprintf
       "Constructor %s expects %d type arguments, but got %d." cn plen alen
@@ -342,7 +340,9 @@ let validate_adt_params cn adt targs =
 let elab_constr_type cn targs =
   let open Datatypes.DataTypeDictionary in
   let%bind (adt, ctr) = lookup_constructor cn in
-  let%bind _ = validate_adt_params cn adt targs in
+  let plen = List.length adt.tparams in
+  let alen = List.length targs in
+  let%bind _ = validate_param_length cn plen alen in
   let res_typ = ADT (adt.tname, targs) in
   match List.find adt.tmap ~f:(fun (n, _) -> n = cn) with
   | None -> pure res_typ
@@ -357,7 +357,9 @@ let extract_targs cn adt atyp = match atyp with
   | ADT (name, targs) ->
       if adt.tname = name
       then
-        let%bind _ = validate_adt_params cn adt targs in
+        let plen = List.length adt.tparams in
+        let alen = List.length targs in        
+        let%bind _ = validate_param_length cn plen alen in
         pure targs
       else fail @@ sprintf
            "Type names don't match: %s expected by %s given"
@@ -374,4 +376,3 @@ let contr_pattern_arg_types atyp cn =
   | Some tms ->
       let subst = List.zip_exn adt.tparams targs in
       pure @@ List.map ~f:(apply_type_subst subst) tms 
-

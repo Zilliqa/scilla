@@ -20,6 +20,33 @@ open BuiltIns
 module SimpleTEnv = MakeTEnv(PlainTypes)
 open SimpleTEnv
 
+(**************************************************************)
+(*             Auxiliary functions for typing                 *)
+(**************************************************************)
+
+(* Given a scrutinee type and a pattern,
+   produce a list of ident -> type mappings for 
+   all variables bound by the pattern *)
+let assign_types_for_pattern sctyp pattern =
+  let rec go atyp tlist p = match p with
+    | Wildcard -> pure tlist
+    | Binder x -> pure @@ [(x, atyp)]
+    | Constructor (cn, ps) ->
+        let%bind arg_types = contr_pattern_arg_types atyp cn in
+        let plen = List.length arg_types in
+        let alen = List.length ps in
+        let%bind _ = validate_param_length cn plen alen in
+        let tps_pts = List.zip_exn arg_types ps in
+        foldM ~init:tlist tps_pts
+          ~f:(fun acc (t, pt) -> go t acc pt)
+  in go sctyp [] pattern
+
+(* TODO: Check pattern branch *)
+
+
+(**************************************************************)
+
+
 (* TODO: Check if the type is well-formed: support type variables *)
 let rec get_type e tenv = match e with
   | Literal l ->
@@ -40,7 +67,8 @@ let rec get_type e tenv = match e with
       app_type tenv ftyp actuals
   | Builtin (i, actuals) ->
       let%bind tresults = mapM actuals
-          ~f:(fun arg -> TEnv.resolveT tenv (get_id arg) ~lopt:(Some (get_loc arg))) in
+          ~f:(fun arg -> TEnv.resolveT tenv (get_id arg)
+                 ~lopt:(Some (get_loc arg))) in
       let targs = List.map tresults ~f:(fun rr -> (rr_typ rr).tp) in
       let%bind (_, ret_typ, _) = BuiltInDictionary.find_builtin_op i targs in
       let%bind _ = TEnv.is_wf_type tenv ret_typ in

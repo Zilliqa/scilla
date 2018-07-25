@@ -15,6 +15,13 @@ open Result.Let_syntax
 let fail s = Error s
 let pure e = return e
 
+(* Monadic fold-left for error *)
+let rec foldM ~f ~init ls = match ls with
+  | x :: ls' ->
+      let%bind res = f init x in
+      foldM ~f:f ~init:res ls'
+  | [] -> Ok init
+
 (* Monadic map for error *)
 let rec mapM ~f ls = match ls with
   | x :: ls' ->
@@ -23,6 +30,8 @@ let rec mapM ~f ls = match ls with
        | Error z as err, _ -> err
        | _, (Error _ as err) -> err)
   | [] -> Ok []
+
+
 
 (* Try all variants in the list, pick the first successful one *)
 let rec tryM ~f ls ~msg = match ls with

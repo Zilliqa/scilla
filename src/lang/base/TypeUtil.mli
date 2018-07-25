@@ -49,7 +49,8 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     (* Check type for well-formedness in the type environment *)
     val is_wf_type : t -> typ -> (unit, string) result
     (* Resolve the identifier *)    
-    val resolveT : ?lopt:(loc option) -> t -> string -> (resolve_result, string) result
+    val resolveT : ?lopt:(loc option) -> t -> string ->
+      (resolve_result, string) result
     (* Copy the environment *)
     val copy : t -> t
     (* Convert to list *)
@@ -95,3 +96,5 @@ val elab_constr_type : string -> typ list -> (typ, string) result
    assignemnts. This is the main working horse of type-checking
    pattern-matching. *)    
 val contr_pattern_arg_types : typ -> string -> (typ list, string) result  
+
+val validate_param_length : string -> int -> int -> (unit, string) result

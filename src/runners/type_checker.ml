@@ -29,7 +29,7 @@ let () =
       (match res with
       | Ok res ->
           printf "%s\n" (pp_typ res.tp)
-      | Error s -> printf "Failed execution:\n%s\n" s)
+      | Error s -> printf "Type checking failed:\n%s\n" s)
   | Some _ | None ->
       printf "%s\n" "Failed to parse input file."
   
