@@ -93,14 +93,18 @@ let rec get_type e tenv = match e with
       then fail @@ sprintf
           "List of pattern matching clauses is empty:\n%s" (expr_str e)
       else
-        wrap_err e (
-          let%bind sctyp = TEnv.resolveT tenv (get_id x)
-              ~lopt:(Some (get_loc x)) in
+        let%bind sctyp = TEnv.resolveT tenv (get_id x)
+            ~lopt:(Some (get_loc x)) in
+        let sct = (rr_typ sctyp).tp in
+        let msg =
+          sprintf "[%s]: error in typing pattern matching on `%s` of type %s (or one of its branches):\n"
+        (get_loc_str (get_loc x)) (get_id x) (pp_typ sct) in
+        wrap_with_info msg (
           let%bind cl_types = mapM clauses ~f:(fun (ptrn, ex) ->
-              type_check_match_branch tenv (rr_typ sctyp).tp ptrn ex) in
+              type_check_match_branch tenv sct ptrn ex) in
           let%bind _ =
             assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
-        (* Return the first type since all they are the same *)
+          (* Return the first type since all they are the same *)
           pure @@ List.hd_exn cl_types
         )
   | Fixpoint (f, t, body) ->
