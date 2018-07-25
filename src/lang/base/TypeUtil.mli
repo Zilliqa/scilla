@@ -78,8 +78,13 @@ val map_typ : typ -> typ -> typ
 (****************************************************************)
 
 val type_equiv : typ -> typ -> bool
+
+(* Applying a function type *)
 val fun_type_applies : typ -> typ list -> (typ, string) result
+
+(* Applying a type function *)
 val elab_tfun_with_args : typ -> typ list -> (typ, string) result
+
 val pp_typ_list : typ list -> string  
 
 (****************************************************************)

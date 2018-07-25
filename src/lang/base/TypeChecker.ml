@@ -100,9 +100,23 @@ let rec get_type e tenv = match e with
           assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
         (* Return the first type since all they are the same *)
         pure @@ List.hd_exn cl_types
+  | Fixpoint (f, t, body) ->
+      pure @@ mk_qual_tp t
+  | TFun (tvar, body) ->
+      let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
+      let%bind bt = get_type body tenv' in
+      pure @@ mk_qual_tp (PolyFun ((get_id tvar), bt.tp))
+  | TApp (tf, arg_types) ->
+      let%bind _ = mapM arg_types ~f:(TEnv.is_wf_type tenv) in
+      let%bind tfres = TEnv.resolveT tenv (get_id tf)
+          ~lopt:(Some (get_loc tf)) in
+      let tftyp = (rr_typ tfres).tp in
+      let%bind res_type = elab_tfun_with_args tftyp arg_types in
+      let%bind _ = TEnv.is_wf_type tenv res_type in
+      pure @@ mk_qual_tp res_type
 
-  (* Type functions *)
-  (* Type vaieables *)
+
+  (* Type applications *)
   (* Messages *)      
 
 
