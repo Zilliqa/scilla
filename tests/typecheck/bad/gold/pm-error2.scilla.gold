@@ -1,0 +1,2 @@
+Type checking failed:
+Types don't match: pattern uses a constructor of type Option, but value of type Bool is given.

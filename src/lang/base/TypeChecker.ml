@@ -30,7 +30,7 @@ open SimpleTEnv
 let assign_types_for_pattern sctyp pattern =
   let rec go atyp tlist p = match p with
     | Wildcard -> pure tlist
-    | Binder x -> pure @@ [(x, atyp)]
+    | Binder x -> pure @@ tlist @ [(x, atyp)]
     | Constructor (cn, ps) ->
         let%bind arg_types = contr_pattern_arg_types atyp cn in
         let plen = List.length arg_types in
@@ -41,11 +41,7 @@ let assign_types_for_pattern sctyp pattern =
           ~f:(fun acc (t, pt) -> go t acc pt)
   in go sctyp [] pattern
 
-(* TODO: Check pattern branch *)
-
-
 (**************************************************************)
-
 
 (* TODO: Check if the type is well-formed: support type variables *)
 let rec get_type e tenv = match e with
@@ -91,14 +87,24 @@ let rec get_type e tenv = match e with
         let%bind ftyp = elab_constr_type cname ts in
         (* Now type-check as a function application *)
         app_type tenv ftyp actuals
+  | MatchExpr (x, clauses) ->
+      if List.is_empty clauses
+      then fail @@ sprintf
+          "List of pattern matching clauses is empty:\n%s" (expr_str e)
+      else 
+        let%bind sctyp = TEnv.resolveT tenv (get_id x)
+            ~lopt:(Some (get_loc x)) in
+        let%bind cl_types = mapM clauses ~f:(fun (ptrn, ex) ->
+            type_check_match_branch tenv (rr_typ sctyp).tp ptrn ex) in
+        let%bind _ =
+          assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
+        (* Return the first type since all they are the same *)
+        pure @@ List.hd_exn cl_types
 
+  (* Type functions *)
+  (* Type vaieables *)
+  (* Messages *)      
 
-  (* ** Type-check ADT constructors *)
-  (* ** Type-check primitive literals *)
-  (* ** ADTs and pattern-matching *)
-  (* ** Recursion principles (hard-coded) *)
-  (* ** Type-check maps *)
-      
 
   (* TODO: Implement other expressions *)
   | _ -> fail @@ sprintf
@@ -113,4 +119,9 @@ and app_type tenv ftyp actuals =
   let%bind res_type = fun_type_applies ftyp targs in
   let%bind _ = TEnv.is_wf_type tenv res_type in
   pure @@ mk_qual_tp res_type
+
+and type_check_match_branch tenv styp ptrn e =
+  let%bind new_typings = assign_types_for_pattern styp ptrn in
+  let tenv' = TEnv.addTs (TEnv.copy tenv) new_typings in
+  get_type e tenv'
 

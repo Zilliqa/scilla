@@ -1,0 +1,5 @@
+Type checking failed:
+Not all types in the list [(PrimType Int64)] are equivalent, e.g.:
+(PrimType Int32)
+and
+(PrimType Int64)

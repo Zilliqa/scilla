@@ -362,7 +362,7 @@ let extract_targs cn adt atyp = match atyp with
         let%bind _ = validate_param_length cn plen alen in
         pure targs
       else fail @@ sprintf
-           "Type names don't match: %s expected by %s given"
+           "Types don't match: pattern uses a constructor of type %s, but value of type %s is given."
            adt.tname name
   | _ -> fail @@ sprintf
         "Not an algebraic data type: %s" (pp_typ atyp)
@@ -376,3 +376,12 @@ let contr_pattern_arg_types atyp cn =
   | Some tms ->
       let subst = List.zip_exn adt.tparams targs in
       pure @@ List.map ~f:(apply_type_subst subst) tms 
+
+let assert_all_same_type ts = match ts with
+  | [] -> fail "Checking an enpty type list."
+  | t :: ts ->
+      match List.find ts ~f:(fun t' -> not (type_equiv t t')) with
+      | None -> pure ()
+      | Some t' -> fail @@ sprintf
+          "Not all types in the list %s are equivalent, e.g.:\n%s\nand\n%s"
+          (pp_typ_list ts) (pp_typ t) (pp_typ t')
