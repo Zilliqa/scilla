@@ -51,6 +51,8 @@ let get_loc_str (l : loc) : string =
 
 type bigint = Big_int.big_int
 
+let mk_ident s = Ident (s, dummy_loc)      
+
 (*******************************************************)
 (*                         Types                       *)
 (*******************************************************)

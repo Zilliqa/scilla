@@ -15,9 +15,9 @@ open Big_int
 open EvalUtil
 open TypeUtil
 
-let mk_ident s = Ident (s, dummy_loc)      
-
-(* Recursion principles for built-in ADTs *)
+(***********************************************************)
+(*    Recursion principles for built-in ADTs               *)
+(***********************************************************)
 
 (* Folding over natural numbers *)
 module NatRec = struct

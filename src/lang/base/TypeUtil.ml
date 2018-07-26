@@ -456,3 +456,13 @@ let wrap_err e ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt)
 
 let wrap_serr s ?opt:(opt = "") =
   wrap_with_info (get_failure_msg_stmt s opt)
+
+(*****************************************************************)
+(*               Blockchain compoenent typing                    *)
+(*****************************************************************)
+
+(* let bc_elements =
+ *   []
+ * 
+ * let bc_type_env =
+ *   TEnv.addTs TEnv.mk recs in *)

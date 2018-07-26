@@ -23,7 +23,8 @@ open TypeUtil
 (*                    Utilities                    *)      
 (***************************************************)    
 
-let reserved_names = List.map ~f:(fun x -> (get_id (fst3 x))) Recursion.recursion_principles
+let reserved_names =
+  List.map ~f:(fun x -> (get_id (fst3 x))) Recursion.recursion_principles
 
 (* Printing result *)
 let pp_result r exclude_names = 
