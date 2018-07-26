@@ -10,7 +10,7 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "ended",
-      "type": "Bool ",
+      "type": "Bool",
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     },
     {

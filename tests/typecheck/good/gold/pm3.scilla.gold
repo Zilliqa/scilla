@@ -1,1 +1,1 @@
-(FunType(ADT Pair((ADT Option((PrimType Int32)))(PrimType Int32)))(PrimType Int32))
+Pair (Option (Int32)) (Int32) -> Int32

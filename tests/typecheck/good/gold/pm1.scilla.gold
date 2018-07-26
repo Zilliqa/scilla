@@ -1,1 +1,1 @@
-(FunType(ADT Bool())(PrimType Int32))
+Bool -> Int32

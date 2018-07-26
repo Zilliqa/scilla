@@ -62,7 +62,24 @@ type typ  =
   | PolyFun of string * typ
 [@@deriving sexp]
 
-let pp_typ t = sexp_of_typ t |> Sexplib.Sexp.to_string
+let rec pp_typ t = match t with
+  | PrimType t -> t
+  | MapType (kt, vt) ->
+      sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt )
+  | ADT (name, targs) ->
+      let elems = name :: (List.map targs
+          ~f:(fun t -> sprintf "(%s)" (pp_typ t)))
+      in
+      String.concat ~sep:" " elems
+  | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
+  | TypeVar tv -> tv
+  | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (pp_typ bt)
+and with_paren t = match t with
+  | FunType _ | PolyFun _ -> sprintf "(%s)" (pp_typ t)
+  | _ -> pp_typ t
+           
+
+
 
 (*******************************************************)
 

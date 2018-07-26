@@ -1,6 +1,6 @@
 Type checking failed:
-Couldn't resolve the identifier y at a location [typecheck/bad/fun2.scilla:1:20] in the type environment
-{ [x -> (PrimType Int32)],
-  [nat_fold -> (PolyFun 'T(FunType(FunType(TypeVar 'T)(FunType(ADT Nat())(TypeVar 'T)))(FunType(TypeVar 'T)(FunType(ADT Nat())(TypeVar 'T)))))],
-  [list_foldl -> (PolyFun 'A(PolyFun 'B(FunType(FunType(TypeVar 'B)(FunType(TypeVar 'A)(TypeVar 'B)))(FunType(TypeVar 'B)(FunType(ADT List((TypeVar 'A)))(TypeVar 'B))))))],
-  [list_foldr -> (PolyFun 'A(PolyFun 'B(FunType(FunType(TypeVar 'A)(FunType(TypeVar 'B)(TypeVar 'B)))(FunType(TypeVar 'B)(FunType(ADT List((TypeVar 'A)))(TypeVar 'B))))))] }
+[typecheck/bad/fun2.scilla:1:20]: Couldn't resolve the identifier y in the type environment
+{ [x -> Int32],
+  [nat_fold -> forall 'T. ('T -> Nat -> 'T) -> 'T -> Nat -> 'T],
+  [list_foldl -> forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B],
+  [list_foldr -> forall 'A. forall 'B. ('A -> 'B -> 'B) -> 'B -> List ('A) -> 'B] }

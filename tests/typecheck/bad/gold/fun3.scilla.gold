@@ -1,2 +1,2 @@
 Type checking failed:
-Cannot find built-in with name "add" and argument types [(PrimType Int32); (ADT Int54())] at location typecheck/bad/fun3.scilla:2:21.
+[typecheck/bad/fun3.scilla:2:21] Cannot find built-in with name "add" and argument types [Int32; Int54].

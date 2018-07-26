@@ -205,11 +205,11 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       | Some r -> pure r
       | None ->
           let loc_str = (match lopt with
-              | Some l -> sprintf " at a location [%s]" (get_loc_str l)
+              | Some l -> sprintf "[%s]: " (get_loc_str l)
               | None -> "") in
           fail @@ sprintf
-            "Couldn't resolve the identifier %s%s in the type environment\n%s"
-            id loc_str (pp env)
+            "%sCouldn't resolve the identifier %s in the type environment\n%s"
+            loc_str id (pp env)
 
     let copy e = {
       tenv = Hashtbl.copy e.tenv;
@@ -316,7 +316,7 @@ let rec fun_type_applies ft argtypes = match ft, argtypes with
     when argt = a -> fun_type_applies rest ats 
   | t, []  -> pure t
   | _ -> fail @@ sprintf
-        "The type %s doesn't apply to the arguments %s." (pp_typ ft)
+        "The type %s doesn't apply to the arguments of types\n%s." (pp_typ ft)
         (pp_typ_list argtypes)
 
 let rec elab_tfun_with_args tf args = match tf, args with
@@ -392,8 +392,7 @@ let assert_all_same_type ts = match ts with
       match List.find ts' ~f:(fun t' -> not (type_equiv t t')) with
       | None -> pure ()
       | Some t' -> fail @@ sprintf
-          "Not all types of the branches %s are equivalent, e.g.:\n%s\nand\n%s"
-          (pp_typ_list ts) (pp_typ t) (pp_typ t')
+          "Not all types of the branches %s are equivalent." (pp_typ_list ts)
 
 (****************************************************************)
 (*                  Better error reporting                      *)

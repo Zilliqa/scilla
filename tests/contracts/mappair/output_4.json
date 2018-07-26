@@ -21,10 +21,10 @@
     },
     {
       "vname": "gpair",
-      "type": "Pair (List (Int64)) (Option (Bool ))",
+      "type": "Pair (List (Int64)) (Option (Bool))",
       "value": {
         "constructor": "Pair",
-        "argtypes": [ "List (Int64)", "Option (Bool )" ],
+        "argtypes": [ "List (Int64)", "Option (Bool)" ],
         "arguments": [
           {
             "constructor": "Cons",
@@ -47,7 +47,7 @@
           },
           {
             "constructor": "Some",
-            "argtypes": [ "Bool " ],
+            "argtypes": [ "Bool" ],
             "arguments": [
               { "constructor": "False", "argtypes": [], "arguments": [] }
             ]

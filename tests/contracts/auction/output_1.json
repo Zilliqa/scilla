@@ -20,7 +20,7 @@
     },
     {
       "vname": "ended",
-      "type": "Bool ",
+      "type": "Bool",
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     },
     {
