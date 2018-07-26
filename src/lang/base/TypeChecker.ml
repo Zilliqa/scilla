@@ -46,7 +46,7 @@ let assign_types_for_pattern sctyp pattern =
 (**************************************************************)
 
 (* TODO: Check if the type is well-formed: support type variables *)
-let rec get_type e tenv = match e with
+let rec type_expr e tenv = match e with
   | Literal l ->
       (* TODO: Check that literal is well-formed *)
       let%bind lt = literal_type l in
@@ -57,7 +57,7 @@ let rec get_type e tenv = match e with
   |  Fun (arg, t, body) ->
       let%bind _ = TEnv.is_wf_type tenv t in
       let tenv' = TEnv.addT (TEnv.copy tenv) arg t in
-      let%bind bt = get_type body tenv' in
+      let%bind bt = type_expr body tenv' in
       pure @@ mk_qual_tp (FunType (t, bt.tp))
   | App (f, actuals) ->
       let%bind fres = wrap_err e @@ 
@@ -75,9 +75,9 @@ let rec get_type e tenv = match e with
       pure @@ mk_qual_tp ret_typ
   | Let (i, t, lhs, rhs) ->
       (* Poor man's error reporting *)
-      let%bind ityp = wrap_err e @@ get_type lhs tenv in
+      let%bind ityp = wrap_err e @@ type_expr lhs tenv in
       let tenv' = TEnv.addT (TEnv.copy tenv) i ityp.tp in
-      get_type rhs tenv'
+      type_expr rhs tenv'
   | Constr (cname, ts, actuals) ->
       let%bind _ = mapM ts ~f:(TEnv.is_wf_type tenv) in
       let open Datatypes.DataTypeDictionary in 
@@ -114,7 +114,7 @@ let rec get_type e tenv = match e with
       pure @@ mk_qual_tp t
   | TFun (tvar, body) ->
       let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
-      let%bind bt = get_type body tenv' in
+      let%bind bt = type_expr body tenv' in
       pure @@ mk_qual_tp (PolyFun ((get_id tvar), bt.tp))
   | TApp (tf, arg_types) ->
       let%bind _ = mapM arg_types ~f:(TEnv.is_wf_type tenv) in
@@ -129,7 +129,7 @@ let rec get_type e tenv = match e with
       let payload_type pld =
         match pld with
         | MTag s -> pure @@ mk_qual_tp string_typ
-        | MLit l -> get_type (Literal l) tenv
+        | MLit l -> type_expr (Literal l) tenv
         | MVar i ->
             let%bind r = TEnv.resolveT tenv (get_id i)
                 ~lopt:(Some (get_loc i)) in
@@ -158,7 +158,7 @@ and app_type tenv ftyp actuals =
 and type_check_match_branch tenv styp ptrn e =
   let%bind new_typings = assign_types_for_pattern styp ptrn in
   let tenv' = TEnv.addTs (TEnv.copy tenv) new_typings in
-  get_type e tenv'
+  type_expr e tenv'
 
 (**************************************************************)
 (*                   Typing statements                        *)
@@ -171,3 +171,19 @@ type stmt_tenv = {
   bc     : TEnv.t;
 }
 
+let rec type_stmts env stmts =
+  match stmts with
+  | [] -> pure env
+  | s :: sts -> (match s with      
+      | SendMsgs i ->
+          let%bind r = TEnv.resolveT env.pure (get_id i)
+              ~lopt:(Some (get_loc i)) in
+          fail "FIXME"
+
+      (* TODO: Implement the rest *)
+      | _ ->
+          fail @@ sprintf
+            "Type-checking the statement %s is not supported yet."
+            (stmt_str s)
+
+    )

@@ -286,6 +286,13 @@ let map_typ k v = MapType (k, v)
 let type_equiv t1 t2 =
   t1 = t2
 
+let assert_equiv expected given =
+  if type_equiv expected given
+  then pure ()
+  else fail @@ sprintf
+      "Type mismatch: %s expected, but %s provided."
+      (pp_typ expected) (pp_typ given)
+
 let rec is_ground_type t = match t with 
   | FunType (a, r) -> is_ground_type a && is_ground_type r
   | MapType (k, v) -> is_ground_type k && is_ground_type v
@@ -312,8 +319,9 @@ let pp_typ_list ts =
    Returns the resul type of application or failure 
 *)
 let rec fun_type_applies ft argtypes = match ft, argtypes with
-  | FunType (argt, rest), a :: ats
-    when argt = a -> fun_type_applies rest ats 
+  | FunType (argt, rest), a :: ats ->
+      let%bind _ = assert_equiv argt a in
+      fun_type_applies rest ats 
   | t, []  -> pure t
   | _ -> fail @@ sprintf
         "The type\n%s\ndoesn't apply, as a function, to the arguments of types\n%s." (pp_typ ft)
@@ -387,7 +395,7 @@ let contr_pattern_arg_types atyp cn =
       pure @@ List.map ~f:(apply_type_subst subst) tms 
 
 let assert_all_same_type ts = match ts with
-  | [] -> fail "Checking an enpty type list."
+  | [] -> fail "Checking an empty type list."
   | t :: ts' ->
       match List.find ts' ~f:(fun t' -> not (type_equiv t t')) with
       | None -> pure ()
@@ -400,7 +408,7 @@ let assert_all_same_type ts = match ts with
 
 let get_failure_msg e = match e with
   | App (f, _) ->
-      sprintf "[%s] Error in typing aplication of `%s`:\n"
+      sprintf "[%s] Error in typing application of `%s`:\n"
         (get_loc_str (get_loc f)) (get_id f)
   | Let (i, t, lhs, rhs) ->
       sprintf "[%s] Error in typing LHS of the binding `%s`:\n"
