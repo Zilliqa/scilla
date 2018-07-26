@@ -15,6 +15,7 @@ open MonadUtil
 open TypeUtil
 open Datatypes
 open BuiltIns
+open Recursion
 
 (* Instantiated the type environment *)
 module SimpleTEnv = MakeTEnv(PlainTypes)
@@ -109,6 +110,10 @@ let rec type_expr tenv e = match e with
           pure @@ List.hd_exn cl_types
         )
   | Fixpoint (f, t, body) ->
+      wrap_err e @@ 
+      let tenv' = TEnv.addT (TEnv.copy tenv) f t in
+      let%bind bt = type_expr tenv' body in
+      let%bind _ = assert_type_equiv t bt.tp in
       pure @@ mk_qual_tp t
   | TFun (tvar, body) ->
       let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
@@ -234,3 +239,26 @@ and type_match_stmt_branch env styp ptrn sts =
   type_stmts env' sts
 
 
+(**************************************************************)
+(*           Typing recursion principles and libraries        *)
+(**************************************************************)
+
+(* This is a really good sanity check: 
+   it should always succeed! *)
+let type_recursion_principles =
+  let recs = List.map recursion_principles
+      ~f:(fun ({lname = a; lexp = e}, c) -> (a, e, c)) in
+  let env0 = TEnv.mk in 
+  mapM recs
+    ~f:(fun (rn, body, expected) ->
+        wrap_with_info
+          (sprintf "Type error when checking recursion primitive %s:\n"
+             (get_id rn)) @@
+        let%bind ar = type_expr env0 body in
+        let actual = ar.tp in
+        let%bind _ = assert_type_equiv expected actual in
+        pure (rn, actual))
+        
+(**************************************************************)
+(*                    Typing a library                        *)
+(**************************************************************)

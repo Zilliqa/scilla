@@ -423,6 +423,9 @@ let get_failure_msg e opt = match e with
   | Builtin (i, _) ->
       sprintf "[%s] Type error in built-in application of `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)
+  | Fixpoint (f, t, body) ->
+      sprintf "Type error in fixpoint application with an argument `%s`:\n"
+        (get_id f)              
   | _ -> ""
 
 let get_failure_msg_stmt s opt = match s with
