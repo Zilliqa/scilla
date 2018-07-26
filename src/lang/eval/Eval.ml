@@ -17,6 +17,7 @@ open MonadUtil
 open PatternMatching
 open BuiltIns
 open Stdint
+open ContractUtil
 open TypeUtil
 
 (***************************************************)
@@ -313,11 +314,6 @@ let init_fields env fs =
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
-let append_implict_contract_params tparams =
-    let creation_block_id = asId creation_block_label in
-    let creation_block = (creation_block_id, PrimType("BNum")) in
-        creation_block :: tparams
-
 (* TODO: implement type-checking *)
 let init_contract clibs elibs cparams' cfields args init_bal  =
   (* All contracts take a few implicit parameters. *)
@@ -373,7 +369,7 @@ let create_cur_state_fields initcstate curcstate =
     
 (* Initialize a module with given arguments and initial balance *)
 let init_module md initargs curargs init_bal bstate elibs =
-  let {cname ; libs; contr} = md in
+  let {cname; libs; contr} = md in
   let {cname; cparams; cfields; ctrans} = contr in
   let%bind initcstate =
     init_contract libs elibs cparams cfields initargs init_bal in
@@ -405,17 +401,11 @@ let get_transition ctr tag =
       let body = t.tbody in
       pure (params, body)
 
-let append_implict_transition_params tparams =
-    let sender_id = asId MessagePayload.sender_label in
-    let sender = (sender_id, PrimType("Address")) in
-    let amount_id = asId MessagePayload.amount_label in
-    let amount = (amount_id, PrimType("Uint128")) in
-        amount :: sender :: tparams
-
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
 (* TODO: Check runtime types *)
 let check_message_entries tparams_o entries =
-  let tparams = append_implict_transition_params tparams_o in
+  let open ContractState in
+  let tparams = append_implict_trans_params tparams_o in
   (* There as an entry for each parameter *)
   let valid_entries = List.for_all tparams
       ~f:(fun p -> List.exists entries ~f:(fun e -> fst e = (get_id (fst p)))) in

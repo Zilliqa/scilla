@@ -16,6 +16,7 @@ open TypeUtil
 open Datatypes
 open BuiltIns
 open Recursion
+open ContractUtil
 
 (* Instantiated the type environment *)
 module SimpleTEnv = MakeTEnv(PlainTypes)
@@ -187,13 +188,19 @@ let rec type_stmts env stmts =
               pure {env with pure = pure'}
             ) in
           type_stmts env' sts                            
-      | Store (f, r) -> 
-          let%bind _ = wrap_serr s (
-              let%bind fr = TEnv.resolveT env.fields (get_id f) in
-              let%bind r = TEnv.resolveT env.pure (get_id r) in
-              assert_type_equiv (rr_typ fr).tp (rr_typ r).tp
-            ) in
-          type_stmts env sts            
+      | Store (f, r) ->
+          if List.mem ~equal:(fun s1 s2 -> s1 = s2)
+              no_store_fields (get_id f) then
+            wrap_serr s (
+              fail @@ sprintf
+                "Writing to the field `%s` is prohibited." (get_id f)) 
+          else          
+            let%bind _ = wrap_serr s (
+                let%bind fr = TEnv.resolveT env.fields (get_id f) in
+                let%bind r = TEnv.resolveT env.pure (get_id r) in
+                assert_type_equiv (rr_typ fr).tp (rr_typ r).tp
+              ) in
+            type_stmts env sts            
       | Bind (x, e) ->
           let%bind ityp = wrap_serr s @@ type_expr env.pure e in
           let pure' = TEnv.addT (TEnv.copy env.pure) x ityp.tp in
@@ -306,6 +313,17 @@ let type_fields tenv flds =
       let%bind _ = assert_type_equiv ft actual in
       pure @@ TEnv.addT (TEnv.copy fenv) fn actual)
 
+(* Type-check transition *)
+let type_transition env0 tr =
+  let {tname; tparams; tbody} = tr in
+  let tenv0 = env0.pure in
+  let tenv1 = TEnv.addTs tenv0 (append_implict_trans_params tparams) in
+  let env = {env0 with pure = tenv1} in
+  let msg = sprintf "[%s] Type error in transition %s:\n"
+      (get_loc_str (get_loc tname)) (get_id tname) in
+  wrap_with_info msg @@
+  type_stmts env tbody
+
 let type_module md elibs =
   let {cname; libs; contr} = md in
   let {cname; cparams; cfields; ctrans} = contr in
@@ -322,22 +340,24 @@ let type_module md elibs =
   (* Step 2: Type check internal libraries *)
   let%bind tenv2 = type_library tenv1 libs in
 
-  (* Step 3: Adding typed contract parameters *)
-  let tenv3 = TEnv.addTs tenv2 cparams in
+  (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
+  let params = append_implict_contract_params cparams in
+  let tenv3 = TEnv.addTs tenv2 params in
 
-  (* Step 4: Type-check fields *)
-  let%bind fenv = type_fields tenv3 cfields in
+  (* Step 4: Type-check fields and add balance *)
+  let%bind fenv0 = type_fields tenv3 cfields in
+  let (bn, bt) = balance_field in
+  let fenv = TEnv.addT fenv0 bn bt in
 
   (* Step 5: Form a general environment for checking transitions *)
   let env = {pure= tenv3; fields= fenv; bc= bc_type_env} in
-  
-  (* TODO: 
-   * Type-check individual transitions
 
-  *)
+  (* Step 6: Type-checking all transitions in batch *)
+  let%bind _ = mapM ctrans ~f:(fun tr -> type_transition env tr) in
 
   (* TODO: Improve the type checker, so it would report more than one
-  type error. E.g., check independent libraries "in parallel".  *)
-  
+     type error. E.g., check independent libraries "in parallel".  *)
+
+  (* Return pure environment *)  
   pure env
 

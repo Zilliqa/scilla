@@ -17,6 +17,7 @@ open MonadUtil
 open EvalUtil
 open Eval
 open DebugMessage
+open ContractUtil
 open Stdint
 
 (****************************************************)
@@ -70,14 +71,14 @@ let check_after_step name res bstate m =
 let input_state_json filename = 
   let open JSON.ContractState in
   let states = get_json_data filename in
-  let match_balance ((vname : string), _) : bool = vname = EvalUtil.balance_label in
+  let match_balance ((vname : string), _) : bool = vname = balance_label in
   let bal_lit = match List.find states ~f:match_balance with
     | Some (_, lit) -> lit
-    | None -> raise (JSON.Invalid_json (EvalUtil.balance_label ^ " field missing"))
+    | None -> raise (JSON.Invalid_json (balance_label ^ " field missing"))
   in
   let bal_int = match bal_lit with
     | UintLit (wx, x) -> Int.of_string x
-    | _ -> raise (JSON.Invalid_json (EvalUtil.balance_label ^ " invalid"))
+    | _ -> raise (JSON.Invalid_json (balance_label ^ " invalid"))
   in
   let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
      no_bal_states, Uint128.of_int bal_int
@@ -85,7 +86,7 @@ let input_state_json filename =
 (* Add balance to output json and print it out *)
 
 let output_state_json (cstate : 'rep EvalUtil.ContractState.t) =
-  let ballit = (EvalUtil.balance_label, UintLit(128, Uint128.to_string cstate.balance)) in
+  let ballit = (balance_label, UintLit(128, Uint128.to_string cstate.balance)) in
   let concatlist = List.cons ballit cstate.fields in
     JSON.ContractState.state_to_json concatlist;;
 
