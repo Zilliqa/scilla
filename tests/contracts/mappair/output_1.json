@@ -30,7 +30,7 @@
     },
     {
       "vname": "gnat",
-      "type": "Nat ",
+      "type": "Nat",
       "value": { "constructor": "Zero", "argtypes": [], "arguments": [] }
     }
   ]
