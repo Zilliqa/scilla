@@ -124,3 +124,9 @@ val wrap_err : loc expr -> ?opt:string -> ('a, string) result -> ('a, string) re
 
 val wrap_serr : loc stmt -> ?opt:string ->
   ('a, string) result -> ('a, string) result
+
+(****************************************************************)
+(*                  Built-in typed entities                     *)
+(****************************************************************)
+
+val blocknum_name : string

@@ -258,7 +258,7 @@ let rec stmt_eval conf stmts =
 
 let check_blockchain_entries entries =
   let expected = [
-      ("BLOCKNUMBER", BNum("0"))
+      (blocknum_name, BNum("0"))
   ] in
   (* every entry must be expected *)
   let c1 = List.for_all entries ~f:(fun (s, _) ->
