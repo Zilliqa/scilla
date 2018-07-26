@@ -21,73 +21,73 @@ open Utils
 module SimpleTEnv = MakeTEnv(PlainTypes)
 open SimpleTEnv
 
-
-let rec check_patterns t patterns =
-  (* builds dictionary of subpatterns for each constructor.
-     dict is assumed to contain all constructor keys. *)
-  let rec dict_builder ps dict =
-    match ps with
-    | (Constructor (s, ps)) :: p_rest ->
+let rec check_patterns_exhaustive expected_type patterns =
+  (* Return (true, _) if a catchall is seen.
+     Return (false, dict) if no catchall is seen,
+     where dict is a dictionary mapping constructor names to subpatterns *)
+  let rec dict_builder patterns dict =
+    match patterns with
+    | (Constructor (s, sps)) :: p_rest ->
         (match AssocDictionary.lookup s dict with
-         | None -> fail @@ sprintf "Unexpected constructor %s in pattern" s
+         | None -> fail @@ sprintf "Constructor %s does not match type %s" s (pp_typ expected_type)
          | Some v ->
-             let new_dict = AssocDictionary.insert s (ps :: v) dict in
+             let new_dict = AssocDictionary.insert s (sps :: v) dict in
              dict_builder p_rest new_dict)
-    | [Wildcard]
-    | [Binder _] -> pure @@ (true, dict)
-    | [] -> pure @@ (false, dict)
-    | _ -> fail @@ "Unreachable pattern" in
-
-  (* Check exhaustive match *)
-  match t with
-  | FunType _ -> pure @@ false (* Matching is impossible *) 
-  | ADT (s, ts) ->
-      (* Find ADT description *)
-      (let%bind adt = DataTypeDictionary.lookup_name s in
-       let ctr_names = List.map adt.tconstr ~f:(fun ctr -> ctr.cname) in
-       (* Build dictionary mapping constructor names to subpatterns *)
-       let dict_init = List.fold ctr_names
-           ~init:(AssocDictionary.make_dict())
-           ~f:(fun dict ctr_name -> AssocDictionary.insert ctr_name [] dict) in
-       let%bind (catchall, pattern_dict) = dict_builder patterns dict_init in
-       (* Catchall means patterns are exhaustive *)
-       if catchall
-       then pure @@ true
-       else
-         (* No catchall. Check that subpatterns for each constructor are exhaustive. *)
-         let%bind _ = mapM
-             ~f:(fun (ctr_name, sps) ->
-                 match sps with
-                 | [] -> fail @@ sprintf "Non-exhaustive match. No pattern found for constructor %s" ctr_name
-                 | _ ->
-                     (* At least one subpattern found for this constructor *)
-                     match List.findi adt.tmap (fun _ (ctrn, ctr_map) -> ctrn = ctr_name) with
-                     | None ->
-                         (* No type mapping for this constructor.
-                              The only legal list of subpatterns is
-                              therefore one empty subpattern. *)
-                         (match sps with
-                          | [[]] -> pure @@ true
-                          | _ -> fail @@ "Illegal subpattern")
-                     | Some (_, (ctr, tmaps)) ->
-                         (* Type mapping found. Check arity *)
-                         let arity = List.length tmaps in
-                         (* Unzip subpatterns, while checking for correct arities.
-                              Then check for exhaustive matches in each *)
-                         let%bind unzipped_sps = unzipN_rev arity sps 
-                             ~msg:(sprintf "Incorrect arity for constructor %s in pattern." ctr) in
-                         let types = List.map tmaps ~f:(fun (_, t) -> t) in
-                         let%bind _ = map2M ~f:(fun t sps -> check_patterns t sps) types unzipped_sps in
-               pure @@ true)
-             (AssocDictionary.to_list pattern_dict) in
-         pure @@ true)
-  | _ ->
-      (* Only one catchall allowed *)
+    | Wildcard :: _
+    | Binder _ :: _ -> pure @@ (true, dict)
+    | [] -> pure @@ (false, dict) in
+  let rec checker adt patterns =
+    let ctr_names = List.map adt.tconstr ~f:(fun ctr -> ctr.cname) in
+    let init_dict = List.fold ctr_names
+        ~init:(AssocDictionary.make_dict())
+        ~f:(fun dict ctr_name -> AssocDictionary.insert ctr_name [] dict) in
+    let%bind (catchall, pattern_dict) = dict_builder patterns init_dict in
+    if catchall
+    then pure @@ ()
+    else
+      (* No catchall. Check that subpatterns for each constructor are exhaustive. *)
+      let%bind _ = mapM
+          ~f:(fun (ctr_name, sps) ->
+              match sps with
+              (* TODO: Improve error messages for non-exhaustive subpatterns *)
+              | [] -> fail @@ sprintf "Non-exhaustive match. No pattern found for constructor %s" ctr_name
+              | _ ->
+                  (* At least one subpattern found for this constructor *)
+                  match List.findi adt.tmap (fun _ (ctrn, ctr_map) -> ctrn = ctr_name) with
+                  | None ->
+                      (* No type mapping for this constructor.
+                         Since at least one subpattern exists, the match is exhaustive.*)
+                      pure @@ ()
+                  | Some (_, (_, tmaps)) ->
+                      (* Type mapping found. Unzip subpatterns *)
+                      let arity = List.length tmaps in
+                      let%bind unzipped_sps = unzipN_rev arity sps
+                          ~msg:(sprintf "Incorrect arity for constructor %s in pattern." ctr_name) in
+                      (* Check that subpatterns are exhaustive *)
+                      let types = List.map tmaps ~f:(fun (_, t) -> t) in
+                      let%bind _ = map2M ~f:(fun t sps -> check_patterns_exhaustive t sps) types unzipped_sps in
+                      pure @@ ())
+          (AssocDictionary.to_list pattern_dict) in
+         pure @@ () in
+  match expected_type with
+  | ADT (adt_name, adt_types) ->
+      let%bind adt = DataTypeDictionary.lookup_name adt_name in
+      (* TODO: Unify expected_type with adt, and pass the resulting type to checker *)
+      checker adt patterns
+  | TypeVar typevar_name ->
+      (* Figure out the expected constructors from the first pattern *)
+      (match patterns with
+       | Wildcard :: _
+       | Binder _ :: _ -> pure @@ () (* Pattern is exhaustive *)
+       | (Constructor (ctr_name, ctr_values)) :: _ ->
+           let%bind (adt, _) = DataTypeDictionary.lookup_constructor ctr_name in
+           checker adt patterns
+       | [] -> fail @@ sprintf "Non-exhaustive match. No pattern found for type variable %s" typevar_name)
+  | _ -> (* No constructors available. Type is only matched by a single binder or wildcard *)
       match patterns with
       | [Wildcard]
-      | [Binder _] -> pure @@ true
-      | _ -> pure @@ false
-
+      | [Binder _] -> pure @@ ()
+      | _ -> pure @@ () (* Illegal, but caught elsewhere *)
 
 
 (* TODO: Check if the type is well-formed: support type variables *)
@@ -127,7 +127,7 @@ let rec get_type e tenv = match e with
       (* TODO: Check types in patterns match *)
       (* TODO: Check that identifiers are not used more than once for each pattern. *)
       let%bind r = TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_loc i)) in
-      let%bind _ = check_patterns (rr_typ r).tp (List.map pes ~f:(fun (p, e) -> p)) in
+      let%bind _ = check_patterns_exhaustive (rr_typ r).tp (List.map pes ~f:(fun (p, e) -> p)) in
       (* TODO: Perform actual type check *)
       fail @@ sprintf
       "Unable to typecheck Match expression %s" (expr_str e)
