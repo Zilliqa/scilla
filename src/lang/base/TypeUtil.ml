@@ -167,11 +167,6 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       tvars : (string, loc) Hashtbl.t
     } 
     
-    let mk =
-      let t1 = Hashtbl.create 50 in
-      let t2 = Hashtbl.create 10 in
-      {tenv = t1; tvars = t2}
-      
     let addT env id tp =
       let _ = Hashtbl.add env.tenv (get_id id)
           {qt = Q.mk_qualified_type tp; loc = get_loc id} in
@@ -196,7 +191,7 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
     let pp ?f:(f = fun _ -> true) env  =
       let lst = List.filter (to_list env) ~f:f in
       let ps = List.map lst
-          ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ (rr_pp v) ^ "]") in
+          ~f:(fun (k, v) -> " [" ^ k ^ " : " ^ (rr_pp v) ^ "]") in
       let cs = String.concat ~sep:",\n " ps in
       "{" ^ cs ^ " }"
 
@@ -216,6 +211,12 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       tvars = Hashtbl.copy e.tvars
     }
 
+    let mk =
+      let t1 = Hashtbl.create 50 in
+      let t2 = Hashtbl.create 10 in
+      let env = {tenv = t1; tvars = t2} in
+      copy env
+    
   end
 end
 

@@ -128,7 +128,7 @@ module DataTypeDictionary = struct
   let bool_typ = ADT (t_bool.tname, [])
   let nat_typ = ADT (t_nat.tname, [])
   let option_typ t = ADT (t_option.tname, [t])
-  let list_typ t = ADT (t_option.tname, [t])
+  let list_typ t = ADT (t_list.tname, [t])
   let pair_typ t s = ADT (t_product.tname, [t; s])
 
   

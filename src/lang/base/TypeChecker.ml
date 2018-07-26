@@ -255,7 +255,7 @@ and type_match_stmt_branch env styp ptrn sts =
 let type_recursion_principles =
   let recs = List.map recursion_principles
       ~f:(fun ({lname = a; lexp = e}, c) -> (a, e, c)) in
-  let env0 = TEnv.mk in 
+  let env0 = TEnv.copy TEnv.mk in 
   mapM recs
     ~f:(fun (rn, body, expected) ->
         wrap_with_info
@@ -274,7 +274,8 @@ let typed_rec_libs =
   let%bind _ = type_recursion_principles in      
   let recs = List.map recursion_principles
       ~f:(fun ({lname = a}, c) -> (a, c)) in
-  pure @@ TEnv.addTs TEnv.mk recs
+  let env = TEnv.mk in
+  pure @@ (TEnv.addTs (TEnv.copy env) recs)
 
 
 let type_library env0 {lentries = ents} =
@@ -285,7 +286,7 @@ let type_library env0 {lentries = ents} =
             (get_loc_str (get_loc ln)) (get_id ln) in
         let%bind tr = wrap_with_info msg (type_expr env le) in       
         pure @@ TEnv.addT (TEnv.copy env) ln tr.tp) in
-  pure res
+  pure @@ TEnv.copy res
 
 (*****************************************************************)
 (*               Blockchain component typing                     *)
@@ -296,7 +297,8 @@ let bc_type_env =
   let open PrimTypes in 
   let bc_elements =
     [(mk_ident TypeUtil.blocknum_name, bnum_typ)] in
-  TEnv.addTs TEnv.mk bc_elements
+  TEnv.addTs (TEnv.copy TEnv.mk) bc_elements
+    
 
 (*****************************************************************)
 (*                 Typing entire contracts                       *)
