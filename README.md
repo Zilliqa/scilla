@@ -46,7 +46,7 @@ own contract code. The second argument, which is a path to the Scilla
 standard library can alternatively be specified in the environment
 variable `SCILLA_STDLIB_PATH`.
 
-If the checker only returns the contract structure in JSON fromat, it
+If the checker only returns the contract structure in JSON format, it
 means that the contract has no type errors. Otherwise, a type error
 trace is provided.
 
