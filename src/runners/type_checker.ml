@@ -25,7 +25,7 @@ let () =
   | Some [e] ->
       let recs = List.map ~f:(fun (a, _, c) -> (a, c)) recursion_principles in
       let tenv = TEnv.addTs TEnv.mk recs in
-      let res = TypeChecker.type_expr e tenv in
+      let res = TypeChecker.type_expr tenv e in
       (match res with
       | Ok res ->
           printf "%s\n" (pp_typ res.tp)

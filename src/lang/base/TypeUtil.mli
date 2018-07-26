@@ -85,6 +85,8 @@ val is_sendable_type : typ -> bool
 
 val type_equiv : typ -> typ -> bool
 
+val assert_type_equiv : typ -> typ -> (unit, string) result
+
 (* Applying a function type *)
 val fun_type_applies : typ -> typ list -> (typ, string) result
 
@@ -118,4 +120,7 @@ val assert_all_same_type : typ list -> (unit, string) result
 
 val wrap_with_info : string -> ('a, string) result -> ('a, string) result
 
-val wrap_err : loc expr -> ('a, string) result -> ('a, string) result
+val wrap_err : loc expr -> ?opt:string -> ('a, string) result -> ('a, string) result
+
+val wrap_serr : loc stmt -> ?opt:string ->
+  ('a, string) result -> ('a, string) result

@@ -46,7 +46,7 @@ let assign_types_for_pattern sctyp pattern =
 (**************************************************************)
 
 (* TODO: Check if the type is well-formed: support type variables *)
-let rec type_expr e tenv = match e with
+let rec type_expr tenv e = match e with
   | Literal l ->
       (* TODO: Check that literal is well-formed *)
       let%bind lt = literal_type l in
@@ -57,7 +57,7 @@ let rec type_expr e tenv = match e with
   |  Fun (arg, t, body) ->
       let%bind _ = TEnv.is_wf_type tenv t in
       let tenv' = TEnv.addT (TEnv.copy tenv) arg t in
-      let%bind bt = type_expr body tenv' in
+      let%bind bt = type_expr tenv' body in
       pure @@ mk_qual_tp (FunType (t, bt.tp))
   | App (f, actuals) ->
       let%bind fres = wrap_err e @@ 
@@ -75,9 +75,9 @@ let rec type_expr e tenv = match e with
       pure @@ mk_qual_tp ret_typ
   | Let (i, t, lhs, rhs) ->
       (* Poor man's error reporting *)
-      let%bind ityp = wrap_err e @@ type_expr lhs tenv in
+      let%bind ityp = wrap_err e @@ type_expr tenv lhs in
       let tenv' = TEnv.addT (TEnv.copy tenv) i ityp.tp in
-      type_expr rhs tenv'
+      type_expr tenv' rhs
   | Constr (cname, ts, actuals) ->
       let%bind _ = mapM ts ~f:(TEnv.is_wf_type tenv) in
       let open Datatypes.DataTypeDictionary in 
@@ -99,10 +99,8 @@ let rec type_expr e tenv = match e with
         let%bind sctyp = TEnv.resolveT tenv (get_id x)
             ~lopt:(Some (get_loc x)) in
         let sct = (rr_typ sctyp).tp in
-        let msg =
-          sprintf "[%s] Error in typing pattern matching on `%s` of type %s (or one of its branches):\n"
-        (get_loc_str (get_loc x)) (get_id x) (pp_typ sct) in
-        wrap_with_info msg (
+        let msg = sprintf " of type %s" (pp_typ sct) in
+        wrap_err e ~opt:msg (
           let%bind cl_types = mapM clauses ~f:(fun (ptrn, ex) ->
               type_check_match_branch tenv sct ptrn ex) in
           let%bind _ =
@@ -114,7 +112,7 @@ let rec type_expr e tenv = match e with
       pure @@ mk_qual_tp t
   | TFun (tvar, body) ->
       let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
-      let%bind bt = type_expr body tenv' in
+      let%bind bt = type_expr tenv' body in
       pure @@ mk_qual_tp (PolyFun ((get_id tvar), bt.tp))
   | TApp (tf, arg_types) ->
       let%bind _ = mapM arg_types ~f:(TEnv.is_wf_type tenv) in
@@ -129,7 +127,7 @@ let rec type_expr e tenv = match e with
       let payload_type pld =
         match pld with
         | MTag s -> pure @@ mk_qual_tp string_typ
-        | MLit l -> type_expr (Literal l) tenv
+        | MLit l -> type_expr tenv (Literal l)
         | MVar i ->
             let%bind r = TEnv.resolveT tenv (get_id i)
                 ~lopt:(Some (get_loc i)) in
@@ -158,7 +156,7 @@ and app_type tenv ftyp actuals =
 and type_check_match_branch tenv styp ptrn e =
   let%bind new_typings = assign_types_for_pattern styp ptrn in
   let tenv' = TEnv.addTs (TEnv.copy tenv) new_typings in
-  type_expr e tenv'
+  type_expr tenv' e
 
 (**************************************************************)
 (*                   Typing statements                        *)
@@ -172,13 +170,33 @@ type stmt_tenv = {
 }
 
 let rec type_stmts env stmts =
+  let open PrimTypes in
+  let open Datatypes.DataTypeDictionary in 
   match stmts with
   | [] -> pure env
-  | s :: sts -> (match s with      
+  | s :: sts -> (match s with
+      | MatchStmt (x, clauses) ->
+          if List.is_empty clauses
+          then wrap_serr s @@ fail @@ sprintf
+              "List of pattern matching clauses is empty:\n%s" (stmt_str s)
+          else
+            let%bind sctyp = TEnv.resolveT env.pure (get_id x)
+                ~lopt:(Some (get_loc x)) in
+            let sct = (rr_typ sctyp).tp in
+            let msg = sprintf " of type %s" (pp_typ sct) in
+            let%bind _ = wrap_serr s ~opt:msg @@
+              mapM clauses ~f:(fun (ptrn, ex) ->
+                  type_match_stmt_branch env sct ptrn ex) in
+            type_stmts env sts                      
+      | AcceptPayment ->
+          type_stmts env sts                      
       | SendMsgs i ->
           let%bind r = TEnv.resolveT env.pure (get_id i)
               ~lopt:(Some (get_loc i)) in
-          fail "FIXME"
+          let expected = list_typ msg_typ in
+          let%bind _ = wrap_serr s @@
+            assert_type_equiv expected (rr_typ r).tp in
+          type_stmts env sts
 
       (* TODO: Implement the rest *)
       | _ ->
@@ -187,3 +205,9 @@ let rec type_stmts env stmts =
             (stmt_str s)
 
     )
+and type_match_stmt_branch env styp ptrn sts =
+  let%bind new_typings = assign_types_for_pattern styp ptrn in
+  let pure' = TEnv.addTs (TEnv.copy env.pure) new_typings in
+  let env' = {env with pure = pure'} in
+  type_stmts env' sts
+

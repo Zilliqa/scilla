@@ -286,7 +286,7 @@ let map_typ k v = MapType (k, v)
 let type_equiv t1 t2 =
   t1 = t2
 
-let assert_equiv expected given =
+let assert_type_equiv expected given =
   if type_equiv expected given
   then pure ()
   else fail @@ sprintf
@@ -320,7 +320,7 @@ let pp_typ_list ts =
 *)
 let rec fun_type_applies ft argtypes = match ft, argtypes with
   | FunType (argt, rest), a :: ats ->
-      let%bind _ = assert_equiv argt a in
+      let%bind _ = assert_type_equiv argt a in
       fun_type_applies rest ats 
   | t, []  -> pure t
   | _ -> fail @@ sprintf
@@ -406,7 +406,7 @@ let assert_all_same_type ts = match ts with
 (*                  Better error reporting                      *)
 (****************************************************************)
 
-let get_failure_msg e = match e with
+let get_failure_msg e opt = match e with
   | App (f, _) ->
       sprintf "[%s] Error in typing application of `%s`:\n"
         (get_loc_str (get_loc f)) (get_id f)
@@ -415,8 +415,8 @@ let get_failure_msg e = match e with
         (get_loc_str (get_loc i)) (get_id i)
   | MatchExpr (x, clauses) ->
       sprintf
-        "[%s] Error in typing pattern matching on `%s` (or one of its branches):\n"
-        (get_loc_str (get_loc x)) (get_id x)
+        "[%s] Error in typing pattern matching on `%s`%s (or one of its branches):\n"
+        (get_loc_str (get_loc x)) (get_id x) opt 
   | TApp (tf, arg_types) ->
       sprintf "[%s] Error in typing type application of `%s`:\n"
         (get_loc_str (get_loc tf)) (get_id tf)
@@ -424,9 +424,19 @@ let get_failure_msg e = match e with
       sprintf "[%s] Error in typing built-in application of `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)
   | _ -> ""
-  
+
+let get_failure_msg_stmt s opt = match s with
+  | SendMsgs i ->
+      sprintf "[%s] Error in sending messages `%s`:\n"
+        (get_loc_str (get_loc i)) (get_id i)
+  | _ -> ""
+
+
 let wrap_with_info msg res = match res with
   | Ok _ -> res
   | Error msg' -> Error (sprintf "%s%s" msg msg')
 
-let wrap_err e = wrap_with_info (get_failure_msg e)
+let wrap_err e ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt)
+
+let wrap_serr s ?opt:(opt = "") =
+  wrap_with_info (get_failure_msg_stmt s opt)
