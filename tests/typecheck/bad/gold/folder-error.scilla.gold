@@ -1,4 +1,7 @@
 Type checking failed:
-[typecheck/bad/folder-error.scilla:1:1]: error in typing LHS of the binding `list_map`:
-[typecheck/bad/folder-error.scilla:3:3]: error in typing LHS of the binding `folder`:
-Cannot elaborate ('A -> 'B -> 'B) -> 'B -> List ('A) -> 'B with type arguments ['A].
+[typecheck/bad/folder-error.scilla:1:1] Error in typing LHS of the binding `list_map`:
+[typecheck/bad/folder-error.scilla:3:3] Error in typing LHS of the binding `folder`:
+Cannot elaborate expression of type
+('A -> 'B -> 'B) -> 'B -> List ('A) -> 'B
+applied, as a type function, to type arguments
+['A].

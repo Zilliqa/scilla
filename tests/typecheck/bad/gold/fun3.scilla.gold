@@ -1,2 +1,3 @@
 Type checking failed:
+[typecheck/bad/fun3.scilla:2:21] Error in typing built-in application of `add`:
 [typecheck/bad/fun3.scilla:2:21] Cannot find built-in with name "add" and argument types [Int32; Int54].

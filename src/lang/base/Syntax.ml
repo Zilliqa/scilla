@@ -52,6 +52,8 @@ let get_loc_str (l : loc) : string =
 type bigint = Big_int.big_int
 
 (*******************************************************)
+(*                         Types                       *)
+(*******************************************************)
                 
 type typ  =
   | PrimType of string
@@ -77,24 +79,10 @@ let rec pp_typ t = match t with
 and with_paren t = match t with
   | FunType _ | PolyFun _ -> sprintf "(%s)" (pp_typ t)
   | _ -> pp_typ t
-           
-
-
 
 (*******************************************************)
-
-type 'rep pattern =
-  | Wildcard
-  | Binder of 'rep ident
-  | Constructor of string * ('rep pattern list)
-[@@deriving sexp]
-
-(* FIXME: Both integers and block numbers are encoded as strings,
- * in order to accommodate big_ints. The reason why I didn't use
- * big_ints is because for some reason the sexp pre-processor does
- * not support them. Once we write a custom pretty-printer for
- * literals and expressions, there will be no need for this atrocity,
- * and we can switch back to big ints. *)
+(*                      Literals                       *)
+(*******************************************************)
 
 (* The first component is a primitive type *)
 type mtype = typ * typ
@@ -119,10 +107,20 @@ type literal =
 
 let pp_literal l = sexp_of_literal l |> Sexplib.Sexp.to_string
 
+(*******************************************************)
+(*                   Expressions                       *)
+(*******************************************************)
+
 type 'rep payload =
   | MTag of string 
   | MLit of literal
   | MVar of 'rep ident
+[@@deriving sexp]
+
+type 'rep pattern =
+  | Wildcard
+  | Binder of 'rep ident
+  | Constructor of string * ('rep pattern list)
 [@@deriving sexp]
 
 type 'rep expr =
@@ -142,6 +140,22 @@ type 'rep expr =
   | Fixpoint of 'rep ident * typ * 'rep expr
 [@@deriving sexp]
 
+let expr_loc (e : 'rep expr) : loc option =
+  match e with
+  | Fun (i, _, _) | App (i, _) | Builtin (i, _)
+  | MatchExpr (i, _) | TFun (i, _) | TApp (i, _) -> 
+    let l = get_loc i in
+      if (l.cnum <> -1) then Some l else None
+  | _ -> None
+
+(* TODO: make normal pretty-printing *)
+let expr_str e =
+  sexp_of_expr sexp_of_loc e |> Sexplib.Sexp.to_string
+
+(*******************************************************)
+(*                   Statements                        *)
+(*******************************************************)
+
 type 'rep stmt =
   | Load of 'rep ident * 'rep ident
   | Store of 'rep ident * 'rep ident
@@ -154,11 +168,21 @@ type 'rep stmt =
   | Throw of 'rep ident
 [@@deriving sexp]
 
-let expr_str e =
-  sexp_of_expr sexp_of_loc e |> Sexplib.Sexp.to_string
-
 let stmt_str s =
   sexp_of_stmt sexp_of_loc s |> Sexplib.Sexp.to_string
+
+let stmt_loc (s : 'rep stmt) : loc option = 
+  match s with
+  | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
+  | MatchStmt (i, _)
+  | SendMsgs i -> 
+    let l = get_loc i in
+      if (l.cnum <> -1) then Some l else None
+  | _ -> None
+
+(*******************************************************)
+(*                    Contracts                        *)
+(*******************************************************)
 
 type 'rep transition = 
   { tname   : 'rep ident;
@@ -196,20 +220,3 @@ type 'rep cmodule =
     elibs : 'rep ident list;  (* list of imports / external libs *)
     contr : 'rep contract }
 [@@deriving sexp]
-
-let stmt_loc (s : 'rep stmt) : loc option = 
-  match s with
-  | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
-  | MatchStmt (i, _)
-  | SendMsgs i -> 
-    let l = get_loc i in
-      if (l.cnum <> -1) then Some l else None
-  | _ -> None
-
-let expr_loc (e : 'rep expr) : loc option =
-  match e with
-  | Fun (i, _, _) | App (i, _) | Builtin (i, _)
-  | MatchExpr (i, _) | TFun (i, _) | TApp (i, _) -> 
-    let l = get_loc i in
-      if (l.cnum <> -1) then Some l else None
-  | _ -> None

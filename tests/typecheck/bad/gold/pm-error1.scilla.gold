@@ -1,4 +1,4 @@
 Type checking failed:
-[typecheck/bad/pm-error1.scilla:3:1]: error in typing LHS of the binding `f`:
-[typecheck/bad/pm-error1.scilla:4:3]: error in typing pattern matching on `c` of type Bool (or one of its branches):
+[typecheck/bad/pm-error1.scilla:3:1] Error in typing LHS of the binding `f`:
+[typecheck/bad/pm-error1.scilla:4:3] Error in typing pattern matching on `c` of type Bool (or one of its branches):
 Not all types of the branches [Int32; Int64] are equivalent.

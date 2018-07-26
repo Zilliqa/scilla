@@ -42,6 +42,8 @@ let assign_types_for_pattern sctyp pattern =
   in go sctyp [] pattern
 
 (**************************************************************)
+(*                   Typing expressions                       *)
+(**************************************************************)
 
 (* TODO: Check if the type is well-formed: support type variables *)
 let rec get_type e tenv = match e with
@@ -58,11 +60,12 @@ let rec get_type e tenv = match e with
       let%bind bt = get_type body tenv' in
       pure @@ mk_qual_tp (FunType (t, bt.tp))
   | App (f, actuals) ->
-      let%bind fres = wrap_err e @@
+      let%bind fres = wrap_err e @@ 
         TEnv.resolveT tenv (get_id f) ~lopt:(Some (get_loc f)) in
       let ftyp = (rr_typ fres).tp in
       wrap_err e @@ app_type tenv ftyp actuals
   | Builtin (i, actuals) ->
+      wrap_err e @@ 
       let%bind tresults = mapM actuals
           ~f:(fun arg -> TEnv.resolveT tenv (get_id arg)
                  ~lopt:(Some (get_loc arg))) in
@@ -97,7 +100,7 @@ let rec get_type e tenv = match e with
             ~lopt:(Some (get_loc x)) in
         let sct = (rr_typ sctyp).tp in
         let msg =
-          sprintf "[%s]: error in typing pattern matching on `%s` of type %s (or one of its branches):\n"
+          sprintf "[%s] Error in typing pattern matching on `%s` of type %s (or one of its branches):\n"
         (get_loc_str (get_loc x)) (get_id x) (pp_typ sct) in
         wrap_with_info msg (
           let%bind cl_types = mapM clauses ~f:(fun (ptrn, ex) ->
@@ -156,4 +159,15 @@ and type_check_match_branch tenv styp ptrn e =
   let%bind new_typings = assign_types_for_pattern styp ptrn in
   let tenv' = TEnv.addTs (TEnv.copy tenv) new_typings in
   get_type e tenv'
+
+(**************************************************************)
+(*                   Typing statements                        *)
+(**************************************************************)
+
+(* Auxiliaty structure for types of fields and BC components *)
+type stmt_tenv = {
+  pure   : TEnv.t;
+  fields : TEnv.t;
+  bc     : TEnv.t;
+}
 

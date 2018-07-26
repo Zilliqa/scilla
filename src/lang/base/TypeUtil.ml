@@ -316,7 +316,7 @@ let rec fun_type_applies ft argtypes = match ft, argtypes with
     when argt = a -> fun_type_applies rest ats 
   | t, []  -> pure t
   | _ -> fail @@ sprintf
-        "The type %s doesn't apply to the arguments of types\n%s." (pp_typ ft)
+        "The type\n%s\ndoesn't apply, as a function, to the arguments of types\n%s." (pp_typ ft)
         (pp_typ_list argtypes)
 
 let rec elab_tfun_with_args tf args = match tf, args with
@@ -326,7 +326,7 @@ let rec elab_tfun_with_args tf args = match tf, args with
   | t, [] -> pure t
   | _ ->
       let msg = sprintf
-        "Cannot elaborate %s with type arguments %s." (pp_typ tf)
+        "Cannot elaborate expression of type\n%s\napplied, as a type function, to type arguments\n%s." (pp_typ tf)
         (pp_typ_list args) in
       fail msg
 
@@ -400,17 +400,21 @@ let assert_all_same_type ts = match ts with
 
 let get_failure_msg e = match e with
   | App (f, _) ->
-      sprintf "[%s]: error in typing aplication of `%s`:\n"
+      sprintf "[%s] Error in typing aplication of `%s`:\n"
         (get_loc_str (get_loc f)) (get_id f)
   | Let (i, t, lhs, rhs) ->
-      sprintf "[%s]: error in typing LHS of the binding `%s`:\n"
+      sprintf "[%s] Error in typing LHS of the binding `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)
   | MatchExpr (x, clauses) ->
-      sprintf "[%s]: error in typing pattern matching on `%s` (or one of its branches):\n"
+      sprintf
+        "[%s] Error in typing pattern matching on `%s` (or one of its branches):\n"
         (get_loc_str (get_loc x)) (get_id x)
   | TApp (tf, arg_types) ->
-      sprintf "[%s]: error in typing type application of `%s`:\n"
+      sprintf "[%s] Error in typing type application of `%s`:\n"
         (get_loc_str (get_loc tf)) (get_id tf)
+  | Builtin (i, _) ->
+      sprintf "[%s] Error in typing built-in application of `%s`:\n"
+        (get_loc_str (get_loc i)) (get_id i)
   | _ -> ""
   
 let wrap_with_info msg res = match res with
