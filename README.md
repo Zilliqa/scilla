@@ -7,12 +7,6 @@
   <img src="https://github.com/Zilliqa/scilla/blob/master/imgs/scilla-logo-color.jpg" width="200" height="200">
 </p>
 
-## Project structure
-
-* [`docs`](./docs) -- specification and other documents 
-* [`src/lang`](./src/lang) -- language definition
-* [`src/runners`](./src/runners) -- interpreters
-
 ## Building and Running
 
 ### Build requirements
@@ -35,7 +29,26 @@ From the project root, execute
 ```
 
 Instead of `let.scilla` you might want to try any dfferent file in `tests/eval/exp`. The second argument, which is a path
-to the Scilla standard library can alternatively be specified in the environment variable SCILLA_STDLIB_PATH
+to the Scilla standard library can alternatively be specified in the
+environment variable `SCILLA_STDLIB_PATH`.
+
+#### Type-checking a contract
+
+From the project root, execute
+
+```
+./bin/scilla-checker tests/checker/auction.scilla
+```
+
+Instead of `auction.scilla` you might want to try any dfferent file in
+`tests/checker` with a complete implementation of a contract, or your
+own contract code. The second argument, which is a path to the Scilla
+standard library can alternatively be specified in the environment
+variable `SCILLA_STDLIB_PATH`.
+
+If the checker only returns the contract structure in JSON fromat, it
+means that the contract has no type errors. Otherwise, a type error
+trace is provided.
 
 #### Executing a simple transition
 
