@@ -1,0 +1,6 @@
+let f = fun (p : Pair (Option Int32) (Int32)) =>
+  match p with
+  | Pair (Some z) _ => z
+  | Pair _ i => i
+  end
+in f

@@ -10,16 +10,19 @@
 
 module Tests = TestUtil.DiffBasedTests(
   struct
-    let gold_path dir f = [dir; "typecheck"; "gold"; f ^ ".gold" ]
-    let test_path f = ["typecheck"; f]
+    let gold_path dir f = [dir; "typecheck"; "good"; "gold"; f ^ ".gold" ]
+    let test_path f = ["typecheck"; "good"; f]
     let runner = "type-checker"      
     let tests = [
       "fun.scilla";
       "fun1.scilla";
-      "fun2.scilla";
-      "fun3.scilla";
       "addr.scilla";
       "app.scilla";
+      "list1.scilla";
+      "pm1.scilla";
+      "pm2.scilla";
+      "pm3.scilla";
+      "pm4.scilla";
     ]
     let use_stdlib = false
   end)

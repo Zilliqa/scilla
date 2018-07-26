@@ -1,0 +1,9 @@
+(jbuild_version 1)
+
+(library
+ (
+  (name testtypefail)
+  (wrapped false)
+  (libraries (core oUnit testutil))
+ )
+)

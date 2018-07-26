@@ -1,0 +1,8 @@
+let x = Int32 42 in
+let y = Int64 41 in
+let f = fun (c : Bool) =>
+  match c with
+  | True => x
+  | _ => y
+  end
+in f

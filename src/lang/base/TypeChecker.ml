@@ -21,77 +21,34 @@ open Utils
 module SimpleTEnv = MakeTEnv(PlainTypes)
 open SimpleTEnv
 
-let rec check_patterns_exhaustive expected_type patterns =
-  (* Return (true, _) if a catchall is seen.
-     Return (false, dict) if no catchall is seen,
-     where dict is a dictionary mapping constructor names to subpatterns *)
-  let rec dict_builder patterns dict =
-    match patterns with
-    | (Constructor (s, sps)) :: p_rest ->
-        (match AssocDictionary.lookup s dict with
-         | None -> fail @@ sprintf "Constructor %s does not match type %s" s (pp_typ expected_type)
-         | Some v ->
-             let new_dict = AssocDictionary.insert s (sps :: v) dict in
-             dict_builder p_rest new_dict)
-    | Wildcard :: _
-    | Binder _ :: _ -> pure @@ (true, dict)
-    | [] -> pure @@ (false, dict) in
-  let rec checker adt patterns =
-    let ctr_names = List.map adt.tconstr ~f:(fun ctr -> ctr.cname) in
-    let init_dict = List.fold ctr_names
-        ~init:(AssocDictionary.make_dict())
-        ~f:(fun dict ctr_name -> AssocDictionary.insert ctr_name [] dict) in
-    let%bind (catchall, pattern_dict) = dict_builder patterns init_dict in
-    if catchall
-    then pure @@ ()
-    else
-      (* No catchall. Check that subpatterns for each constructor are exhaustive. *)
-      let%bind _ = mapM
-          ~f:(fun (ctr_name, sps) ->
-              match sps with
-              (* TODO: Improve error messages for non-exhaustive subpatterns *)
-              | [] -> fail @@ sprintf "Non-exhaustive match. No pattern found for constructor %s" ctr_name
-              | _ ->
-                  (* At least one subpattern found for this constructor *)
-                  match List.findi adt.tmap (fun _ (ctrn, ctr_map) -> ctrn = ctr_name) with
-                  | None ->
-                      (* No type mapping for this constructor.
-                         Since at least one subpattern exists, the match is exhaustive.*)
-                      pure @@ ()
-                  | Some (_, (_, tmaps)) ->
-                      (* Type mapping found. Unzip subpatterns *)
-                      let arity = List.length tmaps in
-                      let%bind unzipped_sps = unzipN_rev arity sps
-                          ~msg:(sprintf "Incorrect arity for constructor %s in pattern." ctr_name) in
-                      (* Check that subpatterns are exhaustive *)
-                      let types = List.map tmaps ~f:(fun (_, t) -> t) in
-                      let%bind _ = map2M ~f:(fun t sps -> check_patterns_exhaustive t sps) types unzipped_sps in
-                      pure @@ ())
-          (AssocDictionary.to_list pattern_dict) in
-         pure @@ () in
-  match expected_type with
-  | ADT (adt_name, adt_types) ->
-      let%bind adt = DataTypeDictionary.lookup_name adt_name in
-      (* TODO: Unify expected_type with adt, and pass the resulting type to checker *)
-      checker adt patterns
-  | TypeVar typevar_name ->
-      (* Figure out the expected constructors from the first pattern *)
-      (match patterns with
-       | Wildcard :: _
-       | Binder _ :: _ -> pure @@ () (* Pattern is exhaustive *)
-       | (Constructor (ctr_name, ctr_values)) :: _ ->
-           let%bind (adt, _) = DataTypeDictionary.lookup_constructor ctr_name in
-           checker adt patterns
-       | [] -> fail @@ sprintf "Non-exhaustive match. No pattern found for type variable %s" typevar_name)
-  | _ -> (* No constructors available. Type is only matched by a single binder or wildcard *)
-      match patterns with
-      | [Wildcard]
-      | [Binder _] -> pure @@ ()
-      | _ -> pure @@ () (* Illegal, but caught elsewhere *)
+(**************************************************************)
+(*             Auxiliary functions for typing                 *)
+(**************************************************************)
 
+(* Given a scrutinee type and a pattern,
+   produce a list of ident -> type mappings for 
+   all variables bound by the pattern *)
+let assign_types_for_pattern sctyp pattern =
+  let rec go atyp tlist p = match p with
+    | Wildcard -> pure tlist
+    | Binder x -> pure @@ tlist @ [(x, atyp)]
+    | Constructor (cn, ps) ->
+        let%bind arg_types = contr_pattern_arg_types atyp cn in
+        let plen = List.length arg_types in
+        let alen = List.length ps in
+        let%bind _ = validate_param_length cn plen alen in
+        let tps_pts = List.zip_exn arg_types ps in
+        foldM ~init:tlist tps_pts
+          ~f:(fun acc (t, pt) -> go t acc pt)
+  in go sctyp [] pattern
+
+(**************************************************************)
+(*                   Typing expressions                       *)
+(**************************************************************)
+>>>>>>> 86fdcae475ff94cdd11840df2e17fd46a351655f
 
 (* TODO: Check if the type is well-formed: support type variables *)
-let rec get_type e tenv = match e with
+let rec type_expr tenv e = match e with
   | Literal l ->
       (* TODO: Check that literal is well-formed *)
       let%bind lt = literal_type l in
@@ -100,44 +57,160 @@ let rec get_type e tenv = match e with
       let%bind r = TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_loc i)) in
       pure @@ (rr_typ r)
   |  Fun (arg, t, body) ->
+      let%bind _ = TEnv.is_wf_type tenv t in
       let tenv' = TEnv.addT (TEnv.copy tenv) arg t in
-      let%bind bt = get_type body tenv' in
+      let%bind bt = type_expr tenv' body in
       pure @@ mk_qual_tp (FunType (t, bt.tp))
   | App (f, actuals) ->
-      let%bind fres = TEnv.resolveT tenv (get_id f) ~lopt:(Some (get_loc f)) in
+      let%bind fres = wrap_err e @@ 
+        TEnv.resolveT tenv (get_id f) ~lopt:(Some (get_loc f)) in
       let ftyp = (rr_typ fres).tp in
-      let%bind tresults = mapM actuals
-          ~f:(fun arg -> TEnv.resolveT tenv (get_id arg) ~lopt:(Some (get_loc arg))) in
-      let targs = List.map tresults ~f:(fun rr -> (rr_typ rr).tp) in
-      let%bind res_type = fun_type_applies ftyp targs in
-      pure @@ mk_qual_tp res_type
+      wrap_err e @@ app_type tenv ftyp actuals
   | Builtin (i, actuals) ->
+      wrap_err e @@ 
       let%bind tresults = mapM actuals
-          ~f:(fun arg -> TEnv.resolveT tenv (get_id arg) ~lopt:(Some (get_loc arg))) in
+          ~f:(fun arg -> TEnv.resolveT tenv (get_id arg)
+                 ~lopt:(Some (get_loc arg))) in
       let targs = List.map tresults ~f:(fun rr -> (rr_typ rr).tp) in
       let%bind (_, ret_typ, _) = BuiltInDictionary.find_builtin_op i targs in
+      let%bind _ = TEnv.is_wf_type tenv ret_typ in
       pure @@ mk_qual_tp ret_typ
   | Let (i, t, lhs, rhs) ->
-      (* TODO: Check that matches type *)
-      let%bind ityp = get_type lhs tenv in
+      (* Poor man's error reporting *)
+      let%bind ityp = wrap_err e @@ type_expr tenv lhs in
       let tenv' = TEnv.addT (TEnv.copy tenv) i ityp.tp in
-      get_type rhs tenv'
-  | MatchExpr (i, pes) ->
-      (* TODO: Check that type of i matches types of patterns *)
-      (* TODO: Check types in patterns match *)
-      (* TODO: Check that identifiers are not used more than once for each pattern. *)
-      let%bind r = TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_loc i)) in
-      let%bind _ = check_patterns_exhaustive (rr_typ r).tp (List.map pes ~f:(fun (p, e) -> p)) in
-      (* TODO: Perform actual type check *)
-      fail @@ sprintf
-      "Unable to typecheck Match expression %s" (expr_str e)
+      type_expr tenv' rhs
+  | Constr (cname, ts, actuals) ->
+      let%bind _ = mapM ts ~f:(TEnv.is_wf_type tenv) in
+      let open Datatypes.DataTypeDictionary in 
+      let%bind (adt, constr) = lookup_constructor cname in
+      let alen = List.length actuals in
+      if (constr.arity <> alen)
+      then fail @@ sprintf
+          "Constructor %s expects %d arguments, but got %d."
+          cname constr.arity alen
+      else
+        let%bind ftyp = elab_constr_type cname ts in
+        (* Now type-check as a function application *)
+        app_type tenv ftyp actuals
+  | MatchExpr (x, clauses) ->
+      if List.is_empty clauses
+      then fail @@ sprintf
+          "List of pattern matching clauses is empty:\n%s" (expr_str e)
+      else
+        let%bind sctyp = TEnv.resolveT tenv (get_id x)
+            ~lopt:(Some (get_loc x)) in
+        let sct = (rr_typ sctyp).tp in
+        let msg = sprintf " of type %s" (pp_typ sct) in
+        wrap_err e ~opt:msg (
+          let%bind cl_types = mapM clauses ~f:(fun (ptrn, ex) ->
+              type_check_match_branch tenv sct ptrn ex) in
+          let%bind _ =
+            assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
+          (* Return the first type since all they are the same *)
+          pure @@ List.hd_exn cl_types
+        )
+  | Fixpoint (f, t, body) ->
+      pure @@ mk_qual_tp t
+  | TFun (tvar, body) ->
+      let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
+      let%bind bt = type_expr tenv' body in
+      pure @@ mk_qual_tp (PolyFun ((get_id tvar), bt.tp))
+  | TApp (tf, arg_types) ->
+      let%bind _ = mapM arg_types ~f:(TEnv.is_wf_type tenv) in
+      let%bind tfres = TEnv.resolveT tenv (get_id tf)
+          ~lopt:(Some (get_loc tf)) in
+      let tftyp = (rr_typ tfres).tp in
+      let%bind res_type = elab_tfun_with_args tftyp arg_types in
+      let%bind _ = TEnv.is_wf_type tenv res_type in
+      pure @@ mk_qual_tp res_type
+  | Message bs ->
+      let open PrimTypes in 
+      let payload_type pld =
+        match pld with
+        | MTag s -> pure @@ mk_qual_tp string_typ
+        | MLit l -> type_expr tenv (Literal l)
+        | MVar i ->
+            let%bind r = TEnv.resolveT tenv (get_id i)
+                ~lopt:(Some (get_loc i)) in
+            let rtp = (rr_typ r).tp in
+            if is_sendable_type rtp
+            then pure (rr_typ r)
+            else fail @@ sprintf
+              "Cannot send values of type %s." (pp_typ rtp)
+      in
+      let%bind typed_payloads =
+        (* Make sure we resolve all the payload *)
+        mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ payload_type pld)
+      in
+      pure @@ mk_qual_tp @@ msg_typ
 
-  (* 1. Type-check primitive literals *)
-  (* 2. ADTs and pattern-matching *)
-  (* 3. Recursin principles (hard-coded) *)
-  (* 4. Type-check maps *)
-  (* 5. Type-check ADTs *)
+and app_type tenv ftyp actuals =
+  (* Type-check function application *)  
+  let%bind _ = TEnv.is_wf_type tenv ftyp in
+  let%bind tresults = mapM actuals
+      ~f:(fun arg -> TEnv.resolveT tenv (get_id arg) ~lopt:(Some (get_loc arg))) in
+  let targs = List.map tresults ~f:(fun rr -> (rr_typ rr).tp) in
+  let%bind res_type = fun_type_applies ftyp targs in
+  let%bind _ = TEnv.is_wf_type tenv res_type in
+  pure @@ mk_qual_tp res_type
 
-  (* TODO: Implement other expressions *)
-  | _ -> fail @@ sprintf
-      "Failed to resolve the type of the expresssion:\n%s\n" (expr_str e)
+and type_check_match_branch tenv styp ptrn e =
+  let%bind new_typings = assign_types_for_pattern styp ptrn in
+  let tenv' = TEnv.addTs (TEnv.copy tenv) new_typings in
+  type_expr tenv' e
+
+(**************************************************************)
+(*                   Typing statements                        *)
+(**************************************************************)
+
+(* Auxiliaty structure for types of fields and BC components *)
+type stmt_tenv = {
+  pure   : TEnv.t;
+  fields : TEnv.t;
+  bc     : TEnv.t;
+}
+
+let rec type_stmts env stmts =
+  let open PrimTypes in
+  let open Datatypes.DataTypeDictionary in 
+  match stmts with
+  | [] -> pure env
+  | s :: sts -> (match s with
+      | MatchStmt (x, clauses) ->
+          if List.is_empty clauses
+          then wrap_serr s @@ fail @@ sprintf
+              "List of pattern matching clauses is empty:\n%s" (stmt_str s)
+          else
+            let%bind sctyp = TEnv.resolveT env.pure (get_id x)
+                ~lopt:(Some (get_loc x)) in
+            let sct = (rr_typ sctyp).tp in
+            let msg = sprintf " of type %s" (pp_typ sct) in
+            let%bind _ = wrap_serr s ~opt:msg @@
+              mapM clauses ~f:(fun (ptrn, ex) ->
+                  type_match_stmt_branch env sct ptrn ex) in
+            type_stmts env sts                      
+      | AcceptPayment ->
+          type_stmts env sts                      
+      | SendMsgs i ->
+          let%bind r = TEnv.resolveT env.pure (get_id i)
+              ~lopt:(Some (get_loc i)) in
+          let expected = list_typ msg_typ in
+          let%bind _ = wrap_serr s @@
+            assert_type_equiv expected (rr_typ r).tp in
+          type_stmts env sts
+
+      (* TODO: Implement the rest *)
+      | _ ->
+          fail @@ sprintf
+            "Type-checking the statement %s is not supported yet."
+            (stmt_str s)
+
+    )
+and type_match_stmt_branch env styp ptrn sts =
+  let%bind new_typings = assign_types_for_pattern styp ptrn in
+  let pure' = TEnv.addTs (TEnv.copy env.pure) new_typings in
+  let env' = {env with pure = pure'} in
+  type_stmts env' sts
+>>>>>>> 86fdcae475ff94cdd11840df2e17fd46a351655f
+

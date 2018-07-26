@@ -1,0 +1,6 @@
+let list_map = tfun 'A => tfun 'B =>
+  fun (f : 'A -> 'B) => fun (l : List 'A) =>
+  let folder = @list_foldr 'A 'B 'A in
+  folder
+in
+list_map  

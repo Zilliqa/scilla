@@ -1,0 +1,4 @@
+Type checking failed:
+[typecheck/bad/map-error.scilla:1:1] Error in typing LHS of the binding `list_map`:
+[typecheck/bad/map-error.scilla:8:5] Error in typing application of `folder`:
+Type mismatch: 'A -> 'B -> 'B expected, but 'A -> List ('B) -> List ('B) provided.

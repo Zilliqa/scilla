@@ -22,16 +22,22 @@ type constructor = {
 
 type adt = {
   tname    : string;
-  targs    : string list; 
+  tparams  : string list; 
   tconstr  : constructor list;
-  tmap     : (string * (int * typ) list) list;
+  tmap     : (string * (typ list)) list;
 }
 
 module DataTypeDictionary : sig
   (* Hiding the actual data type dicionary *)
-  val lookup_constructor : string -> (adt * constructor, string) result
-  val lookup_name : string -> (adt, string) result
 
+  (*  Get ADT by name  *)
+  val lookup_name : string -> (adt, string) result
+  (*  Get ADT by the constructor  *)
+  val lookup_constructor : string -> (adt * constructor, string) result
+  (* Get typing map for a constructor *)
+  val constr_tmap : adt -> string -> (typ list) option
+  
+  (*  Built-in ADTs  *)
   val bool_typ : typ
   val nat_typ : typ
   val option_typ : typ -> typ

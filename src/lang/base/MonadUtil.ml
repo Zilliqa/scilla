@@ -15,6 +15,13 @@ open Result.Let_syntax
 let fail s = Error s
 let pure e = return e
 
+(* Monadic fold-left for error *)
+let rec foldM ~f ~init ls = match ls with
+  | x :: ls' ->
+      let%bind res = f init x in
+      foldM ~f:f ~init:res ls'
+  | [] -> Ok init
+
 (* Monadic map for error *)
 let rec mapM ~f ls = match ls with
   | x :: ls' ->
@@ -23,15 +30,6 @@ let rec mapM ~f ls = match ls with
        | Error z as err, _ -> err
        | _, (Error _ as err) -> err)
   | [] -> Ok []
-
-let rec map2M ~f ls1 ls2 = match (ls1, ls2) with
-  | (x :: ls1', y :: ls2') ->
-      (match f x y, map2M ~f:f ls1' ls2' with
-       | Ok z, Ok zs -> Ok (z :: zs)
-       | Error z as err, _ -> err
-       | _, (Error _ as err) -> err)
-  | ([], []) -> Ok []
-  | _ -> Error "Internal error: map2M given lists of different lengths"
 
 (* Try all variants in the list, pick the first successful one *)
 let rec tryM ~f ls ~msg = match ls with

@@ -1,0 +1,6 @@
+Type checking failed:
+[typecheck/bad/fun2.scilla:1:20]: Couldn't resolve the identifier y in the type environment
+{ [x -> Int32],
+  [nat_fold -> forall 'T. ('T -> Nat -> 'T) -> 'T -> Nat -> 'T],
+  [list_foldl -> forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B],
+  [list_foldr -> forall 'A. forall 'B. ('A -> 'B -> 'B) -> 'B -> List ('A) -> 'B] }

@@ -1,0 +1,8 @@
+let z = Int32 1 in
+let f = fun (p : List (Option Int32)) =>
+  match p with
+  | Nil => z
+  | Cons (Some x) xs => x
+  | Cons _ _ => z
+  end
+in f

@@ -1,2 +1,2 @@
 Failed execution:
-Cannot find built-in with name "add" and argument types [(PrimType Int64); (PrimType Int32)] at location eval/exp/builtin4.scilla:6:2.
+[eval/exp/builtin4.scilla:6:2] Cannot find built-in with name "add" and argument types [Int64; Int32].

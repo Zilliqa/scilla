@@ -32,28 +32,16 @@ let member_exn m j =
   | `Null -> raise (Invalid_json ("Member '" ^ m ^ "' not found in json"))
   | j -> j
 
-let rec typ_to_string t = 
-match t with
-| PrimType t -> t
-| MapType (kt, vt) ->
-    sprintf "Map (%s) (%s)" (typ_to_string kt) (typ_to_string vt )
-| ADT (name, targs) ->
-    let tns = List.map targs
-        ~f:(fun t -> sprintf "(%s)" (typ_to_string t)) in
-    sprintf "%s %s" name (String.concat ~sep:" " tns)
-(* TODO: Support other types *)
-| _ -> "Unsupported"
-
 (* Given a literal, return its full type name *)
 let lit_typ_string l = match l with
-  | Map ((kt, vt), _) -> typ_to_string (MapType (kt, vt))
+  | Map ((kt, vt), _) -> pp_typ (MapType (kt, vt))
   | ADTValue (name, tl, _) -> 
       let r = DataTypeDictionary.lookup_constructor name in
       (match r with
        | Error emsg ->
            raise (Invalid_json (emsg))
        | Ok (t, _)->
-           typ_to_string (ADT (t.tname, tl)))
+           pp_typ (ADT (t.tname, tl)))
   | StringLit _ -> "String"
   | IntLit (w, _) -> "Int" ^ (Int.to_string w)
   | UintLit (w,_) -> "Uint" ^ (Int.to_string w)
@@ -288,7 +276,7 @@ and adtargs_to_json vlist =
 and adttyps_to_json tlist =
   match tlist with
   | t1 :: tn ->
-    let j1 = `String (typ_to_string t1) in
+    let j1 = `String (pp_typ t1) in
     let jtn = adttyps_to_json tn in
       (j1 :: jtn)
   | _ -> []
@@ -455,12 +443,12 @@ let get_string (contr : 'rep contract) =
   (* 2. parameters *)
   let paraml = contr.cparams in
   let paramlj = List.map paraml ~f: (fun (i, t) ->
-    `Assoc [("name", `String (get_id i)); ("type", `String (typ_to_string t))]) in
+    `Assoc [("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
   let paramj = ("params", `List paramlj) in
   (* 3. fields *)
   let fieldsl = contr.cfields in
   let fieldslj = List.map fieldsl ~f: (fun (i, t, _) ->
-    `Assoc [("name", `String (get_id i)); ("type", `String (typ_to_string t))]) in
+    `Assoc [("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
   let fieldsj = ("fields", `List fieldslj) in
   (* 4. transitions *)
   let transl = contr.ctrans in
@@ -470,7 +458,7 @@ let get_string (contr : 'rep contract) =
     (* 4b. transition parameters *)
     let paraml = t.tparams in
     let paramlj = List.map paraml ~f: (fun (i, t) ->
-      `Assoc[("name", `String (get_id i)); ("type", `String (typ_to_string t))]) in
+      `Assoc[("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
     let paramj = ("params", `List paramlj) in
       `Assoc (namej :: paramj :: [] )) in
 

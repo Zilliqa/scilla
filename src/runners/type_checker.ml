@@ -25,11 +25,11 @@ let () =
   | Some [e] ->
       let recs = List.map ~f:(fun (a, _, c) -> (a, c)) recursion_principles in
       let tenv = TEnv.addTs TEnv.mk recs in
-      let res = TypeChecker.get_type e tenv in
+      let res = TypeChecker.type_expr tenv e in
       (match res with
       | Ok res ->
           printf "%s\n" (pp_typ res.tp)
-      | Error s -> printf "Failed execution:\n%s\n" s)
+      | Error s -> printf "Type checking failed:\n%s\n" s)
   | Some _ | None ->
       printf "%s\n" "Failed to parse input file."
   

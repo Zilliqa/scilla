@@ -1,0 +1,6 @@
+Type checking failed:
+[typecheck/bad/nth-error.scilla:1:1] Error in typing LHS of the binding `list_nth`:
+[typecheck/bad/nth-error.scilla:5:5] Error in typing LHS of the binding `list_nth_helper`:
+[typecheck/bad/nth-error.scilla:13:9] Error in typing LHS of the binding `iter`:
+[typecheck/bad/nth-error.scilla:16:13] Error in typing pattern matching on `z` of type Pair (Int32 (Option ('A))) (or one of its branches):
+Constructor Pair expects 2 type arguments, but got 1.

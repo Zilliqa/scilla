@@ -16,7 +16,7 @@ open Result.Let_syntax
 open MonadUtil
 
 let rec match_with_pattern v p = match p with
-  | Wildcard -> pure @@ []
+  | Wildcard -> pure []
   | Binder x -> (match v with
       | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
           fail @@ sprintf "Cannot pattern match a function:\n%s"
@@ -41,8 +41,7 @@ let rec match_with_pattern v p = match p with
               (* The value structure matches the pattern *)
               let vs = List.map ls' ~f:(fun l -> Env.ValLit l) in
               (match List.zip vs ps with
-               | None -> fail
-                           "Pattern and value lists have different length"
+               | None -> fail "Pattern and value lists have different length"
                | Some sub_matches ->
                    let%bind res_list =
                      mapM sub_matches

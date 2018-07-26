@@ -1,2 +1,2 @@
 Failed execution:
-Cannot find built-in with name "hack" and argument types [(PrimType Int32); (PrimType Int32)] at location eval/exp/builtin_error1.scilla:10:12.
+[eval/exp/builtin_error1.scilla:10:12] Cannot find built-in with name "hack" and argument types [Int32; Int32].

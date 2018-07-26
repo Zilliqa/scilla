@@ -18,7 +18,7 @@
     },
     {
       "vname": "funded",
-      "type": "Bool ",
+      "type": "Bool",
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     }
   ]

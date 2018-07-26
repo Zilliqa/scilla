@@ -13,7 +13,7 @@
     { "vname": "_balance", "type": "Uint128", "value": "100" },
     {
       "vname": "ended",
-      "type": "Bool ",
+      "type": "Bool",
       "value": { "constructor": "True", "argtypes": [], "arguments": [] }
     },
     { "vname": "highestBid", "type": "Uint128", "value": "200" },
