@@ -24,7 +24,7 @@ open TypeUtil
 (***************************************************)    
 
 let reserved_names =
-  List.map ~f:(fun x -> (get_id (fst3 x))) Recursion.recursion_principles
+  List.map ~f:(fun ({lname = x}, _) -> get_id x) Recursion.recursion_principles
 
 (* Printing result *)
 let pp_result r exclude_names = 
@@ -287,15 +287,16 @@ let combine_libs clibs elibs =
 
 (* Initializing libraries of a contract *)
 let init_libraries clibs elibs =
-  let libs = combine_libs clibs elibs in
   let init_lib_entry env {lname = id; lexp = e } = (
     let%bind (v, _) = exp_eval e env in
     let env' = Env.bind env (get_id id) v in
     pure env') in
-  let (rids, rvals, _) = List.unzip3 Recursion.recursion_principles in
-  let env = Env.bind_all Env.empty (List.zip_exn (List.map ~f:get_id rids) rvals) in
-  DebugMessage.plog ("Loaded library functions: " ^ (Env.pp env));
-  List.fold_left libs ~init:(pure env)
+
+  let (recs, _) = List.unzip Recursion.recursion_principles in
+  let libs = recs @ (combine_libs clibs elibs) in
+
+  DebugMessage.plog ("Loading library functions.");
+  List.fold_left libs ~init:(pure Env.empty)
     ~f:(fun eres lentry ->
         let%bind env = eres in
         init_lib_entry env lentry)

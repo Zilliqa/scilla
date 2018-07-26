@@ -16,31 +16,6 @@ open Stdint
 let balance_label = "_balance"
 let creation_block_label = "_creation_block"
 
-  (*  Pretty-printing *)
-
-let pp_literal_map s =
-  let ps = List.map s
-      ~f:(fun (k, v) -> sprintf " [%s -> %s]" k (pp_literal v)) in
-  let cs = String.concat ~sep:",\n " ps in
-  sprintf "{%s }" cs
-    
-let pp_literal_list ls =
-  let ps = List.map ls
-      ~f:(fun l -> sprintf " %s" (pp_literal l)) in
-  let cs = String.concat ~sep:",\n " ps in
-  sprintf "[ %s]" cs
-
-let parse_expr s =
-  match FrontEndParser.parse_string ScillaParser.exps s with
-  | Some [e] -> e
-  | _ -> raise ScillaParser.Error
-           
-let parse_type s =
-  match FrontEndParser.parse_string ScillaParser.types s with
-  | Some [t] -> t
-  | _ -> raise ScillaParser.Error
-
-    
 (*****************************************************)
 (* Update-only execution environment for expressions *)
 (*****************************************************)
