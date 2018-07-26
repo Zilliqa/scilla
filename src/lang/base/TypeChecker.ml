@@ -262,3 +262,14 @@ let type_recursion_principles =
 (**************************************************************)
 (*                    Typing a library                        *)
 (**************************************************************)
+
+let type_library {lentries = ents} =
+  let env0 = TEnv.mk in
+  let%bind res =
+    foldM ~init:env0 ents ~f:(fun env {lname=ln; lexp = le} ->
+        let msg = sprintf
+            "[%s] Type error in library %s:\n"
+            (get_loc_str (get_loc ln)) (get_id ln) in
+        let%bind tr = wrap_with_info msg (type_expr env le) in       
+        pure @@ TEnv.addT (TEnv.copy env) ln tr.tp) in
+  pure res
