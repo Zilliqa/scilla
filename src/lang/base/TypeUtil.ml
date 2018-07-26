@@ -426,10 +426,12 @@ let get_failure_msg e opt = match e with
   | _ -> ""
 
 let get_failure_msg_stmt s opt = match s with
-  | Store (x, r) ->
+  | Load (x, f) ->
+      sprintf "[%s] Type error in reading value of `%s` into `%s`:\n"
+        (get_loc_str (get_loc x)) (get_id f) (get_id x)
+  | Store (f, r) ->
       sprintf "[%s] Type error in storing value of `%s` into the field `%s`:\n"
-        (get_loc_str (get_loc x)) (get_id r) (get_id x)
-
+        (get_loc_str (get_loc f)) (get_id r) (get_id f)
   | Bind (x, e) ->
       sprintf "[%s] Type error in the binding to into `%s`:\n"
         (get_loc_str (get_loc x)) (get_id x)

@@ -175,13 +175,16 @@ let rec type_stmts env stmts =
   match stmts with
   | [] -> pure env
   | s :: sts -> (match s with
-      | Load (x, r) ->
-
-          fail "FIXME"
-                
-      | Store (x, r) -> 
+      | Load (x, f) ->
+          let%bind env' = wrap_serr s (
+              let%bind fr = TEnv.resolveT env.fields (get_id f) in
+              let pure' = TEnv.addT (TEnv.copy env.pure) x (rr_typ fr).tp in
+              pure {env with pure = pure'}
+            ) in
+          type_stmts env' sts                            
+      | Store (f, r) -> 
           let%bind _ = wrap_serr s (
-              let%bind fr = TEnv.resolveT env.fields (get_id x) in
+              let%bind fr = TEnv.resolveT env.fields (get_id f) in
               let%bind r = TEnv.resolveT env.pure (get_id r) in
               assert_type_equiv (rr_typ fr).tp (rr_typ r).tp
             ) in
@@ -219,13 +222,10 @@ let rec type_stmts env stmts =
           let%bind _ = wrap_serr s @@
             assert_type_equiv expected (rr_typ r).tp in
           type_stmts env sts
-
-      (* TODO: Implement the rest *)
       | _ ->
           fail @@ sprintf
             "Type-checking the statement %s is not supported yet."
             (stmt_str s)
-
     )
 and type_match_stmt_branch env styp ptrn sts =
   let%bind new_typings = assign_types_for_pattern styp ptrn in
