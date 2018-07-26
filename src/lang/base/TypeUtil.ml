@@ -408,24 +408,38 @@ let assert_all_same_type ts = match ts with
 
 let get_failure_msg e opt = match e with
   | App (f, _) ->
-      sprintf "[%s] Error in typing application of `%s`:\n"
+      sprintf "[%s] Type error in application of `%s`:\n"
         (get_loc_str (get_loc f)) (get_id f)
   | Let (i, t, lhs, rhs) ->
-      sprintf "[%s] Error in typing LHS of the binding `%s`:\n"
+      sprintf "[%s] Type error in the initialiser of `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)
   | MatchExpr (x, clauses) ->
       sprintf
-        "[%s] Error in typing pattern matching on `%s`%s (or one of its branches):\n"
-        (get_loc_str (get_loc x)) (get_id x) opt 
+      "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
+      (get_loc_str (get_loc x)) (get_id x) opt 
   | TApp (tf, arg_types) ->
-      sprintf "[%s] Error in typing type application of `%s`:\n"
+      sprintf "[%s] Type error in type application of `%s`:\n"
         (get_loc_str (get_loc tf)) (get_id tf)
   | Builtin (i, _) ->
-      sprintf "[%s] Error in typing built-in application of `%s`:\n"
+      sprintf "[%s] Type error in built-in application of `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)
   | _ -> ""
 
 let get_failure_msg_stmt s opt = match s with
+  | Store (x, r) ->
+      sprintf "[%s] Type error in storing value of `%s` into the field `%s`:\n"
+        (get_loc_str (get_loc x)) (get_id r) (get_id x)
+
+  | Bind (x, e) ->
+      sprintf "[%s] Type error in the binding to into `%s`:\n"
+        (get_loc_str (get_loc x)) (get_id x)
+  | ReadFromBC (x, bf) ->
+      sprintf "[%s] Error in reading from blockchain state into `%s`:\n"
+        (get_loc_str (get_loc x)) (get_id x)
+  | MatchStmt (x, clauses) ->
+      sprintf
+      "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
+      (get_loc_str (get_loc x)) (get_id x) opt 
   | SendMsgs i ->
       sprintf "[%s] Error in sending messages `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)

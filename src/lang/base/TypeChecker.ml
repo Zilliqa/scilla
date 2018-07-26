@@ -175,6 +175,28 @@ let rec type_stmts env stmts =
   match stmts with
   | [] -> pure env
   | s :: sts -> (match s with
+      | Load (x, r) ->
+
+          fail "FIXME"
+                
+      | Store (x, r) -> 
+          let%bind _ = wrap_serr s (
+              let%bind fr = TEnv.resolveT env.fields (get_id x) in
+              let%bind r = TEnv.resolveT env.pure (get_id r) in
+              assert_type_equiv (rr_typ fr).tp (rr_typ r).tp
+            ) in
+          type_stmts env sts            
+      | Bind (x, e) ->
+          let%bind ityp = wrap_serr s @@ type_expr env.pure e in
+          let pure' = TEnv.addT (TEnv.copy env.pure) x ityp.tp in
+          let env' = {env with pure = pure'} in
+          type_stmts env' sts
+      | ReadFromBC (x, bf) ->
+          let%bind r = wrap_serr s @@ TEnv.resolveT env.bc bf in
+          let bt = (rr_typ r).tp in
+          let pure' = TEnv.addT (TEnv.copy env.pure) x bt in
+          let env' = {env with pure = pure'} in
+          type_stmts env' sts
       | MatchStmt (x, clauses) ->
           if List.is_empty clauses
           then wrap_serr s @@ fail @@ sprintf
