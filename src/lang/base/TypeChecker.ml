@@ -263,8 +263,14 @@ let type_recursion_principles =
 (*                    Typing a library                        *)
 (**************************************************************)
 
-let type_library {lentries = ents} =
-  let env0 = TEnv.mk in
+let typed_rec_libs =
+  let%bind _ = type_recursion_principles in      
+  let recs = List.map recursion_principles
+      ~f:(fun ({lname = a}, c) -> (a, c)) in
+  pure @@ TEnv.addTs TEnv.mk recs
+
+
+let type_library env0 {lentries = ents} =
   let%bind res =
     foldM ~init:env0 ents ~f:(fun env {lname=ln; lexp = le} ->
         let msg = sprintf
@@ -288,3 +294,50 @@ let bc_type_env =
 (*****************************************************************)
 (*                 Typing entire contracts                       *)
 (*****************************************************************)
+
+let type_fields tenv flds =
+  foldM flds ~init:TEnv.mk ~f:(fun fenv (fn, ft, fe) ->
+      let msg = sprintf
+          "[%s] Type error in field %s:\n"
+          (get_loc_str (get_loc fn)) (get_id fn) in
+      wrap_with_info msg @@
+      let%bind ar = type_expr tenv fe in
+      let actual = ar.tp in
+      let%bind _ = assert_type_equiv ft actual in
+      pure @@ TEnv.addT (TEnv.copy fenv) fn actual)
+
+let type_module md elibs =
+  let {cname; libs; contr} = md in
+  let {cname; cparams; cfields; ctrans} = contr in
+  let msg = sprintf "Type error in contract %s:\n" (get_id cname) in
+  wrap_with_info msg @@
+  
+  (* Step 0: Type check recursion principles *)
+  let%bind tenv0 = typed_rec_libs in
+
+  (* Step 1: Type check external libraries *)
+  (* TODO: Cache this information unless its version changed! *)
+  let%bind tenv1 = type_library tenv0 elibs in
+
+  (* Step 2: Type check internal libraries *)
+  let%bind tenv2 = type_library tenv1 libs in
+
+  (* Step 3: Adding typed contract parameters *)
+  let tenv3 = TEnv.addTs tenv2 cparams in
+
+  (* Step 4: Type-check fields *)
+  let%bind fenv = type_fields tenv3 cfields in
+
+  (* Step 5: Form a general environment for checking transitions *)
+  let env = {pure= tenv3; fields= fenv; bc= bc_type_env} in
+  
+  (* TODO: 
+   * Type-check individual transitions
+
+  *)
+
+  (* TODO: Improve the type checker, so it would report more than one
+  type error. E.g., check independent libraries "in parallel".  *)
+  
+  pure env
+
