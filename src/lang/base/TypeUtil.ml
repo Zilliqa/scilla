@@ -456,10 +456,10 @@ let extract_targs cn adt atyp = match atyp with
   | _ -> fail @@ sprintf
         "Not an algebraic data type: %s" (pp_typ atyp)
   
-let constr_pattern_arg_types atyp cn sctyp =
+let constr_pattern_arg_types atyp cn =
   let open Datatypes.DataTypeDictionary in
   let%bind (adt', ctr) = lookup_constructor cn in
-  let taken = free_tvars sctyp in
+  let taken = free_tvars atyp in
   let adt = refresh_adt adt' taken in
 
   let%bind targs = extract_targs cn adt atyp in
