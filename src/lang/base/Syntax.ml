@@ -51,6 +51,8 @@ let get_loc_str (l : loc) : string =
 
 type bigint = Big_int.big_int
 
+let mk_ident s = Ident (s, dummy_loc)      
+
 (*******************************************************)
 (*                         Types                       *)
 (*******************************************************)
@@ -105,6 +107,19 @@ type literal =
 [@@deriving sexp]
 
 let pp_literal l = sexp_of_literal l |> Sexplib.Sexp.to_string
+
+let pp_literal_map s =
+  let ps = List.map s
+      ~f:(fun (k, v) -> sprintf " [%s -> %s]" k (pp_literal v)) in
+  let cs = String.concat ~sep:",\n " ps in
+  sprintf "{%s }" cs
+    
+let pp_literal_list ls =
+  let ps = List.map ls
+      ~f:(fun l -> sprintf " %s" (pp_literal l)) in
+  let cs = String.concat ~sep:",\n " ps in
+  sprintf "[ %s]" cs
+
 
 (*******************************************************)
 (*                   Expressions                       *)

@@ -12,12 +12,12 @@ open Core
 open Result.Let_syntax
 open MonadUtil
 open Big_int
-open EvalUtil
 open TypeUtil
+open FrontEndParser
 
-let mk_ident s = Ident (s, dummy_loc)      
-
-(* Recursion principles for built-in ADTs *)
+(***********************************************************)
+(*    Recursion principles for built-in ADTs               *)
+(***********************************************************)
 
 (* Folding over natural numbers *)
 module NatRec = struct
@@ -39,9 +39,10 @@ module NatRec = struct
         "   g fn res n1 " ^
         "end"
       )
+    let id = mk_ident "nat_fold"
     let fold_fix = Fixpoint (g, fix_type, fix_arg)                    
-    let id = mk_ident "nat_fold"      
-    let fold = Env.ValTypeClosure(tvar, fold_fix, Env.empty)        
+    let fold = TFun(tvar, fold_fix)    
+    let entry = ({lname = id; lexp = fold}, full_type)
   end
 
   module Foldr = struct
@@ -78,9 +79,10 @@ module ListRec = struct
         "   g f res t " ^
         "end"
       )
-    let fold_fix = Fixpoint (g, fix_type, fix_arg)
     let id = mk_ident "list_foldl"      
-    let fold = Env.ValTypeClosure(avar, TFun (bvar, fold_fix), Env.empty)
+    let fold_fix = Fixpoint (g, fix_type, fix_arg)
+    let fold = TFun(avar, TFun (bvar, fold_fix))
+    let entry = ({lname = id; lexp = fold}, full_type)
   end
   
   module Foldr = struct
@@ -96,17 +98,18 @@ module ListRec = struct
         "   f h res " ^
         "end"
       )
+    let id = mk_ident "list_foldr"
     let fold_fix = Fixpoint (g, fix_type, fix_arg)
-    let id = mk_ident "list_foldr"      
-    let fold = Env.ValTypeClosure(avar, TFun (bvar, fold_fix), Env.empty)
+    let fold = TFun(avar, TFun (bvar, fold_fix))
+    let entry = ({lname = id; lexp = fold}, full_type)
   end
   
 end
 
 let recursion_principles = 
- [
-   (NatRec.Foldl.id, NatRec.Foldl.fold, NatRec.Foldl.full_type);
-   (ListRec.Foldl.id, ListRec.Foldl.fold, ListRec.Foldl.full_type);
-   (ListRec.Foldr.id, ListRec.Foldr.fold, ListRec.Foldr.full_type);
- ]
+  [
+    NatRec.Foldl.entry;
+    ListRec.Foldl.entry;
+    ListRec.Foldr.entry;
+  ]
 

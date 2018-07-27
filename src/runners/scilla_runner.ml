@@ -17,7 +17,9 @@ open MonadUtil
 open EvalUtil
 open Eval
 open DebugMessage
+open ContractUtil
 open Stdint
+open RunnerUtil
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -70,14 +72,14 @@ let check_after_step name res bstate m =
 let input_state_json filename = 
   let open JSON.ContractState in
   let states = get_json_data filename in
-  let match_balance ((vname : string), _) : bool = vname = EvalUtil.balance_label in
+  let match_balance ((vname : string), _) : bool = vname = balance_label in
   let bal_lit = match List.find states ~f:match_balance with
     | Some (_, lit) -> lit
-    | None -> raise (JSON.Invalid_json (EvalUtil.balance_label ^ " field missing"))
+    | None -> raise (JSON.Invalid_json (balance_label ^ " field missing"))
   in
   let bal_int = match bal_lit with
     | UintLit (wx, x) -> Int.of_string x
-    | _ -> raise (JSON.Invalid_json (EvalUtil.balance_label ^ " invalid"))
+    | _ -> raise (JSON.Invalid_json (balance_label ^ " invalid"))
   in
   let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
      no_bal_states, Uint128.of_int bal_int
@@ -85,7 +87,7 @@ let input_state_json filename =
 (* Add balance to output json and print it out *)
 
 let output_state_json (cstate : 'rep EvalUtil.ContractState.t) =
-  let ballit = (EvalUtil.balance_label, UintLit(128, Uint128.to_string cstate.balance)) in
+  let ballit = (balance_label, UintLit(128, Uint128.to_string cstate.balance)) in
   let concatlist = List.cons ballit cstate.fields in
     JSON.ContractState.state_to_json concatlist;;
 
@@ -100,27 +102,6 @@ let output_message_json mlist =
     )
   (* There will be at least one output message *)
   | _ -> `Null
-
-(* Parse external libraries. *)
-let import_libs names ldirs =
-  List.map names (fun id -> 
-    let name = get_id id in
-    let errmsg = (sprintf "%s. " ("Failed to import library " ^ name)) in
-    let dir = BatList.find_opt 
-      (fun d -> Caml.Sys.file_exists (d ^ Filename.dir_sep ^ name ^ ".scilla")) 
-      ldirs in
-    let f = match dir with
-      | None -> perr (errmsg ^ "Not found.\n") ; exit 1
-      | Some d -> d ^ Filename.dir_sep ^ name ^ ".scilla" in
-    try
-      let parse_lib = FrontEndParser.parse_file ScillaParser.lmodule f in
-      match parse_lib with
-      | None -> perr (errmsg ^ "Failed to parse.\n"); exit 1
-      | Some lib ->
-        plog (sprintf "%s\n" "Successfully imported external library " ^ name);
-        lib
-    with | _ -> perr (errmsg ^ "Failed to parse.\n"); exit 1
-    )
 
 let () =
   let cli = Cli.parse () in

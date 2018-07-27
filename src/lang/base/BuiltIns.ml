@@ -509,7 +509,9 @@ module Uint = struct
     | _ -> fail "Failed to convert" 
 
   let to_uint_arity = 1
-  let to_uint_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (tvar "'B"))
+  let to_uint_type = tfun_typ "'A" @@ tfun_typ "'B"
+      (fun_typ (tvar "'A") (option_typ (tvar "'B")))
+
   let to_uint_elab w sc ts = match ts with
     | [t] when is_uint_type t || is_int_type t ->
         let%bind ityp = mk_uint_type w in

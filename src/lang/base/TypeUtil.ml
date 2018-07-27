@@ -167,11 +167,6 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       tvars : (string, loc) Hashtbl.t
     } 
     
-    let mk =
-      let t1 = Hashtbl.create 50 in
-      let t2 = Hashtbl.create 10 in
-      {tenv = t1; tvars = t2}
-      
     let addT env id tp =
       let _ = Hashtbl.add env.tenv (get_id id)
           {qt = Q.mk_qualified_type tp; loc = get_loc id} in
@@ -196,7 +191,7 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
     let pp ?f:(f = fun _ -> true) env  =
       let lst = List.filter (to_list env) ~f:f in
       let ps = List.map lst
-          ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ (rr_pp v) ^ "]") in
+          ~f:(fun (k, v) -> " [" ^ k ^ " : " ^ (rr_pp v) ^ "]") in
       let cs = String.concat ~sep:",\n " ps in
       "{" ^ cs ^ " }"
 
@@ -216,6 +211,12 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       tvars = Hashtbl.copy e.tvars
     }
 
+    let mk =
+      let t1 = Hashtbl.create 50 in
+      let t2 = Hashtbl.create 10 in
+      let env = {tenv = t1; tvars = t2} in
+      copy env
+    
   end
 end
 
@@ -408,24 +409,43 @@ let assert_all_same_type ts = match ts with
 
 let get_failure_msg e opt = match e with
   | App (f, _) ->
-      sprintf "[%s] Error in typing application of `%s`:\n"
+      sprintf "[%s] Type error in application of `%s`:\n"
         (get_loc_str (get_loc f)) (get_id f)
   | Let (i, t, lhs, rhs) ->
-      sprintf "[%s] Error in typing LHS of the binding `%s`:\n"
+      sprintf "[%s] Type error in the initialiser of `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)
   | MatchExpr (x, clauses) ->
       sprintf
-        "[%s] Error in typing pattern matching on `%s`%s (or one of its branches):\n"
-        (get_loc_str (get_loc x)) (get_id x) opt 
+      "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
+      (get_loc_str (get_loc x)) (get_id x) opt 
   | TApp (tf, arg_types) ->
-      sprintf "[%s] Error in typing type application of `%s`:\n"
+      sprintf "[%s] Type error in type application of `%s`:\n"
         (get_loc_str (get_loc tf)) (get_id tf)
   | Builtin (i, _) ->
-      sprintf "[%s] Error in typing built-in application of `%s`:\n"
+      sprintf "[%s] Type error in built-in application of `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)
+  | Fixpoint (f, t, body) ->
+      sprintf "Type error in fixpoint application with an argument `%s`:\n"
+        (get_id f)              
   | _ -> ""
 
 let get_failure_msg_stmt s opt = match s with
+  | Load (x, f) ->
+      sprintf "[%s] Type error in reading value of `%s` into `%s`:\n"
+        (get_loc_str (get_loc x)) (get_id f) (get_id x)
+  | Store (f, r) ->
+      sprintf "[%s] Type error in storing value of `%s` into the field `%s`:\n"
+        (get_loc_str (get_loc f)) (get_id r) (get_id f)
+  | Bind (x, e) ->
+      sprintf "[%s] Type error in the binding to into `%s`:\n"
+        (get_loc_str (get_loc x)) (get_id x)
+  | ReadFromBC (x, bf) ->
+      sprintf "[%s] Error in reading from blockchain state into `%s`:\n"
+        (get_loc_str (get_loc x)) (get_id x)
+  | MatchStmt (x, clauses) ->
+      sprintf
+      "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
+      (get_loc_str (get_loc x)) (get_id x) opt 
   | SendMsgs i ->
       sprintf "[%s] Error in sending messages `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)
@@ -440,3 +460,14 @@ let wrap_err e ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt)
 
 let wrap_serr s ?opt:(opt = "") =
   wrap_with_info (get_failure_msg_stmt s opt)
+
+(*****************************************************************)
+(*               Blockchain component typing                     *)
+(*****************************************************************)
+
+let blocknum_name = "BLOCKNUMBER"
+
+(*****************************************************************)
+(*                    Transition typing                          *)
+(*****************************************************************)
+

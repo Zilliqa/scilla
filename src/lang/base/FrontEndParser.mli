@@ -14,3 +14,7 @@ val parse_file : ((Lexing.lexbuf -> ScillaParser.token) ->
 
 val parse_string : ((Lexing.lexbuf -> ScillaParser.token) ->
                   Lexing.lexbuf -> 'a) -> string -> 'a option
+
+val parse_type : string -> typ
+
+val parse_expr : string -> loc expr

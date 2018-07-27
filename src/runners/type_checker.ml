@@ -11,6 +11,7 @@ open Core
 open Printf
 open Sexplib.Std
 open Syntax
+open Result.Let_syntax
 open TypeUtil
 open TypeChecker
 open Recursion
@@ -23,9 +24,13 @@ let () =
   let filename = Sys.argv.(1) in
   match FrontEndParser.parse_file ScillaParser.exps filename with
   | Some [e] ->
-      let recs = List.map ~f:(fun (a, _, c) -> (a, c)) recursion_principles in
-      let tenv = TEnv.addTs TEnv.mk recs in
-      let res = TypeChecker.type_expr tenv e in
+      let res = (
+        let%bind _ = TypeChecker.type_recursion_principles in      
+        let recs = List.map recursion_principles
+            ~f:(fun ({lname = a}, c) -> (a, c)) in
+        let tenv = TEnv.addTs TEnv.mk recs in
+        TypeChecker.type_expr tenv e 
+      ) in
       (match res with
       | Ok res ->
           printf "%s\n" (pp_typ res.tp)

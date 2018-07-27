@@ -16,6 +16,8 @@ open TypeUtil
 open Datatypes
 open BuiltIns
 open Utils
+open Recursion
+open ContractUtil
 
 (* TODO: This dependency should be removed once types annotations are available in the AST *)
 open PatternChecker
@@ -115,6 +117,10 @@ let rec type_expr tenv e = match e with
           pure @@ List.hd_exn cl_types
         )
   | Fixpoint (f, t, body) ->
+      wrap_err e @@ 
+      let tenv' = TEnv.addT (TEnv.copy tenv) f t in
+      let%bind bt = type_expr tenv' body in
+      let%bind _ = assert_type_equiv t bt.tp in
       pure @@ mk_qual_tp t
   | TFun (tvar, body) ->
       let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
@@ -181,6 +187,37 @@ let rec type_stmts env stmts =
   match stmts with
   | [] -> pure env
   | s :: sts -> (match s with
+      | Load (x, f) ->
+          let%bind env' = wrap_serr s (
+              let%bind fr = TEnv.resolveT env.fields (get_id f) in
+              let pure' = TEnv.addT (TEnv.copy env.pure) x (rr_typ fr).tp in
+              pure {env with pure = pure'}
+            ) in
+          type_stmts env' sts                            
+      | Store (f, r) ->
+          if List.mem ~equal:(fun s1 s2 -> s1 = s2)
+              no_store_fields (get_id f) then
+            wrap_serr s (
+              fail @@ sprintf
+                "Writing to the field `%s` is prohibited." (get_id f)) 
+          else          
+            let%bind _ = wrap_serr s (
+                let%bind fr = TEnv.resolveT env.fields (get_id f) in
+                let%bind r = TEnv.resolveT env.pure (get_id r) in
+                assert_type_equiv (rr_typ fr).tp (rr_typ r).tp
+              ) in
+            type_stmts env sts            
+      | Bind (x, e) ->
+          let%bind ityp = wrap_serr s @@ type_expr env.pure e in
+          let pure' = TEnv.addT (TEnv.copy env.pure) x ityp.tp in
+          let env' = {env with pure = pure'} in
+          type_stmts env' sts
+      | ReadFromBC (x, bf) ->
+          let%bind r = wrap_serr s @@ TEnv.resolveT env.bc bf in
+          let bt = (rr_typ r).tp in
+          let pure' = TEnv.addT (TEnv.copy env.pure) x bt in
+          let env' = {env with pure = pure'} in
+          type_stmts env' sts
       | MatchStmt (x, clauses) ->
           if List.is_empty clauses
           then wrap_serr s @@ fail @@ sprintf
@@ -203,17 +240,133 @@ let rec type_stmts env stmts =
           let%bind _ = wrap_serr s @@
             assert_type_equiv expected (rr_typ r).tp in
           type_stmts env sts
-
-      (* TODO: Implement the rest *)
       | _ ->
           fail @@ sprintf
             "Type-checking the statement %s is not supported yet."
             (stmt_str s)
-
     )
 and type_match_stmt_branch env styp ptrn sts =
   let%bind new_typings = assign_types_for_pattern styp ptrn in
   let pure' = TEnv.addTs (TEnv.copy env.pure) new_typings in
   let env' = {env with pure = pure'} in
   type_stmts env' sts
+
+
+(**************************************************************)
+(*           Typing recursion principles and libraries        *)
+(**************************************************************)
+
+(* This is a really good sanity check: 
+   it should always succeed! *)
+let type_recursion_principles =
+  let recs = List.map recursion_principles
+      ~f:(fun ({lname = a; lexp = e}, c) -> (a, e, c)) in
+  let env0 = TEnv.copy TEnv.mk in 
+  mapM recs
+    ~f:(fun (rn, body, expected) ->
+        wrap_with_info
+          (sprintf "Type error when checking recursion primitive %s:\n"
+             (get_id rn)) @@
+        let%bind ar = type_expr env0 body in
+        let actual = ar.tp in
+        let%bind _ = assert_type_equiv expected actual in
+        pure (rn, actual))
+        
+(**************************************************************)
+(*                    Typing a library                        *)
+(**************************************************************)
+
+let typed_rec_libs =
+  let%bind _ = type_recursion_principles in      
+  let recs = List.map recursion_principles
+      ~f:(fun ({lname = a}, c) -> (a, c)) in
+  let env = TEnv.mk in
+  pure @@ (TEnv.addTs (TEnv.copy env) recs)
+
+
+let type_library env0 {lentries = ents} =
+  let%bind res =
+    foldM ~init:env0 ents ~f:(fun env {lname=ln; lexp = le} ->
+        let msg = sprintf
+            "[%s] Type error in library %s:\n"
+            (get_loc_str (get_loc ln)) (get_id ln) in
+        let%bind tr = wrap_with_info msg (type_expr env le) in       
+        pure @@ TEnv.addT (TEnv.copy env) ln tr.tp) in
+  pure @@ TEnv.copy res
+
+(*****************************************************************)
+(*               Blockchain component typing                     *)
+(*****************************************************************)
+
+let bc_type_env =
+  let open SimpleTEnv in
+  let open PrimTypes in 
+  let bc_elements =
+    [(mk_ident TypeUtil.blocknum_name, bnum_typ)] in
+  TEnv.addTs (TEnv.copy TEnv.mk) bc_elements
+    
+
+(*****************************************************************)
+(*                 Typing entire contracts                       *)
+(*****************************************************************)
+
+let type_fields tenv flds =
+  foldM flds ~init:TEnv.mk ~f:(fun fenv (fn, ft, fe) ->
+      let msg = sprintf
+          "[%s] Type error in field %s:\n"
+          (get_loc_str (get_loc fn)) (get_id fn) in
+      wrap_with_info msg @@
+      let%bind ar = type_expr tenv fe in
+      let actual = ar.tp in
+      let%bind _ = assert_type_equiv ft actual in
+      pure @@ TEnv.addT (TEnv.copy fenv) fn actual)
+
+(* Type-check transition *)
+let type_transition env0 tr =
+  let {tname; tparams; tbody} = tr in
+  let tenv0 = env0.pure in
+  let tenv1 = TEnv.addTs tenv0 (append_implict_trans_params tparams) in
+  let env = {env0 with pure = tenv1} in
+  let msg = sprintf "[%s] Type error in transition %s:\n"
+      (get_loc_str (get_loc tname)) (get_id tname) in
+  wrap_with_info msg @@
+  type_stmts env tbody
+
+let type_module md elibs =
+  let {cname; libs; contr} = md in
+  let {cname; cparams; cfields; ctrans} = contr in
+  let msg = sprintf "Type error in contract %s:\n" (get_id cname) in
+  wrap_with_info msg @@
+  
+  (* Step 0: Type check recursion principles *)
+  let%bind tenv0 = typed_rec_libs in
+
+  (* Step 1: Type check external libraries *)
+  (* TODO: Cache this information unless its version changed! *)
+  let%bind tenv1 = foldM elibs ~init:tenv0
+      ~f:(fun acc elib -> type_library acc elib) in
+
+  (* Step 2: Type check internal libraries *)
+  let%bind tenv2 = type_library tenv1 libs in
+
+  (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
+  let params = append_implict_contract_params cparams in
+  let tenv3 = TEnv.addTs tenv2 params in
+
+  (* Step 4: Type-check fields and add balance *)
+  let%bind fenv0 = type_fields tenv3 cfields in
+  let (bn, bt) = balance_field in
+  let fenv = TEnv.addT fenv0 bn bt in
+
+  (* Step 5: Form a general environment for checking transitions *)
+  let env = {pure= tenv3; fields= fenv; bc= bc_type_env} in
+
+  (* Step 6: Type-checking all transitions in batch *)
+  let%bind _ = mapM ctrans ~f:(fun tr -> type_transition env tr) in
+
+  (* TODO: Improve the type checker, so it would report more than one
+     type error. E.g., check independent libraries "in parallel".  *)
+
+  (* Return pure environment *)  
+  pure env
 

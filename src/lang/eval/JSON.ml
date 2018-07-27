@@ -11,17 +11,17 @@
 open Syntax
 open Core
 open Yojson
-open EvalUtil.MessagePayload
+open ContractUtil.MessagePayload
 open Datatypes
 open TypeUtil
 open BuiltIns
-
+    
 exception Invalid_json of string
 let addr_len = 40
 let hash_len = 64
 
 let parse_typ_exn t = 
-  (try EvalUtil.parse_type t
+  (try FrontEndParser.parse_type t
     with _ ->
       raise (Invalid_json (sprintf "Invalid type in json:\n%s" t)))
 

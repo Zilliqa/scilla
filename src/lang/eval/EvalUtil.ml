@@ -12,35 +12,8 @@ open Core
 open Result.Let_syntax
 open MonadUtil
 open Stdint
+open ContractUtil
 
-let balance_label = "_balance"
-let creation_block_label = "_creation_block"
-
-  (*  Pretty-printing *)
-
-let pp_literal_map s =
-  let ps = List.map s
-      ~f:(fun (k, v) -> sprintf " [%s -> %s]" k (pp_literal v)) in
-  let cs = String.concat ~sep:",\n " ps in
-  sprintf "{%s }" cs
-    
-let pp_literal_list ls =
-  let ps = List.map ls
-      ~f:(fun l -> sprintf " %s" (pp_literal l)) in
-  let cs = String.concat ~sep:",\n " ps in
-  sprintf "[ %s]" cs
-
-let parse_expr s =
-  match FrontEndParser.parse_string ScillaParser.exps s with
-  | Some [e] -> e
-  | _ -> raise ScillaParser.Error
-           
-let parse_type s =
-  match FrontEndParser.parse_string ScillaParser.types s with
-  | Some [t] -> t
-  | _ -> raise ScillaParser.Error
-
-    
 (*****************************************************)
 (* Update-only execution environment for expressions *)
 (*****************************************************)
@@ -262,54 +235,6 @@ module ContractState = struct
     sprintf "Contract State:\nImmutable parameters and libraries =\n%s\nMutable fields = \n%s\nBalance = %s\n"
       pp_params pp_fields pp_balance
 
-end
-
-(*****************************************************)
-(*                Message payload                    *)
-(*****************************************************)
-
-module MessagePayload = struct
-
-  let tag_label = "_tag"
-  let amount_label = "_amount"
-  let sender_label = "_sender"
-  let recipient_label = "_recipient"
-  let accepted_label = "_accepted"
-
-  let get_value_for_entry lab f es = 
-    match List.find es ~f:(fun (l, p) -> l = lab) with
-    | None -> fail @@ sprintf "No field \"%s\" in message [%s]."
-          lab (pp_literal_map es)
-    | Some (_, p) ->
-        (match f p with 
-         | Some x -> x
-         | None -> fail @@ sprintf "Wrong value of the entry \"%s\": %s."
-               lab (pp_literal p)) 
-
-  let get_tag = get_value_for_entry tag_label
-      (function StringLit s -> Some (pure s) | _ -> None)
-
-  let get_sender = get_value_for_entry sender_label
-      (function Address _ as a -> Some (pure a) | _ -> None)
-
-  let get_amount = get_value_for_entry amount_label
-      (function 
-        | UintLit (ws, s) ->
-            (try
-               let open Uint128 in
-               let i = of_string s in
-               if (compare i zero) >= 0 && ws = 128
-               then Some (pure i)
-               else
-                 Some (fail @@ sprintf "Amount should be non-negative: %s" s)
-             with
-              | Failure _ -> Some (fail @@
-                  sprintf "Could not convert string %s to Stdint.Uint128." s))
-        | _ -> None)
-  
-  let get_other_entries es =
-    List.filter es ~f:(fun (l, _) -> l <> tag_label)
-  
 end
 
 
