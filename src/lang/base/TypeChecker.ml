@@ -337,7 +337,8 @@ let type_module md elibs =
 
   (* Step 1: Type check external libraries *)
   (* TODO: Cache this information unless its version changed! *)
-  let%bind tenv1 = type_library tenv0 elibs in
+  let%bind tenv1 = foldM elibs ~init:tenv0
+      ~f:(fun acc elib -> type_library acc elib) in
 
   (* Step 2: Type check internal libraries *)
   let%bind tenv2 = type_library tenv1 libs in

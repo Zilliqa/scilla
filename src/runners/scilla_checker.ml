@@ -16,7 +16,9 @@ open DebugMessage
 open TypeChecker
 open MonadUtil
 open Result.Let_syntax
+open RunnerUtil
 
+(* Check that the module parses *)
 let check_parsing ctr = 
     let parse_module =
       FrontEndParser.parse_file ScillaParser.cmodule ctr in
@@ -28,6 +30,7 @@ let check_parsing ctr =
         pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr));
         pure cmod
 
+(* Type check the contract with external libraries *)
 let check_typing cmod elibs =
   let res = type_module cmod elibs in
   match res with
@@ -51,6 +54,7 @@ let () =
        So disable the logger. *)
     let _ = (
       let%bind cmod = check_parsing Sys.argv.(1) in
-      let elibs = {lname= mk_ident "Dummy"; lentries = []} in
+      let lib_dirs = [stdlib_dir] in
+      let elibs = import_libs cmod.elibs lib_dirs in
       check_typing cmod elibs)
     in ())

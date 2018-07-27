@@ -91,15 +91,19 @@ transition Bid ()
           match tmp2 with
           | True =>
             pr = builtin get prs v;
-            hs1 = builtin add pr hb;
-            prs1 = builtin put prs v hs1;
-            pendingReturns := prs1;
-            bidder = Some {Address} _sender;
-            highestBidder := bidder;
-            highestBid := _amount;
-            msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : bid_accepted_code};
-            msgs = one_msg msg;
-            send msgs
+            match pr with
+            | Some pr =>
+              hs1 = builtin add pr hb;
+              prs1 = builtin put prs v hs1;
+              pendingReturns := prs1;
+              bidder = Some {Address} _sender;
+              highestBidder := bidder;
+              highestBid := _amount;
+              msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : bid_accepted_code};
+              msgs = one_msg msg;
+              send msgs
+            | None => 
+            end
           | False =>
             prs1 = builtin put prs v hb; 
             pendingReturns := prs1;
