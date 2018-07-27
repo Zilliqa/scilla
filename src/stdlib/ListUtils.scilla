@@ -349,17 +349,18 @@ let list_zip =
               match bhead with
               | Some bel =>
                 let newp = Pair {'A 'B} h bel in
-                let newp_concat = Cons {Pair 'A 'B} newp r in
+                let newp_concat = Cons {(Pair 'A 'B)} newp r in
                 let btail = tailer b in
                 let newb =
                   match btail with
                   | Some t =>
                     t
                   | None =>
-                    nil
+                    let nilb = Nil {'B} in
+                    nilb
                   end
                 in
-                Pair {List (Pair 'A 'B) (List 'B)} newp_concat newb
+                Pair {(List (Pair 'A 'B)) (List 'B)} newp_concat newb
               | None =>
                 z
               end

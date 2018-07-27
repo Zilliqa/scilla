@@ -69,6 +69,10 @@ let rec subst_type_in_type tvar tp tm = match tm with
       if tvar = arg then pf
       else PolyFun (arg, subst_type_in_type tvar tp t)
 
+let subst_types_in_type sbst tm =
+  List.fold_left sbst ~init:tm
+    ~f:(fun acc (tvar, tp) -> subst_type_in_type tvar tp acc)
+
 let rec refresh_tfun t taken = match t with
   | MapType (kt, vt) -> MapType (kt, refresh_tfun vt taken)
   | FunType (at, rt) ->
@@ -401,6 +405,20 @@ let validate_param_length cn plen alen =
       "Constructor %s expects %d type arguments, but got %d." cn plen alen
   else pure ()
 
+(* Avoid variable clashes *)
+let refresh_adt adt taken =
+  let {tparams; tmap} = adt in
+  let tkn = tparams @ taken in
+  let subst = List.map tparams ~f:(fun tp ->
+      (tp, mk_fresh_var tkn tp)) in
+  let tparams' = List.unzip subst |> snd  in
+  let subst =
+    List.zip_exn tparams @@
+    List.map tparams' ~f:(fun s -> TypeVar s) in 
+  let tmap' = List.map tmap ~f:(fun (cn, tls) ->
+      let tls' = List.map tls ~f:(fun t -> subst_types_in_type subst t)
+      in (cn, tls'))
+  in {adt with tparams = tparams'; tmap = tmap'}
 
 (*  Get elaborated constructor type *)    
 let elab_constr_type cn targs =
@@ -438,9 +456,12 @@ let extract_targs cn adt atyp = match atyp with
   | _ -> fail @@ sprintf
         "Not an algebraic data type: %s" (pp_typ atyp)
   
-let contr_pattern_arg_types atyp cn =
+let constr_pattern_arg_types atyp cn sctyp =
   let open Datatypes.DataTypeDictionary in
-  let%bind (adt, ctr) = lookup_constructor cn in
+  let%bind (adt', ctr) = lookup_constructor cn in
+  let taken = free_tvars sctyp in
+  let adt = refresh_adt adt' taken in
+
   let%bind targs = extract_targs cn adt atyp in
   match constr_tmap adt cn with
   | None -> pure []
