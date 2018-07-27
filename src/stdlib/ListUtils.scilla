@@ -54,9 +54,9 @@ let list_tail =
   fun (l : List 'A) =>
     match l with
     | Cons h t =>
-      Some {'A} t
+      Some {(List 'A)} t
     | Nil =>
-      None {'A}
+      None {(List 'A)}
     end
 
 (* (List 'A -> List 'A ->  List 'A) *)
@@ -95,8 +95,8 @@ let list_reverse =
 (* concatenated together (in the same order) to give the result. *)
 let list_flatten =
   tfun 'A =>
-  fun (l : List List 'A) =>
-    let folder = @list_foldr (List List 'A) (List 'A) in
+  fun (l : List (List 'A)) =>
+    let folder = @list_foldr (List 'A) (List 'A) in
     let init = Nil {'A} in
     let iter =
       fun (h : List 'A) =>
@@ -129,7 +129,7 @@ let list_eq_helper =
   fun (l1 : List 'A) =>
   fun (l2 : List 'A) =>
     let folder = @list_foldl 'A (Option (List 'A)) in
-    let init = Some {List 'A} l2 in
+    let init = Some {(List 'A)} l2 in
     let iter =
       fun (z : Option (List 'A)) =>
       fun (h1 : 'A) =>
@@ -145,13 +145,13 @@ let list_eq_helper =
               let tailF = @list_tail 'A in
               tailF ll2
             | False =>
-              None {List 'A}
+              None {(List 'A)}
             end
           | None =>
-            None {List 'A}
+            None {(List 'A)}
           end
         | None =>
-          None {List 'A}
+          None {(List 'A)}
         end
     in
       folder iter init l1
@@ -394,8 +394,9 @@ let list_zip_with =
       fun (l1 : List 'A) =>
       fun (l2 : List 'B) =>
         let folder = @list_foldl 'A (Pair (List 'C) (List 'B)) in
-        let nil = Nil {'C} in
-        let init = Pair {(List 'C) (List 'B)} nil l2 in
+        let nilb = Nil {'B} in
+        let nilc = Nil {'C} in
+        let init = Pair {(List 'C) (List 'B)} nilc l2 in
         let iter =
           fun (z : Pair (List 'C) (List 'B)) =>
           fun (h : 'A) =>
@@ -415,7 +416,7 @@ let list_zip_with =
                   | Some t =>
                     t
                   | None =>
-                    nil
+                    nilb
                   end
                 in
                 Pair {(List 'C) (List 'B)} newp_concat newb
