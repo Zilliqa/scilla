@@ -43,7 +43,7 @@ let check_typing cmod elibs =
         res
 
 let () =
-  if (Array.length Sys.argv) <> 2
+  if (Array.length Sys.argv) < 2
   then
     (perr (sprintf "Usage: %s foo.scilla\n" Sys.argv.(0))
     )
