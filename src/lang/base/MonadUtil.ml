@@ -47,24 +47,3 @@ let liftPair1 m x = match m with
   | Ok z -> Ok (z, x)
   | Error _ as err -> err
 
-(* Map [[x1; x2; ...; xn]; [y1; y2; ...; yn]; ...]
-   to [[...; y1; x1]; [...; y2; x2]; ...; [...; yn; xn]] *)
-let rec unzipN_rev n ls ~msg =
-  let rec build_empties n =
-    match n with
-    | 0 -> []
-    | m -> [] :: (build_empties (m-1)) in
-  let rec unzip_level n l acc =
-    match (n, l, acc) with
-    | (0, [], []) -> pure @@ []
-    | (m, v :: vs, r :: rs) ->
-        let%bind unzip_res = unzip_level (m-1) vs rs in
-        pure @@ (v :: r) :: unzip_res
-    | _ -> fail @@ msg in
-  let rec unzip_rev n ls acc =
-    match ls with
-    | [] -> pure @@ acc
-    | l :: ls' ->
-        let%bind new_acc = (unzip_level n l acc) in
-        unzip_rev n ls' new_acc in
-  unzip_rev n ls (build_empties n)

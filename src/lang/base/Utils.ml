@@ -54,3 +54,4 @@ module AssocDictionary : Dictionary = struct
   let to_list d = d
 end
 
+exception InternalError of string

@@ -17,6 +17,9 @@ open Datatypes
 open BuiltIns
 open Utils
 
+(* TODO: This dependency should be removed once types annotations are available in the AST *)
+open PatternChecker
+
 (* Instantiated the type environment *)
 module SimpleTEnv = MakeTEnv(PlainTypes)
 open SimpleTEnv
@@ -45,7 +48,6 @@ let assign_types_for_pattern sctyp pattern =
 (**************************************************************)
 (*                   Typing expressions                       *)
 (**************************************************************)
->>>>>>> 86fdcae475ff94cdd11840df2e17fd46a351655f
 
 (* TODO: Check if the type is well-formed: support type variables *)
 let rec type_expr tenv e = match e with
@@ -107,6 +109,8 @@ let rec type_expr tenv e = match e with
               type_check_match_branch tenv sct ptrn ex) in
           let%bind _ =
             assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
+          (* TODO: Move the PM checks to separate phase once type annotations are available in AST *)
+          let%bind _ = pm_check sct clauses in
           (* Return the first type since all they are the same *)
           pure @@ List.hd_exn cl_types
         )
@@ -212,5 +216,4 @@ and type_match_stmt_branch env styp ptrn sts =
   let pure' = TEnv.addTs (TEnv.copy env.pure) new_typings in
   let env' = {env with pure = pure'} in
   type_stmts env' sts
->>>>>>> 86fdcae475ff94cdd11840df2e17fd46a351655f
 
