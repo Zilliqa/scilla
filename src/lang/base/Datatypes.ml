@@ -131,6 +131,9 @@ module DataTypeDictionary = struct
   let list_typ t = ADT (t_list.tname, [t])
   let pair_typ t s = ADT (t_product.tname, [t; s])
 
+  let refresh_adt adt taken =
+    (* TODO: implement me *)
+    adt
   
 end
 

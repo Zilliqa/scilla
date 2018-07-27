@@ -23,6 +23,7 @@ module Tests = TestUtil.DiffBasedTests(
       "pm2.scilla";
       "pm3.scilla";
       "pm4.scilla";
+      "subst.scilla";
     ]
     let use_stdlib = false
   end)
