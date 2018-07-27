@@ -59,7 +59,7 @@ let pm_check t clauses =
         traverse_pattern (augment_ctx ctx dsc) sps_rest i rest_clauses
     | Constructor (c_name, sps_cons) ->
         let arity () = List.length sps_cons in
-        let get_t_args () = constr_pattern_arg_types t c_name t in
+        let get_t_args () = constr_pattern_arg_types t c_name in
         let get_dsc_args dsc =
           match dsc with
           | Pos (_, args) -> args
