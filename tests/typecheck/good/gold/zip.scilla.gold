@@ -1,0 +1,1 @@
+forall 'A. forall 'B. List ('A) -> List ('B) -> List (Pair ('A) ('B))

@@ -38,7 +38,7 @@ let assign_types_for_pattern sctyp pattern =
     | Wildcard -> pure tlist
     | Binder x -> pure @@ tlist @ [(x, atyp)]
     | Constructor (cn, ps) ->
-        let%bind arg_types = contr_pattern_arg_types atyp cn in
+        let%bind arg_types = constr_pattern_arg_types atyp cn sctyp in
         let plen = List.length arg_types in
         let alen = List.length ps in
         let%bind _ = validate_param_length cn plen alen in

@@ -1,6 +1,6 @@
 (* HelloWorld contract *)
 
-import NatUtils
+import ListUtils
 
 (***************************************************)
 (*               Associated library                *)

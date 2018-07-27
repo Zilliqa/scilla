@@ -1,0 +1,23 @@
+let list_unzip =
+  tfun 'A =>
+  tfun 'B =>
+  fun (l : List (Pair 'A 'B)) =>
+    let folder = @list_foldr (Pair 'A 'B) (Pair (List 'A) (List 'B)) in
+    let nil1 = Nil {'A} in
+    let nil2 = Nil {'B} in
+    let init = Pair {(List 'A) (List 'B)} nil1 nil2 in
+    let iter =
+      fun (h : Pair 'A 'B) =>
+      fun (z : Pair (List 'A) (List 'B)) =>
+        match h with
+        | Pair a b =>
+          match z with
+          | Pair la lb =>
+            let nla = Cons {'A} a la in
+            let nlb = Cons {'B} b lb in
+            Pair {(List 'A)(List 'B)} nla nlb
+          end
+        end
+    in
+      folder iter init l
+in list_unzip

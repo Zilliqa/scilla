@@ -23,6 +23,32 @@ open Datatypes
 (*                  Type substitutions                          *)
 (****************************************************************)
 
+let free_tvars tp =
+  let add vs tv = tv :: List.filter ~f:(fun v -> v = tv) vs in
+  let rem vs tv = List.filter ~f:(fun v -> v <> tv) vs in
+  let rec go t acc = (match t with
+  | PrimType _ -> acc
+  | MapType (kt, vt) -> go kt acc |> go vt
+  | FunType (at, rt) -> go at acc |> go rt
+  | TypeVar n -> add acc n
+  | ADT (s, ts) ->
+      List.fold_left ts ~init:acc ~f:(fun z tt -> go tt z)
+  | PolyFun (arg, bt) ->
+      let acc' = go bt acc in
+      rem acc' arg) in
+  go tp []
+
+let mk_fresh_var taken init =
+  let tmp = ref init in
+  let counter = ref 1 in
+  while List.mem taken !tmp ~equal:(fun a b -> a = b) do
+    let cnt = !counter in
+    tmp := init ^ (Int.to_string cnt);
+    counter := cnt + 1;
+  done;
+  !tmp
+
+
 let rec subst_type_in_type tvar tp tm = match tm with
   | PrimType _ as p -> p
   (* Make sure the map's type is still primitive! *)
@@ -42,6 +68,26 @@ let rec subst_type_in_type tvar tp tm = match tm with
   | PolyFun (arg, t) as pf -> 
       if tvar = arg then pf
       else PolyFun (arg, subst_type_in_type tvar tp t)
+
+let subst_types_in_type sbst tm =
+  List.fold_left sbst ~init:tm
+    ~f:(fun acc (tvar, tp) -> subst_type_in_type tvar tp acc)
+
+let rec refresh_tfun t taken = match t with
+  | MapType (kt, vt) -> MapType (kt, refresh_tfun vt taken)
+  | FunType (at, rt) ->
+      FunType (refresh_tfun at taken, refresh_tfun rt taken)
+  | ADT (n, ts) ->
+      let ts' = List.map ts ~f:(fun w -> refresh_tfun w taken) in
+      ADT (n, ts')
+  | PrimType _ | TypeVar _ -> t
+  | PolyFun (arg, bt) ->
+      let arg' = mk_fresh_var taken arg in
+      let tv_new = TypeVar arg' in
+      let bt1 = subst_type_in_type arg tv_new bt in
+      let taken' = arg' :: taken in
+      let bt2 = refresh_tfun bt1 taken' in
+      PolyFun (arg', bt2)
 
 (* The same as above, but for a variable with locations *)
 let subst_type_in_type' tv = subst_type_in_type (get_id tv)
@@ -256,10 +302,12 @@ let literal_type l =
   | Msg _ -> pure msg_typ
   (* TODO: Add structural type checking *)
   | Map ((kt, vt), _) ->
-      if PrimTypes.is_prim_type kt
-      then pure (MapType (kt, vt))
-      else fail @@
-        (sprintf "Not a primitive map key tpye: %s." (pp_typ kt))        
+      pure (MapType (kt, vt))
+      (** TODO: emit constraint on kt for being a primitive type **)
+      (* if PrimTypes.is_prim_type kt
+       * then pure (MapType (kt, vt))
+       * else fail @@
+       *   (sprintf "Not a primitive map key type: %s." (pp_typ kt))         *)
   (* TODO: Add structural type checking *)
   | ADTValue (cname, ts, _) ->
       let%bind (adt, _) = DataTypeDictionary.lookup_constructor cname in
@@ -329,7 +377,11 @@ let rec fun_type_applies ft argtypes = match ft, argtypes with
         (pp_typ_list argtypes)
 
 let rec elab_tfun_with_args tf args = match tf, args with
-  | PolyFun (n, tp), a :: args' ->
+  | PolyFun _ as pf, a :: args' ->
+      let afv = free_tvars a in
+      let%bind (n, tp) = (match refresh_tfun pf afv with
+          | PolyFun (a, b) -> pure (a, b)
+          | _ -> fail "This can't happen!") in
       let tp' = subst_type_in_type n a tp in
       elab_tfun_with_args tp' args'
   | t, [] -> pure t
@@ -353,11 +405,30 @@ let validate_param_length cn plen alen =
       "Constructor %s expects %d type arguments, but got %d." cn plen alen
   else pure ()
 
+(* Avoid variable clashes *)
+let refresh_adt adt taken =
+  let {tparams; tmap} = adt in
+  let tkn = tparams @ taken in
+  let subst = List.map tparams ~f:(fun tp ->
+      (tp, mk_fresh_var tkn tp)) in
+  let tparams' = List.unzip subst |> snd  in
+  let subst =
+    List.zip_exn tparams @@
+    List.map tparams' ~f:(fun s -> TypeVar s) in 
+  let tmap' = List.map tmap ~f:(fun (cn, tls) ->
+      let tls' = List.map tls ~f:(fun t -> subst_types_in_type subst t)
+      in (cn, tls'))
+  in {adt with tparams = tparams'; tmap = tmap'}
 
 (*  Get elaborated constructor type *)    
 let elab_constr_type cn targs =
   let open Datatypes.DataTypeDictionary in
-  let%bind (adt, ctr) = lookup_constructor cn in
+  let%bind (adt', ctr) = lookup_constructor cn in
+  let seq a b = if a = b then 0 else 1 in
+  let taken = List.map targs ~f:free_tvars |>
+              List.concat |>
+              List.dedup_and_sort ~compare:seq in
+  let adt = refresh_adt adt' taken in
   let plen = List.length adt.tparams in
   let alen = List.length targs in
   let%bind _ = validate_param_length cn plen alen in
@@ -385,9 +456,12 @@ let extract_targs cn adt atyp = match atyp with
   | _ -> fail @@ sprintf
         "Not an algebraic data type: %s" (pp_typ atyp)
   
-let contr_pattern_arg_types atyp cn =
+let constr_pattern_arg_types atyp cn sctyp =
   let open Datatypes.DataTypeDictionary in
-  let%bind (adt, ctr) = lookup_constructor cn in
+  let%bind (adt', ctr) = lookup_constructor cn in
+  let taken = free_tvars sctyp in
+  let adt = refresh_adt adt' taken in
+
   let%bind targs = extract_targs cn adt atyp in
   match constr_tmap adt cn with
   | None -> pure []
