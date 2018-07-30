@@ -31,22 +31,13 @@ let member_exn m j =
   | j -> j
 
 (* Given a literal, return its full type name *)
-let lit_typ_string l = match l with
-  | Map ((kt, vt), _) -> pp_typ (MapType (kt, vt))
-  | ADTValue (name, tl, _) -> 
-      let r = DataTypeDictionary.lookup_constructor name in
-      (match r with
-       | Error emsg ->
-           raise (Invalid_json (emsg))
-       | Ok (t, _)->
-           pp_typ (ADT (t.tname, tl)))
-  | StringLit _ -> "String"
-  | IntLit (w, _) -> "Int" ^ (Int.to_string w)
-  | UintLit (w,_) -> "Uint" ^ (Int.to_string w)
-  | BNum _ -> "BNum"
-  | Address _ -> "Address"
-  | Sha256 _ -> "Hash"
-  | Msg _ -> "Message"
+let literal_type_exn l =
+  let t = TypeUtil.literal_type l in
+  match t with
+  | Error emsg ->
+    raise (Invalid_json (emsg))
+  | Ok s->
+    pp_typ s
 
 let build_prim_lit_exn t v =
   let open PrimTypes in
@@ -252,7 +243,7 @@ let state_to_json state =
   let (vname, lit) = state in
   `Assoc [ 
     ("vname", `String vname) ; 
-    ("type", `String (lit_typ_string lit));
+    ("type", `String (literal_type_exn lit));
     ("value", (literal_to_json lit))
   ]
 
