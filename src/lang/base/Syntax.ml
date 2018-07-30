@@ -90,6 +90,9 @@ and with_paren t = match t with
 type mtype = typ * typ
 [@@deriving sexp]
 
+let address_length = 40
+let hash_length = 64
+
 type literal =
   | StringLit of string
   (* (bit-width, value) *)

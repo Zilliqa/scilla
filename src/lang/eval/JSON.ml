@@ -17,8 +17,6 @@ open TypeUtil
 open BuiltIns
     
 exception Invalid_json of string
-let addr_len = 40
-let hash_len = 64
 
 let parse_typ_exn t = 
   (try FrontEndParser.parse_type t
@@ -50,61 +48,14 @@ let lit_typ_string l = match l with
   | Sha256 _ -> "Hash"
   | Msg _ -> "Message"
 
-let lit_exn n =
-  let s, re, l = 
-    match n with
-    | IntLit (wl, l) ->
-      l, Str.regexp "-?[0-9]+$", 0
-    | UintLit (wl, l) ->
-      l, Str.regexp "[0-9]+$", 0
-    | BNum l ->
-      l, Str.regexp "[0-9]+$", 0
-    | Address a ->
-        a, Str.regexp "0x[0-9a-f]+$", addr_len+2
-    | Sha256 s ->
-        s, Str.regexp "0x[0-9a-f]+$", hash_len+2
-    | StringLit s -> s, Str.regexp ".*", 0
-    | _ -> "", Str.regexp "", 0
-  in
-  if (Str.string_match re s 0)
-  then
-    (if l <> 0 && (String.length s) <> l
-     then
-      raise (Invalid_json ("Invalid " ^ lit_typ_string n ^ " : " ^ s ^ " in json"))
-     else
-      (match n with
-      | IntLit (wl, l) | UintLit (wl, l) ->
-        (* detailed validation for integer literals *)
-        if validate_int_literal n
-        then
-          n
-        else
-          raise (Invalid_json ("Invalid integer literal " ^ lit_typ_string n ^ " : " ^ s ^ " in json"))
-      | _ ->
-        n
-      )
-    )
-  else
-    raise (Invalid_json ("Invalid " ^ lit_typ_string n ^ " : " ^ s ^ " in json"))
-
-let build_int_exn t v =
-  let r = build_int t v in
-  match r with
-  | Some rs ->
-    rs
-  | None ->
-    raise (Invalid_json("Invalid integer type/value " ^ (pp_typ t) ^ " " ^ v ^ " in json"))
-
 let build_prim_lit_exn t v =
   let open PrimTypes in
-  match t with
-  | x when x = string_typ -> lit_exn (StringLit v)
-  | x when x = bnum_typ -> lit_exn(BNum v)
-  | x when x = address_typ -> lit_exn(Address v)
-  | x when x = hash_typ -> lit_exn(Sha256 v)
-  | x when is_int_type x || is_uint_type x -> build_int_exn x v
-  | _ ->
-      raise (Invalid_json ("JSON parsing: Invalid type for PrimType literal construction"))
+  let exn_wrapper t v r = 
+    match v with
+    | None -> raise (Invalid_json ("Invalid " ^ (pp_typ t) ^ " value " ^ r ^ " in JSON"))
+    | Some v' -> v'
+  in
+    exn_wrapper t (build_prim_literal t v) v
 
 let verify_adt_typs_exn name tlist1 adt =
   match adt with
@@ -370,9 +321,9 @@ let get_json_data filename =
   let amounts = member_exn amount_label json |> to_string in
   let senders = member_exn sender_label json |> to_string in
   (* Make tag, amount and sender into a literal *)
-  let tag = (tag_label, lit_exn(StringLit(tags))) in
-  let amount = (amount_label, build_int_exn PrimTypes.uint128_typ amounts) in
-  let sender = (sender_label, lit_exn(Address(senders))) in
+  let tag = (tag_label, build_prim_lit_exn PrimTypes.string_typ tags) in
+  let amount = (amount_label, build_prim_lit_exn PrimTypes.uint128_typ amounts) in
+  let sender = (sender_label, build_prim_lit_exn PrimTypes.address_typ senders) in
   let pjlist = member_exn "params" json |> to_list in
   let params = List.map pjlist ~f:jobj_to_statevar in
     tag :: amount :: sender :: params

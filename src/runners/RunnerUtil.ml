@@ -26,7 +26,7 @@ let stdlib_dir =
     | None -> printf "\n%s\n"
        ("A path to Scilla stdlib not found. Please set " ^ scilla_stdlib_path ^ 
        " environment variable, or pass as the second command-line argument for this script.\n" ^
-       "Example:\n./bin/eval-runner list_sort.scilla ./src/stdlib/\n"); exit 1
+       "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla ./src/stdlib/\n"); exit 1
   else Sys.argv.(2)
 
 let parse_stdlib stdlib_dir =
