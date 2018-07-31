@@ -28,7 +28,7 @@ let () =
   | Some [e] ->
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib = { lname = asId "dummy"; lentries = [] } in
-      let elibs = parse_stdlib stdlib_dir in
+      let elibs = parse_stdlib (stdlib_dir()) in
       let envres = Eval.init_libraries clib elibs in
       let env = (match envres with
         | Ok (env') -> env'
