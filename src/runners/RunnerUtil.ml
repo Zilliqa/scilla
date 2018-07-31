@@ -17,8 +17,10 @@ open GlobalConfig
 open DebugMessage
 open Core.Result.Let_syntax
 
-(* A path to standard library. *)
-let stdlib_dir = 
+(* A path to standard library. This is not for the main "scilla-runner" as that
+   gets the path in a different way. This is only for the auxiliary runners which
+   have a simple command line option. *)
+let stdlib_dir () =
   if (Array.length Sys.argv) <= 2
   then
     match Sys.getenv_opt scilla_stdlib_path with
@@ -29,10 +31,11 @@ let stdlib_dir =
        "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla ./src/stdlib/\n"); exit 1
   else Sys.argv.(2)
 
-let parse_stdlib stdlib_dir =
-  let files = Array.to_list (Sys.readdir stdlib_dir) in
+(* parse all files in dir, assuming they are scilla library files. *)
+let parse_stdlib dir =
+  let files = Array.to_list (Sys.readdir dir) in
   let f file' = 
-    let file = stdlib_dir ^ Filename.dir_sep ^ file' in
+    let file = dir ^ Filename.dir_sep ^ file' in
     let name = Filename.remove_extension file in
     let errmsg = (sprintf "%s. " ("Failed to import library " ^ name)) in
     try
@@ -45,9 +48,7 @@ let parse_stdlib stdlib_dir =
   in
     List.map f files
 
-
-
-(* Parse external libraries. *)
+(* Parse external libraries "names" by looking for it in "ldirs". *)
 let import_libs names ldirs =
   List.map (fun id -> 
     let name = get_id id in

@@ -54,7 +54,7 @@ let () =
        So disable the logger. *)
     let _ = (
       let%bind cmod = check_parsing Sys.argv.(1) in
-      let lib_dirs = [stdlib_dir] in
+      let lib_dirs = [stdlib_dir()] in
       let elibs = import_libs cmod.elibs lib_dirs in
       check_typing cmod elibs)
     in ())
