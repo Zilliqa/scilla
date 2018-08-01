@@ -77,7 +77,7 @@ val map_typ : typ -> typ -> typ
 (*                       Type sanitization                      *)
 (****************************************************************)
 
-val is_sendable_type : typ -> bool
+val is_storable_type : typ -> bool
 
 (****************************************************************)
 (*             Utility function for matching types              *)
