@@ -281,7 +281,8 @@ let check_blockchain_entries entries =
 let combine_libs clibs elibs =
   (* combine both the libs, with contract libs defined later 
      (to hide same name external libs *)
-  let j = List.append elibs (clibs::[]) in
+  let clib = match clibs with | Some clib -> (clib::[]) | None -> [] in
+  let j = List.append elibs clib in
   let libs = 
     List.fold_right ~f:(fun l a -> List.append l.lentries a) ~init:[] j in
   libs

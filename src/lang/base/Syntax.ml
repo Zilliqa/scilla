@@ -234,7 +234,7 @@ let pp_cparams ps =
 (* Contract module: libary + contract definiton *)
 type 'rep cmodule =
   { cname : 'rep ident;
-    libs  : 'rep library;     (* lib functions defined in the module *)
+    libs  : ('rep library) option;     (* lib functions defined in the module *)
     elibs : 'rep ident list;  (* list of imports / external libs *)
     contr : 'rep contract }
 [@@deriving sexp]

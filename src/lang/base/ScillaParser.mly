@@ -298,8 +298,8 @@ imports :
 | { [] }
 
 cmodule:
-| els = imports; ls = library; c = contract; EOF
-  { { cname = ls.lname;
+| els = imports; ls = option(library); c = contract; EOF
+  { { cname = c.cname;
       libs = ls;
       elibs = els;
       contr = c } }
