@@ -19,6 +19,7 @@ open Eval
 open DebugMessage
 open ContractUtil
 open Stdint
+open RunnerUtil
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -101,27 +102,6 @@ let output_message_json mlist =
     )
   (* There will be at least one output message *)
   | _ -> `Null
-
-(* Parse external libraries. *)
-let import_libs names ldirs =
-  List.map names (fun id -> 
-    let name = get_id id in
-    let errmsg = (sprintf "%s. " ("Failed to import library " ^ name)) in
-    let dir = BatList.find_opt 
-      (fun d -> Caml.Sys.file_exists (d ^ Filename.dir_sep ^ name ^ ".scilla")) 
-      ldirs in
-    let f = match dir with
-      | None -> perr (errmsg ^ "Not found.\n") ; exit 1
-      | Some d -> d ^ Filename.dir_sep ^ name ^ ".scilla" in
-    try
-      let parse_lib = FrontEndParser.parse_file ScillaParser.lmodule f in
-      match parse_lib with
-      | None -> perr (errmsg ^ "Failed to parse.\n"); exit 1
-      | Some lib ->
-        plog (sprintf "%s\n" "Successfully imported external library " ^ name);
-        lib
-    with | _ -> perr (errmsg ^ "Failed to parse.\n"); exit 1
-    )
 
 let () =
   let cli = Cli.parse () in

@@ -25,7 +25,7 @@ let min_int =
   end
 
 let le_int =
-  fun (a : Uint128) => fun (b : Uin128) =>
+  fun (a : Uint128) => fun (b : Uint128) =>
     let x = builtin lt a b in
     match x with
     | True => True
@@ -123,7 +123,7 @@ transition TransferFrom (from : Address, to : Address, tokens : Uint128)
   | Some m =>
     (* How many tokens has _sender been authorized to transfer, by "from" *)
     sender_allowed_from = builtin get m _sender;
-    all = Pair {Option(Uint128) Option(Uint128)} bal sender_allowed_from;
+    all = Pair { (Option Uint128) (Option Uint128)} bal sender_allowed_from;
     match all with
     | Pair (Some a) (Some b) =>
       (* We can only transfer the minimum of available or authorized tokens *)

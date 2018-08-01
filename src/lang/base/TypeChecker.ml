@@ -34,7 +34,7 @@ let assign_types_for_pattern sctyp pattern =
     | Wildcard -> pure tlist
     | Binder x -> pure @@ tlist @ [(x, atyp)]
     | Constructor (cn, ps) ->
-        let%bind arg_types = contr_pattern_arg_types atyp cn in
+        let%bind arg_types = constr_pattern_arg_types atyp cn in
         let plen = List.length arg_types in
         let alen = List.length ps in
         let%bind _ = validate_param_length cn plen alen in
@@ -337,10 +337,15 @@ let type_module md elibs =
 
   (* Step 1: Type check external libraries *)
   (* TODO: Cache this information unless its version changed! *)
-  let%bind tenv1 = type_library tenv0 elibs in
+  let%bind tenv1 = foldM elibs ~init:tenv0
+      ~f:(fun acc elib -> type_library acc elib) in
 
-  (* Step 2: Type check internal libraries *)
-  let%bind tenv2 = type_library tenv1 libs in
+  (* Step 2: Type check internal libraries, if defined. *)
+  let%bind tenv2 = 
+    match libs with
+    | Some lib -> type_library tenv1 lib
+    | None -> pure @@ tenv1
+    in
 
   (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
   let params = append_implict_contract_params cparams in

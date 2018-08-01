@@ -15,22 +15,7 @@ open EvalUtil
 open Recursion
 open GlobalConfig
 open Core.Result.Let_syntax
-
-let parse_stdlib stdlib_dir =
-  let files = Array.to_list (Sys.readdir stdlib_dir) in
-  let f file' = 
-    let file = stdlib_dir ^ Filename.dir_sep ^ file' in
-    let name = Filename.remove_extension file in
-    let errmsg = (sprintf "%s. " ("Failed to import library " ^ name)) in
-    try
-      let parse_lib = FrontEndParser.parse_file ScillaParser.lmodule file in
-      match parse_lib with
-      | None -> fprintf stderr "%s" (errmsg ^ "Failed to parse.\n"); exit 1
-      | Some lib ->
-        lib
-    with | _ -> fprintf stderr "%s" (errmsg ^ "Failed to parse.\n"); exit 1
-  in
-    List.map f files
+open RunnerUtil
 
 let () =
   if (Array.length Sys.argv) < 2 || (Array.length Sys.argv) > 3
@@ -38,23 +23,13 @@ let () =
     (printf "%s\n" ("Usage: " ^ Sys.argv.(0) ^ " /path/to/exp.scilla [/path/to/stdlib]");
     exit 1)
   else
-  let stdlib_dir = 
-    if (Array.length Sys.argv) = 2
-    then
-      match Sys.getenv_opt scilla_stdlib_path with
-      | Some d -> d
-      | None -> printf "\n%s\n" ("A path to Scilla stdlib not found. Please set " ^ scilla_stdlib_path ^ 
-        " environment variable, or pass as the second command-line argument for this script.\n" ^
-        "Example:\n./bin/eval-runner list_sort.scilla ./src/stdlib/\n"); exit 1
-    else
-      Sys.argv.(2) in
   let filename = Sys.argv.(1) in
   match FrontEndParser.parse_file ScillaParser.exps filename with
   | Some [e] ->
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib = { lname = asId "dummy"; lentries = [] } in
-      let elibs = parse_stdlib stdlib_dir in
-      let envres = Eval.init_libraries clib elibs in
+      let elibs = parse_stdlib (stdlib_dir()) in
+      let envres = Eval.init_libraries (Some clib) elibs in
       let env = (match envres with
         | Ok (env') -> env'
         | Error err ->

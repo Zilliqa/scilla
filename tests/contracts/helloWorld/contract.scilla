@@ -1,5 +1,6 @@
 (* HelloWorld contract *)
 
+import ListUtils
 
 (***************************************************)
 (*               Associated library                *)

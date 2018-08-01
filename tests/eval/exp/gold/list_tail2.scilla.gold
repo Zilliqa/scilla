@@ -1,4 +1,4 @@
-(ADTValue Some((PrimType Int64))((ADTValue Nil((PrimType Int64))()))),
+(ADTValue Some((ADT List((PrimType Int64))))((ADTValue Nil((PrimType Int64))()))),
 { [l3 -> (ADTValue Cons((PrimType Int64))((IntLit 64 1)(ADTValue Nil((PrimType Int64))())))],
   [nil -> (ADTValue Nil((PrimType Int64))())],
   [three -> (IntLit 64 3)],

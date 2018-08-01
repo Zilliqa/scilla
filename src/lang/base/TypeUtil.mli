@@ -108,7 +108,7 @@ val elab_constr_type : string -> typ list -> (typ, string) result
 (* For a given instantiated ADT and a construtor name, get type *
    assignemnts. This is the main working horse of type-checking
    pattern-matching. *)    
-val contr_pattern_arg_types : typ -> string -> (typ list, string) result  
+val constr_pattern_arg_types : typ -> string -> (typ list, string) result  
 
 val validate_param_length : string -> int -> int -> (unit, string) result
 
