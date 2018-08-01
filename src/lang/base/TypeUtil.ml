@@ -309,14 +309,18 @@ let literal_type l =
        * else fail @@
        *   (sprintf "Not a primitive map key type: %s." (pp_typ kt))         *)
   (* TODO: Add structural type checking *)
-  | ADTValue (cname, ts, _) ->
-      let%bind (adt, _) = DataTypeDictionary.lookup_constructor cname in
+  | ADTValue (cname, ts, args) ->
+      let%bind (adt, constr) = DataTypeDictionary.lookup_constructor cname in
       let tparams = adt.tparams in
       let tname = adt.tname in
       if not (List.length tparams = List.length ts)
       then fail @@
         sprintf "Wrong number of type parameters for ADT %s (%i) in constructor %s."
           tname (List.length ts) cname
+      else if not (List.length args = constr.arity)
+      then fail @@
+        sprintf "Wrong number of arguments to ADT %s (%i) in constructor %s."
+          tname (List.length args) cname
       else
         pure @@ ADT (tname, ts)
 

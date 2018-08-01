@@ -139,7 +139,7 @@ let add_tests env =
     let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 4 8) in
     let auctiontests = "auction" >:::(build_contract_tests env "auction" succ_code 1 8) in
     let mappairtests = "mappair" >:::(build_contract_tests env "mappair" succ_code 1 5) in
-    let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 6 6) in
+    let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 6 8) in
     let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1) in
 
     let fungibletokentests = "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8) in

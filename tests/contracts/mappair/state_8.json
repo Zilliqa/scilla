@@ -19,8 +19,8 @@
                                 "2",
                                 {
                                     "constructor": "Nil",
-                                    "argtypes": [ "Int64" ],
-                                    "arguments": ["121"]
+                                    "argtypes": [ "Int32" ],
+                                    "arguments": []
                                 }
                             ]
                         }
