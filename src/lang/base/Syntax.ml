@@ -90,6 +90,9 @@ and with_paren t = match t with
 type mtype = typ * typ
 [@@deriving sexp]
 
+let address_length = 40
+let hash_length = 64
+
 type literal =
   | StringLit of string
   (* (bit-width, value) *)
@@ -231,7 +234,7 @@ let pp_cparams ps =
 (* Contract module: libary + contract definiton *)
 type 'rep cmodule =
   { cname : 'rep ident;
-    libs  : 'rep library;     (* lib functions defined in the module *)
+    libs  : ('rep library) option;     (* lib functions defined in the module *)
     elibs : 'rep ident list;  (* list of imports / external libs *)
     contr : 'rep contract }
 [@@deriving sexp]

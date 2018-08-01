@@ -27,8 +27,7 @@ module BuiltInDictionary : sig
 end
 
 (* The first parameter is a string type *)
-val build_int : typ -> string -> literal option
-val validate_int_literal : literal -> bool
+val build_prim_literal : typ -> string -> literal option
 val is_int_type : typ -> bool
 val is_uint_type : typ -> bool
 

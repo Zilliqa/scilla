@@ -1,0 +1,6 @@
+contract Empty
+()
+
+transition dummy()
+
+end

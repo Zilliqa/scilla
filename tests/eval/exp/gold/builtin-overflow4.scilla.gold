@@ -1,2 +1,2 @@
 Failed to parse input file.
-Syntax error in file eval/exp/builtin-overflow4.scilla: line 8, position 29.: Invalid integer literal -2147483649
+Syntax error in file eval/exp/builtin-overflow4.scilla: line 8, position 29.: Invalid Int32 literal -2147483649
