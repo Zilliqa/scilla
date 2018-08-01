@@ -340,8 +340,12 @@ let type_module md elibs =
   let%bind tenv1 = foldM elibs ~init:tenv0
       ~f:(fun acc elib -> type_library acc elib) in
 
-  (* Step 2: Type check internal libraries *)
-  let%bind tenv2 = type_library tenv1 libs in
+  (* Step 2: Type check internal libraries, if defined. *)
+  let%bind tenv2 = 
+    match libs with
+    | Some lib -> type_library tenv1 lib
+    | None -> pure @@ tenv1
+    in
 
   (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
   let params = append_implict_contract_params cparams in
