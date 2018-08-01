@@ -19,9 +19,12 @@ module Tests = TestUtil.DiffBasedTests(
       "fun3.scilla";
       "list-error.scilla";
       "list-error2.scilla";
+      "list-lit.scilla";
+      "list-lit2.scilla";
       "pm-error1.scilla";
       "pm-error2.scilla";
       "map-error.scilla";
+      "map-lit.scilla";
       "nth-error.scilla";
       "folder-error.scilla";
     ]
