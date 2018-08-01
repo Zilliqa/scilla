@@ -18,6 +18,10 @@ open BuiltIns
     
 exception Invalid_json of string
 
+(****************************************************************)
+(*                    Exception wrappers                        *)
+(****************************************************************)
+
 let parse_typ_exn t = 
   (try FrontEndParser.parse_type t
     with _ ->
@@ -47,6 +51,10 @@ let build_prim_lit_exn t v =
     | Some v' -> v'
   in
     exn_wrapper t (build_prim_literal t v) v
+
+(****************************************************************)
+(*                    JSON parsing                              *)
+(****************************************************************)
 
 let rec json_to_adttyps tjs =
   let open Basic.Util in
@@ -150,8 +158,8 @@ and read_adt_json name j tlist_verify =
   let verify_exn name tlist1 adt =
     match adt with
     | ADTValue (_, tlist2, _) ->
-      if tlist1 = tlist2 then ()
-      else 
+      if TypeUtil.type_equiv_list tlist1 tlist2 then ()
+      else
       let expected = pp_typ_list tlist1 in
       let observed = pp_typ_list tlist2 in
       raise (Invalid_json ("Type mismatch in parsing ADT " ^ name ^ 
@@ -221,6 +229,11 @@ let jobj_to_statevar json =
   let t = parse_typ_exn tstring in
   let v = member_exn "value" json in
     (n, json_to_lit t v)
+
+
+(****************************************************************)
+(*                    JSON printing                             *)
+(****************************************************************)
 
 let rec mapvalues_to_json ms = 
   match ms with
@@ -294,6 +307,11 @@ let get_address_literal l =
   match l with
   | Address al -> Some al
   | _ -> None
+
+
+(****************************************************************)
+(*               JSON Utilities Entry Points                    *)
+(****************************************************************)
 
 module ContractState = struct
 

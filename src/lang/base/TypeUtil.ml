@@ -339,6 +339,12 @@ let map_typ k v = MapType (k, v)
 let type_equiv t1 t2 =
   t1 = t2
 
+(* Return True if corresponding elements are `type_equiv`,
+   False otherwise, or if unequal lengths. *)
+let type_equiv_list tlist1 tlist2 =
+  List.length tlist1 = List.length tlist2 &&
+  not (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 -> not (type_equiv t1 t2)))
+
 let assert_type_equiv expected given =
   if type_equiv expected given
   then pure ()
