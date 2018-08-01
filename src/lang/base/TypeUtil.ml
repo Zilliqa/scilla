@@ -309,14 +309,18 @@ let literal_type l =
        * else fail @@
        *   (sprintf "Not a primitive map key type: %s." (pp_typ kt))         *)
   (* TODO: Add structural type checking *)
-  | ADTValue (cname, ts, _) ->
-      let%bind (adt, _) = DataTypeDictionary.lookup_constructor cname in
+  | ADTValue (cname, ts, args) ->
+      let%bind (adt, constr) = DataTypeDictionary.lookup_constructor cname in
       let tparams = adt.tparams in
       let tname = adt.tname in
       if not (List.length tparams = List.length ts)
       then fail @@
         sprintf "Wrong number of type parameters for ADT %s (%i) in constructor %s."
           tname (List.length ts) cname
+      else if not (List.length args = constr.arity)
+      then fail @@
+        sprintf "Wrong number of arguments to ADT %s (%i) in constructor %s."
+          tname (List.length args) cname
       else
         pure @@ ADT (tname, ts)
 
@@ -334,6 +338,12 @@ let map_typ k v = MapType (k, v)
 (* TODO: Generalise for up to alpha renaming of TVars *)
 let type_equiv t1 t2 =
   t1 = t2
+
+(* Return True if corresponding elements are `type_equiv`,
+   False otherwise, or if unequal lengths. *)
+let type_equiv_list tlist1 tlist2 =
+  List.length tlist1 = List.length tlist2 &&
+  not (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 -> not (type_equiv t1 t2)))
 
 let assert_type_equiv expected given =
   if type_equiv expected given

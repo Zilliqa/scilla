@@ -84,6 +84,7 @@ val is_storable_type : typ -> bool
 (****************************************************************)
 
 val type_equiv : typ -> typ -> bool
+val type_equiv_list : typ list -> typ list -> bool
 
 val assert_type_equiv : typ -> typ -> (unit, string) result
 
