@@ -138,7 +138,7 @@ let rec type_expr tenv e = match e with
             let%bind r = TEnv.resolveT tenv (get_id i)
                 ~lopt:(Some (get_loc i)) in
             let rtp = (rr_typ r).tp in
-            if is_sendable_type rtp
+            if is_storable_type rtp
             then pure (rr_typ r)
             else fail @@ sprintf
               "Cannot send values of type %s." (pp_typ rtp)

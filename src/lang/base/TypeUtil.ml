@@ -359,11 +359,11 @@ let rec is_ground_type t = match t with
   | PolyFun _ -> false
   | _ -> true
 
-let rec is_sendable_type t = match t with 
+let rec is_storable_type t = match t with 
   | FunType (a, r) -> false
   | MapType (k, v) -> false
   | TypeVar _ -> false
-  | ADT (_, ts) -> List.for_all ~f:(fun t -> is_sendable_type t) ts
+  | ADT (_, ts) -> List.for_all ~f:(fun t -> is_storable_type t) ts
   | PolyFun _ -> false
   | _ -> true
 
