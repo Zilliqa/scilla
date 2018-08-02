@@ -131,6 +131,7 @@ module Tests = TestUtil.DiffBasedTests(
       "map-lit.scilla";
       "nth-error.scilla";
       "folder-error.scilla";
+      "some.scilla";
     ]
     let use_stdlib = false
   end)
