@@ -1,0 +1,3 @@
+Type checking failed:
+[typecheck/bad/some.scilla:4:1] Type error in the initialiser of `p`:
+Type mismatch: Option (Bool) expected, but Bool provided.

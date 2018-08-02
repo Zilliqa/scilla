@@ -33,7 +33,7 @@ let main =
   let contract_tests = Testcontracts.add_tests env in
   let exp_tests = Testexp.Tests.add_tests env in
   let type_tests_good = Testtypes.Tests.add_tests env in
-  let type_tests_bad = TestTypeFail.Tests.add_tests env in
+  let type_tests_bad = TestTypeFail.all_tests env in
   let checker_tests = Testchecker.Tests.add_tests env in
   let integer256_tests = TestInteger256.integer256_tests in
 
