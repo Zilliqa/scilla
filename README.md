@@ -19,7 +19,7 @@ found in [INSTALL](./INSTALL.md)
 
 To build the project, run `make clean; make` from the root folder.
 
-Once the probject is built you can try the following things:
+Once the project is built you can try the following things:
 
 #### Evaluating a standalone closed expression:
 
