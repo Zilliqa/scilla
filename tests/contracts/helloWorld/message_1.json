@@ -1,12 +1,12 @@
 {
-    "_tag": "addNumToList",
+    "_tag": "setHello",
     "_amount": "0",
     "_sender" : "0x1234567890123456789012345678901234567890",
     "params": [
         {
-          "vname": "num",
-          "type": "Int64",
-          "value": "45"
+          "vname": "msg",
+          "type": "String",
+          "value": "Hello World"
         }
         
    ]
