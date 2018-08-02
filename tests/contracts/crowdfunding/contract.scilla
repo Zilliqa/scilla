@@ -53,6 +53,7 @@ contract Crowdfunding
 (* Mutable fields *)
 field backers : Map Address Uint128 = Emp Address Uint128
 field funded : Bool = False
+field horrible_DS : Map Address (List (Pair Int32 (Pair BNum (Option Hash))))
 
 transition Donate ()
   blk <- & BLOCKNUMBER;

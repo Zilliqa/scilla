@@ -1,8 +1,8 @@
 opam-version: "1.2"
-maintainer: "ilya.sergey@gmail.com"
-authors: ["Ilya Sergey"]
-homepage: "http://scilla-lang.org/"
-bug-reports: "https://gitter.im/Zilliqa/SmartContract"
+maintainer: "ilya@zilliqa.com"
+authors: ["Zilliqa Research Pvt. Ltd."]
+homepage: "https://scilla-lang.org/"
+bug-reports: "https://github.com/Zilliqa/scilla/issues"
 dev-repo: "https://github.com/Zilliqa/scilla.git"
 
 build: [
