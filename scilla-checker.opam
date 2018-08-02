@@ -1,5 +1,5 @@
 opam-version: "1.2"
-maintainer: "ilya.sergey@gmail.com"
+maintainer: "ilya@zilliqa.com"
 authors: ["Ilya Sergey"]
 homepage: "https://scilla-lang.org/"
 bug-reports: "https://gitter.im/Zilliqa/SmartContract"
