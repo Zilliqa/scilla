@@ -4,6 +4,6 @@
  (
   (name testtypefail)
   (wrapped false)
-  (libraries (core oUnit testutil))
+  (libraries (core oUnit testutil scilla-base))
  )
 )

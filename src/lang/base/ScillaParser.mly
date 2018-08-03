@@ -1,24 +1,34 @@
 (*
- * Copyright (c) 2018 - present. 
- * Zilliqa, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *)
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
 
 
 %{
   open Syntax
   open BuiltIns
 
-  let address_length = 40
-  let hash_length = 64
-
   let to_type d = match d with
     | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x
     | _ -> ADT (d, [])
+  
+  let build_prim_literal_exn t v =
+    match BuiltIns.build_prim_literal t v with
+    | Some l -> l
+    | None -> raise (SyntaxError ("Invalid " ^ (pp_typ t) ^ " literal " ^ v))
 %}
 
 (* Identifiers *)    
@@ -165,23 +175,18 @@ simple_exp :
                
 lit :        
 | BLOCK;
-  n = NUMLIT   { BNum (Big_int.string_of_big_int n) }
+  n = NUMLIT   { build_prim_literal_exn PrimTypes.bnum_typ (Big_int.string_of_big_int n) }
 | i = CID;
   n = NUMLIT   {
     let string_of_n = Big_int.string_of_big_int n in
-    let intlit = BuiltIns.build_int (to_type i) string_of_n in
-    match intlit with
-    | Some l ->
-        l
-    | None ->
-        raise (SyntaxError (Core.sprintf "Invalid integer literal %s" string_of_n))
+    build_prim_literal_exn (to_type i) string_of_n
   }
 | h = HEXLIT   { 
   let l = String.length h in
   if l = (address_length + 2) 
-  then Address h 
+  then build_prim_literal_exn PrimTypes.address_typ h
   else if l = (hash_length + 2)
-  then Sha256 h
+  then build_prim_literal_exn PrimTypes.hash_typ h
   else raise (SyntaxError (Core.sprintf "Wrong hex string size (%s): %d." h l))
 }
 | s = STRING   { StringLit s }

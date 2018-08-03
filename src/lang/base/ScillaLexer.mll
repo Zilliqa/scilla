@@ -1,3 +1,25 @@
+(*
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
+
+
+
+
 {
 open Lexing
 open ScillaParser
@@ -20,7 +42,7 @@ let id = ['a'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let cid =   ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let tid =   '\'' ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*                     
 let lcomment = "(*" (_ # ['\r' '\n'])* "*)" newline
-let hex = '0' 'x' ['a'-'f' '0'-'9']+
+let hex = '0' 'x' ['a'-'f' 'A'-'F' '0'-'9']+
 let intty = "Int32" | "Int64" | "Int128" | "Int256" | "Uint32" |
             "Uint64" | "Uint128" | "Uint256"
                                          

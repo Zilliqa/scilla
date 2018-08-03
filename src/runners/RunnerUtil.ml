@@ -1,11 +1,21 @@
 (*
- * Copyright (c) 2018 - present Zilliqa, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *)
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
 
 
 open Printf
@@ -28,7 +38,7 @@ let stdlib_dir () =
     | None -> printf "\n%s\n"
        ("A path to Scilla stdlib not found. Please set " ^ scilla_stdlib_path ^ 
        " environment variable, or pass as the second command-line argument for this script.\n" ^
-       "Example:\n./bin/eval-runner list_sort.scilla ./src/stdlib/\n"); exit 1
+       "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla ./src/stdlib/\n"); exit 1
   else Sys.argv.(2)
 
 (* parse all files in dir, assuming they are scilla library files. *)

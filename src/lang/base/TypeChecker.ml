@@ -1,12 +1,20 @@
 (*
- * Copyright (c) 2018 - present. 
- * Zilliqa, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *)
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
 
 open Syntax
 open Core
@@ -138,7 +146,7 @@ let rec type_expr tenv e = match e with
             let%bind r = TEnv.resolveT tenv (get_id i)
                 ~lopt:(Some (get_loc i)) in
             let rtp = (rr_typ r).tp in
-            if is_sendable_type rtp
+            if is_storable_type rtp
             then pure (rr_typ r)
             else fail @@ sprintf
               "Cannot send values of type %s." (pp_typ rtp)

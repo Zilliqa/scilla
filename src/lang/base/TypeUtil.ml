@@ -1,12 +1,20 @@
 (*
- * Copyright (c) 2018 - present. 
- * Zilliqa, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *)
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
 
 open Core
 open Sexplib.Std
@@ -276,50 +284,6 @@ module PlainTypes : QualifiedTypes = struct
   let mk_qualified_type t = {tp = t; qual = ()}
 end
 
-(****************************************************************)
-(*                     Typing literals                          *)
-(****************************************************************)
-
-let literal_type l =
-  let open PrimTypes in 
-  match l with
-  | IntLit (32, _) -> pure int32_typ
-  | IntLit (64, _) -> pure int64_typ
-  | IntLit (128, _) -> pure int128_typ
-  | IntLit (256, _) -> pure int256_typ
-  | UintLit (32, _) -> pure uint32_typ
-  | UintLit (64, _) -> pure uint64_typ
-  | UintLit (128, _) -> pure uint128_typ
-  | UintLit (256, _) -> pure uint256_typ
-  | IntLit(w, _) ->
-      fail @@ (sprintf "Wrong bit depth for integer: %i." w)
-  | UintLit(w, _) ->
-      fail @@ (sprintf "Wrong bit depth for unsigned integer: %i." w)
-  | StringLit _ -> pure string_typ
-  | BNum _ -> pure bnum_typ
-  | Address _ -> pure address_typ
-  | Sha256 _ -> pure hash_typ
-  | Msg _ -> pure msg_typ
-  (* TODO: Add structural type checking *)
-  | Map ((kt, vt), _) ->
-      pure (MapType (kt, vt))
-      (** TODO: emit constraint on kt for being a primitive type **)
-      (* if PrimTypes.is_prim_type kt
-       * then pure (MapType (kt, vt))
-       * else fail @@
-       *   (sprintf "Not a primitive map key type: %s." (pp_typ kt))         *)
-  (* TODO: Add structural type checking *)
-  | ADTValue (cname, ts, _) ->
-      let%bind (adt, _) = DataTypeDictionary.lookup_constructor cname in
-      let tparams = adt.tparams in
-      let tname = adt.tname in
-      if not (List.length tparams = List.length ts)
-      then fail @@
-        sprintf "Wrong number of type parameters for ADT %s (%i) in constructor %s."
-          tname (List.length ts) cname
-      else
-        pure @@ ADT (tname, ts)
-
 (* Some useful data type constructors *)
 let fun_typ t s = FunType (t, s)
 let tvar i = TypeVar i
@@ -335,6 +299,12 @@ let map_typ k v = MapType (k, v)
 let type_equiv t1 t2 =
   t1 = t2
 
+(* Return True if corresponding elements are `type_equiv`,
+   False otherwise, or if unequal lengths. *)
+let type_equiv_list tlist1 tlist2 =
+  List.length tlist1 = List.length tlist2 &&
+  not (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 -> not (type_equiv t1 t2)))
+
 let assert_type_equiv expected given =
   if type_equiv expected given
   then pure ()
@@ -349,11 +319,11 @@ let rec is_ground_type t = match t with
   | PolyFun _ -> false
   | _ -> true
 
-let rec is_sendable_type t = match t with 
+let rec is_storable_type t = match t with 
   | FunType (a, r) -> false
   | MapType (k, v) -> false
   | TypeVar _ -> false
-  | ADT (_, ts) -> List.for_all ~f:(fun t -> is_sendable_type t) ts
+  | ADT (_, ts) -> List.for_all ~f:(fun t -> is_storable_type t) ts
   | PolyFun _ -> false
   | _ -> true
 
@@ -476,6 +446,69 @@ let assert_all_same_type ts = match ts with
       | None -> pure ()
       | Some t' -> fail @@ sprintf
           "Not all types of the branches %s are equivalent." (pp_typ_list ts)
+
+(****************************************************************)
+(*                     Typing literals                          *)
+(****************************************************************)
+
+let rec literal_type l =
+  let open PrimTypes in 
+  match l with
+  | IntLit (32, _) -> pure int32_typ
+  | IntLit (64, _) -> pure int64_typ
+  | IntLit (128, _) -> pure int128_typ
+  | IntLit (256, _) -> pure int256_typ
+  | UintLit (32, _) -> pure uint32_typ
+  | UintLit (64, _) -> pure uint64_typ
+  | UintLit (128, _) -> pure uint128_typ
+  | UintLit (256, _) -> pure uint256_typ
+  | IntLit(w, _) ->
+      fail @@ (sprintf "Wrong bit depth for integer: %i." w)
+  | UintLit(w, _) ->
+      fail @@ (sprintf "Wrong bit depth for unsigned integer: %i." w)
+  | StringLit _ -> pure string_typ
+  | BNum _ -> pure bnum_typ
+  | Address _ -> pure address_typ
+  | Sha256 _ -> pure hash_typ
+  | Msg _ -> pure msg_typ
+  | Map ((kt, vt), kv) ->
+     if PrimTypes.is_prim_type kt
+     then 
+      (* Verify that all key/vals conform to kt,vt, recursively. *)
+      let%bind valid = foldM ~f:(fun res (k, v) ->
+        if not res then pure @@ res else
+        let%bind kt' = literal_type k in
+        let%bind vt' = literal_type v in
+          pure @@
+          ((type_equiv kt kt') && (type_equiv vt vt'))
+      ) ~init:true kv in
+      if not valid then fail @@ (sprintf "Malformed literal %s" (pp_literal l))
+      (* We have a valid Map literal. *)
+      else pure (MapType (kt, vt))
+     else fail @@
+       (sprintf "Not a primitive map key type: %s." (pp_typ kt))
+  | ADTValue (cname, ts, args) ->
+      let%bind (adt, constr) = DataTypeDictionary.lookup_constructor cname in
+      let tparams = adt.tparams in
+      let tname = adt.tname in
+      if not (List.length tparams = List.length ts)
+      then fail @@
+        sprintf "Wrong number of type parameters for ADT %s (%i) in constructor %s."
+          tname (List.length ts) cname
+      else if not (List.length args = constr.arity)
+      then fail @@
+        sprintf "Wrong number of arguments to ADT %s (%i) in constructor %s."
+          tname (List.length args) cname
+      (* Verify that the types of args match that declared. *)
+      else
+        let res = ADT(tname, ts) in
+        let%bind tmap = constr_pattern_arg_types res cname in
+        let%bind arg_typs = mapM ~f:(fun l -> literal_type l) args in
+        let args_valid = List.for_all2_exn tmap arg_typs 
+          ~f:(fun t1 t2 -> type_equiv t1 t2) in
+        if not args_valid
+        then fail @@ sprintf "Malformed ADT %s. Arguments do not match expected types" (pp_literal l)
+        else pure @@ res
 
 (****************************************************************)
 (*                  Better error reporting                      *)

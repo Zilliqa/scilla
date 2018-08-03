@@ -1,11 +1,23 @@
 (*
- * Copyright (c) 2018 - present Zilliqa, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *)
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
+
+
 
 open Syntax
 open Core
@@ -28,8 +40,6 @@ let print_literal_list ls =
 let builtin_fail name ls =
   fail @@ sprintf "Cannot apply built-in %s to a list of arguments:%s."
     name (print_literal_list ls)
-
-
 
 module UsefulLiterals = struct
   let true_lit = ADTValue ("True", [], [])
@@ -70,7 +80,7 @@ let validate_int_literal i =
   | _ -> false
 
 (* Given an integer type (as string) and the value (as string),
-   build IntLit or UintLit out of it. TODO: Validate. *)
+   build IntLit or UintLit out of it. *)
 let build_int t v =
   let open PrimTypes in 
   let validator_wrapper l = 
@@ -100,6 +110,51 @@ let is_uint_type = function
            x = PrimTypes.uint128_typ ||
            x = PrimTypes.uint256_typ -> true
   | _ -> false
+
+(* Given an address string, build an Address literal,
+   or return None on invalid address. *)
+let build_address v =
+  let v' = String.lowercase v in
+  let s, re, l =
+    v', Str.regexp "0x[0-9a-f]+$", address_length+2 in
+  if Str.string_match re s 0 && String.length s = l
+  then
+    Some (Address v')
+  else
+    None
+
+(* Given a hash string, build a hash literal,
+   or return None on invalid hash. *)
+let build_hash v =
+  let v' = String.lowercase v in
+  let s, re, l =
+    v', Str.regexp "0x[0-9a-f]+$", hash_length+2 in
+  if Str.string_match re s 0 && String.length s = l
+  then
+    Some (Sha256 v')
+  else
+    None
+
+(* Given an integer string, build a BNum literal,
+   or return None on invalid input. *)
+let build_bnum v =
+  let s, re =
+    v, Str.regexp "[0-9]+$" in
+  if Str.string_match re s 0
+  then
+    Some (BNum v)
+  else
+    None
+
+let build_prim_literal t v =
+  let open PrimTypes in
+  match t with
+  | x when x = string_typ -> Some (StringLit v)
+  | x when x = bnum_typ -> build_bnum v
+  | x when x = address_typ -> build_address v
+  | x when x = hash_typ -> build_hash v
+  | x when is_int_type x || is_uint_type x -> build_int t v
+  | _ -> None
 
 (*******************************************************)
 (*******************************************************)
