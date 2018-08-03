@@ -31,7 +31,7 @@ let main =
   let env = { bin_dir = bin_dir; tests_dir = tests_dir; stdlib_dir = stdlib_dir; print_cli = print_cli } in
   (* Add calls to new tests from here *)
   let contract_tests = Testcontracts.add_tests env in
-  let exp_tests_good = TestExps.Tests.add_tests env in
+  let exp_tests_good = TestExps.Tests.add_tests env in 
   let exp_tests_bad = TestExpsFail.Tests.add_tests env in
   let type_tests_good = Testtypes.Tests.add_tests env in
   let type_tests_bad = TestTypeFail.all_tests env in

@@ -16,6 +16,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open OUnit2
+
 let explist = [
   "app_error1.scilla"; "app_error2.scilla"; "builtin4.scilla";
   "builtin_error1.scilla"; "builtin-overflow1.scilla";
@@ -37,3 +39,4 @@ module Tests = TestUtil.DiffBasedTests(
 
   end)
 
+let all_tests env = "eval_exp_fail_tests" >::: [Tests.add_tests env]

@@ -45,7 +45,7 @@ let check_parsing filename =
 let check_typing e elibs =
   let%bind _ = TypeChecker.type_recursion_principles in
   let recs = List.map recursion_principles
-      ~f:(fun ({lname = a}, c) -> (a, c)) in
+      ~f:(fun ({lname = a; _}, c) -> (a, c)) in
   let tenv0 = TEnv.addTs TEnv.mk recs in
   (* Step 1: Type check external libraries *)
   (* TODO: Cache this information unless its version changed! *)
@@ -64,8 +64,7 @@ let () =
     match FrontEndParser.parse_file ScillaParser.exps filename with
     | Some [e] ->
         let std_lib = parse_stdlib (stdlib_dir()) in
-        let e_type = check_typing e std_lib in
-        (match e_type with
+        (match check_typing e std_lib with
          | Ok res ->
              printf "%s\n" (pp_typ res.tp)
          | Error s -> printf "Type checking failed:\n%s\n" s)

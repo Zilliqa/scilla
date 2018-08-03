@@ -44,8 +44,8 @@ let explist = [
 
 module Tests = TestUtil.DiffBasedTests(
   struct
-    let gold_path dir f = [dir; "eval"; "exp"; "gold"; f ^ ".gold" ]
-    let test_path f = ["eval"; "exp"; f]
+    let gold_path dir f = [dir; "eval"; "exp"; "good"; "gold"; f ^ ".gold" ]
+    let test_path f = ["eval"; "exp"; "good"; f]
     let runner = "eval-runner"
     let tests = explist
     let use_stdlib = true
