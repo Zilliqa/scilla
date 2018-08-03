@@ -1,0 +1,1 @@
+Failed to parse json tests/contracts/mappair/state_8.json: Type mismatch in parsing ADT List. Expected: [Int64] vs Observed: [Int32]

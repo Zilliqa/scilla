@@ -1,19 +1,27 @@
 (*
- * Copyright (c) 2018 - present Zilliqa, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *)
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
 
 open Core
 open Printf
-open Sexplib.Std
 open Syntax
 open Result.Let_syntax
 open TypeUtil
-open TypeChecker
 open Recursion
 
 module SimpleTEnv = MakeTEnv(PlainTypes)
@@ -27,7 +35,7 @@ let () =
       let res = (
         let%bind _ = TypeChecker.type_recursion_principles in      
         let recs = List.map recursion_principles
-            ~f:(fun ({lname = a}, c) -> (a, c)) in
+            ~f:(fun ({lname = a; _}, c) -> (a, c)) in
         let tenv = TEnv.addTs TEnv.mk recs in
         TypeChecker.type_expr tenv e 
       ) in

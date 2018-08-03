@@ -1,0 +1,6 @@
+let tt = True in
+let ff = False in
+let zz = Some {Bool} tt in
+let p = Pair {(Option Bool) Bool} tt ff in
+let s = Some {(Pair (Option Bool) Bool)} p in
+s

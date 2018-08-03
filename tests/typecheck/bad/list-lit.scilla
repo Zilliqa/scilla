@@ -1,0 +1,7 @@
+let one = Int64 1 in
+let four = Int32 4 in
+
+let l1 = Nil {Int64} in
+let l2 = Cons {Int64} one l1 in
+let l3 = Cons {Int32} four l2 in
+l3

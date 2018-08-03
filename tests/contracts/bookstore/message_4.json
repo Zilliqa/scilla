@@ -1,0 +1,22 @@
+{
+    "_tag": "addBook",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678901234567890",
+    "params": [
+        {
+            "vname": "book_title",
+            "type": "String",
+            "value": "1984"
+        },
+        {
+            "vname": "author",
+            "type": "String",
+            "value": "George Orwell"
+        },
+        {
+            "vname": "bookID",
+            "type": "Uint32",
+            "value": "1"
+        }
+   ]
+}

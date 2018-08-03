@@ -1,7 +1,0 @@
-let msg1 = 
-  fun (sender : Address) =>
-  { tag : Main ; to : sender ; amount : 0 }
-
-let msg2 = 
-  fun (sender : Address) =>
-  { tag : Main ; to : a0x134234 ; amount : 0 }

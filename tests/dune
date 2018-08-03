@@ -1,0 +1,9 @@
+(executable
+  (name testsuite)
+  (package testsuite)
+  (public_name testsuite)
+  (preprocess (pps ppx_sexp_conv ppx_let ppx_deriving.show))
+  (libraries core oUnit testcontracts testexp
+             testtypes testtypefail
+             testchecker testinteger256)
+)
