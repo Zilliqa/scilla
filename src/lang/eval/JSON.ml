@@ -53,7 +53,6 @@ let literal_type_exn l =
     pp_typ s
 
 let build_prim_lit_exn t v =
-  let open PrimTypes in
   let exn_wrapper t v r = 
     match v with
     | None -> raise (Invalid_json ("Invalid " ^ (pp_typ t) ^ " value " ^ r ^ " in JSON"))
@@ -76,7 +75,6 @@ let rec json_to_adttyps tjs =
   | _ -> []
 
 let rec json_to_adtargs cname tlist ajs =
-  let open Basic.Util in
   let verify_args_exn cname provided expected =
     if provided <> expected then
       let p = Int.to_string provided in
@@ -146,7 +144,7 @@ and read_adt_json name j tlist_verify =
       r
     ) in
   let res = match j with
-  | `Assoc adt ->
+  | `Assoc _ ->
       let constr = member_exn "constructor" j |> to_string in
       let dt' =
       (match DataTypeDictionary.lookup_constructor constr with
@@ -183,7 +181,6 @@ and read_adt_json name j tlist_verify =
 (* Map is a `List of `Assoc jsons, with
  * the first `Assoc specifying the map's from/to types.*)
 and read_map_json kt vt j =
-  let open Basic.Util in
   match j with
   | `List vli ->
      let kvallist = mapvalues_from_json kt vt vli in
@@ -198,7 +195,7 @@ and mapvalues_from_json kt vt l =
       let kjson = member_exn "key" first in
       let keylit = 
         (match kt with
-         | PrimType t ->
+         | PrimType _ ->
             build_prim_lit_exn kt (to_string kjson)
          | _ -> raise (Invalid_json ("Key in Map JSON is not a PrimType"))
          ) in
@@ -210,7 +207,7 @@ and mapvalues_from_json kt vt l =
          | ADT (name, tlist) ->
             let vl = read_adt_json name vjson tlist in
               vl
-         | PrimType t ->
+         | PrimType _ ->
             build_prim_lit_exn vt (to_string vjson)
          | _ -> raise (Invalid_json ("Unknown type in Map value in JSON"))
         ) in
@@ -273,8 +270,8 @@ and adttyps_to_json tlist =
 and literal_to_json lit = 
   match lit with
   | StringLit (x) | BNum (x) | Address (x) | Sha256 (x) -> `String (x)
-  | IntLit (wx, x) | UintLit (wx, x) -> `String (x)
-  | Map ((kt, vt), kvs) ->
+  | IntLit (_, x) | UintLit (_, x) -> `String (x)
+  | Map ((_, _), kvs) ->
       `List (mapvalues_to_json kvs)
   | ADTValue (n, t, v) ->
       let argtl = adttyps_to_json t in
@@ -309,7 +306,7 @@ let get_string_literal l =
 
 let get_uint_literal l =
   match l with
-  | UintLit (wil, il) -> Some il
+  | UintLit (_, il) -> Some il
   | _ -> None
 
 let get_address_literal l =

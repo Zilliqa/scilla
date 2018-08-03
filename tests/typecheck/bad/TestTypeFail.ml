@@ -39,7 +39,7 @@ let make_bad_lit_test l =
   let err_msg l =
     Printf.sprintf "Malformed literal %s did not fail consistency check" (pp_literal l)
   in
-  test_case (fun test_ctxt ->
+  test_case (fun _ ->
     assert_bool (err_msg l) (is_invalid_literal l))
 
 (* k/v types should match declared map type. *)

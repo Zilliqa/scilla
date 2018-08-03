@@ -19,11 +19,9 @@
 
 open Core
 open Printf
-open Sexplib.Std
 open Syntax
 open Result.Let_syntax
 open TypeUtil
-open TypeChecker
 open Recursion
 
 module SimpleTEnv = MakeTEnv(PlainTypes)
@@ -37,7 +35,7 @@ let () =
       let res = (
         let%bind _ = TypeChecker.type_recursion_principles in      
         let recs = List.map recursion_principles
-            ~f:(fun ({lname = a}, c) -> (a, c)) in
+            ~f:(fun ({lname = a; _}, c) -> (a, c)) in
         let tenv = TEnv.addTs TEnv.mk recs in
         TypeChecker.type_expr tenv e 
       ) in

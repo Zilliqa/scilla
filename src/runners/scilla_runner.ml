@@ -17,12 +17,8 @@
 *)
 
 
-open Printf
-open Sexplib.Std
 open Syntax
 open Core
-open Result.Let_syntax
-open MonadUtil
 open EvalUtil
 open Eval
 open DebugMessage
@@ -65,10 +61,10 @@ let check_extract_cstate name res = match res with
 (*   Running the simularion and printing results     *)
 (*****************************************************)
 
-let check_after_step name res bstate m =
+let check_after_step name res =
   match res with
   | Error err ->
-      perr (sprintf "Failed to execute transition:\n%s\n" err);
+      perr (sprintf "Failed to execute transition in %s:\n%s\n" name err);
       perr "Execution halted";
       exit 1
   | Ok (cstate, outs, _) ->
@@ -87,7 +83,7 @@ let input_state_json filename =
     | None -> raise (JSON.Invalid_json (balance_label ^ " field missing"))
   in
   let bal_int = match bal_lit with
-    | UintLit (wx, x) -> Int.of_string x
+    | UintLit (_, x) -> Int.of_string x
     | _ -> raise (JSON.Invalid_json (balance_label ^ " invalid"))
   in
   let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
@@ -192,7 +188,7 @@ let () =
         plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
         let step_result = handle_message ctr cstate bstate m in
         let (cstate', mlist) =
-          check_after_step cli.input step_result bstate m in
+          check_after_step cli.input step_result in
       
         let osj = output_state_json cstate' in
         let omj = output_message_json mlist in

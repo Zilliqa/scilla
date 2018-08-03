@@ -17,14 +17,8 @@
 *)
 
 
-
 open Printf
-open Sexplib.Std
 open Syntax
-open EvalUtil
-open Recursion
-open GlobalConfig
-open Core.Result.Let_syntax
 open RunnerUtil
 
 let () =
@@ -48,7 +42,7 @@ let () =
       let lib_fnames = List.map (fun (name, _) -> name) env in
       let res = Eval.exp_eval e env in
       (match res with
-      | Ok (v, env) ->
+      | Ok _ ->
           printf "%s\n" (Eval.pp_result res lib_fnames)
       | Error _ -> printf "Failed execution:\n%s\n" (Eval.pp_result res lib_fnames))
   | Some _ | None ->

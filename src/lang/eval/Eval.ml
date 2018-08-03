@@ -33,7 +33,7 @@ open TypeUtil
 (***************************************************)    
 
 let reserved_names =
-  List.map ~f:(fun ({lname = x}, _) -> get_id x) Recursion.recursion_principles
+  List.map ~f:(fun ({lname = x; _}, _) -> get_id x) Recursion.recursion_principles
 
 (* Printing result *)
 let pp_result r exclude_names = 
@@ -41,7 +41,7 @@ let pp_result r exclude_names =
   match r with
   | Error s -> s
   | Ok (e, env) ->
-      let filter_prelude = fun (k, v) ->
+      let filter_prelude = fun (k, _) ->
         not (List.mem enames k ~equal:(fun s1 s2 -> s1 = s2))
       in
       sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
@@ -75,7 +75,7 @@ let rec exp_eval e env = match e with
   | Var i ->
       let%bind v = Env.lookup env i in
       pure @@ (v, env)
-  | Let (i, t, lhs, rhs) ->
+  | Let (i, _, lhs, rhs) ->
       let%bind (lval, _) = exp_eval lhs env in
       let env' = Env.bind env (get_id i) lval in
       exp_eval rhs env'
@@ -120,7 +120,7 @@ let rec exp_eval e env = match e with
       pure (fully_applied, env)          
   | Constr (cname, ts, actuals) ->
       let open Datatypes.DataTypeDictionary in 
-      let%bind (adt, constr) = lookup_constructor cname in
+      let%bind (_, constr) = lookup_constructor cname in
       let alen = List.length actuals in
       if (constr.arity <> alen)
       then fail @@ sprintf
@@ -141,7 +141,7 @@ let rec exp_eval e env = match e with
         tryM clauses
           ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
                   (Env.pp_value v) (expr_str e))
-          ~f:(fun (p, e') -> match_with_pattern v p) in
+          ~f:(fun (p, _) -> match_with_pattern v p) in
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env
           ~f:(fun z (i, w) -> Env.bind z (get_id i) w) in
@@ -239,7 +239,7 @@ let rec stmt_eval conf stmts =
             tryM clauses
               ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
                       (Env.pp_value v) (stmt_str s))
-              ~f:(fun (p, e') -> match_with_pattern v p) in 
+              ~f:(fun (p, _) -> match_with_pattern v p) in 
           (* Update the environment for the branch *)
           let conf' = List.fold_left bnds ~init:conf
               ~f:(fun z (i, w) -> Configuration.bind z (get_id i) w) in
@@ -329,7 +329,7 @@ let init_contract clibs elibs cparams' cfields args init_bal  =
   let cparams = append_implict_contract_params cparams' in
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
-  let pnames = List.map cparams ~f:(fun (i, t) -> get_id i) in
+  let pnames = List.map cparams ~f:(fun (i, _) -> get_id i) in
   let valid_args = List.for_all args ~f:(fun a ->
       (* For each argument there is a parameter *)
       let ex = List.exists pnames ~f:(fun p -> p = fst a) in
@@ -378,13 +378,13 @@ let create_cur_state_fields initcstate curcstate =
     
 (* Initialize a module with given arguments and initial balance *)
 let init_module md initargs curargs init_bal bstate elibs =
-  let {cname; libs; contr} = md in
-  let {cname; cparams; cfields; ctrans} = contr in
+  let {libs; contr; _} = md in
+  let {cparams; cfields; _} = contr in
   let%bind initcstate =
     init_contract libs elibs cparams cfields initargs init_bal in
   let%bind curfields = create_cur_state_fields initcstate.fields curargs in
   (* blockchain input provided is only validated and not used here. *)
-  let%bind bstate' = check_blockchain_entries bstate in
+  let%bind _ = check_blockchain_entries bstate in
   let cstate = { initcstate with fields = curfields } in
     pure (contr, cstate)
 
@@ -413,7 +413,6 @@ let get_transition ctr tag =
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
 (* TODO: Check runtime types *)
 let check_message_entries tparams_o entries =
-  let open ContractState in
   let tparams = append_implict_trans_params tparams_o in
   (* There as an entry for each parameter *)
   let valid_entries = List.for_all tparams
@@ -459,7 +458,7 @@ let post_process_msgs cstate outs =
     let balance = sub cstate.balance to_be_transferred in
     pure {cstate with balance}
 
-let rec append_accepted_state msgs accepted =
+let append_accepted_state msgs accepted =
   let f m =
     match m with
     | Msg m' ->

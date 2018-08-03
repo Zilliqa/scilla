@@ -17,7 +17,6 @@
 *)
 
 open Core
-open Big_int
 open Syntax
 
 val subst_type_in_type: string -> typ -> typ -> typ
@@ -86,6 +85,7 @@ val map_typ : typ -> typ -> typ
 (****************************************************************)
 
 val is_storable_type : typ -> bool
+val is_ground_type : typ -> bool
 
 (****************************************************************)
 (*             Utility function for matching types              *)

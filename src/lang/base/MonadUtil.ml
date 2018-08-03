@@ -16,7 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
 open Core
 open Result.Let_syntax
 
@@ -36,7 +35,7 @@ let rec mapM ~f ls = match ls with
   | x :: ls' ->
       (match f x, mapM ~f:f ls' with
        | Ok z, Ok zs -> Ok (z :: zs)
-       | Error z as err, _ -> err
+       | Error _ as err, _ -> err
        | _, (Error _ as err) -> err)
   | [] -> Ok []
 

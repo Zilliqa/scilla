@@ -18,13 +18,9 @@
 
 open Core
 open Sexplib.Std
-open Yojson
-open Big_int
 open Syntax
 open Result.Let_syntax
 open MonadUtil
-open Big_int
-open Stdint
 open Datatypes
 
 (****************************************************************)
@@ -39,7 +35,7 @@ let free_tvars tp =
   | MapType (kt, vt) -> go kt acc |> go vt
   | FunType (at, rt) -> go at acc |> go rt
   | TypeVar n -> add acc n
-  | ADT (s, ts) ->
+  | ADT (_, ts) ->
       List.fold_left ts ~init:acc ~f:(fun z tt -> go tt z)
   | PolyFun (arg, bt) ->
       let acc' = go bt acc in
@@ -104,7 +100,7 @@ let rec subst_type_in_literal tvar tp l = match l with
   | Map ((kt, vt), ls) -> 
       let kts = subst_type_in_type' tvar tp kt in
       let vts = subst_type_in_type' tvar tp vt in
-      let ls' = List.map ls (fun (k, v) ->
+      let ls' = List.map ls ~f:(fun (k, v) ->
         let k' = subst_type_in_literal tvar tp k in
         let v' = subst_type_in_literal tvar tp v in 
         (k', v')) in
@@ -145,7 +141,7 @@ let rec subst_type_in_expr tvar tp e = match e with
       let cs' = List.map cs ~f:(fun (p, b) -> (p, subst_type_in_expr tvar tp b)) in
       MatchExpr(e, cs')
   | TApp (tf, tl) -> 
-      let tl' = List.map tl (fun t -> subst_type_in_type' tvar tp t) in
+      let tl' = List.map tl ~f:(fun t -> subst_type_in_type' tvar tp t) in
       TApp (tf, tl')
   | Fixpoint (f, t, body) ->
       let t' = subst_type_in_type' tvar tp t in
@@ -239,7 +235,7 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       Hashtbl.fold (fun key data z -> (key, data) :: z) env.tenv []
 
     (* Check type for well-formedness in the type environment *)
-    let is_wf_type tenv t = pure ()
+    let is_wf_type _ _ = pure ()
         
     (* TODO: Add support for tvars *)    
     let pp ?f:(f = fun _ -> true) env  =
@@ -320,8 +316,8 @@ let rec is_ground_type t = match t with
   | _ -> true
 
 let rec is_storable_type t = match t with 
-  | FunType (a, r) -> false
-  | MapType (k, v) -> false
+  | FunType _ -> false
+  | MapType _ -> false
   | TypeVar _ -> false
   | ADT (_, ts) -> List.for_all ~f:(fun t -> is_storable_type t) ts
   | PolyFun _ -> false
@@ -377,7 +373,7 @@ let validate_param_length cn plen alen =
 
 (* Avoid variable clashes *)
 let refresh_adt adt taken =
-  let {tparams; tmap} = adt in
+  let {tparams; tmap; _} = adt in
   let tkn = tparams @ taken in
   let subst = List.map tparams ~f:(fun tp ->
       (tp, mk_fresh_var tkn tp)) in
@@ -393,7 +389,7 @@ let refresh_adt adt taken =
 (*  Get elaborated constructor type *)    
 let elab_constr_type cn targs =
   let open Datatypes.DataTypeDictionary in
-  let%bind (adt', ctr) = lookup_constructor cn in
+  let%bind (adt', _) = lookup_constructor cn in
   let seq a b = if a = b then 0 else 1 in
   let taken = List.map targs ~f:free_tvars |>
               List.concat |>
@@ -428,7 +424,7 @@ let extract_targs cn adt atyp = match atyp with
   
 let constr_pattern_arg_types atyp cn =
   let open Datatypes.DataTypeDictionary in
-  let%bind (adt', ctr) = lookup_constructor cn in
+  let%bind (adt', _) = lookup_constructor cn in
   let taken = free_tvars atyp in
   let adt = refresh_adt adt' taken in
 
@@ -444,7 +440,7 @@ let assert_all_same_type ts = match ts with
   | t :: ts' ->
       match List.find ts' ~f:(fun t' -> not (type_equiv t t')) with
       | None -> pure ()
-      | Some t' -> fail @@ sprintf
+      | Some _ -> fail @@ sprintf
           "Not all types of the branches %s are equivalent." (pp_typ_list ts)
 
 (****************************************************************)
@@ -518,20 +514,20 @@ let get_failure_msg e opt = match e with
   | App (f, _) ->
       sprintf "[%s] Type error in application of `%s`:\n"
         (get_loc_str (get_loc f)) (get_id f)
-  | Let (i, t, lhs, rhs) ->
+  | Let (i, _, _, _) ->
       sprintf "[%s] Type error in the initialiser of `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)
-  | MatchExpr (x, clauses) ->
+  | MatchExpr (x, _) ->
       sprintf
       "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
       (get_loc_str (get_loc x)) (get_id x) opt 
-  | TApp (tf, arg_types) ->
+  | TApp (tf, _) ->
       sprintf "[%s] Type error in type application of `%s`:\n"
         (get_loc_str (get_loc tf)) (get_id tf)
   | Builtin (i, _) ->
       sprintf "[%s] Type error in built-in application of `%s`:\n"
         (get_loc_str (get_loc i)) (get_id i)
-  | Fixpoint (f, t, body) ->
+  | Fixpoint (f, _, _) ->
       sprintf "Type error in fixpoint application with an argument `%s`:\n"
         (get_id f)              
   | _ -> ""
@@ -543,13 +539,13 @@ let get_failure_msg_stmt s opt = match s with
   | Store (f, r) ->
       sprintf "[%s] Type error in storing value of `%s` into the field `%s`:\n"
         (get_loc_str (get_loc f)) (get_id r) (get_id f)
-  | Bind (x, e) ->
+  | Bind (x, _) ->
       sprintf "[%s] Type error in the binding to into `%s`:\n"
         (get_loc_str (get_loc x)) (get_id x)
-  | ReadFromBC (x, bf) ->
+  | ReadFromBC (x, _) ->
       sprintf "[%s] Error in reading from blockchain state into `%s`:\n"
         (get_loc_str (get_loc x)) (get_id x)
-  | MatchStmt (x, clauses) ->
+  | MatchStmt (x, _) ->
       sprintf
       "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
       (get_loc_str (get_loc x)) (get_id x) opt 

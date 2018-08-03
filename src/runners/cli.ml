@@ -100,7 +100,7 @@ let parse () =
     ("-tracelevel", Arg.String (fun x -> f_trace_level := x), "Trace level: none|stmt|exp. (default none)");
     ("-libdir", Arg.String (fun x -> d_libs := x::!d_libs), "Path to directory containing libraries");
   ] in 
-  let ignore_anon s = () in
+  let ignore_anon _ = () in
   let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
   let () = process_trace() in
   let () = validate_main () in

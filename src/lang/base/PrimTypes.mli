@@ -17,9 +17,7 @@
 *)
 
 
-open Core
 open Syntax
-open Sexplib.Std
 
 val prim_types : typ list
 val is_prim_type : typ -> bool

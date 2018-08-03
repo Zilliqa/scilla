@@ -19,7 +19,6 @@
 
 %{
   open Syntax
-  open BuiltIns
 
   let to_type d = match d with
     | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x

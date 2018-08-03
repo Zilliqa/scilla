@@ -17,8 +17,6 @@
 *)
 
 
-open Printf
-open Sexplib.Std
 open Syntax
 open Core
 open DebugMessage

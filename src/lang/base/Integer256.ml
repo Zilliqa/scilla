@@ -225,7 +225,7 @@ module Uint256 = struct
 
   let abs a = a
 
-  let neg a = raise (Failure ("Cannot negate Uint256"))
+  let neg _ = raise (Failure ("Cannot negate Uint256"))
 
   let compare a b =
     if Uint128.compare a.high b.high < 0 then -1 else
@@ -291,7 +291,7 @@ module Int256 = struct
     Uint256.shift_right a shift
 
   (* For signed, logical and arithmetic right shifts are different. *)
-  let shift_right_logical a shift =
+  let shift_right_logical _ _ =
     raise (Failure "Int256: shift_right_logical not implemented")
 
   let logand a b =
@@ -301,7 +301,7 @@ module Int256 = struct
     Uint256.logor a b
 
   let logxor a b =
-    Uint256.logxor a a
+    Uint256.logxor a b
 
   let lognot a =
     Uint256.lognot a
