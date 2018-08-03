@@ -1,0 +1,22 @@
+{
+    "_tag": "updateBook",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678901234567890",
+    "params": [
+        {
+            "vname": "book_id",
+            "type": "Uint32",
+            "value": "101"
+        },
+        {
+            "vname": "book_title",
+            "type": "String",
+            "value": "Animal Farm"
+        },
+        {
+            "vname": "author",
+            "type": "String",
+            "value": "George Orwell"
+        }
+   ]
+}

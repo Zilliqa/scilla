@@ -1,0 +1,49 @@
+{
+  "message": {
+    "_tag": "Main",
+    "_amount": "0",
+    "_accepted": "false",
+    "_recipient": "0x1234567890123456789012345678901234567890",
+    "params": [ { "vname": "code", "type": "Uint32", "value": "1" } ]
+  },
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "lastBookID",
+      "type": "Option (Uint32)",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "Uint32" ],
+        "arguments": [ "1" ]
+      }
+    },
+    {
+      "vname": "bookInventory",
+      "type": "Map (Uint32) (Pair (String) (String))",
+      "value": [
+        {
+          "key": "1",
+          "val": {
+            "constructor": "Pair",
+            "argtypes": [ "String", "String" ],
+            "arguments": [ "1984", "George Orwell" ]
+          }
+        }
+      ]
+    },
+    {
+      "vname": "members",
+      "type": "Map (Address) (Pair (String) (Uint32))",
+      "value": [
+        {
+          "key": "0x1234567890123456789012345678901234567892",
+          "val": {
+            "constructor": "Pair",
+            "argtypes": [ "String", "Uint32" ],
+            "arguments": [ "Bob", "2" ]
+          }
+        }
+      ]
+    }
+  ]
+}
