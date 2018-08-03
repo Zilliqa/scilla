@@ -11,8 +11,8 @@ let fconcat =
 
 let fsubstr =
   fun (a : String) =>
-  fun (s : Int) =>
-  fun (e : Int) =>
+  fun (s : Uint32) =>
+  fun (e : Uint32) =>
     builtin substr a s e in
 
 let a = "hello" in

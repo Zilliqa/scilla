@@ -1,5 +1,5 @@
 
-let int_flatten = @list_flatten (List Int128) in
+let int_flatten = @list_flatten Int128 in
 
 let one = Int128 1 in
 let two = Int128 2 in
@@ -18,8 +18,8 @@ let six = Int128 6 in
 let l5 = Cons {Int128} six nil in
 let l6 = Cons {Int128} five l5 in
 
-
-let ll1 = Cons {(List Int128)} l6 nil in
+let list_nil = Nil {(List Int128)} in
+let ll1 = Cons {(List Int128)} l6 list_nil in
 let ll2 = Cons {(List Int128)} l4 ll1 in
 
 int_flatten ll2

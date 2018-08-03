@@ -14,9 +14,9 @@ let list_tail =
   fun (l : List 'A) =>
     match l with
     | Cons h t =>
-      Some {'A} t
+      Some {(List 'A)} t
     | Nil =>
-      None {'A}
+      None {(List 'A)}
     end
 in
 

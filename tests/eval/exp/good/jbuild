@@ -2,7 +2,7 @@
 
 (library
  (
-  (name testexpsfail)
+  (name testexps)
   (wrapped false)
   (libraries (core oUnit testutil))
  )
