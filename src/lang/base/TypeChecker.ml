@@ -23,7 +23,6 @@ open MonadUtil
 open TypeUtil
 open Datatypes
 open BuiltIns
-open Utils
 open Recursion
 open ContractUtil
 

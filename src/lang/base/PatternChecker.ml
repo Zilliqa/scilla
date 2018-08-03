@@ -14,16 +14,14 @@ open Result.Let_syntax
 open MonadUtil
 open TypeUtil
 open Datatypes
-open BuiltIns
 open Utils
-open Array
 open PatternUtil
 
 open Exp_descriptions
 open Decision_Tree
 
 let pm_check t clauses =
-  let reachable = Array.create (List.length clauses) false in
+  let reachable = Array.create ~len:(List.length clauses) false in
   let static_match c_name span dsc =
     match dsc with
     | Pos (dsc_c_name, _) -> if c_name = dsc_c_name then Yes else No
@@ -82,6 +80,6 @@ let pm_check t clauses =
             pure @@ IfEq (t, c_name, s_tree, f_tree)
   in
   let%bind decision_tree = traverse_clauses (Neg []) 0 clauses in
-  match Array.findi reachable ~f:(fun i r -> not r) with
+  match Array.findi reachable ~f:(fun _ r -> not r) with
   | None -> pure @@ decision_tree (* All patterns reachable *)
   | Some (i, _) -> fail @@ sprintf "Unreachable pattern %d" i (* TODO: look up relevant pattern in clauses and report it *)
