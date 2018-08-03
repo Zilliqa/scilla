@@ -149,6 +149,7 @@ let add_tests env =
     let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 4 8) in
     let auctiontests = "auction" >:::(build_contract_tests env "auction" succ_code 1 8) in
     let mappairtests = "mappair" >:::(build_contract_tests env "mappair" succ_code 1 5) in
+    let bookstoretests = "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10) in
     let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 6 8) in
     let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1) in
 
@@ -156,4 +157,5 @@ let add_tests env =
     let misc_tests = "misc_tests" >::: build_misc_tests env in
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f;
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;
-                             auctiontests;emptytests]
+                             auctiontests;emptytests;bookstoretests]
+
