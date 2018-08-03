@@ -1,0 +1,12 @@
+(library
+ (name scilla_eval)
+  (public_name scilla-eval)
+  (wrapped false)
+  (libraries core
+              angstrom stdint
+              ppx_sexp_conv ppx_deriving batteries
+              ppx_let yojson cryptokit scilla-base)
+  (preprocess (pps ppx_sexp_conv
+                    ppx_let
+                    ppx_deriving.show))
+  (synopsis "Scilla workbench implementation."))

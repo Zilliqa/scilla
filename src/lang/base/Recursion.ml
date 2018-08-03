@@ -18,9 +18,6 @@
 
 open Syntax
 open Core
-open Result.Let_syntax
-open MonadUtil
-open Big_int
 open TypeUtil
 open FrontEndParser
 

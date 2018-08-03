@@ -142,25 +142,25 @@ open Integer256
 open Stdint
 
 (* basic tests *)
-let t1_uint = test_case (fun test_ctxt ->
+let t1_uint = test_case (fun _ ->
   let b = (Uint256.to_string Uint256.max_int) = uint256_max_str in
   assert_bool "Uint256.max_int invalid" b)
 
-let t2_uint = test_case (fun test_ctxt ->
+let t2_uint = test_case (fun _ ->
   let c = Uint256.of_string (Uint256.to_string Uint256.max_int) in
   let b = (compare Uint256.max_int c) = 0 in
   assert_bool "Uint256 string conversion fail" b)
 
-let t1_int = test_case (fun test_ctxt ->
+let t1_int = test_case (fun _ ->
   let b = (Int256.to_string Int256.max_int) = int256_max_str in
   assert_bool "Int256.max_int invalid" b)
 
-let t2_int = test_case (fun test_ctxt ->
+let t2_int = test_case (fun _ ->
   let c = Int256.of_string (Int256.to_string Int256.max_int) in
   let b = (compare Int256.max_int c) = 0 in
   assert_bool "Int256 string conversion fail" b)
 
-let t3_int = test_case (fun test_ctxt ->
+let t3_int = test_case (fun _ ->
   let c = Int256.of_string (Int256.to_string Int256.min_int) in
   let b = (compare Int256.min_int c) = 0 in
   assert_bool "Int256 string conversion fail" b)
@@ -233,7 +233,7 @@ let binary_inputs_int =
 
 module IntTester (IR1 : IntRep) (IR2 : IntRep) = struct
 (* Create a test for binary op b/w two numbers represented as strings *)
-let binary_test_create a b ops = test_case (fun test_ctxt ->
+let binary_test_create a b ops = test_case (fun _ ->
   let aui = IR1.of_string a in
   let bui = IR1.of_string b in
   let auiemu = IR2.of_string a in
@@ -272,7 +272,7 @@ let binary_test_create a b ops = test_case (fun test_ctxt ->
     assert_bool fail_str res
   )
 
-let rec binary_tests inputs = List.fold_left (fun tl (lhs, rhs) ->
+let binary_tests inputs = List.fold_left (fun tl (lhs, rhs) ->
   (* all operations for all inputs *)
   let add = binary_test_create lhs rhs "add" in
   let sub = binary_test_create lhs rhs "sub" in

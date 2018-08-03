@@ -8,7 +8,7 @@ default: all
 # multiple subcommands and uses the library.
 # The library can be loaded in utop for interactive testing.
 all:
-	jbuilder build @install
+	dune build @install
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Launch utop such that it finds the libraroes.
@@ -21,8 +21,8 @@ test: all
 
 # Clean up
 clean:
-# Remove files produced by jbuilder.
-	jbuilder clean
+# Remove files produced by dune.
+	dune clean
 # Remove remaining files/folders ignored by git as defined in .gitignore (-X).
 	git clean -dfXq
 
@@ -44,4 +44,4 @@ zilliqa-docker:
 opamdep:
 	opam init -y
 	opam switch -y 4.06.0
-	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit jbuilder stdint
+	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint

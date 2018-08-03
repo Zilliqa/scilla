@@ -46,10 +46,11 @@ module Env = struct
     | ValLit l -> sexp_of_literal l |> Sexplib.Sexp.to_string
     | ValFix _ -> "<fixpoint>"
     | ValTypeClosure _ -> "<type_closure>"
-    | ValClosure (f, t, e, env) -> "<closure>"
-        (* (sexp_of_expr sexp_of_loc (Fun (f, t, e)) |> Sexplib.Sexp.to_string)
+    | ValClosure _ -> "<closure>"
+    (*| ValClosure (f, t, e, env) -> "<closure>"
+         (sexp_of_expr sexp_of_loc (Fun (f, t, e)) |> Sexplib.Sexp.to_string)
          * ^ ", " ^ (pp env) *)
-  and pp ?f:(f = fun (v : (string * 'rep value)) -> true) e =
+  and pp ?f:(f = fun (_ : (string * 'rep value)) -> true) e =
     (* FIXME: Do not print folds *)
     let e_filtered = List.filter e ~f:f in
     let ps = List.map e_filtered
@@ -124,7 +125,7 @@ module Configuration = struct
     let pp_in_funds = Uint128.to_string conf.incoming_funds in
     let pp_emitted = pp_literal_list conf.emitted in
     let pp_events = String.concat ~sep:", " @@
-        List.map conf.events (fun (e, b) -> sprintf "<%s, %s>" e b)
+        List.map conf.events ~f:(fun (e, b) -> sprintf "<%s, %s>" e b)
     in sprintf "Confuration\nEnv =\n%s\nFields =\n%s\nBalance =%s\nAccepted=%s\n\\
     Blockchain conf =\n%s\nIncoming funds = %s\nEmitted Messages =\n%s\nEmitted events =\n%s\n"
       pp_env pp_fields pp_balance pp_accepted pp_bc_conf pp_in_funds pp_emitted pp_events
@@ -193,7 +194,7 @@ module Configuration = struct
           let%bind _ = validate_msg_payload pl in
           validate_messages tl
       | [] -> pure true
-      | m :: tl -> fail @@ sprintf "This is not a message:\n%s" (pp_literal m)
+      | m :: _ -> fail @@ sprintf "This is not a message:\n%s" (pp_literal m)
 
   (* Convert Scilla list to OCaml list *)
   let get_list_literal v =

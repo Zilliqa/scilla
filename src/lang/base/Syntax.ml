@@ -19,10 +19,6 @@
 
 open Core
 open Sexplib.Std
-open Yojson
-open Big_int
-open Stdint
-open Integer256
 
 exception SyntaxError of string
 

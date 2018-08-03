@@ -34,6 +34,8 @@ module Uint256 : sig
   val shift_left : t -> int -> t
   val shift_right : t -> int -> t
   val shift_right_logical : t -> int -> t
+  val setbit : t -> int -> t
+  val clearbit : t -> int -> t
   val logand : t -> t -> t
   val logor : t -> t -> t
   val logxor : t -> t -> t
@@ -63,6 +65,8 @@ module Int256 : sig
   val shift_left : t -> int -> t
   val shift_right : t -> int -> t
   val shift_right_logical : t -> int -> t
+  val setbit : t -> int -> t
+  val clearbit : t -> int -> t
   val logand : t -> t -> t
   val logor : t -> t -> t
   val logxor : t -> t -> t

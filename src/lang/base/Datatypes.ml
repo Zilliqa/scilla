@@ -19,7 +19,6 @@
 open Syntax
 open Core
 open MonadUtil
-open Result.Let_syntax
 
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)
@@ -105,7 +104,6 @@ module DataTypeDictionary = struct
     ]
   }
 
-  type t = adt list  
   let dict = [t_bool; t_nat; t_option; t_list; t_product]
 
   (*  Get ADT by name *)

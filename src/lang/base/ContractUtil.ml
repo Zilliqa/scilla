@@ -20,9 +20,7 @@
 
 
 open Core
-open Big_int
 open Syntax
-open Result.Let_syntax
 open MonadUtil
 open Stdint
 
@@ -40,7 +38,7 @@ module MessagePayload = struct
   let accepted_label = "_accepted"
 
   let get_value_for_entry lab f es = 
-    match List.find es ~f:(fun (l, p) -> l = lab) with
+    match List.find es ~f:(fun (l, _) -> l = lab) with
     | None -> fail @@ sprintf "No field \"%s\" in message [%s]."
           lab (pp_literal_map es)
     | Some (_, p) ->

@@ -87,7 +87,7 @@ let build_contract_init_test env name =
       (if (env.print_cli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));
       let scillabin = env.bin_dir test_ctxt ^ sep ^ "scilla-runner" in
         (* Ensure that the executable exists with 0 *)
-        (assert_command test_ctxt scillabin args;
+        (assert_command ~ctxt:test_ctxt scillabin args;
           let goldoutput_file = dir ^ "init_output.json" in
           let g = load_file goldoutput_file in
           let o = load_file output_file in

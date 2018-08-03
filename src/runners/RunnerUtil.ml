@@ -19,13 +19,9 @@
 
 
 open Printf
-open Sexplib.Std
 open Syntax
-open EvalUtil
-open Recursion
 open GlobalConfig
 open DebugMessage
-open Core.Result.Let_syntax
 
 (* A path to standard library. This is not for the main "scilla-runner" as that
    gets the path in a different way. This is only for the auxiliary runners which

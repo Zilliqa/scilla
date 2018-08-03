@@ -19,10 +19,6 @@
 
 open Core
 open Syntax
-open Sexplib.Std
-open Yojson
-open Big_int
-open Stdint
 
 let int32_str = "Int32"
 let int64_str = "Int64"

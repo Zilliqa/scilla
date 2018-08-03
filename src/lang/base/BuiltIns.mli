@@ -18,8 +18,6 @@
 
 open Syntax
 open Core
-open Result.Let_syntax
-open MonadUtil
 
 module BuiltInDictionary : sig
   type built_in_executor =

@@ -21,7 +21,6 @@
 
 open Syntax
 open Core
-open Stdint
 open Result.Let_syntax
 open MonadUtil
 open Big_int
@@ -187,7 +186,7 @@ module String = struct
     tfun_typ "'A" @@ tfun_typ "'B" @@ tfun_typ "'C" @@
     (fun_typ (tvar "'A") @@ fun_typ (tvar "'B") @@ fun_typ (tvar "'C") string_typ)
   (* Elaborator to run with arbitrary uints *)
-  let substr_elab t ts = match ts with
+  let substr_elab _ ts = match ts with
     | [s; u1; u2]
       when s = string_typ &&
            is_uint_type u1 &&
@@ -197,7 +196,7 @@ module String = struct
              
   let substr ls _ = match ls with
   | [StringLit x; UintLit (_,s); UintLit (_,e)] ->
-      pure @@ StringLit (Core.String.sub x (int_of_string s) (int_of_string e))
+      pure @@ StringLit (Core.String.sub x ~pos:(int_of_string s) ~len:(int_of_string e))
   | _ -> builtin_fail "String.substr" ls
 end
 
@@ -213,7 +212,6 @@ module type IntRep = sig
   val sub: t -> t -> t
   val mul: t -> t -> t
   val div: t -> t -> t
-  val abs: t -> t
   val zero: t
   val min_int: t
 end
@@ -325,8 +323,6 @@ module Uint32Wrapper = StdUintWrapper(Uint32)
 module Uint64Wrapper = StdUintWrapper(Uint64)
 module Uint128Wrapper = StdUintWrapper(Uint128)
 module Uint256Wrapper = StdUintWrapper(Uint256)
-
-type int_type = IntT | UintT
 
 (*******************************************************)
 (*******************************************************)
@@ -450,7 +446,7 @@ module Int = struct
     | _ -> fail "Failed to elaborate"
   
   let to_int_helper ls w = match ls with
-    | [UintLit (wx, x)] | [IntLit(wx, x)] ->
+    | [UintLit (_, x)] | [IntLit(_, x)] ->
         let lit = IntLit (w, x) in
         let%bind ityp = mk_int_type w in
         if validate_int_literal lit
@@ -574,7 +570,7 @@ module Uint = struct
     | _ -> fail "Failed to elaborate"
 
   let to_uint_helper ls w = match ls with
-    | [UintLit (wx, x)] | [IntLit(wx, x)] ->
+    | [UintLit (_, x)] | [IntLit(_, x)] ->
         let lit = UintLit (w, x) in
         let%bind ityp = mk_uint_type w in
         if validate_int_literal lit
@@ -649,7 +645,7 @@ module BNum = struct
     | _ -> fail "Failed to elaborate"
 
   let badd ls _ = match ls with
-    | [BNum x; UintLit (wy, y)] ->
+    | [BNum x; UintLit (_, y)] ->
         let i1 = big_int_of_string x in
         let i2 = big_int_of_string y in
         if ge_big_int i2 (big_int_of_int 0)
@@ -686,7 +682,7 @@ module Hashing = struct
   open Datatypes.DataTypeDictionary
 
 
-  let hex s = transform_string (Hexa.decode()) s
+  (* let hex s = transform_string (Hexa.decode()) s *)
   let tohex s = transform_string (Hexa.encode()) s
   let hash s = hash_string (Hash.sha2 256) s
 
@@ -700,7 +696,7 @@ module Hashing = struct
   let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") hash_typ
   let hash_arity = 1
   let hash_elab sc ts = match ts with
-    | [u]  -> elab_tfun_with_args sc ts
+    | [_]  -> elab_tfun_with_args sc ts
     | _ -> fail "Failed to elaborate"
   let sha256hash ls _ = match ls with
     | [l] ->
@@ -750,7 +746,7 @@ module Maps = struct
     | _ -> fail "Failed to elaborate"
   let contains ls _ = match ls with
     | [Map (_, entries); key] ->
-        let res = List.exists entries ~f:(fun (k, v) -> k = key) in
+        let res = List.exists entries ~f:(fun (k, _) -> k = key) in
         pure @@ to_Bool res
     | _ -> builtin_fail "Map.contains" ls
 
@@ -768,7 +764,7 @@ module Maps = struct
   let put ls _ = match ls with
     | [Map (tm, entries); key; value] ->
         let filtered =
-          List.filter entries ~f:(fun (k, v) -> k <> key) in
+          List.filter entries ~f:(fun (k, _) -> k <> key) in
         pure @@ Map (tm, ((key, value) :: filtered)) 
     | _ -> builtin_fail "Map.put" ls
 
@@ -785,8 +781,8 @@ module Maps = struct
     | _ -> fail "Failed to elaborate"
   (* Notice that get passes return type *)
   let get ls rt = match ls, rt with
-    | [Map (tm, entries); key], ADT ("Option", [targ]) ->
-        let res = List.find entries ~f:(fun (k, v) -> k = key) in
+    | [Map (_, entries); key], ADT ("Option", [targ]) ->
+        let res = List.find entries ~f:(fun (k, _) -> k = key) in
         (match res with
          | None -> pure @@ none_lit targ
          | Some (_, v) -> some_lit v)
@@ -803,7 +799,7 @@ module Maps = struct
     | _ -> fail "Failed to elaborate" 
   let remove ls _ = match ls with
     | [Map (tm, entries); key] ->
-        let res = List.filter entries ~f:(fun (k, v) -> k <> key) in
+        let res = List.filter entries ~f:(fun (k, _) -> k <> key) in
         pure @@ Map (tm, res)
     | _ -> builtin_fail "Map.remove" ls
 
@@ -816,7 +812,7 @@ module Maps = struct
   let to_list_elab sc ts = match ts with
     | [MapType (kt, vt)]  -> elab_tfun_with_args sc [kt; vt]
     | _ -> fail "Failed to elaborate" 
-  let to_list ls rt = match ls with
+  let to_list ls _ = match ls with
   | [Map ((kt, vt), entries)] ->
       (* The type of the output list will be "Pair (kt) (vt)" *)
       let otyp = pair_typ kt vt in
