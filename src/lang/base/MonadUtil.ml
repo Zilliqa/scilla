@@ -1,13 +1,21 @@
 (*
- * Copyright (c) 2018 - present Zilliqa, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *)
+  This file is part of scilla.
 
-open Syntax
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
 open Core
 open Result.Let_syntax
 
@@ -27,7 +35,7 @@ let rec mapM ~f ls = match ls with
   | x :: ls' ->
       (match f x, mapM ~f:f ls' with
        | Ok z, Ok zs -> Ok (z :: zs)
-       | Error z as err, _ -> err
+       | Error _ as err, _ -> err
        | _, (Error _ as err) -> err)
   | [] -> Ok []
 

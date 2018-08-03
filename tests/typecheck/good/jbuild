@@ -1,9 +1,0 @@
-(jbuild_version 1)
-
-(library
- (
-  (name testtypes)
-  (wrapped false)
-  (libraries (core oUnit testutil))
- )
-)

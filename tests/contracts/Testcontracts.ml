@@ -1,11 +1,21 @@
 (*
- * Copyright (c) 2018 - present Zilliqa, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *)
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
 
 open OUnit2
 open TestUtil
@@ -77,7 +87,7 @@ let build_contract_init_test env name =
       (if (env.print_cli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));
       let scillabin = env.bin_dir test_ctxt ^ sep ^ "scilla-runner" in
         (* Ensure that the executable exists with 0 *)
-        (assert_command test_ctxt scillabin args;
+        (assert_command ~ctxt:test_ctxt scillabin args;
           let goldoutput_file = dir ^ "init_output.json" in
           let g = load_file goldoutput_file in
           let o = load_file output_file in
@@ -139,10 +149,13 @@ let add_tests env =
     let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 4 8) in
     let auctiontests = "auction" >:::(build_contract_tests env "auction" succ_code 1 8) in
     let mappairtests = "mappair" >:::(build_contract_tests env "mappair" succ_code 1 5) in
+    let bookstoretests = "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10) in
+    let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 6 8) in
     let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1) in
 
     let fungibletokentests = "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8) in
     let misc_tests = "misc_tests" >::: build_misc_tests env in
-      "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests;
+      "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f;
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;
-                             auctiontests;emptytests]
+                             auctiontests;emptytests;bookstoretests]
+

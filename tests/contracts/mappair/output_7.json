@@ -1,0 +1,1 @@
+Failed to parse json tests/contracts/mappair/state_7.json: Malformed ADT constructor Nil: expected 0 args, but provided 1.

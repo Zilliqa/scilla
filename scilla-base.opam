@@ -1,14 +1,14 @@
 opam-version: "1.2"
 maintainer: "ilya@zilliqa.com"
-authors: ["Zilliqa Inc."]
-homepage: "https://www.zilliqa.com/scilla"
-bug-reports: "https://www.zilliqa.com/scilla/issues"
+authors: ["Zilliqa Research Pvt. Ltd."]
+homepage: "https://scilla-lang.org/"
+bug-reports: "https://github.com/Zilliqa/scilla/issues"
 dev-repo: "https://github.com/Zilliqa/scilla.git"
 
 build: [
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 
 depends: [
-  "jbuilder" {build & >= "1.0+beta14"}
+  "dune" {build & >= "1.0+beta14"}
 ]

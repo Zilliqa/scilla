@@ -1,0 +1,3 @@
+Type checking failed:
+[typecheck/bad/list-lit2.scilla:6:1] Type error in the initialiser of `l3`:
+Type mismatch: Int64 expected, but Int32 provided.

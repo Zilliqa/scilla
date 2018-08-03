@@ -1,0 +1,9 @@
+let one = Uint32 1 in
+let two = Uint32 2 in
+let three = Uint32 3 in
+let four = Uint64 4 in
+
+let m1 = Emp Uint32 Uint32 in
+let m2 = builtin put m1 one two in
+let m2 = builtin put m1 two four in
+m2

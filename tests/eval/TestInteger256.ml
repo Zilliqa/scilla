@@ -1,3 +1,24 @@
+(*
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
+
+
+
 
 let uint256_max_str = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
 let int256_max_str =  "57896044618658097711785492504343953926634992332820282019728792003956564819967"
@@ -121,25 +142,25 @@ open Integer256
 open Stdint
 
 (* basic tests *)
-let t1_uint = test_case (fun test_ctxt ->
+let t1_uint = test_case (fun _ ->
   let b = (Uint256.to_string Uint256.max_int) = uint256_max_str in
   assert_bool "Uint256.max_int invalid" b)
 
-let t2_uint = test_case (fun test_ctxt ->
+let t2_uint = test_case (fun _ ->
   let c = Uint256.of_string (Uint256.to_string Uint256.max_int) in
   let b = (compare Uint256.max_int c) = 0 in
   assert_bool "Uint256 string conversion fail" b)
 
-let t1_int = test_case (fun test_ctxt ->
+let t1_int = test_case (fun _ ->
   let b = (Int256.to_string Int256.max_int) = int256_max_str in
   assert_bool "Int256.max_int invalid" b)
 
-let t2_int = test_case (fun test_ctxt ->
+let t2_int = test_case (fun _ ->
   let c = Int256.of_string (Int256.to_string Int256.max_int) in
   let b = (compare Int256.max_int c) = 0 in
   assert_bool "Int256 string conversion fail" b)
 
-let t3_int = test_case (fun test_ctxt ->
+let t3_int = test_case (fun _ ->
   let c = Int256.of_string (Int256.to_string Int256.min_int) in
   let b = (compare Int256.min_int c) = 0 in
   assert_bool "Int256 string conversion fail" b)
@@ -212,7 +233,7 @@ let binary_inputs_int =
 
 module IntTester (IR1 : IntRep) (IR2 : IntRep) = struct
 (* Create a test for binary op b/w two numbers represented as strings *)
-let binary_test_create a b ops = test_case (fun test_ctxt ->
+let binary_test_create a b ops = test_case (fun _ ->
   let aui = IR1.of_string a in
   let bui = IR1.of_string b in
   let auiemu = IR2.of_string a in
@@ -251,7 +272,7 @@ let binary_test_create a b ops = test_case (fun test_ctxt ->
     assert_bool fail_str res
   )
 
-let rec binary_tests inputs = List.fold_left (fun tl (lhs, rhs) ->
+let binary_tests inputs = List.fold_left (fun tl (lhs, rhs) ->
   (* all operations for all inputs *)
   let add = binary_test_create lhs rhs "add" in
   let sub = binary_test_create lhs rhs "sub" in
