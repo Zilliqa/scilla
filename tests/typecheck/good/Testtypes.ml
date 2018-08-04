@@ -38,5 +38,5 @@ module Tests = TestUtil.DiffBasedTests(
       "subst.scilla";
       "zip.scilla";
     ]
-    let use_stdlib = false
+    let use_stdlib = true
   end)
