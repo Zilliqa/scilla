@@ -55,7 +55,9 @@ let t1 =
 let t2 =
   (* declared type = (Map(Int32, Int32), Int32) *)
   let mt = (map_typ int32_typ int32_typ, int32_typ) in
-  let l = Map (mt, []) in
+  let mt' = (int32_typ, int32_typ) in
+  let l' = Map (mt', [(IntLit(32, "1"), IntLit(32, "2"))]) in
+  let l = Map (mt, [(l', IntLit(32, "3"))]) in
     make_bad_lit_test l
 
 (* Bool ADT with some arg. *)
