@@ -1,2 +1,2 @@
 Failed execution:
-[eval/exp/builtin4.scilla:6:2] Cannot find built-in with name "add" and argument types [Int64; Int32].
+[eval/exp/bad/builtin4.scilla:7:2] Cannot find built-in with name "add" and argument types [Int64; Int32].
