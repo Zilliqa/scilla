@@ -481,7 +481,11 @@ let rec literal_type l =
       if not valid then fail @@ (sprintf "Malformed literal %s" (pp_literal l))
       (* We have a valid Map literal. *)
       else pure (MapType (kt, vt))
-     else fail @@
+     else if kv = [] && (match kt with | TypeVar _ -> true | _ -> false) then
+      (* we make an exception for Emp as it may be parameterized. *)
+      pure (MapType (kt, vt))
+     else
+      fail @@
        (sprintf "Not a primitive map key type: %s." (pp_typ kt))
   | ADTValue (cname, ts, args) ->
       let%bind (adt, constr) = DataTypeDictionary.lookup_constructor cname in
