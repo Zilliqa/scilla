@@ -71,7 +71,7 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o))
           ~printer:(fun s -> s) gold_output output
       in
-      let libdir = env.stdlib_dir test_ctxt in
+      let libdir = FilePath.make_relative dir (env.stdlib_dir test_ctxt) in
       let args = if use_stdlib then [input_file;libdir] else [input_file] in
       (if (env.print_cli test_ctxt) then
         if use_stdlib then

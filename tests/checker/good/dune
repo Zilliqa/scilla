@@ -1,0 +1,5 @@
+(library
+  (name testcheckersuccess)
+  (wrapped false)
+  (libraries core oUnit testutil)
+)

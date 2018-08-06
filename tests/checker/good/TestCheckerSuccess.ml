@@ -21,8 +21,8 @@
 
 module Tests = TestUtil.DiffBasedTests(
   struct
-    let gold_path dir f = [dir; "checker"; "gold"; f ^ ".gold" ]
-    let test_path f = ["checker"; f]
+    let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
+    let test_path f = ["checker"; "good"; f]
     let runner = "scilla-checker"
     let tests = [
       "crowdfunding.scilla"; "zil-game.scilla"; "fungible-token.scilla"; "auction.scilla";
