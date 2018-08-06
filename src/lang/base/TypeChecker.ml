@@ -336,7 +336,7 @@ let type_transition env0 tr =
 let type_module md elibs =
   let {libs; contr; _} = md in
   let {cname; cparams; cfields; ctrans} = contr in
-  let msg = sprintf "Type error in contract %s:\n" (get_id cname) in
+  let msg = sprintf "Type error(s) in contract %s:\n" (get_id cname) in
   wrap_with_info msg @@
   
   (* Step 0: Type check recursion principles *)
@@ -353,7 +353,7 @@ let type_module md elibs =
       ~f:(fun (acc, emsgs) elib -> 
       let r = type_library acc elib in
       let tenv, emsg = match r with
-      | Error msg -> (acc, emsgs ^ "\n" ^ msg)
+      | Error msg -> (acc, emsgs ^ "\n\n" ^ msg)
       | Ok t -> (t, emsgs) in
       (tenv, emsg)
     ) in
@@ -365,7 +365,7 @@ let type_module md elibs =
   (* Step 4: Type-check fields and add balance *)
   let fenv0, femsgs0 = 
     match type_fields tenv3 cfields with
-    | Error msg -> (tenv3, emsgs ^ "\n" ^ msg)
+    | Error msg -> (tenv3, emsgs ^ "\n\n" ^ msg)
     | Ok t -> (t, emsgs)
   in
   let (bn, bt) = balance_field in
@@ -378,7 +378,7 @@ let type_module md elibs =
   let emsgs' = List.fold_left ~init:femsgs0 ctrans 
   ~f:(fun emsgs tr -> 
     match type_transition env tr with
-    | Error msg -> emsgs ^ "\n" ^ msg
+    | Error msg -> emsgs ^ "\n\n" ^ msg
     | Ok _ -> emsgs
    ) in
 
