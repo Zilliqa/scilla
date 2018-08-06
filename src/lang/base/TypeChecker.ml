@@ -343,23 +343,31 @@ let type_module md elibs =
   let%bind tenv0 = typed_rec_libs in
 
   (* Step 1: Type check external libraries *)
+  (* Step 2: Type check contract library, if defined. *)
+  let all_libs = match libs with
+  | Some lib -> List.append elibs (lib::[])
+  | None -> elibs
+  in
   (* TODO: Cache this information unless its version changed! *)
-  let%bind tenv1 = foldM elibs ~init:tenv0
-      ~f:(fun acc elib -> type_library acc elib) in
-
-  (* Step 2: Type check internal libraries, if defined. *)
-  let%bind tenv2 = 
-    match libs with
-    | Some lib -> type_library tenv1 lib
-    | None -> pure @@ tenv1
-    in
+  let (tenv, emsgs) = List.fold_left all_libs ~init:(tenv0, "")
+      ~f:(fun (acc, emsgs) elib -> 
+      let r = type_library acc elib in
+      let tenv, emsg = match r with
+      | Error msg -> (acc, emsgs ^ "\n" ^ msg)
+      | Ok t -> (t, emsgs) in
+      (tenv, emsg)
+    ) in
 
   (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
   let params = append_implict_contract_params cparams in
-  let tenv3 = TEnv.addTs tenv2 params in
+  let tenv3 = TEnv.addTs tenv params in
 
   (* Step 4: Type-check fields and add balance *)
-  let%bind fenv0 = type_fields tenv3 cfields in
+  let fenv0, femsgs0 = 
+    match type_fields tenv3 cfields with
+    | Error msg -> (tenv3, emsgs ^ "\n" ^ msg)
+    | Ok t -> (t, emsgs)
+  in
   let (bn, bt) = balance_field in
   let fenv = TEnv.addT fenv0 bn bt in
 
@@ -367,11 +375,15 @@ let type_module md elibs =
   let env = {pure= tenv3; fields= fenv; bc= bc_type_env} in
 
   (* Step 6: Type-checking all transitions in batch *)
-  let%bind _ = mapM ctrans ~f:(fun tr -> type_transition env tr) in
+  let emsgs' = List.fold_left ~init:femsgs0 ctrans 
+  ~f:(fun emsgs tr -> 
+    match type_transition env tr with
+    | Error msg -> emsgs ^ "\n" ^ msg
+    | Ok _ -> emsgs
+   ) in
 
-  (* TODO: Improve the type checker, so it would report more than one
-     type error. E.g., check independent libraries "in parallel".  *)
-
-  (* Return pure environment *)  
-  pure env
-
+  if emsgs' = ""
+    (* Return pure environment *)  
+    then pure env
+    (* Return error messages *)
+    else fail @@ emsgs'

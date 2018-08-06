@@ -50,7 +50,7 @@ transition testMapPair ()
   | True =>
     gmap_tmp <- gmap;  
     three = Int32 3;
-    four = Int32 4;
+    four = Int64 4;
     p = Pair {(Int32) (Int32)} three four;   
     gmap_new = builtin put gmap_tmp _sender p;
     gmap := gmap_new;  
@@ -67,7 +67,7 @@ transition addNumToList(num: Int64)
   (* have fun: flip the boolean *)
   bflip = flip_obool b;
   (* append num to the list *)
-  l2 = Cons{Int64} num l1;
+  l2 = Cons{Int32} num l1;
   (* Form updated pair *)
   new_p = Pair {(List(Int64)) (Option(Bool))} l2 bflip;
   gpair := new_p;
