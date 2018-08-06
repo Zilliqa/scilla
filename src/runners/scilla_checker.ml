@@ -34,7 +34,6 @@ let check_parsing ctr =
     | Some cmod -> 
         plog @@ sprintf
           "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" ctr;
-        pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr));
         pure cmod
 
 (* Type check the contract with external libraries *)
@@ -59,9 +58,15 @@ let () =
     (* Testsuite runs this executable with cwd=tests and ends
        up complaining about missing _build directory for logger.
        So disable the logger. *)
-    let _ = (
+    let r = (
       let%bind cmod = check_parsing Sys.argv.(1) in
       let lib_dirs = [stdlib_dir()] in
       let elibs = import_libs cmod.elibs lib_dirs in
-      check_typing cmod elibs)
-    in ())
+      let%bind typing_res = check_typing cmod elibs in
+        pure (cmod, typing_res)
+    ) in
+    match r with
+    | Error _ -> ()
+    | Ok (cmod, _) ->
+      pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr));
+  )
