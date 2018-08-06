@@ -1,9 +1,6 @@
 
 Type error in contract Test:
 
-[:0:0] Type error in library list_to_map:
-[../src/stdlib/ListUtils.scilla:470:5] Type error in the initialiser of `init`:
-Not a primitive map key type: 'A.
 [checker/bad/mappair.scilla:39:1] Type error in transition testMapPair:
 [checker/bad/mappair.scilla:41:3] Type error in pattern matching on `is_owner` of type Bool (or one of its branches):
 [checker/bad/mappair.scilla:54:7] Type error in the binding to into `p`:
