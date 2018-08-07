@@ -1,0 +1,3 @@
+Type checking failed:
+[pm1.scilla:6:1] Type error in pattern matching on `b` of type Bool (or one of its branches):
+Non-exhaustive pattern match.
