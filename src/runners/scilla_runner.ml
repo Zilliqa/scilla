@@ -25,6 +25,7 @@ open DebugMessage
 open ContractUtil
 open Stdint
 open RunnerUtil
+open GlobalConfig
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -119,7 +120,8 @@ let () =
 
       (* Parse external libraries. *)
       let lib_dirs = (Filename.dirname cli.input::cli.libdirs) in
-      let elibs = import_libs cmod.elibs lib_dirs in
+      StdlibTracker.add_stdlib_dirs lib_dirs;
+      let elibs = import_libs cmod.elibs in
       (* Contract library. *)
       let clibs = cmod.libs in
   

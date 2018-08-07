@@ -411,7 +411,6 @@ let get_transition ctr tag =
       pure (params, body)
 
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
-(* TODO: Check runtime types *)
 let check_message_entries tparams_o entries =
   let tparams = append_implict_trans_params tparams_o in
   (* There as an entry for each parameter *)

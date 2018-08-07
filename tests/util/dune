@@ -1,5 +1,5 @@
 (library
   (name testutil)
   (wrapped false)
-  (libraries core oUnit)
+  (libraries core oUnit fileutils)
 )
