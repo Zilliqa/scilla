@@ -23,7 +23,7 @@ open Syntax
 open GlobalConfig
 open DebugMessage
 
-(* Parse external libraries "names" by looking for it in "ldirs". *)
+(* Parse external libraries "names" (by looking for in StdlibTracker). *)
 let import_libs names =
   List.map (fun id -> 
     let name = get_id id in
