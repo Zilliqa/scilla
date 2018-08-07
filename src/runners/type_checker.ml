@@ -59,11 +59,19 @@ let () =
     (perr (sprintf "Usage: %s foo.scilla\n" Sys.argv.(0))
     )
   else (
-    GlobalConfig.set_debug_level GlobalConfig.Debug_None;
+    let open GlobalConfig in
+    set_debug_level Debug_None;
     let filename = Sys.argv.(1) in
     match FrontEndParser.parse_file ScillaParser.exps filename with
     | Some [e] ->
-        let std_lib = parse_stdlib (stdlib_dir()) in
+        (* This is an auxiliary executable, it's second argument must
+         * have a list of stdlib dirs, so note that down. *)
+        add_cmd_stdlib();
+        (* Get list of stdlib dirs. *)
+        let lib_dirs = StdlibTracker.get_stdlib_dirs() in
+        if lib_dirs = [] then stdlib_not_found_err ();
+        (* Import whatever libs we want. *)
+        let std_lib = import_libs [] in
         (match check_typing e std_lib with
          | Ok res ->
              printf "%s\n" (pp_typ res.tp)
