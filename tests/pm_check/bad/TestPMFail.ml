@@ -19,31 +19,24 @@
 
 open OUnit2
 
-open Syntax
-open TypeUtil
-open PrimTypes
-
 module Tests = TestUtil.DiffBasedTests(
   struct
     let gold_path dir f = [dir; "pm_check"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["pm_check"; "bad"; f]
     let runner = "type-checker"      
     let tests = [
-      "fun2.scilla";
-      "fun3.scilla";
-      "list-error.scilla";
-      "list-error2.scilla";
-      "list-lit.scilla";
-      "list-lit2.scilla";
-      "pm-error1.scilla";
-      "pm-error2.scilla";
-      "map-error.scilla";
-      "map-lit.scilla";
-      "nth-error.scilla";
-      "folder-error.scilla";
-      "some.scilla";
+      "pm1.scilla";
+      "pm2.scilla";
+      "pm3.scilla";
+      "pm_nesting1.scilla";
+      "pm_nesting2.scilla";
+      "pm_nesting3.scilla";
+      "pm_unreachable1.scilla";
+      "pm_unreachable2.scilla";
+      "pm_unreachable_nesting1.scilla";
+      "pm_unreachable_nesting2.scilla";
     ]
     let use_stdlib = true
   end)
 
-let all_tests env = "pm_check_fail_tests" >::: [lit_typ_tests;Tests.add_tests env]
+let all_tests env = "pm_check_fail_tests" >::: [Tests.add_tests env]

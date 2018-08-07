@@ -82,4 +82,4 @@ let pm_check t clauses =
   let%bind decision_tree = traverse_clauses (Neg []) 0 clauses in
   match Array.findi reachable ~f:(fun _ r -> not r) with
   | None -> pure @@ decision_tree (* All patterns reachable *)
-  | Some (i, _) -> fail @@ sprintf "Unreachable pattern %d" i (* TODO: look up relevant pattern in clauses and report it *)
+  | Some _ -> fail @@ "Unreachable pattern." (* TODO: look up relevant pattern in clauses and report it *)

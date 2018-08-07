@@ -6,5 +6,6 @@
   (libraries core oUnit testcontracts
              testexps testexpsfail
              testtypes testtypefail
+             testpmfail
              testchecker testinteger256)
 )

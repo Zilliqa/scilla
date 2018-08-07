@@ -41,6 +41,7 @@ let main =
 
   let all_tests = "all_tests" >:::
                   [type_tests_bad; type_tests_good; exp_tests_good; exp_tests_bad;
+                   pm_tests_bad;
                    contract_tests; checker_tests; integer256_tests] in
 
   (* Run all tests *)
