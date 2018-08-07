@@ -54,14 +54,21 @@ let () =
     (perr (sprintf "Usage: %s foo.scilla\n" Sys.argv.(0))
     )
   else (
-    GlobalConfig.set_debug_level GlobalConfig.Debug_None;
+    let open GlobalConfig in
+    set_debug_level Debug_None;
     (* Testsuite runs this executable with cwd=tests and ends
        up complaining about missing _build directory for logger.
        So disable the logger. *)
     let r = (
       let%bind cmod = check_parsing Sys.argv.(1) in
-      let lib_dirs = [stdlib_dir()] in
-      let elibs = import_libs cmod.elibs lib_dirs in
+      (* This is an auxiliary executable, it's second argument must
+       * have a list of stdlib dirs, so note that down. *)
+      add_cmd_stdlib();
+      (* Get list of stdlib dirs. *)
+      let lib_dirs = StdlibTracker.get_stdlib_dirs() in
+      if lib_dirs = [] then stdlib_not_found_err ();
+      (* Import whatever libs we want. *)
+      let elibs = import_libs cmod.elibs in
       let%bind typing_res = check_typing cmod elibs in
         pure (cmod, typing_res)
     ) in

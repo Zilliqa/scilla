@@ -20,6 +20,7 @@
 open Printf
 open Syntax
 open RunnerUtil
+open GlobalConfig
 
 let () =
   if (Array.length Sys.argv) < 2 || (Array.length Sys.argv) > 3
@@ -32,7 +33,13 @@ let () =
   | Some [e] ->
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib = { lname = asId "dummy"; lentries = [] } in
-      let elibs = parse_stdlib (stdlib_dir()) in
+      (* This is an auxiliary executable, it's second argument must
+       * have a list of stdlib dirs, so note that down. *)
+      add_cmd_stdlib ();
+      let lib_dirs = StdlibTracker.get_stdlib_dirs() in
+      if lib_dirs = [] then stdlib_not_found_err ();
+      (* Import all libraries in known stdlib paths. *)
+      let elibs = import_all_libs lib_dirs in
       let envres = Eval.init_libraries (Some clib) elibs in
       let env = (match envres with
         | Ok (env') -> env'
