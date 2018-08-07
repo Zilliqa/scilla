@@ -35,6 +35,7 @@ let main =
   let exp_tests_bad = TestExpsFail.Tests.add_tests env in
   let type_tests_good = Testtypes.Tests.add_tests env in
   let type_tests_bad = TestTypeFail.all_tests env in
+  let pm_tests_bad = TestPMFail.all_tests env in
   let checker_tests = TestChecker.checker_tests env in
   let integer256_tests = TestInteger256.integer256_tests in
 
