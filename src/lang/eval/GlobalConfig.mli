@@ -49,5 +49,7 @@ val scilla_stdlib_env : string
 val get_stdlib_dirs : unit -> string list
 (* Update stdlib dirs with more locations *)
 val add_stdlib_dirs : string list -> unit
+(* Try find library "name" in known locations *)
+val find_lib_dir : string -> string option
 
 end

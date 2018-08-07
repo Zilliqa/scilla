@@ -68,7 +68,7 @@ let () =
       let lib_dirs = StdlibTracker.get_stdlib_dirs() in
       if lib_dirs = [] then stdlib_not_found_err ();
       (* Import whatever libs we want. *)
-      let elibs = import_libs cmod.elibs lib_dirs in
+      let elibs = import_libs cmod.elibs in
       let%bind typing_res = check_typing cmod elibs in
         pure (cmod, typing_res)
     ) in

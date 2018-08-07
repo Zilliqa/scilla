@@ -24,13 +24,11 @@ open GlobalConfig
 open DebugMessage
 
 (* Parse external libraries "names" by looking for it in "ldirs". *)
-let import_libs names ldirs =
+let import_libs names =
   List.map (fun id -> 
     let name = get_id id in
     let errmsg = (sprintf "%s. " ("Failed to import library " ^ name)) in
-    let dir = BatList.find_opt 
-      (fun d -> Caml.Sys.file_exists (d ^ Filename.dir_sep ^ name ^ ".scilla")) 
-      ldirs in
+    let dir = StdlibTracker.find_lib_dir name in
     let open Core in 
     let f = match dir with
       | None -> perr (errmsg ^ "Not found.\n") ; exit 1
@@ -63,7 +61,7 @@ let import_all_libs ldirs =
     let names' = get_lib_list dir in
       List.append names names') ldirs []
   in
-    import_libs names ldirs
+    import_libs names
 
 (* Treat 2nd command line argument as a list of stdlib dirs
  * and add it to StdlibTracker to be tracked. *)
