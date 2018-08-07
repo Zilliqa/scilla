@@ -38,5 +38,16 @@ val set_trace_level : trace_kind -> unit
 val get_trace_file : unit -> string
 val set_trace_file : string -> unit
 
-(* Environment variable to look for stdlib *)
-val scilla_stdlib_path : string
+module StdlibTracker : sig
+
+(* Environment variable: where to look for stdlib.
+ * Multiple entries can be specified, separated by ';'.
+ *)
+val scilla_stdlib_env : string
+(* List of directories to look for stdlib.
+ * Entries from scilla_stdlib_env will be first. *)
+val get_stdlib_dirs : unit -> string list
+(* Update stdlib dirs with more locations *)
+val add_stdlib_dirs : string list -> unit
+
+end

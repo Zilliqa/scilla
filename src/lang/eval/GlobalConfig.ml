@@ -91,5 +91,28 @@ let get_trace_file () =
 let set_trace_file s =
   trace_file := s
 
-(* Environment variable to look for stdlib *)
-let scilla_stdlib_path = "SCILLA_STDLIB_PATH"
+module StdlibTracker = struct
+
+(* Environment variable: where to look for stdlib.
+ * Multiple entries can be specified, separated by ';'.
+ *)
+let scilla_stdlib_env = "SCILLA_STDLIB_PATH"
+
+(* List of directories to look for stdlib *)
+let stdlib_dirs = ref []
+
+(* List of directories to look for stdlib.
+ * Entries from scilla_stdlib_env will be first. *)
+let get_stdlib_dirs () =
+  let env_dirs = 
+    match (Sys.getenv_opt scilla_stdlib_env) with 
+    | Some s -> String.split_on_char ';' s
+    | None -> []
+  in
+    List.append env_dirs !stdlib_dirs
+
+(* Update stdlib dirs with more locations *)
+let add_stdlib_dirs dirs =
+  stdlib_dirs := List.append !stdlib_dirs dirs
+
+end
