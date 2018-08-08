@@ -1,5 +1,6 @@
 {
   "name": "NatUtils",
+  "hash": "f4f5013903695ab996a71d6f2fa591f988d752cb48e2b05135cc2995d4167ac3",
   "entries": [
     {
       "name": "uint32_to_nat_helper",

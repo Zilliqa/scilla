@@ -29,9 +29,19 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
   module MakeTEnv = Q(R)
   open MakeTEnv
 
+  open Cryptokit
+  let hash s = transform_string (Hexa.encode()) (hash_string (Hash.sha2 256) s)
+  let hash_lib lib =
+    let s = List.fold_left ~f:(fun acc {lname;lexp} ->
+      (acc ^ (get_id lname) ^ (expr_str lexp))
+      ) ~init:"" lib.lentries in
+    hash s
+
   type t = MakeTEnv.TEnv.t
 
-  let to_json_string lib_name lib_entries =
+  let to_json_string lib lib_entries =
+    let lib_name = (get_id lib.lname) in
+    let lib_hash = hash_lib lib in
     (* Let's output to a JSON with the following format:
      * {
      *   "name" : "foo",
@@ -55,15 +65,17 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
       (* Compose final result. *)
       `Assoc [
         ("name", `String lib_name);
+        ("hash", `String lib_hash);
         ("entries", `List entries)
       ]
 
   let parse_json j =
     let open Yojson.Basic.Util in
     let name = member "name" j in
+    let lhash = member "hash" j in
     let entries = member "entries" j in 
-    match name, entries with
-    | `String _, `List elj ->
+    match name, lhash, entries with
+    | `String n, `String h, `List elj ->
       (* Conver the list of JSONs to a list of TEnv.tenv entries. *)
       let el = List.fold_right ~f:(fun ej acc ->
         let name_j, type_j, loc_j = 
@@ -88,9 +100,10 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
         | Some e, Some l -> Some (e::l)
         | _ -> None)
       ) ~init:(Some []) elj in
-        el
-    | _, _ -> None
-
+      (match el with
+      | Some el' -> Some (n, h, el')
+      | None -> None)
+    | _, _, _ -> None
 
   (* Get type info for "lib" from cache, if it exists. *)
   let get_lib_tenv_cache (tenv : t) lib =
@@ -105,8 +118,13 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
         let j = Yojson.Basic.from_file file_name in
         let entries_opt = parse_json j in
         match entries_opt with
-        | Some entries ->
-          Some (TEnv.addTs (TEnv.copy tenv) entries)
+        | Some (n, h, entries) ->
+          (* Verify name and hash. *)
+          if n = lib_name && h = (hash_lib lib) then
+            Some (TEnv.addTs (TEnv.copy tenv) entries)
+          else
+            (* name/hash does not match. TODO: print to logger. *)
+            None
         | None ->
           (* Error parsing JSON. TODO: print to logger. *)
           None
@@ -130,7 +148,7 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
     let dir_o = find_lib_dir lib_name in
     match dir_o with
     | Some dir ->
-      let j = to_json_string lib_name lib_entries in
+      let j = to_json_string lib lib_entries in
       let js = Yojson.pretty_to_string j in
       Out_channel.with_file (dir ^ Filename.dir_sep ^ lib_name ^ ".json")
        ~f:(fun channel -> js |> Out_channel.output_string channel)

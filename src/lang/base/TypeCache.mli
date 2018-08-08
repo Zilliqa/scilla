@@ -28,7 +28,7 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) : sig
   type t = Q(R).TEnv.t
 
   (* Get type info for "lib" from cache, if it exists. *)
-  val get_lib_tenv_cache : t -> 'rep library -> t option
+  val get_lib_tenv_cache : t -> loc library -> t option
   (* Store type info tenv, for "lib" in the cache. *)
-  val cache_lib_tenv : t -> 'rep library -> unit
+  val cache_lib_tenv : t -> loc library -> unit
 end

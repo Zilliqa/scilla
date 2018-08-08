@@ -1,5 +1,6 @@
 {
   "name": "BoolUtils",
+  "hash": "deef056dfe147cf6a7d36a2febd519e513c5325f244e9d1f10f2778912dedfef",
   "entries": [
     { "name": "andb", "type": "Bool -> Bool -> Bool", "loc": ":0:0" },
     { "name": "negb", "type": "Bool -> Bool", "loc": ":0:0" },
