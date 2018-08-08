@@ -1,0 +1,9 @@
+(* Expected result: *)
+(* Type checking failed: *)
+(* [pm_check/bad/pm_unreachable1.scilla:6:1] Type error in pattern matching on `b` of type Bool (or one of its branches): *)
+(* Unreachable pattern. *)
+let b = False in
+match b with
+| _ => Int32 0
+| False => Int32 1
+end

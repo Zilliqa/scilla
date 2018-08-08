@@ -135,7 +135,7 @@ module Tests = TestUtil.DiffBasedTests(
       "folder-error.scilla";
       "some.scilla";
     ]
-    let use_stdlib = false
+    let use_stdlib = true
   end)
 
 let all_tests env = "type_check_fail_tests" >::: [lit_typ_tests;Tests.add_tests env]

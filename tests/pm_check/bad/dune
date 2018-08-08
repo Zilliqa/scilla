@@ -1,0 +1,5 @@
+(library
+  (name testpmfail)
+  (wrapped false)
+  (libraries core oUnit testutil scilla-base)
+)

@@ -1,0 +1,6 @@
+(IntLit 32 42),
+{ [g -> (IntLit 32 42)],
+  [p -> (ADTValue Pair((ADT Bool())(ADT Option((PrimType Int32))))((ADTValue True()())(ADTValue Some((PrimType Int32))((IntLit 32 42)))))],
+  [y -> (ADTValue Some((PrimType Int32))((IntLit 32 42)))],
+  [x -> (ADTValue True()())],
+  [v -> (IntLit 32 42)] }

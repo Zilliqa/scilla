@@ -1,6 +1,0 @@
-let x = Int32 42 in
-let ff = fun (z : Int) => x in
-let y = x in
-let a = y in
-let m = {tag : Main; amount : x; code: ff} in
-m

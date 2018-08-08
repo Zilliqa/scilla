@@ -17,26 +17,26 @@
 *)
 
 
-
-
+open OUnit2
 
 module Tests = TestUtil.DiffBasedTests(
   struct
-    let gold_path dir f = [dir; "typecheck"; "good"; "gold"; f ^ ".gold" ]
-    let test_path f = ["typecheck"; "good"; f]
+    let gold_path dir f = [dir; "pm_check"; "bad"; "gold"; f ^ ".gold" ]
+    let test_path f = ["pm_check"; "bad"; f]
     let runner = "type-checker"      
     let tests = [
-      "fun.scilla";
-      "fun1.scilla";
-      "addr.scilla";
-      "app.scilla";
-      "list1.scilla";
       "pm1.scilla";
       "pm2.scilla";
       "pm3.scilla";
-      "pm4.scilla";
-      "subst.scilla";
-      "zip.scilla";
+      "pm_nesting1.scilla";
+      "pm_nesting2.scilla";
+      "pm_nesting3.scilla";
+      "pm_unreachable1.scilla";
+      "pm_unreachable2.scilla";
+      "pm_unreachable_nesting1.scilla";
+      "pm_unreachable_nesting2.scilla";
     ]
     let use_stdlib = true
   end)
+
+let all_tests env = "pm_check_fail_tests" >::: [Tests.add_tests env]
