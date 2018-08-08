@@ -38,10 +38,10 @@ let check_parsing filename =
     | None -> fail (sprintf "%s\n" "Failed to parse input file.")
     | Some e ->
         plog @@ sprintf
-          "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" filename;
+          "\n[Parsing]:\nExpression in [%s] is successfully parsed.\n" filename;
         pure e
 
-(* Type check the contract with external libraries *)
+(* Type check the expression with external libraries *)
 let check_typing e elibs =
   let%bind _ = TypeChecker.type_recursion_principles in
   let recs = List.map recursion_principles
