@@ -54,6 +54,7 @@ let pm_check t clauses =
     match p with
     | Wildcard
     | Binder _ ->
+        let _ = Array.set reachable i true in
         traverse_pattern (augment_ctx ctx dsc) sps_rest i rest_clauses
     | Constructor (c_name, sps_cons) ->
         let arity () = List.length sps_cons in
@@ -82,4 +83,4 @@ let pm_check t clauses =
   let%bind decision_tree = traverse_clauses (Neg []) 0 clauses in
   match Array.findi reachable ~f:(fun _ r -> not r) with
   | None -> pure @@ decision_tree (* All patterns reachable *)
-  | Some _ -> fail @@ "Unreachable pattern." (* TODO: look up relevant pattern in clauses and report it *)
+  | Some (i, _) -> fail @@ sprintf "Pattern %d is unreachable." (i+1) (* TODO: look up relevant pattern in clauses and report it *)
