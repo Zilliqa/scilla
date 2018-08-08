@@ -5,7 +5,7 @@
         "value": "0"
     },
     {
-        "vname": "ownerOf",
+        "vname": "tokenOwnerMap",
         "type": "Map (Uint256) (Address)",
         "value": [
         ]
