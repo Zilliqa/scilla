@@ -146,21 +146,22 @@ type 'rep pattern =
   | Constructor of string * ('rep pattern list)
 [@@deriving sexp]
 
-type 'rep expr =
+type 'rep expr_annot = 'rep expr * 'rep
+and 'rep expr =
   | Literal of literal
   | Var of 'rep ident
-  | Let of 'rep ident * typ option * 'rep expr * 'rep expr
+  | Let of 'rep ident * typ option * 'rep expr_annot * 'rep expr_annot
   | Message of (string * 'rep payload) list
-  | Fun of 'rep ident * typ * 'rep expr
+  | Fun of 'rep ident * typ * 'rep expr_annot
   | App of 'rep ident * 'rep ident list
   | Constr of string * typ list * 'rep ident list
-  | MatchExpr of 'rep ident * ('rep pattern * 'rep expr) list
+  | MatchExpr of 'rep ident * ('rep pattern * 'rep expr_annot) list
   | Builtin of 'rep ident * 'rep ident list 
   (* Advanced features: to be added in Scilla 0.2 *)                 
-  | TFun of 'rep ident * 'rep expr
+  | TFun of 'rep ident * 'rep expr_annot
   | TApp of 'rep ident * typ list
   (* Fixpoint combinator: used to implement recursion principles *)                 
-  | Fixpoint of 'rep ident * typ * 'rep expr
+  | Fixpoint of 'rep ident * typ * 'rep expr_annot
 [@@deriving sexp]
 
 let expr_loc (e : 'rep expr) : loc option =
