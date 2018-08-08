@@ -1,0 +1,15 @@
+{
+  "name": "PairUtils",
+  "entries": [
+    {
+      "name": "snd",
+      "type": "forall 'A. forall 'B. Pair ('A) ('B) -> 'B",
+      "loc": ":0:0"
+    },
+    {
+      "name": "fst",
+      "type": "forall 'A. forall 'B. Pair ('A) ('B) -> 'A",
+      "loc": ":0:0"
+    }
+  ]
+}

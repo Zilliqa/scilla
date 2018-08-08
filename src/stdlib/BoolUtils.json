@@ -1,0 +1,8 @@
+{
+  "name": "BoolUtils",
+  "entries": [
+    { "name": "andb", "type": "Bool -> Bool -> Bool", "loc": ":0:0" },
+    { "name": "negb", "type": "Bool -> Bool", "loc": ":0:0" },
+    { "name": "orb", "type": "Bool -> Bool -> Bool", "loc": ":0:0" }
+  ]
+}

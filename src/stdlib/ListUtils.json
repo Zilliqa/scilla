@@ -1,0 +1,110 @@
+{
+  "name": "ListUtils",
+  "entries": [
+    {
+      "name": "list_to_map",
+      "type": "forall 'A. forall 'B. List (Pair ('A) ('B)) -> Map ('A) ('B)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_append",
+      "type": "forall 'A. List ('A) -> List ('A) -> List ('A)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_zip",
+      "type":
+        "forall 'A. forall 'B. List ('A) -> List ('B) -> List (Pair ('A) ('B))",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_flatten",
+      "type": "forall 'A. List (List ('A)) -> List ('A)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_filter",
+      "type": "forall 'A. ('A -> Bool) -> List ('A) -> List ('A)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_head",
+      "type": "forall 'A. List ('A) -> Option ('A)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_forall",
+      "type": "forall 'A. ('A -> Bool) -> List ('A) -> Bool",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_reverse",
+      "type": "forall 'A. List ('A) -> List ('A)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_nth",
+      "type": "forall 'A. Int32 -> List ('A) -> Option ('A)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_sort",
+      "type": "forall 'A. ('A -> 'A -> Bool) -> List ('A) -> List ('A)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_eq_helper",
+      "type":
+        "forall 'A. ('A -> 'A -> Bool) -> List ('A) -> List ('A) -> Option (List ('A))",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_eq",
+      "type":
+        "forall 'A. ('A -> 'A -> Bool) -> List ('A) -> List ('A) -> Bool",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_length",
+      "type": "forall 'A. List ('A) -> Int32",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_map",
+      "type": "forall 'A. forall 'B. ('A -> 'B) -> List ('A) -> List ('B)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_tail",
+      "type": "forall 'A. List ('A) -> Option (List ('A))",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_mem",
+      "type": "forall 'A. ('A -> 'A -> Bool) -> 'A -> List ('A) -> Bool",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_exists",
+      "type": "forall 'A. ('A -> Bool) -> List ('A) -> Bool",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_zip_with",
+      "type":
+        "forall 'A. forall 'B. forall 'C. ('A -> 'B -> 'C) -> List ('A) -> List ('B) -> List ('C)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_find",
+      "type": "forall 'A. ('A -> Bool) -> List ('A) -> Option ('A)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "list_unzip",
+      "type":
+        "forall 'A. forall 'B. List (Pair ('A) ('B)) -> Pair (List ('A)) (List ('B))",
+      "loc": ":0:0"
+    }
+  ]
+}

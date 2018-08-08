@@ -1,0 +1,44 @@
+{
+  "name": "NatUtils",
+  "entries": [
+    {
+      "name": "uint32_to_nat_helper",
+      "type": "Option (Uint32) -> Option (Nat)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "int32_to_nat",
+      "type": "Int32 -> Option (Nat)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "int64_to_nat",
+      "type": "Int64 -> Option (Nat)",
+      "loc": ":0:0"
+    },
+    { "name": "is_some_zero", "type": "Nat -> Bool", "loc": ":0:0" },
+    { "name": "nat_prev", "type": "Nat -> Option (Nat)", "loc": ":0:0" },
+    { "name": "nat_to_int", "type": "Nat -> Uint32", "loc": ":0:0" },
+    {
+      "name": "uint64_to_nat",
+      "type": "Uint64 -> Option (Nat)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "int128_to_nat",
+      "type": "Int128 -> Option (Nat)",
+      "loc": ":0:0"
+    },
+    {
+      "name": "uint128_to_nat",
+      "type": "Uint128 -> Option (Nat)",
+      "loc": ":0:0"
+    },
+    { "name": "nat_eq", "type": "Nat -> Nat -> Bool", "loc": ":0:0" },
+    {
+      "name": "uint32_to_nat",
+      "type": "Uint32 -> Option (Nat)",
+      "loc": ":0:0"
+    }
+  ]
+}
