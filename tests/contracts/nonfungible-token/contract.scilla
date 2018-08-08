@@ -21,8 +21,8 @@ let checkOwner =
 let checkOwnerOrApproved = 
     fun (msgSender: Address) =>
     fun (tokenId: Uint256) =>
-    fun (ownerOf_tmp : Map (Uint256) (Address)) =>
-        let tokenOwner = builtin get ownerOf_tmp tokenId in
+    fun (tokenOwnerMap_tmp : Map (Uint256) (Address)) =>
+        let tokenOwner = builtin get tokenOwnerMap_tmp tokenId in
         match tokenOwner with
         | None => False
         | Some val =>
@@ -43,25 +43,65 @@ let code_unexpected_error = Uint32 9
 (***************************************************)
 
 contract NonfungibleToken
-(owner : Address,
+(contractOwner : Address,
  name : String,
  symbol: String
 )
 
 (* mutable fields *)
-field ownerOf: Map Uint256 Address = Emp Uint256 Address
+field tokenOwnerMap: Map Uint256 Address = Emp Uint256 Address
 field ownedTokenCount: Map Address Uint256 = Emp Address Uint256
 
 (* immutable field *)
 
+(* @notice Count all NFTs assigned to an owner *)
+(* @dev: Event should be emitted once scilla is ready *)
+transition balanceOf(address: Address) 
+    otc <- ownedTokenCount;
+    balance = builtin get otc address;
+    match balance with
+    | Some bal =>
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            balance : bal};
+        msgs = one_msg msg;
+        send msgs
+    | None =>
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            balance : Uint256 0};
+        msgs = one_msg msg;
+        send msgs
+    end
+end
+
+
+(* @notice Count all NFTs assigned to an owner *)
+(* @dev: Event should be emitted once scilla is ready *)
+transition ownerOf(tokenId: Uint256) 
+    tom <- tokenOwnerMap;
+    someVal = builtin get tom tokenId;
+    match someVal with
+    | Some val =>
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            owner : val};
+        msgs = one_msg msg;
+        send msgs
+    | None =>
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            code : code_failure};
+        msgs = one_msg msg;
+        send msgs
+    end
+end
+
+
 transition mint(to: Address, tokenId: Uint256)
-    checkAuthorized = checkOwner owner _sender;
+    checkAuthorized = checkOwner contractOwner _sender;
     status = Uint32 0;
     match checkAuthorized with
     | True =>
-        currOwnerOf <- ownerOf;
-        newOwnerOf = builtin put currOwnerOf tokenId to;
-        ownerOf := newOwnerOf;
+        currtokenOwnerMap <- tokenOwnerMap;
+        newtokenOwnerMap = builtin put currtokenOwnerMap tokenId to;
+        tokenOwnerMap := newtokenOwnerMap;
         (* add to owner count *)
         curr_otc <- ownedTokenCount;
         userCnt = builtin get curr_otc to;
@@ -92,13 +132,13 @@ transition mint(to: Address, tokenId: Uint256)
 end
 
 transition transferFrom(from: Address, to: Address, tokenId: Uint256)
-    copy_ownerOf <- ownerOf;
-    isAuthorized = checkOwnerOrApproved from tokenId copy_ownerOf;
+    copy_tokenOwnerMap <- tokenOwnerMap;
+    isAuthorized = checkOwnerOrApproved from tokenId copy_tokenOwnerMap;
     match isAuthorized with
     | True =>
-        (* Change ownerOf *)
-        new_ownerof = builtin put copy_ownerOf tokenId to;
-        ownerOf := new_ownerof;
+        (* Change tokenOwnerMap *)
+        new_tokenOwnerMap = builtin put copy_tokenOwnerMap tokenId to;
+        tokenOwnerMap := new_tokenOwnerMap;
 
         (* Change Count *)
         curr_otc <- ownedTokenCount;

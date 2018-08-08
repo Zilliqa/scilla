@@ -8,7 +8,7 @@
       ]
     },
     {
-      "vname": "ownerOf",
+      "vname": "tokenOwnerMap",
       "type": "Map (Uint256) (Address)",
       "value": [
         { "key": "1", "val": "0x1234567890123456789012345678901234567892" }
