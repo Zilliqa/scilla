@@ -54,7 +54,6 @@ let pm_check t clauses =
     match p with
     | Wildcard
     | Binder _ ->
-        let _ = Array.set reachable i true in
         traverse_pattern (augment_ctx ctx dsc) sps_rest i rest_clauses
     | Constructor (c_name, sps_cons) ->
         let arity () = List.length sps_cons in
