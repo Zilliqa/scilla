@@ -1,0 +1,145 @@
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+import BoolUtils
+library NonfungibleToken
+
+let one_msg = 
+  fun (msg : Message) => 
+  let nil_msg = Nil {Message} in
+Cons {Message} msg nil_msg
+
+let checkOwner =
+    fun (msgSender: Address) => 
+    fun (contractOwner: Address) =>
+        let isOwner = builtin eq msgSender contractOwner in
+        match isOwner with
+        | True => True
+        | False => False
+        end
+
+let checkOwnerOrApproved = 
+    fun (msgSender: Address) =>
+    fun (tokenId: Uint256) =>
+    fun (ownerOf_tmp : Map (Uint256) (Address)) =>
+        let tokenOwner = builtin get ownerOf_tmp tokenId in
+        match tokenOwner with
+        | None => False
+        | Some val =>
+            let isSenderTokenOwner = builtin eq val msgSender in 
+            match isSenderTokenOwner with
+            | True => True
+            | False => False
+            end
+        end 
+
+let code_success = Uint32 0
+let code_failure = Uint32 1
+let code_not_authorized = Uint32 2
+let code_unexpected_error = Uint32 9
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+
+contract NonfungibleToken
+(owner : Address,
+ name : String,
+ symbol: String
+)
+
+(* mutable fields *)
+field ownerOf: Map Uint256 Address = Emp Uint256 Address
+field ownedTokenCount: Map Address Uint256 = Emp Address Uint256
+
+(* immutable field *)
+
+transition mint(to: Address, tokenId: Uint256)
+    checkAuthorized = checkOwner owner _sender;
+    status = Uint32 0;
+    match checkAuthorized with
+    | True =>
+        currOwnerOf <- ownerOf;
+        newOwnerOf = builtin put currOwnerOf tokenId to;
+        ownerOf := newOwnerOf;
+        (* add to owner count *)
+        curr_otc <- ownedTokenCount;
+        userCnt = builtin get curr_otc to;
+        match userCnt with
+        | Some val =>
+            one = Uint256 1;
+            new_val = builtin add val one;
+            new_otc = builtin put curr_otc to new_val;
+            ownedTokenCount := new_otc
+        | None =>
+            new_val = Uint256 1;
+            new_otc = builtin put curr_otc to new_val;
+            ownedTokenCount := new_otc
+        end;
+
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            code : code_success};
+        msgs = one_msg msg;
+        send msgs
+    | False =>
+         msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            code : code_not_authorized};
+        msgs = one_msg msg;
+        send msgs
+    end
+
+    
+end
+
+transition transferFrom(from: Address, to: Address, tokenId: Uint256)
+    copy_ownerOf <- ownerOf;
+    isAuthorized = checkOwnerOrApproved from tokenId copy_ownerOf;
+    match isAuthorized with
+    | True =>
+        (* Change ownerOf *)
+        new_ownerof = builtin put copy_ownerOf tokenId to;
+        ownerOf := new_ownerof;
+
+        (* Change Count *)
+        curr_otc <- ownedTokenCount;
+
+        (*subtract one from previous token owner *)
+        val = builtin get curr_otc from;
+        match val with
+        | Some a1 =>
+            a2  = let one = Uint256 1 in builtin sub a1 one;
+            otc_1 = builtin put curr_otc from a2;
+            ownedTokenCount := otc_1
+        | None =>
+            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            code : code_unexpected_error};
+            msgs = one_msg msg;
+            send msgs
+        end;
+
+        (* add one to the new token owner *)
+        otc_2 <- ownedTokenCount;
+        userCnt = builtin get otc_2 to;
+        match userCnt with
+        | Some val =>
+            one = Uint256 1;
+            new_val = builtin add val one;
+            new_otc = builtin put otc_2 to new_val;
+            ownedTokenCount := new_otc
+        | None =>
+            new_val = Uint256 1;
+            new_otc = builtin put otc_2 to new_val;
+            ownedTokenCount := new_otc
+        end;
+
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            code : code_success};
+        msgs = one_msg msg;
+        send msgs
+    | False =>
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            code : code_not_authorized};
+        msgs = one_msg msg;
+        send msgs
+    end
+end

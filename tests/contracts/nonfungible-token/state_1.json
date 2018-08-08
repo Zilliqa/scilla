@@ -1,0 +1,13 @@
+[
+    {
+        "vname": "_balance",
+        "type": "Uint128",
+        "value": "0"
+    },
+    {
+        "vname": "ownerOf",
+        "type": "Map (Uint256) (Address)",
+        "value": [
+        ]
+    }
+]

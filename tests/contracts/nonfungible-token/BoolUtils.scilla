@@ -1,0 +1,30 @@
+library BoolUtils
+
+let andb = 
+  fun (b : Bool) =>
+  fun (c : Bool) =>
+    match b with 
+    | False => False
+    | True  =>
+      match c with 
+      | False => False
+      | True  => True
+      end
+    end
+
+let orb = 
+  fun (b : Bool) => fun (c : Bool) =>
+    match b with 
+    | True  => True
+    | False =>
+      match c with 
+      | False => False
+      | True  => True
+      end
+    end
+
+let negb = fun (b : Bool) => 
+  match b with
+  | True => False
+  | False => True
+  end
