@@ -23,28 +23,58 @@ open Syntax
 open Result.Let_syntax
 open TypeUtil
 open Recursion
+open RunnerUtil
+open DebugMessage
+open MonadUtil
 
 module SimpleTEnv = MakeTEnv(PlainTypes)
 open SimpleTEnv
 
+(* Check that the expression parses *)
+let check_parsing filename = 
+    let parse_module =
+      FrontEndParser.parse_file ScillaParser.exps filename in
+    match parse_module with
+    | None -> fail (sprintf "%s\n" "Failed to parse input file.")
+    | Some e ->
+        plog @@ sprintf
+          "\n[Parsing]:\nExpression in [%s] is successfully parsed.\n" filename;
+        pure e
+
+(* Type check the expression with external libraries *)
+let check_typing e elibs =
+  let%bind _ = TypeChecker.type_recursion_principles in
+  let recs = List.map recursion_principles
+      ~f:(fun ({lname = a; _}, c) -> (a, c)) in
+  let tenv0 = TEnv.addTs TEnv.mk recs in
+  (* Step 1: Type check external libraries *)
+  (* TODO: Cache this information unless its version changed! *)
+  let%bind tenv1 = MonadUtil.foldM elibs ~init:tenv0
+      ~f:(fun acc elib -> TypeChecker.type_library acc elib) in
+  TypeChecker.type_expr tenv1 e
 
 let () =
-  let filename = Sys.argv.(1) in
-  match FrontEndParser.parse_file ScillaParser.exps filename with
-  | Some [e] ->
-      let res = (
-        let%bind _ = TypeChecker.type_recursion_principles in      
-        let recs = List.map recursion_principles
-            ~f:(fun ({lname = a; _}, c) -> (a, c)) in
-        let tenv = TEnv.addTs TEnv.mk recs in
-        TypeChecker.type_expr tenv e 
-      ) in
-      (match res with
-      | Ok res ->
-          printf "%s\n" (pp_typ res.tp)
-      | Error s -> printf "Type checking failed:\n%s\n" s)
-  | Some _ | None ->
-      printf "%s\n" "Failed to parse input file."
-  
-
-
+  if (Array.length Sys.argv) < 2
+  then
+    (perr (sprintf "Usage: %s foo.scilla\n" Sys.argv.(0))
+    )
+  else (
+    let open GlobalConfig in
+    set_debug_level Debug_None;
+    let filename = Sys.argv.(1) in
+    match FrontEndParser.parse_file ScillaParser.exps filename with
+    | Some [e] ->
+        (* This is an auxiliary executable, it's second argument must
+         * have a list of stdlib dirs, so note that down. *)
+        add_cmd_stdlib();
+        (* Get list of stdlib dirs. *)
+        let lib_dirs = StdlibTracker.get_stdlib_dirs() in
+        if lib_dirs = [] then stdlib_not_found_err ();
+        (* Import whatever libs we want. *)
+        let std_lib = import_libs [] in
+        (match check_typing e std_lib with
+         | Ok res ->
+             printf "%s\n" (pp_typ res.tp)
+         | Error s -> printf "Type checking failed:\n%s\n" s)
+    | Some _ | None ->
+        printf "%s\n" "Failed to parse input file.")

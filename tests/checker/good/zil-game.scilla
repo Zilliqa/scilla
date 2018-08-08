@@ -98,7 +98,6 @@ let check_validity =
         builtin eq h g
       | _ => False  
       end  
-    | _ => False
     end
 
 (* Owner can withdraw balance if deadline has passed *)

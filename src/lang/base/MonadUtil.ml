@@ -39,8 +39,6 @@ let rec mapM ~f ls = match ls with
        | _, (Error _ as err) -> err)
   | [] -> Ok []
 
-
-
 (* Try all variants in the list, pick the first successful one *)
 let rec tryM ~f ls ~msg = match ls with
   | x :: ls' ->

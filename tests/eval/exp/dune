@@ -1,5 +1,0 @@
-(library
-  (name testexp)
-  (wrapped false)
-  (libraries core oUnit testutil)
-)

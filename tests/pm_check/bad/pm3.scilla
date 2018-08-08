@@ -1,0 +1,10 @@
+(* Expected result: *)
+(* Type checking failed: *)
+(* [pm_check/bad/pm3.scilla:8:1] Type error in pattern matching on `y` of type List (Int32) (or one of its branches): *)
+(* Non-exhaustive pattern match. *)
+let v = Int32 42 in
+let n = Nil {Int32} in
+let y = Cons {Int32} v n in
+match y with 
+    | Cons x y => Int32 1
+    end

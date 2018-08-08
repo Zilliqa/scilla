@@ -1,0 +1,12 @@
+(* Expected result: *)
+(* Type checking failed: *)
+(* [pm_check/bad/pm_nesting1.scilla:9:1] Type error in pattern matching on `y` of type List (Option (Int32)) (or one of its branches): *)
+(* Non-exhaustive pattern match. *)
+let v = Int32 42 in
+let x = Some {Int32} v in
+let n = Nil {(Option Int32)} in
+let y = Cons {(Option Int32)} x n in
+match y with 
+| Cons (Some x) y => Int32 1
+| Nil => Int32 3
+end
