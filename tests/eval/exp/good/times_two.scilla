@@ -1,0 +1,14 @@
+let zero = Zero in 
+let one  = Succ zero in 
+let two  = Succ one in
+let three = Succ two in
+let folder = @nat_fold Int32 in
+let f0 = Int32 1 in
+let fn = 
+  fun (z : Int32) =>
+  fun (n : Nat) => 		
+    let t = Int32 2 in 
+    builtin mul z t 
+in
+		
+folder fn f0 three

@@ -31,15 +31,18 @@ let main =
   let env = { bin_dir = bin_dir; tests_dir = tests_dir; stdlib_dir = stdlib_dir; print_cli = print_cli } in
   (* Add calls to new tests from here *)
   let contract_tests = Testcontracts.add_tests env in
-  let exp_tests = Testexp.Tests.add_tests env in
+  let exp_tests_good = TestExps.Tests.add_tests env in 
+  let exp_tests_bad = TestExpsFail.Tests.add_tests env in
   let type_tests_good = Testtypes.Tests.add_tests env in
   let type_tests_bad = TestTypeFail.all_tests env in
+  let pm_tests_bad = TestPMFail.all_tests env in
   let checker_tests = TestChecker.checker_tests env in
   let integer256_tests = TestInteger256.integer256_tests in
 
   let all_tests = "all_tests" >:::
-                  [type_tests_bad; type_tests_good; exp_tests; contract_tests; 
-                   checker_tests; integer256_tests] in
+                  [type_tests_bad; type_tests_good; exp_tests_good; exp_tests_bad;
+                   pm_tests_bad;
+                   contract_tests; checker_tests; integer256_tests] in
 
   (* Run all tests *)
   run_test_tt_main all_tests

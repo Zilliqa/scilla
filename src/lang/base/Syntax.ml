@@ -61,7 +61,6 @@ let mk_ident s = Ident (s, dummy_loc)
 (*******************************************************)
 (*                         Types                       *)
 (*******************************************************)
-                
 type typ  =
   | PrimType of string
   | MapType of typ * typ

@@ -1,2 +1,0 @@
-Failed execution:
-[eval/exp/builtin_error1.scilla:10:12] Cannot find built-in with name "hack" and argument types [Int32; Int32].

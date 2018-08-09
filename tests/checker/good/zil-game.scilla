@@ -1,35 +1,10 @@
 (***************************************************)
 (*               Associated library                *)
 (***************************************************)
+
+import BoolUtils
+
 library ZilGame
-
-let andb = 
-  fun (b : Bool) => fun (c : Bool) =>
-    match b with 
-    | False => False
-    | True  =>
-      match c with 
-      | False => False
-      | True  => True
-      end
-    end
-
-let orb = 
-  fun (b : Bool) => fun (c : Bool) =>
-    match b with 
-    | True  => True
-    | False =>
-      match c with 
-      | False => False
-      | True  => True
-      end
-    end
-
-let negb = fun (b : Bool) => 
-  match b with
-  | True => False
-  | False => True
-  end
 
 let one_msg = 
   fun (msg : Message) => 
@@ -98,7 +73,6 @@ let check_validity =
         builtin eq h g
       | _ => False  
       end  
-    | _ => False
     end
 
 (* Owner can withdraw balance if deadline has passed *)

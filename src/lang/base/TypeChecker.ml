@@ -26,6 +26,9 @@ open BuiltIns
 open Recursion
 open ContractUtil
 
+(* TODO: This dependency should be removed once types annotations are available in the AST *)
+open PatternChecker
+
 (* Instantiated the type environment *)
 module SimpleTEnv = MakeTEnv(PlainTypes)
 open SimpleTEnv
@@ -114,6 +117,8 @@ let rec type_expr tenv e = match e with
               type_check_match_branch tenv sct ptrn ex) in
           let%bind _ =
             assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
+          (* TODO: Move the PM checks to separate phase once type annotations are available in AST *)
+          let%bind _ = pm_check sct clauses in
           (* Return the first type since all they are the same *)
           pure @@ List.hd_exn cl_types
         )
@@ -333,6 +338,27 @@ let type_transition env0 tr =
   wrap_with_info msg @@
   type_stmts env tbody
 
+(* type library, handling cache as necessary. *)
+let type_library_cache tenv elib =
+  (* We are caching SimpleTEnv = MakeTEnv(PlainTypes) *)
+  let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) in
+  let open STC in
+  (* Check if we have the type info in cache. *)
+  match get_lib_tenv_cache tenv elib with
+  | Some tenv' ->
+    (* Use cached entries. *)
+    (tenv', "")
+  | None ->
+    (* Couldn't find in cache. Actually type the library. *)
+    let res = type_library tenv elib in
+    (match res with
+    | Error msg -> (tenv, msg)
+    | Ok tenv' -> 
+        (* Since we don't have this in cache, cache it now. *)
+        cache_lib_tenv tenv' elib;
+        (tenv', "")
+    )
+
 let type_module md elibs =
   let {libs; contr; _} = md in
   let {cname; cparams; cfields; ctrans} = contr in
@@ -348,15 +374,14 @@ let type_module md elibs =
   | Some lib -> List.append elibs (lib::[])
   | None -> elibs
   in
-  (* TODO: Cache this information unless its version changed! *)
   let (tenv, emsgs) = List.fold_left all_libs ~init:(tenv0, "")
-      ~f:(fun (acc, emsgs) elib -> 
-      let r = type_library acc elib in
-      let tenv, emsg = match r with
-      | Error msg -> (acc, emsgs ^ "\n\n" ^ msg)
-      | Ok t -> (t, emsgs) in
-      (tenv, emsg)
-    ) in
+    ~f:(fun (tenv_acc, emsgs_acc) elib ->
+      let (tenv', emsg) = type_library_cache tenv_acc elib in
+      let emsgs' = if emsg = "" then emsgs_acc else (emsgs_acc ^ "\n\n" ^ emsg) in
+      (* Updated env and error messages are what we accummulate in the fold. *)
+        (tenv', emsgs')
+    )
+  in
 
   (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
   let params = append_implict_contract_params cparams in

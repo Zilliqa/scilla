@@ -1,0 +1,11 @@
+(* Expected result: *)
+(* Cannot find built-in with name "add" and argument types [Int64; Int32] *)
+let f = fun (z : Int32) =>
+    let b = Int32 40 in
+    fun (c : Int32) =>
+    	let t = builtin add b c in
+	builtin add z t
+in
+let a = Int64 100 in
+let b = Int32 2 in
+f a b

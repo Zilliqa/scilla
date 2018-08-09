@@ -16,27 +16,19 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+(*****************************************************************)
+(*                    Library type caching                       *)
+(*****************************************************************)
 
+open Syntax
+open TypeUtil
 
+module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) : sig
 
+  type t = Q(R).TEnv.t
 
-module Tests = TestUtil.DiffBasedTests(
-  struct
-    let gold_path dir f = [dir; "typecheck"; "good"; "gold"; f ^ ".gold" ]
-    let test_path f = ["typecheck"; "good"; f]
-    let runner = "type-checker"      
-    let tests = [
-      "fun.scilla";
-      "fun1.scilla";
-      "addr.scilla";
-      "app.scilla";
-      "list1.scilla";
-      "pm1.scilla";
-      "pm2.scilla";
-      "pm3.scilla";
-      "pm4.scilla";
-      "subst.scilla";
-      "zip.scilla";
-    ]
-    let use_stdlib = true
-  end)
+  (* Get type info for "lib" from cache, if it exists. *)
+  val get_lib_tenv_cache : t -> loc library -> t option
+  (* Store type info tenv, for "lib" in the cache. *)
+  val cache_lib_tenv : t -> loc library -> unit
+end
