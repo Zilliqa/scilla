@@ -131,7 +131,7 @@ val wrap_with_info : string -> ('a, string) result -> ('a, string) result
 
 val wrap_err : loc expr -> ?opt:string -> ('a, string) result -> ('a, string) result
 
-val wrap_serr : loc stmt -> ?opt:string ->
+val wrap_serr : (loc, loc) stmt -> ?opt:string ->
   ('a, string) result -> ('a, string) result
 
 (****************************************************************)

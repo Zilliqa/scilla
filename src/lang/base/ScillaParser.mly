@@ -92,10 +92,10 @@
 (* %left PLUS *)
 (* %nonassoc NEG *)
 
-%start <Syntax.loc Syntax.expr list> exps
+%start <Syntax.loc Syntax.expr_annot list> exps
 %start <Syntax.typ list> types
-%start <Syntax.loc Syntax.stmt list> stmts_term
-%start <Syntax.loc Syntax.cmodule> cmodule
+%start <(Syntax.loc, Syntax.loc) Syntax.stmt_annot list> stmts_term
+%start <(Syntax.loc, Syntax.loc) Syntax.cmodule> cmodule
 %start <Syntax.loc Syntax.library> lmodule
 
 %%
@@ -129,26 +129,26 @@ exp:
 | LET; x = ID;
   t = ioption(type_annot) 
   EQ; f = simple_exp; IN; e = exp
-  {Let ((Ident (x, toLoc $startpos)), t, f, e) }
+  {(Let ((Ident (x, toLoc $startpos)), t, f, e), toLoc $startpos) }
                                              
 simple_exp :    
 (* Function *)    
 | FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
-  { Fun (Ident (i, toLoc $startpos), t, e) } 
+  { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) } 
 (* Application *)  
 | f = ID;
   args = nonempty_list(ID)
   { let xs = List.map (fun i -> Ident (i, toLoc $startpos)) args
-    in App ((Ident (f, toLoc $startpos)), xs) }
+    in (App ((Ident (f, toLoc $startpos)), xs), toLoc $startpos ) }
 (* Atomic expression *)
 | a = atomic_exp {a} 
 (* Built-in call *)
 | BUILTIN; b = ID; args = nonempty_list(ID)
   { let xs = List.map (fun i -> Ident (i, dummy_loc)) args
-    in Builtin ((Ident (b, toLoc $startpos)), xs) }
+    in (Builtin ((Ident (b, toLoc $startpos)), xs), toLoc $startpos) }
 (* Message construction *)
 | LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE
-  { Message es } 
+  { (Message es, toLoc $startpos) } 
 (* Data constructor application *)
 | c = CID ts=option(ctargs) args=list(ID)
   { let targs =
@@ -156,21 +156,21 @@ simple_exp :
        | None -> []
        | Some ls -> ls) in
     let xs = List.map (fun i -> Ident (i, toLoc $startpos)) args in
-    Constr (c, targs, xs)
+    (Constr (c, targs, xs), toLoc $startpos)
   }
 (* Match expression *)
 | MATCH; x = ID; WITH; cs=list(exp_pm_clause); END
-  { MatchExpr (Ident (x, toLoc $startpos), cs) }
+  { (MatchExpr (Ident (x, toLoc $startpos), cs), toLoc $startpos) }
 (* Type function *)
 | TFUN; i = TID ARROW; e = exp
-  { TFun (Ident (i, toLoc $startpos), e) } 
+  { (TFun (Ident (i, toLoc $startpos), e), toLoc $startpos) } 
 (* Type application *)
 | AT; f = ID; targs = nonempty_list(targ)
-  { TApp ((Ident (f, toLoc $startpos)), targs) }
+  { (TApp ((Ident (f, toLoc $startpos)), targs), toLoc $startpos) }
 
   atomic_exp :
-| i = ID       { Var (Ident (i, toLoc $startpos)) }
-| l = lit      { Literal l } 
+| i = ID       { (Var (Ident (i, toLoc $startpos)), toLoc $startpos) }
+| l = lit      { (Literal l, toLoc $startpos) } 
                
 lit :        
 | BLOCK;
@@ -236,14 +236,14 @@ types :
 (***********************************************)
 
 stmt:
-| l = ID; BIND; r = ID   { Load (asIdL l (toLoc $startpos($2)), asId r) }
-| l = ID; ASSIGN; r = ID { Store (asIdL l (toLoc $startpos($2)), asId r) }
-| l = ID; EQ; r = exp    { Bind (asIdL l (toLoc $startpos($2)), r) }
-| l=ID; BIND; AND; c=CID { ReadFromBC (asIdL l (toLoc $startpos($2)), c) }
-| ACCEPT                 { AcceptPayment }
-| SEND; m = ID;          { SendMsgs (asIdL m (toLoc $startpos)) }
+| l = ID; BIND; r = ID   { (Load (asIdL l (toLoc $startpos($2)), asId r), toLoc $startpos) }
+| l = ID; ASSIGN; r = ID { (Store (asIdL l (toLoc $startpos($2)), asId r), toLoc $startpos) }
+| l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos($2)), r), toLoc $startpos) }
+| l=ID; BIND; AND; c=CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
+| ACCEPT                 { (AcceptPayment, toLoc $startpos) }
+| SEND; m = ID;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | MATCH; x = ID; WITH; cs=list(stmt_pm_clause); END
-  { MatchStmt (Ident (x, toLoc $startpos), cs) }
+  { (MatchStmt (Ident (x, toLoc $startpos), cs), toLoc $startpos)  }
 
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;

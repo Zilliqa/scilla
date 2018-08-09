@@ -179,22 +179,25 @@ let expr_str e =
 (*                   Statements                        *)
 (*******************************************************)
 
-type 'rep stmt =
-  | Load of 'rep ident * 'rep ident
-  | Store of 'rep ident * 'rep ident
-  | Bind of 'rep ident * 'rep expr_annot
-  | MatchStmt of 'rep ident * ('rep pattern * 'rep stmt list) list
-  | ReadFromBC of 'rep ident * string
+type ('rep, 'erep) stmt_annot = ('rep, 'erep) stmt * 'rep
+and ('rep, 'erep) stmt =
+  | Load of 'erep ident * 'erep ident
+  | Store of 'erep ident * 'erep ident
+  | Bind of 'erep ident * 'erep expr_annot
+  | MatchStmt of 'erep ident * ('erep pattern * ('rep, 'erep) stmt_annot list) list
+  | ReadFromBC of 'erep ident * string
   | AcceptPayment
-  | SendMsgs of 'rep ident
+  | SendMsgs of 'erep ident
   | Event of string * string
-  | Throw of 'rep ident
+  | Throw of 'erep ident
 [@@deriving sexp]
 
-let stmt_str s =
-  sexp_of_stmt sexp_of_loc s |> Sexplib.Sexp.to_string
+let stmt_str (srep : ('rep, 'erep) stmt_annot) =
+  let (s, _) = srep in 
+  let sexp = sexp_of_stmt sexp_of_loc sexp_of_loc s in
+  Sexplib.Sexp.to_string sexp
 
-let stmt_loc (s : 'rep stmt) : loc option = 
+let stmt_loc (s : ('rep, 'erep) stmt) : loc option = 
   match s with
   | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
   | MatchStmt (i, _)
@@ -207,10 +210,10 @@ let stmt_loc (s : 'rep stmt) : loc option =
 (*                    Contracts                        *)
 (*******************************************************)
 
-type 'rep transition = 
-  { tname   : 'rep ident;
-    tparams : ('rep ident  * typ) list;
-    tbody   : 'rep stmt list }
+type ('rep, 'erep) transition = 
+  { tname   : 'erep ident;
+    tparams : ('erep ident  * typ) list;
+    tbody   : ('rep, 'erep) stmt_annot list }
 [@@deriving sexp]
 
 type 'rep lib_entry =
@@ -223,11 +226,11 @@ type 'rep library =
     lentries : 'rep lib_entry list }
 [@@deriving sexp]
   
-type 'rep contract =
-  { cname   : 'rep ident;
-    cparams : ('rep ident  * typ) list;
-    cfields : ('rep ident * typ * 'rep expr_annot) list;
-    ctrans  : 'rep transition list; }
+type ('rep, 'erep) contract =
+  { cname   : 'erep ident;
+    cparams : ('erep ident  * typ) list;
+    cfields : ('erep ident * typ * 'erep expr_annot) list;
+    ctrans  : ('rep, 'erep) transition list; }
 [@@deriving sexp]
 
 let pp_cparams ps =
@@ -237,9 +240,9 @@ let pp_cparams ps =
   "[" ^ (String.concat ~sep:", " cs) ^ "]"
 
 (* Contract module: libary + contract definiton *)
-type 'rep cmodule =
-  { cname : 'rep ident;
-    libs  : ('rep library) option;     (* lib functions defined in the module *)
-    elibs : 'rep ident list;  (* list of imports / external libs *)
-    contr : 'rep contract }
+type ('rep, 'erep) cmodule =
+  { cname : 'erep ident;
+    libs  : ('erep library) option;     (* lib functions defined in the module *)
+    elibs : 'erep ident list;  (* list of imports / external libs *)
+    contr : ('rep, 'erep) contract }
 [@@deriving sexp]

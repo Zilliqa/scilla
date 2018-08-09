@@ -194,37 +194,47 @@ type stmt_tenv = {
   bc     : TEnv.t;
 }
 
+let add_stmt_to_stmts_env s repstmts =
+  match repstmts with
+  | (stmts, env) -> (s :: stmts, env)
+
 let rec type_stmts env stmts =
   let open PrimTypes in
   let open Datatypes.DataTypeDictionary in 
   match stmts with
-  | [] -> pure env
-  | s :: sts -> (match s with
-      | Load (x, f) ->
-          let%bind env' = wrap_serr s (
-              let%bind fr = TEnv.resolveT env.fields (get_id f) in
-              let pure' = TEnv.addT (TEnv.copy env.pure) x (rr_typ fr).tp in
-              pure {env with pure = pure'}
-            ) in
-          type_stmts env' sts                            
-      | Store (f, r) ->
-          if List.mem ~equal:(fun s1 s2 -> s1 = s2)
-              no_store_fields (get_id f) then
-            wrap_serr s (
-              fail @@ sprintf
-                "Writing to the field `%s` is prohibited." (get_id f)) 
-          else          
-            let%bind _ = wrap_serr s (
-                let%bind fr = TEnv.resolveT env.fields (get_id f) in
-                let%bind r = TEnv.resolveT env.pure (get_id r) in
-                assert_type_equiv (rr_typ fr).tp (rr_typ r).tp
-              ) in
-            type_stmts env sts            
+  | [] -> pure ([], env)
+  | (s, rep) :: sts ->
+      (match s with
+       | Load (x, f) ->
+           let%bind checked_stmts = wrap_serr s (
+               let%bind fr = TEnv.resolveT env.fields (get_id f) in
+               let pure' = TEnv.addT (TEnv.copy env.pure) x (rr_typ fr).tp in
+               let next_env = {env with pure = pure'} in
+               type_stmts next_env sts
+             ) in
+           pure @@ add_stmt_to_stmts_env (Load (x, f), rep) checked_stmts
+       | Store (f, r) ->
+           if List.mem ~equal:(fun s1 s2 -> s1 = s2)
+               no_store_fields (get_id f) then
+             wrap_serr s (
+               fail @@ sprintf
+                 "Writing to the field `%s` is prohibited." (get_id f)) 
+           else          
+             let%bind checked_stmts = wrap_serr s (
+                 let%bind fr = TEnv.resolveT env.fields (get_id f) in
+                 let%bind r = TEnv.resolveT env.pure (get_id r) in
+                 let%bind _ = assert_type_equiv (rr_typ fr).tp (rr_typ r).tp in
+                 type_stmts env sts
+               ) in
+             pure @@ add_stmt_to_stmts_env (Store (f, r), rep) checked_stmts
       | Bind (x, e) ->
-          let%bind (_, (ityp, _)) = wrap_serr s @@ type_expr env.pure e in
+          let%bind (_, (ityp, _)) as checked_e = wrap_serr s @@ type_expr env.pure e in
           let pure' = TEnv.addT (TEnv.copy env.pure) x ityp.tp in
           let env' = {env with pure = pure'} in
-          type_stmts env' sts
+          let%bind checked_stmts = type_stmts env' sts in
+          pure @@ add_stmt_to_stmts_env (Bind (x, checked_e), (ityp, rep)) checked_stmts
+
+
       | ReadFromBC (x, bf) ->
           let%bind r = wrap_serr s @@ TEnv.resolveT env.bc bf in
           let bt = (rr_typ r).tp in
