@@ -43,3 +43,5 @@ cv/*.out
 *.synctex.gz
 *.out.ps
 .#*
+
+src/stdlib/*.json
