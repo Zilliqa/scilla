@@ -113,40 +113,42 @@ let rec subst_type_in_literal tvar tp l = match l with
 
 
 (* Substitute type for a type variable *)
-let rec subst_type_in_expr tvar tp e = match e with
-  | Literal l -> Literal (subst_type_in_literal tvar tp l)
-  | Var _ as v -> v
+let rec subst_type_in_expr tvar tp (erep : 'rep expr_annot) =
+  let (e, rep) = erep in
+  match e with
+  | Literal l -> (Literal (subst_type_in_literal tvar tp l), rep)
+  | Var _ as v -> (v, rep)
   | Fun (f, t, body) ->
       let t_subst = subst_type_in_type' tvar tp t in 
       let body_subst = subst_type_in_expr tvar tp body in
-      Fun (f, t_subst, body_subst)
+      (Fun (f, t_subst, body_subst), rep)
   | TFun (tv, body) as tf ->
       if get_id tv = get_id tvar
-      then tf
+      then (tf, rep)
       else 
         let body_subst = subst_type_in_expr tvar tp body in
-        TFun (tv, body_subst)
+        (TFun (tv, body_subst), rep)
   | Constr (n, ts, es) ->
       let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
-      Constr (n, ts', es)
-  | App _ as app -> app
-  | Builtin _ as bi -> bi
+      (Constr (n, ts', es), rep)
+  | App _ as app -> (app, rep)
+  | Builtin _ as bi -> (bi, rep)
   | Let (i, tann, lhs, rhs) ->
       let tann' = Option.map tann ~f:(fun t -> subst_type_in_type' tvar tp t) in
       let lhs' = subst_type_in_expr tvar tp lhs in
       let rhs' = subst_type_in_expr tvar tp rhs in
-      Let (i, tann', lhs', rhs')
-  | Message _ as m -> m
+      (Let (i, tann', lhs', rhs'), rep)
+  | Message _ as m -> (m, rep)
   | MatchExpr (e, cs) ->
       let cs' = List.map cs ~f:(fun (p, b) -> (p, subst_type_in_expr tvar tp b)) in
-      MatchExpr(e, cs')
+      (MatchExpr(e, cs'), rep)
   | TApp (tf, tl) -> 
       let tl' = List.map tl ~f:(fun t -> subst_type_in_type' tvar tp t) in
-      TApp (tf, tl')
+      (TApp (tf, tl'), rep)
   | Fixpoint (f, t, body) ->
       let t' = subst_type_in_type' tvar tp t in
       let body' = subst_type_in_expr tvar tp body in
-      Fixpoint (f, t', body')
+      (Fixpoint (f, t', body'), rep)
 
 (****************************************************************)
 (*                Inferred types and qualifiers                 *)

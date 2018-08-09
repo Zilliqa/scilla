@@ -51,7 +51,8 @@ let check_typing e elibs =
   (* TODO: Cache this information unless its version changed! *)
   let%bind tenv1 = MonadUtil.foldM elibs ~init:tenv0
       ~f:(fun acc elib -> TypeChecker.type_library acc elib) in
-  TypeChecker.type_expr tenv1 e
+  let%bind (_, (typ, _)) = TypeChecker.type_expr tenv1 e in
+  pure @@ typ
 
 let () =
   if (Array.length Sys.argv) < 2

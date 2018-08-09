@@ -182,7 +182,7 @@ let expr_str e =
 type 'rep stmt =
   | Load of 'rep ident * 'rep ident
   | Store of 'rep ident * 'rep ident
-  | Bind of 'rep ident * 'rep expr
+  | Bind of 'rep ident * 'rep expr_annot
   | MatchStmt of 'rep ident * ('rep pattern * 'rep stmt list) list
   | ReadFromBC of 'rep ident * string
   | AcceptPayment
@@ -215,7 +215,7 @@ type 'rep transition =
 
 type 'rep lib_entry =
   { lname : 'rep ident;
-    lexp  : 'rep expr }
+    lexp  : 'rep expr_annot }
 [@@deriving sexp]
 
 type 'rep library =
@@ -226,7 +226,7 @@ type 'rep library =
 type 'rep contract =
   { cname   : 'rep ident;
     cparams : ('rep ident  * typ) list;
-    cfields : ('rep ident * typ * 'rep expr) list;
+    cfields : ('rep ident * typ * 'rep expr_annot) list;
     ctrans  : 'rep transition list; }
 [@@deriving sexp]
 

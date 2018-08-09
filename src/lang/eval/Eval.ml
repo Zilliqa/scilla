@@ -69,7 +69,9 @@ let vals_to_literals vals =
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
 (*******************************************************)
-let rec exp_eval e env = match e with
+let rec exp_eval erep env =
+  let (e, _) = erep in
+  match e with
   | Literal l ->
       pure (Env.ValLit l, env)
   | Var i ->

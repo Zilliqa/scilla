@@ -29,4 +29,4 @@ val parse_string : ((Lexing.lexbuf -> ScillaParser.token) ->
 
 val parse_type : string -> typ
 
-val parse_expr : string -> loc expr
+val parse_expr : string -> loc expr_annot

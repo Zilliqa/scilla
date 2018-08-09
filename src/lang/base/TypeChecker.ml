@@ -221,7 +221,7 @@ let rec type_stmts env stmts =
               ) in
             type_stmts env sts            
       | Bind (x, e) ->
-          let%bind ityp = wrap_serr s @@ type_expr env.pure e in
+          let%bind (_, (ityp, _)) = wrap_serr s @@ type_expr env.pure e in
           let pure' = TEnv.addT (TEnv.copy env.pure) x ityp.tp in
           let env' = {env with pure = pure'} in
           type_stmts env' sts
@@ -280,7 +280,7 @@ let type_recursion_principles =
         wrap_with_info
           (sprintf "Type error when checking recursion primitive %s:\n"
              (get_id rn)) @@
-        let%bind ar = type_expr env0 body in
+        let%bind (_, (ar, _)) = type_expr env0 body in
         let actual = ar.tp in
         let%bind _ = assert_type_equiv expected actual in
         pure (rn, actual))
@@ -303,7 +303,7 @@ let type_library env0 {lentries = ents; _} =
         let msg = sprintf
             "[%s] Type error in library %s:\n"
             (get_loc_str (get_loc ln)) (get_id ln) in
-        let%bind tr = wrap_with_info msg (type_expr env le) in       
+        let%bind (_, (tr, _)) = wrap_with_info msg (type_expr env le) in       
         pure @@ TEnv.addT (TEnv.copy env) ln tr.tp) in
   pure @@ TEnv.copy res
 
@@ -329,7 +329,7 @@ let type_fields tenv flds =
           "[%s] Type error in field %s:\n"
           (get_loc_str (get_loc fn)) (get_id fn) in
       wrap_with_info msg @@
-      let%bind ar = type_expr tenv fe in
+      let%bind (_, (ar, _)) = type_expr tenv fe in
       let actual = ar.tp in
       let%bind _ = assert_type_equiv ft actual in
       pure @@ TEnv.addT (TEnv.copy fenv) fn actual)

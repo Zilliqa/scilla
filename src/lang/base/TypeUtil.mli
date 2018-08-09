@@ -21,7 +21,7 @@ open Syntax
 
 val subst_type_in_type: string -> typ -> typ -> typ
 val subst_type_in_literal: 'a ident -> typ -> literal -> literal
-val subst_type_in_expr: 'a ident -> typ -> 'a expr -> 'a expr
+val subst_type_in_expr: 'a ident -> typ -> 'a expr_annot -> 'a expr_annot
 
 (* An inferred type with possible qualifiers *)
 type 'rep inferred_type = {

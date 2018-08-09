@@ -36,9 +36,9 @@ module Env = struct
   (* Fully reduced value *)
   'rep value =
     | ValLit of literal
-    | ValClosure of 'rep Syntax.ident * typ * 'rep expr * 'rep t
-    | ValTypeClosure of 'rep Syntax.ident * 'rep expr * 'rep t                      
-    | ValFix of 'rep Syntax.ident * typ * 'rep expr * 'rep t
+    | ValClosure of 'rep Syntax.ident * typ * 'rep expr_annot * 'rep t
+    | ValTypeClosure of 'rep Syntax.ident * 'rep expr_annot * 'rep t                      
+    | ValFix of 'rep Syntax.ident * typ * 'rep expr_annot * 'rep t
   [@@deriving sexp]
 
   (* Pretty-printing *)
