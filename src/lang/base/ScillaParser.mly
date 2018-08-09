@@ -91,6 +91,7 @@
 
 (* %left PLUS *)
 (* %nonassoc NEG *)
+%right TARROW
 
 %start <Syntax.loc Syntax.expr list> exps
 %start <Syntax.typ list> types
@@ -110,7 +111,8 @@ typ :
     | _ -> ADT (d, targs)
   }   
 | MAP; k=targ; v = targ; { MapType (k, v) }
-| t1 = targ; TARROW; t2 = typ; {FunType (t1, t2) }
+| t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
+| LPAREN; t = typ; RPAREN; { t }
 | FORALL; tv = TID; PERIOD; t = typ; {PolyFun (tv, t)}
 | t = TID; { TypeVar t }        
                                   
