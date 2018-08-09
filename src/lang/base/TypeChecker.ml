@@ -56,8 +56,8 @@ let assign_types_for_pattern sctyp pattern =
 (**************************************************************)
 
 (* TODO: Check if the type is well-formed: support type variables *)
-let rec type_expr tenv (re : 'rep expr_annot)=
-  let (e, rep) = re in
+let rec type_expr tenv (erep : 'rep expr_annot)=
+  let (e, rep) = erep in
   match e with
   | Literal l ->
       let%bind lt = literal_type l in
