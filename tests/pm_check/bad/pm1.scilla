@@ -1,0 +1,8 @@
+(* Expected result: *)
+(* Type checking failed: *)
+(* [pm_check/bad/pm1.scilla:6:1] Type error in pattern matching on `b` of type Bool (or one of its branches): *)
+(* Non-exhaustive pattern match. *)
+let b = False in
+match b with 
+    | False => Int32 1
+    end

@@ -1,0 +1,3 @@
+Type checking failed:
+[pm_check/bad/pm_nesting1.scilla:9:1] Type error in pattern matching on `y` of type List (Option (Int32)) (or one of its branches):
+Non-exhaustive pattern match.

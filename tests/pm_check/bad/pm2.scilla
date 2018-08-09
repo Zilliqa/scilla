@@ -1,0 +1,9 @@
+(* Expected result: *)
+(* Type checking failed: *)
+(* [pm_check/bad/pm2.scilla:7:1] Type error in pattern matching on `b` of type Option (Int32) (or one of its branches): *)
+(* Non-exhaustive pattern match. *)
+let z = Int32 3 in 
+let b = Some {Int32} z in
+match b with 
+    | Some t => Int32 1
+    end
