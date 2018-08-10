@@ -30,6 +30,13 @@ let rec foldM ~f ~init ls = match ls with
       foldM ~f:f ~init:res ls'
   | [] -> Ok init
 
+(* Monadic fold-right for error *)
+let rec foldrM ~f ~init ls = match ls with
+  | x :: ls' ->
+      let%bind rest = foldrM ~f:f ~init:init ls' in
+      f rest x
+  | [] -> Ok init
+
 (* Monadic map for error *)
 let rec mapM ~f ls = match ls with
   | x :: ls' ->
