@@ -27,6 +27,7 @@ open Datatypes
 (*                  Type substitutions                          *)
 (****************************************************************)
 
+(* Return free tvars in tp *)
 let free_tvars tp =
   let add vs tv = tv :: List.filter ~f:(fun v -> v = tv) vs in
   let rem vs tv = List.filter ~f:(fun v -> v <> tv) vs in
@@ -92,6 +93,28 @@ let rec refresh_tfun t taken = match t with
       let taken' = arg' :: taken in
       let bt2 = refresh_tfun bt1 taken' in
       PolyFun (arg', bt2)
+
+(* Alpha renaming to canonical (pre-determined) names. *)
+let canonicalize_tfun t =
+  let taken = free_tvars t in
+  let get_new_name counter = "'_A" ^ Int.to_string counter in
+  let rec refresh t taken counter = match t with
+    | MapType (kt, vt) -> MapType (kt, refresh vt taken counter)
+    | FunType (at, rt) ->
+        FunType (refresh at taken counter, refresh rt taken counter)
+    | ADT (n, ts) ->
+        let ts' = List.map ts ~f:(fun w -> refresh w taken counter) in
+        ADT (n, ts')
+    | PrimType _ | TypeVar _ -> t
+    | PolyFun (arg, bt) ->
+        let arg' = get_new_name counter in
+        let tv_new = TypeVar arg' in
+        let bt1 = subst_type_in_type arg tv_new bt in
+        let taken' = arg' :: taken in
+        let bt2 = refresh bt1 taken' (counter+1) in
+        PolyFun (arg', bt2)
+  in
+    refresh t taken 1
 
 (* The same as above, but for a variable with locations *)
 let subst_type_in_type' tv = subst_type_in_type (get_id tv)
@@ -291,9 +314,10 @@ let map_typ k v = MapType (k, v)
 (****************************************************************)
 
 (* Type equivalence *)
-(* TODO: Generalise for up to alpha renaming of TVars *)
 let type_equiv t1 t2 =
-  t1 = t2
+  let t1' = canonicalize_tfun t1 in
+  let t2' = canonicalize_tfun t2 in
+    t1' = t2'
 
 (* Return True if corresponding elements are `type_equiv`,
    False otherwise, or if unequal lengths. *)
