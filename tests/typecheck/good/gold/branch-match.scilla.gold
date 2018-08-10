@@ -1,0 +1,1 @@
+forall 'X. forall 'A. ('A -> 'X) -> ('A -> 'X) -> 'A -> Bool -> 'X
