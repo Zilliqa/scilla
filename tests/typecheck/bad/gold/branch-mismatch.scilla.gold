@@ -1,0 +1,3 @@
+Type checking failed:
+[typecheck/bad/branch-mismatch.scilla:8:2] Type error in pattern matching on `c` of type Bool (or one of its branches):
+Not all types of the branches ['X; 'Y] are equivalent.

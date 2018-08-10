@@ -1,0 +1,12 @@
+tfun 'X =>
+tfun 'Y =>
+tfun 'A =>
+ fun (f : 'A -> 'X) =>
+ fun (g : 'A -> 'Y) =>
+ fun (a : 'A) =>
+ fun (c : Bool) =>
+ match c with
+ | True =>  f a
+ | False => g a
+ end
+ 

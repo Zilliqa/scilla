@@ -60,6 +60,7 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["typecheck"; "good"; f]
     let runner = "type-checker"      
     let tests = [
+      "branch-match.scilla";
       "fun.scilla";
       "fun1.scilla";
       "addr.scilla";
