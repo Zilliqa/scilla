@@ -44,9 +44,12 @@ let type_equiv_tests = [
   ("forall 'A. List ('A) -> List ('A)", "forall 'A. List ('A) -> List ('A) -> List ('A)", false);
   ("forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
     "forall 'B. forall 'A. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B", false);
+  ("forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
+    "forall 'B. forall 'A. ('A -> 'B -> 'A) -> 'A -> List ('B) -> 'A", true);
   ("forall 'A. 'A -> forall 'B. List ('B)", "forall 'B. 'B -> forall 'A. List ('A)", true);
   ("forall 'A. 'A -> (forall 'A. List ('A)) -> 'A", "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B", true);
   ("forall 'A. 'A -> (forall 'A. List ('A)) -> 'B", "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B", false);
+  ("forall 'A. 'A -> (forall 'A. List ('A)) -> 'B", "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B", true);
 ]
 
 let type_equiv_tests = "type_equiv_tests" >::: (make_type_equiv_tests type_equiv_tests)
