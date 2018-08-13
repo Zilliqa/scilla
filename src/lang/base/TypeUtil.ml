@@ -261,13 +261,11 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
     let is_wf_type tenv t =
       let rec is_wf_typ' t' tb = match t' with
       | MapType (kt, vt) ->
-        let _ = is_wf_typ' kt tb in
-        let _ = is_wf_typ' vt tb in
-          pure ()
+        let%bind _ = is_wf_typ' kt tb in
+          is_wf_typ' vt tb
       | FunType (at, rt) ->
-        let _ = is_wf_typ' at tb in
-        let _ = is_wf_typ' rt tb in
-          pure ()
+        let%bind _ = is_wf_typ' at tb in
+          is_wf_typ' rt tb
       | ADT (n, ts) ->
         let open Datatypes.DataTypeDictionary in
         let%bind adt = lookup_name n in
@@ -275,8 +273,7 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
           fail @@ sprintf "ADT type %s expects %d arguments but got %d.\n" 
           n (List.length adt.tparams) (List.length ts) 
         else
-          let _ = foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:(()) ts in
-            pure ()
+          foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:(()) ts
       | PrimType _  -> pure ()
       | TypeVar a ->
         (* Check if bound locally. *)
@@ -284,9 +281,7 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
         (* Check if bound in environment. *)
         else if List.mem (tvars tenv) (a, dummy_loc) ~equal:(fun x y -> fst x = fst y) then pure()
         else fail @@ sprintf "Unbound type variable %s in type %s" a (pp_typ t)
-      | PolyFun (arg, bt) ->
-        let _ = is_wf_typ' bt (arg::tb) in
-          pure ()
+      | PolyFun (arg, bt) -> is_wf_typ' bt (arg::tb)
       in
         is_wf_typ' t []
 
