@@ -1,0 +1,2 @@
+Type checking failed:
+Unbound type variable 'A in type 'A
