@@ -428,7 +428,7 @@ end
 
 module ContractInfo = struct
 
-let get_string (contr : 'rep contract) =
+let get_string (contr : ('rep, 'erep) contract) =
   (* 1. contract name *)
   let namej = ("name", `String (get_id contr.cname)) in
   (* 2. parameters *)

@@ -142,7 +142,7 @@ let rec exp_eval erep env =
       let%bind ((_, e_branch), bnds) =
         tryM clauses
           ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
-                  (Env.pp_value v) (expr_str e))
+                  (Env.pp_value v) (expr_str erep))
           ~f:(fun (p, _) -> match_with_pattern v p) in
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env
@@ -172,10 +172,10 @@ let rec exp_eval erep env =
    *     match expr_loc e with
    *     | Some l1 -> fail @@
    *         sprintf "Expression in line %s: %s  is not supported yet."
-   *           (Int.to_string l1.lnum) (expr_str e)
+   *           (Int.to_string l1.lnum) (expr_str erep)
    *     | None -> fail @@
    *         sprintf  "Expression in line %s is not supported yet."
-   *           (expr_str e) *)
+   *           (expr_str erep) *)
 
 (* Applying a function *)
 and try_apply_as_closure v arg =
@@ -218,7 +218,7 @@ and try_apply_as_type_closure v arg_type =
 let rec stmt_eval conf stmts =
   match stmts with
   | [] -> pure conf
-  | s :: sts -> (match s with
+  | ((s, _) as stmt) :: sts -> (match s with
       | Load (x, r) ->
           let%bind l = Configuration.load conf r in
           let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
@@ -240,7 +240,7 @@ let rec stmt_eval conf stmts =
           let%bind ((_, branch_stmts), bnds) =
             tryM clauses
               ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
-                      (Env.pp_value v) (stmt_str s))
+                      (Env.pp_value v) (stmt_str stmt))
               ~f:(fun (p, _) -> match_with_pattern v p) in 
           (* Update the environment for the branch *)
           let conf' = List.fold_left bnds ~init:conf
@@ -260,7 +260,7 @@ let rec stmt_eval conf stmts =
 
       (* TODO: Implement the rest *)
       | _ -> fail @@ sprintf "The statement %s is not supported yet."
-            (stmt_str s)
+            (stmt_str stmt)
     )
 
 (*******************************************************)

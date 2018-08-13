@@ -172,8 +172,10 @@ let expr_loc (e : 'rep expr) : loc option =
   | _ -> None
 
 (* TODO: make normal pretty-printing *)
-let expr_str e =
-  sexp_of_expr sexp_of_loc e |> Sexplib.Sexp.to_string
+let expr_str (erep : 'rep expr_annot) =
+  let (e, _) = erep in
+  let eexp = sexp_of_expr sexp_of_loc e in
+  Sexplib.Sexp.to_string eexp
 
 (*******************************************************)
 (*                   Statements                        *)

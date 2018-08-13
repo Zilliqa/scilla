@@ -130,7 +130,7 @@ module ContractInfo : sig
           ]
         }
   *)
-  val get_string : 'rep Syntax.contract -> string
+  val get_string : ('rep, 'erep) Syntax.contract -> string
 end
 
 exception Invalid_json of string

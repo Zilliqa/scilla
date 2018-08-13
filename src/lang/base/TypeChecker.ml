@@ -121,7 +121,7 @@ let rec type_expr tenv (erep : 'rep expr_annot) =
   | MatchExpr (x, clauses) ->
       if List.is_empty clauses
       then fail @@ sprintf
-          "List of pattern matching clauses is empty:\n%s" (expr_str e)
+          "List of pattern matching clauses is empty:\n%s" (expr_str erep)
       else
         let%bind sctyp = TEnv.resolveT tenv (get_id x)
             ~lopt:(Some (get_loc x)) in
@@ -229,7 +229,7 @@ let rec type_stmts env stmts =
   let open Datatypes.DataTypeDictionary in 
   match stmts with
   | [] -> pure ([], env)
-  | (s, rep) :: sts ->
+  | ((s, rep) as stmt) :: sts ->
       (match s with
        | Load (x, f) ->
            let%bind (checked_stmts, ident_type) = wrap_serr s (
@@ -267,26 +267,33 @@ let rec type_stmts env stmts =
           let typed_x = add_type_to_ident x ityp in
           pure @@ add_stmt_to_stmts_env (Bind (typed_x, checked_e), rep) checked_stmts
 
-
+      (* TODO *)
       | ReadFromBC (x, bf) ->
           let%bind r = wrap_serr s @@ TEnv.resolveT env.bc bf in
           let bt = (rr_typ r).tp in
           let pure' = TEnv.addT (TEnv.copy env.pure) x bt in
           let env' = {env with pure = pure'} in
           type_stmts env' sts
+
+      (* DONE *)
       | MatchStmt (x, clauses) ->
           if List.is_empty clauses
           then wrap_serr s @@ fail @@ sprintf
-              "List of pattern matching clauses is empty:\n%s" (stmt_str s)
+              "List of pattern matching clauses is empty:\n%s" (stmt_str stmt)
           else
             let%bind sctyp = TEnv.resolveT env.pure (get_id x)
                 ~lopt:(Some (get_loc x)) in
-            let sct = (rr_typ sctyp).tp in
+            let sctype = rr_typ sctyp in
+            let sct = sctype.tp in
             let msg = sprintf " of type %s" (pp_typ sct) in
-            let%bind _ = wrap_serr s ~opt:msg @@
+            let typed_x = add_type_to_ident x sctype in
+            let%bind checked_clauses = wrap_serr s ~opt:msg @@
               mapM clauses ~f:(fun (ptrn, ex) ->
                   type_match_stmt_branch env sct ptrn ex) in
-            type_stmts env sts                      
+            let%bind checked_stmts = type_stmts env sts in
+            pure @@ add_stmt_to_stmts_env (MatchStmt (typed_x, checked_clauses), rep) checked_stmts
+
+      (* TODO *)
       | AcceptPayment ->
           type_stmts env sts                      
       | SendMsgs i ->
@@ -299,13 +306,14 @@ let rec type_stmts env stmts =
       | _ ->
           fail @@ sprintf
             "Type-checking the statement %s is not supported yet."
-            (stmt_str s)
+            (stmt_str stmt)
     )
 and type_match_stmt_branch env styp ptrn sts =
-  let%bind new_typings = assign_types_for_pattern styp ptrn in
+  let%bind (new_p, new_typings) = assign_types_for_pattern styp ptrn in
   let pure' = TEnv.addTs (TEnv.copy env.pure) new_typings in
   let env' = {env with pure = pure'} in
-  type_stmts env' sts
+  let new_stmts = (type_stmts env' sts) in
+  pure @@ (new_p, new_stmts)
 
 
 (**************************************************************)
