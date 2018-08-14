@@ -1,7 +1,7 @@
-(IntLit 32 42),
-{ [x -> (IntLit 32 42)],
-  [c -> (ADTValue Some((ADT Option((PrimType Int32))))((ADTValue Some((PrimType Int32))((IntLit 32 42)))))],
-  [b -> (ADTValue True()())],
-  [z -> (IntLit 32 3)],
-  [y -> (ADTValue Some((PrimType Int32))((IntLit 32 42)))],
-  [v -> (IntLit 32 42)] }
+(Int32 42),
+{ [x -> (Int32 42)],
+  [c -> (Some (Some (Int32 42)))],
+  [b -> (True)],
+  [z -> (Int32 3)],
+  [y -> (Some (Int32 42))],
+  [v -> (Int32 42)] }

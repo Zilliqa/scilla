@@ -1,6 +1,6 @@
-(ADTValue False()()),
-{ [d -> (ADTValue True()())],
-  [c -> (IntLit 128 42)],
-  [two -> (IntLit 128 2)],
-  [b -> (IntLit 128 44)],
-  [a -> (IntLit 128 42)] }
+(False),
+{ [d -> (True)],
+  [c -> (Int128 42)],
+  [two -> (Int128 2)],
+  [b -> (Int128 44)],
+  [a -> (Int128 42)] }

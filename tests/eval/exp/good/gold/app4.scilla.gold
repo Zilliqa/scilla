@@ -1,6 +1,6 @@
-(IntLit 32 2),
+(Int32 2),
 { [g -> <closure>],
-  [d -> (IntLit 32 2)],
-  [a -> (IntLit 32 1)],
+  [d -> (Int32 2)],
+  [a -> (Int32 1)],
   [f -> <closure>],
-  [x -> (IntLit 32 42)] }
+  [x -> (Int32 42)] }

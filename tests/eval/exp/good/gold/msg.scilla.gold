@@ -1,6 +1,6 @@
-(Msg((tag(StringLit Main))(amount(IntLit 32 42))(code(IntLit 32 42)))),
-{ [m -> (Msg((tag(StringLit Main))(amount(IntLit 32 42))(code(IntLit 32 42))))],
-  [a -> (IntLit 32 42)],
-  [y -> (IntLit 32 42)],
+(Message [(tag : (String "Main")) ; (amount : (Int32 42)) ; (code : (Int32 42))]),
+{ [m -> (Message [(tag : (String "Main")) ; (amount : (Int32 42)) ; (code : (Int32 42))])],
+  [a -> (Int32 42)],
+  [y -> (Int32 42)],
   [f -> <closure>],
-  [x -> (IntLit 32 42)] }
+  [x -> (Int32 42)] }

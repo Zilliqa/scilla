@@ -118,7 +118,7 @@ type literal =
 let rec pp_literal l =
     let open Int in
     match l with
-    | StringLit s -> "\"" ^ s ^ "\""
+    | StringLit s -> "(String " ^ "\"" ^ s ^ "\"" ^ ")"
     (* (bit-width, value) *)
     | IntLit (b, i) -> "(Int" ^ (to_string b) ^ " " ^ i ^ ")"
     (* (bit-width, value) *)
@@ -132,7 +132,7 @@ let rec pp_literal l =
           let t = "(" ^ s ^ " : " ^ (pp_literal l') ^ ")" in
             if String.is_empty a then t else a ^ " ; " ^ t
           ) ^ "]" in
-      ("(Msg " ^ items ^ ")")
+      ("(Message " ^ items ^ ")")
     | Map ((_, _), kv) ->
       (* we don't print mtype as that's printed for every entry. *)
       let items = "[" ^

@@ -1,3 +1,4 @@
-(StringLit"def\t"),
-{ [t -> (StringLit"def\t")],
-  [s -> (StringLit"abc\n")] }
+(String "def	"),
+{ [t -> (String "def	")],
+  [s -> (String "abc
+")] }

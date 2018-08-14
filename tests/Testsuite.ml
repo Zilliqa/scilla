@@ -23,11 +23,11 @@ let main =
   let bin_dir_default = (Sys.getcwd () ^ Filename.dir_sep ^ "bin") in
   let tests_dir_default = (Sys.getcwd () ^ Filename.dir_sep ^ "tests") in
   let stdlib_dir_default = (Sys.getcwd() ^ Filename.dir_sep ^ "src" ^ Filename.dir_sep ^ "stdlib") in
-  let bin_dir = Conf.make_string "bin_dir" bin_dir_default "directory containing binaries" in
-  let tests_dir = Conf.make_string "tests_dir" tests_dir_default "directory containing tests" in
-  let stdlib_dir = Conf.make_string "stdlib_dir" stdlib_dir_default "directory containing stdlib" in
-  let print_cli = Conf.make_bool "print_cli" false "print command line arguments used for test(s)" in
-  let update_gold = Conf.make_bool "update_gold" false "ignore compare mismatch and update gold file(s)" in
+  let bin_dir = Conf.make_string "bin_dir" bin_dir_default "Directory containing binaries" in
+  let tests_dir = Conf.make_string "tests_dir" tests_dir_default "Directory containing tests" in
+  let stdlib_dir = Conf.make_string "stdlib_dir" stdlib_dir_default "Directory containing stdlib" in
+  let print_cli = Conf.make_bool "print_cli" false "Print command line arguments used for test(s)" in
+  let update_gold = Conf.make_bool "update_gold" false "Ignore compare mismatch and update gold file(s)" in
 
   let env = {
     bin_dir = bin_dir;

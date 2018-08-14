@@ -26,6 +26,11 @@ let i_to_s i =
 let load_file f =
     Core.In_channel.read_all f
 
+(* save string to file *)
+let save_to_file s f =
+  let open Core.Out_channel in
+  with_file f ~f:(fun channel -> s |> output_string channel)
+
 let string_of_chars chars = 
   let buf = Buffer.create 16 in
   List.iter (Buffer.add_char buf) chars;
@@ -73,6 +78,11 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o))
           ~printer:(fun s -> s) gold_output output
       in
+      let output_updater s =
+        let output = stream_to_string s in
+        (save_to_file output goldoutput_file;
+        Printf.printf "Updated gold for test %s\n" input_file);
+      in
       let libdir = FilePath.make_relative dir (env.stdlib_dir test_ctxt) in
       let args = if use_stdlib then [input_file;libdir] else [input_file] in
       (if (env.print_cli test_ctxt) then
@@ -80,7 +90,11 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
           (Printf.printf "\nUsing CLI: %s %s %s\n" runner input_file libdir)
         else
           (Printf.printf "\nUsing CLI: %s %s\n" runner input_file));
-      assert_command ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (args)) in
+      let update_gold = env.update_gold test_ctxt in
+      if update_gold then
+        assert_command ~foutput:output_updater ~chdir:dir ~ctxt:test_ctxt evalbin (args)
+      else
+        assert_command ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (args)) in
     test :: build_exp_tests env r
 
   let add_tests env =
