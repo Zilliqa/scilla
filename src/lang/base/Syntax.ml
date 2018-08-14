@@ -157,10 +157,6 @@ let rec pp_literal l =
             (this ^ next)
           in
             "(List " ^ pcons al ^ ")"
-        | "Some" ->
-          if List.length al <> 1 then "(Malformed Option)" else
-          "(Some " ^ pp_literal (List.nth_exn al 0) ^ ")"
-        | "Nil" | "None" | "True" | "False" -> "(" ^ cn ^ ")"
         | "Zero" | "Succ" ->
             let rec counter largs =
               if List.length largs = 0 then "0" else
@@ -171,9 +167,11 @@ let rec pp_literal l =
               | _ -> "(Malformed Nat)")
             in
               "(Nat "^ (counter al) ^ ")"
-        | "Pair" ->
-          "(Pair " ^ (pp_literal (List.nth_exn al 0)) ^ " " ^ (pp_literal (List.nth_exn al 1)) ^ ")"
-        | _ -> "(Unknown literal)"
+        | _ ->
+          (* Generic printing for other ADTs. *)
+          "(" ^ cn ^
+          List.fold_left al ~init:"" ~f:(fun a l' -> a ^ " " ^ (pp_literal l'))
+          ^ ")"
         )
 
 (* SExp version for structural printing. *)
