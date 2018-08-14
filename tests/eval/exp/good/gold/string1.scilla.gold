@@ -1,8 +1,8 @@
-(Map((PrimType Int32)(PrimType String))(((IntLit 32 2)(StringLit def))((IntLit 32 1)(StringLit abc)))),
-{ [m2 -> (Map((PrimType Int32)(PrimType String))(((IntLit 32 2)(StringLit def))((IntLit 32 1)(StringLit abc))))],
-  [m1 -> (Map((PrimType Int32)(PrimType String))(((IntLit 32 1)(StringLit abc))))],
-  [m0 -> (Map((PrimType Int32)(PrimType String))())],
-  [t -> (StringLit def)],
-  [s -> (StringLit abc)],
-  [k2 -> (IntLit 32 2)],
-  [k1 -> (IntLit 32 1)] }
+(Map [((Int32 2) => (String "def")); ((Int32 1) => (String "abc"))]),
+{ [m2 -> (Map [((Int32 2) => (String "def")); ((Int32 1) => (String "abc"))])],
+  [m1 -> (Map [((Int32 1) => (String "abc"))])],
+  [m0 -> (Map [])],
+  [t -> (String "def")],
+  [s -> (String "abc")],
+  [k2 -> (Int32 2)],
+  [k1 -> (Int32 1)] }

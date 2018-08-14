@@ -106,7 +106,7 @@ let rec type_expr tenv e = match e with
   | MatchExpr (x, clauses) ->
       if List.is_empty clauses
       then fail @@ sprintf
-          "List of pattern matching clauses is empty:\n%s" (expr_str e)
+          "List of pattern matching clauses is empty:\n%s" (pp_expr e)
       else
         let%bind sctyp = TEnv.resolveT tenv (get_id x)
             ~lopt:(Some (get_loc x)) in
@@ -325,7 +325,9 @@ let type_fields tenv flds =
       let%bind ar = type_expr tenv fe in
       let actual = ar.tp in
       let%bind _ = assert_type_equiv ft actual in
-      pure @@ TEnv.addT (TEnv.copy fenv) fn actual)
+      if is_storable_type ft then
+        pure @@ TEnv.addT (TEnv.copy fenv) fn actual
+      else fail @@ sprintf "Values of the type \"%s\" cannot be stored." (pp_typ ft))
 
 (* Type-check transition *)
 let type_transition env0 tr =
@@ -337,6 +339,27 @@ let type_transition env0 tr =
       (get_loc_str (get_loc tname)) (get_id tname) in
   wrap_with_info msg @@
   type_stmts env tbody
+
+(* type library, handling cache as necessary. *)
+let type_library_cache tenv elib =
+  (* We are caching SimpleTEnv = MakeTEnv(PlainTypes) *)
+  let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) in
+  let open STC in
+  (* Check if we have the type info in cache. *)
+  match get_lib_tenv_cache tenv elib with
+  | Some tenv' ->
+    (* Use cached entries. *)
+    (tenv', "")
+  | None ->
+    (* Couldn't find in cache. Actually type the library. *)
+    let res = type_library tenv elib in
+    (match res with
+    | Error msg -> (tenv, msg)
+    | Ok tenv' -> 
+        (* Since we don't have this in cache, cache it now. *)
+        cache_lib_tenv tenv' elib;
+        (tenv', "")
+    )
 
 let type_module md elibs =
   let {libs; contr; _} = md in
@@ -353,15 +376,14 @@ let type_module md elibs =
   | Some lib -> List.append elibs (lib::[])
   | None -> elibs
   in
-  (* TODO: Cache this information unless its version changed! *)
   let (tenv, emsgs) = List.fold_left all_libs ~init:(tenv0, "")
-      ~f:(fun (acc, emsgs) elib -> 
-      let r = type_library acc elib in
-      let tenv, emsg = match r with
-      | Error msg -> (acc, emsgs ^ "\n\n" ^ msg)
-      | Ok t -> (t, emsgs) in
-      (tenv, emsg)
-    ) in
+    ~f:(fun (tenv_acc, emsgs_acc) elib ->
+      let (tenv', emsg) = type_library_cache tenv_acc elib in
+      let emsgs' = if emsg = "" then emsgs_acc else (emsgs_acc ^ "\n\n" ^ emsg) in
+      (* Updated env and error messages are what we accummulate in the fold. *)
+        (tenv', emsgs')
+    )
+  in
 
   (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
   let params = append_implict_contract_params cparams in

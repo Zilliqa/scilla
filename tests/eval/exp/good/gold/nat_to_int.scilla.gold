@@ -1,6 +1,6 @@
-(UintLit 32 3),
-{ [res1 -> (UintLit 32 0)],
-  [three -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))],
-  [two -> (ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))],
-  [one -> (ADTValue Succ()((ADTValue Zero()())))],
-  [zero -> (ADTValue Zero()())] }
+(Int32 3),
+{ [res1 -> (Int32 0)],
+  [three -> (Nat 3)],
+  [two -> (Nat 2)],
+  [one -> (Nat 1)],
+  [zero -> (Nat 0)] }

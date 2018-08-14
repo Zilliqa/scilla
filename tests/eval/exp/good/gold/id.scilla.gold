@@ -1,4 +1,4 @@
-(IntLit 32 42),
-{ [n -> (IntLit 32 42)],
+(Int32 42),
+{ [n -> (Int32 42)],
   [id_int -> <closure>],
   [id -> <type_closure>] }

@@ -121,8 +121,11 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["typecheck"; "bad"; f]
     let runner = "type-checker"      
     let tests = [
+      "adt-error1.scilla";
+      "branch-mismatch.scilla";
       "fun2.scilla";
       "fun3.scilla";
+      "fun4.scilla";
       "list-error.scilla";
       "list-error2.scilla";
       "list-lit.scilla";

@@ -1,0 +1,6 @@
+let one = Int32 1 in
+let two = Int32 2 in
+let pair1 = Pair {Int32 Int32} one two in
+let nil = Nil {(Pair Int32 Int32)} in
+let l4 = Cons {(Pair Int32)} pair1 nil in
+l4
