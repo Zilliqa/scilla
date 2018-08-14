@@ -3,5 +3,5 @@ Type error(s) in contract Empty:
 
 
 [:0:0] Type error in field bad_bar:
-The type "Map (Int64) (String -> Int32)" cannot be stored.
+Values of the type "Map (Int64) (String -> Int32)" cannot be stored.
 
