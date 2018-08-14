@@ -1,0 +1,7 @@
+Type checking failed:
+<<<<<<< HEAD
+[typecheck/bad/fun3.scilla:2:21] Type error in built-in application of `add`:
+[typecheck/bad/fun3.scilla:2:21] Cannot find built-in with name "add" and argument types [Int32; Int54].
+=======
+ADT Int54 not found
+>>>>>>> master

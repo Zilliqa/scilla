@@ -25,6 +25,8 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["checker"; "bad"; f]
     let runner = "scilla-checker"
     let tests = [
+      "bad_fields1.scilla";
+      "bad_fields2.scilla";
       "mappair.scilla"
     ]
     let use_stdlib = true

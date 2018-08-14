@@ -1,0 +1,8 @@
+contract Empty
+()
+
+field bad_bar : Map Int64 (String -> Int32) = Emp Int64 (String -> Int32)
+
+transition dummy()
+
+end

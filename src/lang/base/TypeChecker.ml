@@ -325,7 +325,9 @@ let type_fields tenv flds =
       let%bind ar = type_expr tenv fe in
       let actual = ar.tp in
       let%bind _ = assert_type_equiv ft actual in
-      pure @@ TEnv.addT (TEnv.copy fenv) fn actual)
+      if is_storable_type ft then
+        pure @@ TEnv.addT (TEnv.copy fenv) fn actual
+      else fail @@ sprintf "Values of the type \"%s\" cannot be stored." (pp_typ ft))
 
 (* Type-check transition *)
 let type_transition env0 tr =
