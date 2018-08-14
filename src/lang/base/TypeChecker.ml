@@ -106,7 +106,7 @@ let rec type_expr tenv e = match e with
   | MatchExpr (x, clauses) ->
       if List.is_empty clauses
       then fail @@ sprintf
-          "List of pattern matching clauses is empty:\n%s" (expr_str e)
+          "List of pattern matching clauses is empty:\n%s" (pp_expr e)
       else
         let%bind sctyp = TEnv.resolveT tenv (get_id x)
             ~lopt:(Some (get_loc x)) in

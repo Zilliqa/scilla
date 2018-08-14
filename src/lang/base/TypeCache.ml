@@ -33,7 +33,7 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
   let hash s = transform_string (Hexa.encode()) (hash_string (Hash.sha2 256) s)
   let hash_lib lib =
     let s = List.fold_left ~f:(fun acc {lname;lexp} ->
-      (acc ^ (get_id lname) ^ (expr_str lexp))
+      (acc ^ (get_id lname) ^ (spp_expr lexp))
       ) ~init:"" lib.lentries in
     hash s
 

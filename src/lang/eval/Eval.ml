@@ -94,8 +94,7 @@ let rec exp_eval e env = match e with
                    "Cannot store a closure\n%s\nas %s\nin a message\n%s."
                    (Env.pp_value v)
                    (get_id i)
-                   (sexp_of_expr sexp_of_loc  m |>
-                    Sexplib.Sexp.to_string))
+                   (pp_expr m))
       in
       let%bind payload_resolved =
         (* Make sure we resolve all the payload *)
@@ -140,7 +139,7 @@ let rec exp_eval e env = match e with
       let%bind ((_, e_branch), bnds) =
         tryM clauses
           ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
-                  (Env.pp_value v) (expr_str e))
+                  (Env.pp_value v) (pp_expr e))
           ~f:(fun (p, _) -> match_with_pattern v p) in
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env
@@ -170,10 +169,10 @@ let rec exp_eval e env = match e with
    *     match expr_loc e with
    *     | Some l1 -> fail @@
    *         sprintf "Expression in line %s: %s  is not supported yet."
-   *           (Int.to_string l1.lnum) (expr_str e)
+   *           (Int.to_string l1.lnum) (pp_expr e)
    *     | None -> fail @@
    *         sprintf  "Expression in line %s is not supported yet."
-   *           (expr_str e) *)
+   *           (pp_expr e) *)
 
 (* Applying a function *)
 and try_apply_as_closure v arg =

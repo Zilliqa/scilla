@@ -1,4 +1,4 @@
-(IntLit 32 142),
-{ [b -> (IntLit 32 2)],
-  [a -> (IntLit 32 100)],
+(Int32 142),
+{ [b -> (Int32 2)],
+  [a -> (Int32 100)],
   [f -> <closure>] }

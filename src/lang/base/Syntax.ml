@@ -93,6 +93,7 @@ and with_paren t = match t with
 (* The first component is a primitive type *)
 type mtype = typ * typ
 [@@deriving sexp]
+let pp_mtype (kt, vt) = pp_typ (MapType(kt, vt))
 
 let address_length = 40
 let hash_length = 64
@@ -114,7 +115,68 @@ type literal =
   | ADTValue of string * typ list * literal list
 [@@deriving sexp]
 
-let pp_literal l = sexp_of_literal l |> Sexplib.Sexp.to_string
+let rec pp_literal l =
+    let open Int in
+    match l with
+    | StringLit s -> "(String " ^ "\"" ^ s ^ "\"" ^ ")"
+    (* (bit-width, value) *)
+    | IntLit (b, i) -> "(Int" ^ (to_string b) ^ " " ^ i ^ ")"
+    (* (bit-width, value) *)
+    | UintLit (b, ui) -> "(Int" ^ (to_string b) ^ " " ^ ui ^ ")"
+    | BNum b -> "(BNum " ^ b ^ ")"
+    | Address a -> "(Address " ^ a ^ ")"
+    | Sha256 h -> "(Hash " ^ h ^ ")"
+    | Msg m ->
+      let items = "[" ^
+        List.fold_left m ~init:"" ~f:(fun a (s, l') ->
+          let t = "(" ^ s ^ " : " ^ (pp_literal l') ^ ")" in
+            if String.is_empty a then t else a ^ " ; " ^ t
+          ) ^ "]" in
+      ("(Message " ^ items ^ ")")
+    | Map ((_, _), kv) ->
+      (* we don't print mtype as that's printed for every entry. *)
+      let items = "[" ^
+        List.fold_left kv ~init:"" ~f:(fun a (k, v) ->
+          let t = "(" ^ (pp_literal k) ^ " => " ^ (pp_literal v) ^ ")" in
+            if String.is_empty a then t else a ^ "; " ^ t
+          ) ^ "]" in
+      ("(Map " ^ items ^ ")")
+    | ADTValue (cn, _, al) ->
+        (match cn with
+        | "Cons" ->
+          (* Print non-empty lists in a readable way. *)
+          let rec pcons largs =
+            if List.length largs = 0 then "(Nil)" else
+            let this = (pp_literal (List.nth_exn largs 0)) ^ ", " in
+            let next =
+              if List.length largs <> 2 then "(Malformed List)" else
+              (match (List.nth_exn largs 1) with
+              | ADTValue(_, _, al') ->
+                pcons al'
+              | _ -> "(Malformed List") in
+            (this ^ next)
+          in
+            "(List " ^ pcons al ^ ")"
+        | "Zero" | "Succ" ->
+            let rec counter largs =
+              if List.length largs = 0 then "0" else
+              if List.length largs <> 1 then "(Malformed Nat)" else
+              (match (List.nth_exn largs 0) with
+              | ADTValue (_, _, al') ->
+                Int.to_string ((Int.of_string (counter al')) + 1)
+              | _ -> "(Malformed Nat)")
+            in
+              "(Nat "^ (counter al) ^ ")"
+        | _ ->
+          (* Generic printing for other ADTs. *)
+          "(" ^ cn ^
+          List.fold_left al ~init:"" ~f:(fun a l' -> a ^ " " ^ (pp_literal l'))
+          ^ ")"
+        )
+
+(* SExp version for structural printing. *)
+let spp_literal l =
+  sexp_of_literal l |> Sexplib.Sexp.to_string
 
 let pp_literal_map s =
   let ps = List.map s
@@ -170,9 +232,13 @@ let expr_loc (e : 'rep expr) : loc option =
       if (l.cnum <> -1) then Some l else None
   | _ -> None
 
-(* TODO: make normal pretty-printing *)
-let expr_str e =
+(* SExp printing for Expr for structural printing. *)
+let spp_expr e =
   sexp_of_expr sexp_of_loc e |> Sexplib.Sexp.to_string
+
+(* TODO: add pretty printing for expressions. *)
+let pp_expr e =
+  spp_expr e
 
 (*******************************************************)
 (*                   Statements                        *)
