@@ -1,0 +1,4 @@
+Type checking failed:
+[typecheck/bad/adt-error1.scilla:5:1] Type error in the initialiser of `l4`:
+ADT type Pair expects 2 arguments but got 1.
+
