@@ -238,6 +238,7 @@ let expr_loc (e : 'rep expr) : loc option =
 let spp_expr e =
   sexp_of_expr sexp_of_loc e |> Sexplib.Sexp.to_string
 
+(* TODO: add pretty printing for expressions. *)
 let pp_expr e =
   spp_expr e
 
