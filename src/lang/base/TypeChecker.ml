@@ -57,7 +57,7 @@ let assign_types_for_pattern sctyp pattern =
         let%bind _ = validate_param_length cn plen alen in
         let tps_pts = List.zip_exn arg_types ps in
         let%bind (typed_ps, tps) =
-          foldrM ~init:([], []) tps_pts
+          foldrM ~init:([], tlist) tps_pts
             ~f:(fun (ps, ts) (t, pt) ->
                 let%bind (p, tss) = go t ts pt in
                 pure @@ (p :: ps, tss)) in
@@ -99,11 +99,13 @@ let rec type_expr tenv (erep : 'rep expr_annot) =
       let%bind _ = TEnv.is_wf_type tenv ret_typ in
       let q_ret_typ = mk_qual_tp ret_typ in
       pure @@ (Builtin (add_type_to_ident i q_ret_typ, typed_actuals), (q_ret_typ, rep))
-  | Let (i, _, lhs, rhs) ->
+  | Let (i, topt, lhs, rhs) ->
       (* Poor man's error reporting *)
-      let%bind (_, (ityp, _)) = wrap_err e @@ type_expr tenv lhs in
+      let%bind (_, (ityp, _)) as checked_lhs = wrap_err e @@ type_expr tenv lhs in
       let tenv' = TEnv.addT (TEnv.copy tenv) i ityp.tp in
-      type_expr tenv' rhs
+      let typed_i = add_type_to_ident i ityp in
+      let%bind (_, (rhstyp, _)) as checked_rhs = type_expr tenv' rhs in
+      pure @@ (Let (typed_i, topt, checked_lhs, checked_rhs), (rhstyp, rep))
   | Constr (cname, ts, actuals) ->
       let%bind _ = mapM ts ~f:(TEnv.is_wf_type tenv) in
       let open Datatypes.DataTypeDictionary in 
@@ -232,13 +234,13 @@ let rec type_stmts env stmts =
   | ((s, rep) as stmt) :: sts ->
       (match s with
        | Load (x, f) ->
-           let%bind (checked_stmts, ident_type) = wrap_serr s (
+           let%bind (next_env, ident_type) = wrap_serr s (
                let%bind fr = TEnv.resolveT env.fields (get_id f) in
                let pure' = TEnv.addT (TEnv.copy env.pure) x (rr_typ fr).tp in
                let next_env = {env with pure = pure'} in
-               let%bind checked_stmts = type_stmts next_env sts in
-               pure @@ (checked_stmts, rr_typ fr)
+               pure @@ (next_env, rr_typ fr)
              ) in
+           let%bind checked_stmts = type_stmts next_env sts in
            let typed_x = add_type_to_ident x ident_type in
            let typed_f = add_type_to_ident f ident_type in
            pure @@ add_stmt_to_stmts_env (Load (typed_x, typed_f), rep) checked_stmts
@@ -266,16 +268,15 @@ let rec type_stmts env stmts =
           let%bind checked_stmts = type_stmts env' sts in
           let typed_x = add_type_to_ident x ityp in
           pure @@ add_stmt_to_stmts_env (Bind (typed_x, checked_e), rep) checked_stmts
-
-      (* TODO *)
       | ReadFromBC (x, bf) ->
           let%bind r = wrap_serr s @@ TEnv.resolveT env.bc bf in
-          let bt = (rr_typ r).tp in
+          let x_type = rr_typ r in
+          let bt = x_type.tp in
           let pure' = TEnv.addT (TEnv.copy env.pure) x bt in
           let env' = {env with pure = pure'} in
-          type_stmts env' sts
-
-      (* DONE *)
+          let%bind checked_stmts = type_stmts env' sts in
+          let typed_x = add_type_to_ident x x_type in
+          pure @@ add_stmt_to_stmts_env (ReadFromBC (typed_x, bf), rep) checked_stmts
       | MatchStmt (x, clauses) ->
           if List.is_empty clauses
           then wrap_serr s @@ fail @@ sprintf
@@ -292,17 +293,19 @@ let rec type_stmts env stmts =
                   type_match_stmt_branch env sct ptrn ex) in
             let%bind checked_stmts = type_stmts env sts in
             pure @@ add_stmt_to_stmts_env (MatchStmt (typed_x, checked_clauses), rep) checked_stmts
-
-      (* TODO *)
       | AcceptPayment ->
-          type_stmts env sts                      
+          let%bind checked_stmts = type_stmts env sts in
+          pure @@ add_stmt_to_stmts_env (AcceptPayment, rep) checked_stmts
       | SendMsgs i ->
           let%bind r = TEnv.resolveT env.pure (get_id i)
               ~lopt:(Some (get_loc i)) in
+          let i_type = rr_typ r in
           let expected = list_typ msg_typ in
           let%bind _ = wrap_serr s @@
-            assert_type_equiv expected (rr_typ r).tp in
-          type_stmts env sts
+            assert_type_equiv expected i_type.tp in
+          let typed_i = add_type_to_ident i i_type in
+          let%bind checked_stmts = type_stmts env sts in
+          pure @@ add_stmt_to_stmts_env (SendMsgs typed_i, rep) checked_stmts
       | _ ->
           fail @@ sprintf
             "Type-checking the statement %s is not supported yet."
@@ -312,7 +315,7 @@ and type_match_stmt_branch env styp ptrn sts =
   let%bind (new_p, new_typings) = assign_types_for_pattern styp ptrn in
   let pure' = TEnv.addTs (TEnv.copy env.pure) new_typings in
   let env' = {env with pure = pure'} in
-  let new_stmts = (type_stmts env' sts) in
+  let%bind (new_stmts, _) = type_stmts env' sts in
   pure @@ (new_p, new_stmts)
 
 
