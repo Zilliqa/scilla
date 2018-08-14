@@ -40,8 +40,10 @@ let stream_to_string (s : char Stream.t) =
 type tsuite_env = 
   { bin_dir : test_ctxt -> string;
     tests_dir : test_ctxt -> string;
-    stdlib_dir : test_ctxt -> string; 
-    print_cli : test_ctxt -> bool; }
+    stdlib_dir : test_ctxt -> string;
+    print_cli : test_ctxt -> bool;
+    update_gold : test_ctxt -> bool;
+  }
 
 module type TestSuiteInput = sig
   val tests : string list

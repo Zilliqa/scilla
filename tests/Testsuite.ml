@@ -27,8 +27,13 @@ let main =
   let tests_dir = Conf.make_string "tests_dir" tests_dir_default "directory containing tests" in
   let stdlib_dir = Conf.make_string "stdlib_dir" stdlib_dir_default "directory containing stdlib" in
   let print_cli = Conf.make_bool "print_cli" false "print command line arguments used for test(s)" in
+  let update_gold = Conf.make_bool "update_gold" false "ignore compare mismatch and update gold file(s)" in
 
-  let env = { bin_dir = bin_dir; tests_dir = tests_dir; stdlib_dir = stdlib_dir; print_cli = print_cli } in
+  let env = {
+    bin_dir = bin_dir;
+    tests_dir = tests_dir; stdlib_dir = stdlib_dir; 
+    print_cli = print_cli; update_gold = update_gold
+  } in
   (* Add calls to new tests from here *)
   let contract_tests = Testcontracts.add_tests env in
   let exp_tests_good = TestExps.Tests.add_tests env in 

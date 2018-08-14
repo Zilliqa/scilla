@@ -43,13 +43,13 @@ module Env = struct
 
   (* Pretty-printing *)
   let rec pp_value v = match v with
-    | ValLit l -> sexp_of_literal l |> Sexplib.Sexp.to_string
+    | ValLit l ->  pp_literal l
     | ValFix _ -> "<fixpoint>"
     | ValTypeClosure _ -> "<type_closure>"
     | ValClosure _ -> "<closure>"
-    (*| ValClosure (f, t, e, env) -> "<closure>"
-         (sexp_of_expr sexp_of_loc (Fun (f, t, e)) |> Sexplib.Sexp.to_string)
-         * ^ ", " ^ (pp env) *)
+    (* | ValClosure (f, t, e, env) ->
+         (pp_expr (Fun (f, t, e)))
+          ^ ", " ^ (pp env) *)
   and pp ?f:(f = fun (_ : (string * 'rep value)) -> true) e =
     (* FIXME: Do not print folds *)
     let e_filtered = List.filter e ~f:f in
