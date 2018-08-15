@@ -10,6 +10,7 @@ let one_msg =
   let nil_msg = Nil {Message} in
 Cons {Message} msg nil_msg
 
+(* Checks and see if an address is a contract owner *)
 let checkContractOwner =
     fun (msgSender: Address) => 
     fun (contractOwner: Address) =>
@@ -19,7 +20,8 @@ let checkContractOwner =
         | False => False
         end
 
-let checkTokenOwner = 
+(* Checks and see if an address is a token owner *)
+let isTokenOwner = 
     fun (msgSender: Address) =>
     fun (tokenId: Uint256) =>
     fun (tokenOwnerMap_tmp : Map (Uint256) (Address)) =>
@@ -34,21 +36,51 @@ let checkTokenOwner =
             end
         end 
 
-
-let checkOwnerOrApproved = 
+(* Checks if a given address is approved to make txn the given tokenID *)
+(* Not to be confused with isApprovedForAll                            *)
+let isApproved = 
     fun (msgSender: Address) =>
-    fun (tokenId: Uint256) =>
-    fun (tokenOwnerMap_tmp : Map (Uint256) (Address)) =>
-        let tokenOwner = builtin get tokenOwnerMap_tmp tokenId in
-        match tokenOwner with
-        | None => False
+    fun (tokenID: Uint256) =>
+    fun (approvalMap_tmp: Map (Uint256) (Address)) =>
+        let val = builtin get approvalMap_tmp tokenID in
+        match val with
+        | None => False 
         | Some val =>
-            let isSenderTokenOwner = builtin eq val msgSender in 
-            match isSenderTokenOwner with
-            | True => True
-            | False => False
+            let isSenderApproved = builtin eq val msgSender in
+            match isSenderApproved with
+            | True => True 
+            | False => False 
             end
-        end 
+        end
+
+(* Checks if an message sender is approved by a given owner. (i.e. operator) *)
+let isApprovedForAll = 
+    fun (msgSender: Address) =>
+    fun (tokenID: Uint256) =>
+    fun (approvalMap_tmp: Map (Uint256) (Address)) =>
+        let val = builtin get approvalMap_tmp tokenID in
+        match val with
+        | None => False 
+        | Some val =>
+            let isSenderApproved = builtin eq val msgSender in
+            match isSenderApproved with
+            | True => True 
+            | False => False 
+            end
+        end
+
+(* Check if a sender is an operator of the owner, approved for the given ID *)
+(* or is the owner of the token *)
+let isApprovedOrOwner =
+    fun (isOwner: Bool) =>
+    fun (isApproved: Bool) =>
+    fun (isApprovedForAll: Bool) =>
+        let checkone =  orb isOwner isApproved in
+        let checktwo = orb checkone isApprovedForAll in
+        match checktwo with
+        | True => True
+        | False => False
+        end
 
 let code_success = Uint32 0
 let code_failure = Uint32 1
@@ -68,6 +100,8 @@ contract NonfungibleToken
 (* mutable fields *)
 field tokenOwnerMap: Map Uint256 Address = Emp Uint256 Address
 field ownedTokenCount: Map Address Uint256 = Emp Address Uint256
+
+(* There can only be one approved address per token at a given time. *)
 field tokenApprovals: Map Uint256 Address = Emp Uint256 Address
 
 (* immutable field *)
@@ -95,8 +129,8 @@ end
 (* @notice Count all NFTs assigned to an owner *)
 (* @dev: Event should be emitted once scilla is ready *)
 transition ownerOf(tokenId: Uint256) 
-    tom <- tokenOwnerMap;
-    someVal = builtin get tom tokenId;
+    copy_tokenOwnerMap <- tokenOwnerMap;
+    someVal = builtin get copy_tokenOwnerMap tokenId;
     match someVal with
     | Some val =>
         msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
@@ -151,7 +185,14 @@ end
 
 transition transferFrom(from: Address, to: Address, tokenId: Uint256)
     copy_tokenOwnerMap <- tokenOwnerMap;
-    isAuthorized = checkOwnerOrApproved from tokenId copy_tokenOwnerMap;
+    copy_tokenApprovals <- tokenApprovals;
+
+    checkOwner = isTokenOwner _sender tokenId copy_tokenOwnerMap;
+    checkApproved = isApproved _sender tokenId copy_tokenApprovals;
+
+    (* tmp *)
+    checkApprovedForAll = isApprovedForAll _sender tokenId copy_tokenApprovals;
+    isAuthorized = isApprovedOrOwner checkOwner checkApproved checkApprovedForAll;
     match isAuthorized with
     | True =>
         (* Change tokenOwnerMap *)
@@ -204,9 +245,14 @@ end
 
 transition approve(to: Address, tokenId: Uint256)
     copy_tokenOwnerMap <- tokenOwnerMap;
-    isAuthorized = checkTokenOwner _sender tokenId copy_tokenOwnerMap;
+    isAuthorized = isTokenOwner _sender tokenId copy_tokenOwnerMap;
     match isAuthorized with
     | True =>
+        (* add to token approval mapping *)
+        copy_tokApproval <- tokenApprovals;
+        new_tokApproval = builtin put copy_tokApproval tokenId to;
+        tokenApprovals := new_tokApproval;
+
         msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
             code : code_success};
         msgs = one_msg msg;
