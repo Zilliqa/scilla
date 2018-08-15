@@ -24,6 +24,11 @@
       ]
     },
     {
+      "vname": "operatorApprovals",
+      "type": "Map (Address) (Map (Address) (Bool))",
+      "value": []
+    },
+    {
       "vname": "tokenApprovals",
       "type": "Map (Uint256) (Address)",
       "value": []

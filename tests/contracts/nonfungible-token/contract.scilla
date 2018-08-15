@@ -56,16 +56,23 @@ let isApproved =
 (* Checks if an message sender is approved by a given owner. (i.e. operator) *)
 let isApprovedForAll = 
     fun (msgSender: Address) =>
-    fun (tokenID: Uint256) =>
-    fun (approvalMap_tmp: Map (Uint256) (Address)) =>
-        let val = builtin get approvalMap_tmp tokenID in
-        match val with
-        | None => False 
+    fun (tokenOwner: Address) =>
+    fun (operatorMap: Map (Address) (Map (Address) (Bool))) =>
+        let m = builtin get operatorMap tokenOwner in
+        match m with
+        | None => False
+            (* owner did not assign anyone to the approval mapping *)
         | Some val =>
-            let isSenderApproved = builtin eq val msgSender in
-            match isSenderApproved with
-            | True => True 
-            | False => False 
+            (* val is of type Map (Address) (Bool) *)
+            let check_list = builtin get val msgSender in
+            match check_list with
+            | None => False
+            | Some is_sender_approved =>
+                (* check if sender has access rights *)
+                match is_sender_approved with
+                | True => True
+                | False => False
+                end
             end
         end
 
@@ -85,7 +92,9 @@ let isApprovedOrOwner =
 let code_success = Uint32 0
 let code_failure = Uint32 1
 let code_not_authorized = Uint32 2
+let code_not_found = Uint32 4
 let code_unexpected_error = Uint32 9
+
 
 (***************************************************)
 (*             The contract definition             *)
@@ -185,61 +194,72 @@ end
 transition transferFrom(from: Address, to: Address, tokenId: Uint256)
     copy_tokenOwnerMap <- tokenOwnerMap;
     copy_tokenApprovals <- tokenApprovals;
+    copy_operatorApproval <- operatorApprovals;
 
-    checkOwner = isTokenOwner _sender tokenId copy_tokenOwnerMap;
-    checkApproved = isApproved _sender tokenId copy_tokenApprovals;
-    checkApprovedForAll = isApprovedForAll _sender tokenId copy_tokenApprovals;
+    (* Get tokenOwner Address *)
+    getTokenOwner = builtin get copy_tokenOwnerMap tokenId;
+    match getTokenOwner with
+    | None =>
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+                code : code_not_found};
+                msgs = one_msg msg;
+                send msgs
+    | Some tokenOwner =>
+        checkOwner = isTokenOwner _sender tokenId copy_tokenOwnerMap;
+        checkApproved = isApproved _sender tokenId copy_tokenApprovals;
+        checkApprovedForAll = isApprovedForAll _sender tokenOwner copy_operatorApproval;
 
-    (* isApprovedOrOwner checks if any of the three conditions are met *)
-    isAuthorized = isApprovedOrOwner checkOwner checkApproved checkApprovedForAll;
+        (* isApprovedOrOwner checks if any of the three conditions are met *)
+        isAuthorized = isApprovedOrOwner checkOwner checkApproved checkApprovedForAll;
 
-    match isAuthorized with
-    | True =>
-        (* Change tokenOwnerMap *)
-        new_tokenOwnerMap = builtin put copy_tokenOwnerMap tokenId to;
-        tokenOwnerMap := new_tokenOwnerMap;
+        match isAuthorized with
+        | True =>
+            (* Change tokenOwnerMap *)
+            new_tokenOwnerMap = builtin put copy_tokenOwnerMap tokenId to;
+            tokenOwnerMap := new_tokenOwnerMap;
 
-        (* Change Count *)
-        curr_otc <- ownedTokenCount;
+            (* Change Count *)
+            curr_otc <- ownedTokenCount;
 
-        (*subtract one from previous token owner *)
-        val = builtin get curr_otc from;
-        match val with
-        | Some a1 =>
-            a2  = let one = Uint256 1 in builtin sub a1 one;
-            otc_1 = builtin put curr_otc from a2;
-            ownedTokenCount := otc_1
-        | None =>
+            (*subtract one from previous token owner *)
+            val = builtin get curr_otc from;
+            match val with
+            | Some a1 =>
+                a2  = let one = Uint256 1 in builtin sub a1 one;
+                otc_1 = builtin put curr_otc from a2;
+                ownedTokenCount := otc_1
+            | None =>
+                msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+                code : code_unexpected_error};
+                msgs = one_msg msg;
+                send msgs
+            end;
+
+            (* add one to the new token owner *)
+            otc_2 <- ownedTokenCount;
+            userCnt = builtin get otc_2 to;
+            match userCnt with
+            | Some val =>
+                one = Uint256 1;
+                new_val = builtin add val one;
+                new_otc = builtin put otc_2 to new_val;
+                ownedTokenCount := new_otc
+            | None =>
+                new_val = Uint256 1;
+                new_otc = builtin put otc_2 to new_val;
+                ownedTokenCount := new_otc
+            end;
+
             msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : code_unexpected_error};
+                code : code_success};
             msgs = one_msg msg;
             send msgs
-        end;
-
-        (* add one to the new token owner *)
-        otc_2 <- ownedTokenCount;
-        userCnt = builtin get otc_2 to;
-        match userCnt with
-        | Some val =>
-            one = Uint256 1;
-            new_val = builtin add val one;
-            new_otc = builtin put otc_2 to new_val;
-            ownedTokenCount := new_otc
-        | None =>
-            new_val = Uint256 1;
-            new_otc = builtin put otc_2 to new_val;
-            ownedTokenCount := new_otc
-        end;
-
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : code_success};
-        msgs = one_msg msg;
-        send msgs
-    | False =>
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : code_not_authorized};
-        msgs = one_msg msg;
-        send msgs
+        | False =>
+            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+                code : code_not_authorized};
+            msgs = one_msg msg;
+            send msgs
+        end
     end
 end
 
@@ -265,7 +285,7 @@ transition approve(to: Address, tokenId: Uint256)
     end
 end
 
-
+(* Sets or unsets the approval of a given operator *)
 transition setApprovalForAll(to: Address, approved: Bool)
 
     copy_operatorApproval <- operatorApprovals;
