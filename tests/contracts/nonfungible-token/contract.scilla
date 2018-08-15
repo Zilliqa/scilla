@@ -2,6 +2,7 @@
 (*               Associated library                *)
 (***************************************************)
 import BoolUtils
+
 library NonfungibleToken
 
 let one_msg = 
@@ -9,7 +10,7 @@ let one_msg =
   let nil_msg = Nil {Message} in
 Cons {Message} msg nil_msg
 
-let checkOwner =
+let checkContractOwner =
     fun (msgSender: Address) => 
     fun (contractOwner: Address) =>
         let isOwner = builtin eq msgSender contractOwner in
@@ -17,6 +18,22 @@ let checkOwner =
         | True => True
         | False => False
         end
+
+let checkTokenOwner = 
+    fun (msgSender: Address) =>
+    fun (tokenId: Uint256) =>
+    fun (tokenOwnerMap_tmp : Map (Uint256) (Address)) =>
+        let tokenOwner = builtin get tokenOwnerMap_tmp tokenId in
+        match tokenOwner with
+        | None => False
+        | Some val =>
+            let isSenderTokenOwner = builtin eq val msgSender in 
+            match isSenderTokenOwner with
+            | True => True
+            | False => False
+            end
+        end 
+
 
 let checkOwnerOrApproved = 
     fun (msgSender: Address) =>
@@ -51,6 +68,7 @@ contract NonfungibleToken
 (* mutable fields *)
 field tokenOwnerMap: Map Uint256 Address = Emp Uint256 Address
 field ownedTokenCount: Map Address Uint256 = Emp Address Uint256
+field tokenApprovals: Map Uint256 Address = Emp Uint256 Address
 
 (* immutable field *)
 
@@ -95,7 +113,7 @@ end
 
 
 transition mint(to: Address, tokenId: Uint256)
-    checkAuthorized = checkOwner contractOwner _sender;
+    checkAuthorized = checkContractOwner contractOwner _sender;
     status = Uint32 0;
     match checkAuthorized with
     | True =>
@@ -172,6 +190,23 @@ transition transferFrom(from: Address, to: Address, tokenId: Uint256)
             ownedTokenCount := new_otc
         end;
 
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            code : code_success};
+        msgs = one_msg msg;
+        send msgs
+    | False =>
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            code : code_not_authorized};
+        msgs = one_msg msg;
+        send msgs
+    end
+end
+
+transition approve(to: Address, tokenId: Uint256)
+    copy_tokenOwnerMap <- tokenOwnerMap;
+    isAuthorized = checkTokenOwner _sender tokenId copy_tokenOwnerMap;
+    match isAuthorized with
+    | True =>
         msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
             code : code_success};
         msgs = one_msg msg;

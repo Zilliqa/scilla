@@ -1,6 +1,11 @@
 [
   { "vname": "_balance", "type": "Uint128", "value": "0" },
   {
+    "vname": "tokenApprovals",
+    "type": "Map (Uint256) (Address)",
+    "value": []
+  },
+  {
     "vname": "ownedTokenCount",
     "type": "Map (Address) (Uint256)",
     "value": [
