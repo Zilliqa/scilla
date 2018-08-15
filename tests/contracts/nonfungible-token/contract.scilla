@@ -100,9 +100,9 @@ contract NonfungibleToken
 (* mutable fields *)
 field tokenOwnerMap: Map Uint256 Address = Emp Uint256 Address
 field ownedTokenCount: Map Address Uint256 = Emp Address Uint256
-
 (* There can only be one approved address per token at a given time. *)
 field tokenApprovals: Map Uint256 Address = Emp Uint256 Address
+field operatorApprovals: Map Address Map Address Bool = Emp Address Map Address Bool
 
 (* immutable field *)
 
@@ -147,9 +147,8 @@ end
 
 
 transition mint(to: Address, tokenId: Uint256)
-    checkAuthorized = checkContractOwner contractOwner _sender;
-    status = Uint32 0;
-    match checkAuthorized with
+    isAuthorized = checkContractOwner contractOwner _sender;
+    match isAuthorized with
     | True =>
         currtokenOwnerMap <- tokenOwnerMap;
         newtokenOwnerMap = builtin put currtokenOwnerMap tokenId to;
@@ -189,10 +188,11 @@ transition transferFrom(from: Address, to: Address, tokenId: Uint256)
 
     checkOwner = isTokenOwner _sender tokenId copy_tokenOwnerMap;
     checkApproved = isApproved _sender tokenId copy_tokenApprovals;
-
-    (* tmp *)
     checkApprovedForAll = isApprovedForAll _sender tokenId copy_tokenApprovals;
+
+    (* isApprovedOrOwner checks if any of the three conditions are met *)
     isAuthorized = isApprovedOrOwner checkOwner checkApproved checkApprovedForAll;
+
     match isAuthorized with
     | True =>
         (* Change tokenOwnerMap *)
@@ -260,6 +260,39 @@ transition approve(to: Address, tokenId: Uint256)
     | False =>
         msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
             code : code_not_authorized};
+        msgs = one_msg msg;
+        send msgs
+    end
+end
+
+
+transition setApprovalForAll(to: Address, approved: Bool)
+
+    copy_operatorApproval <- operatorApprovals;
+    isValidOperation = builtin eq _sender to;
+    (* require _sender is not approving himself *)
+    match isValidOperation with
+    | False =>
+        (* Check if sender has an existing record on the operatorApproval *)
+        previous_operatorRecord = builtin get copy_operatorApproval _sender;
+        match previous_operatorRecord with
+        | Some record =>
+            new_entry = builtin put record to approved;
+            new_operatorRecord = builtin put copy_operatorApproval _sender new_entry;
+            operatorApprovals := new_operatorRecord
+        | None =>
+            (* make a new entry *)
+            new_entry = let m = Emp Address Bool in builtin put m to approved;
+            new_operatorRecord = builtin put copy_operatorApproval _sender new_entry;
+            operatorApprovals := new_operatorRecord
+        end;
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            code : code_success};
+        msgs = one_msg msg;
+        send msgs
+    | True =>
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+            code : code_failure};
         msgs = one_msg msg;
         send msgs
     end
