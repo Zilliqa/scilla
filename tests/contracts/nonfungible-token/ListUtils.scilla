@@ -1,0 +1,519 @@
+library ListUtils
+
+(* ('A -> 'B) -> List 'A -> List 'B *)
+(* Apply (f : 'A -> 'B) to every element of List 'A *)
+(* to generate List 'B. *)
+let list_map = tfun 'A => tfun 'B =>
+  fun (f : 'A -> 'B) => fun (l : List 'A) =>
+  let folder = @list_foldr 'A (List 'B) in
+  let init = Nil {'B} in
+  let iter = fun (h : 'A) => fun (z : List 'B) =>
+    let h1 = f h in
+    Cons {'B} h1 z  		
+	in folder iter init l
+
+(* ('A -> Bool) -> List 'A -> List 'A *)
+(* Preserving the order of elements in (l : List 'A),  *)
+(* return new list containing only those elements *)
+(* that satisfy the function f. *)
+let list_filter =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldr 'A (List 'A) in
+    let init = Nil {'A} in
+    let iter =
+      fun (h : 'A) =>
+      fun (z : List 'A) =>
+        let h1 = f h in
+        match h1 with
+        | True =>
+          Cons {'A} h z
+        | False =>
+          z
+        end
+     in
+       folder iter init l
+
+(* (List 'A) -> (Option 'A) *)
+(* Return the head element of a list as Some 'A, None otherwise *)
+let list_head =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some {'A} h
+    | Nil =>
+      None {'A}
+    end
+
+(* (List 'A) -> (Option List 'A) *)
+(* Return the list except for the head *)
+let list_tail =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some {(List 'A)} t
+    | Nil =>
+      None {(List 'A)}
+    end
+
+(* (List 'A -> List 'A ->  List 'A) *)
+(* Append the second list to the first one and return a new List *)
+let list_append =
+  tfun 'A =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    (* Fold right over l1 and keep prepending elements to l2 *)
+    (* l2 is the initial accumulator *)
+    let folder = @list_foldr 'A (List 'A) in
+    let init = l2 in
+    let iter =
+      fun (h : 'A) =>
+      fun (z : List 'A) =>
+        Cons {'A} h z
+    in
+      folder iter init l1
+
+(* (List 'A -> List 'A) *)
+(* Return the reverse of the argument list *)
+let list_reverse =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A (List 'A) in
+    let init = Nil {'A} in
+    let iter =
+      fun (z : List 'A) =>
+      fun (h : 'A) =>
+        Cons {'A} h z
+    in
+      folder iter init l
+
+(* (List List 'A) -> List 'A *)
+(* Concatenate a list of lists. The elements of the argument are all *)
+(* concatenated together (in the same order) to give the result. *)
+let list_flatten =
+  tfun 'A =>
+  fun (l : List (List 'A)) =>
+    let folder = @list_foldr (List 'A) (List 'A) in
+    let init = Nil {'A} in
+    let iter =
+      fun (h : List 'A) =>
+      fun (z : List 'A) =>
+        let app = @list_append 'A in
+        app h z
+    in
+      folder iter init l
+
+(* List 'A -> Int32 *)
+(* Number of elements in list *)
+let list_length =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    let folder = @list_foldr 'A Int32 in
+    let init = Int32 0 in
+    let iter =
+      fun (h : 'A) =>
+      fun (z : Int32) =>
+        let one = Int32 1 in
+          builtin add one z
+     in
+       folder iter init l
+
+(* Helper function for list_eq. Not for public use. *)
+(* Returns Some Nil on successul match. None otherwise. *)
+let list_eq_helper =
+  tfun 'A =>
+  fun (eq : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    let folder = @list_foldl 'A (Option (List 'A)) in
+    let init = Some {(List 'A)} l2 in
+    let iter =
+      fun (z : Option (List 'A)) =>
+      fun (h1 : 'A) =>
+        match z with
+        | Some ll2 =>
+          let headF = @list_head 'A in
+          let h2o = headF ll2 in
+          match h2o with
+          | Some h2 =>
+            let eqb = eq h1 h2 in
+            match eqb with
+            | True =>
+              let tailF = @list_tail 'A in
+              tailF ll2
+            | False =>
+              None {(List 'A)}
+            end
+          | None =>
+            None {(List 'A)}
+          end
+        | None =>
+          None {(List 'A)}
+        end
+    in
+      folder iter init l1
+
+(* ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool *)
+(* Return true iff two lists compare equal. *)
+(* Comparison is performed using the "f" function provided. *)
+let list_eq =
+  tfun 'A =>
+  fun (f : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    let eqh = @list_eq_helper 'A in
+    let res = eqh f l1 l2 in
+    match res with
+    | Some l =>
+      match l with
+      | Nil =>
+        True
+      | _ =>
+        False
+      end
+    | _ =>
+      False
+    end
+
+(* ('A -> 'A -> Bool) -> 'A -> List 'A -> Bool *)
+(* Return True iff "m" is in the list "l", as compared by function "f". *)
+let list_mem =
+  tfun 'A =>
+  fun (f : 'A -> 'A -> Bool) =>
+  fun (m : 'A) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A Bool in
+    let init = False in
+    let iter =
+      fun (z : Bool) =>
+      fun (h : 'A) =>
+        let res = f h m in
+        match res with
+        | True =>
+          True
+        | False =>
+          z
+        end
+    in
+      folder iter init l
+
+(* ('A -> Bool) -> List 'A -> Bool *)
+(* Return True iff all elements of list "l" satisfy predicate "f". *)
+let list_forall =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A Bool in
+    let init = True in
+    let iter =
+      fun (z : Bool) =>
+      fun (h : 'A) =>
+        let res = f h in
+        match res with
+        | False =>
+          False
+        | True =>
+          z
+        end
+    in
+    folder iter init l
+
+(* ('A -> Bool) -> List 'A -> Bool *)
+(* Return True iff at least one element of list "l" satisfy predicate "f". *)
+let list_exists =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A Bool in
+    let init = False in
+    let iter =
+      fun (z : Bool) =>
+      fun (h : 'A) =>
+        let res = f h in
+        match res with
+        | True =>
+          True
+        | False =>
+          z
+        end
+    in
+      folder iter init l
+
+(* ('A -> 'A -> Bool) -> List 'A -> List 'A *)
+(* Stable sort the input list "l". *)
+(* "flt" returns True if the first argument is lesser-than the second *)
+let list_sort =
+  (* Insertion sort *)
+  tfun 'A =>
+  fun (flt : 'A -> 'A -> Bool) =>
+  fun (ls : List 'A) =>
+    let true = True in 
+    let false = False in
+    let rec_A_A = @list_foldr 'A (List 'A) in
+    let rec_A_Pair = @list_foldr 'A (Pair Bool (List 'A))  in
+    let nil_A = Nil {'A} in 
+    let sink_down =
+      fun (e : 'A) => fun (ls : List 'A) =>
+        let init = Pair {Bool (List 'A)} false nil_A in
+        let iter1 =
+          fun (h : 'A) =>
+          fun (res : Pair Bool (List 'A)) =>
+            match res with
+            | Pair True rest =>
+              let z = Cons {'A} h rest in
+              Pair {Bool (List 'A)} true z
+            | Pair False rest =>
+              let bl = flt h e in
+              match bl with
+              | True =>
+                let z = Cons {'A} e rest in
+                let z2 = Cons {'A} h z in
+                Pair {Bool (List 'A)} true z2
+              | False =>
+                let z = Cons {'A} h rest in
+                Pair {Bool (List 'A)} false z
+              end
+            end   
+        in
+        let res1 = rec_A_Pair iter1 init ls in
+        match res1 with
+        | Pair True ls1 => ls1
+        | Pair False ls1 => Cons {'A} e ls1
+        end
+    in
+    let iter2 =
+      fun (h : 'A) =>
+      fun (res : List 'A) =>
+        sink_down h res
+    in 
+      rec_A_A iter2 nil_A ls
+
+
+(* ('A -> Bool) -> 'A -> 'A *)
+(* Return Some a, where "a" is the first element of *)
+(* "l" that satisfies the predicate "f". *)
+(* Return None iff none of the elements in "l" satisfy "f". *)
+let list_find =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A (Option 'A) in
+    let init = None {'A} in
+    let iter =
+      fun (z : Option 'A) =>
+      fun (h : 'A) =>
+        match z with
+        | Some a =>
+          z
+        | None =>
+          let r = f h in
+          match r with
+          | True =>
+            Some {'A} h
+          | False =>
+            None {'A}
+          end
+        end
+     in
+       folder iter init l
+
+(* List 'A -> List 'B -> List (Pair 'A 'B) *)
+(* Combine corresponding elements of m1 and m2 into a pair *)
+(* and return the resulting list. In case of different number *)
+(* of elements in the lists, the extra elements are ignored. *)
+let list_zip =
+  tfun 'A =>
+  tfun 'B =>
+  fun (m1 : List 'A) =>
+  fun (m2 : List 'B) =>
+    let list_zip_helper =
+      tfun 'A =>
+      tfun 'B =>
+      fun (l1 : List 'A) =>
+      fun (l2 : List 'B) =>
+        let folder = @list_foldl 'A (Pair (List (Pair 'A 'B)) (List 'B)) in
+        let nil = Nil {(Pair 'A 'B)} in
+        let init = Pair {(List (Pair 'A 'B)) (List 'B)} nil l2 in
+        let iter =
+          fun (z : Pair (List (Pair 'A 'B)) (List 'B)) =>
+          fun (h : 'A) =>
+            match z with
+            | Pair r b =>
+              (* Get b's head, pair it with h and add to r. *)
+              let header = @list_head 'B in
+              let tailer = @list_tail 'B in
+              let bhead = header b in
+              match bhead with
+              | Some bel =>
+                let newp = Pair {'A 'B} h bel in
+                let newp_concat = Cons {(Pair 'A 'B)} newp r in
+                let btail = tailer b in
+                let newb =
+                  match btail with
+                  | Some t =>
+                    t
+                  | None =>
+                    let nilb = Nil {'B} in
+                    nilb
+                  end
+                in
+                Pair {(List (Pair 'A 'B)) (List 'B)} newp_concat newb
+              | None =>
+                z
+              end
+            end
+          in
+            folder iter init l1
+    in
+      let zipper = @list_zip_helper 'A 'B in
+      let res = zipper m1 m2 in
+      match res with
+      | Pair x y =>
+        let reverser = @list_reverse (Pair 'A 'B) in
+          reverser x
+      end
+
+(* ('A -> 'B -> 'C) -> List 'A -> List 'B -> List 'C *)
+(* Combine corresponding elements of m1 and m2 using "f" *)
+(* and return the resulting list of 'C. In case of different number *)
+(* of elements in the lists, the extra elements are ignored. *)
+let list_zip_with =
+  tfun 'A =>
+  tfun 'B =>
+  tfun 'C =>
+  fun (f : 'A -> 'B -> 'C) =>
+  fun (m1 : List 'A) =>
+  fun (m2 : List 'B) =>
+    let list_zip_helper =
+      tfun 'A =>
+      tfun 'B =>
+      tfun 'C =>
+      fun (g : 'A -> 'B -> 'C) =>
+      fun (l1 : List 'A) =>
+      fun (l2 : List 'B) =>
+        let folder = @list_foldl 'A (Pair (List 'C) (List 'B)) in
+        let nilb = Nil {'B} in
+        let nilc = Nil {'C} in
+        let init = Pair {(List 'C) (List 'B)} nilc l2 in
+        let iter =
+          fun (z : Pair (List 'C) (List 'B)) =>
+          fun (h : 'A) =>
+            match z with
+            | Pair r b =>
+              (* Get b's head, pair it with h and add to r. *)
+              let header = @list_head 'B in
+              let tailer = @list_tail 'B in
+              let bhead = header b in
+              match bhead with
+              | Some bel =>
+                let newp = g h bel in
+                let newp_concat = Cons {'C} newp r in
+                let btail = tailer b in
+                let newb =
+                  match btail with
+                  | Some t =>
+                    t
+                  | None =>
+                    nilb
+                  end
+                in
+                Pair {(List 'C) (List 'B)} newp_concat newb
+              | None =>
+                z
+              end
+            end
+          in
+            folder iter init l1
+    in
+      let zipper = @list_zip_helper 'A 'B 'C in
+      let res = zipper f m1 m2 in
+      match res with
+      | Pair x y =>
+        let reverser = @list_reverse 'C in
+          reverser x
+      end
+
+(* List (Pair 'A 'B) -> Pair (List 'A) (List 'B) *)
+let list_unzip =
+  tfun 'A =>
+  tfun 'B =>
+  fun (l : List (Pair 'A 'B)) =>
+    let folder = @list_foldr (Pair 'A 'B) (Pair (List 'A) (List 'B)) in
+    let nil1 = Nil {'A} in
+    let nil2 = Nil {'B} in
+    let init = Pair {(List 'A) (List 'B)} nil1 nil2 in
+    let iter =
+      fun (h : Pair 'A 'B) =>
+      fun (z : Pair (List 'A) (List 'B)) =>
+        match h with
+        | Pair a b =>
+          match z with
+          | Pair la lb =>
+            let nla = Cons {'A} a la in
+            let nlb = Cons {'B} b lb in
+            Pair {(List 'A)(List 'B)} nla nlb
+          end
+        end
+    in
+      folder iter init l
+
+(* List (Pair 'A 'B) -> Map 'A 'B *)
+(* Convert a list of key-val pairs into a map, overwriting duplicates. *)
+let list_to_map =
+  tfun 'A =>
+  tfun 'B =>
+  fun (l : List (Pair 'A 'B)) =>
+    let folder = @list_foldl (Pair 'A 'B) (Map 'A 'B) in
+    let init = Emp 'A 'B in
+    let iter =
+      fun (z : Map 'A 'B) =>
+      fun (h : Pair 'A 'B) =>
+        match h with
+        | Pair a b =>
+          builtin put z a b
+        end
+    in
+      folder iter init l
+
+(* Int32 -> List 'A -> Option 'A *)
+(* Returns (Some 'A) if n'th element exists in list. None otherwise *)
+let list_nth =
+  tfun 'A =>
+  fun (n_h : Int32) =>
+  fun (l_h : List 'A) =>
+    let list_nth_helper =
+      tfun 'A =>
+      fun (n : Int32) =>
+      fun (l : List 'A) =>
+        let folder = @list_foldl 'A (Pair Int32 (Option 'A)) in
+        let zero = Int32 0 in
+        let none = None {'A} in
+        let init = Pair {Int32 (Option 'A)} zero none in
+        let iter =
+          fun (z : Pair Int32 (Option 'A)) =>
+          fun (h : 'A) =>
+            match z with
+            | Pair i oe =>
+              let one = Int32 1 in
+              let nexti = builtin add i one in
+              let this = builtin eq n i in
+              match this with
+              | True =>
+                let someh = Some {'A} h in
+                Pair {Int32 (Option 'A)} nexti someh
+              | False =>
+                Pair {Int32 (Option 'A)} nexti oe
+              end
+            end
+          in
+          folder iter init l
+    in
+    let nth = @list_nth_helper 'A in
+    let res = nth n_h l_h in
+    match res with
+    | Pair i oe =>
+      oe
+    end
