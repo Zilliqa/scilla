@@ -24,23 +24,27 @@ open TypeUtil
 (*                    Library type caching                       *)
 (*****************************************************************)
 
-module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
+module StdlibTypeCacher
+    (Q : MakeTEnvFunctor)
+    (R : QualifiedTypes)
+    (C : Contract_sig) = struct
 
   module MakeTEnv = Q(R)
   open MakeTEnv
+  open C
 
   open Cryptokit
   let hash s = transform_string (Hexa.encode()) (hash_string (Hash.sha2 256) s)
   let hash_lib lib =
     let s = List.fold_left ~f:(fun acc {lname;lexp} ->
-      (acc ^ (get_id lname) ^ (expr_str lexp))
+      (acc ^ (get_id_e lname) ^ (expr_str lexp))
       ) ~init:"" lib.lentries in
     hash s
 
   type t = MakeTEnv.TEnv.t
 
   let to_json_string lib lib_entries =
-    let lib_name = (get_id lib.lname) in
+    let lib_name = (get_id_s lib.lname) in
     let lib_hash = hash_lib lib in
     (* Let's output to a JSON with the following format:
      * {
@@ -107,7 +111,7 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
 
   (* Get type info for "lib" from cache, if it exists. *)
   let get_lib_tenv_cache (tenv : t) lib =
-    let lib_name = get_id lib.lname in
+    let lib_name = get_id_s lib.lname in
     let open GlobalConfig.StdlibTracker in
     let dir_o = find_lib_dir lib_name in
     match dir_o with
@@ -136,7 +140,7 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
   let cache_lib_tenv (tenv : t) lib =
     (* 1. Carefully separate out only lib's entries from tenv *)
     let entry_names =
-      List.map ~f:(fun {lname;_} -> (get_id lname)) lib.lentries
+      List.map ~f:(fun {lname;_} -> (get_id_e lname)) lib.lentries
     in
     (* OCaml's List.mem is not according to online docs. Why? *)
     let list_mem l a = List.exists l ~f:(fun b -> b = a) in
@@ -144,7 +148,7 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
 
     (* 2. Write back to cache. *)
     let open GlobalConfig.StdlibTracker in
-    let lib_name = get_id lib.lname in
+    let lib_name = get_id_s lib.lname in
     let dir_o = find_lib_dir lib_name in
     match dir_o with
     | Some dir ->

@@ -19,6 +19,9 @@
 
 %{
   open Syntax
+  open ParserUtil
+
+  open ParsedContract
 
   let to_type d = match d with
     | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x
@@ -96,8 +99,8 @@
 %start <Syntax.loc Syntax.expr_annot list> exps
 %start <Syntax.typ list> types
 %start <(Syntax.loc, Syntax.loc) Syntax.stmt_annot list> stmts_term
-%start <(Syntax.loc, Syntax.loc) Syntax.cmodule> cmodule
-%start <Syntax.loc Syntax.library> lmodule
+%start <ParserUtil.ParsedContract.cmodule> cmodule
+%start <ParserUtil.ParsedContract.library> lmodule
 
 %%
 
@@ -292,7 +295,7 @@ contract:
       ctrans  = ts } }
 
 libentry :
-| LET; ns = ID; EQ; e= exp { { lname = asId ns; lexp = e } }
+| LET; ns = ID; EQ; e= exp { { lname = asId ns ; lexp = e } }
 
 library :
 | LIBRARY; n = CID; ls = list(libentry);

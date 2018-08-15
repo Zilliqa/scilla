@@ -604,3 +604,31 @@ let blocknum_name = "BLOCKNUMBER"
 (*                    Transition typing                          *)
 (*****************************************************************)
 
+(*******************************************************)
+(*                   Annotations                       *)
+(*******************************************************)
+
+module TypecheckerERep (R : Rep) : Rep = struct
+  type rep = R.rep inferred_type * R.rep
+end
+
+(*****************************************************************)
+(*                 Typing entire contracts                       *)
+(*****************************************************************)
+
+module Typechecker_Contracts
+    (SR : Rep)
+    (ER : Rep) = struct
+
+  module STR = SR
+  module ETR = TypecheckerERep(ER)
+  module UntypedContract = Contract (SR) (ER)
+  module TypedContract = Contract (STR) (ETR)
+
+  include TypedContract
+      
+end
+
+(* TODO: This doesn't feel right *)
+open ParserUtil
+module TypedContracts = Typechecker_Contracts (ParserRep) (ParserRep)

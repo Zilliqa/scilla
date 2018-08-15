@@ -181,6 +181,36 @@ let expr_str (erep : 'rep expr_annot) =
 (*                   Statements                        *)
 (*******************************************************)
 
+(* module Stmt = functor (SR : Rep) (ER : Rep) -> struct
+  type stmt =
+    | Load of ER.rep ident * ER.rep ident * SR.rep
+    | Store of ER.rep ident * ER.rep ident * SR.rep
+    | Bind of ER.rep ident * ER.rep expr_annot * SR.rep
+    | MatchStmt of ER.rep ident * (ER.rep pattern * stmt list) list * SR.rep
+    | ReadFromBC of ER.rep ident * string * SR.rep
+    | AcceptPayment of SR.rep
+    | SendMsgs of ER.rep ident * SR.rep
+    | Event of string * string * SR.rep
+    | Throw of ER.rep ident * SR.rep
+
+  let get_rep s =
+    match s with
+    | Load (_, _, rep)
+    | Store (_, _, rep)
+    | Bind (_, _, rep)
+    | MatchStmt (_, _, rep)
+    | ReadFromBC (_, _, rep)
+    | AcceptPayment rep
+    | SendMsgs (_, rep)
+    | Event (_, _, rep)
+    | Throw (_, rep) -> rep
+
+  include SR
+end
+*)
+
+
+
 type ('rep, 'erep) stmt_annot = ('rep, 'erep) stmt * 'rep
 and ('rep, 'erep) stmt =
   | Load of 'erep ident * 'erep ident
@@ -208,10 +238,92 @@ let stmt_loc (s : ('rep, 'erep) stmt) : loc option =
       if (l.cnum <> -1) then Some l else None
   | _ -> None
 
+
+(*******************************************************)
+(*                   Annotations                       *)
+(*******************************************************)
+
+module type Rep = sig
+  type rep
+end
+
 (*******************************************************)
 (*                    Contracts                        *)
 (*******************************************************)
 
+module type Contract_sig = sig
+  type exp_nametype
+  type stmt_nametype
+  type param_type
+  type exp_type
+  type stmt_type
+  type field_type
+  type libs_type
+  type erep
+  type srep
+  
+  type transition = { tname : stmt_nametype;
+                      tparams : param_type list;
+                      tbody : stmt_type list }
+
+  type lib_entry = { lname : exp_nametype;
+                     lexp : exp_type }
+
+  type library = { lname : stmt_nametype;
+                   lentries : lib_entry list }
+
+  type contract = { cname : stmt_nametype;
+                    cparams : param_type list;
+                    cfields : field_type list;
+                    ctrans : transition list }
+
+  type cmodule = { cname : stmt_nametype;
+                   libs : library option;
+                   elibs : libs_type list;
+                   contr : contract }
+
+end
+
+module Contract (SR : Rep) (ER : Rep) : Contract_sig = struct
+  type exp_nametype = ER.rep ident
+  type stmt_nametype = SR.rep ident
+  type param_type = (ER.rep ident * typ)
+  type exp_type = ER.rep expr_annot
+  type stmt_type = (SR.rep, ER.rep) stmt_annot
+  type field_type = (ER.rep ident * typ * ER.rep expr_annot)
+  type libs_type = SR.rep ident
+  type erep = ER.rep
+  type srep = SR.rep
+  
+  type transition = 
+    { tname   : SR.rep ident;
+      tparams : (ER.rep ident  * typ) list;
+      tbody   : (SR.rep, ER.rep) stmt_annot list }
+
+  type lib_entry =
+    { lname : ER.rep ident;
+      lexp  : ER.rep expr_annot }
+
+  type library =
+    { lname : SR.rep ident;
+      lentries : lib_entry list }
+  
+  type contract =
+    { cname   : SR.rep ident;
+      cparams : (ER.rep ident  * typ) list;
+      cfields : (ER.rep ident * typ * ER.rep expr_annot) list;
+      ctrans  : transition list; }
+
+  (* Contract module: libary + contract definiton *)
+  type cmodule =
+    { cname : SR.rep ident;
+      libs  : library option;     (* lib functions defined in the module *)
+      elibs : SR.rep ident list;  (* list of imports / external libs *)
+      contr : contract }
+
+end
+
+(*
 type ('rep, 'erep) transition = 
   { tname   : 'erep ident;
     tparams : ('erep ident  * typ) list;
@@ -248,3 +360,4 @@ type ('rep, 'erep) cmodule =
     elibs : 'erep ident list;  (* list of imports / external libs *)
     contr : ('rep, 'erep) contract }
 [@@deriving sexp]
+*)

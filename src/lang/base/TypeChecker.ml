@@ -338,7 +338,8 @@ let type_recursion_principles =
         let actual = ar.tp in
         let%bind _ = assert_type_equiv expected actual in
         pure (rn, actual))
-        
+
+
 (**************************************************************)
 (*                    Typing a library                        *)
 (**************************************************************)

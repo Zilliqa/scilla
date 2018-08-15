@@ -16,22 +16,18 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-(*****************************************************************)
-(*                    Library type caching                       *)
-(*****************************************************************)
-
 open Syntax
-open TypeUtil
 
-module StdlibTypeCacher
-    (Q : MakeTEnvFunctor)
-    (R : QualifiedTypes)
-    (C : Contract_sig) : sig
+(*******************************************************)
+(*                   Annotations                       *)
+(*******************************************************)
 
-  type t = Q(R).TEnv.t
-
-  (* Get type info for "lib" from cache, if it exists. *)
-  val get_lib_tenv_cache : t -> C.library -> t option
-  (* Store type info tenv, for "lib" in the cache. *)
-  val cache_lib_tenv : t -> C.library -> unit
+module ParserRep : Rep = struct
+  type rep = loc
 end
+
+(*******************************************************)
+(*                    Contracts                        *)
+(*******************************************************)
+
+module ParsedContract = Contract (ParserRep) (ParserRep)
