@@ -14,3 +14,4 @@ Description of test cases
 |9      |   ApproveForAll | `0x...92` approves `0x...93`. `0x...92` should now have two entries in the approvals.  |
 |9      |   ApproveForAll | `0x...92` approves `0x...93`. `0x...92` should now have two entries in the approvals.  |
 |11     |   Transfer (with token approval) | `0x...92` tranfer `91`'s token to `93`.   |
+|12     |   Delegated Approved | `92` delegates `91` as an approved operator. `91` successfully approves `93` to transfer tokenId 1   |

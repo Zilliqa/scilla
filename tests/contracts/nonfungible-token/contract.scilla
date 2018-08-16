@@ -278,25 +278,40 @@ transition transferFrom(from: Address, to: Address, tokenId: Uint256)
 end
 
 transition approve(to: Address, tokenId: Uint256)
+
     copy_tokenOwnerMap <- tokenOwnerMap;
+    copy_operatorApproval <- operatorApprovals;
 
-    isAuthorized = isTokenOwner _sender tokenId copy_tokenOwnerMap;
-    match isAuthorized with
-    | True =>
-        (* add to token approval mapping *)
-        copy_tokApproval <- tokenApprovals;
-        new_tokApproval = builtin put copy_tokApproval tokenId to;
-        tokenApprovals := new_tokApproval;
+    (* Get tokenOwner Address *)
+    getTokenOwner = builtin get copy_tokenOwnerMap tokenId;
+    match getTokenOwner with
+    | None =>
+        (* Token not found *)
+        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+                code : code_not_found};
+                msgs = one_msg msg;
+                send msgs
+    | Some tokenOwner =>
+        checkApprovedForAll = isApprovedForAll _sender tokenOwner copy_operatorApproval;
+        checkOwner = isTokenOwner _sender tokenId copy_tokenOwnerMap;
+        isAuthorized = orb checkApprovedForAll checkOwner;
+        match isAuthorized with
+        | True =>
+            (* add to token approval mapping *)
+            copy_tokenApprovals <- tokenApprovals;
+            new_tokenApprovals = builtin put copy_tokenApprovals tokenId to;
+            tokenApprovals := new_tokenApprovals;
 
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : code_success};
-        msgs = one_msg msg;
-        send msgs
-    | False =>
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : code_not_authorized};
-        msgs = one_msg msg;
-        send msgs
+            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+                code : code_success};
+            msgs = one_msg msg;
+            send msgs
+        | False =>
+            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+                code : code_not_authorized};
+            msgs = one_msg msg;
+            send msgs
+        end
     end
 end
 
