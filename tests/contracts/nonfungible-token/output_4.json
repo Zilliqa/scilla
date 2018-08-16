@@ -9,6 +9,11 @@
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
+      "vname": "operatorApprovals",
+      "type": "Map (Address) (Map (Address) (Bool))",
+      "value": []
+    },
+    {
       "vname": "tokenApprovals",
       "type": "Map (Uint256) (Address)",
       "value": []

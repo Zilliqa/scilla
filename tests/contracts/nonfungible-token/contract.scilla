@@ -127,6 +127,7 @@ transition balanceOf(address: Address)
         msgs = one_msg msg;
         send msgs
     | None =>
+        (* User do not have any tokens *)
         msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
             balance : Uint256 0};
         msgs = one_msg msg;
@@ -200,6 +201,7 @@ transition transferFrom(from: Address, to: Address, tokenId: Uint256)
     getTokenOwner = builtin get copy_tokenOwnerMap tokenId;
     match getTokenOwner with
     | None =>
+        (* Token not found *)
         msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
                 code : code_not_found};
                 msgs = one_msg msg;
@@ -214,6 +216,16 @@ transition transferFrom(from: Address, to: Address, tokenId: Uint256)
 
         match isAuthorized with
         | True =>
+
+            (* Remove from Approval *)
+            match checkApproved with
+            | True =>
+                (* Remove entry from approvals at the token level *)
+                new_tokenApprovals = builtin remove copy_tokenApprovals tokenId; 
+                tokenApprovals := new_tokenApprovals
+            | False =>
+            end;
+
             (* Change tokenOwnerMap *)
             new_tokenOwnerMap = builtin put copy_tokenOwnerMap tokenId to;
             tokenOwnerMap := new_tokenOwnerMap;
@@ -250,6 +262,8 @@ transition transferFrom(from: Address, to: Address, tokenId: Uint256)
                 ownedTokenCount := new_otc
             end;
 
+            
+
             msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
                 code : code_success};
             msgs = one_msg msg;
@@ -265,6 +279,7 @@ end
 
 transition approve(to: Address, tokenId: Uint256)
     copy_tokenOwnerMap <- tokenOwnerMap;
+
     isAuthorized = isTokenOwner _sender tokenId copy_tokenOwnerMap;
     match isAuthorized with
     | True =>
