@@ -515,7 +515,16 @@ let rec literal_type l =
   | BNum _ -> pure bnum_typ
   | Address _ -> pure address_typ
   | Sha256 _ -> pure hash_typ
-  | Msg _ -> pure msg_typ
+  (* Check that messages and events have storable parameters. *)
+  | Msg m -> 
+    let%bind all_storable = foldM ~f:(fun acc (_, l) ->
+      let%bind t = literal_type l in
+      if acc then pure (is_storable_type t) else pure false)
+      ~init:true m
+    in
+    if not all_storable then
+      fail @@ sprintf "Message/Event has invalid / non-storable parameters"
+    else pure msg_typ
   | Map ((kt, vt), kv) ->
      if PrimTypes.is_prim_type kt
      then 

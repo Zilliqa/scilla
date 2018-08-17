@@ -33,5 +33,6 @@
       "type": "Nat",
       "value": { "constructor": "Zero", "argtypes": [], "arguments": [] }
     }
-  ]
+  ],
+  "events": []
 }

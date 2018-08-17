@@ -21,5 +21,18 @@
       "type": "Bool",
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     }
+  ],
+  "events": [
+    {
+      "eventname": "DonationAccepted",
+      "params": [
+        {
+          "vname": "donor",
+          "type": "Address",
+          "value": "0x12345678901234567890123456789012345678cd"
+        },
+        { "vname": "amount", "type": "Uint128", "value": "200" }
+      ]
+    }
   ]
 }

@@ -81,6 +81,7 @@
 %token CONTRACT       
 %token TRANSITION
 %token SEND
+%token EVENT
 %token ACCEPT
 %token MAP
        
@@ -244,6 +245,7 @@ stmt:
 | l=ID; BIND; AND; c=CID { ReadFromBC (asIdL l (toLoc $startpos($2)), c) }
 | ACCEPT                 { AcceptPayment }
 | SEND; m = ID;          { SendMsgs (asIdL m (toLoc $startpos)) }
+| EVENT; s = STRING; m = ID; { CreateEvnt (s, (asIdL m (toLoc $startpos))) }
 | MATCH; x = ID; WITH; cs=list(stmt_pm_clause); END
   { MatchStmt (Ident (x, toLoc $startpos), cs) }
 

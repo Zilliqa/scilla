@@ -62,6 +62,10 @@ let rec build_contract_tests env name ecode i n =
            let g = load_file goldoutput_file in
            if ecode = WEXITED 0 then
              let o = load_file output_file in
+             let update_gold = env.update_gold test_ctxt in
+             if update_gold then
+              (Printf.printf "Updating gold output for test %s\n" (name^"_"^(i_to_s i));
+                save_to_file o goldoutput_file);
              (* Compare output.json with a gold output in the contract directory *)
              assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o)) ~ctxt:test_ctxt
                ~msg:(Core.sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g) g o);

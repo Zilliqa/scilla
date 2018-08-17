@@ -20,5 +20,18 @@
       "type": "Bool",
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     }
+  ],
+  "events": [
+    {
+      "eventname": "ClaimedBack",
+      "params": [
+        {
+          "vname": "claimed_by",
+          "type": "Address",
+          "value": "0x12345678901234567890123456789012345678ab"
+        },
+        { "vname": "amount", "type": "Uint128", "value": "100" }
+      ]
+    }
   ]
 }
