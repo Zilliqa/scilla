@@ -19,6 +19,7 @@
 open Core
 open Syntax
 open TypeUtil
+open TypeHelpers
 
 (*****************************************************************)
 (*                    Library type caching                       *)

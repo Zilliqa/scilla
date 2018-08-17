@@ -20,8 +20,9 @@
 (*                    Library type caching                       *)
 (*****************************************************************)
 
-open Syntax
 open TypeUtil
+open TypeHelpers
+        
 
 module StdlibTypeCacher
     (Q : MakeTEnvFunctor)

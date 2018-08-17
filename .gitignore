@@ -45,3 +45,4 @@ cv/*.out
 .#*
 
 src/stdlib/*.json
+*/#*.*#

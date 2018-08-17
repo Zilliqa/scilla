@@ -20,6 +20,7 @@ open Syntax
 open Core
 open TypeUtil
 open FrontEndParser
+open TypeHelpers
 
 (***********************************************************)
 (*    Recursion principles for built-in ADTs               *)
