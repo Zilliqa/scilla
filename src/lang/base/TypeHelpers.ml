@@ -16,23 +16,25 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
 open PrimTypes
+open TypeUtil
+open Syntax
 
 (*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
 
 module TypecheckerERep (R : Rep) = struct
-  type rep = typ * R.rep
+  type rep = PlainTypes.t inferred_type * R.rep
 
   let get_loc r = match r with | (_, rr) -> R.get_loc rr
   let mk_msg_payload_id s =
     match R.mk_msg_payload_id s with
-    | Ident (n, r) -> Ident (n, (uint128_typ, r))
+    | Ident (n, r) -> Ident (n, (PlainTypes.mk_qualified_type uint128_typ, r))
 
-
-  let parse_rep s = (uint128_typ, R.parse_rep s)
+  let mk_rep (r : R.rep) (t : PlainTypes.t inferred_type) = (t, r)
+  
+  let parse_rep s = (PlainTypes.mk_qualified_type uint128_typ, R.parse_rep s)
   let get_rep_str r = match r with | (_, rr) -> R.get_rep_str rr
 end
 

@@ -27,14 +27,7 @@ module StdlibTypeCacher
     (Q : MakeTEnvFunctor)
     (R : QualifiedTypes)
     (SR : Rep)
-    (ER : sig
-       type rep
-       val get_loc : rep -> loc
-       val mk_msg_payload_id : string -> rep ident
-       val parse_rep : string -> rep
-       val get_rep_str: rep -> string
-       val expr_str : rep expr_annot -> string
-     end)
+    (ER : Rep)
     (L : sig
        type lib_entry = { lname : ER.rep ident ; lexp : ER.rep expr_annot }
        type library = { lname : SR.rep ident; lentries : lib_entry list }

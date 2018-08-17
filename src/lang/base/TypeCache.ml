@@ -28,14 +28,7 @@ module StdlibTypeCacher
     (Q : MakeTEnvFunctor)
     (R : QualifiedTypes)
     (SR : Rep)
-    (ER : sig
-       type rep
-       val get_loc : rep -> loc
-       val mk_msg_payload_id : string -> rep ident
-       val parse_rep : string -> rep
-       val get_rep_str: rep -> string
-       val expr_str : rep expr_annot -> string
-     end)
+    (ER : Rep)
     (L : sig
        type lib_entry = { lname : ER.rep ident ; lexp : ER.rep expr_annot }
        type library = { lname : SR.rep ident; lentries : lib_entry list }
@@ -49,7 +42,7 @@ module StdlibTypeCacher
   let hash s = transform_string (Hexa.encode()) (hash_string (Hash.sha2 256) s)
   let hash_lib (lib : L.library) =
     let s = List.fold_left ~f:(fun acc {lname;lexp} ->
-      (acc ^ (get_id lname) ^ (ER.expr_str lexp))
+      (acc ^ (get_id lname) ^ (expr_str lexp))
       ) ~init:"" lib.lentries in
     hash s
 

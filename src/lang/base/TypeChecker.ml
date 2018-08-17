@@ -124,7 +124,7 @@ let rec type_expr tenv (erep : loc expr_annot) =
   | MatchExpr (x, clauses) ->
       if List.is_empty clauses
       then fail @@ sprintf
-          "List of pattern matching clauses is empty:\n%s" (expr_str erep sexp_of_loc)
+          "List of pattern matching clauses is empty:\n%s" (expr_str erep)
       else
         let%bind sctyp = TEnv.resolveT tenv (get_id x)
             ~lopt:(Some (get_rep x)) in
@@ -375,9 +375,13 @@ let type_fields tenv flds get_loc =
 open TypeHelpers
     
 module Typechecker_Contracts
-    (SR : Rep)
-    (ER : Rep) = struct
+    (* TODO: This needs to be parameterized rather than bound to ParserRep.
+       Cannot be done until type_stmt has been generalized. *)
+  (* (SR : Rep) *)
+  (*     (ER : Rep) *) = struct
 
+  module SR = ParserRep
+  module ER = ParserRep
   module STR = SR
   module ETR = TypecheckerERep (ER)
   module UntypedContract = Contract (SR) (ER)
@@ -387,22 +391,33 @@ module Typechecker_Contracts
 
   module TypeEnv = MakeTEnv(PlainTypes)(ER)
   open TypeEnv
+
+  (* Auxiliaty structure for types of fields and BC components *)
+(*  type stmt_tenv = {
+    pure   : TEnv.t;
+    fields : TEnv.t;
+    bc     : TEnv.t;
+    } *)
       
   open UntypedContract
-      
-  (**************************************************************)
-  (*                    Typing transitions                      *)
-  (**************************************************************)
-      
-  let type_transition env0 tr =
+
+  let type_transition (env0 : stmt_tenv) (tr : UntypedContract.transition) : (TypedContract.transition * stmt_tenv, string) result  =
     let {tname; tparams; tbody} = tr in
     let tenv0 = env0.pure in
+    let lift_ident_e (id, t) =
+      match id with
+      | Ident (s, r) -> (Ident (s, ETR.mk_rep r (mk_qual_tp t)), t) in
+  
+    let typed_tparams = List.map tparams ~f:lift_ident_e in
     let tenv1 = TEnv.addTs tenv0 (append_implict_trans_params tparams ER.mk_msg_payload_id) in
     let env = {env0 with pure = tenv1} in
     let msg = sprintf "[%s] Type error in transition %s:\n"
-        (get_loc_str (get_loc tname)) (get_id tname) in
-    wrap_with_info msg @@
-    type_stmts env tbody
+        (get_loc_str (SR.get_loc (get_rep tname))) (get_id tname) in
+    let%bind (typed_stmts, new_tenv) = wrap_with_info msg @@ type_stmts env tbody in
+    pure @@ ({ TypedContract.tname = tname ;
+               TypedContract.tparams = typed_tparams;
+               TypedContract.tbody = typed_stmts }, new_tenv)
+        
 
   (**************************************************************)
   (*                    Typing libraries                        *)
@@ -420,13 +435,13 @@ module Typechecker_Contracts
       foldM ~init:env0 ents ~f:(fun env {lname=ln; lexp = le} ->
           let msg = sprintf
               "[%s] Type error in library %s:\n"
-              (get_loc_str (get_loc ln)) (get_id ln) in
+              (get_loc_str (ER.get_loc (get_rep ln))) (get_id ln) in
           let%bind (_, (tr, _)) = wrap_with_info msg (type_expr env le) in       
           pure @@ TEnv.addT (TEnv.copy env) ln tr.tp) in
     pure @@ TEnv.copy res
 
   (* type library, handling cache as necessary. *)
-  let type_library_cache (tenv : stmt_tenv) (elib : UntypedContract.library)  =
+  let type_library_cache (tenv : TEnv.t) (elib : UntypedContract.library)  =
     (* We are caching TypeEnv = MakeTEnv(PlainTypes)(ER) *)
     let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) (STR) (ER) (UntypedContract) in
     let open STC in
@@ -501,8 +516,3 @@ module Typechecker_Contracts
     else fail @@ emsgs'
 
 end
-
-
-(* TODO: This doesn't feel right *)
-open ParserUtil
-module TypedContract = Typechecker_Contracts (ParserRep) (ParserRep)
