@@ -20,20 +20,31 @@
 (*                    Library type caching                       *)
 (*****************************************************************)
 
+open Syntax
 open TypeUtil
-open TypeHelpers
-        
 
 module StdlibTypeCacher
     (Q : MakeTEnvFunctor)
-    (R : QualifiedTypes) : sig
+    (R : QualifiedTypes)
+    (SR : Rep)
+    (ER : sig
+       type rep
+       val get_loc : rep -> loc
+       val mk_msg_payload_id : string -> rep ident
+       val parse_rep : string -> rep
+       val get_rep_str: rep -> string
+       val expr_str : rep expr_annot -> string
+     end)
+    (L : sig
+       type lib_entry = { lname : ER.rep ident ; lexp : ER.rep expr_annot }
+       type library = { lname : SR.rep ident; lentries : lib_entry list }
+     end)
+  : sig
 
-  type t = Q(R).TEnv.t
-  open TypedContracts
+  type t = Q(R)(ER).TEnv.t
 
-  
   (* Get type info for "lib" from cache, if it exists. *)
-  val get_lib_tenv_cache : t -> library -> t option
+  val get_lib_tenv_cache : t -> L.library -> t option
   (* Store type info tenv, for "lib" in the cache. *)
-  val cache_lib_tenv : t -> library -> unit
+  val cache_lib_tenv : t -> L.library -> unit
 end

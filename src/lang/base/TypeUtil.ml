@@ -183,14 +183,18 @@ type 'rep inferred_type = {
 } [@@deriving sexp]
 
 module type QualifiedTypes = sig
-  type t
+   type t
   val mk_qualified_type : typ -> t inferred_type      
 end
 
-module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
+module type MakeTEnvFunctor = functor
+  (Q : QualifiedTypes)
+  (R : Rep)
+  -> sig
   (* Resolving results *)
   type resolve_result
   val rr_loc : resolve_result -> loc
+  val rr_rep : resolve_result -> R.rep
   val rr_typ : resolve_result -> Q.t inferred_type
   val rr_pp  : resolve_result -> string
   val mk_qual_tp : typ -> Q.t inferred_type
@@ -200,22 +204,22 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     (* Make new type environment *)
     val mk : t
     (* Add to type environment *)
-    val addT : t -> loc ident -> typ -> t
+    val addT : t -> R.rep ident -> typ -> t
     (* Add to many type bindings *)
-    val addTs : t -> (loc ident * typ) list -> t      
+    val addTs : t -> (R.rep ident * typ) list -> t      
     (* Add type variable to the environment *)
-    val addV : t -> loc ident -> t
+    val addV : t -> R.rep ident -> t
     (* Check type for well-formedness in the type environment *)
     val is_wf_type : t -> typ -> (unit, string) result
     (* Resolve the identifier *)
     val resolveT : 
-      ?lopt:(loc option) -> t -> string -> (resolve_result, string) result
+      ?lopt:(R.rep option) -> t -> string -> (resolve_result, string) result
     (* Copy the environment *)
     val copy : t -> t
     (* Convert to list *)
     val to_list : t -> (string * resolve_result) list
     (* Get type variables *)
-    val tvars : t -> (string * loc) list
+    val tvars : t -> (string * R.rep) list
     (* Print the type environment *)
     val pp : ?f:(string * resolve_result -> bool) -> t -> string        
   end
@@ -226,11 +230,15 @@ end
 (****************************************************************)
 
 (* Typing environment, parameterised by a qualifier *)
-module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
-  type resolve_result = {qt : Q.t inferred_type; loc : loc }
-  let rr_loc rr = rr.loc
+module MakeTEnv: MakeTEnvFunctor = functor
+  (Q : QualifiedTypes)
+  (R : Rep)
+  -> struct
+  type resolve_result = {qt : Q.t inferred_type; rep : R.rep }
+  let rr_loc rr = R.get_loc (rr.rep)
+  let rr_rep rr = rr.rep
   let rr_typ rr = rr.qt
-  (*  TODO: Also print location *)
+  (*  TODO: Also print rep *)
   let rr_pp  rr = (rr_typ rr).tp |> pp_typ
   let mk_qual_tp tp =  Q.mk_qualified_type tp
       
@@ -238,20 +246,20 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
     type t = {
       (* Typed identifiers *)
       tenv  : (string, resolve_result) Hashtbl.t;
-      (* Context for type variables and their locations *)
-      tvars : (string, loc) Hashtbl.t
+      (* Context for type variables and their rep *)
+      tvars : (string, R.rep) Hashtbl.t
     } 
     
     let addT env id tp =
       let _ = Hashtbl.add env.tenv (get_id id)
-          {qt = Q.mk_qualified_type tp; loc = get_loc id} in
+          {qt = Q.mk_qualified_type tp; rep = get_rep id} in
       env
         
     let addTs env kvs = 
       List.fold_left ~init:env ~f:(fun z (k, v) -> addT z k v) kvs
         
     let addV env id = 
-      let _ = Hashtbl.add env.tvars (get_id id) (get_loc id) in env
+      let _ = Hashtbl.add env.tvars (get_id id) (get_rep id) in env
         
     let tvars env =
       Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []
@@ -275,7 +283,7 @@ module MakeTEnv: MakeTEnvFunctor = functor (Q: QualifiedTypes) -> struct
       | Some r -> pure r
       | None ->
           let loc_str = (match lopt with
-              | Some l -> sprintf "[%s]: " (get_loc_str l)
+              | Some l -> sprintf "[%s]: " (get_loc_str (R.get_loc l))
               | None -> "") in
           fail @@ sprintf
             "%sCouldn't resolve the identifier %s in the type environment\n%s"
@@ -540,7 +548,7 @@ let rec literal_type l =
 (*                  Better error reporting                      *)
 (****************************************************************)
 
-let get_failure_msg e opt = match e with
+let get_failure_msg e opt get_loc = match e with
   | App (f, _) ->
       sprintf "[%s] Type error in application of `%s`:\n"
         (get_loc_str (get_loc f)) (get_id f)
@@ -562,7 +570,7 @@ let get_failure_msg e opt = match e with
         (get_id f)              
   | _ -> ""
 
-let get_failure_msg_stmt s opt = match s with
+let get_failure_msg_stmt s opt get_loc = match s with
   | Load (x, f) ->
       sprintf "[%s] Type error in reading value of `%s` into `%s`:\n"
         (get_loc_str (get_loc x)) (get_id f) (get_id x)
@@ -589,10 +597,10 @@ let wrap_with_info msg res = match res with
   | Ok _ -> res
   | Error msg' -> Error (sprintf "%s%s" msg msg')
 
-let wrap_err e ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt)
+let wrap_err e get_loc ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt get_loc)
 
-let wrap_serr s ?opt:(opt = "") =
-  wrap_with_info (get_failure_msg_stmt s opt)
+let wrap_serr s get_loc ?opt:(opt = "") =
+  wrap_with_info (get_failure_msg_stmt s opt get_loc)
 
 (*****************************************************************)
 (*               Blockchain component typing                     *)

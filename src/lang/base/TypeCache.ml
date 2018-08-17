@@ -19,7 +19,6 @@
 open Core
 open Syntax
 open TypeUtil
-open TypeHelpers
 
 (*****************************************************************)
 (*                    Library type caching                       *)
@@ -27,42 +26,56 @@ open TypeHelpers
 
 module StdlibTypeCacher
     (Q : MakeTEnvFunctor)
-    (R : QualifiedTypes) = struct
-
-  module MakeTEnv = Q(R)
+    (R : QualifiedTypes)
+    (SR : Rep)
+    (ER : sig
+       type rep
+       val get_loc : rep -> loc
+       val mk_msg_payload_id : string -> rep ident
+       val parse_rep : string -> rep
+       val get_rep_str: rep -> string
+       val expr_str : rep expr_annot -> string
+     end)
+    (L : sig
+       type lib_entry = { lname : ER.rep ident ; lexp : ER.rep expr_annot }
+       type library = { lname : SR.rep ident; lentries : lib_entry list }
+     end)
+       = struct
+                                            
+  module MakeTEnv = Q(R)(ER)
   open MakeTEnv
-
+  
   open Cryptokit
   let hash s = transform_string (Hexa.encode()) (hash_string (Hash.sha2 256) s)
-  let hash_lib lib =
+  let hash_lib (lib : L.library) =
     let s = List.fold_left ~f:(fun acc {lname;lexp} ->
-      (acc ^ (get_id_e lname) ^ (expr_str lexp))
+      (acc ^ (get_id lname) ^ (ER.expr_str lexp))
       ) ~init:"" lib.lentries in
     hash s
 
   type t = MakeTEnv.TEnv.t
 
-  let to_json_string lib lib_entries =
-    let lib_name = (get_id_s lib.lname) in
+  let to_json_string (lib : L.library) lib_entries =
+    let lib_name = (get_id lib.lname) in
     let lib_hash = hash_lib lib in
     (* Let's output to a JSON with the following format:
      * {
      *   "name" : "foo",
      *   "entries" : [
-     *      { "name" : "foo1", "type" "Int32", "loc" : "" },
-     *      { "name" : "foo2", "type" : "Int32 -> Int64", "loc", ""}
+     *      { "name" : "foo1", "type" "Int32", "rep" : "" },
+     *      { "name" : "foo2", "type" : "Int32 -> Int64", "rep", ""}
      *    ]
      * }
      *)
      let entries = 
       List.map ~f:(fun (n, t) ->
         let name_s = n in
-        let loc_s = get_loc_str (rr_loc t) in
+        let rep_s = ER.get_rep_str (rr_rep t) in
         let type_s = rr_pp t in
         `Assoc [ 
           ("name", `String name_s);
           ("type", `String type_s);
-          ("loc", `String loc_s)
+          ("rep", `String rep_s)
         ]
       ) lib_entries in
       (* Compose final result. *)
@@ -81,15 +94,15 @@ module StdlibTypeCacher
     | `String n, `String h, `List elj ->
       (* Conver the list of JSONs to a list of TEnv.tenv entries. *)
       let el = List.fold_right ~f:(fun ej acc ->
-        let name_j, type_j, loc_j = 
-          member "name" ej, member "type" ej, member "loc" ej in
+        let name_j, type_j, rep_j = 
+          member "name" ej, member "type" ej, member "rep" ej in
         let e_o = 
-          (match name_j, type_j, loc_j with
-          | `String name_s, `String type_s, `String _ ->
+          (match name_j, type_j, rep_j with
+          | `String name_s, `String type_s, `String rep_s ->
               (* Printf.printf "Parsing type: %s\n" type_s; *)
               (try
                 let typ = FrontEndParser.parse_type type_s in
-                let loc = dummy_loc in (* TODO: parse loc_s *)
+                let loc = ER.parse_rep rep_s in (* TODO: parse loc_s *)
                 let id = asIdL name_s loc in
                 Some (id, typ)
                with
@@ -109,8 +122,8 @@ module StdlibTypeCacher
     | _, _, _ -> None
 
   (* Get type info for "lib" from cache, if it exists. *)
-  let get_lib_tenv_cache (tenv : t) lib =
-    let lib_name = get_id_s lib.lname in
+  let get_lib_tenv_cache (tenv : t) (lib : L.library) =
+    let lib_name = get_id lib.lname in
     let open GlobalConfig.StdlibTracker in
     let dir_o = find_lib_dir lib_name in
     match dir_o with
@@ -136,10 +149,10 @@ module StdlibTypeCacher
     | None -> None
 
   (* Store type info tenv, for "lib" in the cache. *)
-  let cache_lib_tenv (tenv : t) lib =
+  let cache_lib_tenv (tenv : t) (lib : L.library) =
     (* 1. Carefully separate out only lib's entries from tenv *)
     let entry_names =
-      List.map ~f:(fun {lname;_} -> (get_id_e lname)) lib.lentries
+      List.map ~f:(fun {lname;_} -> (get_id lname)) lib.lentries
     in
     (* OCaml's List.mem is not according to online docs. Why? *)
     let list_mem l a = List.exists l ~f:(fun b -> b = a) in
@@ -147,7 +160,7 @@ module StdlibTypeCacher
 
     (* 2. Write back to cache. *)
     let open GlobalConfig.StdlibTracker in
-    let lib_name = get_id_s lib.lname in
+    let lib_name = get_id lib.lname in
     let dir_o = find_lib_dir lib_name in
     match dir_o with
     | Some dir ->

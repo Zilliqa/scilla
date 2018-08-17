@@ -18,16 +18,16 @@
 
 open Syntax
 open Core
+open ParserUtil
 open TypeUtil
 open FrontEndParser
-open TypeHelpers
 
 (***********************************************************)
 (*    Recursion principles for built-in ADTs               *)
 (***********************************************************)
 
 (* TODO: Split this file into separate parsing and typechecking, and parameterize in the same way as the typechecker *)
-open TypedContracts
+open ParsedContract
 
 (* Folding over natural numbers *)
 module NatRec = struct
@@ -49,7 +49,7 @@ module NatRec = struct
           "   g fn res n1 " ^
           "end"
         )
-      let id = mk_id_e "nat_fold" dummy_erep
+      let id = mk_ident "nat_fold"
       let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
       let fold = (TFun(tvar, fold_fix), loc)
       let entry = ({lname = id; lexp = fold}, full_type)

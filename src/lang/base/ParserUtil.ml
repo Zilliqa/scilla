@@ -24,6 +24,11 @@ open Syntax
 
 module ParserRep = struct
   type rep = loc
+  let get_loc l = l
+  let mk_msg_payload_id s = Ident (s, dummy_loc)
+
+  let parse_rep _ = dummy_loc
+  let get_rep_str r = get_loc_str r
 end
 
 (*******************************************************)

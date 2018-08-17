@@ -49,7 +49,7 @@ let asId i = Ident (i, dummy_loc)
 let asIdL i loc = Ident(i, loc)
 
 let get_id i = match i with Ident (x, _) -> x
-let get_loc i : loc = match i with Ident (_, l) -> l
+let get_rep i = match i with Ident (_, l) -> l
 let get_loc_str (l : loc) : string =
   l.fname ^ ":" ^ Int.to_string l.lnum ^ 
       ":" ^ Int.to_string (l.cnum - l.bol + 1)
@@ -167,14 +167,14 @@ let expr_loc (e : 'rep expr) : loc option =
   match e with
   | Fun (i, _, _) | App (i, _) | Builtin (i, _)
   | MatchExpr (i, _) | TFun (i, _) | TApp (i, _) -> 
-    let l = get_loc i in
+    let l = get_rep i in
       if (l.cnum <> -1) then Some l else None
   | _ -> None
 
 (* TODO: make normal pretty-printing *)
-let expr_str (erep : 'rep expr_annot) =
+let expr_str (erep : 'rep expr_annot) sexp_of_rep =
   let (e, _) = erep in
-  let eexp = sexp_of_expr sexp_of_loc e in
+  let eexp = sexp_of_expr sexp_of_rep e in
   Sexplib.Sexp.to_string eexp
 
 (*******************************************************)
@@ -229,12 +229,12 @@ let stmt_str (srep : ('rep, 'erep) stmt_annot) =
   let sexp = sexp_of_stmt sexp_of_loc sexp_of_loc s in
   Sexplib.Sexp.to_string sexp
 
-let stmt_loc (s : ('rep, 'erep) stmt) : loc option = 
+let stmt_loc (s : ('rep, 'erep) stmt) : 'rep option = 
   match s with
   | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
   | MatchStmt (i, _)
   | SendMsgs i -> 
-    let l = get_loc i in
+    let l = get_rep i in
       if (l.cnum <> -1) then Some l else None
   | _ -> None
 
@@ -245,6 +245,12 @@ let stmt_loc (s : ('rep, 'erep) stmt) : loc option =
 
 module type Rep = sig
   type rep
+  val get_loc : rep -> loc
+  val mk_msg_payload_id : string -> rep ident
+
+  (* TODO: This needs to be looked through properly *)
+  val parse_rep : string -> rep
+  val get_rep_str: rep -> string
 end
 
 (*******************************************************)

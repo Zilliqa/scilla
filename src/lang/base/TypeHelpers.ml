@@ -17,38 +17,22 @@
 *)
 
 open Syntax
-open TypeUtil
-
-
-(*****************************************************************)
-(*                    Transition typing                          *)
-(*****************************************************************)
+open PrimTypes
 
 (*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
 
 module TypecheckerERep (R : Rep) = struct
-  type rep = R.rep inferred_type * R.rep
+  type rep = typ * R.rep
+
+  let get_loc r = match r with | (_, rr) -> R.get_loc rr
+  let mk_msg_payload_id s =
+    match R.mk_msg_payload_id s with
+    | Ident (n, r) -> Ident (n, (uint128_typ, r))
+
+
+  let parse_rep s = (uint128_typ, R.parse_rep s)
+  let get_rep_str r = match r with | (_, rr) -> R.get_rep_str rr
 end
 
-(*****************************************************************)
-(*                 Typing entire contracts                       *)
-(*****************************************************************)
-
-module Typechecker_Contracts
-    (SR : Rep)
-    (ER : Rep) = struct
-
-  module STR = SR
-  module ETR = TypecheckerERep(ER)
-  module UntypedContract = Contract (SR) (ER)
-  module TypedContract = Contract (STR) (ETR)
-
-  include TypedContract
-      
-end
-
-(* TODO: This doesn't feel right *)
-open ParserUtil
-module TypedContracts = Typechecker_Contracts (ParserRep) (ParserRep)
