@@ -30,5 +30,6 @@
       "type": "Bool",
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     }
-  ]
+  ],
+  "events": []
 }

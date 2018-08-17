@@ -77,6 +77,7 @@ rule read =
   | "contract"    { CONTRACT }      
   | "transition"  { TRANSITION }      
   | "send"        { SEND }      
+  | "event"       { EVENT }
   | "field"       { FIELD }      
   | "accept"      { ACCEPT }      
   | "Emp"         { EMP }

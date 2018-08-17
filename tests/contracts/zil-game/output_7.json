@@ -37,5 +37,6 @@
         "arguments": []
       }
     }
-  ]
+  ],
+  "events": [ { "eventname": "GameOver", "params": [] } ]
 }

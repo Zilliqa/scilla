@@ -246,6 +246,14 @@ let rec type_stmts env stmts =
           let%bind _ = wrap_serr s @@
             assert_type_equiv expected (rr_typ r).tp in
           type_stmts env sts
+      | CreateEvnt (_, i) ->
+          let%bind r = TEnv.resolveT env.pure (get_id i)
+              ~lopt:(Some (get_loc i)) in
+          (* An event is a named message, hence msg_typ. *)
+          let expected = msg_typ in
+          let%bind _ = wrap_serr s @@
+            assert_type_equiv expected (rr_typ r).tp in
+          type_stmts env sts
       | _ ->
           fail @@ sprintf
             "Type-checking the statement %s is not supported yet."

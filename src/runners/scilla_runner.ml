@@ -68,11 +68,12 @@ let check_after_step name res =
       perr (sprintf "Failed to execute transition in %s:\n%s\n" name err);
       perr "Execution halted";
       exit 1
-  | Ok (cstate, outs, _) ->
+  | Ok (cstate, outs, events) ->
       plog (sprintf "Success! Here's what we got:\n" ^
             sprintf "%s" (ContractState.pp cstate) ^
-            sprintf "Emitted messages:\n%s\n\n" (pp_literal_list outs));
-       (cstate, outs)
+            sprintf "Emitted messages:\n%s\n\n" (pp_literal_list outs) ^
+            sprintf "Emitted events:\n%s\n\n" (pp_named_literal_list events));
+       (cstate, outs, events)
 
 (* Parse the input state json and extract out _balance separately *)
 let input_state_json filename = 
@@ -108,6 +109,18 @@ let output_message_json mlist =
     )
   (* There will be at least one output message *)
   | _ -> `Null
+
+let rec output_event_json elist =
+  match elist with
+  | e :: rest ->
+    let j = output_event_json rest in
+    let (n, m) = e in
+    (match m with
+    | Msg m' ->
+      let ej = JSON.Event.event_to_json (n, m') in
+      ej :: j
+    | _ -> `Null :: j)
+  | [] -> []
 
 let () =
   let cli = Cli.parse () in
@@ -146,7 +159,7 @@ let () =
             perr (sprintf "Failed to parse json %s: %s\n" cli.input_blockchain s);
             exit 1
       in
-      let (output_msg_json, output_state_json) = 
+      let (output_msg_json, output_state_json, output_events_json) = 
       if cli.input_message = ""
       then
         (* Initializing the contract's state, just for checking things. *)
@@ -155,7 +168,7 @@ let () =
         (* Will throw an exception if unsuccessful. *)
         let _ = check_extract_cstate cli.input init_res in
         (plog (sprintf "\nContract initialized successfully\n");
-          (`Null, `List []))
+          (`Null, `List [], `List []))
       else
         (* Not initialization, execute transition specified in the message *)
         (let mmsg = 
@@ -189,13 +202,18 @@ let () =
         plog (sprintf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg));
         plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
         let step_result = handle_message ctr cstate bstate m in
-        let (cstate', mlist) =
+        let (cstate', mlist, elist) =
           check_after_step cli.input step_result in
       
         let osj = output_state_json cstate' in
         let omj = output_message_json mlist in
-          (omj, osj))
+        let oej = `List (output_event_json elist) in
+          (omj, osj, oej))
       in
-      let output_json = `Assoc [("message", output_msg_json) ; ("states", output_state_json)] in
+      let output_json = `Assoc [
+        ("message", output_msg_json); 
+        ("states", output_state_json);
+        ("events", output_events_json)
+      ] in
         Out_channel.with_file cli.output ~f:(fun channel -> 
           Yojson.pretty_to_string output_json |> Out_channel.output_string channel)
