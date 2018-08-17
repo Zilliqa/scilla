@@ -608,7 +608,7 @@ let blocknum_name = "BLOCKNUMBER"
 (*                   Annotations                       *)
 (*******************************************************)
 
-module TypecheckerERep (R : Rep) : Rep = struct
+module TypecheckerERep (R : Rep) = struct
   type rep = R.rep inferred_type * R.rep
 end
 

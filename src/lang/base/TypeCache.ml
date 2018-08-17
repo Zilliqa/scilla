@@ -26,12 +26,10 @@ open TypeUtil
 
 module StdlibTypeCacher
     (Q : MakeTEnvFunctor)
-    (R : QualifiedTypes)
-    (C : Contract_sig) = struct
+    (R : QualifiedTypes) = struct
 
   module MakeTEnv = Q(R)
   open MakeTEnv
-  open C
 
   open Cryptokit
   let hash s = transform_string (Hexa.encode()) (hash_string (Hash.sha2 256) s)

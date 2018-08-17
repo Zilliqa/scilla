@@ -25,13 +25,14 @@ open TypeUtil
 
 module StdlibTypeCacher
     (Q : MakeTEnvFunctor)
-    (R : QualifiedTypes)
-    (C : Contract_sig) : sig
+    (R : QualifiedTypes) : sig
 
   type t = Q(R).TEnv.t
+  open TypedContracts
 
+  
   (* Get type info for "lib" from cache, if it exists. *)
-  val get_lib_tenv_cache : t -> C.library -> t option
+  val get_lib_tenv_cache : t -> library -> t option
   (* Store type info tenv, for "lib" in the cache. *)
-  val cache_lib_tenv : t -> C.library -> unit
+  val cache_lib_tenv : t -> library -> unit
 end

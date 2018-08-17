@@ -22,7 +22,7 @@ open Syntax
 (*                   Annotations                       *)
 (*******************************************************)
 
-module ParserRep : Rep = struct
+module ParserRep = struct
   type rep = loc
 end
 
