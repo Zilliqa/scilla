@@ -1,6 +1,6 @@
 (library
- (name scilla_external_deps)
- (public_name scilla-external-deps)
+ (name scilla_cpp_deps)
+ (public_name scilla-cpp-deps)
   (wrapped false)
   (libraries ctypes ctypes.foreign cryptokit)
   (cxx_names c_schnorr DataConversion Schnorr Sha3)

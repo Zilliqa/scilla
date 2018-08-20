@@ -10,7 +10,7 @@
               angstrom
               ppx_sexp_conv ppx_deriving
               ppx_let yojson cryptokit
-              scilla-base scilla-eval scilla-external-deps)
+              scilla-base scilla-eval scilla-cpp-deps)
   (flags (-cclib -lstdc++ -cclib -lcrypto))
 
   (preprocess (pps ppx_sexp_conv ppx_let ppx_deriving.show))
