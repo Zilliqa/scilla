@@ -86,3 +86,11 @@ transition incNat ()
   msgs = one_msg msg;
   send msgs
 end
+
+transition createBadEvent()
+  m = nat_to_int;
+  (* We cannot have a function (which is what "m" is) as part of message/event. *)
+  e = { bad_field : m };
+  event "BadEvent" e;
+  accept
+end

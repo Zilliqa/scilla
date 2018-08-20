@@ -1,3 +1,0 @@
-(ADTValue False()()),
-{ [y -> (ADTValue False()())],
-  [x -> (ADTValue True()())] }

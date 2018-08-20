@@ -1,0 +1,8 @@
+contract Empty
+()
+
+field bad_foo : (Int32 -> Int32) = fun (a : Int32) => a
+
+transition dummy()
+
+end

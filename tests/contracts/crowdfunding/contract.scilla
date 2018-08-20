@@ -73,6 +73,8 @@ transition Donate ()
       msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0; 
               code : accepted_code};
       msgs = one_msg msg;
+      e = { donor : _sender; amount : _amount };
+      event "DonationAccepted" e;
       send msgs     
     end  
   | False => 
@@ -156,6 +158,8 @@ transition ClaimBack ()
         msg  = {_tag : Main; _recipient : _sender; _amount : v; 
                 code : reclaimed_code};
         msgs = one_msg msg;
+        e = { claimed_by : _sender; amount : v };
+        event "ClaimedBack" e;
         send msgs
       end
     end

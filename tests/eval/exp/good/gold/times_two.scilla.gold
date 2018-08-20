@@ -1,8 +1,8 @@
-(IntLit 32 8),
+(Int32 8),
 { [fn -> <closure>],
-  [f0 -> (IntLit 32 1)],
+  [f0 -> (Int32 1)],
   [folder -> <fixpoint>],
-  [three -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))],
-  [two -> (ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))],
-  [one -> (ADTValue Succ()((ADTValue Zero()())))],
-  [zero -> (ADTValue Zero()())] }
+  [three -> (Nat 3)],
+  [two -> (Nat 2)],
+  [one -> (Nat 1)],
+  [zero -> (Nat 0)] }

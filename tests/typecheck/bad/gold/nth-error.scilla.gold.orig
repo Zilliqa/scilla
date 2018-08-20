@@ -1,0 +1,11 @@
+Type checking failed:
+[typecheck/bad/nth-error.scilla:1:1] Type error in the initialiser of `list_nth`:
+[typecheck/bad/nth-error.scilla:5:5] Type error in the initialiser of `list_nth_helper`:
+[typecheck/bad/nth-error.scilla:13:9] Type error in the initialiser of `iter`:
+<<<<<<< HEAD
+[typecheck/bad/nth-error.scilla:16:13] Type error in pattern matching on `z` of type Pair (Int32 (Option ('A))) (or one of its branches):
+Constructor Pair expects 2 type arguments, but got 1.
+=======
+ADT type Pair expects 2 arguments but got 1.
+
+>>>>>>> master

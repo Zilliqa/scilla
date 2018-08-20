@@ -124,7 +124,7 @@ let rec type_expr tenv (erep : 'rep expr_annot) get_loc =
   | MatchExpr (x, clauses) ->
       if List.is_empty clauses
       then fail @@ sprintf
-          "List of pattern matching clauses is empty:\n%s" (expr_str erep)
+          "List of pattern matching clauses is empty:\n%s" (pp_expr e)
       else
         let%bind sctyp = TEnv.resolveT tenv (get_id x)
             ~lopt:(Some (get_rep x)) in
@@ -307,6 +307,17 @@ let rec type_stmts env stmts get_loc =
           let typed_i = add_type_to_ident i i_type in
           let%bind checked_stmts = type_stmts env sts get_loc in
           pure @@ add_stmt_to_stmts_env (SendMsgs typed_i, rep) checked_stmts
+      | CreateEvnt (st, i) ->
+          let%bind r = TEnv.resolveT env.pure (get_id i)
+              ~lopt:(Some (get_loc (get_rep i))) in
+          (* An event is a named message, hence msg_typ. *)
+          let i_type = rr_typ r in
+          let expected = msg_typ in
+          let%bind _ = wrap_serr s get_rep @@
+            assert_type_equiv expected i_type.tp in
+          let typed_i = add_type_to_ident i i_type in
+          let%bind checked_stmts = type_stmts env sts get_loc in
+          pure @@ add_stmt_to_stmts_env (CreateEvnt (st, typed_i), rep) checked_stmts
       | _ ->
           fail @@ sprintf
             "Type-checking the statement %s is not supported yet."
@@ -389,7 +400,6 @@ module Typechecker_Contracts
   let add_type_to_id id t : ETR.rep ident =
     match id with
     | Ident (s, r) -> Ident (s, ETR.mk_rep r t)
-    
   
   let type_transition (env0 : stmt_tenv) (tr : UntypedContract.transition) : (TypedContract.transition * stmt_tenv, string) result  =
     let {tname; tparams; tbody} = tr in
@@ -409,7 +419,6 @@ module Typechecker_Contracts
   (*****************************************************************)
   (*                 Typing entire contracts                       *)
   (*****************************************************************)
-            
   let type_fields tenv flds =
     let%bind (typed_flds, new_env) = foldM flds ~init:([], TEnv.mk)
         ~f:(fun (acc, fenv) (fn, ft, fe) ->
@@ -421,9 +430,11 @@ module Typechecker_Contracts
             let actual = ar.tp in
             let%bind _ = assert_type_equiv ft actual in
             let typed_fs = add_type_to_id fn ar in
-            pure @@ ((typed_fs, ft, typed_expr) :: acc,
-                     TEnv.addT (TEnv.copy fenv) fn actual)) in
-    pure @@ (List.rev typed_flds, new_env)
+            if is_storable_type ft then
+              pure @@ ((typed_fs, ft, typed_expr) :: acc,
+                       TEnv.addT (TEnv.copy fenv) fn actual)
+            else fail @@ sprintf "Values of the type \"%s\" cannot be stored." (pp_typ ft)) in
+        pure @@ (List.rev typed_flds, new_env)
 
   (**************************************************************)
   (*                    Typing libraries                        *)

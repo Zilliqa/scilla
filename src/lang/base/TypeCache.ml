@@ -49,8 +49,8 @@ module StdlibTypeCacher
   open Cryptokit
   let hash s = transform_string (Hexa.encode()) (hash_string (Hash.sha2 256) s)
   let hash_lib (lib : L.library) =
-    let s = List.fold_left ~f:(fun acc {lname;lexp} ->
-      (acc ^ (get_id lname) ^ (expr_str lexp))
+    let s = List.fold_left ~f:(fun acc {lname; _ (* TODO, Issue #179: lexp *) } ->
+        (acc ^ (get_id lname) (* TODO, Issue #179: Fix this ^ (spp_expr lexp)  *)   )
       ) ~init:"" lib.lentries in
     hash s
 

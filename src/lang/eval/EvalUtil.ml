@@ -43,13 +43,13 @@ module Env = struct
 
   (* Pretty-printing *)
   let rec pp_value v = match v with
-    | ValLit l -> sexp_of_literal l |> Sexplib.Sexp.to_string
+    | ValLit l ->  pp_literal l
     | ValFix _ -> "<fixpoint>"
     | ValTypeClosure _ -> "<type_closure>"
     | ValClosure _ -> "<closure>"
-    (*| ValClosure (f, t, e, env) -> "<closure>"
-         (sexp_of_expr sexp_of_loc (Fun (f, t, e)) |> Sexplib.Sexp.to_string)
-         * ^ ", " ^ (pp env) *)
+    (* | ValClosure (f, t, e, env) ->
+         (pp_expr (Fun (f, t, e)))
+          ^ ", " ^ (pp env) *)
   and pp ?f:(f = fun (_ : (string * 'rep value)) -> true) e =
     (* FIXME: Do not print folds *)
     let e_filtered = List.filter e ~f:f in
@@ -113,7 +113,7 @@ module Configuration = struct
     (* Emitted messages *)
     emitted : literal list;
     (* Emitted events *)
-    events : (string * string) list
+    events : (string * literal) list
   }
 
   let pp conf =
@@ -124,9 +124,8 @@ module Configuration = struct
     let pp_bc_conf = pp_literal_map conf.blockchain_state in
     let pp_in_funds = Uint128.to_string conf.incoming_funds in
     let pp_emitted = pp_literal_list conf.emitted in
-    let pp_events = String.concat ~sep:", " @@
-        List.map conf.events ~f:(fun (e, b) -> sprintf "<%s, %s>" e b)
-    in sprintf "Confuration\nEnv =\n%s\nFields =\n%s\nBalance =%s\nAccepted=%s\n\\
+    let pp_events = pp_named_literal_list conf.events in
+    sprintf "Confuration\nEnv =\n%s\nFields =\n%s\nBalance =%s\nAccepted=%s\n\\
     Blockchain conf =\n%s\nIncoming funds = %s\nEmitted Messages =\n%s\nEmitted events =\n%s\n"
       pp_env pp_fields pp_balance pp_accepted pp_bc_conf pp_in_funds pp_emitted pp_events
 
@@ -217,6 +216,22 @@ module Configuration = struct
     let old_emitted = conf.emitted in
     let emitted = old_emitted @ ls in
     pure {conf with emitted}
+
+  let create_event conf ename eparams_resolved =
+    let%bind event = 
+      match eparams_resolved with
+      | Env.ValLit l -> 
+        (match l with
+        | Msg _ ->
+          (* An event is a named message. *)
+          pure @@ (ename, l)
+        | _ -> fail @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l))
+      | (Env.ValFix _ | Env.ValClosure _ | Env.ValTypeClosure _ ) as v -> 
+        fail @@ sprintf "Incorrect event parameters: %s\n" (Env.pp_value v)
+    in
+    let old_events = conf.events in
+    let events = event::old_events in
+    pure {conf with events}
 end
 
 (*****************************************************)

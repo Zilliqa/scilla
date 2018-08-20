@@ -268,8 +268,35 @@ module MakeTEnv: MakeTEnvFunctor = functor
       Hashtbl.fold (fun key data z -> (key, data) :: z) env.tenv []
 
     (* Check type for well-formedness in the type environment *)
-    let is_wf_type _ _ = pure ()
-        
+    let is_wf_type tenv t =
+      let rec is_wf_typ' t' tb = match t' with
+      | MapType (kt, vt) ->
+        let%bind _ = is_wf_typ' kt tb in
+          is_wf_typ' vt tb
+      | FunType (at, rt) ->
+        let%bind _ = is_wf_typ' at tb in
+          is_wf_typ' rt tb
+      | ADT (n, ts) ->
+        let open Datatypes.DataTypeDictionary in
+        let%bind adt = lookup_name n in
+        if List.length ts <> List.length adt.tparams then
+          fail @@ sprintf "ADT type %s expects %d arguments but got %d.\n" 
+          n (List.length adt.tparams) (List.length ts) 
+        else
+          foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:(()) ts
+      | PrimType _  -> pure ()
+      | TypeVar a ->
+        (* Check if bound locally. *)
+        if List.mem tb a ~equal:(fun a b -> a = b) then pure ()
+        (* Check if bound in environment. *)
+        else
+          (match List.findi (tvars tenv) ~f:(fun _ (x, _) -> x = a) with
+           | Some _ -> pure()
+           | None -> fail @@ sprintf "Unbound type variable %s in type %s" a (pp_typ t))
+      | PolyFun (arg, bt) -> is_wf_typ' bt (arg::tb)
+      in
+        is_wf_typ' t []
+
     (* TODO: Add support for tvars *)    
     let pp ?f:(f = fun _ -> true) env  =
       let lst = List.filter (to_list env) ~f:f in
@@ -286,7 +313,7 @@ module MakeTEnv: MakeTEnvFunctor = functor
               | Some l -> sprintf "[%s]: " (get_loc_str (R.get_loc l))
               | None -> "") in
           fail @@ sprintf
-            "%sCouldn't resolve the identifier %s in the type environment\n%s"
+            "%sCouldn't resolve the identifier \"%s\" in the type environment\n%s"
             loc_str id (pp env)
 
     let copy e = {
@@ -351,7 +378,7 @@ let rec is_ground_type t = match t with
 
 let rec is_storable_type t = match t with 
   | FunType _ -> false
-  | MapType _ -> false
+  | MapType (kt, vt) -> is_storable_type kt && is_storable_type vt
   | TypeVar _ -> false
   | ADT (_, ts) -> List.for_all ~f:(fun t -> is_storable_type t) ts
   | PolyFun _ -> false
@@ -455,7 +482,7 @@ let extract_targs cn adt atyp = match atyp with
            adt.tname name
   | _ -> fail @@ sprintf
         "Not an algebraic data type: %s" (pp_typ atyp)
-  
+
 let constr_pattern_arg_types atyp cn =
   let open Datatypes.DataTypeDictionary in
   let%bind (adt', _) = lookup_constructor cn in
@@ -500,7 +527,16 @@ let rec literal_type l =
   | BNum _ -> pure bnum_typ
   | Address _ -> pure address_typ
   | Sha256 _ -> pure hash_typ
-  | Msg _ -> pure msg_typ
+  (* Check that messages and events have storable parameters. *)
+  | Msg m -> 
+    let%bind all_storable = foldM ~f:(fun acc (_, l) ->
+      let%bind t = literal_type l in
+      if acc then pure (is_storable_type t) else pure false)
+      ~init:true m
+    in
+    if not all_storable then
+      fail @@ sprintf "Message/Event has invalid / non-storable parameters"
+    else pure msg_typ
   | Map ((kt, vt), kv) ->
      if PrimTypes.is_prim_type kt
      then 

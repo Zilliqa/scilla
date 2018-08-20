@@ -1,7 +1,7 @@
-(ADTValue Some((ADT List((PrimType Int64))))((ADTValue Nil((PrimType Int64))()))),
-{ [l3 -> (ADTValue Cons((PrimType Int64))((IntLit 64 1)(ADTValue Nil((PrimType Int64))())))],
-  [nil -> (ADTValue Nil((PrimType Int64))())],
-  [three -> (IntLit 64 3)],
-  [two -> (IntLit 64 2)],
-  [one -> (IntLit 64 1)],
+(Some (Nil)),
+{ [l3 -> (List (Int64 1), (Nil))],
+  [nil -> (Nil)],
+  [three -> (Int64 3)],
+  [two -> (Int64 2)],
+  [one -> (Int64 1)],
   [int_rest -> <closure>] }

@@ -1,5 +1,5 @@
-(ADTValue Some((PrimType Int32))((IntLit 32 12))),
-{ [y -> (ADTValue Some((PrimType Int32))((IntLit 32 12)))],
-  [t -> (ADTValue True()())],
-  [x -> (IntLit 32 12)],
-  [a -> (IntLit 32 12)] }
+(Some (Int32 12)),
+{ [y -> (Some (Int32 12))],
+  [t -> (True)],
+  [x -> (Int32 12)],
+  [a -> (Int32 12)] }

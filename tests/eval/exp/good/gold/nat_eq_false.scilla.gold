@@ -1,6 +1,6 @@
-(ADTValue False()()),
-{ [four -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))))],
-  [three -> (ADTValue Succ()((ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))))],
-  [two -> (ADTValue Succ()((ADTValue Succ()((ADTValue Zero()())))))],
-  [one -> (ADTValue Succ()((ADTValue Zero()())))],
-  [zero -> (ADTValue Zero()())] }
+(False),
+{ [four -> (Nat 4)],
+  [three -> (Nat 3)],
+  [two -> (Nat 2)],
+  [one -> (Nat 1)],
+  [zero -> (Nat 0)] }
