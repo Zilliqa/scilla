@@ -15,7 +15,7 @@ Required ubuntu packages can be installed as below:
 
 ```
 sudo apt-get update
-sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev
+sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev
 ```
 
 Building Scilla requires OCaml 4.06.1. You can switch to this version and install required
@@ -24,7 +24,7 @@ opam packages using the commands listed below:
 ```
 opam init -y
 opam switch -y 4.06.1
-opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils
+opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign
 ```
 
 The above three commands can, alternatively, be run using the make target `opamdep`
@@ -52,10 +52,10 @@ eval `opam config env`
 The dependencies can be installed via [Homebrew](https://brew.sh/):
 
 ```
-brew install ocaml opam pkg-config
+brew install ocaml opam pkg-config libffi
 opam init
 opam switch -y 4.06.1
-opam install angstrom batteries core cryptokit fileutils hex num oUnit ppx_deriving ppx_deriving_yojson ppx_let ppx_sexp_conv stdint yojson menhir dune
+opam install angstrom batteries core cryptokit fileutils hex num oUnit ppx_deriving ppx_deriving_yojson ppx_let ppx_sexp_conv stdint yojson menhir dune ctypes ctypes-foreign
 
 ```
 Then run the following command to setup environment on current shell. 

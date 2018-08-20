@@ -1,0 +1,7 @@
+(library
+ (name scilla_external_deps)
+ (public_name scilla-external-deps)
+  (wrapped false)
+  (libraries ctypes ctypes.foreign cryptokit)
+  (flags (-I /home/vaivaswatha/c/zilliqa/build/lib -I /home/vaivaswatha/c/zilliqa/build/src/libUtils -I /home/vaivaswatha/c/zilliqa/build/src/libCrypto -cclib -lschnorr -cclib -lCrypto -cclib -lCommon -cclib -lUtils -cclib -lg3logger -cclib -lcrypto -cclib -lpthread -cclib -lstdc++))
+)
