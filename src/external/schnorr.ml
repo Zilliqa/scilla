@@ -1,3 +1,6 @@
+(* Force link external C++ code: https://github.com/ocamllabs/ocaml-ctypes/issues/541 *)
+external _force_link_ : unit -> unit = "genKeyPair_Z"
+
 open Ctypes
 open Foreign
 
@@ -45,8 +48,8 @@ let genKeyPair () =
   let genKeyPair_Z = foreign "genKeyPair_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning void) in
 
   (* Allocate buffers *)
-  let dataPrivKey = allocate_n char privkey_len in
-  let dataPubKey = allocate_n char pubkey_len in
+  let dataPrivKey = allocate_n char ~count:privkey_len in
+  let dataPubKey = allocate_n char ~count:pubkey_len in
   (* create container struct objects *)
   let privK = make rawBytes_Z in
   let pubK = make rawBytes_Z in
@@ -58,8 +61,8 @@ let genKeyPair () =
   (* Call the C function to generate a key pair. *)
   let _ = genKeyPair_Z (addr privK) (addr pubK) in
   (* Read the keys into OCaml strings. *)
-  let privK' = string_from_ptr dataPrivKey privkey_len in
-  let pubK' = string_from_ptr dataPubKey pubkey_len in
+  let privK' = string_from_ptr dataPrivKey ~length:privkey_len in
+  let pubK' = string_from_ptr dataPubKey ~length:pubkey_len in
     (bin_to_hex privK', bin_to_hex pubK')
 
 
@@ -79,10 +82,10 @@ let sign privKey pubKey msg =
   let msgS = make rawBytes_Z in
   let signS = make rawBytes_Z in
   (* and allocate data *)
-  let privKD = allocate_n char privkey_len in
-  let pubKD = allocate_n char pubkey_len in
-  let msgD = allocate_n char (String.length msg) in
-  let signD = allocate_n char signature_len in
+  let privKD = allocate_n char ~count:privkey_len in
+  let pubKD = allocate_n char ~count:pubkey_len in
+  let msgD = allocate_n char ~count:(String.length msg) in
+  let signD = allocate_n char ~count:signature_len in
   (* and fill the fields. *)
   let _ = setf privKS rawBytes_data privKD in
   let _ = setf privKS rawBytes_len privkey_len in
@@ -99,7 +102,7 @@ let sign privKey pubKey msg =
   (* Call the signing C function. *)
   let _ = sign_Z (addr privKS) (addr pubKS) (addr msgS) (addr signS) in
   (* Copy back the signature. *)
-  let signS' = string_from_ptr signD signature_len in
+  let signS' = string_from_ptr signD ~length:signature_len in
     bin_to_hex signS'
 
 
@@ -117,9 +120,9 @@ let verify pubKey msg signature =
   let msgS = make rawBytes_Z in
   let signS = make rawBytes_Z in
   (* and allocate data *)
-  let pubKD = allocate_n char pubkey_len in
-  let msgD = allocate_n char (String.length msg) in
-  let signD = allocate_n char signature_len in
+  let pubKD = allocate_n char ~count:pubkey_len in
+  let msgD = allocate_n char ~count:(String.length msg) in
+  let signD = allocate_n char ~count:signature_len in
   (* and fill the fields. *)
   let _ = setf pubKS rawBytes_data pubKD in
   let _ = setf pubKS rawBytes_len pubkey_len in

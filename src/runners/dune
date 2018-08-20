@@ -11,7 +11,7 @@
               ppx_sexp_conv ppx_deriving
               ppx_let yojson cryptokit
               scilla-base scilla-eval scilla-external-deps)
-  (flags (-I /home/vaivaswatha/c/zilliqa/build/lib -I /home/vaivaswatha/c/zilliqa/build/src/libUtils -I /home/vaivaswatha/c/zilliqa/build/src/libCrypto -cclib -lschnorr -cclib -lCrypto -cclib -lCommon -cclib -lUtils -cclib -lg3logger -cclib -lcrypto -cclib -lpthread -cclib -lstdc++))
+  (flags (-cclib -lstdc++ -cclib -lcrypto))
 
   (preprocess (pps ppx_sexp_conv ppx_let ppx_deriving.show))
   (package scilla-runner))

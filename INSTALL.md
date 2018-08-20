@@ -15,7 +15,7 @@ Required ubuntu packages can be installed as below:
 
 ```
 sudo apt-get update
-sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev
+sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev
 ```
 
 Building Scilla requires OCaml 4.06.1. You can switch to this version and install required
