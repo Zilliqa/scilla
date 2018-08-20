@@ -190,6 +190,12 @@ let pp_literal_list ls =
   let cs = String.concat ~sep:",\n " ps in
   sprintf "[ %s]" cs
 
+let pp_named_literal_list nls =
+  let ps = List.map nls
+      ~f:(fun (n, l) -> sprintf "<%s : %s>" n (pp_literal l)) in
+  let cs = String.concat ~sep:",\n " ps in
+  sprintf "[ %s]" cs
+
 
 (*******************************************************)
 (*                   Expressions                       *)
@@ -252,7 +258,7 @@ type 'rep stmt =
   | ReadFromBC of 'rep ident * string
   | AcceptPayment
   | SendMsgs of 'rep ident
-  | Event of string * string
+  | CreateEvnt of string * 'rep ident
   | Throw of 'rep ident
 [@@deriving sexp]
 
@@ -263,6 +269,7 @@ let stmt_loc (s : 'rep stmt) : loc option =
   match s with
   | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
   | MatchStmt (i, _)
+  | CreateEvnt (_, i)
   | SendMsgs i -> 
     let l = get_loc i in
       if (l.cnum <> -1) then Some l else None

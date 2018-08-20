@@ -12,5 +12,6 @@
       }
     },
     { "vname": "count", "type": "Int32", "value": "2" }
-  ]
+  ],
+  "events": []
 }

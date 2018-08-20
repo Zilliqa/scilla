@@ -6,5 +6,6 @@
     "_recipient": "0xabcdd4dfafd282e8a8b3c776eb9fc907d3219876",
     "params": []
   },
-  "states": [ { "vname": "_balance", "type": "Uint128", "value": "0" } ]
+  "states": [ { "vname": "_balance", "type": "Uint128", "value": "0" } ],
+  "events": []
 }
