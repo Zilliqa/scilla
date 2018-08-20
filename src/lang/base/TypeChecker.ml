@@ -70,7 +70,7 @@ let assign_types_for_pattern sctyp pattern =
 (**************************************************************)
 
 (* TODO: Check if the type is well-formed: support type variables *)
-let rec type_expr tenv (erep : loc expr_annot) =
+let rec type_expr tenv (erep : 'rep expr_annot) get_loc =
   let (e, rep) = erep in
   match e with
   | Literal l ->
@@ -84,7 +84,7 @@ let rec type_expr tenv (erep : loc expr_annot) =
       wrap_err e get_rep @@ 
       let%bind _ = TEnv.is_wf_type tenv t in
       let tenv' = TEnv.addT (TEnv.copy tenv) arg t in
-      let%bind (_, (bt, _)) as b = type_expr tenv' body in
+      let%bind (_, (bt, _)) as b = type_expr tenv' body get_loc in
       let typed_arg = add_type_to_ident arg (mk_qual_tp t) in
       pure @@ (Fun (typed_arg, t, b), (mk_qual_tp (FunType (t, bt.tp)), rep))
   | App (f, actuals) ->
@@ -102,10 +102,10 @@ let rec type_expr tenv (erep : loc expr_annot) =
       pure @@ (Builtin (add_type_to_ident i q_ret_typ, typed_actuals), (q_ret_typ, rep))
   | Let (i, topt, lhs, rhs) ->
       (* Poor man's error reporting *)
-      let%bind (_, (ityp, _)) as checked_lhs = wrap_err e  get_rep @@ type_expr tenv lhs in
+      let%bind (_, (ityp, _)) as checked_lhs = wrap_err e  get_rep @@ type_expr tenv lhs get_loc in
       let tenv' = TEnv.addT (TEnv.copy tenv) i ityp.tp in
       let typed_i = add_type_to_ident i ityp in
-      let%bind (_, (rhstyp, _)) as checked_rhs = type_expr tenv' rhs in
+      let%bind (_, (rhstyp, _)) as checked_rhs = type_expr tenv' rhs get_loc in
       pure @@ (Let (typed_i, topt, checked_lhs, checked_rhs), (rhstyp, rep))
   | Constr (cname, ts, actuals) ->
       let%bind _ = mapM ts ~f:(TEnv.is_wf_type tenv) in
@@ -132,7 +132,7 @@ let rec type_expr tenv (erep : loc expr_annot) =
         let msg = sprintf " of type %s" (pp_typ sct) in
         wrap_err e  get_rep ~opt:msg (
           let%bind typed_clauses = mapM clauses ~f:(fun (ptrn, ex) ->
-              type_check_match_branch tenv sct ptrn ex) in
+              type_check_match_branch tenv sct ptrn ex get_loc) in
           let cl_types = List.map typed_clauses ~f:(fun (_, (_, (t, _))) -> t) in
           let%bind _ =
             assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
@@ -144,12 +144,12 @@ let rec type_expr tenv (erep : loc expr_annot) =
   | Fixpoint (f, t, body) ->
       wrap_err e get_rep @@ 
       let tenv' = TEnv.addT (TEnv.copy tenv) f t in
-      let%bind (_, (bt, _)) as typed_b = type_expr tenv' body in
+      let%bind (_, (bt, _)) as typed_b = type_expr tenv' body get_loc in
       let%bind _ = assert_type_equiv t bt.tp in
       pure @@ (Fixpoint (add_type_to_ident f (mk_qual_tp t), t, typed_b), (mk_qual_tp t, rep))
   | TFun (tvar, body) ->
       let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
-      let%bind (_, (bt, _)) as typed_b = type_expr tenv' body in
+      let%bind (_, (bt, _)) as typed_b = type_expr tenv' body get_loc in
       let typed_tvar = add_type_to_ident tvar bt in
       pure @@ (TFun (typed_tvar, typed_b), (mk_qual_tp (PolyFun ((get_id tvar), bt.tp)), rep))
   | TApp (tf, arg_types) ->
@@ -167,7 +167,7 @@ let rec type_expr tenv (erep : loc expr_annot) =
         (match pld with
          | MTag _ as m -> pure @@ m
          | MLit l as m ->
-             let%bind _ = type_expr tenv (Literal l, rep)
+             let%bind _ = type_expr tenv (Literal l, rep) get_loc 
              in pure @@ m
          | MVar i ->
              let%bind r = TEnv.resolveT tenv (get_id i)
@@ -193,10 +193,10 @@ and app_type tenv ftyp actuals =
   let%bind _ = TEnv.is_wf_type tenv res_type in
   pure @@ (typed_actuals, mk_qual_tp res_type)
 
-and type_check_match_branch tenv styp ptrn e =
+and type_check_match_branch tenv styp ptrn e get_loc =
   let%bind (new_p, new_typings) = assign_types_for_pattern styp ptrn in
   let tenv' = TEnv.addTs (TEnv.copy tenv) new_typings in
-  let%bind typed_e = type_expr tenv' e in
+  let%bind typed_e = type_expr tenv' e get_loc in
   pure @@ (new_p, typed_e)
 
 and type_actuals tenv actuals =
@@ -227,7 +227,7 @@ let add_stmt_to_stmts_env s repstmts =
   match repstmts with
   | (stmts, env) -> (s :: stmts, env)
 
-let rec type_stmts env stmts =
+let rec type_stmts env stmts get_loc =
   let open PrimTypes in
   let open Datatypes.DataTypeDictionary in 
   match stmts with
@@ -241,7 +241,7 @@ let rec type_stmts env stmts =
                let next_env = {env with pure = pure'} in
                pure @@ (next_env, rr_typ fr)
              ) in
-           let%bind checked_stmts = type_stmts next_env sts in
+           let%bind checked_stmts = type_stmts next_env sts get_loc in
            let typed_x = add_type_to_ident x ident_type in
            let typed_f = add_type_to_ident f ident_type in
            pure @@ add_stmt_to_stmts_env (Load (typed_x, typed_f), rep) checked_stmts
@@ -256,17 +256,17 @@ let rec type_stmts env stmts =
                  let%bind fr = TEnv.resolveT env.fields (get_id f) in
                  let%bind r = TEnv.resolveT env.pure (get_id r) in
                  let%bind _ = assert_type_equiv (rr_typ fr).tp (rr_typ r).tp in
-                 let%bind checked_stmts = type_stmts env sts in
+                 let%bind checked_stmts = type_stmts env sts get_loc in
                  pure @@ (checked_stmts, rr_typ fr, rr_typ r)
                ) in
              let typed_f = add_type_to_ident f f_type in
              let typed_r = add_type_to_ident r r_type in
              pure @@ add_stmt_to_stmts_env (Store (typed_f, typed_r), rep) checked_stmts
       | Bind (x, e) ->
-          let%bind (_, (ityp, _)) as checked_e = wrap_serr s get_rep @@ type_expr env.pure e in
+          let%bind (_, (ityp, _)) as checked_e = wrap_serr s get_rep @@ type_expr env.pure e get_loc in
           let pure' = TEnv.addT (TEnv.copy env.pure) x ityp.tp in
           let env' = {env with pure = pure'} in
-          let%bind checked_stmts = type_stmts env' sts in
+          let%bind checked_stmts = type_stmts env' sts get_loc in
           let typed_x = add_type_to_ident x ityp in
           pure @@ add_stmt_to_stmts_env (Bind (typed_x, checked_e), rep) checked_stmts
       | ReadFromBC (x, bf) ->
@@ -275,7 +275,7 @@ let rec type_stmts env stmts =
           let bt = x_type.tp in
           let pure' = TEnv.addT (TEnv.copy env.pure) x bt in
           let env' = {env with pure = pure'} in
-          let%bind checked_stmts = type_stmts env' sts in
+          let%bind checked_stmts = type_stmts env' sts get_loc in
           let typed_x = add_type_to_ident x x_type in
           pure @@ add_stmt_to_stmts_env (ReadFromBC (typed_x, bf), rep) checked_stmts
       | MatchStmt (x, clauses) ->
@@ -291,11 +291,11 @@ let rec type_stmts env stmts =
             let typed_x = add_type_to_ident x sctype in
             let%bind checked_clauses = wrap_serr s get_rep ~opt:msg @@
               mapM clauses ~f:(fun (ptrn, ex) ->
-                  type_match_stmt_branch env sct ptrn ex) in
-            let%bind checked_stmts = type_stmts env sts in
+                  type_match_stmt_branch env sct ptrn ex get_loc ) in
+            let%bind checked_stmts = type_stmts env sts get_loc in
             pure @@ add_stmt_to_stmts_env (MatchStmt (typed_x, checked_clauses), rep) checked_stmts
       | AcceptPayment ->
-          let%bind checked_stmts = type_stmts env sts in
+          let%bind checked_stmts = type_stmts env sts get_loc in
           pure @@ add_stmt_to_stmts_env (AcceptPayment, rep) checked_stmts
       | SendMsgs i ->
           let%bind r = TEnv.resolveT env.pure (get_id i)
@@ -305,18 +305,18 @@ let rec type_stmts env stmts =
           let%bind _ = wrap_serr s get_rep @@
             assert_type_equiv expected i_type.tp in
           let typed_i = add_type_to_ident i i_type in
-          let%bind checked_stmts = type_stmts env sts in
+          let%bind checked_stmts = type_stmts env sts get_loc in
           pure @@ add_stmt_to_stmts_env (SendMsgs typed_i, rep) checked_stmts
       | _ ->
           fail @@ sprintf
             "Type-checking the statement %s is not supported yet."
             (stmt_str stmt)
     )
-and type_match_stmt_branch env styp ptrn sts =
+and type_match_stmt_branch env styp ptrn sts get_loc =
   let%bind (new_p, new_typings) = assign_types_for_pattern styp ptrn in
   let pure' = TEnv.addTs (TEnv.copy env.pure) new_typings in
   let env' = {env with pure = pure'} in
-  let%bind (new_stmts, _) = type_stmts env' sts in
+  let%bind (new_stmts, _) = type_stmts env' sts get_loc in
   pure @@ (new_p, new_stmts)
 
 
@@ -326,7 +326,7 @@ and type_match_stmt_branch env styp ptrn sts =
 
 (* This is a really good sanity check: 
    it should always succeed! *)
-let type_recursion_principles =
+let type_recursion_principles get_loc =
   let recs = List.map recursion_principles
       ~f:(fun ({lname = a; lexp = e}, c) -> (a, e, c)) in
   let env0 = TEnv.copy TEnv.mk in 
@@ -335,7 +335,7 @@ let type_recursion_principles =
         wrap_with_info
           (sprintf "Type error when checking recursion primitive %s:\n"
              (get_id rn)) @@
-        let%bind (_, (ar, _)) = type_expr env0 body in
+        let%bind (_, (ar, _)) = type_expr env0 body get_loc in
         let actual = ar.tp in
         let%bind _ = assert_type_equiv expected actual in
         pure (rn, actual))
@@ -352,21 +352,6 @@ let bc_type_env =
     [(mk_ident TypeUtil.blocknum_name, bnum_typ)] in
   TEnv.addTs (TEnv.copy TEnv.mk) bc_elements
     
-
-(*****************************************************************)
-(*                 Typing entire contracts                       *)
-(*****************************************************************)
-
-let type_fields tenv flds get_loc =
-  foldM flds ~init:TEnv.mk ~f:(fun fenv (fn, ft, fe) ->
-      let msg = sprintf
-          "[%s] Type error in field %s:\n"
-          (get_loc_str (get_loc fn)) (get_id fn) in
-      wrap_with_info msg @@
-      let%bind (_, (ar, _)) = type_expr tenv fe in
-      let actual = ar.tp in
-      let%bind _ = assert_type_equiv ft actual in
-      pure @@ TEnv.addT (TEnv.copy fenv) fn actual)
 
 (*****************************************************************)
 (*                 Typing entire contracts                       *)
@@ -401,45 +386,71 @@ module Typechecker_Contracts
       
   open UntypedContract
 
+  let add_type_to_id id t : ETR.rep ident =
+    match id with
+    | Ident (s, r) -> Ident (s, ETR.mk_rep r t)
+    
+  
   let type_transition (env0 : stmt_tenv) (tr : UntypedContract.transition) : (TypedContract.transition * stmt_tenv, string) result  =
     let {tname; tparams; tbody} = tr in
     let tenv0 = env0.pure in
-    let lift_ident_e (id, t) =
-      match id with
-      | Ident (s, r) -> (Ident (s, ETR.mk_rep r (mk_qual_tp t)), t) in
-  
+    let lift_ident_e (id, t) = (add_type_to_id id (mk_qual_tp t), t) in
     let typed_tparams = List.map tparams ~f:lift_ident_e in
     let tenv1 = TEnv.addTs tenv0 (append_implict_trans_params tparams ER.mk_msg_payload_id) in
     let env = {env0 with pure = tenv1} in
     let msg = sprintf "[%s] Type error in transition %s:\n"
         (get_loc_str (SR.get_loc (get_rep tname))) (get_id tname) in
-    let%bind (typed_stmts, new_tenv) = wrap_with_info msg @@ type_stmts env tbody in
+    let%bind (typed_stmts, new_tenv) = wrap_with_info msg @@ type_stmts env tbody ER.get_loc in
     pure @@ ({ TypedContract.tname = tname ;
                TypedContract.tparams = typed_tparams;
                TypedContract.tbody = typed_stmts }, new_tenv)
         
+
+  (*****************************************************************)
+  (*                 Typing entire contracts                       *)
+  (*****************************************************************)
+            
+  let type_fields tenv flds =
+    let%bind (typed_flds, new_env) = foldM flds ~init:([], TEnv.mk)
+        ~f:(fun (acc, fenv) (fn, ft, fe) ->
+            let msg = sprintf
+                "[%s] Type error in field %s:\n"
+                (get_loc_str (ER.get_loc (get_rep fn))) (get_id fn) in
+            wrap_with_info msg @@
+            let%bind (_, (ar, _)) as typed_expr = type_expr tenv fe ER.get_loc in
+            let actual = ar.tp in
+            let%bind _ = assert_type_equiv ft actual in
+            let typed_fs = add_type_to_id fn ar in
+            pure @@ ((typed_fs, ft, typed_expr) :: acc,
+                     TEnv.addT (TEnv.copy fenv) fn actual)) in
+    pure @@ (List.rev typed_flds, new_env)
 
   (**************************************************************)
   (*                    Typing libraries                        *)
   (**************************************************************)
       
   let typed_rec_libs =
-    let%bind _ = type_recursion_principles in      
+    let%bind _ = type_recursion_principles ER.get_loc in      
     let recs = List.map recursion_principles
         ~f:(fun ({lname = a; _}, c) -> (a, c)) in
     let env = TEnv.mk in
     pure @@ (TEnv.addTs (TEnv.copy env) recs)
             
-  let type_library env0 {lentries = ents; _} =
-    let%bind res =
-      foldM ~init:env0 ents ~f:(fun env {lname=ln; lexp = le} ->
+  let type_library env0 { lname ; lentries = ents } =
+    let%bind (typed_entries, new_tenv) =
+      foldM ~init:([], env0) ents ~f:(fun (acc, env) {lname=ln; lexp = le} ->
           let msg = sprintf
               "[%s] Type error in library %s:\n"
               (get_loc_str (ER.get_loc (get_rep ln))) (get_id ln) in
-          let%bind (_, (tr, _)) = wrap_with_info msg (type_expr env le) in       
-          pure @@ TEnv.addT (TEnv.copy env) ln tr.tp) in
-    pure @@ TEnv.copy res
+          let%bind (_, (tr, _)) as typed_e = wrap_with_info msg (type_expr env le ER.get_loc ) in
+          let typed_ln = add_type_to_id ln tr in
+          pure @@ ({ TypedContract.lname = typed_ln;
+                     TypedContract.lexp = typed_e }:: acc,
+                   TEnv.addT (TEnv.copy env) ln tr.tp)) in
+    pure @@ ( { TypedContract.lname = lname ;
+                TypedContract.lentries = List.rev typed_entries }, TEnv.copy new_tenv)
 
+  (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
   (* type library, handling cache as necessary. *)
   let type_library_cache (tenv : TEnv.t) (elib : UntypedContract.library)  =
     (* We are caching TypeEnv = MakeTEnv(PlainTypes)(ER) *)
@@ -455,16 +466,17 @@ module Typechecker_Contracts
         let res = type_library tenv elib in
         (match res with
          | Error msg -> (tenv, msg)
-         | Ok tenv' -> 
+         | Ok (_, tenv') as lib_res -> 
              (* Since we don't have this in cache, cache it now. *)
              cache_lib_tenv tenv' elib;
-             (tenv', "")
+             (lib_res, "")
         )
-
+  *)
+            
   let type_module (md : UntypedContract.cmodule) (elibs : UntypedContract.library list) : (TypedContract.cmodule * stmt_tenv, string) result =
     let {cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
-    let {cname; cparams; cfields; ctrans} = contr in
-    let msg = sprintf "Type error(s) in contract %s:\n" (get_id cname) in
+    let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
+    let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
     wrap_with_info msg @@
     
     (* Step 0: Type check recursion principles *)
@@ -476,12 +488,19 @@ module Typechecker_Contracts
       | Some lib -> List.append elibs (lib::[])
       | None -> elibs
     in
-    let (tenv, emsgs) = List.fold_left all_libs ~init:(tenv0, "")
-        ~f:(fun (tenv_acc, emsgs_acc) elib ->
-            let (tenv', emsg) = type_library_cache tenv_acc elib in
-            let emsgs' = if emsg = "" then emsgs_acc else (emsgs_acc ^ "\n\n" ^ emsg) in
+    let ((libs, tenv), emsgs) = List.fold_left all_libs ~init:(([], tenv0), "")
+        ~f:(fun ((lib_acc, tenv_acc), emsgs_acc) elib ->
+            (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
+               let (tenv', emsg) = type_library_cache tenv_acc elib in *)
+            let ((typed_libraries, tenv'), emsg) =
+              match type_library tenv_acc elib with
+              | Ok (t_lib, t_env) -> ((t_lib :: lib_acc, t_env), emsgs_acc)
+              | Error msg ->
+                  let emsgs' = if msg = "" then emsgs_acc else (emsgs_acc ^ "\n\n" ^ msg) in
+                  ((lib_acc, tenv_acc), emsgs')
+            in
             (* Updated env and error messages are what we accummulate in the fold. *)
-            (tenv', emsgs')
+            ((typed_libraries, tenv'), emsg)
           )
     in
     
@@ -490,10 +509,10 @@ module Typechecker_Contracts
     let tenv3 = TEnv.addTs tenv params in
     
     (* Step 4: Type-check fields and add balance *)
-    let fenv0, femsgs0 = 
+    let (typed_fields, fenv0), femsgs0 = 
       match type_fields tenv3 cfields with
-      | Error msg -> (tenv3, emsgs ^ "\n\n" ^ msg)
-      | Ok t -> (t, emsgs)
+      | Error msg -> (([], tenv3), emsgs ^ "\n\n" ^ msg)
+      | Ok (typed_fields, tenv) -> ((typed_fields, tenv), emsgs)
     in
     let (bn, bt) = balance_field in
     let fenv = TEnv.addT fenv0 bn bt in
@@ -502,16 +521,28 @@ module Typechecker_Contracts
     let env = {pure= tenv3; fields= fenv; bc= bc_type_env} in
     
     (* Step 6: Type-checking all transitions in batch *)
-    let emsgs' = List.fold_left ~init:femsgs0 ctrans 
-        ~f:(fun emsgs tr -> 
+    let (t_trans, emsgs') = List.fold_left ~init:([], femsgs0) ctrans 
+        ~f:(fun (trans_acc, emsgs) tr -> 
             match type_transition env tr with
-            | Error msg -> emsgs ^ "\n\n" ^ msg
-            | Ok _ -> emsgs
+            | Error msg -> (trans_acc, emsgs ^ "\n\n" ^ msg)
+            | Ok (typed_trans, _) -> (typed_trans :: trans_acc, emsgs)
           ) in
+    let typed_trans = List.rev t_trans in
 
+    (* Step 7: Lift contract parameters to ETR.rep ident *)
+    let typed_params = List.map params
+        ~f:(fun (id, t) -> (add_type_to_id id (mk_qual_tp t), t)) in
+    
     if emsgs' = ""
     (* Return pure environment *)  
-    then pure ({cname = mod_cname; libs = libs; elibs = mod_elibs; contr = contr}, env)
+    then pure ({TypedContract.cname = mod_cname;
+                TypedContract.libs = List.hd libs;
+                TypedContract.elibs = mod_elibs;
+                TypedContract.contr =
+                  {TypedContract.cname = ctr_cname;
+                   TypedContract.cparams = typed_params;
+                   TypedContract.cfields = typed_fields;
+                   TypedContract.ctrans = typed_trans}}, env)
     (* Return error messages *)
     else fail @@ emsgs'
 

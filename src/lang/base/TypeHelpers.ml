@@ -36,5 +36,6 @@ module TypecheckerERep (R : Rep) = struct
   
   let parse_rep s = (PlainTypes.mk_qualified_type uint128_typ, R.parse_rep s)
   let get_rep_str r = match r with | (_, rr) -> R.get_rep_str rr
+
 end
 

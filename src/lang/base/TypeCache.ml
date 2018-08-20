@@ -28,13 +28,21 @@ module StdlibTypeCacher
     (Q : MakeTEnvFunctor)
     (R : QualifiedTypes)
     (SR : Rep)
-    (ER : Rep)
+    (ER : sig
+       type rep
+       val get_loc : rep -> loc
+       val mk_msg_payload_id : string -> rep ident
+
+       (* TODO: This needs to be looked through properly *)
+       val parse_rep : string -> rep
+       val get_rep_str: rep -> string
+     end)
     (L : sig
        type lib_entry = { lname : ER.rep ident ; lexp : ER.rep expr_annot }
        type library = { lname : SR.rep ident; lentries : lib_entry list }
      end)
        = struct
-                                            
+
   module MakeTEnv = Q(R)(ER)
   open MakeTEnv
   
@@ -55,20 +63,20 @@ module StdlibTypeCacher
      * {
      *   "name" : "foo",
      *   "entries" : [
-     *      { "name" : "foo1", "type" "Int32", "rep" : "" },
-     *      { "name" : "foo2", "type" : "Int32 -> Int64", "rep", ""}
+     *      { "name" : "foo1", "type" "Int32", "loc" : "" },
+     *      { "name" : "foo2", "type" : "Int32 -> Int64", "loc", ""}
      *    ]
      * }
      *)
      let entries = 
       List.map ~f:(fun (n, t) ->
         let name_s = n in
-        let rep_s = ER.get_rep_str (rr_rep t) in
+        let loc_s = get_loc_str (rr_loc t) in
         let type_s = rr_pp t in
         `Assoc [ 
           ("name", `String name_s);
           ("type", `String type_s);
-          ("rep", `String rep_s)
+          ("loc", `String loc_s)
         ]
       ) lib_entries in
       (* Compose final result. *)
@@ -87,15 +95,15 @@ module StdlibTypeCacher
     | `String n, `String h, `List elj ->
       (* Conver the list of JSONs to a list of TEnv.tenv entries. *)
       let el = List.fold_right ~f:(fun ej acc ->
-        let name_j, type_j, rep_j = 
-          member "name" ej, member "type" ej, member "rep" ej in
+        let name_j, type_j, loc_j = 
+          member "name" ej, member "type" ej, member "loc" ej in
         let e_o = 
-          (match name_j, type_j, rep_j with
-          | `String name_s, `String type_s, `String rep_s ->
+          (match name_j, type_j, loc_j with
+          | `String name_s, `String type_s, `String loc_s ->
               (* Printf.printf "Parsing type: %s\n" type_s; *)
               (try
                 let typ = FrontEndParser.parse_type type_s in
-                let loc = ER.parse_rep rep_s in (* TODO: parse loc_s *)
+                let loc = ER.parse_rep loc_s in (* TODO: parse loc_s *)
                 let id = asIdL name_s loc in
                 Some (id, typ)
                with
