@@ -137,17 +137,3 @@ let verify pubKey msg signature =
   (* Call the signing C function. *)
   let succ = verify_Z (addr pubKS) (addr msgS) (addr signS) in
   if succ = 1 then true else false
-
-let schnorrTest () =
-  let privK, pubK = genKeyPair () in
-  let msg = "Hello world\n" in
-  let signature = sign privK pubK msg in
-  let _ = Printf.printf "privK: %s\npubK: %s\nmsg: %s\nsignature: %s\n" privK pubK msg signature in
-  let succ = verify pubK msg signature in
-  let _ =
-    if succ then Printf.printf "Verification1 successful\n"
-    else Printf.printf "Verification1 failed\n";
-  in
-  let fail = verify pubK (msg ^ "\n") signature in
-  if fail then Printf.printf "Verification2 failed\n"
-  else Printf.printf "Verification2 successful\n";
