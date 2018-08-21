@@ -27,13 +27,14 @@ module StdlibTypeCacher
     (Q : MakeTEnvFunctor)
     (R : QualifiedTypes)
     (SR : Rep)
-    (ER : Rep)
-    (L : sig
-       type lib_entry = { lname : ER.rep ident ; lexp : ER.rep expr_annot }
-       type library = { lname : SR.rep ident; lentries : lib_entry list }
-     end)
-  : sig
+    (ER : Rep) : sig
 
+  module L :
+  sig
+    type lib_entry = { lname : ER.rep ident ; lexp : ER.rep expr_annot }
+    type library = { lname : SR.rep ident; lentries : lib_entry list }
+  end
+    
   type t = Q(R)(ER).TEnv.t
 
   (* Get type info for "lib" from cache, if it exists. *)
