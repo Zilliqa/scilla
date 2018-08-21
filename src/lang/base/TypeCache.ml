@@ -31,7 +31,8 @@ module StdlibTypeCacher
     (ER : sig
        type rep
        val get_loc : rep -> loc
-       val mk_msg_payload_id : string -> rep ident
+       val mk_msg_payload_id_address : string -> rep ident
+       val mk_msg_payload_id_uint128 : string -> rep ident
 
        (* TODO: This needs to be looked through properly *)
        val parse_rep : string -> rep

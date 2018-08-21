@@ -406,7 +406,7 @@ module Typechecker_Contracts
     let tenv0 = env0.pure in
     let lift_ident_e (id, t) = (add_type_to_id id (mk_qual_tp t), t) in
     let typed_tparams = List.map tparams ~f:lift_ident_e in
-    let tenv1 = TEnv.addTs tenv0 (append_implict_trans_params tparams ER.mk_msg_payload_id) in
+    let tenv1 = TEnv.addTs tenv0 (append_implict_trans_params tparams ER.mk_msg_payload_id_address ER.mk_msg_payload_id_uint128) in
     let env = {env0 with pure = tenv1} in
     let msg = sprintf "[%s] Type error in transition %s:\n"
         (get_loc_str (SR.get_loc (get_rep tname))) (get_id tname) in
