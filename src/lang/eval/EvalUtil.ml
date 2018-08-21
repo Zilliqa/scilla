@@ -73,7 +73,7 @@ module Env = struct
     | Some x -> pure @@ snd x
     | None -> fail @@ sprintf
         "Identifier \"%s\" at %s is not bound in environment:\n"
-        i (get_loc_str (get_loc k))
+        i (get_loc_str (get_rep k))
 end
 
 
@@ -263,3 +263,10 @@ module ContractState = struct
 end
 
 
+(*****************************************************)
+(*         Contract definitions                      *)
+(*****************************************************)
+
+open ParserUtil
+module EvalContract = Contract (ParserRep) (ParserRep)
+    

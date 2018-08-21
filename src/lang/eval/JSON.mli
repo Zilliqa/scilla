@@ -16,7 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-
 (** The state input is a json containing an array state variables.
  ** Each state variable is a list of the following key value pairs:
  **    "vname" : "variable name"
@@ -96,7 +95,7 @@ module BlockChainState : sig
 end
 
 module ContractInfo : sig
-
+open EvalUtil.EvalContract
   (* Given a parsed contract, give a string JSON with these details:
        { 
          "name" : "foo",
@@ -130,7 +129,7 @@ module ContractInfo : sig
           ]
         }
   *)
-  val get_string : ('rep, 'erep) Syntax.contract -> string
+  val get_string : contract -> string
 end
 
 module Event : sig

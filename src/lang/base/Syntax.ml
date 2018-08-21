@@ -354,6 +354,12 @@ module Contract (SR : Rep) (ER : Rep) = struct
       elibs : SR.rep ident list;  (* list of imports / external libs *)
       contr : contract }
 
+  let pp_cparams ps =
+    let cs = List.map ps ~f:(fun (i, t) ->
+        get_id i ^ " : " ^
+        (sexp_of_typ t |> Sexplib.Sexp.to_string)) in
+    "[" ^ (String.concat ~sep:", " cs) ^ "]"
+
 end
 
 
@@ -381,12 +387,6 @@ type ('rep, 'erep) contract =
     cfields : ('erep ident * typ * 'erep expr_annot) list;
     ctrans  : ('rep, 'erep) transition list; }
 [@@deriving sexp]
-
-let pp_cparams ps =
-  let cs = List.map ps ~f:(fun (i, t) ->
-      get_id i ^ " : " ^
-      (sexp_of_typ t |> Sexplib.Sexp.to_string)) in
-  "[" ^ (String.concat ~sep:", " cs) ^ "]"
 
 (* Contract module: libary + contract definiton *)
 type ('rep, 'erep) cmodule =
