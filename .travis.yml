@@ -9,6 +9,7 @@ addons:
     - zlib1g-dev
     - libgmp-dev
     - libssl-dev
+    - libboost-system-dev
     - aspcud
 cache:
   directories:
