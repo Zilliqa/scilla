@@ -46,7 +46,7 @@ let check_parsing filename =
 
 (* Type check the expression with external libraries *)
 let check_typing e elibs =
-  let%bind _ = TypeChecker.type_recursion_principles ParserRep.get_loc in
+  let%bind _ = type_recursion_principles ParserRep.get_loc in
   let recs = List.map recursion_principles
       ~f:(fun ({lname = a; _}, c) -> (a, c)) in
   let tenv0 = TEnv.addTs TEnv.mk recs in

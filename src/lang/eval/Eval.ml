@@ -211,6 +211,7 @@ and try_apply_as_type_closure v arg_type =
       fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)
 
 
+open EvalContract
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla statemnts   *)
 (*******************************************************)
@@ -289,7 +290,6 @@ let check_blockchain_entries entries =
 (*              Contract initialization                *)
 (*******************************************************)
 
-open EvalContract
 (* Combine external and contract lib functions. *)
 let combine_libs clibs elibs =
   (* combine both the libs, with contract libs defined later 

@@ -183,7 +183,9 @@ type 'rep inferred_type = {
 } [@@deriving sexp]
 
 module type QualifiedTypes = sig
-   type t
+  type t
+  val t_of_sexp : Sexp.t -> t
+  val sexp_of_t : t -> Sexp.t
   val mk_qualified_type : typ -> t inferred_type      
 end
 
@@ -337,6 +339,8 @@ end
 
 module PlainTypes : QualifiedTypes = struct
   type t = unit
+  [@@deriving sexp]
+
   let mk_qualified_type t = {tp = t; qual = ()}
 end
 
@@ -593,8 +597,8 @@ let get_failure_msg e opt get_loc = match e with
         (get_loc_str (get_loc i)) (get_id i)
   | MatchExpr (x, _) ->
       sprintf
-      "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
-      (get_loc_str (get_loc x)) (get_id x) opt 
+        "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
+        (get_loc_str (get_loc x)) (get_id x) opt 
   | TApp (tf, _) ->
       sprintf "[%s] Type error in type application of `%s`:\n"
         (get_loc_str (get_loc tf)) (get_id tf)
@@ -605,38 +609,12 @@ let get_failure_msg e opt get_loc = match e with
       sprintf "Type error in fixpoint application with an argument `%s`:\n"
         (get_id f)              
   | _ -> ""
-
-let get_failure_msg_stmt s opt get_loc = match s with
-  | Load (x, f) ->
-      sprintf "[%s] Type error in reading value of `%s` into `%s`:\n"
-        (get_loc_str (get_loc x)) (get_id f) (get_id x)
-  | Store (f, r) ->
-      sprintf "[%s] Type error in storing value of `%s` into the field `%s`:\n"
-        (get_loc_str (get_loc f)) (get_id r) (get_id f)
-  | Bind (x, _) ->
-      sprintf "[%s] Type error in the binding to into `%s`:\n"
-        (get_loc_str (get_loc x)) (get_id x)
-  | ReadFromBC (x, _) ->
-      sprintf "[%s] Error in reading from blockchain state into `%s`:\n"
-        (get_loc_str (get_loc x)) (get_id x)
-  | MatchStmt (x, _) ->
-      sprintf
-      "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
-      (get_loc_str (get_loc x)) (get_id x) opt 
-  | SendMsgs i ->
-      sprintf "[%s] Error in sending messages `%s`:\n"
-        (get_loc_str (get_loc i)) (get_id i)
-  | _ -> ""
-
-
+      
 let wrap_with_info msg res = match res with
   | Ok _ -> res
   | Error msg' -> Error (sprintf "%s%s" msg msg')
-
+                      
 let wrap_err e get_loc ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt get_loc)
-
-let wrap_serr s get_loc ?opt:(opt = "") =
-  wrap_with_info (get_failure_msg_stmt s opt get_loc)
 
 (*****************************************************************)
 (*               Blockchain component typing                     *)

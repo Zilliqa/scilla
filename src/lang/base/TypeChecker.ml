@@ -212,146 +212,6 @@ and type_actuals tenv actuals =
   let typed_actuals = List.map actuals_with_types ~f:(fun (a, t) -> add_type_to_ident a t) in
   pure @@ (targs, typed_actuals)
 
-(**************************************************************)
-(*                   Typing statements                        *)
-(**************************************************************)
-
-(* Auxiliaty structure for types of fields and BC components *)
-type stmt_tenv = {
-  pure   : TEnv.t;
-  fields : TEnv.t;
-  bc     : TEnv.t;
-}
-
-let add_stmt_to_stmts_env s repstmts =
-  match repstmts with
-  | (stmts, env) -> (s :: stmts, env)
-
-let rec type_stmts env stmts get_loc =
-  let open PrimTypes in
-  let open Datatypes.DataTypeDictionary in 
-  match stmts with
-  | [] -> pure ([], env)
-  | ((s, rep) as stmt) :: sts ->
-      (match s with
-       | Load (x, f) ->
-           let%bind (next_env, ident_type) = wrap_serr s get_rep (
-               let%bind fr = TEnv.resolveT env.fields (get_id f) in
-               let pure' = TEnv.addT (TEnv.copy env.pure) x (rr_typ fr).tp in
-               let next_env = {env with pure = pure'} in
-               pure @@ (next_env, rr_typ fr)
-             ) in
-           let%bind checked_stmts = type_stmts next_env sts get_loc in
-           let typed_x = add_type_to_ident x ident_type in
-           let typed_f = add_type_to_ident f ident_type in
-           pure @@ add_stmt_to_stmts_env (Load (typed_x, typed_f), rep) checked_stmts
-       | Store (f, r) ->
-           if List.mem ~equal:(fun s1 s2 -> s1 = s2)
-               no_store_fields (get_id f) then
-             wrap_serr s  get_rep (
-               fail @@ sprintf
-                 "Writing to the field `%s` is prohibited." (get_id f)) 
-           else          
-             let%bind (checked_stmts, f_type, r_type) = wrap_serr s get_rep (
-                 let%bind fr = TEnv.resolveT env.fields (get_id f) in
-                 let%bind r = TEnv.resolveT env.pure (get_id r) in
-                 let%bind _ = assert_type_equiv (rr_typ fr).tp (rr_typ r).tp in
-                 let%bind checked_stmts = type_stmts env sts get_loc in
-                 pure @@ (checked_stmts, rr_typ fr, rr_typ r)
-               ) in
-             let typed_f = add_type_to_ident f f_type in
-             let typed_r = add_type_to_ident r r_type in
-             pure @@ add_stmt_to_stmts_env (Store (typed_f, typed_r), rep) checked_stmts
-      | Bind (x, e) ->
-          let%bind (_, (ityp, _)) as checked_e = wrap_serr s get_rep @@ type_expr env.pure e get_loc in
-          let pure' = TEnv.addT (TEnv.copy env.pure) x ityp.tp in
-          let env' = {env with pure = pure'} in
-          let%bind checked_stmts = type_stmts env' sts get_loc in
-          let typed_x = add_type_to_ident x ityp in
-          pure @@ add_stmt_to_stmts_env (Bind (typed_x, checked_e), rep) checked_stmts
-      | ReadFromBC (x, bf) ->
-          let%bind r = wrap_serr s get_rep @@ TEnv.resolveT env.bc bf in
-          let x_type = rr_typ r in
-          let bt = x_type.tp in
-          let pure' = TEnv.addT (TEnv.copy env.pure) x bt in
-          let env' = {env with pure = pure'} in
-          let%bind checked_stmts = type_stmts env' sts get_loc in
-          let typed_x = add_type_to_ident x x_type in
-          pure @@ add_stmt_to_stmts_env (ReadFromBC (typed_x, bf), rep) checked_stmts
-      | MatchStmt (x, clauses) ->
-          if List.is_empty clauses
-          then wrap_serr s get_rep @@ fail @@ sprintf
-              "List of pattern matching clauses is empty:\n%s" (stmt_str stmt)
-          else
-            let%bind sctyp = TEnv.resolveT env.pure (get_id x)
-                ~lopt:(Some (get_rep x)) in
-            let sctype = rr_typ sctyp in
-            let sct = sctype.tp in
-            let msg = sprintf " of type %s" (pp_typ sct) in
-            let typed_x = add_type_to_ident x sctype in
-            let%bind checked_clauses = wrap_serr s get_rep ~opt:msg @@
-              mapM clauses ~f:(fun (ptrn, ex) ->
-                  type_match_stmt_branch env sct ptrn ex get_loc ) in
-            let%bind checked_stmts = type_stmts env sts get_loc in
-            pure @@ add_stmt_to_stmts_env (MatchStmt (typed_x, checked_clauses), rep) checked_stmts
-      | AcceptPayment ->
-          let%bind checked_stmts = type_stmts env sts get_loc in
-          pure @@ add_stmt_to_stmts_env (AcceptPayment, rep) checked_stmts
-      | SendMsgs i ->
-          let%bind r = TEnv.resolveT env.pure (get_id i)
-              ~lopt:(Some (get_rep i)) in
-          let i_type = rr_typ r in
-          let expected = list_typ msg_typ in
-          let%bind _ = wrap_serr s get_rep @@
-            assert_type_equiv expected i_type.tp in
-          let typed_i = add_type_to_ident i i_type in
-          let%bind checked_stmts = type_stmts env sts get_loc in
-          pure @@ add_stmt_to_stmts_env (SendMsgs typed_i, rep) checked_stmts
-      | CreateEvnt (st, i) ->
-          let%bind r = TEnv.resolveT env.pure (get_id i)
-              ~lopt:(Some (get_loc (get_rep i))) in
-          (* An event is a named message, hence msg_typ. *)
-          let i_type = rr_typ r in
-          let expected = msg_typ in
-          let%bind _ = wrap_serr s get_rep @@
-            assert_type_equiv expected i_type.tp in
-          let typed_i = add_type_to_ident i i_type in
-          let%bind checked_stmts = type_stmts env sts get_loc in
-          pure @@ add_stmt_to_stmts_env (CreateEvnt (st, typed_i), rep) checked_stmts
-      | _ ->
-          fail @@ sprintf
-            "Type-checking the statement %s is not supported yet."
-            (stmt_str stmt)
-    )
-and type_match_stmt_branch env styp ptrn sts get_loc =
-  let%bind (new_p, new_typings) = assign_types_for_pattern styp ptrn in
-  let pure' = TEnv.addTs (TEnv.copy env.pure) new_typings in
-  let env' = {env with pure = pure'} in
-  let%bind (new_stmts, _) = type_stmts env' sts get_loc in
-  pure @@ (new_p, new_stmts)
-
-
-(**************************************************************)
-(*           Typing recursion principles and libraries        *)
-(**************************************************************)
-
-(* This is a really good sanity check: 
-   it should always succeed! *)
-let type_recursion_principles get_loc =
-  let recs = List.map recursion_principles
-      ~f:(fun ({lname = a; lexp = e}, c) -> (a, e, c)) in
-  let env0 = TEnv.copy TEnv.mk in 
-  mapM recs
-    ~f:(fun (rn, body, expected) ->
-        wrap_with_info
-          (sprintf "Type error when checking recursion primitive %s:\n"
-             (get_id rn)) @@
-        let%bind (_, (ar, _)) = type_expr env0 body get_loc in
-        let actual = ar.tp in
-        let%bind _ = assert_type_equiv expected actual in
-        pure (rn, actual))
-
-
 (*****************************************************************)
 (*               Blockchain component typing                     *)
 (*****************************************************************)
@@ -382,25 +242,178 @@ module Typechecker_Contracts
   module ETR = TypecheckerERep (ER)
   module UntypedContract = Contract (SR) (ER)
   module TypedContract = Contract (STR) (ETR)
-
   include TypedContract
 
   module TypeEnv = MakeTEnv(PlainTypes)(ER)
   open TypeEnv
 
+  open UntypedContract
+      
+  (****************************************************************)
+  (*                  Better error reporting                      *)
+  (****************************************************************)
+  let get_failure_msg_stmt srep opt =
+    let (s, rep) = srep in
+    match s with
+    | Load (x, f) ->
+        sprintf "[%s] Type error in reading value of `%s` into `%s`:\n"
+          (get_loc_str (SR.get_loc rep)) (get_id f) (get_id x)
+    | Store (f, r) ->
+        sprintf "[%s] Type error in storing value of `%s` into the field `%s`:\n"
+          (get_loc_str (SR.get_loc rep)) (get_id r) (get_id f)
+    | Bind (x, _) ->
+        sprintf "[%s] Type error in the binding to into `%s`:\n"
+          (get_loc_str (SR.get_loc rep)) (get_id x)
+    | MatchStmt (x, _) ->
+        sprintf
+          "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
+          (get_loc_str (SR.get_loc rep)) (get_id x) opt 
+    | ReadFromBC (x, _) ->
+        sprintf "[%s] Error in reading from blockchain state into `%s`:\n"
+          (get_loc_str (SR.get_loc rep)) (get_id x)
+    | AcceptPayment ->
+        sprintf "[%s] Error in accepting payment\n"
+          (get_loc_str (SR.get_loc rep))
+    | SendMsgs i ->
+        sprintf "[%s] Error in sending messages `%s`:\n"
+          (get_loc_str (SR.get_loc rep)) (get_id i)
+    | CreateEvnt (s, _) ->
+        sprintf "[%s] Error in create event `%s`:\n"
+          (get_loc_str (SR.get_loc rep)) s
+    | Throw i ->
+        sprintf "[%s] Error in throw of '%s':\n"
+          (get_loc_str (SR.get_loc rep)) (get_id i)
+
+  let wrap_with_info msg res = match res with
+    | Ok _ -> res
+    | Error msg' -> Error (sprintf "%s%s" msg msg')
+
+  let wrap_serr s ?opt:(opt = "") =
+    wrap_with_info (get_failure_msg_stmt s opt)
+
+  (**************************************************************)
+  (*                   Typing statements                        *)
+  (**************************************************************)
+
   (* Auxiliaty structure for types of fields and BC components *)
-(*  type stmt_tenv = {
+  type stmt_tenv = {
     pure   : TEnv.t;
     fields : TEnv.t;
     bc     : TEnv.t;
-    } *)
-      
-  open UntypedContract
+  }
+
+  let add_stmt_to_stmts_env s repstmts =
+    match repstmts with
+    | (stmts, env) -> (s :: stmts, env)
+
+  let rec type_stmts env stmts get_loc =
+    let open PrimTypes in
+    let open Datatypes.DataTypeDictionary in 
+    match stmts with
+    | [] -> pure ([], env)
+    | ((s, rep) as stmt) :: sts ->
+        (match s with
+         | Load (x, f) ->
+             let%bind (next_env, ident_type) = wrap_serr stmt (
+                 let%bind fr = TEnv.resolveT env.fields (get_id f) in
+                 let pure' = TEnv.addT (TEnv.copy env.pure) x (rr_typ fr).tp in
+                 let next_env = {env with pure = pure'} in
+                 pure @@ (next_env, rr_typ fr)
+               ) in
+             let%bind checked_stmts = type_stmts next_env sts get_loc in
+             let typed_x = add_type_to_ident x ident_type in
+             let typed_f = add_type_to_ident f ident_type in
+             pure @@ add_stmt_to_stmts_env (TypedContract.Load (typed_x, typed_f), rep) checked_stmts
+         | Store (f, r) ->
+             if List.mem ~equal:(fun s1 s2 -> s1 = s2)
+                 no_store_fields (get_id f) then
+               wrap_serr stmt (
+                 fail @@ sprintf
+                   "Writing to the field `%s` is prohibited." (get_id f)) 
+             else          
+               let%bind (checked_stmts, f_type, r_type) = wrap_serr stmt (
+                   let%bind fr = TEnv.resolveT env.fields (get_id f) in
+                   let%bind r = TEnv.resolveT env.pure (get_id r) in
+                   let%bind _ = assert_type_equiv (rr_typ fr).tp (rr_typ r).tp in
+                   let%bind checked_stmts = type_stmts env sts get_loc in
+                   pure @@ (checked_stmts, rr_typ fr, rr_typ r)
+                 ) in
+               let typed_f = add_type_to_ident f f_type in
+               let typed_r = add_type_to_ident r r_type in
+               pure @@ add_stmt_to_stmts_env (TypedContract.Store (typed_f, typed_r), rep) checked_stmts
+         | Bind (x, e) ->
+             let%bind (_, (ityp, _)) as checked_e = wrap_serr stmt @@ type_expr env.pure e get_loc in
+             let pure' = TEnv.addT (TEnv.copy env.pure) x ityp.tp in
+             let env' = {env with pure = pure'} in
+             let%bind checked_stmts = type_stmts env' sts get_loc in
+             let typed_x = add_type_to_ident x ityp in
+             pure @@ add_stmt_to_stmts_env (TypedContract.Bind (typed_x, checked_e), rep) checked_stmts
+         | ReadFromBC (x, bf) ->
+             let%bind r = wrap_serr stmt @@ TEnv.resolveT env.bc bf in
+             let x_type = rr_typ r in
+             let bt = x_type.tp in
+             let pure' = TEnv.addT (TEnv.copy env.pure) x bt in
+             let env' = {env with pure = pure'} in
+             let%bind checked_stmts = type_stmts env' sts get_loc in
+             let typed_x = add_type_to_ident x x_type in
+             pure @@ add_stmt_to_stmts_env (TypedContract.ReadFromBC (typed_x, bf), rep) checked_stmts
+         | MatchStmt (x, clauses) ->
+             if List.is_empty clauses
+             then wrap_serr stmt @@ fail @@ sprintf
+                 "List of pattern matching clauses is empty:\n%s" (stmt_str stmt)
+             else
+               let%bind sctyp = TEnv.resolveT env.pure (get_id x)
+                   ~lopt:(Some (get_rep x)) in
+               let sctype = rr_typ sctyp in
+               let sct = sctype.tp in
+               let msg = sprintf " of type %s" (pp_typ sct) in
+               let typed_x = add_type_to_ident x sctype in
+               let%bind checked_clauses = wrap_serr stmt ~opt:msg @@
+                 mapM clauses ~f:(fun (ptrn, ex) ->
+                     type_match_stmt_branch env sct ptrn ex get_loc ) in
+               let%bind checked_stmts = type_stmts env sts get_loc in
+               pure @@ add_stmt_to_stmts_env (TypedContract.MatchStmt (typed_x, checked_clauses), rep) checked_stmts
+         | AcceptPayment ->
+             let%bind checked_stmts = type_stmts env sts get_loc in
+             pure @@ add_stmt_to_stmts_env (TypedContract.AcceptPayment, rep) checked_stmts
+         | SendMsgs i ->
+             let%bind r = TEnv.resolveT env.pure (get_id i)
+                 ~lopt:(Some (get_rep i)) in
+             let i_type = rr_typ r in
+             let expected = list_typ msg_typ in
+             let%bind _ = wrap_serr stmt @@
+               assert_type_equiv expected i_type.tp in
+             let typed_i = add_type_to_ident i i_type in
+             let%bind checked_stmts = type_stmts env sts get_loc in
+             pure @@ add_stmt_to_stmts_env (TypedContract.SendMsgs typed_i, rep) checked_stmts
+         | CreateEvnt (st, i) ->
+             let%bind r = TEnv.resolveT env.pure (get_id i)
+                 ~lopt:(Some (get_loc (get_rep i))) in
+             (* An event is a named message, hence msg_typ. *)
+             let i_type = rr_typ r in
+             let expected = msg_typ in
+             let%bind _ = wrap_serr stmt @@
+               assert_type_equiv expected i_type.tp in
+             let typed_i = add_type_to_ident i i_type in
+             let%bind checked_stmts = type_stmts env sts get_loc in
+             pure @@ add_stmt_to_stmts_env (TypedContract.CreateEvnt (st, typed_i), rep) checked_stmts
+         | _ ->
+             fail @@ sprintf
+               "Type-checking the statement %s is not supported yet."
+               (stmt_str stmt)
+        )
+  and type_match_stmt_branch env styp ptrn sts get_loc =
+    let%bind (new_p, new_typings) = assign_types_for_pattern styp ptrn in
+    let pure' = TEnv.addTs (TEnv.copy env.pure) new_typings in
+    let env' = {env with pure = pure'} in
+    let%bind (new_stmts, _) = type_stmts env' sts get_loc in
+    pure @@ (new_p, new_stmts)
+
 
   let add_type_to_id id t : ETR.rep ident =
     match id with
     | Ident (s, r) -> Ident (s, ETR.mk_rep r t)
-  
+
   let type_transition (env0 : stmt_tenv) (tr : UntypedContract.transition) : (TypedContract.transition * stmt_tenv, string) result  =
     let {tname; tparams; tbody} = tr in
     let tenv0 = env0.pure in
@@ -414,7 +427,28 @@ module Typechecker_Contracts
     pure @@ ({ TypedContract.tname = tname ;
                TypedContract.tparams = typed_tparams;
                TypedContract.tbody = typed_stmts }, new_tenv)
-        
+
+
+  (**************************************************************)
+  (*           Typing recursion principles and libraries        *)
+  (**************************************************************)
+
+  (* This is a really good sanity check: 
+     it should always succeed! *)
+  let type_recursion_principles get_loc =
+    let recs = List.map recursion_principles
+        ~f:(fun ({lname = a; lexp = e}, c) -> (a, e, c)) in
+    let env0 = TEnv.copy TEnv.mk in 
+    mapM recs
+      ~f:(fun (rn, body, expected) ->
+          wrap_with_info
+            (sprintf "Type error when checking recursion primitive %s:\n"
+               (get_id rn)) @@
+          let%bind (_, (ar, _)) = type_expr env0 body get_loc in
+          let actual = ar.tp in
+          let%bind _ = assert_type_equiv expected actual in
+          pure (rn, actual))
+
 
   (*****************************************************************)
   (*                 Typing entire contracts                       *)
@@ -556,5 +590,6 @@ module Typechecker_Contracts
                    TypedContract.ctrans = typed_trans}}, env)
     (* Return error messages *)
     else fail @@ emsgs'
+
 
 end

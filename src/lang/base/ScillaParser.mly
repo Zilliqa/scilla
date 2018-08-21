@@ -99,7 +99,7 @@
 
 %start <Syntax.loc Syntax.expr_annot list> exps
 %start <Syntax.typ list> types
-%start <(Syntax.loc, Syntax.loc) Syntax.stmt_annot list> stmts_term
+%start <ParserUtil.ParsedContract.stmt_annot list> stmts_term
 %start <ParserUtil.ParsedContract.cmodule> cmodule
 %start <ParserUtil.ParsedContract.library> lmodule
 

@@ -32,6 +32,8 @@ type 'rep inferred_type = {
 (* Qualifiers to type inference with additional information *)
 module type QualifiedTypes = sig
   type t
+  val t_of_sexp : Sexp.t -> t
+  val sexp_of_t : t -> Sexp.t
   val mk_qualified_type : typ -> t inferred_type      
 end
 
@@ -131,12 +133,7 @@ val assert_all_same_type : typ list -> (unit, string) result
 (*                  Better error reporting                      *)
 (****************************************************************)
 
-val wrap_with_info : string -> ('a, string) result -> ('a, string) result
-
 val wrap_err : 'rep expr -> ('rep ident -> loc) -> ?opt:string ->
-  ('a, string) result -> ('a, string) result
-
-val wrap_serr : ('srep, 'erep) stmt -> ('erep ident -> loc) -> ?opt:string ->
   ('a, string) result -> ('a, string) result
 
 (****************************************************************)

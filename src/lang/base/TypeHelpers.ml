@@ -26,7 +26,8 @@ open Syntax
 
 module TypecheckerERep (R : Rep) = struct
   type rep = PlainTypes.t inferred_type * R.rep
-
+  [@@deriving sexp]
+ 
   let get_loc r = match r with | (_, rr) -> R.get_loc rr
 
   let mk_msg_payload_id s t =

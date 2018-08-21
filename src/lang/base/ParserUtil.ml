@@ -24,6 +24,8 @@ open Syntax
 
 module ParserRep = struct
   type rep = loc
+  [@@deriving sexp]
+    
   let get_loc l = l
   let mk_msg_payload_id_address s = Ident (s, dummy_loc)
   let mk_msg_payload_id_uint128 s = Ident (s, dummy_loc)
