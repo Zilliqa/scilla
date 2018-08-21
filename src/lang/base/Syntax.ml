@@ -248,41 +248,6 @@ let pp_expr e =
   spp_expr e
 
 (*******************************************************)
-(*                   Statements                        *)
-(*******************************************************)
-
-(* module Stmt = functor (SR : Rep) (ER : Rep) -> struct
-  type stmt =
-    | Load of ER.rep ident * ER.rep ident * SR.rep
-    | Store of ER.rep ident * ER.rep ident * SR.rep
-    | Bind of ER.rep ident * ER.rep expr_annot * SR.rep
-    | MatchStmt of ER.rep ident * (ER.rep pattern * stmt list) list * SR.rep
-    | ReadFromBC of ER.rep ident * string * SR.rep
-    | AcceptPayment of SR.rep
-    | SendMsgs of ER.rep ident * SR.rep
-    | Event of string * string * SR.rep
-    | Throw of ER.rep ident * SR.rep
-
-  let get_rep s =
-    match s with
-    | Load (_, _, rep)
-    | Store (_, _, rep)
-    | Bind (_, _, rep)
-    | MatchStmt (_, _, rep)
-    | ReadFromBC (_, _, rep)
-    | AcceptPayment rep
-    | SendMsgs (_, rep)
-    | Event (_, _, rep)
-    | Throw (_, rep) -> rep
-
-  include SR
-end
-*)
-
-
-
-
-(*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
 
@@ -292,6 +257,7 @@ module type Rep = sig
   val mk_msg_payload_id_address : string -> rep ident
   val mk_msg_payload_id_uint128 : string -> rep ident
 
+  val rep_of_sexp : Sexp.t -> rep
   val sexp_of_rep : rep -> Sexp.t
   
   (* TODO: This needs to be looked through properly *)
@@ -300,10 +266,14 @@ module type Rep = sig
 end
 
 (*******************************************************)
-(*                    Contracts                        *)
+(*          Annotated scilla syntax                    *)
 (*******************************************************)
 
-module Contract (SR : Rep) (ER : Rep) = struct
+module Syntax (SR : Rep) (ER : Rep) = struct
+
+  (*******************************************************)
+  (*                   Statements                        *)
+  (*******************************************************)
 
   type stmt_annot = stmt * SR.rep
   and stmt =
@@ -318,25 +288,24 @@ module Contract (SR : Rep) (ER : Rep) = struct
     | Throw of ER.rep ident
   [@@deriving sexp]
   
-  let stmt_str (srep : ('rep, 'erep) stmt_annot) =
+  let stmt_str (srep : stmt_annot) =
+    (* TODO: print rep as well? *)
     let (s, _) = srep in 
-    let sexp = sexp_of_stmt sexp_of_loc sexp_of_loc s in
+    let sexp = sexp_of_stmt s in
     Sexplib.Sexp.to_string sexp
 
-  let stmt_loc (s : ('rep, 'erep) stmt) : 'rep option = 
-    match s with
-    | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
-    | MatchStmt (i, _)
-    | CreateEvnt (_, i)
-    | SendMsgs i -> 
-        let l = get_rep i in
-        if (l.cnum <> -1) then Some l else None
-    | _ -> None
+  let stmt_rep srep = snd srep
+  
+  let stmt_loc s = SR.get_loc (stmt_rep s)
+
+  (*******************************************************)
+  (*                    Contracts                        *)
+  (*******************************************************)
 
   type transition = 
     { tname   : SR.rep ident;
       tparams : (ER.rep ident  * typ) list;
-      tbody   : (SR.rep, ER.rep) stmt_annot list }
+      tbody   : stmt_annot list }
 
   type lib_entry =
     { lname : ER.rep ident;
