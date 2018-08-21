@@ -281,33 +281,6 @@ end
 
 
 
-type ('rep, 'erep) stmt_annot = ('rep, 'erep) stmt * 'rep
-and ('rep, 'erep) stmt =
-  | Load of 'erep ident * 'erep ident
-  | Store of 'erep ident * 'erep ident
-  | Bind of 'erep ident * 'erep expr_annot
-  | MatchStmt of 'erep ident * ('erep pattern * ('rep, 'erep) stmt_annot list) list
-  | ReadFromBC of 'erep ident * string
-  | AcceptPayment
-  | SendMsgs of 'erep ident
-  | CreateEvnt of string * 'erep ident
-  | Throw of 'erep ident
-[@@deriving sexp]
-
-let stmt_str (srep : ('rep, 'erep) stmt_annot) =
-  let (s, _) = srep in 
-  let sexp = sexp_of_stmt sexp_of_loc sexp_of_loc s in
-  Sexplib.Sexp.to_string sexp
-
-let stmt_loc (s : ('rep, 'erep) stmt) : 'rep option = 
-  match s with
-  | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
-  | MatchStmt (i, _)
-  | CreateEvnt (_, i)
-  | SendMsgs i -> 
-    let l = get_rep i in
-      if (l.cnum <> -1) then Some l else None
-  | _ -> None
 
 (*******************************************************)
 (*                   Annotations                       *)
@@ -319,6 +292,8 @@ module type Rep = sig
   val mk_msg_payload_id_address : string -> rep ident
   val mk_msg_payload_id_uint128 : string -> rep ident
 
+  val sexp_of_rep : rep -> Sexp.t
+  
   (* TODO: This needs to be looked through properly *)
   val parse_rep : string -> rep
   val get_rep_str: rep -> string
@@ -329,6 +304,35 @@ end
 (*******************************************************)
 
 module Contract (SR : Rep) (ER : Rep) = struct
+
+  type stmt_annot = stmt * SR.rep
+  and stmt =
+    | Load of ER.rep ident * ER.rep ident
+    | Store of ER.rep ident * ER.rep ident
+    | Bind of ER.rep ident * ER.rep expr_annot
+    | MatchStmt of ER.rep ident * (ER.rep pattern * stmt_annot list) list
+    | ReadFromBC of ER.rep ident * string
+    | AcceptPayment
+    | SendMsgs of ER.rep ident
+    | CreateEvnt of string * ER.rep ident
+    | Throw of ER.rep ident
+  [@@deriving sexp]
+  
+  let stmt_str (srep : ('rep, 'erep) stmt_annot) =
+    let (s, _) = srep in 
+    let sexp = sexp_of_stmt sexp_of_loc sexp_of_loc s in
+    Sexplib.Sexp.to_string sexp
+
+  let stmt_loc (s : ('rep, 'erep) stmt) : 'rep option = 
+    match s with
+    | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
+    | MatchStmt (i, _)
+    | CreateEvnt (_, i)
+    | SendMsgs i -> 
+        let l = get_rep i in
+        if (l.cnum <> -1) then Some l else None
+    | _ -> None
+
   type transition = 
     { tname   : SR.rep ident;
       tparams : (ER.rep ident  * typ) list;
