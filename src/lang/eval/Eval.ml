@@ -417,7 +417,7 @@ let get_transition ctr tag =
 
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
 let check_message_entries tparams_o entries =
-  let tparams = append_implict_trans_params tparams_o ParserUtil.ParserRep.mk_msg_payload_id in
+  let tparams = append_implict_trans_params tparams_o ParserUtil.ParserRep.mk_msg_payload_id_address ParserUtil.ParserRep.mk_msg_payload_id_uint128 in
   (* There as an entry for each parameter *)
   let valid_entries = List.for_all tparams
       ~f:(fun p -> List.exists entries ~f:(fun e -> fst e = (get_id (fst p)))) in
