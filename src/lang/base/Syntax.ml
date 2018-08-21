@@ -363,37 +363,3 @@ module Contract (SR : Rep) (ER : Rep) = struct
 
 end
 
-
-
-(*
-type ('rep, 'erep) transition = 
-  { tname   : 'erep ident;
-    tparams : ('erep ident  * typ) list;
-    tbody   : ('rep, 'erep) stmt_annot list }
-[@@deriving sexp]
-
-type 'rep lib_entry =
-  { lname : 'rep ident;
-    lexp  : 'rep expr_annot }
-[@@deriving sexp]
-
-type 'rep library =
-  { lname : 'rep ident;
-    lentries : 'rep lib_entry list }
-[@@deriving sexp]
-  
-type ('rep, 'erep) contract =
-  { cname   : 'erep ident;
-    cparams : ('erep ident  * typ) list;
-    cfields : ('erep ident * typ * 'erep expr_annot) list;
-    ctrans  : ('rep, 'erep) transition list; }
-[@@deriving sexp]
-
-(* Contract module: libary + contract definiton *)
-type ('rep, 'erep) cmodule =
-  { cname : 'erep ident;
-    libs  : ('erep library) option;     (* lib functions defined in the module *)
-    elibs : 'erep ident list;  (* list of imports / external libs *)
-    contr : ('rep, 'erep) contract }
-[@@deriving sexp]
-*)
