@@ -230,7 +230,7 @@ let bc_type_env =
 
 open TypeHelpers
     
-module Typechecker_Contracts
+module ScillaTypechecker
     (* TODO: This needs to be parameterized rather than bound to ParserRep.
        Cannot be done until type_stmt has been generalized. *)
   (* (SR : Rep) *)
@@ -240,14 +240,14 @@ module Typechecker_Contracts
   module ER = ParserRep
   module STR = SR
   module ETR = TypecheckerERep (ER)
-  module UntypedContract = Contract (SR) (ER)
-  module TypedContract = Contract (STR) (ETR)
-  include TypedContract
+  module UntypedSyntax = ScillaSyntax (SR) (ER)
+  module TypedSyntax = ScillaSyntax (STR) (ETR)
+  include TypedSyntax
 
   module TypeEnv = MakeTEnv(PlainTypes)(ER)
   open TypeEnv
 
-  open UntypedContract
+  open UntypedSyntax
       
   (****************************************************************)
   (*                  Better error reporting                      *)
@@ -323,7 +323,7 @@ module Typechecker_Contracts
              let%bind checked_stmts = type_stmts next_env sts get_loc in
              let typed_x = add_type_to_ident x ident_type in
              let typed_f = add_type_to_ident f ident_type in
-             pure @@ add_stmt_to_stmts_env (TypedContract.Load (typed_x, typed_f), rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.Load (typed_x, typed_f), rep) checked_stmts
          | Store (f, r) ->
              if List.mem ~equal:(fun s1 s2 -> s1 = s2)
                  no_store_fields (get_id f) then
@@ -340,14 +340,14 @@ module Typechecker_Contracts
                  ) in
                let typed_f = add_type_to_ident f f_type in
                let typed_r = add_type_to_ident r r_type in
-               pure @@ add_stmt_to_stmts_env (TypedContract.Store (typed_f, typed_r), rep) checked_stmts
+               pure @@ add_stmt_to_stmts_env (TypedSyntax.Store (typed_f, typed_r), rep) checked_stmts
          | Bind (x, e) ->
              let%bind (_, (ityp, _)) as checked_e = wrap_serr stmt @@ type_expr env.pure e get_loc in
              let pure' = TEnv.addT (TEnv.copy env.pure) x ityp.tp in
              let env' = {env with pure = pure'} in
              let%bind checked_stmts = type_stmts env' sts get_loc in
              let typed_x = add_type_to_ident x ityp in
-             pure @@ add_stmt_to_stmts_env (TypedContract.Bind (typed_x, checked_e), rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.Bind (typed_x, checked_e), rep) checked_stmts
          | ReadFromBC (x, bf) ->
              let%bind r = wrap_serr stmt @@ TEnv.resolveT env.bc bf in
              let x_type = rr_typ r in
@@ -356,7 +356,7 @@ module Typechecker_Contracts
              let env' = {env with pure = pure'} in
              let%bind checked_stmts = type_stmts env' sts get_loc in
              let typed_x = add_type_to_ident x x_type in
-             pure @@ add_stmt_to_stmts_env (TypedContract.ReadFromBC (typed_x, bf), rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.ReadFromBC (typed_x, bf), rep) checked_stmts
          | MatchStmt (x, clauses) ->
              if List.is_empty clauses
              then wrap_serr stmt @@ fail @@ sprintf
@@ -372,10 +372,10 @@ module Typechecker_Contracts
                  mapM clauses ~f:(fun (ptrn, ex) ->
                      type_match_stmt_branch env sct ptrn ex get_loc ) in
                let%bind checked_stmts = type_stmts env sts get_loc in
-               pure @@ add_stmt_to_stmts_env (TypedContract.MatchStmt (typed_x, checked_clauses), rep) checked_stmts
+               pure @@ add_stmt_to_stmts_env (TypedSyntax.MatchStmt (typed_x, checked_clauses), rep) checked_stmts
          | AcceptPayment ->
              let%bind checked_stmts = type_stmts env sts get_loc in
-             pure @@ add_stmt_to_stmts_env (TypedContract.AcceptPayment, rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.AcceptPayment, rep) checked_stmts
          | SendMsgs i ->
              let%bind r = TEnv.resolveT env.pure (get_id i)
                  ~lopt:(Some (get_rep i)) in
@@ -385,7 +385,7 @@ module Typechecker_Contracts
                assert_type_equiv expected i_type.tp in
              let typed_i = add_type_to_ident i i_type in
              let%bind checked_stmts = type_stmts env sts get_loc in
-             pure @@ add_stmt_to_stmts_env (TypedContract.SendMsgs typed_i, rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.SendMsgs typed_i, rep) checked_stmts
          | CreateEvnt (st, i) ->
              let%bind r = TEnv.resolveT env.pure (get_id i)
                  ~lopt:(Some (get_loc (get_rep i))) in
@@ -396,7 +396,7 @@ module Typechecker_Contracts
                assert_type_equiv expected i_type.tp in
              let typed_i = add_type_to_ident i i_type in
              let%bind checked_stmts = type_stmts env sts get_loc in
-             pure @@ add_stmt_to_stmts_env (TypedContract.CreateEvnt (st, typed_i), rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.CreateEvnt (st, typed_i), rep) checked_stmts
          | _ ->
              fail @@ sprintf
                "Type-checking the statement %s is not supported yet."
@@ -414,7 +414,7 @@ module Typechecker_Contracts
     match id with
     | Ident (s, r) -> Ident (s, ETR.mk_rep r t)
 
-  let type_transition (env0 : stmt_tenv) (tr : UntypedContract.transition) : (TypedContract.transition * stmt_tenv, string) result  =
+  let type_transition env0 tr =
     let {tname; tparams; tbody} = tr in
     let tenv0 = env0.pure in
     let lift_ident_e (id, t) = (add_type_to_id id (mk_qual_tp t), t) in
@@ -424,9 +424,9 @@ module Typechecker_Contracts
     let msg = sprintf "[%s] Type error in transition %s:\n"
         (get_loc_str (SR.get_loc (get_rep tname))) (get_id tname) in
     let%bind (typed_stmts, new_tenv) = wrap_with_info msg @@ type_stmts env tbody ER.get_loc in
-    pure @@ ({ TypedContract.tname = tname ;
-               TypedContract.tparams = typed_tparams;
-               TypedContract.tbody = typed_stmts }, new_tenv)
+    pure @@ ({ TypedSyntax.tname = tname ;
+               TypedSyntax.tparams = typed_tparams;
+               TypedSyntax.tbody = typed_stmts }, new_tenv)
 
 
   (**************************************************************)
@@ -489,11 +489,11 @@ module Typechecker_Contracts
               (get_loc_str (ER.get_loc (get_rep ln))) (get_id ln) in
           let%bind (_, (tr, _)) as typed_e = wrap_with_info msg (type_expr env le ER.get_loc ) in
           let typed_ln = add_type_to_id ln tr in
-          pure @@ ({ TypedContract.lname = typed_ln;
-                     TypedContract.lexp = typed_e }:: acc,
+          pure @@ ({ TypedSyntax.lname = typed_ln;
+                     TypedSyntax.lexp = typed_e }:: acc,
                    TEnv.addT (TEnv.copy env) ln tr.tp)) in
-    pure @@ ( { TypedContract.lname = lname ;
-                TypedContract.lentries = List.rev typed_entries }, TEnv.copy new_tenv)
+    pure @@ ( { TypedSyntax.lname = lname ;
+                TypedSyntax.lentries = List.rev typed_entries }, TEnv.copy new_tenv)
 
   (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
   (* type library, handling cache as necessary. *)
@@ -518,7 +518,7 @@ module Typechecker_Contracts
         )
   *)
             
-  let type_module (md : UntypedContract.cmodule) (elibs : UntypedContract.library list) : (TypedContract.cmodule * stmt_tenv, string) result =
+  let type_module md elibs =
     let {cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
@@ -580,14 +580,14 @@ module Typechecker_Contracts
     
     if emsgs' = ""
     (* Return pure environment *)  
-    then pure ({TypedContract.cname = mod_cname;
-                TypedContract.libs = List.hd libs;
-                TypedContract.elibs = mod_elibs;
-                TypedContract.contr =
-                  {TypedContract.cname = ctr_cname;
-                   TypedContract.cparams = typed_params;
-                   TypedContract.cfields = typed_fields;
-                   TypedContract.ctrans = typed_trans}}, env)
+    then pure ({TypedSyntax.cname = mod_cname;
+                TypedSyntax.libs = List.hd libs;
+                TypedSyntax.elibs = mod_elibs;
+                TypedSyntax.contr =
+                  {TypedSyntax.cname = ctr_cname;
+                   TypedSyntax.cparams = typed_params;
+                   TypedSyntax.cfields = typed_fields;
+                   TypedSyntax.ctrans = typed_trans}}, env)
     (* Return error messages *)
     else fail @@ emsgs'
 

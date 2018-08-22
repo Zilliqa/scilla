@@ -21,7 +21,7 @@
   open Syntax
   open ParserUtil
 
-  open ParsedContract
+  open ParsedSyntax
 
   let to_type d = match d with
     | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x
@@ -99,9 +99,9 @@
 
 %start <Syntax.loc Syntax.expr_annot list> exps
 %start <Syntax.typ list> types
-%start <ParserUtil.ParsedContract.stmt_annot list> stmts_term
-%start <ParserUtil.ParsedContract.cmodule> cmodule
-%start <ParserUtil.ParsedContract.library> lmodule
+%start <ParserUtil.ParsedSyntax.stmt_annot list> stmts_term
+%start <ParserUtil.ParsedSyntax.cmodule> cmodule
+%start <ParserUtil.ParsedSyntax.library> lmodule
 
 %%
 

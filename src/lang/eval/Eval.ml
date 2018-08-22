@@ -211,7 +211,7 @@ and try_apply_as_type_closure v arg_type =
       fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)
 
 
-open EvalContract
+open EvalSyntax
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla statemnts   *)
 (*******************************************************)

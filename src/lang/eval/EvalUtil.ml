@@ -268,5 +268,5 @@ end
 (*****************************************************)
 
 open ParserUtil
-module EvalContract = Contract (ParserRep) (ParserRep)
+module EvalSyntax = ScillaSyntax (ParserRep) (ParserRep)
     

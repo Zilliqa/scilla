@@ -32,8 +32,8 @@ let () =
   match FrontEndParser.parse_file ScillaParser.exps filename with
   | Some [e] ->
       (* Since this is not a contract, we have no in-contract lib defined. *)
-      let clib = { TypeChecker.Typechecker_Contracts.UntypedContract.lname = asId "dummy";
-                   TypeChecker.Typechecker_Contracts.UntypedContract.lentries = [] } in
+      let clib = { TypeChecker.ScillaTypechecker.UntypedSyntax.lname = asId "dummy";
+                   TypeChecker.ScillaTypechecker.UntypedSyntax.lentries = [] } in
       (* This is an auxiliary executable, it's second argument must
        * have a list of stdlib dirs, so note that down. *)
       add_cmd_stdlib ();

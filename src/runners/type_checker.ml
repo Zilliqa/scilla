@@ -31,7 +31,7 @@ open MonadUtil
 module SimpleTEnv = MakeTEnv(PlainTypes) (ParserRep)
 open SimpleTEnv
 
-open TypeChecker.Typechecker_Contracts
+open TypeChecker.ScillaTypechecker
     
 (* Check that the expression parses *)
 let check_parsing filename = 

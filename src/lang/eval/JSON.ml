@@ -427,7 +427,7 @@ let get_json_data filename  =
 end
 
 module ContractInfo = struct
-  open EvalUtil.EvalContract
+  open EvalUtil.EvalSyntax
          
   let get_string (contr : contract) =
     (* 1. contract name *)

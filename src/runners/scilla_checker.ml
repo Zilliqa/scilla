@@ -24,7 +24,7 @@ open MonadUtil
 open Result.Let_syntax
 open RunnerUtil
 
-open TypeChecker.Typechecker_Contracts
+open TypeChecker.ScillaTypechecker
 
 (* Check that the module parses *)
 let check_parsing ctr = 

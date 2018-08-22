@@ -27,7 +27,7 @@ open FrontEndParser
 (***********************************************************)
 
 (* TODO: Split this file into separate parsing and typechecking, and parameterize in the same way as the typechecker *)
-open ParsedContract
+open ParsedSyntax
 
 (* Folding over natural numbers *)
 module NatRec = struct

@@ -269,7 +269,7 @@ end
 (*          Annotated scilla syntax                    *)
 (*******************************************************)
 
-module Contract (SR : Rep) (ER : Rep) = struct
+module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
   (*******************************************************)
   (*                   Statements                        *)

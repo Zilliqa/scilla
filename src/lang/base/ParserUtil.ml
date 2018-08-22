@@ -38,4 +38,4 @@ end
 (*                    Contracts                        *)
 (*******************************************************)
 
-module ParsedContract = Contract (ParserRep) (ParserRep)
+module ParsedSyntax = ScillaSyntax (ParserRep) (ParserRep)
