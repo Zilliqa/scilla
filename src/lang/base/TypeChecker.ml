@@ -28,200 +28,15 @@ open Recursion
 open ContractUtil
 open Utils
     
-(* TODO: This dependency should be removed once types annotations are available in the AST *)
-open PatternChecker
-
 (* Instantiated the type environment *)
 module SimpleTEnv = MakeTEnv(PlainTypes)(ParserRep)
-open SimpleTEnv
 
 (**************************************************************)
 (*             Auxiliary functions for typing                 *)
 (**************************************************************)
 
-(* Lift 'rep ident to (inferred_type * 'rep) ident *)
-let add_type_to_ident i typ =
-  match i with
-  | Ident (name, rep) -> Ident (name, (typ, rep))
 
-(* Given a scrutinee type and a pattern,
-   produce a list of ident -> type mappings for 
-   all variables bound by the pattern *)
-let assign_types_for_pattern sctyp pattern =
-  let rec go atyp tlist p = match p with
-    | Wildcard -> pure (Wildcard, tlist)
-    | Binder x -> pure @@ (Binder (add_type_to_ident x (mk_qual_tp atyp)), (x, atyp) :: tlist)
-    | Constructor (cn, ps) ->
-        let%bind arg_types = constr_pattern_arg_types atyp cn in
-        let plen = List.length arg_types in
-        let alen = List.length ps in
-        let%bind _ = validate_param_length cn plen alen in
-        let tps_pts = List.zip_exn arg_types ps in
-        let%bind (typed_ps, tps) =
-          foldrM ~init:([], tlist) tps_pts
-            ~f:(fun (ps, ts) (t, pt) ->
-                let%bind (p, tss) = go t ts pt in
-                pure @@ (p :: ps, tss)) in
-        pure @@ (Constructor (cn, typed_ps), tps)
-  in go sctyp [] pattern
 
-(**************************************************************)
-(*                   Typing expressions                       *)
-(**************************************************************)
-
-(* TODO: Check if the type is well-formed: support type variables *)
-let rec type_expr tenv (erep : 'rep expr_annot) get_loc =
-  let (e, rep) = erep in
-  match e with
-  | Literal l ->
-      let%bind lt = literal_type l in
-      pure @@ (Literal l, (mk_qual_tp lt, rep))
-  | Var i ->
-      let%bind r = TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_rep i)) in
-      let typ = rr_typ r in
-      pure @@ (Var (add_type_to_ident i typ), (typ, rep))
-  |  Fun (arg, t, body) ->
-      wrap_err e get_rep @@ 
-      let%bind _ = TEnv.is_wf_type tenv t in
-      let tenv' = TEnv.addT (TEnv.copy tenv) arg t in
-      let%bind (_, (bt, _)) as b = type_expr tenv' body get_loc in
-      let typed_arg = add_type_to_ident arg (mk_qual_tp t) in
-      pure @@ (Fun (typed_arg, t, b), (mk_qual_tp (FunType (t, bt.tp)), rep))
-  | App (f, actuals) ->
-      wrap_err e  get_rep @@ 
-      let%bind fres = TEnv.resolveT tenv (get_id f) ~lopt:(Some (get_rep f)) in
-      let%bind (typed_actuals, apptyp) = app_type tenv (rr_typ fres).tp actuals in
-      let typed_f = add_type_to_ident f (rr_typ fres) in
-      pure @@ (App (typed_f, typed_actuals), (apptyp, rep))
-  | Builtin (i, actuals) ->
-      wrap_err e  get_rep @@ 
-      let%bind (targs, typed_actuals) = type_actuals tenv actuals in
-      let%bind (_, ret_typ, _) = BuiltInDictionary.find_builtin_op i targs in
-      let%bind _ = TEnv.is_wf_type tenv ret_typ in
-      let q_ret_typ = mk_qual_tp ret_typ in
-      pure @@ (Builtin (add_type_to_ident i q_ret_typ, typed_actuals), (q_ret_typ, rep))
-  | Let (i, topt, lhs, rhs) ->
-      (* Poor man's error reporting *)
-      let%bind (_, (ityp, _)) as checked_lhs = wrap_err e  get_rep @@ type_expr tenv lhs get_loc in
-      let tenv' = TEnv.addT (TEnv.copy tenv) i ityp.tp in
-      let typed_i = add_type_to_ident i ityp in
-      let%bind (_, (rhstyp, _)) as checked_rhs = type_expr tenv' rhs get_loc in
-      pure @@ (Let (typed_i, topt, checked_lhs, checked_rhs), (rhstyp, rep))
-  | Constr (cname, ts, actuals) ->
-      let%bind _ = mapM ts ~f:(TEnv.is_wf_type tenv) in
-      let open Datatypes.DataTypeDictionary in 
-      let%bind (_, constr) = lookup_constructor cname in
-      let alen = List.length actuals in
-      if (constr.arity <> alen)
-      then fail @@ sprintf
-          "Constructor %s expects %d arguments, but got %d."
-          cname constr.arity alen
-      else
-        let%bind ftyp = elab_constr_type cname ts in
-        (* Now type-check as a function application *)
-        let%bind (typed_actuals, apptyp) = app_type tenv ftyp actuals in
-        pure @@ (Constr (cname, ts, typed_actuals), (apptyp, rep))
-  | MatchExpr (x, clauses) ->
-      if List.is_empty clauses
-      then fail @@ sprintf
-          "List of pattern matching clauses is empty:\n%s" (pp_expr e)
-      else
-        let%bind sctyp = TEnv.resolveT tenv (get_id x)
-            ~lopt:(Some (get_rep x)) in
-        let sct = (rr_typ sctyp).tp in
-        let msg = sprintf " of type %s" (pp_typ sct) in
-        wrap_err e  get_rep ~opt:msg (
-          let%bind typed_clauses = mapM clauses ~f:(fun (ptrn, ex) ->
-              type_check_match_branch tenv sct ptrn ex get_loc) in
-          let cl_types = List.map typed_clauses ~f:(fun (_, (_, (t, _))) -> t) in
-          let%bind _ =
-            assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
-          (* TODO: Move the PM checks to separate phase once type annotations are available in AST *)
-          let%bind _ = pm_check sct clauses in
-          (* Return the first type since all they are the same *)
-          pure @@ (MatchExpr (add_type_to_ident x (rr_typ sctyp), typed_clauses), (List.hd_exn cl_types, rep))
-        )
-  | Fixpoint (f, t, body) ->
-      wrap_err e get_rep @@ 
-      let tenv' = TEnv.addT (TEnv.copy tenv) f t in
-      let%bind (_, (bt, _)) as typed_b = type_expr tenv' body get_loc in
-      let%bind _ = assert_type_equiv t bt.tp in
-      pure @@ (Fixpoint (add_type_to_ident f (mk_qual_tp t), t, typed_b), (mk_qual_tp t, rep))
-  | TFun (tvar, body) ->
-      let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
-      let%bind (_, (bt, _)) as typed_b = type_expr tenv' body get_loc in
-      let typed_tvar = add_type_to_ident tvar bt in
-      pure @@ (TFun (typed_tvar, typed_b), (mk_qual_tp (PolyFun ((get_id tvar), bt.tp)), rep))
-  | TApp (tf, arg_types) ->
-      let%bind _ = mapM arg_types ~f:(TEnv.is_wf_type tenv) in
-      let%bind tfres = TEnv.resolveT tenv (get_id tf)
-          ~lopt:(Some (get_rep tf)) in
-      let tf_rr = rr_typ tfres in
-      let tftyp = tf_rr.tp in
-      let%bind res_type = elab_tfun_with_args tftyp arg_types in
-      let%bind _ = TEnv.is_wf_type tenv res_type in
-      pure @@ (TApp (add_type_to_ident tf tf_rr, arg_types), (mk_qual_tp res_type, rep))
-  | Message bs ->
-      let open PrimTypes in 
-      let payload_type pld =
-        (match pld with
-         | MTag _ as m -> pure @@ m
-         | MLit l as m ->
-             let%bind _ = type_expr tenv (Literal l, rep) get_loc 
-             in pure @@ m
-         | MVar i ->
-             let%bind r = TEnv.resolveT tenv (get_id i)
-                 ~lopt:(Some (get_rep i)) in
-             let t = rr_typ r in
-             let rtp = t.tp in
-             if is_storable_type rtp
-             then pure @@ MVar (add_type_to_ident i t)
-             else fail @@ sprintf
-                 "Cannot send values of type %s." (pp_typ rtp))
-      in
-      let%bind typed_bs =
-        (* Make sure we resolve all the payload *)
-        mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ payload_type pld)
-      in
-      pure @@ (Message typed_bs, (mk_qual_tp @@ msg_typ, rep))
-
-and app_type tenv ftyp actuals =
-  (* Type-check function application *)  
-  let%bind _ = TEnv.is_wf_type tenv ftyp in
-  let%bind (targs, typed_actuals) = type_actuals tenv actuals in
-  let%bind res_type = fun_type_applies ftyp targs in
-  let%bind _ = TEnv.is_wf_type tenv res_type in
-  pure @@ (typed_actuals, mk_qual_tp res_type)
-
-and type_check_match_branch tenv styp ptrn e get_loc =
-  let%bind (new_p, new_typings) = assign_types_for_pattern styp ptrn in
-  let tenv' = TEnv.addTs (TEnv.copy tenv) new_typings in
-  let%bind typed_e = type_expr tenv' e get_loc in
-  pure @@ (new_p, typed_e)
-
-and type_actuals tenv actuals =
-  let%bind tresults = mapM actuals
-      ~f:(fun arg -> TEnv.resolveT tenv (get_id arg)
-             ~lopt:(Some (get_rep arg))) in
-  let tqargs = List.map tresults ~f:rr_typ in
-  let targs = List.map tqargs ~f:(fun rr -> rr.tp) in
-  let actuals_with_types =
-    match List.zip actuals tqargs with
-    | Some l -> l
-    | None -> raise (InternalError "Different number of actuals and Types of actuals")  in
-  let typed_actuals = List.map actuals_with_types ~f:(fun (a, t) -> add_type_to_ident a t) in
-  pure @@ (targs, typed_actuals)
-
-(*****************************************************************)
-(*               Blockchain component typing                     *)
-(*****************************************************************)
-
-let bc_type_env =
-  let open SimpleTEnv in
-  let open PrimTypes in 
-  let bc_elements =
-    [(mk_ident TypeUtil.blocknum_name, bnum_typ)] in
-  TEnv.addTs (TEnv.copy TEnv.mk) bc_elements
     
 
 (*****************************************************************)
@@ -252,44 +67,274 @@ module ScillaTypechecker
   (****************************************************************)
   (*                  Better error reporting                      *)
   (****************************************************************)
+  let get_failure_msg erep opt =
+    let (e, rep) = erep in
+    let locstr = get_loc_str (ER.get_loc rep) in
+    match e with
+    | Literal _ ->
+        sprintf "[%s] Type error in literal.\n"
+          locstr
+    | Var i ->
+        sprintf "[%s] Type error in variable `%s`:\n"
+          locstr (get_id i)
+    | Let (i, _, _, _) ->
+        sprintf "[%s] Type error in the initialiser of `%s`:\n"
+          locstr (get_id i)
+    | Message _ ->
+        sprintf "[%s] Type error in message.\n"
+          locstr
+    | Fun (f, _, _) ->
+        sprintf "[%s] Type error in function `%s`:\n"
+          locstr (get_id f)
+    | App (f, _) ->
+        sprintf "[%s] Type error in application of `%s`:\n"
+          locstr (get_id f)
+    | Constr (s, _, _) ->
+        sprintf "[%s] Type error in constructor `%s`:\n"
+          locstr s
+    | MatchExpr (x, _) ->
+        sprintf
+          "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
+          locstr (get_id x) opt 
+    | Builtin (i, _) ->
+        sprintf "[%s] Type error in built-in application of `%s`:\n"
+          locstr (get_id i)
+    | TApp (tf, _) ->
+        sprintf "[%s] Type error in type application of `%s`:\n"
+          locstr (get_id tf)
+    | TFun (tf, _) ->
+        sprintf "[%s] Type error in type function `%s`:\n"
+          locstr (get_id tf)
+    | Fixpoint (f, _, _) ->
+        sprintf "Type error in fixpoint application with an argument `%s`:\n"
+          (get_id f)              
+
   let get_failure_msg_stmt srep opt =
     let (s, rep) = srep in
+    let locstr = get_loc_str (SR.get_loc rep) in
     match s with
     | Load (x, f) ->
         sprintf "[%s] Type error in reading value of `%s` into `%s`:\n"
-          (get_loc_str (SR.get_loc rep)) (get_id f) (get_id x)
+          locstr (get_id f) (get_id x)
     | Store (f, r) ->
         sprintf "[%s] Type error in storing value of `%s` into the field `%s`:\n"
-          (get_loc_str (SR.get_loc rep)) (get_id r) (get_id f)
+          locstr (get_id r) (get_id f)
     | Bind (x, _) ->
         sprintf "[%s] Type error in the binding to into `%s`:\n"
-          (get_loc_str (SR.get_loc rep)) (get_id x)
+          locstr (get_id x)
     | MatchStmt (x, _) ->
         sprintf
           "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
-          (get_loc_str (SR.get_loc rep)) (get_id x) opt 
+          locstr (get_id x) opt 
     | ReadFromBC (x, _) ->
         sprintf "[%s] Error in reading from blockchain state into `%s`:\n"
-          (get_loc_str (SR.get_loc rep)) (get_id x)
+          locstr (get_id x)
     | AcceptPayment ->
         sprintf "[%s] Error in accepting payment\n"
-          (get_loc_str (SR.get_loc rep))
+          locstr
     | SendMsgs i ->
         sprintf "[%s] Error in sending messages `%s`:\n"
-          (get_loc_str (SR.get_loc rep)) (get_id i)
+          locstr (get_id i)
     | CreateEvnt (s, _) ->
         sprintf "[%s] Error in create event `%s`:\n"
-          (get_loc_str (SR.get_loc rep)) s
+          locstr s
     | Throw i ->
         sprintf "[%s] Error in throw of '%s':\n"
-          (get_loc_str (SR.get_loc rep)) (get_id i)
+          locstr (get_id i)
 
   let wrap_with_info msg res = match res with
     | Ok _ -> res
     | Error msg' -> Error (sprintf "%s%s" msg msg')
 
+  let wrap_err e ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt)
+
   let wrap_serr s ?opt:(opt = "") =
     wrap_with_info (get_failure_msg_stmt s opt)
+
+  (*****************************************************************)
+  (*               Blockchain component typing                     *)
+  (*****************************************************************)
+      
+  let bc_type_env =
+    let open PrimTypes in 
+    let bc_elements =
+      [(mk_ident TypeUtil.blocknum_name, bnum_typ)] in
+    TEnv.addTs (TEnv.copy TEnv.mk) bc_elements
+      
+  (**************************************************************)
+  (*             Auxiliary functions for typing                 *)
+  (**************************************************************)
+
+  (* Lift 'rep ident to (inferred_type * 'rep) ident *)
+  let add_type_to_ident i typ =
+    match i with
+    | Ident (name, rep) -> Ident (name, ETR.mk_rep rep typ)
+
+  (* Given a scrutinee type and a pattern,
+     produce a list of ident -> type mappings for 
+     all variables bound by the pattern *)
+  let assign_types_for_pattern sctyp pattern =
+    let rec go atyp tlist p = match p with
+      | Wildcard -> pure (TypedSyntax.Wildcard, tlist)
+      | Binder x -> pure @@ (TypedSyntax.Binder (add_type_to_ident x (mk_qual_tp atyp)), (x, atyp) :: tlist)
+      | Constructor (cn, ps) ->
+          let%bind arg_types = constr_pattern_arg_types atyp cn in
+          let plen = List.length arg_types in
+          let alen = List.length ps in
+          let%bind _ = validate_param_length cn plen alen in
+          let tps_pts = List.zip_exn arg_types ps in
+          let%bind (typed_ps, tps) =
+            foldrM ~init:([], tlist) tps_pts
+              ~f:(fun (ps, ts) (t, pt) ->
+                  let%bind (p, tss) = go t ts pt in
+                  pure @@ (p :: ps, tss)) in
+          pure @@ (TypedSyntax.Constructor (cn, typed_ps), tps)
+    in go sctyp [] pattern
+
+  (**************************************************************)
+  (*                   Typing expressions                       *)
+  (**************************************************************)
+
+  (* TODO: Check if the type is well-formed: support type variables *)
+  let rec type_expr tenv erep =
+    let (e, rep) = erep in
+    match e with
+    | Literal l ->
+        let%bind lt = literal_type l in
+        pure @@ (TypedSyntax.Literal l, (mk_qual_tp lt, rep))
+    | Var i ->
+        let%bind r = TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_rep i)) in
+        let typ = rr_typ r in
+        pure @@ (TypedSyntax.Var (add_type_to_ident i typ), (typ, rep))
+    |  Fun (arg, t, body) ->
+        wrap_err erep @@ 
+        let%bind _ = TEnv.is_wf_type tenv t in
+        let tenv' = TEnv.addT (TEnv.copy tenv) arg t in
+        let%bind (_, (bt, _)) as b = type_expr tenv' body in
+        let typed_arg = add_type_to_ident arg (mk_qual_tp t) in
+        pure @@ (TypedSyntax.Fun (typed_arg, t, b), (mk_qual_tp (FunType (t, bt.tp)), rep))
+    | App (f, actuals) ->
+        wrap_err erep @@ 
+        let%bind fres = TEnv.resolveT tenv (get_id f) ~lopt:(Some (get_rep f)) in
+        let%bind (typed_actuals, apptyp) = app_type tenv (rr_typ fres).tp actuals in
+        let typed_f = add_type_to_ident f (rr_typ fres) in
+        pure @@ (TypedSyntax.App (typed_f, typed_actuals), (apptyp, rep))
+    | Builtin (i, actuals) ->
+        wrap_err erep @@ 
+        let%bind (targs, typed_actuals) = type_actuals tenv actuals in
+        let%bind (_, ret_typ, _) = BuiltInDictionary.find_builtin_op i targs in
+        let%bind _ = TEnv.is_wf_type tenv ret_typ in
+        let q_ret_typ = mk_qual_tp ret_typ in
+        pure @@ (TypedSyntax.Builtin (add_type_to_ident i q_ret_typ, typed_actuals), (q_ret_typ, rep))
+    | Let (i, topt, lhs, rhs) ->
+        (* Poor man's error reporting *)
+        let%bind (_, (ityp, _)) as checked_lhs = wrap_err erep @@ type_expr tenv lhs in
+        let tenv' = TEnv.addT (TEnv.copy tenv) i ityp.tp in
+        let typed_i = add_type_to_ident i ityp in
+        let%bind (_, (rhstyp, _)) as checked_rhs = type_expr tenv' rhs in
+        pure @@ (TypedSyntax.Let (typed_i, topt, checked_lhs, checked_rhs), (rhstyp, rep))
+    | Constr (cname, ts, actuals) ->
+        let%bind _ = mapM ts ~f:(TEnv.is_wf_type tenv) in
+        let open Datatypes.DataTypeDictionary in 
+        let%bind (_, constr) = lookup_constructor cname in
+        let alen = List.length actuals in
+        if (constr.arity <> alen)
+        then fail @@ sprintf
+            "Constructor %s expects %d arguments, but got %d."
+            cname constr.arity alen
+        else
+          let%bind ftyp = elab_constr_type cname ts in
+          (* Now type-check as a function application *)
+          let%bind (typed_actuals, apptyp) = app_type tenv ftyp actuals in
+          pure @@ (TypedSyntax.Constr (cname, ts, typed_actuals), (apptyp, rep))
+    | MatchExpr (x, clauses) ->
+        if List.is_empty clauses
+        then fail @@ sprintf
+            "List of pattern matching clauses is empty:\n%s" (pp_expr e)
+        else
+          let%bind sctyp = TEnv.resolveT tenv (get_id x)
+              ~lopt:(Some (get_rep x)) in
+          let sct = (rr_typ sctyp).tp in
+          let msg = sprintf " of type %s" (pp_typ sct) in
+          wrap_err erep ~opt:msg (
+            let%bind typed_clauses = mapM clauses ~f:(fun (ptrn, ex) ->
+                type_check_match_branch tenv sct ptrn ex) in
+            let cl_types = List.map typed_clauses ~f:(fun (_, (_, (t, _))) -> t) in
+            let%bind _ =
+              assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
+            (* Return the first type since all they are the same *)
+            pure @@ (TypedSyntax.MatchExpr (add_type_to_ident x (rr_typ sctyp), typed_clauses), (List.hd_exn cl_types, rep))
+          )
+    | Fixpoint (f, t, body) ->
+        wrap_err erep @@ 
+        let tenv' = TEnv.addT (TEnv.copy tenv) f t in
+        let%bind (_, (bt, _)) as typed_b = type_expr tenv' body in
+        let%bind _ = assert_type_equiv t bt.tp in
+        pure @@ (TypedSyntax.Fixpoint (add_type_to_ident f (mk_qual_tp t), t, typed_b), (mk_qual_tp t, rep))
+    | TFun (tvar, body) ->
+        let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
+        let%bind (_, (bt, _)) as typed_b = type_expr tenv' body in
+        let typed_tvar = add_type_to_ident tvar bt in
+        pure @@ (TypedSyntax.TFun (typed_tvar, typed_b), (mk_qual_tp (PolyFun ((get_id tvar), bt.tp)), rep))
+    | TApp (tf, arg_types) ->
+        let%bind _ = mapM arg_types ~f:(TEnv.is_wf_type tenv) in
+        let%bind tfres = TEnv.resolveT tenv (get_id tf)
+            ~lopt:(Some (get_rep tf)) in
+        let tf_rr = rr_typ tfres in
+        let tftyp = tf_rr.tp in
+        let%bind res_type = elab_tfun_with_args tftyp arg_types in
+        let%bind _ = TEnv.is_wf_type tenv res_type in
+        pure @@ (TypedSyntax.TApp (add_type_to_ident tf tf_rr, arg_types), (mk_qual_tp res_type, rep))
+    | Message bs ->
+        let open PrimTypes in 
+        let payload_type pld =
+          (match pld with
+           | MTag m -> pure @@ TypedSyntax.MTag m
+           | MLit l ->
+               let%bind _ = type_expr tenv (Literal l, rep) 
+               in pure @@ TypedSyntax.MLit l
+           | MVar i ->
+               let%bind r = TEnv.resolveT tenv (get_id i)
+                   ~lopt:(Some (get_rep i)) in
+               let t = rr_typ r in
+               let rtp = t.tp in
+               if is_storable_type rtp
+               then pure @@ TypedSyntax.MVar (add_type_to_ident i t)
+               else fail @@ sprintf
+                   "Cannot send values of type %s." (pp_typ rtp))
+        in
+        let%bind typed_bs =
+          (* Make sure we resolve all the payload *)
+          mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ payload_type pld)
+        in
+        pure @@ (TypedSyntax.Message typed_bs, (mk_qual_tp @@ msg_typ, rep))
+
+  and app_type tenv ftyp actuals =
+    (* Type-check function application *)  
+    let%bind _ = TEnv.is_wf_type tenv ftyp in
+    let%bind (targs, typed_actuals) = type_actuals tenv actuals in
+    let%bind res_type = fun_type_applies ftyp targs in
+    let%bind _ = TEnv.is_wf_type tenv res_type in
+    pure @@ (typed_actuals, mk_qual_tp res_type)
+
+  and type_check_match_branch tenv styp ptrn e =
+    let%bind (new_p, new_typings) = assign_types_for_pattern styp ptrn in
+    let tenv' = TEnv.addTs (TEnv.copy tenv) new_typings in
+    let%bind typed_e = type_expr tenv' e in
+    pure @@ (new_p, typed_e)
+
+  and type_actuals tenv actuals =
+    let%bind tresults = mapM actuals
+        ~f:(fun arg -> TEnv.resolveT tenv (get_id arg)
+               ~lopt:(Some (get_rep arg))) in
+    let tqargs = List.map tresults ~f:rr_typ in
+    let targs = List.map tqargs ~f:(fun rr -> rr.tp) in
+    let actuals_with_types =
+      match List.zip actuals tqargs with
+      | Some l -> l
+      | None -> raise (InternalError "Different number of actuals and Types of actuals")  in
+    let typed_actuals = List.map actuals_with_types ~f:(fun (a, t) -> add_type_to_ident a t) in
+    pure @@ (targs, typed_actuals)
 
   (**************************************************************)
   (*                   Typing statements                        *)
@@ -342,7 +387,7 @@ module ScillaTypechecker
                let typed_r = add_type_to_ident r r_type in
                pure @@ add_stmt_to_stmts_env (TypedSyntax.Store (typed_f, typed_r), rep) checked_stmts
          | Bind (x, e) ->
-             let%bind (_, (ityp, _)) as checked_e = wrap_serr stmt @@ type_expr env.pure e get_loc in
+             let%bind (_, (ityp, _)) as checked_e = wrap_serr stmt @@ type_expr env.pure e in
              let pure' = TEnv.addT (TEnv.copy env.pure) x ityp.tp in
              let env' = {env with pure = pure'} in
              let%bind checked_stmts = type_stmts env' sts get_loc in
@@ -360,7 +405,7 @@ module ScillaTypechecker
          | MatchStmt (x, clauses) ->
              if List.is_empty clauses
              then wrap_serr stmt @@ fail @@ sprintf
-                 "List of pattern matching clauses is empty:\n%s" (stmt_str stmt)
+                 "List of pattern matching clauses is empty:\n%s" (pp_stmt s)
              else
                let%bind sctyp = TEnv.resolveT env.pure (get_id x)
                    ~lopt:(Some (get_rep x)) in
@@ -397,18 +442,17 @@ module ScillaTypechecker
              let typed_i = add_type_to_ident i i_type in
              let%bind checked_stmts = type_stmts env sts get_loc in
              pure @@ add_stmt_to_stmts_env (TypedSyntax.CreateEvnt (st, typed_i), rep) checked_stmts
-         | _ ->
+         | Throw _ ->
              fail @@ sprintf
-               "Type-checking the statement %s is not supported yet."
-               (stmt_str stmt)
+               "Type-checking of Throw statements is not supported yet."
         )
+        
   and type_match_stmt_branch env styp ptrn sts get_loc =
     let%bind (new_p, new_typings) = assign_types_for_pattern styp ptrn in
     let pure' = TEnv.addTs (TEnv.copy env.pure) new_typings in
     let env' = {env with pure = pure'} in
     let%bind (new_stmts, _) = type_stmts env' sts get_loc in
     pure @@ (new_p, new_stmts)
-
 
   let add_type_to_id id t : ETR.rep ident =
     match id with
@@ -435,7 +479,7 @@ module ScillaTypechecker
 
   (* This is a really good sanity check: 
      it should always succeed! *)
-  let type_recursion_principles get_loc =
+  let type_recursion_principles =
     let recs = List.map recursion_principles
         ~f:(fun ({lname = a; lexp = e}, c) -> (a, e, c)) in
     let env0 = TEnv.copy TEnv.mk in 
@@ -444,7 +488,7 @@ module ScillaTypechecker
           wrap_with_info
             (sprintf "Type error when checking recursion primitive %s:\n"
                (get_id rn)) @@
-          let%bind (_, (ar, _)) = type_expr env0 body get_loc in
+          let%bind (_, (ar, _)) = type_expr env0 body in
           let actual = ar.tp in
           let%bind _ = assert_type_equiv expected actual in
           pure (rn, actual))
@@ -460,7 +504,7 @@ module ScillaTypechecker
                 "[%s] Type error in field %s:\n"
                 (get_loc_str (ER.get_loc (get_rep fn))) (get_id fn) in
             wrap_with_info msg @@
-            let%bind (_, (ar, _)) as typed_expr = type_expr tenv fe ER.get_loc in
+            let%bind (_, (ar, _)) as typed_expr = type_expr tenv fe in
             let actual = ar.tp in
             let%bind _ = assert_type_equiv ft actual in
             let typed_fs = add_type_to_id fn ar in
@@ -475,7 +519,7 @@ module ScillaTypechecker
   (**************************************************************)
       
   let typed_rec_libs =
-    let%bind _ = type_recursion_principles ER.get_loc in      
+    let%bind _ = type_recursion_principles in
     let recs = List.map recursion_principles
         ~f:(fun ({lname = a; _}, c) -> (a, c)) in
     let env = TEnv.mk in
@@ -487,7 +531,7 @@ module ScillaTypechecker
           let msg = sprintf
               "[%s] Type error in library %s:\n"
               (get_loc_str (ER.get_loc (get_rep ln))) (get_id ln) in
-          let%bind (_, (tr, _)) as typed_e = wrap_with_info msg (type_expr env le ER.get_loc ) in
+          let%bind (_, (tr, _)) as typed_e = wrap_with_info msg (type_expr env le) in
           let typed_ln = add_type_to_id ln tr in
           pure @@ ({ TypedSyntax.lname = typed_ln;
                      TypedSyntax.lexp = typed_e }:: acc,

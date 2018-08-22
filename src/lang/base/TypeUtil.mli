@@ -21,7 +21,6 @@ open Syntax
 
 val subst_type_in_type: string -> typ -> typ -> typ
 val subst_type_in_literal: 'a ident -> typ -> literal -> literal
-val subst_type_in_expr: 'a ident -> typ -> 'a expr_annot -> 'a expr_annot
 
 (* An inferred type with possible qualifiers *)
 type 'rep inferred_type = {
@@ -128,13 +127,6 @@ val constr_pattern_arg_types : typ -> string -> (typ list, string) result
 val validate_param_length : string -> int -> int -> (unit, string) result
 
 val assert_all_same_type : typ list -> (unit, string) result
-
-(****************************************************************)
-(*                  Better error reporting                      *)
-(****************************************************************)
-
-val wrap_err : 'rep expr -> ('rep ident -> loc) -> ?opt:string ->
-  ('a, string) result -> ('a, string) result
 
 (****************************************************************)
 (*                  Built-in typed entities                     *)

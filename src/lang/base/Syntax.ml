@@ -198,56 +198,6 @@ let pp_named_literal_list nls =
 
 
 (*******************************************************)
-(*                   Expressions                       *)
-(*******************************************************)
-
-type 'rep payload =
-  | MTag of string 
-  | MLit of literal
-  | MVar of 'rep ident
-[@@deriving sexp]
-
-type 'rep pattern =
-  | Wildcard
-  | Binder of 'rep ident
-  | Constructor of string * ('rep pattern list)
-[@@deriving sexp]
-
-type 'rep expr_annot = 'rep expr * 'rep
-and 'rep expr =
-  | Literal of literal
-  | Var of 'rep ident
-  | Let of 'rep ident * typ option * 'rep expr_annot * 'rep expr_annot
-  | Message of (string * 'rep payload) list
-  | Fun of 'rep ident * typ * 'rep expr_annot
-  | App of 'rep ident * 'rep ident list
-  | Constr of string * typ list * 'rep ident list
-  | MatchExpr of 'rep ident * ('rep pattern * 'rep expr_annot) list
-  | Builtin of 'rep ident * 'rep ident list 
-  (* Advanced features: to be added in Scilla 0.2 *)                 
-  | TFun of 'rep ident * 'rep expr_annot
-  | TApp of 'rep ident * typ list
-  (* Fixpoint combinator: used to implement recursion principles *)                 
-  | Fixpoint of 'rep ident * typ * 'rep expr_annot
-[@@deriving sexp]
-
-let expr_loc (e : 'rep expr) : loc option =
-  match e with
-  | Fun (i, _, _) | App (i, _) | Builtin (i, _)
-  | MatchExpr (i, _) | TFun (i, _) | TApp (i, _) -> 
-    let l = get_rep i in
-      if (l.cnum <> -1) then Some l else None
-  | _ -> None
-
-(* SExp printing for Expr for structural printing. *)
-let spp_expr e =
-  sexp_of_expr sexp_of_loc e |> Sexplib.Sexp.to_string
-
-(* TODO: add pretty printing for expressions. *)
-let pp_expr e =
-  spp_expr e
-
-(*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
 
@@ -271,6 +221,56 @@ end
 
 module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
+(*******************************************************)
+(*                   Expressions                       *)
+(*******************************************************)
+
+  type payload =
+    | MTag of string 
+    | MLit of literal
+    | MVar of ER.rep ident
+  [@@deriving sexp]
+
+  type pattern =
+    | Wildcard
+    | Binder of ER.rep ident
+    | Constructor of string * (pattern list)
+  [@@deriving sexp]
+
+  type expr_annot = expr * ER.rep
+  and expr =
+    | Literal of literal
+    | Var of ER.rep ident
+    | Let of ER.rep ident * typ option * expr_annot * expr_annot
+    | Message of (string * payload) list
+    | Fun of ER.rep ident * typ * expr_annot
+    | App of ER.rep ident * ER.rep ident list
+    | Constr of string * typ list * ER.rep ident list
+    | MatchExpr of ER.rep ident * (pattern * expr_annot) list
+    | Builtin of ER.rep ident * ER.rep ident list 
+    (* Advanced features: to be added in Scilla 0.2 *)                 
+    | TFun of ER.rep ident * expr_annot
+    | TApp of ER.rep ident * typ list
+    (* Fixpoint combinator: used to implement recursion principles *)                 
+    | Fixpoint of ER.rep ident * typ * expr_annot
+  [@@deriving sexp]
+
+  let expr_rep erep = snd erep
+      
+  let expr_loc erep =
+    let l = ER.get_loc (expr_rep erep) in
+    if l.cnum <> -1
+    then Some l
+    else None
+
+  (* SExp printing for Expr for structural printing. *)
+  let spp_expr e =
+    sexp_of_expr e |> Sexplib.Sexp.to_string
+
+  (* TODO: add pretty printing for expressions. *)
+  let pp_expr e =
+    spp_expr e
+
   (*******************************************************)
   (*                   Statements                        *)
   (*******************************************************)
@@ -279,8 +279,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   and stmt =
     | Load of ER.rep ident * ER.rep ident
     | Store of ER.rep ident * ER.rep ident
-    | Bind of ER.rep ident * ER.rep expr_annot
-    | MatchStmt of ER.rep ident * (ER.rep pattern * stmt_annot list) list
+    | Bind of ER.rep ident * expr_annot
+    | MatchStmt of ER.rep ident * (pattern * stmt_annot list) list
     | ReadFromBC of ER.rep ident * string
     | AcceptPayment
     | SendMsgs of ER.rep ident
@@ -288,16 +288,16 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Throw of ER.rep ident
   [@@deriving sexp]
   
-  let stmt_str (srep : stmt_annot) =
-    (* TODO: print rep as well? *)
-    let (s, _) = srep in 
-    let sexp = sexp_of_stmt s in
-    Sexplib.Sexp.to_string sexp
-
   let stmt_rep srep = snd srep
   
   let stmt_loc s = SR.get_loc (stmt_rep s)
 
+  let spp_stmt s =
+    sexp_of_stmt s |> Sexplib.Sexp.to_string
+
+  let pp_stmt s =
+    spp_stmt s
+      
   (*******************************************************)
   (*                    Contracts                        *)
   (*******************************************************)
@@ -309,7 +309,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
   type lib_entry =
     { lname : ER.rep ident;
-      lexp  : ER.rep expr_annot }
+      lexp  : expr_annot }
 
   type library =
     { lname : SR.rep ident;
@@ -318,7 +318,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   type contract =
     { cname   : SR.rep ident;
       cparams : (ER.rep ident  * typ) list;
-      cfields : (ER.rep ident * typ * ER.rep expr_annot) list;
+      cfields : (ER.rep ident * typ * expr_annot) list;
       ctrans  : transition list; }
 
   (* Contract module: libary + contract definiton *)

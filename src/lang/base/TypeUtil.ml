@@ -136,6 +136,7 @@ let rec subst_type_in_literal tvar tp l = match l with
 
 
 (* Substitute type for a type variable *)
+(*
 let rec subst_type_in_expr tvar tp (erep : 'rep expr_annot) =
   let (e, rep) = erep in
   match e with
@@ -172,7 +173,8 @@ let rec subst_type_in_expr tvar tp (erep : 'rep expr_annot) =
       let t' = subst_type_in_type' tvar tp t in
       let body' = subst_type_in_expr tvar tp body in
       (Fixpoint (f, t', body'), rep)
-
+*)
+    
 (****************************************************************)
 (*                Inferred types and qualifiers                 *)
 (****************************************************************)
@@ -333,7 +335,7 @@ module MakeTEnv: MakeTEnvFunctor = functor
 end
 
 
-(****************************************************************)
+(***************************************************************)
 (*               Specific instantiations                        *)
 (****************************************************************)
 
@@ -583,38 +585,6 @@ let rec literal_type l =
         if not args_valid
         then fail @@ sprintf "Malformed ADT %s. Arguments do not match expected types" (pp_literal l)
         else pure @@ res
-
-(****************************************************************)
-(*                  Better error reporting                      *)
-(****************************************************************)
-
-let get_failure_msg e opt get_loc = match e with
-  | App (f, _) ->
-      sprintf "[%s] Type error in application of `%s`:\n"
-        (get_loc_str (get_loc f)) (get_id f)
-  | Let (i, _, _, _) ->
-      sprintf "[%s] Type error in the initialiser of `%s`:\n"
-        (get_loc_str (get_loc i)) (get_id i)
-  | MatchExpr (x, _) ->
-      sprintf
-        "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
-        (get_loc_str (get_loc x)) (get_id x) opt 
-  | TApp (tf, _) ->
-      sprintf "[%s] Type error in type application of `%s`:\n"
-        (get_loc_str (get_loc tf)) (get_id tf)
-  | Builtin (i, _) ->
-      sprintf "[%s] Type error in built-in application of `%s`:\n"
-        (get_loc_str (get_loc i)) (get_id i)
-  | Fixpoint (f, _, _) ->
-      sprintf "Type error in fixpoint application with an argument `%s`:\n"
-        (get_id f)              
-  | _ -> ""
-      
-let wrap_with_info msg res = match res with
-  | Ok _ -> res
-  | Error msg' -> Error (sprintf "%s%s" msg msg')
-                      
-let wrap_err e get_loc ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt get_loc)
 
 (*****************************************************************)
 (*               Blockchain component typing                     *)

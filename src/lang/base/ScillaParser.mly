@@ -97,7 +97,7 @@
 (* %nonassoc NEG *)
 %right TARROW
 
-%start <Syntax.loc Syntax.expr_annot list> exps
+%start <ParserUtil.ParsedSyntax.expr_annot list> exps
 %start <Syntax.typ list> types
 %start <ParserUtil.ParsedSyntax.stmt_annot list> stmts_term
 %start <ParserUtil.ParsedSyntax.cmodule> cmodule
