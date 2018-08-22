@@ -19,9 +19,9 @@
 
 open Syntax
 open Core
-open Result.Let_syntax
 open EvalUtil
 open MonadUtil
+open MonadUtil.Let_syntax
 open PatternMatching
 open BuiltIns
 open Stdint
@@ -39,8 +39,8 @@ let reserved_names =
 let pp_result r exclude_names = 
   let enames = List.append exclude_names reserved_names in
   match r with
-  | Error s -> s
-  | Ok (e, env) ->
+  | Error (s, _) -> s
+  | Ok ((e, env), _) ->
       let filter_prelude = fun (k, _) ->
         not (List.mem enames k ~equal:(fun s1 s2 -> s1 = s2))
       in

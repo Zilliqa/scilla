@@ -18,8 +18,8 @@
 
 open Syntax
 open Core
-open Result.Let_syntax
 open MonadUtil
+open MonadUtil.Let_syntax
 open Stdint
 open ContractUtil
 
