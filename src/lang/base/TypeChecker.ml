@@ -543,7 +543,7 @@ module ScillaTypechecker
   (* type library, handling cache as necessary. *)
   let type_library_cache (tenv : TEnv.t) (elib : UntypedContract.library)  =
     (* We are caching TypeEnv = MakeTEnv(PlainTypes)(ER) *)
-    let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) (STR) (ER) (UntypedContract) in
+    let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) (STR) (ER) in
     let open STC in
     (* Check if we have the type info in cache. *)
     match get_lib_tenv_cache tenv elib with
