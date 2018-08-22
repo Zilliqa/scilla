@@ -52,7 +52,7 @@ eval `opam config env`
 The dependencies can be installed via [Homebrew](https://brew.sh/):
 
 ```
-brew install ocaml opam pkg-config libffi
+brew install ocaml opam pkg-config libffi openssl
 opam init
 opam switch -y 4.06.1
 opam install angstrom batteries core cryptokit fileutils hex num oUnit ppx_deriving ppx_deriving_yojson ppx_let ppx_sexp_conv stdint yojson menhir dune ctypes ctypes-foreign
