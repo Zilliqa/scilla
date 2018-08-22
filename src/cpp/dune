@@ -5,5 +5,5 @@
   (libraries ctypes ctypes.foreign cryptokit)
   (cxx_names c_schnorr DataConversion Schnorr Sha3)
   (cxx_flags -std=c++11)
-  (c_flags (-I /usr/local/opt/openssl/include/openssl/))
+  (c_flags (-I/usr/local/opt/openssl/include))
 )
