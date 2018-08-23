@@ -17,6 +17,60 @@
 *)
 
 open Core
+open Result.Let_syntax
+
+(****************************************************************)
+(*               Utilities for the result monad                 *)
+(****************************************************************)
+
+(* Monadic evaluation results *)
+let fail s = Error s
+let pure e = return e
+
+(* Monadic fold-left for error *)
+let rec foldM ~f ~init ls = match ls with
+  | x :: ls' ->
+      let%bind res = f init x in
+      foldM ~f:f ~init:res ls'
+  | [] -> pure init
+
+(* Monadic fold-right for error *)
+let rec foldrM ~f ~init ls = match ls with
+  | x :: ls' ->
+      let%bind rest = foldrM ~f:f ~init:init ls' in
+      f rest x
+  | [] -> pure init
+
+(* Monadic map for error *)
+let rec mapM ~f ls = match ls with
+  | x :: ls' ->
+      (match f x, mapM ~f:f ls' with
+       | Ok z, Ok zs -> Ok (z :: zs)
+       | Error _ as err, _ -> err
+       | _, (Error _ as err) -> err)
+  | [] -> Ok []
+
+(* Try all variants in the list, pick the first successful one *)
+let rec tryM ~f ls ~msg = match ls with
+  | x :: ls' ->
+      (match f x  with
+       | Ok z -> Ok (x, z)
+       | Error _ -> tryM ~f:f ls' ~msg)
+  | [] -> Error msg
+
+let liftPair2 x m = match m with
+  | Ok z -> Ok (x, z)
+  | Error _ as err -> err
+
+let liftPair1 m x = match m with
+  | Ok z -> Ok (z, x)
+  | Error _ as err -> err
+
+(****************************************************************)
+(*           A monad for `Eval` and related utilites            *)
+(****************************************************************)
+
+module EvalMonad = struct
 
 type eval_state = 
   { 
@@ -64,6 +118,10 @@ end)
 let fail s = Error (s, init_eval_state)
 let pure e = Ok (e, init_eval_state)
 let pure_gas e g = Ok (e, { init_eval_state with gas_used = g } )
+let from_result r =
+  match r with
+  | Core.Error s -> fail s
+  | Core.Ok a -> pure a
 
 open Let_syntax
 
@@ -106,3 +164,5 @@ let liftPair2 x m = match m with
 let liftPair1 m x = match m with
   | Ok (z, es) -> Ok ((z, x), es)
   | Error _ as err -> err
+
+end (* module EvalMonad *)

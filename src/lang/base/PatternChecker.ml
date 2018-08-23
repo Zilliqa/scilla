@@ -11,7 +11,7 @@
 open Syntax
 open Core
 open MonadUtil
-open MonadUtil.Let_syntax
+open Result.Let_syntax
 open TypeUtil
 open Datatypes
 open Utils

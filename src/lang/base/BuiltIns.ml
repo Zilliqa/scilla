@@ -22,7 +22,7 @@
 open Syntax
 open Core
 open MonadUtil
-open MonadUtil.Let_syntax
+open Result.Let_syntax
 open Big_int
 open Stdint
 open TypeUtil
@@ -838,10 +838,10 @@ let elab_id = fun t _ -> pure t
 module BuiltInDictionary = struct 
 
   (* Elaborates the operation type based on the arguments types *)
-  type elaborator = typ -> typ list -> (typ, string) eresult      
+  type elaborator = typ -> typ list -> (typ, string) result      
 
   (* Takes the expected type as an argument to elaborate the result *)
-  type built_in_executor = literal list -> typ -> (literal, string) eresult
+  type built_in_executor = literal list -> typ -> (literal, string) result
 
   (* A built-in record type:
      * built-in name

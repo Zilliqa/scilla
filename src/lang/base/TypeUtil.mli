@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open MonadUtil
+open Core
 open Syntax
 
 val subst_type_in_type: string -> typ -> typ -> typ
@@ -58,10 +58,10 @@ module type MakeTEnvFunctor = functor
     (* Add type variable to the environment *)
     val addV : t -> R.rep ident -> t
     (* Check type for well-formedness in the type environment *)
-    val is_wf_type : t -> typ -> (unit, string) eresult
+    val is_wf_type : t -> typ -> (unit, string) result
     (* Resolve the identifier *)    
     val resolveT : ?lopt:(R.rep option) -> t -> string ->
-      (resolve_result, string) eresult
+      (resolve_result, string) result
     (* Copy the environment *)
     val copy : t -> t
     (* Convert to list *)
@@ -76,7 +76,7 @@ end
 module PlainTypes : QualifiedTypes
 module MakeTEnv : MakeTEnvFunctor
 
-val literal_type : literal -> (typ, string) eresult
+val literal_type : literal -> (typ, string) result
 
 (* Useful generic types *)
 val fun_typ : typ -> typ -> typ
@@ -98,13 +98,13 @@ val is_ground_type : typ -> bool
 val type_equiv : typ -> typ -> bool
 val type_equiv_list : typ list -> typ list -> bool
 
-val assert_type_equiv : typ -> typ -> (unit, string) eresult
+val assert_type_equiv : typ -> typ -> (unit, string) result
 
 (* Applying a function type *)
-val fun_type_applies : typ -> typ list -> (typ, string) eresult
+val fun_type_applies : typ -> typ list -> (typ, string) result
 
 (* Applying a type function *)
-val elab_tfun_with_args : typ -> typ list -> (typ, string) eresult
+val elab_tfun_with_args : typ -> typ list -> (typ, string) result
 
 val pp_typ_list : typ list -> string  
 
@@ -116,28 +116,28 @@ val pp_typ_list : typ list -> string
 val apply_type_subst : (string * typ) list -> typ -> typ
 
 (*  Get elaborated type for a constructor and list of type arguments *)    
-val elab_constr_type : string -> typ list -> (typ, string) eresult  
+val elab_constr_type : string -> typ list -> (typ, string) result  
 
 (* For a given instantiated ADT and a construtor name, get type *
    assignemnts. This is the main working horse of type-checking
    pattern-matching. *)    
-val constr_pattern_arg_types : typ -> string -> (typ list, string) eresult  
+val constr_pattern_arg_types : typ -> string -> (typ list, string) result  
 
-val validate_param_length : string -> int -> int -> (unit, string) eresult
+val validate_param_length : string -> int -> int -> (unit, string) result
 
-val assert_all_same_type : typ list -> (unit, string) eresult
+val assert_all_same_type : typ list -> (unit, string) result
 
 (****************************************************************)
 (*                  Better error reporting                      *)
 (****************************************************************)
 
-val wrap_with_info : string -> ('a, string) eresult -> ('a, string) eresult
+val wrap_with_info : string -> ('a, string) result -> ('a, string) result
 
 val wrap_err : 'rep expr -> ('rep ident -> loc) -> ?opt:string ->
-  ('a, string) eresult -> ('a, string) eresult
+  ('a, string) result -> ('a, string) result
 
 val wrap_serr : ('srep, 'erep) stmt -> ('erep ident -> loc) -> ?opt:string ->
-  ('a, string) eresult -> ('a, string) eresult
+  ('a, string) result -> ('a, string) result
 
 (****************************************************************)
 (*                  Built-in typed entities                     *)
