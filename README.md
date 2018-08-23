@@ -5,7 +5,7 @@
 [![Gitter chat](http://img.shields.io/badge/chat-on%20gitter-077a8f.svg)](https://gitter.im/Zilliqa/SmartContract)
 
 <p align="center">
-  <img src="https://github.com/Zilliqa/scilla/blob/master/imgs/scilla-logo-color.jpg" width="200" height="200">
+  <a href="https://scilla-lang.org/"><img src="https://github.com/Zilliqa/scilla/blob/master/imgs/scilla-logo-color.jpg" width="200" height="200"></a>
 </p>
 
 ## Building and Running
@@ -13,7 +13,7 @@
 ### Build requirements
 
 Platform specific instructions for setting up your system for building Scilla can be
-found in [INSTALL](./INSTALL.md)
+found in [INSTALL.md](./INSTALL.md).
 
 ### Compiling and Running
 
