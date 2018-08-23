@@ -224,7 +224,6 @@ and 'rep expr =
   | Constr of string * typ list * 'rep ident list
   | MatchExpr of 'rep ident * ('rep pattern * 'rep expr_annot) list
   | Builtin of 'rep ident * 'rep ident list 
-  (* Advanced features: to be added in Scilla 0.2 *)                 
   | TFun of 'rep ident * 'rep expr_annot
   | TApp of 'rep ident * typ list
   (* Fixpoint combinator: used to implement recursion principles *)                 
@@ -278,8 +277,6 @@ let pp_expr e =
   include SR
 end
 *)
-
-
 
 type ('rep, 'erep) stmt_annot = ('rep, 'erep) stmt * 'rep
 and ('rep, 'erep) stmt =
