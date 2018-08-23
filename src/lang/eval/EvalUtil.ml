@@ -36,9 +36,9 @@ module Env = struct
   (* Fully reduced value *)
   'rep value =
     | ValLit of literal
-    | ValClosure of 'rep Syntax.ident * typ * 'rep expr * 'rep t
-    | ValTypeClosure of 'rep Syntax.ident * 'rep expr * 'rep t                      
-    | ValFix of 'rep Syntax.ident * typ * 'rep expr * 'rep t
+    | ValClosure of 'rep Syntax.ident * typ * 'rep expr_annot * 'rep t
+    | ValTypeClosure of 'rep Syntax.ident * 'rep expr_annot * 'rep t                      
+    | ValFix of 'rep Syntax.ident * typ * 'rep expr_annot * 'rep t
   [@@deriving sexp]
 
   (* Pretty-printing *)
@@ -73,7 +73,7 @@ module Env = struct
     | Some x -> pure @@ snd x
     | None -> fail @@ sprintf
         "Identifier \"%s\" at %s is not bound in environment:\n"
-        i (get_loc_str (get_loc k))
+        i (get_loc_str (get_rep k))
 end
 
 
@@ -263,3 +263,10 @@ module ContractState = struct
 end
 
 
+(*****************************************************)
+(*         Contract definitions                      *)
+(*****************************************************)
+
+open ParserUtil
+module EvalContract = Contract (ParserRep) (ParserRep)
+    

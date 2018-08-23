@@ -21,7 +21,7 @@ open Syntax
 
 val subst_type_in_type: string -> typ -> typ -> typ
 val subst_type_in_literal: 'a ident -> typ -> literal -> literal
-val subst_type_in_expr: 'a ident -> typ -> 'a expr -> 'a expr
+val subst_type_in_expr: 'a ident -> typ -> 'a expr_annot -> 'a expr_annot
 
 (* An inferred type with possible qualifiers *)
 type 'rep inferred_type = {
@@ -35,10 +35,14 @@ module type QualifiedTypes = sig
   val mk_qualified_type : typ -> t inferred_type      
 end
 
-module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
+module type MakeTEnvFunctor = functor
+  (Q: QualifiedTypes)
+  (R : Rep)
+  -> sig
   (* Resolving results *)
   type resolve_result
   val rr_loc : resolve_result -> loc
+  val rr_rep : resolve_result -> R.rep
   val rr_typ : resolve_result -> Q.t inferred_type
   val rr_pp  : resolve_result -> string
   val mk_qual_tp : typ -> Q.t inferred_type
@@ -48,22 +52,22 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     (* Make new type environment *)
     val mk : t
     (* Add to type environment *)
-    val addT : t -> loc ident -> typ -> t
+    val addT : t -> R.rep ident -> typ -> t
     (* Add to many type bindings *)
-    val addTs : t -> (loc ident * typ) list -> t
+    val addTs : t -> (R.rep ident * typ) list -> t
     (* Add type variable to the environment *)
-    val addV : t -> loc ident -> t
+    val addV : t -> R.rep ident -> t
     (* Check type for well-formedness in the type environment *)
     val is_wf_type : t -> typ -> (unit, string) eresult
     (* Resolve the identifier *)    
-    val resolveT : ?lopt:(loc option) -> t -> string ->
+    val resolveT : ?lopt:(R.rep option) -> t -> string ->
       (resolve_result, string) eresult
     (* Copy the environment *)
     val copy : t -> t
     (* Convert to list *)
     val to_list : t -> (string * resolve_result) list
     (* Get type variables *)
-    val tvars : t -> (string * loc) list
+    val tvars : t -> (string * R.rep) list
     (* Print the type environment *)
     val pp : ?f:(string * resolve_result -> bool) -> t -> string        
   end
@@ -129,9 +133,10 @@ val assert_all_same_type : typ list -> (unit, string) eresult
 
 val wrap_with_info : string -> ('a, string) eresult -> ('a, string) eresult
 
-val wrap_err : loc expr -> ?opt:string -> ('a, string) eresult -> ('a, string) eresult
+val wrap_err : 'rep expr -> ('rep ident -> loc) -> ?opt:string ->
+  ('a, string) eresult -> ('a, string) eresult
 
-val wrap_serr : loc stmt -> ?opt:string ->
+val wrap_serr : ('srep, 'erep) stmt -> ('erep ident -> loc) -> ?opt:string ->
   ('a, string) eresult -> ('a, string) eresult
 
 (****************************************************************)

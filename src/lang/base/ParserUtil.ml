@@ -16,17 +16,24 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-
-
-
 open Syntax
 
-val parse_file : ((Lexing.lexbuf -> ScillaParser.token) ->
-                  Lexing.lexbuf -> 'a) -> string -> 'a option
+(*******************************************************)
+(*                   Annotations                       *)
+(*******************************************************)
 
-val parse_string : ((Lexing.lexbuf -> ScillaParser.token) ->
-                  Lexing.lexbuf -> 'a) -> string -> 'a option
+module ParserRep = struct
+  type rep = loc
+  let get_loc l = l
+  let mk_msg_payload_id_address s = Ident (s, dummy_loc)
+  let mk_msg_payload_id_uint128 s = Ident (s, dummy_loc)
 
-val parse_type : string -> typ
+  let parse_rep _ = dummy_loc
+  let get_rep_str r = get_loc_str r
+end
 
-val parse_expr : string -> loc expr_annot
+(*******************************************************)
+(*                    Contracts                        *)
+(*******************************************************)
+
+module ParsedContract = Contract (ParserRep) (ParserRep)

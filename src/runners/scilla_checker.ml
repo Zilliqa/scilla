@@ -20,10 +20,11 @@
 open Syntax
 open Core
 open DebugMessage
-open TypeChecker
 open MonadUtil
 open MonadUtil.Let_syntax
 open RunnerUtil
+
+open TypeChecker.Typechecker_Contracts
 
 (* Check that the module parses *)
 let check_parsing ctr = 

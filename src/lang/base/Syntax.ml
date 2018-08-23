@@ -49,7 +49,7 @@ let asId i = Ident (i, dummy_loc)
 let asIdL i loc = Ident(i, loc)
 
 let get_id i = match i with Ident (x, _) -> x
-let get_loc i : loc = match i with Ident (_, l) -> l
+let get_rep i = match i with Ident (_, l) -> l
 let get_loc_str (l : loc) : string =
   l.fname ^ ":" ^ Int.to_string l.lnum ^ 
       ":" ^ Int.to_string (l.cnum - l.bol + 1)
@@ -213,28 +213,29 @@ type 'rep pattern =
   | Constructor of string * ('rep pattern list)
 [@@deriving sexp]
 
-type 'rep expr =
+type 'rep expr_annot = 'rep expr * 'rep
+and 'rep expr =
   | Literal of literal
   | Var of 'rep ident
-  | Let of 'rep ident * typ option * 'rep expr * 'rep expr
+  | Let of 'rep ident * typ option * 'rep expr_annot * 'rep expr_annot
   | Message of (string * 'rep payload) list
-  | Fun of 'rep ident * typ * 'rep expr
+  | Fun of 'rep ident * typ * 'rep expr_annot
   | App of 'rep ident * 'rep ident list
   | Constr of string * typ list * 'rep ident list
-  | MatchExpr of 'rep ident * ('rep pattern * 'rep expr) list
+  | MatchExpr of 'rep ident * ('rep pattern * 'rep expr_annot) list
   | Builtin of 'rep ident * 'rep ident list 
   (* Advanced features: to be added in Scilla 0.2 *)                 
-  | TFun of 'rep ident * 'rep expr
+  | TFun of 'rep ident * 'rep expr_annot
   | TApp of 'rep ident * typ list
   (* Fixpoint combinator: used to implement recursion principles *)                 
-  | Fixpoint of 'rep ident * typ * 'rep expr
+  | Fixpoint of 'rep ident * typ * 'rep expr_annot
 [@@deriving sexp]
 
 let expr_loc (e : 'rep expr) : loc option =
   match e with
   | Fun (i, _, _) | App (i, _) | Builtin (i, _)
   | MatchExpr (i, _) | TFun (i, _) | TApp (i, _) -> 
-    let l = get_loc i in
+    let l = get_rep i in
       if (l.cnum <> -1) then Some l else None
   | _ -> None
 
@@ -250,68 +251,115 @@ let pp_expr e =
 (*                   Statements                        *)
 (*******************************************************)
 
-type 'rep stmt =
-  | Load of 'rep ident * 'rep ident
-  | Store of 'rep ident * 'rep ident
-  | Bind of 'rep ident * 'rep expr
-  | MatchStmt of 'rep ident * ('rep pattern * 'rep stmt list) list
-  | ReadFromBC of 'rep ident * string
+(* module Stmt = functor (SR : Rep) (ER : Rep) -> struct
+  type stmt =
+    | Load of ER.rep ident * ER.rep ident * SR.rep
+    | Store of ER.rep ident * ER.rep ident * SR.rep
+    | Bind of ER.rep ident * ER.rep expr_annot * SR.rep
+    | MatchStmt of ER.rep ident * (ER.rep pattern * stmt list) list * SR.rep
+    | ReadFromBC of ER.rep ident * string * SR.rep
+    | AcceptPayment of SR.rep
+    | SendMsgs of ER.rep ident * SR.rep
+    | Event of string * string * SR.rep
+    | Throw of ER.rep ident * SR.rep
+
+  let get_rep s =
+    match s with
+    | Load (_, _, rep)
+    | Store (_, _, rep)
+    | Bind (_, _, rep)
+    | MatchStmt (_, _, rep)
+    | ReadFromBC (_, _, rep)
+    | AcceptPayment rep
+    | SendMsgs (_, rep)
+    | Event (_, _, rep)
+    | Throw (_, rep) -> rep
+
+  include SR
+end
+*)
+
+
+
+type ('rep, 'erep) stmt_annot = ('rep, 'erep) stmt * 'rep
+and ('rep, 'erep) stmt =
+  | Load of 'erep ident * 'erep ident
+  | Store of 'erep ident * 'erep ident
+  | Bind of 'erep ident * 'erep expr_annot
+  | MatchStmt of 'erep ident * ('erep pattern * ('rep, 'erep) stmt_annot list) list
+  | ReadFromBC of 'erep ident * string
   | AcceptPayment
-  | SendMsgs of 'rep ident
-  | CreateEvnt of string * 'rep ident
-  | Throw of 'rep ident
+  | SendMsgs of 'erep ident
+  | CreateEvnt of string * 'erep ident
+  | Throw of 'erep ident
 [@@deriving sexp]
 
-let stmt_str s =
-  sexp_of_stmt sexp_of_loc s |> Sexplib.Sexp.to_string
+let stmt_str (srep : ('rep, 'erep) stmt_annot) =
+  let (s, _) = srep in 
+  let sexp = sexp_of_stmt sexp_of_loc sexp_of_loc s in
+  Sexplib.Sexp.to_string sexp
 
-let stmt_loc (s : 'rep stmt) : loc option = 
+let stmt_loc (s : ('rep, 'erep) stmt) : 'rep option = 
   match s with
   | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
   | MatchStmt (i, _)
   | CreateEvnt (_, i)
   | SendMsgs i -> 
-    let l = get_loc i in
+    let l = get_rep i in
       if (l.cnum <> -1) then Some l else None
   | _ -> None
+
+(*******************************************************)
+(*                   Annotations                       *)
+(*******************************************************)
+
+module type Rep = sig
+  type rep
+  val get_loc : rep -> loc
+  val mk_msg_payload_id_address : string -> rep ident
+  val mk_msg_payload_id_uint128 : string -> rep ident
+
+  (* TODO: This needs to be looked through properly *)
+  val parse_rep : string -> rep
+  val get_rep_str: rep -> string
+end
 
 (*******************************************************)
 (*                    Contracts                        *)
 (*******************************************************)
 
-type 'rep transition = 
-  { tname   : 'rep ident;
-    tparams : ('rep ident  * typ) list;
-    tbody   : 'rep stmt list }
-[@@deriving sexp]
+module Contract (SR : Rep) (ER : Rep) = struct
+  type transition = 
+    { tname   : SR.rep ident;
+      tparams : (ER.rep ident  * typ) list;
+      tbody   : (SR.rep, ER.rep) stmt_annot list }
 
-type 'rep lib_entry =
-  { lname : 'rep ident;
-    lexp  : 'rep expr }
-[@@deriving sexp]
+  type lib_entry =
+    { lname : ER.rep ident;
+      lexp  : ER.rep expr_annot }
 
-type 'rep library =
-  { lname : 'rep ident;
-    lentries : 'rep lib_entry list }
-[@@deriving sexp]
+  type library =
+    { lname : SR.rep ident;
+      lentries : lib_entry list }
   
-type 'rep contract =
-  { cname   : 'rep ident;
-    cparams : ('rep ident  * typ) list;
-    cfields : ('rep ident * typ * 'rep expr) list;
-    ctrans  : 'rep transition list; }
-[@@deriving sexp]
+  type contract =
+    { cname   : SR.rep ident;
+      cparams : (ER.rep ident  * typ) list;
+      cfields : (ER.rep ident * typ * ER.rep expr_annot) list;
+      ctrans  : transition list; }
 
-let pp_cparams ps =
-  let cs = List.map ps ~f:(fun (i, t) ->
-      get_id i ^ " : " ^
-      (sexp_of_typ t |> Sexplib.Sexp.to_string)) in
-  "[" ^ (String.concat ~sep:", " cs) ^ "]"
+  (* Contract module: libary + contract definiton *)
+  type cmodule =
+    { cname : SR.rep ident;
+      libs  : library option;     (* lib functions defined in the module *)
+      elibs : SR.rep ident list;  (* list of imports / external libs *)
+      contr : contract }
 
-(* Contract module: libary + contract definiton *)
-type 'rep cmodule =
-  { cname : 'rep ident;
-    libs  : ('rep library) option;     (* lib functions defined in the module *)
-    elibs : 'rep ident list;  (* list of imports / external libs *)
-    contr : 'rep contract }
-[@@deriving sexp]
+  let pp_cparams ps =
+    let cs = List.map ps ~f:(fun (i, t) ->
+        get_id i ^ " : " ^
+        (sexp_of_typ t |> Sexplib.Sexp.to_string)) in
+    "[" ^ (String.concat ~sep:", " cs) ^ "]"
+
+end
+

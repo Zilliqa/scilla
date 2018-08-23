@@ -69,7 +69,9 @@ let vals_to_literals vals =
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
 (*******************************************************)
-let rec exp_eval e env = match e with
+let rec exp_eval erep env =
+  let (e, _) = erep in
+  match e with
   | Literal l ->
       pure (Env.ValLit l, env)
   | Var i ->
@@ -215,7 +217,7 @@ and try_apply_as_type_closure v arg_type =
 let rec stmt_eval conf stmts =
   match stmts with
   | [] -> pure conf
-  | s :: sts -> (match s with
+  | ((s, _) as stmt) :: sts -> (match s with
       | Load (x, r) ->
           let%bind l = Configuration.load conf r in
           let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
@@ -237,7 +239,7 @@ let rec stmt_eval conf stmts =
           let%bind ((_, branch_stmts), bnds) =
             tryM clauses
               ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
-                      (Env.pp_value v) (stmt_str s))
+                      (Env.pp_value v) (stmt_str stmt))
               ~f:(fun (p, _) -> match_with_pattern v p) in 
           (* Update the environment for the branch *)
           let conf' = List.fold_left bnds ~init:conf
@@ -260,7 +262,7 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       (* TODO: Implement the rest *)
       | _ -> fail @@ sprintf "The statement %s is not supported yet."
-            (stmt_str s)
+            (stmt_str stmt)
     )
 
 (*******************************************************)
@@ -287,6 +289,7 @@ let check_blockchain_entries entries =
 (*              Contract initialization                *)
 (*******************************************************)
 
+open EvalContract
 (* Combine external and contract lib functions. *)
 let combine_libs clibs elibs =
   (* combine both the libs, with contract libs defined later 
@@ -414,7 +417,7 @@ let get_transition ctr tag =
 
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
 let check_message_entries tparams_o entries =
-  let tparams = append_implict_trans_params tparams_o in
+  let tparams = append_implict_trans_params tparams_o ParserUtil.ParserRep.mk_msg_payload_id_address ParserUtil.ParserRep.mk_msg_payload_id_uint128 in
   (* There as an entry for each parameter *)
   let valid_entries = List.for_all tparams
       ~f:(fun p -> List.exists entries ~f:(fun e -> fst e = (get_id (fst p)))) in
