@@ -22,13 +22,14 @@
   open ParserUtil
 
   open ParsedSyntax
+  open ParserBuiltins
 
   let to_type d = match d with
     | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x
     | _ -> ADT (d, [])
   
   let build_prim_literal_exn t v =
-    match BuiltIns.build_prim_literal t v with
+    match build_prim_literal t v with
     | Some l -> l
     | None -> raise (SyntaxError ("Invalid " ^ (pp_typ t) ^ " literal " ^ v))
 %}

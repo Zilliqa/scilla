@@ -31,14 +31,6 @@ open Utils
 (* Instantiated the type environment *)
 module SimpleTEnv = MakeTEnv(PlainTypes)(ParserRep)
 
-(**************************************************************)
-(*             Auxiliary functions for typing                 *)
-(**************************************************************)
-
-
-
-    
-
 (*****************************************************************)
 (*                 Typing entire contracts                       *)
 (*****************************************************************)
@@ -59,6 +51,11 @@ module ScillaTypechecker
   module TypedSyntax = ScillaSyntax (STR) (ETR)
   include TypedSyntax
 
+  module TU = TypeUtilities (SR) (ER)
+  open TU
+  module TBuiltins = ScillaBuiltIns (SR) (ER)
+  open TBuiltins
+  
   module TypeEnv = MakeTEnv(PlainTypes)(ER)
   open TypeEnv
 

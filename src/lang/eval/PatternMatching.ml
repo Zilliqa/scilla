@@ -23,6 +23,8 @@ open EvalUtil
 open Result.Let_syntax
 open MonadUtil
 
+open EvalSyntax
+
 let rec match_with_pattern v p = match p with
   | Wildcard -> pure []
   | Binder x -> (match v with
@@ -61,4 +63,4 @@ let rec match_with_pattern v p = match p with
           | _ -> fail @@
               sprintf "Cannot match value %s againts pattern %s."
                 (Env.pp_value v)
-                (sexp_of_pattern sexp_of_loc p |> Sexplib.Sexp.to_string))
+                (sexp_of_pattern p |> Sexplib.Sexp.to_string))

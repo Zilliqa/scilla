@@ -19,24 +19,30 @@
 open Syntax
 open Core
 
-module BuiltInDictionary : sig
-  type built_in_executor =
-    literal list -> typ -> (literal, string) result
+module ScillaBuiltIns
+    (SR : Rep)
+    (ER : Rep) : sig
 
-  (*  
+  module BuiltInDictionary : sig
+    type built_in_executor =
+      literal list -> typ -> (literal, string) result
+
+    (*  
    The return result is a triple:
    * The full elaborated type of the operation, e.g., string -> Bool
    * Its result type for given argument types, e.g., Bool
    * Executor for evaluating the operation      
    *)
-  val find_builtin_op :
-    loc ident -> typ list -> ((typ * typ * built_in_executor), string) result
+    val find_builtin_op :
+      loc ident -> typ list -> ((typ * typ * built_in_executor), string) result
+  end
+
+  (* The first parameter is a string type *)
+  val build_prim_literal : typ -> string -> literal option
+  val is_int_type : typ -> bool
+  val is_uint_type : typ -> bool
+
+  (* Elaborator for the built-in typ *)
+  val elab_id : typ -> typ list -> (typ, string) result
+
 end
-
-(* The first parameter is a string type *)
-val build_prim_literal : typ -> string -> literal option
-val is_int_type : typ -> bool
-val is_uint_type : typ -> bool
-
-(* Elaborator for the built-in typ *)
-val elab_id : typ -> typ list -> (typ, string) result

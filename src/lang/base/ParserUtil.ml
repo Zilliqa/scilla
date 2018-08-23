@@ -17,7 +17,8 @@
 *)
 
 open Syntax
-
+open BuiltIns
+    
 (*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
@@ -39,3 +40,4 @@ end
 (*******************************************************)
 
 module ParsedSyntax = ScillaSyntax (ParserRep) (ParserRep)
+module ParserBuiltins = ScillaBuiltIns (ParserRep) (ParserRep)

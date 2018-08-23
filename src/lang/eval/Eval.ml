@@ -1,4 +1,4 @@
-(*
+ (*
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
@@ -27,6 +27,11 @@ open BuiltIns
 open Stdint
 open ContractUtil
 open TypeUtil
+
+open EvalTypeUtilities
+open EvalBuiltIns
+
+open EvalSyntax
 
 (***************************************************)
 (*                    Utilities                    *)      

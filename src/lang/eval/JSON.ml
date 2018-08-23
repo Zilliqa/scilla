@@ -25,6 +25,8 @@ open Datatypes
 open TypeUtil
 open BuiltIns
     
+open JSONTypeUtilities
+    
 exception Invalid_json of string
 
 (****************************************************************)

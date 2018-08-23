@@ -28,6 +28,8 @@ open FrontEndParser
 
 (* TODO: Split this file into separate parsing and typechecking, and parameterize in the same way as the typechecker *)
 open ParsedSyntax
+module RecursionTU = TypeUtilities (ParserRep) (ParserRep)
+open RecursionTU
 
 (* Folding over natural numbers *)
 module NatRec = struct

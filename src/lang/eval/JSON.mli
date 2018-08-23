@@ -16,6 +16,10 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open TypeUtil
+
+module JSONTypeUtilities = TypeUtilities (ParserRep) (ParserRep)
+
 (** The state input is a json containing an array state variables.
  ** Each state variable is a list of the following key value pairs:
  **    "vname" : "variable name"

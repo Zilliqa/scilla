@@ -37,7 +37,9 @@ module ScillaPatternchecker
   module UncheckedPatternSyntax = ScillaSyntax (SR) (ER)
   module CheckedPatternSyntax = ScillaSyntax (SPR) (EPR)
 
+  module PatternCheckerTypeUtilities = TypeUtilities (SR) (ER)
   open UncheckedPatternSyntax
+  open PatternCheckerTypeUtilities
   
   let pm_check t clauses =
     let reachable = Array.create ~len:(List.length clauses) false in
