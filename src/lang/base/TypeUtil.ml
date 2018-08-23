@@ -19,8 +19,8 @@
 open Core
 open Sexplib.Std
 open Syntax
-open Result.Let_syntax
 open MonadUtil
+open MonadUtil.Let_syntax
 open Datatypes
 
 (****************************************************************)
@@ -210,10 +210,10 @@ module type MakeTEnvFunctor = functor
     (* Add type variable to the environment *)
     val addV : t -> R.rep ident -> t
     (* Check type for well-formedness in the type environment *)
-    val is_wf_type : t -> typ -> (unit, string) result
+    val is_wf_type : t -> typ -> (unit, string) eresult
     (* Resolve the identifier *)
     val resolveT : 
-      ?lopt:(R.rep option) -> t -> string -> (resolve_result, string) result
+      ?lopt:(R.rep option) -> t -> string -> (resolve_result, string) eresult
     (* Copy the environment *)
     val copy : t -> t
     (* Convert to list *)
@@ -631,7 +631,7 @@ let get_failure_msg_stmt s opt get_loc = match s with
 
 let wrap_with_info msg res = match res with
   | Ok _ -> res
-  | Error msg' -> Error (sprintf "%s%s" msg msg')
+  | Error (msg', es) -> Error((sprintf "%s%s" msg msg'), es)
 
 let wrap_err e get_loc ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt get_loc)
 

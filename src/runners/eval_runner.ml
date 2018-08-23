@@ -43,8 +43,8 @@ let () =
       let elibs = import_all_libs lib_dirs in
       let envres = Eval.init_libraries (Some clib) elibs in
       let env = (match envres with
-        | Ok (env') -> env'
-        | Error err ->
+        | Ok (env', _) -> env'
+        | Error (err, _) ->
           printf "Failed to initialize stdlib. Evaluation halted: %s\n" err;
           exit 1;) in
       let lib_fnames = List.map (fun (name, _) -> name) env in

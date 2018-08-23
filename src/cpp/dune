@@ -1,0 +1,8 @@
+(library
+ (name scilla_cpp_deps)
+ (public_name scilla-cpp-deps)
+  (wrapped false)
+  (libraries ctypes ctypes.foreign cryptokit)
+  (cxx_names c_schnorr DataConversion Schnorr Sha3)
+  (cxx_flags -std=c++11 -I/usr/local/opt/openssl/include)
+)

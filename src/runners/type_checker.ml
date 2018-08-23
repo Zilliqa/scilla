@@ -21,12 +21,12 @@ open Core
 open Printf
 open Syntax
 open ParserUtil
-open Result.Let_syntax
 open TypeUtil
 open Recursion
 open RunnerUtil
 open DebugMessage
 open MonadUtil
+open MonadUtil.Let_syntax
 
 module SimpleTEnv = MakeTEnv(PlainTypes) (ParserRep)
 open SimpleTEnv
@@ -79,8 +79,8 @@ let () =
         (* Import whatever libs we want. *)
         let std_lib = import_libs [] in
         (match check_typing e std_lib with
-         | Ok res ->
+         | Ok (res, _) ->
              printf "%s\n" (pp_typ res.tp)
-         | Error s -> printf "Type checking failed:\n%s\n" s)
+         | Error (s, _) -> printf "Type checking failed:\n%s\n" s)
     | Some _ | None ->
         printf "%s\n" "Failed to parse input file.")

@@ -17,7 +17,7 @@
 *)
 
 open Syntax
-open Core
+open MonadUtil
 
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)
@@ -39,9 +39,9 @@ module DataTypeDictionary : sig
   (* Hiding the actual data type dicionary *)
 
   (*  Get ADT by name  *)
-  val lookup_name : string -> (adt, string) result
+  val lookup_name : string -> (adt, string) eresult
   (*  Get ADT by the constructor  *)
-  val lookup_constructor : string -> (adt * constructor, string) result
+  val lookup_constructor : string -> (adt * constructor, string) eresult
   (* Get typing map for a constructor *)
   val constr_tmap : adt -> string -> (typ list) option
   

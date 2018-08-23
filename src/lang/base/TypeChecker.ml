@@ -19,8 +19,8 @@
 open Syntax
 open ParserUtil
 open Core
-open Result.Let_syntax
 open MonadUtil
+open MonadUtil.Let_syntax
 open TypeUtil
 open Datatypes
 open BuiltIns
@@ -401,7 +401,7 @@ module Typechecker_Contracts
     match id with
     | Ident (s, r) -> Ident (s, ETR.mk_rep r t)
   
-  let type_transition (env0 : stmt_tenv) (tr : UntypedContract.transition) : (TypedContract.transition * stmt_tenv, string) result  =
+  let type_transition (env0 : stmt_tenv) (tr : UntypedContract.transition) : (TypedContract.transition * stmt_tenv, string) eresult  =
     let {tname; tparams; tbody} = tr in
     let tenv0 = env0.pure in
     let lift_ident_e (id, t) = (add_type_to_id id (mk_qual_tp t), t) in
@@ -471,20 +471,20 @@ module Typechecker_Contracts
     match get_lib_tenv_cache tenv elib with
     | Some tenv' ->
         (* Use cached entries. *)
-        (tenv', "")
+    pure (tenv', "")
     | None ->
         (* Couldn't find in cache. Actually type the library. *)
         let res = type_library tenv elib in
         (match res with
-         | Error msg -> (tenv, msg)
-         | Ok (_, tenv') as lib_res -> 
+    | Error (msg, es) -> Ok((tenv, msg), es)
+    | Ok ((_, tenv'), es) as lib_res -> 
              (* Since we don't have this in cache, cache it now. *)
              cache_lib_tenv tenv' elib;
-             (lib_res, "")
+        Ok((lib_res, ""), es)
         )
   *)
             
-  let type_module (md : UntypedContract.cmodule) (elibs : UntypedContract.library list) : (TypedContract.cmodule * stmt_tenv, string) result =
+  let type_module (md : UntypedContract.cmodule) (elibs : UntypedContract.library list) : (TypedContract.cmodule * stmt_tenv, string) eresult =
     let {cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
@@ -499,19 +499,19 @@ module Typechecker_Contracts
       | Some lib -> List.append elibs (lib::[])
       | None -> elibs
     in
-    let ((libs, tenv), emsgs) = List.fold_left all_libs ~init:(([], tenv0), "")
+  let%bind ((libs, tenv), emsgs) = foldM all_libs ~init:(([], tenv0), "")
         ~f:(fun ((lib_acc, tenv_acc), emsgs_acc) elib ->
             (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
-               let (tenv', emsg) = type_library_cache tenv_acc elib in *)
-            let ((typed_libraries, tenv'), emsg) =
+            let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
+            let%bind ((typed_libraries, tenv'), emsg) =
               match type_library tenv_acc elib with
-              | Ok (t_lib, t_env) -> ((t_lib :: lib_acc, t_env), emsgs_acc)
-              | Error msg ->
+              | Ok ((t_lib, t_env), es) -> Ok(((t_lib::lib_acc, t_env), emsgs_acc), es)
+              | Error (msg, es) ->
                   let emsgs' = if msg = "" then emsgs_acc else (emsgs_acc ^ "\n\n" ^ msg) in
-                  ((lib_acc, tenv_acc), emsgs')
+                  Ok(((lib_acc, tenv_acc), emsgs'), es)
             in
             (* Updated env and error messages are what we accummulate in the fold. *)
-            ((typed_libraries, tenv'), emsg)
+            pure ((typed_libraries, tenv'), emsg)
           )
     in
     
@@ -520,10 +520,10 @@ module Typechecker_Contracts
     let tenv3 = TEnv.addTs tenv params in
     
     (* Step 4: Type-check fields and add balance *)
-    let (typed_fields, fenv0), femsgs0 = 
+    let%bind (typed_fields, fenv0), femsgs0 = 
       match type_fields tenv3 cfields with
-      | Error msg -> (([], tenv3), emsgs ^ "\n\n" ^ msg)
-      | Ok (typed_fields, tenv) -> ((typed_fields, tenv), emsgs)
+      | Error (msg, es) -> Ok ((([], tenv3), emsgs ^ "\n\n" ^ msg), es)
+      | Ok ((typed_fields, tenv), es) -> Ok (((typed_fields, tenv), emsgs), es)
     in
     let (bn, bt) = balance_field in
     let fenv = TEnv.addT fenv0 bn bt in
@@ -532,11 +532,11 @@ module Typechecker_Contracts
     let env = {pure= tenv3; fields= fenv; bc= bc_type_env} in
     
     (* Step 6: Type-checking all transitions in batch *)
-    let (t_trans, emsgs') = List.fold_left ~init:([], femsgs0) ctrans 
+  let%bind (t_trans, emsgs') = foldM ~init:([], femsgs0) ctrans 
         ~f:(fun (trans_acc, emsgs) tr -> 
             match type_transition env tr with
-            | Error msg -> (trans_acc, emsgs ^ "\n\n" ^ msg)
-            | Ok (typed_trans, _) -> (typed_trans :: trans_acc, emsgs)
+            | Error (msg, es) -> Ok ((trans_acc, emsgs ^ "\n\n" ^ msg), es)
+            | Ok ((typed_trans, _), es) -> Ok((typed_trans :: trans_acc, emsgs), es)
           ) in
     let typed_trans = List.rev t_trans in
 
