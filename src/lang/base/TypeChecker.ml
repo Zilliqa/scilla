@@ -28,9 +28,6 @@ open Recursion
 open ContractUtil
 open Utils
     
-(* Instantiated the type environment *)
-module SimpleTEnv = MakeTEnv(PlainTypes)(ParserRep)
-
 (*****************************************************************)
 (*                 Typing entire contracts                       *)
 (*****************************************************************)
@@ -56,7 +53,7 @@ module ScillaTypechecker
   module TBuiltins = ScillaBuiltIns (SR) (ER)
   open TBuiltins
   
-  module TypeEnv = MakeTEnv(PlainTypes)(ER)
+  module TypeEnv = TU.MakeTEnv(PlainTypes)(ER)
   open TypeEnv
 
   open UntypedSyntax
@@ -141,7 +138,7 @@ module ScillaTypechecker
 
   let wrap_with_info msg res = match res with
     | Ok _ -> res
-    | Error msg' -> Error (sprintf "%s%s" msg msg')
+    | Error (msg', es) -> Error (sprintf "%s%s" msg msg', es)
 
   let wrap_err e ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt)
 
@@ -455,7 +452,7 @@ module ScillaTypechecker
     match id with
     | Ident (s, r) -> Ident (s, ETR.mk_rep r t)
   
-  let type_transition (env0 : stmt_tenv) (tr : UntypedContract.transition) : (TypedContract.transition * stmt_tenv, string) eresult  =
+  let type_transition (env0 : stmt_tenv) (tr : UntypedSyntax.transition) : (TypedSyntax.transition * stmt_tenv, string) eresult  =
     let {tname; tparams; tbody} = tr in
     let tenv0 = env0.pure in
     let lift_ident_e (id, t) = (add_type_to_id id (mk_qual_tp t), t) in
@@ -538,7 +535,7 @@ module ScillaTypechecker
 
   (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
   (* type library, handling cache as necessary. *)
-  let type_library_cache (tenv : TEnv.t) (elib : UntypedContract.library)  =
+  let type_library_cache (tenv : TEnv.t) (elib : UntypedSyntax.library)  =
     (* We are caching TypeEnv = MakeTEnv(PlainTypes)(ER) *)
     let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) (STR) (ER) in
     let open STC in
@@ -559,7 +556,7 @@ module ScillaTypechecker
         )
   *)
             
-  let type_module (md : UntypedContract.cmodule) (elibs : UntypedContract.library list) : (TypedContract.cmodule * stmt_tenv, string) eresult =
+  let type_module (md : UntypedSyntax.cmodule) (elibs : UntypedSyntax.library list) : (TypedSyntax.cmodule * stmt_tenv, string) eresult =
     let {cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in

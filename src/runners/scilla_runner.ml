@@ -97,7 +97,7 @@ let input_state_json filename =
 
 (* Add balance to output json and print it out *)
 
-let output_state_json (cstate : 'rep EvalUtil.ContractState.t) =
+let output_state_json (cstate : EvalUtil.ContractState.t) =
   let ballit = (balance_label, UintLit(128, Uint128.to_string cstate.balance)) in
   let concatlist = List.cons ballit cstate.fields in
     JSON.ContractState.state_to_json concatlist;;

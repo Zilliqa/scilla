@@ -74,18 +74,13 @@ module type MakeTEnvFunctor = functor
   end
 
 module PlainTypes : QualifiedTypes
-module MakeTEnv : MakeTEnvFunctor
 
 module TypeUtilities
     (SR : Rep)
     (ER : Rep) : sig
 
-  type expr_annot
-  
-  val subst_type_in_type: string -> typ -> typ -> typ
-  val subst_type_in_literal: 'a ident -> typ -> literal -> literal
-  val subst_type_in_expr : 'a ident -> typ -> expr_annot -> expr_annot
-
+  module MakeTEnv : MakeTEnvFunctor
+    
   val literal_type : literal -> (typ, string) eresult
 
   (* Useful generic types *)
@@ -109,9 +104,6 @@ module TypeUtilities
   val type_equiv_list : typ list -> typ list -> bool
 
   val assert_type_equiv : typ -> typ -> (unit, string) eresult
-
-  (* Applying a type function *)
-  val elab_tfun_with_args : typ -> typ list -> (typ, string) eresult
 
   (* Applying a function type *)
   val fun_type_applies : typ -> typ list -> (typ, string) eresult

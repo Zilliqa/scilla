@@ -334,5 +334,155 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         (sexp_of_typ t |> Sexplib.Sexp.to_string)) in
     "[" ^ (String.concat ~sep:", " cs) ^ "]"
 
+  (****************************************************************)
+  (*                  Type substitutions                          *)
+  (****************************************************************)
+
+  (* Return free tvars in tp *)
+  let free_tvars tp =
+    let add vs tv = tv :: List.filter ~f:(fun v -> v = tv) vs in
+    let rem vs tv = List.filter ~f:(fun v -> v <> tv) vs in
+    let rec go t acc = (match t with
+        | PrimType _ -> acc
+        | MapType (kt, vt) -> go kt acc |> go vt
+        | FunType (at, rt) -> go at acc |> go rt
+        | TypeVar n -> add acc n
+        | ADT (_, ts) ->
+            List.fold_left ts ~init:acc ~f:(fun z tt -> go tt z)
+        | PolyFun (arg, bt) ->
+            let acc' = go bt acc in
+            rem acc' arg) in
+    go tp []
+
+  let mk_fresh_var taken init =
+    let tmp = ref init in
+    let counter = ref 1 in
+    while List.mem taken !tmp ~equal:(fun a b -> a = b) do
+      let cnt = !counter in
+      tmp := init ^ (Int.to_string cnt);
+      counter := cnt + 1;
+    done;
+    !tmp
+
+
+  let rec subst_type_in_type tvar tp tm = match tm with
+    | PrimType _ as p -> p
+    (* Make sure the map's type is still primitive! *)
+    | MapType (kt, vt) -> 
+        let kts = subst_type_in_type tvar tp kt in
+        let vts = subst_type_in_type tvar tp vt in
+        MapType (kts, vts)
+    | FunType (at, rt) -> 
+        let ats = subst_type_in_type tvar tp at in
+        let rts = subst_type_in_type tvar tp rt in
+        FunType (ats, rts)
+    | TypeVar n as tv ->
+        if tvar = n then tp else tv
+    | ADT (s, ts) ->
+        let ts' = List.map ts ~f:(fun t -> subst_type_in_type tvar tp t) in
+        ADT (s, ts')
+    | PolyFun (arg, t) as pf -> 
+        if tvar = arg then pf
+        else PolyFun (arg, subst_type_in_type tvar tp t)
+
+  let subst_types_in_type sbst tm =
+    List.fold_left sbst ~init:tm
+      ~f:(fun acc (tvar, tp) -> subst_type_in_type tvar tp acc)
+
+  let rec refresh_tfun t taken = match t with
+    | MapType (kt, vt) -> MapType (kt, refresh_tfun vt taken)
+    | FunType (at, rt) ->
+        FunType (refresh_tfun at taken, refresh_tfun rt taken)
+    | ADT (n, ts) ->
+        let ts' = List.map ts ~f:(fun w -> refresh_tfun w taken) in
+        ADT (n, ts')
+    | PrimType _ | TypeVar _ -> t
+    | PolyFun (arg, bt) ->
+        let arg' = mk_fresh_var taken arg in
+        let tv_new = TypeVar arg' in
+        let bt1 = subst_type_in_type arg tv_new bt in
+        let taken' = arg' :: taken in
+        let bt2 = refresh_tfun bt1 taken' in
+        PolyFun (arg', bt2)
+
+  (* Alpha renaming to canonical (pre-determined) names. *)
+  let canonicalize_tfun t =
+    let taken = free_tvars t in
+    let get_new_name counter = "'_A" ^ Int.to_string counter in
+    let rec refresh t taken counter = match t with
+      | MapType (kt, vt) -> MapType (kt, refresh vt taken counter)
+      | FunType (at, rt) ->
+          FunType (refresh at taken counter, refresh rt taken counter)
+      | ADT (n, ts) ->
+          let ts' = List.map ts ~f:(fun w -> refresh w taken counter) in
+          ADT (n, ts')
+      | PrimType _ | TypeVar _ -> t
+      | PolyFun (arg, bt) ->
+          let arg' = get_new_name counter in
+          let tv_new = TypeVar arg' in
+          let bt1 = subst_type_in_type arg tv_new bt in
+          let taken' = arg' :: taken in
+          let bt2 = refresh bt1 taken' (counter+1) in
+          PolyFun (arg', bt2)
+    in
+    refresh t taken 1
+
+  (* The same as above, but for a variable with locations *)
+  let subst_type_in_type' tv = subst_type_in_type (get_id tv)
+
+  let rec subst_type_in_literal tvar tp l = match l with
+    | Map ((kt, vt), ls) -> 
+        let kts = subst_type_in_type' tvar tp kt in
+        let vts = subst_type_in_type' tvar tp vt in
+        let ls' = List.map ls ~f:(fun (k, v) ->
+            let k' = subst_type_in_literal tvar tp k in
+            let v' = subst_type_in_literal tvar tp v in 
+            (k', v')) in
+        Map ((kts, vts), ls')
+    | ADTValue (n, ts, ls) ->
+        let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
+        let ls' = List.map ls ~f:(fun l -> subst_type_in_literal tvar tp l) in
+        ADTValue (n, ts', ls')
+    | _ -> l
+
+
+  (* Substitute type for a type variable *)
+  let rec subst_type_in_expr tvar tp erep =
+    let (e, rep) = erep in
+    match e with
+    | Literal l -> (Literal (subst_type_in_literal tvar tp l), rep)
+    | Var _ as v -> (v, rep)
+    | Fun (f, t, body) ->
+        let t_subst = subst_type_in_type' tvar tp t in 
+        let body_subst = subst_type_in_expr tvar tp body in
+        (Fun (f, t_subst, body_subst), rep)
+    | TFun (tv, body) as tf ->
+        if get_id tv = get_id tvar
+        then (tf, rep)
+        else 
+          let body_subst = subst_type_in_expr tvar tp body in
+          (TFun (tv, body_subst), rep)
+    | Constr (n, ts, es) ->
+        let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
+        (Constr (n, ts', es), rep)
+    | App _ as app -> (app, rep)
+    | Builtin _ as bi -> (bi, rep)
+    | Let (i, tann, lhs, rhs) ->
+        let tann' = Option.map tann ~f:(fun t -> subst_type_in_type' tvar tp t) in
+        let lhs' = subst_type_in_expr tvar tp lhs in
+        let rhs' = subst_type_in_expr tvar tp rhs in
+        (Let (i, tann', lhs', rhs'), rep)
+    | Message _ as m -> (m, rep)
+    | MatchExpr (e, cs) ->
+        let cs' = List.map cs ~f:(fun (p, b) -> (p, subst_type_in_expr tvar tp b)) in
+        (MatchExpr(e, cs'), rep)
+    | TApp (tf, tl) -> 
+        let tl' = List.map tl ~f:(fun t -> subst_type_in_type' tvar tp t) in
+        (TApp (tf, tl'), rep)
+    | Fixpoint (f, t, body) ->
+        let t' = subst_type_in_type' tvar tp t in
+        let body' = subst_type_in_expr tvar tp body in
+        (Fixpoint (f, t', body'), rep)
+
 end
 
