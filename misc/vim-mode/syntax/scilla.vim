@@ -3,6 +3,7 @@
 " Filenames: *.scilla
 " Maintainer: Edison LIM (edison.limjh@gmail.com)
 " URL: https://github.com/edisonljh/vim-scilla 
+" License: MIT
 
 if exists("b:current_syntax")
       finish

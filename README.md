@@ -128,3 +128,16 @@ Add the following line to your ~/.emacs file to load this mode for files ending 
 ;; Scilla mode
 (load-file "/path/to/scilla.el")
 ```
+## Vim mode for Scilla
+
+A vim config file for syntax highlighting is available [here](https://github.com/edisonljh/vim-scilla). The same files are also available in the [misc folder](https://github.com/edisonljh/vim-scilla).
+
+You can install it through Pathogen by:
+```
+git clone https://github.com/edisonljh/vim-scilla.git ~/.vim/bundle/vim-scilla
+```
+
+Or through Vundle by adding the following line to your `~/.vimrc`:
+```
+Plugin 'edisonljh/vim-scilla'
+```
