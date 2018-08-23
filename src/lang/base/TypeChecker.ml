@@ -77,9 +77,9 @@ module ScillaTypechecker
     | Message _ ->
         sprintf "[%s] Type error in message.\n"
           locstr
-    | Fun (f, _, _) ->
-        sprintf "[%s] Type error in function `%s`:\n"
-          locstr (get_id f)
+    | Fun _ ->
+        sprintf "[%s] Type error in function:\n"
+          locstr
     | App (f, _) ->
         sprintf "[%s] Type error in application of `%s`:\n"
           locstr (get_id f)
@@ -201,7 +201,7 @@ module ScillaTypechecker
         let typ = rr_typ r in
         pure @@ (TypedSyntax.Var (add_type_to_ident i typ), (typ, rep))
     |  Fun (arg, t, body) ->
-        wrap_err erep @@ 
+        (*        wrap_err erep @@  *)
         let%bind _ = TEnv.is_wf_type tenv t in
         let tenv' = TEnv.addT (TEnv.copy tenv) arg t in
         let%bind (_, (bt, _)) as b = type_expr tenv' body in
