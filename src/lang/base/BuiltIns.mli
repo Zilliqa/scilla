@@ -17,7 +17,7 @@
 *)
 
 open Syntax
-open Core
+open MonadUtil
 
 module ScillaBuiltIns
     (SR : Rep)
@@ -25,7 +25,7 @@ module ScillaBuiltIns
 
   module BuiltInDictionary : sig
     type built_in_executor =
-      literal list -> typ -> (literal, string) result
+      literal list -> typ -> (literal, string) eresult
 
     (*  
    The return result is a triple:
@@ -34,7 +34,7 @@ module ScillaBuiltIns
    * Executor for evaluating the operation      
    *)
     val find_builtin_op :
-      loc ident -> typ list -> ((typ * typ * built_in_executor), string) result
+      loc ident -> typ list -> ((typ * typ * built_in_executor), string) eresult
   end
 
   (* The first parameter is a string type *)
@@ -43,6 +43,6 @@ module ScillaBuiltIns
   val is_uint_type : typ -> bool
 
   (* Elaborator for the built-in typ *)
-  val elab_id : typ -> typ list -> (typ, string) result
+  val elab_id : typ -> typ list -> (typ, string) eresult
 
 end

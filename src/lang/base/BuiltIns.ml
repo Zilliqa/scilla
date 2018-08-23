@@ -21,8 +21,8 @@
 
 open Syntax
 open Core
-open Result.Let_syntax
 open MonadUtil
+open MonadUtil.Let_syntax
 open Big_int
 open Stdint
 open TypeUtil
@@ -845,10 +845,10 @@ module ScillaBuiltIns
   module BuiltInDictionary = struct 
 
     (* Elaborates the operation type based on the arguments types *)
-    type elaborator = typ -> typ list -> (typ, string) result      
+    type elaborator = typ -> typ list -> (typ, string) eresult      
 
     (* Takes the expected type as an argument to elaborate the result *)
-    type built_in_executor = literal list -> typ -> (literal, string) result
+    type built_in_executor = literal list -> typ -> (literal, string) eresult
 
     (* A built-in record type:
        * built-in name

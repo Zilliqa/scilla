@@ -19,8 +19,8 @@
 open Core
 open Sexplib.Std
 open Syntax
-open Result.Let_syntax
 open MonadUtil
+open MonadUtil.Let_syntax
 open Datatypes
 
 (****************************************************************)
@@ -43,6 +43,7 @@ module type MakeTEnvFunctor = functor
   (Q : QualifiedTypes)
   (R : Rep)
   -> sig
+
     (* Resolving results *)
     type resolve_result
     val rr_loc : resolve_result -> loc
@@ -62,10 +63,10 @@ module type MakeTEnvFunctor = functor
       (* Add type variable to the environment *)
       val addV : t -> R.rep ident -> t
       (* Check type for well-formedness in the type environment *)
-      val is_wf_type : t -> typ -> (unit, string) result
+      val is_wf_type : t -> typ -> (unit, string) eresult
       (* Resolve the identifier *)
       val resolveT : 
-        ?lopt:(R.rep option) -> t -> string -> (resolve_result, string) result
+        ?lopt:(R.rep option) -> t -> string -> (resolve_result, string) eresult
       (* Copy the environment *)
       val copy : t -> t
       (* Convert to list *)
@@ -76,113 +77,7 @@ module type MakeTEnvFunctor = functor
       val pp : ?f:(string * resolve_result -> bool) -> t -> string        
     end
   end
-
-(****************************************************************)
-(*                   Typing environments                        *)
-(****************************************************************)
-
-(* Typing environment, parameterised by a qualifier *)
-module MakeTEnv: MakeTEnvFunctor = functor
-  (Q : QualifiedTypes)
-  (R : Rep)
-  -> struct
-    type resolve_result = {qt : Q.t inferred_type; rep : R.rep }
-    let rr_loc rr = R.get_loc (rr.rep)
-    let rr_rep rr = rr.rep
-    let rr_typ rr = rr.qt
-    (*  TODO: Also print rep *)
-    let rr_pp  rr = (rr_typ rr).tp |> pp_typ
-    let mk_qual_tp tp =  Q.mk_qualified_type tp
-
-    module TEnv = struct
-      type t = {
-        (* Typed identifiers *)
-        tenv  : (string, resolve_result) Hashtbl.t;
-        (* Context for type variables and their rep *)
-        tvars : (string, R.rep) Hashtbl.t
-      } 
-
-      let addT env id tp =
-        let _ = Hashtbl.add env.tenv (get_id id)
-            {qt = Q.mk_qualified_type tp; rep = get_rep id} in
-        env
-
-      let addTs env kvs = 
-        List.fold_left ~init:env ~f:(fun z (k, v) -> addT z k v) kvs
-
-      let addV env id = 
-        let _ = Hashtbl.add env.tvars (get_id id) (get_rep id) in env
-
-      let tvars env =
-        Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []
-
-      let to_list env =
-        Hashtbl.fold (fun key data z -> (key, data) :: z) env.tenv []
-
-      (* Check type for well-formedness in the type environment *)
-      let is_wf_type tenv t =
-        let rec is_wf_typ' t' tb = match t' with
-          | MapType (kt, vt) ->
-              let%bind _ = is_wf_typ' kt tb in
-              is_wf_typ' vt tb
-          | FunType (at, rt) ->
-              let%bind _ = is_wf_typ' at tb in
-              is_wf_typ' rt tb
-          | ADT (n, ts) ->
-              let open Datatypes.DataTypeDictionary in
-              let%bind adt = lookup_name n in
-              if List.length ts <> List.length adt.tparams then
-                fail @@ sprintf "ADT type %s expects %d arguments but got %d.\n" 
-                  n (List.length adt.tparams) (List.length ts) 
-              else
-                foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:(()) ts
-          | PrimType _  -> pure ()
-          | TypeVar a ->
-              (* Check if bound locally. *)
-              if List.mem tb a ~equal:(fun a b -> a = b) then pure ()
-              (* Check if bound in environment. *)
-              else
-                (match List.findi (tvars tenv) ~f:(fun _ (x, _) -> x = a) with
-                 | Some _ -> pure()
-                 | None -> fail @@ sprintf "Unbound type variable %s in type %s" a (pp_typ t))
-          | PolyFun (arg, bt) -> is_wf_typ' bt (arg::tb)
-        in
-        is_wf_typ' t []
-
-      (* TODO: Add support for tvars *)    
-      let pp ?f:(f = fun _ -> true) env  =
-        let lst = List.filter (to_list env) ~f:f in
-        let ps = List.map lst
-            ~f:(fun (k, v) -> " [" ^ k ^ " : " ^ (rr_pp v) ^ "]") in
-        let cs = String.concat ~sep:",\n " ps in
-        "{" ^ cs ^ " }"
-
-      let resolveT ?lopt:(lopt = None) env id =
-        match Hashtbl.find_opt env.tenv id with
-        | Some r -> pure r
-        | None ->
-            let loc_str = (match lopt with
-                | Some l -> sprintf "[%s]: " (get_loc_str (R.get_loc l))
-                | None -> "") in
-            fail @@ sprintf
-              "%sCouldn't resolve the identifier \"%s\" in the type environment\n%s"
-              loc_str id (pp env)
-
-      let copy e = {
-        tenv = Hashtbl.copy e.tenv;
-        tvars = Hashtbl.copy e.tvars
-      }
-
-      let mk =
-        let t1 = Hashtbl.create 50 in
-        let t2 = Hashtbl.create 10 in
-        let env = {tenv = t1; tvars = t2} in
-        copy env
-
-    end
-  end
-
-
+  
 (***************************************************************)
 (*               Specific instantiations                        *)
 (****************************************************************)
@@ -590,7 +485,6 @@ module TypeUtilities
           if not args_valid
           then fail @@ sprintf "Malformed ADT %s. Arguments do not match expected types" (pp_literal l)
           else pure @@ res
-
 end
   
 (*****************************************************************)

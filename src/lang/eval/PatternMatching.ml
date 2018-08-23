@@ -20,8 +20,8 @@ open Core
 open Datatypes
 open Syntax
 open EvalUtil
-open Result.Let_syntax
 open MonadUtil
+open MonadUtil.Let_syntax
 
 open EvalSyntax
 
