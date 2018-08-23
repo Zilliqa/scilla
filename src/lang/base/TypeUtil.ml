@@ -19,8 +19,8 @@
 open Core
 open Sexplib.Std
 open Syntax
-open Result.Let_syntax
 open MonadUtil
+open MonadUtil.Let_syntax
 open Datatypes
 
 (****************************************************************)
@@ -204,10 +204,10 @@ module type MakeTEnvFunctor = functor (Q: QualifiedTypes) -> sig
     (* Add type variable to the environment *)
     val addV : t -> loc ident -> t
     (* Check type for well-formedness in the type environment *)
-    val is_wf_type : t -> typ -> (unit, string) result
+    val is_wf_type : t -> typ -> (unit, string) eresult
     (* Resolve the identifier *)
     val resolveT : 
-      ?lopt:(loc option) -> t -> string -> (resolve_result, string) result
+      ?lopt:(loc option) -> t -> string -> (resolve_result, string) eresult
     (* Copy the environment *)
     val copy : t -> t
     (* Convert to list *)
@@ -515,7 +515,16 @@ let rec literal_type l =
   | BNum _ -> pure bnum_typ
   | Address _ -> pure address_typ
   | Sha256 _ -> pure hash_typ
-  | Msg _ -> pure msg_typ
+  (* Check that messages and events have storable parameters. *)
+  | Msg m -> 
+    let%bind all_storable = foldM ~f:(fun acc (_, l) ->
+      let%bind t = literal_type l in
+      if acc then pure (is_storable_type t) else pure false)
+      ~init:true m
+    in
+    if not all_storable then
+      fail @@ sprintf "Message/Event has invalid / non-storable parameters"
+    else pure msg_typ
   | Map ((kt, vt), kv) ->
      if PrimTypes.is_prim_type kt
      then 
@@ -610,7 +619,7 @@ let get_failure_msg_stmt s opt = match s with
 
 let wrap_with_info msg res = match res with
   | Ok _ -> res
-  | Error msg' -> Error (sprintf "%s%s" msg msg')
+  | Error (msg', es) -> Error((sprintf "%s%s" msg msg'), es)
 
 let wrap_err e ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt)
 

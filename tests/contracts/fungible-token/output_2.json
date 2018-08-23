@@ -26,5 +26,6 @@
       "type": "Map (Address) (Map (Address) (Uint128))",
       "value": []
     }
-  ]
+  ],
+  "events": []
 }

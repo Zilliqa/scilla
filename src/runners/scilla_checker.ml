@@ -22,7 +22,7 @@ open Core
 open DebugMessage
 open TypeChecker
 open MonadUtil
-open Result.Let_syntax
+open MonadUtil.Let_syntax
 open RunnerUtil
 
 (* Check that the module parses *)
@@ -40,7 +40,7 @@ let check_parsing ctr =
 let check_typing cmod elibs =
   let res = type_module cmod elibs in
   match res with
-  | Error msg -> pout @@ sprintf "\n%s\n\n" msg; res
+  | Error (msg, _) -> pout @@ sprintf "\n%s\n\n" msg; res
   | Ok _ ->
       let cn = get_id cmod.cname in 
         plog @@ sprintf
@@ -74,6 +74,6 @@ let () =
     ) in
     match r with
     | Error _ -> ()
-    | Ok (cmod, _) ->
+    | Ok ((cmod, _), _) ->
       pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr));
   )

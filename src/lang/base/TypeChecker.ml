@@ -18,8 +18,8 @@
 
 open Syntax
 open Core
-open Result.Let_syntax
 open MonadUtil
+open MonadUtil.Let_syntax
 open TypeUtil
 open Datatypes
 open BuiltIns
@@ -246,6 +246,14 @@ let rec type_stmts env stmts =
           let%bind _ = wrap_serr s @@
             assert_type_equiv expected (rr_typ r).tp in
           type_stmts env sts
+      | CreateEvnt (_, i) ->
+          let%bind r = TEnv.resolveT env.pure (get_id i)
+              ~lopt:(Some (get_loc i)) in
+          (* An event is a named message, hence msg_typ. *)
+          let expected = msg_typ in
+          let%bind _ = wrap_serr s @@
+            assert_type_equiv expected (rr_typ r).tp in
+          type_stmts env sts
       | _ ->
           fail @@ sprintf
             "Type-checking the statement %s is not supported yet."
@@ -349,16 +357,16 @@ let type_library_cache tenv elib =
   match get_lib_tenv_cache tenv elib with
   | Some tenv' ->
     (* Use cached entries. *)
-    (tenv', "")
+    pure (tenv', "")
   | None ->
     (* Couldn't find in cache. Actually type the library. *)
     let res = type_library tenv elib in
     (match res with
-    | Error msg -> (tenv, msg)
-    | Ok tenv' -> 
+    | Error (msg, es) -> Ok((tenv, msg), es)
+    | Ok (tenv', es) -> 
         (* Since we don't have this in cache, cache it now. *)
         cache_lib_tenv tenv' elib;
-        (tenv', "")
+        Ok((tenv', ""), es)
     )
 
 let type_module md elibs =
@@ -376,12 +384,12 @@ let type_module md elibs =
   | Some lib -> List.append elibs (lib::[])
   | None -> elibs
   in
-  let (tenv, emsgs) = List.fold_left all_libs ~init:(tenv0, "")
+  let%bind (tenv, emsgs) = foldM all_libs ~init:(tenv0, "")
     ~f:(fun (tenv_acc, emsgs_acc) elib ->
-      let (tenv', emsg) = type_library_cache tenv_acc elib in
+      let%bind (tenv', emsg) = type_library_cache tenv_acc elib in
       let emsgs' = if emsg = "" then emsgs_acc else (emsgs_acc ^ "\n\n" ^ emsg) in
       (* Updated env and error messages are what we accummulate in the fold. *)
-        (tenv', emsgs')
+        pure (tenv', emsgs')
     )
   in
 
@@ -390,10 +398,10 @@ let type_module md elibs =
   let tenv3 = TEnv.addTs tenv params in
 
   (* Step 4: Type-check fields and add balance *)
-  let fenv0, femsgs0 = 
+  let%bind fenv0, femsgs0 = 
     match type_fields tenv3 cfields with
-    | Error msg -> (tenv3, emsgs ^ "\n\n" ^ msg)
-    | Ok t -> (t, emsgs)
+    | Error (msg, es) -> Ok((tenv3, emsgs ^ "\n\n" ^ msg), es)
+    | Ok (t, es) -> Ok((t, emsgs), es)
   in
   let (bn, bt) = balance_field in
   let fenv = TEnv.addT fenv0 bn bt in
@@ -402,11 +410,11 @@ let type_module md elibs =
   let env = {pure= tenv3; fields= fenv; bc= bc_type_env} in
 
   (* Step 6: Type-checking all transitions in batch *)
-  let emsgs' = List.fold_left ~init:femsgs0 ctrans 
+  let%bind emsgs' = foldM ~init:femsgs0 ctrans 
   ~f:(fun emsgs tr -> 
     match type_transition env tr with
-    | Error msg -> emsgs ^ "\n\n" ^ msg
-    | Ok _ -> emsgs
+    | Error (msg, es) -> Ok((emsgs ^ "\n\n" ^ msg), es)
+    | Ok (_, es) -> Ok(emsgs, es)
    ) in
 
   if emsgs' = ""

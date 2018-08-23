@@ -47,9 +47,9 @@ let member_exn m j =
 let literal_type_exn l =
   let t = TypeUtil.literal_type l in
   match t with
-  | Error emsg ->
+  | Error (emsg, _) ->
     raise (Invalid_json (emsg))
-  | Ok s->
+  | Ok (s, _)->
     pp_typ s
 
 let build_prim_lit_exn t v =
@@ -84,9 +84,9 @@ let rec json_to_adtargs cname tlist ajs =
   in
   let dt =
   (match DataTypeDictionary.lookup_constructor cname with
-  | Error emsg ->
+  | Error (emsg, _) ->
     raise (Invalid_json(emsg))
-  | Ok (r, _) ->
+  | Ok ((r, _), _) ->
     r
   ) in
   match cname with
@@ -138,9 +138,9 @@ and read_adt_json name j tlist_verify =
   let open Basic.Util in
   let dt =
   (match DataTypeDictionary.lookup_name name with
-    | Error emsg ->
+    | Error (emsg, _) ->
       raise (Invalid_json(emsg))
-    | Ok r ->
+    | Ok (r, _) ->
       r
     ) in
   let res = match j with
@@ -148,9 +148,9 @@ and read_adt_json name j tlist_verify =
       let constr = member_exn "constructor" j |> to_string in
       let dt' =
       (match DataTypeDictionary.lookup_constructor constr with
-      | Error emsg ->
+      | Error (emsg, _) ->
         raise (Invalid_json(emsg))
-      | Ok (r, _) ->
+      | Ok ((r, _), _) ->
         r
       ) in
       if (dt <> dt') then
@@ -456,5 +456,28 @@ let get_string (contr : 'rep contract) =
   let transj = ("transitions", `List translj) in
   let finalj = `Assoc (namej :: paramj :: fieldsj :: transj :: []) in
   pretty_to_string finalj
+
+end
+
+module Event = struct
+
+  (* Same as Event_to_jstring, but instead gives out raw json, not it's string *)
+  let event_to_json (name, e) =
+    `Assoc [
+      ("eventname", `String name);
+      ("params", `List (slist_to_json e))
+    ]
+
+  (** 
+   ** Prints a Event (string, (string, literal) list) as a json to the 
+   ** and returns the string. pp enables pretty printing.
+   **)
+  let event_to_jstring ?(pp = false) event =
+    let j = event_to_json event in
+    if pp
+    then
+      Basic.pretty_to_string j
+    else
+      Basic.to_string j
 
 end

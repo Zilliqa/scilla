@@ -133,4 +133,16 @@ module ContractInfo : sig
   val get_string : 'rep Syntax.contract -> string
 end
 
+module Event : sig
+
+  (** 
+   ** Prints a Event (string, (string, literal) list) as a json to the 
+   ** and returns the string. pp enables pretty printing.
+   **)
+  val event_to_jstring : ?pp:bool -> string * ((string * Syntax.literal) list) -> string
+  (* Same as Event_to_jstring, but instead gives out raw json, not it's string *)
+  val event_to_json : string * ((string * Syntax.literal) list) -> Yojson.json
+
+end
+
 exception Invalid_json of string

@@ -11,3 +11,7 @@ Type mismatch: Int32 expected, but Int64 provided.
 [checker/bad/mappair.scilla:70:6] Type error in the binding to into `l2`:
 Type mismatch: Int32 expected, but Int64 provided.
 
+[checker/bad/mappair.scilla:90:1] Type error in transition createBadEvent:
+[checker/bad/mappair.scilla:93:5] Type error in the binding to into `e`:
+Cannot send values of type Nat -> Uint32.
+
