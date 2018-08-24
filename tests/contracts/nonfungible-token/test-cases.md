@@ -1,6 +1,8 @@
 # Test Cases
 Description of test cases
 
+### Successful Test Cases
+
 | No. |  Category |      Description     |
 |-----|---|---| 
 |1      |   Mint | Successful add token id 1 |
@@ -15,3 +17,16 @@ Description of test cases
 |10      |   Transfer (by operator) | `92` assigns `91` as the operator for his tokens. `91` transfer token ID `2` to himself. |
 |11     |   Transfer (with token approval) | `0x...92` tranfer `91`'s token to `93`.   |
 |12     |   Delegated Approved | `92` delegates `91` as an approved operator. `91` successfully approves `93` to transfer tokenId 1   |
+
+### Unsuccessful Test Cases
+These test cases should fail
+
+| No. |  Category |      Description     |
+|-----|---|---|
+|21      |   Mint | Unsuccessful as sender is not the token owner. Expected error code: `2` |
+|22      |   Mint | Unsuccessful as token has already been minted. Expected error code: `6` |
+|23      |   Transfer | Unsuccessful as the sender is not the token owner. Unexpected error code `2`|
+|24      |   Transfer | Unsuccessful as the token does not exist. Unexpected error code `4` 
+|25      |   Transfer | Unsuccessful as tokenOwner do not match From. Unexpected error code `5` |
+|26      |   Approve  | Unsuccessful as the sender is not the token owner                |
+|27      |   ApproveForAll  | Unsuccessful as the sender is trying to set himself as operator |

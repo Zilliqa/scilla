@@ -156,6 +156,7 @@ let add_tests env =
     let bookstoretests = "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10) in
     let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 6 8) in
     let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12) in
+    let nonfungibletokentests_expected_f = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27) in
    
     let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1) in
 
@@ -163,5 +164,5 @@ let add_tests env =
     let misc_tests = "misc_tests" >::: build_misc_tests env in
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f;
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;
-                             auctiontests;emptytests;bookstoretests;nonfungibletokentests]
+                             auctiontests;emptytests;bookstoretests;nonfungibletokentests_expected_f;nonfungibletokentests]
 

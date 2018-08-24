@@ -160,7 +160,7 @@ transition ownerOf(tokenId: Uint256)
         send msgs
     | None =>
         msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : code_failure};
+            code : code_not_found};
         msgs = one_msg msg;
         send msgs
     end
