@@ -155,7 +155,7 @@ let add_tests env =
     let mappairtests = "mappair" >:::(build_contract_tests env "mappair" succ_code 1 5) in
     let bookstoretests = "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10) in
     let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 6 8) in
-    let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 11) in
+    let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12) in
    
     let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1) in
 

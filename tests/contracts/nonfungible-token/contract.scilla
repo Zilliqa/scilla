@@ -89,11 +89,13 @@ let isApprovedOrOwner =
         | False => False
         end
 
+(* Error codes *)
 let code_success = Uint32 0
 let code_failure = Uint32 1
 let code_not_authorized = Uint32 2
 let code_not_found = Uint32 4
 let code_bad_request = Uint32 5
+let code_token_exists = Uint32 6
 let code_unexpected_error = Uint32 9
 
 
@@ -108,11 +110,19 @@ contract NonfungibleToken
 )
 
 (* mutable fields *)
+
+(* Mapping between tokenId to token owner *)
 field tokenOwnerMap: Map Uint256 Address = Emp Uint256 Address
+(* Mapping from owner to number of owned tokens *)
 field ownedTokenCount: Map Address Uint256 = Emp Address Uint256
-(* There can only be one approved address per token at a given time. *)
+
+(* Mapping between tokenId to approved address *)
+(* @dev: There can only be one approved address per token at a given time. *)
 field tokenApprovals: Map Uint256 Address = Emp Uint256 Address
-field operatorApprovals: Map Address Map Address Bool = Emp Address Map Address Bool
+
+(* Mapping from owner to operator approvals  *)
+field operatorApprovals: Map Address Map Address Bool 
+                            = Emp Address Map Address Bool
 
 (* immutable field *)
 
@@ -156,34 +166,54 @@ transition ownerOf(tokenId: Uint256)
     end
 end
 
-
+(* @dev:    Mint new tokens. Only `contractOwner` can mint the token*)
+(* @param:  to - address of the token recipient                     *)
+(* @param:  tokenId - token id of the new token                     *)
+(* Returns error message code_token_exist if token exists           *)
 transition mint(to: Address, tokenId: Uint256)
+
+    (* Sender must be the contract owner *)
     isAuthorized = checkContractOwner contractOwner _sender;
     match isAuthorized with
     | True =>
-        currtokenOwnerMap <- tokenOwnerMap;
-        newtokenOwnerMap = builtin put currtokenOwnerMap tokenId to;
-        tokenOwnerMap := newtokenOwnerMap;
-        (* add to owner count *)
-        curr_otc <- ownedTokenCount;
-        userCnt = builtin get curr_otc to;
-        match userCnt with
-        | Some val =>
-            one = Uint256 1;
-            new_val = builtin add val one;
-            new_otc = builtin put curr_otc to new_val;
-            ownedTokenCount := new_otc
-        | None =>
-            new_val = Uint256 1;
-            new_otc = builtin put curr_otc to new_val;
-            ownedTokenCount := new_otc
-        end;
+        currentTokenOwnerMap <- tokenOwnerMap;
+        (* Check if token exists *)
+        tokenExist = builtin contains currentTokenOwnerMap tokenId;
+        match tokenExist with
+        | True =>
+            (* Token exists, return error code *)
+            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+                code : code_token_exists};
+            msgs = one_msg msg;
+            send msgs
+        | False =>
+            (* Mint token *)
+            newtokenOwnerMap = builtin put currentTokenOwnerMap tokenId to;
+            tokenOwnerMap := newtokenOwnerMap;
+            (* add to owner count *)
+            curr_otc <- ownedTokenCount;
+            userCnt = builtin get curr_otc to;
+            match userCnt with
+            | Some val =>
+                (* Append to existing results *)
+                one = Uint256 1;
+                new_val = builtin add val one;
+                new_otc = builtin put curr_otc to new_val;
+                ownedTokenCount := new_otc
+            | None =>
+                (* User does not have existing tokens *)
+                new_val = Uint256 1;
+                new_otc = builtin put curr_otc to new_val;
+                ownedTokenCount := new_otc
+            end;
 
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : code_success};
-        msgs = one_msg msg;
-        send msgs
+            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+                code : code_success};
+            msgs = one_msg msg;
+            send msgs
+        end
     | False =>
+        (* Unauthorized transaction - sender is not the contract owner*)
          msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
             code : code_not_authorized};
         msgs = one_msg msg;
@@ -192,6 +222,7 @@ transition mint(to: Address, tokenId: Uint256)
 
     
 end
+
 (* @dev Transfer the ownership of a given token ID to another address *)
 (* @param from:     Current owner of the token                        *)
 (* @param to:       Recipient address of the token                    *)
@@ -267,11 +298,13 @@ transition transferFrom(from: Address, to: Address, tokenId: Uint256)
                 userCnt = builtin get otc_2 to;
                 match userCnt with
                 | Some val =>
+                    (* Add to existing value *)
                     one = Uint256 1;
                     new_val = builtin add val one;
                     new_otc = builtin put otc_2 to new_val;
                     ownedTokenCount := new_otc
                 | None =>
+                    (* User do not have existing token counts. Create new entry *)
                     new_val = Uint256 1;
                     new_otc = builtin put otc_2 to new_val;
                     ownedTokenCount := new_otc
@@ -284,6 +317,7 @@ transition transferFrom(from: Address, to: Address, tokenId: Uint256)
                 msgs = one_msg msg;
                 send msgs
             | False =>
+                (* Unauthorized transaction *)
                 msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
                     code : code_not_authorized};
                 msgs = one_msg msg;
@@ -292,6 +326,13 @@ transition transferFrom(from: Address, to: Address, tokenId: Uint256)
         end
     end
 end
+
+(* @dev: Approves another address to transfer the given token ID                *)
+(* - There can only be one approved address per token at a given time           *)
+(* - Absence of entry in tokenApproval indicates there is no approved address   *)
+(* param: to Address to be approved for the given token id                      *)
+(* param: tokenId uint256 id of the token to be apporved                        *)
+
 
 transition approve(to: Address, tokenId: Uint256)
 
@@ -323,6 +364,7 @@ transition approve(to: Address, tokenId: Uint256)
             msgs = one_msg msg;
             send msgs
         | False =>
+            (* Unauthorized transaction *)
             msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
                 code : code_not_authorized};
             msgs = one_msg msg;
@@ -331,7 +373,10 @@ transition approve(to: Address, tokenId: Uint256)
     end
 end
 
-(* Sets or unsets the approval of a given operator *)
+(* @dev: sets or unsets the approval of a given operator                *)
+(* @param: address to be set or unset as operator                       *)
+(* @param: approved - status of the approval to be set                  *)
+
 transition setApprovalForAll(to: Address, approved: Bool)
 
     copy_operatorApproval <- operatorApprovals;
@@ -343,6 +388,7 @@ transition setApprovalForAll(to: Address, approved: Bool)
         previous_operatorRecord = builtin get copy_operatorApproval _sender;
         match previous_operatorRecord with
         | Some record =>
+            (* Append new entry to the operatorRecords *)
             new_entry = builtin put record to approved;
             new_operatorRecord = builtin put copy_operatorApproval _sender new_entry;
             operatorApprovals := new_operatorRecord
