@@ -11,10 +11,10 @@
     { "vname": "count", "type": "Int32", "value": "1" },
     {
       "vname": "ping_addr",
-      "type": "Option (Address)",
+      "type": "Option (ByStr20)",
       "value": {
         "constructor": "Some",
-        "argtypes": [ "Address" ],
+        "argtypes": [ "ByStr20" ],
         "arguments": [ "0x1992d4dfafd282e8a8b3c776eb9fc907d321e21a" ]
       }
     }

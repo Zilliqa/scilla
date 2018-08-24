@@ -33,7 +33,7 @@ module TypecheckerERep (R : Rep) = struct
     match s with
     | Ident (n, r) -> Ident (n, (PlainTypes.mk_qualified_type t, r))
 
-  let mk_msg_payload_id_address s = mk_msg_payload_id (R.mk_msg_payload_id_address s) address_typ
+  let mk_msg_payload_id_address s = mk_msg_payload_id (R.mk_msg_payload_id_address s) (bystr_typ address_length)
   let mk_msg_payload_id_uint128 s = mk_msg_payload_id (R.mk_msg_payload_id_uint128 s) uint128_typ
   
   let mk_rep (r : R.rep) (t : PlainTypes.t inferred_type) = (t, r)

@@ -51,7 +51,7 @@ module MessagePayload = struct
       (function StringLit s -> Some (pure s) | _ -> None)
 
   let get_sender = get_value_for_entry sender_label
-      (function Address _ as a -> Some (pure a) | _ -> None)
+      (function ByStr(len, _) as a when len = address_length -> Some (pure a) | _ -> None)
 
   let get_amount = get_value_for_entry amount_label
       (function 
@@ -75,7 +75,7 @@ end
 
 let append_implict_trans_params tparams mk_id_address mk_id_uint128 =
   let open PrimTypes in
-  let sender = (mk_id_address MessagePayload.sender_label, address_typ) in
+  let sender = (mk_id_address MessagePayload.sender_label, bystr_typ address_length) in
   let amount = (mk_id_uint128 MessagePayload.amount_label, uint128_typ) in
   amount :: sender :: tparams
 

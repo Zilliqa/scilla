@@ -23,7 +23,7 @@ open Yojson
 open ContractUtil.MessagePayload
 open Datatypes
 open TypeUtil
-open BuiltIns
+open PrimTypes
     
 exception Invalid_json of string
 
@@ -34,7 +34,7 @@ exception Invalid_json of string
 let parse_typ_exn t = 
   (try FrontEndParser.parse_type t
     with _ ->
-      raise (Invalid_json (sprintf "Invalid type in json:\n%s" t)))
+      raise (Invalid_json (sprintf "Invalid type in json: %s\n" t)))
 
 let member_exn m j =
   let open Basic.Util in
@@ -269,8 +269,8 @@ and adttyps_to_json tlist =
 
 and literal_to_json lit = 
   match lit with
-  | StringLit (x) | BNum (x) | Address (x) | Sha256 (x) -> `String (x)
-  | IntLit (_, x) | UintLit (_, x) -> `String (x)
+  | StringLit (x) | BNum (x) -> `String (x)
+  | IntLit (_, x) | UintLit (_, x) | ByStr(_, x) -> `String (x)
   | Map ((_, _), kvs) ->
       `List (mapvalues_to_json kvs)
   | ADTValue (n, t, v) ->
@@ -311,7 +311,7 @@ let get_uint_literal l =
 
 let get_address_literal l =
   match l with
-  | Address al -> Some al
+  | ByStr(len, al) when len = address_length -> Some al
   | _ -> None
 
 
@@ -363,7 +363,7 @@ let get_json_data filename =
   (* Make tag, amount and sender into a literal *)
   let tag = (tag_label, build_prim_lit_exn PrimTypes.string_typ tags) in
   let amount = (amount_label, build_prim_lit_exn PrimTypes.uint128_typ amounts) in
-  let sender = (sender_label, build_prim_lit_exn PrimTypes.address_typ senders) in
+  let sender = (sender_label, build_prim_lit_exn (PrimTypes.bystr_typ address_length) senders) in
   let pjlist = member_exn "params" json |> to_list in
   let params = List.map pjlist ~f:jobj_to_statevar in
     tag :: amount :: sender :: params

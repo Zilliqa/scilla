@@ -1,7 +1,7 @@
 [
     {
         "vname" : "owner",
-        "type" : "Address", 
+        "type" : "ByStr20", 
         "value" : "0x12345678kl90123456789012345678901234567890"
     },
     {

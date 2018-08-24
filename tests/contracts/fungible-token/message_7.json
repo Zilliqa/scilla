@@ -5,12 +5,12 @@
     "params" : [
         {
             "vname": "from",
-            "type": "Address",
+            "type": "ByStr20",
             "value": "0x1234567890123456789012345678901234567890"
         },
         {
             "vname": "to",
-            "type": "Address",
+            "type": "ByStr20",
             "value": "0x78345678901234567890123456789012345678cd"
         },
         {

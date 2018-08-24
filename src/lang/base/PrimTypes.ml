@@ -19,6 +19,8 @@
 
 open Core
 open Syntax
+open Stdint
+open Integer256
 
 let int32_str = "Int32"
 let int64_str = "Int64"
@@ -30,9 +32,8 @@ let uint128_str = "Uint128"
 let uint256_str = "Uint256"
 let string_str = "String"
 let bnum_str = "BNum"
-let address_str = "Address"
-let hash_str = "Hash"
 let msg_str = "Message"
+let bystr_str = "ByStr"
 
 let int32_typ = PrimType int32_str
 let int64_typ = PrimType int64_str
@@ -44,14 +45,142 @@ let uint128_typ = PrimType uint128_str
 let uint256_typ = PrimType uint256_str
 let string_typ = PrimType string_str
 let bnum_typ = PrimType bnum_str
-let address_typ = PrimType address_str
-let hash_typ = PrimType hash_str
 let msg_typ = PrimType msg_str
-  
-let prim_types =
+let bystr_typ b = PrimType (bystr_str ^ Int.to_string b)
+
+(* Given a ByStrX string, return integer X *)
+let bystr_width t =
+  match t with
+  | PrimType s ->
+    let re = Str.regexp "ByStr\\([0-9]+\\)$" in
+    if Str.string_match re s 0 then
+      let b = Int.of_string (Str.matched_group 1 s) in
+      Some b
+    else
+      None
+  | _ -> None
+
+let prim_types_except_bystr =
     [int32_typ; int64_typ; int128_typ; int256_typ;
      uint32_typ; uint64_typ; uint128_typ; uint256_typ;
-     string_typ; bnum_typ; address_typ;
-     hash_typ; msg_typ]  
+     string_typ; bnum_typ; msg_typ]  
 
-let is_prim_type t = List.mem ~equal:(fun t1 t2 -> t1 = t2) prim_types t
+let is_prim_type t =
+  match t with
+  | PrimType _ ->
+    (match (bystr_width t) with
+    | Some _ -> true (* bystr_typ *)
+    | None ->
+      List.mem ~equal:(fun t1 t2 -> t1 = t2) prim_types_except_bystr t)
+  | _ -> false
+
+let is_int_type = function
+  | x when x = int32_typ ||
+           x = int64_typ ||
+           x = int128_typ ||
+           x = int256_typ -> true
+  | _ -> false
+
+let is_uint_type = function
+  | x when x = uint32_typ ||
+           x = uint64_typ ||
+           x = uint128_typ ||
+           x = uint256_typ -> true
+  | _ -> false
+
+let is_bystr_type t =
+  match bystr_width t with
+  | Some _ -> true
+  | None -> false
+
+(****************************************************************)
+(*                 Primitive Literal Utilities                  *)
+(****************************************************************)
+
+
+(* Validate Int* and Uint* literals (wx, x), whether the
+   string x they contain can be represented in wx bits  *)
+let validate_int_literal i =
+  try
+    match i with
+    | IntLit (wx, x) ->
+      (match wx with
+      | 32 -> Int32.to_string (Int32.of_string x) = x
+      | 64 -> Int64.to_string (Int64.of_string x) = x
+      | 128 -> Int128.to_string (Int128.of_string x) = x
+      | 256 -> Int256.to_string (Int256.of_string x) = x
+      | _ -> false
+      )
+    | UintLit (wx, x) ->
+      (match wx with
+      | 32 -> Uint32.to_string (Uint32.of_string x) = x
+      | 64 -> Uint64.to_string (Uint64.of_string x) = x
+      | 128 -> Uint128.to_string (Uint128.of_string x) = x
+      | 256 -> Uint256.to_string (Uint256.of_string x) = x
+      | _ -> false
+      )
+    | _ -> false
+  with
+  | _ -> false
+
+(* Given an integer type (as string) and the value (as string),
+   build IntLit or UintLit out of it. *)
+let build_int t v =
+  let validator_wrapper l = 
+    if validate_int_literal l then Some l else None
+  in
+  match t with
+  | x when x = int32_typ   -> validator_wrapper (IntLit(32, v))
+  | x when x = int64_typ   -> validator_wrapper (IntLit(64, v))
+  | x when x = int128_typ  -> validator_wrapper (IntLit(128, v))
+  | x when x = int256_typ  -> validator_wrapper (IntLit(256, v))
+  | x when x = uint32_typ  -> validator_wrapper (UintLit(32, v))
+  | x when x = uint64_typ  -> validator_wrapper (UintLit(64, v))
+  | x when x = uint128_typ -> validator_wrapper (UintLit(128, v))
+  | x when x = uint256_typ -> validator_wrapper (UintLit(256, v))
+  | _ -> None
+
+let validate_bnum_literal b = match b with
+  | BNum v ->
+    let s, re =
+    v, Str.regexp "[0-9]+$" in
+    if Str.string_match re s 0
+    then
+      true
+    else
+      false
+  | _ -> false
+
+(* Given an integer string, build a BNum literal,
+   or return None on invalid input. *)
+let build_bnum v =
+  let b = BNum (v) in
+  if validate_bnum_literal b then Some b else None
+
+let validate_bystr_literal b = match b with
+  | ByStr (w, s) ->
+    let s, re, l =
+      s, Str.regexp "0x[0-9a-f]+$", w in
+    if Str.string_match re s 0 && (String.length s)-2 = (l * 2)
+    then true else false
+  | _ -> false
+
+
+(* Given a hexadecimal byte string, build a ByStr
+   literal or return None on invalid input. *)
+let build_bystr t v =
+  let w = bystr_width t in
+  match w with
+  | Some b ->
+    let v' = String.lowercase v in
+    let bs = ByStr (b, v') in
+    if validate_bystr_literal bs then Some bs else None
+  | None -> None
+
+let build_prim_literal t v =
+  match t with
+  | x when x = string_typ -> Some (StringLit v)
+  | x when x = bnum_typ -> build_bnum v
+  | x when is_bystr_type x -> build_bystr t v
+  | x when is_int_type x || is_uint_type x -> build_int t v
+  | _ -> None

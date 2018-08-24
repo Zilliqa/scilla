@@ -3,13 +3,13 @@
   "params": [
     { "name": "auctionStart", "type": "BNum" },
     { "name": "biddingTime", "type": "Uint128" },
-    { "name": "beneficiary", "type": "Address" }
+    { "name": "beneficiary", "type": "ByStr20" }
   ],
   "fields": [
     { "name": "ended", "type": "Bool" },
-    { "name": "highestBidder", "type": "Option (Address)" },
+    { "name": "highestBidder", "type": "Option (ByStr20)" },
     { "name": "highestBid", "type": "Uint128" },
-    { "name": "pendingReturns", "type": "Map (Address) (Uint128)" }
+    { "name": "pendingReturns", "type": "Map (ByStr20) (Uint128)" }
   ],
   "transitions": [
     { "name": "Bid", "params": [] },

@@ -10,10 +10,10 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "ping_addr",
-      "type": "Option (Address)",
+      "type": "Option (ByStr20)",
       "value": {
         "constructor": "None",
-        "argtypes": [ "Address" ],
+        "argtypes": [ "ByStr20" ],
         "arguments": []
       }
     },

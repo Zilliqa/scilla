@@ -95,8 +95,8 @@ type mtype = typ * typ
 [@@deriving sexp]
 let pp_mtype (kt, vt) = pp_typ (MapType(kt, vt))
 
-let address_length = 40
-let hash_length = 64
+let address_length = 20
+let hash_length = 32
 
 type literal =
   | StringLit of string
@@ -105,8 +105,8 @@ type literal =
   (* (bit-width, value) *)
   | UintLit of int * string
   | BNum of string
-  | Address of string
-  | Sha256 of string
+  (* (bit-width, value) *)
+  | ByStr of int * string
   (* Message: an associative array *)    
   | Msg of (string * literal) list
   (* A dynamic map of literals *)    
@@ -124,8 +124,7 @@ let rec pp_literal l =
     (* (bit-width, value) *)
     | UintLit (b, ui) -> "(Int" ^ (to_string b) ^ " " ^ ui ^ ")"
     | BNum b -> "(BNum " ^ b ^ ")"
-    | Address a -> "(Address " ^ a ^ ")"
-    | Sha256 h -> "(Hash " ^ h ^ ")"
+    | ByStr (i, s) -> "(ByStr" ^ (to_string i) ^ " " ^ s ^ ")"
     | Msg m ->
       let items = "[" ^
         List.fold_left m ~init:"" ~f:(fun a (s, l') ->

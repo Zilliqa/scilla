@@ -26,9 +26,9 @@ let fst_f = @fst (List(Int64)) (Option (Bool))
 let snd_f = @snd (List(Int64)) (Option (Bool))
 
 contract Test
-(owner: Address)
+(owner: ByStr20)
 
-field gmap : Map Address (Pair (Int32) (Int32))  = Emp Address (Pair (Int32) (Int32))
+field gmap : Map ByStr20 (Pair (Int32) (Int32))  = Emp ByStr20 (Pair (Int32) (Int32))
 field gpair : Pair (List(Int64)) (Option (Bool)) =
     let el = Nil {Int64} in
     let n = None {Bool} in

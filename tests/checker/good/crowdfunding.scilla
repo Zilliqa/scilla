@@ -12,15 +12,15 @@ let one_msg =
     Cons {Message} msg nil_msg
     
 let check_update = 
-  fun (bs : Map Address Uint128) =>
-  fun (_sender : Address) =>
+  fun (bs : Map ByStr20 Uint128) =>
+  fun (_sender : ByStr20) =>
   fun (_amount : Uint128) =>
     let c = builtin contains bs _sender in
     match c with 
     | False => 
       let bs1 = builtin put bs _sender _amount in
-      Some {Map Address Uint128} bs1 
-    | True  => None {Map Address Uint128}
+      Some {Map ByStr20 Uint128} bs1 
+    | True  => None {Map ByStr20 Uint128}
     end
 
 let blk_leq =
@@ -46,12 +46,12 @@ let reclaimed_code = Int32 9
 contract Crowdfunding
 
 (*  Parameters *)
-(owner     : Address,
+(owner     : ByStr20,
  max_block : BNum,
  goal      : Uint128)
 
 (* Mutable fields *)
-field backers : Map Address Uint128 = Emp Address Uint128
+field backers : Map ByStr20 Uint128 = Emp ByStr20 Uint128
 field funded : Bool = False
 
 transition Donate ()

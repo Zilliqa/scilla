@@ -5,7 +5,7 @@
     "params" : [
         {
             "vname": "spender",
-            "type": "Address",
+            "type": "ByStr20",
             "value": "0x54345678901234567890123456789012345678cd"
         },
         {

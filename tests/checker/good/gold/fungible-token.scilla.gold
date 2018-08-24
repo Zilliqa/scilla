@@ -1,46 +1,46 @@
 {
   "name": "FungibleToken",
   "params": [
-    { "name": "owner", "type": "Address" },
+    { "name": "owner", "type": "ByStr20" },
     { "name": "total_tokens", "type": "Uint128" }
   ],
   "fields": [
-    { "name": "balances", "type": "Map (Address) (Uint128)" },
-    { "name": "allowed", "type": "Map (Address) (Map (Address) (Uint128))" }
+    { "name": "balances", "type": "Map (ByStr20) (Uint128)" },
+    { "name": "allowed", "type": "Map (ByStr20) (Map (ByStr20) (Uint128))" }
   ],
   "transitions": [
     {
       "name": "BalanceOf",
-      "params": [ { "name": "tokenOwner", "type": "Address" } ]
+      "params": [ { "name": "tokenOwner", "type": "ByStr20" } ]
     },
     { "name": "TotalSupply", "params": [] },
     {
       "name": "Transfer",
       "params": [
-        { "name": "to", "type": "Address" },
+        { "name": "to", "type": "ByStr20" },
         { "name": "tokens", "type": "Uint128" }
       ]
     },
     {
       "name": "TransferFrom",
       "params": [
-        { "name": "from", "type": "Address" },
-        { "name": "to", "type": "Address" },
+        { "name": "from", "type": "ByStr20" },
+        { "name": "to", "type": "ByStr20" },
         { "name": "tokens", "type": "Uint128" }
       ]
     },
     {
       "name": "Approve",
       "params": [
-        { "name": "spender", "type": "Address" },
+        { "name": "spender", "type": "ByStr20" },
         { "name": "tokens", "type": "Uint128" }
       ]
     },
     {
       "name": "Allowance",
       "params": [
-        { "name": "tokenOwner", "type": "Address" },
-        { "name": "spender", "type": "Address" }
+        { "name": "tokenOwner", "type": "ByStr20" },
+        { "name": "spender", "type": "ByStr20" }
       ]
     }
   ]

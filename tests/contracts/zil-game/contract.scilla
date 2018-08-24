@@ -14,11 +14,11 @@ let one_msg =
 let no_msg = Nil {Message}
 
 let update_hash = 
-  fun (oh : Option Hash) =>
-  fun (h : Hash) =>
+  fun (oh : Option ByStr32) =>
+  fun (h : ByStr32) =>
     match oh with
-    | Some x => Some {Hash} x
-    | None   => Some {Hash} h
+    | Some x => Some {ByStr32} x
+    | None   => Some {ByStr32} h
     end
 
 let update_timer = 
@@ -52,16 +52,16 @@ let time_to_claim =
     end     
 
 let check_validity = 
-  fun (a        : Address) =>
+  fun (a        : ByStr20) =>
   fun (solution : Int128) =>
-  fun (pa       : Address) =>
-  fun (pb       : Address) =>
-  fun (guess_a  : Option Hash) =>
-  fun (guess_b  : Option Hash) =>
+  fun (pa       : ByStr20) =>
+  fun (pb       : ByStr20) =>
+  fun (guess_a  : Option ByStr32) =>
+  fun (guess_b  : Option ByStr32) =>
     let ca = builtin eq pa a in
     let cb = builtin eq pb a in
-    let xa = Pair {Bool (Option Hash)} ca guess_a in 
-    let xb = Pair {Bool (Option Hash)} cb guess_b in 
+    let xa = Pair {Bool (Option ByStr32)} ca guess_a in 
+    let xb = Pair {Bool (Option ByStr32)} cb guess_b in 
     match xa with
     | Pair True (Some g) =>
       let h = builtin sha256hash solution in
@@ -90,13 +90,13 @@ let can_withdraw =
 
 (* In the case of equal results, or no results the prise goes to the owner *)
 let determine_winner = 
-  fun (puzzle   : Hash) =>
-  fun (guess_a  : Option Hash) =>
-  fun (guess_b  : Option Hash) =>
-  fun (pa       : Address) =>
-  fun (pb       : Address) =>
-  fun (oa       : Address) =>
-    let gab = Pair { (Option Hash) (Option Hash) } guess_a guess_b in
+  fun (puzzle   : ByStr32) =>
+  fun (guess_a  : Option ByStr32) =>
+  fun (guess_b  : Option ByStr32) =>
+  fun (pa       : ByStr20) =>
+  fun (pb       : ByStr20) =>
+  fun (oa       : ByStr20) =>
+    let gab = Pair { (Option ByStr32) (Option ByStr32) } guess_a guess_b in
     match gab with
     | Pair (Some ga) (Some gb) =>
       let d1 = builtin dist puzzle ga in
@@ -129,19 +129,19 @@ let cannot_withdraw = Int32 7
 (***************************************************)
 contract ZilGame 
 (
-owner    : Address,
-player_a : Address,
-player_b : Address,
-puzzle   : Hash
+owner    : ByStr20,
+player_a : ByStr20,
+player_b : ByStr20,
+puzzle   : ByStr32
 )
 
 (* Initial balance is not stated explicitly: it's initialized when creating the contract. *)
 
-field player_a_hash : Option Hash = None {Hash}
-field player_b_hash : Option Hash = None {Hash}
+field player_a_hash : Option ByStr32 = None {ByStr32}
+field player_b_hash : Option ByStr32 = None {ByStr32}
 field timer         : Option BNum  = None {BNum}
 
-transition Play (guess: Hash)
+transition Play (guess: ByStr32)
   tm_opt <- timer;
   b <- & BLOCKNUMBER;
   (* Check the timer *)
