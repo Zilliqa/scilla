@@ -21,7 +21,7 @@ open Syntax
 open Core
 open DebugMessage
 open MonadUtil
-open MonadUtil.Let_syntax
+open Result.Let_syntax
 open RunnerUtil
 
 open TypeChecker.Typechecker_Contracts
@@ -41,7 +41,7 @@ let check_parsing ctr =
 let check_typing cmod elibs =
   let res = type_module cmod elibs in
   match res with
-  | Error (msg, _) -> pout @@ sprintf "\n%s\n\n" msg; res
+  | Error msg -> pout @@ sprintf "\n%s\n\n" msg; res
   | Ok _ ->
       let cn = get_id cmod.cname in 
         plog @@ sprintf
@@ -75,6 +75,6 @@ let () =
     ) in
     match r with
     | Error _ -> ()
-    | Ok ((cmod, _), _) ->
+    | Ok (cmod, _) ->
       pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr));
   )
