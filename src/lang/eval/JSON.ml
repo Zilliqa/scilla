@@ -47,9 +47,9 @@ let member_exn m j =
 let literal_type_exn l =
   let t = TypeUtil.literal_type l in
   match t with
-  | Error (emsg, _) ->
+  | Error emsg ->
     raise (Invalid_json (emsg))
-  | Ok (s, _)->
+  | Ok s->
     pp_typ s
 
 let build_prim_lit_exn t v =
@@ -84,9 +84,9 @@ let rec json_to_adtargs cname tlist ajs =
   in
   let dt =
   (match DataTypeDictionary.lookup_constructor cname with
-  | Error (emsg, _) ->
+  | Error emsg ->
     raise (Invalid_json(emsg))
-  | Ok ((r, _), _) ->
+  | Ok (r, _) ->
     r
   ) in
   match cname with
@@ -138,9 +138,9 @@ and read_adt_json name j tlist_verify =
   let open Basic.Util in
   let dt =
   (match DataTypeDictionary.lookup_name name with
-    | Error (emsg, _) ->
+    | Error emsg ->
       raise (Invalid_json(emsg))
-    | Ok (r, _) ->
+    | Ok r ->
       r
     ) in
   let res = match j with
@@ -148,9 +148,9 @@ and read_adt_json name j tlist_verify =
       let constr = member_exn "constructor" j |> to_string in
       let dt' =
       (match DataTypeDictionary.lookup_constructor constr with
-      | Error (emsg, _) ->
+      | Error emsg ->
         raise (Invalid_json(emsg))
-      | Ok ((r, _), _) ->
+      | Ok (r, _) ->
         r
       ) in
       if (dt <> dt') then
@@ -427,35 +427,36 @@ let get_json_data filename  =
 end
 
 module ContractInfo = struct
-
-let get_string (contr : 'rep contract) =
-  (* 1. contract name *)
-  let namej = ("name", `String (get_id contr.cname)) in
-  (* 2. parameters *)
-  let paraml = contr.cparams in
-  let paramlj = List.map paraml ~f: (fun (i, t) ->
-    `Assoc [("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
-  let paramj = ("params", `List paramlj) in
-  (* 3. fields *)
-  let fieldsl = contr.cfields in
-  let fieldslj = List.map fieldsl ~f: (fun (i, t, _) ->
-    `Assoc [("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
-  let fieldsj = ("fields", `List fieldslj) in
-  (* 4. transitions *)
-  let transl = contr.ctrans in
-  let translj = List.map transl ~f: (fun t ->
-    (* 4a. transition name *)
-    let namej = ("name", `String (get_id t.tname)) in
-    (* 4b. transition parameters *)
-    let paraml = t.tparams in
+  open EvalUtil.EvalContract
+         
+  let get_string (contr : contract) =
+    (* 1. contract name *)
+    let namej = ("name", `String (get_id contr.cname)) in
+    (* 2. parameters *)
+    let paraml = contr.cparams in
     let paramlj = List.map paraml ~f: (fun (i, t) ->
-      `Assoc[("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
+        `Assoc [("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
     let paramj = ("params", `List paramlj) in
-      `Assoc (namej :: paramj :: [] )) in
-
-  let transj = ("transitions", `List translj) in
-  let finalj = `Assoc (namej :: paramj :: fieldsj :: transj :: []) in
-  pretty_to_string finalj
+    (* 3. fields *)
+    let fieldsl = contr.cfields in
+    let fieldslj = List.map fieldsl ~f: (fun (i, t, _) ->
+        `Assoc [("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
+    let fieldsj = ("fields", `List fieldslj) in
+    (* 4. transitions *)
+    let transl = contr.ctrans in
+    let translj = List.map transl ~f: (fun t ->
+        (* 4a. transition name *)
+        let namej = ("name", `String (get_id t.tname)) in
+        (* 4b. transition parameters *)
+        let paraml = t.tparams in
+        let paramlj = List.map paraml ~f: (fun (i, t) ->
+            `Assoc[("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
+        let paramj = ("params", `List paramlj) in
+        `Assoc (namej :: paramj :: [] )) in
+    
+    let transj = ("transitions", `List translj) in
+    let finalj = `Assoc (namej :: paramj :: fieldsj :: transj :: []) in
+    pretty_to_string finalj
 
 end
 

@@ -20,16 +20,19 @@
 open Core
 open Printf
 open Syntax
+open ParserUtil
 open TypeUtil
 open Recursion
 open RunnerUtil
 open DebugMessage
 open MonadUtil
-open MonadUtil.Let_syntax
+open Result.Let_syntax
 
-module SimpleTEnv = MakeTEnv(PlainTypes)
+module SimpleTEnv = MakeTEnv(PlainTypes) (ParserRep)
 open SimpleTEnv
 
+open TypeChecker.Typechecker_Contracts
+    
 (* Check that the expression parses *)
 let check_parsing filename = 
     let parse_module =
@@ -43,15 +46,18 @@ let check_parsing filename =
 
 (* Type check the expression with external libraries *)
 let check_typing e elibs =
-  let%bind _ = TypeChecker.type_recursion_principles in
+  let%bind _ = TypeChecker.type_recursion_principles ParserRep.get_loc in
   let recs = List.map recursion_principles
       ~f:(fun ({lname = a; _}, c) -> (a, c)) in
   let tenv0 = TEnv.addTs TEnv.mk recs in
   (* Step 1: Type check external libraries *)
   (* TODO: Cache this information unless its version changed! *)
-  let%bind tenv1 = MonadUtil.foldM elibs ~init:tenv0
-      ~f:(fun acc elib -> TypeChecker.type_library acc elib) in
-  TypeChecker.type_expr tenv1 e
+  let%bind (_, tenv1) = MonadUtil.foldM elibs ~init:([], tenv0)
+      ~f:(fun (lib_acc, env_acc) elib ->
+          let%bind (lib, new_env) = type_library env_acc elib in
+        pure @@ (lib_acc @ [lib], new_env)) in
+  let%bind (_, (typ, _)) = TypeChecker.type_expr tenv1 e ParserRep.get_loc in
+  pure @@ typ
 
 let () =
   if (Array.length Sys.argv) < 2
@@ -73,8 +79,8 @@ let () =
         (* Import whatever libs we want. *)
         let std_lib = import_libs [] in
         (match check_typing e std_lib with
-         | Ok (res, _) ->
+         | Ok res ->
              printf "%s\n" (pp_typ res.tp)
-         | Error (s, _) -> printf "Type checking failed:\n%s\n" s)
+         | Error s -> printf "Type checking failed:\n%s\n" s)
     | Some _ | None ->
         printf "%s\n" "Failed to parse input file.")

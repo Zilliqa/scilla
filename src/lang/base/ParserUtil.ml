@@ -17,26 +17,23 @@
 *)
 
 open Syntax
-open Core
 
-module BuiltInDictionary : sig
-  type built_in_executor =
-    literal list -> typ -> (literal, string) result
+(*******************************************************)
+(*                   Annotations                       *)
+(*******************************************************)
 
-  (*  
-   The return result is a triple:
-   * The full elaborated type of the operation, e.g., string -> Bool
-   * Its result type for given argument types, e.g., Bool
-   * Executor for evaluating the operation      
-   *)
-  val find_builtin_op :
-    loc ident -> typ list -> ((typ * typ * built_in_executor), string) result
+module ParserRep = struct
+  type rep = loc
+  let get_loc l = l
+  let mk_msg_payload_id_address s = Ident (s, dummy_loc)
+  let mk_msg_payload_id_uint128 s = Ident (s, dummy_loc)
+
+  let parse_rep _ = dummy_loc
+  let get_rep_str r = get_loc_str r
 end
 
-(* The first parameter is a string type *)
-val build_prim_literal : typ -> string -> literal option
-val is_int_type : typ -> bool
-val is_uint_type : typ -> bool
+(*******************************************************)
+(*                    Contracts                        *)
+(*******************************************************)
 
-(* Elaborator for the built-in typ *)
-val elab_id : typ -> typ list -> (typ, string) result
+module ParsedContract = Contract (ParserRep) (ParserRep)

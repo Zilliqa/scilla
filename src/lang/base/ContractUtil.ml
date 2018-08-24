@@ -73,12 +73,10 @@ module MessagePayload = struct
   
 end
 
-let append_implict_trans_params tparams =
-  let open PrimTypes in 
-  let sender_id = asId MessagePayload.sender_label in
-  let sender = (sender_id, address_typ) in
-  let amount_id = asId MessagePayload.amount_label in
-  let amount = (amount_id, uint128_typ) in
+let append_implict_trans_params tparams mk_id_address mk_id_uint128 =
+  let open PrimTypes in
+  let sender = (mk_id_address MessagePayload.sender_label, address_typ) in
+  let amount = (mk_id_uint128 MessagePayload.amount_label, uint128_typ) in
   amount :: sender :: tparams
 
 let balance_label = "_balance"

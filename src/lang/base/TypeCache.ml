@@ -24,22 +24,28 @@ open TypeUtil
 (*                    Library type caching                       *)
 (*****************************************************************)
 
-module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
+module StdlibTypeCacher
+    (Q : MakeTEnvFunctor)
+    (R : QualifiedTypes)
+    (SR : Rep)
+    (ER : Rep) = struct
 
-  module MakeTEnv = Q(R)
+  module L = Contract (SR) (ER)
+  open L
+  module MakeTEnv = Q(R)(ER)
   open MakeTEnv
-
+  
   open Cryptokit
   let hash s = transform_string (Hexa.encode()) (hash_string (Hash.sha2 256) s)
-  let hash_lib lib =
-    let s = List.fold_left ~f:(fun acc {lname;lexp} ->
-      (acc ^ (get_id lname) ^ (spp_expr lexp))
+  let hash_lib (lib : L.library) =
+    let s = List.fold_left ~f:(fun acc {lname; _ (* TODO, Issue #179: lexp *) } ->
+        (acc ^ (get_id lname) (* TODO, Issue #179: Fix this ^ (spp_expr lexp)  *)   )
       ) ~init:"" lib.lentries in
     hash s
 
   type t = MakeTEnv.TEnv.t
 
-  let to_json_string lib lib_entries =
+  let to_json_string (lib : L.library) lib_entries =
     let lib_name = (get_id lib.lname) in
     let lib_hash = hash_lib lib in
     (* Let's output to a JSON with the following format:
@@ -82,11 +88,11 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
           member "name" ej, member "type" ej, member "loc" ej in
         let e_o = 
           (match name_j, type_j, loc_j with
-          | `String name_s, `String type_s, `String _ ->
+          | `String name_s, `String type_s, `String loc_s ->
               (* Printf.printf "Parsing type: %s\n" type_s; *)
               (try
                 let typ = FrontEndParser.parse_type type_s in
-                let loc = dummy_loc in (* TODO: parse loc_s *)
+                let loc = ER.parse_rep loc_s in (* TODO: parse loc_s *)
                 let id = asIdL name_s loc in
                 Some (id, typ)
                with
@@ -106,7 +112,7 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
     | _, _, _ -> None
 
   (* Get type info for "lib" from cache, if it exists. *)
-  let get_lib_tenv_cache (tenv : t) lib =
+  let get_lib_tenv_cache (tenv : t) (lib : L.library) =
     let lib_name = get_id lib.lname in
     let open GlobalConfig.StdlibTracker in
     let dir_o = find_lib_dir lib_name in
@@ -133,7 +139,7 @@ module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) = struct
     | None -> None
 
   (* Store type info tenv, for "lib" in the cache. *)
-  let cache_lib_tenv (tenv : t) lib =
+  let cache_lib_tenv (tenv : t) (lib : L.library) =
     (* 1. Carefully separate out only lib's entries from tenv *)
     let entry_names =
       List.map ~f:(fun {lname;_} -> (get_id lname)) lib.lentries

@@ -23,12 +23,22 @@
 open Syntax
 open TypeUtil
 
-module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) : sig
+module StdlibTypeCacher
+    (Q : MakeTEnvFunctor)
+    (R : QualifiedTypes)
+    (SR : Rep)
+    (ER : Rep) : sig
 
-  type t = Q(R).TEnv.t
+  module L :
+  sig
+    type lib_entry = { lname : ER.rep ident ; lexp : ER.rep expr_annot }
+    type library = { lname : SR.rep ident; lentries : lib_entry list }
+  end
+    
+  type t = Q(R)(ER).TEnv.t
 
   (* Get type info for "lib" from cache, if it exists. *)
-  val get_lib_tenv_cache : t -> loc library -> t option
+  val get_lib_tenv_cache : t -> L.library -> t option
   (* Store type info tenv, for "lib" in the cache. *)
-  val cache_lib_tenv : t -> loc library -> unit
+  val cache_lib_tenv : t -> L.library -> unit
 end
