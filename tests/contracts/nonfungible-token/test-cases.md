@@ -12,6 +12,6 @@ Description of test cases
 |7      |   Approve | `0x...92`approves `0x...91` permission to transfer token ID 1       |
 |8      |   ApproveForAll | `0x...92` approves `0x...91`. |                                                           |
 |9      |   ApproveForAll | `0x...92` approves `0x...93`. `0x...92` should now have two entries in the approvals.  |
-|9      |   ApproveForAll | `0x...92` approves `0x...93`. `0x...92` should now have two entries in the approvals.  |
+|10      |   Transfer (by operator) | `92` assigns `91` as the operator for his tokens. `91` transfer token ID `2` to himself. |
 |11     |   Transfer (with token approval) | `0x...92` tranfer `91`'s token to `93`.   |
 |12     |   Delegated Approved | `92` delegates `91` as an approved operator. `91` successfully approves `93` to transfer tokenId 1   |

@@ -93,6 +93,7 @@ let code_success = Uint32 0
 let code_failure = Uint32 1
 let code_not_authorized = Uint32 2
 let code_not_found = Uint32 4
+let code_bad_request = Uint32 5
 let code_unexpected_error = Uint32 9
 
 
@@ -191,7 +192,10 @@ transition mint(to: Address, tokenId: Uint256)
 
     
 end
-
+(* @dev Transfer the ownership of a given token ID to another address *)
+(* @param from:     Current owner of the token                        *)
+(* @param to:       Recipient address of the token                    *)
+(* @param tokenId   uint256 id of the token to be transferred         *)
 transition transferFrom(from: Address, to: Address, tokenId: Uint256)
     copy_tokenOwnerMap <- tokenOwnerMap;
     copy_tokenApprovals <- tokenApprovals;
@@ -211,68 +215,80 @@ transition transferFrom(from: Address, to: Address, tokenId: Uint256)
         checkApproved = isApproved _sender tokenId copy_tokenApprovals;
         checkApprovedForAll = isApprovedForAll _sender tokenOwner copy_operatorApproval;
 
-        (* isApprovedOrOwner checks if any of the three conditions are met *)
-        isAuthorized = isApprovedOrOwner checkOwner checkApproved checkApprovedForAll;
+        (* Checks if the `from` is indeed the owner of the token *)
+        isFromTokenOwner = builtin eq tokenOwner from;
+        match isFromTokenOwner with
+        | False =>
+            (* From address is not the same as the tokenOwner    *)
+            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+                    code : code_bad_request };
+                    msgs = one_msg msg;
+                    send msgs
+        | True => 
 
-        match isAuthorized with
-        | True =>
+            (* isApprovedOrOwner checks if any of the three conditions are met *)
+            isAuthorized = isApprovedOrOwner checkOwner checkApproved checkApprovedForAll;
 
-            (* Remove from Approval *)
-            match checkApproved with
+            match isAuthorized with
             | True =>
-                (* Remove entry from approvals at the token level *)
-                new_tokenApprovals = builtin remove copy_tokenApprovals tokenId; 
-                tokenApprovals := new_tokenApprovals
-            | False =>
-            end;
 
-            (* Change tokenOwnerMap *)
-            new_tokenOwnerMap = builtin put copy_tokenOwnerMap tokenId to;
-            tokenOwnerMap := new_tokenOwnerMap;
+                (* Remove from Approval *)
+                match checkApproved with
+                | True =>
+                    (* Remove entry from approvals at the token level *)
+                    new_tokenApprovals = builtin remove copy_tokenApprovals tokenId; 
+                    tokenApprovals := new_tokenApprovals
+                | False =>
+                end;
 
-            (* Change Count *)
-            curr_otc <- ownedTokenCount;
+                (* Change tokenOwnerMap *)
+                new_tokenOwnerMap = builtin put copy_tokenOwnerMap tokenId to;
+                tokenOwnerMap := new_tokenOwnerMap;
 
-            (*subtract one from previous token owner *)
-            val = builtin get curr_otc from;
-            match val with
-            | Some a1 =>
-                a2  = let one = Uint256 1 in builtin sub a1 one;
-                otc_1 = builtin put curr_otc from a2;
-                ownedTokenCount := otc_1
-            | None =>
+                (* Change Count *)
+                curr_otc <- ownedTokenCount;
+
+                (*subtract one from previous token owner *)
+                val = builtin get curr_otc from;
+                match val with
+                | Some a1 =>
+                    a2  = let one = Uint256 1 in builtin sub a1 one;
+                    otc_1 = builtin put curr_otc from a2;
+                    ownedTokenCount := otc_1
+                | None =>
+                    msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+                    code : code_unexpected_error};
+                    msgs = one_msg msg;
+                    send msgs
+                end;
+
+                (* add one to the new token owner *)
+                otc_2 <- ownedTokenCount;
+                userCnt = builtin get otc_2 to;
+                match userCnt with
+                | Some val =>
+                    one = Uint256 1;
+                    new_val = builtin add val one;
+                    new_otc = builtin put otc_2 to new_val;
+                    ownedTokenCount := new_otc
+                | None =>
+                    new_val = Uint256 1;
+                    new_otc = builtin put otc_2 to new_val;
+                    ownedTokenCount := new_otc
+                end;
+
+                
+
                 msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                code : code_unexpected_error};
+                    code : code_success};
                 msgs = one_msg msg;
                 send msgs
-            end;
-
-            (* add one to the new token owner *)
-            otc_2 <- ownedTokenCount;
-            userCnt = builtin get otc_2 to;
-            match userCnt with
-            | Some val =>
-                one = Uint256 1;
-                new_val = builtin add val one;
-                new_otc = builtin put otc_2 to new_val;
-                ownedTokenCount := new_otc
-            | None =>
-                new_val = Uint256 1;
-                new_otc = builtin put otc_2 to new_val;
-                ownedTokenCount := new_otc
-            end;
-
-            
-
-            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                code : code_success};
-            msgs = one_msg msg;
-            send msgs
-        | False =>
-            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                code : code_not_authorized};
-            msgs = one_msg msg;
-            send msgs
+            | False =>
+                msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+                    code : code_not_authorized};
+                msgs = one_msg msg;
+                send msgs
+            end
         end
     end
 end
