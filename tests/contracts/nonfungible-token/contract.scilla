@@ -114,19 +114,14 @@ field operatorApprovals: Map Address Map Address Bool
 transition balanceOf(address: Address) 
     otc <- ownedTokenCount;
     balance = builtin get otc address;
-    match balance with
-    | Some bal =>
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            balance : bal};
-        msgs = one_msg msg;
-        send msgs
-    | None =>
-        (* User do not have any tokens *)
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            balance : Uint256 0};
-        msgs = one_msg msg;
-        send msgs
-    end
+    balance_1 = match balance with
+    | Some bal => bal
+    | None => Uint256 0
+    end;
+    msg = {_tag : Main; _recipient: _sender; _amount: Uint128 0;
+    balance : balance_1};
+    msgs = one_msg msg;
+    send msgs
 end
 
 
