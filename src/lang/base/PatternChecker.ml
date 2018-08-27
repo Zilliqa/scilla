@@ -41,7 +41,7 @@ module ScillaPatternchecker
   open UncheckedPatternSyntax
   open PatternCheckerTypeUtilities
   
-  let pm_check t clauses =
+  let pm_check_clauses t clauses =
     let reachable = Array.create ~len:(List.length clauses) false in
     let static_match c_name span dsc =
       match dsc with
@@ -105,7 +105,103 @@ module ScillaPatternchecker
     | None -> pure @@ decision_tree (* All patterns reachable *)
     | Some (i, _) -> fail @@ sprintf "Pattern %d is unreachable." (i+1) (* TODO: look up relevant pattern in clauses and report it *)
 
-  (* TODO: Check all patterns for exhaustion and reachability *)
-  (*           let%bind _ = pm_check sct clauses in *)
+  let rec pm_check_expr erep =
+    let (e, rep) = erep in
+    match e with
+    | Literal l -> pure @@ (CheckedPatternSyntax.Literal l, rep)
+    | Var i -> pure @@ (CheckedPatternSyntax.Var i, rep)
+    | Let (i, t, b, body) ->
+        let%bind checked_b = pm_check_expr b in
+        let%bind checked_body = pm_check_expr body in
+        pure @@ (CheckedPatternSyntax.Let (i, t, checked_b, checked_body), rep)
+    | Message msgs -> pure @@ (CheckedPatternSyntax.Message msgs, rep)
+    | Fun (i, t, body) ->
+        let%bind checked_body = pm_check_expr body in
+        pure @@ (CheckedPatternSyntax.Fun (i, t, checked_body), rep)
+    | App (f, args) -> pure @@ (CheckedPatternSyntax.App (f, args), rep)
+    | Constr (c, t, args) -> pure @@ (CheckedPatternSyntax.Constr (c, t, args), rep)
+    | MatchExpr (Ident (_, r) as x, clauses) ->
+        let t = ER.get_type r in
+        let%bind _ = pm_check_clauses t.tp clauses in
+        let%bind checked_clauses = mapM
+            ~f:(fun (p, e) ->
+                let%bind checked_e = pm_check_expr e in
+                pure @@ (p, checked_e)) clauses in
+        pure @@ (CheckedPatternSyntax.MatchExpr (x, checked_clauses), rep)
+    | Builtin (f, args) ->
+        pure @@ (CheckedPatternSyntax.Builtin (f, args), rep)
+    (* Advanced features: to be added in Scilla 0.2 *)                 
+    | TFun (t, body) ->
+        let%bind checked_body = pm_check_expr body in
+        pure @@ (CheckedPatternSyntax.TFun (t, checked_body), rep)
+    | TApp (i, targs) ->
+        pure @@ (CheckedPatternSyntax.TApp (i, targs), rep)
+    (* Fixpoint combinator: used to implement recursion principles *)                 
+    | Fixpoint (i, t, body) ->
+        let%bind checked_body = pm_check_expr body in
+        pure @@ (CheckedPatternSyntax.Fixpoint (i, t, checked_body), rep)
+
+
+  let rec pm_check_stmts stmts =
+    match stmts with
+    | [] -> pure @@ []
+    | (s, rep) :: sts ->
+        let%bind checked_s =
+          (match s with
+           | Load (i, x) -> pure @@ (CheckedPatternSyntax.Load (i, x), rep)
+           | Store (i, x) -> pure @@ (CheckedPatternSyntax.Store (i, x), rep)
+           | Bind (i, e) ->
+               let%bind checked_e = pm_check_expr e in
+               pure @@ (CheckedPatternSyntax.Bind (i, checked_e), rep)
+           | MatchStmt (Ident (_, r) as x, clauses) ->
+               let t = ER.get_type r in
+               let%bind _ = pm_check_clauses t.tp clauses in
+               let%bind checked_clauses = mapM
+                   ~f:(fun (p, ss) ->
+                       let%bind checked_s = pm_check_stmts ss in
+                       pure @@ (p, checked_s)) clauses in
+               pure @@ (CheckedPatternSyntax.MatchStmt (x, checked_clauses), rep)
+           | ReadFromBC (i, s) ->
+               pure @@ (CheckedPatternSyntax.ReadFromBC (i, s), rep)
+           | AcceptPayment -> pure @@ (CheckedPatternSyntax.AcceptPayment, rep)
+           | SendMsgs i -> pure @@ (CheckedPatternSyntax.SendMsgs i, rep)
+           | CreateEvnt (s, i) -> pure @@ (CheckedPatternSyntax.CreateEvnt (s, i), rep)
+           | Throw i -> pure @@ (CheckedPatternSyntax.Throw i, rep)
+          ) in
+        let%bind checked_stmts = pm_check_stmts sts in
+        pure @@ (checked_s :: checked_stmts)
+    
+  let pm_check_transition t =
+    let { tname; tparams; tbody } = t in
+    let%bind checked_body = pm_check_stmts tbody in
+    pure @@ { CheckedPatternSyntax.tname = tname;
+              CheckedPatternSyntax.tparams = tparams;
+              CheckedPatternSyntax.tbody = checked_body }
+
+  let pm_check_library l =
+    let { lname = libname; lentries } = l in
+    let%bind checked_lentries = mapM
+      ~f:(fun entry ->
+           let { lname = entryname; lexp } = entry in
+           let%bind checked_lexp = pm_check_expr lexp in
+           pure @@ { CheckedPatternSyntax.lname = entryname;
+                     CheckedPatternSyntax.lexp = checked_lexp }) lentries in
+    pure @@ { CheckedPatternSyntax.lname = libname;
+              CheckedPatternSyntax.lentries = checked_lentries }
+
+  let pm_check_fields fs =
+    mapM ~f:(fun (i, t, e) ->
+        let%bind checked_e = pm_check_expr e in
+        pure @@ (i, t, checked_e)) fs
+  
+  let pm_check_contract c =
+    let { cname; cparams; cfields; ctrans } = c in
+    let%bind checked_flds = pm_check_fields cfields in
+    let%bind checked_trans = mapM
+        ~f:(fun t -> pm_check_transition t) ctrans in
+    pure @@ { CheckedPatternSyntax.cname = cname;
+              CheckedPatternSyntax.cparams = cparams;
+              CheckedPatternSyntax.cfields = checked_flds;
+              CheckedPatternSyntax.ctrans = checked_trans }
 
 end
