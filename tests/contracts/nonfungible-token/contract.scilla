@@ -2,7 +2,6 @@
 (*               Associated library                *)
 (***************************************************)
 import BoolUtils
-
 library NonfungibleToken
 
 let one_msg = 
@@ -14,11 +13,7 @@ Cons {Message} msg nil_msg
 let checkContractOwner =
     fun (msgSender: Address) => 
     fun (contractOwner: Address) =>
-        let isOwner = builtin eq msgSender contractOwner in
-        match isOwner with
-        | True => True
-        | False => False
-        end
+        builtin eq msgSender contractOwner
 
 (* Checks and see if an address is a token owner *)
 let isTokenOwner = 
@@ -29,11 +24,7 @@ let isTokenOwner =
         match tokenOwner with
         | None => False
         | Some val =>
-            let isSenderTokenOwner = builtin eq val msgSender in 
-            match isSenderTokenOwner with
-            | True => True
-            | False => False
-            end
+            builtin eq val msgSender
         end 
 
 (* Checks if a given address is approved to make txn the given tokenID *)
@@ -46,11 +37,7 @@ let isApproved =
         match val with
         | None => False 
         | Some val =>
-            let isSenderApproved = builtin eq val msgSender in
-            match isSenderApproved with
-            | True => True 
-            | False => False 
-            end
+            builtin eq val msgSender
         end
 
 (* Checks if an message sender is approved by a given owner. (i.e. operator) *)
@@ -82,12 +69,8 @@ let isApprovedOrOwner =
     fun (isOwner: Bool) =>
     fun (isApproved: Bool) =>
     fun (isApprovedForAll: Bool) =>
-        let checkone =  orb isOwner isApproved in
-        let checktwo = orb checkone isApprovedForAll in
-        match checktwo with
-        | True => True
-        | False => False
-        end
+        let isOwnerOrApproved =  orb isOwner isApproved in
+        orb isOwnerOrApproved isApprovedForAll
 
 (* Error codes *)
 let code_success = Uint32 0
