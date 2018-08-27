@@ -119,7 +119,7 @@ To run an individual test(s), for example
 The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
 
-## Toolings
+## Developer Tools
 ### Emacs mode for Scilla
 
 An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode/scilla.el).
