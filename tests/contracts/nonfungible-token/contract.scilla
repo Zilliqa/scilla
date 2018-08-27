@@ -104,8 +104,8 @@ field ownedTokenCount: Map Address Uint256 = Emp Address Uint256
 field tokenApprovals: Map Uint256 Address = Emp Uint256 Address
 
 (* Mapping from owner to operator approvals  *)
-field operatorApprovals: Map Address Map Address Bool 
-                            = Emp Address Map Address Bool
+field operatorApprovals: Map Address (Map Address Bool) 
+                            = Emp Address (Map Address Bool)
 
 (* immutable field *)
 
@@ -358,10 +358,11 @@ end
 transition setApprovalForAll(to: Address, approved: Bool)
 
     copy_operatorApproval <- operatorApprovals;
-    isValidOperation = builtin eq _sender to;
+    (* Checks if the _sender is approving himself *)
+    isValidOperation = let check = builtin eq _sender to in negb check;
     (* require _sender is not approving himself *)
     match isValidOperation with
-    | False =>
+    | True =>
         (* Check if sender has an existing record on the operatorApproval *)
         previous_operatorRecord = builtin get copy_operatorApproval _sender;
         match previous_operatorRecord with
@@ -380,7 +381,7 @@ transition setApprovalForAll(to: Address, approved: Bool)
             code : code_success};
         msgs = one_msg msg;
         send msgs
-    | True =>
+    | False =>
         msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
             code : code_failure};
         msgs = one_msg msg;
