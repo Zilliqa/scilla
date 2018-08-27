@@ -119,7 +119,8 @@ To run an individual test(s), for example
 The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
 
-## Emacs mode for Scilla
+## Toolings
+### Emacs mode for Scilla
 
 An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode/scilla.el).
 Add the following line to your ~/.emacs file to load this mode for files ending with .scilla.
@@ -128,11 +129,9 @@ Add the following line to your ~/.emacs file to load this mode for files ending 
 ;; Scilla mode
 (load-file "/path/to/scilla.el")
 ```
-## Vim mode for Scilla
+### Vim plugin for Scilla
 
-A vim config file for syntax highlighting is available [here](https://github.com/edisonljh/vim-scilla). The same files are also available in the [misc folder](https://github.com/edisonljh/vim-scilla).
-
-You can install it through Pathogen by:
+You can install the vim config files through Pathogen by:
 ```
 git clone https://github.com/edisonljh/vim-scilla.git ~/.vim/bundle/vim-scilla
 ```
@@ -141,3 +140,5 @@ Or through Vundle by adding the following line to your `~/.vimrc`:
 ```
 Plugin 'edisonljh/vim-scilla'
 ```
+
+Repo: [vim-scilla](https://github.com/edisonljh/vim-scilla).
