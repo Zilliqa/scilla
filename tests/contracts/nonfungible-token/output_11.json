@@ -10,7 +10,7 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "ownedTokenCount",
-      "type": "Map (Address) (Uint256)",
+      "type": "Map (ByStr20) (Uint256)",
       "value": [
         { "key": "0x1234567890123456789012345678901234567893", "val": "1" },
         { "key": "0x1234567890123456789012345678901234567892", "val": "1" }
@@ -18,7 +18,7 @@
     },
     {
       "vname": "tokenOwnerMap",
-      "type": "Map (Uint256) (Address)",
+      "type": "Map (Uint256) (ByStr20)",
       "value": [
         { "key": "1", "val": "0x1234567890123456789012345678901234567893" },
         { "key": "2", "val": "0x1234567890123456789012345678901234567892" }
@@ -26,12 +26,12 @@
     },
     {
       "vname": "tokenApprovals",
-      "type": "Map (Uint256) (Address)",
+      "type": "Map (Uint256) (ByStr20)",
       "value": []
     },
     {
       "vname": "operatorApprovals",
-      "type": "Map (Address) (Map (Address) (Bool))",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
       "value": []
     }
   ],

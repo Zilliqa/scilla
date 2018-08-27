@@ -11,15 +11,15 @@ Cons {Message} msg nil_msg
 
 (* Checks and see if an address is a contract owner *)
 let checkContractOwner =
-    fun (msgSender: Address) => 
-    fun (contractOwner: Address) =>
+    fun (msgSender: ByStr20) => 
+    fun (contractOwner: ByStr20) =>
         builtin eq msgSender contractOwner
 
 (* Checks and see if an address is a token owner *)
 let isTokenOwner = 
-    fun (msgSender: Address) =>
+    fun (msgSender: ByStr20) =>
     fun (tokenId: Uint256) =>
-    fun (tokenOwnerMap_tmp : Map (Uint256) (Address)) =>
+    fun (tokenOwnerMap_tmp : Map (Uint256) (ByStr20)) =>
         let tokenOwner = builtin get tokenOwnerMap_tmp tokenId in
         match tokenOwner with
         | None => False
@@ -30,9 +30,9 @@ let isTokenOwner =
 (* Checks if a given address is approved to make txn the given tokenID *)
 (* Not to be confused with isApprovedForAll                            *)
 let isApproved = 
-    fun (msgSender: Address) =>
+    fun (msgSender: ByStr20) =>
     fun (tokenID: Uint256) =>
-    fun (approvalMap_tmp: Map (Uint256) (Address)) =>
+    fun (approvalMap_tmp: Map (Uint256) (ByStr20)) =>
         let val = builtin get approvalMap_tmp tokenID in
         match val with
         | None => False 
@@ -42,15 +42,15 @@ let isApproved =
 
 (* Checks if an message sender is approved by a given owner. (i.e. operator) *)
 let isApprovedForAll = 
-    fun (msgSender: Address) =>
-    fun (tokenOwner: Address) =>
-    fun (operatorMap: Map (Address) (Map (Address) (Bool))) =>
+    fun (msgSender: ByStr20) =>
+    fun (tokenOwner: ByStr20) =>
+    fun (operatorMap: Map (ByStr20) (Map (ByStr20) (Bool))) =>
         let m = builtin get operatorMap tokenOwner in
         match m with
         | None => False
             (* owner did not assign anyone to the approval mapping *)
         | Some val =>
-            (* val is of type Map (Address) (Bool) *)
+            (* val is of type Map (ByStr20) (Bool) *)
             let check_list = builtin get val msgSender in
             match check_list with
             | None => False
@@ -87,7 +87,7 @@ let code_unexpected_error = Uint32 9
 (***************************************************)
 
 contract NonfungibleToken
-(contractOwner : Address,
+(contractOwner : ByStr20,
  name : String,
  symbol: String
 )
@@ -95,23 +95,23 @@ contract NonfungibleToken
 (* mutable fields *)
 
 (* Mapping between tokenId to token owner *)
-field tokenOwnerMap: Map Uint256 Address = Emp Uint256 Address
+field tokenOwnerMap: Map Uint256 ByStr20 = Emp Uint256 ByStr20
 (* Mapping from owner to number of owned tokens *)
-field ownedTokenCount: Map Address Uint256 = Emp Address Uint256
+field ownedTokenCount: Map ByStr20 Uint256 = Emp ByStr20 Uint256
 
 (* Mapping between tokenId to approved address *)
 (* @dev: There can only be one approved address per token at a given time. *)
-field tokenApprovals: Map Uint256 Address = Emp Uint256 Address
+field tokenApprovals: Map Uint256 ByStr20 = Emp Uint256 ByStr20
 
 (* Mapping from owner to operator approvals  *)
-field operatorApprovals: Map Address (Map Address Bool) 
-                            = Emp Address (Map Address Bool)
+field operatorApprovals: Map ByStr20 (Map ByStr20 Bool) 
+                            = Emp ByStr20 (Map ByStr20 Bool)
 
 (* immutable field *)
 
 (* @notice Count all NFTs assigned to an owner *)
 (* @dev: Event should be emitted once scilla is ready *)
-transition balanceOf(address: Address) 
+transition balanceOf(address: ByStr20) 
     otc <- ownedTokenCount;
     balance = builtin get otc address;
     balance_1 = match balance with
@@ -148,7 +148,7 @@ end
 (* @param:  to - address of the token recipient                     *)
 (* @param:  tokenId - token id of the new token                     *)
 (* Returns error message code_token_exist if token exists           *)
-transition mint(to: Address, tokenId: Uint256)
+transition mint(to: ByStr20, tokenId: Uint256)
 
     (* Sender must be the contract owner *)
     isAuthorized = checkContractOwner contractOwner _sender;
@@ -205,12 +205,12 @@ end
 (* @param from:     Current owner of the token                        *)
 (* @param to:       Recipient address of the token                    *)
 (* @param tokenId   uint256 id of the token to be transferred         *)
-transition transferFrom(from: Address, to: Address, tokenId: Uint256)
+transition transferFrom(from: ByStr20, to: ByStr20, tokenId: Uint256)
     copy_tokenOwnerMap <- tokenOwnerMap;
     copy_tokenApprovals <- tokenApprovals;
     copy_operatorApproval <- operatorApprovals;
 
-    (* Get tokenOwner Address *)
+    (* Get tokenOwner ByStr20 *)
     getTokenOwner = builtin get copy_tokenOwnerMap tokenId;
     match getTokenOwner with
     | None =>
@@ -308,16 +308,16 @@ end
 (* @dev: Approves another address to transfer the given token ID                *)
 (* - There can only be one approved address per token at a given time           *)
 (* - Absence of entry in tokenApproval indicates there is no approved address   *)
-(* param: to Address to be approved for the given token id                      *)
+(* param: to ByStr20 to be approved for the given token id                      *)
 (* param: tokenId uint256 id of the token to be apporved                        *)
 
 
-transition approve(to: Address, tokenId: Uint256)
+transition approve(to: ByStr20, tokenId: Uint256)
 
     copy_tokenOwnerMap <- tokenOwnerMap;
     copy_operatorApproval <- operatorApprovals;
 
-    (* Get tokenOwner Address *)
+    (* Get tokenOwner ByStr20 *)
     getTokenOwner = builtin get copy_tokenOwnerMap tokenId;
     match getTokenOwner with
     | None =>
@@ -355,7 +355,7 @@ end
 (* @param: address to be set or unset as operator                       *)
 (* @param: approved - status of the approval to be set                  *)
 
-transition setApprovalForAll(to: Address, approved: Bool)
+transition setApprovalForAll(to: ByStr20, approved: Bool)
 
     copy_operatorApproval <- operatorApprovals;
     (* Checks if the _sender is approving himself *)
@@ -373,7 +373,7 @@ transition setApprovalForAll(to: Address, approved: Bool)
             operatorApprovals := new_operatorRecord
         | None =>
             (* make a new entry *)
-            new_entry = let m = Emp Address Bool in builtin put m to approved;
+            new_entry = let m = Emp ByStr20 Bool in builtin put m to approved;
             new_operatorRecord = builtin put copy_operatorApproval _sender new_entry;
             operatorApprovals := new_operatorRecord
         end;
