@@ -41,15 +41,15 @@ contract OpenAuction
 (*  Parameters *)
 (auctionStart : BNum,
  biddingTime  : Uint128,
- beneficiary  : Address
+ beneficiary  : ByStr20
 )
 
 (* Mutable fields *)
 
 field ended : Bool = False
-field highestBidder  : Option Address  = None {Address}
+field highestBidder  : Option ByStr20  = None {ByStr20}
 field highestBid     : Uint128 = Uint128 0
-field pendingReturns : Map Address Uint128 = Emp Address Uint128
+field pendingReturns : Map ByStr20 Uint128 = Emp ByStr20 Uint128
 
 
 (* Transition 1: bidding *)
@@ -96,7 +96,7 @@ transition Bid ()
               hs1 = builtin add pr hb;
               prs1 = builtin put prs v hs1;
               pendingReturns := prs1;
-              bidder = Some {Address} _sender;
+              bidder = Some {ByStr20} _sender;
               highestBidder := bidder;
               highestBid := _amount;
               msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : bid_accepted_code};
@@ -107,7 +107,7 @@ transition Bid ()
           | False =>
             prs1 = builtin put prs v hb; 
             pendingReturns := prs1;
-            bidder = Some {Address} _sender;
+            bidder = Some {ByStr20} _sender;
             highestBidder := bidder;
             highestBid := _amount;
             msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : bid_accepted_code};
@@ -115,7 +115,7 @@ transition Bid ()
             send msgs
           end
         | None =>
-          first_bidder = Some {Address} _sender;
+          first_bidder = Some {ByStr20} _sender;
           highestBidder := first_bidder;
           highestBid := _amount;
           msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : first_bid_accepted_code};

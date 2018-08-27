@@ -20,7 +20,7 @@ let set_hello_code = Int32 2
 (***************************************************)
 
 contract HelloWorld
-(owner: Address)
+(owner: ByStr20)
 
 field welcome_msg : String = ""
 

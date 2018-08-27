@@ -10,7 +10,7 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "members",
-      "type": "Map (Address) (Pair (String) (Uint32))",
+      "type": "Map (ByStr20) (Pair (String) (Uint32))",
       "value": []
     },
     {

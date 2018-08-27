@@ -19,8 +19,14 @@
 
 open Syntax
 
-val prim_types : typ list
+(****************************************************************)
+(*                     PrimType utilities                        *)
+(****************************************************************)
+
 val is_prim_type : typ -> bool
+val is_int_type : typ -> bool
+val is_uint_type : typ -> bool
+val is_bystr_type : typ -> bool
 
 val int32_typ : typ
 val int64_typ : typ
@@ -32,7 +38,20 @@ val uint128_typ : typ
 val uint256_typ : typ
 val string_typ : typ
 val bnum_typ : typ
-val address_typ : typ
-val hash_typ : typ
 val msg_typ : typ
+val bystr_typ : int -> typ
+(* Given a ByStrX, return integer X *)
+val bystr_width : typ -> int option
 
+(****************************************************************)
+(*            PrimType Literal utilities                        *)
+(****************************************************************)
+
+val build_prim_literal : typ -> string -> literal option
+(* Validate Int* and Uint* literals (wx, x), whether the
+   string x they contain can be represented in wx bits  *)
+val validate_int_literal : literal -> bool
+(* Is input literal a valid BNum? *)
+val validate_bnum_literal : literal -> bool
+(* Is input a valid ByStr literal? *)
+val validate_bystr_literal : literal -> bool

@@ -8,7 +8,7 @@ For instance, this example shows how a Member object might be created.
 ```c++
 // c++ equivalent
 struct Member {
-    Address addr;
+    ByStr20 addr;
     String name;
     Uint32 membershipType;
 }

@@ -33,10 +33,5 @@ module BuiltInDictionary : sig
     loc ident -> typ list -> ((typ * typ * built_in_executor), string) result
 end
 
-(* The first parameter is a string type *)
-val build_prim_literal : typ -> string -> literal option
-val is_int_type : typ -> bool
-val is_uint_type : typ -> bool
-
 (* Elaborator for the built-in typ *)
 val elab_id : typ -> typ list -> (typ, string) result

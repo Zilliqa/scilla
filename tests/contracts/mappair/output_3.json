@@ -51,7 +51,7 @@
     },
     {
       "vname": "gmap",
-      "type": "Map (Address) (Pair (Int32) (Int32))",
+      "type": "Map (ByStr20) (Pair (Int32) (Int32))",
       "value": [
         {
           "key": "0x12345678901234567890123456789012345678ab",
