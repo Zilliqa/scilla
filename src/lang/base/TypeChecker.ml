@@ -47,7 +47,7 @@ module ScillaTypechecker
   module UntypedSyntax = ScillaSyntax (SR) (ER)
   module TypedSyntax = ScillaSyntax (STR) (ETR)
   include TypedSyntax
-
+  
   module TU = TypeUtilities (SR) (ER)
   open TU
   module TBuiltins = ScillaBuiltIns (SR) (ER)

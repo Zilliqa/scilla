@@ -25,12 +25,9 @@ open Decision_Tree
 (* TODO: Figure out how the generated decision trees should be added as annotations *)
 
 module ScillaPatternchecker
-(* TODO: This needs to be parameterized rather than bound to ParserRep and TypecheckerERep. *)
-(* (SR : Rep) *)
-  (* (ER : Rep) *) = struct
+  (SR : Rep)
+  (ER : Rep) = struct
 
-  module SR = ParserRep
-  module ER = TypecheckerERep (ParserRep)
   module SPR = SR
   module EPR = ER
 
