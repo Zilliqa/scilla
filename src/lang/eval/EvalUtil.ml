@@ -19,7 +19,8 @@
 open Syntax
 open Core
 open MonadUtil
-open MonadUtil.Let_syntax
+open EvalMonad
+open EvalMonad.Let_syntax
 open Stdint
 open ContractUtil
 open TypeUtil

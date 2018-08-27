@@ -26,7 +26,7 @@ open Recursion
 open RunnerUtil
 open DebugMessage
 open MonadUtil
-open MonadUtil.Let_syntax
+open Result.Let_syntax
 
 open TypeChecker.ScillaTypechecker
 open TypeChecker.ScillaTypechecker.TypeEnv
@@ -77,8 +77,8 @@ let () =
         (* Import whatever libs we want. *)
         let std_lib = import_libs [] in
         (match check_typing e std_lib with
-         | Ok (res, _) ->
+         | Ok res ->
              printf "%s\n" (pp_typ res.tp)
-         | Error (s, _) -> printf "Type checking failed:\n%s\n" s)
+         | Error s -> printf "Type checking failed:\n%s\n" s)
     | Some _ | None ->
         printf "%s\n" "Failed to parse input file.")

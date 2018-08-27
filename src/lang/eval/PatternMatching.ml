@@ -21,7 +21,7 @@ open Datatypes
 open Syntax
 open EvalUtil
 open MonadUtil
-open MonadUtil.Let_syntax
+open Result.Let_syntax
 
 open EvalSyntax
 

@@ -26,7 +26,7 @@ open ContractUtil
 open Stdint
 open RunnerUtil
 open GlobalConfig
-open MonadUtil
+open MonadUtil.EvalMonad
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -215,7 +215,7 @@ let () =
           (omj, osj, oej), gas)
       in
       let output_json = `Assoc [
-        (* ("gas_consumed", `String (Int.to_string gas)); *)
+        (* "gas_consumed", `String (Int.to_string gas); *)
         ("message", output_msg_json); 
         ("states", output_state_json);
         ("events", output_events_json)

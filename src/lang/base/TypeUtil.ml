@@ -20,7 +20,7 @@ open Core
 open Sexplib.Std
 open Syntax
 open MonadUtil
-open MonadUtil.Let_syntax
+open Result.Let_syntax
 open Datatypes
 
 (****************************************************************)
@@ -63,10 +63,10 @@ module type MakeTEnvFunctor = functor
       (* Add type variable to the environment *)
       val addV : t -> R.rep ident -> t
       (* Check type for well-formedness in the type environment *)
-      val is_wf_type : t -> typ -> (unit, string) eresult
+      val is_wf_type : t -> typ -> (unit, string) result
       (* Resolve the identifier *)
       val resolveT : 
-        ?lopt:(R.rep option) -> t -> string -> (resolve_result, string) eresult
+        ?lopt:(R.rep option) -> t -> string -> (resolve_result, string) result
       (* Copy the environment *)
       val copy : t -> t
       (* Convert to list *)
@@ -351,7 +351,6 @@ module TypeUtilities
     let%bind (adt', _) = lookup_constructor cn in
     let taken = free_tvars atyp in
     let adt = refresh_adt adt' taken in
-
     let%bind targs = extract_targs cn adt atyp in
     match constr_tmap adt cn with
     | None -> pure []

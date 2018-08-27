@@ -20,7 +20,7 @@ open Syntax
 open ParserUtil
 open Core
 open MonadUtil
-open MonadUtil.Let_syntax
+open Result.Let_syntax
 open TypeUtil
 open Datatypes
 open BuiltIns
@@ -138,7 +138,7 @@ module ScillaTypechecker
 
   let wrap_with_info msg res = match res with
     | Ok _ -> res
-    | Error (msg', es) -> Error (sprintf "%s%s" msg msg', es)
+    | Error msg' -> Error (sprintf "%s%s" msg msg')
 
   let wrap_err e ?opt:(opt = "") = wrap_with_info (get_failure_msg e opt)
 
@@ -233,9 +233,9 @@ module ScillaTypechecker
         let%bind (_, constr) = lookup_constructor cname in
         let alen = List.length actuals in
         if (constr.arity <> alen)
-        then fail @@ sprintf
+        then fail @@ (sprintf
             "Constructor %s expects %d arguments, but got %d."
-            cname constr.arity alen
+            cname constr.arity alen)
         else
           let%bind ftyp = elab_constr_type cname ts in
           (* Now type-check as a function application *)
@@ -452,7 +452,7 @@ module ScillaTypechecker
     match id with
     | Ident (s, r) -> Ident (s, ETR.mk_rep r t)
   
-  let type_transition (env0 : stmt_tenv) (tr : UntypedSyntax.transition) : (TypedSyntax.transition * stmt_tenv, string) eresult  =
+  let type_transition (env0 : stmt_tenv) (tr : UntypedSyntax.transition) : (TypedSyntax.transition * stmt_tenv, string) result  =
     let {tname; tparams; tbody} = tr in
     let tenv0 = env0.pure in
     let lift_ident_e (id, t) = (add_type_to_id id (mk_qual_tp t), t) in
@@ -556,7 +556,7 @@ module ScillaTypechecker
         )
   *)
             
-  let type_module (md : UntypedSyntax.cmodule) (elibs : UntypedSyntax.library list) : (TypedSyntax.cmodule * stmt_tenv, string) eresult =
+  let type_module (md : UntypedSyntax.cmodule) (elibs : UntypedSyntax.library list) : (TypedSyntax.cmodule * stmt_tenv, string) result =
     let {cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
@@ -577,10 +577,10 @@ module ScillaTypechecker
             let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
             let%bind ((typed_libraries, tenv'), emsg) =
               match type_library tenv_acc elib with
-              | Ok ((t_lib, t_env), es) -> Ok(((t_lib::lib_acc, t_env), emsgs_acc), es)
-              | Error (msg, es) ->
+              | Ok (t_lib, t_env) -> Ok((t_lib::lib_acc, t_env), emsgs_acc)
+              | Error msg ->
                   let emsgs' = if msg = "" then emsgs_acc else (emsgs_acc ^ "\n\n" ^ msg) in
-                  Ok(((lib_acc, tenv_acc), emsgs'), es)
+                  Ok((lib_acc, tenv_acc), emsgs')
             in
             (* Updated env and error messages are what we accummulate in the fold. *)
             pure ((typed_libraries, tenv'), emsg)
@@ -594,8 +594,8 @@ module ScillaTypechecker
     (* Step 4: Type-check fields and add balance *)
     let%bind (typed_fields, fenv0), femsgs0 = 
       match type_fields tenv3 cfields with
-      | Error (msg, es) -> Ok ((([], tenv3), emsgs ^ "\n\n" ^ msg), es)
-      | Ok ((typed_fields, tenv), es) -> Ok (((typed_fields, tenv), emsgs), es)
+      | Error msg -> Ok (([], tenv3), emsgs ^ "\n\n" ^ msg)
+      | Ok (typed_fields, tenv) -> Ok ((typed_fields, tenv), emsgs)
     in
     let (bn, bt) = balance_field in
     let fenv = TEnv.addT fenv0 bn bt in
@@ -607,8 +607,8 @@ module ScillaTypechecker
   let%bind (t_trans, emsgs') = foldM ~init:([], femsgs0) ctrans 
         ~f:(fun (trans_acc, emsgs) tr -> 
             match type_transition env tr with
-            | Error (msg, es) -> Ok ((trans_acc, emsgs ^ "\n\n" ^ msg), es)
-            | Ok ((typed_trans, _), es) -> Ok((typed_trans :: trans_acc, emsgs), es)
+            | Error msg -> Ok (trans_acc, emsgs ^ "\n\n" ^ msg)
+            | Ok (typed_trans, _) -> Ok(typed_trans :: trans_acc, emsgs)
           ) in
     let typed_trans = List.rev t_trans in
 
