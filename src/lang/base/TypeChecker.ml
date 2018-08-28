@@ -487,7 +487,7 @@ module ScillaTypechecker
       | Some lib -> List.append elibs (lib::[])
       | None -> elibs
     in
-  let%bind ((libs, tenv), emsgs) = foldM all_libs ~init:(([], tenv0), "")
+    let%bind ((libs, tenv), emsgs) = foldM all_libs ~init:(([], tenv0), "")
         ~f:(fun ((lib_acc, tenv_acc), emsgs_acc) elib ->
             (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
             let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)

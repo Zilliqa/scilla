@@ -232,4 +232,45 @@ module ScillaPatternchecker
               CheckedPatternSyntax.cfields = checked_flds;
               CheckedPatternSyntax.ctrans = checked_trans }
 
+  let pm_check_module md =
+    let { cname = mod_cname; libs; elibs = mod_elibs; contr } = md in
+    let { cname = ctr_cname; cparams; cfields; ctrans} = contr in
+    let init_msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
+    wrap_with_info init_msg @@
+
+    let%bind (checked_lib, emsgs) =
+      match libs with
+      | Some l ->
+          (match pm_check_library l with
+           | Ok c_lib -> Ok (Some c_lib, "")
+           | Error msg -> Ok (None, msg))
+      | None -> Ok (None, "")
+    in
+
+    let%bind (checked_fields, emsgs') =
+      match pm_check_fields cfields with
+      | Error msg -> Ok ([], emsgs ^ "\n\n" ^ msg)
+      | Ok ckd_fields -> Ok (ckd_fields, emsgs) in
+    
+    let%bind (c_trans, emsgs'') = foldM ~init:([], emsgs') ctrans 
+        ~f:(fun (trans_acc, msg_acc) tr -> 
+            match pm_check_transition tr with
+            | Error msg -> Ok (trans_acc, msg_acc ^ "\n\n" ^ msg)
+            | Ok ckd_trans -> Ok (ckd_trans :: trans_acc, msg_acc)
+          ) in
+    let checked_trans = List.rev c_trans in
+    
+    if emsgs' = ""
+    (* Return pure environment *)  
+    then pure @@ {CheckedPatternSyntax.cname = mod_cname;
+                  CheckedPatternSyntax.libs = checked_lib;
+                  CheckedPatternSyntax.elibs = mod_elibs;
+                  CheckedPatternSyntax.contr =
+                    {CheckedPatternSyntax.cname = ctr_cname;
+                     CheckedPatternSyntax.cparams = cparams;
+                     CheckedPatternSyntax.cfields = checked_fields;
+                     CheckedPatternSyntax.ctrans = checked_trans}}
+    (* Return error messages *)
+    else fail @@ emsgs''
+    
 end
