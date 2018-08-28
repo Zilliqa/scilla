@@ -56,13 +56,12 @@ let check_typing e elibs =
   let%bind typed_e = type_expr tenv1 e in
   pure @@ typed_e
 
-let check_patterns =
-  let module PM_checker = ScillaTypechecker
-      (TypeChecker.ScillaTypechecker.STR)
-      (TypeChecker.ScillaTypechecker.ETR) in
-  open PM_checker in
-  ScillaPatternchecker.pm_check_expr
+module PM_SR = TypeChecker.ScillaTypechecker.STR
+module PM_ER = TypeChecker.ScillaTypechecker.ETR
+module PM_Checker = ScillaPatternchecker (PM_SR) (PM_ER)
 
+let check_patterns e = PM_Checker.pm_check_expr e
+    
 let () =
   if (Array.length Sys.argv) < 2
   then
@@ -86,7 +85,7 @@ let () =
          | Ok ((_, (e_typ, _)) as typed_erep) ->
              (match check_patterns typed_erep with
               | Ok _ -> printf "%s\n" (pp_typ e_typ.tp)
-              | Error s -> printf "Pattern match check failed:\n%s\n" s
+              | Error s -> printf "Type checking failed:\n%s\n" s
              )
          | Error s -> printf "Type checking failed:\n%s\n" s)
     | Some _ | None ->

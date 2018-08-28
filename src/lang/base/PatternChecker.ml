@@ -16,8 +16,6 @@ open TypeUtil
 open Datatypes
 open Utils
 open PatternUtil
-open ParserUtil
-open TypeHelpers
 
 open Exp_descriptions
 open Decision_Tree
@@ -26,7 +24,10 @@ open Decision_Tree
 
 module ScillaPatternchecker
   (SR : Rep)
-  (ER : Rep) = struct
+  (ER : sig
+     include Rep
+     val get_type : rep -> PlainTypes.t inferred_type
+  end) = struct
 
   module SPR = SR
   module EPR = ER
@@ -38,6 +39,9 @@ module ScillaPatternchecker
   open UncheckedPatternSyntax
   open PatternCheckerTypeUtilities
   
+  let wrap_pmcheck_err e ?opt:(opt = "") = wrap_err e "patternmatch checking" ~opt:opt
+  let wrap_pmcheck_serr s ?opt:(opt = "") = wrap_serr s "patternmatch checking" ~opt:opt
+
   let pm_check_clauses t clauses =
     let reachable = Array.create ~len:(List.length clauses) false in
     let static_match c_name span dsc =
@@ -102,16 +106,32 @@ module ScillaPatternchecker
     | None -> pure @@ decision_tree (* All patterns reachable *)
     | Some (i, _) -> fail @@ sprintf "Pattern %d is unreachable." (i+1) (* TODO: look up relevant pattern in clauses and report it *)
 
+  let lift_msg_payloads sps =
+    List.map sps
+      ~f:(fun (s, p) ->
+          let lifted_p = match p with
+            | MTag s -> CheckedPatternSyntax.MTag s
+            | MLit l -> CheckedPatternSyntax.MLit l
+            | MVar (Ident (vs, r)) -> CheckedPatternSyntax.MVar (Ident (vs, r)) in
+          (s, lifted_p))
+
+  let rec lift_pattern p =
+    match p with
+    | Wildcard -> CheckedPatternSyntax.Wildcard
+    | Binder (Ident (s, r)) -> CheckedPatternSyntax.Binder (Ident (s, r))
+    | Constructor (s, sps) ->
+        CheckedPatternSyntax.Constructor (s, List.map sps ~f:(fun sp -> lift_pattern sp))
+    
   let rec pm_check_expr erep =
     let (e, rep) = erep in
     match e with
     | Literal l -> pure @@ (CheckedPatternSyntax.Literal l, rep)
     | Var i -> pure @@ (CheckedPatternSyntax.Var i, rep)
     | Let (i, t, b, body) ->
-        let%bind checked_b = pm_check_expr b in
+        let%bind checked_b = wrap_pmcheck_err erep @@ pm_check_expr b in
         let%bind checked_body = pm_check_expr body in
         pure @@ (CheckedPatternSyntax.Let (i, t, checked_b, checked_body), rep)
-    | Message msgs -> pure @@ (CheckedPatternSyntax.Message msgs, rep)
+    | Message msgs -> pure @@ (CheckedPatternSyntax.Message (lift_msg_payloads msgs), rep)
     | Fun (i, t, body) ->
         let%bind checked_body = pm_check_expr body in
         pure @@ (CheckedPatternSyntax.Fun (i, t, checked_body), rep)
@@ -119,11 +139,13 @@ module ScillaPatternchecker
     | Constr (c, t, args) -> pure @@ (CheckedPatternSyntax.Constr (c, t, args), rep)
     | MatchExpr (Ident (_, r) as x, clauses) ->
         let t = ER.get_type r in
+        let msg = sprintf " of type %s" (pp_typ t.tp) in
+        wrap_pmcheck_err erep ~opt:msg @@ 
         let%bind _ = pm_check_clauses t.tp clauses in
         let%bind checked_clauses = mapM
             ~f:(fun (p, e) ->
                 let%bind checked_e = pm_check_expr e in
-                pure @@ (p, checked_e)) clauses in
+                pure @@ (lift_pattern p, checked_e)) clauses in
         pure @@ (CheckedPatternSyntax.MatchExpr (x, checked_clauses), rep)
     | Builtin (f, args) ->
         pure @@ (CheckedPatternSyntax.Builtin (f, args), rep)
@@ -135,6 +157,7 @@ module ScillaPatternchecker
         pure @@ (CheckedPatternSyntax.TApp (i, targs), rep)
     (* Fixpoint combinator: used to implement recursion principles *)                 
     | Fixpoint (i, t, body) ->
+        wrap_pmcheck_err erep @@ 
         let%bind checked_body = pm_check_expr body in
         pure @@ (CheckedPatternSyntax.Fixpoint (i, t, checked_body), rep)
 
@@ -142,21 +165,23 @@ module ScillaPatternchecker
   let rec pm_check_stmts stmts =
     match stmts with
     | [] -> pure @@ []
-    | (s, rep) :: sts ->
+    | ((s, rep) as srep) :: sts ->
         let%bind checked_s =
           (match s with
            | Load (i, x) -> pure @@ (CheckedPatternSyntax.Load (i, x), rep)
            | Store (i, x) -> pure @@ (CheckedPatternSyntax.Store (i, x), rep)
            | Bind (i, e) ->
+               wrap_pmcheck_serr srep @@ 
                let%bind checked_e = pm_check_expr e in
                pure @@ (CheckedPatternSyntax.Bind (i, checked_e), rep)
            | MatchStmt (Ident (_, r) as x, clauses) ->
+               wrap_pmcheck_serr srep @@ 
                let t = ER.get_type r in
                let%bind _ = pm_check_clauses t.tp clauses in
                let%bind checked_clauses = mapM
                    ~f:(fun (p, ss) ->
                        let%bind checked_s = pm_check_stmts ss in
-                       pure @@ (p, checked_s)) clauses in
+                       pure @@ (lift_pattern p, checked_s)) clauses in
                pure @@ (CheckedPatternSyntax.MatchStmt (x, checked_clauses), rep)
            | ReadFromBC (i, s) ->
                pure @@ (CheckedPatternSyntax.ReadFromBC (i, s), rep)
@@ -170,7 +195,9 @@ module ScillaPatternchecker
     
   let pm_check_transition t =
     let { tname; tparams; tbody } = t in
-    let%bind checked_body = pm_check_stmts tbody in
+    let msg = sprintf "[%s] Error during pattern-match checking of transition %s:\n"
+      (get_loc_str (SR.get_loc (get_rep tname))) (get_id tname) in
+    let%bind checked_body = wrap_with_info msg @@ pm_check_stmts tbody in
     pure @@ { CheckedPatternSyntax.tname = tname;
               CheckedPatternSyntax.tparams = tparams;
               CheckedPatternSyntax.tbody = checked_body }
@@ -180,7 +207,9 @@ module ScillaPatternchecker
     let%bind checked_lentries = mapM
       ~f:(fun entry ->
            let { lname = entryname; lexp } = entry in
-           let%bind checked_lexp = pm_check_expr lexp in
+           let msg = sprintf "[%s] Error during pattern-match checking of library %s:\n"
+               (get_loc_str (ER.get_loc (get_rep entryname))) (get_id entryname) in
+           let%bind checked_lexp = wrap_with_info msg @@ pm_check_expr lexp in
            pure @@ { CheckedPatternSyntax.lname = entryname;
                      CheckedPatternSyntax.lexp = checked_lexp }) lentries in
     pure @@ { CheckedPatternSyntax.lname = libname;
@@ -188,7 +217,9 @@ module ScillaPatternchecker
 
   let pm_check_fields fs =
     mapM ~f:(fun (i, t, e) ->
-        let%bind checked_e = pm_check_expr e in
+        let msg = sprintf "[%s] Error during pattern-match checking of field %s:\n"
+            (get_loc_str (ER.get_loc (get_rep i))) (get_id i) in
+        let%bind checked_e = wrap_with_info msg @@ pm_check_expr e in
         pure @@ (i, t, checked_e)) fs
   
   let pm_check_contract c =

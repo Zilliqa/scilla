@@ -483,5 +483,92 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         let body' = subst_type_in_expr tvar tp body in
         (Fixpoint (f, t', body'), rep)
 
+  (****************************************************************)
+  (*                  Better error reporting                      *)
+  (****************************************************************)
+  let get_failure_msg erep phase opt =
+    let (e, rep) = erep in
+    let locstr = get_loc_str (ER.get_loc rep) in
+    match e with
+    | Literal _ ->
+        sprintf "[%s] Type error in literal. %s\n"
+          locstr phase
+    | Var i ->
+        sprintf "[%s] Type error in variable `%s`:\n"
+          locstr (get_id i)
+    | Let (i, _, _, _) ->
+        sprintf "[%s] Type error in the initialiser of `%s`:\n"
+          locstr (get_id i)
+    | Message _ ->
+        sprintf "[%s] Type error in message.\n"
+          locstr
+    | Fun _ ->
+        sprintf "[%s] Type error in function:\n"
+          locstr
+    | App (f, _) ->
+        sprintf "[%s] Type error in application of `%s`:\n"
+          locstr (get_id f)
+    | Constr (s, _, _) ->
+        sprintf "[%s] Type error in constructor `%s`:\n"
+          locstr s
+    | MatchExpr (x, _) ->
+        sprintf
+          "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
+          locstr (get_id x) opt 
+    | Builtin (i, _) ->
+        sprintf "[%s] Type error in built-in application of `%s`:\n"
+          locstr (get_id i)
+    | TApp (tf, _) ->
+        sprintf "[%s] Type error in type application of `%s`:\n"
+          locstr (get_id tf)
+    | TFun (tf, _) ->
+        sprintf "[%s] Type error in type function `%s`:\n"
+          locstr (get_id tf)
+    | Fixpoint (f, _, _) ->
+        sprintf "Type error in fixpoint application with an argument `%s`:\n"
+          (get_id f)              
+
+  let get_failure_msg_stmt srep phase opt =
+    let (s, rep) = srep in
+    let locstr = get_loc_str (SR.get_loc rep) in
+    match s with
+    | Load (x, f) ->
+        sprintf "[%s] Type error in reading value of `%s` into `%s`:\n %s"
+          locstr (get_id f) (get_id x) phase
+    | Store (f, r) ->
+        sprintf "[%s] Type error in storing value of `%s` into the field `%s`:\n"
+          locstr (get_id r) (get_id f)
+    | Bind (x, _) ->
+        sprintf "[%s] Type error in the binding to into `%s`:\n"
+          locstr (get_id x)
+    | MatchStmt (x, _) ->
+        sprintf
+          "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
+          locstr (get_id x) opt 
+    | ReadFromBC (x, _) ->
+        sprintf "[%s] Error in reading from blockchain state into `%s`:\n"
+          locstr (get_id x)
+    | AcceptPayment ->
+        sprintf "[%s] Error in accepting payment\n"
+          locstr
+    | SendMsgs i ->
+        sprintf "[%s] Error in sending messages `%s`:\n"
+          locstr (get_id i)
+    | CreateEvnt (s, _) ->
+        sprintf "[%s] Error in create event `%s`:\n"
+          locstr s
+    | Throw i ->
+        sprintf "[%s] Error in throw of '%s':\n"
+          locstr (get_id i)
+
+  let wrap_with_info msg res = match res with
+    | Ok _ -> res
+    | Error msg' -> Error (sprintf "%s%s" msg msg')
+
+  let wrap_err e phase ?opt:(opt = "") = wrap_with_info (get_failure_msg e phase opt)
+
+  let wrap_serr s phase ?opt:(opt = "") =
+    wrap_with_info (get_failure_msg_stmt s phase opt)
+  
 end
 

@@ -25,12 +25,12 @@ open ContractUtil.MessagePayload
 open Datatypes
 open TypeUtil
 open PrimTypes
-    
+open BuiltIns
+
 module JSONTypeUtilities = TypeUtilities (ParserRep) (ParserRep)
 module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
 
 open JSONTypeUtilities
-open JSONBuiltIns
     
 exception Invalid_json of string
 
