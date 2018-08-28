@@ -387,8 +387,10 @@ module TypeUtilities
         fail @@ (sprintf "Wrong bit depth for unsigned integer: %i." w)
     | StringLit _ -> pure string_typ
     | BNum _ -> pure bnum_typ
-    | Address _ -> pure address_typ
-    | Sha256 _ -> pure hash_typ
+    | ByStr (b, _) ->
+        if validate_bystr_literal l
+        then pure (bystr_typ b)
+        else fail @@ (sprintf "Malformed byte string " ^ (pp_literal l))
     (* Check that messages and events have storable parameters. *)
     | Msg m -> 
         let%bind all_storable = foldM ~f:(fun acc (_, l) ->
@@ -442,7 +444,7 @@ module TypeUtilities
           then fail @@ sprintf "Malformed ADT %s. Arguments do not match expected types" (pp_literal l)
           else pure @@ res
 end
-  
+
 (*****************************************************************)
 (*               Blockchain component typing                     *)
 (*****************************************************************)

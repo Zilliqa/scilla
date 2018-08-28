@@ -22,14 +22,13 @@
   open ParserUtil
 
   open ParsedSyntax
-  open ParserBuiltins
 
   let to_type d = match d with
     | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x
     | _ -> ADT (d, [])
   
   let build_prim_literal_exn t v =
-    match build_prim_literal t v with
+    match PrimTypes.build_prim_literal t v with
     | Some l -> l
     | None -> raise (SyntaxError ("Invalid " ^ (pp_typ t) ^ " literal " ^ v))
 %}
@@ -189,11 +188,7 @@ lit :
   }
 | h = HEXLIT   { 
   let l = String.length h in
-  if l = (address_length + 2) 
-  then build_prim_literal_exn PrimTypes.address_typ h
-  else if l = (hash_length + 2)
-  then build_prim_literal_exn PrimTypes.hash_typ h
-  else raise (SyntaxError (Core.sprintf "Wrong hex string size (%s): %d." h l))
+  build_prim_literal_exn (PrimTypes.bystr_typ ((l-1)/2)) h
 }
 | s = STRING   { StringLit s }
 | EMP; kt = targ; vt = targ

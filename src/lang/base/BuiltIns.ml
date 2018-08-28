@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -37,7 +37,7 @@ module ScillaBuiltIns
 
   module BuiltinTypeUtilities = TypeUtilities (SR) (ER)
   open BuiltinTypeUtilities
-  
+
   let print_literal_list ls =
     let ps = List.map ls
         ~f:(fun l -> sexp_of_literal l |> Sexplib.Sexp.to_string) in
@@ -59,108 +59,6 @@ module ScillaBuiltIns
 
     let to_Bool b = if b then true_lit else false_lit
   end
-
-  (* Validate Int* and Uint* literals (wx, x), whether the
-     string x they contain can be represented in wx bits  *)
-  let validate_int_literal i =
-    try
-      match i with
-      | IntLit (wx, x) ->
-          (match wx with
-           | 32 -> Int32.to_string (Int32.of_string x) = x
-           | 64 -> Int64.to_string (Int64.of_string x) = x
-           | 128 -> Int128.to_string (Int128.of_string x) = x
-           | 256 -> Int256.to_string (Int256.of_string x) = x
-           | _ -> false
-          )
-      | UintLit (wx, x) ->
-          (match wx with
-           | 32 -> Uint32.to_string (Uint32.of_string x) = x
-           | 64 -> Uint64.to_string (Uint64.of_string x) = x
-           | 128 -> Uint128.to_string (Uint128.of_string x) = x
-           | 256 -> Uint256.to_string (Uint256.of_string x) = x
-           | _ -> false
-          )
-      | _ -> false
-    with
-    | _ -> false
-
-  (* Given an integer type (as string) and the value (as string),
-     build IntLit or UintLit out of it. *)
-  let build_int t v =
-    let open PrimTypes in 
-    let validator_wrapper l = 
-      if validate_int_literal l then Some l else None
-    in
-    match t with
-    | x when x = int32_typ   -> validator_wrapper (IntLit(32, v))
-    | x when x = int64_typ   -> validator_wrapper (IntLit(64, v))
-    | x when x = int128_typ  -> validator_wrapper (IntLit(128, v))
-    | x when x = int256_typ  -> validator_wrapper (IntLit(256, v))
-    | x when x = uint32_typ  -> validator_wrapper (UintLit(32, v))
-    | x when x = uint64_typ  -> validator_wrapper (UintLit(64, v))
-    | x when x = uint128_typ -> validator_wrapper (UintLit(128, v))
-    | x when x = uint256_typ -> validator_wrapper (UintLit(256, v))
-    | _ -> None
-
-  let is_int_type = function
-    | x when x = PrimTypes.int32_typ ||
-             x = PrimTypes.int64_typ ||
-             x = PrimTypes.int128_typ ||
-             x = PrimTypes.int256_typ -> true
-    | _ -> false
-
-  let is_uint_type = function
-    | x when x = PrimTypes.uint32_typ ||
-             x = PrimTypes.uint64_typ ||
-             x = PrimTypes.uint128_typ ||
-             x = PrimTypes.uint256_typ -> true
-    | _ -> false
-
-  (* Given an address string, build an Address literal,
-     or return None on invalid address. *)
-  let build_address v =
-    let v' = String.lowercase v in
-    let s, re, l =
-      v', Str.regexp "0x[0-9a-f]+$", address_length+2 in
-    if Str.string_match re s 0 && String.length s = l
-    then
-      Some (Address v')
-    else
-      None
-
-  (* Given a hash string, build a hash literal,
-     or return None on invalid hash. *)
-  let build_hash v =
-    let v' = String.lowercase v in
-    let s, re, l =
-      v', Str.regexp "0x[0-9a-f]+$", hash_length+2 in
-    if Str.string_match re s 0 && String.length s = l
-    then
-      Some (Sha256 v')
-    else
-      None
-
-  (* Given an integer string, build a BNum literal,
-     or return None on invalid input. *)
-  let build_bnum v =
-    let s, re =
-      v, Str.regexp "[0-9]+$" in
-    if Str.string_match re s 0
-    then
-      Some (BNum v)
-    else
-      None
-
-  let build_prim_literal t v =
-    let open PrimTypes in
-    match t with
-    | x when x = string_typ -> Some (StringLit v)
-    | x when x = bnum_typ -> build_bnum v
-    | x when x = address_typ -> build_address v
-    | x when x = hash_typ -> build_hash v
-    | x when is_int_type x || is_uint_type x -> build_int t v
-    | _ -> None
 
   (*******************************************************)
   (*******************************************************)
@@ -319,6 +217,71 @@ module ScillaBuiltIns
       let b = of_string bstr in
       if (compare a b) < 0 then true else false
 
+  end
+
+  (***********************************************************)
+  (******************** Byte Strings *************************)
+  (***********************************************************)
+  module Hashing = struct
+    open UsefulLiterals
+    open Cryptokit
+    open PrimTypes
+    open Datatypes.DataTypeDictionary
+
+
+    (* let hex s = transform_string (Hexa.decode()) s *)
+    let tohex s = transform_string (Hexa.encode()) s
+    let hash s = hash_string (Hash.sha2 256) s
+
+    let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
+    let eq_arity = 2    
+    let eq_elab sc ts =
+      match ts with
+      | [bstyp1; bstyp2] when
+          (* We want both the types to be ByStr with equal width. *)
+          is_bystr_type bstyp1 && is_bystr_type bstyp2 && bstyp1 = bstyp2
+        -> elab_tfun_with_args sc [bstyp1]
+      | _ -> fail "Failed to elaborate"
+    let eq ls _ = match ls with
+      | [ByStr (w1, x1); ByStr(w2, x2)] ->
+          pure @@ to_Bool (w1 = w2 && x1 = x2)
+      | _ -> builtin_fail "Hashing.eq" ls
+
+    let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") (bystr_typ hash_length)
+    let hash_arity = 1
+    let hash_elab sc ts = match ts with
+      | [_]  -> elab_tfun_with_args sc ts
+      | _ -> fail "Failed to elaborate"
+    let sha256hash ls _ = match ls with
+      | [l] ->
+          let lstr = sexp_of_literal l |> Sexplib.Sexp.to_string in
+          let lhash = hash lstr in
+          let lhash_hex = "0x" ^ tohex lhash in 
+          pure @@ ByStr(hash_length, lhash_hex)
+      | _ -> builtin_fail "Hashing.sha256hash" ls
+
+    let big_int_of_hash h =
+      let s = match Hex.of_string h with
+        | `Hex s -> s
+      in Big_int.big_int_of_string s
+
+    (* TODO: define for other ByStr types? *)
+    let dist_type = fun_typ (bystr_typ hash_length) @@ fun_typ (bystr_typ hash_length) uint128_typ
+    let dist_arity = 2    
+    let dist ls _ = match ls with
+      | [ByStr(_, x); ByStr(_, y)] ->
+          let i1 = big_int_of_hash x in
+          let i2 = big_int_of_hash y in
+          let two256 = power_big_int_positive_big_int (big_int_of_int 2) (big_int_of_int 256) in
+          let i1' = mod_big_int i1 two256 in
+          let i2' = mod_big_int i2 two256 in
+          let dist = abs_big_int (sub_big_int i1' i2') in
+          let i = build_prim_literal uint256_typ (string_of_big_int dist) in
+          (match i with
+           | Some ui -> pure ui
+           | None -> builtin_fail "Hashing.dist: Error building Uint256 from hash distance" ls
+          )
+      | _ -> builtin_fail "Hashing.dist" ls
   end
 
   (* Instantiating the functors *)
@@ -664,79 +627,6 @@ module ScillaBuiltIns
   end
 
   (***********************************************************)
-  (* Working with addresses *)
-  (***********************************************************)
-  module Address = struct
-    open UsefulLiterals
-    open PrimTypes
-    open Datatypes.DataTypeDictionary
-
-    let eq_type = fun_typ address_typ @@ fun_typ address_typ bool_typ
-    let eq_arity = 2    
-    let eq ls _ = match ls with
-      | [Address x; Address y] ->
-          pure @@ to_Bool (x = y)
-      | _ -> builtin_fail "Address.eq" ls
-  end
-
-  (***********************************************************)
-  (* Hashing *)
-  (***********************************************************)
-  module Hashing = struct
-    open UsefulLiterals
-    open Cryptokit
-    open PrimTypes
-    open Datatypes.DataTypeDictionary
-
-
-    (* let hex s = transform_string (Hexa.decode()) s *)
-    let tohex s = transform_string (Hexa.encode()) s
-    let hash s = hash_string (Hash.sha2 256) s
-
-    let eq_type = fun_typ hash_typ @@ fun_typ hash_typ bool_typ
-    let eq_arity = 2    
-    let eq ls _ = match ls with
-      | [Sha256 x; Sha256 y] ->
-          pure @@ to_Bool (x = y)
-      | _ -> builtin_fail "Hashing.eq" ls
-
-    let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") hash_typ
-    let hash_arity = 1
-    let hash_elab sc ts = match ts with
-      | [_]  -> elab_tfun_with_args sc ts
-      | _ -> fail "Failed to elaborate"
-    let sha256hash ls _ = match ls with
-      | [l] ->
-          let lstr = sexp_of_literal l |> Sexplib.Sexp.to_string in
-          let lhash = hash lstr in
-          let lhash_hex = "0x" ^ tohex lhash in 
-          pure @@ Sha256 lhash_hex
-      | _ -> builtin_fail "Hashing.sha256hash" ls
-
-    let big_int_of_hash h =
-      let s = match Hex.of_string h with
-        | `Hex s -> s
-      in Big_int.big_int_of_string s
-
-    let dist_type = fun_typ hash_typ @@ fun_typ hash_typ uint128_typ
-    let dist_arity = 2    
-    let dist ls _ = match ls with
-      | [Sha256 x; Sha256 y] ->
-          let i1 = big_int_of_hash x in
-          let i2 = big_int_of_hash y in
-          let two256 = power_big_int_positive_big_int (big_int_of_int 2) (big_int_of_int 256) in
-          let i1' = mod_big_int i1 two256 in
-          let i2' = mod_big_int i2 two256 in
-          let dist = abs_big_int (sub_big_int i1' i2') in
-          let i = build_int uint256_typ (string_of_big_int dist) in
-          (match i with
-           | Some ui -> pure ui
-           | None -> builtin_fail "Hashing.dist: Error building Uint256 from hash distance" ls
-          )
-      | _ -> builtin_fail "Hashing.dist" ls
-  end
-
-  (***********************************************************)
   (* Maps *)
   (***********************************************************)
   module Maps = struct
@@ -867,16 +757,13 @@ module ScillaBuiltIns
       ("concat", String.concat_arity, String.concat_type, elab_id, String.concat);
       ("substr", String.substr_arity, String.substr_type, String.substr_elab, String.substr);
 
-      (* Addresses *)
-      ("eq", Address.eq_arity, Address.eq_type, elab_id, Address.eq);
-
       (* Block numbers *)
       ("eq", BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq);
       ("blt", BNum.blt_arity, BNum.blt_type, elab_id , BNum.blt);
       ("badd", BNum.badd_arity, BNum.badd_type, BNum.badd_elab , BNum.badd);
 
       (* Hashes *)
-      ("eq", Hashing.eq_arity, Hashing.eq_type, elab_id, Hashing.eq);
+      ("eq", Hashing.eq_arity, Hashing.eq_type, Hashing.eq_elab, Hashing.eq);
       ("dist", Hashing.dist_arity, Hashing.dist_type, elab_id , Hashing.dist);
       ("sha256hash", Hashing.hash_arity, Hashing.hash_type,Hashing.hash_elab, Hashing.sha256hash);
 

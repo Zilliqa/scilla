@@ -12,8 +12,8 @@ let one_msg =
 contract CrowdFundingInvoke
 
 (*  Parameters *)
-(cfaddr     : Address, (* address of the crowdfunding contract *)
- owner      : Address) (* address of the owner of this contract *)
+(cfaddr     : ByStr20, (* address of the crowdfunding contract *)
+ owner      : ByStr20) (* address of the owner of this contract *)
 
 transition Main ()
   accept;

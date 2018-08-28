@@ -6,7 +6,7 @@
     },
     {
         "vname": "tokenOwnerMap",
-        "type": "Map (Uint256) (Address)",
+        "type": "Map (Uint256) (ByStr20)",
         "value": [
         ]
     }
