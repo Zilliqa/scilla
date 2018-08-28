@@ -104,7 +104,7 @@ include Monad.Make2 (struct
       let res = f x in
         add_gas res es.gas_used
 
-    let map x ~f = match x with
+  let map x ~f = match x with
     | Error _ as x -> x
     | Ok (x, g) -> Ok ((f x), g)
 
