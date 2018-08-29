@@ -15,5 +15,3 @@ Add the following line to your `~/.vimrc`:
 Plugin 'edisonljh/vim-scilla'
 ```
 
-## License
-MIT 2018
