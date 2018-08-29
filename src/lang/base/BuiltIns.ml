@@ -58,7 +58,7 @@ module ScillaBuiltIns
   end
 
   (*******************************************************)
-  (*******************************************************)
+  (**************** String *******************************)
   (*******************************************************)
 
   (* String operations *)
@@ -214,71 +214,6 @@ module ScillaBuiltIns
       let b = of_string bstr in
       if (compare a b) < 0 then true else false
 
-  end
-
-  (***********************************************************)
-  (******************** Byte Strings *************************)
-  (***********************************************************)
-  module Hashing = struct
-    open UsefulLiterals
-    open Cryptokit
-    open PrimTypes
-    open Datatypes.DataTypeDictionary
-
-
-    (* let hex s = transform_string (Hexa.decode()) s *)
-    let tohex s = transform_string (Hexa.encode()) s
-    let hash s = hash_string (Hash.sha2 256) s
-
-    let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
-    let eq_arity = 2    
-    let eq_elab sc ts =
-      match ts with
-      | [bstyp1; bstyp2] when
-          (* We want both the types to be ByStr with equal width. *)
-          is_bystr_type bstyp1 && is_bystr_type bstyp2 && bstyp1 = bstyp2
-        -> elab_tfun_with_args sc [bstyp1]
-      | _ -> fail "Failed to elaborate"
-    let eq ls _ = match ls with
-      | [ByStr (w1, x1); ByStr(w2, x2)] ->
-          pure @@ to_Bool (w1 = w2 && x1 = x2)
-      | _ -> builtin_fail "Hashing.eq" ls
-
-    let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") (bystr_typ hash_length)
-    let hash_arity = 1
-    let hash_elab sc ts = match ts with
-      | [_]  -> elab_tfun_with_args sc ts
-      | _ -> fail "Failed to elaborate"
-    let sha256hash ls _ = match ls with
-      | [l] ->
-          let lstr = sexp_of_literal l |> Sexplib.Sexp.to_string in
-          let lhash = hash lstr in
-          let lhash_hex = "0x" ^ tohex lhash in 
-          pure @@ ByStr(hash_length, lhash_hex)
-      | _ -> builtin_fail "Hashing.sha256hash" ls
-
-    let big_int_of_hash h =
-      let s = match Hex.of_string h with
-        | `Hex s -> s
-      in Big_int.big_int_of_string s
-
-    (* TODO: define for other ByStr types? *)
-    let dist_type = fun_typ (bystr_typ hash_length) @@ fun_typ (bystr_typ hash_length) uint128_typ
-    let dist_arity = 2    
-    let dist ls _ = match ls with
-      | [ByStr(_, x); ByStr(_, y)] ->
-          let i1 = big_int_of_hash x in
-          let i2 = big_int_of_hash y in
-          let two256 = power_big_int_positive_big_int (big_int_of_int 2) (big_int_of_int 256) in
-          let i1' = mod_big_int i1 two256 in
-          let i2' = mod_big_int i2 two256 in
-          let dist = abs_big_int (sub_big_int i1' i2') in
-          let i = build_prim_literal uint256_typ (string_of_big_int dist) in
-          (match i with
-           | Some ui -> pure ui
-           | None -> builtin_fail "Hashing.dist: Error building Uint256 from hash distance" ls
-          )
-      | _ -> builtin_fail "Hashing.dist" ls
   end
 
   (* Instantiating the functors *)
@@ -621,6 +556,71 @@ module ScillaBuiltIns
               "Cannot add a negative value (%s) to a block." y
       | _ -> builtin_fail "BNum.badd" ls
 
+  end
+
+  (***********************************************************)
+  (******************** Byte Strings *************************)
+  (***********************************************************)
+  module Hashing = struct
+    open UsefulLiterals
+    open Cryptokit
+    open PrimTypes
+    open Datatypes.DataTypeDictionary
+
+
+    (* let hex s = transform_string (Hexa.decode()) s *)
+    let tohex s = transform_string (Hexa.encode()) s
+    let hash s = hash_string (Hash.sha2 256) s
+
+    let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
+    let eq_arity = 2    
+    let eq_elab sc ts =
+      match ts with
+      | [bstyp1; bstyp2] when
+          (* We want both the types to be ByStr with equal width. *)
+          is_bystr_type bstyp1 && is_bystr_type bstyp2 && bstyp1 = bstyp2
+        -> elab_tfun_with_args sc [bstyp1]
+      | _ -> fail "Failed to elaborate"
+    let eq ls _ = match ls with
+      | [ByStr (w1, x1); ByStr(w2, x2)] ->
+          pure @@ to_Bool (w1 = w2 && x1 = x2)
+      | _ -> builtin_fail "Hashing.eq" ls
+
+    let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") (bystr_typ hash_length)
+    let hash_arity = 1
+    let hash_elab sc ts = match ts with
+      | [_]  -> elab_tfun_with_args sc ts
+      | _ -> fail "Failed to elaborate"
+    let sha256hash ls _ = match ls with
+      | [l] ->
+          let lstr = sexp_of_literal l |> Sexplib.Sexp.to_string in
+          let lhash = hash lstr in
+          let lhash_hex = "0x" ^ tohex lhash in 
+          pure @@ ByStr(hash_length, lhash_hex)
+      | _ -> builtin_fail "Hashing.sha256hash" ls
+
+    let big_int_of_hash h =
+      let s = match Hex.of_string h with
+        | `Hex s -> s
+      in Big_int.big_int_of_string s
+
+    (* TODO: define for other ByStr types? *)
+    let dist_type = fun_typ (bystr_typ hash_length) @@ fun_typ (bystr_typ hash_length) uint128_typ
+    let dist_arity = 2    
+    let dist ls _ = match ls with
+      | [ByStr(_, x); ByStr(_, y)] ->
+          let i1 = big_int_of_hash x in
+          let i2 = big_int_of_hash y in
+          let two256 = power_big_int_positive_big_int (big_int_of_int 2) (big_int_of_int 256) in
+          let i1' = mod_big_int i1 two256 in
+          let i2' = mod_big_int i2 two256 in
+          let dist = abs_big_int (sub_big_int i1' i2') in
+          let i = build_prim_literal uint256_typ (string_of_big_int dist) in
+          (match i with
+           | Some ui -> pure ui
+           | None -> builtin_fail "Hashing.dist: Error building Uint256 from hash distance" ls
+          )
+      | _ -> builtin_fail "Hashing.dist" ls
   end
 
   (***********************************************************)
