@@ -99,14 +99,20 @@ let to_nat_coster _ args base =
   | [UintLit(_, i)] -> pure @@ Int.of_string i * base
   | _ -> fail @@ "Gas cost error for to_nat built-in"
 
-let int_coster _ args base =
+let int_coster op args base =
+  let base' = 
+    match op with
+    | "mul" -> base * 2
+    | "div" | "rem" -> base * 4
+    | _ -> base
+  in
   match args with
   | [IntLit(w, _)] | [UintLit(w, _)]
   | [IntLit(w, _); IntLit(_, _)]
   | [UintLit(w, _); UintLit(_, _)] ->
-    if w = 32 || w = 64 then pure base
-    else if w = 128 then pure (base * 2)
-    else if w = 256 then pure (base * 4)
+    if w = 32 || w = 64 then pure base'
+    else if w = 128 then pure (base' * 2)
+    else if w = 256 then pure (base' * 4)
     else fail @@ "Gas cost error for integer built-in"
   | _ -> fail @@ "Gas cost error for integer built-in"
 
@@ -143,6 +149,8 @@ let builtin_records : builtin_record list = [
   ("add", [tvar "'A"; tvar "'A"], int_coster, 2);
   ("sub", [tvar "'A"; tvar "'A"], int_coster, 2);
   ("mul", [tvar "'A"; tvar "'A"], int_coster, 2);
+  ("div", [tvar "'A"; tvar "'A"], int_coster, 2);
+  ("rem", [tvar "'A"; tvar "'A"], int_coster, 2);
   ("to_int32", [tvar "'A"], int_coster, 2);
   ("to_int64", [tvar "'A"], int_coster, 2);
   ("to_int128", [tvar "'A"], int_coster, 2);
