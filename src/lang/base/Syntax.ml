@@ -197,115 +197,6 @@ let pp_named_literal_list nls =
 
 
 (*******************************************************)
-(*                   Expressions                       *)
-(*******************************************************)
-
-type 'rep payload =
-  | MTag of string 
-  | MLit of literal
-  | MVar of 'rep ident
-[@@deriving sexp]
-
-type 'rep pattern =
-  | Wildcard
-  | Binder of 'rep ident
-  | Constructor of string * ('rep pattern list)
-[@@deriving sexp]
-
-type 'rep expr_annot = 'rep expr * 'rep
-and 'rep expr =
-  | Literal of literal
-  | Var of 'rep ident
-  | Let of 'rep ident * typ option * 'rep expr_annot * 'rep expr_annot
-  | Message of (string * 'rep payload) list
-  | Fun of 'rep ident * typ * 'rep expr_annot
-  | App of 'rep ident * 'rep ident list
-  | Constr of string * typ list * 'rep ident list
-  | MatchExpr of 'rep ident * ('rep pattern * 'rep expr_annot) list
-  | Builtin of 'rep ident * 'rep ident list 
-  | TFun of 'rep ident * 'rep expr_annot
-  | TApp of 'rep ident * typ list
-  (* Fixpoint combinator: used to implement recursion principles *)                 
-  | Fixpoint of 'rep ident * typ * 'rep expr_annot
-[@@deriving sexp]
-
-let expr_loc (e : 'rep expr) : loc option =
-  match e with
-  | Fun (i, _, _) | App (i, _) | Builtin (i, _)
-  | MatchExpr (i, _) | TFun (i, _) | TApp (i, _) -> 
-    let l = get_rep i in
-      if (l.cnum <> -1) then Some l else None
-  | _ -> None
-
-(* SExp printing for Expr for structural printing. *)
-let spp_expr e =
-  sexp_of_expr sexp_of_loc e |> Sexplib.Sexp.to_string
-
-(* TODO: add pretty printing for expressions. *)
-let pp_expr e =
-  spp_expr e
-
-(*******************************************************)
-(*                   Statements                        *)
-(*******************************************************)
-
-(* module Stmt = functor (SR : Rep) (ER : Rep) -> struct
-  type stmt =
-    | Load of ER.rep ident * ER.rep ident * SR.rep
-    | Store of ER.rep ident * ER.rep ident * SR.rep
-    | Bind of ER.rep ident * ER.rep expr_annot * SR.rep
-    | MatchStmt of ER.rep ident * (ER.rep pattern * stmt list) list * SR.rep
-    | ReadFromBC of ER.rep ident * string * SR.rep
-    | AcceptPayment of SR.rep
-    | SendMsgs of ER.rep ident * SR.rep
-    | Event of string * string * SR.rep
-    | Throw of ER.rep ident * SR.rep
-
-  let get_rep s =
-    match s with
-    | Load (_, _, rep)
-    | Store (_, _, rep)
-    | Bind (_, _, rep)
-    | MatchStmt (_, _, rep)
-    | ReadFromBC (_, _, rep)
-    | AcceptPayment rep
-    | SendMsgs (_, rep)
-    | Event (_, _, rep)
-    | Throw (_, rep) -> rep
-
-  include SR
-end
-*)
-
-type ('rep, 'erep) stmt_annot = ('rep, 'erep) stmt * 'rep
-and ('rep, 'erep) stmt =
-  | Load of 'erep ident * 'erep ident
-  | Store of 'erep ident * 'erep ident
-  | Bind of 'erep ident * 'erep expr_annot
-  | MatchStmt of 'erep ident * ('erep pattern * ('rep, 'erep) stmt_annot list) list
-  | ReadFromBC of 'erep ident * string
-  | AcceptPayment
-  | SendMsgs of 'erep ident
-  | CreateEvnt of string * 'erep ident
-  | Throw of 'erep ident
-[@@deriving sexp]
-
-let stmt_str (srep : ('rep, 'erep) stmt_annot) =
-  let (s, _) = srep in 
-  let sexp = sexp_of_stmt sexp_of_loc sexp_of_loc s in
-  Sexplib.Sexp.to_string sexp
-
-let stmt_loc (s : ('rep, 'erep) stmt) : 'rep option = 
-  match s with
-  | Load (i, _) | Store(i, _) | ReadFromBC (i, _) 
-  | MatchStmt (i, _)
-  | CreateEvnt (_, i)
-  | SendMsgs i -> 
-    let l = get_rep i in
-      if (l.cnum <> -1) then Some l else None
-  | _ -> None
-
-(*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
 
@@ -315,24 +206,109 @@ module type Rep = sig
   val mk_msg_payload_id_address : string -> rep ident
   val mk_msg_payload_id_uint128 : string -> rep ident
 
+  val rep_of_sexp : Sexp.t -> rep
+  val sexp_of_rep : rep -> Sexp.t
+  
   (* TODO: This needs to be looked through properly *)
   val parse_rep : string -> rep
   val get_rep_str: rep -> string
 end
 
 (*******************************************************)
-(*                    Contracts                        *)
+(*          Annotated scilla syntax                    *)
 (*******************************************************)
 
-module Contract (SR : Rep) (ER : Rep) = struct
+module ScillaSyntax (SR : Rep) (ER : Rep) = struct
+
+(*******************************************************)
+(*                   Expressions                       *)
+(*******************************************************)
+
+  type payload =
+    | MTag of string 
+    | MLit of literal
+    | MVar of ER.rep ident
+  [@@deriving sexp]
+
+  type pattern =
+    | Wildcard
+    | Binder of ER.rep ident
+    | Constructor of string * (pattern list)
+  [@@deriving sexp]
+
+  type expr_annot = expr * ER.rep
+  and expr =
+    | Literal of literal
+    | Var of ER.rep ident
+    | Let of ER.rep ident * typ option * expr_annot * expr_annot
+    | Message of (string * payload) list
+    | Fun of ER.rep ident * typ * expr_annot
+    | App of ER.rep ident * ER.rep ident list
+    | Constr of string * typ list * ER.rep ident list
+    | MatchExpr of ER.rep ident * (pattern * expr_annot) list
+    | Builtin of ER.rep ident * ER.rep ident list 
+    (* Advanced features: to be added in Scilla 0.2 *)                 
+    | TFun of ER.rep ident * expr_annot
+    | TApp of ER.rep ident * typ list
+    (* Fixpoint combinator: used to implement recursion principles *)                 
+    | Fixpoint of ER.rep ident * typ * expr_annot
+  [@@deriving sexp]
+
+  let expr_rep erep = snd erep
+      
+  let expr_loc erep =
+    let l = ER.get_loc (expr_rep erep) in
+    if l.cnum <> -1
+    then Some l
+    else None
+
+  (* SExp printing for Expr for structural printing. *)
+  let spp_expr e =
+    sexp_of_expr e |> Sexplib.Sexp.to_string
+
+  (* TODO: add pretty printing for expressions. *)
+  let pp_expr e =
+    spp_expr e
+
+  (*******************************************************)
+  (*                   Statements                        *)
+  (*******************************************************)
+
+  type stmt_annot = stmt * SR.rep
+  and stmt =
+    | Load of ER.rep ident * ER.rep ident
+    | Store of ER.rep ident * ER.rep ident
+    | Bind of ER.rep ident * expr_annot
+    | MatchStmt of ER.rep ident * (pattern * stmt_annot list) list
+    | ReadFromBC of ER.rep ident * string
+    | AcceptPayment
+    | SendMsgs of ER.rep ident
+    | CreateEvnt of string * ER.rep ident
+    | Throw of ER.rep ident
+  [@@deriving sexp]
+  
+  let stmt_rep srep = snd srep
+  
+  let stmt_loc s = SR.get_loc (stmt_rep s)
+
+  let spp_stmt s =
+    sexp_of_stmt s |> Sexplib.Sexp.to_string
+
+  let pp_stmt s =
+    spp_stmt s
+      
+  (*******************************************************)
+  (*                    Contracts                        *)
+  (*******************************************************)
+
   type transition = 
     { tname   : SR.rep ident;
       tparams : (ER.rep ident  * typ) list;
-      tbody   : (SR.rep, ER.rep) stmt_annot list }
+      tbody   : stmt_annot list }
 
   type lib_entry =
     { lname : ER.rep ident;
-      lexp  : ER.rep expr_annot }
+      lexp  : expr_annot }
 
   type library =
     { lname : SR.rep ident;
@@ -341,7 +317,7 @@ module Contract (SR : Rep) (ER : Rep) = struct
   type contract =
     { cname   : SR.rep ident;
       cparams : (ER.rep ident  * typ) list;
-      cfields : (ER.rep ident * typ * ER.rep expr_annot) list;
+      cfields : (ER.rep ident * typ * expr_annot) list;
       ctrans  : transition list; }
 
   (* Contract module: libary + contract definiton *)
@@ -357,5 +333,242 @@ module Contract (SR : Rep) (ER : Rep) = struct
         (sexp_of_typ t |> Sexplib.Sexp.to_string)) in
     "[" ^ (String.concat ~sep:", " cs) ^ "]"
 
+  (****************************************************************)
+  (*                  Type substitutions                          *)
+  (****************************************************************)
+
+  (* Return free tvars in tp *)
+  let free_tvars tp =
+    let add vs tv = tv :: List.filter ~f:(fun v -> v = tv) vs in
+    let rem vs tv = List.filter ~f:(fun v -> v <> tv) vs in
+    let rec go t acc = (match t with
+        | PrimType _ -> acc
+        | MapType (kt, vt) -> go kt acc |> go vt
+        | FunType (at, rt) -> go at acc |> go rt
+        | TypeVar n -> add acc n
+        | ADT (_, ts) ->
+            List.fold_left ts ~init:acc ~f:(fun z tt -> go tt z)
+        | PolyFun (arg, bt) ->
+            let acc' = go bt acc in
+            rem acc' arg) in
+    go tp []
+
+  let mk_fresh_var taken init =
+    let tmp = ref init in
+    let counter = ref 1 in
+    while List.mem taken !tmp ~equal:(fun a b -> a = b) do
+      let cnt = !counter in
+      tmp := init ^ (Int.to_string cnt);
+      counter := cnt + 1;
+    done;
+    !tmp
+
+
+  let rec subst_type_in_type tvar tp tm = match tm with
+    | PrimType _ as p -> p
+    (* Make sure the map's type is still primitive! *)
+    | MapType (kt, vt) -> 
+        let kts = subst_type_in_type tvar tp kt in
+        let vts = subst_type_in_type tvar tp vt in
+        MapType (kts, vts)
+    | FunType (at, rt) -> 
+        let ats = subst_type_in_type tvar tp at in
+        let rts = subst_type_in_type tvar tp rt in
+        FunType (ats, rts)
+    | TypeVar n as tv ->
+        if tvar = n then tp else tv
+    | ADT (s, ts) ->
+        let ts' = List.map ts ~f:(fun t -> subst_type_in_type tvar tp t) in
+        ADT (s, ts')
+    | PolyFun (arg, t) as pf -> 
+        if tvar = arg then pf
+        else PolyFun (arg, subst_type_in_type tvar tp t)
+
+  let subst_types_in_type sbst tm =
+    List.fold_left sbst ~init:tm
+      ~f:(fun acc (tvar, tp) -> subst_type_in_type tvar tp acc)
+
+  let rec refresh_tfun t taken = match t with
+    | MapType (kt, vt) -> MapType (kt, refresh_tfun vt taken)
+    | FunType (at, rt) ->
+        FunType (refresh_tfun at taken, refresh_tfun rt taken)
+    | ADT (n, ts) ->
+        let ts' = List.map ts ~f:(fun w -> refresh_tfun w taken) in
+        ADT (n, ts')
+    | PrimType _ | TypeVar _ -> t
+    | PolyFun (arg, bt) ->
+        let arg' = mk_fresh_var taken arg in
+        let tv_new = TypeVar arg' in
+        let bt1 = subst_type_in_type arg tv_new bt in
+        let taken' = arg' :: taken in
+        let bt2 = refresh_tfun bt1 taken' in
+        PolyFun (arg', bt2)
+
+  (* Alpha renaming to canonical (pre-determined) names. *)
+  let canonicalize_tfun t =
+    let taken = free_tvars t in
+    let get_new_name counter = "'_A" ^ Int.to_string counter in
+    let rec refresh t taken counter = match t with
+      | MapType (kt, vt) -> MapType (kt, refresh vt taken counter)
+      | FunType (at, rt) ->
+          FunType (refresh at taken counter, refresh rt taken counter)
+      | ADT (n, ts) ->
+          let ts' = List.map ts ~f:(fun w -> refresh w taken counter) in
+          ADT (n, ts')
+      | PrimType _ | TypeVar _ -> t
+      | PolyFun (arg, bt) ->
+          let arg' = get_new_name counter in
+          let tv_new = TypeVar arg' in
+          let bt1 = subst_type_in_type arg tv_new bt in
+          let taken' = arg' :: taken in
+          let bt2 = refresh bt1 taken' (counter+1) in
+          PolyFun (arg', bt2)
+    in
+    refresh t taken 1
+
+  (* The same as above, but for a variable with locations *)
+  let subst_type_in_type' tv = subst_type_in_type (get_id tv)
+
+  let rec subst_type_in_literal tvar tp l = match l with
+    | Map ((kt, vt), ls) -> 
+        let kts = subst_type_in_type' tvar tp kt in
+        let vts = subst_type_in_type' tvar tp vt in
+        let ls' = List.map ls ~f:(fun (k, v) ->
+            let k' = subst_type_in_literal tvar tp k in
+            let v' = subst_type_in_literal tvar tp v in 
+            (k', v')) in
+        Map ((kts, vts), ls')
+    | ADTValue (n, ts, ls) ->
+        let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
+        let ls' = List.map ls ~f:(fun l -> subst_type_in_literal tvar tp l) in
+        ADTValue (n, ts', ls')
+    | _ -> l
+
+
+  (* Substitute type for a type variable *)
+  let rec subst_type_in_expr tvar tp erep =
+    let (e, rep) = erep in
+    match e with
+    | Literal l -> (Literal (subst_type_in_literal tvar tp l), rep)
+    | Var _ as v -> (v, rep)
+    | Fun (f, t, body) ->
+        let t_subst = subst_type_in_type' tvar tp t in 
+        let body_subst = subst_type_in_expr tvar tp body in
+        (Fun (f, t_subst, body_subst), rep)
+    | TFun (tv, body) as tf ->
+        if get_id tv = get_id tvar
+        then (tf, rep)
+        else 
+          let body_subst = subst_type_in_expr tvar tp body in
+          (TFun (tv, body_subst), rep)
+    | Constr (n, ts, es) ->
+        let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
+        (Constr (n, ts', es), rep)
+    | App _ as app -> (app, rep)
+    | Builtin _ as bi -> (bi, rep)
+    | Let (i, tann, lhs, rhs) ->
+        let tann' = Option.map tann ~f:(fun t -> subst_type_in_type' tvar tp t) in
+        let lhs' = subst_type_in_expr tvar tp lhs in
+        let rhs' = subst_type_in_expr tvar tp rhs in
+        (Let (i, tann', lhs', rhs'), rep)
+    | Message _ as m -> (m, rep)
+    | MatchExpr (e, cs) ->
+        let cs' = List.map cs ~f:(fun (p, b) -> (p, subst_type_in_expr tvar tp b)) in
+        (MatchExpr(e, cs'), rep)
+    | TApp (tf, tl) -> 
+        let tl' = List.map tl ~f:(fun t -> subst_type_in_type' tvar tp t) in
+        (TApp (tf, tl'), rep)
+    | Fixpoint (f, t, body) ->
+        let t' = subst_type_in_type' tvar tp t in
+        let body' = subst_type_in_expr tvar tp body in
+        (Fixpoint (f, t', body'), rep)
+
+  (****************************************************************)
+  (*                  Better error reporting                      *)
+  (****************************************************************)
+  let get_failure_msg erep phase opt =
+    let (e, rep) = erep in
+    let locstr = get_loc_str (ER.get_loc rep) in
+    match e with
+    | Literal _ ->
+        sprintf "[%s] Type error in literal. %s\n"
+          locstr phase
+    | Var i ->
+        sprintf "[%s] Type error in variable `%s`:\n"
+          locstr (get_id i)
+    | Let (i, _, _, _) ->
+        sprintf "[%s] Type error in the initialiser of `%s`:\n"
+          locstr (get_id i)
+    | Message _ ->
+        sprintf "[%s] Type error in message.\n"
+          locstr
+    | Fun _ ->
+        sprintf "[%s] Type error in function:\n"
+          locstr
+    | App (f, _) ->
+        sprintf "[%s] Type error in application of `%s`:\n"
+          locstr (get_id f)
+    | Constr (s, _, _) ->
+        sprintf "[%s] Type error in constructor `%s`:\n"
+          locstr s
+    | MatchExpr (x, _) ->
+        sprintf
+          "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
+          locstr (get_id x) opt 
+    | Builtin (i, _) ->
+        sprintf "[%s] Type error in built-in application of `%s`:\n"
+          locstr (get_id i)
+    | TApp (tf, _) ->
+        sprintf "[%s] Type error in type application of `%s`:\n"
+          locstr (get_id tf)
+    | TFun (tf, _) ->
+        sprintf "[%s] Type error in type function `%s`:\n"
+          locstr (get_id tf)
+    | Fixpoint (f, _, _) ->
+        sprintf "Type error in fixpoint application with an argument `%s`:\n"
+          (get_id f)              
+
+  let get_failure_msg_stmt srep phase opt =
+    let (s, rep) = srep in
+    let locstr = get_loc_str (SR.get_loc rep) in
+    match s with
+    | Load (x, f) ->
+        sprintf "[%s] Type error in reading value of `%s` into `%s`:\n %s"
+          locstr (get_id f) (get_id x) phase
+    | Store (f, r) ->
+        sprintf "[%s] Type error in storing value of `%s` into the field `%s`:\n"
+          locstr (get_id r) (get_id f)
+    | Bind (x, _) ->
+        sprintf "[%s] Type error in the binding to into `%s`:\n"
+          locstr (get_id x)
+    | MatchStmt (x, _) ->
+        sprintf
+          "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
+          locstr (get_id x) opt 
+    | ReadFromBC (x, _) ->
+        sprintf "[%s] Error in reading from blockchain state into `%s`:\n"
+          locstr (get_id x)
+    | AcceptPayment ->
+        sprintf "[%s] Error in accepting payment\n"
+          locstr
+    | SendMsgs i ->
+        sprintf "[%s] Error in sending messages `%s`:\n"
+          locstr (get_id i)
+    | CreateEvnt (s, _) ->
+        sprintf "[%s] Error in create event `%s`:\n"
+          locstr s
+    | Throw i ->
+        sprintf "[%s] Error in throw of '%s':\n"
+          locstr (get_id i)
+
+  let wrap_with_info msg res = match res with
+    | Ok _ -> res
+    | Error msg' -> Error (sprintf "%s%s" msg msg')
+
+  let wrap_err e phase ?opt:(opt = "") = wrap_with_info (get_failure_msg e phase opt)
+
+  let wrap_serr s phase ?opt:(opt = "") =
+    wrap_with_info (get_failure_msg_stmt s phase opt)
+  
 end
 

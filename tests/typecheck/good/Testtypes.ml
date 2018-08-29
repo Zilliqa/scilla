@@ -18,10 +18,13 @@
 
 open OUnit2
 open Syntax
+open ParserUtil
+
+module TestTypeUtils = TypeUtil.TypeUtilities (ParserRep) (ParserRep)
 
 let make_type_equiv_test st1 st2 eq =
   let open FrontEndParser in
-  let open TypeUtil in
+  let open TestTypeUtils in
   let t1, t2 = 
     try
       parse_type st1, parse_type st2 

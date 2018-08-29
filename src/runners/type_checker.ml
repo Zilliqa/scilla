@@ -16,7 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-
 open Core
 open Printf
 open Syntax
@@ -27,12 +26,8 @@ open RunnerUtil
 open DebugMessage
 open MonadUtil
 open Result.Let_syntax
+open PatternChecker
 
-module SimpleTEnv = MakeTEnv(PlainTypes) (ParserRep)
-open SimpleTEnv
-
-open TypeChecker.Typechecker_Contracts
-    
 (* Check that the expression parses *)
 let check_parsing filename = 
     let parse_module =
@@ -46,7 +41,9 @@ let check_parsing filename =
 
 (* Type check the expression with external libraries *)
 let check_typing e elibs =
-  let%bind _ = TypeChecker.type_recursion_principles ParserRep.get_loc in
+  let open TypeChecker.ScillaTypechecker in
+  let open TypeChecker.ScillaTypechecker.TypeEnv in
+  let%bind _ = type_recursion_principles in
   let recs = List.map recursion_principles
       ~f:(fun ({lname = a; _}, c) -> (a, c)) in
   let tenv0 = TEnv.addTs TEnv.mk recs in
@@ -56,9 +53,15 @@ let check_typing e elibs =
       ~f:(fun (lib_acc, env_acc) elib ->
           let%bind (lib, new_env) = type_library env_acc elib in
         pure @@ (lib_acc @ [lib], new_env)) in
-  let%bind (_, (typ, _)) = TypeChecker.type_expr tenv1 e ParserRep.get_loc in
-  pure @@ typ
+  let%bind typed_e = type_expr tenv1 e in
+  pure @@ typed_e
 
+module PM_SR = TypeChecker.ScillaTypechecker.STR
+module PM_ER = TypeChecker.ScillaTypechecker.ETR
+module PM_Checker = ScillaPatternchecker (PM_SR) (PM_ER)
+
+let check_patterns e = PM_Checker.pm_check_expr e
+    
 let () =
   if (Array.length Sys.argv) < 2
   then
@@ -79,8 +82,11 @@ let () =
         (* Import whatever libs we want. *)
         let std_lib = import_libs [] in
         (match check_typing e std_lib with
-         | Ok res ->
-             printf "%s\n" (pp_typ res.tp)
+         | Ok ((_, (e_typ, _)) as typed_erep) ->
+             (match check_patterns typed_erep with
+              | Ok _ -> printf "%s\n" (pp_typ e_typ.tp)
+              | Error s -> printf "Type checking failed:\n%s\n" s
+             )
          | Error s -> printf "Type checking failed:\n%s\n" s)
     | Some _ | None ->
         printf "%s\n" "Failed to parse input file.")

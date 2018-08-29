@@ -18,12 +18,19 @@
 
 
 open Syntax
+open ParserUtil
 open Core
 open Yojson
 open ContractUtil.MessagePayload
 open Datatypes
 open TypeUtil
 open PrimTypes
+open BuiltIns
+
+module JSONTypeUtilities = TypeUtilities (ParserRep) (ParserRep)
+module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
+
+open JSONTypeUtilities
     
 exception Invalid_json of string
 
@@ -45,7 +52,7 @@ let member_exn m j =
 
 (* Given a literal, return its full type name *)
 let literal_type_exn l =
-  let t = TypeUtil.literal_type l in
+  let t = literal_type l in
   match t with
   | Error emsg ->
     raise (Invalid_json (emsg))
@@ -165,7 +172,7 @@ and read_adt_json name j tlist_verify =
   let verify_exn name tlist1 adt =
     match adt with
     | ADTValue (_, tlist2, _) ->
-      if TypeUtil.type_equiv_list tlist1 tlist2 then ()
+      if type_equiv_list tlist1 tlist2 then ()
       else
       let expected = pp_typ_list tlist1 in
       let observed = pp_typ_list tlist2 in
@@ -427,7 +434,7 @@ let get_json_data filename  =
 end
 
 module ContractInfo = struct
-  open EvalUtil.EvalContract
+  open EvalUtil.EvalSyntax
          
   let get_string (contr : contract) =
     (* 1. contract name *)
