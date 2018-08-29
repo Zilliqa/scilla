@@ -114,7 +114,9 @@ module ScillaBuiltIns
     val sub: t -> t -> t
     val mul: t -> t -> t
     val div: t -> t -> t
+    val rem : t -> t -> t
     val zero: t
+    val one : t
     val min_int: t
   end
 
@@ -141,8 +143,8 @@ module ScillaBuiltIns
       (* if a > 0 && b < 0 && r < 0 then we have an overflow *)
       if ((compare a zero) > 0 && (compare b zero) < 0 && (compare r zero) < 0) 
       then raise IntOverflow
-      (* if a < 0 && b > 0 && r > 0 then we have an underflow *)
-      else if ((compare a zero) < 0 && (compare b zero) > 0 && (compare r zero) > 0) 
+      (* if a < 0 && b < 0 && r > 0 then we have an underflow*)
+      else if ((compare a zero) < 0 && (compare b zero) < 0 && (compare r zero) > 0) 
       then raise IntUnderflow
       else
         to_string r
@@ -164,10 +166,27 @@ module ScillaBuiltIns
       else
         to_string r
 
+    let safe_div astr bstr =
+      let a = of_string astr in
+      let b = of_string bstr in
+      (* Integer overflow during division occurs in a very specific case. *)
+      (* https://stackoverflow.com/a/30400252/2128804 *)
+      if a = min_int && b = (sub zero one) then raise IntOverflow else
+        (* Division_by_zero is taken care of by underlying implementation. *)
+        let r = div a b in
+        to_string r
+
+    let safe_rem astr bstr =
+      let a = of_string astr in
+      let b = of_string bstr in
+      (* Division_by_zero is taken care of by underlying implementation. *)
+      let r = rem a b in
+      to_string r
+
     let safe_lt astr bstr =
       let a = of_string astr in
       let b = of_string bstr in
-      if (compare a b) < 0 then true else false
+    if (compare a b) < 0 then true else false
 
   end
 
@@ -208,6 +227,20 @@ module ScillaBuiltIns
           to_string r
       else
         to_string r
+
+    let safe_div astr bstr =
+      let a = of_string astr in
+      let b = of_string bstr in
+      (* Division_by_zero is taken care of by underlying implementation. *)
+      let r = div a b in
+      to_string r
+        
+    let safe_rem astr bstr =
+      let a = of_string astr in
+      let b = of_string bstr in
+      (* Division_by_zero is taken care of by underlying implementation. *)
+      let r = rem a b in
+      to_string r
 
     let safe_lt astr bstr =
       let a = of_string astr in
@@ -255,6 +288,7 @@ module ScillaBuiltIns
           else
             pure @@ to_Bool (x = y)
       | _ -> builtin_fail "Int.eq" ls
+
 
     let add ls _ = match ls with
       | [IntLit (wx, x); IntLit (wy, y)] ->
@@ -315,6 +349,46 @@ module ScillaBuiltIns
                builtin_fail "Int.mul: an overflow/underflow occurred" ls
             )
       | _ -> builtin_fail "Int.mul" ls
+
+    let div ls  _ = match ls with
+      | [IntLit (wx, x); IntLit (wy, y)] ->
+          if (wx <> wy) then
+            builtin_fail "Int.div: type mistmatch" ls
+          else 
+            (try match wx with
+               | 32 ->
+                   pure (IntLit (wx, Int32Wrapper.safe_div x y))
+               | 64 ->
+                   pure (IntLit (wx, Int64Wrapper.safe_div x y ))
+               | 128 ->
+                   pure (IntLit (wx, Int128Wrapper.safe_div x y))
+               | 256 ->
+                   pure (IntLit (wx, Int256Wrapper.safe_div x y))
+               | _ -> builtin_fail "Int.div: unsupported Int type" ls
+             with | Division_by_zero | IntOverflow ->
+               builtin_fail "Int.div: Division by zero / IntOverflow error occurred" ls
+            )
+      | _ -> builtin_fail "Int.div" ls
+
+    let rem ls  _ = match ls with
+      | [IntLit (wx, x); IntLit (wy, y)] ->
+          if (wx <> wy) then
+            builtin_fail "Int.rem: type mistmatch" ls
+          else 
+            (try match wx with
+               | 32 ->
+                   pure (IntLit (wx, Int32Wrapper.safe_rem x y))
+               | 64 ->
+                   pure (IntLit (wx, Int64Wrapper.safe_rem x y ))
+               | 128 ->
+                   pure (IntLit (wx, Int128Wrapper.safe_rem x y))
+               | 256 ->
+                   pure (IntLit (wx, Int256Wrapper.safe_rem x y))
+               | _ -> builtin_fail "Int.rem: unsupported Int type" ls
+             with | Division_by_zero ->
+               builtin_fail "Int.rem: Division by zero error occurred" ls
+            )
+      | _ -> builtin_fail "Int.rem" ls
 
     let lt ls _ = match ls with
       | [IntLit (wx, x); IntLit (wy, y)] ->
@@ -438,6 +512,38 @@ module ScillaBuiltIns
             )
       | _ -> builtin_fail "Uint.mul" ls  
 
+    let div ls _ = match ls with
+      | [UintLit (wx, x); UintLit (wy, y)] ->
+          if (wx <> wy) then
+            builtin_fail "Uint.div: type mistmatch" ls
+          else 
+            (try match wx with
+               | 32 -> pure (UintLit (wx, Uint32Wrapper.safe_div x y))
+               | 64 -> pure (UintLit (wx, Uint64Wrapper.safe_div  x y ))
+               | 128 -> pure (UintLit (wx, Uint128Wrapper.safe_div  x y))
+               | 256 -> pure (UintLit (wx, Uint256Wrapper.safe_div  x y))
+               | _ -> builtin_fail "Uint.div: unsupported Uint type" ls
+             with | Division_by_zero ->
+               builtin_fail "Uint.div: Division by zero occurred" ls
+            )
+      | _ -> builtin_fail "Uint.div" ls  
+
+    let rem ls _ = match ls with
+      | [UintLit (wx, x); UintLit (wy, y)] ->
+          if (wx <> wy) then
+            builtin_fail "Uint.rem: type mistmatch" ls
+          else 
+            (try match wx with
+               | 32 -> pure (UintLit (wx, Uint32Wrapper.safe_rem x y))
+               | 64 -> pure (UintLit (wx, Uint64Wrapper.safe_rem  x y ))
+               | 128 -> pure (UintLit (wx, Uint128Wrapper.safe_rem  x y))
+               | 256 -> pure (UintLit (wx, Uint256Wrapper.safe_rem  x y))
+               | _ -> builtin_fail "Uint.rem: unsupported Uint type" ls
+             with | Division_by_zero ->
+               builtin_fail "Uint.rem: Division by zero occurred" ls
+            )
+      | _ -> builtin_fail "Uint.rem" ls
+
     let lt ls _ = match ls with
       | [UintLit (wx, x); UintLit (wy, y)] -> 
           if (wx <> wy) then
@@ -484,7 +590,6 @@ module ScillaBuiltIns
     let to_uint64 ls _ = to_uint_helper ls 64
     let to_uint128 ls _ = to_uint_helper ls 128
     let to_uint256 ls _ = to_uint_helper ls 256
-
 
     let to_nat_arity = 1
     let to_nat_type = tfun_typ "'A" @@ (fun_typ (tvar "'A") nat_typ)
@@ -777,6 +882,8 @@ module ScillaBuiltIns
       ("add", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.add);
       ("sub", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.sub);
       ("mul", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.mul);
+      ("div", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.div);
+      ("rem", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.rem);
       ("to_int32", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 32, Int.to_int32);
       ("to_int64", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 64, Int.to_int64);
       ("to_int128", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 128, Int.to_int128);
@@ -788,6 +895,8 @@ module ScillaBuiltIns
       ("add", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.add);
       ("sub", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.sub);
       ("mul", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.mul);
+      ("div", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.div);
+      ("rem", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.rem);
       ("to_uint32", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 32, Uint.to_uint32);
       ("to_uint64", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 64, Uint.to_uint64);
       ("to_uint128", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 128, Uint.to_uint128);
