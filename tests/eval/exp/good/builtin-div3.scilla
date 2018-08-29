@@ -1,0 +1,10 @@
+(* Expected result: 100 *)
+let f = fun (z : Int32) =>
+    let b = Int32 40 in
+    fun (c : Int32) =>
+    	let t = builtin div b c in
+	builtin add z t
+in
+let a = Int32 100 in
+let b = Int32 101 in
+f a b
