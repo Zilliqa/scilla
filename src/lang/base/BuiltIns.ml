@@ -143,7 +143,7 @@ module ScillaBuiltIns
       (* if a > 0 && b < 0 && r < 0 then we have an overflow *)
       if ((compare a zero) > 0 && (compare b zero) < 0 && (compare r zero) < 0) 
       then raise IntOverflow
-      (* if a < 0 && b < 0 && r > 0 then we have an underflow*)
+      (* if a < 0 && b > 0 && r > 0 then we have an underflow*)
       else if ((compare a zero) < 0 && (compare b zero) > 0 && (compare r zero) > 0) 
       then raise IntUnderflow
       else
