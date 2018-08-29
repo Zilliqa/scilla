@@ -131,6 +131,8 @@ Add the following line to your ~/.emacs file to load this mode for files ending 
 ```
 ### Vim plugin for Scilla
 
+A vim plugin for editing Scilla contracts is [provided](./misc/vim-plugin).
+
 You can install the vim config files through Pathogen by:
 ```
 git clone https://github.com/edisonljh/vim-scilla.git ~/.vim/bundle/vim-scilla
@@ -141,4 +143,4 @@ Or through Vundle by adding the following line to your `~/.vimrc`:
 Plugin 'edisonljh/vim-scilla'
 ```
 
-Repo: [vim-scilla](https://github.com/edisonljh/vim-scilla).
+Mirror Repo: [vim-scilla](https://github.com/edisonljh/vim-scilla).
