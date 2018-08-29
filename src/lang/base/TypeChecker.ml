@@ -368,16 +368,19 @@ module ScillaTypechecker
     match id with
     | Ident (s, r) -> Ident (s, ETR.mk_rep r t)
   
-  let type_transition (env0 : stmt_tenv) (tr : UntypedSyntax.transition) : (TypedSyntax.transition * stmt_tenv, string) result  =
+  let type_transition env0 tr : (TypedSyntax.transition * stmt_tenv, string) result  =
     let {tname; tparams; tbody} = tr in
     let tenv0 = env0.pure in
     let lift_ident_e (id, t) = (add_type_to_id id (mk_qual_tp t), t) in
     let typed_tparams = List.map tparams ~f:lift_ident_e in
-    let tenv1 = TEnv.addTs tenv0 (append_implict_trans_params tparams ER.mk_msg_payload_id_address ER.mk_msg_payload_id_uint128) in
+    let append_params = append_implict_trans_params tparams
+        ER.mk_msg_payload_id_address ER.mk_msg_payload_id_uint128 in
+    let tenv1 = TEnv.addTs tenv0 append_params in
     let env = {env0 with pure = tenv1} in
     let msg = sprintf "[%s] Type error in transition %s:\n"
         (get_loc_str (SR.get_loc (get_rep tname))) (get_id tname) in
-    let%bind (typed_stmts, new_tenv) = wrap_with_info msg @@ type_stmts env tbody ER.get_loc in
+    let%bind (typed_stmts, new_tenv) = wrap_with_info msg @@
+      type_stmts env tbody ER.get_loc in
     pure @@ ({ TypedSyntax.tname = tname ;
                TypedSyntax.tparams = typed_tparams;
                TypedSyntax.tbody = typed_stmts }, new_tenv)
