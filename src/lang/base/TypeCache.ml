@@ -30,7 +30,7 @@ module StdlibTypeCacher
     (SR : Rep)
     (ER : Rep) = struct
 
-  module L = Contract (SR) (ER)
+  module L = ScillaSyntax (SR) (ER)
   open L
   module MakeTEnv = Q(R)(ER)
   open MakeTEnv

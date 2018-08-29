@@ -95,7 +95,7 @@ module BlockChainState : sig
 end
 
 module ContractInfo : sig
-open EvalUtil.EvalContract
+open EvalUtil.EvalSyntax
   (* Given a parsed contract, give a string JSON with these details:
        { 
          "name" : "foo",

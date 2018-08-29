@@ -1,4 +1,4 @@
-(*
+ (*
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
@@ -24,10 +24,13 @@ open MonadUtil
 open EvalMonad
 open EvalMonad.Let_syntax
 open PatternMatching
-open BuiltIns
 open Stdint
 open ContractUtil
-open TypeUtil
+
+open EvalTypeUtilities
+open EvalBuiltIns
+
+open EvalSyntax
 
 (***************************************************)
 (*                    Utilities                    *)      
@@ -204,7 +207,6 @@ and try_apply_as_type_closure v arg_type =
   match v with
   | Env.ValTypeClosure (tv, body, env) ->
       (* TODO: implement type substitution in TypeUtil.ml *)
-      let open TypeUtil in
       let body_subst = subst_type_in_expr tv arg_type body in
       let%bind (v, _) = exp_eval body_subst env in
       pure v      
@@ -212,13 +214,14 @@ and try_apply_as_type_closure v arg_type =
       fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)
 
 
+open EvalSyntax
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla statemnts   *)
 (*******************************************************)
 let rec stmt_eval conf stmts =
   match stmts with
   | [] -> pure conf
-  | ((s, _) as stmt) :: sts -> (match s with
+  | (s, _) :: sts -> (match s with
       | Load (x, r) ->
           let%bind l = Configuration.load conf r in
           let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
@@ -240,7 +243,7 @@ let rec stmt_eval conf stmts =
           let%bind ((_, branch_stmts), bnds) =
             tryM clauses
               ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
-                      (Env.pp_value v) (stmt_str stmt))
+                      (Env.pp_value v) (pp_stmt s))
               ~f:(fun (p, _) -> from_result @@ match_with_pattern v p) in 
           (* Update the environment for the branch *)
           let conf' = List.fold_left bnds ~init:conf
@@ -263,7 +266,7 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       (* TODO: Implement the rest *)
       | _ -> fail @@ sprintf "The statement %s is not supported yet."
-            (stmt_str stmt)
+            (pp_stmt s)
     )
 
 (*******************************************************)
@@ -272,7 +275,7 @@ let rec stmt_eval conf stmts =
 
 let check_blockchain_entries entries =
   let expected = [
-      (blocknum_name, BNum("0"))
+      (TypeUtil.blocknum_name, BNum("0"))
   ] in
   (* every entry must be expected *)
   let c1 = List.for_all entries ~f:(fun (s, _) ->
@@ -290,7 +293,6 @@ let check_blockchain_entries entries =
 (*              Contract initialization                *)
 (*******************************************************)
 
-open EvalContract
 (* Combine external and contract lib functions. *)
 let combine_libs clibs elibs =
   (* combine both the libs, with contract libs defined later 

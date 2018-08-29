@@ -15,17 +15,17 @@
     },
     {
       "vname": "highestBidder",
-      "type": "Option (Address)",
+      "type": "Option (ByStr20)",
       "value": {
         "constructor": "None",
-        "argtypes": [ "Address" ],
+        "argtypes": [ "ByStr20" ],
         "arguments": []
       }
     },
     { "vname": "highestBid", "type": "Uint128", "value": "0" },
     {
       "vname": "pendingReturns",
-      "type": "Map (Address) (Uint128)",
+      "type": "Map (ByStr20) (Uint128)",
       "value": []
     }
   ],

@@ -24,9 +24,12 @@ open OUnit2
  * in both Scilla source parser and the JSON parser against
  * building bad literals. *)
 open Syntax
-open TypeUtil
+open ParserUtil
 open PrimTypes
 
+module TestTypeUtils = TypeUtil.TypeUtilities (ParserRep) (ParserRep)
+open TestTypeUtils
+    
 (* Given a literal "l", return a test that will assert that
  * the literal is malformed. Do not pass good literals. *)
 let make_bad_lit_test l =

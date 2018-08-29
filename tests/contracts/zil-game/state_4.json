@@ -10,10 +10,10 @@
   },
   {
     "vname": "player_a_hash",
-    "type": "Option (Hash)",
+    "type": "Option (ByStr32)",
     "value": {
       "constructor": "Some",
-      "argtypes": [ "Hash" ],
+      "argtypes": [ "ByStr32" ],
       "arguments": [
         "0x123456789012345678901234567890123456789012345678901234567890abff"
       ]
@@ -21,8 +21,8 @@
   },
   {
     "vname": "player_b_hash",
-    "type": "Option (Hash)",
-      "value": { "constructor": "None", "argtypes": ["Hash"], "arguments": [] }
+    "type": "Option (ByStr32)",
+      "value": { "constructor": "None", "argtypes": ["ByStr32"], "arguments": [] }
   },
   {
     "vname": "_balance",

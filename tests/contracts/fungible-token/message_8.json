@@ -5,12 +5,12 @@
     "params" : [
         {
             "vname": "tokenOwner",
-            "type": "Address",
+            "type": "ByStr20",
             "value": "0x1234567890123456789012345678901234567890"
         },
         {
             "vname": "spender",
-            "type": "Address",
+            "type": "ByStr20",
             "value": "0x54345678901234567890123456789012345678cd"
         }
     ]

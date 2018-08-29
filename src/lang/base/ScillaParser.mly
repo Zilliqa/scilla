@@ -21,14 +21,14 @@
   open Syntax
   open ParserUtil
 
-  open ParsedContract
+  open ParsedSyntax
 
   let to_type d = match d with
     | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x
     | _ -> ADT (d, [])
   
   let build_prim_literal_exn t v =
-    match BuiltIns.build_prim_literal t v with
+    match PrimTypes.build_prim_literal t v with
     | Some l -> l
     | None -> raise (SyntaxError ("Invalid " ^ (pp_typ t) ^ " literal " ^ v))
 %}
@@ -97,11 +97,11 @@
 (* %nonassoc NEG *)
 %right TARROW
 
-%start <Syntax.loc Syntax.expr_annot list> exps
+%start <ParserUtil.ParsedSyntax.expr_annot list> exps
 %start <Syntax.typ list> types
-%start <(Syntax.loc, Syntax.loc) Syntax.stmt_annot list> stmts_term
-%start <ParserUtil.ParsedContract.cmodule> cmodule
-%start <ParserUtil.ParsedContract.library> lmodule
+%start <ParserUtil.ParsedSyntax.stmt_annot list> stmts_term
+%start <ParserUtil.ParsedSyntax.cmodule> cmodule
+%start <ParserUtil.ParsedSyntax.library> lmodule
 
 %%
 
@@ -188,11 +188,7 @@ lit :
   }
 | h = HEXLIT   { 
   let l = String.length h in
-  if l = (address_length + 2) 
-  then build_prim_literal_exn PrimTypes.address_typ h
-  else if l = (hash_length + 2)
-  then build_prim_literal_exn PrimTypes.hash_typ h
-  else raise (SyntaxError (Core.sprintf "Wrong hex string size (%s): %d." h l))
+  build_prim_literal_exn (PrimTypes.bystr_typ ((l-1)/2)) h
 }
 | s = STRING   { StringLit s }
 | EMP; kt = targ; vt = targ

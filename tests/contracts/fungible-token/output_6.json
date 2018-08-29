@@ -4,7 +4,7 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "allowed",
-      "type": "Map (Address) (Map (Address) (Uint128))",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
       "value": [
         {
           "key": "0x1234567890123456789012345678901234567890",
@@ -23,7 +23,7 @@
     },
     {
       "vname": "balances",
-      "type": "Map (Address) (Uint128)",
+      "type": "Map (ByStr20) (Uint128)",
       "value": [
         { "key": "0x78345678901234567890123456789012345678cd", "val": "580" },
         {

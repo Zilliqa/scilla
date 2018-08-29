@@ -10,22 +10,22 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "ownedTokenCount",
-      "type": "Map (Address) (Uint256)",
+      "type": "Map (ByStr20) (Uint256)",
       "value": []
     },
     {
       "vname": "tokenApprovals",
-      "type": "Map (Uint256) (Address)",
+      "type": "Map (Uint256) (ByStr20)",
       "value": []
     },
     {
       "vname": "operatorApprovals",
-      "type": "Map (Address) (Map (Address) (Bool))",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
       "value": []
     },
     {
       "vname": "tokenOwnerMap",
-      "type": "Map (Uint256) (Address)",
+      "type": "Map (Uint256) (ByStr20)",
       "value": []
     }
   ],

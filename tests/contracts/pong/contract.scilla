@@ -19,7 +19,7 @@ contract Pong
 
 (* Mutable fields *)
 field count : Int32 = Int32 2
-field ping_addr : Option Address = None {Address}
+field ping_addr : Option ByStr20 = None {ByStr20}
 
 transition Pong ()
   one = Int32 1;
@@ -47,7 +47,7 @@ transition Pong ()
   end
 end
 
-transition SetPingAddr (pingAddr : Address)
-  paOpt = Some {Address} pingAddr;
+transition SetPingAddr (pingAddr : ByStr20)
+  paOpt = Some {ByStr20} pingAddr;
   ping_addr := paOpt
 end

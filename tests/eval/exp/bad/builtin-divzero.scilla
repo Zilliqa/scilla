@@ -1,0 +1,10 @@
+(* Expected result: Division by zero *)
+
+let f =
+  fun (a : Int32) =>
+  fun (b : Int32) =>
+    builtin div a b
+in
+let a = Int32 99999 in
+let b = Int32 0 in
+f a b

@@ -32,22 +32,22 @@ let code_bookid_exist = Uint32 4
 (*             The contract definition             *)
 (***************************************************)
 contract BookStore
-(owner: Address,
+(owner: ByStr20,
 storeName: String)
 
 (* storeName can be immutable if it won't ever be changed             *)
 
 
-(* Membership data consists of three attributes: Address, Name and typeOfMember*)
+(* Membership data consists of three attributes: ByStr20, Name and typeOfMember*)
 (* Equivalent member data in C++ struct *)
 (* struct Member {                                                    *)
-(*     Address address;                                               *)
+(*     ByStr20 address;                                               *)
 (*     String name;                                                   *)
 (*     Uint32 membershipType; // 0: Regular, 1: Premium, 2: Corporate *)
 (* }                                                                  *)
 
-field members: Map Address (Pair (String) (Uint32))
-                = Emp Address (Pair (String) (Uint32))
+field members: Map ByStr20 (Pair (String) (Uint32))
+                = Emp ByStr20 (Pair (String) (Uint32))
 
 (* lastBookID: last book ID issued *)
 field lastBookID: Option Uint32 = None {Uint32}
@@ -73,7 +73,7 @@ field bookInventory: Map Uint32 (Pair (String) (String))
 (* access controls to grant a user permission to perform certain actions *)
 (* (e.g. add/remove books) *)
 
-transition addMember(name: String, addr: Address, memberType: Uint32)
+transition addMember(name: String, addr: ByStr20, memberType: Uint32)
 
     (* Access control: Checking if sender is the owner of the Contract *)
     is_authorized = builtin eq _sender owner;

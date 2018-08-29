@@ -1,18 +1,18 @@
 {
   "name": "ZilGame",
   "params": [
-    { "name": "owner", "type": "Address" },
-    { "name": "player_a", "type": "Address" },
-    { "name": "player_b", "type": "Address" },
-    { "name": "puzzle", "type": "Hash" }
+    { "name": "owner", "type": "ByStr20" },
+    { "name": "player_a", "type": "ByStr20" },
+    { "name": "player_b", "type": "ByStr20" },
+    { "name": "puzzle", "type": "ByStr32" }
   ],
   "fields": [
-    { "name": "player_a_hash", "type": "Option (Hash)" },
-    { "name": "player_b_hash", "type": "Option (Hash)" },
+    { "name": "player_a_hash", "type": "Option (ByStr32)" },
+    { "name": "player_b_hash", "type": "Option (ByStr32)" },
     { "name": "timer", "type": "Option (BNum)" }
   ],
   "transitions": [
-    { "name": "Play", "params": [ { "name": "guess", "type": "Hash" } ] },
+    { "name": "Play", "params": [ { "name": "guess", "type": "ByStr32" } ] },
     {
       "name": "ClaimReward",
       "params": [ { "name": "solution", "type": "Int128" } ]
