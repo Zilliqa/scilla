@@ -23,6 +23,11 @@ let explist = [
   "app_error2.scilla";
   "builtin4.scilla";
   "builtin_error1.scilla";
+  "builtin-divzero.scilla";
+  "builtin-divzero2.scilla";
+  "builtin-divzero3.scilla";
+  "builtin-divzero4.scilla";
+  "builtin-remzero.scilla";
   "builtin-overflow10.scilla";
   "builtin-overflow11.scilla";
   "builtin-overflow1.scilla";

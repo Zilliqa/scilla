@@ -122,7 +122,13 @@ module Int256_Emu = struct
     if compare_big_int x (add_big_int (mult_big_int y q) r) <> 0 then
       raise (Failure "div/rem fail: N != D*q + r")
     else
-      (q, r)
+      (* Modulo arithmetic in stdint hides/wraps overflow, so do that.
+       * (Int256 mimics stdint behaviour w.r.t overflows).
+       * The motivation is "int_min / -1", where the overflowed result
+       * "-int_max" wraps to "int_min". This fails the validation
+       * check above, hence we do "mod_signed" after the validation.
+       * See https://stackoverflow.com/a/30400252/2128804. *)
+      (mod_signed q, mod_signed r)
 
   let div a b =
     let (q, _) = divrem a b in
@@ -219,6 +225,8 @@ let binary_inputs_int =
     ("0", int256_max_str);
     (* (max_int, max_int) *)
     (Int256.to_string Int256.max_int, int256_max_str);
+    (* (min_int, "-1") *)
+    (int256_min_str, "-1");
     (* (max_int, min_int) *)
     (Int256.to_string Int256.max_int, int256_min_str);
     (* (min_int, min_int) *)
