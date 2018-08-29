@@ -1,0 +1,8 @@
+let f =
+  fun (a : Int32) =>
+  fun (b : Int32) =>
+    builtin div a b
+in
+let int_min = Int32 -2147483648 in
+let minus_one = Int32 -1 in
+f int_min minus_one

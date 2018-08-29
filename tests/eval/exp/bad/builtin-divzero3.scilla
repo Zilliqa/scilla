@@ -1,0 +1,8 @@
+let f =
+  fun (a : Int256) =>
+  fun (b : Int256) =>
+    builtin div a b
+in
+let a = Int256 1001 in
+let b = Int256 0 in
+f a b

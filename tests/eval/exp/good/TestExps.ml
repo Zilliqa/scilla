@@ -28,6 +28,9 @@ let explist = [
   "builtin3.scilla";
   "builtin5.scilla";  
   "builtin-strings.scilla";
+  "builtin-div.scilla";
+  "builtin-div2.scilla";
+  "builtin-rem.scilla";
   "cons.scilla";
   "fib.scilla";  
   "hash1.scilla";
