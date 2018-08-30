@@ -34,6 +34,8 @@ let string_str = "String"
 let bnum_str = "BNum"
 let msg_str = "Message"
 let bystr_str = "ByStr"
+(* ByStrX will have X appended below. *)
+let bystrx_str = "ByStr"
 
 let int32_typ = PrimType int32_str
 let int64_typ = PrimType int64_str
@@ -46,10 +48,11 @@ let uint256_typ = PrimType uint256_str
 let string_typ = PrimType string_str
 let bnum_typ = PrimType bnum_str
 let msg_typ = PrimType msg_str
-let bystr_typ b = PrimType (bystr_str ^ Int.to_string b)
+let bystr_typ = PrimType bystr_str
+let bystrx_typ b = PrimType (bystrx_str ^ Int.to_string b)
 
 (* Given a ByStrX string, return integer X *)
-let bystr_width t =
+let bystrx_width t =
   match t with
   | PrimType s ->
     let re = Str.regexp "ByStr\\([0-9]+\\)$" in
@@ -60,18 +63,18 @@ let bystr_width t =
       None
   | _ -> None
 
-let prim_types_except_bystr =
+let prim_types_except_bystrx =
     [int32_typ; int64_typ; int128_typ; int256_typ;
      uint32_typ; uint64_typ; uint128_typ; uint256_typ;
-     string_typ; bnum_typ; msg_typ]  
+     string_typ; bnum_typ; msg_typ; bystr_typ]
 
 let is_prim_type t =
   match t with
   | PrimType _ ->
-    (match (bystr_width t) with
-    | Some _ -> true (* bystr_typ *)
+    (match (bystrx_width t) with
+    | Some _ -> true (* bystrx_typ *)
     | None ->
-      List.mem ~equal:(fun t1 t2 -> t1 = t2) prim_types_except_bystr t)
+      List.mem ~equal:(fun t1 t2 -> t1 = t2) prim_types_except_bystrx t)
   | _ -> false
 
 let is_int_type = function
@@ -88,8 +91,8 @@ let is_uint_type = function
            x = uint256_typ -> true
   | _ -> false
 
-let is_bystr_type t =
-  match bystr_width t with
+let is_bystrx_type t =
+  match bystrx_width t with
   | Some _ -> true
   | None -> false
 
@@ -157,30 +160,45 @@ let build_bnum v =
   let b = BNum (v) in
   if validate_bnum_literal b then Some b else None
 
-let validate_bystr_literal b = match b with
-  | ByStr (w, s) ->
+let validate_bystrx_literal b = match b with
+  | ByStrX (w, s) ->
     let s, re, l =
       s, Str.regexp "0x[0-9a-f]+$", w in
     if Str.string_match re s 0 && (String.length s)-2 = (l * 2)
     then true else false
   | _ -> false
 
-
-(* Given a hexadecimal byte string, build a ByStr
+(* Given a hexadecimal byte string, build a ByStrX
    literal or return None on invalid input. *)
-let build_bystr t v =
-  let w = bystr_width t in
+let build_bystrx t v =
+  let w = bystrx_width t in
   match w with
   | Some b ->
     let v' = String.lowercase v in
-    let bs = ByStr (b, v') in
-    if validate_bystr_literal bs then Some bs else None
+    let bs = ByStrX (b, v') in
+    if validate_bystrx_literal bs then Some bs else None
   | None -> None
+
+let validate_bystr_literal b = match b with
+  | ByStr s ->
+    let s, re =
+      s, Str.regexp "0x[0-9a-f]+$" in
+    if Str.string_match re s 0 && ((String.length s)-2) % 2 = 0
+    then true else false
+  | _ -> false
+
+(* Given a hexadecimal byte string, build a ByStr
+   literal or return None on invalid input. *)
+let build_bystr v =
+  let v' = String.lowercase v in
+  let bs = ByStr v' in
+  if validate_bystr_literal bs then Some bs else None
 
 let build_prim_literal t v =
   match t with
   | x when x = string_typ -> Some (StringLit v)
   | x when x = bnum_typ -> build_bnum v
-  | x when is_bystr_type x -> build_bystr t v
+  | x when x = bystr_typ -> build_bystr v
+  | x when is_bystrx_type x -> build_bystrx t v
   | x when is_int_type x || is_uint_type x -> build_int t v
   | _ -> None

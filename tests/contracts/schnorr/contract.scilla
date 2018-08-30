@@ -1,0 +1,83 @@
+import PairUtils
+
+library Schnorr
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+let fst_f = @fst (ByStr32) (ByStr33)
+let snd_f = @snd (ByStr32) (ByStr33)
+
+contract Schnorr
+()
+
+field priv_key : Option (ByStr32) = None {ByStr32}
+field pub_key : Option (ByStr33) = None {ByStr32}
+
+transition sign_and_verify (msg : ByStr)
+  pubk_o <- pub_key;
+  privk_o <- priv_key;
+  match pubk_o with
+  | Some pubk =>
+    match privk_o with
+    | Some privk =>
+      (* We have both privk and pubk. Sign the message. *)
+      sig = builtin schnorr_sign privk pubk msg;
+      ver = builtin schnorr_verify pubk msg sig;
+      match ver with
+      | True =>
+        m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "signed and verified" };
+        mone = one_msg m;
+        send mone
+      | False =>
+        m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "signed and verify failed" };
+        mone = one_msg m;
+        send mone
+      end
+    | None =>
+      m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "internal error" };
+      mone = one_msg m;
+      send mone
+    end
+  | None =>
+    (* We don't have a key-pair, generate one and store it. *)
+    kpair = builtin schnorr_gen_key_pair;
+    privk = fst_f kpair;
+    pubk = snd_f kpair;
+    (* We have both privk and pubk. Sign the message. *)
+    sig = builtin schnorr_sign privk pubk msg;
+    m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; signature : sig };
+    mone = one_msg m;
+    (* Update state *)
+    privk_c = Some{ByStr32} privk;
+    priv_key := privk_c;
+    pubk_c = Some{ByStr33} pubk;
+    pub_key := pubk_c;
+    send mone
+  end
+end
+
+transition verify(msg : ByStr, sig : ByStr64)
+  pubk_o <- pub_key;
+  match pubk_o with
+  | Some pubk =>
+    sig = builtin schnorr_verify pubk msg sig;
+    match sig with
+    | True =>
+      m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "verification successful" };
+      mone = one_msg m;
+      send mone
+    | False =>
+      m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "verification failed" };
+      mone = one_msg m;
+      send mone
+    end
+  | None =>
+    (* We don't have a key-pair. *)
+    m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "no key error" };
+    mone = one_msg m;
+    send mone
+  end
+end

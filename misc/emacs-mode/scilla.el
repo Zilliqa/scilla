@@ -17,9 +17,10 @@
 (defvar scilla-constants
   '("False" "True" "Some" "None"))
 
+;; We can't define a simple list of scilla-types as we want
+;; a regexp for ByStr[0-9]*, and that won't work with regexp-opt later.
 (defvar scilla-types
-  '("String" "Int32" "Int64" "Int128" "Uint32" "Uint64" "Uint128"
-    "Int256" "Uint256" "BNum" "Address" "Hash" "Message" "Map" "ADT"))
+  "\\(String\\|Int32\\|Int64\\|Int128\\|Uint32\\|Uint64\\|Uint128\\|Int256\\|Uint256\\|BNum\\|ByStr[0-9]*\\|Message\\|Map\\|ADT\\)")
 
 (defvar scilla-keywords
   '("builtin" "block" "library" "let" "in" "match" "with" "end"
@@ -42,7 +43,7 @@
     ;; ; : , ; { } =>  @ $ = are all special elements
     ;; (":\\|,\\|;\\|{\\|}\\|=>\\|@\\|$\\|=" . font-lock-keyword-face)
     ( ,(regexp-opt scilla-keywords 'words) . font-lock-keyword-face)
-    (, (regexp-opt scilla-types 'words) . font-lock-type-face)
+    ( ,scilla-types . font-lock-type-face)
     ;; Some known constants like True/False etc.
     ( ,(regexp-opt scilla-constants 'words) . font-lock-constant-face)
     ;; Numerical constants. Decimal or Hexadecimal integers.
