@@ -470,11 +470,14 @@ end
 module Event = struct
 
   (* Same as Event_to_jstring, but instead gives out raw json, not it's string *)
-  let event_to_json (name, e) =
-    `Assoc [
-      ("eventname", `String name);
-      ("params", `List (slist_to_json e))
-    ]
+  let event_to_json e =
+    (* extract out "_eventname" from the message *)
+    let (_, eventnamelit) = List.find_exn e ~f:(fun (x, _) -> x = eventname_label) in
+    let eventnames = get_string_literal eventnamelit in
+    (* Get a list without the extracted components *)
+    let filtered_list = List.filter e ~f:(fun (x, _) -> not (x = eventname_label)) in
+    `Assoc [("eventname", `String (BatOption.get eventnames)); 
+            ("params", `List (slist_to_json filtered_list))] 
 
   (** 
    ** Prints a Event (string, (string, literal) list) as a json to the 

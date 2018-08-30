@@ -76,7 +76,7 @@ let check_after_step name res =
             sprintf "%s" (ContractState.pp cstate) ^
             sprintf "Emitted messages:\n%s\n\n" (pp_literal_list outs) ^
             sprintf"Gas spent:%s\n" (Int.to_string es.gas_used) ^
-            sprintf "Emitted events:\n%s\n\n" (pp_named_literal_list events));
+            sprintf "Emitted events:\n%s\n\n" (pp_literal_list events));
        (cstate, outs, events), es.gas_used
 
 (* Parse the input state json and extract out _balance separately *)
@@ -118,10 +118,9 @@ let rec output_event_json elist =
   match elist with
   | e :: rest ->
     let j = output_event_json rest in
-    let (n, m) = e in
-    (match m with
+    (match e with
     | Msg m' ->
-      let ej = JSON.Event.event_to_json (n, m') in
+      let ej = JSON.Event.event_to_json m' in
       ej :: j
     | _ -> `Null :: j)
   | [] -> []

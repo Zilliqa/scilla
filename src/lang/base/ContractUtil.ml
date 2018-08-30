@@ -36,6 +36,7 @@ module MessagePayload = struct
   let sender_label = "_sender"
   let recipient_label = "_recipient"
   let accepted_label = "_accepted"
+  let eventname_label = "_eventname"
 
   let get_value_for_entry lab f es = 
     match List.find es ~f:(fun (l, _) -> l = lab) with

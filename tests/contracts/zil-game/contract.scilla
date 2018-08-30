@@ -233,8 +233,8 @@ transition Withdraw ()
   | True =>
     msg = {_tag : Main; _recipient : owner; _amount : bal; code : here_is_the_reward};
     msgs = one_msg msg;
-    e = {};
-    event "GameOver" e;
+    e = { _eventname : "GameOver" };
+    event e;
     send msgs
   | False =>
     msg = {_tag : Main; _recipient : _sender; _amount : Uint128 0; code : cannot_withdraw};

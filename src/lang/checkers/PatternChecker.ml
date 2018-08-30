@@ -187,7 +187,7 @@ module ScillaPatternchecker
                pure @@ (CheckedPatternSyntax.ReadFromBC (i, s), rep)
            | AcceptPayment -> pure @@ (CheckedPatternSyntax.AcceptPayment, rep)
            | SendMsgs i -> pure @@ (CheckedPatternSyntax.SendMsgs i, rep)
-           | CreateEvnt (s, i) -> pure @@ (CheckedPatternSyntax.CreateEvnt (s, i), rep)
+           | CreateEvnt i -> pure @@ (CheckedPatternSyntax.CreateEvnt i, rep)
            | Throw i -> pure @@ (CheckedPatternSyntax.Throw i, rep)
           ) in
         let%bind checked_stmts = pm_check_stmts sts in

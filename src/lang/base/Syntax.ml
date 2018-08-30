@@ -194,13 +194,6 @@ let pp_literal_list ls =
   let cs = String.concat ~sep:",\n " ps in
   sprintf "[ %s]" cs
 
-let pp_named_literal_list nls =
-  let ps = List.map nls
-      ~f:(fun (n, l) -> sprintf "<%s : %s>" n (pp_literal l)) in
-  let cs = String.concat ~sep:",\n " ps in
-  sprintf "[ %s]" cs
-
-
 (*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
@@ -288,7 +281,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | ReadFromBC of ER.rep ident * string
     | AcceptPayment
     | SendMsgs of ER.rep ident
-    | CreateEvnt of string * ER.rep ident
+    | CreateEvnt of ER.rep ident
     | Throw of ER.rep ident
   [@@deriving sexp]
   
@@ -559,9 +552,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | SendMsgs i ->
         sprintf "[%s] Error in sending messages `%s`:\n"
           locstr (get_id i)
-    | CreateEvnt (s, _) ->
+    | CreateEvnt i ->
         sprintf "[%s] Error in create event `%s`:\n"
-          locstr s
+          locstr (get_id i)
     | Throw i ->
         sprintf "[%s] Error in throw of '%s':\n"
           locstr (get_id i)

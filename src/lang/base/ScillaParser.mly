@@ -244,7 +244,7 @@ stmt:
 | l=ID; BIND; AND; c=CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
 | SEND; m = ID;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
-| EVENT; s = STRING; m = ID; { (CreateEvnt (s, (asIdL m (toLoc $startpos))), toLoc $startpos) }
+| EVENT; m = ID; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | MATCH; x = ID; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (Ident (x, toLoc $startpos), cs), toLoc $startpos)  }
 
