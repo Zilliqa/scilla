@@ -476,7 +476,7 @@ module Event = struct
     let eventnames = get_string_literal eventnamelit in
     (* Get a list without the extracted components *)
     let filtered_list = List.filter e ~f:(fun (x, _) -> not (x = eventname_label)) in
-    `Assoc [("eventname", `String (BatOption.get eventnames)); 
+    `Assoc [(eventname_label, `String (BatOption.get eventnames));
             ("params", `List (slist_to_json filtered_list))] 
 
   (** 
