@@ -149,7 +149,7 @@ simple_exp :
 (* Atomic expression *)
 | a = atomic_exp {a} 
 (* Built-in call *)
-| BUILTIN; b = ID; args = nonempty_list(ID)
+| BUILTIN; b = ID; args = list(ID)
   { let xs = List.map (fun i -> Ident (i, dummy_loc)) args
     in (Builtin ((Ident (b, toLoc $startpos)), xs), toLoc $startpos) }
 (* Message construction *)
@@ -188,7 +188,7 @@ lit :
   }
 | h = HEXLIT   { 
   let l = String.length h in
-  build_prim_literal_exn (PrimTypes.bystr_typ ((l-1)/2)) h
+  build_prim_literal_exn (PrimTypes.bystrx_typ ((l-1)/2)) h
 }
 | s = STRING   { StringLit s }
 | EMP; kt = targ; vt = targ
