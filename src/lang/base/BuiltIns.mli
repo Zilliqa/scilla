@@ -34,7 +34,7 @@ module ScillaBuiltIns
    * Executor for evaluating the operation      
    *)
     val find_builtin_op :
-      loc ident -> typ list -> ((typ * typ * built_in_executor), string) result
+      ER.rep ident -> typ list -> ((typ * typ * built_in_executor), string) result
   end
 
   (* Elaborator for the built-in typ *)

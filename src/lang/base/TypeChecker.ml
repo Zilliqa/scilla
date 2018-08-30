@@ -27,21 +27,41 @@ open BuiltIns
 open Recursion
 open ContractUtil
 open Utils
+open PrimTypes
     
+(*******************************************************)
+(*                   Annotations                       *)
+(*******************************************************)
+
+module TypecheckerERep (R : Rep) = struct
+  type rep = PlainTypes.t inferred_type * R.rep
+  [@@deriving sexp]
+ 
+  let get_loc r = match r with | (_, rr) -> R.get_loc rr
+
+  let mk_msg_payload_id s t =
+    match s with
+    | Ident (n, r) -> Ident (n, (PlainTypes.mk_qualified_type t, r))
+
+  let mk_msg_payload_id_address s = mk_msg_payload_id (R.mk_msg_payload_id_address s) (bystrx_typ address_length)
+  let mk_msg_payload_id_uint128 s = mk_msg_payload_id (R.mk_msg_payload_id_uint128 s) uint128_typ
+  
+  let mk_rep (r : R.rep) (t : PlainTypes.t inferred_type) = (t, r)
+  
+  let parse_rep s = (PlainTypes.mk_qualified_type uint128_typ, R.parse_rep s)
+  let get_rep_str r = match r with | (_, rr) -> R.get_rep_str rr
+
+  let get_type (r : rep) = fst r
+end
+
 (*****************************************************************)
 (*                 Typing entire contracts                       *)
 (*****************************************************************)
 
-open TypeHelpers
-    
 module ScillaTypechecker
-    (* TODO: This needs to be parameterized rather than bound to ParserRep.
-       Cannot be done until type_stmt has been generalized. *)
-  (* (SR : Rep) *)
-  (*     (ER : Rep) *) = struct
+  (SR : Rep)
+  (ER : Rep) = struct
 
-  module SR = ParserRep
-  module ER = ParserRep
   module STR = SR
   module ETR = TypecheckerERep (ER)
   module UntypedSyntax = ScillaSyntax (SR) (ER)
@@ -50,13 +70,13 @@ module ScillaTypechecker
   include ETR
   
   module TU = TypeUtilities (SR) (ER)
-  open TU
   module TBuiltins = ScillaBuiltIns (SR) (ER)
-  open TBuiltins
-  
   module TypeEnv = TU.MakeTEnv(PlainTypes)(ER)
+  module CU = ScillaContractUtil (SR) (ER)
+  
+  open TU
+  open TBuiltins
   open TypeEnv
-
   open UntypedSyntax
       
   let wrap_type_err e ?opt:(opt = "") = wrap_err e "typechecking" ~opt:opt
@@ -370,8 +390,7 @@ module ScillaTypechecker
     let tenv0 = env0.pure in
     let lift_ident_e (id, t) = (add_type_to_id id (mk_qual_tp t), t) in
     let typed_tparams = List.map tparams ~f:lift_ident_e in
-    let append_params = append_implict_trans_params tparams
-        ER.mk_msg_payload_id_address ER.mk_msg_payload_id_uint128 in
+    let append_params = CU.append_implict_trans_params tparams in
     let tenv1 = TEnv.addTs tenv0 append_params in
     let env = {env0 with pure = tenv1} in
     let msg = sprintf "[%s] Type error in transition %s:\n"

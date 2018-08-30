@@ -16,14 +16,10 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-
-
-
 open Core
 open Syntax
 open MonadUtil
 open Stdint
-
 
 (*****************************************************)
 (*                Message payload                    *)
@@ -74,12 +70,6 @@ module MessagePayload = struct
   
 end
 
-let append_implict_trans_params tparams mk_id_address mk_id_uint128 =
-  let open PrimTypes in
-  let sender = (mk_id_address MessagePayload.sender_label, bystrx_typ address_length) in
-  let amount = (mk_id_uint128 MessagePayload.amount_label, uint128_typ) in
-  amount :: sender :: tparams
-
 let balance_label = "_balance"
 let creation_block_label = "_creation_block"
 
@@ -96,3 +86,17 @@ let balance_field =
   let open PrimTypes in 
   let balance_id = asId balance_label in
   (balance_id, uint128_typ)
+
+
+module ScillaContractUtil
+    (SR : Rep)
+    (ER : Rep) = struct
+
+  let append_implict_trans_params tparams =
+    let open PrimTypes in
+    let sender = (ER.mk_msg_payload_id_address MessagePayload.sender_label, bystrx_typ address_length) in
+    let amount = (ER.mk_msg_payload_id_uint128 MessagePayload.amount_label, uint128_typ) in
+    amount :: sender :: tparams
+    
+end
+
