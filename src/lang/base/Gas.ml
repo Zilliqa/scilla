@@ -22,6 +22,14 @@ open MonadUtil
 open Syntax
 open TypeUtil
 open PrimTypes
+open Schnorr
+
+module ScillaGas
+    (SR : Rep)
+    (ER : Rep) = struct
+
+module GasTypeUtilities = TypeUtilities (SR) (ER)
+open GasTypeUtilities
 
 (* The storage cost of a literal, based on it's size. *)
 let rec literal_cost lit =
@@ -38,7 +46,9 @@ let rec literal_cost lit =
   (* (bit-width, value) *)
   | IntLit (w, _) | UintLit (w, _) -> pure @@ w/8
   (* (bit-width, value) *)
-  | ByStr (w, _) -> pure @@ w
+  | ByStrX (w, _) -> pure @@ w
+  | ByStr s ->
+    pure @@ (String.length s) - 2
   (* Message: an associative array *)    
   | Msg m ->
     foldM ~f:(fun acc (s, lit') ->
@@ -79,11 +89,15 @@ let hash_coster op args base =
   let%bind types = mapM args ~f:literal_type in
   match op, types, args with
   | "eq", [a1;a2], _
-    when is_bystr_type a1 && is_bystr_type a2 &&
-         get (bystr_width a1) = get (bystr_width a2)
-       -> pure @@ get (bystr_width a1) * base
+    when is_bystrx_type a1 && is_bystrx_type a2 &&
+         get (bystrx_width a1) = get (bystrx_width a2)
+       -> pure @@ get (bystrx_width a1) * base
   | "sha256hash", _, [a] ->
     pure @@ (String.length (pp_literal a) + 20) * base
+  | "schnorr_gen_key_pair", _, _ -> pure 20 (* TODO *)
+  | "schnorr_sign", _, [_;_;ByStr(s)]
+  | "schnorr_verify", _, [_;ByStr(s);_] ->
+    pure @@ (String.length s) * base
   | _ -> fail @@ "Gas cost error for hash built-in"
 
 let map_coster _ args base =
@@ -133,8 +147,11 @@ let builtin_records : builtin_record list = [
   (* Hashes *)
   ("eq", [tvar "'A"; tvar "'A"], hash_coster, 1);
   (* We currently only support `dist` for ByStr32. *)
-  ("dist", [bystr_typ hash_length; bystr_typ hash_length], base_coster, 32);
+  ("dist", [bystrx_typ hash_length; bystrx_typ hash_length], base_coster, 32);
   ("sha256hash", [tvar "'A"], hash_coster, 1);
+  ("schnorr_gen_key_pair", [], hash_coster, 1);
+  ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], hash_coster, 5);
+  ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], hash_coster, 5);
 
   (* Maps *)
   ("contains", [tvar "'A"; tvar "'A"], map_coster, 1);
@@ -170,7 +187,7 @@ let builtin_cost op_i arg_literals =
     if name = op && List.length types = List.length arg_types
       && (List.for_all2_exn ~f:(fun t1 t2 ->
         (* the types should match *)
-        TypeUtil.type_equiv t1 t2 ||
+        type_equiv t1 t2 ||
         (* or the built-in record is generic *)
         (match t2 with | TypeVar _ -> true | _ -> false)) 
         arg_types types)
@@ -181,3 +198,5 @@ let builtin_cost op_i arg_literals =
         op (pp_literal_list arg_literals) in
   let %bind (_, cost) = tryM builtin_records ~f:matcher ~msg:msg in
     pure cost
+
+end

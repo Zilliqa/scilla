@@ -18,9 +18,15 @@
 
 open Syntax
 
+module ScillaGas
+    (SR : Rep)
+    (ER : Rep) : sig
+
 (* The cost of storing a literal: propotional to it's size. *)
 val literal_cost : literal -> (int, string) result
 
 (* Cost of built-in operations, given the built-in name
    and the arguments (during eval) to the built-in. *)
 val builtin_cost : loc ident -> literal list -> (int, string) result
+
+end

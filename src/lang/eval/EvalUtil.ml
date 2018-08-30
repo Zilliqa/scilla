@@ -25,6 +25,7 @@ open Stdint
 open ContractUtil
 open TypeUtil
 open BuiltIns
+open Gas
 
 open ParserUtil
 module SR = ParserRep
@@ -32,6 +33,7 @@ module ER = ParserRep
 module EvalSyntax = ScillaSyntax (SR) (ER)
 module EvalTypeUtilities = TypeUtilities (SR) (ER)
 module EvalBuiltIns = ScillaBuiltIns (SR) (ER) 
+module EvalGas = ScillaGas (SR) (ER)
 
 open EvalSyntax
     
