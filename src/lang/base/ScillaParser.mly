@@ -21,7 +21,7 @@
   open Syntax
   open ParserUtil
 
-  open ParsedContract
+  open ParsedSyntax
 
   let to_type d = match d with
     | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x
@@ -97,11 +97,11 @@
 (* %nonassoc NEG *)
 %right TARROW
 
-%start <Syntax.loc Syntax.expr_annot list> exps
+%start <ParserUtil.ParsedSyntax.expr_annot list> exps
 %start <Syntax.typ list> types
-%start <(Syntax.loc, Syntax.loc) Syntax.stmt_annot list> stmts_term
-%start <ParserUtil.ParsedContract.cmodule> cmodule
-%start <ParserUtil.ParsedContract.library> lmodule
+%start <ParserUtil.ParsedSyntax.stmt_annot list> stmts_term
+%start <ParserUtil.ParsedSyntax.cmodule> cmodule
+%start <ParserUtil.ParsedSyntax.library> lmodule
 
 %%
 
@@ -149,7 +149,7 @@ simple_exp :
 (* Atomic expression *)
 | a = atomic_exp {a} 
 (* Built-in call *)
-| BUILTIN; b = ID; args = nonempty_list(ID)
+| BUILTIN; b = ID; args = list(ID)
   { let xs = List.map (fun i -> Ident (i, dummy_loc)) args
     in (Builtin ((Ident (b, toLoc $startpos)), xs), toLoc $startpos) }
 (* Message construction *)
@@ -188,7 +188,7 @@ lit :
   }
 | h = HEXLIT   { 
   let l = String.length h in
-  build_prim_literal_exn (PrimTypes.bystr_typ ((l-1)/2)) h
+  build_prim_literal_exn (PrimTypes.bystrx_typ ((l-1)/2)) h
 }
 | s = STRING   { StringLit s }
 | EMP; kt = targ; vt = targ
@@ -244,7 +244,7 @@ stmt:
 | l=ID; BIND; AND; c=CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
 | SEND; m = ID;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
-| EVENT; s = STRING; m = ID; { (CreateEvnt (s, (asIdL m (toLoc $startpos))), toLoc $startpos) }
+| EVENT; m = ID; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | MATCH; x = ID; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (Ident (x, toLoc $startpos), cs), toLoc $startpos)  }
 

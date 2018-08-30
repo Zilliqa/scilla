@@ -18,12 +18,19 @@
 
 
 open Syntax
+open ParserUtil
 open Core
 open Yojson
 open ContractUtil.MessagePayload
 open Datatypes
 open TypeUtil
 open PrimTypes
+open BuiltIns
+
+module JSONTypeUtilities = TypeUtilities (ParserRep) (ParserRep)
+module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
+
+open JSONTypeUtilities
     
 exception Invalid_json of string
 
@@ -45,7 +52,7 @@ let member_exn m j =
 
 (* Given a literal, return its full type name *)
 let literal_type_exn l =
-  let t = TypeUtil.literal_type l in
+  let t = literal_type l in
   match t with
   | Error emsg ->
     raise (Invalid_json (emsg))
@@ -165,7 +172,7 @@ and read_adt_json name j tlist_verify =
   let verify_exn name tlist1 adt =
     match adt with
     | ADTValue (_, tlist2, _) ->
-      if TypeUtil.type_equiv_list tlist1 tlist2 then ()
+      if type_equiv_list tlist1 tlist2 then ()
       else
       let expected = pp_typ_list tlist1 in
       let observed = pp_typ_list tlist2 in
@@ -269,8 +276,8 @@ and adttyps_to_json tlist =
 
 and literal_to_json lit = 
   match lit with
-  | StringLit (x) | BNum (x) -> `String (x)
-  | IntLit (_, x) | UintLit (_, x) | ByStr(_, x) -> `String (x)
+  | StringLit (x) | BNum (x) | ByStr(x) -> `String (x)
+  | IntLit (_, x) | UintLit (_, x) | ByStrX(_, x) -> `String (x)
   | Map ((_, _), kvs) ->
       `List (mapvalues_to_json kvs)
   | ADTValue (n, t, v) ->
@@ -311,7 +318,7 @@ let get_uint_literal l =
 
 let get_address_literal l =
   match l with
-  | ByStr(len, al) when len = address_length -> Some al
+  | ByStrX(len, al) when len = address_length -> Some al
   | _ -> None
 
 
@@ -363,7 +370,7 @@ let get_json_data filename =
   (* Make tag, amount and sender into a literal *)
   let tag = (tag_label, build_prim_lit_exn PrimTypes.string_typ tags) in
   let amount = (amount_label, build_prim_lit_exn PrimTypes.uint128_typ amounts) in
-  let sender = (sender_label, build_prim_lit_exn (PrimTypes.bystr_typ address_length) senders) in
+  let sender = (sender_label, build_prim_lit_exn (PrimTypes.bystrx_typ address_length) senders) in
   let pjlist = member_exn "params" json |> to_list in
   let params = List.map pjlist ~f:jobj_to_statevar in
     tag :: amount :: sender :: params
@@ -427,7 +434,7 @@ let get_json_data filename  =
 end
 
 module ContractInfo = struct
-  open EvalUtil.EvalContract
+  open EvalUtil.EvalSyntax
          
   let get_string (contr : contract) =
     (* 1. contract name *)
@@ -463,11 +470,14 @@ end
 module Event = struct
 
   (* Same as Event_to_jstring, but instead gives out raw json, not it's string *)
-  let event_to_json (name, e) =
-    `Assoc [
-      ("eventname", `String name);
-      ("params", `List (slist_to_json e))
-    ]
+  let event_to_json e =
+    (* extract out "_eventname" from the message *)
+    let (_, eventnamelit) = List.find_exn e ~f:(fun (x, _) -> x = eventname_label) in
+    let eventnames = get_string_literal eventnamelit in
+    (* Get a list without the extracted components *)
+    let filtered_list = List.filter e ~f:(fun (x, _) -> not (x = eventname_label)) in
+    `Assoc [(eventname_label, `String (BatOption.get eventnames));
+            ("params", `List (slist_to_json filtered_list))] 
 
   (** 
    ** Prints a Event (string, (string, literal) list) as a json to the 

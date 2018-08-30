@@ -23,8 +23,9 @@ open DebugMessage
 open MonadUtil
 open Result.Let_syntax
 open RunnerUtil
+open PatternChecker
 
-open TypeChecker.Typechecker_Contracts
+open TypeChecker.ScillaTypechecker
 
 (* Check that the module parses *)
 let check_parsing ctr = 
@@ -39,15 +40,17 @@ let check_parsing ctr =
 
 (* Type check the contract with external libraries *)
 let check_typing cmod elibs =
+  let open TypeChecker.ScillaTypechecker in
   let res = type_module cmod elibs in
   match res with
   | Error msg -> pout @@ sprintf "\n%s\n\n" msg; res
-  | Ok _ ->
-      let cn = get_id cmod.cname in 
-        plog @@ sprintf
-          "\n[Type Checking]:\nContract module [%s] is well-typed.\n"
-          cn;
-        res
+  | Ok typed_module -> pure @@ typed_module
+
+module PM_SR = TypeChecker.ScillaTypechecker.STR
+module PM_ER = TypeChecker.ScillaTypechecker.ETR
+module PM_Checker = ScillaPatternchecker (PM_SR) (PM_ER)
+
+let check_patterns e = PM_Checker.pm_check_module e
 
 let () =
   if (Array.length Sys.argv) < 2
@@ -70,8 +73,9 @@ let () =
       if lib_dirs = [] then stdlib_not_found_err ();
       (* Import whatever libs we want. *)
       let elibs = import_libs cmod.elibs in
-      let%bind typing_res = check_typing cmod elibs in
-        pure (cmod, typing_res)
+      let%bind (typed_cmod, tenv) = check_typing cmod elibs in
+      let%bind pm_checked_cmod = check_patterns typed_cmod in
+      pure @@ (cmod, tenv)
     ) in
     match r with
     | Error _ -> ()

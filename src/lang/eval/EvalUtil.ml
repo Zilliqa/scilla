@@ -23,6 +23,95 @@ open EvalMonad
 open EvalMonad.Let_syntax
 open Stdint
 open ContractUtil
+open TypeUtil
+open BuiltIns
+
+open ParserUtil
+module SR = ParserRep
+module ER = ParserRep
+module EvalSyntax = ScillaSyntax (SR) (ER)
+module EvalTypeUtilities = TypeUtilities (SR) (ER)
+module EvalBuiltIns = ScillaBuiltIns (SR) (ER) 
+
+open EvalSyntax
+    
+let rec subst_type_in_type tvar tp tm = match tm with
+  | PrimType _ | Unit as p -> p
+  (* Make sure the map's type is still primitive! *)
+  | MapType (kt, vt) -> 
+      let kts = subst_type_in_type tvar tp kt in
+      let vts = subst_type_in_type tvar tp vt in
+      MapType (kts, vts)
+  | FunType (at, rt) -> 
+      let ats = subst_type_in_type tvar tp at in
+      let rts = subst_type_in_type tvar tp rt in
+      FunType (ats, rts)
+  | TypeVar n as tv ->
+      if tvar = n then tp else tv
+  | ADT (s, ts) ->
+      let ts' = List.map ts ~f:(fun t -> subst_type_in_type tvar tp t) in
+      ADT (s, ts')
+  | PolyFun (arg, t) as pf -> 
+      if tvar = arg then pf
+      else PolyFun (arg, subst_type_in_type tvar tp t)
+
+
+(* The same as above, but for a variable with locations *)
+let subst_type_in_type' tv = subst_type_in_type (get_id tv)
+
+let rec subst_type_in_literal tvar tp l = match l with
+  | Map ((kt, vt), ls) -> 
+      let kts = subst_type_in_type' tvar tp kt in
+      let vts = subst_type_in_type' tvar tp vt in
+      let ls' = List.map ls ~f:(fun (k, v) ->
+        let k' = subst_type_in_literal tvar tp k in
+        let v' = subst_type_in_literal tvar tp v in 
+        (k', v')) in
+      Map ((kts, vts), ls')
+  | ADTValue (n, ts, ls) ->
+      let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
+      let ls' = List.map ls ~f:(fun l -> subst_type_in_literal tvar tp l) in
+      ADTValue (n, ts', ls')
+  | _ -> l
+
+(* Substitute type for a type variable *)
+let rec subst_type_in_expr tvar tp (erep : expr_annot) =
+  let (e, rep) = erep in
+  match e with
+  | Literal l -> (Literal (subst_type_in_literal tvar tp l), rep)
+  | Var _ as v -> (v, rep)
+  | Fun (f, t, body) ->
+      let t_subst = subst_type_in_type' tvar tp t in 
+      let body_subst = subst_type_in_expr tvar tp body in
+      (Fun (f, t_subst, body_subst), rep)
+  | TFun (tv, body) as tf ->
+      if get_id tv = get_id tvar
+      then (tf, rep)
+      else 
+        let body_subst = subst_type_in_expr tvar tp body in
+        (TFun (tv, body_subst), rep)
+  | Constr (n, ts, es) ->
+      let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
+      (Constr (n, ts', es), rep)
+  | App _ as app -> (app, rep)
+  | Builtin _ as bi -> (bi, rep)
+  | Let (i, tann, lhs, rhs) ->
+      let tann' = Option.map tann ~f:(fun t -> subst_type_in_type' tvar tp t) in
+      let lhs' = subst_type_in_expr tvar tp lhs in
+      let rhs' = subst_type_in_expr tvar tp rhs in
+      (Let (i, tann', lhs', rhs'), rep)
+  | Message _ as m -> (m, rep)
+  | MatchExpr (e, cs) ->
+      let cs' = List.map cs ~f:(fun (p, b) -> (p, subst_type_in_expr tvar tp b)) in
+      (MatchExpr(e, cs'), rep)
+  | TApp (tf, tl) -> 
+      let tl' = List.map tl ~f:(fun t -> subst_type_in_type' tvar tp t) in
+      (TApp (tf, tl'), rep)
+  | Fixpoint (f, t, body) ->
+      let t' = subst_type_in_type' tvar tp t in
+      let body' = subst_type_in_expr tvar tp body in
+      (Fixpoint (f, t', body'), rep)
+
 
 (*****************************************************)
 (* Update-only execution environment for expressions *)
@@ -31,15 +120,15 @@ module Env = struct
   type ident = string
 
   (* Environment *)
-  type 'rep t =
-    (string * 'rep value) list
+  type t =
+    (string * value) list
   and
   (* Fully reduced value *)
-  'rep value =
+  value =
     | ValLit of literal
-    | ValClosure of 'rep Syntax.ident * typ * 'rep expr_annot * 'rep t
-    | ValTypeClosure of 'rep Syntax.ident * 'rep expr_annot * 'rep t                      
-    | ValFix of 'rep Syntax.ident * typ * 'rep expr_annot * 'rep t
+    | ValClosure of ER.rep Syntax.ident * typ * expr_annot * t
+    | ValTypeClosure of ER.rep Syntax.ident * expr_annot * t                      
+    | ValFix of ER.rep Syntax.ident * typ * expr_annot * t
   [@@deriving sexp]
 
   (* Pretty-printing *)
@@ -51,7 +140,7 @@ module Env = struct
     (* | ValClosure (f, t, e, env) ->
          (pp_expr (Fun (f, t, e)))
           ^ ", " ^ (pp env) *)
-  and pp ?f:(f = fun (_ : (string * 'rep value)) -> true) e =
+  and pp ?f:(f = fun (_ : (string * value)) -> true) e =
     (* FIXME: Do not print folds *)
     let e_filtered = List.filter e ~f:f in
     let ps = List.map e_filtered
@@ -98,9 +187,9 @@ end
 module Configuration = struct
 
   (* Runtime contract configuration and operations with it *)
-  type 'rep t = {
+  type t = {
     (* Immutable variables *)
-    env : 'rep Env.t;
+    env : Env.t;
     (* Contract fields *)
     fields : (string * literal) list;
     (* Contract balance *)
@@ -114,7 +203,7 @@ module Configuration = struct
     (* Emitted messages *)
     emitted : literal list;
     (* Emitted events *)
-    events : (string * literal) list
+    events : literal list
   }
 
   let pp conf =
@@ -125,7 +214,7 @@ module Configuration = struct
     let pp_bc_conf = pp_literal_map conf.blockchain_state in
     let pp_in_funds = Uint128.to_string conf.incoming_funds in
     let pp_emitted = pp_literal_list conf.emitted in
-    let pp_events = pp_named_literal_list conf.events in
+    let pp_events = pp_literal_list conf.events in
     sprintf "Confuration\nEnv =\n%s\nFields =\n%s\nBalance =%s\nAccepted=%s\n\\
     Blockchain conf =\n%s\nIncoming funds = %s\nEmitted Messages =\n%s\nEmitted events =\n%s\n"
       pp_env pp_fields pp_balance pp_accepted pp_bc_conf pp_in_funds pp_emitted pp_events
@@ -212,26 +301,50 @@ module Configuration = struct
             (Env.pp_value v)
       | Env.ValLit l -> convert_to_list l 
 
+  let validate_outgoing_message m' =
+    let open ContractUtil.MessagePayload in
+    match m' with
+    | Msg m ->
+      (* All outgoing messages must have certain mandatory fields *)
+      let tag_found = List.exists ~f:(fun (s, _) -> s = tag_label) m in
+      let amount_found = List.exists ~f:(fun (s, _) -> s = amount_label) m in
+      let recipient_found = List.exists ~f:(fun (s, _) -> s = recipient_label) m in
+      if tag_found && amount_found && recipient_found then pure m'
+      else fail @@ sprintf "Message %s is missing a mandatory field." (pp_literal (Msg m))
+    | _ -> fail @@ sprintf "Literal %s is not a message, cannot be sent." (pp_literal m')
+
   let send_messages conf ms =
-    let%bind ls = get_list_literal ms in
+    let%bind ls' = get_list_literal ms in
+    let%bind ls = mapM ~f:validate_outgoing_message ls' in
     let old_emitted = conf.emitted in
     let emitted = old_emitted @ ls in
     pure {conf with emitted}
 
-  let create_event conf ename eparams_resolved =
+  let validate_event m' =
+    let open ContractUtil.MessagePayload in
+    match m' with
+    | Msg m ->
+      (* All events must have certain mandatory fields *)
+      let eventname_found = List.exists ~f:(fun (s, _) -> s = eventname_label) m in
+      if eventname_found then pure m'
+      else fail @@ sprintf "Event %s is missing a mandatory field." (pp_literal (Msg m))
+    | _ -> fail @@ sprintf "Literal %s is not a valid event argument." (pp_literal m')
+
+
+  let create_event conf eparams_resolved =
     let%bind event = 
       match eparams_resolved with
       | Env.ValLit l -> 
         (match l with
         | Msg _ ->
-          (* An event is a named message. *)
-          pure @@ (ename, l)
+          pure @@ l
         | _ -> fail @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l))
       | (Env.ValFix _ | Env.ValClosure _ | Env.ValTypeClosure _ ) as v -> 
         fail @@ sprintf "Incorrect event parameters: %s\n" (Env.pp_value v)
     in
+    let%bind event' = validate_event event in
     let old_events = conf.events in
-    let events = event::old_events in
+    let events = event'::old_events in
     pure {conf with events}
 end
 
@@ -244,9 +357,9 @@ module ContractState = struct
   type init_args = (string * literal) list 
 
   (* Runtime contract configuration and operations with it *)
-  type 'rep t = {
+  type t = {
     (* Immutable parameters *)
-    env : 'rep Env.t;
+    env : Env.t;
     (* Contract fields *)
     fields : (string * literal) list;
     (* Contract balance *)
@@ -262,12 +375,3 @@ module ContractState = struct
       pp_params pp_fields pp_balance
 
 end
-
-
-(*****************************************************)
-(*         Contract definitions                      *)
-(*****************************************************)
-
-open ParserUtil
-module EvalContract = Contract (ParserRep) (ParserRep)
-    

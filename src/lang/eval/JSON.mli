@@ -95,7 +95,7 @@ module BlockChainState : sig
 end
 
 module ContractInfo : sig
-open EvalUtil.EvalContract
+open EvalUtil.EvalSyntax
   (* Given a parsed contract, give a string JSON with these details:
        { 
          "name" : "foo",
@@ -135,12 +135,12 @@ end
 module Event : sig
 
   (** 
-   ** Prints a Event (string, (string, literal) list) as a json to the 
+   ** Prints an Event "(string, literal) list" as a json to the 
    ** and returns the string. pp enables pretty printing.
    **)
-  val event_to_jstring : ?pp:bool -> string * ((string * Syntax.literal) list) -> string
+  val event_to_jstring : ?pp:bool -> (string * Syntax.literal) list -> string
   (* Same as Event_to_jstring, but instead gives out raw json, not it's string *)
-  val event_to_json : string * ((string * Syntax.literal) list) -> Yojson.json
+  val event_to_json : (string * Syntax.literal) list -> Yojson.json
 
 end
 

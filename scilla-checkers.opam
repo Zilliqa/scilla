@@ -1,0 +1,14 @@
+opam-version: "1.2"
+maintainer: "ilya@zilliqa.com"
+authors: ["Zilliqa Research Pvt. Ltd."]
+homepage: "https://scilla-lang.org/"
+bug-reports: "https://github.com/Zilliqa/scilla/issues"
+dev-repo: "https://github.com/Zilliqa/scilla.git"
+
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+
+depends: [
+  "dune" {build & >= "1.0+beta14"}
+]

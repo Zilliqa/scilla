@@ -36,6 +36,7 @@ module MessagePayload = struct
   let sender_label = "_sender"
   let recipient_label = "_recipient"
   let accepted_label = "_accepted"
+  let eventname_label = "_eventname"
 
   let get_value_for_entry lab f es = 
     match List.find es ~f:(fun (l, _) -> l = lab) with
@@ -51,7 +52,7 @@ module MessagePayload = struct
       (function StringLit s -> Some (pure s) | _ -> None)
 
   let get_sender = get_value_for_entry sender_label
-      (function ByStr(len, _) as a when len = address_length -> Some (pure a) | _ -> None)
+      (function ByStrX(len, _) as a when len = address_length -> Some (pure a) | _ -> None)
 
   let get_amount = get_value_for_entry amount_label
       (function 
@@ -75,7 +76,7 @@ end
 
 let append_implict_trans_params tparams mk_id_address mk_id_uint128 =
   let open PrimTypes in
-  let sender = (mk_id_address MessagePayload.sender_label, bystr_typ address_length) in
+  let sender = (mk_id_address MessagePayload.sender_label, bystrx_typ address_length) in
   let amount = (mk_id_uint128 MessagePayload.amount_label, uint128_typ) in
   amount :: sender :: tparams
 
