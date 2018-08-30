@@ -246,6 +246,7 @@ module TypeUtilities
     | TypeVar _ -> false
     | ADT (_, ts) -> List.for_all ~f:(fun t -> is_storable_type t) ts
     | PolyFun _ -> false
+    | Unit -> false
     | _ -> true
 
 
