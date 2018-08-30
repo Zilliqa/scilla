@@ -346,8 +346,9 @@ module ScillaTypechecker
              (match s with
              | SendMsgs _ ->
                 pure @@ add_stmt_to_stmts_env (TypedSyntax.SendMsgs typed_i, rep) checked_stmts
-             | _ ->
-                pure @@ add_stmt_to_stmts_env (TypedSyntax.CreateEvnt typed_i, rep) checked_stmts)
+             | CreateEvnt _ ->
+                pure @@ add_stmt_to_stmts_env (TypedSyntax.CreateEvnt typed_i, rep) checked_stmts
+             | _ -> fail "Unexpected statement during type-checking")
          | Throw _ ->
              fail @@ sprintf
                "Type-checking of Throw statements is not supported yet."
