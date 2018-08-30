@@ -38,5 +38,5 @@
       }
     }
   ],
-  "events": [ { "eventname": "GameOver", "params": [] } ]
+  "events": [ { "_eventname": "GameOver", "params": [] } ]
 }

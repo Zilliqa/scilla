@@ -23,7 +23,7 @@
   ],
   "events": [
     {
-      "eventname": "ClaimedBack",
+      "_eventname": "ClaimedBack",
       "params": [
         {
           "vname": "claimed_by",

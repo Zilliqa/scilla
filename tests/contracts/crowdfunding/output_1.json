@@ -23,7 +23,7 @@
   ],
   "events": [
     {
-      "eventname": "DonationAccepted",
+      "_eventname": "DonationAccepted",
       "params": [
         {
           "vname": "donor",
