@@ -1,0 +1,25 @@
+[
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "pub_key",
+      "type": "Option (ByStr33)",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "ByStr33" ],
+        "arguments": [
+          "0x0331cca11ff9bc747e20fd0aef3425e3fe0a6be27c9cb60348fac0a9077403a029"
+        ]
+      }
+    },
+    {
+      "vname": "priv_key",
+      "type": "Option (ByStr32)",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "ByStr32" ],
+        "arguments": [
+          "0x383f7c2af7edcd955bee9b78122d14cbebc7fd12b4efeedc6063cee78de74baf"
+        ]
+      }
+    }
+]

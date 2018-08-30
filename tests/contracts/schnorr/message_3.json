@@ -1,0 +1,17 @@
+{
+    "_tag": "verify",
+    "_amount": "0",
+    "_sender" : "0x12345678901234567890123456789012345678ab",
+    "params": [
+        {
+            "vname" : "msg",
+            "type" : "ByStr",
+            "value" : "0xff0ffe45aa23"
+        },
+        {
+            "vname" : "sig",
+            "type" : "ByStr64",
+            "value" : "0x125ddeb7d68c36f381d24fd23e871f1a270533e8efc49b66922ab8603c7e79d3aeb79374b0fbb8b571f8eebd84b51dbda844b7d0fdbadf3011393343b5b040fd"
+        }
+    ]
+}

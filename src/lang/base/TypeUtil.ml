@@ -137,7 +137,7 @@ module MakeTEnv: MakeTEnvFunctor = functor
                   n (List.length adt.tparams) (List.length ts) 
               else
                 foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:(()) ts
-          | PrimType _  -> pure ()
+          | PrimType _  | Unit -> pure ()
           | TypeVar a ->
               (* Check if bound locally. *)
               if List.mem tb a ~equal:(fun a b -> a = b) then pure ()
@@ -212,6 +212,7 @@ module TypeUtilities
   let tvar i = TypeVar i
   let tfun_typ i t = PolyFun (i, t)
   let map_typ k v = MapType (k, v)
+  let unit_typ = Unit
 
   (* Type equivalence *)
   let type_equiv t1 t2 =
@@ -387,9 +388,13 @@ module TypeUtilities
         fail @@ (sprintf "Wrong bit depth for unsigned integer: %i." w)
     | StringLit _ -> pure string_typ
     | BNum _ -> pure bnum_typ
-    | ByStr (b, _) ->
-        if validate_bystr_literal l
-        then pure (bystr_typ b)
+    | ByStr _ -> 
+      if validate_bystr_literal l
+      then pure bystr_typ
+      else fail @@ (sprintf "Malformed byte string " ^ (pp_literal l))
+    | ByStrX (b, _) ->
+        if validate_bystrx_literal l
+        then pure (bystrx_typ b)
         else fail @@ (sprintf "Malformed byte string " ^ (pp_literal l))
     (* Check that messages and events have storable parameters. *)
     | Msg m -> 

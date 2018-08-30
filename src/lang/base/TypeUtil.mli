@@ -87,6 +87,7 @@ module TypeUtilities
   val tvar : string -> typ
   val tfun_typ : string -> typ -> typ
   val map_typ : typ -> typ -> typ
+  val unit_typ : typ
 
   (****************************************************************)
   (*                       Type sanitization                      *)

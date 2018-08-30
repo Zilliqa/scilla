@@ -54,6 +54,11 @@ module ScillaBuiltIns
 
     let none_lit t = ADTValue ("None", [t], [])
 
+    let pair_lit l1 l2 =
+      let%bind t1 = literal_type l1 in
+      let%bind t2 = literal_type l2 in
+      pure @@ ADTValue ("Pair", [t1;t2], [l1;l2])
+
     let to_Bool b = if b then true_lit else false_lit
   end
 
@@ -671,7 +676,7 @@ module ScillaBuiltIns
     open Cryptokit
     open PrimTypes
     open Datatypes.DataTypeDictionary
-
+    open Schnorr
 
     (* let hex s = transform_string (Hexa.decode()) s *)
     let tohex s = transform_string (Hexa.encode()) s
@@ -683,15 +688,15 @@ module ScillaBuiltIns
       match ts with
       | [bstyp1; bstyp2] when
           (* We want both the types to be ByStr with equal width. *)
-          is_bystr_type bstyp1 && is_bystr_type bstyp2 && bstyp1 = bstyp2
+          is_bystrx_type bstyp1 && is_bystrx_type bstyp2 && bstyp1 = bstyp2
         -> elab_tfun_with_args sc [bstyp1]
       | _ -> fail "Failed to elaborate"
     let eq ls _ = match ls with
-      | [ByStr (w1, x1); ByStr(w2, x2)] ->
+      | [ByStrX (w1, x1); ByStrX(w2, x2)] ->
           pure @@ to_Bool (w1 = w2 && x1 = x2)
       | _ -> builtin_fail "Hashing.eq" ls
 
-    let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") (bystr_typ hash_length)
+    let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ hash_length)
     let hash_arity = 1
     let hash_elab sc ts = match ts with
       | [_]  -> elab_tfun_with_args sc ts
@@ -701,7 +706,10 @@ module ScillaBuiltIns
           let lstr = sexp_of_literal l |> Sexplib.Sexp.to_string in
           let lhash = hash lstr in
           let lhash_hex = "0x" ^ tohex lhash in 
-          pure @@ ByStr(hash_length, lhash_hex)
+          let lo = build_prim_literal (bystrx_typ hash_length) lhash_hex in
+          (match lo with
+          | Some l' -> pure @@ l'
+          | None -> builtin_fail "Hashing.sha256hash: internal error, invalid sha256 hash" ls)
       | _ -> builtin_fail "Hashing.sha256hash" ls
 
     let big_int_of_hash h =
@@ -709,11 +717,11 @@ module ScillaBuiltIns
         | `Hex s -> s
       in Big_int.big_int_of_string s
 
-    (* TODO: define for other ByStr types? *)
-    let dist_type = fun_typ (bystr_typ hash_length) @@ fun_typ (bystr_typ hash_length) uint128_typ
+    (* TODO: define for other ByStrX types? *)
+    let dist_type = fun_typ (bystrx_typ hash_length) @@ fun_typ (bystrx_typ hash_length) uint128_typ
     let dist_arity = 2    
     let dist ls _ = match ls with
-      | [ByStr(_, x); ByStr(_, y)] ->
+      | [ByStrX(_, x); ByStrX(_, y)] ->
           let i1 = big_int_of_hash x in
           let i2 = big_int_of_hash y in
           let two256 = power_big_int_positive_big_int (big_int_of_int 2) (big_int_of_int 256) in
@@ -726,6 +734,63 @@ module ScillaBuiltIns
            | None -> builtin_fail "Hashing.dist: Error building Uint256 from hash distance" ls
           )
       | _ -> builtin_fail "Hashing.dist" ls
+
+    (* ByStrX -> ByStr *)
+    let to_bystr_type = tfun_typ "'A" @@ fun_typ (tvar "'A") bystr_typ
+    let to_bystr_arity = 1
+    let to_bystr_elab sc ts = match ts with
+      | [t] when is_bystrx_type t -> elab_tfun_with_args sc ts
+      | _ -> fail "Failed to elaborate"
+    let to_bystr ls _ = match ls with
+      | [ByStrX(_, s)] -> 
+        let res = build_prim_literal bystr_typ s in
+        (match res with
+         | Some l' -> pure l'
+         | None -> builtin_fail "Hashing.to_bystr: internal error" ls)
+      | _ -> builtin_fail "Hashing.to_bystr" ls
+
+    let schnorr_gen_key_pair_type = fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
+    let schnorr_gen_key_pair_arity = 0  
+    let schnorr_gen_key_pair ls _ =
+      match ls with
+      | [] ->
+        let privK, pubK = genKeyPair () in
+        let privK_lit_o = build_prim_literal (bystrx_typ privkey_len) privK in
+        let pubK_lit_o = build_prim_literal (bystrx_typ pubkey_len) pubK in
+        (match privK_lit_o, pubK_lit_o with
+        | Some privK', Some pubK' -> pair_lit privK' pubK'
+        | _ -> builtin_fail "schnorr_gen_key_pair: internal error, invalid private/public key(s)." ls)
+      | _ -> builtin_fail "schnorr_gen_key_pair" ls
+
+    let schnorr_sign_type = fun_typ (bystrx_typ privkey_len) @@ (* private key *)
+                            fun_typ (bystrx_typ pubkey_len) @@ (* public key *)
+                            fun_typ (bystr_typ) @@ (* message to be signed *)
+                            (bystrx_typ signature_len) (* signature *)
+    let schnorr_sign_arity = 3
+    let schnorr_sign ls _ =
+      match ls with
+      | [ByStrX(privklen, privkey); ByStrX(pubklen, pubkey); ByStr(msg)]
+          when privklen = privkey_len && pubklen = pubkey_len ->
+        let s = sign privkey pubkey msg in
+        let s' = build_prim_literal (bystrx_typ signature_len) s in
+        (match s' with
+        | Some s'' -> pure s''
+        | None -> builtin_fail "schnorr_sign: internal error, invalid signature." ls)
+      | _ -> builtin_fail "schnorr_sign" ls
+
+    let schnorr_verify_type = fun_typ (bystrx_typ pubkey_len) @@ (* public key *)
+                              fun_typ (bystr_typ) @@ (* signed message *)
+                              fun_typ (bystrx_typ signature_len) @@ (* signature *)
+                              bool_typ
+    let schnorr_verify_arity = 3
+    let schnorr_verify ls _ =
+      match ls with
+      | [ByStrX(pubklen, pubkey); ByStr(msg); ByStrX(siglen, signature)]
+          when siglen = signature_len && pubklen = pubkey_len ->
+        let v = verify pubkey msg signature in
+        pure @@ to_Bool v
+      | _ -> builtin_fail "schnorr_verify" ls
+
   end
 
   (***********************************************************)
@@ -868,6 +933,10 @@ module ScillaBuiltIns
       ("eq", Hashing.eq_arity, Hashing.eq_type, Hashing.eq_elab, Hashing.eq);
       ("dist", Hashing.dist_arity, Hashing.dist_type, elab_id , Hashing.dist);
       ("sha256hash", Hashing.hash_arity, Hashing.hash_type,Hashing.hash_elab, Hashing.sha256hash);
+      ("to_bystr", Hashing.to_bystr_arity, Hashing.to_bystr_type, Hashing.to_bystr_elab, Hashing.to_bystr);
+      ("schnorr_gen_key_pair", Hashing.schnorr_gen_key_pair_arity, Hashing.schnorr_gen_key_pair_type, elab_id, Hashing.schnorr_gen_key_pair);
+      ("schnorr_sign", Hashing.schnorr_sign_arity, Hashing.schnorr_sign_type, elab_id, Hashing.schnorr_sign);
+      ("schnorr_verify", Hashing.schnorr_verify_arity, Hashing.schnorr_verify_type, elab_id, Hashing.schnorr_verify);
 
       (* Maps *)
       ("contains", Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains);
