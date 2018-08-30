@@ -173,7 +173,10 @@ module ScillaTypechecker
             let%bind _ =
               assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
             (* Return the first type since all they are the same *)
-            pure @@ (TypedSyntax.MatchExpr (add_type_to_ident x (rr_typ sctyp), typed_clauses), (List.hd_exn cl_types, rep))
+            pure @@ (TypedSyntax.MatchExpr
+                       (add_type_to_ident x (rr_typ sctyp),
+                        typed_clauses),
+                     (List.hd_exn cl_types, rep))
           )
     | Fixpoint (f, t, body) ->
         wrap_type_err erep @@ 
