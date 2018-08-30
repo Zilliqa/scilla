@@ -90,7 +90,7 @@ end
 transition createBadEvent()
   m = nat_to_int;
   (* We cannot have a function (which is what "m" is) as part of message/event. *)
-  e = { bad_field : m };
-  event "BadEvent" e;
+  e = { _eventname : "BadEvent"; bad_field : m };
+  event e;
   accept
 end
