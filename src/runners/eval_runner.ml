@@ -22,6 +22,8 @@ open Syntax
 open RunnerUtil
 open GlobalConfig
 
+let gas_limit = 1000 
+
 let () =
   if (Array.length Sys.argv) < 2 || (Array.length Sys.argv) > 3
   then
@@ -42,13 +44,15 @@ let () =
       (* Import all libraries in known stdlib paths. *)
       let elibs = import_all_libs lib_dirs in
       let envres = Eval.init_libraries (Some clib) elibs in
-      let env = (match envres with
-        | Ok (env', _) -> env'
+      let env, gas_remaining = 
+        (match envres gas_limit with
+        | Ok (env', gas_remaining) -> env', gas_remaining
         | Error (err, _) ->
           printf "Failed to initialize stdlib. Evaluation halted: %s\n" err;
           exit 1;) in
       let lib_fnames = List.map (fun (name, _) -> name) env in
-      let res = Eval.exp_eval e env in
+      let res' = Eval.exp_eval e env in
+      let res = res' gas_remaining in
       (match res with
       | Ok _ ->
           printf "%s\n" (Eval.pp_result res lib_fnames)

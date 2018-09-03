@@ -32,52 +32,55 @@ open MonadUtil.EvalMonad
 (*          Checking initialized libraries          *)
 (****************************************************)
 
-let check_libs clibs elibs name =
+let check_libs clibs elibs name gas_limit =
    let ls = init_libraries clibs elibs in
    (* Are libraries ok? *)
-   match ls with
-   | Ok (res, _) ->
+   match ls gas_limit with
+   | Ok (res, gas_remaining) ->
        plog (sprintf
          "\n[Initializing libraries]:\n%s\n\nLibraries for [%s] are on. All seems fine so far!\n\n"
          (* (Env.pp res) *)
          (String.concat ~sep:", " (List.map (List.rev res) ~f:fst))
-         name)
-   | Error (err, _) ->
+         name);
+      gas_remaining
+   | Error (err, gas_remaining) ->
       perr (sprintf "\nFailed to initialize libraries:\n%s\n" err);
-      perr "Execution stopped"
+      perr "Execution stopped";
+      gas_remaining
 
 (****************************************************)
 (*     Checking initialized contract state          *)
 (****************************************************)
-let check_extract_cstate name res = match res with
-  | Error (err, es) ->
+let check_extract_cstate name res gas_limit = 
+  match res gas_limit with
+  | Error (err, remaining_gas) ->
       perr (sprintf "Failed to initialize fields:\n%s\n" err);
-      perr (sprintf"Gas spent:%s\n" (Int.to_string es.gas_used));
+      perr (sprintf"Gas remaining:%s\n" (Int.to_string remaining_gas));
       perr "Execution stopped";
       exit 1
-  | Ok ((_, cstate), es) ->
+  | Ok ((_, cstate), remaining_gas) ->
       plog (sprintf "[Initializing %s's fields]\nSuccess!\n%s\n"
          name (ContractState.pp cstate));
-      cstate
+      cstate, remaining_gas
 
 (*****************************************************)
 (*   Running the simularion and printing results     *)
 (*****************************************************)
 
-let check_after_step name res =
-  match res with
-  | Error (err, es) ->
+let check_after_step name res gas_limit =
+  match res gas_limit with
+  | Error (err, remaining_gas) ->
       perr (sprintf "Failed to execute transition in %s:\n%s\n" name err);
-      perr (sprintf"Gas spent:%s\n" (Int.to_string es.gas_used));
+      perr (sprintf"Gas remaining:%s\n" (Int.to_string remaining_gas));
       perr "Execution halted";
       exit 1
-  | Ok ((cstate, outs, events), es) ->
+  | Ok ((cstate, outs, events), remaining_gas) ->
       plog (sprintf "Success! Here's what we got:\n" ^
             sprintf "%s" (ContractState.pp cstate) ^
             sprintf "Emitted messages:\n%s\n\n" (pp_literal_list outs) ^
-            sprintf"Gas spent:%s\n" (Int.to_string es.gas_used) ^
+            sprintf"Gas remaining:%s\n" (Int.to_string remaining_gas) ^
             sprintf "Emitted events:\n%s\n\n" (pp_literal_list events));
-       (cstate, outs, events), es.gas_used
+       (cstate, outs, events), remaining_gas
 
 (* Parse the input state json and extract out _balance separately *)
 let input_state_json filename = 
@@ -125,6 +128,8 @@ let rec output_event_json elist =
     | _ -> `Null :: j)
   | [] -> []
 
+let gas_limit = 1000 (* TODO: Get this from outside world. *)
+
 let () =
   let cli = Cli.parse () in
   let parse_module =
@@ -142,7 +147,7 @@ let () =
       let clibs = cmod.libs in
   
       (* Checking initialized libraries! *)
-      check_libs clibs elibs cli.input;
+      let gas_remaining = check_libs clibs elibs cli.input gas_limit in
  
       (* Retrieve initial parameters *)
       let initargs = 
@@ -198,7 +203,7 @@ let () =
         let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
-        let cstate = check_extract_cstate cli.input init_res in
+        let cstate, gas_remaining' = check_extract_cstate cli.input init_res gas_remaining in
         (* Contract code *)
         let ctr = cmod.contr in
 
@@ -206,7 +211,7 @@ let () =
         plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
         let step_result = handle_message ctr cstate bstate m in
         let (cstate', mlist, elist), gas =
-          check_after_step cli.input step_result in
+          check_after_step cli.input step_result gas_remaining' in
       
         let osj = output_state_json cstate' in
         let omj = output_message_json mlist in
@@ -214,7 +219,7 @@ let () =
           (omj, osj, oej), gas)
       in
       let output_json = `Assoc [
-        (* "gas_consumed", `String (Int.to_string gas); *)
+        (* "gas_remaining", `String (Int.to_string gas); *)
         ("message", output_msg_json); 
         ("states", output_state_json);
         ("events", output_events_json)

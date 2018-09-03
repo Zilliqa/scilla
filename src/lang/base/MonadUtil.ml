@@ -72,52 +72,51 @@ let liftPair1 m x = match m with
 
 module EvalMonad = struct
 
-type eval_state = 
-  { 
-    gas_used : int;
-    unused : int;
-  }
-
-let init_eval_state =
-  { gas_used = 0; unused = 0 }
-
-(* Extended result type, to track eval_state. *)
+(* Extended result type, to track remaining gas. *)
 type ('a, 'b) eresult =
-  | Ok of 'a * eval_state
-  | Error of 'b * eval_state
+  | Ok of 'a * int
+  | Error of 'b * int
 
-let add_gas x g = match x with
-  | Error (e, es) -> 
-    let es' = { es with gas_used = es.gas_used + g } in
-      Error (e, es')
-  | Ok (x, es) ->
-    let es' = { es with gas_used = es.gas_used + g } in
-    Ok (x, es')
-
+(* Each eval operation that passes through this monad 
+ * returns a function "(int -> ('a, 'b) eresult", which
+ * when executed with "remaining_gas" as the argument
+ * produces eresult (with a new value for remaining_gas). *)
 include Monad.Make2 (struct
 
-  type nonrec ('a, 'b) t = ('a,'b) eresult
+  type nonrec ('a, 'b) t = int -> ('a, 'b) eresult
 
-  let bind x ~f = match x with
-    | Error _ as x  -> x
-    | Ok (x, es) ->
-      let res = f x in
-        add_gas res es.gas_used
+  let bind x ~f =
+    (fun remaining_gas ->
+      let r = x remaining_gas in
+      match r with
+      | Error _ as x'  -> x'
+      | Ok (z, remaining_gas') -> (f z) remaining_gas'
+    )
 
-  let map x ~f = match x with
-    | Error _ as x -> x
-    | Ok (x, g) -> Ok ((f x), g)
+  let map x ~f =
+    (fun remaining_gas ->
+      let r = x remaining_gas in
+      match r with
+      | Error _ as x' -> x'
+      | Ok (z, remaining_gas') -> Ok ((f z), remaining_gas'))
 
   let map = `Custom map
 
-  let return x = Ok (x, init_eval_state)
+  (* This does charge any gas. *)
+  let return x = (fun remaining_gas -> Ok (x, remaining_gas))
 
 end)
 
 (* Monadic evaluation results *)
-let fail s = Error (s, init_eval_state)
-let pure e = Ok (e, init_eval_state)
-let pure_gas e g = Ok (e, { init_eval_state with gas_used = g } )
+let fail s = (fun remaining_gas -> Error (s, remaining_gas))
+let pure e = return e
+let form_result e gas_cost = 
+  (fun remaining_gas -> 
+    if remaining_gas >= gas_cost then
+      Ok(e, remaining_gas - gas_cost)
+    else
+      Error ("Ran out of gas", remaining_gas))
+
 let from_result r =
   match r with
   | Core.Error s -> fail s
@@ -140,29 +139,45 @@ let rec foldrM ~f ~init ls = match ls with
   | [] -> pure init
 
 (* Monadic map for error *)
-let rec mapM ~f ls = match ls with
-  | x :: ls' ->
-      (match f x, mapM ~f:f ls' with
-       | Ok (z, es1), Ok (zs, es2) -> 
-          pure_gas (z :: zs) (es1.gas_used + es2.gas_used)
-       | Error _ as err, _ -> err
-       | _, (Error _ as err) -> err)
-  | [] -> pure []
+let mapM ~f ls = 
+  let rec doMap ls remaining_cost =
+    match ls with
+    | x :: ls' ->
+      let r1 = f x in
+      (match r1 remaining_cost with
+        | Ok(z, remaining_cost') ->
+          let z' = (doMap ls' remaining_cost') in
+          (match z' with
+           | Ok (z'', remaining_cost'') -> Ok (z :: z'', remaining_cost'')
+           | Error _ as x' -> x')
+        | Error _ as x' -> x')
+
+    | [] -> Ok ([], remaining_cost)
+  in
+  (fun remaining_cost -> doMap ls remaining_cost)
 
 (* Try all variants in the list, pick the first successful one *)
-let rec tryM ~f ls ~msg = match ls with
-  | x :: ls' ->
-      (match f x  with
-       | Ok (z, es) -> Ok ((x, z), es)
-       | Error _ -> tryM ~f:f ls' ~msg)
-  | [] -> fail msg
+let tryM ~f ls ~msg =
+  let rec doTry ls remaining_cost =
+    match ls with
+    | x :: ls' ->
+      (match (f x) remaining_cost  with
+       | Ok (z, remaining_cost') -> Ok ((x, z), remaining_cost')
+       | Error (_, remaining_cost') -> doTry ls' remaining_cost')
+    | [] -> Error (msg, remaining_cost)
+  in
+  (fun remaining_cost -> doTry ls remaining_cost)
 
-let liftPair2 x m = match m with
-  | Ok (z, es) -> Ok ((x, z), es)
-  | Error _ as err -> err
+let liftPair2 x m = 
+  (fun remaining_gas ->
+    match m remaining_gas with
+    | Ok (z, es) -> Ok ((x, z), es)
+    | Error _ as err -> err)
 
-let liftPair1 m x = match m with
-  | Ok (z, es) -> Ok ((z, x), es)
-  | Error _ as err -> err
+let liftPair1 m x =
+  (fun remaining_gas ->
+    match m remaining_gas with
+    | Ok (z, es) -> Ok ((z, x), es)
+    | Error _ as err -> err)
 
 end (* module EvalMonad *)

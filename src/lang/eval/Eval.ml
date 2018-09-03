@@ -157,9 +157,9 @@ let rec exp_eval erep env =
       let%bind arg_literals = vals_to_literals args in
       let%bind tps = from_result @@ MonadUtil.mapM arg_literals ~f:literal_type in
       let%bind (_, ret_typ, op) = from_result @@ BuiltInDictionary.find_builtin_op i tps in
-      let%bind res = from_result @@ op arg_literals ret_typ in 
-      let %bind gas = from_result @@ builtin_cost i arg_literals in
-      pure_gas (Env.ValLit res, env) gas
+      let%bind cost = from_result @@ builtin_cost i arg_literals in
+      let%bind res = from_result @@ op arg_literals ret_typ in
+        form_result (Env.ValLit res, env) cost
   | Fixpoint (f, t, body) ->
       let fix = Env.ValFix (f, t, body, env) in
       pure (fix, env)
