@@ -77,19 +77,11 @@ let check_validity =
 
 (* Owner can withdraw balance if deadline has passed *)
 let can_withdraw =
-  fun (timer : Option BNum) =>
+  fun (tm : BNum) =>
   fun (b : BNum) =>
-    match timer with
-    | Some tm =>
-      let window = Uint32 10 in
-      let deadline = builtin badd tm window in
-      let can = builtin blt deadline b in
-      match can with
-      | True => True
-      | False => False
-      end
-    | None => False
-    end
+    let window = Uint32 30 in
+    let deadline = builtin badd tm window in
+      builtin blt deadline b
 
 (* In the case of equal results, or no results the prise goes to the owner *)
 let determine_winner = 
@@ -226,9 +218,9 @@ transition ClaimReward(solution: Int128)
 end
 
 transition Withdraw ()
-  tm_opt <- timer;
+  tm =_creation_block;
   b <- &BLOCKNUMBER;
-  cw = can_withdraw tm_opt b;
+  cw = can_withdraw tm b;
   is_owner = builtin eq owner _sender;
   bal <- _balance;
   good_to_go = andb cw is_owner;
@@ -236,6 +228,8 @@ transition Withdraw ()
   | True =>
     msg = {_tag : Main; _recipient : owner; _amount : bal; code : here_is_the_reward};
     msgs = one_msg msg;
+    e = { _eventname : "GameOver" };
+    event e;
     send msgs
   | False =>
     msg = {_tag : Main; _recipient : _sender; _amount : Uint128 0; code : cannot_withdraw};
