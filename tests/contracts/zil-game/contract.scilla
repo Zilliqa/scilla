@@ -73,7 +73,6 @@ let check_validity =
         builtin eq h g
       | _ => False  
       end  
-    | _ => False
     end
 
 (* Owner can withdraw balance if deadline has passed *)
@@ -82,11 +81,7 @@ let can_withdraw =
   fun (b : BNum) =>
     let window = Uint32 30 in
     let deadline = builtin badd tm window in
-    let can = builtin blt deadline b in
-    match can with
-    | True => True
-    | False => False
-    end
+      builtin blt deadline b
 
 (* In the case of equal results, or no results the prise goes to the owner *)
 let determine_winner = 
