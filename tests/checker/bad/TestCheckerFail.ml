@@ -27,6 +27,7 @@ module Tests = TestUtil.DiffBasedTests(
     let tests = [
       "bad_fields1.scilla";
       "bad_fields2.scilla";
+      "unbound.scilla";
       "mappair.scilla"
     ]
     let use_stdlib = true
