@@ -155,7 +155,7 @@ let rec exp_eval erep env =
       let%bind tps = fromR @@ MonadUtil.mapM arg_literals ~f:literal_type in
       let%bind (_, ret_typ, op) = get_builtin_executor i tps arg_literals in
       let%bind res = fromR @@ op arg_literals ret_typ in
-        pure @@ (Env.ValLit res, env)
+      pure (Env.ValLit res, env)
   | Fixpoint (f, t, body) ->
       let fix = Env.ValFix (f, t, body, env) in
       pure (fix, env)
@@ -262,9 +262,6 @@ let rec stmt_eval conf stmts =
           let%bind eparams_resolved = Configuration.lookup conf params in
           let%bind conf' = Configuration.create_event conf eparams_resolved in
           stmt_eval conf' sts
-      (* TODO: Implement the rest *)
-      | _ -> fail @@ sprintf "The statement %s is not supported yet."
-            (pp_stmt s)
     )
 
 (*******************************************************)
