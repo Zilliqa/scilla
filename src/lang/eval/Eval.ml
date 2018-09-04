@@ -432,7 +432,7 @@ let check_message_entries tparams_o entries =
       ~f:(fun e -> (List.count entries ~f:(fun e' -> fst e = fst e')) = 1) in
   if not (valid_entries && uniq_entries && valid_params)
   then fail @@ sprintf
-      "Mismatch b/w message entries:\n%s\nand expected transition parameters%s\n"
+      "Duplicate entries or mismatch b/w message entries:\n%s\nand expected transition parameters%s\n"
       (pp_literal_map entries) (pp_cparams tparams)
   else
     pure entries
