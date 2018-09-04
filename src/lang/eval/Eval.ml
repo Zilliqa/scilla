@@ -262,6 +262,9 @@ let rec stmt_eval conf stmts =
           let%bind eparams_resolved = Configuration.lookup conf params in
           let%bind conf' = Configuration.create_event conf eparams_resolved in
           stmt_eval conf' sts
+      (* TODO: Implement the rest *)
+      | _ -> fail @@ sprintf "The statement %s is not supported yet."
+            (pp_stmt s)
     )
 
 (*******************************************************)
