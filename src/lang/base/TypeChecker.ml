@@ -106,7 +106,6 @@ module ScillaTypechecker
   (*                   Typing expressions                       *)
   (**************************************************************)
 
-  (* TODO: Check if the type is well-formed: support type variables *)
   let rec type_expr tenv erep =
     let (e, rep) = erep in
     match e with
