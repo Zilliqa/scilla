@@ -116,6 +116,11 @@ let fromR r =
   | Core.Error s -> fail s
   | Core.Ok a -> pure a
 
+let mapR r remaining_gas =
+  match r with
+  | Core.Error s -> Error (s, remaining_gas)
+  | Core.Ok a -> Ok (a, remaining_gas)
+
 open Let_syntax
 
 (* Monadic fold-left for error *)

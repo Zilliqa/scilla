@@ -120,11 +120,9 @@ let builtin_executor i arg_tps arg_lits =
   let%bind cost = fromR @@ EvalGas.builtin_cost i arg_lits in
   (fun remaining_cost ->
     if remaining_cost >= cost then 
-      let res' = op arg_lits ret_typ in
+      let res = op arg_lits ret_typ in
       let remaining_cost' = remaining_cost - cost in
-      match res' with
-      | Core.Ok (res) -> Ok (res, remaining_cost')
-      | Core.Error s -> Error (s, remaining_cost') (* charge gas even on failure of builtin. *)
+      mapR res remaining_cost'
     else Error ((sprintf "Ran out of gas before executing builtin %s" (get_id i)), remaining_cost))
 
 (*****************************************************)
