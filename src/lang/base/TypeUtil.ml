@@ -166,8 +166,8 @@ module MakeTEnv: MakeTEnvFunctor = functor
                 | Some l -> sprintf "[%s]: " (get_loc_str (R.get_loc l))
                 | None -> "") in
             fail @@ sprintf
-              "%sCouldn't resolve the identifier \"%s\" in the type environment\n%s"
-              loc_str id (pp env)
+              "%sCouldn't resolve the identifier \"%s\".\n"
+              loc_str id
 
       let copy e = {
         tenv = Hashtbl.copy e.tenv;
