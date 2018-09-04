@@ -110,14 +110,8 @@ end)
 (* Monadic evaluation results *)
 let fail s = (fun remaining_gas -> Error (s, remaining_gas))
 let pure e = return e
-let form_result e gas_cost = 
-  (fun remaining_gas -> 
-    if remaining_gas >= gas_cost then
-      Ok(e, remaining_gas - gas_cost)
-    else
-      Error ("Ran out of gas", remaining_gas))
 
-let from_result r =
+let fromR r =
   match r with
   | Core.Error s -> fail s
   | Core.Ok a -> pure a

@@ -28,9 +28,6 @@ open Stdint
 open ContractUtil
 
 open EvalTypeUtilities
-open EvalBuiltIns
-open EvalGas
-
 open EvalSyntax
 
 (***************************************************)
@@ -126,7 +123,7 @@ let rec exp_eval erep env =
       pure (fully_applied, env)          
   | Constr (cname, ts, actuals) ->
       let open Datatypes.DataTypeDictionary in 
-      let%bind (_, constr) = from_result @@ lookup_constructor cname in
+      let%bind (_, constr) = fromR @@ lookup_constructor cname in
       let alen = List.length actuals in
       if (constr.arity <> alen)
       then fail @@ sprintf
@@ -147,7 +144,7 @@ let rec exp_eval erep env =
         tryM clauses
           ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
                   (Env.pp_value v) (pp_expr e))
-          ~f:(fun (p, _) -> from_result @@ match_with_pattern v p) in
+          ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env
           ~f:(fun z (i, w) -> Env.bind z (get_id i) w) in
@@ -155,11 +152,10 @@ let rec exp_eval erep env =
   | Builtin (i, actuals) ->
       let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
       let%bind arg_literals = vals_to_literals args in
-      let%bind tps = from_result @@ MonadUtil.mapM arg_literals ~f:literal_type in
-      let%bind (_, ret_typ, op) = from_result @@ BuiltInDictionary.find_builtin_op i tps in
-      let%bind cost = from_result @@ builtin_cost i arg_literals in
-      let%bind res = from_result @@ op arg_literals ret_typ in
-        form_result (Env.ValLit res, env) cost
+      let%bind tps = fromR @@ MonadUtil.mapM arg_literals ~f:literal_type in
+      let%bind (_, ret_typ, op) = get_builtin_executor i tps arg_literals in
+      let%bind res = fromR @@ op arg_literals ret_typ in
+        pure @@ (Env.ValLit res, env)
   | Fixpoint (f, t, body) ->
       let fix = Env.ValFix (f, t, body, env) in
       pure (fix, env)
@@ -246,7 +242,7 @@ let rec stmt_eval conf stmts =
             tryM clauses
               ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
                       (Env.pp_value v) (pp_stmt s))
-              ~f:(fun (p, _) -> from_result @@ match_with_pattern v p) in 
+              ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in 
           (* Update the environment for the branch *)
           let conf' = List.fold_left bnds ~init:conf
               ~f:(fun z (i, w) -> Configuration.bind z (get_id i) w) in
@@ -404,8 +400,8 @@ let init_module md initargs curargs init_bal bstate elibs =
 
 (* Extract necessary bits from the message *)
 let preprocess_message es =
-  let%bind tag = from_result @@ MessagePayload.get_tag es in
-  let%bind amount = from_result @@ MessagePayload.get_amount es in
+  let%bind tag = fromR @@ MessagePayload.get_tag es in
+  let%bind amount = fromR @@ MessagePayload.get_amount es in
   let other = MessagePayload.get_other_entries es in
   pure (tag, amount, other)
 
@@ -453,7 +449,7 @@ let prepare_for_message contr m =
 let post_process_msgs cstate outs =
   (* Evey outgoing message should carry an "_amount" tag *)
   let%bind amounts = mapM outs ~f:(fun l -> match l with
-      | Msg es -> from_result @@ MessagePayload.get_amount es
+      | Msg es -> fromR @@ MessagePayload.get_amount es
       | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal l)) in
   let open Uint128 in
   let to_be_transferred = List.fold_left amounts ~init:zero
