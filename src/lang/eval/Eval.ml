@@ -154,7 +154,7 @@ let rec exp_eval erep env =
       let%bind arg_literals = vals_to_literals args in
       let%bind tps = fromR @@ MonadUtil.mapM arg_literals ~f:literal_type in
       let%bind res = builtin_executor i tps arg_literals in
-        pure @@ (Env.ValLit res, env)
+      pure (Env.ValLit res, env)
   | Fixpoint (f, t, body) ->
       let fix = Env.ValFix (f, t, body, env) in
       pure (fix, env)
