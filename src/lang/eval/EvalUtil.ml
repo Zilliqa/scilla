@@ -115,11 +115,16 @@ let rec subst_type_in_expr tvar tp (erep : expr_annot) =
       (Fixpoint (f, t', body'), rep)
 
 (* Return a builtin_op wrapped in EvalMonad *)
-let get_builtin_executor i arg_tps arg_lits =
-  let%bind (arg_typ, ret_typ, op) = fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op i arg_tps in
+let builtin_executor i arg_tps arg_lits =
+  let%bind (_, ret_typ, op) = fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op i arg_tps in
   let%bind cost = fromR @@ EvalGas.builtin_cost i arg_lits in
   (fun remaining_cost ->
-    if remaining_cost >= cost then Ok ((arg_typ, ret_typ, op), remaining_cost-cost)
+    if remaining_cost >= cost then 
+      let res' = op arg_lits ret_typ in
+      let remaining_cost' = remaining_cost - cost in
+      match res' with
+      | Core.Ok (res) -> Ok (res, remaining_cost')
+      | Core.Error s -> Error (s, remaining_cost') (* charge gas even on failure of builtin. *)
     else Error ((sprintf "Ran out of gas before executing builtin %s" (get_id i)), remaining_cost))
 
 (*****************************************************)
