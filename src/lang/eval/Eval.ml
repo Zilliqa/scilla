@@ -71,6 +71,7 @@ let vals_to_literals vals =
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
 (*******************************************************)
+
 let rec exp_eval erep env =
   let (e, _) = erep in
   match e with
@@ -80,9 +81,9 @@ let rec exp_eval erep env =
       let%bind v = Env.lookup env i in
       pure @@ (v, env)
   | Let (i, _, lhs, rhs) ->
-      let%bind (lval, _) = exp_eval lhs env in
+      let%bind (lval, _) = exp_eval_wrapper lhs env in
       let env' = Env.bind env (get_id i) lval in
-      exp_eval rhs env'
+      exp_eval_wrapper rhs env'
   | Message bs as m ->
       (* Resolve all message payload *)
       let resolve pld = match pld with
@@ -148,7 +149,7 @@ let rec exp_eval erep env =
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env
           ~f:(fun z (i, w) -> Env.bind z (get_id i) w) in
-      exp_eval e_branch env'      
+      exp_eval_wrapper e_branch env'      
   | Builtin (i, actuals) ->
       let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
       let%bind arg_literals = vals_to_literals args in
@@ -185,15 +186,15 @@ and try_apply_as_closure v arg =
   | Env.ValClosure (formal, _, body, env) ->
       (* TODO: add runtime type-checking *)
       let env1 = Env.bind env (get_id formal) arg in
-      let%bind (v, _) = exp_eval body env1 in
+      let%bind (v, _) = exp_eval_wrapper body env1 in
       pure v
   | Env.ValFix (g, _, body, env) ->
       let env1 = Env.bind env (get_id g) v in
-      let%bind (v, _) = exp_eval body env1 in
+      let%bind (v, _) = exp_eval_wrapper body env1 in
       (match v with
        | Env.ValClosure (formal, _, cbody, cenv) ->
            let env2 = Env.bind cenv (get_id formal) arg in
-           let%bind (v, _) = exp_eval cbody env2 in
+           let%bind (v, _) = exp_eval_wrapper cbody env2 in
            (* printf "Resulting value: %s\n\n" (Env.pp_value v); *)
            pure v
        | _ ->  fail @@ sprintf "A fixpoint should take a function as a body")
@@ -205,10 +206,17 @@ and try_apply_as_type_closure v arg_type =
   | Env.ValTypeClosure (tv, body, env) ->
       (* TODO: implement type substitution in TypeUtil.ml *)
       let body_subst = subst_type_in_expr tv arg_type body in
-      let%bind (v, _) = exp_eval body_subst env in
+      let%bind (v, _) = exp_eval_wrapper body_subst env in
       pure v      
   | _ ->
       fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)
+
+and exp_eval_wrapper expr env =
+  let thunk() = exp_eval expr env in
+  let%bind cost = fromR @@ EvalGas.expr_static_cost expr in
+  let (e, _) = expr in
+  let emsg = sprintf "Ran out of gas executing %s\n" (pp_expr e) in
+  checkwrap_op thunk cost emsg
 
 
 open EvalSyntax
@@ -228,7 +236,7 @@ let rec stmt_eval conf stmts =
           let%bind conf' = Configuration.store conf (get_id x) v in
           stmt_eval conf' sts
       | Bind (x, e) ->
-          let%bind (lval, _) = exp_eval e conf.env in
+          let%bind (lval, _) = exp_eval_wrapper e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
           stmt_eval conf' sts
       | ReadFromBC (x, bf) ->
@@ -303,7 +311,7 @@ let combine_libs clibs elibs =
 (* Initializing libraries of a contract *)
 let init_libraries clibs elibs =
   let init_lib_entry env {lname = id; lexp = e } = (
-    let%bind (v, _) = exp_eval e env in
+    let%bind (v, _) = exp_eval_wrapper e env in
     let env' = Env.bind env (get_id id) v in
     pure env') in
 
@@ -320,7 +328,7 @@ let init_libraries clibs elibs =
 let init_fields env fs =
   (* Initialize a field in aconstant enfirontment *)
   let init_field fname _t fexp =
-    let%bind (v, _) = exp_eval fexp env in
+    let%bind (v, _) = exp_eval_wrapper fexp env in
     match v with
     | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
         fail @@ sprintf "Closure cannot be stored in a field %s." fname

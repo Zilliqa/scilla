@@ -122,7 +122,7 @@ let mapR r remaining_gas =
   | Core.Ok a -> Ok (a, remaining_gas)
 
 (* Wrap an op with cost check when op returns "result". *)
-let checkwrap_op op_thunk cost =
+let checkwrap_opR op_thunk cost =
   (fun remaining_gas ->
     if (remaining_gas >= cost)
     then 
@@ -130,6 +130,14 @@ let checkwrap_op op_thunk cost =
       mapR res (remaining_gas - cost)
     else 
       Error ("Ran out of gas", remaining_gas))
+
+(* Wrap an op with cost check when op returns "eresult". *)
+let checkwrap_op op_thunk cost emsg =
+  (fun remaining_gas ->
+    if remaining_gas >= cost then
+      op_thunk() (remaining_gas - cost)
+    else
+      Error (emsg, remaining_gas))
 
 open Let_syntax
 

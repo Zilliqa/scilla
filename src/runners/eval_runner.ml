@@ -51,7 +51,7 @@ let () =
           printf "Failed to initialize stdlib. Evaluation halted: %s\n" err;
           exit 1;) in
       let lib_fnames = List.map (fun (name, _) -> name) env in
-      let res' = Eval.exp_eval e env in
+      let res' = Eval.exp_eval_wrapper e env in
       let res = res' gas_remaining in
       (match res with
       | Ok _ ->

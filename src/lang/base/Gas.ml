@@ -29,7 +29,9 @@ module ScillaGas
     (ER : Rep) = struct
 
 module GasTypeUtilities = TypeUtilities (SR) (ER)
+module GasSyntax = ScillaSyntax (SR) (ER)
 open GasTypeUtilities
+open GasSyntax
 
 (* The storage cost of a literal, based on it's size. *)
 let rec literal_cost lit =
@@ -66,6 +68,18 @@ let rec literal_cost lit =
     foldM ~f:(fun acc lit' ->
       let%bind clit' = literal_cost lit' in
       pure (acc + clit')) ~init:0 ll
+
+let expr_static_cost erep =
+  let (e, _) = erep in
+  match e with
+  | Literal _ | Var _ | Let _
+  | Message _ | Fun _ | App _
+  | Constr _ | TFun _ | TApp _ ->
+    pure 1
+  | MatchExpr (_, clauses) ->
+    pure @@ List.length clauses
+  | Fixpoint _ -> pure 1 (* TODO *)
+  | Builtin _ -> pure 0 (* this is a dynamic cost. *)
 
 (* A signature for functions that determine dynamic cost of built-in ops. *)
 (* op -> arguments -> base cost -> total cost *)
