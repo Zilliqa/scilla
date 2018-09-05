@@ -1,0 +1,25 @@
+
+Type error(s) in contract Crowdfunding:
+
+
+[:0:0] Type error in library check_update:
+ADT Uint12 not found
+
+[checker/bad/unbound.scilla:57:1] Type error in transition Donate:
+[checker/bad/unbound.scilla:59:3] Type error in the binding to into `in_time`:
+[checker/bad/unbound.scilla:59:13] Type error in application of `blk_leq`:
+[checker/bad/unbound.scilla:59:13]: Couldn't resolve the identifier "blk_leq".
+
+
+[checker/bad/unbound.scilla:88:1] Type error in transition GetFunds:
+[checker/bad/unbound.scilla:90:3] Type error in pattern matching on `is_owner` of type Bool (or one of its branches):
+[checker/bad/unbound.scilla:92:5] Type error in the binding to into `msg`:
+[:0:0]: Couldn't resolve the identifier "not_owner_code".
+
+
+[checker/bad/unbound.scilla:122:1] Type error in transition ClaimBack:
+[checker/bad/unbound.scilla:125:3] Type error in pattern matching on `after_deadline` of type Bool (or one of its branches):
+[checker/bad/unbound.scilla:127:5] Type error in the binding to into `msg`:
+[:0:0]: Couldn't resolve the identifier "too_early_code".
+
+

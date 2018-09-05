@@ -86,3 +86,26 @@ transition incNat ()
   msgs = one_msg msg;
   send msgs
 end
+
+(* This transition sends out a malformed message. Will flag error. *)
+transition malMessage1()
+  (* missing `_amount` field *)
+  msg = { _tag: "Main"; _recipient : _sender };
+  msgs = one_msg msg;
+  send msgs
+end
+
+(* This transition sends out a malformed message. Will flag error. *)
+transition malMessage2()
+  (* duplicate field *)
+  msg = { _tag: "Main"; _recipient : _sender; _amount : Uint128 0; status : "foo"; status : "bar" };
+  msgs = one_msg msg;
+  send msgs
+end
+
+(* This transition disallowed arguments. Will flag error. *)
+transition malTransition1( _sender : ByStr20 )
+  msg = { _tag: "Main"; _recipient : _sender; _amount : Uint128 0; status : "foo" };
+  msgs = one_msg msg;
+  send msgs
+end
