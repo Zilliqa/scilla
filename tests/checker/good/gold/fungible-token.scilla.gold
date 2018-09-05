@@ -43,5 +43,6 @@
         { "name": "spender", "type": "ByStr20" }
       ]
     }
-  ]
+  ],
+  "events": []
 }

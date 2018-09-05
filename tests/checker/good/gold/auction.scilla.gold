@@ -15,5 +15,6 @@
     { "name": "Bid", "params": [] },
     { "name": "Withdraw", "params": [] },
     { "name": "AuctionEnd", "params": [] }
-  ]
+  ],
+  "events": []
 }
