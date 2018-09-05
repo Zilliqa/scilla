@@ -22,7 +22,7 @@ open Syntax
 open RunnerUtil
 open GlobalConfig
 
-let gas_limit = 1000 
+let gas_limit = 2000
 
 let () =
   if (Array.length Sys.argv) < 2 || (Array.length Sys.argv) > 3
