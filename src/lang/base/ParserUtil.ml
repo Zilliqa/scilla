@@ -28,8 +28,9 @@ module ParserRep = struct
   [@@deriving sexp]
     
   let get_loc l = l
-  let mk_msg_payload_id_address s = Ident (s, dummy_loc)
-  let mk_msg_payload_id_uint128 s = Ident (s, dummy_loc)
+  let mk_id_address s = Ident (s, dummy_loc)
+  let mk_id_uint128 s = Ident (s, dummy_loc)
+  let mk_id_bnum    s = Ident (s, dummy_loc)
 
   let parse_rep _ = dummy_loc
   let get_rep_str r = get_loc_str r

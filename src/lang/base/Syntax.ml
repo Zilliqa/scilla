@@ -201,8 +201,10 @@ let pp_literal_list ls =
 module type Rep = sig
   type rep
   val get_loc : rep -> loc
-  val mk_msg_payload_id_address : string -> rep ident
-  val mk_msg_payload_id_uint128 : string -> rep ident
+
+  val mk_id_address : string -> rep ident
+  val mk_id_uint128 : string -> rep ident
+  val mk_id_bnum    : string -> rep ident
 
   val rep_of_sexp : Sexp.t -> rep
   val sexp_of_rep : rep -> Sexp.t

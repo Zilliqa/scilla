@@ -17,14 +17,12 @@
 *)
 
 open Syntax
-open ParserUtil
 open Core
 open MonadUtil
 open Result.Let_syntax
 open TypeUtil
 open Datatypes
 open BuiltIns
-open Recursion
 open ContractUtil
 open Utils
 open PrimTypes
@@ -39,12 +37,13 @@ module TypecheckerERep (R : Rep) = struct
  
   let get_loc r = match r with | (_, rr) -> R.get_loc rr
 
-  let mk_msg_payload_id s t =
+  let mk_id s t =
     match s with
     | Ident (n, r) -> Ident (n, (PlainTypes.mk_qualified_type t, r))
 
-  let mk_msg_payload_id_address s = mk_msg_payload_id (R.mk_msg_payload_id_address s) (bystrx_typ address_length)
-  let mk_msg_payload_id_uint128 s = mk_msg_payload_id (R.mk_msg_payload_id_uint128 s) uint128_typ
+  let mk_id_address s = mk_id (R.mk_id_address s) (bystrx_typ address_length)
+  let mk_id_uint128 s = mk_id (R.mk_id_uint128 s) uint128_typ
+  let mk_id_bnum    s = mk_id (R.mk_id_bnum s) bnum_typ
   
   let mk_rep (r : R.rep) (t : PlainTypes.t inferred_type) = (t, r)
   
@@ -487,6 +486,7 @@ module ScillaTypechecker
             
   let type_module
       (md : UntypedSyntax.cmodule)
+      (* TODO : rec_libs should be added to the contract somehow *)
       (rec_libs : UntypedSyntax.lib_entry list)
       (elibs : UntypedSyntax.library list)
     : (TypedSyntax.cmodule * stmt_tenv, string) result =
@@ -497,7 +497,7 @@ module ScillaTypechecker
     wrap_with_info msg @@
     
     (* Step 0: Type check recursion principles *)
-    let%bind tenv0 = type_rec_libs rec_libs in
+    let%bind (_, tenv0) = type_rec_libs rec_libs in
     
     (* Step 1: Type check external libraries *)
     (* Step 2: Type check contract library, if defined. *)
@@ -522,7 +522,7 @@ module ScillaTypechecker
     in
     
     (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
-    let params = append_implict_contract_params cparams in
+    let params = CU.append_implict_contract_params cparams in
     let tenv3 = TEnv.addTs tenv params in
     
     (* Step 4: Type-check fields and add balance *)
@@ -531,7 +531,7 @@ module ScillaTypechecker
       | Error msg -> Ok (([], tenv3), emsgs ^ "\n\n" ^ msg)
       | Ok (typed_fields, tenv) -> Ok ((typed_fields, tenv), emsgs)
     in
-    let (bn, bt) = balance_field in
+    let (bn, bt) = CU.balance_field in
     let fenv = TEnv.addT fenv0 bn bt in
     
     (* Step 5: Form a general environment for checking transitions *)
