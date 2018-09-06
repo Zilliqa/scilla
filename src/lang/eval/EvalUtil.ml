@@ -309,8 +309,11 @@ module Configuration = struct
       let tag_found = List.exists ~f:(fun (s, _) -> s = tag_label) m in
       let amount_found = List.exists ~f:(fun (s, _) -> s = amount_label) m in
       let recipient_found = List.exists ~f:(fun (s, _) -> s = recipient_label) m in
-      if tag_found && amount_found && recipient_found then pure m'
-      else fail @@ sprintf "Message %s is missing a mandatory field." (pp_literal (Msg m))
+      let uniq_entries = List.for_all m
+        ~f:(fun e -> (List.count m ~f:(fun e' -> fst e = fst e')) = 1) in
+      if tag_found && amount_found && recipient_found && uniq_entries then pure m'
+      else fail @@ sprintf 
+        "Message %s is missing a mandatory field or has duplicate fields." (pp_literal (Msg m))
     | _ -> fail @@ sprintf "Literal %s is not a message, cannot be sent." (pp_literal m')
 
   let send_messages conf ms =
@@ -326,8 +329,11 @@ module Configuration = struct
     | Msg m ->
       (* All events must have certain mandatory fields *)
       let eventname_found = List.exists ~f:(fun (s, _) -> s = eventname_label) m in
-      if eventname_found then pure m'
-      else fail @@ sprintf "Event %s is missing a mandatory field." (pp_literal (Msg m))
+      let uniq_entries = List.for_all m
+        ~f:(fun e -> (List.count m ~f:(fun e' -> fst e = fst e')) = 1) in
+      if eventname_found && uniq_entries then pure m'
+      else fail @@ sprintf 
+        "Event %s is missing a mandatory field or has duplicate fields." (pp_literal (Msg m))
     | _ -> fail @@ sprintf "Literal %s is not a valid event argument." (pp_literal m')
 
 

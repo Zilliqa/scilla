@@ -354,7 +354,7 @@ module ScillaTypechecker
          | AcceptPayment ->
              let%bind checked_stmts = type_stmts env sts get_loc in
              pure @@ add_stmt_to_stmts_env (TypedSyntax.AcceptPayment, rep) checked_stmts
-         | SendMsgs i | CreateEvnt i->
+         | SendMsgs i ->
              let%bind r = TEnv.resolveT env.pure (get_id i)
                  ~lopt:(Some (get_rep i)) in
              let i_type = rr_typ r in
@@ -363,12 +363,17 @@ module ScillaTypechecker
                assert_type_equiv expected i_type.tp in
              let typed_i = add_type_to_ident i i_type in
              let%bind checked_stmts = type_stmts env sts get_loc in
-             (match s with
-             | SendMsgs _ ->
-                pure @@ add_stmt_to_stmts_env (TypedSyntax.SendMsgs typed_i, rep) checked_stmts
-             | CreateEvnt _ ->
-                pure @@ add_stmt_to_stmts_env (TypedSyntax.CreateEvnt typed_i, rep) checked_stmts
-             | _ -> fail "Unexpected statement during type-checking")
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.SendMsgs typed_i, rep) checked_stmts
+         | CreateEvnt i ->
+            (* Same as SendMsgs except that this takes a single message instead of a list. *)
+             let%bind r = TEnv.resolveT env.pure (get_id i)
+                 ~lopt:(Some (get_rep i)) in
+             let i_type = rr_typ r in
+             let%bind _ = wrap_type_serr stmt @@
+               assert_type_equiv msg_typ i_type.tp in
+             let typed_i = add_type_to_ident i i_type in
+             let%bind checked_stmts = type_stmts env sts get_loc in
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.CreateEvnt typed_i, rep) checked_stmts
          | Throw _ ->
              fail @@ sprintf
                "Type-checking of Throw statements is not supported yet."
