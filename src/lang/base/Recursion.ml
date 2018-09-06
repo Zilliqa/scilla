@@ -19,7 +19,6 @@
 open Syntax
 open Core
 open ParserUtil
-open TypeUtil
 open FrontEndParser
 
 (***********************************************************)
@@ -28,8 +27,6 @@ open FrontEndParser
 
 (* TODO: Split this file into separate parsing and typechecking, and parameterize in the same way as the typechecker *)
 open ParsedSyntax
-module RecursionTU = TypeUtilities (ParserRep) (ParserRep)
-open RecursionTU
 
 (* Folding over natural numbers *)
 module NatRec = struct
@@ -41,8 +38,6 @@ module NatRec = struct
     module Foldl = struct
       (* The type of the fixpoint argument *)
       let fix_type = parse_type "('T -> Nat -> 'T) -> 'T -> Nat -> 'T"
-      (* The type of the entire recursion primitive *)
-      let full_type = tfun_typ "'T" fix_type
       let (_, loc) as fix_arg = parse_expr ( 
           "fun (fn : 'T -> Nat -> 'T) => fun (f0 : 'T) => fun (n: Nat) => " ^
           "match n with " ^
@@ -54,7 +49,7 @@ module NatRec = struct
       let id = mk_ident "nat_fold"
       let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
       let fold = (TFun(tvar, fold_fix), loc)
-      let entry = ({lname = id; lexp = fold}, full_type)
+      let entry = {lname = id; lexp = fold}
     end
 
     module Foldr = struct
@@ -81,8 +76,6 @@ module NatRec = struct
     module Foldl = struct
       (* The type of the fixpoint argument *)
       let fix_type = parse_type "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
-      (* The type of the primitive *)
-      let full_type = tfun_typ "'A" (tfun_typ "'B" fix_type)
       let (_, loc) as fix_arg = parse_expr ( 
           "fun (f : 'B -> 'A -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
           "match l with " ^
@@ -94,14 +87,12 @@ module NatRec = struct
       let id = mk_ident "list_foldl"      
       let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
       let fold = (TFun(avar, (TFun (bvar, fold_fix), loc)), loc)
-      let entry = ({lname = id; lexp = fold}, full_type)
+      let entry = {lname = id; lexp = fold}
     end
 
     module Foldr = struct
       (* The type of the fixpoint argument *)
       let fix_type = parse_type "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
-      (* The type of the primitive *)
-      let full_type = tfun_typ "'A" (tfun_typ "'B" fix_type)        
       let (_, loc) as fix_arg = parse_expr ( 
           "fun (f : 'A -> 'B -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
           "match l with " ^
@@ -113,7 +104,7 @@ module NatRec = struct
       let id = mk_ident "list_foldr"
       let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
       let fold = (TFun(avar, (TFun (bvar, fold_fix), loc)), loc)
-      let entry = ({lname = id; lexp = fold}, full_type)
+      let entry = {lname = id; lexp = fold}
     end
 
   end
