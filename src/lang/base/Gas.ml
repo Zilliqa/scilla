@@ -81,6 +81,21 @@ let expr_static_cost erep =
   | Fixpoint _ -> pure 1 (* TODO *)
   | Builtin _ -> pure 0 (* this is a dynamic cost. *)
 
+let stmt_cost scon = match scon with
+  | G_Load l -> literal_cost l
+  | G_Store (old_l, new_l) -> 
+    let%bind old_cost =  literal_cost(old_l) in 
+    let%bind new_cost = literal_cost(new_l) in
+    let storage_cost = new_cost - old_cost in
+    let%bind op_cost = literal_cost(new_l) in
+      pure @@ op_cost + storage_cost
+  | G_Bind -> pure 0
+  | G_MatchStmt -> pure 0
+  | G_ReadFromBC -> pure 0
+  | G_AcceptPayment -> pure 0
+  | G_SendMsgs _ -> pure 0 (* TODO *)
+  | G_CreateEvnt e -> literal_cost e
+
 (* A signature for functions that determine dynamic cost of built-in ops. *)
 (* op -> arguments -> base cost -> total cost *)
 type coster = string -> literal list -> int -> (int, string) result

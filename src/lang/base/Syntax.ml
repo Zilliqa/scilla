@@ -294,7 +294,20 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
   let pp_stmt s =
     spp_stmt s
-      
+
+  (**************************************************)
+  (*          Statement evaluation info             *)
+  (**************************************************)
+  type stmt_eval_context =
+    | G_Load of literal
+    | G_Store of (literal * literal)
+    | G_Bind
+    | G_MatchStmt
+    | G_ReadFromBC
+    | G_AcceptPayment
+    | G_SendMsgs of literal list
+    | G_CreateEvnt of literal
+
   (*******************************************************)
   (*                    Contracts                        *)
   (*******************************************************)

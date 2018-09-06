@@ -228,12 +228,14 @@ let rec stmt_eval conf stmts =
   | [] -> pure conf
   | (s, _) :: sts -> (match s with
       | Load (x, r) ->
-          let%bind l = Configuration.load conf r in
+          let%bind (l, scon) = Configuration.load conf r in
           let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
+          let%bind _ = stmt_gas_wrap scon in
           stmt_eval conf' sts
       | Store (x, r) ->
           let%bind v = Configuration.lookup conf r in
-          let%bind conf' = Configuration.store conf (get_id x) v in
+          let%bind (conf', scon) = Configuration.store conf (get_id x) v in
+          let%bind _ = stmt_gas_wrap scon in
           stmt_eval conf' sts
       | Bind (x, e) ->
           let%bind (lval, _) = exp_eval_wrapper e conf.env in
@@ -263,11 +265,13 @@ let rec stmt_eval conf stmts =
       (* Caution emitting messages does not change balance immediately! *)      
       | SendMsgs ms ->
           let%bind ms_resolved = Configuration.lookup conf ms in
-          let%bind conf' = Configuration.send_messages conf ms_resolved in
+          let%bind (conf', scon) = Configuration.send_messages conf ms_resolved in
+          let%bind _ = stmt_gas_wrap scon in
           stmt_eval conf' sts
       | CreateEvnt params ->
           let%bind eparams_resolved = Configuration.lookup conf params in
-          let%bind conf' = Configuration.create_event conf eparams_resolved in
+          let%bind (conf', scon) = Configuration.create_event conf eparams_resolved in
+          let%bind _ = stmt_gas_wrap scon in
           stmt_eval conf' sts
       (* TODO: Implement the rest *)
       | _ -> fail @@ sprintf "The statement %s is not supported yet."
