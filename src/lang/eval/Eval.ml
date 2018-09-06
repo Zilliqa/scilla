@@ -211,6 +211,7 @@ and try_apply_as_type_closure v arg_type =
   | _ ->
       fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)
 
+(* Adding gas cost to the reduction *)
 and exp_eval_wrapper expr env =
   let thunk () = exp_eval expr env in
   let%bind cost = fromR @@ EvalGas.expr_static_cost expr in
