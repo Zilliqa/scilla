@@ -31,8 +31,10 @@ module StdlibTypeCacher
     (ER : Rep) = struct
 
   module L = ScillaSyntax (SR) (ER)
-  open L
   module MakeTEnv = Q(R)(ER)
+  type t = MakeTEnv.TEnv.t
+             
+  open L
   open MakeTEnv
   
   open Cryptokit
@@ -43,7 +45,6 @@ module StdlibTypeCacher
       ) ~init:"" lib.lentries in
     hash s
 
-  type t = MakeTEnv.TEnv.t
 
   let to_json_string (lib : L.library) lib_entries =
     let lib_name = (get_id lib.lname) in

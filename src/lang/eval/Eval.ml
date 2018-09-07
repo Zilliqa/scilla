@@ -37,7 +37,7 @@ module EvalContractUtil = ScillaContractUtil (ParserUtil.ParserRep) (ParserUtil.
 (***************************************************)    
 
 let reserved_names =
-  List.map ~f:(fun ({lname = x; _}, _) -> get_id x) Recursion.recursion_principles
+  List.map ~f:(fun {lname = x; _} -> get_id x) Recursion.recursion_principles
 
 (* Printing result *)
 let pp_result r exclude_names = 
@@ -326,8 +326,7 @@ let init_libraries clibs elibs =
     let env' = Env.bind env (get_id id) v in
     pure env') in
 
-  let (recs, _) = List.unzip Recursion.recursion_principles in
-  let libs = recs @ (combine_libs clibs elibs) in
+  let libs = Recursion.recursion_principles @ (combine_libs clibs elibs) in
 
   DebugMessage.plog ("Loading library functions.");
   List.fold_left libs ~init:(pure Env.empty)
@@ -350,7 +349,7 @@ let init_fields env fs =
 (* TODO: implement type-checking *)
 let init_contract clibs elibs cparams' cfields args init_bal  =
   (* All contracts take a few implicit parameters. *)
-  let cparams = append_implict_contract_params cparams' in
+  let cparams = EvalContractUtil.append_implict_contract_params cparams' in
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
   let pnames = List.map cparams ~f:(fun (i, _) -> get_id i) in

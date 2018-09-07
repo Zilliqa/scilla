@@ -28,6 +28,17 @@ open MonadUtil
 open Result.Let_syntax
 open PatternChecker
 
+
+module ParsedSyntax = ParserUtil.ParsedSyntax
+module PSRep = ParserRep
+module PERep = ParserRep
+  
+module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
+module TCSRep = TC.OutputSRep
+module TCERep = TC.OutputERep
+
+module PM_Checker = ScillaPatternchecker (TCSRep) (TCERep)
+
 (* Check that the expression parses *)
 let check_parsing filename = 
     let parse_module =
@@ -41,12 +52,11 @@ let check_parsing filename =
 
 (* Type check the expression with external libraries *)
 let check_typing e elibs =
-  let open TypeChecker.ScillaTypechecker in
-  let open TypeChecker.ScillaTypechecker.TypeEnv in
-  let%bind _ = type_recursion_principles in
-  let recs = List.map recursion_principles
-      ~f:(fun ({lname = a; _}, c) -> (a, c)) in
-  let tenv0 = TEnv.addTs TEnv.mk recs in
+  let open TC in
+  let open TC.TypeEnv in
+  let rec_lib = { ParsedSyntax.lname = asId "rec_lib" ;
+                  ParsedSyntax.lentries = recursion_principles } in
+  let%bind (typed_rec_libs, tenv0) = type_library TEnv.mk rec_lib in
   (* Step 1: Type check external libraries *)
   (* TODO: Cache this information unless its version changed! *)
   let%bind (_, tenv1) = MonadUtil.foldM elibs ~init:([], tenv0)
@@ -55,10 +65,6 @@ let check_typing e elibs =
         pure @@ (lib_acc @ [lib], new_env)) in
   let%bind typed_e = type_expr tenv1 e in
   pure @@ typed_e
-
-module PM_SR = TypeChecker.ScillaTypechecker.STR
-module PM_ER = TypeChecker.ScillaTypechecker.ETR
-module PM_Checker = ScillaPatternchecker (PM_SR) (PM_ER)
 
 let check_patterns e = PM_Checker.pm_check_expr e
     

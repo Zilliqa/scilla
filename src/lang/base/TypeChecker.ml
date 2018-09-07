@@ -72,7 +72,7 @@ module ScillaTypechecker
   module TBuiltins = ScillaBuiltIns (SR) (ER)
   module TypeEnv = TU.MakeTEnv(PlainTypes)(ER)
   module CU = ScillaContractUtil (SR) (ER)
-  
+
   open TU
   open TBuiltins
   open TypeEnv
@@ -128,7 +128,7 @@ module ScillaTypechecker
   (*                   Typing expressions                       *)
   (**************************************************************)
 
-  let rec type_expr tenv erep =
+  let rec type_expr tenv (erep : UntypedSyntax.expr_annot) =
     let (e, rep) = erep in
     match e with
     | Literal l ->
@@ -562,5 +562,13 @@ module ScillaTypechecker
     (* Return error messages *)
     else fail @@ emsgs'
 
+
+  (**************************************************************)
+  (*                    Staging API                             *)
+  (**************************************************************)
+
+  module OutputSyntax = TypedSyntax
+  module OutputSRep = STR
+  module OutputERep = ETR
 
 end
