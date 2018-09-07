@@ -397,7 +397,13 @@ let create_cur_state_fields initcstate curcstate =
   else
     fail @@sprintf "Mismatch in input state variables:\nexpected:\n%s\nprovided:\n%s\n"
                    (pp_literal_map initcstate) (pp_literal_map curcstate)
-    
+
+
+let literal_list_gas llit =
+  foldM ~f:(fun acc (_, lit) ->
+    let%bind c = fromR @@ EvalGas.literal_cost lit in
+    pure (c + acc)) ~init:0 llit
+
 (* Initialize a module with given arguments and initial balance *)
 let init_module md initargs curargs init_bal bstate elibs =
   let {libs; contr; _} = md in
@@ -405,6 +411,9 @@ let init_module md initargs curargs init_bal bstate elibs =
   let%bind initcstate =
     init_contract libs elibs cparams cfields initargs init_bal in
   let%bind curfields = create_cur_state_fields initcstate.fields curargs in
+  (* Gas accounting for params and state fields. *)
+  let%bind _ = literal_list_gas curfields in
+  let%bind _ = literal_list_gas initargs in
   (* blockchain input provided is only validated and not used here. *)
   let%bind _ = check_blockchain_entries bstate in
   let cstate = { initcstate with fields = curfields } in
