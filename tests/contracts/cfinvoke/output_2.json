@@ -1,4 +1,5 @@
 {
+  "gas_remaining": "1808",
   "message": {
     "_tag": "ClaimBack",
     "_amount": "0",
