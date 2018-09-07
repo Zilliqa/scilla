@@ -128,8 +128,6 @@ let rec output_event_json elist =
     | _ -> `Null :: j)
   | [] -> []
 
-let gas_limit = 2000 (* TODO: Get this from outside world. *)
-
 let () =
   let cli = Cli.parse () in
   let parse_module =
@@ -147,7 +145,7 @@ let () =
       let clibs = cmod.libs in
   
       (* Checking initialized libraries! *)
-      let gas_remaining = check_libs clibs elibs cli.input gas_limit in
+      let gas_remaining = check_libs clibs elibs cli.input cli.gas_limit in
  
       (* Retrieve initial parameters *)
       let initargs = 
@@ -174,9 +172,9 @@ let () =
         let init_res = init_module cmod initargs [] Uint128.zero bstate elibs in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
-        let _ = check_extract_cstate cli.input init_res in
+        let (_, remaining_gas') = check_extract_cstate cli.input init_res gas_remaining in
         (plog (sprintf "\nContract initialized successfully\n");
-          (`Null, `List [], `List []), 0)
+          (`Null, `List [], `List []), remaining_gas')
       else
         (* Not initialization, execute transition specified in the message *)
         (let mmsg = 
@@ -219,7 +217,7 @@ let () =
           (omj, osj, oej), gas)
       in
       let output_json = `Assoc [
-        (* "gas_remaining", `String (Int.to_string gas); *)
+        "gas_remaining", `String (Int.to_string gas);
         ("message", output_msg_json); 
         ("states", output_state_json);
         ("events", output_events_json)
