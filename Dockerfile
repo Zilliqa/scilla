@@ -8,6 +8,7 @@ COPY . /scilla
 WORKDIR /scilla
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
     build-essential \
     m4 \
     ocaml \
@@ -15,6 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     zlib1g-dev \
     libgmp-dev \
+    libffi-dev \
+    libssl-dev \
+    libboost-system-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN make opamdep && echo \
