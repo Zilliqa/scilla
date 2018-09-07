@@ -78,7 +78,7 @@ let expr_static_cost erep =
     pure 1
   | MatchExpr (_, clauses) ->
     pure @@ List.length clauses
-  | Fixpoint _ -> pure 1 (* TODO *)
+  | Fixpoint _ -> pure 1 (* more cost accounted during recursive evaluation. *)
   | Builtin _ -> pure 0 (* this is a dynamic cost. *)
 
 let stmt_cost scon = match scon with
@@ -89,11 +89,13 @@ let stmt_cost scon = match scon with
     let storage_cost = new_cost - old_cost in
     let%bind op_cost = literal_cost(new_l) in
       pure @@ op_cost + storage_cost
-  | G_Bind -> pure 0
-  | G_MatchStmt -> pure 0
-  | G_ReadFromBC -> pure 0
-  | G_AcceptPayment -> pure 0
-  | G_SendMsgs _ -> pure 0 (* TODO *)
+  | G_Bind -> pure 1
+  | G_MatchStmt num_clauses-> pure num_clauses
+  | G_ReadFromBC -> pure 1
+  | G_AcceptPayment -> pure 1
+  | G_SendMsgs mlist -> foldM ~f:(fun acc m -> 
+      let%bind c = literal_cost m in
+      pure (acc + c)) ~init:0 mlist
   | G_CreateEvnt e -> literal_cost e
 
 (* A signature for functions that determine dynamic cost of built-in ops. *)

@@ -128,7 +128,7 @@ let rec output_event_json elist =
     | _ -> `Null :: j)
   | [] -> []
 
-let gas_limit = 1000 (* TODO: Get this from outside world. *)
+let gas_limit = 2000 (* TODO: Get this from outside world. *)
 
 let () =
   let cli = Cli.parse () in

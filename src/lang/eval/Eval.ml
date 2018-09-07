@@ -241,10 +241,12 @@ let rec stmt_eval conf stmts =
       | Bind (x, e) ->
           let%bind (lval, _) = exp_eval_wrapper e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
+          let%bind _ = stmt_gas_wrap G_Bind in
           stmt_eval conf' sts
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
           let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
+          let%bind _ = stmt_gas_wrap G_ReadFromBC in
           stmt_eval conf' sts                            
       | MatchStmt (x, clauses) ->
           let%bind v = Env.lookup conf.env x in 
@@ -259,9 +261,11 @@ let rec stmt_eval conf stmts =
           let%bind conf'' = stmt_eval conf' branch_stmts in
           (* Restore initial immutable bindings *)
           let cont_conf = {conf'' with env = conf.env} in
+          let%bind _ = stmt_gas_wrap (G_MatchStmt (List.length clauses)) in
           stmt_eval cont_conf sts
       | AcceptPayment ->
           let%bind conf' = Configuration.accept_incoming conf in
+          let%bind _ = stmt_gas_wrap G_AcceptPayment in
           stmt_eval conf' sts
       (* Caution emitting messages does not change balance immediately! *)      
       | SendMsgs ms ->
