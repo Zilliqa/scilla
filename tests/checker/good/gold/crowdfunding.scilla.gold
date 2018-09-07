@@ -13,5 +13,21 @@
     { "name": "Donate", "params": [] },
     { "name": "GetFunds", "params": [] },
     { "name": "ClaimBack", "params": [] }
+  ],
+  "events": [
+    {
+      "name": "ClaimedBack",
+      "params": [
+        { "name": "claimed_by", "type": "ByStr20" },
+        { "name": "amount", "type": "Uint128" }
+      ]
+    },
+    {
+      "name": "DonationAccepted",
+      "params": [
+        { "name": "donor", "type": "ByStr20" },
+        { "name": "amount", "type": "Uint128" }
+      ]
+    }
   ]
 }
