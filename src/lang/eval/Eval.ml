@@ -28,8 +28,6 @@ open Stdint
 open ContractUtil
 
 open EvalTypeUtilities
-open EvalBuiltIns
-
 open EvalSyntax
 
 (***************************************************)
@@ -73,6 +71,7 @@ let vals_to_literals vals =
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
 (*******************************************************)
+
 let rec exp_eval erep env =
   let (e, _) = erep in
   match e with
@@ -82,9 +81,9 @@ let rec exp_eval erep env =
       let%bind v = Env.lookup env i in
       pure @@ (v, env)
   | Let (i, _, lhs, rhs) ->
-      let%bind (lval, _) = exp_eval lhs env in
+      let%bind (lval, _) = exp_eval_wrapper lhs env in
       let env' = Env.bind env (get_id i) lval in
-      exp_eval rhs env'
+      exp_eval_wrapper rhs env'
   | Message bs as m ->
       (* Resolve all message payload *)
       let resolve pld = match pld with
@@ -125,7 +124,7 @@ let rec exp_eval erep env =
       pure (fully_applied, env)          
   | Constr (cname, ts, actuals) ->
       let open Datatypes.DataTypeDictionary in 
-      let%bind (_, constr) = from_result @@ lookup_constructor cname in
+      let%bind (_, constr) = fromR @@ lookup_constructor cname in
       let alen = List.length actuals in
       if (constr.arity <> alen)
       then fail @@ sprintf
@@ -146,17 +145,16 @@ let rec exp_eval erep env =
         tryM clauses
           ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
                   (Env.pp_value v) (pp_expr e))
-          ~f:(fun (p, _) -> from_result @@ match_with_pattern v p) in
+          ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env
           ~f:(fun z (i, w) -> Env.bind z (get_id i) w) in
-      exp_eval e_branch env'      
+      exp_eval_wrapper e_branch env'      
   | Builtin (i, actuals) ->
       let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
       let%bind arg_literals = vals_to_literals args in
-      let%bind tps = from_result @@ MonadUtil.mapM arg_literals ~f:literal_type in
-      let%bind (_, ret_typ, op) = from_result @@ BuiltInDictionary.find_builtin_op i tps in
-      let%bind res = from_result @@ op arg_literals ret_typ in 
+      let%bind tps = fromR @@ MonadUtil.mapM arg_literals ~f:literal_type in
+      let%bind res = builtin_executor i tps arg_literals in
       pure (Env.ValLit res, env)
   | Fixpoint (f, t, body) ->
       let fix = Env.ValFix (f, t, body, env) in
@@ -188,15 +186,15 @@ and try_apply_as_closure v arg =
   | Env.ValClosure (formal, _, body, env) ->
       (* TODO: add runtime type-checking *)
       let env1 = Env.bind env (get_id formal) arg in
-      let%bind (v, _) = exp_eval body env1 in
+      let%bind (v, _) = exp_eval_wrapper body env1 in
       pure v
   | Env.ValFix (g, _, body, env) ->
       let env1 = Env.bind env (get_id g) v in
-      let%bind (v, _) = exp_eval body env1 in
+      let%bind (v, _) = exp_eval_wrapper body env1 in
       (match v with
        | Env.ValClosure (formal, _, cbody, cenv) ->
            let env2 = Env.bind cenv (get_id formal) arg in
-           let%bind (v, _) = exp_eval cbody env2 in
+           let%bind (v, _) = exp_eval_wrapper cbody env2 in
            (* printf "Resulting value: %s\n\n" (Env.pp_value v); *)
            pure v
        | _ ->  fail @@ sprintf "A fixpoint should take a function as a body")
@@ -208,10 +206,18 @@ and try_apply_as_type_closure v arg_type =
   | Env.ValTypeClosure (tv, body, env) ->
       (* TODO: implement type substitution in TypeUtil.ml *)
       let body_subst = subst_type_in_expr tv arg_type body in
-      let%bind (v, _) = exp_eval body_subst env in
+      let%bind (v, _) = exp_eval_wrapper body_subst env in
       pure v      
   | _ ->
       fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)
+
+(* Adding gas cost to the reduction *)
+and exp_eval_wrapper expr env =
+  let thunk () = exp_eval expr env in
+  let%bind cost = fromR @@ EvalGas.expr_static_cost expr in
+  let (e, _) = expr in
+  let emsg = sprintf "Ran out of gas executing %s\n" (pp_expr e) in
+  checkwrap_op thunk cost emsg
 
 
 open EvalSyntax
@@ -223,20 +229,24 @@ let rec stmt_eval conf stmts =
   | [] -> pure conf
   | (s, _) :: sts -> (match s with
       | Load (x, r) ->
-          let%bind l = Configuration.load conf r in
+          let%bind (l, scon) = Configuration.load conf r in
           let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
+          let%bind _ = stmt_gas_wrap scon in
           stmt_eval conf' sts
       | Store (x, r) ->
           let%bind v = Configuration.lookup conf r in
-          let%bind conf' = Configuration.store conf (get_id x) v in
+          let%bind (conf', scon) = Configuration.store conf (get_id x) v in
+          let%bind _ = stmt_gas_wrap scon in
           stmt_eval conf' sts
       | Bind (x, e) ->
-          let%bind (lval, _) = exp_eval e conf.env in
+          let%bind (lval, _) = exp_eval_wrapper e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
+          let%bind _ = stmt_gas_wrap G_Bind in
           stmt_eval conf' sts
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
           let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
+          let%bind _ = stmt_gas_wrap G_ReadFromBC in
           stmt_eval conf' sts                            
       | MatchStmt (x, clauses) ->
           let%bind v = Env.lookup conf.env x in 
@@ -244,25 +254,29 @@ let rec stmt_eval conf stmts =
             tryM clauses
               ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
                       (Env.pp_value v) (pp_stmt s))
-              ~f:(fun (p, _) -> from_result @@ match_with_pattern v p) in 
+              ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in 
           (* Update the environment for the branch *)
           let conf' = List.fold_left bnds ~init:conf
               ~f:(fun z (i, w) -> Configuration.bind z (get_id i) w) in
           let%bind conf'' = stmt_eval conf' branch_stmts in
           (* Restore initial immutable bindings *)
           let cont_conf = {conf'' with env = conf.env} in
+          let%bind _ = stmt_gas_wrap (G_MatchStmt (List.length clauses)) in
           stmt_eval cont_conf sts
       | AcceptPayment ->
           let%bind conf' = Configuration.accept_incoming conf in
+          let%bind _ = stmt_gas_wrap G_AcceptPayment in
           stmt_eval conf' sts
       (* Caution emitting messages does not change balance immediately! *)      
       | SendMsgs ms ->
           let%bind ms_resolved = Configuration.lookup conf ms in
-          let%bind conf' = Configuration.send_messages conf ms_resolved in
+          let%bind (conf', scon) = Configuration.send_messages conf ms_resolved in
+          let%bind _ = stmt_gas_wrap scon in
           stmt_eval conf' sts
       | CreateEvnt params ->
           let%bind eparams_resolved = Configuration.lookup conf params in
-          let%bind conf' = Configuration.create_event conf eparams_resolved in
+          let%bind (conf', scon) = Configuration.create_event conf eparams_resolved in
+          let%bind _ = stmt_gas_wrap scon in
           stmt_eval conf' sts
       (* TODO: Implement the rest *)
       | _ -> fail @@ sprintf "The statement %s is not supported yet."
@@ -306,7 +320,7 @@ let combine_libs clibs elibs =
 (* Initializing libraries of a contract *)
 let init_libraries clibs elibs =
   let init_lib_entry env {lname = id; lexp = e } = (
-    let%bind (v, _) = exp_eval e env in
+    let%bind (v, _) = exp_eval_wrapper e env in
     let env' = Env.bind env (get_id id) v in
     pure env') in
 
@@ -323,7 +337,7 @@ let init_libraries clibs elibs =
 let init_fields env fs =
   (* Initialize a field in aconstant enfirontment *)
   let init_field fname _t fexp =
-    let%bind (v, _) = exp_eval fexp env in
+    let%bind (v, _) = exp_eval_wrapper fexp env in
     match v with
     | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
         fail @@ sprintf "Closure cannot be stored in a field %s." fname
@@ -402,8 +416,8 @@ let init_module md initargs curargs init_bal bstate elibs =
 
 (* Extract necessary bits from the message *)
 let preprocess_message es =
-  let%bind tag = from_result @@ MessagePayload.get_tag es in
-  let%bind amount = from_result @@ MessagePayload.get_amount es in
+  let%bind tag = fromR @@ MessagePayload.get_tag es in
+  let%bind amount = fromR @@ MessagePayload.get_amount es in
   let other = MessagePayload.get_other_entries es in
   pure (tag, amount, other)
 
@@ -451,7 +465,7 @@ let prepare_for_message contr m =
 let post_process_msgs cstate outs =
   (* Evey outgoing message should carry an "_amount" tag *)
   let%bind amounts = mapM outs ~f:(fun l -> match l with
-      | Msg es -> from_result @@ MessagePayload.get_amount es
+      | Msg es -> fromR @@ MessagePayload.get_amount es
       | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal l)) in
   let open Uint128 in
   let to_be_transferred = List.fold_left amounts ~init:zero
