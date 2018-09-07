@@ -18,5 +18,6 @@
       "params": [ { "name": "solution", "type": "Int128" } ]
     },
     { "name": "Withdraw", "params": [] }
-  ]
+  ],
+  "events": [ { "name": "GameOver", "params": [] } ]
 }

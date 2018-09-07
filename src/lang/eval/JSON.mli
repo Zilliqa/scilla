@@ -129,7 +129,7 @@ open EvalUtil.EvalSyntax
           ]
         }
   *)
-  val get_string : contract -> string
+  val get_string : contract -> (string * (string * Syntax.typ) list) list -> string
 end
 
 module Event : sig

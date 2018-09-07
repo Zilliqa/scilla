@@ -52,6 +52,11 @@ module PM_Checker = ScillaPatternchecker (PM_SR) (PM_ER)
 
 let check_patterns e = PM_Checker.pm_check_module e
 
+let check_events_info einfo =
+  match einfo with
+  | Error msg -> pout @@ sprintf "\n%s\n\n" msg; einfo
+  | Ok _ -> einfo
+
 let () =
   if (Array.length Sys.argv) < 2
   then
@@ -75,10 +80,11 @@ let () =
       let elibs = import_libs cmod.elibs in
       let%bind (typed_cmod, tenv) = check_typing cmod elibs in
       let%bind pm_checked_cmod = check_patterns typed_cmod in
-      pure @@ (cmod, tenv)
+      let%bind event_info = check_events_info @@ EventInfo.event_info typed_cmod.contr in
+      pure @@ (cmod, tenv, event_info)
     ) in
     match r with
     | Error _ -> ()
-    | Ok (cmod, _) ->
-      pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr));
+    | Ok (cmod, _, event_info) ->
+      pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr event_info));
   )
