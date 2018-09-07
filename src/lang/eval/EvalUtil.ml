@@ -25,6 +25,7 @@ open Stdint
 open ContractUtil
 open TypeUtil
 open BuiltIns
+open Gas
 
 open ParserUtil
 module SR = ParserRep
@@ -32,6 +33,7 @@ module ER = ParserRep
 module EvalSyntax = ScillaSyntax (SR) (ER)
 module EvalTypeUtilities = TypeUtilities (SR) (ER)
 module EvalBuiltIns = ScillaBuiltIns (SR) (ER) 
+module EvalGas = ScillaGas (SR) (ER)
 
 open EvalSyntax
     
@@ -112,6 +114,19 @@ let rec subst_type_in_expr tvar tp (erep : expr_annot) =
       let body' = subst_type_in_expr tvar tp body in
       (Fixpoint (f, t', body'), rep)
 
+(* Return a builtin_op wrapped in EvalMonad *)
+let builtin_executor i arg_tps arg_lits =
+  let%bind (_, ret_typ, op) =
+    fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op i arg_tps in
+  let%bind cost = fromR @@ EvalGas.builtin_cost i arg_lits in
+  let res () = op arg_lits ret_typ in
+  checkwrap_opR res cost
+
+(* Add a check that the just evaluated statement was in our gas limit. *)
+let stmt_gas_wrap scon =
+  let%bind cost = fromR @@ EvalGas.stmt_cost scon in
+  let dummy () = pure () in (* the operation is already executed unfortunately *)
+    checkwrap_op dummy cost "Ran out of gas evaluating statement"
 
 (*****************************************************)
 (* Update-only execution environment for expressions *)
@@ -229,9 +244,10 @@ module Configuration = struct
     | Env.ValLit l ->
         (let s = st.fields in
          match List.find s ~f:(fun (z, _) -> z = k) with
-         | Some (_, _) -> pure @@
-             {st with
+         | Some (_, l') -> pure @@
+             ({st with
               fields = (k, l) :: List.filter ~f:(fun z -> fst z <> k) s}
+              , G_Store(l', l))
          | None -> fail @@ sprintf
                "No field \"%s\" in fields:\n%s" k (pp_literal_map s))
 
@@ -239,13 +255,14 @@ module Configuration = struct
     let i = get_id k in
     if i = balance_label
     then
-      (* Balance is a special case *)   
-      pure @@ UintLit (128, (Uint128.to_string st.balance))
+      (* Balance is a special case *)
+      let l = UintLit (128, (Uint128.to_string st.balance)) in
+      pure (l, G_Load(l))
     else
       (* Evenrything else is from fields *)
       let s = st.fields in
       match List.find ~f:(fun z -> fst z = i) s with 
-      | Some x -> pure @@ snd x
+      | Some x -> pure @@ (snd x, G_Load(snd x))
       | None -> fail @@ sprintf
             "No field \"%s\" in field map:\n%s" i (pp_literal_map s)
 
@@ -321,7 +338,7 @@ module Configuration = struct
     let%bind ls = mapM ~f:validate_outgoing_message ls' in
     let old_emitted = conf.emitted in
     let emitted = old_emitted @ ls in
-    pure {conf with emitted}
+    pure ({conf with emitted}, G_SendMsgs ls)
 
   let validate_event m' =
     let open ContractUtil.MessagePayload in
@@ -351,7 +368,7 @@ module Configuration = struct
     let%bind event' = validate_event event in
     let old_events = conf.events in
     let events = event'::old_events in
-    pure {conf with events}
+    pure ({conf with events}, G_CreateEvnt event')
 end
 
 (*****************************************************)

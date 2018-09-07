@@ -436,7 +436,7 @@ end
 module ContractInfo = struct
   open EvalUtil.EvalSyntax
          
-  let get_string (contr : contract) =
+  let get_string (contr : contract) (event_info : (string * (string * typ) list) list) =
     (* 1. contract name *)
     let namej = ("name", `String (get_id contr.cname)) in
     (* 2. parameters *)
@@ -462,7 +462,17 @@ module ContractInfo = struct
         `Assoc (namej :: paramj :: [] )) in
     
     let transj = ("transitions", `List translj) in
-    let finalj = `Assoc (namej :: paramj :: fieldsj :: transj :: []) in
+    (* 5. event info *)
+    let eventslj = List.map event_info ~f: (fun (eventname, plist) ->
+        let namej = ("name", `String (eventname)) in
+        let paramlj = List.map plist ~f: (fun (pname, ptype) ->
+          `Assoc [("name", `String pname); ("type", `String (pp_typ ptype))]) in
+        let paramj = ("params", `List paramlj) in
+          `Assoc (namej :: paramj :: [])
+      ) in
+    let eventsj = ("events", `List eventslj) in
+
+    let finalj = `Assoc (namej :: paramj :: fieldsj :: transj :: eventsj :: []) in
     pretty_to_string finalj
 
 end
