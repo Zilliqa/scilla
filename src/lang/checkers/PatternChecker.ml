@@ -35,9 +35,9 @@ module ScillaPatternchecker
   module UncheckedPatternSyntax = ScillaSyntax (SR) (ER)
   module CheckedPatternSyntax = ScillaSyntax (SPR) (EPR)
 
-  module PatternCheckerTypeUtilities = TypeUtilities (SR) (ER)
+  module TU = TypeUtilities (SR) (ER)
   open UncheckedPatternSyntax
-  open PatternCheckerTypeUtilities
+  open TU
   
   let wrap_pmcheck_err e ?opt:(opt = "") = wrap_err e "patternmatch checking" ~opt:opt
   let wrap_pmcheck_serr s ?opt:(opt = "") = wrap_serr s "patternmatch checking" ~opt:opt

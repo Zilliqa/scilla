@@ -209,7 +209,8 @@ module type Rep = sig
   val rep_of_sexp : Sexp.t -> rep
   val sexp_of_rep : rep -> Sexp.t
   
-  (* TODO: This needs to be looked through properly *)
+  (* TODO, Issue #179: These functions are only used in TypeCache.ml. 
+     See if they can be eliminated somehow *)
   val parse_rep : string -> rep
   val get_rep_str: rep -> string
 end
@@ -266,9 +267,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   let spp_expr e =
     sexp_of_expr e |> Sexplib.Sexp.to_string
 
-  (* TODO: add pretty printing for expressions. *)
-  let pp_expr e =
-    spp_expr e
+  let pp_expr e = spp_expr e
 
   (*******************************************************)
   (*                   Statements                        *)

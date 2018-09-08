@@ -27,12 +27,11 @@ module ScillaBuiltIns
     type built_in_executor =
       literal list -> typ -> (literal, string) result
 
-    (*  
-   The return result is a triple:
-   * The full elaborated type of the operation, e.g., string -> Bool
-   * Its result type for given argument types, e.g., Bool
-   * Executor for evaluating the operation      
-   *)
+    (* The return result is a triple:
+     * The full elaborated type of the operation, e.g., string -> Bool
+     * Its result type for given argument types, e.g., Bool
+     * Executor for evaluating the operation      
+    *)
     val find_builtin_op :
       ER.rep ident -> typ list -> ((typ * typ * built_in_executor), string) result
   end

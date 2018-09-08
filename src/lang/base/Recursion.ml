@@ -25,7 +25,6 @@ open FrontEndParser
 (*    Recursion principles for built-in ADTs               *)
 (***********************************************************)
 
-(* TODO: Split this file into separate parsing and typechecking, and parameterize in the same way as the typechecker *)
 open ParsedSyntax
 
 (* Folding over natural numbers *)

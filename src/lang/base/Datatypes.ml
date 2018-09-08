@@ -32,7 +32,7 @@ type constructor = {
 
 (* An Algebraic Data Type *)
 type adt = {
-  tname    : string; (* type name *)
+  tname      : string;         (* type name *)
   tparams    : string list;    (* type parameters *)
 
   (* supported constructors *)
@@ -42,8 +42,6 @@ type adt = {
      The arity of the constructor is the same as the length
      of the list, so the types are mapped correspondingly. *)
   tmap     : (string * (typ list)) list;
-
-  (* recur    : Syntax.loc Env.value *)
 }
 
 module DataTypeDictionary = struct
