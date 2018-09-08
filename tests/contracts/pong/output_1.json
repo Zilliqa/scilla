@@ -1,4 +1,5 @@
 {
+  "gas_remaining": "1797",
   "message": {
     "_tag": "Ping",
     "_amount": "0",

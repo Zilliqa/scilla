@@ -24,6 +24,7 @@ type ioFiles = {
     output : string;
     input : string;
     libdirs : string list;
+    gas_limit : int;
 }
 
 val parse : unit -> ioFiles

@@ -25,10 +25,12 @@ let f_input = ref ""
 let f_trace_file = ref ""
 let f_trace_level = ref ""
 let d_libs = ref []
+let v_gas_limit = ref 0
 
 let usage = "-init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
-    " -o output.json -i input.scilla [-tracefile filename] [-tracelevel none|stmt|exp ]" 
+    " -o output.json -i input.scilla [-tracefile filename] [-tracelevel none|stmt|exp ]" ^
+    " -gaslimit i"
 
 let print_usage () = 
   Printf.fprintf stderr "Mandatory and optional flags:\n%s %s\n" Sys.argv.(0) usage
@@ -70,10 +72,13 @@ let validate_main () =
     if (!f_input_message = "") <> (!f_input_state = "") 
       then msg5 ^ "Input message and input state can both be present or both absent\n"
       else msg5 in
-  if msg6 <> ""
+  let msg7 = 
+    (* gas limit is mandatory *)
+    if !v_gas_limit <= 0 then msg6 ^ "Invalid gas limit specified" else msg6 in
+  if msg7 <> ""
   then
     (print_usage ();
-     Printf.fprintf stderr "%s\n" msg6;
+     Printf.fprintf stderr "%s\n" msg7;
      exit 1)
   else 
     ()
@@ -86,6 +91,7 @@ type ioFiles = {
     output : string;
     input : string;
     libdirs : string list;
+    gas_limit : int;
 }
 
 let parse () =
@@ -99,6 +105,7 @@ let parse () =
     ("-tracefile", Arg.String (fun x -> f_trace_file := x), "Path to trace file. (prints to stdout if no file specified)");
     ("-tracelevel", Arg.String (fun x -> f_trace_level := x), "Trace level: none|stmt|exp. (default none)");
     ("-libdir", Arg.String (fun x -> d_libs := x::!d_libs), "Path to directory containing libraries");
+    ("-gaslimit", Arg.Int (fun i -> v_gas_limit := i), "Gas limit");
   ] in 
   let ignore_anon _ = () in
   let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
@@ -106,4 +113,4 @@ let parse () =
   let () = validate_main () in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input;
-     libdirs = !d_libs}
+     libdirs = !d_libs; gas_limit = !v_gas_limit}

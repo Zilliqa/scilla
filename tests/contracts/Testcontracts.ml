@@ -29,6 +29,8 @@ let rec print_args args =
 
 let sep = Filename.dir_sep
 
+let testsuit_gas_limit = 2000
+
 (* 
  * Build tests to invoke scilla-runner with the right arguments, for
  * multiple test cases, each suffixed with _i up to _n (both inclusive)
@@ -51,6 +53,7 @@ let rec build_contract_tests env name ecode i n =
               (* stdlib is in src/stdlib *)
               "-libdir"; "src" ^ sep ^ "stdlib";
               "-o"; output_file;
+              "-gaslimit"; Core.Int.to_string testsuit_gas_limit;
               "-imessage"; dir ^ "message_" ^ (i_to_s i) ^ ".json";
               "-istate" ; dir ^ "state_" ^ (i_to_s i) ^ ".json";
               "-iblockchain" ; dir ^ "blockchain_" ^ (i_to_s i) ^ ".json"] in
@@ -86,6 +89,7 @@ let build_contract_init_test env name =
                   "-libdir"; "src" ^ sep ^ "stdlib";
                   "-i"; dir ^ "contract.scilla";
                   "-o"; output_file;
+                  "-gaslimit"; Core.Int.to_string testsuit_gas_limit;
                   "-iblockchain"; dir ^ "blockchain_1.json";]
             in
       (if (env.print_cli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));

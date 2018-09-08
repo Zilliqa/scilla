@@ -1,4 +1,5 @@
 {
+  "gas_remaining": "1789",
   "message": {
     "_tag": "GetFunds",
     "_amount": "0",
