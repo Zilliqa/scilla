@@ -19,13 +19,29 @@
 
 open Syntax
 open Core
+open ParserUtil
 open DebugMessage
 open MonadUtil
 open Result.Let_syntax
 open RunnerUtil
 open PatternChecker
+open Recursion
+open EventInfo
 
-open TypeChecker.ScillaTypechecker
+module ParsedSyntax = ParserUtil.ParsedSyntax
+module PSRep = ParserRep
+module PERep = ParserRep
+  
+module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
+module TCSRep = TC.OutputSRep
+module TCERep = TC.OutputERep
+
+module PMC = ScillaPatternchecker (TCSRep) (TCERep)
+module PMCSRep = PMC.SPR
+module PMCERep = PMC.EPR
+
+module EI = ScillaEventInfo (PMCSRep) (PMCERep)
+
 
 (* Check that the module parses *)
 let check_parsing ctr = 
@@ -40,17 +56,13 @@ let check_parsing ctr =
 
 (* Type check the contract with external libraries *)
 let check_typing cmod elibs =
-  let open TypeChecker.ScillaTypechecker in
-  let res = type_module cmod elibs in
+  let open TC in
+  let res = type_module cmod recursion_principles elibs in
   match res with
   | Error msg -> pout @@ sprintf "\n%s\n\n" msg; res
   | Ok typed_module -> pure @@ typed_module
 
-module PM_SR = TypeChecker.ScillaTypechecker.STR
-module PM_ER = TypeChecker.ScillaTypechecker.ETR
-module PM_Checker = ScillaPatternchecker (PM_SR) (PM_ER)
-
-let check_patterns e = PM_Checker.pm_check_module e
+let check_patterns e = PMC.pm_check_module e
 
 let check_events_info einfo =
   match einfo with
@@ -80,7 +92,7 @@ let () =
       let elibs = import_libs cmod.elibs in
       let%bind (typed_cmod, tenv) = check_typing cmod elibs in
       let%bind pm_checked_cmod = check_patterns typed_cmod in
-      let%bind event_info = check_events_info @@ EventInfo.event_info typed_cmod.contr in
+      let%bind event_info = check_events_info @@ EI.event_info pm_checked_cmod.contr in
       pure @@ (cmod, tenv, event_info)
     ) in
     match r with

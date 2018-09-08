@@ -13,15 +13,13 @@ module ScillaEventInfo
        val get_type : rep -> PlainTypes.t inferred_type
      end) = struct
 
-  module TC = TypeChecker.ScillaTypechecker(ER)(SR)
+  module SER = SR
+  module EER = ER
+  module EISyntax = ScillaSyntax (SR) (ER)
+  module TU = TypeUtilities (SR) (ER)
 
-  module STR = SR
-  module ETR = TC.ETR
-  module TypedSyntax = TC.TypedSyntax
-  module TypeUtil = TC.TU
-
-  open TypedSyntax
-  open TypeUtil
+  open EISyntax
+  open TU
 
   (* Given a contract, return a list of events it may create,
    * and the parameter types of the event. *)
@@ -47,7 +45,7 @@ module ScillaEventInfo
                   | MTag _ -> pure string_typ
                   | MLit l -> literal_type l
                   | MVar v -> 
-                      let t' = ETR.get_type (get_rep v) in
+                      let t' = ER.get_type (get_rep v) in
                       pure t'.tp
                  )in pure (fname, t)
              ) filtered_m in
