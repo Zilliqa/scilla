@@ -988,7 +988,7 @@ module ScillaBuiltIns
           else fail @@ "Name or arity don't match") in
       let%bind (_, (type_elab, res_type, exec)) = tryM built_in_dict ~f:finder
           ~msg:(sprintf "[%s] Cannot find built-in with name \"%s\" and argument types %s."
-                  (get_rep op |> get_loc_str) opname (pp_typ_list argtypes))
+                  (ER.get_loc (get_rep op) |> get_loc_str) opname (pp_typ_list argtypes))
       in pure (type_elab, res_type, exec)
 
   end

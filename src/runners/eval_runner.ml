@@ -19,8 +19,19 @@
 
 open Printf
 open Syntax
+open ParserUtil
 open RunnerUtil
 open GlobalConfig
+
+
+module ParsedSyntax = ParserUtil.ParsedSyntax
+module PSRep = ParserRep
+module PERep = ParserRep
+  
+module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
+module TCSRep = TC.OutputSRep
+module TCERep = TC.OutputERep
+
 
 let gas_limit = 2000
 
@@ -34,8 +45,8 @@ let () =
   match FrontEndParser.parse_file ScillaParser.exps filename with
   | Some [e] ->
       (* Since this is not a contract, we have no in-contract lib defined. *)
-      let clib = { TypeChecker.ScillaTypechecker.UntypedSyntax.lname = asId "dummy";
-                   TypeChecker.ScillaTypechecker.UntypedSyntax.lentries = [] } in
+      let clib = { TC.UntypedSyntax.lname = asId "dummy";
+                   TC.UntypedSyntax.lentries = [] } in
       (* This is an auxiliary executable, it's second argument must
        * have a list of stdlib dirs, so note that down. *)
       add_cmd_stdlib ();

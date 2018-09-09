@@ -20,8 +20,6 @@ open PatternUtil
 open Exp_descriptions
 open Decision_Tree
 
-(* TODO: Figure out how the generated decision trees should be added as annotations *)
-
 module ScillaPatternchecker
   (SR : Rep)
   (ER : sig
@@ -35,9 +33,9 @@ module ScillaPatternchecker
   module UncheckedPatternSyntax = ScillaSyntax (SR) (ER)
   module CheckedPatternSyntax = ScillaSyntax (SPR) (EPR)
 
-  module PatternCheckerTypeUtilities = TypeUtilities (SR) (ER)
+  module TU = TypeUtilities (SR) (ER)
   open UncheckedPatternSyntax
-  open PatternCheckerTypeUtilities
+  open TU
   
   let wrap_pmcheck_err e ?opt:(opt = "") = wrap_err e "patternmatch checking" ~opt:opt
   let wrap_pmcheck_serr s ?opt:(opt = "") = wrap_serr s "patternmatch checking" ~opt:opt
@@ -54,7 +52,7 @@ module ScillaPatternchecker
     in
     let rec traverse_clauses dsc i rest_clauses =
       match rest_clauses with
-      | [] -> fail @@ "Non-exhaustive pattern match." (* TODO: Give counter-example based on dsc *)
+      | [] -> fail @@ "Non-exhaustive pattern match." (* TODO, Issue #210: Give counter-example based on dsc *)
       | (p1, _) :: rest_clauses' -> match_pattern p1 t dsc [] [] i rest_clauses'
     and traverse_pattern ctx sps i rest_clauses  =
       match sps with
@@ -104,7 +102,7 @@ module ScillaPatternchecker
     let%bind decision_tree = traverse_clauses (Neg []) 0 clauses in
     match Array.findi reachable ~f:(fun _ r -> not r) with
     | None -> pure @@ decision_tree (* All patterns reachable *)
-    | Some (i, _) -> fail @@ sprintf "Pattern %d is unreachable." (i+1) (* TODO: look up relevant pattern in clauses and report it *)
+    | Some (i, _) -> fail @@ sprintf "Pattern %d is unreachable." (i+1) (* TODO, Issue #270: look up relevant pattern in clauses and report it *)
 
   let lift_msg_payloads sps =
     List.map sps

@@ -16,10 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-
-
-
-
 {
 open Lexing
 open ScillaParser

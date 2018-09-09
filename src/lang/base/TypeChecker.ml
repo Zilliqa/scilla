@@ -17,31 +17,50 @@
 *)
 
 open Syntax
-open ParserUtil
 open Core
 open MonadUtil
 open Result.Let_syntax
 open TypeUtil
 open Datatypes
 open BuiltIns
-open Recursion
 open ContractUtil
 open Utils
+open PrimTypes
     
+(*******************************************************)
+(*                   Annotations                       *)
+(*******************************************************)
+
+module TypecheckerERep (R : Rep) = struct
+  type rep = PlainTypes.t inferred_type * R.rep
+  [@@deriving sexp]
+ 
+  let get_loc r = match r with | (_, rr) -> R.get_loc rr
+
+  let mk_id s t =
+    match s with
+    | Ident (n, r) -> Ident (n, (PlainTypes.mk_qualified_type t, r))
+
+  let mk_id_address s = mk_id (R.mk_id_address s) (bystrx_typ address_length)
+  let mk_id_uint128 s = mk_id (R.mk_id_uint128 s) uint128_typ
+  let mk_id_bnum    s = mk_id (R.mk_id_bnum s) bnum_typ
+  
+  let mk_rep (r : R.rep) (t : PlainTypes.t inferred_type) = (t, r)
+  
+  let parse_rep s = (PlainTypes.mk_qualified_type uint128_typ, R.parse_rep s)
+  let get_rep_str r = match r with | (_, rr) -> R.get_rep_str rr
+
+  let get_type (r : rep) = fst r
+end
+
 (*****************************************************************)
 (*                 Typing entire contracts                       *)
 (*****************************************************************)
 
-open TypeHelpers
-    
 module ScillaTypechecker
-    (* TODO: This needs to be parameterized rather than bound to ParserRep.
-       Cannot be done until type_stmt has been generalized. *)
-  (* (SR : Rep) *)
-  (*     (ER : Rep) *) = struct
+  (SR : Rep)
+  (ER : Rep) = struct
 
-  module SR = ParserRep
-  module ER = ParserRep
   module STR = SR
   module ETR = TypecheckerERep (ER)
   module UntypedSyntax = ScillaSyntax (SR) (ER)
@@ -50,13 +69,13 @@ module ScillaTypechecker
   include ETR
   
   module TU = TypeUtilities (SR) (ER)
-  open TU
   module TBuiltins = ScillaBuiltIns (SR) (ER)
-  open TBuiltins
-  
   module TypeEnv = TU.MakeTEnv(PlainTypes)(ER)
-  open TypeEnv
+  module CU = ScillaContractUtil (SR) (ER)
 
+  open TU
+  open TBuiltins
+  open TypeEnv
   open UntypedSyntax
       
   let wrap_type_err e ?opt:(opt = "") = wrap_err e "typechecking" ~opt:opt
@@ -66,12 +85,15 @@ module ScillaTypechecker
   (*               Blockchain component typing                     *)
   (*****************************************************************)
       
-  let bc_type_env =
+  let bc_types =
     let open PrimTypes in 
-    let bc_elements =
-      [(mk_ident TypeUtil.blocknum_name, bnum_typ)] in
-    TEnv.addTs (TEnv.copy TEnv.mk) bc_elements
-      
+    [(TypeUtil.blocknum_name, bnum_typ)]
+
+  let lookup_bc_type x =
+    match List.findi bc_types ~f:(fun _ (f, _) -> f = x) with
+    | Some (_, (_, t)) -> pure @@ t
+    | None -> fail @@ sprintf "Unknown blockchain field %s." x
+  
   (**************************************************************)
   (*             Auxiliary functions for typing                 *)
   (**************************************************************)
@@ -106,7 +128,7 @@ module ScillaTypechecker
   (*                   Typing expressions                       *)
   (**************************************************************)
 
-  let rec type_expr tenv erep =
+  let rec type_expr tenv (erep : UntypedSyntax.expr_annot) =
     let (e, rep) = erep in
     match e with
     | Literal l ->
@@ -256,7 +278,6 @@ module ScillaTypechecker
   type stmt_tenv = {
     pure   : TEnv.t;
     fields : TEnv.t;
-    bc     : TEnv.t;
   }
 
   let add_stmt_to_stmts_env s repstmts =
@@ -306,13 +327,11 @@ module ScillaTypechecker
              let typed_x = add_type_to_ident x ityp in
              pure @@ add_stmt_to_stmts_env (TypedSyntax.Bind (typed_x, checked_e), rep) checked_stmts
          | ReadFromBC (x, bf) ->
-             let%bind r = wrap_type_serr stmt @@ TEnv.resolveT env.bc bf in
-             let x_type = rr_typ r in
-             let bt = x_type.tp in
+             let%bind bt = wrap_type_serr stmt @@ lookup_bc_type bf in
              let pure' = TEnv.addT (TEnv.copy env.pure) x bt in
              let env' = {env with pure = pure'} in
              let%bind checked_stmts = type_stmts env' sts get_loc in
-             let typed_x = add_type_to_ident x x_type in
+             let typed_x = add_type_to_ident x (mk_qual_tp bt) in
              pure @@ add_stmt_to_stmts_env (TypedSyntax.ReadFromBC (typed_x, bf), rep) checked_stmts
          | MatchStmt (x, clauses) ->
              if List.is_empty clauses
@@ -374,8 +393,7 @@ module ScillaTypechecker
     let tenv0 = env0.pure in
     let lift_ident_e (id, t) = (add_type_to_id id (mk_qual_tp t), t) in
     let typed_tparams = List.map tparams ~f:lift_ident_e in
-    let append_params = append_implict_trans_params tparams
-        ER.mk_msg_payload_id_address ER.mk_msg_payload_id_uint128 in
+    let append_params = CU.append_implict_trans_params tparams in
     let tenv1 = TEnv.addTs tenv0 append_params in
     let env = {env0 with pure = tenv1} in
     let msg = sprintf "[%s] Type error in transition %s:\n"
@@ -385,27 +403,6 @@ module ScillaTypechecker
     pure @@ ({ TypedSyntax.tname = tname ;
                TypedSyntax.tparams = typed_tparams;
                TypedSyntax.tbody = typed_stmts }, new_tenv)
-
-
-  (**************************************************************)
-  (*           Typing recursion principles and libraries        *)
-  (**************************************************************)
-
-  (* This is a really good sanity check: 
-     it should always succeed! *)
-  let type_recursion_principles =
-    let recs = List.map recursion_principles
-        ~f:(fun ({lname = a; lexp = e}, c) -> (a, e, c)) in
-    let env0 = TEnv.copy TEnv.mk in 
-    mapM recs
-      ~f:(fun (rn, body, expected) ->
-          wrap_with_info
-            (sprintf "Type error when checking recursion primitive %s:\n"
-               (get_id rn)) @@
-          let%bind (_, (ar, _)) = type_expr env0 body in
-          let actual = ar.tp in
-          let%bind _ = assert_type_equiv expected actual in
-          pure (rn, actual))
 
 
   (*****************************************************************)
@@ -432,13 +429,23 @@ module ScillaTypechecker
   (*                    Typing libraries                        *)
   (**************************************************************)
       
-  let typed_rec_libs =
-    let%bind _ = type_recursion_principles in
-    let recs = List.map recursion_principles
-        ~f:(fun ({lname = a; _}, c) -> (a, c)) in
-    let env = TEnv.mk in
-    pure @@ (TEnv.addTs (TEnv.copy env) recs)
-            
+  let type_rec_libs rec_libs =
+    let recs = List.map rec_libs
+        ~f:(fun {lname = a; lexp = e} -> (a, e)) in
+    let env0 = TEnv.copy TEnv.mk in
+    foldM recs ~init:([], env0)
+      ~f:(fun (entry_acc, env_acc) (rn, body) ->
+          wrap_with_info
+            (sprintf "Type error when checking recursion primitive %s:\n"
+               (get_id rn)) @@
+          let%bind ((_, (ar, _)) as typed_body) = type_expr env0 body in
+          let typed_rn = add_type_to_id rn ar in
+          let new_entries = { TypedSyntax.lname = typed_rn ;
+                              TypedSyntax.lexp = typed_body } :: entry_acc in
+          let new_env = TEnv.addT (TEnv.copy env_acc) rn ar.tp in
+          pure @@ (new_entries, new_env))
+
+
   let type_library env0 { lname ; lentries = ents } =
     let%bind (typed_entries, new_tenv) =
       foldM ~init:([], env0) ents ~f:(fun (acc, env) {lname=ln; lexp = le} ->
@@ -476,14 +483,20 @@ module ScillaTypechecker
         )
   *)
             
-  let type_module (md : UntypedSyntax.cmodule) (elibs : UntypedSyntax.library list) : (TypedSyntax.cmodule * stmt_tenv, string) result =
+  let type_module
+      (md : UntypedSyntax.cmodule)
+      (* TODO : rec_libs should be added to the contract somehow *)
+      (rec_libs : UntypedSyntax.lib_entry list)
+      (elibs : UntypedSyntax.library list)
+    : (TypedSyntax.cmodule * stmt_tenv, string) result =
+
     let {cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
     wrap_with_info msg @@
     
     (* Step 0: Type check recursion principles *)
-    let%bind tenv0 = typed_rec_libs in
+    let%bind (_, tenv0) = type_rec_libs rec_libs in
     
     (* Step 1: Type check external libraries *)
     (* Step 2: Type check contract library, if defined. *)
@@ -508,7 +521,7 @@ module ScillaTypechecker
     in
     
     (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
-    let params = append_implict_contract_params cparams in
+    let params = CU.append_implict_contract_params cparams in
     let tenv3 = TEnv.addTs tenv params in
     
     (* Step 4: Type-check fields and add balance *)
@@ -517,11 +530,11 @@ module ScillaTypechecker
       | Error msg -> Ok (([], tenv3), emsgs ^ "\n\n" ^ msg)
       | Ok (typed_fields, tenv) -> Ok ((typed_fields, tenv), emsgs)
     in
-    let (bn, bt) = balance_field in
+    let (bn, bt) = CU.balance_field in
     let fenv = TEnv.addT fenv0 bn bt in
     
     (* Step 5: Form a general environment for checking transitions *)
-    let env = {pure= tenv3; fields= fenv; bc= bc_type_env} in
+    let env = {pure= tenv3; fields= fenv} in
     
     (* Step 6: Type-checking all transitions in batch *)
   let%bind (t_trans, emsgs') = foldM ~init:([], femsgs0) ctrans 
@@ -549,5 +562,13 @@ module ScillaTypechecker
     (* Return error messages *)
     else fail @@ emsgs'
 
+
+  (**************************************************************)
+  (*                    Staging API                             *)
+  (**************************************************************)
+
+  module OutputSyntax = TypedSyntax
+  module OutputSRep = STR
+  module OutputERep = ETR
 
 end

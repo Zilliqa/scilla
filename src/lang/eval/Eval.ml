@@ -30,12 +30,14 @@ open ContractUtil
 open EvalTypeUtilities
 open EvalSyntax
 
+module CU = ScillaContractUtil (ParserUtil.ParserRep) (ParserUtil.ParserRep)
+    
 (***************************************************)
 (*                    Utilities                    *)      
 (***************************************************)    
 
 let reserved_names =
-  List.map ~f:(fun ({lname = x; _}, _) -> get_id x) Recursion.recursion_principles
+  List.map ~f:(fun {lname = x; _} -> get_id x) Recursion.recursion_principles
 
 (* Printing result *)
 let pp_result r exclude_names = 
@@ -169,14 +171,6 @@ let rec exp_eval erep env =
           ~f:(fun res arg_type -> let%bind v = res in
               try_apply_as_type_closure v arg_type) in
       pure (fully_applied, env)          
-  (* | _ -> 
-   *     match expr_loc e with
-   *     | Some l1 -> fail @@
-   *         sprintf "Expression in line %s: %s  is not supported yet."
-   *           (Int.to_string l1.lnum) (pp_expr e)
-   *     | None -> fail @@
-   *         sprintf  "Expression in line %s is not supported yet."
-   *           (pp_expr e) *)
 
 (* Applying a function *)
 and try_apply_as_closure v arg =
@@ -195,7 +189,6 @@ and try_apply_as_closure v arg =
        | Env.ValClosure (formal, _, cbody, cenv) ->
            let env2 = Env.bind cenv (get_id formal) arg in
            let%bind (v, _) = exp_eval_wrapper cbody env2 in
-           (* printf "Resulting value: %s\n\n" (Env.pp_value v); *)
            pure v
        | _ ->  fail @@ sprintf "A fixpoint should take a function as a body")
   | Env.ValTypeClosure _ ->
@@ -204,7 +197,6 @@ and try_apply_as_closure v arg =
 and try_apply_as_type_closure v arg_type =
   match v with
   | Env.ValTypeClosure (tv, body, env) ->
-      (* TODO: implement type substitution in TypeUtil.ml *)
       let body_subst = subst_type_in_expr tv arg_type body in
       let%bind (v, _) = exp_eval_wrapper body_subst env in
       pure v      
@@ -278,13 +270,12 @@ let rec stmt_eval conf stmts =
           let%bind (conf', scon) = Configuration.create_event conf eparams_resolved in
           let%bind _ = stmt_gas_wrap scon in
           stmt_eval conf' sts
-      (* TODO: Implement the rest *)
-      | _ -> fail @@ sprintf "The statement %s is not supported yet."
-            (pp_stmt s)
+      (* TODO: Implement Throw *)
+      | Throw _ -> fail @@ sprintf "Throw statements are not supported yet."
     )
 
 (*******************************************************)
-(*              BlockchainState initialization                *)
+(*          BlockchainState initialization             *)
 (*******************************************************)
 
 let check_blockchain_entries entries =
@@ -324,8 +315,7 @@ let init_libraries clibs elibs =
     let env' = Env.bind env (get_id id) v in
     pure env') in
 
-  let (recs, _) = List.unzip Recursion.recursion_principles in
-  let libs = recs @ (combine_libs clibs elibs) in
+  let libs = Recursion.recursion_principles @ (combine_libs clibs elibs) in
 
   DebugMessage.plog ("Loading library functions.");
   List.fold_left libs ~init:(pure Env.empty)
@@ -335,7 +325,7 @@ let init_libraries clibs elibs =
 
 (* Initialize fields in a constant environment *)
 let init_fields env fs =
-  (* Initialize a field in aconstant enfirontment *)
+  (* Initialize a field in a constant environment *)
   let init_field fname _t fexp =
     let%bind (v, _) = exp_eval_wrapper fexp env in
     match v with
@@ -348,7 +338,7 @@ let init_fields env fs =
 (* TODO: implement type-checking *)
 let init_contract clibs elibs cparams' cfields args init_bal  =
   (* All contracts take a few implicit parameters. *)
-  let cparams = append_implict_contract_params cparams' in
+  let cparams = CU.append_implict_contract_params cparams' in
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
   let pnames = List.map cparams ~f:(fun (i, _) -> get_id i) in
@@ -443,7 +433,7 @@ let get_transition ctr tag =
 
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
 let check_message_entries tparams_o entries =
-  let tparams = append_implict_trans_params tparams_o ParserUtil.ParserRep.mk_msg_payload_id_address ParserUtil.ParserRep.mk_msg_payload_id_uint128 in
+  let tparams = CU.append_implict_trans_params tparams_o in
   (* There as an entry for each parameter *)
   let valid_entries = List.for_all tparams
       ~f:(fun p -> List.exists entries ~f:(fun e -> fst e = (get_id (fst p)))) in
