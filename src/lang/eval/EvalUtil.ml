@@ -38,7 +38,7 @@ module EvalGas = ScillaGas (SR) (ER)
 open EvalSyntax
     
 let rec subst_type_in_type tvar tp tm = match tm with
-  | PrimType _ | Unit as p -> p
+  | PrimType _ as p -> p
   (* Make sure the map's type is still primitive! *)
   | MapType (kt, vt) -> 
       let kts = subst_type_in_type tvar tp kt in
