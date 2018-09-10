@@ -276,7 +276,10 @@ module Configuration = struct
 
   let accept_incoming st =
     let incoming' = st.incoming_funds in
-    if (Uint128.compare incoming' Uint128.zero) > 0
+    (* Although unsigned integer is used, and this check isn't
+     * necessary, we have it just in case, some how a malformed
+     * Uint128 literal manages to reach here.  *)
+    if (Uint128.compare incoming' Uint128.zero) >= 0
     then
       let balance = Uint128.add st.balance incoming' in
       let accepted = true in
