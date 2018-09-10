@@ -137,7 +137,7 @@ module MakeTEnv: MakeTEnvFunctor = functor
                   n (List.length adt.tparams) (List.length ts) 
               else
                 foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:(()) ts
-          | PrimType _  | Unit -> pure ()
+          | PrimType _  -> pure ()
           | TypeVar a ->
               (* Check if bound locally. *)
               if List.mem tb a ~equal:(fun a b -> a = b) then pure ()
@@ -212,7 +212,6 @@ module TypeUtilities
   let tvar i = TypeVar i
   let tfun_typ i t = PolyFun (i, t)
   let map_typ k v = MapType (k, v)
-  let unit_typ = Unit
 
   (* Type equivalence *)
   let type_equiv t1 t2 =
@@ -246,7 +245,6 @@ module TypeUtilities
     | TypeVar _ -> false
     | ADT (_, ts) -> List.for_all ~f:(fun t -> is_storable_type t) ts
     | PolyFun _ -> false
-    | Unit -> false
     | _ -> true
 
 

@@ -68,7 +68,6 @@ type typ  =
   | ADT of string * typ list
   | TypeVar of string
   | PolyFun of string * typ
-  | Unit
 [@@deriving sexp]
 
 let rec pp_typ t = match t with
@@ -83,7 +82,6 @@ let rec pp_typ t = match t with
   | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
   | TypeVar tv -> tv
   | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (pp_typ bt)
-  | Unit -> sprintf "()"
 and with_paren t = match t with
   | FunType _ | PolyFun _ -> sprintf "(%s)" (pp_typ t)
   | _ -> pp_typ t
@@ -358,7 +356,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     let add vs tv = tv :: List.filter ~f:(fun v -> v = tv) vs in
     let rem vs tv = List.filter ~f:(fun v -> v <> tv) vs in
     let rec go t acc = (match t with
-        | PrimType _ | Unit -> acc
+        | PrimType _ -> acc
         | MapType (kt, vt) -> go kt acc |> go vt
         | FunType (at, rt) -> go at acc |> go rt
         | TypeVar n -> add acc n
@@ -381,7 +379,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
 
   let rec subst_type_in_type tvar tp tm = match tm with
-    | PrimType _ | Unit as p -> p
+    | PrimType _ as p -> p
     (* Make sure the map's type is still primitive! *)
     | MapType (kt, vt) -> 
         let kts = subst_type_in_type tvar tp kt in
@@ -411,7 +409,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | ADT (n, ts) ->
         let ts' = List.map ts ~f:(fun w -> refresh_tfun w taken) in
         ADT (n, ts')
-    | PrimType _ | TypeVar _ | Unit -> t
+    | PrimType _ | TypeVar _ -> t
     | PolyFun (arg, bt) ->
         let arg' = mk_fresh_var taken arg in
         let tv_new = TypeVar arg' in
@@ -431,7 +429,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       | ADT (n, ts) ->
           let ts' = List.map ts ~f:(fun w -> refresh w taken counter) in
           ADT (n, ts')
-      | PrimType _ | TypeVar _ | Unit -> t
+      | PrimType _ | TypeVar _ -> t
       | PolyFun (arg, bt) ->
           let arg' = get_new_name counter in
           let tv_new = TypeVar arg' in

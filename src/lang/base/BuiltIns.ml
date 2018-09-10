@@ -749,7 +749,7 @@ module ScillaBuiltIns
          | None -> builtin_fail "Hashing.to_bystr: internal error" ls)
       | _ -> builtin_fail "Hashing.to_bystr" ls
 
-    let schnorr_gen_key_pair_type = fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
+    let schnorr_gen_key_pair_type = pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len)
     let schnorr_gen_key_pair_arity = 0  
     let schnorr_gen_key_pair ls _ =
       match ls with
