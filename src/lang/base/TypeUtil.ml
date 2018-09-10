@@ -262,7 +262,8 @@ module TypeUtilities
   let rec fun_type_applies ft argtypes = match ft, argtypes with
     | FunType (argt, rest), a :: ats ->
         let%bind _ = assert_type_equiv argt a in
-        fun_type_applies rest ats 
+        fun_type_applies rest ats
+    | FunType (argt, rest), [] when argt = Unit -> pure rest
     | t, []  -> pure t
     | _ -> fail @@ sprintf
           "The type\n%s\ndoesn't apply, as a function, to the arguments of types\n%s." (pp_typ ft)
