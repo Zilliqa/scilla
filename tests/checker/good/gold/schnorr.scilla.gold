@@ -1,0 +1,22 @@
+{
+  "name": "Schnorr",
+  "params": [],
+  "fields": [
+    { "name": "priv_key", "type": "Option (ByStr32)" },
+    { "name": "pub_key", "type": "Option (ByStr33)" }
+  ],
+  "transitions": [
+    {
+      "name": "sign_and_verify",
+      "params": [ { "name": "msg", "type": "ByStr" } ]
+    },
+    {
+      "name": "verify",
+      "params": [
+        { "name": "msg", "type": "ByStr" },
+        { "name": "sig", "type": "ByStr64" }
+      ]
+    }
+  ],
+  "events": []
+}

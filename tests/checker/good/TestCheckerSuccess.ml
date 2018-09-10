@@ -26,7 +26,7 @@ module Tests = TestUtil.DiffBasedTests(
     let runner = "scilla-checker"
     let tests = [
       "crowdfunding.scilla"; "zil-game.scilla"; "fungible-token.scilla"; "auction.scilla";
-      "empty.scilla"
+      "empty.scilla"; "schnorr.scilla"
     ]
     let use_stdlib = true
   end)
