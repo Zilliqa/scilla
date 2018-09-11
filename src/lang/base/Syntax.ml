@@ -423,6 +423,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (* Alpha renaming to canonical (pre-determined) names. *)
   let canonicalize_tfun t =
     let taken = free_tvars t in
+    (* The parser doesn't allow type names to begin with '_'. *)
     let get_new_name counter = "'_A" ^ Int.to_string counter in
     let rec refresh t taken counter = match t with
       | MapType (kt, vt) -> MapType (kt, refresh vt taken counter)
@@ -498,6 +499,63 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         let t' = subst_type_in_type' tvar tp t in
         let body' = subst_type_in_expr tvar tp body in
         (Fixpoint (f, t', body'), rep)
+
+(* Is expr dependent on any ident in blist.
+ * This is the same as checking if a free var
+ * in expr is present in blist. *)
+  let free_vars_dep_check erep blist =
+
+    (* is m in l. *)
+    let is_mem m l =
+      List.exists l ~f:(fun x -> get_id m = get_id x) in
+    (* is any m in ml, in l. *)
+    let any_is_mem ml l =
+      List.exists ml ~f:(fun i -> is_mem i l) in
+    (* get elements in "l" that are not in bound_vars. *)
+    let get_free l bound_vars =
+      List.filter l ~f:(fun i -> not (is_mem i bound_vars)) in
+    let rec get_pattern_bounds p =
+      match p with
+      | Wildcard -> []
+      | Binder i -> [i]
+      | Constructor (_, plist) ->
+        List.fold plist ~init:[] ~f:(fun acc p' ->
+          let l = get_pattern_bounds p' in
+          acc @ l)
+    in
+
+    let rec recurser erep bound_vars =
+      let (e, _) = erep in
+      match e with
+      | Literal _ -> false
+      | Var v -> (not @@ is_mem v bound_vars) && is_mem v blist
+      | Fun (f, _, body) -> recurser body (f :: bound_vars)
+      | TFun (_, body) -> recurser body bound_vars
+      | Constr (_, _, es) -> any_is_mem (get_free es bound_vars) blist
+      | App (f, args)
+      | Builtin (f, args) ->
+        let args' = f :: args in
+        any_is_mem (get_free args' bound_vars) blist
+      | Let (i, _, lhs, rhs) ->
+        if recurser lhs bound_vars then true 
+        else recurser rhs (i::bound_vars)
+      | Message margs ->
+        List.exists margs ~f:(fun (_, x) ->
+          (match x with
+          | MTag _ | MLit _ -> false
+          | MVar v ->  (not @@ is_mem v bound_vars) && is_mem v blist))
+      | MatchExpr (v, cs) ->
+        if (not @@ is_mem v bound_vars) && is_mem v blist then true else
+        List.exists cs ~f: (fun (p, e) ->
+          (* bind variables in pattern and recurse for expression. *)
+          let bound_vars' = (get_pattern_bounds p) @ bound_vars in
+          recurser e bound_vars')
+      | TApp (v, _) -> 
+        (not @@ is_mem v bound_vars) && is_mem v blist
+      | Fixpoint (f, _, body) ->
+        recurser body (f :: bound_vars)
+    in
+    recurser erep []
 
   (****************************************************************)
   (*                  Better error reporting                      *)

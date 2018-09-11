@@ -1,0 +1,14 @@
+
+Type error(s) in contract BadLibTest1:
+
+
+[:0:0] Type error in library one_msg:
+
+Type mismatch: Message expected, but Uint128 provided.[:0:0] Type error in library two_msg:
+
+Type mismatch: Message expected, but Uint128 provided.[:0:0] Type error in library andb:
+
+[checker/bad/lib_bad1.scilla:32:5] Type error in pattern matching on `b` of type Bool (or one of its branches):
+[checker/bad/lib_bad1.scilla:35:7] Type error in pattern matching on `c` of type Int32 (or one of its branches):
+Not an algebraic data type: Int32
+
