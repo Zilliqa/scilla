@@ -1,0 +1,19 @@
+[
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+        "vname": "glist",
+        "type": "List (Int64)",
+        "value": {
+            "constructor": "Cons",
+            "argtypes": [ "Int64" ],
+            "arguments": [
+                "1",
+                {
+                    "constructor": "Nil",
+                    "argtypes": [ "Int64" ],
+                    "arguments": []
+                }
+            ]
+        }
+    }
+]

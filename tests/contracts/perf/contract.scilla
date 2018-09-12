@@ -1,0 +1,34 @@
+import ListUtils PairUtils NatUtils
+
+library Test
+
+let no_msg = Nil {Message}
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+contract Test
+()
+
+field glist : List(Int64) = Nil {Int64}
+
+transition incList()
+  p <- glist;
+
+  last = match p with
+    | Cons a b =>
+      a
+    | Nil => Int64 0
+  end;
+  one = Int64 1;
+  num = builtin add last one;
+
+  new_p = Cons{Int64} num p;
+  glist := new_p;
+  len =  let my_list_length = @list_length Int64 in my_list_length new_p;
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; listLength : len};
+  msgs = one_msg msg;
+  send msgs
+end
