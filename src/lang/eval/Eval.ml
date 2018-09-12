@@ -207,8 +207,7 @@ and try_apply_as_type_closure v arg_type =
 and exp_eval_wrapper expr env =
   let thunk () = exp_eval expr env in
   let%bind cost = fromR @@ EvalGas.expr_static_cost expr in
-  let (e, _) = expr in
-  let emsg = sprintf "Ran out of gas executing %s\n" (pp_expr e) in
+  let emsg = sprintf "Ran out of gas.\n" in
   checkwrap_op thunk cost emsg
 
 
