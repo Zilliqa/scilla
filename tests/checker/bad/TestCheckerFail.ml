@@ -30,6 +30,7 @@ module Tests = TestUtil.DiffBasedTests(
       "unbound.scilla";
       "event_bad1.scilla";
       "lib_bad1.scilla";
+      "zil_mod.scilla";
       "mappair.scilla"
     ]
     let use_stdlib = true

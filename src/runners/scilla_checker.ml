@@ -62,7 +62,11 @@ let check_typing cmod elibs =
   | Error msg -> pout @@ sprintf "\n%s\n\n" msg; res
   | Ok typed_module -> pure @@ typed_module
 
-let check_patterns e = PMC.pm_check_module e
+let check_patterns e =
+  let res = PMC.pm_check_module e in
+  match res with
+  | Error msg -> pout @@ sprintf "\n%s\n\n" msg; res
+  | Ok pm_checked_module -> pure @@ pm_checked_module
 
 let check_events_info einfo =
   match einfo with
