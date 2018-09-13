@@ -514,14 +514,14 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     (* get elements in "l" that are not in bound_vars. *)
     let get_free l bound_vars =
       List.filter l ~f:(fun i -> not (is_mem i bound_vars)) in
-    let rec get_pattern_bounds p =
-      match p with
-      | Wildcard -> []
-      | Binder i -> [i]
-      | Constructor (_, plist) ->
-        List.fold plist ~init:[] ~f:(fun acc p' ->
-          let l = get_pattern_bounds p' in
-          acc @ l)
+    let get_pattern_bounds p =
+      let rec accfunc p acc =
+        match p with
+        | Wildcard -> []
+        | Binder i -> i::acc
+        | Constructor (_, plist) ->
+          List.fold plist ~init:[] ~f:(fun acc p' -> accfunc p' acc)
+      in accfunc p []
     in
 
     let rec recurser erep bound_vars =
@@ -537,15 +537,14 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         let args' = f :: args in
         any_is_mem (get_free args' bound_vars) blist
       | Let (i, _, lhs, rhs) ->
-        if recurser lhs bound_vars then true 
-        else recurser rhs (i::bound_vars)
+        (recurser lhs bound_vars) || (recurser rhs (i::bound_vars))
       | Message margs ->
         List.exists margs ~f:(fun (_, x) ->
           (match x with
           | MTag _ | MLit _ -> false
           | MVar v ->  (not @@ is_mem v bound_vars) && is_mem v blist))
       | MatchExpr (v, cs) ->
-        if (not @@ is_mem v bound_vars) && is_mem v blist then true else
+        ((not @@ is_mem v bound_vars) && is_mem v blist) ||
         List.exists cs ~f: (fun (p, e) ->
           (* bind variables in pattern and recurse for expression. *)
           let bound_vars' = (get_pattern_bounds p) @ bound_vars in
