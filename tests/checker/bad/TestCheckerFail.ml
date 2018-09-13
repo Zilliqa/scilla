@@ -29,6 +29,7 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_fields2.scilla";
       "unbound.scilla";
       "event_bad1.scilla";
+      "lib_bad1.scilla";
       "zil_mod.scilla";
       "mappair.scilla"
     ]
