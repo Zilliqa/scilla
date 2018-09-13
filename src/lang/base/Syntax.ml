@@ -517,10 +517,10 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     let get_pattern_bounds p =
       let rec accfunc p acc =
         match p with
-        | Wildcard -> []
+        | Wildcard -> acc
         | Binder i -> i::acc
         | Constructor (_, plist) ->
-          List.fold plist ~init:[] ~f:(fun acc p' -> accfunc p' acc)
+          List.fold plist ~init:acc ~f:(fun acc p' -> accfunc p' acc)
       in accfunc p []
     in
 
