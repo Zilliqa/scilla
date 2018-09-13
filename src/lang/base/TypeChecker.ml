@@ -447,18 +447,33 @@ module ScillaTypechecker
 
 
   let type_library env0 { lname ; lentries = ents } =
-    let%bind (typed_entries, new_tenv) =
-      foldM ~init:([], env0) ents ~f:(fun (acc, env) {lname=ln; lexp = le} ->
+    let%bind (typed_entries, new_tenv, errs, _) =
+      foldM ~init:([], env0, "", []) ents ~f:(fun (acc, env, errs, blist) {lname=ln; lexp = le} ->
           let msg = sprintf
-              "[%s] Type error in library %s:\n"
+              "[%s] Type error in library %s:\n\n"
               (get_loc_str (ER.get_loc (get_rep ln))) (get_id ln) in
-          let%bind (_, (tr, _)) as typed_e = wrap_with_info msg (type_expr env le) in
-          let typed_ln = add_type_to_id ln tr in
-          pure @@ ({ TypedSyntax.lname = typed_ln;
+          let dep_on_blist = free_vars_dep_check le blist in
+          (* If exp depends on a blacklisted exp, then let's ignore it. *)
+          if dep_on_blist then pure @@ (acc, env, errs, ln :: blist) else
+          let res = wrap_with_info msg (type_expr env le) in
+          match res with
+          | Error e ->
+            (* A new original failure. Add to blocklist and move on. *)
+            pure @@ (acc, env, errs ^ e, ln :: blist)
+          | Ok res' ->
+            (* This went good. *)
+            let (_, (tr, _)) as typed_e = res' in
+            let typed_ln = add_type_to_id ln tr in
+            pure @@ ({ TypedSyntax.lname = typed_ln;
                      TypedSyntax.lexp = typed_e }:: acc,
-                   TEnv.addT (TEnv.copy env) ln tr.tp)) in
-    pure @@ ( { TypedSyntax.lname = lname ;
+                   TEnv.addT (TEnv.copy env) ln tr.tp, errs, blist))
+    in
+    (* If there has been no errors at all, we're good to go. *)
+    if errs = "" then
+        pure @@ ( { TypedSyntax.lname = lname ;
                 TypedSyntax.lentries = List.rev typed_entries }, TEnv.copy new_tenv)
+    (* Else report all errors together. *)
+    else fail @@ errs
 
   (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
   (* type library, handling cache as necessary. *)
