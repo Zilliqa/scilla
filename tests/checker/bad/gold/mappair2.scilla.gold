@@ -1,0 +1,9 @@
+
+[checker/bad/mappair2.scilla:92:1] Identifier malMessage1 used more than once
+[checker/bad/mappair2.scilla:105:24] Identifier num1 used more than once
+[checker/bad/mappair2.scilla:94:7] Missing _amount or _recipient in Message
+[checker/bad/mappair2.scilla:107:7] [:0:0] Identifier status used more than once
+[checker/bad/mappair2.scilla:113:1] Paramter _sender in transition malTransition1 cannot be explicit.
+[checker/bad/mappair2.scilla:30:2] Contract parameter _creation_block cannot be explicit.
+
+

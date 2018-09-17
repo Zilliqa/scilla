@@ -262,7 +262,7 @@ stmts_term:
 (***********************************************)
 
 param_pair:
-| n = ID; COLON; t = typ { asId n, t }
+| n = ID; COLON; t = typ { asIdL n (toLoc $startpos(n)), t }
 
 transition:
 | TRANSITION; t = trans_id;

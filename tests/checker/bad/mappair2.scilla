@@ -1,0 +1,117 @@
+import ListUtils PairUtils NatUtils
+
+library Test
+
+let no_msg = Nil {Message}
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+let flip_obool =
+  fun (ob : Option (Bool)) =>
+    let t = True in
+    let f = False in
+    match ob with
+    | None => Some {Bool} t
+    | Some b =>
+      match b with
+      | True => Some {Bool} f
+      | False => Some {Bool} t
+      end
+    end
+
+let fst_f = @fst (List(Int64)) (Option (Bool))
+let snd_f = @snd (List(Int64)) (Option (Bool))
+
+contract Test
+(owner: ByStr20,
+ _creation_block : BNum)
+
+field gmap : Map ByStr20 (Pair (Int32) (Int32))  = Emp ByStr20 (Pair (Int32) (Int32))
+field gpair : Pair (List(Int64)) (Option (Bool)) =
+    let el = Nil {Int64} in
+    let n = None {Bool} in
+    Pair {(List(Int64)) (Option(Bool))} el n
+
+field gnat : Nat = Zero
+
+transition testMapPair ()
+  is_owner = builtin eq owner _sender;
+  match is_owner with
+  | False =>
+    gmap_tmp <- gmap;  
+    one = Int32 1;
+    two = Int32 2;
+    p = Pair {(Int32) (Int32)} one two;   
+    gmap_new = builtin put gmap_tmp _sender p;
+    gmap := gmap_new;  
+    send no_msg
+  | True =>
+    gmap_tmp <- gmap;  
+    three = Int32 3;
+    four = Int32 4;
+    p = Pair {(Int32) (Int32)} three four;   
+    gmap_new = builtin put gmap_tmp _sender p;
+    gmap := gmap_new;  
+    send no_msg
+  end
+end
+
+transition addNumToList(num: Int64)
+  p <- gpair;
+  (* get first of pair = List (Int64) *)
+  l1 = fst_f p;
+  (* get second of pair = Option (Bool) *)
+  b = snd_f p;
+  (* have fun: flip the boolean *)
+  bflip = flip_obool b;
+  (* append num to the list *)
+  l2 = Cons{Int64} num l1;
+  (* Form updated pair *)
+  new_p = Pair {(List(Int64)) (Option(Bool))} l2 bflip;
+  gpair := new_p;
+  len = let my_list_length = @list_length Int64 in my_list_length l2;
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; listLength : len};
+  msgs = one_msg msg;
+  send msgs
+end
+
+transition incNat ()
+  n <- gnat;
+  m = Succ n;
+  gnat := m;
+  i = nat_to_int m;
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; nat : i};
+  msgs = one_msg msg;
+  send msgs
+end
+
+(* This transition sends out a malformed message. Will flag error. *)
+transition malMessage1()
+  (* missing `_amount` field *)
+  msg = { _tag: "Main"; _recipient : _sender };
+  msgs = one_msg msg;
+  send msgs
+end
+
+(* Duplicate transition name. *)
+transition malMessage1()
+
+end
+
+(* This transition sends out a malformed message. Will flag error. *)
+transition malMessage2(num1 : BNum, num1 : BNum)
+  (* duplicate field *)
+  msg = { _tag: "Main"; _recipient : _sender; _amount : Uint128 0; status : "foo"; status : "bar" };
+  msgs = one_msg msg;
+  send msgs
+end
+
+(* This transition has disallowed arguments. Will flag error. *)
+transition malTransition1( _sender : ByStr20 )
+  msg = { _tag: "Main"; _recipient : _sender; _amount : Uint128 0; status : "foo" };
+  msgs = one_msg msg;
+  send msgs
+end
