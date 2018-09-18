@@ -339,7 +339,7 @@ let get_json_data filename  =
     let jlist = json |> Basic.Util.to_list in
       List.map jlist ~f:jobj_to_statevar
   in
-    timer_p ("build literal from json" ^ filename) literal_builder
+    timer_p ("build literal from json " ^ filename) literal_builder
 
 (* Get a json object from given states *)
 let state_to_json states = 
