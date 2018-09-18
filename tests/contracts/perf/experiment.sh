@@ -13,15 +13,15 @@ function runscilla
 function runexp
 {
     n=$1
-    t=`(time runscilla ${1}) 2>&1 | grep "real" | cut -d $'\t' -f 2`
+    t=`(time runscilla ${1}) 2>&1 | tee -a timer.log | grep "real" | cut -d $'\t' -f 2`
     echo "Time for 100 runs of list size $1: $t"
 }
 
-runexp 1
-runexp 100
-runexp 200
-runexp 400
-runexp 600
-runexp 1000
+# runexp 1
+# runexp 100
+# runexp 200
+# runexp 400
+# runexp 600
+# runexp 1000
 runexp 1505
 

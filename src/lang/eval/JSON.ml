@@ -26,6 +26,7 @@ open Datatypes
 open TypeUtil
 open PrimTypes
 open BuiltIns
+open GlobalConfig
 
 module JSONTypeUtilities = TypeUtilities (ParserRep) (ParserRep)
 module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
@@ -331,10 +332,14 @@ module ContractState = struct
 (** Returns a list of (vname:string,value:literal) items
     Invalid inputs in the json are ignored **)
 let get_json_data filename  =
-  let json = Basic.from_file filename in
+  let json_parser() = Basic.from_file filename in
+  let json = timer_p ("parse json file " ^ filename) json_parser in
   (* input json is a list of key/value pairs *)
-  let jlist = json |> Basic.Util.to_list in
-    List.map jlist ~f:jobj_to_statevar
+  let literal_builder () = 
+    let jlist = json |> Basic.Util.to_list in
+      List.map jlist ~f:jobj_to_statevar
+  in
+    timer_p ("build literal from json" ^ filename) literal_builder
 
 (* Get a json object from given states *)
 let state_to_json states = 
@@ -363,17 +368,21 @@ module Message = struct
   Invalid inputs in the json are ignored **)
 let get_json_data filename =
   let open Basic.Util in
-  let json = Basic.from_file filename in
-  let tags = member_exn tag_label json |> to_string in
-  let amounts = member_exn amount_label json |> to_string in
-  let senders = member_exn sender_label json |> to_string in
-  (* Make tag, amount and sender into a literal *)
-  let tag = (tag_label, build_prim_lit_exn PrimTypes.string_typ tags) in
-  let amount = (amount_label, build_prim_lit_exn PrimTypes.uint128_typ amounts) in
-  let sender = (sender_label, build_prim_lit_exn (PrimTypes.bystrx_typ address_length) senders) in
-  let pjlist = member_exn "params" json |> to_list in
-  let params = List.map pjlist ~f:jobj_to_statevar in
-    tag :: amount :: sender :: params
+  let json_parser () = Basic.from_file filename in
+  let json = timer_p ("parse json file " ^ filename) json_parser in
+  let literal_builder () = 
+    let tags = member_exn tag_label json |> to_string in
+    let amounts = member_exn amount_label json |> to_string in
+    let senders = member_exn sender_label json |> to_string in
+    (* Make tag, amount and sender into a literal *)
+    let tag = (tag_label, build_prim_lit_exn PrimTypes.string_typ tags) in
+    let amount = (amount_label, build_prim_lit_exn PrimTypes.uint128_typ amounts) in
+    let sender = (sender_label, build_prim_lit_exn (PrimTypes.bystrx_typ address_length) senders) in
+    let pjlist = member_exn "params" json |> to_list in
+    let params = List.map pjlist ~f:jobj_to_statevar in
+      tag :: amount :: sender :: params
+  in
+    timer_p ("build literal from json " ^ filename) literal_builder
 
 (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
 let message_to_json message =

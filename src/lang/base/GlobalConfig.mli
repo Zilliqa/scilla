@@ -53,3 +53,6 @@ module StdlibTracker : sig
   val find_lib_dir : string -> string option
 
 end
+
+(* Execute a thunk, print the time it took for it and return result. *)
+val timer_p : string -> (unit -> 'a) -> 'a

@@ -27,7 +27,7 @@ transition incList()
 
   new_p = Cons{Int64} num p;
   glist := new_p;
-  len =  let my_list_length = @list_length Int64 in my_list_length new_p;
+  len =  Uint64 0; (* let my_list_length = @list_length Int64 in my_list_length new_p; *)
   msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; listLength : len};
   msgs = one_msg msg;
   send msgs

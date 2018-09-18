@@ -122,3 +122,11 @@ let find_lib_dir name =
     (fun d -> Caml.Sys.file_exists (d ^ Filename.dir_sep ^ name ^ ".scilla")) dirs
 
 end
+
+let timer_p phase_str f =
+  let t0 = Sys.time() in
+  let result = f () in
+  let t1 = Sys.time() in
+  let t = t1 -. t0 in
+  Printf.printf "Timer (%s): %fs\n" phase_str t;
+  result

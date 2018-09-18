@@ -131,21 +131,30 @@ let rec output_event_json elist =
 let () =
   let cli = Cli.parse () in
   let parse_module =
-    FrontEndParser.parse_file ScillaParser.cmodule cli.input in
+    let parse_module_thunk () = 
+      FrontEndParser.parse_file ScillaParser.cmodule cli.input
+    in
+      timer_p "parse scilla source" parse_module_thunk
+  in
   match parse_module with
   | None -> plog (sprintf "%s\n" "Failed to parse input file.")
   | Some cmod ->
       plog (sprintf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" cli.input);
 
       (* Parse external libraries. *)
-      let lib_dirs = (Filename.dirname cli.input::cli.libdirs) in
-      StdlibTracker.add_stdlib_dirs lib_dirs;
-      let elibs = import_libs cmod.elibs in
-      (* Contract library. *)
-      let clibs = cmod.libs in
+      let import_libs_thunk () =
+        let lib_dirs = (Filename.dirname cli.input::cli.libdirs) in
+        StdlibTracker.add_stdlib_dirs lib_dirs;
+        let elibs = import_libs cmod.elibs in
+        (* Contract library. *)
+        let clibs = cmod.libs in
+        let gas_remaining = check_libs clibs elibs cli.input cli.gas_limit in
+          elibs, gas_remaining
+      in
+      let elibs, gas_remaining = timer_p "import libs" import_libs_thunk in
   
       (* Checking initialized libraries! *)
-      let gas_remaining = check_libs clibs elibs cli.input cli.gas_limit in
+      
  
       (* Retrieve initial parameters *)
       let initargs = 
@@ -197,30 +206,45 @@ let () =
             exit 1
         in
 
-        (* Initializing the contract's state *)
-        let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
-        (* Prints stats after the initialization and returns the initial state *)
-        (* Will throw an exception if unsuccessful. *)
-        let cstate, gas_remaining' = check_extract_cstate cli.input init_res gas_remaining in
-        (* Contract code *)
-        let ctr = cmod.contr in
+        let execute_thunk() =
+          (* Initializing the contract's state *)
+          let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
+          (* Prints stats after the initialization and returns the initial state *)
+          (* Will throw an exception if unsuccessful. *)
+          let cstate, gas_remaining' = check_extract_cstate cli.input init_res gas_remaining in
+          (* Contract code *)
+          let ctr = cmod.contr in
 
-        plog (sprintf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg));
-        plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
-        let step_result = handle_message ctr cstate bstate m in
-        let (cstate', mlist, elist), gas =
-          check_after_step cli.input step_result gas_remaining' in
+          plog (sprintf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg));
+          plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
+          let step_result = handle_message ctr cstate bstate m in
+          let (cstate', mlist, elist), gas =
+            check_after_step cli.input step_result gas_remaining' in
+          (cstate', mlist, elist), gas
+        in
+        
+        let (cstate', mlist, elist), gas = timer_p "execute transition" execute_thunk in
       
-        let osj = output_state_json cstate' in
-        let omj = output_message_json mlist in
-        let oej = `List (output_event_json elist) in
-          (omj, osj, oej), gas)
+        let literal_to_json () = 
+          let osj = output_state_json cstate' in
+          let omj = output_message_json mlist in
+          let oej = `List (output_event_json elist) in
+            (omj, osj, oej), gas
+        in
+          timer_p "literal_to_json" literal_to_json)
       in
-      let output_json = `Assoc [
-        "gas_remaining", `String (Int.to_string gas);
-        ("message", output_msg_json); 
-        ("states", output_state_json);
-        ("events", output_events_json)
-      ] in
-        Out_channel.with_file cli.output ~f:(fun channel -> 
-          Yojson.pretty_to_string output_json |> Out_channel.output_string channel)
+      let json_to_string () = 
+        let output_json = `Assoc [
+          "gas_remaining", `String (Int.to_string gas);
+          ("message", output_msg_json); 
+          ("states", output_state_json);
+          ("events", output_events_json)
+        ] in
+          Yojson.pretty_to_string output_json
+      in
+        let jstring = timer_p "json_to_string" json_to_string in
+        let print_thunk () =
+          Out_channel.with_file cli.output ~f:(fun channel -> 
+            jstring |> Out_channel.output_string channel) in
+        timer_p ("json print to " ^ cli.output) print_thunk;
+        Printf.printf "\n";
