@@ -3,6 +3,7 @@ Type error(s) in contract Crowdfunding:
 
 
 [:0:0] Type error in library check_update:
+
 ADT Uint12 not found
 
 [checker/bad/unbound.scilla:57:1] Type error in transition Donate:

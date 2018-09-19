@@ -1,0 +1,63 @@
+(* The purpose of this test contract is to demonstrate that *)
+(* type errors in different library functions are independently *)
+(* handled by the type checker. *)
+
+library BadLib1
+
+let one_msg =
+  fun (msg : Uint128) =>        (* We have a type error here *)
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+let one_msg1 =
+  fun (msg : Message) =>
+    one_msg msg
+
+let two_msg = 
+  fun (msg : Message) =>  
+  fun (msg2 : Uint128) =>       (* We have a type error here *)
+    let nil_msg = Nil {Message} in
+    let one = Cons {Message} msg nil_msg in
+    Cons {Message} msg2 one
+
+let two_msg2 = 
+  fun (msg : Message) =>
+  fun(msg2 : Message) =>
+    two_msg msg msg2
+
+
+let andb = 
+  fun (b : Bool) =>
+  fun (c : Int32) =>            (* We have a type error here *)
+    match b with 
+    | False => False
+    | True  =>
+      match c with 
+      | False => False
+      | True  => True
+      end
+    end
+
+let andb_wrap =                 (* This depends on andb and shouldn't be reported *)
+  fun (b : Bool) =>
+  fun (c : Bool) =>
+    andb b c
+
+let bool_wrap2 =                 (* This *doesn't* depend on any bad above and should be reported *)
+  fun (andb : Bool) =>
+     andb
+
+
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract BadLibTest1
+
+(*  Parameters *)
+()
+
+
+transition Foo ()
+
+end
