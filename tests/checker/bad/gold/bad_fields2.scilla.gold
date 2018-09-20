@@ -2,6 +2,6 @@
 Type error(s) in contract Empty:
 
 
-[:0:0] Type error in field bad_bar:
+[checker/bad/bad_fields2.scilla:4:7] Type error in field bad_bar:
 Values of the type "Map (Int64) (String -> Int32)" cannot be stored.
 
