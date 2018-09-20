@@ -1,8 +1,10 @@
+runs=1
+
 function runscilla
 {
     n=$1
     i=1
-    while [[ $i -lt 100 ]]
+    while [[ $i -le $runs ]]
     do
         ../../../bin/scilla-runner -init init.json -istate state_${n}.json -imessage message_1.json -o output.json -iblockchain blockchain_1.json -i contract.scilla -libdir ../../..//src/stdlib -gaslimit 100000
         
@@ -14,7 +16,7 @@ function runexp
 {
     n=$1
     t=`(time runscilla ${1}) 2>&1 | tee -a timer.log | grep "real" | cut -d $'\t' -f 2`
-    echo "Time for 100 runs of list size $1: $t"
+    echo "Time for $runs runs of list size $1: $t"
 }
 
 # runexp 1
@@ -24,4 +26,3 @@ function runexp
 # runexp 600
 # runexp 1000
 runexp 1505
-
