@@ -26,11 +26,12 @@ let f_trace_file = ref ""
 let f_trace_level = ref ""
 let d_libs = ref []
 let v_gas_limit = ref 0
+let b_pp_lit = ref true
 
 let usage = "-init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
     " -o output.json -i input.scilla [-tracefile filename] [-tracelevel none|stmt|exp ]" ^
-    " -gaslimit i"
+    " -gaslimit i [-pplit true|false]"
 
 let print_usage () = 
   Printf.fprintf stderr "Mandatory and optional flags:\n%s %s\n" Sys.argv.(0) usage
@@ -42,6 +43,9 @@ let process_trace () =
   | "exp" -> GlobalConfig.set_trace_level GlobalConfig.Trace_Expression;
             GlobalConfig.set_trace_file !f_trace_file
   | _ -> ()
+
+let process_pplit () =
+  if !b_pp_lit then GlobalConfig.set_pp_lit true else GlobalConfig.set_pp_lit false
 
 let validate_main () =
   let msg = 
@@ -106,10 +110,12 @@ let parse () =
     ("-tracelevel", Arg.String (fun x -> f_trace_level := x), "Trace level: none|stmt|exp. (default none)");
     ("-libdir", Arg.String (fun x -> d_libs := x::!d_libs), "Path to directory containing libraries");
     ("-gaslimit", Arg.Int (fun i -> v_gas_limit := i), "Gas limit");
+    ("-pplit", Arg.Bool (fun b -> b_pp_lit := b), "Pretty print literals");
   ] in 
   let ignore_anon _ = () in
   let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
   let () = process_trace() in
+  let () = process_pplit() in
   let () = validate_main () in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input;

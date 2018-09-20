@@ -21,6 +21,7 @@ open Syntax
 open MonadUtil
 open Stdint
 open Core.Result.Let_syntax
+open PrettyPrinters
 
 (*****************************************************)
 (*                Message payload                    *)

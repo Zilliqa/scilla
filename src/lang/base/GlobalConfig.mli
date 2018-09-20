@@ -38,6 +38,9 @@ val set_trace_level : trace_kind -> unit
 val get_trace_file : unit -> string
 val set_trace_file : string -> unit
 
+val set_pp_lit : bool -> unit
+val get_pp_lit : unit -> bool
+
 module StdlibTracker : sig
 
   (* Environment variable: where to look for stdlib.
