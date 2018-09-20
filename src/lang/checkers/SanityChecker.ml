@@ -43,18 +43,20 @@ module ScillaSanityChecker
 
     (* Check if there are duplicate entries in "ilist". *)
     let check_duplicate_ident gloc ilist =
-      let list_count l e =
-        List.fold_left (fun i x -> if get_id x = get_id e then i+1 else i) 0 l
+      let rec recurser ilist' e =
+        match ilist' with
+        | i :: rem ->
+          let e' =
+            if (List.exists (fun x -> get_id x = get_id i) rem)
+            then
+              (e ^ Core.sprintf "[%s] Identifier %s used more than once\n"
+                                (get_loc_str @@ gloc @@ get_rep i) (get_id i))
+            else e
+          in
+            recurser rem e'
+        | [] -> e
       in
-      let (e, _) = List.fold_left (fun (e, dlist) i ->
-        let count = list_count ilist i in
-        if count > 1 && not (List.exists (fun x -> get_id x = get_id i) dlist) then
-          (e ^ Core.sprintf "[%s] Identifier %s used more than once\n"
-                            (get_loc_str @@ gloc @@ get_rep i) (get_id i)), i::dlist
-        else (e, dlist)
-      ) ("", []) ilist
-      in
-        e
+        recurser ilist ""
     in
 
     (* No repeating names for params. *)
