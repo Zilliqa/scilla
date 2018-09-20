@@ -26,7 +26,7 @@ open Datatypes
 open TypeUtil
 open PrimTypes
 open BuiltIns
-open JSON_pp
+open PrettyPrinters
 
 module JSONTypeUtilities = TypeUtilities (ParserRep) (ParserRep)
 module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
