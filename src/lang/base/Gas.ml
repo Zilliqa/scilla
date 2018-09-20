@@ -35,10 +35,7 @@ module ScillaGas
 
   (* The storage cost of a literal, based on it's size. *)
   let rec literal_cost lit =
-    let%bind lt = literal_type lit in
-    if not (is_storable_type lt) then
-      fail @@ sprintf "Cannot determine cost of non-storable literal %s" (pp_literal lit)
-    else match lit with
+    match lit with
       (* StringLits have fixed cost till a certain
          length and increased cost after that. *)
       | StringLit s ->
