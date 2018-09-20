@@ -102,11 +102,29 @@ module DataTypeDictionary = struct
     ]
   }
 
-  let dict = [t_bool; t_nat; t_option; t_list; t_product]
+  (* adt.tname -> adt *)
+  let adt_name_dict =
+    let open Caml in
+    let ht : ((string, adt) Hashtbl.t) = Hashtbl.create 5 in
+    let _ = Hashtbl.add ht t_bool.tname t_bool in
+    let _ = Hashtbl.add ht t_nat.tname t_nat in
+    let _ = Hashtbl.add ht t_option.tname t_option in
+    let _ = Hashtbl.add ht t_list.tname t_list in
+    let _ = Hashtbl.add ht t_product.tname t_product in
+      ht
+
+  (* tconstr -> (adt * constructor) *)
+  let adt_cons_dict =
+    let open Caml in
+    let ht : ((string, (adt * constructor)) Hashtbl.t) = Hashtbl.create 10 in
+    Hashtbl.iter (fun _ a -> List.iter (fun c -> Hashtbl.add ht c.cname (a, c)) a.tconstr)
+      adt_name_dict;
+    ht
 
   (*  Get ADT by name *)
   let lookup_name name =
-    match List.find dict ~f:(fun t -> t.tname = name) with
+    let open Caml in
+    match Hashtbl.find_opt adt_name_dict name with
     | None ->
       fail @@ sprintf "ADT %s not found" name
     | Some a ->
@@ -114,17 +132,12 @@ module DataTypeDictionary = struct
 
   (*  Get ADT by the constructor *)
   let lookup_constructor cn =
-    match List.find dict
-      ~f:(fun t -> let cns = t.tconstr in
-           List.exists cns ~f:(fun c -> c.cname = cn)) with
+    let open Caml in
+    match Hashtbl.find_opt adt_cons_dict cn with
     | None -> fail @@
         sprintf "No data type with constructor %s found" cn
     | Some dt ->
-        (match List.find dt.tconstr ~f:(fun c -> c.cname = cn) with
-         | None -> fail @@
-             sprintf "Data type %s must have constructor %s."
-               dt.tname cn
-         | Some ctr -> pure (dt, ctr))
+      pure dt
 
   let constr_tmap adt cn = 
     List.find adt.tmap ~f:(fun (n, _) -> n = cn) |> Option.map ~f:snd
