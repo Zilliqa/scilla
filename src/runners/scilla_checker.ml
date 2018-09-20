@@ -25,6 +25,7 @@ open MonadUtil
 open Result.Let_syntax
 open RunnerUtil
 open PatternChecker
+open SanityChecker
 open Recursion
 open EventInfo
 
@@ -40,6 +41,7 @@ module PMC = ScillaPatternchecker (TCSRep) (TCERep)
 module PMCSRep = PMC.SPR
 module PMCERep = PMC.EPR
 
+module SC = ScillaSanityChecker (PMCSRep) (PMCERep)
 module EI = ScillaEventInfo (PMCSRep) (PMCERep)
 
 
@@ -67,6 +69,12 @@ let check_patterns e =
   match res with
   | Error msg -> pout @@ sprintf "\n%s\n\n" msg; res
   | Ok pm_checked_module -> pure @@ pm_checked_module
+
+let check_sanity c =
+  let res = SC.contr_sanity c in
+  match res with
+  | Error msg -> pout @@ sprintf "\n%s\n\n" msg; res
+  | Ok _ -> pure ()
 
 let check_events_info einfo =
   match einfo with
@@ -96,6 +104,7 @@ let () =
       let elibs = import_libs cmod.elibs in
       let%bind (typed_cmod, tenv) = check_typing cmod elibs in
       let%bind pm_checked_cmod = check_patterns typed_cmod in
+      let%bind _ = check_sanity pm_checked_cmod.contr in
       let%bind event_info = check_events_info @@ EI.event_info pm_checked_cmod.contr in
       pure @@ (cmod, tenv, event_info)
     ) in

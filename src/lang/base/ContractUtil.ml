@@ -20,6 +20,7 @@ open Core
 open Syntax
 open MonadUtil
 open Stdint
+open Core.Result.Let_syntax
 
 (*****************************************************)
 (*                Message payload                    *)
@@ -81,6 +82,9 @@ module ScillaContractUtil
     (SR : Rep)
     (ER : Rep) = struct
 
+  module ContractUtilSyntax = ScillaSyntax (SR) (ER)
+  open ContractUtilSyntax
+
   let balance_field =
     let open PrimTypes in
     (ER.mk_id_uint128 balance_label, uint128_typ)
@@ -95,6 +99,35 @@ module ScillaContractUtil
     let sender = (ER.mk_id_address MessagePayload.sender_label, bystrx_typ address_length) in
     let amount = (ER.mk_id_uint128 MessagePayload.amount_label, uint128_typ) in
     amount :: sender :: tparams
+
+  (* Iterate over all messages in the contract, accumuating result. 
+   * ~f takes a message and an accumulator and updates the accumulator. *)
+  let fold_over_messages contr ~init ~f =
+    (* Loop through each transition *)
+    foldM ~f:(fun acc trans ->
+        (* Loop through each statement, looking for messages. *)
+        let rec stmt_iter stmt_list acc = 
+          match stmt_list with
+          | (stmt, _)::stmt_list' -> 
+              let%bind acc' =
+                (match stmt with
+                 | MatchStmt (_, clauses) ->
+                     (* Recurse through all clauses. *)
+                     foldM ~f:(fun acc'' (_, stmt_list'') ->
+                         stmt_iter stmt_list'' acc''
+                       ) ~init:acc clauses
+                 (* Every message created gets bound to some variable. *)
+                 | Bind (b, (e, _)) ->
+                     (match e with
+                      | Message m -> f b m acc
+                      | _ -> (* Uninteresting expression. *) pure acc
+                     )
+                 | _ -> (* Uninteresting statement. *) pure acc
+                ) in  stmt_iter stmt_list' acc'
+          | [] -> pure acc
+        in
+        stmt_iter trans.tbody acc
+      ) ~init:init contr.ctrans
     
 end
 

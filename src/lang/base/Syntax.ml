@@ -205,6 +205,7 @@ module type Rep = sig
   val mk_id_address : string -> rep ident
   val mk_id_uint128 : string -> rep ident
   val mk_id_bnum    : string -> rep ident
+  val mk_id_string  : string -> rep ident
 
   val rep_of_sexp : Sexp.t -> rep
   val sexp_of_rep : rep -> Sexp.t
