@@ -26,6 +26,7 @@ open OUnit2
 open Syntax
 open ParserUtil
 open PrimTypes
+open PrettyPrinters
 
 module TestTypeUtils = TypeUtil.TypeUtilities (ParserRep) (ParserRep)
 open TestTypeUtils

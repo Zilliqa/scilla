@@ -23,6 +23,7 @@ open Syntax
 open TypeUtil
 open PrimTypes
 open Schnorr
+open PrettyPrinters
 
 module ScillaGas
     (SR : Rep)
