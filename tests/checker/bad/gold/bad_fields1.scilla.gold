@@ -2,6 +2,6 @@
 Type error(s) in contract Empty:
 
 
-[:0:0] Type error in field bad_foo:
+[checker/bad/bad_fields1.scilla:4:7] Type error in field bad_foo:
 Values of the type "Int32 -> Int32" cannot be stored.
 

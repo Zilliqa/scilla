@@ -3,4 +3,4 @@ Cannot store a closure
 <closure>
 as ff
 in a message
-(Message((tag(MTag Main))(amount(MVar(Ident x((fname"")(lnum 0)(bol 0)(cnum -1)))))(code(MVar(Ident ff((fname"")(lnum 0)(bol 0)(cnum -1))))))).
+(Message((tag(MTag Main))(amount(MVar(Ident x((fname eval/exp/bad/msg_error.scilla)(lnum 5)(bol 79)(cnum 109)))))(code(MVar(Ident ff((fname eval/exp/bad/msg_error.scilla)(lnum 5)(bol 79)(cnum 118))))))).

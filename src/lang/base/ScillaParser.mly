@@ -220,7 +220,7 @@ exp_pm_clause:
 msg_entry :
 | i = ID; COLON;  l = lit { i, MLit l }
 | i = ID; COLON;  c = CID { i, MTag c }
-| i = ID; COLON;  v = ID  { i,  MVar (asId v) }
+| i = ID; COLON;  v = ID  { i,  MVar (asIdL v (toLoc $startpos(v))) }
 
 type_annot:
 | COLON; t = typ { t }
@@ -238,8 +238,8 @@ types :
 (***********************************************)
 
 stmt:
-| l = ID; BIND; r = ID   { (Load (asIdL l (toLoc $startpos($2)), asId r), toLoc $startpos) }
-| l = ID; ASSIGN; r = ID { (Store (asIdL l (toLoc $startpos($2)), asId r), toLoc $startpos) }
+| l = ID; BIND; r = ID   { (Load (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; ASSIGN; r = ID { (Store (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos($2)), r), toLoc $startpos) }
 | l=ID; BIND; AND; c=CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
@@ -280,7 +280,7 @@ trans_id:
 field:
 | FIELD; f = ID; COLON; t=typ;
   EQ; rhs = exp
-  { asId f, t, rhs }
+  { asIdL f (toLoc $startpos(f)), t, rhs }
 
 contract:
 | CONTRACT; c = CID;
@@ -293,7 +293,7 @@ contract:
       ctrans  = ts } }
 
 libentry :
-| LET; ns = ID; EQ; e= exp { { lname = asId ns ; lexp = e } }
+| LET; ns = ID; EQ; e= exp { { lname = asIdL ns (toLoc $startpos(ns)) ; lexp = e } }
 
 library :
 | LIBRARY; n = CID; ls = list(libentry);
