@@ -23,6 +23,7 @@ open EvalUtil
 open Eval
 open DebugMessage
 open ContractUtil
+open PrettyPrinters
 open Stdint
 open RunnerUtil
 open GlobalConfig

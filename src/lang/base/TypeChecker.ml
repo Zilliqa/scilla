@@ -44,6 +44,7 @@ module TypecheckerERep (R : Rep) = struct
   let mk_id_address s = mk_id (R.mk_id_address s) (bystrx_typ address_length)
   let mk_id_uint128 s = mk_id (R.mk_id_uint128 s) uint128_typ
   let mk_id_bnum    s = mk_id (R.mk_id_bnum s) bnum_typ
+  let mk_id_string  s = mk_id (R.mk_id_string s) string_typ
   
   let mk_rep (r : R.rep) (t : PlainTypes.t inferred_type) = (t, r)
   
@@ -561,7 +562,7 @@ module ScillaTypechecker
     let typed_trans = List.rev t_trans in
 
     (* Step 7: Lift contract parameters to ETR.rep ident *)
-    let typed_params = List.map params
+    let typed_params = List.map cparams
         ~f:(fun (id, t) -> (add_type_to_id id (mk_qual_tp t), t)) in
     
     if emsgs' = ""

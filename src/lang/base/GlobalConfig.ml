@@ -91,6 +91,13 @@ let get_trace_file () =
 let set_trace_file s =
   trace_file := s
 
+let pp_lit = ref true
+
+let set_pp_lit b =
+  pp_lit := b
+
+let get_pp_lit () = !pp_lit
+
 module StdlibTracker = struct
 
 (* Environment variable: where to look for stdlib.

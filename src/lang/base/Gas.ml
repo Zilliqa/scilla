@@ -23,6 +23,7 @@ open Syntax
 open TypeUtil
 open PrimTypes
 open Schnorr
+open PrettyPrinters
 
 module ScillaGas
     (SR : Rep)
@@ -35,10 +36,7 @@ module ScillaGas
 
   (* The storage cost of a literal, based on it's size. *)
   let rec literal_cost lit =
-    let%bind lt = literal_type lit in
-    if not (is_storable_type lt) then
-      fail @@ sprintf "Cannot determine cost of non-storable literal %s" (pp_literal lit)
-    else match lit with
+    match lit with
       (* StringLits have fixed cost till a certain
          length and increased cost after that. *)
       | StringLit s ->
@@ -87,7 +85,7 @@ module ScillaGas
         let%bind old_cost =  literal_cost(old_l) in 
         let%bind new_cost = literal_cost(new_l) in
         let storage_cost = new_cost - old_cost in
-        let%bind op_cost = literal_cost(new_l) in
+        let op_cost = Int.max old_cost new_cost in
         pure @@ op_cost + storage_cost
     | G_Bind -> pure 1
     | G_MatchStmt num_clauses-> pure num_clauses
@@ -192,21 +190,21 @@ module ScillaGas
     ("to_list", [tvar "'A"], map_coster, 1); 
 
     (* Integers *)
-    ("eq", [tvar "'A"; tvar "'A"], int_coster, 2);
-    ("lt", [tvar "'A"; tvar "'A"], int_coster, 2);
-    ("add", [tvar "'A"; tvar "'A"], int_coster, 2);
-    ("sub", [tvar "'A"; tvar "'A"], int_coster, 2);
-    ("mul", [tvar "'A"; tvar "'A"], int_coster, 2);
-    ("div", [tvar "'A"; tvar "'A"], int_coster, 2);
-    ("rem", [tvar "'A"; tvar "'A"], int_coster, 2);
-    ("to_int32", [tvar "'A"], int_coster, 2);
-    ("to_int64", [tvar "'A"], int_coster, 2);
-    ("to_int128", [tvar "'A"], int_coster, 2);
-    ("to_int256", [tvar "'A"], int_coster, 2);
-    ("to_uint32", [tvar "'A"], int_coster, 2);
-    ("to_uint64", [tvar "'A"], int_coster, 2);
-    ("to_uint128", [tvar "'A"], int_coster, 2);
-    ("to_uint256", [tvar "'A"], int_coster, 2);
+    ("eq", [tvar "'A"; tvar "'A"], int_coster, 4);
+    ("lt", [tvar "'A"; tvar "'A"], int_coster, 4);
+    ("add", [tvar "'A"; tvar "'A"], int_coster, 4);
+    ("sub", [tvar "'A"; tvar "'A"], int_coster, 4);
+    ("mul", [tvar "'A"; tvar "'A"], int_coster, 4);
+    ("div", [tvar "'A"; tvar "'A"], int_coster, 4);
+    ("rem", [tvar "'A"; tvar "'A"], int_coster, 4);
+    ("to_int32", [tvar "'A"], int_coster, 4);
+    ("to_int64", [tvar "'A"], int_coster, 4);
+    ("to_int128", [tvar "'A"], int_coster, 4);
+    ("to_int256", [tvar "'A"], int_coster, 4);
+    ("to_uint32", [tvar "'A"], int_coster, 4);
+    ("to_uint64", [tvar "'A"], int_coster, 4);
+    ("to_uint128", [tvar "'A"], int_coster, 4);
+    ("to_uint256", [tvar "'A"], int_coster, 4);
     ("to_nat", [tvar "'A"], to_nat_coster, 1);
   ]
 

@@ -17,9 +17,11 @@ module ScillaEventInfo
   module EER = ER
   module EISyntax = ScillaSyntax (SR) (ER)
   module TU = TypeUtilities (SR) (ER)
+  module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
 
   open EISyntax
   open TU
+  open SCU
 
   (* Given a contract, return a list of events it may create,
    * and the parameter types of the event. *)
@@ -27,7 +29,7 @@ module ScillaEventInfo
 
     (* Given a message and a current list of event info, extract
      * info from message and append to the list. *)
-    let extract_from_message m acc =
+    let extract_from_message _ m acc =
       (* Check if this is for an event. *)
       (match (List.find_opt (fun (label, _) -> label = eventname_label) m) with
        | Some (_, epld) ->
@@ -69,30 +71,7 @@ module ScillaEventInfo
        | None -> (* Not for an event. *) pure acc
       ) in
 
-    (* Loop through each transition *)
-    foldM ~f:(fun acc trans ->
-        (* Loop through each statement, looking for messages. *)
-        let rec stmt_iter stmt_list acc = 
-          match stmt_list with
-          | (stmt, _)::stmt_list' -> 
-              let%bind acc' =
-                (match stmt with
-                 | MatchStmt (_, clauses) ->
-                     (* Recurse through all clauses. *)
-                     foldM ~f:(fun acc'' (_, stmt_list'') ->
-                         stmt_iter stmt_list'' acc''
-                       ) ~init:acc clauses
-                 (* Every message created gets bound to some variable. *)
-                 | Bind (_, (e, _)) ->
-                     (match e with
-                      | Message m -> extract_from_message m acc
-                      | _ -> (* Uninteresting expression. *) pure acc
-                     )
-                 | _ -> (* Uninteresting statement. *) pure acc
-                ) in  stmt_iter stmt_list' acc'
-          | [] -> pure acc
-        in
-        stmt_iter trans.tbody acc
-      ) ~init:[] contr.ctrans
+    
+    fold_over_messages contr ~init:[] ~f:extract_from_message
 
 end

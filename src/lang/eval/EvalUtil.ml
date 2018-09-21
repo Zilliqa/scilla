@@ -23,6 +23,7 @@ open EvalMonad
 open EvalMonad.Let_syntax
 open Stdint
 open ContractUtil
+open PrettyPrinters
 open TypeUtil
 open BuiltIns
 open Gas

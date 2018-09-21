@@ -22,6 +22,7 @@ open Syntax
 open MonadUtil
 open Result.Let_syntax
 open Datatypes
+open PrettyPrinters
 
 (****************************************************************)
 (*                Inferred types and qualifiers                 *)
