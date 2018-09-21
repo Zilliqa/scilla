@@ -1,4 +1,4 @@
-runs=1
+runs=5
 
 function runscilla
 {
@@ -19,10 +19,13 @@ function runexp
     echo "Time for $runs runs of list size $1: $t"
 }
 
-# runexp 1
-# runexp 100
-# runexp 200
-# runexp 400
-# runexp 600
-# runexp 1000
+runexp 1
+runexp 100
+runexp 200
+runexp 400
+runexp 600
+runexp 1000
 runexp 1505
+runexp 2001
+runexp 2500
+runexp 2999
