@@ -1,6 +1,6 @@
 
 Type error(s) in contract ZilGame:
-[:0:0] Error during pattern-match checking of library check_validity:
+[checker/bad/zil_mod.scilla:54:5] Error during pattern-match checking of library check_validity:
 [checker/bad/zil_mod.scilla:65:5] Type error in pattern matching on `xa` of type Pair (Bool) (Option (ByStr32)) (or one of its branches):
 Pattern 3 is unreachable.
 
