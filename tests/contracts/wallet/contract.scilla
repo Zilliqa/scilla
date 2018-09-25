@@ -1,0 +1,100 @@
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+library WalletLib
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+let error_msg =
+  fun (sender : ByStr20) =>
+  fun (error_code : Int32) =>
+    let msg = {_tag : Main; _recipient : sender; _amount : Uint128 0;
+               code : error_code } in
+    let msgs = one_msg msg in
+    msgs
+
+let transaction_executed = Int32 2
+let transaction_added = Int32 1
+let non_owner_cannot_sign = Int32 -1
+let unknown_transaction_id = Int32 -2
+let insufficient_funds = Int32 -3
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract Wallet
+(
+owner    : ByStr20
+)
+
+field balance : Uint128 = Uint128 0
+field transactionCount : Uint32 = Uint32 0
+field transactions : Map Uint32 (Pair ByStr20 Uint128) =
+  Emp Uint32 (Pair ByStr20 Uint128)
+
+
+(* Submit a transaction for future signoff *)
+transition SubmitTransaction (recipient : ByStr20, amount : Uint128)
+  tc <- transactionCount;
+  transaction = Pair {ByStr20 Uint128} recipient amount;
+  ts_tmp <- transactions;
+  ts_new = builtin put ts_tmp tc transaction;
+  inc = Uint32 1;
+  tc_new = builtin add tc inc;
+  transactionCount := tc_new;
+  transactions := ts_new;
+  msg = {_tag : Main; _recipient : recipient; _amount : Uint128 0;
+         code : transaction_added; transactionId : tc };
+  msgs = one_msg msg;
+  send msgs
+end
+
+(* Sign off on an existing transaction *)
+transition SignTransaction (transactionId : Uint32)
+  is_owner = builtin eq owner _sender;
+  (* Only the owner is allowed to sign off transactions *)
+  match is_owner with
+  | True =>
+    ts_tmp <- transactions;
+    transaction = builtin get ts_tmp transactionId;
+    (* Transaction must have been submitted *)
+    match transaction with
+    | None =>
+      msgs = error_msg _sender unknown_transaction_id;
+      send msgs
+    | Some (Pair recipient amount) =>
+      bal <- balance;
+      not_enough_money = builtin lt bal amount;
+      (* Sufficient funds must be available *)
+      match not_enough_money with
+      | True =>
+        msgs = error_msg _sender insufficient_funds;
+        send msgs
+      | False =>
+        (* Execute transaction, and remove it *)
+        new_balance = builtin sub bal amount;
+        new_ts = builtin remove ts_tmp transactionId;
+        transactions := new_ts;
+        balance := new_balance;
+        msg = {_tag : Main; _recipient : recipient; _amount : amount;
+               code : transaction_executed };
+        msgs = one_msg msg;
+        send msgs
+      end
+    end
+  | False =>
+    msgs = error_msg _sender non_owner_cannot_sign;
+    send msgs
+  end
+end
+
+(* Add funds to wallet *)
+transition AddFunds ()
+  bal <- balance;
+  new_balance = builtin add bal _amount;
+  balance := new_balance;
+  accept
+end
