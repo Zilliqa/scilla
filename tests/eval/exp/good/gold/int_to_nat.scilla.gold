@@ -11,7 +11,7 @@
   [two_nat2 -> (Nat 2)],
   [one_nat2 -> (Nat 1)],
   [three_nat1 -> (Nat 3)],
-  [three_uint -> (Int32 3)],
+  [three_uint -> (Uint32 3)],
   [zero_nat2 -> (Nat 0)],
   [zero_nat1 -> (Nat 0)],
-  [zero_uint -> (Int32 0)] }
+  [zero_uint -> (Uint32 0)] }
