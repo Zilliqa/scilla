@@ -1,5 +1,5 @@
-(Int32 3),
-{ [res1 -> (Int32 0)],
+(Uint32 3),
+{ [res1 -> (Uint32 0)],
   [three -> (Nat 3)],
   [two -> (Nat 2)],
   [one -> (Nat 1)],
