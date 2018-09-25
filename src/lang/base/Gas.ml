@@ -208,6 +208,17 @@ module ScillaGas
     ("to_nat", [tvar "'A"], to_nat_coster, 1);
   ]
 
+  let builtin_hashtbl =
+    let open Caml in
+    let ht : ((string, builtin_record list) Hashtbl.t) = Hashtbl.create 64 in
+    List.iter (fun row ->
+      let (opname, _, _, _) = row in
+      match Hashtbl.find_opt ht opname with
+      | Some p ->  Hashtbl.add ht opname (row::p)
+      | None -> Hashtbl.add ht opname (row::[])
+    ) builtin_records;
+      ht
+
   let builtin_cost op_i arg_literals =
     let op = get_id op_i in
     let%bind arg_types = mapM arg_literals ~f:literal_type in
@@ -225,7 +236,9 @@ module ScillaGas
     in
     let msg = sprintf "Unable to determine gas cost for \"%s %s\""
         op (pp_literal_list arg_literals) in
-    let %bind (_, cost) = tryM builtin_records ~f:matcher ~msg:msg in
+    let open Caml in
+    let dict = match Hashtbl.find_opt builtin_hashtbl op with | Some rows -> rows | None -> [] in
+    let %bind (_, cost) = tryM dict ~f:matcher ~msg:msg in
     pure cost
 
 end
