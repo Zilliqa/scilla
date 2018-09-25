@@ -83,7 +83,7 @@ let rec pp_literal_simplified l =
     (* (bit-width, value) *)
     | IntLit (b, i) -> "(Int" ^ (to_string b) ^ " " ^ i ^ ")"
     (* (bit-width, value) *)
-    | UintLit (b, ui) -> "(Int" ^ (to_string b) ^ " " ^ ui ^ ")"
+    | UintLit (b, ui) -> "(Uint" ^ (to_string b) ^ " " ^ ui ^ ")"
     | BNum b -> "(BNum " ^ b ^ ")"
     | ByStr s -> "(ByStr " ^ s ^ ")"
     | ByStrX (i, s) -> "(ByStr" ^ (to_string i) ^ " " ^ s ^ ")"
