@@ -46,12 +46,20 @@ let make_bad_lit_test l =
   test_case (fun _ ->
     assert_bool (err_msg l) (is_invalid_literal l))
 
+exception IntBuilderInTestsuite of string
+let int_builder w s =
+  let t = 
+    match w with | 32 -> int32_typ | 64 -> int64_typ | 128 -> int128_typ | 256 -> int256_typ
+    | _ -> raise (IntBuilderInTestsuite "Internal error in testsuite") in
+  BatOption.get (build_prim_literal t s)
+
+
 (* k/v types should match declared map type. *)
 let t1 = 
   (* declared type = (Int32, Int32) *)
   let mt = (int32_typ, int32_typ) in
   (* value type = (Int32, Int64) *)
-  let kv = IntLit (32, "1"), IntLit(64, "2") in
+  let kv = (int_builder 32 "1"), (int_builder 64 "2") in
   let l = Map (mt, [kv]) in
     make_bad_lit_test l
 
@@ -60,28 +68,28 @@ let t2 =
   (* declared type = (Map(Int32, Int32), Int32) *)
   let mt = (map_typ int32_typ int32_typ, int32_typ) in
   let mt' = (int32_typ, int32_typ) in
-  let l' = Map (mt', [(IntLit(32, "1"), IntLit(32, "2"))]) in
-  let l = Map (mt, [(l', IntLit(32, "3"))]) in
+  let l' = Map (mt', [((int_builder 32 "1"), (int_builder 32 "2"))]) in
+  let l = Map (mt, [(l', (int_builder 32 "3"))]) in
     make_bad_lit_test l
 
 (* Bool ADT with some arg. *)
 let t3 =
-  let badt = ADTValue ("False", [], [IntLit(32, "1")]) in
+  let badt = ADTValue ("False", [], [(int_builder 32 "1")]) in
   make_bad_lit_test badt
 
 (* Bool ADT with some type. *)
 let t4 =
-  let badt = ADTValue ("False", [int32_typ], [IntLit(32, "1")]) in
+  let badt = ADTValue ("False", [int32_typ], [(int_builder 32 "1")]) in
   make_bad_lit_test badt
 
 (* Malformed Option ADT. *)
 let t5 =
-  let bado = ADTValue ("Some", [int32_typ], [IntLit(64, "1")]) in
+  let bado = ADTValue ("Some", [int32_typ], [(int_builder 64 "1")]) in
   make_bad_lit_test bado
 
 (* Malformed Option ADT. *)
 let t6 =
-  let bado = ADTValue ("Some", [int32_typ;int32_typ], [IntLit(32, "1")]) in
+  let bado = ADTValue ("Some", [int32_typ;int32_typ], [(int_builder 32 "1")]) in
   make_bad_lit_test bado
 
 (* Malformed List *)
@@ -93,13 +101,13 @@ let t7 =
 let t8 =
   (* l1 is malformed. *)
   let l1 = ADTValue ("Nil", [], []) in
-  let l2 = ADTValue ("Cons", [int32_typ], [IntLit(32, "1");l1]) in
+  let l2 = ADTValue ("Cons", [int32_typ], [(int_builder 32 "1");l1]) in
   make_bad_lit_test l2
 
 (* Malformed List *)
 let t9 =
   (* l2 should have a second arg. *)
-  let l2 = ADTValue ("Cons", [int32_typ], [IntLit(32, "1")]) in
+  let l2 = ADTValue ("Cons", [int32_typ], [(int_builder 32 "1")]) in
   make_bad_lit_test l2
 
 (* Malformed List *)
@@ -113,7 +121,7 @@ let t10 =
 let t11 =
   (* l1 has different type compared to l2 *)
   let l1 = ADTValue ("Nil", [int64_typ], []) in
-  let l2 = ADTValue ("Cons", [int32_typ], [IntLit(32, "1");l1]) in
+  let l2 = ADTValue ("Cons", [int32_typ], [(int_builder 32 "1");l1]) in
   make_bad_lit_test l2
 
 let lit_typ_tests = "literal_type_tests" >::: [t1;t2;t3;t4;t5;t6;t7;t8;t9;t10;t11]

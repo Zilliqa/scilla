@@ -273,7 +273,7 @@ let get_string_literal l =
 
 let get_uint_literal l =
   match l with
-  | UintLit (_, il) -> Some il
+  | UintLit il -> Some (string_of_uint_lit il)
   | _ -> None
 
 let get_address_literal l =

@@ -78,3 +78,6 @@ module Int256 : sig
   val of_string : string -> t
   val to_string : t -> string
 end
+
+type int256 = Int256.t
+type uint256 = Uint256.t

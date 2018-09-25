@@ -44,7 +44,8 @@ module ScillaGas
           pure @@ if l <= 20 then 20 else l
       | BNum _ -> pure @@ 32 (* 256 bits *)
       (* (bit-width, value) *)
-      | IntLit (w, _) | UintLit (w, _) -> pure @@ w/8
+      | IntLit x -> pure @@ (int_lit_width x) / 8
+      | UintLit x -> pure @@ (uint_lit_width x) / 8
       (* (bit-width, value) *)
       | ByStrX (w, _) -> pure @@ w
       | ByStr s ->
@@ -109,7 +110,7 @@ module ScillaGas
     | "eq", [StringLit s1; StringLit s2]
     | "concat", [StringLit s1; StringLit s2] ->
         pure @@ (String.length s1 + String.length s2) * base
-    | "substr", [StringLit s; UintLit(_, _); UintLit(_, _)] ->
+    | "substr", [StringLit s; UintLit (Uint32L _); UintLit (Uint32L _)] ->
         pure @@ (String.length s) * base
     | _ -> fail @@ "Gas cost error for string built-in"
 
@@ -139,7 +140,7 @@ module ScillaGas
   let to_nat_coster _ args base =
     match args with
     (* TODO: Is this good? *)
-    | [UintLit(_, i)] -> pure @@ Int.of_string i * base
+    | [UintLit (Uint32L i)] -> pure @@  (Stdint.Uint32.to_int i) * base
     | _ -> fail @@ "Gas cost error for to_nat built-in"
 
   let int_coster op args base =
@@ -149,15 +150,17 @@ module ScillaGas
       | "div" | "rem" -> base * 4
       | _ -> base
     in
-    match args with
-    | [IntLit(w, _)] | [UintLit(w, _)]
-    | [IntLit(w, _); IntLit(_, _)]
-    | [UintLit(w, _); UintLit(_, _)] ->
-        if w = 32 || w = 64 then pure base'
-        else if w = 128 then pure (base' * 2)
-        else if w = 256 then pure (base' * 4)
-        else fail @@ "Gas cost error for integer built-in"
-    | _ -> fail @@ "Gas cost error for integer built-in"
+    let%bind w = match args with
+      | [IntLit i] | [IntLit i; IntLit _] ->
+        pure @@ int_lit_width i
+      | [UintLit i] | [UintLit i; UintLit _] ->
+        pure @@ uint_lit_width i
+      | _ -> fail @@ "Gas cost error for integer built-in"
+    in
+      if w = 32 || w = 64 then pure base'
+      else if w = 128 then pure (base' * 2)
+      else if w = 256 then pure (base' * 4)
+      else fail @@ "Gas cost error for integer built-in"
 
   let tvar s = TypeVar(s)
 

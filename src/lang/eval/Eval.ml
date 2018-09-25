@@ -60,8 +60,7 @@ let is_serializable_literal l = match l with
 let sanitize_literal l =
   if is_serializable_literal l
   then pure l
-  else fail @@ sprintf "Cannot serialize literal %s"
-               (sexp_of_literal l |> Sexplib.Sexp.to_string)
+  else fail @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
 let vals_to_literals vals =
   mapM vals ~f:(fun arg -> match arg with

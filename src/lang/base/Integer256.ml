@@ -388,3 +388,5 @@ module Int256 = struct
     else Uint256.to_string i
 
 end
+
+type int256 = Int256.t
