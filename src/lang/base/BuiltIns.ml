@@ -977,13 +977,13 @@ module ScillaBuiltIns
       let open Caml in
       let ht : ((string, built_in_record list) Hashtbl.t) = Hashtbl.create 64 in
       List.iter (fun row ->
-        let (opname, _, _, _, _) = row in
-        match Hashtbl.find_opt ht opname with
-        | Some p ->  Hashtbl.add ht opname (row::p)
-        | None -> Hashtbl.add ht opname (row::[])
-      ) built_in_dict;
-        ht
-
+          let (opname, _, _, _, _) = row in
+          match Hashtbl.find_opt ht opname with
+          | Some p ->  Hashtbl.add ht opname (row::p)
+          | None -> Hashtbl.add ht opname (row::[])
+        ) built_in_dict;
+      ht
+      
     (* Dictionary lookup based on the operation name and type *)
     let find_builtin_op op argtypes =
       let opname = get_id op in
@@ -997,7 +997,7 @@ module ScillaBuiltIns
             pure (type_elab, res_type, exec)
           else fail @@ "Name or arity don't match") in
       let open Caml in
-      let dict = match Hashtbl.find_opt built_in_hashtbl opname with | Some rows -> rows | None -> [] in
+      let dict = Option.value ~default:[] @@ Hashtbl.find_opt built_in_hashtbl opname in
       let%bind (_, (type_elab, res_type, exec)) = tryM dict ~f:finder
           ~msg:(sprintf "[%s] Cannot find built-in with name \"%s\" and argument types %s."
                   (ER.get_loc (get_rep op) |> get_loc_str) opname (pp_typ_list argtypes))
