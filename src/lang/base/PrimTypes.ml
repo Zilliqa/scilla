@@ -100,48 +100,58 @@ let is_bystrx_type t =
 (*                 Primitive Literal Utilities                  *)
 (****************************************************************)
 
-
-(* Validate Int* and Uint* literals (wx, x), whether the
-   string x they contain can be represented in wx bits  *)
-let validate_int_literal i =
-  try
-    match i with
-    | IntLit (wx, x) ->
-      (match wx with
-      | 32 -> Int32.to_string (Int32.of_string x) = x
-      | 64 -> Int64.to_string (Int64.of_string x) = x
-      | 128 -> Int128.to_string (Int128.of_string x) = x
-      | 256 -> Int256.to_string (Int256.of_string x) = x
+(* Is string representation of integer valid for integer typ. *)
+let validate_int_string t x =
+    try
+      match t with
+      | t' when t' = int32_typ -> Int32.to_string (Int32.of_string x) = x
+      | t' when t' = int64_typ -> Int64.to_string (Int64.of_string x) = x
+      | t' when t' = int128_typ -> Int128.to_string (Int128.of_string x) = x
+      | t' when t' = int256_typ -> Int256.to_string (Int256.of_string x) = x
+      | t' when t' = uint32_typ -> Uint32.to_string (Uint32.of_string x) = x
+      | t' when t' = uint64_typ -> Uint64.to_string (Uint64.of_string x) = x
+      | t' when t' = uint128_typ -> Uint128.to_string (Uint128.of_string x) = x
+      | t' when t' = uint256_typ -> Uint256.to_string (Uint256.of_string x) = x
       | _ -> false
-      )
-    | UintLit (wx, x) ->
-      (match wx with
-      | 32 -> Uint32.to_string (Uint32.of_string x) = x
-      | 64 -> Uint64.to_string (Uint64.of_string x) = x
-      | 128 -> Uint128.to_string (Uint128.of_string x) = x
-      | 256 -> Uint256.to_string (Uint256.of_string x) = x
-      | _ -> false
-      )
+    with
     | _ -> false
-  with
-  | _ -> false
 
-(* Given an integer type (as string) and the value (as string),
+(* Given an integer type and the value (as string),
    build IntLit or UintLit out of it. *)
 let build_int t v =
-  let validator_wrapper l = 
-    if validate_int_literal l then Some l else None
+  let validator_wrapper l= 
+    if validate_int_string t v then Some l else None
   in
-  match t with
-  | x when x = int32_typ   -> validator_wrapper (IntLit(32, v))
-  | x when x = int64_typ   -> validator_wrapper (IntLit(64, v))
-  | x when x = int128_typ  -> validator_wrapper (IntLit(128, v))
-  | x when x = int256_typ  -> validator_wrapper (IntLit(256, v))
-  | x when x = uint32_typ  -> validator_wrapper (UintLit(32, v))
-  | x when x = uint64_typ  -> validator_wrapper (UintLit(64, v))
-  | x when x = uint128_typ -> validator_wrapper (UintLit(128, v))
-  | x when x = uint256_typ -> validator_wrapper (UintLit(256, v))
-  | _ -> None
+  try 
+    (match t with
+    | x when x = int32_typ   -> validator_wrapper (IntLit (Int32L (Int32.of_string v)))
+    | x when x = int64_typ   -> validator_wrapper (IntLit (Int64L (Int64.of_string v)))
+    | x when x = int128_typ  -> validator_wrapper (IntLit (Int128L (Stdint.Int128.of_string v)))
+    | x when x = int256_typ  -> validator_wrapper (IntLit (Int256L (Int256.of_string v)))
+    | x when x = uint32_typ  -> validator_wrapper (UintLit (Uint32L (Stdint.Uint32.of_string v)))
+    | x when x = uint64_typ  -> validator_wrapper (UintLit (Uint64L (Stdint.Uint64.of_string v)))
+    | x when x = uint128_typ -> validator_wrapper (UintLit (Uint128L (Stdint.Uint128.of_string v)))
+    | x when x = uint256_typ -> validator_wrapper (UintLit (Uint256L (Uint256.of_string v)))
+    | _ -> None)
+  with | _ -> None
+
+let int_lit_width i =
+  match i with | Int32L _ -> 32 | Int64L _ -> 64 | Int128L _ -> 128 | Int256L _ -> 256
+
+let string_of_int_lit i = match i with
+  | Int32L i' -> Int32.to_string i'
+  | Int64L i' -> Int64.to_string i'
+  | Int128L i' -> Int128.to_string i'
+  | Int256L i' -> Int256.to_string i'
+
+let uint_lit_width i =
+  match i with | Uint32L _ -> 32 | Uint64L _ -> 64 | Uint128L _ -> 128 | Uint256L _ -> 256
+
+let string_of_uint_lit i = match i with
+  | Uint32L i' -> Uint32.to_string i'
+  | Uint64L i' -> Uint64.to_string i'
+  | Uint128L i' -> Uint128.to_string i'
+  | Uint256L i' -> Uint256.to_string i'
 
 let validate_bnum_literal b = match b with
   | BNum v ->

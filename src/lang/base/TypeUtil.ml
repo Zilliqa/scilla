@@ -377,18 +377,14 @@ module TypeUtilities
   let rec literal_type l =
     let open PrimTypes in 
     match l with
-    | IntLit (32, _) -> pure int32_typ
-    | IntLit (64, _) -> pure int64_typ
-    | IntLit (128, _) -> pure int128_typ
-    | IntLit (256, _) -> pure int256_typ
-    | UintLit (32, _) -> pure uint32_typ
-    | UintLit (64, _) -> pure uint64_typ
-    | UintLit (128, _) -> pure uint128_typ
-    | UintLit (256, _) -> pure uint256_typ
-    | IntLit(w, _) ->
-        fail @@ (sprintf "Wrong bit depth for integer: %i." w)
-    | UintLit(w, _) ->
-        fail @@ (sprintf "Wrong bit depth for unsigned integer: %i." w)
+    | IntLit (Int32L _) -> pure int32_typ
+    | IntLit (Int64L _) -> pure int64_typ
+    | IntLit (Int128L _) -> pure int128_typ
+    | IntLit (Int256L _) -> pure int256_typ
+    | UintLit (Uint32L _) -> pure uint32_typ
+    | UintLit (Uint64L _) -> pure uint64_typ
+    | UintLit (Uint128L _) -> pure uint128_typ
+    | UintLit (Uint256L _) -> pure uint256_typ
     | StringLit _ -> pure string_typ
     | BNum _ -> pure bnum_typ
     | ByStr _ -> 
