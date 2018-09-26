@@ -5,10 +5,35 @@ import ListUtils
 (***************************************************)
 library WalletLib
 
+let transaction_inc = Uint32 1
+let empty_sigs = Nil {ByStr20}
+
+let signature_added = Int32 3
+let transaction_executed = Int32 2
+let transaction_added = Int32 1
+let non_owner_cannot_sign = Int32 -1
+let unknown_transaction_id = Int32 -2
+let insufficient_funds = Int32 -3
+let no_signature_list_found = Int32 -4
+let already_signed = Int32 -5
+
 let one_msg = 
   fun (msg : Message) => 
     let nil_msg = Nil {Message} in
     Cons {Message} msg nil_msg
+
+let transaction_msg =
+  fun (recipient : ByStr20) =>
+  fun (amount : Uint128) =>
+    {_tag : Main; _recipient : recipient; _amount : amount;
+     code : transaction_executed }
+  
+let transaction_msgs =
+  fun (recipient : ByStr20) =>
+  fun (amount : Uint128) =>
+    let msg = transaction_msg recipient amount in
+    let msgs = one_msg msg in
+    msgs
 
 let error_msg =
   fun (sender : ByStr20) =>
@@ -18,46 +43,108 @@ let error_msg =
     let msgs = one_msg msg in
     msgs
 
-let is_owner =
+let address_mem =
   fun (sender : ByStr20) =>
-  fun (owners : List ByStr20) =>
+  fun (mem_list : List ByStr20) =>
     let predicate =
       fun (m1 : ByStr20) =>
       fun (m2 : ByStr20) =>
         builtin eq m1 m2 in
-    let own_mem = @list_mem ByStr20 in
-    own_mem predicate sender owners
+        let mem = @list_mem ByStr20 in
+        mem predicate sender mem_list
 
-let transaction_executed = Int32 2
-let transaction_added = Int32 1
-let non_owner_cannot_sign = Int32 -1
-let unknown_transaction_id = Int32 -2
-let insufficient_funds = Int32 -3
+let execute_awaiting =
+  fun (balance : Uint128) =>
+  fun (awaiting : List (Pair ByStr20 Uint128)) =>
+    let create_result_unexecuted =
+      fun (balance : Uint128) =>
+      fun (next_awaiting : Pair ByStr20 Uint128) =>
+      fun (rest_awaiting : List (Pair ByStr20 Uint128)) =>
+      fun (msgs : List Message) =>
+        let new_awaiting = Cons {(Pair ByStr20 Uint128)} next_awaiting rest_awaiting in
+        let bal_awaiting = Pair {Uint128 (List (Pair ByStr20 Uint128))} balance new_awaiting in
+        Pair {(List Message) (Pair Uint128 (List (Pair ByStr20 Uint128)))} msgs bal_awaiting in
+    let create_result_executed =
+      fun (balance : Uint128) =>
+      fun (msgs : List Message) =>
+        let new_awaiting = Nil {(Pair ByStr20 Uint128)} in
+        let bal_awaiting = Pair {Uint128 (List (Pair ByStr20 Uint128))} balance new_awaiting in
+        Pair {(List Message) (Pair Uint128 (List (Pair ByStr20 Uint128)))} msgs bal_awaiting in
+    let folder = @list_foldl (Pair ByStr20 Uint128) (Pair (List Message) (Pair Uint128 (List (Pair ByStr20 Uint128)))) in
+    let iter =
+      fun (collected : Pair (List Message) (Pair Uint128 (List (Pair ByStr20 Uint128)))) =>
+      fun (next_awaiting : Pair ByStr20 Uint128) =>
+        match next_awaiting with
+        | Pair recipient amount =>
+          match collected with
+          | Pair msgs (Pair balance awaiting) =>
+            match awaiting with
+            | Cons _ _ =>
+              (* Earlier transactions still awaiting execution *)
+              create_result_unexecuted balance next_awaiting awaiting msgs
+            | Nil =>
+              (* This is the earliest unexecuted transaction *)
+              let not_enough_funds = builtin lt balance amount in
+              match not_enough_funds with
+              | True =>
+                (* No more money *)
+                create_result_unexecuted balance next_awaiting awaiting msgs
+              | False =>
+                (* Execute next transaction *)
+                let new_balance = builtin sub balance amount in
+                let msg = transaction_msg recipient amount in
+                let new_msgs = Cons {Message} msg msgs in
+                create_result_executed new_balance new_msgs
+              end
+            end
+          end
+        end in
+    let empty_msgs = Nil {Message} in
+    let init = create_result_executed balance empty_msgs in
+    folder iter init awaiting
+      
 
 (***************************************************)
 (*             The contract definition             *)
 (***************************************************)
 contract Wallet
 (
-owners    : List ByStr20
+owners              : List ByStr20,
+required_signatures : Int32
 )
 
-field balance : Uint128 = Uint128 0
+field balance          : Uint128 = Uint128 0
 field transactionCount : Uint32 = Uint32 0
-field transactions : Map Uint32 (Pair ByStr20 Uint128) =
-  Emp Uint32 (Pair ByStr20 Uint128)
-
+field signatures       : Map Uint32 (List ByStr20) =
+                           Emp Uint32 (List ByStr20)
+field transactions     : Map Uint32 (Pair ByStr20 Uint128) =
+                           Emp Uint32 (Pair ByStr20 Uint128)
+field awaiting_funds   : List (Pair ByStr20 Uint128) = Nil {(Pair ByStr20 Uint128)}
 
 (* Submit a transaction for future signoff *)
 transition SubmitTransaction (recipient : ByStr20, amount : Uint128)
   tc <- transactionCount;
+
+  (* Create new transaction *)
   transaction = Pair {ByStr20 Uint128} recipient amount;
+
+  (* Add transaction to outstanding list of transactions *)
   ts_tmp <- transactions;
   ts_new = builtin put ts_tmp tc transaction;
-  inc = Uint32 1;
-  tc_new = builtin add tc inc;
+
+  (* Add empty list of signatures *)
+  sigs_tmp <- signatures;
+  sigs_new = builtin put sigs_tmp tc empty_sigs;
+  
+  (* Increment transaction counter *)
+  tc_new = builtin add tc transaction_inc;
+
+  (* Update fields *)
   transactionCount := tc_new;
   transactions := ts_new;
+  signatures := sigs_new;
+
+  (* Send message with id of created transaction *)
   msg = {_tag : Main; _recipient : recipient; _amount : Uint128 0;
          code : transaction_added; transactionId : tc };
   msgs = one_msg msg;
@@ -66,47 +153,105 @@ end
 
 (* Sign off on an existing transaction *)
 transition SignTransaction (transactionId : Uint32)
-  sender_is_owner = is_owner _sender owners;
+  (* Helper function *)
+  sender_mem = address_mem _sender;
+
   (* Only the owner is allowed to sign off transactions *)
+  sender_is_owner = sender_mem owners;
   match sender_is_owner with
+  | False =>
+    msgs = error_msg _sender non_owner_cannot_sign;
+    send msgs
   | True =>
+    (* Transaction must have been submitted *)
     ts_tmp <- transactions;
     transaction = builtin get ts_tmp transactionId;
-    (* Transaction must have been submitted *)
     match transaction with
     | None =>
       msgs = error_msg _sender unknown_transaction_id;
       send msgs
     | Some (Pair recipient amount) =>
-      bal <- balance;
-      not_enough_money = builtin lt bal amount;
-      (* Sufficient funds must be available *)
-      match not_enough_money with
-      | True =>
-        msgs = error_msg _sender insufficient_funds;
+      (* Transaction must occur in signatures map *)
+      sigs_tmp <- signatures;
+      sigs_opt = builtin get sigs_tmp transactionId;
+      match sigs_opt with
+      | None =>
+        msgs = error_msg _sender no_signature_list_found;
         send msgs
-      | False =>
-        (* Execute transaction, and remove it *)
-        new_balance = builtin sub bal amount;
-        new_ts = builtin remove ts_tmp transactionId;
-        transactions := new_ts;
-        balance := new_balance;
-        msg = {_tag : Main; _recipient : recipient; _amount : amount;
-               code : transaction_executed };
-        msgs = one_msg msg;
-        send msgs
+      | Some sigs =>
+        (* Sender must not have signed already *)
+        sender_has_signed = sender_mem sigs;
+        match sender_has_signed with
+        | True =>
+          msgs = error_msg _sender already_signed;
+          send msgs
+        | False =>
+          (* Signature is valid. Add to collected signatures *)
+          new_sigs = Cons {ByStr20} _sender sigs;
+          new_signatures = builtin put sigs_tmp transactionId new_sigs;
+          signatures := new_signatures;
+
+          (* Check for sufficient number of signatures *)
+          len = @list_length ByStr20;
+          no_of_sigs = len new_sigs;
+          not_enough_signatures = builtin lt no_of_sigs required_signatures;
+          match not_enough_signatures with
+          | True =>
+            (* Not enough signatures. Send message with id of created transaction *)
+            msg = {_tag : Main; _recipient : recipient; _amount : Uint128 0;
+                   code : signature_added; number_of_signatures : no_of_sigs };
+            msgs = one_msg msg;
+            send msgs
+          | False => 
+            (* Enough signatures collected. Remove transaction and signatures *)
+            new_ts = builtin remove ts_tmp transactionId;
+            new_signatures = builtin remove new_signatures transactionId;
+            transactions := new_ts;
+            signatures := new_signatures;
+            
+            (* Check for sufficient funds  *)
+            bal <- balance;
+            not_enough_money = builtin lt bal amount;
+            match not_enough_money with
+            | True =>
+              (* Move transaction to back of list of waiting transactions *)
+              await <- awaiting_funds;
+              trans = Pair {ByStr20 Uint128} recipient amount;
+              emp_trans_list = Nil {(Pair ByStr20 Uint128)};
+              trans_as_list = Cons {(Pair ByStr20 Uint128)} trans emp_trans_list;
+              new_await = let app = @list_append (Pair ByStr20 Uint128)
+                          in app await trans_as_list;
+              awaiting_funds := new_await;
+
+              msgs = error_msg _sender insufficient_funds;
+              send msgs
+            | False =>
+              (* Execute transaction. *)
+              new_balance = builtin sub bal amount;
+              balance := new_balance;
+              msgs = transaction_msgs recipient amount;
+              send msgs
+            end
+          end
+        end
       end
     end
-  | False =>
-    msgs = error_msg _sender non_owner_cannot_sign;
-    send msgs
   end
 end
 
 (* Add funds to wallet *)
 transition AddFunds ()
+  (* Accept funds and update balance *)
   bal <- balance;
   new_balance = builtin add bal _amount;
-  balance := new_balance;
-  accept
+  accept;
+  (* Execute awaiting transactions *)
+  await_tmp <- awaiting_funds;
+  execute_result = execute_awaiting new_balance await_tmp;
+  match execute_result with
+  | Pair msgs (Pair bal await) =>
+    balance := bal;
+    awaiting_funds := await;
+    send msgs
+  end
 end
