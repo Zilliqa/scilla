@@ -78,9 +78,9 @@ module NatRec = struct
       let (_, loc) as fix_arg = parse_expr ( 
           "fun (f : 'B -> 'A -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
           "match l with " ^
-          " | Nil => z " ^
           " | Cons h t => let res = f z h in " ^
           "   g f res t " ^
+          " | Nil => z " ^
           "end"
         )
       let id = mk_ident "list_foldl"      
@@ -95,9 +95,9 @@ module NatRec = struct
       let (_, loc) as fix_arg = parse_expr ( 
           "fun (f : 'A -> 'B -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
           "match l with " ^
-          " | Nil => z " ^
           " | Cons h t => let res = g f z t in " ^
           "   f h res " ^
+          " | Nil => z " ^
           "end"
         )
       let id = mk_ident "list_foldr"
