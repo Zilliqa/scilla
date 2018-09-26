@@ -149,9 +149,8 @@ simple_exp :
 (* Atomic expression *)
 | a = atomic_exp {a} 
 (* Built-in call *)
-| BUILTIN; b = ID; args = list(ID)
-  { let xs = List.map (fun i -> Ident (i, dummy_loc)) args
-    in (Builtin ((Ident (b, toLoc $startpos)), xs), toLoc $startpos) }
+| BUILTIN; b = ID; xs = builtin_args
+  { (Builtin ((Ident (b, toLoc $startpos(b))), xs), toLoc $startpos) }
 (* Message construction *)
 | LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE
   { (Message es, toLoc $startpos) } 
@@ -221,6 +220,11 @@ msg_entry :
 | i = ID; COLON;  l = lit { i, MLit l }
 | i = ID; COLON;  c = CID { i, MTag c }
 | i = ID; COLON;  v = ID  { i,  MVar (asIdL v (toLoc $startpos(v))) }
+
+builtin_args :
+| args = nonempty_list(ID) 
+  { List.map (fun i -> Ident (i, dummy_loc)) args }
+| LPAREN; RPAREN { [] }
 
 type_annot:
 | COLON; t = typ { t }

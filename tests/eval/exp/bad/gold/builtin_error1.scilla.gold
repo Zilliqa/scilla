@@ -1,2 +1,2 @@
 Failed execution:
-[eval/exp/bad/builtin_error1.scilla:10:12] Cannot find built-in with name "hack" and argument types [Int32; Int32].
+[eval/exp/bad/builtin_error1.scilla:10:20] Cannot find built-in with name "hack" and argument types [Int32; Int32].
