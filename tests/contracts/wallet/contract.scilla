@@ -1,3 +1,5 @@
+import ListUtils
+
 (***************************************************)
 (*               Associated library                *)
 (***************************************************)
@@ -16,6 +18,16 @@ let error_msg =
     let msgs = one_msg msg in
     msgs
 
+let is_owner =
+  fun (sender : ByStr20) =>
+  fun (owners : List ByStr20) =>
+    let predicate =
+      fun (m1 : ByStr20) =>
+      fun (m2 : ByStr20) =>
+        builtin eq m1 m2 in
+    let own_mem = @list_mem ByStr20 in
+    own_mem predicate sender owners
+
 let transaction_executed = Int32 2
 let transaction_added = Int32 1
 let non_owner_cannot_sign = Int32 -1
@@ -27,7 +39,7 @@ let insufficient_funds = Int32 -3
 (***************************************************)
 contract Wallet
 (
-owner    : ByStr20
+owners    : List ByStr20
 )
 
 field balance : Uint128 = Uint128 0
@@ -54,9 +66,9 @@ end
 
 (* Sign off on an existing transaction *)
 transition SignTransaction (transactionId : Uint32)
-  is_owner = builtin eq owner _sender;
+  sender_is_owner = is_owner _sender owners;
   (* Only the owner is allowed to sign off transactions *)
-  match is_owner with
+  match sender_is_owner with
   | True =>
     ts_tmp <- transactions;
     transaction = builtin get ts_tmp transactionId;
