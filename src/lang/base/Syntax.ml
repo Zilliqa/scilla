@@ -100,12 +100,35 @@ let pp_mtype (kt, vt) = pp_typ (MapType(kt, vt))
 let address_length = 20
 let hash_length = 32
 
+type int_lit =
+  | Int32L of int32 | Int64L of int64 | Int128L of Stdint.int128 | Int256L of Integer256.int256
+
+let sexp_of_int_lit i = 
+  match i with 
+  | Int32L i' -> Sexp.Atom ("Int32 " ^ Int32.to_string i')
+  | Int64L i' -> Sexp.Atom ("Int64 " ^ Int64.to_string i')
+  | Int128L i' -> Sexp.Atom ("Int128 " ^ Stdint.Int128.to_string i')
+  | Int256L i' -> Sexp.Atom ("Int256 " ^ Integer256.Int256.to_string i')
+
+let int_lit_of_sexp _ = raise (SyntaxError "int_lit_of_sexp not implemented")
+
+type uint_lit =
+  | Uint32L of Stdint.uint32 | Uint64L of Stdint.uint64 | Uint128L of Stdint.uint128 | Uint256L of Integer256.uint256
+
+let sexp_of_uint_lit i = 
+  match i with 
+  | Uint32L i' -> Sexp.Atom ("Uint32 " ^ Stdint.Uint32.to_string i')
+  | Uint64L i' -> Sexp.Atom ("Uint64 " ^ Stdint.Uint64.to_string i')
+  | Uint128L i' -> Sexp.Atom ("Uint128 " ^ Stdint.Uint128.to_string i')
+  | Uint256L i' -> Sexp.Atom ("Uint256 " ^ Integer256.Uint256.to_string i')
+
+let uint_lit_of_sexp _ = raise (SyntaxError "uint_lit_of_sexp not implemented")
+
 type literal =
   | StringLit of string
-  (* (bit-width, value) *)
-  | IntLit of int * string
-  (* (bit-width, value) *)
-  | UintLit of int * string
+  (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
+  | IntLit of int_lit
+  | UintLit of uint_lit
   | BNum of string
   (* (bit-width, value) *)
   | ByStrX of int * string
