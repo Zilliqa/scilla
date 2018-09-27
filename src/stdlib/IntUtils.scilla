@@ -42,11 +42,8 @@ let int_ge =
   tfun 'A =>
   fun (a : 'A) =>
   fun (b : 'A) =>
-    let gt = builtin lt b a in
-    match gt with
-    | True => True
-    | False => builtin eq b a
-    end
+    let le = @int_le 'A in
+    le b a
 
 (* int_eq instantiations *)
 let int32_eq = @int_eq Int32
