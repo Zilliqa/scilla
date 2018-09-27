@@ -63,9 +63,9 @@ module ScillaBuiltIns
   (* Convert int_lit to raw byte string. *)
   let bstring_from_int_lit = function
     | Int32L i ->
-    let buf = Bytes.create 4 in
-    let _ = Int32.to_bytes_big_endian i buf 0 in
-      Bytes.to_string buf
+      let buf = Bytes.create 4 in
+      let _ = Int32.to_bytes_big_endian i buf 0 in
+        Bytes.to_string buf
     | Int64L i ->
       let buf = Bytes.create 8 in
       let _ = Int64.to_bytes_big_endian i buf 0 in
