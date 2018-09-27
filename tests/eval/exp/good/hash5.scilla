@@ -20,5 +20,4 @@ let h7 = builtin sha256hash v7 in
 let h8 = builtin sha256hash v8 in
 let h9 = builtin sha256hash v9 in
 let h10 = builtin sha256hash v10 in
-
-h10
+builtin sha256hash h9
