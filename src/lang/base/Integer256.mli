@@ -46,6 +46,9 @@ module Uint256 : sig
 
   val of_string : string -> t
   val to_string : t -> string
+  val to_bytes_big_endian : t -> Bytes.t -> int -> unit
+  val to_bytes_little_endian : t -> Bytes.t -> int -> unit
+
 end
 
 module Int256 : sig
@@ -77,6 +80,9 @@ module Int256 : sig
 
   val of_string : string -> t
   val to_string : t -> string
+  val to_bytes_big_endian : t -> Bytes.t -> int -> unit
+  val to_bytes_little_endian : t -> Bytes.t -> int -> unit
+
 end
 
 type int256 = Int256.t
