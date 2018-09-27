@@ -25,7 +25,7 @@
         "constructor": "Some",
         "argtypes": [ "ByStr32" ],
         "arguments": [
-          "0x123456789012345678901234567890123456789012345678901234567890abff"
+          "0x7c3ccd10bb7ec37b46d37926ae6274267f007a34aeaf15c882a715a7f3300529"
         ]
       }
     },

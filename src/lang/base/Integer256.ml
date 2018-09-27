@@ -263,6 +263,16 @@ module Uint256 = struct
     in
       app ui ""
 
+  let to_bytes_big_endian ui buf off =
+    let _ = Uint128.to_bytes_big_endian ui.high buf off in
+    let _ = Uint128.to_bytes_big_endian ui.low buf (off+16) in
+    ()
+
+  let to_bytes_little_endian ui buf off =
+    let _ = Uint128.to_bytes_big_endian ui.low buf off in
+    let _ = Uint128.to_bytes_big_endian ui.high buf (off+16) in
+    ()
+
 end
 
 (*  https://github.com/andrenth/ocaml-stdint/blob/master/lib/int128_stubs.c *)
@@ -386,6 +396,12 @@ module Int256 = struct
   let to_string i =
     if isneg i then "-" ^ Uint256.to_string (neg i)
     else Uint256.to_string i
+
+  let to_bytes_big_endian i buf off =
+    Uint256.to_bytes_big_endian i buf off
+
+  let to_bytes_little_endian i buf off =
+    Uint256.to_bytes_little_endian i buf off
 
 end
 
