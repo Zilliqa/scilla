@@ -26,7 +26,8 @@ let explist = [
   "builtin1.scilla";
   "builtin2.scilla"; 
   "builtin3.scilla";
-  "builtin5.scilla";  
+  "builtin5.scilla";
+  "builtin6.scilla";  
   "builtin-strings.scilla";
   "builtin-div.scilla";
   "builtin-div2.scilla";
@@ -39,6 +40,7 @@ let explist = [
   "hash2.scilla";  
   "hash3.scilla";
   "hash4.scilla";
+  "hash5.scilla";
   "hof2.scilla";
   "hof3.scilla";
   "hof.scilla";

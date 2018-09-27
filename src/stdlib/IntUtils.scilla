@@ -1,0 +1,101 @@
+library IntUtils
+
+let int_eq =
+  tfun 'A =>
+  fun (a : 'A) =>
+  fun (b : 'A) =>
+    builtin eq a b
+
+let int_neq =
+  tfun 'A =>
+  fun (a : 'A) =>
+  fun (b : 'A) =>
+    let eq = builtin eq a b in
+    match eq with
+    | True => False
+    | False => True
+    end
+
+let int_lt =
+  tfun 'A =>
+  fun (a : 'A) =>
+  fun (b : 'A) =>
+    builtin lt a b
+
+let int_le =
+  tfun 'A =>
+  fun (a : 'A) =>
+  fun (b : 'A) =>
+    let lt = builtin lt a b in
+    match lt with
+    | True => True
+    | False => builtin eq a b
+    end
+
+let int_gt =
+  tfun 'A =>
+  fun (a : 'A) =>
+  fun (b : 'A) =>
+    builtin lt b a
+
+let int_ge =
+  tfun 'A =>
+  fun (a : 'A) =>
+  fun (b : 'A) =>
+    let le = @int_le 'A in
+    le b a
+
+(* int_eq instantiations *)
+let int32_eq = @int_eq Int32
+let int64_eq = @int_eq Int64
+let int128_eq = @int_eq Int128
+let int256_eq = @int_eq Int256
+let uint32_eq = @int_eq Uint32
+let uint64_eq = @int_eq Uint64
+let uint128_eq = @int_eq Uint128
+let uint256_eq = @int_eq Uint256
+(* int_neq instantiations *)
+let int32_neq = @int_neq Int32
+let int64_neq = @int_neq Int64
+let int128_neq = @int_neq Int128
+let int256_neq = @int_neq Int256
+let uint32_neq = @int_neq Uint32
+let uint64_neq = @int_neq Uint64
+let uint128_neq = @int_neq Uint128
+let uint256_neq = @int_neq Uint256
+(* int_lt instantiations *)
+let int32_lt = @int_lt Int32
+let int64_lt = @int_lt Int64
+let int128_lt = @int_lt Int128
+let int256_lt = @int_lt Int256
+let uint32_lt = @int_lt Uint32
+let uint64_lt = @int_lt Uint64
+let uint128_lt = @int_lt Uint128
+let uint256_lt = @int_lt Uint256
+(* int_le instantiations *)
+let int32_le = @int_le Int32
+let int64_le = @int_le Int64
+let int128_le = @int_le Int128
+let int256_le = @int_le Int256
+let uint32_le = @int_le Uint32
+let uint64_le = @int_le Uint64
+let uint128_le = @int_le Uint128
+let uint256_le = @int_le Uint256
+(* int_gt instantiations *)
+let int32_gt = @int_gt Int32
+let int64_gt = @int_gt Int64
+let int128_gt = @int_gt Int128
+let int256_gt = @int_gt Int256
+let uint32_gt = @int_gt Uint32
+let uint64_gt = @int_gt Uint64
+let uint128_gt = @int_gt Uint128
+let uint256_gt = @int_gt Uint256
+(* int_ge instantiations *)
+let int32_ge = @int_ge Int32
+let int64_ge = @int_ge Int64
+let int128_ge = @int_ge Int128
+let int256_ge = @int_ge Int256
+let uint32_ge = @int_ge Uint32
+let uint64_ge = @int_ge Uint64
+let uint128_ge = @int_ge Uint128
+let uint256_ge = @int_ge Uint256

@@ -60,8 +60,7 @@ let is_serializable_literal l = match l with
 let sanitize_literal l =
   if is_serializable_literal l
   then pure l
-  else fail @@ sprintf "Cannot serialize literal %s"
-               (sexp_of_literal l |> Sexplib.Sexp.to_string)
+  else fail @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
 let vals_to_literals vals =
   mapM vals ~f:(fun arg -> match arg with
@@ -146,8 +145,8 @@ let rec exp_eval erep env =
       (* Get the branch and the bindings *)
       let%bind ((_, e_branch), bnds) =
         tryM clauses
-          ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
-                  (Env.pp_value v) (pp_expr e))
+          (* TODO: add location info to error message. *)
+          ~msg:(sprintf "Match expression failed. No clause matched.")
           ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env

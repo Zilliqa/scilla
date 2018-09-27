@@ -49,9 +49,16 @@ val bystrx_width : typ -> int option
 (****************************************************************)
 
 val build_prim_literal : typ -> string -> literal option
-(* Validate Int* and Uint* literals (wx, x), whether the
-   string x they contain can be represented in wx bits  *)
-val validate_int_literal : literal -> bool
+(* Is string representation of integer valid for integer typ. *)
+val validate_int_string : typ -> string -> bool
+(* Get bit-width if int_lit. *)
+val int_lit_width : int_lit -> int
+(* Get bit-width if uint_lit. *)
+val uint_lit_width : uint_lit -> int
+(* String conversion from int_typ *)
+val string_of_int_lit : int_lit -> string
+(* String conversion from uint_typ *)
+val string_of_uint_lit : uint_lit -> string
 (* Is input literal a valid BNum? *)
 val validate_bnum_literal : literal -> bool
 (* Is input a valid ByStrX literal? *)

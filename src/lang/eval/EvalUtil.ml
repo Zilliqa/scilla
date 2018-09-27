@@ -257,7 +257,7 @@ module Configuration = struct
     if i = balance_label
     then
       (* Balance is a special case *)
-      let l = UintLit (128, (Uint128.to_string st.balance)) in
+      let l = UintLit (Uint128L st.balance) in
       pure (l, G_Load(l))
     else
       (* Evenrything else is from fields *)
