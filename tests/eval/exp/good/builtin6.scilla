@@ -1,0 +1,7 @@
+
+let a = Int256 100 in
+let b = Int256 2 in
+let a_gt_b = int256_gt a b in
+let a_ge_a = int256_ge a a in
+let a_le_b = int256_le a b in
+a

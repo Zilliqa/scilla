@@ -1,0 +1,6 @@
+(Int256 100),
+{ [a_le_b -> (False)],
+  [a_ge_a -> (True)],
+  [a_gt_b -> (True)],
+  [b -> (Int256 2)],
+  [a -> (Int256 100)] }
