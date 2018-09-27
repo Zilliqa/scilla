@@ -1,23 +1,11 @@
   
 let list_int_eq_t = @list_eq Uint64 in
 
-let int_eq =
-  fun (a : Uint64) =>
-  fun (b : Uint64) =>
-    builtin eq a b
-in
-
-let list_int_eq = list_int_eq_t int_eq in
+let list_int_eq = list_int_eq_t uint64_eq in
 
 let int_sort_t = @list_sort Uint64 in
 
-let flt =
-  fun (a : Uint64) =>
-  fun (b : Uint64) =>
-    builtin lt a b
-in
-    
-let int_sort = int_sort_t flt in
+let int_sort = int_sort_t uint64_lt in
 
 let zero = Uint64 0 in
 let one = Uint64 1 in

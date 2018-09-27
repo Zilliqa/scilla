@@ -17,4 +17,4 @@
   [ten -> (Int64 10)],
   [two -> (Int64 2)],
   [one -> (Int64 1)],
-  [int_eq -> <closure>] }
+  [int_list_eq -> <closure>] }

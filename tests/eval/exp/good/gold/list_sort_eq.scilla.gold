@@ -15,8 +15,6 @@
   [one -> (Uint64 1)],
   [zero -> (Uint64 0)],
   [int_sort -> <closure>],
-  [flt -> <closure>],
   [int_sort_t -> <closure>],
   [list_int_eq -> <closure>],
-  [int_eq -> <closure>],
   [list_int_eq_t -> <closure>] }
