@@ -60,6 +60,43 @@ module ScillaBuiltIns
     let to_Bool b = if b then true_lit else false_lit
   end
 
+  (* Convert int_lit to raw byte string. *)
+  let bstring_from_int_lit = function
+    | Int32L i ->
+      let buf = Bytes.create 4 in
+      let _ = Int32.to_bytes_big_endian i buf 0 in
+        Bytes.to_string buf
+    | Int64L i ->
+      let buf = Bytes.create 8 in
+      let _ = Int64.to_bytes_big_endian i buf 0 in
+        Bytes.to_string buf
+    | Int128L i ->
+      let buf = Bytes.create 16 in
+      let _ = Int128.to_bytes_big_endian i buf 0 in
+        Bytes.to_string buf
+    | Int256L i ->
+      let buf = Bytes.create 32 in
+      let _ = Int256.to_bytes_big_endian i buf 0 in
+        Bytes.to_string buf
+  (* Convert uint_lit to raw byte string. *)
+  let bstring_from_uint_lit = function
+    | Uint32L ui ->
+      let buf = Bytes.create 4 in
+      let _ = Uint32.to_bytes_big_endian ui buf 0 in
+        Bytes.to_string buf
+    | Uint64L ui ->
+      let buf = Bytes.create 8 in
+      let _ = Uint64.to_bytes_big_endian ui buf 0 in
+        Bytes.to_string buf
+    | Uint128L ui ->
+      let buf = Bytes.create 16 in
+      let _ = Uint128.to_bytes_big_endian ui buf 0 in
+        Bytes.to_string buf
+    | Uint256L ui ->
+      let buf = Bytes.create 32 in
+      let _ = Uint256.to_bytes_big_endian ui buf 0 in
+        Bytes.to_string buf
+
   (*******************************************************)
   (**************** String *******************************)
   (*******************************************************)
@@ -617,8 +654,11 @@ module ScillaBuiltIns
     open Datatypes.DataTypeDictionary
     open Schnorr
 
-    (* let hex s = transform_string (Hexa.decode()) s *)
-    let tohex s = transform_string (Hexa.encode()) s
+    (* Create binary / bytes from ASCII hexadecimal string 0x... *)
+    let fromhex s = transform_string (Hexa.decode()) (Core.String.sub s ~pos:2 ~len:((Core.String.length s)-2))
+    (* Create ASCII hexadecimal string from raw binary / bytes. *)
+    let tohex s = "0x" ^ (transform_string (Hexa.encode()) s)
+    (* Hash raw bytes / binary string. *)
     let hash s = hash_string (Hash.sha2 256) s
 
     let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
@@ -642,9 +682,16 @@ module ScillaBuiltIns
       | _ -> fail "Failed to elaborate"
     let sha256hash ls _ = match ls with
       | [l] ->
-          let lstr = sexp_of_literal l |> Sexplib.Sexp.to_string in
+          let lstr = 
+            (match l with
+            | StringLit s -> s
+            | IntLit il -> bstring_from_int_lit il
+            | UintLit uil -> bstring_from_uint_lit uil
+            | ByStr s | ByStrX (_, s) -> fromhex s
+            (* Anything else, just serialize with SExp. *)
+            | _ -> sexp_of_literal l |> Sexplib.Sexp.to_string) in
           let lhash = hash lstr in
-          let lhash_hex = "0x" ^ tohex lhash in 
+          let lhash_hex = tohex lhash in 
           let lo = build_prim_literal (bystrx_typ hash_length) lhash_hex in
           (match lo with
           | Some l' -> pure @@ l'

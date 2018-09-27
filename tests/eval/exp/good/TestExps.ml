@@ -40,6 +40,7 @@ let explist = [
   "hash2.scilla";  
   "hash3.scilla";
   "hash4.scilla";
+  "hash5.scilla";
   "hof2.scilla";
   "hof3.scilla";
   "hof.scilla";
