@@ -389,9 +389,10 @@ let create_cur_state_fields initcstate curcstate =
 
 
 let literal_list_gas llit =
-  foldM ~f:(fun acc (_, lit) ->
+  mapM ~f:(fun (_, lit) ->
     let%bind c = fromR @@ EvalGas.literal_cost lit in
-    pure (c + acc)) ~init:0 llit
+    let dummy () = pure () in (* the literal is already created. *)
+    checkwrap_op dummy c "Ran out of gas") llit
 
 (* Initialize a module with given arguments and initial balance *)
 let init_module md initargs curargs init_bal bstate elibs =
