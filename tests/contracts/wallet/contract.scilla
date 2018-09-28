@@ -88,22 +88,22 @@ let execute_awaiting =
       fun (rest_awaiting : List (Pair ByStr20 Uint128)) =>
       fun (msgs : List Message) =>
         let new_awaiting = Cons {(Pair ByStr20 Uint128)} next_awaiting rest_awaiting in
-        let bal_awaiting = Pair {Uint128 (List (Pair ByStr20 Uint128))} balance new_awaiting in
-        Pair {(List Message) (Pair Uint128 (List (Pair ByStr20 Uint128)))} msgs bal_awaiting in
+        let msgs_awaiting = Pair {(List Message) (List (Pair ByStr20 Uint128))} msgs new_awaiting in
+        Pair {Uint128 (Pair (List Message) (List (Pair ByStr20 Uint128)))} balance msgs_awaiting in
     let create_result_executed =
       fun (balance : Uint128) =>
       fun (msgs : List Message) =>
         let new_awaiting = Nil {(Pair ByStr20 Uint128)} in
-        let bal_awaiting = Pair {Uint128 (List (Pair ByStr20 Uint128))} balance new_awaiting in
-        Pair {(List Message) (Pair Uint128 (List (Pair ByStr20 Uint128)))} msgs bal_awaiting in
-    let folder = @list_foldl (Pair ByStr20 Uint128) (Pair (List Message) (Pair Uint128 (List (Pair ByStr20 Uint128)))) in
+        let msgs_awaiting = Pair {(List Message) (List (Pair ByStr20 Uint128))} msgs new_awaiting in
+        Pair {Uint128 (Pair (List Message) (List (Pair ByStr20 Uint128)))} balance msgs_awaiting in
+    let folder = @list_foldl (Pair ByStr20 Uint128) (Pair Uint128 (Pair (List Message) (List (Pair ByStr20 Uint128)))) in
     let iter =
-      fun (collected : Pair (List Message) (Pair Uint128 (List (Pair ByStr20 Uint128)))) =>
+      fun (collected : Pair Uint128 (Pair (List Message) (List (Pair ByStr20 Uint128)))) =>
       fun (next_awaiting : Pair ByStr20 Uint128) =>
         match next_awaiting with
         | Pair recipient amount =>
           match collected with
-          | Pair msgs (Pair balance awaiting) =>
+          | Pair balance (Pair msgs awaiting) =>
             match awaiting with
             | Cons _ _ =>
               (* Earlier transactions still awaiting execution *)
@@ -127,7 +127,10 @@ let execute_awaiting =
         end in
     let empty_msgs = Nil {Message} in
     let init = create_result_executed balance empty_msgs in
-    folder iter init awaiting
+    let tmp_res = folder iter init awaiting in
+    match tmp_res with
+    | Pair _ res => res
+    end
       
 
 (***************************************************)
@@ -143,7 +146,6 @@ required_signatures : Int32
 field validity_checked : Bool = False
 field contract_valid   : Bool = False
 
-field balance          : Uint128 = Uint128 0
 field transactionCount : Uint32 = Uint32 0
 field signatures       : Map Uint32 (List ByStr20) =
                            Emp Uint32 (List ByStr20)
@@ -240,7 +242,7 @@ transition SignTransaction (transactionId : Uint32)
             signatures := new_signatures;
             
             (* Check for sufficient funds  *)
-            bal <- balance;
+            bal <- _balance;
             not_enough_money = builtin lt bal amount;
             match not_enough_money with
             | True =>
@@ -257,8 +259,6 @@ transition SignTransaction (transactionId : Uint32)
               send msgs
             | False =>
               (* Execute transaction. *)
-              new_balance = builtin sub bal amount;
-              balance := new_balance;
               msgs = transaction_msgs recipient amount;
               send msgs
             end
@@ -289,16 +289,13 @@ transition AddFunds ()
     msgs = error_msg _sender invalid_contract;
     send msgs
   | True =>
-    (* Accept funds and update balance *)
-    bal <- balance;
-    new_balance = builtin add bal _amount;
     accept;
     (* Execute awaiting transactions *)
+    bal <- _balance;
     await_tmp <- awaiting_funds;
-    execute_result = execute_awaiting new_balance await_tmp;
+    execute_result = execute_awaiting bal await_tmp;
     match execute_result with
-    | Pair msgs (Pair bal await) =>
-      balance := bal;
+    | Pair msgs await =>
       awaiting_funds := await;
       send msgs
     end
