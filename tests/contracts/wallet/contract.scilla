@@ -10,13 +10,23 @@ let mk_transaction_added_event =
   fun (tc : Uint32) =>
     { _eventname : "Transaction created" ; transactionId : tc }
 
+(* Event for communicating the signing of a transaction *)
+let mk_transaction_signed_event =
+  fun (no_of_sigs : Int32) =>
+    { _eventname : "Transaction signed" ; signature_count : no_of_sigs }
+
 (* Error events *)
-let non_owner_cannot_sign   = { _eventname : "Signee not recognized as owner" }
-let unknown_transaction_id  = { _eventname : "Unknown transaction id" }
-let no_signature_list_found = { _eventname : "No signature list for transaction" }
-let already_signed          = { _eventname : "Transaction already signed by signee" }
-let insufficient_funds      = { _eventname : "Insufficient funds in wallet" }
-let invalid_contract        = { _eventname : "Invalid contract" }
+let mk_error_event =
+  fun (err_msg : String) =>
+    { _eventname : "WalletError" ; err_msg : err_msg }
+
+(* Error messages *)
+let non_owner_cannot_sign_err_msg   = "Signee not recognized as owner"
+let unknown_transaction_id_err_msg  = "Unknown transaction id"
+let insufficient_funds_err_msg      = "Insufficient funds in wallet"
+let no_signature_list_found_err_msg = "No signature list for transaction"
+let already_signed_err_msg          = "Transaction already signed by signee"
+let invalid_contract_err_msg        = "Invalid contract"
 
 
 let transaction_inc = Uint32 1
@@ -25,11 +35,14 @@ let empty_sigs = Nil {ByStr20}
 let signature_added = Int32 3
 let transaction_executed = Int32 2
 
+(* Check that the number of distinct owners is at *)
+(* least as large as the required number of signatures *)
 let check_contract_validity =
   fun (owners : List ByStr20) =>
   fun (required_signatures : Int32) =>
     let find = @list_find ByStr20 in
     let len = @list_length ByStr20 in
+    (* Find a given owner in a list of owners *)
     let finder =
       fun (cur_owner : ByStr20) =>
       fun (seen_owners : List ByStr20) =>
@@ -38,6 +51,8 @@ let check_contract_validity =
         find cur_owner_eq seen_owners in
     let folder = @list_foldl ByStr20 (List ByStr20) in
     let init = Nil {ByStr20} in
+    (* For each owner check whether that owner occurs *)
+    (* earlier in the list of owners *)
     let iter =
       fun (seen_owners : List ByStr20) =>
       fun (cur_owner : ByStr20) =>
@@ -49,25 +64,26 @@ let check_contract_validity =
     let filtered_owners = folder iter init owners in
     let no_of_filtered_owners = len filtered_owners in
     int32_le required_signatures no_of_filtered_owners
-         
-let one_msg = 
-  fun (msg : Message) => 
-    let nil_msg = Nil {Message} in
-    Cons {Message} msg nil_msg
 
+(* Create one transaction message *)
 let transaction_msg =
   fun (recipient : ByStr20) =>
   fun (amount : Uint128) =>
     {_tag : Main; _recipient : recipient; _amount : amount;
      code : transaction_executed }
-  
+
+(* Wrap one transaction message as singleton list *)
 let transaction_msgs =
   fun (recipient : ByStr20) =>
   fun (amount : Uint128) =>
+    let one_msg = 
+      fun (msg : Message) => 
+        let nil_msg = Nil {Message} in
+        Cons {Message} msg nil_msg in
     let msg = transaction_msg recipient amount in
-    let msgs = one_msg msg in
-    msgs
+    one_msg msg
 
+(* list_mem for owners *)
 let address_mem =
   fun (sender : ByStr20) =>
   fun (mem_list : List ByStr20) =>
@@ -78,9 +94,11 @@ let address_mem =
         let mem = @list_mem ByStr20 in
         mem predicate sender mem_list
 
+(* Create messages for executing waiting transactions *)
 let execute_awaiting =
   fun (balance : Uint128) =>
   fun (awaiting : List (Pair ByStr20 Uint128)) =>
+    (* Add transaction to list of unexecuted transactions *)
     let create_result_unexecuted =
       fun (balance : Uint128) =>
       fun (next_awaiting : Pair ByStr20 Uint128) =>
@@ -89,6 +107,7 @@ let execute_awaiting =
         let new_awaiting = Cons {(Pair ByStr20 Uint128)} next_awaiting rest_awaiting in
         let msgs_awaiting = Pair {(List Message) (List (Pair ByStr20 Uint128))} msgs new_awaiting in
         Pair {Uint128 (Pair (List Message) (List (Pair ByStr20 Uint128)))} balance msgs_awaiting in
+    (* Deduct remaining balance, and create execution message *)
     let create_result_executed =
       fun (balance : Uint128) =>
       fun (msgs : List Message) =>
@@ -96,6 +115,9 @@ let execute_awaiting =
         let msgs_awaiting = Pair {(List Message) (List (Pair ByStr20 Uint128))} msgs new_awaiting in
         Pair {Uint128 (Pair (List Message) (List (Pair ByStr20 Uint128)))} balance msgs_awaiting in
     let folder = @list_foldl (Pair ByStr20 Uint128) (Pair Uint128 (Pair (List Message) (List (Pair ByStr20 Uint128)))) in
+    (* Check if next awaiting transaction can be executed. *)
+    (* If so, create message and reduce balance. *)
+    (* Add to list of waiting transactions if not. *)
     let iter =
       fun (collected : Pair Uint128 (Pair (List Message) (List (Pair ByStr20 Uint128)))) =>
       fun (next_awaiting : Pair ByStr20 Uint128) =>
@@ -127,6 +149,7 @@ let execute_awaiting =
     let empty_msgs = Nil {Message} in
     let init = create_result_executed balance empty_msgs in
     let tmp_res = folder iter init awaiting in
+    (* No need to return remaining balance. *)
     match tmp_res with
     | Pair _ res => res
     end
@@ -189,27 +212,31 @@ transition SignTransaction (transactionId : Uint32)
   sender_is_owner = sender_mem owners;
   match sender_is_owner with
   | False =>
-    event non_owner_cannot_sign
+    e = mk_error_event non_owner_cannot_sign_err_msg;
+    event e
   | True =>
     (* Transaction must have been submitted *)
     ts_tmp <- transactions;
     transaction = builtin get ts_tmp transactionId;
     match transaction with
     | None =>
-      event unknown_transaction_id
+      e = mk_error_event unknown_transaction_id_err_msg;
+      event e
     | Some (Pair recipient amount) =>
       (* Transaction must occur in signatures map *)
       sigs_tmp <- signatures;
       sigs_opt = builtin get sigs_tmp transactionId;
       match sigs_opt with
       | None =>
-        event no_signature_list_found
+        e = mk_error_event no_signature_list_found_err_msg;
+        event e
       | Some sigs =>
         (* Sender must not have signed already *)
         sender_has_signed = sender_mem sigs;
         match sender_has_signed with
         | True =>
-          event already_signed
+          e = mk_error_event already_signed_err_msg;
+          event e
         | False =>
           (* Signature is valid. Add to collected signatures *)
           new_sigs = Cons {ByStr20} _sender sigs;
@@ -223,10 +250,8 @@ transition SignTransaction (transactionId : Uint32)
           match not_enough_signatures with
           | True =>
             (* Not enough signatures. Send message with id of created transaction *)
-            msg = {_tag : Main; _recipient : recipient; _amount : Uint128 0;
-                   code : signature_added; number_of_signatures : no_of_sigs };
-            msgs = one_msg msg;
-            send msgs
+            e = mk_transaction_signed_event no_of_sigs;
+            event e
           | False => 
             (* Enough signatures collected. Remove transaction and signatures *)
             new_ts = builtin remove ts_tmp transactionId;
@@ -247,7 +272,8 @@ transition SignTransaction (transactionId : Uint32)
               new_await = let app = @list_append (Pair ByStr20 Uint128)
                           in app await trans_as_list;
               awaiting_funds := new_await;
-              event insufficient_funds
+              e = mk_error_event insufficient_funds_err_msg;
+              event e
             | False =>
               (* Execute transaction. *)
               msgs = transaction_msgs recipient amount;
@@ -277,7 +303,8 @@ transition AddFunds ()
   valid <- contract_valid;
   match valid with
   | False =>
-    event invalid_contract
+    e = mk_error_event invalid_contract_err_msg;
+    event e
   | True =>
     accept;
     (* Execute awaiting transactions *)
