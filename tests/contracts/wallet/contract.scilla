@@ -1,4 +1,4 @@
-import ListUtils
+import ListUtils IntUtils
 
 (***************************************************)
 (*               Associated library                *)
@@ -16,7 +16,33 @@ let unknown_transaction_id = Int32 -2
 let insufficient_funds = Int32 -3
 let no_signature_list_found = Int32 -4
 let already_signed = Int32 -5
+let invalid_contract = Int32 -6
 
+let check_contract_validity =
+  fun (owners : List ByStr20) =>
+  fun (required_signatures : Int32) =>
+    let find = @list_find ByStr20 in
+    let len = @list_length ByStr20 in
+    let finder =
+      fun (cur_owner : ByStr20) =>
+      fun (seen_owners : List ByStr20) =>
+        let cur_owner_eq =
+          fun (other : ByStr20) => builtin eq cur_owner other in
+        find cur_owner_eq seen_owners in
+    let folder = @list_foldl ByStr20 (List ByStr20) in
+    let init = Nil {ByStr20} in
+    let iter =
+      fun (seen_owners : List ByStr20) =>
+      fun (cur_owner : ByStr20) =>
+        let found = finder cur_owner seen_owners in
+        match found with
+        | Some _ => seen_owners
+        | None => Cons {ByStr20} cur_owner seen_owners
+        end in
+    let filtered_owners = folder iter init owners in
+    let no_of_filtered_owners = len filtered_owners in
+    int32_le required_signatures no_of_filtered_owners
+         
 let one_msg = 
   fun (msg : Message) => 
     let nil_msg = Nil {Message} in
@@ -112,6 +138,10 @@ contract Wallet
 owners              : List ByStr20,
 required_signatures : Int32
 )
+
+(* Funds are not allowed to be added if the contract is not valid *)
+field validity_checked : Bool = False
+field contract_valid   : Bool = False
 
 field balance          : Uint128 = Uint128 0
 field transactionCount : Uint32 = Uint32 0
@@ -241,17 +271,36 @@ end
 
 (* Add funds to wallet *)
 transition AddFunds ()
-  (* Accept funds and update balance *)
-  bal <- balance;
-  new_balance = builtin add bal _amount;
-  accept;
-  (* Execute awaiting transactions *)
-  await_tmp <- awaiting_funds;
-  execute_result = execute_awaiting new_balance await_tmp;
-  match execute_result with
-  | Pair msgs (Pair bal await) =>
-    balance := bal;
-    awaiting_funds := await;
+  (* Only accept funds if number of required signatures is less than the number of distinct owners *)
+  checked <- validity_checked;
+  match checked with
+  | False =>
+    valid_contract = check_contract_validity owners required_signatures;
+    contract_valid := valid_contract;
+    checked = True;
+    validity_checked := checked
+  | True =>
+    valid <- contract_valid
+  end;
+
+  valid <- contract_valid;
+  match valid with
+  | False =>
+    msgs = error_msg _sender invalid_contract;
     send msgs
+  | True =>
+    (* Accept funds and update balance *)
+    bal <- balance;
+    new_balance = builtin add bal _amount;
+    accept;
+    (* Execute awaiting transactions *)
+    await_tmp <- awaiting_funds;
+    execute_result = execute_awaiting new_balance await_tmp;
+    match execute_result with
+    | Pair msgs (Pair bal await) =>
+      balance := bal;
+      awaiting_funds := await;
+      send msgs
+    end
   end
 end
