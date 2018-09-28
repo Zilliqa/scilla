@@ -5,6 +5,20 @@ import ListUtils IntUtils
 (***************************************************)
 library WalletLib
 
+(* Event for communicating a new transaction id *)
+let mk_transaction_added_event =
+  fun (tc : Uint32) =>
+    { _eventname : "Transaction created" ; transactionId : tc }
+
+(* Error events *)
+let non_owner_cannot_sign   = { _eventname : "Signee not recognized as owner" }
+let unknown_transaction_id  = { _eventname : "Unknown transaction id" }
+let no_signature_list_found = { _eventname : "No signature list for transaction" }
+let already_signed          = { _eventname : "Transaction already signed by signee" }
+let insufficient_funds      = { _eventname : "Insufficient funds in wallet" }
+let invalid_contract        = { _eventname : "Invalid contract" }
+
+
 let transaction_inc = Uint32 1
 let empty_sigs = Nil {ByStr20}
 
@@ -162,7 +176,7 @@ transition SubmitTransaction (recipient : ByStr20, amount : Uint128)
   signatures := sigs_new;
 
   (* Create event with transaction Id *)
-  e = { _eventname : "Transaction created" ; transactionId : tc };
+  e = mk_transaction_added_event tc;
   event e
 end
 
@@ -175,31 +189,27 @@ transition SignTransaction (transactionId : Uint32)
   sender_is_owner = sender_mem owners;
   match sender_is_owner with
   | False =>
-    e = { _eventname : "Signee not recognized as owner" };
-    event e
+    event non_owner_cannot_sign
   | True =>
     (* Transaction must have been submitted *)
     ts_tmp <- transactions;
     transaction = builtin get ts_tmp transactionId;
     match transaction with
     | None =>
-      e = { _eventname : "Unknown transaction id" };
-      event e
+      event unknown_transaction_id
     | Some (Pair recipient amount) =>
       (* Transaction must occur in signatures map *)
       sigs_tmp <- signatures;
       sigs_opt = builtin get sigs_tmp transactionId;
       match sigs_opt with
       | None =>
-        e = { _eventname : "No signature list for transaction" };
-        event e
+        event no_signature_list_found
       | Some sigs =>
         (* Sender must not have signed already *)
         sender_has_signed = sender_mem sigs;
         match sender_has_signed with
         | True =>
-          e = { _eventname : "Transaction already signed by signee" };
-          event e
+          event already_signed
         | False =>
           (* Signature is valid. Add to collected signatures *)
           new_sigs = Cons {ByStr20} _sender sigs;
@@ -237,9 +247,7 @@ transition SignTransaction (transactionId : Uint32)
               new_await = let app = @list_append (Pair ByStr20 Uint128)
                           in app await trans_as_list;
               awaiting_funds := new_await;
-
-              e = { _eventname : "Insufficient funds in wallet" };
-              event e
+              event insufficient_funds
             | False =>
               (* Execute transaction. *)
               msgs = transaction_msgs recipient amount;
@@ -269,8 +277,7 @@ transition AddFunds ()
   valid <- contract_valid;
   match valid with
   | False =>
-    e = { _eventname : "Invalid contract" };
-    event e
+    event invalid_contract
   | True =>
     accept;
     (* Execute awaiting transactions *)
