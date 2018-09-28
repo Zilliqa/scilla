@@ -10,13 +10,6 @@ let empty_sigs = Nil {ByStr20}
 
 let signature_added = Int32 3
 let transaction_executed = Int32 2
-let transaction_added = Int32 1
-let non_owner_cannot_sign = Int32 -1
-let unknown_transaction_id = Int32 -2
-let insufficient_funds = Int32 -3
-let no_signature_list_found = Int32 -4
-let already_signed = Int32 -5
-let invalid_contract = Int32 -6
 
 let check_contract_validity =
   fun (owners : List ByStr20) =>
@@ -58,14 +51,6 @@ let transaction_msgs =
   fun (recipient : ByStr20) =>
   fun (amount : Uint128) =>
     let msg = transaction_msg recipient amount in
-    let msgs = one_msg msg in
-    msgs
-
-let error_msg =
-  fun (sender : ByStr20) =>
-  fun (error_code : Int32) =>
-    let msg = {_tag : Main; _recipient : sender; _amount : Uint128 0;
-               code : error_code } in
     let msgs = one_msg msg in
     msgs
 
@@ -176,11 +161,9 @@ transition SubmitTransaction (recipient : ByStr20, amount : Uint128)
   transactions := ts_new;
   signatures := sigs_new;
 
-  (* Send message with id of created transaction *)
-  msg = {_tag : Main; _recipient : recipient; _amount : Uint128 0;
-         code : transaction_added; transactionId : tc };
-  msgs = one_msg msg;
-  send msgs
+  (* Create event with transaction Id *)
+  e = { _eventname : "Transaction created" ; transactionId : tc };
+  event e
 end
 
 (* Sign off on an existing transaction *)
@@ -192,31 +175,31 @@ transition SignTransaction (transactionId : Uint32)
   sender_is_owner = sender_mem owners;
   match sender_is_owner with
   | False =>
-    msgs = error_msg _sender non_owner_cannot_sign;
-    send msgs
+    e = { _eventname : "Signee not recognized as owner" };
+    event e
   | True =>
     (* Transaction must have been submitted *)
     ts_tmp <- transactions;
     transaction = builtin get ts_tmp transactionId;
     match transaction with
     | None =>
-      msgs = error_msg _sender unknown_transaction_id;
-      send msgs
+      e = { _eventname : "Unknown transaction id" };
+      event e
     | Some (Pair recipient amount) =>
       (* Transaction must occur in signatures map *)
       sigs_tmp <- signatures;
       sigs_opt = builtin get sigs_tmp transactionId;
       match sigs_opt with
       | None =>
-        msgs = error_msg _sender no_signature_list_found;
-        send msgs
+        e = { _eventname : "No signature list for transaction" };
+        event e
       | Some sigs =>
         (* Sender must not have signed already *)
         sender_has_signed = sender_mem sigs;
         match sender_has_signed with
         | True =>
-          msgs = error_msg _sender already_signed;
-          send msgs
+          e = { _eventname : "Transaction already signed by signee" };
+          event e
         | False =>
           (* Signature is valid. Add to collected signatures *)
           new_sigs = Cons {ByStr20} _sender sigs;
@@ -255,8 +238,8 @@ transition SignTransaction (transactionId : Uint32)
                           in app await trans_as_list;
               awaiting_funds := new_await;
 
-              msgs = error_msg _sender insufficient_funds;
-              send msgs
+              e = { _eventname : "Insufficient funds in wallet" };
+              event e
             | False =>
               (* Execute transaction. *)
               msgs = transaction_msgs recipient amount;
@@ -286,8 +269,8 @@ transition AddFunds ()
   valid <- contract_valid;
   match valid with
   | False =>
-    msgs = error_msg _sender invalid_contract;
-    send msgs
+    e = { _eventname : "Invalid contract" };
+    event e
   | True =>
     accept;
     (* Execute awaiting transactions *)
