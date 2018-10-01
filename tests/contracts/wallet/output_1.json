@@ -1,0 +1,38 @@
+{
+  "gas_remaining": "1052",
+  "message": null,
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "100" },
+    {
+      "vname": "awaiting_funds",
+      "type": "List (Pair (ByStr20) (Uint128))",
+      "value": {
+        "constructor": "Nil",
+        "argtypes": [ "Pair (ByStr20) (Uint128)" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "validity_checked",
+      "type": "Bool",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "contract_valid",
+      "type": "Bool",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
+    { "vname": "transactionCount", "type": "Uint32", "value": "0" },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (List (ByStr20))",
+      "value": []
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
+      "value": []
+    }
+  ],
+  "events": []
+}

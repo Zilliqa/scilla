@@ -175,6 +175,7 @@ field transactions     : Map Uint32 (Pair ByStr20 Uint128) =
                            Emp Uint32 (Pair ByStr20 Uint128)
 field awaiting_funds   : List (Pair ByStr20 Uint128) = Nil {(Pair ByStr20 Uint128)}
 
+
 (* Submit a transaction for future signoff *)
 transition SubmitTransaction (recipient : ByStr20, amount : Uint128)
   tc <- transactionCount;
@@ -285,6 +286,17 @@ transition SignTransaction (transactionId : Uint32)
     end
   end
 end
+
+
+
+
+(* Revoke signature of existing transaction, if it has not yet been executed. *)
+(* transition RevokeSignature () *)
+
+(* Add new owner. Must be accepted by all existing owners *)
+(* transition SignOffNewOwner (new_owner : ByStr20) *)
+  
+
 
 (* Add funds to wallet *)
 transition AddFunds ()
