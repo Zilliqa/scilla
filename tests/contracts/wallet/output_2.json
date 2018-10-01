@@ -1,0 +1,65 @@
+{
+  "gas_remaining": "1248",
+  "message": null,
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "100" },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (List (ByStr20))",
+      "value": [
+        {
+          "key": "0",
+          "val": {
+            "constructor": "Nil",
+            "argtypes": [ "ByStr20" ],
+            "arguments": []
+          }
+        }
+      ]
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
+      "value": [
+        {
+          "key": "0",
+          "val": {
+            "constructor": "Pair",
+            "argtypes": [ "ByStr20", "Uint128" ],
+            "arguments": [
+              "0x1234567890123456789012345678906780000000", "10"
+            ]
+          }
+        }
+      ]
+    },
+    { "vname": "transactionCount", "type": "Uint32", "value": "1" },
+    {
+      "vname": "validity_checked",
+      "type": "Bool",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "contract_valid",
+      "type": "Bool",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "awaiting_funds",
+      "type": "List (Pair (ByStr20) (Uint128))",
+      "value": {
+        "constructor": "Nil",
+        "argtypes": [ "Pair (ByStr20) (Uint128)" ],
+        "arguments": []
+      }
+    }
+  ],
+  "events": [
+    {
+      "_eventname": "Transaction created",
+      "params": [
+        { "vname": "transactionId", "type": "Uint32", "value": "0" }
+      ]
+    }
+  ]
+}
