@@ -31,7 +31,7 @@ let b_pp_lit = ref true
 let usage = "-init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
     " -o output.json -i input.scilla [-tracefile filename] [-tracelevel none|stmt|exp ]" ^
-    " -gaslimit i [-pplit true|false]"
+    " -gaslimit i [-libdir dirpath] [-pplit true|false]"
 
 let print_usage () = 
   Printf.fprintf stderr "Mandatory and optional flags:\n%s %s\n" Sys.argv.(0) usage
