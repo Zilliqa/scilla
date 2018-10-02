@@ -66,10 +66,11 @@ let rec subst_type_in_literal tvar tp l = match l with
   | Map ((kt, vt), ls) -> 
       let kts = subst_type_in_type' tvar tp kt in
       let vts = subst_type_in_type' tvar tp vt in
-      let ls' = List.map ls ~f:(fun (k, v) ->
+      let ls' = Caml.Hashtbl.create (Caml.Hashtbl.length ls) in
+      let _ = Caml.Hashtbl.iter (fun k v ->
         let k' = subst_type_in_literal tvar tp k in
         let v' = subst_type_in_literal tvar tp v in 
-        (k', v')) in
+        Caml.Hashtbl.add ls' k' v') ls in
       Map ((kts, vts), ls')
   | ADTValue (n, ts, ls) ->
       let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
@@ -257,7 +258,7 @@ module Configuration = struct
     if i = balance_label
     then
       (* Balance is a special case *)
-      let l = UintLit (128, (Uint128.to_string st.balance)) in
+      let l = UintLit (Uint128L st.balance) in
       pure (l, G_Load(l))
     else
       (* Evenrything else is from fields *)

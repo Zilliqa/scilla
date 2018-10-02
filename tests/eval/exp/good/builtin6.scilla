@@ -1,0 +1,82 @@
+
+let a = Int32 100 in
+let b = Int32 2 in
+let c = Int32 40 in
+let a_gt_b = int32_gt a b in
+let a_ge_a = int32_ge a a in
+let a_le_b = int32_le a b in
+let a_lt_c = int32_lt a c in
+let c_eq_a = int32_eq c a in
+let b_neq_c = int32_neq b c in
+
+let a1 = Int64 100 in
+let b1 = Int64 2 in
+let c1 = Int64 40 in
+let a1_gt_b1 = int64_gt a1 b1 in
+let a1_ge_a1 = int64_ge a1 a1 in
+let a1_le_b1 = int64_le a1 b1 in
+let a1_lt_c1 = int64_lt a1 c1 in
+let c1_eq_a1 = int64_eq c1 a1 in
+let b1_neq_c1 = int64_neq b1 c1 in
+
+let a2 = Int128 100 in
+let b2 = Int128 2 in
+let c2 = Int128 40 in
+let a2_gt_b2 = int128_gt a2 b2 in
+let a2_ge_a2 = int128_ge a2 a2 in
+let a2_le_b2 = int128_le a2 b2 in
+let a2_lt_c2 = int128_lt a2 c2 in
+let c2_eq_a2 = int128_eq c2 a2 in
+let b2_neq_c2 = int128_neq b2 c2 in
+
+let a3 = Int256 100 in
+let b3 = Int256 2 in
+let c3 = Int256 40 in
+let a3_gt_b = int256_gt a3 b3 in
+let a3_ge_a3 = int256_ge a3 a3 in
+let a3_le_b3 = int256_le a3 b3 in
+let a3_lt_c3 = int256_lt a3 c3 in
+let c3_eq_a3 = int256_eq c3 a3 in
+let b3_neq_c3 = int256_neq b3 c3 in
+
+let a4 = Uint32 100 in
+let b4 = Uint32 2 in
+let c4 = Uint32 40 in
+let a4_gt_b4 = uint32_gt a4 b4 in
+let a4_ge_a4 = uint32_ge a4 a4 in
+let a4_le_b4 = uint32_le a4 b4 in
+let a4_lt_c4 = uint32_lt a4 c4 in
+let c4_eq_a4 = uint32_eq c4 a4 in
+let b4_neq_c4 = uint32_neq b4 c4 in
+
+let a5 = Uint64 100 in
+let b5 = Uint64 2 in
+let c5 = Uint64 40 in
+let a5_gt_b5 = uint64_gt a5 b5 in
+let a5_ge_a5 = uint64_ge a5 a5 in
+let a5_le_b5 = uint64_le a5 b5 in
+let a5_lt_c5 = uint64_lt a5 c5 in
+let c5_eq_a5 = uint64_eq c5 a5 in
+let b5_neq_c5 = uint64_neq b5 c5 in
+
+let a6 = Uint128 100 in
+let b6 = Uint128 2 in
+let c6 = Uint128 40 in
+let a6_gt_b6 = uint128_gt a6 b6 in
+let a6_ge_a6 = uint128_ge a6 a6 in
+let a6_le_b6 = uint128_le a6 b6 in
+let a6_lt_c6 = uint128_lt a6 c6 in
+let c6_eq_a6 = uint128_eq c6 a6 in
+let b6_neq_c6 = uint128_neq b6 c6 in
+
+let a7 = Uint256 100 in
+let b7 = Uint256 2 in
+let c7 = Uint256 40 in
+let a7_gt_b7 = uint256_gt a7 b7 in
+let a7_ge_a7 = uint256_ge a7 a7 in
+let a7_le_b7 = uint256_le a7 b7 in
+let a7_lt_c7 = uint256_lt a7 c7 in
+let c7_eq_a7 = uint256_eq c7 a7 in
+let b7_neq_c7 = uint256_neq b7 c7 in
+
+a

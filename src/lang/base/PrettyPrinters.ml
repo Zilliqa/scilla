@@ -20,20 +20,18 @@
 open Core
 open Syntax
 open Yojson
+open PrimTypes
 
 (****************************************************************)
 (*                    JSON printing                             *)
 (****************************************************************)
 
 let rec mapvalues_to_json ms = 
-  match ms with
-  | kv :: remaining ->
-    let (k, v) = kv in
+  Caml.Hashtbl.fold (fun k v a ->
     let kjson = "key", (literal_to_json k) in
     let vjson = "val", (literal_to_json v) in
     let kv_json = `Assoc (kjson :: vjson :: []) in
-      kv_json :: (mapvalues_to_json remaining)
-  | [] -> []
+      kv_json :: a) ms []
 
 and adtargs_to_json vlist =
   match vlist with
@@ -51,10 +49,12 @@ and adttyps_to_json tlist =
       (j1 :: jtn)
   | _ -> []
 
-and literal_to_json lit = 
+and literal_to_json lit =
   match lit with
-  | StringLit (x) | BNum (x) | ByStr(x) -> `String (x)
-  | IntLit (_, x) | UintLit (_, x) | ByStrX(_, x) -> `String (x)
+  | StringLit (x) | BNum (x) | ByStr(x)
+  | ByStrX(_, x) -> `String (x)
+  | IntLit x  -> `String (string_of_int_lit x)
+  | UintLit x -> `String (string_of_uint_lit x)
   | Map ((_, _), kvs) ->
       `List (mapvalues_to_json kvs)
   | ADTValue (n, t, v) ->
@@ -81,9 +81,9 @@ let rec pp_literal_simplified l =
     match l with
     | StringLit s -> "(String " ^ "\"" ^ s ^ "\"" ^ ")"
     (* (bit-width, value) *)
-    | IntLit (b, i) -> "(Int" ^ (to_string b) ^ " " ^ i ^ ")"
+    | IntLit i -> "(Int" ^ (Int.to_string (int_lit_width i))^ " " ^ (string_of_int_lit i) ^ ")"
     (* (bit-width, value) *)
-    | UintLit (b, ui) -> "(Int" ^ (to_string b) ^ " " ^ ui ^ ")"
+    | UintLit i -> "(Uint" ^ (Int.to_string (uint_lit_width i))^ " " ^ (string_of_uint_lit i) ^ ")"
     | BNum b -> "(BNum " ^ b ^ ")"
     | ByStr s -> "(ByStr " ^ s ^ ")"
     | ByStrX (i, s) -> "(ByStr" ^ (to_string i) ^ " " ^ s ^ ")"
@@ -97,10 +97,10 @@ let rec pp_literal_simplified l =
     | Map ((_, _), kv) ->
       (* we don't print mtype as that's printed for every entry. *)
       let items = "[" ^
-        List.fold_left kv ~init:"" ~f:(fun a (k, v) ->
+        (Caml.Hashtbl.fold (fun k v a ->
           let t = "(" ^ (pp_literal_simplified k) ^ " => " ^ (pp_literal_simplified v) ^ ")" in
             if String.is_empty a then t else a ^ "; " ^ t
-          ) ^ "]" in
+          ) kv "")  ^ "]" in
       ("(Map " ^ items ^ ")")
     | ADTValue (cn, _, al) ->
         (match cn with

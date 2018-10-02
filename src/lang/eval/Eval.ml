@@ -60,8 +60,7 @@ let is_serializable_literal l = match l with
 let sanitize_literal l =
   if is_serializable_literal l
   then pure l
-  else fail @@ sprintf "Cannot serialize literal %s"
-               (sexp_of_literal l |> Sexplib.Sexp.to_string)
+  else fail @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
 let vals_to_literals vals =
   mapM vals ~f:(fun arg -> match arg with
@@ -146,8 +145,8 @@ let rec exp_eval erep env =
       (* Get the branch and the bindings *)
       let%bind ((_, e_branch), bnds) =
         tryM clauses
-          ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
-                  (Env.pp_value v) (pp_expr e))
+          (* TODO: add location info to error message. *)
+          ~msg:(sprintf "Match expression failed. No clause matched.")
           ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env
@@ -390,9 +389,10 @@ let create_cur_state_fields initcstate curcstate =
 
 
 let literal_list_gas llit =
-  foldM ~f:(fun acc (_, lit) ->
+  mapM ~f:(fun (_, lit) ->
     let%bind c = fromR @@ EvalGas.literal_cost lit in
-    pure (c + acc)) ~init:0 llit
+    let dummy () = pure () in (* the literal is already created. *)
+    checkwrap_op dummy c "Ran out of gas") llit
 
 (* Initialize a module with given arguments and initial balance *)
 let init_module md initargs curargs init_bal bstate elibs =

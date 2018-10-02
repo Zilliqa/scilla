@@ -54,17 +54,15 @@ module MessagePayload = struct
 
   let get_amount = get_value_for_entry amount_label
       (function 
-        | UintLit (ws, s) ->
+        | UintLit (Uint128L i) ->
             (try
-               let open Uint128 in
-               let i = of_string s in
-               if (compare i zero) >= 0 && ws = 128
+               if (compare i Uint128.zero) >= 0
                then Some (pure i)
                else
-                 Some (fail @@ sprintf "Amount should be non-negative: %s" s)
+                 Some (fail @@ sprintf "Amount should be non-negative: %s" (Uint128.to_string i))
              with
               | Failure _ -> Some (fail @@
-                  sprintf "Could not convert string %s to Stdint.Uint128." s))
+                  sprintf "Could not convert string %s to Stdint.Uint128." (Uint128.to_string i)))
         | _ -> None)
   
   let get_other_entries es =

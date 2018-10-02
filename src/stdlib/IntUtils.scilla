@@ -1,0 +1,145 @@
+library IntUtils
+
+let int_neq =
+  tfun 'A =>
+  fun (eq : 'A -> 'A -> Bool) =>
+  fun (a : 'A) =>
+  fun (b : 'A) =>
+    let eqr = eq a b in
+    match eqr with
+    | True => False
+    | False => True
+    end
+
+let int_le =
+  tfun 'A =>
+  fun (eq : 'A -> 'A -> Bool) =>
+  fun (lt : 'A -> 'A -> Bool) =>
+  fun (a : 'A) =>
+  fun (b : 'A) =>
+    let ltr = lt a b in
+    match ltr with
+    | True => True
+    | False => eq a b
+    end
+
+let int_gt =
+  tfun 'A =>
+  fun (lt : 'A -> 'A -> Bool) =>
+  fun (a : 'A) =>
+  fun (b : 'A) =>
+    lt b a
+
+let int_ge =
+  tfun 'A =>
+  fun (eq : 'A -> 'A -> Bool) =>
+  fun (lt : 'A -> 'A -> Bool) =>
+  fun (a : 'A) =>
+  fun (b : 'A) =>
+    let le = @int_le 'A in
+    le eq lt b a
+
+(* int_eq instantiations *)
+let int32_eq =
+  fun (a : Int32) =>
+  fun (b : Int32) =>
+    builtin eq a b
+let int64_eq =
+  fun (a : Int64) =>
+  fun (b : Int64) =>
+    builtin eq a b
+let int128_eq =
+  fun (a : Int128) =>
+  fun (b : Int128) =>
+    builtin eq a b
+let int256_eq =
+  fun (a : Int256) =>
+  fun (b : Int256) =>
+    builtin eq a b
+let uint32_eq =
+  fun (a : Uint32) =>
+  fun (b : Uint32) =>
+    builtin eq a b
+let uint64_eq =
+  fun (a : Uint64) =>
+  fun (b : Uint64) =>
+    builtin eq a b
+let uint128_eq =
+  fun (a : Uint128) =>
+  fun (b : Uint128) =>
+    builtin eq a b
+let uint256_eq =
+  fun (a : Uint256) =>
+  fun (b : Uint256) =>
+    builtin eq a b
+
+(* int_lt instantiations *)
+let int32_lt =
+  fun (a : Int32) =>
+  fun (b : Int32) =>
+    builtin lt a b
+let int64_lt =
+  fun (a : Int64) =>
+  fun (b : Int64) =>
+    builtin lt a b
+let int128_lt =
+  fun (a : Int128) =>
+  fun (b : Int128) =>
+    builtin lt a b
+let int256_lt =
+  fun (a : Int256) =>
+  fun (b : Int256) =>
+    builtin lt a b
+let uint32_lt =
+  fun (a : Uint32) =>
+  fun (b : Uint32) =>
+    builtin lt a b
+let uint64_lt =
+  fun (a : Uint64) =>
+  fun (b : Uint64) =>
+    builtin lt a b
+let uint128_lt =
+  fun (a : Uint128) =>
+  fun (b : Uint128) =>
+    builtin lt a b
+let uint256_lt =
+  fun (a : Uint256) =>
+  fun (b : Uint256) =>
+    builtin lt a b
+
+(* int_neq instantiations *)
+let int32_neq = let t = @int_neq Int32 in t int32_eq
+let int64_neq = let t = @int_neq Int64 in t int64_eq
+let int128_neq = let t = @int_neq Int128 in t int128_eq
+let int256_neq = let t = @int_neq Int256 in t int256_eq
+let uint32_neq = let t = @int_neq Uint32 in t uint32_eq
+let uint64_neq = let t = @int_neq Uint64 in t uint64_eq
+let uint128_neq = let t = @int_neq Uint128 in t uint128_eq
+let uint256_neq = let t = @int_neq Uint256 in t uint256_eq
+(* int_le instantiations *)
+let int32_le = let t = @int_le Int32 in t int32_eq int32_lt
+let int64_le = let t = @int_le Int64 in t int64_eq int64_lt
+let int128_le = let t = @int_le Int128 in t int128_eq int128_lt
+let int256_le = let t = @int_le Int256 in t int256_eq int256_lt
+let uint32_le = let t = @int_le Uint32 in t uint32_eq uint32_lt
+let uint64_le = let t = @int_le Uint64 in t uint64_eq uint64_lt
+let uint128_le = let t = @int_le Uint128 in t uint128_eq uint128_lt
+let uint256_le = let t = @int_le Uint256 in t uint256_eq uint256_lt
+(* int_gt instantiations *)
+let int32_gt = let t = @int_gt Int32 in t int32_lt
+let int64_gt = let t = @int_gt Int64 in t int64_lt
+let int128_gt = let t = @int_gt Int128 in t int128_lt
+let int256_gt = let t = @int_gt Int256 in t int256_lt
+let uint32_gt = let t = @int_gt Uint32 in t uint32_lt
+let uint64_gt = let t = @int_gt Uint64 in t uint64_lt
+let uint128_gt = let t = @int_gt Uint128 in t uint128_lt
+let uint256_gt = let t = @int_gt Uint256 in t uint256_lt
+(* int_ge instantiations *)
+let int32_ge = let t = @int_ge Int32 in t int32_eq int32_lt
+let int64_ge = let t = @int_ge Int64 in t int64_eq int64_lt
+let int128_ge = let t = @int_ge Int128 in t int128_eq int128_lt
+let int256_ge = let t = @int_ge Int256 in t int256_eq int256_lt
+let uint32_ge = let t = @int_ge Uint32 in t uint32_eq uint32_lt
+let uint64_ge = let t = @int_ge Uint64 in t uint64_eq uint64_lt
+let uint128_ge = let t = @int_ge Uint128 in t uint128_eq uint128_lt
+let uint256_ge = let t = @int_ge Uint256 in t uint256_eq uint256_lt

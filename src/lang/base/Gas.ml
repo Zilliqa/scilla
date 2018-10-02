@@ -44,7 +44,8 @@ module ScillaGas
           pure @@ if l <= 20 then 20 else l
       | BNum _ -> pure @@ 32 (* 256 bits *)
       (* (bit-width, value) *)
-      | IntLit (w, _) | UintLit (w, _) -> pure @@ w/8
+      | IntLit x -> pure @@ (int_lit_width x) / 8
+      | UintLit x -> pure @@ (uint_lit_width x) / 8
       (* (bit-width, value) *)
       | ByStrX (w, _) -> pure @@ w
       | ByStr s ->
@@ -57,10 +58,11 @@ module ScillaGas
               pure (acc + cs + clit')) ~init:0 m
       (* A dynamic map of literals *)    
       | Map (_, m) ->
-          foldM ~f:(fun acc (lit1, lit2) ->
-              let%bind clit1 = literal_cost lit1 in
-              let%bind clit2 = literal_cost lit2 in
-              pure (acc + clit1 + clit2)) ~init:0 m
+          Caml.Hashtbl.fold (fun lit1 lit2 acc' ->
+            let%bind acc = acc' in
+            let%bind clit1 = literal_cost lit1 in
+            let%bind clit2 = literal_cost lit2 in
+            pure (acc + clit1 + clit2)) m (pure 0)
       (* A constructor in HNF *)      
       | ADTValue (_, _, ll) ->
           foldM ~f:(fun acc lit' ->
@@ -109,7 +111,7 @@ module ScillaGas
     | "eq", [StringLit s1; StringLit s2]
     | "concat", [StringLit s1; StringLit s2] ->
         pure @@ (String.length s1 + String.length s2) * base
-    | "substr", [StringLit s; UintLit(_, _); UintLit(_, _)] ->
+    | "substr", [StringLit s; UintLit (Uint32L _); UintLit (Uint32L _)] ->
         pure @@ (String.length s) * base
     | _ -> fail @@ "Gas cost error for string built-in"
 
@@ -131,15 +133,13 @@ module ScillaGas
 
   let map_coster _ args base =
     match args with
-    | Map (_, m)::_ ->
-        (* TODO: Should these be linear? *)
-        pure @@ (List.length m) * base
+    | Map _ :: _ -> pure base
     | _ -> fail @@ "Gas cost error for map built-in"
 
   let to_nat_coster _ args base =
     match args with
     (* TODO: Is this good? *)
-    | [UintLit(_, i)] -> pure @@ Int.of_string i * base
+    | [UintLit (Uint32L i)] -> pure @@  (Stdint.Uint32.to_int i) * base
     | _ -> fail @@ "Gas cost error for to_nat built-in"
 
   let int_coster op args base =
@@ -149,15 +149,17 @@ module ScillaGas
       | "div" | "rem" -> base * 4
       | _ -> base
     in
-    match args with
-    | [IntLit(w, _)] | [UintLit(w, _)]
-    | [IntLit(w, _); IntLit(_, _)]
-    | [UintLit(w, _); UintLit(_, _)] ->
-        if w = 32 || w = 64 then pure base'
-        else if w = 128 then pure (base' * 2)
-        else if w = 256 then pure (base' * 4)
-        else fail @@ "Gas cost error for integer built-in"
-    | _ -> fail @@ "Gas cost error for integer built-in"
+    let%bind w = match args with
+      | [IntLit i] | [IntLit i; IntLit _] ->
+        pure @@ int_lit_width i
+      | [UintLit i] | [UintLit i; UintLit _] ->
+        pure @@ uint_lit_width i
+      | _ -> fail @@ "Gas cost error for integer built-in"
+    in
+      if w = 32 || w = 64 then pure base'
+      else if w = 128 then pure (base' * 2)
+      else if w = 256 then pure (base' * 4)
+      else fail @@ "Gas cost error for integer built-in"
 
   let tvar s = TypeVar(s)
 
@@ -208,6 +210,17 @@ module ScillaGas
     ("to_nat", [tvar "'A"], to_nat_coster, 1);
   ]
 
+  let builtin_hashtbl =
+    let open Caml in
+    let ht : ((string, builtin_record list) Hashtbl.t) = Hashtbl.create 64 in
+    List.iter (fun row ->
+      let (opname, _, _, _) = row in
+      match Hashtbl.find_opt ht opname with
+      | Some p ->  Hashtbl.add ht opname (row::p)
+      | None -> Hashtbl.add ht opname (row::[])
+    ) builtin_records;
+      ht
+
   let builtin_cost op_i arg_literals =
     let op = get_id op_i in
     let%bind arg_types = mapM arg_literals ~f:literal_type in
@@ -225,7 +238,9 @@ module ScillaGas
     in
     let msg = sprintf "Unable to determine gas cost for \"%s %s\""
         op (pp_literal_list arg_literals) in
-    let %bind (_, cost) = tryM builtin_records ~f:matcher ~msg:msg in
+    let open Caml in
+    let dict = match Hashtbl.find_opt builtin_hashtbl op with | Some rows -> rows | None -> [] in
+    let %bind (_, cost) = tryM dict ~f:matcher ~msg:msg in
     pure cost
 
 end

@@ -93,16 +93,16 @@ let input_state_json filename =
     | None -> raise (JSON.Invalid_json (balance_label ^ " field missing"))
   in
   let bal_int = match bal_lit with
-    | UintLit (_, x) -> Int.of_string x
+    | UintLit (Uint128L x) -> x
     | _ -> raise (JSON.Invalid_json (balance_label ^ " invalid"))
   in
   let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
-     no_bal_states, Uint128.of_int bal_int
+     no_bal_states, bal_int
 
 (* Add balance to output json and print it out *)
 
 let output_state_json (cstate : EvalUtil.ContractState.t) =
-  let ballit = (balance_label, UintLit(128, Uint128.to_string cstate.balance)) in
+  let ballit = (balance_label, UintLit(Uint128L cstate.balance)) in
   let concatlist = List.cons ballit cstate.fields in
     JSON.ContractState.state_to_json concatlist;;
 

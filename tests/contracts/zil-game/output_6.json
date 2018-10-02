@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "1573",
+  "gas_remaining": "1385",
   "message": {
     "_tag": "Main",
     "_amount": "500",
@@ -25,7 +25,7 @@
         "constructor": "Some",
         "argtypes": [ "ByStr32" ],
         "arguments": [
-          "0xe25c8fc34e419385c94dd12af11310a90b81c0ce9bc6f4a8058c6eb3bbfa4bba"
+          "0x7c3ccd10bb7ec37b46d37926ae6274267f007a34aeaf15c882a715a7f3300529"
         ]
       }
     },

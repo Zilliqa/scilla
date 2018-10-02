@@ -1,11 +1,11 @@
-(Int32 0),
+(Uint32 0),
 { [res6 -> (Some (Int128 9999999999999999999))],
   [res5 -> (None)],
   [res4 -> (None)],
   [res3 -> (Some (Int32 -1))],
   [res2 -> (Some (Int32 1))],
   [res1 -> (Some (Int32 0))],
-  [big_num -> (Int64 9999999999999999999)],
+  [big_num -> (Uint64 9999999999999999999)],
   [minus_one -> (Int32 -1)],
-  [one -> (Int32 1)],
-  [zero -> (Int32 0)] }
+  [one -> (Uint32 1)],
+  [zero -> (Uint32 0)] }

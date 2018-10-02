@@ -149,9 +149,8 @@ simple_exp :
 (* Atomic expression *)
 | a = atomic_exp {a} 
 (* Built-in call *)
-| BUILTIN; b = ID; args = list(ID)
-  { let xs = List.map (fun i -> Ident (i, dummy_loc)) args
-    in (Builtin ((Ident (b, toLoc $startpos)), xs), toLoc $startpos) }
+| BUILTIN; b = ID; xs = builtin_args
+  { (Builtin ((Ident (b, toLoc $startpos(b))), xs), toLoc $startpos) }
 (* Message construction *)
 | LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE
   { (Message es, toLoc $startpos) } 
@@ -193,7 +192,7 @@ lit :
 | s = STRING   { StringLit s }
 | EMP; kt = targ; vt = targ
 {
-  Map ((kt, vt), [])
+  Map ((kt, vt), Hashtbl.create 4) (* 4 is arbitrary here. *)
   (* if isPrimType kt
    * then Map ((kt, vt), [])
    * else
@@ -220,7 +219,12 @@ exp_pm_clause:
 msg_entry :
 | i = ID; COLON;  l = lit { i, MLit l }
 | i = ID; COLON;  c = CID { i, MTag c }
-| i = ID; COLON;  v = ID  { i,  MVar (asId v) }
+| i = ID; COLON;  v = ID  { i,  MVar (asIdL v (toLoc $startpos(v))) }
+
+builtin_args :
+| args = nonempty_list(ID) 
+  { List.map (fun i -> Ident (i, dummy_loc)) args }
+| LPAREN; RPAREN { [] }
 
 type_annot:
 | COLON; t = typ { t }
@@ -238,8 +242,8 @@ types :
 (***********************************************)
 
 stmt:
-| l = ID; BIND; r = ID   { (Load (asIdL l (toLoc $startpos($2)), asId r), toLoc $startpos) }
-| l = ID; ASSIGN; r = ID { (Store (asIdL l (toLoc $startpos($2)), asId r), toLoc $startpos) }
+| l = ID; BIND; r = ID   { (Load (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; ASSIGN; r = ID { (Store (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos($2)), r), toLoc $startpos) }
 | l=ID; BIND; AND; c=CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
@@ -280,7 +284,7 @@ trans_id:
 field:
 | FIELD; f = ID; COLON; t=typ;
   EQ; rhs = exp
-  { asId f, t, rhs }
+  { asIdL f (toLoc $startpos(f)), t, rhs }
 
 contract:
 | CONTRACT; c = CID;
@@ -293,7 +297,7 @@ contract:
       ctrans  = ts } }
 
 libentry :
-| LET; ns = ID; EQ; e= exp { { lname = asId ns ; lexp = e } }
+| LET; ns = ID; EQ; e= exp { { lname = asIdL ns (toLoc $startpos(ns)) ; lexp = e } }
 
 library :
 | LIBRARY; n = CID; ls = list(libentry);
