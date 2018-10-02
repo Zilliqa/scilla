@@ -12,7 +12,7 @@ let mk_transaction_added_event =
 
 (* Event for communicating the signing of a transaction *)
 let mk_transaction_signed_event =
-  fun (no_of_sigs : Int32) =>
+  fun (no_of_sigs : Uint32) =>
     { _eventname : "Transaction signed" ; signature_count : no_of_sigs }
 
 (* Error events *)
@@ -30,40 +30,37 @@ let invalid_contract_err_msg        = "Invalid contract"
 
 
 let transaction_inc = Uint32 1
-let empty_sigs = Nil {ByStr20}
+let empty_sigs = Emp ByStr20 Bool
 
 let signature_added = Int32 3
 let transaction_executed = Int32 2
 
-(* Check that the number of distinct owners is at *)
-(* least as large as the required number of signatures *)
-let check_contract_validity =
-  fun (owners : List ByStr20) =>
-  fun (required_signatures : Int32) =>
-    let find = @list_find ByStr20 in
-    let len = @list_length ByStr20 in
-    (* Find a given owner in a list of owners *)
-    let finder =
-      fun (cur_owner : ByStr20) =>
-      fun (seen_owners : List ByStr20) =>
-        let cur_owner_eq =
-          fun (other : ByStr20) => builtin eq cur_owner other in
-        find cur_owner_eq seen_owners in
-    let folder = @list_foldl ByStr20 (List ByStr20) in
-    let init = Nil {ByStr20} in
-    (* For each owner check whether that owner occurs *)
-    (* earlier in the list of owners *)
+(* Make map of owners *)
+let mk_owners_map =
+  fun (initial_owners : List ByStr20) =>
+    let init = Emp ByStr20 Bool in
     let iter =
-      fun (seen_owners : List ByStr20) =>
+      fun (acc : Map ByStr20 Bool) =>
       fun (cur_owner : ByStr20) =>
-        let found = finder cur_owner seen_owners in
-        match found with
-        | Some _ => seen_owners
-        | None => Cons {ByStr20} cur_owner seen_owners
+        let mem = builtin get acc cur_owner in
+        match mem with
+        | Some True =>
+          (* owner already added *)
+          acc
+        | _ =>
+          (* owner not yet added, or removed *)
+          let t = True in
+          builtin put acc cur_owner t
         end in
-    let filtered_owners = folder iter init owners in
-    let no_of_filtered_owners = len filtered_owners in
-    int32_le required_signatures no_of_filtered_owners
+    let folder = @list_foldl ByStr20 (Map ByStr20 Bool) in
+    folder iter init initial_owners
+
+(* Check that the number of distinct owners is greater than 0 *)
+let check_contract_validity =
+  fun (owners : Map ByStr20 Bool) =>
+    let no_of_owners = builtin size owners in
+    let zero = Uint32 0 in
+    builtin lt zero no_of_owners
 
 (* Create one transaction message *)
 let transaction_msg =
@@ -86,13 +83,13 @@ let transaction_msgs =
 (* list_mem for owners *)
 let address_mem =
   fun (sender : ByStr20) =>
-  fun (mem_list : List ByStr20) =>
-    let predicate =
-      fun (m1 : ByStr20) =>
-      fun (m2 : ByStr20) =>
-        builtin eq m1 m2 in
-        let mem = @list_mem ByStr20 in
-        mem predicate sender mem_list
+  fun (mem_map : Map ByStr20 Bool) =>
+    let mem = builtin get mem_map sender in
+    match mem with
+    | None       => False
+    | Some False => False
+    | Some True  => True
+    end
 
 (* Create messages for executing waiting transactions *)
 let execute_awaiting =
@@ -160,19 +157,26 @@ let execute_awaiting =
 (***************************************************)
 contract Wallet
 (
-owners              : List ByStr20,
-required_signatures : Int32
+initial_owners      : List ByStr20,
+required_signatures : Uint32
 )
 
 (* Funds are not allowed to be added if the contract is not valid *)
 field validity_checked : Bool = False
 field contract_valid   : Bool = False
 
+(* adr -> True indicates that an owner *)
+(* adr -> False or adr not in map indicates non-owner *)
+(* The initial owners will be added as owners when funds are *)
+(* initially added to the contract. *)
+field owners           : Map ByStr20 Bool = Emp ByStr20 Bool
+
 field transactionCount : Uint32 = Uint32 0
-field signatures       : Map Uint32 (List ByStr20) =
-                           Emp Uint32 (List ByStr20)
+field signatures       : Map Uint32 (Map ByStr20 Bool) =
+                           Emp Uint32 (Map ByStr20 Bool)
 field transactions     : Map Uint32 (Pair ByStr20 Uint128) =
                            Emp Uint32 (Pair ByStr20 Uint128)
+(* TODO: Add signees *)
 field awaiting_funds   : List (Pair ByStr20 Uint128) = Nil {(Pair ByStr20 Uint128)}
 
 
@@ -210,7 +214,8 @@ transition SignTransaction (transactionId : Uint32)
   sender_mem = address_mem _sender;
 
   (* Only the owner is allowed to sign off transactions *)
-  sender_is_owner = sender_mem owners;
+  owners_tmp <- owners;
+  sender_is_owner = sender_mem owners_tmp;
   match sender_is_owner with
   | False =>
     e = mk_error_event non_owner_cannot_sign_err_msg;
@@ -240,13 +245,13 @@ transition SignTransaction (transactionId : Uint32)
           event e
         | False =>
           (* Signature is valid. Add to collected signatures *)
-          new_sigs = Cons {ByStr20} _sender sigs;
+          t = True;
+          new_sigs = builtin put sigs _sender t;
           new_signatures = builtin put sigs_tmp transactionId new_sigs;
           signatures := new_signatures;
 
           (* Check for sufficient number of signatures *)
-          len = @list_length ByStr20;
-          no_of_sigs = len new_sigs;
+          no_of_sigs = builtin size new_sigs;
           not_enough_signatures = builtin lt no_of_sigs required_signatures;
           match not_enough_signatures with
           | True =>
@@ -304,7 +309,9 @@ transition AddFunds ()
   checked <- validity_checked;
   match checked with
   | False =>
-    valid_contract = check_contract_validity owners required_signatures;
+    owners_map = mk_owners_map initial_owners;
+    owners := owners_map;
+    valid_contract = check_contract_validity owners_map;
     contract_valid := valid_contract;
     checked = True;
     validity_checked := checked
