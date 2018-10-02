@@ -58,10 +58,11 @@ module ScillaGas
               pure (acc + cs + clit')) ~init:0 m
       (* A dynamic map of literals *)    
       | Map (_, m) ->
-          foldM ~f:(fun acc (lit1, lit2) ->
-              let%bind clit1 = literal_cost lit1 in
-              let%bind clit2 = literal_cost lit2 in
-              pure (acc + clit1 + clit2)) ~init:0 m
+          Caml.Hashtbl.fold (fun lit1 lit2 acc' ->
+            let%bind acc = acc' in
+            let%bind clit1 = literal_cost lit1 in
+            let%bind clit2 = literal_cost lit2 in
+            pure (acc + clit1 + clit2)) m (pure 0)
       (* A constructor in HNF *)      
       | ADTValue (_, _, ll) ->
           foldM ~f:(fun acc lit' ->
@@ -132,9 +133,7 @@ module ScillaGas
 
   let map_coster _ args base =
     match args with
-    | Map (_, m)::_ ->
-        (* TODO: Should these be linear? *)
-        pure @@ (List.length m) * base
+    | Map _ :: _ -> pure base
     | _ -> fail @@ "Gas cost error for map built-in"
 
   let to_nat_coster _ args base =
