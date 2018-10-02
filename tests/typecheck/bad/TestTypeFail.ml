@@ -59,8 +59,9 @@ let t1 =
   (* declared type = (Int32, Int32) *)
   let mt = (int32_typ, int32_typ) in
   (* value type = (Int32, Int64) *)
-  let kv = (int_builder 32 "1"), (int_builder 64 "2") in
-  let l = Map (mt, [kv]) in
+  let kv = Caml.Hashtbl.create 1 in
+  let _ = Caml.Hashtbl.replace kv (int_builder 32 "1") (int_builder 64 "2") in
+  let l = Map (mt, kv) in
     make_bad_lit_test l
 
 (* Map's key type can only be a primitive type. *)
@@ -68,8 +69,13 @@ let t2 =
   (* declared type = (Map(Int32, Int32), Int32) *)
   let mt = (map_typ int32_typ int32_typ, int32_typ) in
   let mt' = (int32_typ, int32_typ) in
-  let l' = Map (mt', [((int_builder 32 "1"), (int_builder 32 "2"))]) in
-  let l = Map (mt, [(l', (int_builder 32 "3"))]) in
+  let m1 = Caml.Hashtbl.create 1 in
+  let _ = Caml.Hashtbl.replace m1 (int_builder 32 "1") (int_builder 32 "2") in
+  let l' =  Map (mt', m1) in
+  let m2 = Caml.Hashtbl.create 1 in
+  (* The key for m2 is being set to another Map, non-primitive. *)
+  let _ = Caml.Hashtbl.replace m2 l' (int_builder 32 "3") in
+  let l = Map (mt, m2) in
     make_bad_lit_test l
 
 (* Bool ADT with some arg. *)

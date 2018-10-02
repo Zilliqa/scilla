@@ -136,8 +136,8 @@ type literal =
   | ByStr of string
   (* Message: an associative array *)    
   | Msg of (string * literal) list
-  (* A dynamic map of literals *)    
-  | Map of mtype * (literal * literal) list
+  (* A dynamic map of literals *)
+  | Map of mtype * (literal, literal) Hashtbl.t
   (* A constructor in HNF *)      
   | ADTValue of string * typ list * literal list
 [@@deriving sexp]
@@ -400,10 +400,11 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Map ((kt, vt), ls) -> 
         let kts = subst_type_in_type' tvar tp kt in
         let vts = subst_type_in_type' tvar tp vt in
-        let ls' = List.map ls ~f:(fun (k, v) ->
+        let ls' = Hashtbl.create (Hashtbl.length ls) in
+        let _ = Hashtbl.iter (fun k v  ->
             let k' = subst_type_in_literal tvar tp k in
             let v' = subst_type_in_literal tvar tp v in 
-            (k', v')) in
+            Hashtbl.add ls' k' v') ls in
         Map ((kts, vts), ls')
     | ADTValue (n, ts, ls) ->
         let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
