@@ -1,0 +1,2 @@
+let x = 0xfb19 in
+builtin to_bystr x
