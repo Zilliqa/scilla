@@ -889,7 +889,7 @@ module ScillaBuiltIns
       | _ -> fail "Failed to elaborate" 
     let size ls _ = match ls with
       | [Map (_, entries)] ->
-          (* The type of the output list will be "Uint32" *)
+          (* The type of the output will be "Uint32" *)
           let ol = Caml.Hashtbl.length entries in
           pure (UintLit (Uint32L (Stdint.Uint32.of_int ol)))
       | _ -> builtin_fail "Map.size" ls

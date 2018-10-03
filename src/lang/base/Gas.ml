@@ -189,7 +189,8 @@ module ScillaGas
     ("put", [tvar "'A"; tvar "'A"; tvar "'A"], map_coster, 1);
     ("get", [tvar "'A"; tvar "'A"], map_coster, 1);
     ("remove", [tvar "'A"; tvar "'A"], map_coster, 1);
-    ("to_list", [tvar "'A"], map_coster, 1); 
+    ("to_list", [tvar "'A"], map_coster, 1);
+    ("size", [tvar "'A"], map_coster, 1); 
 
     (* Integers *)
     ("eq", [tvar "'A"; tvar "'A"], int_coster, 4);
