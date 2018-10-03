@@ -1,4 +1,4 @@
-import ListUtils IntUtils
+import ListUtils IntUtils BoolUtils
 
 (***************************************************)
 (*               Associated library                *)
@@ -26,8 +26,9 @@ let unknown_transaction_id_err_msg  = "Unknown transaction id"
 let insufficient_funds_err_msg      = "Insufficient funds in wallet"
 let no_signature_list_found_err_msg = "No signature list for transaction"
 let already_signed_err_msg          = "Transaction already signed by signee"
+let not_already_signed_err_msg      = "Transaction not signed by signee"
 let invalid_contract_err_msg        = "Invalid contract"
-let invalid_amount_err_msg        = "Invalid amount"
+let invalid_amount_err_msg          = "Invalid amount"
 
 
 let transaction_inc = Uint32 1
@@ -161,6 +162,18 @@ let remove_keys =
       fun (next_key : 'K) =>
         builtin remove acc next_key in
     folder iter map keys
+
+(* Remove transaction id from list *)
+let remove_transaction_id =
+  fun (element : Uint32) =>
+  fun (l : List Uint32) =>
+    let filterer = @list_filter Uint32 in
+    let pred =
+      fun (e : Uint32) =>
+        let equal = uint32_eq e element in
+        negb equal in
+    filterer pred l
+        
 
 (***************************************************)
 (*             The contract definition             *)
@@ -307,11 +320,42 @@ transition SignTransaction (transactionId : Uint32)
   end
 end
 
-
-
-
 (* Revoke signature of existing transaction, if it has not yet been executed. *)
-(* transition RevokeSignature () *)
+transition RevokeSignature (transactionId : Uint32)
+  (* Transaction must occur in signatures map *)
+  sigs_tmp <- signatures;
+  sigs_opt = builtin get sigs_tmp transactionId;
+  match sigs_opt with
+  | None =>
+    e = mk_error_event no_signature_list_found_err_msg;
+    event e
+  | Some sigs =>
+    (* Sender must have signed already *)
+    sender_has_signed = address_mem _sender sigs;
+    match sender_has_signed with
+    | False =>
+      e = mk_error_event not_already_signed_err_msg;
+      event e
+    | True =>
+      new_sigs = builtin remove sigs _sender;
+      new_signatures = builtin put sigs_tmp transactionId new_sigs;
+      signatures := new_signatures;
+      (* Check if this invalidates transaction *)
+      old_no_of_sigs = builtin size sigs;
+      new_no_of_sigs = builtin size new_sigs;
+      was_approved = uint32_ge old_no_of_sigs required_signatures;
+      no_longer_approved = uint32_lt new_no_of_sigs required_signatures;
+      must_remove_from_awaiting = andb was_approved no_longer_approved;
+      match must_remove_from_awaiting with
+      | False =>
+      | True =>
+        await_tmp <- awaiting_funds;
+        new_await = remove_transaction_id transactionId await_tmp;
+        awaiting_funds := new_await
+      end
+    end
+  end
+end
 
 (* Add new owner. Must be accepted by all existing owners *)
 (* transition SignOffNewOwner (new_owner : ByStr20) *)
@@ -331,7 +375,6 @@ transition AddFunds ()
     checked = True;
     validity_checked := checked
   | True =>
-    valid <- contract_valid
   end;
 
   valid <- contract_valid;
@@ -365,5 +408,3 @@ transition AddFunds ()
     end 
   end
 end
-
-
