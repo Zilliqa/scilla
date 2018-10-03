@@ -1,0 +1,17 @@
+
+contract Test
+()
+
+field gmap : Map Int128 Int128 = Emp Int128 Int128
+field topkey : Int128 = Int128 0
+
+transition addToMap()
+  p <- gmap;
+  tk <- topkey;
+
+  gmap1 = builtin put p tk tk;
+  one = Int128 1;
+  tkinc = builtin add tk one;
+  topkey := tkinc;
+  gmap := gmap1
+end
