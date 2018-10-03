@@ -2,15 +2,15 @@
 contract Test
 ()
 
-field gmap : Map Int32 Int32 = Emp Int32 Int32
-field topkey : Int32 = Int32 0
+field gmap : Map Int256 Int256 = Emp Int256 Int256
+field topkey : Int256 = Int256 0
 
 transition addToMap()
   p <- gmap;
   tk <- topkey;
 
   gmap1 = builtin put p tk tk;
-  one = Int32 1;
+  one = Int256 1;
   tkinc = builtin add tk one;
   topkey := tkinc;
   gmap := gmap1

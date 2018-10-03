@@ -1,6 +1,12 @@
 {
-  "gas_remaining": "759923",
-  "message": null,
+  "gas_remaining": "689744",
+  "message": {
+    "_tag": "Main",
+    "_amount": "0",
+    "_accepted": "false",
+    "_recipient": "0x12345678901234567890123456789012345678ab",
+    "params": [ { "vname": "size", "type": "Int32", "value": "10000" } ]
+  },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -6195,7 +6201,6 @@
         { "key": "6331", "val": "6331" },
         { "key": "3961", "val": "3961" },
         { "key": "7299", "val": "7299" },
-        { "key": "10000", "val": "10000" },
         { "key": "5436", "val": "5436" },
         { "key": "9608", "val": "9608" },
         { "key": "2853", "val": "2853" },
@@ -10010,7 +10015,7 @@
         { "key": "5974", "val": "5974" }
       ]
     },
-    { "vname": "topkey", "type": "Int32", "value": "10001" }
+    { "vname": "topkey", "type": "Int32", "value": "10000" }
   ],
   "events": []
 }

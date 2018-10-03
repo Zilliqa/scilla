@@ -1,0 +1,28 @@
+import ListUtils
+
+library Test
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+let list_length_f = @list_length (Pair(Int32)(Int32))
+
+contract Test
+()
+
+field gmap : Map Int32 Int32 = Emp Int32 Int32
+field topkey : Int32 = Int32 0
+
+transition size()
+  p <- gmap;
+
+  mp = builtin to_list p;
+  len = list_length_f mp;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; size : len};
+  msgs = one_msg msg;
+  send msgs
+
+end
