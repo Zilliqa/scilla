@@ -6,7 +6,7 @@ function runscilla
     i=1
     while [[ $i -le $runs ]]
     do
-        ../../../../bin/scilla-runner -init init.json -istate state_${n}.json -imessage message_1.json -o output.json -iblockchain blockchain_1.json -i contract.scilla -libdir ../../../..//src/stdlib -gaslimit 100000
+        ../../../../bin/scilla-runner -init init.json -istate state_${n}.json -imessage message.json -o output.json -iblockchain blockchain.json -i contract.scilla -libdir ../../../..//src/stdlib -gaslimit 100000
         
         i=$(($i + 1))
     done

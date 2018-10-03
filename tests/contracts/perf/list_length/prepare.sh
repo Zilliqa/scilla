@@ -6,9 +6,9 @@ update_state()
 }
 
 i=1
-while [[ $i -lt 100 ]]
+while [[ $i -le 100 ]]
 do
-    ../../../../bin/scilla-runner -init init.json -istate state.json -imessage message_1.json -o output.json -iblockchain blockchain_1.json -i contract.scilla -libdir ../../../..//src/stdlib -gaslimit 100000
+    ../../../../bin/scilla-runner -init init.json -istate state.json -imessage message.json -o output.json -iblockchain blockchain.json -i contract.scilla -libdir ../../../..//src/stdlib -gaslimit 100000
     
     update_state
 
