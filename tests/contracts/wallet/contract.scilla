@@ -130,10 +130,10 @@ let get_affordable_awaiting =
   fun (balance : Uint128) =>
   fun (awaiting : List Uint32) =>
   fun (transactions : Map Uint32 (Pair ByStr20 Uint128)) =>
-    let folder = @list_foldl Uint32 (Pair Uint128 (Pair (List Uint32) (List Uint32))) in
+    let folder = @list_foldr Uint32 (Pair Uint128 (Pair (List Uint32) (List Uint32))) in
     let iter =
-      fun (acc : Pair Uint128 (Pair (List Uint32) (List Uint32))) =>
       fun (next_awaiting : Uint32) =>
+      fun (acc : Pair Uint128 (Pair (List Uint32) (List Uint32))) =>
         match acc with
         | Pair remaining_balance (Pair to_be_executed not_to_be_executed) =>
           let transaction = builtin get transactions next_awaiting in
