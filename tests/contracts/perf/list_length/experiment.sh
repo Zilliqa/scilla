@@ -1,4 +1,4 @@
-runs=5
+runs=1
 
 function runscilla
 {
