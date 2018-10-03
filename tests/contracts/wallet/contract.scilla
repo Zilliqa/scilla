@@ -15,6 +15,19 @@ let mk_transaction_signed_event =
   fun (no_of_sigs : Uint32) =>
     { _eventname : "Transaction signed" ; signature_count : no_of_sigs }
 
+(* Event for communicating a the addition of a new owner *)
+let mk_candidate_owner_added_event =
+    { _eventname : "Candiate owner added" }
+
+(* Event for communicating a the signing off of a new owner *)
+let mk_owner_signed_event =
+  fun (no_of_sigs : Uint32) =>
+    { _eventname : "Owner signed" ; signature_count : no_of_sigs }
+
+(* Event for communicating a the addition of a new owner *)
+let mk_new_owner_approved_event =
+    { _eventname : "New owner approved" }
+
 (* Error events *)
 let mk_error_event =
   fun (err_msg : String) =>
@@ -189,17 +202,26 @@ field validity_checked : Bool = False
 field contract_valid   : Bool = False
 
 (* adr -> True indicates that an owner *)
-(* adr -> False or adr not in map indicates non-owner *)
+(* adr not in map indicates non-owner *)
+(* adr -> False is not used *)
 (* The initial owners will be added as owners when funds are *)
 (* initially added to the contract. *)
 field owners           : Map ByStr20 Bool = Emp ByStr20 Bool
 
 field transactionCount : Uint32 = Uint32 0
+
+(* Collected signatures for transactions *)
 field signatures       : Map Uint32 (Map ByStr20 Bool) =
                            Emp Uint32 (Map ByStr20 Bool)
+(* Awaiting transactions *) 
 field transactions     : Map Uint32 (Pair ByStr20 Uint128) =
                            Emp Uint32 (Pair ByStr20 Uint128)
+(* Approved transactions awaiting funds *) 
 field awaiting_funds   : List Uint32 = Nil {Uint32}
+
+(* Collected signatures for new owners *)
+field owner_signatures : Map ByStr20 (Map ByStr20 Bool) =
+                           Emp ByStr20 (Map ByStr20 Bool)
 
 
 (* Submit a transaction for future signoff *)
@@ -357,9 +379,73 @@ transition RevokeSignature (transactionId : Uint32)
   end
 end
 
-(* Add new owner. Must be accepted by all existing owners *)
-(* transition SignOffNewOwner (new_owner : ByStr20) *)
-  
+(* Sign off on new owner. *)
+transition SignOffNewOwner (new_owner : ByStr20)
+  (* Helpers *)
+  sender_mem = address_mem _sender;
+  t = True;
+
+  (* Only owners are allowed to sign off new owners *)
+  owners_tmp <- owners;
+  sender_is_owner = sender_mem owners_tmp;
+  match sender_is_owner with
+  | False =>
+    e = mk_error_event non_owner_cannot_sign_err_msg;
+    event e
+  | True =>
+    owner_signatures_tmp <- owner_signatures;
+    sigs_option = builtin get owner_signatures_tmp _sender;
+    match sigs_option with
+    | None =>
+      (* New owner *)
+      empty_sigs = Emp ByStr20 Bool;
+      new_sigs = builtin put empty_sigs _sender t;
+      new_owner_signatures = builtin put owner_signatures_tmp new_owner new_sigs;
+      owner_signatures := new_owner_signatures;
+      (* Create event with owner id *)
+      e = mk_candidate_owner_added_event;
+      event e
+    | Some sigs =>
+      (* Sender must not have signed already *)
+      sender_has_signed = sender_mem sigs;
+      match sender_has_signed with
+      | True =>
+        e = mk_error_event already_signed_err_msg;
+        event e
+      | False =>
+        new_sigs = builtin put sigs _sender t;
+        new_owner_signatures = builtin put owner_signatures_tmp new_owner new_sigs;
+        (* Create event with owner id *)
+        no_of_sigs = builtin size new_sigs;
+        e = mk_owner_signed_event no_of_sigs;
+        event e
+      end
+    end;
+    (* Check if all owners have signed *)
+    current_owners <- owners;
+    owner_signatures_tmp <- owner_signatures;
+    sigs_option = builtin get owner_signatures_tmp _sender;
+    match sigs_option with
+    | None =>
+      (* Cannot happen *)
+    | Some sigs => 
+      no_of_owners = builtin size current_owners;
+      no_of_sigs = builtin size sigs;
+      all_have_signed = uint32_eq no_of_sigs no_of_owners;
+      match all_have_signed with
+      | False =>
+      | True =>
+        new_owner_signatures = builtin remove owner_signatures_tmp new_owner;
+        owner_signatures := new_owner_signatures;
+        new_owners = builtin put current_owners new_owner t;
+        owners := new_owners;
+        (* Create event with owner id *)
+        e = mk_new_owner_approved_event;
+        event e
+      end
+    end
+  end  
+end
 
 
 (* Add funds to wallet *)
