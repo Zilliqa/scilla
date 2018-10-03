@@ -1,34 +1,34 @@
-Timer (parse scilla source): 0.000100s
-Timer (import libs): 0.000492s
-Timer (parse json file init.json): 0.000034s
-Timer (build literal from json init.json): 0.000010s
-Timer (parse json file message.json): 0.000014s
-Timer (build literal from json message.json): 0.000020s
-Timer (parse json file state_5000.json): 0.005815s
-Timer (build literal from json state_5000.json): 0.022091s
-Timer (execute transition): 0.801034s
-Timer (literal_to_json): 0.003886s
-Timer (json_to_string): 0.020399s
-Timer (json print to output.json): 0.000239s
-
-
-real	0m0.895s
-user	0m0.648s
-sys	0m0.248s
 Timer (parse scilla source): 0.000058s
-Timer (import libs): 0.000261s
+Timer (import libs): 0.000275s
 Timer (parse json file init.json): 0.000016s
 Timer (build literal from json init.json): 0.000005s
 Timer (parse json file message.json): 0.000007s
+Timer (build literal from json message.json): 0.000010s
+Timer (parse json file state_5000.json): 0.004467s
+Timer (build literal from json state_5000.json): 0.019845s
+Timer (execute transition): 0.776902s
+Timer (literal_to_json): 0.003847s
+Timer (json_to_string): 0.020926s
+Timer (json print to output.json): 0.000259s
+
+
+real	0m0.843s
+user	0m0.641s
+sys	0m0.200s
+Timer (parse scilla source): 0.000059s
+Timer (import libs): 0.000264s
+Timer (parse json file init.json): 0.000017s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000008s
 Timer (build literal from json message.json): 0.000009s
-Timer (parse json file state_10000.json): 0.006705s
-Timer (build literal from json state_10000.json): 0.039207s
-Timer (execute transition): 3.458083s
-Timer (literal_to_json): 0.011693s
-Timer (json_to_string): 0.035104s
-Timer (json print to output.json): 0.000327s
+Timer (parse json file state_10000.json): 0.006593s
+Timer (build literal from json state_10000.json): 0.040592s
+Timer (execute transition): 3.348929s
+Timer (literal_to_json): 0.011824s
+Timer (json_to_string): 0.034832s
+Timer (json print to output.json): 0.000300s
 
 
-real	0m3.566s
-user	0m2.607s
-sys	0m0.958s
+real	0m3.469s
+user	0m2.636s
+sys	0m0.820s

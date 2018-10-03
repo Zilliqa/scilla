@@ -1,0 +1,42 @@
+import ListUtils PairUtils
+
+library Test
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+let fst_f = @fst Int32 Int32
+
+(* List Int32 -> Int32 *)
+(* Sum of elements in list *)
+let list_sum =
+  fun (l : List (Pair(Int32)(Int32))) =>
+    let folder = @list_foldr (Pair(Int32)(Int32)) Int32 in
+    let init = Int32 0 in
+    let iter =
+      fun (h : Pair(Int32)(Int32)) =>
+      fun (z : Int32) =>
+        let hh = fst_f h in
+        builtin add hh z
+     in
+     folder iter init l
+     
+contract Test
+()
+
+field gmap : Map Int32 Int32 = Emp Int32 Int32
+field topkey : Int32 = Int32 0
+
+transition sum()
+  p <- gmap;
+
+  mp = builtin to_list p;
+  sum = list_sum mp;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; sum : sum};
+  msgs = one_msg msg;
+  send msgs
+
+end
