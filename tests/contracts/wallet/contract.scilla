@@ -27,6 +27,7 @@ let insufficient_funds_err_msg      = "Insufficient funds in wallet"
 let no_signature_list_found_err_msg = "No signature list for transaction"
 let already_signed_err_msg          = "Transaction already signed by signee"
 let invalid_contract_err_msg        = "Invalid contract"
+let invalid_amount_err_msg        = "Invalid amount"
 
 
 let transaction_inc = Uint32 1
@@ -70,7 +71,7 @@ let transaction_msg =
      code : transaction_executed }
 
 (* Wrap one transaction message as singleton list *)
-let transaction_msgs =
+let transaction_msg_as_list =
   fun (recipient : ByStr20) =>
   fun (amount : Uint128) =>
     let one_msg = 
@@ -79,6 +80,25 @@ let transaction_msgs =
         Cons {Message} msg nil_msg in
     let msg = transaction_msg recipient amount in
     one_msg msg
+
+(* Create messages for list of transactions *)
+let transaction_msgs =
+  fun (transaction_ids : List Uint32) =>
+  fun (transactions : Map Uint32 (Pair ByStr20 Uint128)) =>
+    let mapper = @list_map Uint32 Message in
+    let iter =
+      fun (id : Uint32) =>
+        let transaction = builtin get transactions id in
+        match transaction with
+        | None =>
+          (* Should not happen *)
+          let dummy_amount = Uint128 0 in
+          let dummy_address = 0x0000000000000000000000000000000000000000 in
+          transaction_msg dummy_address dummy_amount
+        | Some (Pair recipient amount) =>
+          transaction_msg recipient amount
+        end in
+    mapper iter transaction_ids
 
 (* list_mem for owners *)
 let address_mem =
@@ -91,91 +111,56 @@ let address_mem =
     | Some True  => True
     end
 
-(* Create messages for executing waiting transactions *)
-let execute_awaiting =
+(* Split awaiting transactions into list of ones we can afford and list of ones we cannot *)
+let get_affordable_awaiting =
   fun (balance : Uint128) =>
   fun (awaiting : List Uint32) =>
   fun (transactions : Map Uint32 (Pair ByStr20 Uint128)) =>
-  fun (signatures : Map Uint32 (Map ByStr20 Bool)) =>
-    let folder = @list_foldl Uint32 in
+    let folder = @list_foldl Uint32 (Pair Uint128 (Pair (List Uint32) (List Uint32))) in
     let iter =
       fun (acc : Pair Uint128 (Pair (List Uint32) (List Uint32))) =>
       fun (next_awaiting : Uint32) =>
         match acc with
-        | Pair balance (Pair to_be_executed not_being_executed) =>
-          match not_being_executed with
-          | Cons _ _ =>
-            (* Not the next awaiting *)
-            let new_not_being_executed = Cons {Uint32} next_awaiting not_being_executed in
-            let awaiting_pair = Pair {(List Uint32) (List Uint32)} to_be_executed new_not_being_executed in
-            Pair {Uint128 (Pair (List Uint32) (List Uint32))} balance awaiting_pair
-          | Nil =>
-            let transaction = builtin get transactions next_awaiting in
-            let amount =
-              match transaction with
-              | None => Uint128 0
-              | Some (Pair _ a) => a
-              end in
-            let not_enough_funds = builtin lt balance amount in
+        | Pair remaining_balance (Pair to_be_executed not_to_be_executed) =>
+          let transaction = builtin get transactions next_awaiting in
+          match transaction with
+          | None =>
+            (* Transaction should exist, but we can't fix it here, so just ignore. *)
+            acc
+          | Some (Pair recipient amount) =>
+            let not_enough_funds = builtin lt remaining_balance amount in
             match not_enough_funds with
             | True =>
               (* Not enough money *)
-              let new_not_being_executed = Cons {Uint32} next_awaiting not_being_executed in
-              let awaiting_pair = Pair {(List Uint32) (List Uint32)} to_be_executed new_not_being_executed in
+              let new_not_to_be_executed = Cons {Uint32} next_awaiting not_to_be_executed in
+              let awaiting_pair = Pair {(List Uint32) (List Uint32)} to_be_executed new_not_to_be_executed in
               Pair {Uint128 (Pair (List Uint32) (List Uint32))} balance awaiting_pair
             | False =>
               (* To be executed *)
-              let new_balance = builtin sub balance amount in
               let new_to_be_executed = Cons {Uint32} next_awaiting to_be_executed in
-              let awaiting_pair = Pair {(List Uint32) (List Uint32)} new_to_be_executed not_being_executed in
-              Pair {Uint128 (Pair (List Uint32) (List Uint32))} new_balance awaiting_pair
+              let awaiting_pair = Pair {(List Uint32) (List Uint32)} new_to_be_executed not_to_be_executed in
+              let new_remaining_balance = builtin sub balance amount in
+              Pair {Uint128 (Pair (List Uint32) (List Uint32))} new_remaining_balance awaiting_pair
             end
           end
         end in
-      let empty_awaiting_list = Nil {Uint32} in
-      let init_awaiting_pair = Pair {(List Uint32) (List Uint32)} empty_awaiting_list empty_awaiting_list in
-      let init = Pair {Uint128 (Pair (List Uint32) (List Uint32))} balance init_awaiting_pair in
-      let rem_balance_split_awaiting = folder iter init awaiting in
-      let to_be_executed =
-        match rem_balance_split_awaiting with
-        | Pair _ (Pair to_be_executed _) => to_be_executed
-        end in
-      let still_awaiting_rev = 
-        match rem_balance_split_awaiting with
-        | Pair _ (Pair _ remaining_awaiting) => remaining_awaiting
-        end in
-      (* Create messages *)
-      let mapper = @list_map Uint32 Message in
-      let iter =
-        fun (to_be_executed : Uint32) =>
-          let transaction = builtin get transactions to_be_executed in
-          match transaction with
-          | None =>
-            (* This should be impossible. Create empty message *)
-            let dummy_recipient = 0x0000000000000000000000000000000000000000 in
-            let amount = Uint128 0 in
-            transaction_msg recipient amount
-          | Some (Pair recipient amount) =>
-            transaction_msg recipient amount
-          end in
-      let msgs = mapper iter to_be_executed in
-      (* Remove to_be_executed transactions from transactions and signatures *)
-      let iter =
-        tfun 'A =>
-        fun (acc : Map Uint32 'A) =>
-        fun (next_awaiting : Uint32) =>
-          builtin remove acc next_awaiting in
-      let iter_transactions = @iter (Pair ByStr20 Uint128) in
-      let iter_signatures = @iter (Map ByStr20 Bool) in
-      let remaining_transactions = folder iter_transactions transactions to_be_executed in
-      let remaining_signatures = folder iter_signatures signatures to_be_executed in
-      (* Bundle results *)
-      let reverser = @list_reverse Uint32 in
-      let still_awaiting = reverser still_awaiting_rev in
-      let awaiting_msgs = Pair {(List Uint32) (List Message)} still_awaiting msgs in
-      let signatures_awating_msgs = Pair {(Map Uint32 (Map ByStr20 Bool)) (Pair (List Uint32) (List Message))} remaining_signatures awaiting_msgs in
-      Pair {(Map Uint32 (Pair ByStr20 Uint128)) (Pair (Map Uint32 (Map ByStr20 Bool)) (Pair (List Uint32) (List Message)))} remaining_transactions signatures_awating_msgs
-      
+    let empty_awaiting = Nil {Uint32} in
+    let init_awaiting_pair = Pair {(List Uint32) (List Uint32)} empty_awaiting empty_awaiting in
+    let init = Pair {Uint128 (Pair (List Uint32) (List Uint32))} balance init_awaiting_pair in
+    folder iter init awaiting
+
+(* Remove list of keys from map *)
+let remove_keys =
+  tfun 'K =>
+  tfun 'V =>
+  fun (map : Map 'K 'V) =>
+  fun (keys : List 'K) =>
+    let folder = @list_foldl 'K (Map 'K 'V) in
+    let iter =
+      fun (acc : Map 'K 'V) =>
+      fun (next_key : 'K) =>
+        builtin remove acc next_key in
+    folder iter map keys
 
 (***************************************************)
 (*             The contract definition             *)
@@ -208,28 +193,38 @@ field awaiting_funds   : List Uint32 = Nil {Uint32}
 transition SubmitTransaction (recipient : ByStr20, amount : Uint128)
   tc <- transactionCount;
 
-  (* Create new transaction *)
-  transaction = Pair {ByStr20 Uint128} recipient amount;
+  zero = Uint128 0;
+  amount_is_zero = builtin eq amount zero;
 
-  (* Add transaction to outstanding list of transactions *)
-  ts_tmp <- transactions;
-  ts_new = builtin put ts_tmp tc transaction;
-
-  (* Add empty list of signatures *)
-  sigs_tmp <- signatures;
-  sigs_new = builtin put sigs_tmp tc empty_sigs;
-  
-  (* Increment transaction counter *)
-  tc_new = builtin add tc transaction_inc;
-
-  (* Update fields *)
-  transactionCount := tc_new;
-  transactions := ts_new;
-  signatures := sigs_new;
-
-  (* Create event with transaction Id *)
-  e = mk_transaction_added_event tc;
-  event e
+  match amount_is_zero with
+  | True =>
+    (* Illegal transaction *)
+    e = mk_error_event invalid_amount_err_msg;
+    event e
+  | False =>
+    (* Create new transaction *)
+    transaction = Pair {ByStr20 Uint128} recipient amount;
+    
+    (* Add transaction to outstanding list of transactions *)
+    ts_tmp <- transactions;
+    ts_new = builtin put ts_tmp tc transaction;
+    
+    (* Add empty list of signatures *)
+    sigs_tmp <- signatures;
+    sigs_new = builtin put sigs_tmp tc empty_sigs;
+    
+    (* Increment transaction counter *)
+    tc_new = builtin add tc transaction_inc;
+    
+    (* Update fields *)
+    transactionCount := tc_new;
+    transactions := ts_new;
+    signatures := sigs_new;
+    
+    (* Create event with transaction Id *)
+    e = mk_transaction_added_event tc;
+    event e
+  end
 end
 
 (* Sign off on an existing transaction *)
@@ -288,12 +283,9 @@ transition SignTransaction (transactionId : Uint32)
             not_enough_money = builtin lt bal amount;
             match not_enough_money with
             | True =>
-              (* Move transaction to back of list of waiting transactions *)
+              (* Add transaction to list of waiting transactions *)
               await <- awaiting_funds;
-              emp_trans_list = Nil {Uint32};
-              trans_as_list = Cons {Uint32} transactionId emp_trans_list;
-              new_await = let app = @list_append (Uint32)
-                          in app await trans_as_list;
+              new_await = Cons {Uint32} transactionId await;
               awaiting_funds := new_await;
               e = mk_error_event insufficient_funds_err_msg;
               event e
@@ -305,7 +297,7 @@ transition SignTransaction (transactionId : Uint32)
               transactions := new_ts;
               signatures := new_signatures;
               (* Execute transaction. *)
-              msgs = transaction_msgs recipient amount;
+              msgs = transaction_msg_as_list recipient amount;
               send msgs
             end
           end
@@ -352,11 +344,26 @@ transition AddFunds ()
     (* Execute awaiting transactions *)
     bal <- _balance;
     await_tmp <- awaiting_funds;
-    execute_result = execute_awaiting bal await_tmp;
-    match execute_result with
-    | Pair msgs await =>
-      awaiting_funds := await;
+    trans <- transactions;
+    sigs <- signatures;
+    
+    split_awaiting = get_affordable_awaiting bal await_tmp trans;
+    match split_awaiting with
+    | Pair _ (Pair to_be_executed not_to_be_executed) =>
+      (* Generate messages *)
+      msgs = transaction_msgs to_be_executed trans;
+      (* Remove executed transactions *)
+      transaction_remover = @remove_keys Uint32 (Pair ByStr20 Uint128);
+      signature_remover = @remove_keys Uint32 (Map ByStr20 Bool);
+      new_transactions = transaction_remover trans to_be_executed;
+      transactions := new_transactions;
+      new_signatures = signature_remover sigs to_be_executed;
+      signatures := new_signatures;
+      
+      (* Execute transactions *)
       send msgs
-    end
+    end 
   end
 end
+
+
