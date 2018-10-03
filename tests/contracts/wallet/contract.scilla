@@ -37,7 +37,7 @@ let mk_error_event =
 let non_owner_cannot_sign_err_msg   = "Signee not recognized as owner"
 let unknown_transaction_id_err_msg  = "Unknown transaction id"
 let insufficient_funds_err_msg      = "Insufficient funds in wallet"
-let no_signature_list_found_err_msg = "No signature list for transaction"
+let no_signature_list_found_err_msg = "No signature list found"
 let already_signed_err_msg          = "Transaction already signed by signee"
 let not_already_signed_err_msg      = "Transaction not signed by signee"
 let invalid_contract_err_msg        = "Invalid contract"
@@ -375,6 +375,30 @@ transition RevokeSignature (transactionId : Uint32)
         new_await = remove_transaction_id transactionId await_tmp;
         awaiting_funds := new_await
       end
+    end
+  end
+end
+
+(* Revoke signature for new owner *)
+transition RevokeOwnerSignature (new_owner : ByStr20)
+  (* new owner must occur in signatures map *)
+  sigs_tmp <- owner_signatures;
+  sigs_opt = builtin get sigs_tmp new_owner;
+  match sigs_opt with
+  | None =>
+    e = mk_error_event no_signature_list_found_err_msg;
+    event e
+  | Some sigs =>
+    (* Sender must have signed already *)
+    sender_has_signed = address_mem _sender sigs;
+    match sender_has_signed with
+    | False =>
+      e = mk_error_event not_already_signed_err_msg;
+      event e
+    | True =>
+      new_sigs = builtin remove sigs _sender;
+      new_signatures = builtin put sigs_tmp new_owner new_sigs;
+      owner_signatures := new_signatures
     end
   end
 end
