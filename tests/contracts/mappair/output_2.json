@@ -5,7 +5,7 @@
     "_amount": "0",
     "_accepted": "false",
     "_recipient": "0x12345678901234567890123456789012345678ab",
-    "params": [ { "vname": "listLength", "type": "Int32", "value": "1" } ]
+    "params": [ { "vname": "listLength", "type": "Uint32", "value": "1" } ]
   },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
