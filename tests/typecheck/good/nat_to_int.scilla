@@ -1,0 +1,4 @@
+let z = Zero in
+let one = Succ z in
+let two = Succ one in
+nat_to_int two
