@@ -1,0 +1,44 @@
+import ListUtils PairUtils
+
+library Test
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+let fst_f = @fst Int128 Int128
+
+(* List Int128 -> Int128 *)
+(* Sum of elements in list *)
+let list_div =
+  fun (l : List (Pair(Int128)(Int128))) =>
+    let folder = @list_foldr (Pair(Int128)(Int128)) Int128 in
+    let init = Int128 0 in
+    let iter =
+      fun (h : Pair(Int128)(Int128)) =>
+      fun (z : Int128) =>
+        let x = Int128 31 in
+        let hh = fst_f h in
+        (* no accummulation. *)
+        builtin div hh x
+     in
+     folder iter init l
+     
+contract Test
+()
+
+field gmap : Map Int128 Int128 = Emp Int128 Int128
+field topkey : Int128 = Int128 0
+
+transition div()
+  p <- gmap;
+
+  mp = builtin to_list p;
+  quotient = list_div mp;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; quotient : quotient};
+  msgs = one_msg msg;
+  send msgs
+
+end
