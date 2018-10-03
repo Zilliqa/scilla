@@ -1,6 +1,6 @@
 [
     {
-        "vname" : "owners",
+        "vname" : "initial_owners",
         "type" : "List ByStr20",
         "value" : {
             "constructor" : "Cons",
@@ -31,7 +31,7 @@
     },
     {
         "vname" : "required_signatures",
-        "type" : "Int32",
+        "type" : "Uint32",
         "value" : "2"
     },
     {

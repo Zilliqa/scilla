@@ -18,12 +18,16 @@
           "arguments"   : []
       }
     },
+    { "vname": "owners",
+      "type": "Map Bystr20 Bool",
+      "value": []
+    },
     { "vname": "transactionCount",
       "type": "Uint32",
       "value": "0"
     },
     { "vname": "signatures",
-      "type": "Map Uint32 (List ByStr20)",
+      "type": "Map Uint32 (Map ByStr20 Bool)",
       "value": []
     },
     { "vname": "transactions",
@@ -31,11 +35,15 @@
       "value": []
     },
     { "vname": "awaiting_funds",
-      "type": "List (Pair ByStr20 Uint128)",
+      "type": "List Uint32",
       "value": {
           "constructor" : "Nil",
-          "argtypes"    : [ "Pair ByStr20 Uint128" ],
+          "argtypes"    : [ "Uint32" ],
           "arguments"   : []
       }
+    },
+    { "vname": "owner_signatures",
+      "type": "Map ByStr20 (Map ByStr20 Bool)",
+      "value": []
     }
 ]
