@@ -60,8 +60,8 @@ let check_extract_cstate name res gas_limit =
       perr "Execution stopped";
       exit 1
   | Ok ((_, cstate), remaining_gas) ->
-      plog (sprintf "[Initializing %s's fields]\nSuccess!\n%s\n"
-         name (ContractState.pp cstate));
+      plog (sprintf "[Initializing %s's fields]\nSuccess!\n"
+         name );
       cstate, remaining_gas
 
 (*****************************************************)
@@ -77,7 +77,7 @@ let check_after_step name res gas_limit =
       exit 1
   | Ok ((cstate, outs, events), remaining_gas) ->
       plog (sprintf "Success! Here's what we got:\n" ^
-            sprintf "%s" (ContractState.pp cstate) ^
+            (* sprintf "%s" (ContractState.pp cstate) ^ *)
             sprintf "Emitted messages:\n%s\n\n" (pp_literal_list outs) ^
             sprintf"Gas remaining:%s\n" (Int.to_string remaining_gas) ^
             sprintf "Emitted events:\n%s\n\n" (pp_literal_list events));
