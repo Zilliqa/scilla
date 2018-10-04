@@ -3,14 +3,39 @@
     {
       "vname": "signatures",
       "type": "Map (Uint32) (Map (ByStr20) (Bool))",
-      "value": []
+      "value": [
+        {
+          "key": "1",
+          "val": [
+            {
+              "key": "0x1234567890123456789012345678906784567890",
+              "val": {
+                "constructor": "True",
+                "argtypes": [],
+                "arguments": []
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       "vname": "transactions",
       "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
-      "value": []
+      "value": [
+        {
+          "key": "1",
+          "val": {
+            "constructor": "Pair",
+            "argtypes": [ "ByStr20", "Uint128" ],
+            "arguments": [
+              "0x1234567890123456789012345678906780000000", "100"
+            ]
+          }
+        }
+      ]
     },
-    { "vname": "transactionCount", "type": "Uint32", "value": "1" },
+    { "vname": "transactionCount", "type": "Uint32", "value": "2" },
     {
       "vname": "validity_checked",
       "type": "Bool",

@@ -14,6 +14,15 @@
       "value": []
     },
     {
+      "vname": "awaiting_funds",
+      "type": "List (Uint32)",
+      "value": {
+        "constructor": "Nil",
+        "argtypes": [ "Uint32" ],
+        "arguments": []
+      }
+    },
+    {
       "vname": "validity_checked",
       "type": "Bool",
       "value": { "constructor": "True", "argtypes": [], "arguments": [] }
@@ -42,15 +51,6 @@
       ]
     },
     { "vname": "transactionCount", "type": "Uint32", "value": "0" },
-    {
-      "vname": "awaiting_funds",
-      "type": "List (Uint32)",
-      "value": {
-        "constructor": "Nil",
-        "argtypes": [ "Uint32" ],
-        "arguments": []
-      }
-    },
     {
       "vname": "owner_signatures",
       "type": "Map (ByStr20) (Map (ByStr20) (Bool))",

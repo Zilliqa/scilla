@@ -509,10 +509,10 @@ transition AddFunds ()
       transaction_remover = @remove_keys Uint32 (Pair ByStr20 Uint128);
       signature_remover = @remove_keys Uint32 (Map ByStr20 Bool);
       new_transactions = transaction_remover trans to_be_executed;
+      awaiting_funds := not_to_be_executed;
       transactions := new_transactions;
       new_signatures = signature_remover sigs to_be_executed;
       signatures := new_signatures;
-      
       (* Execute transactions *)
       send msgs
     end 
