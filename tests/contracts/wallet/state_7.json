@@ -1,9 +1,43 @@
 [
     { "vname": "_balance", "type": "Uint128", "value": "90" },
     {
+      "vname": "awaiting_funds",
+      "type": "List (Uint32)",
+      "value": {
+        "constructor": "Cons",
+        "argtypes": [ "Uint32" ],
+        "arguments": [
+          "1",
+          { "constructor": "Nil", "argtypes": [ "Uint32" ], "arguments": [] }
+        ]
+      }
+    },
+    {
       "vname": "signatures",
       "type": "Map (Uint32) (Map (ByStr20) (Bool))",
-      "value": [ { "key": "1", "val": [] } ]
+      "value": [
+        {
+          "key": "1",
+          "val": [
+            {
+              "key": "0x1234567890123456789012345678906784567890",
+              "val": {
+                "constructor": "True",
+                "argtypes": [],
+                "arguments": []
+              }
+            },
+            {
+              "key": "0xffcdeabcde126786789012345678901234567890",
+              "val": {
+                "constructor": "True",
+                "argtypes": [],
+                "arguments": []
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       "vname": "transactions",
@@ -49,15 +83,6 @@
           "val": { "constructor": "True", "argtypes": [], "arguments": [] }
         }
       ]
-    },
-    {
-      "vname": "awaiting_funds",
-      "type": "List (Uint32)",
-      "value": {
-        "constructor": "Nil",
-        "argtypes": [ "Uint32" ],
-        "arguments": []
-      }
     },
     {
       "vname": "owner_signatures",

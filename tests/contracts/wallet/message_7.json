@@ -1,5 +1,5 @@
 {
-    "_tag": "SignTransaction",
+    "_tag": "RevokeSignature",
     "_amount": "0",
     "_sender" : "0x1234567890123456789012345678906784567890",
     "params": [
