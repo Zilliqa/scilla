@@ -1,26 +1,34 @@
 {
-  "gas_remaining": "4023",
+  "gas_remaining": "3649",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
-      "vname": "owner_signatures",
-      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
       "value": [
         {
+          "key": "0x1234567890123456789012345678906784567890",
+          "val": { "constructor": "True", "argtypes": [], "arguments": [] }
+        },
+        {
+          "key": "0xabcdeabcde123456786782345678901234567890",
+          "val": { "constructor": "True", "argtypes": [], "arguments": [] }
+        },
+        {
+          "key": "0xffcdeabcde126786789012345678901234567890",
+          "val": { "constructor": "True", "argtypes": [], "arguments": [] }
+        },
+        {
           "key": "0x1234567890123456789012345678906784567891",
-          "val": [
-            {
-              "key": "0x1234567890123456789012345678906784567890",
-              "val": {
-                "constructor": "True",
-                "argtypes": [],
-                "arguments": []
-              }
-            }
-          ]
+          "val": { "constructor": "True", "argtypes": [], "arguments": [] }
         }
       ]
+    },
+    {
+      "vname": "owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "value": []
     },
     {
       "vname": "validity_checked",
@@ -31,24 +39,6 @@
       "vname": "contract_valid",
       "type": "Bool",
       "value": { "constructor": "True", "argtypes": [], "arguments": [] }
-    },
-    {
-      "vname": "owners",
-      "type": "Map (ByStr20) (Bool)",
-      "value": [
-        {
-          "key": "0x1234567890123456789012345678906784567890",
-          "val": { "constructor": "True", "argtypes": [], "arguments": [] }
-        },
-        {
-          "key": "0xffcdeabcde126786789012345678901234567890",
-          "val": { "constructor": "True", "argtypes": [], "arguments": [] }
-        },
-        {
-          "key": "0xabcdeabcde123456786782345678901234567890",
-          "val": { "constructor": "True", "argtypes": [], "arguments": [] }
-        }
-      ]
     },
     { "vname": "transactionCount", "type": "Uint32", "value": "0" },
     {
@@ -71,5 +61,13 @@
       }
     }
   ],
-  "events": [ { "_eventname": "Candiate owner added", "params": [] } ]
+  "events": [
+    { "_eventname": "New owner approved", "params": [] },
+    {
+      "_eventname": "Owner signed",
+      "params": [
+        { "vname": "signature_count", "type": "Uint32", "value": "3" }
+      ]
+    }
+  ]
 }

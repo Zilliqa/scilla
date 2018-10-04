@@ -19,7 +19,7 @@
       }
     },
     { "vname": "owners",
-      "type": "Map Bystr20 Bool",
+      "type": "Map ByStr20 Bool",
       "value": []
     },
     { "vname": "transactionCount",
