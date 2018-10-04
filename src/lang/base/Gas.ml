@@ -239,8 +239,7 @@ module ScillaGas
       then fcoster op arg_literals base (* this can fail too *)
       else fail @@ "Name or arity doesn't match"
     in
-    let msg = sprintf "Unable to determine gas cost for \"%s %s\""
-        op (pp_literal_list arg_literals) in
+    let msg = sprintf "Unable to determine gas cost for \"%s\"" op in
     let open Caml in
     let dict = match Hashtbl.find_opt builtin_hashtbl op with | Some rows -> rows | None -> [] in
     let %bind (_, cost) = tryM dict ~f:matcher ~msg:msg in
