@@ -1,0 +1,7 @@
+let x = Int32 1 in
+let y = Int64 2 in
+let o = builtin to_int64 x in
+match o with
+| Some x1 => builtin eq x1 y
+| None => False
+end

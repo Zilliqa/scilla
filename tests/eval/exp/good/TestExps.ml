@@ -95,6 +95,7 @@ let explist = [
   "string1.scilla";
   "string2.scilla";
   "times_two.scilla";
+  "to_bystr.scilla";
   "type_subst1.scilla";
   "type_subst2.scilla";
   "uint_conversions.scilla";

@@ -393,7 +393,7 @@ module ScillaBuiltIns
       | _ -> fail "Failed to convert" 
 
     let to_int_arity = 1
-    let to_int_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (tvar "'B"))
+    let to_int_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
     let to_int_elab w sc ts = match ts with
       | [t] when is_int_type t || is_uint_type t ->
           let%bind ityp = mk_int_type w in

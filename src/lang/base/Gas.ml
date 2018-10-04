@@ -129,6 +129,8 @@ module ScillaGas
     | "schnorr_sign", _, [_;_;ByStr(s)]
     | "schnorr_verify", _, [_;ByStr(s);_] ->
         pure @@ (String.length s) * base
+    | "to_bystr", [a], _
+      when is_bystrx_type a -> pure @@ get (bystrx_width a) * base
     | _ -> fail @@ "Gas cost error for hash built-in"
 
   let map_coster _ args base =
@@ -179,6 +181,7 @@ module ScillaGas
     ("eq", [tvar "'A"; tvar "'A"], hash_coster, 1);
     (* We currently only support `dist` for ByStr32. *)
     ("dist", [bystrx_typ hash_length; bystrx_typ hash_length], base_coster, 32);
+    ("to_bystr", [tvar "'A"], hash_coster, 1);
     ("sha256hash", [tvar "'A"], hash_coster, 1);
     ("schnorr_gen_key_pair", [], hash_coster, 1);
     ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], hash_coster, 5);
