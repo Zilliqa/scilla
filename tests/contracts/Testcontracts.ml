@@ -29,7 +29,7 @@ let rec print_args args =
 
 let sep = Filename.dir_sep
 
-let testsuit_gas_limit = 2000
+let testsuit_gas_limit = 5000
 
 (* 
  * Build tests to invoke scilla-runner with the right arguments, for
