@@ -59,7 +59,7 @@ let rec is_pure_literal l = match l with
   | Msg es -> List.for_all es ~f:(fun (_, l') -> is_pure_literal l')
   | ADTValue (_, _, es) -> List.for_all es ~f:(fun e -> is_pure_literal e)
   (* | Map (_, ht) ->
-   *     let es = Hashtbl.data ht in
+   *     let es = Caml.Hashtbl.to_alist ht in
    *     List.for_all es ~f:(fun (k, v) -> is_pure_literal k && is_pure_literal v) *)
   | _ -> true
 

@@ -143,7 +143,7 @@ type literal =
   | ADTValue of string * typ list * literal list
   (* An embedded closure *)
   | Clo of (literal -> int -> (literal, string) EvalMonad.eresult)
-  (* A polymorphic type *)
+  (* A type abstraction *)
   | TClo of (typ -> int -> (literal, string) EvalMonad.eresult)
 [@@deriving sexp]
 
