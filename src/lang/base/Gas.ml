@@ -144,12 +144,13 @@ module ScillaGas
     | [UintLit (Uint32L i)] -> pure @@  (Stdint.Uint32.to_int i) * base
     | _ -> fail @@ "Gas cost error for to_nat built-in"
 
-  let int_coster op args base =
-    let base' = 
-      match op with
-      | "mul" -> base * 2
-      | "div" | "rem" -> base * 4
-      | _ -> base
+  let int_coster _ args base =
+    let base' =
+      (* match op with
+         | "mul" -> base * 2
+         | "div" | "rem" -> base * 4
+         | _ -> base
+      *) base (* No emperical evidence for charing more for mul / div. *)
     in
     let%bind w = match args with
       | [IntLit i] | [IntLit i; IntLit _] ->
