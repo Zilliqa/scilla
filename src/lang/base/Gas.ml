@@ -147,12 +147,13 @@ module ScillaGas
     | [UintLit (Uint32L i)] -> pure @@  (Stdint.Uint32.to_int i) * base
     | _ -> fail @@ "Gas cost error for to_nat built-in"
 
-  let int_coster op args base =
-    let base' = 
-      match op with
-      | "mul" -> base * 2
-      | "div" | "rem" -> base * 4
-      | _ -> base
+  let int_coster _ args base =
+    let base' =
+      (* match op with
+         | "mul" -> base * 2
+         | "div" | "rem" -> base * 4
+         | _ -> base
+      *) base (* No emperical evidence for charing more for mul / div. *)
     in
     let%bind w = match args with
       | [IntLit i] | [IntLit i; IntLit _] ->
@@ -242,8 +243,7 @@ module ScillaGas
       then fcoster op arg_literals base (* this can fail too *)
       else fail @@ "Name or arity doesn't match"
     in
-    let msg = sprintf "Unable to determine gas cost for \"%s %s\""
-        op (pp_literal_list arg_literals) in
+    let msg = sprintf "Unable to determine gas cost for \"%s\"" op in
     let open Caml in
     let dict = match Hashtbl.find_opt builtin_hashtbl op with | Some rows -> rows | None -> [] in
     let %bind (_, cost) = tryM dict ~f:matcher ~msg:msg in
