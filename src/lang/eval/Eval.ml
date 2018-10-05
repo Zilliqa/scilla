@@ -53,7 +53,7 @@ let pp_result r exclude_names =
 
 (* Serializable literals *)
 let is_serializable_literal l = match l with
-  | Msg _ | ADTValue _ | Map _ -> false
+  | Msg _ | ADTValue _ | Map _ | Clo _ -> false
   | _ -> true
 
 (* Sanitize before storing into a message *)
@@ -62,13 +62,14 @@ let sanitize_literal l =
   then pure l
   else fail @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
-let vals_to_literals vals =
-  mapM vals ~f:(fun arg -> match arg with
-      | Env.ValLit l -> pure l
-      | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
-          fail @@
-          sprintf "Closure arguments in ADT are not supported: %s."
-            (Env.pp_value arg))
+let val_to_literal arg = match arg with
+  | Env.ValLit l -> pure l
+  | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
+      fail @@
+      sprintf "Closure arguments in ADT are not supported: %s."
+        (Env.pp_value arg)
+
+let vals_to_literals vals = mapM vals ~f:val_to_literal
 
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
@@ -107,9 +108,16 @@ let rec exp_eval erep env =
         (* Make sure we resolve all the payload *)
         mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ resolve pld) in
       pure (Env.ValLit (Msg payload_resolved), env)
-  | Fun (arg, t, body) ->
-      let clo = Env.ValClosure (arg, t, body, env) in
-      pure (clo, env)
+  | Fun (formal, _, body) ->
+      (* Apply to an argument *)
+      let runner arg = 
+        let varg = Env.ValLit arg in 
+        let env1 = Env.bind env (get_id formal) varg in
+        let%bind (v, _) = exp_eval_wrapper body env1 in
+        let%bind lit = val_to_literal v in
+        pure lit
+      in      
+      pure (Env.ValLit (Clo runner), env)
   | App (f, actuals) ->
       (* Resolve the actuals *)
       let%bind args =
@@ -120,8 +128,6 @@ let rec exp_eval erep env =
         List.fold_left args ~init:(pure ff)
           ~f:(fun res arg ->
               let%bind v = res in
-              (* printf "Value to be applied: %s\n" (Env.pp_value v);
-               * printf "Argument: %s\n\n" (Env.pp_value arg); *)
               try_apply_as_closure v arg) in
       pure (fully_applied, env)          
   | Constr (cname, ts, actuals) ->
@@ -158,9 +164,16 @@ let rec exp_eval erep env =
       let%bind tps = fromR @@ MonadUtil.mapM arg_literals ~f:literal_type in
       let%bind res = builtin_executor i tps arg_literals in
       pure (Env.ValLit res, env)
-  | Fixpoint (f, t, body) ->
-      let fix = Env.ValFix (f, t, body, env) in
-      pure (fix, env)
+  | Fixpoint (g, _, body) ->
+      let rec fix arg =
+        let env1 = Env.bind env (get_id g) clo_fix in
+        let%bind (fbody, _) = exp_eval_wrapper body env1 in
+        let%bind lit = val_to_literal fbody in
+        match lit with
+        | Clo f -> f arg
+        | _ -> fail "Cannot apply fxpoint argument to a value"
+      and clo_fix = Env.ValLit (Clo fix)          
+      in pure (clo_fix, env)
   | TFun (tvar, body) ->
       let tclo = Env.ValTypeClosure (tvar, body, env) in
       pure (tclo, env)
@@ -175,22 +188,16 @@ let rec exp_eval erep env =
 (* Applying a function *)
 and try_apply_as_closure v arg =
   match v with
+  | Env.ValLit (Clo clo) ->
+      let%bind larg = val_to_literal arg in
+      let%bind res = clo larg in
+      pure @@ Env.ValLit res
   | Env.ValLit _ ->
       fail @@ sprintf "Not a functional value: %s." (Env.pp_value v)
-  | Env.ValClosure (formal, _, body, env) ->
-      (* TODO: add runtime type-checking *)
-      let env1 = Env.bind env (get_id formal) arg in
-      let%bind (v, _) = exp_eval_wrapper body env1 in
-      pure v
-  | Env.ValFix (g, _, body, env) ->
-      let env1 = Env.bind env (get_id g) v in
-      let%bind (v, _) = exp_eval_wrapper body env1 in
-      (match v with
-       | Env.ValClosure (formal, _, cbody, cenv) ->
-           let env2 = Env.bind cenv (get_id formal) arg in
-           let%bind (v, _) = exp_eval_wrapper cbody env2 in
-           pure v
-       | _ ->  fail @@ sprintf "A fixpoint should take a function as a body")
+  | Env.ValClosure _  ->
+      fail @@ sprintf "Closures no longer supported." 
+  | Env.ValFix _  ->
+      fail @@ sprintf "Fixpoint closures are no longer supported." 
   | Env.ValTypeClosure _ ->
       fail @@ sprintf "Cannot apply a type closure to a value argument: %s." (Env.pp_value arg)
 
