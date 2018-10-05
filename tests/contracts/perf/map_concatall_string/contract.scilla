@@ -21,8 +21,10 @@ let list_concat =
       fun (z : String) =>
         let hh = fst_f h in
         let ii = snd_f h in
-        let x = builtin concat hh ii in
-        x
+        let b = builtin eq hh ii in
+        let x = builtin concat z hh in
+        let y = builtin concat x ii in
+        y
      in
      folder iter init l
      

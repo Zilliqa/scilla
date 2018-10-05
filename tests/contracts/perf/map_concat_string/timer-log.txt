@@ -1,34 +1,238 @@
-Timer (parse scilla source): 0.000153s
-Timer (import libs): 0.000573s
-Timer (parse json file init.json): 0.000025s
-Timer (build literal from json init.json): 0.000011s
-Timer (parse json file message.json): 0.000013s
-Timer (build literal from json message.json): 0.000018s
-Timer (parse json file state_5000.json): 0.005704s
-Timer (build literal from json state_5000.json): 0.001491s
-Timer (execute transition): 0.265146s
-Timer (literal_to_json): 0.004132s
-Timer (json_to_string): 0.016195s
-Timer (json print to output.json): 0.000226s
+Timer (parse scilla source): 0.000085s
+Timer (import libs): 0.000281s
+Timer (parse json file init.json): 0.000016s
+Timer (build literal from json init.json): 0.000004s
+Timer (parse json file message.json): 0.000008s
+Timer (build literal from json message.json): 0.000009s
+Timer (parse json file state_5000.json): 0.003529s
+Timer (build literal from json state_5000.json): 0.001089s
+Uncaught exception:
+  
+  (Invalid_argument "pos + len past end: 0 + 5 > 4")
 
-
-real	0m0.337s
-user	0m0.307s
-sys	0m0.029s
+Raised at file "pervasives.ml", line 33, characters 20-45
+Called from file "src/string.ml", line 127, characters 2-76
+Called from file "src/lang/base/BuiltIns.ml", line 141, characters 28-93
+Called from file "src/lang/base/MonadUtil.ml", line 129, characters 19-29
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/runners/scilla_runner.ml", line 72, characters 8-21
+Called from file "src/runners/scilla_runner.ml", line 223, characters 12-65
+Called from file "src/lang/base/GlobalConfig.ml", line 135, characters 15-19
+Called from file "src/runners/scilla_runner.ml", line 227, characters 43-85
 Timer (parse scilla source): 0.000084s
-Timer (import libs): 0.000284s
+Timer (import libs): 0.000280s
+Timer (parse json file init.json): 0.000015s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000008s
+Timer (build literal from json message.json): 0.000009s
+Timer (parse json file state_5000.json): 0.003546s
+Timer (build literal from json state_5000.json): 0.001097s
+Uncaught exception:
+  
+  (Invalid_argument "pos + len past end: 0 + 5 > 4")
+
+Raised at file "pervasives.ml", line 33, characters 20-45
+Called from file "src/string.ml", line 127, characters 2-76
+Called from file "src/lang/base/BuiltIns.ml", line 141, characters 28-93
+Called from file "src/lang/base/MonadUtil.ml", line 129, characters 19-29
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/runners/scilla_runner.ml", line 72, characters 8-21
+Called from file "src/runners/scilla_runner.ml", line 223, characters 12-65
+Called from file "src/lang/base/GlobalConfig.ml", line 135, characters 15-19
+Called from file "src/runners/scilla_runner.ml", line 227, characters 43-85
+Timer (parse scilla source): 0.000096s
+Timer (import libs): 0.000282s
+Timer (parse json file init.json): 0.000016s
+Timer (build literal from json init.json): 0.000004s
+Timer (parse json file message.json): 0.000008s
+Timer (build literal from json message.json): 0.000011s
+Timer (parse json file state_5000.json): 0.003856s
+Timer (build literal from json state_5000.json): 0.001108s
+Uncaught exception:
+  
+  (Invalid_argument "pos + len past end: 0 + 5 > 4")
+
+Raised at file "pervasives.ml", line 33, characters 20-45
+Called from file "src/string.ml", line 127, characters 2-76
+Called from file "src/lang/base/BuiltIns.ml", line 141, characters 28-93
+Called from file "src/lang/base/MonadUtil.ml", line 129, characters 19-29
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/runners/scilla_runner.ml", line 72, characters 8-21
+Called from file "src/runners/scilla_runner.ml", line 223, characters 12-65
+Called from file "src/lang/base/GlobalConfig.ml", line 135, characters 15-19
+Called from file "src/runners/scilla_runner.ml", line 227, characters 43-85
+Timer (parse scilla source): 0.000085s
+Timer (import libs): 0.000280s
+Timer (parse json file init.json): 0.000017s
+Timer (build literal from json init.json): 0.000005s
+Timer (parse json file message.json): 0.000008s
+Timer (build literal from json message.json): 0.000010s
+Timer (parse json file state_5000.json): 0.003513s
+Timer (build literal from json state_5000.json): 0.001130s
+Uncaught exception:
+  
+  (Invalid_argument "pos + len past end: 0 + 5 > 4")
+
+Raised at file "pervasives.ml", line 33, characters 20-45
+Called from file "src/string.ml", line 127, characters 2-76
+Called from file "src/lang/base/BuiltIns.ml", line 141, characters 28-93
+Called from file "src/lang/base/MonadUtil.ml", line 129, characters 19-29
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/runners/scilla_runner.ml", line 72, characters 8-21
+Called from file "src/runners/scilla_runner.ml", line 223, characters 12-65
+Called from file "src/lang/base/GlobalConfig.ml", line 135, characters 15-19
+Called from file "src/runners/scilla_runner.ml", line 227, characters 43-85
+Timer (parse scilla source): 0.000086s
+Timer (import libs): 0.000279s
 Timer (parse json file init.json): 0.000014s
 Timer (build literal from json init.json): 0.000006s
 Timer (parse json file message.json): 0.000008s
+Timer (build literal from json message.json): 0.000011s
+Timer (parse json file state_5000.json): 0.003553s
+Timer (build literal from json state_5000.json): 0.001090s
+Uncaught exception:
+  
+  (Invalid_argument "pos + len past end: 0 + 5 > 4")
+
+Raised at file "pervasives.ml", line 33, characters 20-45
+Called from file "src/string.ml", line 127, characters 2-76
+Called from file "src/lang/base/BuiltIns.ml", line 141, characters 28-93
+Called from file "src/lang/base/MonadUtil.ml", line 129, characters 19-29
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/runners/scilla_runner.ml", line 72, characters 8-21
+Called from file "src/runners/scilla_runner.ml", line 223, characters 12-65
+Called from file "src/lang/base/GlobalConfig.ml", line 135, characters 15-19
+Called from file "src/runners/scilla_runner.ml", line 227, characters 43-85
+
+real	0m0.438s
+user	0m0.402s
+sys	0m0.036s
+Timer (parse scilla source): 0.000085s
+Timer (import libs): 0.000281s
+Timer (parse json file init.json): 0.000015s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000007s
 Timer (build literal from json message.json): 0.000010s
-Timer (parse json file state_10000.json): 0.006642s
-Timer (build literal from json state_10000.json): 0.003671s
-Timer (execute transition): 0.712222s
-Timer (literal_to_json): 0.004344s
-Timer (json_to_string): 0.050304s
-Timer (json print to output.json): 0.000319s
+Timer (parse json file state_10000.json): 0.006633s
+Timer (build literal from json state_10000.json): 0.003675s
+Uncaught exception:
+  
+  (Invalid_argument "pos + len past end: 0 + 5 > 4")
 
+Raised at file "pervasives.ml", line 33, characters 20-45
+Called from file "src/string.ml", line 127, characters 2-76
+Called from file "src/lang/base/BuiltIns.ml", line 141, characters 28-93
+Called from file "src/lang/base/MonadUtil.ml", line 129, characters 19-29
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/runners/scilla_runner.ml", line 72, characters 8-21
+Called from file "src/runners/scilla_runner.ml", line 223, characters 12-65
+Called from file "src/lang/base/GlobalConfig.ml", line 135, characters 15-19
+Called from file "src/runners/scilla_runner.ml", line 227, characters 43-85
+Timer (parse scilla source): 0.000086s
+Timer (import libs): 0.000284s
+Timer (parse json file init.json): 0.000016s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000006s
+Timer (build literal from json message.json): 0.000010s
+Timer (parse json file state_10000.json): 0.006859s
+Timer (build literal from json state_10000.json): 0.003586s
+Uncaught exception:
+  
+  (Invalid_argument "pos + len past end: 0 + 5 > 4")
 
-real	0m0.791s
-user	0m0.783s
-sys	0m0.009s
+Raised at file "pervasives.ml", line 33, characters 20-45
+Called from file "src/string.ml", line 127, characters 2-76
+Called from file "src/lang/base/BuiltIns.ml", line 141, characters 28-93
+Called from file "src/lang/base/MonadUtil.ml", line 129, characters 19-29
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/runners/scilla_runner.ml", line 72, characters 8-21
+Called from file "src/runners/scilla_runner.ml", line 223, characters 12-65
+Called from file "src/lang/base/GlobalConfig.ml", line 135, characters 15-19
+Called from file "src/runners/scilla_runner.ml", line 227, characters 43-85
+Timer (parse scilla source): 0.000084s
+Timer (import libs): 0.000279s
+Timer (parse json file init.json): 0.000015s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000008s
+Timer (build literal from json message.json): 0.000009s
+Timer (parse json file state_10000.json): 0.006617s
+Timer (build literal from json state_10000.json): 0.003566s
+Uncaught exception:
+  
+  (Invalid_argument "pos + len past end: 0 + 5 > 4")
+
+Raised at file "pervasives.ml", line 33, characters 20-45
+Called from file "src/string.ml", line 127, characters 2-76
+Called from file "src/lang/base/BuiltIns.ml", line 141, characters 28-93
+Called from file "src/lang/base/MonadUtil.ml", line 129, characters 19-29
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/runners/scilla_runner.ml", line 72, characters 8-21
+Called from file "src/runners/scilla_runner.ml", line 223, characters 12-65
+Called from file "src/lang/base/GlobalConfig.ml", line 135, characters 15-19
+Called from file "src/runners/scilla_runner.ml", line 227, characters 43-85
+Timer (parse scilla source): 0.000126s
+Timer (import libs): 0.000375s
+Timer (parse json file init.json): 0.000022s
+Timer (build literal from json init.json): 0.000008s
+Timer (parse json file message.json): 0.000016s
+Timer (build literal from json message.json): 0.000013s
+Timer (parse json file state_10000.json): 0.007408s
+Timer (build literal from json state_10000.json): 0.003583s
+Uncaught exception:
+  
+  (Invalid_argument "pos + len past end: 0 + 5 > 4")
+
+Raised at file "pervasives.ml", line 33, characters 20-45
+Called from file "src/string.ml", line 127, characters 2-76
+Called from file "src/lang/base/BuiltIns.ml", line 141, characters 28-93
+Called from file "src/lang/base/MonadUtil.ml", line 129, characters 19-29
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/runners/scilla_runner.ml", line 72, characters 8-21
+Called from file "src/runners/scilla_runner.ml", line 223, characters 12-65
+Called from file "src/lang/base/GlobalConfig.ml", line 135, characters 15-19
+Called from file "src/runners/scilla_runner.ml", line 227, characters 43-85
+Timer (parse scilla source): 0.000086s
+Timer (import libs): 0.000281s
+Timer (parse json file init.json): 0.000016s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000008s
+Timer (build literal from json message.json): 0.000011s
+Timer (parse json file state_10000.json): 0.006650s
+Timer (build literal from json state_10000.json): 0.003594s
+Uncaught exception:
+  
+  (Invalid_argument "pos + len past end: 0 + 5 > 4")
+
+Raised at file "pervasives.ml", line 33, characters 20-45
+Called from file "src/string.ml", line 127, characters 2-76
+Called from file "src/lang/base/BuiltIns.ml", line 141, characters 28-93
+Called from file "src/lang/base/MonadUtil.ml", line 129, characters 19-29
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/lang/base/MonadUtil.ml", line 90, characters 19-34
+Called from file "src/runners/scilla_runner.ml", line 72, characters 8-21
+Called from file "src/runners/scilla_runner.ml", line 223, characters 12-65
+Called from file "src/lang/base/GlobalConfig.ml", line 135, characters 15-19
+Called from file "src/runners/scilla_runner.ml", line 227, characters 43-85
+
+real	0m0.897s
+user	0m0.825s
+sys	0m0.059s
