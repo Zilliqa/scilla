@@ -1,0 +1,32 @@
+Timer (parse scilla source): 0.000100s
+Timer (import libs): 0.000381s
+Timer (parse json file init.json): 0.000018s
+Timer (build literal from json init.json): 0.000008s
+Timer (parse json file message.json): 0.000009s
+Timer (build literal from json message.json): 0.000016s
+Timer (parse json file state_5000.json): 0.005341s
+Timer (build literal from json state_5000.json): 0.022986s
+Timer (execute transition): 0.149150s
+Timer (literal_to_json): 0.004540s
+Timer (json_to_string): 0.022479s
+Timer (json print to output.json): 0.000229s
+
+
+real	0m0.240s
+user	0m0.213s
+sys	0m0.021s
+Timer (parse scilla source): 0.000081s
+Timer (import libs): 0.000309s
+Timer (parse json file init.json): 0.000014s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000007s
+Timer (build literal from json message.json): 0.000011s
+Timer (parse json file state_10000.json): 0.006739s
+Timer (build literal from json state_10000.json): 0.040924s
+Failed to execute transition in contract.scilla:
+Ran out of gas
+Gas remaining:44
+Execution halted
+real	0m0.280s
+user	0m0.276s
+sys	0m0.004s
