@@ -55,7 +55,7 @@ let pp_result r exclude_names =
 (* TODO: Augment with deep checking *)
 let rec is_pure_literal l = match l with
   | Clo _ -> false
-  | TClo _ -> false
+  | TAbs _ -> false
   | Msg es -> List.for_all es ~f:(fun (_, l') -> is_pure_literal l')
   | ADTValue (_, _, es) -> List.for_all es ~f:(fun e -> is_pure_literal e)
   (* | Map (_, ht) ->
@@ -65,7 +65,7 @@ let rec is_pure_literal l = match l with
 
 (* Serializable literals *)
 let is_serializable_literal l = match l with
-  | Msg _ | ADTValue _ | Map _ | Clo _ | TClo _ -> false
+  | Msg _ | ADTValue _ | Map _ | Clo _ | TAbs _ -> false
   | _ -> true
 
 (* Sanitize before storing into a message *)
@@ -182,7 +182,7 @@ let rec exp_eval erep env =
         let%bind lit = val_to_literal v in
         pure lit
       in      
-      pure (Env.ValLit (TClo typer), env)
+      pure (Env.ValLit (TAbs typer), env)
   | TApp (tf, arg_types) ->
       let%bind ff = Env.lookup env tf in
       let%bind fully_applied =
@@ -203,7 +203,7 @@ and try_apply_as_closure v arg =
 
 and try_apply_as_type_closure v arg_type =
   match v with
-  | Env.ValLit (TClo tclo) ->
+  | Env.ValLit (TAbs tclo) ->
       let%bind res = tclo arg_type in
       pure @@ Env.ValLit res
   | _ ->

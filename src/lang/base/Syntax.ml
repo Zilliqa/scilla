@@ -144,7 +144,7 @@ type literal =
   (* An embedded closure *)
   | Clo of (literal -> int -> (literal, string) EvalMonad.eresult)
   (* A type abstraction *)
-  | TClo of (typ -> int -> (literal, string) EvalMonad.eresult)
+  | TAbs of (typ -> int -> (literal, string) EvalMonad.eresult)
 [@@deriving sexp]
 
 
