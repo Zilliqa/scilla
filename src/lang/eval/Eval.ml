@@ -74,11 +74,6 @@ let sanitize_literal l =
   then pure l
   else fail @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
-let val_to_literal arg = match arg with
-  | Env.ValLit l -> pure l
-
-let vals_to_literals vals = mapM vals ~f:val_to_literal
-
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
 (*******************************************************)
@@ -87,7 +82,7 @@ let rec exp_eval erep env =
   let (e, _) = erep in
   match e with
   | Literal l ->
-      pure (Env.ValLit l, env)
+      pure (l, env)
   | Var i ->
       let%bind v = Env.lookup env i in
       pure @@ (v, env)
@@ -102,23 +97,20 @@ let rec exp_eval erep env =
         | MLit l  -> sanitize_literal l
         | MVar i ->
             let%bind v = Env.lookup env i in
-            match v with
-            | ValLit l -> sanitize_literal l
+            sanitize_literal v
       in
       let%bind payload_resolved =
         (* Make sure we resolve all the payload *)
         mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ resolve pld) in
-      pure (Env.ValLit (Msg payload_resolved), env)
+      pure (Msg payload_resolved, env)
   | Fun (formal, _, body) ->
       (* Apply to an argument *)
       let runner arg = 
-        let varg = Env.ValLit arg in 
-        let env1 = Env.bind env (get_id formal) varg in
+        let env1 = Env.bind env (get_id formal) arg in
         let%bind (v, _) = exp_eval_wrapper body env1 in
-        let%bind lit = val_to_literal v in
-        pure lit
+        pure v
       in      
-      pure (Env.ValLit (Clo runner), env)
+      pure (Clo runner, env)
   | App (f, actuals) ->
       (* Resolve the actuals *)
       let%bind args =
@@ -144,9 +136,8 @@ let rec exp_eval erep env =
         let%bind args =
           mapM actuals ~f:(fun arg -> Env.lookup env arg) in
         (* Make sure we only pass "pure" literals, not closures *)
-        let%bind arg_literals = vals_to_literals args in
-        let lit = ADTValue (cname, ts, arg_literals) in
-        pure (Env.ValLit lit, env)
+        let lit = ADTValue (cname, ts, args) in
+        pure (lit, env)
   | MatchExpr (x, clauses) ->
       let%bind v = Env.lookup env x in
       (* Get the branch and the bindings *)
@@ -161,28 +152,25 @@ let rec exp_eval erep env =
       exp_eval_wrapper e_branch env'      
   | Builtin (i, actuals) ->
       let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
-      let%bind arg_literals = vals_to_literals args in
-      let%bind tps = fromR @@ MonadUtil.mapM arg_literals ~f:literal_type in
-      let%bind res = builtin_executor i tps arg_literals in
-      pure (Env.ValLit res, env)
+      let%bind tps = fromR @@ MonadUtil.mapM args ~f:literal_type in
+      let%bind res = builtin_executor i tps args in
+      pure (res, env)
   | Fixpoint (g, _, body) ->
       let rec fix arg =
         let env1 = Env.bind env (get_id g) clo_fix in
         let%bind (fbody, _) = exp_eval_wrapper body env1 in
-        let%bind lit = val_to_literal fbody in
-        match lit with
+        match fbody with
         | Clo f -> f arg
         | _ -> fail "Cannot apply fxpoint argument to a value"
-      and clo_fix = Env.ValLit (Clo fix)          
+      and clo_fix = Clo fix          
       in pure (clo_fix, env)
   | TFun (tv, body) ->
       let typer arg_type =
         let body_subst = subst_type_in_expr tv arg_type body in
         let%bind (v, _) = exp_eval_wrapper body_subst env in
-        let%bind lit = val_to_literal v in
-        pure lit
+        pure v
       in      
-      pure (Env.ValLit (TAbs typer), env)
+      pure (TAbs typer, env)
   | TApp (tf, arg_types) ->
       let%bind ff = Env.lookup env tf in
       let%bind fully_applied =
@@ -194,18 +182,13 @@ let rec exp_eval erep env =
 (* Applying a function *)
 and try_apply_as_closure v arg =
   match v with
-  | Env.ValLit (Clo clo) ->
-      let%bind larg = val_to_literal arg in
-      let%bind res = clo larg in
-      pure @@ Env.ValLit res
-  | Env.ValLit _ ->
+  | Clo clo -> clo arg
+  |  _ ->
       fail @@ sprintf "Not a functional value: %s." (Env.pp_value v)
 
 and try_apply_as_type_closure v arg_type =
   match v with
-  | Env.ValLit (TAbs tclo) ->
-      let%bind res = tclo arg_type in
-      pure @@ Env.ValLit res
+  | TAbs tclo -> tclo arg_type
   | _ ->
       fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)
 
@@ -227,7 +210,7 @@ let rec stmt_eval conf stmts =
   | (s, _) :: sts -> (match s with
       | Load (x, r) ->
           let%bind (l, scon) = Configuration.load conf r in
-          let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
+          let conf' = Configuration.bind conf (get_id x) l in
           let%bind _ = stmt_gas_wrap scon in
           stmt_eval conf' sts
       | Store (x, r) ->
@@ -242,7 +225,7 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
-          let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
+          let conf' = Configuration.bind conf (get_id x) l in
           let%bind _ = stmt_gas_wrap G_ReadFromBC in
           stmt_eval conf' sts                            
       | MatchStmt (x, clauses) ->
@@ -334,7 +317,7 @@ let init_fields env fs =
   let init_field fname _t fexp =
     let%bind (v, _) = exp_eval_wrapper fexp env in
     match v with
-    | Env.ValLit l when is_pure_literal l -> pure (fname, l)
+    | l when is_pure_literal l -> pure (fname, l)
     | _ -> fail @@ sprintf "Closure cannot be stored in a field %s." fname
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
@@ -361,10 +344,8 @@ let init_contract clibs elibs cparams' cfields args init_bal  =
       "Mismatch between the vector of arguments:\n%s\nand expected parameters%s\n"
       (pp_literal_map args) (pp_cparams cparams)
   else
-    (* Init parameters *)
-    let params = List.map args ~f:(fun (n, l) -> (n, Env.ValLit l)) in
     (* Fold params into already initialized libraries, possibly shadowing *)
-    let env = List.fold_left ~init:libenv params 
+    let env = List.fold_left ~init:libenv args
         ~f:(fun e (p, v) -> Env.bind e p v) in
     let%bind fields = init_fields env cfields in
     let balance = init_bal in
@@ -506,7 +487,7 @@ let handle_message contr cstate bstate m =
   let {env; fields; balance} = cstate in
   (* Add all values to the contract environment *)
   let actual_env = List.fold_left tenv ~init:env
-      ~f:(fun e (n, l) -> Env.bind e n (Env.ValLit l)) in
+      ~f:(fun e (n, l) -> Env.bind e n l) in
   let open Configuration in
 
   (* Create configuration *)  
