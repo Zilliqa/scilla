@@ -28,9 +28,6 @@ open EvalSyntax
 let rec match_with_pattern v p = match p with
   | Wildcard -> pure []
   | Binder x -> (match v with
-      | Env.ValTypeClosure _ ->
-          fail @@ sprintf "Cannot pattern match a function:\n%s"
-            (Env.pp_value v)
       | Env.ValLit _ ->
           (* Bound a plain literal *)
           pure @@ [(x, v)]

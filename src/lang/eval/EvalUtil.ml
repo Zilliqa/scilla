@@ -143,13 +143,11 @@ module Env = struct
   (* Fully reduced value *)
   value =
     | ValLit of literal
-    | ValTypeClosure of ER.rep Syntax.ident * expr_annot * t                      
   [@@deriving sexp]
 
   (* Pretty-printing *)
   let rec pp_value v = match v with
     | ValLit l ->  pp_literal l
-    | ValTypeClosure _ -> "<type_closure>"
   and pp ?f:(f = fun (_ : (string * value)) -> true) e =
     (* FIXME: Do not print folds *)
     let e_filtered = List.filter e ~f:f in
@@ -233,9 +231,6 @@ module Configuration = struct
   
   let store st k v =
     match v with 
-    | Env.ValTypeClosure _ ->
-        fail @@ sprintf "Cannot store a closure below into a field %s:\n%s"
-          k (Env.pp_value v)
     | Env.ValLit l ->
         (let s = st.fields in
          match List.find s ~f:(fun (z, _) -> z = k) with
@@ -310,10 +305,6 @@ module Configuration = struct
         | l -> fail @@ sprintf "The literal is not a list:\n%s" (pp_literal l))
       in       
       match v with
-      | Env.ValTypeClosure _ as v ->
-          fail @@
-          sprintf "Value should be a list of messages, but is a closure:\n%s"
-            (Env.pp_value v)
       | Env.ValLit l -> convert_to_list l 
 
   let validate_outgoing_message m' =
@@ -360,8 +351,6 @@ module Configuration = struct
         | Msg _ ->
           pure @@ l
         | _ -> fail @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l))
-      | Env.ValTypeClosure _ as v -> 
-        fail @@ sprintf "Incorrect event parameters: %s\n" (Env.pp_value v)
     in
     let%bind event' = validate_event event in
     let old_events = conf.events in

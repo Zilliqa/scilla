@@ -76,10 +76,6 @@ let sanitize_literal l =
 
 let val_to_literal arg = match arg with
   | Env.ValLit l -> pure l
-  | Env.ValTypeClosure _ ->
-      fail @@
-      sprintf "Closure arguments in ADT are not supported: %s."
-        (Env.pp_value arg)
 
 let vals_to_literals vals = mapM vals ~f:val_to_literal
 
@@ -99,22 +95,15 @@ let rec exp_eval erep env =
       let%bind (lval, _) = exp_eval_wrapper lhs env in
       let env' = Env.bind env (get_id i) lval in
       exp_eval_wrapper rhs env'
-  | Message bs as m ->
+  | Message bs ->
       (* Resolve all message payload *)
       let resolve pld = match pld with
         | MTag s -> pure @@ (StringLit s)
         | MLit l  -> sanitize_literal l
         | MVar i ->
             let%bind v = Env.lookup env i in
-            (match v with
-             | ValLit l -> sanitize_literal l
-             (* Closures are not sendable by messages *)
-             | ValTypeClosure _ as v ->
-                 fail @@ sprintf
-                   "Cannot store a closure\n%s\nas %s\nin a message\n%s."
-                   (Env.pp_value v)
-                   (get_id i)
-                   (pp_expr m))
+            match v with
+            | ValLit l -> sanitize_literal l
       in
       let%bind payload_resolved =
         (* Make sure we resolve all the payload *)
@@ -211,8 +200,6 @@ and try_apply_as_closure v arg =
       pure @@ Env.ValLit res
   | Env.ValLit _ ->
       fail @@ sprintf "Not a functional value: %s." (Env.pp_value v)
-  | Env.ValTypeClosure _ ->
-      fail @@ sprintf "Cannot apply a type closure to a value argument: %s." (Env.pp_value arg)
 
 and try_apply_as_type_closure v arg_type =
   match v with
@@ -348,8 +335,6 @@ let init_fields env fs =
     let%bind (v, _) = exp_eval_wrapper fexp env in
     match v with
     | Env.ValLit l when is_pure_literal l -> pure (fname, l)
-    | Env.ValTypeClosure _ ->
-        fail @@ sprintf "Closure cannot be stored in a field %s." fname
     | _ -> fail @@ sprintf "Closure cannot be stored in a field %s." fname
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
