@@ -449,6 +449,7 @@ module TypeUtilities
           then fail @@ sprintf "Malformed ADT %s. Arguments do not match expected types" (pp_literal l)
           else pure @@ res
     | Clo _ -> fail @@ "Cannot type-check runtime closure."
+    | TClo _ -> fail @@ "Cannot type-check runtime type function."
 end
 
 (*****************************************************************)

@@ -135,6 +135,8 @@ let rec pp_literal_simplified l =
           ^ ")"
         )
     | Clo _ -> "<closure>"
+    | TClo _ -> "<type_closure>"
+
 
 let pp_literal_json l =
   literal_to_jstring l

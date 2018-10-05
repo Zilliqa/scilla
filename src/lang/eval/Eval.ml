@@ -51,9 +51,21 @@ let pp_result r exclude_names =
       in
       sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
 
+(* Makes sure that the literal has no closures in it *)
+(* TODO: Augment with deep checking *)
+let rec is_pure_literal l = match l with
+  | Clo _ -> false
+  | TClo _ -> false
+  | Msg es -> List.for_all es ~f:(fun (_, l') -> is_pure_literal l')
+  | ADTValue (_, _, es) -> List.for_all es ~f:(fun e -> is_pure_literal e)
+  (* | Map (_, ht) ->
+   *     let es = Hashtbl.data ht in
+   *     List.for_all es ~f:(fun (k, v) -> is_pure_literal k && is_pure_literal v) *)
+  | _ -> true
+
 (* Serializable literals *)
 let is_serializable_literal l = match l with
-  | Msg _ | ADTValue _ | Map _ | Clo _ -> false
+  | Msg _ | ADTValue _ | Map _ | Clo _ | TClo _ -> false
   | _ -> true
 
 (* Sanitize before storing into a message *)
@@ -64,7 +76,7 @@ let sanitize_literal l =
 
 let val_to_literal arg = match arg with
   | Env.ValLit l -> pure l
-  | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
+  | Env.ValTypeClosure _ ->
       fail @@
       sprintf "Closure arguments in ADT are not supported: %s."
         (Env.pp_value arg)
@@ -97,7 +109,7 @@ let rec exp_eval erep env =
             (match v with
              | ValLit l -> sanitize_literal l
              (* Closures are not sendable by messages *)
-             | (ValClosure _ | ValFix _ | ValTypeClosure _) as v ->
+             | ValTypeClosure _ as v ->
                  fail @@ sprintf
                    "Cannot store a closure\n%s\nas %s\nin a message\n%s."
                    (Env.pp_value v)
@@ -174,9 +186,14 @@ let rec exp_eval erep env =
         | _ -> fail "Cannot apply fxpoint argument to a value"
       and clo_fix = Env.ValLit (Clo fix)          
       in pure (clo_fix, env)
-  | TFun (tvar, body) ->
-      let tclo = Env.ValTypeClosure (tvar, body, env) in
-      pure (tclo, env)
+  | TFun (tv, body) ->
+      let typer arg_type =
+        let body_subst = subst_type_in_expr tv arg_type body in
+        let%bind (v, _) = exp_eval_wrapper body_subst env in
+        let%bind lit = val_to_literal v in
+        pure lit
+      in      
+      pure (Env.ValLit (TClo typer), env)
   | TApp (tf, arg_types) ->
       let%bind ff = Env.lookup env tf in
       let%bind fully_applied =
@@ -194,19 +211,14 @@ and try_apply_as_closure v arg =
       pure @@ Env.ValLit res
   | Env.ValLit _ ->
       fail @@ sprintf "Not a functional value: %s." (Env.pp_value v)
-  | Env.ValClosure _  ->
-      fail @@ sprintf "Closures no longer supported." 
-  | Env.ValFix _  ->
-      fail @@ sprintf "Fixpoint closures are no longer supported." 
   | Env.ValTypeClosure _ ->
       fail @@ sprintf "Cannot apply a type closure to a value argument: %s." (Env.pp_value arg)
 
 and try_apply_as_type_closure v arg_type =
   match v with
-  | Env.ValTypeClosure (tv, body, env) ->
-      let body_subst = subst_type_in_expr tv arg_type body in
-      let%bind (v, _) = exp_eval_wrapper body_subst env in
-      pure v      
+  | Env.ValLit (TClo tclo) ->
+      let%bind res = tclo arg_type in
+      pure @@ Env.ValLit res
   | _ ->
       fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)
 
@@ -335,9 +347,10 @@ let init_fields env fs =
   let init_field fname _t fexp =
     let%bind (v, _) = exp_eval_wrapper fexp env in
     match v with
-    | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
+    | Env.ValLit l when is_pure_literal l -> pure (fname, l)
+    | Env.ValTypeClosure _ ->
         fail @@ sprintf "Closure cannot be stored in a field %s." fname
-    | Env.ValLit l -> pure (fname, l)
+    | _ -> fail @@ sprintf "Closure cannot be stored in a field %s." fname
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
