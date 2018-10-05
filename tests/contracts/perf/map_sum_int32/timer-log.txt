@@ -1,34 +1,138 @@
-Timer (parse scilla source): 0.000094s
-Timer (import libs): 0.000425s
-Timer (parse json file init.json): 0.000057s
-Timer (build literal from json init.json): 0.000009s
-Timer (parse json file message.json): 0.000008s
+Timer (parse scilla source): 0.000098s
+Timer (import libs): 0.000300s
+Timer (parse json file init.json): 0.000014s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000007s
 Timer (build literal from json message.json): 0.000010s
-Timer (parse json file state_5000.json): 0.003612s
-Timer (build literal from json state_5000.json): 0.019892s
-Timer (execute transition): 0.758397s
-Timer (literal_to_json): 0.003914s
-Timer (json_to_string): 0.021224s
-Timer (json print to output.json): 0.000219s
+Timer (parse json file state_5000.json): 0.003532s
+Timer (build literal from json state_5000.json): 0.019526s
+Timer (execute transition): 0.054360s
+Timer (literal_to_json): 0.003964s
+Timer (json_to_string): 0.022670s
+Timer (json print to output.json): 0.000228s
 
+Timer (parse scilla source): 0.000076s
+Timer (import libs): 0.000277s
+Timer (parse json file init.json): 0.000015s
+Timer (build literal from json init.json): 0.000005s
+Timer (parse json file message.json): 0.000007s
+Timer (build literal from json message.json): 0.000010s
+Timer (parse json file state_5000.json): 0.003552s
+Timer (build literal from json state_5000.json): 0.019417s
+Timer (execute transition): 0.049809s
+Timer (literal_to_json): 0.003891s
+Timer (json_to_string): 0.022585s
+Timer (json print to output.json): 0.000246s
 
-real	0m0.934s
-user	0m0.664s
-sys	0m0.200s
-Timer (parse scilla source): 0.000075s
+Timer (parse scilla source): 0.000078s
+Timer (import libs): 0.000279s
+Timer (parse json file init.json): 0.000015s
+Timer (build literal from json init.json): 0.000005s
+Timer (parse json file message.json): 0.000007s
+Timer (build literal from json message.json): 0.000009s
+Timer (parse json file state_5000.json): 0.003522s
+Timer (build literal from json state_5000.json): 0.019511s
+Timer (execute transition): 0.050159s
+Timer (literal_to_json): 0.003858s
+Timer (json_to_string): 0.022709s
+Timer (json print to output.json): 0.000206s
+
+Timer (parse scilla source): 0.000078s
+Timer (import libs): 0.000276s
+Timer (parse json file init.json): 0.000017s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000007s
+Timer (build literal from json message.json): 0.000010s
+Timer (parse json file state_5000.json): 0.003550s
+Timer (build literal from json state_5000.json): 0.019554s
+Timer (execute transition): 0.049580s
+Timer (literal_to_json): 0.003828s
+Timer (json_to_string): 0.022546s
+Timer (json print to output.json): 0.000213s
+
+Timer (parse scilla source): 0.000085s
 Timer (import libs): 0.000278s
+Timer (parse json file init.json): 0.000014s
+Timer (build literal from json init.json): 0.000005s
+Timer (parse json file message.json): 0.000009s
+Timer (build literal from json message.json): 0.000010s
+Timer (parse json file state_5000.json): 0.003511s
+Timer (build literal from json state_5000.json): 0.019360s
+Timer (execute transition): 0.050328s
+Timer (literal_to_json): 0.003839s
+Timer (json_to_string): 0.022649s
+Timer (json print to output.json): 0.000240s
+
+
+real	0m0.570s
+user	0m0.524s
+sys	0m0.046s
+Timer (parse scilla source): 0.000077s
+Timer (import libs): 0.000293s
 Timer (parse json file init.json): 0.000015s
 Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000009s
+Timer (build literal from json message.json): 0.000011s
+Timer (parse json file state_10000.json): 0.006767s
+Timer (build literal from json state_10000.json): 0.041866s
+Timer (execute transition): 0.102936s
+Timer (literal_to_json): 0.009484s
+Timer (json_to_string): 0.049744s
+Timer (json print to output.json): 0.000323s
+
+Timer (parse scilla source): 0.000078s
+Timer (import libs): 0.000276s
+Timer (parse json file init.json): 0.000016s
+Timer (build literal from json init.json): 0.000006s
 Timer (parse json file message.json): 0.000008s
+Timer (build literal from json message.json): 0.000012s
+Timer (parse json file state_10000.json): 0.006622s
+Timer (build literal from json state_10000.json): 0.039119s
+Timer (execute transition): 0.114377s
+Timer (literal_to_json): 0.009731s
+Timer (json_to_string): 0.049799s
+Timer (json print to output.json): 0.000337s
+
+Timer (parse scilla source): 0.000076s
+Timer (import libs): 0.000276s
+Timer (parse json file init.json): 0.000015s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000009s
 Timer (build literal from json message.json): 0.000010s
-Timer (parse json file state_10000.json): 0.006551s
-Timer (build literal from json state_10000.json): 0.040348s
-Timer (execute transition): 3.260215s
-Timer (literal_to_json): 0.008678s
-Timer (json_to_string): 0.039687s
-Timer (json print to output.json): 0.000325s
+Timer (parse json file state_10000.json): 0.006636s
+Timer (build literal from json state_10000.json): 0.038942s
+Timer (execute transition): 0.103136s
+Timer (literal_to_json): 0.009554s
+Timer (json_to_string): 0.050103s
+Timer (json print to output.json): 0.000380s
+
+Timer (parse scilla source): 0.000080s
+Timer (import libs): 0.000289s
+Timer (parse json file init.json): 0.000016s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000007s
+Timer (build literal from json message.json): 0.000010s
+Timer (parse json file state_10000.json): 0.006627s
+Timer (build literal from json state_10000.json): 0.039287s
+Timer (execute transition): 0.102962s
+Timer (literal_to_json): 0.009546s
+Timer (json_to_string): 0.049895s
+Timer (json print to output.json): 0.000330s
+
+Timer (parse scilla source): 0.000077s
+Timer (import libs): 0.000282s
+Timer (parse json file init.json): 0.000017s
+Timer (build literal from json init.json): 0.000006s
+Timer (parse json file message.json): 0.000008s
+Timer (build literal from json message.json): 0.000009s
+Timer (parse json file state_10000.json): 0.006644s
+Timer (build literal from json state_10000.json): 0.039444s
+Timer (execute transition): 0.103099s
+Timer (literal_to_json): 0.009694s
+Timer (json_to_string): 0.050188s
+Timer (json print to output.json): 0.000396s
 
 
-real	0m3.370s
-user	0m2.767s
-sys	0m0.602s
+real	0m1.126s
+user	0m1.075s
+sys	0m0.051s
