@@ -1,0 +1,7 @@
+
+Type error(s) in contract Empty:
+
+
+[checker/bad/bad_fields3.scilla:4:7] Type error in field bad_bar:
+Values of the type "List (String -> Int32)" cannot be stored.
+

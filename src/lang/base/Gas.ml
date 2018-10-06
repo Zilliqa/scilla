@@ -68,6 +68,9 @@ module ScillaGas
           foldM ~f:(fun acc lit' ->
               let%bind clit' = literal_cost lit' in
               pure (acc + clit')) ~init:0 ll
+      (* TODO: Check this *)
+      | Clo _ -> pure @@ 0
+      | TAbs _ -> pure @@ 0
 
   let expr_static_cost erep =
     let (e, _) = erep in

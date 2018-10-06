@@ -19,6 +19,7 @@
 
 open Core
 open Sexplib.Std
+open MonadUtil
 
 exception SyntaxError of string
 
@@ -140,6 +141,10 @@ type literal =
   | Map of mtype * (literal, literal) Hashtbl.t
   (* A constructor in HNF *)      
   | ADTValue of string * typ list * literal list
+  (* An embedded closure *)
+  | Clo of (literal -> int -> (literal, string) EvalMonad.eresult)
+  (* A type abstraction *)
+  | TAbs of (typ -> int -> (literal, string) EvalMonad.eresult)
 [@@deriving sexp]
 
 
