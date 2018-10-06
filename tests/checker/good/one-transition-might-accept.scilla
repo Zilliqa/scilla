@@ -1,0 +1,18 @@
+scilla_version 0
+
+contract OneTransitionMightAccept
+()
+
+transition maybe_donate1(cond : Bool)
+  match cond with
+  | True => accept
+  | False =>
+    e = { _eventname : "Donation rejected" };
+    event e
+  end
+end
+
+transition foo(cond : Bool)
+  e = { _eventname : "foo" };
+  event e
+end

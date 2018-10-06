@@ -1,0 +1,72 @@
+scilla_version 0
+
+contract MultipleAccepts
+()
+
+transition donate_twice()
+  accept;
+  accept
+end
+
+transition donate_thrice()
+  accept;
+  accept;
+  accept
+end
+
+transition donate_once_or_twice(twice : Bool)
+  accept;
+  match twice with
+  | True => accept
+  | False =>
+    e = { _eventname : "Thanks" };
+    event e
+  end
+end
+
+transition donate_once_or_twice_reversed(twice : Bool)
+  match twice with
+  | True => accept
+  | False =>
+    e = { _eventname : "Thanks" };
+    event e
+  end;
+  accept
+end
+
+(* This is guaranteed to only accept once, but static analysis won't let *)
+(* us figure that out in full generality (because the result of the      *)
+(* expression being matched on won't be known until runtime.  So this    *)
+(* needs to trigger a warning, not an error.                             *)
+transition donate_once_non_obvious(switch : Bool)
+  match switch with
+  | True => accept
+  | False =>
+    e = { _eventname : "Thanks" };
+    event e
+  end;
+  match switch with
+  | False => accept
+  | True =>
+    e = { _eventname : "Thanks" };
+    event e
+  end
+end
+
+transition donate_twice_non_obvious(switch : Bool)
+  match switch with
+  | True => accept
+  | False =>
+    e = { _eventname : "Thanks" };
+    event e
+  end;
+  accept;
+  match switch with
+  | False => accept
+  | True =>
+    e = { _eventname : "Thanks" };
+    event e
+  end;
+  accept
+end
+

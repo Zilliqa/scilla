@@ -1,0 +1,26 @@
+{
+  "cashflow_tags": [],
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "MissingAccepts",
+    "params": [],
+    "fields": [],
+    "transitions": [
+      { "vname": "foo", "params": [ { "vname": "cond", "type": "Bool" } ] },
+      { "vname": "bar", "params": [ { "vname": "cond", "type": "Bool" } ] }
+    ],
+    "events": [
+      { "vname": "bar", "params": [] },
+      { "vname": "foo", "params": [] }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "Contract MissingAccepts had no transitions with accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}
