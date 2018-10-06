@@ -1,0 +1,8 @@
+contract Empty
+()
+
+field bad_bar : List (String -> Int32) = Nil {(String -> Int32)}
+
+transition dummy()
+
+end
