@@ -1,0 +1,7 @@
+contract MultipleAccepts
+()
+
+transition donate()
+  accept;
+  accept
+end
