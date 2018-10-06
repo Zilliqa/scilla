@@ -9,6 +9,25 @@ Setup OCaml using the instructions
 sure you have switched (using `opam switch`) to a version not older
 than the one specified below.
 
+### openSUSE
+
+- Install `libsecp256k1-devel` from
+  https://software.opensuse.org/package/libsecp256k1-devel by clicking
+  on the `Show experimental packages` button and then performing the
+  1-click install from the `network:cryptocurrencies` project.
+
+- Install `bubblewrap` from
+  https://software.opensuse.org/package/bubblewrap by clicking on the
+  `Show experimental packages` button and then performing the 1-click
+  install from the `Virtualization:containers` project.
+
+- Install `ocaml` from https://software.opensuse.org/package/ocaml by
+  performing the 1-click install of the officially released package.
+
+- Run:
+
+    sudo zypper install -y curl m4 opam2 pkg-config zlib-devel gmp-devel libffi-devel libopenssl-devel boost-devel
+
 ### Ubuntu
 
 On machines with Ubuntu strictly older than 18.04, run these additional commands first:
@@ -25,6 +44,8 @@ sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
 sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev
 ```
+
+### OCaml toolchain
 
 Building Scilla requires OCaml 4.06.1. You can switch to this version and install required
 opam packages using the commands listed below:
