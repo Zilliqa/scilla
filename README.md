@@ -38,7 +38,7 @@ environment variable `SCILLA_STDLIB_PATH`.
 From the project root, execute
 
 ```
-./bin/scilla-checker tests/checker/auction.scilla
+./bin/scilla-checker tests/checker/good/auction.scilla
 ```
 
 Instead of `auction.scilla` you might want to try any dfferent file in
