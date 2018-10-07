@@ -59,12 +59,37 @@ module ScillaSanityChecker
         recurser ilist ""
     in
 
+    let rec find_accepts = function stmts ->
+       List.flatten
+       (List.map (fun stmt ->
+        match fst stmt with
+        | AcceptPayment -> [stmt_loc stmt]
+        | MatchStmt (_ident, pslist) ->
+            List.flatten
+              (List.map (fun (_pattern, stmts) -> (find_accepts stmts)) pslist)
+        | _ -> []
+      ) stmts)
+    in
+
+    let check_duplicate_accepts transition =
+      let accepts = (find_accepts transition.tbody) in
+      if List.length accepts <= 1 then ""
+      else
+        Core.sprintf "transition %s had duplicate accept statements:\n"
+                     (get_id transition.tname) ^
+        String.concat ""
+          (List.map (fun loc -> Core.sprintf "  Accept at %s\n" (get_loc_str loc))
+                    accepts)
+    in
+
     (* No repeating names for params. *)
     let e = check_duplicate_ident ER.get_loc (List.map (fun (i, _) -> i) contr.cparams) in
     (* No repeating field names. *)
     let e = e ^ check_duplicate_ident ER.get_loc (List.map (fun (i, _, _) -> i) contr.cfields) in
     (* No repeating transition names. *)
     let e = e ^ check_duplicate_ident SR.get_loc (List.map (fun t -> t.tname) contr.ctrans) in
+    (* No repeating accept statements *)
+    let e = e ^ String.concat "" (List.map (fun t -> check_duplicate_accepts t) contr.ctrans) in
     (* No repeating transition parameter names. *)
     let e = List.fold_left
       (fun e t -> e ^ check_duplicate_ident ER.get_loc (List.map (fun (i, _) -> i) t.tparams))

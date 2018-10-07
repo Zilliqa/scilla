@@ -1,0 +1,7 @@
+{
+  "name": "OneAccept",
+  "params": [],
+  "fields": [],
+  "transitions": [ { "name": "donate", "params": [] } ],
+  "events": []
+}

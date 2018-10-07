@@ -1,0 +1,4 @@
+
+transition donate had duplicate accept statements:
+  Accept at checker/bad/multiple_accepts.scilla:5:3
+  Accept at checker/bad/multiple_accepts.scilla:6:3

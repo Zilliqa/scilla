@@ -1,0 +1,6 @@
+contract OneAccept
+()
+
+transition donate()
+  accept
+end
