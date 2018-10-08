@@ -15,16 +15,16 @@ let mk_transaction_signed_event =
   fun (no_of_sigs : Uint32) =>
     { _eventname : "Transaction signed" ; signature_count : no_of_sigs }
 
-(* Event for communicating a the addition of a new owner *)
+(* Event for communicating the addition of a new owner *)
 let mk_candidate_owner_added_event =
     { _eventname : "Candiate owner added" }
 
-(* Event for communicating a the signing off of a new owner *)
+(* Event for communicating the signing off of a new owner *)
 let mk_owner_signed_event =
   fun (no_of_sigs : Uint32) =>
     { _eventname : "Owner signed" ; signature_count : no_of_sigs }
 
-(* Event for communicating a the addition of a new owner *)
+(* Event for communicating the addition of a new owner *)
 let mk_new_owner_approved_event =
     { _eventname : "New owner approved" }
 
