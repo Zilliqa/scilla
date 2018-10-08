@@ -65,15 +65,6 @@
       ]
     },
     {
-      "vname": "awaiting_funds",
-      "type": "List (Uint32)",
-      "value": {
-        "constructor": "Nil",
-        "argtypes": [ "Uint32" ],
-        "arguments": []
-      }
-    },
-    {
       "vname": "owner_signatures",
       "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
       "value": []

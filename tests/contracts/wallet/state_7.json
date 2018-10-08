@@ -1,18 +1,6 @@
 [
     { "vname": "_balance", "type": "Uint128", "value": "90" },
     {
-      "vname": "awaiting_funds",
-      "type": "List (Uint32)",
-      "value": {
-        "constructor": "Cons",
-        "argtypes": [ "Uint32" ],
-        "arguments": [
-          "1",
-          { "constructor": "Nil", "argtypes": [ "Uint32" ], "arguments": [] }
-        ]
-      }
-    },
-    {
       "vname": "signatures",
       "type": "Map (Uint32) (Map (ByStr20) (Bool))",
       "value": [

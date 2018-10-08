@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "4155",
+  "gas_remaining": "4166",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
@@ -60,15 +60,6 @@
       "vname": "transactions",
       "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
       "value": []
-    },
-    {
-      "vname": "awaiting_funds",
-      "type": "List (Uint32)",
-      "value": {
-        "constructor": "Nil",
-        "argtypes": [ "Uint32" ],
-        "arguments": []
-      }
     }
   ],
   "events": []

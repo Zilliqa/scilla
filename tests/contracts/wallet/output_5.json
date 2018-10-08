@@ -1,64 +1,25 @@
 {
-  "gas_remaining": "3932",
-  "message": null,
+  "gas_remaining": "3951",
+  "message": {
+    "_tag": "",
+    "_amount": "10",
+    "_accepted": "false",
+    "_recipient": "0x1234567890123456789012345678906780000000",
+    "params": [ { "vname": "code", "type": "Int32", "value": "2" } ]
+  },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "90" },
     {
-      "vname": "awaiting_funds",
-      "type": "List (Uint32)",
-      "value": {
-        "constructor": "Cons",
-        "argtypes": [ "Uint32" ],
-        "arguments": [
-          "1",
-          { "constructor": "Nil", "argtypes": [ "Uint32" ], "arguments": [] }
-        ]
-      }
-    },
-    {
       "vname": "signatures",
       "type": "Map (Uint32) (Map (ByStr20) (Bool))",
-      "value": [
-        {
-          "key": "1",
-          "val": [
-            {
-              "key": "0x1234567890123456789012345678906784567890",
-              "val": {
-                "constructor": "True",
-                "argtypes": [],
-                "arguments": []
-              }
-            },
-            {
-              "key": "0xffcdeabcde126786789012345678901234567890",
-              "val": {
-                "constructor": "True",
-                "argtypes": [],
-                "arguments": []
-              }
-            }
-          ]
-        }
-      ]
+      "value": []
     },
     {
       "vname": "transactions",
       "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
-      "value": [
-        {
-          "key": "1",
-          "val": {
-            "constructor": "Pair",
-            "argtypes": [ "ByStr20", "Uint128" ],
-            "arguments": [
-              "0x1234567890123456789012345678906780000000", "100"
-            ]
-          }
-        }
-      ]
+      "value": []
     },
-    { "vname": "transactionCount", "type": "Uint32", "value": "2" },
+    { "vname": "transactionCount", "type": "Uint32", "value": "1" },
     {
       "vname": "validity_checked",
       "type": "Bool",
@@ -93,10 +54,5 @@
       "value": []
     }
   ],
-  "events": [
-    {
-      "_eventname": "WalletError",
-      "params": [ { "vname": "err_code", "type": "Int32", "value": "-3" } ]
-    }
-  ]
+  "events": []
 }

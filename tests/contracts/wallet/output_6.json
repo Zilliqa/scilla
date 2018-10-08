@@ -1,104 +1,17 @@
 {
-  "gas_remaining": "2847",
+  "gas_remaining": "4340",
   "message": null,
   "states": [
-    { "vname": "_balance", "type": "Uint128", "value": "6" },
+    { "vname": "_balance", "type": "Uint128", "value": "10" },
     {
       "vname": "signatures",
       "type": "Map (Uint32) (Map (ByStr20) (Bool))",
-      "value": [
-        {
-          "key": "3",
-          "val": [
-            {
-              "key": "0x1234567890123456789012345678906784567890",
-              "val": {
-                "constructor": "True",
-                "argtypes": [],
-                "arguments": []
-              }
-            },
-            {
-              "key": "0xffcdeabcde126786789012345678901234567890",
-              "val": {
-                "constructor": "True",
-                "argtypes": [],
-                "arguments": []
-              }
-            }
-          ]
-        },
-        {
-          "key": "1",
-          "val": [
-            {
-              "key": "0x1234567890123456789012345678906784567890",
-              "val": {
-                "constructor": "True",
-                "argtypes": [],
-                "arguments": []
-              }
-            },
-            {
-              "key": "0xffcdeabcde126786789012345678901234567890",
-              "val": {
-                "constructor": "True",
-                "argtypes": [],
-                "arguments": []
-              }
-            }
-          ]
-        }
-      ]
+      "value": []
     },
     {
       "vname": "transactions",
       "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
-      "value": [
-        {
-          "key": "3",
-          "val": {
-            "constructor": "Pair",
-            "argtypes": [ "ByStr20", "Uint128" ],
-            "arguments": [
-              "0x1234567890123456789012345678906780000000", "100"
-            ]
-          }
-        },
-        {
-          "key": "1",
-          "val": {
-            "constructor": "Pair",
-            "argtypes": [ "ByStr20", "Uint128" ],
-            "arguments": [
-              "0x1234567890123456789012345678906780000000", "100"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "vname": "awaiting_funds",
-      "type": "List (Uint32)",
-      "value": {
-        "constructor": "Cons",
-        "argtypes": [ "Uint32" ],
-        "arguments": [
-          "3",
-          {
-            "constructor": "Cons",
-            "argtypes": [ "Uint32" ],
-            "arguments": [
-              "1",
-              {
-                "constructor": "Nil",
-                "argtypes": [ "Uint32" ],
-                "arguments": []
-              }
-            ]
-          }
-        ]
-      }
+      "value": []
     },
     { "vname": "transactionCount", "type": "Uint32", "value": "4" },
     {

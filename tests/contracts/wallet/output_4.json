@@ -1,23 +1,50 @@
 {
-  "gas_remaining": "3852",
-  "message": {
-    "_tag": "Main",
-    "_amount": "10",
-    "_accepted": "false",
-    "_recipient": "0x1234567890123456789012345678906780000000",
-    "params": [ { "vname": "code", "type": "Int32", "value": "2" } ]
-  },
+  "gas_remaining": "4056",
+  "message": null,
   "states": [
-    { "vname": "_balance", "type": "Uint128", "value": "90" },
+    { "vname": "_balance", "type": "Uint128", "value": "100" },
     {
       "vname": "signatures",
       "type": "Map (Uint32) (Map (ByStr20) (Bool))",
-      "value": []
+      "value": [
+        {
+          "key": "0",
+          "val": [
+            {
+              "key": "0x1234567890123456789012345678906784567890",
+              "val": {
+                "constructor": "True",
+                "argtypes": [],
+                "arguments": []
+              }
+            },
+            {
+              "key": "0xffcdeabcde126786789012345678901234567890",
+              "val": {
+                "constructor": "True",
+                "argtypes": [],
+                "arguments": []
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       "vname": "transactions",
       "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
-      "value": []
+      "value": [
+        {
+          "key": "0",
+          "val": {
+            "constructor": "Pair",
+            "argtypes": [ "ByStr20", "Uint128" ],
+            "arguments": [
+              "0x1234567890123456789012345678906780000000", "10"
+            ]
+          }
+        }
+      ]
     },
     { "vname": "transactionCount", "type": "Uint32", "value": "1" },
     {
@@ -47,15 +74,6 @@
           "val": { "constructor": "True", "argtypes": [], "arguments": [] }
         }
       ]
-    },
-    {
-      "vname": "awaiting_funds",
-      "type": "List (Uint32)",
-      "value": {
-        "constructor": "Nil",
-        "argtypes": [ "Uint32" ],
-        "arguments": []
-      }
     },
     {
       "vname": "owner_signatures",

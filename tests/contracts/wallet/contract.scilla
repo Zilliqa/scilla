@@ -1,4 +1,4 @@
-import ListUtils IntUtils BoolUtils
+import ListUtils IntUtils
 
 (***************************************************)
 (*               Associated library                *)
@@ -42,7 +42,8 @@ let already_signed_err_code          = Int32 -5
 let not_already_signed_err_code      = Int32 -6
 let invalid_contract_err_code        = Int32 -7
 let invalid_amount_err_code          = Int32 -8
-
+let not_enough_signatures_err_code   = Int32 -9
+let sender_is_not_recipient_err_code = Int32 -10
 
 let transaction_inc = Uint32 1
 let empty_sigs = Emp ByStr20 Bool
@@ -81,38 +82,21 @@ let check_contract_validity =
 let transaction_msg =
   fun (recipient : ByStr20) =>
   fun (amount : Uint128) =>
-    {_tag : Main; _recipient : recipient; _amount : amount;
+  fun (tag : String) =>
+    {_tag : tag; _recipient : recipient; _amount : amount;
      code : transaction_executed }
 
 (* Wrap one transaction message as singleton list *)
 let transaction_msg_as_list =
   fun (recipient : ByStr20) =>
   fun (amount : Uint128) =>
+  fun (tag : String) =>
     let one_msg = 
       fun (msg : Message) => 
         let nil_msg = Nil {Message} in
         Cons {Message} msg nil_msg in
-    let msg = transaction_msg recipient amount in
+    let msg = transaction_msg recipient amount tag in
     one_msg msg
-
-(* Create messages for list of transactions *)
-let transaction_msgs =
-  fun (transaction_ids : List Uint32) =>
-  fun (transactions : Map Uint32 (Pair ByStr20 Uint128)) =>
-    let mapper = @list_map Uint32 Message in
-    let iter =
-      fun (id : Uint32) =>
-        let transaction = builtin get transactions id in
-        match transaction with
-        | None =>
-          (* Should not happen *)
-          let dummy_amount = Uint128 0 in
-          let dummy_address = 0x0000000000000000000000000000000000000000 in
-          transaction_msg dummy_address dummy_amount
-        | Some (Pair recipient amount) =>
-          transaction_msg recipient amount
-        end in
-    mapper iter transaction_ids
 
 (* list_mem for owners *)
 let address_mem =
@@ -125,68 +109,6 @@ let address_mem =
     | Some True  => True
     end
 
-(* Split awaiting transactions into list of ones we can afford and list of ones we cannot *)
-let get_affordable_awaiting =
-  fun (balance : Uint128) =>
-  fun (awaiting : List Uint32) =>
-  fun (transactions : Map Uint32 (Pair ByStr20 Uint128)) =>
-    let folder = @list_foldr Uint32 (Pair Uint128 (Pair (List Uint32) (List Uint32))) in
-    let iter =
-      fun (next_awaiting : Uint32) =>
-      fun (acc : Pair Uint128 (Pair (List Uint32) (List Uint32))) =>
-        match acc with
-        | Pair remaining_balance (Pair to_be_executed not_to_be_executed) =>
-          let transaction = builtin get transactions next_awaiting in
-          match transaction with
-          | None =>
-            (* Transaction should exist, but we can't fix it here, so just ignore. *)
-            acc
-          | Some (Pair recipient amount) =>
-            let not_enough_funds = builtin lt remaining_balance amount in
-            match not_enough_funds with
-            | True =>
-              (* Not enough money *)
-              let new_not_to_be_executed = Cons {Uint32} next_awaiting not_to_be_executed in
-              let awaiting_pair = Pair {(List Uint32) (List Uint32)} to_be_executed new_not_to_be_executed in
-              Pair {Uint128 (Pair (List Uint32) (List Uint32))} balance awaiting_pair
-            | False =>
-              (* To be executed *)
-              let new_to_be_executed = Cons {Uint32} next_awaiting to_be_executed in
-              let awaiting_pair = Pair {(List Uint32) (List Uint32)} new_to_be_executed not_to_be_executed in
-              let new_remaining_balance = builtin sub balance amount in
-              Pair {Uint128 (Pair (List Uint32) (List Uint32))} new_remaining_balance awaiting_pair
-            end
-          end
-        end in
-    let empty_awaiting = Nil {Uint32} in
-    let init_awaiting_pair = Pair {(List Uint32) (List Uint32)} empty_awaiting empty_awaiting in
-    let init = Pair {Uint128 (Pair (List Uint32) (List Uint32))} balance init_awaiting_pair in
-    folder iter init awaiting
-
-(* Remove list of keys from map *)
-let remove_keys =
-  tfun 'K =>
-  tfun 'V =>
-  fun (map : Map 'K 'V) =>
-  fun (keys : List 'K) =>
-    let folder = @list_foldl 'K (Map 'K 'V) in
-    let iter =
-      fun (acc : Map 'K 'V) =>
-      fun (next_key : 'K) =>
-        builtin remove acc next_key in
-    folder iter map keys
-
-(* Remove transaction id from list *)
-let remove_transaction_id =
-  fun (element : Uint32) =>
-  fun (l : List Uint32) =>
-    let filterer = @list_filter Uint32 in
-    let pred =
-      fun (e : Uint32) =>
-        let equal = uint32_eq e element in
-        negb equal in
-    filterer pred l
-        
 
 (***************************************************)
 (*             The contract definition             *)
@@ -213,11 +135,9 @@ field transactionCount : Uint32 = Uint32 0
 (* Collected signatures for transactions *)
 field signatures       : Map Uint32 (Map ByStr20 Bool) =
                            Emp Uint32 (Map ByStr20 Bool)
-(* Awaiting transactions *) 
+(* Transactions *) 
 field transactions     : Map Uint32 (Pair ByStr20 Uint128) =
                            Emp Uint32 (Pair ByStr20 Uint128)
-(* Approved transactions awaiting funds *) 
-field awaiting_funds   : List Uint32 = Nil {Uint32}
 
 (* Collected signatures for new owners *)
 field owner_signatures : Map ByStr20 (Map ByStr20 Bool) =
@@ -302,39 +222,62 @@ transition SignTransaction (transactionId : Uint32)
           t = True;
           new_sigs = builtin put sigs _sender t;
           new_signatures = builtin put sigs_tmp transactionId new_sigs;
-          signatures := new_signatures;
+          signatures := new_signatures
+        end
+      end
+    end
+  end
+end
 
+(* Execute signed-off transaction *)
+transition ExecuteTransaction (transactionId : Uint32, tag : String)
+  transactions_tmp <- transactions;
+  transaction_opt = builtin get transactions_tmp transactionId;
+  match transaction_opt with
+  | None =>
+    (* Transaction was not found. *)
+    e = mk_error_event unknown_transaction_id_err_code;
+    event e
+  | Some (Pair recipient amount) =>
+    (* Only the recipient can initiate the transaction *)
+    recipient_is_sender = builtin eq recipient _sender;
+    match recipient_is_sender with
+    | False => 
+      e = mk_error_event sender_is_not_recipient_err_code;
+      event e
+    | True =>
+      (* Check for sufficient funds  *)
+      bal <- _balance;
+      not_enough_money = builtin lt bal amount;
+      match not_enough_money with
+      | True =>
+        e = mk_error_event insufficient_funds_err_code;
+        event e
+      | False =>
+        signatures_tmp <- signatures;
+        sigs_opt = builtin get signatures_tmp transactionId;
+        match sigs_opt with
+        | None =>
+          (* Signatures not found, even though the transaction exists.*)
+          e = mk_error_event unknown_transaction_id_err_code;
+          event e
+        | Some sigs =>
           (* Check for sufficient number of signatures *)
-          no_of_sigs = builtin size new_sigs;
+          no_of_sigs = builtin size sigs;
           not_enough_signatures = builtin lt no_of_sigs required_signatures;
           match not_enough_signatures with
           | True =>
-            (* Not enough signatures. Send message with id of created transaction *)
-            e = mk_transaction_signed_event no_of_sigs;
+            e = mk_error_event not_enough_signatures_err_code;
             event e
-          | False => 
-            (* Check for sufficient funds  *)
-            bal <- _balance;
-            not_enough_money = builtin lt bal amount;
-            match not_enough_money with
-            | True =>
-              (* Add transaction to list of waiting transactions *)
-              await <- awaiting_funds;
-              new_await = Cons {Uint32} transactionId await;
-              awaiting_funds := new_await;
-              e = mk_error_event insufficient_funds_err_code;
-              event e
-            | False =>
-              (* Enough signatures collected, and enough money available. *)
-              (* Remove transaction and signatures, and execute. *)
-              new_ts = builtin remove ts_tmp transactionId;
-              new_signatures = builtin remove new_signatures transactionId;
-              transactions := new_ts;
-              signatures := new_signatures;
-              (* Execute transaction. *)
-              msgs = transaction_msg_as_list recipient amount;
-              send msgs
-            end
+          | False =>
+            (* Transaction approved, and enough money available. *)
+            (* Remove transaction and signatures, and execute. *)
+            new_transactions = builtin remove transactions_tmp transactionId;
+            transactions := new_transactions;
+            new_signatures = builtin remove signatures_tmp transactionId;
+            signatures := new_signatures;
+            msgs = transaction_msg_as_list recipient amount tag;
+            send msgs
           end
         end
       end
@@ -361,20 +304,7 @@ transition RevokeSignature (transactionId : Uint32)
     | True =>
       new_sigs = builtin remove sigs _sender;
       new_signatures = builtin put sigs_tmp transactionId new_sigs;
-      signatures := new_signatures;
-      (* Check if this invalidates transaction *)
-      old_no_of_sigs = builtin size sigs;
-      new_no_of_sigs = builtin size new_sigs;
-      was_approved = uint32_ge old_no_of_sigs required_signatures;
-      no_longer_approved = uint32_lt new_no_of_sigs required_signatures;
-      must_remove_from_awaiting = andb was_approved no_longer_approved;
-      match must_remove_from_awaiting with
-      | False =>
-      | True =>
-        await_tmp <- awaiting_funds;
-        new_await = remove_transaction_id transactionId await_tmp;
-        awaiting_funds := new_await
-      end
+      signatures := new_signatures
     end
   end
 end
@@ -475,7 +405,7 @@ end
 
 (* Add funds to wallet *)
 transition AddFunds ()
-  (* Only accept funds if number of required signatures is less than the number of distinct owners *)
+  (* Check validity of contract. If the contract is invalid, funds may become locked *)
   checked <- validity_checked;
   match checked with
   | False =>
@@ -488,34 +418,13 @@ transition AddFunds ()
   | True =>
   end;
 
+  (* Only accept funds if the contract is valid. *)
   valid <- contract_valid;
   match valid with
   | False =>
     e = mk_error_event invalid_contract_err_code;
     event e
   | True =>
-    accept;
-    (* Execute awaiting transactions *)
-    bal <- _balance;
-    await_tmp <- awaiting_funds;
-    trans <- transactions;
-    sigs <- signatures;
-    
-    split_awaiting = get_affordable_awaiting bal await_tmp trans;
-    match split_awaiting with
-    | Pair _ (Pair to_be_executed not_to_be_executed) =>
-      (* Generate messages *)
-      msgs = transaction_msgs to_be_executed trans;
-      (* Remove executed transactions *)
-      transaction_remover = @remove_keys Uint32 (Pair ByStr20 Uint128);
-      signature_remover = @remove_keys Uint32 (Map ByStr20 Bool);
-      new_transactions = transaction_remover trans to_be_executed;
-      awaiting_funds := not_to_be_executed;
-      transactions := new_transactions;
-      new_signatures = signature_remover sigs to_be_executed;
-      signatures := new_signatures;
-      (* Execute transactions *)
-      send msgs
-    end 
+    accept
   end
 end

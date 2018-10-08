@@ -1,12 +1,17 @@
 {
-    "_tag": "SignTransaction",
+    "_tag": "ExecuteTransaction",
     "_amount": "0",
-    "_sender" : "0xffcdeabcde126786789012345678901234567890",
+    "_sender" : "0x1234567890123456789012345678906780000000",
     "params": [
         {
             "vname": "transactionId",
             "type": "Uint32",
-            "value": "1"
+            "value": "0"
+        },
+        {
+            "vname": "tag",
+            "type": "String",
+            "value": ""
         }
     ]
 }

@@ -65,14 +65,5 @@
       "vname": "transactions",
       "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
       "value": []
-    },
-    {
-      "vname": "awaiting_funds",
-      "type": "List (Uint32)",
-      "value": {
-        "constructor": "Nil",
-        "argtypes": [ "Uint32" ],
-        "arguments": []
-      }
     }
 ]

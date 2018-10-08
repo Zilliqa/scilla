@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "4147",
+  "gas_remaining": "4158",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "100" },
@@ -52,15 +52,6 @@
           "val": { "constructor": "True", "argtypes": [], "arguments": [] }
         }
       ]
-    },
-    {
-      "vname": "awaiting_funds",
-      "type": "List (Uint32)",
-      "value": {
-        "constructor": "Nil",
-        "argtypes": [ "Uint32" ],
-        "arguments": []
-      }
     },
     {
       "vname": "owner_signatures",

@@ -1,27 +1,8 @@
 {
-  "gas_remaining": "4086",
+  "gas_remaining": "4203",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "100" },
-    {
-      "vname": "signatures",
-      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
-      "value": []
-    },
-    {
-      "vname": "transactions",
-      "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
-      "value": []
-    },
-    {
-      "vname": "awaiting_funds",
-      "type": "List (Uint32)",
-      "value": {
-        "constructor": "Nil",
-        "argtypes": [ "Uint32" ],
-        "arguments": []
-      }
-    },
     {
       "vname": "validity_checked",
       "type": "Bool",
@@ -51,6 +32,16 @@
       ]
     },
     { "vname": "transactionCount", "type": "Uint32", "value": "0" },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "value": []
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
+      "value": []
+    },
     {
       "vname": "owner_signatures",
       "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
