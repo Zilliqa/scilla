@@ -1,6 +1,2 @@
 Failed execution:
-Cannot store a closure
-<closure>
-as ff
-in a message
-(Message((tag(MTag Main))(amount(MVar(Ident x((fname eval/exp/bad/msg_error.scilla)(lnum 5)(bol 79)(cnum 109)))))(code(MVar(Ident ff((fname eval/exp/bad/msg_error.scilla)(lnum 5)(bol 79)(cnum 118))))))).
+Cannot serialize literal <closure>

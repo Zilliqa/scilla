@@ -134,6 +134,9 @@ let rec pp_literal_simplified l =
           List.fold_left al ~init:"" ~f:(fun a l' -> a ^ " " ^ (pp_literal_simplified l'))
           ^ ")"
         )
+    | Clo _ -> "<closure>"
+    | TAbs _ -> "<type_closure>"
+
 
 let pp_literal_json l =
   literal_to_jstring l

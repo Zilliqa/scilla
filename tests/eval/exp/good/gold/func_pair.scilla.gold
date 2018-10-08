@@ -1,0 +1,5 @@
+(String "abcabc"),
+{ [g -> <closure>],
+  [s -> (String "abc")],
+  [p -> (Pair <closure> <closure>)],
+  [f -> <closure>] }

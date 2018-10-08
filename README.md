@@ -26,7 +26,7 @@ Once the project is built you can try the following things:
 From the project root, execute
 
 ```
-./bin/eval-runner tests/eval/exp/let.scilla src/stdlib
+./bin/eval-runner tests/eval/exp/good/let.scilla src/stdlib
 ```
 
 Instead of `let.scilla` you might want to try any dfferent file in `tests/eval/exp`. The second argument, which is a path
@@ -38,7 +38,7 @@ environment variable `SCILLA_STDLIB_PATH`.
 From the project root, execute
 
 ```
-./bin/scilla-checker tests/checker/auction.scilla
+./bin/scilla-checker tests/checker/good/auction.scilla
 ```
 
 Instead of `auction.scilla` you might want to try any dfferent file in
