@@ -30,18 +30,18 @@ let mk_new_owner_approved_event =
 
 (* Error events *)
 let mk_error_event =
-  fun (err_msg : String) =>
-    { _eventname : "WalletError" ; err_msg : err_msg }
+  fun (err_code : Int32) =>
+    { _eventname : "WalletError" ; err_code : err_code }
 
 (* Error messages *)
-let non_owner_cannot_sign_err_msg   = "Signee not recognized as owner"
-let unknown_transaction_id_err_msg  = "Unknown transaction id"
-let insufficient_funds_err_msg      = "Insufficient funds in wallet"
-let no_signature_list_found_err_msg = "No signature list found"
-let already_signed_err_msg          = "Transaction already signed by signee"
-let not_already_signed_err_msg      = "Transaction not signed by signee"
-let invalid_contract_err_msg        = "Invalid contract"
-let invalid_amount_err_msg          = "Invalid amount"
+let non_owner_cannot_sign_err_code   = Int32 -1
+let unknown_transaction_id_err_code  = Int32 -2
+let insufficient_funds_err_code      = Int32 -3
+let no_signature_list_found_err_code = Int32 -4
+let already_signed_err_code          = Int32 -5
+let not_already_signed_err_code      = Int32 -6
+let invalid_contract_err_code        = Int32 -7
+let invalid_amount_err_code          = Int32 -8
 
 
 let transaction_inc = Uint32 1
@@ -234,7 +234,7 @@ transition SubmitTransaction (recipient : ByStr20, amount : Uint128)
   match amount_is_zero with
   | True =>
     (* Illegal transaction *)
-    e = mk_error_event invalid_amount_err_msg;
+    e = mk_error_event invalid_amount_err_code;
     event e
   | False =>
     (* Create new transaction *)
@@ -272,7 +272,7 @@ transition SignTransaction (transactionId : Uint32)
   sender_is_owner = sender_mem owners_tmp;
   match sender_is_owner with
   | False =>
-    e = mk_error_event non_owner_cannot_sign_err_msg;
+    e = mk_error_event non_owner_cannot_sign_err_code;
     event e
   | True =>
     (* Transaction must have been submitted *)
@@ -280,7 +280,7 @@ transition SignTransaction (transactionId : Uint32)
     transaction = builtin get ts_tmp transactionId;
     match transaction with
     | None =>
-      e = mk_error_event unknown_transaction_id_err_msg;
+      e = mk_error_event unknown_transaction_id_err_code;
       event e
     | Some (Pair recipient amount) =>
       (* Transaction must occur in signatures map *)
@@ -288,14 +288,14 @@ transition SignTransaction (transactionId : Uint32)
       sigs_opt = builtin get sigs_tmp transactionId;
       match sigs_opt with
       | None =>
-        e = mk_error_event no_signature_list_found_err_msg;
+        e = mk_error_event no_signature_list_found_err_code;
         event e
       | Some sigs =>
         (* Sender must not have signed already *)
         sender_has_signed = sender_mem sigs;
         match sender_has_signed with
         | True =>
-          e = mk_error_event already_signed_err_msg;
+          e = mk_error_event already_signed_err_code;
           event e
         | False =>
           (* Signature is valid. Add to collected signatures *)
@@ -322,7 +322,7 @@ transition SignTransaction (transactionId : Uint32)
               await <- awaiting_funds;
               new_await = Cons {Uint32} transactionId await;
               awaiting_funds := new_await;
-              e = mk_error_event insufficient_funds_err_msg;
+              e = mk_error_event insufficient_funds_err_code;
               event e
             | False =>
               (* Enough signatures collected, and enough money available. *)
@@ -349,14 +349,14 @@ transition RevokeSignature (transactionId : Uint32)
   sigs_opt = builtin get sigs_tmp transactionId;
   match sigs_opt with
   | None =>
-    e = mk_error_event no_signature_list_found_err_msg;
+    e = mk_error_event no_signature_list_found_err_code;
     event e
   | Some sigs =>
     (* Sender must have signed already *)
     sender_has_signed = address_mem _sender sigs;
     match sender_has_signed with
     | False =>
-      e = mk_error_event not_already_signed_err_msg;
+      e = mk_error_event not_already_signed_err_code;
       event e
     | True =>
       new_sigs = builtin remove sigs _sender;
@@ -386,14 +386,14 @@ transition RevokeOwnerSignature (new_owner : ByStr20)
   sigs_opt = builtin get sigs_tmp new_owner;
   match sigs_opt with
   | None =>
-    e = mk_error_event no_signature_list_found_err_msg;
+    e = mk_error_event no_signature_list_found_err_code;
     event e
   | Some sigs =>
     (* Sender must have signed already *)
     sender_has_signed = address_mem _sender sigs;
     match sender_has_signed with
     | False =>
-      e = mk_error_event not_already_signed_err_msg;
+      e = mk_error_event not_already_signed_err_code;
       event e
     | True =>
       new_sigs = builtin remove sigs _sender;
@@ -414,7 +414,7 @@ transition SignOffNewOwner (new_owner : ByStr20)
   sender_is_owner = sender_mem owners_tmp;
   match sender_is_owner with
   | False =>
-    e = mk_error_event non_owner_cannot_sign_err_msg;
+    e = mk_error_event non_owner_cannot_sign_err_code;
     event e
   | True =>
     owner_signatures_tmp <- owner_signatures;
@@ -434,7 +434,7 @@ transition SignOffNewOwner (new_owner : ByStr20)
       sender_has_signed = sender_mem sigs;
       match sender_has_signed with
       | True =>
-        e = mk_error_event already_signed_err_msg;
+        e = mk_error_event already_signed_err_code;
         event e
       | False =>
         new_sigs = builtin put sigs _sender t;
@@ -491,7 +491,7 @@ transition AddFunds ()
   valid <- contract_valid;
   match valid with
   | False =>
-    e = mk_error_event invalid_contract_err_msg;
+    e = mk_error_event invalid_contract_err_code;
     event e
   | True =>
     accept;

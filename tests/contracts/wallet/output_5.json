@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "3908",
+  "gas_remaining": "3932",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "90" },
@@ -96,13 +96,7 @@
   "events": [
     {
       "_eventname": "WalletError",
-      "params": [
-        {
-          "vname": "err_msg",
-          "type": "String",
-          "value": "Insufficient funds in wallet"
-        }
-      ]
+      "params": [ { "vname": "err_code", "type": "Int32", "value": "-3" } ]
     }
   ]
 }
