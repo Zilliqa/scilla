@@ -94,7 +94,7 @@ let rec exp_eval erep env =
       (* Resolve all message payload *)
       let resolve pld = match pld with
         | MTag s -> pure @@ (StringLit s)
-        | MLit l  -> sanitize_literal l
+        | MLit l -> sanitize_literal l
         | MVar i ->
             let%bind v = Env.lookup env i in
             sanitize_literal v
@@ -322,7 +322,6 @@ let init_fields env fs =
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
-(* TODO: implement type-checking *)
 let init_contract clibs elibs cparams' cfields args init_bal  =
   (* All contracts take a few implicit parameters. *)
   let cparams = CU.append_implict_contract_params cparams' in
