@@ -1,5 +1,5 @@
 (* Expected answer *)
-(* (ByStr32 0xfb19be0f160d895fe4d12de4975812c2cafbbcd2e3985f2162037583c12ed320) *)
+(* (ByStr32 0x569597d9f61e5f5279382dda6e26fb69be96cc1700a970aa0efc277da150c44a ) *)
 
 let k1 = Int64 1 in
 let k2 = Int64 2 in
