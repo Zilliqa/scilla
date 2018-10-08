@@ -1,5 +1,5 @@
 (* Expected answer *)
-(* (ADTValue True()()) *)
+(* (ADTValue False()()) *)
 
 let k1 = Int128 1 in
 let k2 = Int128 2 in
