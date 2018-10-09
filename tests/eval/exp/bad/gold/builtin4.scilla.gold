@@ -1,2 +1,15 @@
-Failed execution:
-[eval/exp/bad/builtin4.scilla:7:10] Cannot find built-in with name "add" and argument types [Int64; Int32].
+{
+  "gas_remaining": 1750,
+  "errors": [
+    {
+      "error_message":
+        "Cannot find built-in with name \"add\" and argument types [Int64; Int32].",
+      "start_location": {
+        "file": "eval/exp/bad/builtin4.scilla",
+        "line": 7,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

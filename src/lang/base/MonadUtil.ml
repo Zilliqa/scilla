@@ -18,14 +18,22 @@
 
 open Core
 open Result.Let_syntax
+open ErrorUtils
+
+(* Monadic evaluation results *)
+let fail (s : scilla_error list) = Error s
+let pure e = return e
+
+(* fail with just a message, no location info. *)
+let fail0 (msg : string) = fail @@ mk_error0 msg
+(* fail with a message and start location. *)
+let fail1 msg sloc = fail @@ mk_error1 msg sloc
+(* fail with a message and both start and end locations. *)
+let fail2 msg sloc eloc = fail @@ mk_error2 msg sloc eloc
 
 (****************************************************************)
 (*               Utilities for the result monad                 *)
 (****************************************************************)
-
-(* Monadic evaluation results *)
-let fail s = Error s
-let pure e = return e
 
 (* Monadic fold-left for error *)
 let rec foldM ~f ~init ls = match ls with
@@ -108,8 +116,15 @@ module EvalMonad = struct
     end)
 
   (* Monadic evaluation results *)
-  let fail s = (fun remaining_gas -> Error (s, remaining_gas))
+  let fail (s : scilla_error list) = (fun remaining_gas -> Error (s, remaining_gas))
   let pure e = return e
+
+  (* fail with just a message, no location info. *)
+  let fail0 (msg : string) = fail @@ mk_error0 msg
+  (* fail with a message and start location. *)
+  let fail1 msg sloc = fail @@ mk_error1 msg sloc
+  (* fail with a message and both start and end locations. *)
+  let fail2 msg sloc eloc = fail @@ mk_error2 msg sloc eloc
 
   let fromR r =
     match r with
@@ -129,7 +144,7 @@ module EvalMonad = struct
          let res = op_thunk() in
          mapR res (remaining_gas - cost)
        else 
-         Error ("Ran out of gas", remaining_gas))
+         Error (mk_error0 "Ran out of gas", remaining_gas))
 
   (* Wrap an op with cost check when op returns "eresult". *)
   let checkwrap_op op_thunk cost emsg =

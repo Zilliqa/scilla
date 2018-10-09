@@ -1,26 +1,135 @@
-
-Type error(s) in contract Crowdfunding:
-
-
-[checker/bad/unbound.scilla:14:5] Type error in library check_update:
-
-ADT Uint12 not found
-
-[checker/bad/unbound.scilla:57:1] Type error in transition Donate:
-[checker/bad/unbound.scilla:59:3] Type error in the binding to into `in_time`:
-[checker/bad/unbound.scilla:59:13] Type error in application of `blk_leq`:
-[checker/bad/unbound.scilla:59:13]: Couldn't resolve the identifier "blk_leq".
-
-
-[checker/bad/unbound.scilla:88:1] Type error in transition GetFunds:
-[checker/bad/unbound.scilla:90:3] Type error in pattern matching on `is_owner` of type Bool (or one of its branches):
-[checker/bad/unbound.scilla:92:5] Type error in the binding to into `msg`:
-[checker/bad/unbound.scilla:93:20]: Couldn't resolve the identifier "not_owner_code".
-
-
-[checker/bad/unbound.scilla:122:1] Type error in transition ClaimBack:
-[checker/bad/unbound.scilla:125:3] Type error in pattern matching on `after_deadline` of type Bool (or one of its branches):
-[checker/bad/unbound.scilla:127:5] Type error in the binding to into `msg`:
-[checker/bad/unbound.scilla:128:20]: Couldn't resolve the identifier "too_early_code".
-
-
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract Crowdfunding:\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in library check_update:\n\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 14,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "ADT Uint12 not found",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in transition Donate:\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 57,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in the binding to into `in_time`:\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 59,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in application of `blk_leq`:\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 59,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Couldn't resolve the identifier \"blk_leq\".\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 59,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in transition GetFunds:\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 88,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in pattern matching on `is_owner` of type Bool (or one of its branches):\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 90,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in the binding to into `msg`:\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 92,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Couldn't resolve the identifier \"not_owner_code\".\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 93,
+        "column": 20
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in transition ClaimBack:\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 122,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in pattern matching on `after_deadline` of type Bool (or one of its branches):\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 125,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in the binding to into `msg`:\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 127,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Couldn't resolve the identifier \"too_early_code\".\n",
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 128,
+        "column": 20
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

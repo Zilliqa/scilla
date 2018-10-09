@@ -126,7 +126,7 @@ module DataTypeDictionary = struct
     let open Caml in
     match Hashtbl.find_opt adt_name_dict name with
     | None ->
-      fail @@ sprintf "ADT %s not found" name
+      fail0 @@ sprintf "ADT %s not found" name
     | Some a ->
         pure (a)
 
@@ -134,7 +134,7 @@ module DataTypeDictionary = struct
   let lookup_constructor cn =
     let open Caml in
     match Hashtbl.find_opt adt_cons_dict cn with
-    | None -> fail @@
+    | None -> fail0 @@
         sprintf "No data type with constructor %s found" cn
     | Some dt ->
       pure dt

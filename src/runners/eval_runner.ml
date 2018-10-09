@@ -19,9 +19,12 @@
 
 open Printf
 open Syntax
+open ErrorUtils
 open ParserUtil
 open RunnerUtil
 open GlobalConfig
+open PrettyPrinters
+open DebugMessage
 
 
 module ParsedSyntax = ParserUtil.ParsedSyntax
@@ -58,8 +61,8 @@ let () =
       let env, gas_remaining = 
         (match envres gas_limit with
         | Ok (env', gas_remaining) -> env', gas_remaining
-        | Error (err, _) ->
-          printf "Failed to initialize stdlib. Evaluation halted: %s\n" err;
+        | Error (err, gas_remaining) ->
+          pout @@ scilla_error_gas_jstring gas_remaining err;
           exit 1;) in
       let lib_fnames = List.map (fun (name, _) -> name) env in
       let res' = Eval.exp_eval_wrapper e env in
@@ -67,9 +70,6 @@ let () =
       (match res with
       | Ok _ ->
           printf "%s\n" (Eval.pp_result res lib_fnames)
-      | Error _ -> printf "Failed execution:\n%s\n" (Eval.pp_result res lib_fnames))
+      | Error (el, gas_remaining) -> pout @@ scilla_error_gas_jstring gas_remaining el)
   | Some _ | None ->
-      printf "%s\n" "Failed to parse input file."
-  
-
-
+      pout @@ scilla_error_gas_jstring gas_limit (mk_error0 ("Failed to parse input file." ^ filename))

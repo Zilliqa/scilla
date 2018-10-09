@@ -1,6 +1,5 @@
 open TypeUtil
 open Syntax
-
 open PrimTypes
 open ContractUtil.MessagePayload
 open MonadUtil
@@ -36,8 +35,8 @@ module ScillaEventInfo
            let emsg = "Error determining event name\n" in
            let%bind eventname = match epld with
              | MTag s -> pure s
-             | MLit l -> (match l with | StringLit s -> pure s | _ -> fail emsg)
-             | MVar _ -> fail emsg 
+             | MLit l -> (match l with | StringLit s -> pure s | _ -> fail0 emsg)
+             | MVar _ -> fail0 emsg 
            in
            (* Get the type of the event parameters. *)
            let filtered_m = List.filter (fun (label, _) -> not (label = eventname_label)) m in
@@ -60,7 +59,7 @@ module ScillaEventInfo
                       acc ^ (Printf.sprintf "(%s : %s); " n (pp_typ t))) "[" tplist
                   ^ "]" in 
                 if m_types <> tlist then 
-                  fail @@ Printf.sprintf "Parameter mismatch for event %s. %s vs %s\n"
+                  fail0 @@ Printf.sprintf "Parameter mismatch for event %s. %s vs %s\n"
                     eventname (printer tlist) (printer m_types)
                 else
                   pure @@ acc
