@@ -168,7 +168,7 @@ let add_tests env =
     let schnorrtests = "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 4) in
     let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1) in
     let fungibletokentests = "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8) in
-    let wallettests = "wallet" >:::(build_contract_tests env "wallet" succ_code 1 10) in
+    let wallettests = "wallet" >:::(build_contract_tests env "wallet" succ_code 1 11) in
     let misc_tests = "misc_tests" >::: build_misc_tests env in
 
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f;
