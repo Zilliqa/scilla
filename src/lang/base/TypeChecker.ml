@@ -389,7 +389,7 @@ module ScillaTypechecker
     match id with
     | Ident (s, r) -> Ident (s, ETR.mk_rep r t)
   
-  let type_transition env0 tr : (TypedSyntax.transition * stmt_tenv, string) result  =
+  let type_transition env0 tr : (TypedSyntax.transition, string) result  =
     let {tname; tparams; tbody} = tr in
     let tenv0 = env0.pure in
     let lift_ident_e (id, t) = (add_type_to_id id (mk_qual_tp t), t) in
@@ -399,11 +399,11 @@ module ScillaTypechecker
     let env = {env0 with pure = tenv1} in
     let msg = sprintf "[%s] Type error in transition %s:\n"
         (get_loc_str (SR.get_loc (get_rep tname))) (get_id tname) in
-    let%bind (typed_stmts, new_tenv) = wrap_with_info msg @@
+    let%bind (typed_stmts, _) = wrap_with_info msg @@
       type_stmts env tbody ER.get_loc in
     pure @@ ({ TypedSyntax.tname = tname ;
                TypedSyntax.tparams = typed_tparams;
-               TypedSyntax.tbody = typed_stmts }, new_tenv)
+               TypedSyntax.tbody = typed_stmts })
 
 
   (*****************************************************************)
@@ -553,11 +553,12 @@ module ScillaTypechecker
     let env = {pure= tenv3; fields= fenv} in
     
     (* Step 6: Type-checking all transitions in batch *)
-  let%bind (t_trans, emsgs') = foldM ~init:([], femsgs0) ctrans 
-        ~f:(fun (trans_acc, emsgs) tr -> 
-            match type_transition env tr with
+    let%bind (t_trans, emsgs') = foldM ~init:([], femsgs0) ctrans 
+        ~f:(fun (trans_acc, emsgs) tr ->
+            let toplevel_env = {pure = TEnv.copy env.pure; fields = TEnv.copy fenv} in
+            match type_transition toplevel_env tr with
             | Error msg -> Ok (trans_acc, emsgs ^ "\n\n" ^ msg)
-            | Ok (typed_trans, _) -> Ok(typed_trans :: trans_acc, emsgs)
+            | Ok typed_trans -> Ok(typed_trans :: trans_acc, emsgs)
           ) in
     let typed_trans = List.rev t_trans in
 
