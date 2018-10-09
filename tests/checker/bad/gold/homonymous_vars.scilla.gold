@@ -1,0 +1,10 @@
+
+Type error(s) in contract Wallet:
+
+
+[checker/bad/homonymous_vars.scilla:11:1] Type error in transition ExecuteTransaction:
+[checker/bad/homonymous_vars.scilla:13:3] Type error in the binding to into `not_enough_money`:
+[checker/bad/homonymous_vars.scilla:13:22] Type error in built-in application of `lt`:
+[:0:0]: Couldn't resolve the identifier "sxamount".
+
+
