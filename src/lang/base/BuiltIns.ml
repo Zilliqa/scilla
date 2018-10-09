@@ -887,7 +887,7 @@ module ScillaBuiltIns
        uint32_typ)
     let size_elab sc ts = match ts with
       | [MapType (kt, vt)]  -> elab_tfun_with_args sc [kt; vt]
-      | _ -> fail "Failed to elaborate" 
+      | _ -> fail0 "Failed to elaborate" 
     let size ls _ = match ls with
       | [Map (_, entries)] ->
           (* The type of the output will be "Uint32" *)
