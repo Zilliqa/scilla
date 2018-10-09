@@ -393,7 +393,7 @@ module ScillaBuiltIns
       | _ -> fail "Failed to convert" 
 
     let to_int_arity = 1
-    let to_int_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (tvar "'B"))
+    let to_int_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
     let to_int_elab w sc ts = match ts with
       | [t] when is_int_type t || is_uint_type t ->
           let%bind ityp = mk_int_type w in
@@ -796,7 +796,7 @@ module ScillaBuiltIns
       | _ -> fail "Failed to elaborate"
     let contains ls _ = match ls with
       | [Map (_, entries); key] ->
-          let res = List.exists entries ~f:(fun (k, _) -> k = key) in
+          let res = Caml.Hashtbl.mem entries key in
           pure @@ to_Bool res
       | _ -> builtin_fail "Map.contains" ls
 
@@ -813,9 +813,10 @@ module ScillaBuiltIns
       | _ -> fail "Failed to elaborate"
     let put ls _ = match ls with
       | [Map (tm, entries); key; value] ->
-          let filtered =
-            List.filter entries ~f:(fun (k, _) -> k <> key) in
-          pure @@ Map (tm, ((key, value) :: filtered)) 
+          (* Scilla semantics is not in-place modification. *)
+          let entries' = Caml.Hashtbl.copy entries in
+          let _ = Caml.Hashtbl.replace entries' key value in
+          pure @@ Map (tm, entries') 
       | _ -> builtin_fail "Map.put" ls
 
 
@@ -832,10 +833,10 @@ module ScillaBuiltIns
     (* Notice that get passes return type *)
     let get ls rt = match ls, rt with
       | [Map (_, entries); key], ADT ("Option", [targ]) ->
-          let res = List.find entries ~f:(fun (k, _) -> k = key) in
+          let res = Caml.Hashtbl.find_opt entries key in
           (match res with
            | None -> pure @@ none_lit targ
-           | Some (_, v) -> some_lit v)
+           | Some v -> some_lit v)
       | _ -> builtin_fail "Map.get" ls
 
     let remove_arity = 2
@@ -849,8 +850,10 @@ module ScillaBuiltIns
       | _ -> fail "Failed to elaborate" 
     let remove ls _ = match ls with
       | [Map (tm, entries); key] ->
-          let res = List.filter entries ~f:(fun (k, _) -> k <> key) in
-          pure @@ Map (tm, res)
+          (* Scilla semantics is not in-place modification. *)
+          let entries' = Caml.Hashtbl.copy entries in
+          let _ = Caml.Hashtbl.remove entries' key in
+          pure @@ Map (tm, entries')
       | _ -> builtin_fail "Map.remove" ls
 
 
@@ -867,11 +870,11 @@ module ScillaBuiltIns
           (* The type of the output list will be "Pair (kt) (vt)" *)
           let otyp = pair_typ kt vt in
           let nil = ADTValue ("Nil", (otyp::[]), []) in
-          let ol = List.fold_left entries ~init:nil
-              ~f: (fun accum (k, v) ->
-                  let kv = ADTValue ("Pair", (kt::vt::[]), k::v::[]) in
-                  let kvl = ADTValue ("Cons", (otyp::[]), (kv::accum::[]))
-                  in kvl)
+          let ol = Caml.Hashtbl.fold
+              (fun k v accum ->
+               let kv = ADTValue ("Pair", (kt::vt::[]), k::v::[]) in
+               let kvl = ADTValue ("Cons", (otyp::[]), (kv::accum::[])) in
+               kvl) entries nil
           in pure (ol)
       | _ -> builtin_fail "Map.to_list" ls
 

@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "1642",
+  "gas_remaining": "1478",
   "message": {
     "_tag": "Main",
     "_amount": "0",
@@ -23,19 +23,19 @@
       "type": "Map (Uint32) (Pair (String) (String))",
       "value": [
         {
-          "key": "2",
-          "val": {
-            "constructor": "Pair",
-            "argtypes": [ "String", "String" ],
-            "arguments": [ "IQ84", "Haruki Murakami" ]
-          }
-        },
-        {
           "key": "1",
           "val": {
             "constructor": "Pair",
             "argtypes": [ "String", "String" ],
             "arguments": [ "1984", "George Orwell" ]
+          }
+        },
+        {
+          "key": "2",
+          "val": {
+            "constructor": "Pair",
+            "argtypes": [ "String", "String" ],
+            "arguments": [ "IQ84", "Haruki Murakami" ]
           }
         }
       ]

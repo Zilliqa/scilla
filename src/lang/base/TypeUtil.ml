@@ -409,17 +409,18 @@ module TypeUtilities
         if PrimTypes.is_prim_type kt
         then 
           (* Verify that all key/vals conform to kt,vt, recursively. *)
-          let%bind valid = foldM ~f:(fun res (k, v) ->
+          let%bind valid = Caml.Hashtbl.fold (fun k v res' ->
+              let%bind res = res' in
               if not res then pure @@ res else
                 let%bind kt' = literal_type k in
                 let%bind vt' = literal_type v in
                 pure @@
                 ((type_equiv kt kt') && (type_equiv vt vt'))
-            ) ~init:true kv in
+            ) kv (pure true) in
           if not valid then fail @@ (sprintf "Malformed literal %s" (pp_literal l))
           (* We have a valid Map literal. *)
           else pure (MapType (kt, vt))
-        else if kv = [] && (match kt with | TypeVar _ -> true | _ -> false) then
+        else if ((Caml.Hashtbl.length kv) = 0) && (match kt with | TypeVar _ -> true | _ -> false) then
           (* we make an exception for Emp as it may be parameterized. *)
           pure (MapType (kt, vt))
         else
@@ -447,6 +448,8 @@ module TypeUtilities
           if not args_valid
           then fail @@ sprintf "Malformed ADT %s. Arguments do not match expected types" (pp_literal l)
           else pure @@ res
+    | Clo _ -> fail @@ "Cannot type-check runtime closure."
+    | TAbs _ -> fail @@ "Cannot type-check runtime type function."
 end
 
 (*****************************************************************)

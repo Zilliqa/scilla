@@ -66,10 +66,11 @@ let rec subst_type_in_literal tvar tp l = match l with
   | Map ((kt, vt), ls) -> 
       let kts = subst_type_in_type' tvar tp kt in
       let vts = subst_type_in_type' tvar tp vt in
-      let ls' = List.map ls ~f:(fun (k, v) ->
+      let ls' = Caml.Hashtbl.create (Caml.Hashtbl.length ls) in
+      let _ = Caml.Hashtbl.iter (fun k v ->
         let k' = subst_type_in_literal tvar tp k in
         let v' = subst_type_in_literal tvar tp v in 
-        (k', v')) in
+        Caml.Hashtbl.add ls' k' v') ls in
       Map ((kts, vts), ls')
   | ADTValue (n, ts, ls) ->
       let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
@@ -136,34 +137,18 @@ module Env = struct
   type ident = string
 
   (* Environment *)
-  type t =
-    (string * value) list
-  and
-  (* Fully reduced value *)
-  value =
-    | ValLit of literal
-    | ValClosure of ER.rep Syntax.ident * typ * expr_annot * t
-    | ValTypeClosure of ER.rep Syntax.ident * expr_annot * t                      
-    | ValFix of ER.rep Syntax.ident * typ * expr_annot * t
+  type t = (string * literal) list
   [@@deriving sexp]
 
   (* Pretty-printing *)
-  let rec pp_value v = match v with
-    | ValLit l ->  pp_literal l
-    | ValFix _ -> "<fixpoint>"
-    | ValTypeClosure _ -> "<type_closure>"
-    | ValClosure _ -> "<closure>"
-    (* | ValClosure (f, t, e, env) ->
-         (pp_expr (Fun (f, t, e)))
-          ^ ", " ^ (pp env) *)
-  and pp ?f:(f = fun (_ : (string * value)) -> true) e =
+  let rec pp_value = pp_literal
+  and pp ?f:(f = fun (_ : (string * literal)) -> true) e =
     (* FIXME: Do not print folds *)
     let e_filtered = List.filter e ~f:f in
     let ps = List.map e_filtered
         ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ (pp_value v) ^ "]") in
     let cs = String.concat ~sep:",\n " ps in
     "{" ^ cs ^ " }"
-  
 
   let empty = []
 
@@ -237,20 +222,15 @@ module Configuration = struct
 
   (*  Manipulations with configuartion *)
   
-  let store st k v =
-    match v with 
-    | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
-        fail @@ sprintf "Cannot store a closure below into a field %s:\n%s"
-          k (Env.pp_value v)
-    | Env.ValLit l ->
-        (let s = st.fields in
-         match List.find s ~f:(fun (z, _) -> z = k) with
-         | Some (_, l') -> pure @@
-             ({st with
-              fields = (k, l) :: List.filter ~f:(fun z -> fst z <> k) s}
-              , G_Store(l', l))
-         | None -> fail @@ sprintf
-               "No field \"%s\" in fields:\n%s" k (pp_literal_map s))
+  let store st k l =
+    let s = st.fields in
+    match List.find s ~f:(fun (z, _) -> z = k) with
+    | Some (_, l') -> pure @@
+        ({st with
+          fields = (k, l) :: List.filter ~f:(fun z -> fst z <> k) s}
+        , G_Store(l', l))
+    | None -> fail @@ sprintf
+          "No field \"%s\" in fields:\n%s" k (pp_literal_map s)
 
   let load st k =
     let i = get_id k in
@@ -314,13 +294,8 @@ module Configuration = struct
             let%bind rest = convert_to_list t in
             pure @@ h :: rest
         | l -> fail @@ sprintf "The literal is not a list:\n%s" (pp_literal l))
-      in       
-      match v with
-      | (Env.ValFix _ | Env.ValClosure _ | Env.ValTypeClosure _ ) as v ->
-          fail @@
-          sprintf "Value should be a list of messages, but is a closure:\n%s"
-            (Env.pp_value v)
-      | Env.ValLit l -> convert_to_list l 
+      in
+      convert_to_list v
 
   let validate_outgoing_message m' =
     let open ContractUtil.MessagePayload in
@@ -358,16 +333,12 @@ module Configuration = struct
     | _ -> fail @@ sprintf "Literal %s is not a valid event argument." (pp_literal m')
 
 
-  let create_event conf eparams_resolved =
+  let create_event conf l =
     let%bind event = 
-      match eparams_resolved with
-      | Env.ValLit l -> 
-        (match l with
-        | Msg _ ->
-          pure @@ l
-        | _ -> fail @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l))
-      | (Env.ValFix _ | Env.ValClosure _ | Env.ValTypeClosure _ ) as v -> 
-        fail @@ sprintf "Incorrect event parameters: %s\n" (Env.pp_value v)
+      (match l with
+       | Msg _  ->
+           pure @@ l
+       | _ -> fail @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l))
     in
     let%bind event' = validate_event event in
     let old_events = conf.events in

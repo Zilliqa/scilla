@@ -191,12 +191,12 @@ and read_adt_json name j tlist_verify =
 and read_map_json kt vt j =
   match j with
   | `List vli ->
-     let kvallist = mapvalues_from_json kt vt vli in
+     let kvallist = mapvalues_from_json kt vt vli (List.length vli) in
      Map ((kt, vt), kvallist)
-  | `Null -> Map ((kt, vt), [])
+  | `Null -> Map ((kt, vt), Caml.Hashtbl.create 0)
   | _ -> raise (Invalid_json ("JSON parsing: error parsing Map"))
  
-and mapvalues_from_json kt vt l = 
+and mapvalues_from_json kt vt l size = 
   let open Basic.Util in
   match l with
   | first :: remaining ->
@@ -219,9 +219,10 @@ and mapvalues_from_json kt vt l =
             build_prim_lit_exn vt (to_string vjson)
          | _ -> raise (Invalid_json ("Unknown type in Map value in JSON"))
         ) in
-        let vlist = mapvalues_from_json kt vt remaining in
-          (keylit, vallit) :: vlist
-  | [] -> []
+        let m = mapvalues_from_json kt vt remaining size in
+          let _ = Caml.Hashtbl.replace m keylit vallit in
+          m
+  | [] -> (Caml.Hashtbl.create size)
 
 and json_to_lit t v =
   let open Basic.Util in

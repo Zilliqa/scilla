@@ -27,14 +27,11 @@ open PrimTypes
 (****************************************************************)
 
 let rec mapvalues_to_json ms = 
-  match ms with
-  | kv :: remaining ->
-    let (k, v) = kv in
+  Caml.Hashtbl.fold (fun k v a ->
     let kjson = "key", (literal_to_json k) in
     let vjson = "val", (literal_to_json v) in
     let kv_json = `Assoc (kjson :: vjson :: []) in
-      kv_json :: (mapvalues_to_json remaining)
-  | [] -> []
+      kv_json :: a) ms []
 
 and adtargs_to_json vlist =
   match vlist with
@@ -100,10 +97,10 @@ let rec pp_literal_simplified l =
     | Map ((_, _), kv) ->
       (* we don't print mtype as that's printed for every entry. *)
       let items = "[" ^
-        List.fold_left kv ~init:"" ~f:(fun a (k, v) ->
+        (Caml.Hashtbl.fold (fun k v a ->
           let t = "(" ^ (pp_literal_simplified k) ^ " => " ^ (pp_literal_simplified v) ^ ")" in
             if String.is_empty a then t else a ^ "; " ^ t
-          ) ^ "]" in
+          ) kv "")  ^ "]" in
       ("(Map " ^ items ^ ")")
     | ADTValue (cn, _, al) ->
         (match cn with
@@ -137,6 +134,9 @@ let rec pp_literal_simplified l =
           List.fold_left al ~init:"" ~f:(fun a l' -> a ^ " " ^ (pp_literal_simplified l'))
           ^ ")"
         )
+    | Clo _ -> "<closure>"
+    | TAbs _ -> "<type_closure>"
+
 
 let pp_literal_json l =
   literal_to_jstring l

@@ -35,7 +35,8 @@ let explist = [
   "builtin-rem.scilla";
   "builtin-rem2.scilla";
   "cons.scilla";
-  "fib.scilla";  
+  "fib.scilla";
+  "func_pair.scilla";
   "hash1.scilla";
   "hash2.scilla";  
   "hash3.scilla";
@@ -95,6 +96,7 @@ let explist = [
   "string1.scilla";
   "string2.scilla";
   "times_two.scilla";
+  "to_bystr.scilla";
   "type_subst1.scilla";
   "type_subst2.scilla";
   "uint_conversions.scilla";
