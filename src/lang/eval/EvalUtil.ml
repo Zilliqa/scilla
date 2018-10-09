@@ -18,6 +18,7 @@
 
 open Syntax
 open Core
+open ErrorUtils
 open MonadUtil
 open EvalMonad
 open EvalMonad.Let_syntax
@@ -125,10 +126,10 @@ let builtin_executor i arg_tps arg_lits =
   checkwrap_opR res cost
 
 (* Add a check that the just evaluated statement was in our gas limit. *)
-let stmt_gas_wrap scon =
+let stmt_gas_wrap scon sloc =
   let%bind cost = fromR @@ EvalGas.stmt_cost scon in
   let dummy () = pure () in (* the operation is already executed unfortunately *)
-    checkwrap_op dummy cost "Ran out of gas evaluating statement"
+    checkwrap_op dummy cost (mk_error1 "Ran out of gas evaluating statement" sloc)
 
 (*****************************************************)
 (* Update-only execution environment for expressions *)
@@ -162,9 +163,8 @@ module Env = struct
     let i = get_id k in
     match List.find ~f:(fun z -> fst z = i) e with 
     | Some x -> pure @@ snd x
-    | None -> fail @@ sprintf
-        "Identifier \"%s\" at %s is not bound in environment:\n"
-        i (get_loc_str (get_rep k))
+    | None -> fail1 (sprintf
+        "Identifier \"%s\" is not bound in environment:\n" i) (get_rep k)
 end
 
 
@@ -177,7 +177,7 @@ module BlockchainState = struct
   let lookup e k =
     match List.find ~f:(fun z -> fst z = k) e with 
     | Some x -> pure @@ snd x
-    | None -> fail @@ sprintf
+    | None -> fail0 @@ sprintf
         "No value for key \"%s\" at in the blockchain state:\n%s"
         k (pp_literal_map e)  
 end
@@ -229,7 +229,7 @@ module Configuration = struct
         ({st with
           fields = (k, l) :: List.filter ~f:(fun z -> fst z <> k) s}
         , G_Store(l', l))
-    | None -> fail @@ sprintf
+    | None -> fail0 @@ sprintf
           "No field \"%s\" in fields:\n%s" k (pp_literal_map s)
 
   let load st k =
@@ -244,7 +244,7 @@ module Configuration = struct
       let s = st.fields in
       match List.find ~f:(fun z -> fst z = i) s with 
       | Some x -> pure @@ (snd x, G_Load(snd x))
-      | None -> fail @@ sprintf
+      | None -> fail0 @@ sprintf
             "No field \"%s\" in field map:\n%s" i (pp_literal_map s)
 
   let bind st k v =
@@ -267,7 +267,7 @@ module Configuration = struct
       let incoming_funds = Uint128.zero in
       pure @@ {st with balance; accepted; incoming_funds}
     else
-      fail @@ sprintf "Incoming balance is negaitve (somehow):%s."
+      fail0 @@ sprintf "Incoming balance is negaitve (somehow):%s."
         (Uint128.to_string incoming')
 
   (* Check that message is well-formed before adding to the sending pool *)
@@ -276,7 +276,7 @@ module Configuration = struct
     let validate_msg_payload pl =
       let has_tag = List.exists pl ~f:(fun (k, _) -> k = "tag") in      
       if has_tag then pure true
-      else fail @@ sprintf "Message contents have no \"tag\" field:\n[%s]"
+      else fail0 @@ sprintf "Message contents have no \"tag\" field:\n[%s]"
           (pp_literal_map pl)
     in
     match ls with
@@ -284,7 +284,7 @@ module Configuration = struct
           let%bind _ = validate_msg_payload pl in
           validate_messages tl
       | [] -> pure true
-      | m :: _ -> fail @@ sprintf "This is not a message:\n%s" (pp_literal m)
+      | m :: _ -> fail0 @@ sprintf "This is not a message:\n%s" (pp_literal m)
 
   (* Convert Scilla list to OCaml list *)
   let get_list_literal v =
@@ -293,7 +293,7 @@ module Configuration = struct
         | ADTValue ("Cons", _, [h; t]) ->
             let%bind rest = convert_to_list t in
             pure @@ h :: rest
-        | l -> fail @@ sprintf "The literal is not a list:\n%s" (pp_literal l))
+        | l -> fail0 @@ sprintf "The literal is not a list:\n%s" (pp_literal l))
       in
       convert_to_list v
 
@@ -308,9 +308,9 @@ module Configuration = struct
       let uniq_entries = List.for_all m
         ~f:(fun e -> (List.count m ~f:(fun e' -> fst e = fst e')) = 1) in
       if tag_found && amount_found && recipient_found && uniq_entries then pure m'
-      else fail @@ sprintf 
+      else fail0 @@ sprintf 
         "Message %s is missing a mandatory field or has duplicate fields." (pp_literal (Msg m))
-    | _ -> fail @@ sprintf "Literal %s is not a message, cannot be sent." (pp_literal m')
+    | _ -> fail0 @@ sprintf "Literal %s is not a message, cannot be sent." (pp_literal m')
 
   let send_messages conf ms =
     let%bind ls' = get_list_literal ms in
@@ -328,9 +328,9 @@ module Configuration = struct
       let uniq_entries = List.for_all m
         ~f:(fun e -> (List.count m ~f:(fun e' -> fst e = fst e')) = 1) in
       if eventname_found && uniq_entries then pure m'
-      else fail @@ sprintf 
+      else fail0 @@ sprintf 
         "Event %s is missing a mandatory field or has duplicate fields." (pp_literal (Msg m))
-    | _ -> fail @@ sprintf "Literal %s is not a valid event argument." (pp_literal m')
+    | _ -> fail0 @@ sprintf "Literal %s is not a valid event argument." (pp_literal m')
 
 
   let create_event conf l =
@@ -338,7 +338,7 @@ module Configuration = struct
       (match l with
        | Msg _  ->
            pure @@ l
-       | _ -> fail @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l))
+       | _ -> fail0 @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l))
     in
     let%bind event' = validate_event event in
     let old_events = conf.events in

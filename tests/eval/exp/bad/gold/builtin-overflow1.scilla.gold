@@ -1,3 +1,11 @@
-Failed execution:
-Cannot apply built-in Int.add: an overflow/underflow occurred to a list of arguments:[  (Int32 999999999),
-  (Int32 1999999998)].
+{
+  "gas_remaining": 1746,
+  "errors": [
+    {
+      "error_message":
+        "Cannot apply built-in Int.add: an overflow/underflow occurred to a list of arguments:[  (Int32 999999999),\n  (Int32 1999999998)].",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

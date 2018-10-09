@@ -144,4 +144,6 @@ module Event : sig
 
 end
 
-exception Invalid_json of string
+open ErrorUtils
+exception Invalid_json of scilla_error list
+val mk_invalid_json : string -> exn
