@@ -1,17 +1,88 @@
-
-Type error(s) in contract Test:
-
-
-[checker/bad/mappair.scilla:39:1] Type error in transition testMapPair:
-[checker/bad/mappair.scilla:41:3] Type error in pattern matching on `is_owner` of type Bool (or one of its branches):
-[checker/bad/mappair.scilla:54:5] Type error in the binding to into `p`:
-Type mismatch: Int32 expected, but Int64 provided.
-
-[checker/bad/mappair.scilla:61:1] Type error in transition addNumToList:
-[checker/bad/mappair.scilla:70:3] Type error in the binding to into `l2`:
-Type mismatch: Int32 expected, but Int64 provided.
-
-[checker/bad/mappair.scilla:90:1] Type error in transition createBadEvent:
-[checker/bad/mappair.scilla:93:3] Type error in the binding to into `e`:
-Cannot send values of type Nat -> Uint32.
-
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract Test:\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in transition testMapPair:\n",
+      "start_location": {
+        "file": "checker/bad/mappair.scilla",
+        "line": 39,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in pattern matching on `is_owner` of type Bool (or one of its branches):\n",
+      "start_location": {
+        "file": "checker/bad/mappair.scilla",
+        "line": 41,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in the binding to into `p`:\n",
+      "start_location": {
+        "file": "checker/bad/mappair.scilla",
+        "line": 54,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type mismatch: Int32 expected, but Int64 provided.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in transition addNumToList:\n",
+      "start_location": {
+        "file": "checker/bad/mappair.scilla",
+        "line": 61,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in the binding to into `l2`:\n",
+      "start_location": {
+        "file": "checker/bad/mappair.scilla",
+        "line": 70,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type mismatch: Int32 expected, but Int64 provided.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in transition createBadEvent:\n",
+      "start_location": {
+        "file": "checker/bad/mappair.scilla",
+        "line": 90,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in the binding to into `e`:\n",
+      "start_location": {
+        "file": "checker/bad/mappair.scilla",
+        "line": 93,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Cannot send values of type Nat -> Uint32.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}
