@@ -33,7 +33,7 @@ let rec match_with_pattern v p = match p with
         DataTypeDictionary.lookup_constructor cn in
       (* Check that the pattern is well-formed *)
       if ctr.arity <> List.length ps
-      then fail @@
+      then fail0 @@
         sprintf "Constructor %s requires %d parameters, but %d are provided."
           ctr.cname ctr.arity (List.length ps)
       (* Pattern is well-formed, processing the value *)    
@@ -43,7 +43,7 @@ let rec match_with_pattern v p = match p with
                  (List.length ls') = ctr.arity  ->
               (* The value structure matches the pattern *)
               (match List.zip ls' ps with
-               | None -> fail "Pattern and value lists have different length"
+               | None -> fail0 "Pattern and value lists have different length"
                | Some sub_matches ->
                    let%bind res_list =
                      mapM sub_matches
@@ -52,7 +52,7 @@ let rec match_with_pattern v p = match p with
                    (* We will need to catch this statically. *)
                    pure @@ ListLabels.flatten res_list)
 
-          | _ -> fail @@
+          | _ -> fail0 @@
               sprintf "Cannot match value %s againts pattern %s."
                 (Env.pp_value v)
                 (sexp_of_pattern p |> Sexplib.Sexp.to_string))

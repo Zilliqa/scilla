@@ -43,5 +43,5 @@ zilliqa-docker:
 
 opamdep:
 	opam init -y
-	opam switch -y 4.06.0
+	opam switch -y 4.06.1
 	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign

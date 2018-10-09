@@ -1,2 +1,10 @@
-Failed execution:
-Cannot serialize literal <closure>
+{
+  "gas_remaining": 1755,
+  "errors": [
+    {
+      "error_message": "Cannot serialize literal <closure>",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

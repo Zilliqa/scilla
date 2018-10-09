@@ -20,27 +20,9 @@
 open Core
 open Sexplib.Std
 open MonadUtil
+open ErrorUtils
 
 exception SyntaxError of string
-
-(* Location info, since Lexing.position does not support sexp *)
-type loc = {
-  fname : string; (* file name *)
-  lnum : int;     (* line number *)
-  bol : int;      (* beginning of line *)
-  cnum : int;     (* column number *)
-}
-[@@deriving sexp]
-
-let toLoc (p : Lexing.position) : loc = {
-  fname = p.pos_fname;
-  lnum = p.pos_lnum; 
-  bol = p.pos_bol; 
-  cnum = p.pos_cnum;
-}
-
-let dummy_loc =
-  toLoc Lexing.dummy_pos
 
 type 'rep ident =
   | Ident of string * 'rep
@@ -51,9 +33,6 @@ let asIdL i loc = Ident(i, loc)
 
 let get_id i = match i with Ident (x, _) -> x
 let get_rep i = match i with Ident (_, l) -> l
-let get_loc_str (l : loc) : string =
-  l.fname ^ ":" ^ Int.to_string l.lnum ^ 
-      ":" ^ Int.to_string (l.cnum - l.bol + 1)
 
 type bigint = Big_int.big_int
 
@@ -142,9 +121,9 @@ type literal =
   (* A constructor in HNF *)      
   | ADTValue of string * typ list * literal list
   (* An embedded closure *)
-  | Clo of (literal -> int -> (literal, string) EvalMonad.eresult)
+  | Clo of (literal -> int -> (literal, scilla_error list) EvalMonad.eresult)
   (* A type abstraction *)
-  | TAbs of (typ -> int -> (literal, string) EvalMonad.eresult)
+  | TAbs of (typ -> int -> (literal, scilla_error list) EvalMonad.eresult)
 [@@deriving sexp]
 
 
@@ -517,82 +496,83 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (****************************************************************)
   let get_failure_msg erep phase opt =
     let (e, rep) = erep in
-    let locstr = get_loc_str (ER.get_loc rep) in
-    match e with
+    let sloc = ER.get_loc rep in
+    (match e with
     | Literal _ ->
-        sprintf "[%s] Type error in literal. %s\n"
-          locstr phase
+        sprintf "Type error in literal. %s\n"
+           phase
     | Var i ->
-        sprintf "[%s] Type error in variable `%s`:\n"
-          locstr (get_id i)
+        sprintf "Type error in variable `%s`:\n"
+           (get_id i)
     | Let (i, _, _, _) ->
-        sprintf "[%s] Type error in the initialiser of `%s`:\n"
-          locstr (get_id i)
+        sprintf "Type error in the initialiser of `%s`:\n"
+           (get_id i)
     | Message _ ->
-        sprintf "[%s] Type error in message.\n"
-          locstr
+        sprintf "Type error in message.\n"
+          
     | Fun _ ->
-        sprintf "[%s] Type error in function:\n"
-          locstr
+        sprintf "Type error in function:\n"
+          
     | App (f, _) ->
-        sprintf "[%s] Type error in application of `%s`:\n"
-          locstr (get_id f)
+        sprintf "Type error in application of `%s`:\n"
+           (get_id f)
     | Constr (s, _, _) ->
-        sprintf "[%s] Type error in constructor `%s`:\n"
-          locstr s
+        sprintf "Type error in constructor `%s`:\n"
+           s
     | MatchExpr (x, _) ->
         sprintf
-          "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
-          locstr (get_id x) opt 
+          "Type error in pattern matching on `%s`%s (or one of its branches):\n"
+           (get_id x) opt 
     | Builtin (i, _) ->
-        sprintf "[%s] Type error in built-in application of `%s`:\n"
-          locstr (get_id i)
+        sprintf "Type error in built-in application of `%s`:\n"
+           (get_id i)
     | TApp (tf, _) ->
-        sprintf "[%s] Type error in type application of `%s`:\n"
-          locstr (get_id tf)
+        sprintf "Type error in type application of `%s`:\n"
+           (get_id tf)
     | TFun (tf, _) ->
-        sprintf "[%s] Type error in type function `%s`:\n"
-          locstr (get_id tf)
+        sprintf "Type error in type function `%s`:\n"
+           (get_id tf)
     | Fixpoint (f, _, _) ->
         sprintf "Type error in fixpoint application with an argument `%s`:\n"
-          (get_id f)              
+          (get_id f)
+    ), sloc
 
   let get_failure_msg_stmt srep phase opt =
     let (s, rep) = srep in
-    let locstr = get_loc_str (SR.get_loc rep) in
-    match s with
+    let sloc = SR.get_loc rep in
+    (match s with
     | Load (x, f) ->
-        sprintf "[%s] Type error in reading value of `%s` into `%s`:\n %s"
-          locstr (get_id f) (get_id x) phase
+        sprintf "Type error in reading value of `%s` into `%s`:\n %s"
+           (get_id f) (get_id x) phase
     | Store (f, r) ->
-        sprintf "[%s] Type error in storing value of `%s` into the field `%s`:\n"
-          locstr (get_id r) (get_id f)
+        sprintf "Type error in storing value of `%s` into the field `%s`:\n"
+           (get_id r) (get_id f)
     | Bind (x, _) ->
-        sprintf "[%s] Type error in the binding to into `%s`:\n"
-          locstr (get_id x)
+        sprintf "Type error in the binding to into `%s`:\n"
+           (get_id x)
     | MatchStmt (x, _) ->
         sprintf
-          "[%s] Type error in pattern matching on `%s`%s (or one of its branches):\n"
-          locstr (get_id x) opt 
+          "Type error in pattern matching on `%s`%s (or one of its branches):\n"
+           (get_id x) opt 
     | ReadFromBC (x, _) ->
-        sprintf "[%s] Error in reading from blockchain state into `%s`:\n"
-          locstr (get_id x)
+        sprintf "Error in reading from blockchain state into `%s`:\n"
+           (get_id x)
     | AcceptPayment ->
-        sprintf "[%s] Error in accepting payment\n"
-          locstr
+        sprintf "Error in accepting payment\n"
     | SendMsgs i ->
-        sprintf "[%s] Error in sending messages `%s`:\n"
-          locstr (get_id i)
+        sprintf "Error in sending messages `%s`:\n"
+           (get_id i)
     | CreateEvnt i ->
-        sprintf "[%s] Error in create event `%s`:\n"
-          locstr (get_id i)
+        sprintf "Error in create event `%s`:\n"
+           (get_id i)
     | Throw i ->
-        sprintf "[%s] Error in throw of '%s':\n"
-          locstr (get_id i)
+        sprintf "Error in throw of '%s':\n"
+           (get_id i)
+    ), sloc
 
-  let wrap_with_info msg res = match res with
+  let wrap_with_info (msg, sloc) res = match res with
     | Ok _ -> res
-    | Error msg' -> Error (sprintf "%s%s" msg msg')
+    | Error e -> Error ({emsg = msg; startl = sloc; endl = dummy_loc}::e)
 
   let wrap_err e phase ?opt:(opt = "") = wrap_with_info (get_failure_msg e phase opt)
 
