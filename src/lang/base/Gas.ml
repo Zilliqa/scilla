@@ -17,6 +17,7 @@
 *)
 
 open Core
+open ErrorUtils
 open Result.Let_syntax
 open MonadUtil
 open Syntax
@@ -58,15 +59,19 @@ module ScillaGas
               pure (acc + cs + clit')) ~init:0 m
       (* A dynamic map of literals *)    
       | Map (_, m) ->
-          foldM ~f:(fun acc (lit1, lit2) ->
-              let%bind clit1 = literal_cost lit1 in
-              let%bind clit2 = literal_cost lit2 in
-              pure (acc + clit1 + clit2)) ~init:0 m
+          Caml.Hashtbl.fold (fun lit1 lit2 acc' ->
+            let%bind acc = acc' in
+            let%bind clit1 = literal_cost lit1 in
+            let%bind clit2 = literal_cost lit2 in
+            pure (acc + clit1 + clit2)) m (pure 0)
       (* A constructor in HNF *)      
       | ADTValue (_, _, ll) ->
           foldM ~f:(fun acc lit' ->
               let%bind clit' = literal_cost lit' in
               pure (acc + clit')) ~init:0 ll
+      (* TODO: Check this *)
+      | Clo _ -> pure @@ 0
+      | TAbs _ -> pure @@ 0
 
   let expr_static_cost erep =
     let (e, _) = erep in
@@ -99,7 +104,7 @@ module ScillaGas
 
   (* A signature for functions that determine dynamic cost of built-in ops. *)
   (* op -> arguments -> base cost -> total cost *)
-  type coster = string -> literal list -> int -> (int, string) result
+  type coster = string -> literal list -> int -> (int, scilla_error list) result
   (* op, arg types, coster, base cost. *)
   type builtin_record = string * (typ list) * coster * int
   (* a static coster that only looks at base cost. *)
@@ -112,7 +117,7 @@ module ScillaGas
         pure @@ (String.length s1 + String.length s2) * base
     | "substr", [StringLit s; UintLit (Uint32L _); UintLit (Uint32L _)] ->
         pure @@ (String.length s) * base
-    | _ -> fail @@ "Gas cost error for string built-in"
+    | _ -> fail0 @@ "Gas cost error for string built-in"
 
   let hash_coster op args base =
     let open BatOption in
@@ -128,39 +133,40 @@ module ScillaGas
     | "schnorr_sign", _, [_;_;ByStr(s)]
     | "schnorr_verify", _, [_;ByStr(s);_] ->
         pure @@ (String.length s) * base
-    | _ -> fail @@ "Gas cost error for hash built-in"
+    | "to_bystr", [a], _
+      when is_bystrx_type a -> pure @@ get (bystrx_width a) * base
+    | _ -> fail0 @@ "Gas cost error for hash built-in"
 
   let map_coster _ args base =
     match args with
-    | Map (_, m)::_ ->
-        (* TODO: Should these be linear? *)
-        pure @@ (List.length m) * base
-    | _ -> fail @@ "Gas cost error for map built-in"
+    | Map _ :: _ -> pure base
+    | _ -> fail0 @@ "Gas cost error for map built-in"
 
   let to_nat_coster _ args base =
     match args with
     (* TODO: Is this good? *)
     | [UintLit (Uint32L i)] -> pure @@  (Stdint.Uint32.to_int i) * base
-    | _ -> fail @@ "Gas cost error for to_nat built-in"
+    | _ -> fail0 @@ "Gas cost error for to_nat built-in"
 
-  let int_coster op args base =
-    let base' = 
-      match op with
-      | "mul" -> base * 2
-      | "div" | "rem" -> base * 4
-      | _ -> base
+  let int_coster _ args base =
+    let base' =
+      (* match op with
+         | "mul" -> base * 2
+         | "div" | "rem" -> base * 4
+         | _ -> base
+      *) base (* No emperical evidence for charing more for mul / div. *)
     in
     let%bind w = match args with
       | [IntLit i] | [IntLit i; IntLit _] ->
         pure @@ int_lit_width i
       | [UintLit i] | [UintLit i; UintLit _] ->
         pure @@ uint_lit_width i
-      | _ -> fail @@ "Gas cost error for integer built-in"
+      | _ -> fail0 @@ "Gas cost error for integer built-in"
     in
       if w = 32 || w = 64 then pure base'
       else if w = 128 then pure (base' * 2)
       else if w = 256 then pure (base' * 4)
-      else fail @@ "Gas cost error for integer built-in"
+      else fail0 @@ "Gas cost error for integer built-in"
 
   let tvar s = TypeVar(s)
 
@@ -180,6 +186,7 @@ module ScillaGas
     ("eq", [tvar "'A"; tvar "'A"], hash_coster, 1);
     (* We currently only support `dist` for ByStr32. *)
     ("dist", [bystrx_typ hash_length; bystrx_typ hash_length], base_coster, 32);
+    ("to_bystr", [tvar "'A"], hash_coster, 1);
     ("sha256hash", [tvar "'A"], hash_coster, 1);
     ("schnorr_gen_key_pair", [], hash_coster, 1);
     ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], hash_coster, 5);
@@ -235,13 +242,12 @@ module ScillaGas
              (match t2 with | TypeVar _ -> true | _ -> false)) 
              arg_types types)
       then fcoster op arg_literals base (* this can fail too *)
-      else fail @@ "Name or arity doesn't match"
+      else fail0 @@ "Name or arity doesn't match"
     in
-    let msg = sprintf "Unable to determine gas cost for \"%s %s\""
-        op (pp_literal_list arg_literals) in
+    let msg = sprintf "Unable to determine gas cost for \"%s\"" op in
     let open Caml in
     let dict = match Hashtbl.find_opt builtin_hashtbl op with | Some rows -> rows | None -> [] in
-    let %bind (_, cost) = tryM dict ~f:matcher ~msg:msg in
+    let %bind (_, cost) = tryM dict ~f:matcher ~msg:(mk_error0 msg) in
     pure cost
 
 end

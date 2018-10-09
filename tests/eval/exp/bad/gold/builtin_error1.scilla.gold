@@ -1,2 +1,15 @@
-Failed execution:
-[eval/exp/bad/builtin_error1.scilla:10:20] Cannot find built-in with name "hack" and argument types [Int32; Int32].
+{
+  "gas_remaining": 1747,
+  "errors": [
+    {
+      "error_message":
+        "Cannot find built-in with name \"hack\" and argument types [Int32; Int32].",
+      "start_location": {
+        "file": "eval/exp/bad/builtin_error1.scilla",
+        "line": 10,
+        "column": 20
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

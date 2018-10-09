@@ -19,6 +19,7 @@
 
 open Syntax
 open Core
+open ErrorUtils
 open EvalUtil
 open Eval
 open DebugMessage
@@ -45,9 +46,8 @@ let check_libs clibs elibs name gas_limit =
          name);
       gas_remaining
    | Error (err, gas_remaining) ->
-      perr (sprintf "\nFailed to initialize libraries:\n%s\n" err);
-      perr "Execution stopped";
-      gas_remaining
+      perr @@ scilla_error_gas_jstring gas_remaining err;
+      exit 1
 
 (****************************************************)
 (*     Checking initialized contract state          *)
@@ -55,13 +55,11 @@ let check_libs clibs elibs name gas_limit =
 let check_extract_cstate name res gas_limit = 
   match res gas_limit with
   | Error (err, remaining_gas) ->
-      perr (sprintf "Failed to initialize fields:\n%s\n" err);
-      perr (sprintf"Gas remaining:%s\n" (Int.to_string remaining_gas));
-      perr "Execution stopped";
+      perr @@ scilla_error_gas_jstring remaining_gas err;
       exit 1
   | Ok ((_, cstate), remaining_gas) ->
-      plog (sprintf "[Initializing %s's fields]\nSuccess!\n%s\n"
-         name (ContractState.pp cstate));
+      plog (sprintf "[Initializing %s's fields]\nSuccess!\n"
+         name );
       cstate, remaining_gas
 
 (*****************************************************)
@@ -71,13 +69,11 @@ let check_extract_cstate name res gas_limit =
 let check_after_step name res gas_limit =
   match res gas_limit with
   | Error (err, remaining_gas) ->
-      perr (sprintf "Failed to execute transition in %s:\n%s\n" name err);
-      perr (sprintf"Gas remaining:%s\n" (Int.to_string remaining_gas));
-      perr "Execution halted";
+      perr @@ scilla_error_gas_jstring remaining_gas err;
       exit 1
   | Ok ((cstate, outs, events), remaining_gas) ->
       plog (sprintf "Success! Here's what we got:\n" ^
-            sprintf "%s" (ContractState.pp cstate) ^
+            (* sprintf "%s" (ContractState.pp cstate) ^ *)
             sprintf "Emitted messages:\n%s\n\n" (pp_literal_list outs) ^
             sprintf"Gas remaining:%s\n" (Int.to_string remaining_gas) ^
             sprintf "Emitted events:\n%s\n\n" (pp_literal_list events));
@@ -90,11 +86,11 @@ let input_state_json filename =
   let match_balance ((vname : string), _) : bool = vname = balance_label in
   let bal_lit = match List.find states ~f:match_balance with
     | Some (_, lit) -> lit
-    | None -> raise (JSON.Invalid_json (balance_label ^ " field missing"))
+    | None -> raise (JSON.mk_invalid_json (balance_label ^ " field missing"))
   in
   let bal_int = match bal_lit with
     | UintLit (Uint128L x) -> x
-    | _ -> raise (JSON.Invalid_json (balance_label ^ " invalid"))
+    | _ -> raise (JSON.mk_invalid_json (balance_label ^ " invalid"))
   in
   let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
      no_bal_states, bal_int
@@ -154,7 +150,7 @@ let () =
           JSON.ContractState.get_json_data cli.input_init
         with
         | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_init s);
+            perr (sprintf "Failed to parse json %s: %s\n" cli.input_init (sprint_scilla_error_list s));
             exit 1
       in
       (* Retrieve block chain state  *)
@@ -163,7 +159,7 @@ let () =
         JSON.BlockChainState.get_json_data cli.input_blockchain 
       with
         | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_blockchain s);
+            perr (sprintf "Failed to parse json %s: %s\n" cli.input_blockchain (sprint_scilla_error_list s));
             exit 1
       in
       let (output_msg_json, output_state_json, output_events_json), gas = 
@@ -183,7 +179,7 @@ let () =
           JSON.Message.get_json_data cli.input_message 
         with
         | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_message s);
+            perr (sprintf "Failed to parse json %s: %s\n" cli.input_message (sprint_scilla_error_list s));
             exit 1
         in
         let m = Msg mmsg in
@@ -194,7 +190,7 @@ let () =
           input_state_json cli.input_state
         with
         | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_state s);
+            perr (sprintf "Failed to parse json %s: %s\n" cli.input_state (sprint_scilla_error_list s));
             exit 1
         in
 

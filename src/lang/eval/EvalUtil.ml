@@ -18,6 +18,7 @@
 
 open Syntax
 open Core
+open ErrorUtils
 open MonadUtil
 open EvalMonad
 open EvalMonad.Let_syntax
@@ -66,10 +67,11 @@ let rec subst_type_in_literal tvar tp l = match l with
   | Map ((kt, vt), ls) -> 
       let kts = subst_type_in_type' tvar tp kt in
       let vts = subst_type_in_type' tvar tp vt in
-      let ls' = List.map ls ~f:(fun (k, v) ->
+      let ls' = Caml.Hashtbl.create (Caml.Hashtbl.length ls) in
+      let _ = Caml.Hashtbl.iter (fun k v ->
         let k' = subst_type_in_literal tvar tp k in
         let v' = subst_type_in_literal tvar tp v in 
-        (k', v')) in
+        Caml.Hashtbl.add ls' k' v') ls in
       Map ((kts, vts), ls')
   | ADTValue (n, ts, ls) ->
       let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
@@ -124,10 +126,10 @@ let builtin_executor i arg_tps arg_lits =
   checkwrap_opR res cost
 
 (* Add a check that the just evaluated statement was in our gas limit. *)
-let stmt_gas_wrap scon =
+let stmt_gas_wrap scon sloc =
   let%bind cost = fromR @@ EvalGas.stmt_cost scon in
   let dummy () = pure () in (* the operation is already executed unfortunately *)
-    checkwrap_op dummy cost "Ran out of gas evaluating statement"
+    checkwrap_op dummy cost (mk_error1 "Ran out of gas evaluating statement" sloc)
 
 (*****************************************************)
 (* Update-only execution environment for expressions *)
@@ -136,34 +138,18 @@ module Env = struct
   type ident = string
 
   (* Environment *)
-  type t =
-    (string * value) list
-  and
-  (* Fully reduced value *)
-  value =
-    | ValLit of literal
-    | ValClosure of ER.rep Syntax.ident * typ * expr_annot * t
-    | ValTypeClosure of ER.rep Syntax.ident * expr_annot * t                      
-    | ValFix of ER.rep Syntax.ident * typ * expr_annot * t
+  type t = (string * literal) list
   [@@deriving sexp]
 
   (* Pretty-printing *)
-  let rec pp_value v = match v with
-    | ValLit l ->  pp_literal l
-    | ValFix _ -> "<fixpoint>"
-    | ValTypeClosure _ -> "<type_closure>"
-    | ValClosure _ -> "<closure>"
-    (* | ValClosure (f, t, e, env) ->
-         (pp_expr (Fun (f, t, e)))
-          ^ ", " ^ (pp env) *)
-  and pp ?f:(f = fun (_ : (string * value)) -> true) e =
+  let rec pp_value = pp_literal
+  and pp ?f:(f = fun (_ : (string * literal)) -> true) e =
     (* FIXME: Do not print folds *)
     let e_filtered = List.filter e ~f:f in
     let ps = List.map e_filtered
         ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ (pp_value v) ^ "]") in
     let cs = String.concat ~sep:",\n " ps in
     "{" ^ cs ^ " }"
-  
 
   let empty = []
 
@@ -177,9 +163,8 @@ module Env = struct
     let i = get_id k in
     match List.find ~f:(fun z -> fst z = i) e with 
     | Some x -> pure @@ snd x
-    | None -> fail @@ sprintf
-        "Identifier \"%s\" at %s is not bound in environment:\n"
-        i (get_loc_str (get_rep k))
+    | None -> fail1 (sprintf
+        "Identifier \"%s\" is not bound in environment:\n" i) (get_rep k)
 end
 
 
@@ -192,7 +177,7 @@ module BlockchainState = struct
   let lookup e k =
     match List.find ~f:(fun z -> fst z = k) e with 
     | Some x -> pure @@ snd x
-    | None -> fail @@ sprintf
+    | None -> fail0 @@ sprintf
         "No value for key \"%s\" at in the blockchain state:\n%s"
         k (pp_literal_map e)  
 end
@@ -237,20 +222,15 @@ module Configuration = struct
 
   (*  Manipulations with configuartion *)
   
-  let store st k v =
-    match v with 
-    | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
-        fail @@ sprintf "Cannot store a closure below into a field %s:\n%s"
-          k (Env.pp_value v)
-    | Env.ValLit l ->
-        (let s = st.fields in
-         match List.find s ~f:(fun (z, _) -> z = k) with
-         | Some (_, l') -> pure @@
-             ({st with
-              fields = (k, l) :: List.filter ~f:(fun z -> fst z <> k) s}
-              , G_Store(l', l))
-         | None -> fail @@ sprintf
-               "No field \"%s\" in fields:\n%s" k (pp_literal_map s))
+  let store st k l =
+    let s = st.fields in
+    match List.find s ~f:(fun (z, _) -> z = k) with
+    | Some (_, l') -> pure @@
+        ({st with
+          fields = (k, l) :: List.filter ~f:(fun z -> fst z <> k) s}
+        , G_Store(l', l))
+    | None -> fail0 @@ sprintf
+          "No field \"%s\" in fields:\n%s" k (pp_literal_map s)
 
   let load st k =
     let i = get_id k in
@@ -264,7 +244,7 @@ module Configuration = struct
       let s = st.fields in
       match List.find ~f:(fun z -> fst z = i) s with 
       | Some x -> pure @@ (snd x, G_Load(snd x))
-      | None -> fail @@ sprintf
+      | None -> fail0 @@ sprintf
             "No field \"%s\" in field map:\n%s" i (pp_literal_map s)
 
   let bind st k v =
@@ -287,7 +267,7 @@ module Configuration = struct
       let incoming_funds = Uint128.zero in
       pure @@ {st with balance; accepted; incoming_funds}
     else
-      fail @@ sprintf "Incoming balance is negaitve (somehow):%s."
+      fail0 @@ sprintf "Incoming balance is negaitve (somehow):%s."
         (Uint128.to_string incoming')
 
   (* Check that message is well-formed before adding to the sending pool *)
@@ -296,7 +276,7 @@ module Configuration = struct
     let validate_msg_payload pl =
       let has_tag = List.exists pl ~f:(fun (k, _) -> k = "tag") in      
       if has_tag then pure true
-      else fail @@ sprintf "Message contents have no \"tag\" field:\n[%s]"
+      else fail0 @@ sprintf "Message contents have no \"tag\" field:\n[%s]"
           (pp_literal_map pl)
     in
     match ls with
@@ -304,7 +284,7 @@ module Configuration = struct
           let%bind _ = validate_msg_payload pl in
           validate_messages tl
       | [] -> pure true
-      | m :: _ -> fail @@ sprintf "This is not a message:\n%s" (pp_literal m)
+      | m :: _ -> fail0 @@ sprintf "This is not a message:\n%s" (pp_literal m)
 
   (* Convert Scilla list to OCaml list *)
   let get_list_literal v =
@@ -313,14 +293,9 @@ module Configuration = struct
         | ADTValue ("Cons", _, [h; t]) ->
             let%bind rest = convert_to_list t in
             pure @@ h :: rest
-        | l -> fail @@ sprintf "The literal is not a list:\n%s" (pp_literal l))
-      in       
-      match v with
-      | (Env.ValFix _ | Env.ValClosure _ | Env.ValTypeClosure _ ) as v ->
-          fail @@
-          sprintf "Value should be a list of messages, but is a closure:\n%s"
-            (Env.pp_value v)
-      | Env.ValLit l -> convert_to_list l 
+        | l -> fail0 @@ sprintf "The literal is not a list:\n%s" (pp_literal l))
+      in
+      convert_to_list v
 
   let validate_outgoing_message m' =
     let open ContractUtil.MessagePayload in
@@ -333,9 +308,9 @@ module Configuration = struct
       let uniq_entries = List.for_all m
         ~f:(fun e -> (List.count m ~f:(fun e' -> fst e = fst e')) = 1) in
       if tag_found && amount_found && recipient_found && uniq_entries then pure m'
-      else fail @@ sprintf 
+      else fail0 @@ sprintf 
         "Message %s is missing a mandatory field or has duplicate fields." (pp_literal (Msg m))
-    | _ -> fail @@ sprintf "Literal %s is not a message, cannot be sent." (pp_literal m')
+    | _ -> fail0 @@ sprintf "Literal %s is not a message, cannot be sent." (pp_literal m')
 
   let send_messages conf ms =
     let%bind ls' = get_list_literal ms in
@@ -353,21 +328,17 @@ module Configuration = struct
       let uniq_entries = List.for_all m
         ~f:(fun e -> (List.count m ~f:(fun e' -> fst e = fst e')) = 1) in
       if eventname_found && uniq_entries then pure m'
-      else fail @@ sprintf 
+      else fail0 @@ sprintf 
         "Event %s is missing a mandatory field or has duplicate fields." (pp_literal (Msg m))
-    | _ -> fail @@ sprintf "Literal %s is not a valid event argument." (pp_literal m')
+    | _ -> fail0 @@ sprintf "Literal %s is not a valid event argument." (pp_literal m')
 
 
-  let create_event conf eparams_resolved =
+  let create_event conf l =
     let%bind event = 
-      match eparams_resolved with
-      | Env.ValLit l -> 
-        (match l with
-        | Msg _ ->
-          pure @@ l
-        | _ -> fail @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l))
-      | (Env.ValFix _ | Env.ValClosure _ | Env.ValTypeClosure _ ) as v -> 
-        fail @@ sprintf "Incorrect event parameters: %s\n" (Env.pp_value v)
+      (match l with
+       | Msg _  ->
+           pure @@ l
+       | _ -> fail0 @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l))
     in
     let%bind event' = validate_event event in
     let old_events = conf.events in

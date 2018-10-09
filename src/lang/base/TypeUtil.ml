@@ -17,6 +17,7 @@
 *)
 
 open Core
+open ErrorUtils
 open Sexplib.Std
 open Syntax
 open MonadUtil
@@ -64,10 +65,10 @@ module type MakeTEnvFunctor = functor
       (* Add type variable to the environment *)
       val addV : t -> R.rep ident -> t
       (* Check type for well-formedness in the type environment *)
-      val is_wf_type : t -> typ -> (unit, string) result
+      val is_wf_type : t -> typ -> (unit, scilla_error list) result
       (* Resolve the identifier *)
       val resolveT : 
-        ?lopt:(R.rep option) -> t -> string -> (resolve_result, string) result
+        ?lopt:(R.rep option) -> t -> string -> (resolve_result, scilla_error list) result
       (* Copy the environment *)
       val copy : t -> t
       (* Convert to list *)
@@ -134,7 +135,7 @@ module MakeTEnv: MakeTEnvFunctor = functor
               let open Datatypes.DataTypeDictionary in
               let%bind adt = lookup_name n in
               if List.length ts <> List.length adt.tparams then
-                fail @@ sprintf "ADT type %s expects %d arguments but got %d.\n" 
+                fail0 @@ sprintf "ADT type %s expects %d arguments but got %d.\n" 
                   n (List.length adt.tparams) (List.length ts) 
               else
                 foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:(()) ts
@@ -146,7 +147,7 @@ module MakeTEnv: MakeTEnvFunctor = functor
               else
                 (match List.findi (tvars tenv) ~f:(fun _ (x, _) -> x = a) with
                  | Some _ -> pure()
-                 | None -> fail @@ sprintf "Unbound type variable %s in type %s" a (pp_typ t))
+                 | None -> fail0 @@ sprintf "Unbound type variable %s in type %s" a (pp_typ t))
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg::tb)
         in
         is_wf_typ' t []
@@ -163,12 +164,12 @@ module MakeTEnv: MakeTEnvFunctor = functor
         match Hashtbl.find_opt env.tenv id with
         | Some r -> pure r
         | None ->
-            let loc_str = (match lopt with
-                | Some l -> sprintf "[%s]: " (get_loc_str (R.get_loc l))
-                | None -> "") in
-            fail @@ sprintf
-              "%sCouldn't resolve the identifier \"%s\".\n"
-              loc_str id
+            let sloc = (match lopt with
+                | Some l -> R.get_loc l
+                | None -> dummy_loc) in
+            fail1 (sprintf
+              "Couldn't resolve the identifier \"%s\".\n" id)
+              sloc
 
       let copy e = {
         tenv = Hashtbl.copy e.tenv;
@@ -230,7 +231,7 @@ module TypeUtilities
   let assert_type_equiv expected given =
     if type_equiv expected given
     then pure ()
-    else fail @@ sprintf
+    else fail0 @@ sprintf
         "Type mismatch: %s expected, but %s provided."
         (pp_typ expected) (pp_typ given)
 
@@ -266,7 +267,7 @@ module TypeUtilities
         fun_type_applies rest ats
     | FunType (argt, rest), [] when argt = Unit -> pure rest
     | t, []  -> pure t
-    | _ -> fail @@ sprintf
+    | _ -> fail0 @@ sprintf
           "The type\n%s\ndoesn't apply, as a function, to the arguments of types\n%s." (pp_typ ft)
           (pp_typ_list argtypes)
 
@@ -275,7 +276,7 @@ module TypeUtilities
         let afv = free_tvars a in
         let%bind (n, tp) = (match refresh_tfun pf afv with
             | PolyFun (a, b) -> pure (a, b)
-            | _ -> fail "This can't happen!") in
+            | _ -> fail0 "This can't happen!") in
         let tp' = subst_type_in_type n a tp in
         elab_tfun_with_args tp' args'
     | t, [] -> pure t
@@ -283,7 +284,7 @@ module TypeUtilities
         let msg = sprintf
             "Cannot elaborate expression of type\n%s\napplied, as a type function, to type arguments\n%s." (pp_typ tf)
             (pp_typ_list args) in
-        fail msg
+        fail0 msg
 
   (****************************************************************)
   (*                        Working with ADTs                     *)
@@ -295,7 +296,7 @@ module TypeUtilities
 
   let validate_param_length cn plen alen =
     if plen <> alen
-    then fail @@ sprintf
+    then fail0 @@ sprintf
         "Constructor %s expects %d type arguments, but got %d." cn plen alen
     else pure ()
 
@@ -344,10 +345,10 @@ module TypeUtilities
           let alen = List.length targs in        
           let%bind _ = validate_param_length cn plen alen in
           pure targs
-        else fail @@ sprintf
+        else fail0 @@ sprintf
             "Types don't match: pattern uses a constructor of type %s, but value of type %s is given."
             adt.tname name
-    | _ -> fail @@ sprintf
+    | _ -> fail0 @@ sprintf
           "Not an algebraic data type: %s" (pp_typ atyp)
 
   let constr_pattern_arg_types atyp cn =
@@ -363,11 +364,11 @@ module TypeUtilities
         pure @@ List.map ~f:(apply_type_subst subst) tms 
 
   let assert_all_same_type ts = match ts with
-    | [] -> fail "Checking an empty type list."
+    | [] -> fail0 "Checking an empty type list."
     | t :: ts' ->
         match List.find ts' ~f:(fun t' -> not (type_equiv t t')) with
         | None -> pure ()
-        | Some _ -> fail @@ sprintf
+        | Some _ -> fail0 @@ sprintf
               "Not all types of the branches %s are equivalent." (pp_typ_list ts)
 
   (****************************************************************)
@@ -390,11 +391,11 @@ module TypeUtilities
     | ByStr _ -> 
       if validate_bystr_literal l
       then pure bystr_typ
-      else fail @@ (sprintf "Malformed byte string " ^ (pp_literal l))
+      else fail0 @@ (sprintf "Malformed byte string " ^ (pp_literal l))
     | ByStrX (b, _) ->
         if validate_bystrx_literal l
         then pure (bystrx_typ b)
-        else fail @@ (sprintf "Malformed byte string " ^ (pp_literal l))
+        else fail0 @@ (sprintf "Malformed byte string " ^ (pp_literal l))
     (* Check that messages and events have storable parameters. *)
     | Msg m -> 
         let%bind all_storable = foldM ~f:(fun acc (_, l) ->
@@ -403,38 +404,39 @@ module TypeUtilities
             ~init:true m
         in
         if not all_storable then
-          fail @@ sprintf "Message/Event has invalid / non-storable parameters"
+          fail0 @@ sprintf "Message/Event has invalid / non-storable parameters"
         else pure msg_typ
     | Map ((kt, vt), kv) ->
         if PrimTypes.is_prim_type kt
         then 
           (* Verify that all key/vals conform to kt,vt, recursively. *)
-          let%bind valid = foldM ~f:(fun res (k, v) ->
+          let%bind valid = Caml.Hashtbl.fold (fun k v res' ->
+              let%bind res = res' in
               if not res then pure @@ res else
                 let%bind kt' = literal_type k in
                 let%bind vt' = literal_type v in
                 pure @@
                 ((type_equiv kt kt') && (type_equiv vt vt'))
-            ) ~init:true kv in
-          if not valid then fail @@ (sprintf "Malformed literal %s" (pp_literal l))
+            ) kv (pure true) in
+          if not valid then fail0 @@ (sprintf "Malformed literal %s" (pp_literal l))
           (* We have a valid Map literal. *)
           else pure (MapType (kt, vt))
-        else if kv = [] && (match kt with | TypeVar _ -> true | _ -> false) then
+        else if ((Caml.Hashtbl.length kv) = 0) && (match kt with | TypeVar _ -> true | _ -> false) then
           (* we make an exception for Emp as it may be parameterized. *)
           pure (MapType (kt, vt))
         else
-          fail @@
+          fail0 @@
           (sprintf "Not a primitive map key type: %s." (pp_typ kt))
     | ADTValue (cname, ts, args) ->
         let%bind (adt, constr) = DataTypeDictionary.lookup_constructor cname in
         let tparams = adt.tparams in
         let tname = adt.tname in
         if not (List.length tparams = List.length ts)
-        then fail @@
+        then fail0 @@
           sprintf "Wrong number of type parameters for ADT %s (%i) in constructor %s."
             tname (List.length ts) cname
         else if not (List.length args = constr.arity)
-        then fail @@
+        then fail0 @@
           sprintf "Wrong number of arguments to ADT %s (%i) in constructor %s."
             tname (List.length args) cname
             (* Verify that the types of args match that declared. *)
@@ -445,8 +447,10 @@ module TypeUtilities
           let args_valid = List.for_all2_exn tmap arg_typs 
               ~f:(fun t1 t2 -> type_equiv t1 t2) in
           if not args_valid
-          then fail @@ sprintf "Malformed ADT %s. Arguments do not match expected types" (pp_literal l)
+          then fail0 @@ sprintf "Malformed ADT %s. Arguments do not match expected types" (pp_literal l)
           else pure @@ res
+    | Clo _ -> fail0 @@ "Cannot type-check runtime closure."
+    | TAbs _ -> fail0 @@ "Cannot type-check runtime type function."
 end
 
 (*****************************************************************)

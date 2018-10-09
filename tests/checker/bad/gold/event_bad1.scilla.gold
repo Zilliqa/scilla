@@ -1,4 +1,10 @@
-
-Parameter mismatch for event ClaimedBack. [(amount : Uint128); ] vs [(claimed_by : ByStr20); (amount : Uint128); ]
-
-
+{
+  "errors": [
+    {
+      "error_message":
+        "Parameter mismatch for event ClaimedBack. [(amount : Uint128); ] vs [(claimed_by : ByStr20); (amount : Uint128); ]\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

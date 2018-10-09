@@ -19,6 +19,7 @@
 
 %{
   open Syntax
+  open ErrorUtils
   open ParserUtil
 
   open ParsedSyntax
@@ -192,7 +193,7 @@ lit :
 | s = STRING   { StringLit s }
 | EMP; kt = targ; vt = targ
 {
-  Map ((kt, vt), [])
+  Map ((kt, vt), Hashtbl.create 4) (* 4 is arbitrary here. *)
   (* if isPrimType kt
    * then Map ((kt, vt), [])
    * else

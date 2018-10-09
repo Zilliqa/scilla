@@ -21,20 +21,18 @@ open Core
 open Syntax
 open Yojson
 open PrimTypes
+open ErrorUtils
 
 (****************************************************************)
 (*                    JSON printing                             *)
 (****************************************************************)
 
 let rec mapvalues_to_json ms = 
-  match ms with
-  | kv :: remaining ->
-    let (k, v) = kv in
+  Caml.Hashtbl.fold (fun k v a ->
     let kjson = "key", (literal_to_json k) in
     let vjson = "val", (literal_to_json v) in
     let kv_json = `Assoc (kjson :: vjson :: []) in
-      kv_json :: (mapvalues_to_json remaining)
-  | [] -> []
+      kv_json :: a) ms []
 
 and adtargs_to_json vlist =
   match vlist with
@@ -75,6 +73,35 @@ let literal_to_jstring ?(pp = false) lit =
   if pp then Basic.pretty_to_string j
   else Basic.to_string j
 
+let scilla_error_to_json elist =
+  let loc_to_json (l : loc) =
+    `Assoc [
+      ("file", `String l.fname);
+      ("line", `Int l.lnum);
+      ("column", `Int l.cnum);
+    ] in
+  let err_to_json (e : scilla_error) =
+    `Assoc [
+      ("error_message", `String e.emsg);
+      ("start_location", loc_to_json e.startl);
+      ("end_location", loc_to_json e.endl);
+    ] in
+  let ejl = List.fold_right elist ~init:[] ~f:(fun e acc -> (err_to_json e) :: acc) in
+    `List ejl
+
+let scilla_error_to_jstring ?(pp = true) elist =
+  let j' = scilla_error_to_json elist in
+  let j = `Assoc [("errors", j')] in
+  if pp then Basic.pretty_to_string j
+  else Basic.to_string j
+
+let scilla_error_gas_jstring ?(pp = true) gas_remaining elist =
+  let j' = scilla_error_to_json elist in
+  let j = `Assoc [("gas_remaining", `Int gas_remaining); ("errors", j')] in
+  if pp then Basic.pretty_to_string j
+  else Basic.to_string j
+
+
 (*****************************************************)
 (*                Pretty Printers                    *)
 (*****************************************************)
@@ -100,10 +127,10 @@ let rec pp_literal_simplified l =
     | Map ((_, _), kv) ->
       (* we don't print mtype as that's printed for every entry. *)
       let items = "[" ^
-        List.fold_left kv ~init:"" ~f:(fun a (k, v) ->
+        (Caml.Hashtbl.fold (fun k v a ->
           let t = "(" ^ (pp_literal_simplified k) ^ " => " ^ (pp_literal_simplified v) ^ ")" in
             if String.is_empty a then t else a ^ "; " ^ t
-          ) ^ "]" in
+          ) kv "")  ^ "]" in
       ("(Map " ^ items ^ ")")
     | ADTValue (cn, _, al) ->
         (match cn with
@@ -137,6 +164,9 @@ let rec pp_literal_simplified l =
           List.fold_left al ~init:"" ~f:(fun a l' -> a ^ " " ^ (pp_literal_simplified l'))
           ^ ")"
         )
+    | Clo _ -> "<closure>"
+    | TAbs _ -> "<type_closure>"
+
 
 let pp_literal_json l =
   literal_to_jstring l

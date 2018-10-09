@@ -38,12 +38,12 @@ module MessagePayload = struct
 
   let get_value_for_entry lab f es = 
     match List.find es ~f:(fun (l, _) -> l = lab) with
-    | None -> fail @@ sprintf "No field \"%s\" in message [%s]."
+    | None -> fail0 @@ sprintf "No field \"%s\" in message [%s]."
           lab (pp_literal_map es)
     | Some (_, p) ->
         (match f p with 
          | Some x -> x
-         | None -> fail @@ sprintf "Wrong value of the entry \"%s\": %s."
+         | None -> fail0 @@ sprintf "Wrong value of the entry \"%s\": %s."
                lab (pp_literal p)) 
 
   let get_tag = get_value_for_entry tag_label
@@ -59,9 +59,9 @@ module MessagePayload = struct
                if (compare i Uint128.zero) >= 0
                then Some (pure i)
                else
-                 Some (fail @@ sprintf "Amount should be non-negative: %s" (Uint128.to_string i))
+                 Some (fail0 @@ sprintf "Amount should be non-negative: %s" (Uint128.to_string i))
              with
-              | Failure _ -> Some (fail @@
+              | Failure _ -> Some (fail0 @@
                   sprintf "Could not convert string %s to Stdint.Uint128." (Uint128.to_string i)))
         | _ -> None)
   
