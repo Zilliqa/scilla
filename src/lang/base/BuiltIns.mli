@@ -17,6 +17,7 @@
 *)
 
 open Syntax
+open ErrorUtils
 open Core
 
 module ScillaBuiltIns
@@ -25,7 +26,7 @@ module ScillaBuiltIns
 
   module BuiltInDictionary : sig
     type built_in_executor =
-      literal list -> typ -> (literal, string) result
+      literal list -> typ -> (literal, scilla_error list) result
 
     (* The return result is a triple:
      * The full elaborated type of the operation, e.g., string -> Bool
@@ -33,10 +34,10 @@ module ScillaBuiltIns
      * Executor for evaluating the operation      
     *)
     val find_builtin_op :
-      ER.rep ident -> typ list -> ((typ * typ * built_in_executor), string) result
+      ER.rep ident -> typ list -> ((typ * typ * built_in_executor), scilla_error list) result
   end
 
   (* Elaborator for the built-in typ *)
-  val elab_id : typ -> typ list -> (typ, string) result
+  val elab_id : typ -> typ list -> (typ, scilla_error list) result
 
 end

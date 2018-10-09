@@ -24,9 +24,11 @@ open TypeUtil
 open Recursion
 open RunnerUtil
 open DebugMessage
+open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
 open PatternChecker
+open PrettyPrinters
 
 
 module ParsedSyntax = ParserUtil.ParsedSyntax
@@ -44,7 +46,7 @@ let check_parsing filename =
     let parse_module =
       FrontEndParser.parse_file ScillaParser.exps filename in
     match parse_module with
-    | None -> fail (sprintf "%s\n" "Failed to parse input file.")
+    | None -> fail0 (sprintf "Failed to parse input file %s\n." filename)
     | Some e ->
         plog @@ sprintf
           "\n[Parsing]:\nExpression in [%s] is successfully parsed.\n" filename;
@@ -91,8 +93,8 @@ let () =
          | Ok ((_, (e_typ, _)) as typed_erep) ->
              (match check_patterns typed_erep with
               | Ok _ -> printf "%s\n" (pp_typ e_typ.tp)
-              | Error s -> printf "Type checking failed:\n%s\n" s
+              | Error el -> pout @@ scilla_error_to_jstring el
              )
-         | Error s -> printf "Type checking failed:\n%s\n" s)
+         | Error el -> pout @@ scilla_error_to_jstring el)
     | Some _ | None ->
-        printf "%s\n" "Failed to parse input file.")
+        pout @@ scilla_error_to_jstring (mk_error0 "Failed to parse input file"))
