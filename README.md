@@ -32,9 +32,7 @@ From the project root, execute
 Instead of `let.scilla` you might want to try any dfferent file in
 `tests/eval/exp`. The second argument, which is a path to the Scilla
 standard library can alternatively be specified in the environment
-variable `SCILLA_STDLIB_PATH`. This should be an absolute path; if it
-is a relative path then things (such as `make test`) which run from
-other working directories will break.
+variable `SCILLA_STDLIB_PATH`. This must be an absolute path;
 
 #### Type-checking a contract
 
@@ -48,7 +46,7 @@ Instead of `auction.scilla` you might want to try any dfferent file in
 `tests/checker` with a complete implementation of a contract, or your
 own contract code. The second argument, which is a path to the Scilla
 standard library can alternatively be specified in the environment
-variable `SCILLA_STDLIB_PATH`. As above, this should be an absolute
+variable `SCILLA_STDLIB_PATH`. As above, this must be an absolute
 path.
 
 If the checker only returns the contract structure in JSON format, it
