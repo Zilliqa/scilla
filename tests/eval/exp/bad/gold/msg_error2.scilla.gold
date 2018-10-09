@@ -1,2 +1,11 @@
-Failed execution:
-Cannot serialize literal (Message [(tag : (String "Main")) ; (amount : (Int32 42)) ; (code : (Int32 42))])
+{
+  "gas_remaining": 1753,
+  "errors": [
+    {
+      "error_message":
+        "Cannot serialize literal (Message [(tag : (String \"Main\")) ; (amount : (Int32 42)) ; (code : (Int32 42))])",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

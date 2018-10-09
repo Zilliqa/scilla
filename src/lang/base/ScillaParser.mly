@@ -19,6 +19,7 @@
 
 %{
   open Syntax
+  open ErrorUtils
   open ParserUtil
 
   open ParsedSyntax

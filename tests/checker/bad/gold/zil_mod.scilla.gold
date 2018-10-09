@@ -1,6 +1,34 @@
-
-Type error(s) in contract ZilGame:
-[checker/bad/zil_mod.scilla:54:5] Error during pattern-match checking of library check_validity:
-[checker/bad/zil_mod.scilla:65:5] Type error in pattern matching on `xa` of type Pair (Bool) (Option (ByStr32)) (or one of its branches):
-Pattern 3 is unreachable.
-
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract ZilGame:\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Error during pattern-match checking of library check_validity:\n",
+      "start_location": {
+        "file": "checker/bad/zil_mod.scilla",
+        "line": 54,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in pattern matching on `xa` of type Pair (Bool) (Option (ByStr32)) (or one of its branches):\n",
+      "start_location": {
+        "file": "checker/bad/zil_mod.scilla",
+        "line": 65,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Pattern 3 is unreachable.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

@@ -1,3 +1,14 @@
-Failed execution:
-Identifier "oops" at eval/exp/bad/let-error.scilla:4:9 is not bound in environment:
-
+{
+  "gas_remaining": 1757,
+  "errors": [
+    {
+      "error_message": "Identifier \"oops\" is not bound in environment:\n",
+      "start_location": {
+        "file": "eval/exp/bad/let-error.scilla",
+        "line": 4,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}
