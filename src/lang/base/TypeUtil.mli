@@ -17,6 +17,7 @@
 *)
 
 open Core
+open ErrorUtils
 open Syntax
 
 (* An inferred type with possible qualifiers *)
@@ -57,10 +58,10 @@ module type MakeTEnvFunctor = functor
       (* Add type variable to the environment *)
       val addV : t -> R.rep ident -> t
       (* Check type for well-formedness in the type environment *)
-      val is_wf_type : t -> typ -> (unit, string) result
+      val is_wf_type : t -> typ -> (unit, scilla_error list) result
       (* Resolve the identifier *)    
       val resolveT : ?lopt:(R.rep option) -> t -> string ->
-        (resolve_result, string) result
+        (resolve_result, scilla_error list) result
       (* Copy the environment *)
       val copy : t -> t
       (* Convert to list *)
@@ -80,7 +81,7 @@ module TypeUtilities
 
   module MakeTEnv : MakeTEnvFunctor
     
-  val literal_type : literal -> (typ, string) result
+  val literal_type : literal -> (typ, scilla_error list) result
 
   (* Useful generic types *)
   val fun_typ : typ -> typ -> typ
@@ -103,13 +104,13 @@ module TypeUtilities
   val type_equiv : typ -> typ -> bool
   val type_equiv_list : typ list -> typ list -> bool
 
-  val assert_type_equiv : typ -> typ -> (unit, string) result
+  val assert_type_equiv : typ -> typ -> (unit, scilla_error list) result
 
   (* Applying a function type *)
-  val fun_type_applies : typ -> typ list -> (typ, string) result
+  val fun_type_applies : typ -> typ list -> (typ, scilla_error list) result
 
   (* Applying a type function *)
-  val elab_tfun_with_args : typ -> typ list -> (typ, string) result
+  val elab_tfun_with_args : typ -> typ list -> (typ, scilla_error list) result
 
   val pp_typ_list : typ list -> string  
 
@@ -121,16 +122,16 @@ module TypeUtilities
   val apply_type_subst : (string * typ) list -> typ -> typ
 
   (*  Get elaborated type for a constructor and list of type arguments *)    
-  val elab_constr_type : string -> typ list -> (typ, string) result  
+  val elab_constr_type : string -> typ list -> (typ, scilla_error list) result  
 
   (* For a given instantiated ADT and a construtor name, get type *
      assignemnts. This is the main working horse of type-checking
      pattern-matching. *)    
-  val constr_pattern_arg_types : typ -> string -> (typ list, string) result  
+  val constr_pattern_arg_types : typ -> string -> (typ list, scilla_error list) result  
 
-  val validate_param_length : string -> int -> int -> (unit, string) result
+  val validate_param_length : string -> int -> int -> (unit, scilla_error list) result
 
-  val assert_all_same_type : typ list -> (unit, string) result
+  val assert_all_same_type : typ list -> (unit, scilla_error list) result
 
 end
 

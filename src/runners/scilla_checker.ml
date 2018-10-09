@@ -19,6 +19,8 @@
 
 open Syntax
 open Core
+open ErrorUtils
+open PrettyPrinters
 open ParserUtil
 open DebugMessage
 open MonadUtil
@@ -50,7 +52,7 @@ let check_parsing ctr =
     let parse_module =
       FrontEndParser.parse_file ScillaParser.cmodule ctr in
     match parse_module with
-    | None -> fail (sprintf "%s\n" "Failed to parse input file.")
+    | None -> fail0 (sprintf "%s\n" "Failed to parse input file.")
     | Some cmod -> 
         plog @@ sprintf
           "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" ctr;
@@ -61,30 +63,32 @@ let check_typing cmod elibs =
   let open TC in
   let res = type_module cmod recursion_principles elibs in
   match res with
-  | Error msg -> pout @@ sprintf "\n%s\n\n" msg; res
+  | Error msgs -> pout @@ scilla_error_to_jstring msgs; res
   | Ok typed_module -> pure @@ typed_module
 
 let check_patterns e =
   let res = PMC.pm_check_module e in
   match res with
-  | Error msg -> pout @@ sprintf "\n%s\n\n" msg; res
+  | Error msg -> pout @@ scilla_error_to_jstring msg; res
   | Ok pm_checked_module -> pure @@ pm_checked_module
 
 let check_sanity c =
   let res = SC.contr_sanity c in
   match res with
-  | Error msg -> pout @@ sprintf "\n%s\n\n" msg; res
+  | Error msg -> pout @@ scilla_error_to_jstring msg; res
   | Ok _ -> pure ()
 
 let check_events_info einfo =
   match einfo with
-  | Error msg -> pout @@ sprintf "\n%s\n\n" msg; einfo
+  | Error msg -> pout @@ scilla_error_to_jstring msg; einfo
   | Ok _ -> einfo
 
 let () =
   if (Array.length Sys.argv) < 2
   then
-    (perr (sprintf "Usage: %s foo.scilla\n" Sys.argv.(0))
+    (perr @@ 
+      scilla_error_to_jstring @@ 
+        mk_error0 (sprintf "Usage: %s foo.scilla\n" Sys.argv.(0))
     )
   else (
     let open GlobalConfig in
@@ -109,7 +113,7 @@ let () =
       pure @@ (cmod, tenv, event_info)
     ) in
     match r with
-    | Error _ -> ()
+    | Error el -> () (* we've already printed the error(s). *)
     | Ok (cmod, _, event_info) ->
       pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr event_info));
   )

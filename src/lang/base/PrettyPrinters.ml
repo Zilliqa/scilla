@@ -21,6 +21,7 @@ open Core
 open Syntax
 open Yojson
 open PrimTypes
+open ErrorUtils
 
 (****************************************************************)
 (*                    JSON printing                             *)
@@ -71,6 +72,35 @@ let literal_to_jstring ?(pp = false) lit =
   let j = literal_to_json lit in
   if pp then Basic.pretty_to_string j
   else Basic.to_string j
+
+let scilla_error_to_json elist =
+  let loc_to_json (l : loc) =
+    `Assoc [
+      ("file", `String l.fname);
+      ("line", `Int l.lnum);
+      ("column", `Int l.cnum);
+    ] in
+  let err_to_json (e : scilla_error) =
+    `Assoc [
+      ("error_message", `String e.emsg);
+      ("start_location", loc_to_json e.startl);
+      ("end_location", loc_to_json e.endl);
+    ] in
+  let ejl = List.fold_right elist ~init:[] ~f:(fun e acc -> (err_to_json e) :: acc) in
+    `List ejl
+
+let scilla_error_to_jstring ?(pp = true) elist =
+  let j' = scilla_error_to_json elist in
+  let j = `Assoc [("errors", j')] in
+  if pp then Basic.pretty_to_string j
+  else Basic.to_string j
+
+let scilla_error_gas_jstring ?(pp = true) gas_remaining elist =
+  let j' = scilla_error_to_json elist in
+  let j = `Assoc [("gas_remaining", `Int gas_remaining); ("errors", j')] in
+  if pp then Basic.pretty_to_string j
+  else Basic.to_string j
+
 
 (*****************************************************)
 (*                Pretty Printers                    *)

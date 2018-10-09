@@ -1,3 +1,11 @@
-Failed execution:
-Cannot apply built-in Uint.sub: an overflow/underflow occurred to a list of arguments:[  (Uint32 0),
-  (Uint32 1)].
+{
+  "gas_remaining": 1753,
+  "errors": [
+    {
+      "error_message":
+        "Cannot apply built-in Uint.sub: an overflow/underflow occurred to a list of arguments:[  (Uint32 0),\n  (Uint32 1)].",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}
