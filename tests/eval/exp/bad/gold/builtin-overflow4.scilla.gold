@@ -1,2 +1,11 @@
-Failed to parse input file.
-Syntax error in file eval/exp/bad/builtin-overflow4.scilla: line 8, position 29.: Invalid Int32 literal -2147483649
+{
+  "gas_remaining": 2000,
+  "errors": [
+    {
+      "error_message":
+        "Failed to parse input file.eval/exp/bad/builtin-overflow4.scilla",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}Syntax error in file eval/exp/bad/builtin-overflow4.scilla: line 8, position 29.: Invalid Int32 literal -2147483649

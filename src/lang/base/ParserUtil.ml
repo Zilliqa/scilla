@@ -17,6 +17,8 @@
 *)
 
 open Syntax
+open ErrorUtils
+
     
 (*******************************************************)
 (*                   Annotations                       *)

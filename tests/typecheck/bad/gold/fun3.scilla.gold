@@ -1,2 +1,9 @@
-Type checking failed:
-ADT Int54 not found
+{
+  "errors": [
+    {
+      "error_message": "ADT Int54 not found",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

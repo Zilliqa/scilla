@@ -10,6 +10,7 @@
 
 open Syntax
 open Core
+open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
 open TypeUtil
@@ -52,7 +53,7 @@ module ScillaPatternchecker
     in
     let rec traverse_clauses dsc i rest_clauses =
       match rest_clauses with
-      | [] -> fail @@ "Non-exhaustive pattern match." (* TODO, Issue #210: Give counter-example based on dsc *)
+      | [] -> fail0 @@ "Non-exhaustive pattern match." (* TODO, Issue #210: Give counter-example based on dsc *)
       | (p1, _) :: rest_clauses' -> match_pattern p1 t dsc [] [] i rest_clauses'
     and traverse_pattern ctx sps i rest_clauses  =
       match sps with
@@ -69,7 +70,7 @@ module ScillaPatternchecker
       | (p1::ps, t1::ts, dsc1::dscs) :: sps_rest ->
           match_pattern p1 t1 dsc1 ctx ((ps, ts, dscs)::sps_rest) i rest_clauses
       | _ ->
-          fail @@ "Internal error - pattern match uses incorrect arity"
+          fail0 @@ "Internal error - pattern match uses incorrect arity"
     and match_pattern p t dsc ctx sps_rest i rest_clauses =
       match p with
       | Wildcard
@@ -102,7 +103,7 @@ module ScillaPatternchecker
     let%bind decision_tree = traverse_clauses (Neg []) 0 clauses in
     match Array.findi reachable ~f:(fun _ r -> not r) with
     | None -> pure @@ decision_tree (* All patterns reachable *)
-    | Some (i, _) -> fail @@ sprintf "Pattern %d is unreachable." (i+1) (* TODO, Issue #270: look up relevant pattern in clauses and report it *)
+    | Some (i, _) -> fail0 @@ sprintf "Pattern %d is unreachable." (i+1) (* TODO, Issue #270: look up relevant pattern in clauses and report it *)
 
   let lift_msg_payloads sps =
     List.map sps
@@ -193,9 +194,8 @@ module ScillaPatternchecker
     
   let pm_check_transition t =
     let { tname; tparams; tbody } = t in
-    let msg = sprintf "[%s] Error during pattern-match checking of transition %s:\n"
-      (get_loc_str (SR.get_loc (get_rep tname))) (get_id tname) in
-    let%bind checked_body = wrap_with_info msg @@ pm_check_stmts tbody in
+    let msg = sprintf "Error during pattern-match checking of transition %s:\n" (get_id tname) in
+    let%bind checked_body = wrap_with_info (msg, SR.get_loc (get_rep tname)) @@ pm_check_stmts tbody in
     pure @@ { CheckedPatternSyntax.tname = tname;
               CheckedPatternSyntax.tparams = tparams;
               CheckedPatternSyntax.tbody = checked_body }
@@ -205,9 +205,8 @@ module ScillaPatternchecker
     let%bind checked_lentries = mapM
       ~f:(fun entry ->
            let { lname = entryname; lexp } = entry in
-           let msg = sprintf "[%s] Error during pattern-match checking of library %s:\n"
-               (get_loc_str (ER.get_loc (get_rep entryname))) (get_id entryname) in
-           let%bind checked_lexp = wrap_with_info msg @@ pm_check_expr lexp in
+           let msg = sprintf "Error during pattern-match checking of library %s:\n" (get_id entryname) in
+           let%bind checked_lexp = wrap_with_info (msg, ER.get_loc (get_rep entryname)) @@ pm_check_expr lexp in
            pure @@ { CheckedPatternSyntax.lname = entryname;
                      CheckedPatternSyntax.lexp = checked_lexp }) lentries in
     pure @@ { CheckedPatternSyntax.lname = libname;
@@ -215,9 +214,8 @@ module ScillaPatternchecker
 
   let pm_check_fields fs =
     mapM ~f:(fun (i, t, e) ->
-        let msg = sprintf "[%s] Error during pattern-match checking of field %s:\n"
-            (get_loc_str (ER.get_loc (get_rep i))) (get_id i) in
-        let%bind checked_e = wrap_with_info msg @@ pm_check_expr e in
+        let msg = sprintf "Error during pattern-match checking of field %s:\n" (get_id i) in
+        let%bind checked_e = wrap_with_info (msg, ER.get_loc (get_rep i)) @@ pm_check_expr e in
         pure @@ (i, t, checked_e)) fs
   
   let pm_check_contract c =
@@ -234,31 +232,31 @@ module ScillaPatternchecker
     let { cname = mod_cname; libs; elibs = mod_elibs; contr } = md in
     let { cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let init_msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
-    wrap_with_info init_msg @@
+    wrap_with_info (init_msg, dummy_loc) @@
 
     let%bind (checked_lib, emsgs) =
       match libs with
       | Some l ->
           (match pm_check_library l with
-           | Ok c_lib -> Ok (Some c_lib, "")
+           | Ok c_lib -> Ok (Some c_lib, [])
            | Error msg -> Ok (None, msg))
-      | None -> Ok (None, "")
+      | None -> Ok (None, [])
     in
 
     let%bind (checked_fields, emsgs') =
       match pm_check_fields cfields with
-      | Error msg -> Ok ([], emsgs ^ "\n\n" ^ msg)
+      | Error msg -> Ok ([], emsgs @ msg)
       | Ok ckd_fields -> Ok (ckd_fields, emsgs) in
     
     let%bind (c_trans, emsgs'') = foldM ~init:([], emsgs') ctrans 
         ~f:(fun (trans_acc, msg_acc) tr -> 
             match pm_check_transition tr with
-            | Error msg -> Ok (trans_acc, msg_acc ^ "\n\n" ^ msg)
+            | Error msg -> Ok (trans_acc, msg_acc @ msg)
             | Ok ckd_trans -> Ok (ckd_trans :: trans_acc, msg_acc)
           ) in
     let checked_trans = List.rev c_trans in
     
-    if emsgs' = ""
+    if emsgs'' = []
     (* Return pure environment *)  
     then pure @@ {CheckedPatternSyntax.cname = mod_cname;
                   CheckedPatternSyntax.libs = checked_lib;
