@@ -1,9 +1,11 @@
-Failed to execute transition in tests/contracts/mappair/contract.scilla:
-Duplicate entries or mismatch b/w message entries:
-{ [_amount -> (Int128 0)],
-  [_sender -> (ByStr20 0x12345678901234567890123456789012345678ab)],
-  [_sender -> (ByStr20 0x12345678901234567890123456789012345678ab)] }
-and expected transition parameters[_amount : (PrimType Uint128), _sender : (PrimType ByStr20), _sender : (PrimType ByStr20)]
-
-Gas spent:0
-Execution halted
+{
+  "gas_remaining": 1807,
+  "errors": [
+    {
+      "error_message":
+        "Duplicate entries or mismatch b/w message entries:\n{ [_amount -> (Uint128 0)],\n  [_sender -> (ByStr20 0x12345678901234567890123456789012345678ab)],\n  [_sender -> (ByStr20 0x12345678901234567890123456789012345678ab)] }\nand expected transition parameters[_amount : (PrimType Uint128), _sender : (PrimType ByStr20), _sender : (PrimType ByStr20)]\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

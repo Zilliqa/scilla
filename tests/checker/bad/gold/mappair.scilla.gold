@@ -2,7 +2,11 @@
   "errors": [
     {
       "error_message": "Type error(s) in contract Test:\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/mappair.scilla",
+        "line": 28,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {

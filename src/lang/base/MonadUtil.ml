@@ -64,7 +64,7 @@ let rec tryM ~f ls ~msg = match ls with
       (match f x  with
        | Ok z -> Ok (x, z)
        | Error _ -> tryM ~f:f ls' ~msg)
-  | [] -> Error msg
+  | [] -> Error (msg ())
 
 let liftPair2 x m = match m with
   | Ok z -> Ok (x, z)
@@ -196,7 +196,7 @@ module EvalMonad = struct
           (match (f x) remaining_cost  with
            | Ok (z, remaining_cost') -> Ok ((x, z), remaining_cost')
            | Error (_, remaining_cost') -> doTry ls' remaining_cost')
-      | [] -> Error (msg, remaining_cost)
+      | [] -> Error (msg (), remaining_cost)
     in
     (fun remaining_cost -> doTry ls remaining_cost)
 

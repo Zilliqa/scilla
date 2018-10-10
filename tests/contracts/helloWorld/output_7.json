@@ -1,7 +1,11 @@
-Failed to initialize fields:
-Mismatch in input state variables:
-expected:
-{ [welcome_msg -> (StringLit"")] }
-provided:
-{ [welcome_msg -> (StringLit"Hello World")],
-  [welcome_msg -> (StringLit"Hello World")] }
+{
+  "gas_remaining": 1947,
+  "errors": [
+    {
+      "error_message":
+        "Mismatch in input state variables:\nexpected:\n{ [welcome_msg -> (String \"\")] }\nprovided:\n{ [welcome_msg -> (String \"Hello World\")],\n  [welcome_msg -> (String \"Hello World\")] }\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

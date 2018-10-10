@@ -295,7 +295,7 @@ module ScillaTypechecker
         (match s with
          | Load (x, f) ->
              let%bind (next_env, ident_type) = wrap_type_serr stmt (
-                 let%bind fr = TEnv.resolveT env.fields (get_id f) in
+                 let%bind fr = TEnv.resolveT env.fields (get_id f) ~lopt:(Some (get_rep f)) in
                  let pure' = TEnv.addT (TEnv.copy env.pure) x (rr_typ fr).tp in
                  let next_env = {env with pure = pure'} in
                  pure @@ (next_env, rr_typ fr)
@@ -312,8 +312,8 @@ module ScillaTypechecker
                    "Writing to the field `%s` is prohibited." (get_id f)) 
              else          
                let%bind (checked_stmts, f_type, r_type) = wrap_type_serr stmt (
-                   let%bind fr = TEnv.resolveT env.fields (get_id f) in
-                   let%bind r = TEnv.resolveT env.pure (get_id r) in
+                   let%bind fr = TEnv.resolveT env.fields (get_id f) ~lopt:(Some (get_rep f)) in
+                   let%bind r = TEnv.resolveT env.pure (get_id r) ~lopt:(Some (get_rep r)) in
                    let%bind _ = assert_type_equiv (rr_typ fr).tp (rr_typ r).tp in
                    let%bind checked_stmts = type_stmts env sts get_loc in
                    pure @@ (checked_stmts, rr_typ fr, rr_typ r)
@@ -508,7 +508,7 @@ module ScillaTypechecker
     let {cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
-    wrap_with_info (msg, dummy_loc) @@
+    wrap_with_info (msg, SR.get_loc (get_rep ctr_cname)) @@
     
     (* Step 0: Type check recursion principles *)
     let%bind (_, tenv0) = type_rec_libs rec_libs in

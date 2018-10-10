@@ -145,7 +145,7 @@ let rec exp_eval erep env =
       let%bind ((_, e_branch), bnds) =
         tryM clauses
           (* TODO: add location info to error message. *)
-          ~msg:(mk_error0(sprintf "Match expression failed. No clause matched."))
+          ~msg:(fun () -> mk_error0(sprintf "Match expression failed. No clause matched."))
           ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env
@@ -235,7 +235,7 @@ let rec stmt_eval conf stmts =
           let%bind v = Env.lookup conf.env x in 
           let%bind ((_, branch_stmts), bnds) =
             tryM clauses
-              ~msg:(mk_error0 (sprintf "Value %s\ndoes not match any clause of\n%s."
+              ~msg:(fun () -> mk_error0 (sprintf "Value %s\ndoes not match any clause of\n%s."
                       (Env.pp_value v) (pp_stmt s)))
               ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in 
           (* Update the environment for the branch *)

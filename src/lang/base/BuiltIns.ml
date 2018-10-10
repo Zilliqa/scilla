@@ -1001,7 +1001,8 @@ module ScillaBuiltIns
       let open Caml in
       let dict = Option.value ~default:[] @@ Hashtbl.find_opt built_in_hashtbl opname in
       let%bind (_, (type_elab, res_type, exec)) = tryM dict ~f:finder
-          ~msg:(mk_error1
+          ~msg:(fun () ->
+              mk_error1
                 (sprintf "Cannot find built-in with name \"%s\" and argument types %s." opname (pp_typ_list argtypes))
                 (ER.get_loc (get_rep op)))
       in pure (type_elab, res_type, exec)
