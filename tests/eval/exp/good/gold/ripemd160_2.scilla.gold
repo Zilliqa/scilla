@@ -1,0 +1,10 @@
+(ByStr20 0xdacbfeebcb2a2101a315c947642da5b0889c8612),
+{ [h2 -> (ByStr20 0xdacbfeebcb2a2101a315c947642da5b0889c8612)],
+  [h1 -> (ByStr20 0x285c8e05cef38fef7ea5a39819da4016eabe29cf)],
+  [m2 -> (Map [((Int64 1) => (Int64 42)); ((Int64 2) => (Int64 239))])],
+  [m1 -> (Map [((Int64 1) => (Int64 42))])],
+  [m0 -> (Map [])],
+  [v2 -> (Int64 239)],
+  [v1 -> (Int64 42)],
+  [k2 -> (Int64 2)],
+  [k1 -> (Int64 1)] }

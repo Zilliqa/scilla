@@ -1,0 +1,23 @@
+
+let v1 = Int32 1 in
+let v2 = Int64 2 in
+let v3 = Int128 43 in
+let v4 = Int256 239 in
+let v5 = Uint32 10 in
+let v6 = Uint64 11 in
+let v7 = Uint128 1 in
+let v8 = Uint256 13 in
+let v9 = "HelloWorld" in
+let v10 = 0xabcd1234 in
+
+let h1 = builtin ripemd160hash v1 in
+let h2 = builtin ripemd160hash v2 in
+let h3 = builtin ripemd160hash v3 in
+let h4 = builtin ripemd160hash v4 in
+let h5 = builtin ripemd160hash v5 in
+let h6 = builtin ripemd160hash v6 in
+let h7 = builtin ripemd160hash v7 in
+let h8 = builtin ripemd160hash v8 in
+let h9 = builtin ripemd160hash v9 in
+let h10 = builtin ripemd160hash v10 in
+builtin ripemd160hash h9
