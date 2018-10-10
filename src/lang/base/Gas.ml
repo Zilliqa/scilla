@@ -129,6 +129,10 @@ module ScillaGas
       -> pure @@ get (bystrx_width a1) * base
     | "sha256hash", _, [a] ->
         pure @@ (String.length (pp_literal a) + 20) * base
+    | "keccak256hash", _, [a] ->
+        pure @@ (String.length (pp_literal a) + 20) * base
+    | "ripemd160hash", _, [a] ->
+        pure @@ (String.length (pp_literal a) + 20) * base
     | "schnorr_gen_key_pair", _, _ -> pure 20 (* TODO *)
     | "schnorr_sign", _, [_;_;ByStr(s)]
     | "schnorr_verify", _, [_;ByStr(s);_] ->
@@ -188,6 +192,8 @@ module ScillaGas
     ("dist", [bystrx_typ hash_length; bystrx_typ hash_length], base_coster, 32);
     ("to_bystr", [tvar "'A"], hash_coster, 1);
     ("sha256hash", [tvar "'A"], hash_coster, 1);
+    ("keccak256hash", [tvar "'A"], hash_coster, 1);
+    ("ripemd160hash", [tvar "'A"], hash_coster, 1);
     ("schnorr_gen_key_pair", [], hash_coster, 1);
     ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], hash_coster, 5);
     ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], hash_coster, 5);
@@ -232,14 +238,14 @@ module ScillaGas
   let builtin_cost op_i arg_literals =
     let op = get_id op_i in
     let%bind arg_types = mapM arg_literals ~f:literal_type in
-    let matcher (name, types, fcoster, base) = 
+    let matcher (name, types, fcoster, base) =
       (* The names and type list lengths must match and *)
       if name = op && List.length types = List.length arg_types
          && (List.for_all2_exn ~f:(fun t1 t2 ->
              (* the types should match *)
              type_equiv t1 t2 ||
              (* or the built-in record is generic *)
-             (match t2 with | TypeVar _ -> true | _ -> false)) 
+             (match t2 with | TypeVar _ -> true | _ -> false))
              arg_types types)
       then fcoster op arg_literals base (* this can fail too *)
       else fail0 @@ "Name or arity doesn't match"
