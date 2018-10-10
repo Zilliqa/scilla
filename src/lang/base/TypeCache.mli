@@ -32,7 +32,10 @@ module StdlibTypeCacher
   module L :
   sig
     type expr_annot
-    type lib_entry = { lname : ER.rep ident ; lexp : expr_annot }
+    type type_def
+    type lib_entry =
+      | LibVar of ER.rep ident * expr_annot
+      | LibTyp of ER.rep ident * type_def list
     type library = { lname : SR.rep ident; lentries : lib_entry list }
   end
     

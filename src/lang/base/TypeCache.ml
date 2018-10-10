@@ -41,8 +41,12 @@ module StdlibTypeCacher
   open Cryptokit
   let hash s = transform_string (Hexa.encode()) (hash_string (Hash.sha2 256) s)
   let hash_lib (lib : L.library) =
-    let s = List.fold_left ~f:(fun acc {lname; _ (* TODO, Issue #179: lexp *) } ->
-        (acc ^ (get_id lname) (* TODO, Issue #179: Fix this ^ (spp_expr lexp)  *)   )
+    let s = List.fold_left
+        ~f:(fun acc lib_entry ->
+            match lib_entry with
+            | LibTyp _ -> acc (* TODO: cache types as well *)
+            | LibVar (lname, _) -> 
+            (acc ^ (get_id lname))  (* TODO, Issue #179: cache lexp, possibly using (spp_expr lexp)*)
       ) ~init:"" lib.lentries in
     hash s
 
@@ -143,12 +147,17 @@ module StdlibTypeCacher
   (* Store type info tenv, for "lib" in the cache. *)
   let cache_lib_tenv (tenv : t) (lib : L.library) =
     (* 1. Carefully separate out only lib's entries from tenv *)
-    let entry_names =
-      List.map ~f:(fun {lname;_} -> (get_id lname)) lib.lentries
+    let (entry_names, _typ_names) =
+      List.partition_map lib.lentries
+        ~f:(fun entry ->
+            match entry with
+            | LibVar (lname, _) -> `Fst (get_id lname)
+            | LibTyp (tname, _) -> `Snd (get_id tname))
     in
     (* OCaml's List.mem is not according to online docs. Why? *)
     let list_mem l a = List.exists l ~f:(fun b -> b = a) in
     let lib_entries = List.filter ~f:(fun e -> list_mem entry_names (fst e)) (TEnv.to_list tenv) in
+    (* TODO: Handle typ_names *)
 
     (* 2. Write back to cache. *)
     let open GlobalConfig.StdlibTracker in

@@ -39,7 +39,11 @@ module CU = ScillaContractUtil (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 (***************************************************)    
 
 let reserved_names =
-  List.map ~f:(fun {lname = x; _} -> get_id x) Recursion.recursion_principles
+  List.map ~f:(fun entry ->
+      match entry with
+      | LibVar (lname, _) -> get_id lname
+      | LibTyp (tname, _) -> get_id tname)
+    Recursion.recursion_principles
 
 (* Printing result *)
 let pp_result r exclude_names = 
@@ -301,7 +305,7 @@ let combine_libs clibs elibs =
 
 (* Initializing libraries of a contract *)
 let init_libraries clibs elibs =
-  let init_lib_entry env {lname = id; lexp = e } = (
+  let init_lib_entry env id e = (
     let%bind (v, _) = exp_eval_wrapper e env in
     let env' = Env.bind env (get_id id) v in
     pure env') in
@@ -311,8 +315,11 @@ let init_libraries clibs elibs =
   DebugMessage.plog ("Loading library functions.");
   List.fold_left libs ~init:(pure Env.empty)
     ~f:(fun eres lentry ->
-        let%bind env = eres in
-        init_lib_entry env lentry)
+        match lentry with
+        | LibTyp _ -> eres
+        | LibVar (lname, lexp) ->
+            let%bind env = eres in
+            init_lib_entry env lname lexp)
 
 (* Initialize fields in a constant environment *)
 let init_fields env fs =

@@ -88,6 +88,8 @@
 %token EVENT
 %token ACCEPT
 %token MAP
+%token TYPE
+%token OF
        
 (*  Other tokens *)
 %token EOF
@@ -297,8 +299,16 @@ contract:
       cfields = fs;
       ctrans  = ts } }
 
+tconstr :
+| BAR; tn = CID; OF; t = typ
+  { { cname = asIdL tn (toLoc $startpos); ctype = Some t }}
+| BAR; tn = CID
+  { { cname = asIdL tn (toLoc $startpos); ctype = None }}
+
 libentry :
-| LET; ns = ID; EQ; e= exp { { lname = asIdL ns (toLoc $startpos(ns)) ; lexp = e } }
+| LET; ns = ID; EQ; e= exp { LibVar (asIdL ns (toLoc $startpos(ns)), e) }
+| TYPE; tname = CID; EQ; constrs = list(tconstr)
+  { LibTyp (asIdL tname (toLoc $startpos), constrs) }
 
 library :
 | LIBRARY; n = CID; ls = list(libentry);

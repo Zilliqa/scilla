@@ -430,42 +430,49 @@ module ScillaTypechecker
   (**************************************************************)
       
   let type_rec_libs rec_libs =
-    let recs = List.map rec_libs
-        ~f:(fun {lname = a; lexp = e} -> (a, e)) in
+    (* TODO : Add lib_typs to type environment *)
+    let (lib_vars, _lib_typs) =
+      List.partition_map rec_libs
+        ~f:(fun le -> match le with
+            | LibVar (n, e) -> `Fst (n, e)
+            | LibTyp (n, ts) -> `Snd (n, ts)) in
     let env0 = TEnv.copy TEnv.mk in
-    foldM recs ~init:([], env0)
+    foldM lib_vars ~init:([], env0)
       ~f:(fun (entry_acc, env_acc) (rn, body) ->
           wrap_with_info
             (sprintf "Type error when checking recursion primitive %s:\n"
                (get_id rn), dummy_loc) @@
           let%bind ((_, (ar, _)) as typed_body) = type_expr env0 body in
           let typed_rn = add_type_to_id rn ar in
-          let new_entries = { TypedSyntax.lname = typed_rn ;
-                              TypedSyntax.lexp = typed_body } :: entry_acc in
+          let new_entries = (TypedSyntax.LibVar (typed_rn, typed_body)) :: entry_acc in
           let new_env = TEnv.addT (TEnv.copy env_acc) rn ar.tp in
           pure @@ (new_entries, new_env))
 
 
   let type_library env0 { lname ; lentries = ents } =
     let%bind (typed_entries, new_tenv, errs, _) =
-      foldM ~init:([], env0, [], []) ents ~f:(fun (acc, env, errs, blist) {lname=ln; lexp = le} ->
-          let msg = sprintf
-              "Type error in library %s:\n\n" (get_id ln) in
-          let dep_on_blist = free_vars_dep_check le blist in
-          (* If exp depends on a blacklisted exp, then let's ignore it. *)
-          if dep_on_blist then pure @@ (acc, env, errs, ln :: blist) else
-          let res = wrap_with_info (msg, ER.get_loc (get_rep ln)) (type_expr env le) in
-          match res with
-          | Error e ->
-            (* A new original failure. Add to blocklist and move on. *)
-            pure @@ (acc, env, errs @ e, ln :: blist)
-          | Ok res' ->
-            (* This went good. *)
-            let (_, (tr, _)) as typed_e = res' in
-            let typed_ln = add_type_to_id ln tr in
-            pure @@ ({ TypedSyntax.lname = typed_ln;
-                     TypedSyntax.lexp = typed_e }:: acc,
-                   TEnv.addT (TEnv.copy env) ln tr.tp, errs, blist))
+      foldM ~init:([], env0, [], []) ents
+        ~f:(fun (acc, env, errs, blist) lib_entry ->
+            match lib_entry with
+            (* TODO: Handle this properly *)
+            | LibTyp _ -> pure @@ (acc, env, errs, blist)
+            | LibVar (ln, le) -> 
+                let msg = sprintf
+                    "Type error in library %s:\n\n" (get_id ln) in
+                let dep_on_blist = free_vars_dep_check le blist in
+                (* If exp depends on a blacklisted exp, then let's ignore it. *)
+                if dep_on_blist then pure @@ (acc, env, errs, ln :: blist) else
+                  let res = wrap_with_info (msg, ER.get_loc (get_rep ln)) (type_expr env le) in
+                  match res with
+                  | Error e ->
+                      (* A new original failure. Add to blocklist and move on. *)
+                      pure @@ (acc, env, errs @ e, ln :: blist)
+                  | Ok res' ->
+                      (* This went good. *)
+                      let (_, (tr, _)) as typed_e = res' in
+                      let typed_ln = add_type_to_id ln tr in
+                      pure @@ (TypedSyntax.LibVar (typed_ln, typed_e) :: acc,
+                               TEnv.addT (TEnv.copy env) ln tr.tp, errs, blist))
     in
     (* If there has been no errors at all, we're good to go. *)
     if errs = [] then

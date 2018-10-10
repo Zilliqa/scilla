@@ -78,6 +78,8 @@ rule read =
   | "accept"      { ACCEPT }      
   | "Emp"         { EMP }
   | "Map"         { MAP }
+  | "type"        { TYPE }
+  | "of"          { OF }
 
 
   (* Separators *)    

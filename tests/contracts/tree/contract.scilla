@@ -1,0 +1,17 @@
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+library BinaryTree
+
+type Tree =
+| Leaf
+| Node of Pair Tree Tree
+
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract BinaryTreeTestContract ()
+
+transition Test ()
+end
