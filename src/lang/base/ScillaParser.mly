@@ -274,13 +274,13 @@ transition:
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
   ss = stmts;
   END;
-  { { tname = asIdL t (toLoc $startpos);
+  { { tname = t;
       tparams = params;
       tbody = ss } }
 
 trans_id:
-| c = CID {c};
-| i = ID {i};
+| c = CID { asIdL c (toLoc $startpos(c)) };
+| i = ID { asIdL i (toLoc $startpos(i)) };
 
 field:
 | FIELD; f = ID; COLON; t=typ;
@@ -292,7 +292,7 @@ contract:
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
   fs = list(field);
   ts = list(transition)
-  { { cname   = asIdL c (toLoc $startpos);
+  { { cname   = asIdL c (toLoc $startpos(c));
       cparams = params;
       cfields = fs;
       ctrans  = ts } }

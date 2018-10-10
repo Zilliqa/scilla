@@ -2,7 +2,11 @@
   "errors": [
     {
       "error_message": "Type error(s) in contract Crowdfunding:\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/unbound.scilla",
+        "line": 46,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
@@ -24,7 +28,7 @@
       "start_location": {
         "file": "checker/bad/unbound.scilla",
         "line": 57,
-        "column": 1
+        "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
@@ -60,7 +64,7 @@
       "start_location": {
         "file": "checker/bad/unbound.scilla",
         "line": 88,
-        "column": 1
+        "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
@@ -98,7 +102,7 @@
       "start_location": {
         "file": "checker/bad/unbound.scilla",
         "line": 122,
-        "column": 1
+        "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },

@@ -507,7 +507,7 @@ module ScillaTypechecker
     let {cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
-    wrap_with_info (msg, dummy_loc) @@
+    wrap_with_info (msg, SR.get_loc (get_rep ctr_cname)) @@
     
     (* Step 0: Type check recursion principles *)
     let%bind (_, tenv0) = type_rec_libs rec_libs in

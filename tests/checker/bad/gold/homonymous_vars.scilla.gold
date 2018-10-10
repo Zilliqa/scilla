@@ -2,7 +2,11 @@
   "errors": [
     {
       "error_message": "Type error(s) in contract Wallet:\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/homonymous_vars.scilla",
+        "line": 4,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
@@ -10,7 +14,7 @@
       "start_location": {
         "file": "checker/bad/homonymous_vars.scilla",
         "line": 11,
-        "column": 1
+        "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
