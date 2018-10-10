@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Failed to parse json /home/vaivaswatha/c/scilla/tests/contracts/mappair/state_7.json:\n",
+        "Failed to parse json tests/contracts/mappair/state_7.json:\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

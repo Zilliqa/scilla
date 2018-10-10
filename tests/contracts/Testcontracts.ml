@@ -43,7 +43,8 @@ let rec build_contract_tests env name ecode i n =
     (* function to run scilla-runner and check exit code *)
       (fun test_ctxt ->
         (* Files for the contract are in examples/contract/(crowdfunding|zil-game|etc). *)
-        let dir = env.tests_dir test_ctxt ^ sep ^ "contracts" ^ sep ^
+        let tests_dir = FilePath.make_relative (Sys.getcwd()) (env.tests_dir test_ctxt) in
+        let dir = tests_dir ^ sep ^ "contracts" ^ sep ^
           name ^ sep in
         let tmpdir = bracket_tmpdir test_ctxt in 
         let output_file = tmpdir ^ sep ^ name ^ "_output_"
