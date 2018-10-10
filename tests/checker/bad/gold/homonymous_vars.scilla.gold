@@ -6,36 +6,22 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type error in transition ExecuteTransaction:\n",
+      "error_message": "Type error(s) in transition ExecuteTransaction:\n",
       "start_location": {
         "file": "checker/bad/homonymous_vars.scilla",
         "line": 11,
-        "column": 1
+        "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message":
-        "Type error in the binding to into `not_enough_money`:\n",
-      "start_location": {
-        "file": "checker/bad/homonymous_vars.scilla",
-        "line": 13,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error in built-in application of `lt`:\n",
+        "Type error in the binding to into `not_enough_money`:\nType error in built-in application of `lt`:\nCouldn't resolve the identifier \"sxamount\".\n",
       "start_location": {
         "file": "checker/bad/homonymous_vars.scilla",
         "line": 13,
         "column": 22
       },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Couldn't resolve the identifier \"sxamount\".\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ]

@@ -5,7 +5,7 @@
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
         "line": 92,
-        "column": 1
+        "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
@@ -38,7 +38,7 @@
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
         "line": 113,
-        "column": 1
+        "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
