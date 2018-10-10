@@ -150,7 +150,8 @@ let () =
           JSON.ContractState.get_json_data cli.input_init
         with
         | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_init (sprint_scilla_error_list s));
+            perr @@ scilla_error_gas_jstring gas_remaining @@ 
+                mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init);
             exit 1
       in
       (* Retrieve block chain state  *)
@@ -159,7 +160,8 @@ let () =
         JSON.BlockChainState.get_json_data cli.input_blockchain 
       with
         | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_blockchain (sprint_scilla_error_list s));
+            perr @@ scilla_error_gas_jstring gas_remaining @@ 
+              mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_blockchain);
             exit 1
       in
       let (output_msg_json, output_state_json, output_events_json), gas = 
@@ -178,8 +180,9 @@ let () =
         try
           JSON.Message.get_json_data cli.input_message 
         with
-        | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_message (sprint_scilla_error_list s));
+        | JSON.Invalid_json s ->
+            perr @@ scilla_error_gas_jstring gas_remaining @@ 
+              mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_message);
             exit 1
         in
         let m = Msg mmsg in
@@ -189,8 +192,9 @@ let () =
         try
           input_state_json cli.input_state
         with
-        | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_state (sprint_scilla_error_list s));
+        | JSON.Invalid_json s ->
+            perr @@ scilla_error_gas_jstring gas_remaining @@ 
+              mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state);
             exit 1
         in
 

@@ -1,6 +1,11 @@
-Failed to execute transition:
-Mismatch b/w message entries:
-{ [_amount -> (UintLit 128 0)],
-  [_sender -> (ByStr20 0xa2345678901234567890123456789012345678ab)],
-  [Unknown -> (IntLit 32 0)] }
-and expected transition parameters[_amount : (PrimType Uint128), _sender : (PrimType ByStr20)]
+{
+  "gas_remaining": 1875,
+  "errors": [
+    {
+      "error_message":
+        "Duplicate entries or mismatch b/w message entries:\n{ [_amount -> (Uint128 0)],\n  [_sender -> (ByStr20 0xa2345678901234567890123456789012345678ab)],\n  [Unknown -> (Int32 0)] }\nand expected transition parameters[_amount : (PrimType Uint128), _sender : (PrimType ByStr20)]\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}
