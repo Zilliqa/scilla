@@ -29,9 +29,10 @@ From the project root, execute
 ./bin/eval-runner tests/eval/exp/good/let.scilla src/stdlib
 ```
 
-Instead of `let.scilla` you might want to try any dfferent file in `tests/eval/exp`. The second argument, which is a path
-to the Scilla standard library can alternatively be specified in the
-environment variable `SCILLA_STDLIB_PATH`.
+Instead of `let.scilla` you might want to try any dfferent file in
+`tests/eval/exp`. The second argument, which is a path to the Scilla
+standard library can alternatively be specified in the environment
+variable `SCILLA_STDLIB_PATH`. This must be an absolute path;
 
 #### Type-checking a contract
 
@@ -45,7 +46,8 @@ Instead of `auction.scilla` you might want to try any dfferent file in
 `tests/checker` with a complete implementation of a contract, or your
 own contract code. The second argument, which is a path to the Scilla
 standard library can alternatively be specified in the environment
-variable `SCILLA_STDLIB_PATH`.
+variable `SCILLA_STDLIB_PATH`. As above, this must be an absolute
+path.
 
 If the checker only returns the contract structure in JSON format, it
 means that the contract has no type errors. Otherwise, a type error
