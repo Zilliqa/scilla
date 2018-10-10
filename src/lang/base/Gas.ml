@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-
+  
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
-
+ 
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
+ 
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -51,20 +51,20 @@ module ScillaGas
       | ByStrX (w, _) -> pure @@ w
       | ByStr s ->
           pure @@ (String.length s) - 2
-      (* Message: an associative array *)
+      (* Message: an associative array *)    
       | Msg m ->
           foldM ~f:(fun acc (s, lit') ->
               let%bind cs = literal_cost (StringLit(s)) in
               let%bind clit' = literal_cost lit' in
               pure (acc + cs + clit')) ~init:0 m
-      (* A dynamic map of literals *)
+      (* A dynamic map of literals *)    
       | Map (_, m) ->
           Caml.Hashtbl.fold (fun lit1 lit2 acc' ->
             let%bind acc = acc' in
             let%bind clit1 = literal_cost lit1 in
             let%bind clit2 = literal_cost lit2 in
             pure (acc + clit1 + clit2)) m (pure 0)
-      (* A constructor in HNF *)
+      (* A constructor in HNF *)      
       | ADTValue (_, _, ll) ->
           foldM ~f:(fun acc lit' ->
               let%bind clit' = literal_cost lit' in
@@ -87,8 +87,8 @@ module ScillaGas
 
   let stmt_cost scon = match scon with
     | G_Load l -> literal_cost l
-    | G_Store (old_l, new_l) ->
-        let%bind old_cost =  literal_cost(old_l) in
+    | G_Store (old_l, new_l) -> 
+        let%bind old_cost =  literal_cost(old_l) in 
         let%bind new_cost = literal_cost(new_l) in
         let storage_cost = new_cost - old_cost in
         let op_cost = Int.max old_cost new_cost in
@@ -97,7 +97,7 @@ module ScillaGas
     | G_MatchStmt num_clauses-> pure num_clauses
     | G_ReadFromBC -> pure 1
     | G_AcceptPayment -> pure 1
-    | G_SendMsgs mlist -> foldM ~f:(fun acc m ->
+    | G_SendMsgs mlist -> foldM ~f:(fun acc m -> 
         let%bind c = literal_cost m in
         pure (acc + c)) ~init:0 mlist
     | G_CreateEvnt e -> literal_cost e
@@ -130,6 +130,8 @@ module ScillaGas
     | "sha256hash", _, [a] ->
         pure @@ (String.length (pp_literal a) + 20) * base
     | "keccak256hash", _, [a] ->
+        pure @@ (String.length (pp_literal a) + 20) * base
+    | "ripemd160hash", _, [a] ->
         pure @@ (String.length (pp_literal a) + 20) * base
     | "schnorr_gen_key_pair", _, _ -> pure 20 (* TODO *)
     | "schnorr_sign", _, [_;_;ByStr(s)]
@@ -191,6 +193,7 @@ module ScillaGas
     ("to_bystr", [tvar "'A"], hash_coster, 1);
     ("sha256hash", [tvar "'A"], hash_coster, 1);
     ("keccak256hash", [tvar "'A"], hash_coster, 1);
+    ("ripemd160hash", [tvar "'A"], hash_coster, 1);
     ("schnorr_gen_key_pair", [], hash_coster, 1);
     ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], hash_coster, 5);
     ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], hash_coster, 5);
@@ -200,7 +203,7 @@ module ScillaGas
     ("put", [tvar "'A"; tvar "'A"; tvar "'A"], map_coster, 1);
     ("get", [tvar "'A"; tvar "'A"], map_coster, 1);
     ("remove", [tvar "'A"; tvar "'A"], map_coster, 1);
-    ("to_list", [tvar "'A"], map_coster, 1);
+    ("to_list", [tvar "'A"], map_coster, 1); 
 
     (* Integers *)
     ("eq", [tvar "'A"; tvar "'A"], int_coster, 4);
