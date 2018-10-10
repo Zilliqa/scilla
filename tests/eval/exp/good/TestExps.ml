@@ -55,8 +55,6 @@ let explist = [
   "keccak256_5.scilla";
   "ripemd160_1.scilla";
   "ripemd160_2.scilla";
-  "ripemd160_3.scilla";
-  "ripemd160_4.scilla";
   "ripemd160_5.scilla";
   "let-builtin.scilla";
   "let.scilla";
