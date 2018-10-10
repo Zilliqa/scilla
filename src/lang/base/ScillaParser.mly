@@ -164,7 +164,7 @@ simple_exp :
   }
 (* Match expression *)
 | MATCH; x = ID; WITH; cs=list(exp_pm_clause); END
-  { (MatchExpr (Ident (x, toLoc $startpos), cs), toLoc $startpos) }
+  { (MatchExpr (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos) }
 (* Type function *)
 | TFUN; i = TID ARROW; e = exp
   { (TFun (Ident (i, toLoc $startpos), e), toLoc $startpos) } 
@@ -251,7 +251,7 @@ stmt:
 | SEND; m = ID;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | EVENT; m = ID; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | MATCH; x = ID; WITH; cs=list(stmt_pm_clause); END
-  { (MatchStmt (Ident (x, toLoc $startpos), cs), toLoc $startpos)  }
+  { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
 
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;

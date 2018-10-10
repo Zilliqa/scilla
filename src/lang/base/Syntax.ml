@@ -574,10 +574,30 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Ok _ -> res
     | Error e -> Error ({emsg = msg; startl = sloc; endl = dummy_loc}::e)
 
-  let wrap_err e phase ?opt:(opt = "") = wrap_with_info (get_failure_msg e phase opt)
+  let wrap_err e phase ?opt:(opt = "") res =
+    match res with
+    | Ok _ -> res
+    (* Handle a special case where we're dealing with the most precise error. *)
+    | Error (e' :: []) ->
+      let m, l = get_failure_msg e phase opt in
+      if e'.startl = dummy_loc then
+        Error (mk_error1 (m ^ e'.emsg) l)
+      else
+        Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
+    | _ -> wrap_with_info (get_failure_msg e phase opt) res
 
-  let wrap_serr s phase ?opt:(opt = "") =
-    wrap_with_info (get_failure_msg_stmt s phase opt)
+  let wrap_serr s phase ?opt:(opt = "") res =
+    match res with
+    | Ok _ -> res
+      (* Handle a special case where we're dealing with the most precise error. *)
+    | Error (e' :: []) ->
+      let m, l = get_failure_msg_stmt s phase opt in
+      if e'.startl = dummy_loc then
+        Error (mk_error1 (m ^ e'.emsg) l)
+      else
+        Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
+    | _ ->
+      wrap_with_info (get_failure_msg_stmt s phase opt) res
   
 end
 
