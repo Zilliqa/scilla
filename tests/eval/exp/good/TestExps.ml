@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-
+  
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
-
+ 
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
+ 
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -24,10 +24,10 @@ let explist = [
   "app5.scilla";
   "app.scilla";
   "builtin1.scilla";
-  "builtin2.scilla";
+  "builtin2.scilla"; 
   "builtin3.scilla";
   "builtin5.scilla";
-  "builtin6.scilla";
+  "builtin6.scilla";  
   "builtin-strings.scilla";
   "builtin-div.scilla";
   "builtin-div2.scilla";
@@ -38,14 +38,14 @@ let explist = [
   "fib.scilla";
   "func_pair.scilla";
   "hash1.scilla";
-  "hash2.scilla";
+  "hash2.scilla";  
   "hash3.scilla";
   "hash4.scilla";
   "hash5.scilla";
   "hof2.scilla";
   "hof3.scilla";
   "hof.scilla";
-  "id.scilla";
+  "id.scilla";  
   "int_conversions.scilla";
   "int_to_nat.scilla";
   "keccak256_1.scilla";
@@ -53,6 +53,11 @@ let explist = [
   "keccak256_3.scilla";
   "keccak256_4.scilla";
   "keccak256_5.scilla";
+  "ripemd160_1.scilla";
+  "ripemd160_2.scilla";
+  "ripemd160_3.scilla";
+  "ripemd160_4.scilla";
+  "ripemd160_5.scilla";
   "let-builtin.scilla";
   "let.scilla";
   "list_append.scilla";
@@ -72,12 +77,12 @@ let explist = [
   "list_sort.scilla";
   "list_sort_eq.scilla";
   "list_tail1.scilla";
-  "list_tail2.scilla";
+  "list_tail2.scilla";  
   "list_tail.scilla";
-  "list_to_map.scilla";
+  "list_to_map.scilla"; 
   "list_unzip.scilla";
   "list_zip.scilla";
-  "list_zip_with.scilla";
+  "list_zip_with.scilla";  
   "map1.scilla";
   "map2.scilla";
   "map3.scilla";
@@ -93,7 +98,7 @@ let explist = [
   "pair1.scilla";
   "pair2.scilla";
   "pair3.scilla";
-  "pm1.scilla";
+  "pm1.scilla";  
   "pm2.scilla";
   "pm3.scilla";
   "pm_app.scilla";
