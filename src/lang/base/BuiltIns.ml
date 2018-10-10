@@ -110,21 +110,21 @@ module ScillaBuiltIns
 
     (* let string_eq_type = FunType (string_typ, FunType (string_typ, )) *)
 
-    let eq_arity = 2    
+    let eq_arity = 2
     let eq_type = fun_typ string_typ @@ fun_typ string_typ bool_typ
     let eq ls _ = match ls with
       | [StringLit x; StringLit y] ->
           pure @@ to_Bool (x = y)
       | _ -> builtin_fail "String.eq" ls
 
-    let concat_arity = 2    
-    let concat_type = fun_typ string_typ @@ fun_typ string_typ string_typ    
+    let concat_arity = 2
+    let concat_type = fun_typ string_typ @@ fun_typ string_typ string_typ
     let concat ls _ = match ls with
       | [StringLit x; StringLit y] ->
           pure @@ StringLit (x ^ y)
       | _ -> builtin_fail "String.concat" ls
 
-    let substr_arity = 3    
+    let substr_arity = 3
     let substr_type =
       tfun_typ "'A" @@ tfun_typ "'B" @@ tfun_typ "'C" @@
       (fun_typ (tvar "'A") @@ fun_typ (tvar "'B") @@ fun_typ (tvar "'C") string_typ)
@@ -165,20 +165,20 @@ module ScillaBuiltIns
     let safe_add a b =
       let r = add a b in
       (* if a > 0 && b > 0 && r < 0 then we have an overflow*)
-      if ((compare a zero) > 0 && (compare b zero) > 0 && (compare r zero) < 0) 
+      if ((compare a zero) > 0 && (compare b zero) > 0 && (compare r zero) < 0)
       then raise IntOverflow
       (* if a < 0 && b < 0 && r > 0 then we have an underflow*)
-      else if ((compare a zero) < 0 && (compare b zero) < 0 && (compare r zero) > 0) 
+      else if ((compare a zero) < 0 && (compare b zero) < 0 && (compare r zero) > 0)
       then raise IntUnderflow
       else r
 
     let safe_sub a b =
       let r = R.sub a b in
       (* if a > 0 && b < 0 && r < 0 then we have an overflow *)
-      if ((compare a zero) > 0 && (compare b zero) < 0 && (compare r zero) < 0) 
+      if ((compare a zero) > 0 && (compare b zero) < 0 && (compare r zero) < 0)
       then raise IntOverflow
       (* if a < 0 && b > 0 && r > 0 then we have an underflow*)
-      else if ((compare a zero) < 0 && (compare b zero) > 0 && (compare r zero) > 0) 
+      else if ((compare a zero) < 0 && (compare b zero) > 0 && (compare r zero) > 0)
       then raise IntUnderflow
       else r
 
@@ -242,7 +242,7 @@ module ScillaBuiltIns
     let safe_div a b =
       (* Division_by_zero is taken care of by underlying implementation. *)
       div a b
-        
+
     let safe_rem a b =
       (* Division_by_zero is taken care of by underlying implementation. *)
       rem a b
@@ -291,8 +291,8 @@ module ScillaBuiltIns
         pure @@ to_Bool (x = y)
       | _ -> builtin_fail "Int.eq: unsupported types" ls
 
-    let add ls _ = 
-      try 
+    let add ls _ =
+      try
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
               pure @@ Int32L(Int32Wrapper.safe_add x y)
@@ -307,8 +307,8 @@ module ScillaBuiltIns
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Int.add: an overflow/underflow occurred" ls
 
-    let sub ls _ = 
-      try 
+    let sub ls _ =
+      try
         let%bind l =(match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
               pure @@ Int32L(Int32Wrapper.safe_sub x y)
@@ -323,8 +323,8 @@ module ScillaBuiltIns
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Int.sub: an overflow/underflow occurred" ls
 
-    let mul ls _ = 
-      try 
+    let mul ls _ =
+      try
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
               pure @@ Int32L(Int32Wrapper.safe_mul x y)
@@ -339,8 +339,8 @@ module ScillaBuiltIns
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Int.mul: an overflow/underflow occurred" ls
 
-    let div ls _ = 
-      try 
+    let div ls _ =
+      try
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
               pure @@ Int32L(Int32Wrapper.safe_div x y)
@@ -356,7 +356,7 @@ module ScillaBuiltIns
           builtin_fail "Int.div: Division by zero / IntOverflow error occurred" ls
 
     let rem ls  _ =
-      try 
+      try
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
               pure @@ Int32L(Int32Wrapper.safe_rem x y)
@@ -372,7 +372,7 @@ module ScillaBuiltIns
                builtin_fail "Int.rem: Division by zero error occurred" ls
 
     let lt ls _ =
-      try 
+      try
         (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
               pure @@ to_Bool (Int32Wrapper.safe_lt x y)
@@ -401,7 +401,7 @@ module ScillaBuiltIns
           elab_tfun_with_args sc [t; ityp]
       | _ -> fail0 "Failed to elaborate"
 
-    let to_int_helper ls w = 
+    let to_int_helper ls w =
       let%bind xs = match ls with
         | [IntLit x] -> pure @@ string_of_int_lit x
         | [UintLit x] -> pure @@ string_of_uint_lit x
@@ -447,8 +447,8 @@ module ScillaBuiltIns
         pure @@ to_Bool (x = y)
       | _ -> builtin_fail "Uint.eq: unsupported types" ls
 
-    let add ls _ = 
-      try 
+    let add ls _ =
+      try
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
               pure @@ Uint32L(Uint32Wrapper.safe_add x y)
@@ -463,8 +463,8 @@ module ScillaBuiltIns
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Uint.add: an overflow/underflow occurred" ls
 
-    let sub ls _ = 
-      try 
+    let sub ls _ =
+      try
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
               pure @@ Uint32L(Uint32Wrapper.safe_sub x y)
@@ -479,8 +479,8 @@ module ScillaBuiltIns
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Uint.sub: an overflow/underflow occurred" ls
 
-    let mul ls _ = 
-      try 
+    let mul ls _ =
+      try
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
               pure @@ Uint32L(Uint32Wrapper.safe_mul x y)
@@ -495,8 +495,8 @@ module ScillaBuiltIns
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Uint.mul: an overflow/underflow occurred" ls
 
-    let div ls _ = 
-      try 
+    let div ls _ =
+      try
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
               pure @@ Uint32L(Uint32Wrapper.safe_div x y)
@@ -512,7 +512,7 @@ module ScillaBuiltIns
         builtin_fail "Uint.div: Division by zero / UintOverflow error occurred" ls
 
     let rem ls  _ =
-      try 
+      try
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
               pure @@ Uint32L(Uint32Wrapper.safe_rem x y)
@@ -528,7 +528,7 @@ module ScillaBuiltIns
         builtin_fail "Uint.rem: Division by zero error occurred" ls
 
     let lt ls _ =
-      try 
+      try
         (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
               pure @@ to_Bool (Uint32Wrapper.safe_lt x y)
@@ -559,7 +559,7 @@ module ScillaBuiltIns
           elab_tfun_with_args sc [t; ityp]
       | _ -> fail0 "Failed to elaborate"
 
-    let to_uint_helper ls w = 
+    let to_uint_helper ls w =
       let%bind xs = match ls with
         | [IntLit x] -> pure @@ string_of_int_lit x
         | [UintLit x] -> pure @@ string_of_uint_lit x
@@ -608,14 +608,14 @@ module ScillaBuiltIns
     open Datatypes.DataTypeDictionary
 
     let eq_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ
-    let eq_arity = 2    
+    let eq_arity = 2
     let eq ls _ = match ls with
       | [BNum x; BNum y] ->
           pure @@ to_Bool (x = y)
       | _ -> builtin_fail "BNum.eq" ls
 
     let blt_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ
-    let blt_arity = 2    
+    let blt_arity = 2
     let blt ls _ = match ls with
       | [BNum x; BNum y] -> pure (
           let i1 = big_int_of_string x in
@@ -623,7 +623,7 @@ module ScillaBuiltIns
           to_Bool (lt_big_int i1 i2))
       | _ -> builtin_fail "BNum.blt" ls
 
-    let badd_arity = 2    
+    let badd_arity = 2
     let badd_type =
       tfun_typ "'A" @@ tfun_typ "'B" @@
       (fun_typ (tvar "'A") @@ fun_typ (tvar "'B") bnum_typ)
@@ -661,9 +661,11 @@ module ScillaBuiltIns
     let tohex s = "0x" ^ (transform_string (Hexa.encode()) s)
     (* Hash raw bytes / binary string. *)
     let hash s = hash_string (Hash.sha2 256) s
+    (* Keccak256 hash raw bytes / binary string. *)
+    let keccak256_helper s = hash_string (Hash.keccak 256) s
 
     let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
-    let eq_arity = 2    
+    let eq_arity = 2
     let eq_elab sc ts =
       match ts with
       | [bstyp1; bstyp2] when
@@ -683,7 +685,7 @@ module ScillaBuiltIns
       | _ -> fail0 "Failed to elaborate"
     let sha256hash ls _ = match ls with
       | [l] ->
-          let lstr = 
+          let lstr =
             (match l with
             | StringLit s -> s
             | IntLit il -> bstring_from_int_lit il
@@ -692,12 +694,30 @@ module ScillaBuiltIns
             (* Anything else, just serialize with SExp. *)
             | _ -> sexp_of_literal l |> Sexplib.Sexp.to_string) in
           let lhash = hash lstr in
-          let lhash_hex = tohex lhash in 
+          let lhash_hex = tohex lhash in
           let lo = build_prim_literal (bystrx_typ hash_length) lhash_hex in
           (match lo with
           | Some l' -> pure @@ l'
           | None -> builtin_fail "Hashing.sha256hash: internal error, invalid sha256 hash" ls)
       | _ -> builtin_fail "Hashing.sha256hash" ls
+
+    let keccak256hash ls _ = match ls with
+      | [l] ->
+          let lstr =
+            (match l with
+            | StringLit s -> s
+            | IntLit il -> bstring_from_int_lit il
+            | UintLit uil -> bstring_from_uint_lit uil
+            | ByStr s | ByStrX (_, s) -> fromhex s
+            (* Anything else, just serialize with SExp. *)
+            | _ -> sexp_of_literal l |> Sexplib.Sexp.to_string) in
+          let lhash = keccak256_helper lstr in
+          let lhash_hex = tohex lhash in
+          let lo = build_prim_literal (bystrx_typ hash_length) lhash_hex in
+          (match lo with
+          | Some l' -> pure @@ l'
+          | None -> builtin_fail "Hashing.keccak256hash: internal error, invalid keccak256 hash" ls)
+      | _ -> builtin_fail "Hashing.keccak256hash" ls
 
     let big_int_of_hash h =
       let s = match Hex.of_string h with
@@ -706,7 +726,7 @@ module ScillaBuiltIns
 
     (* TODO: define for other ByStrX types? *)
     let dist_type = fun_typ (bystrx_typ hash_length) @@ fun_typ (bystrx_typ hash_length) uint128_typ
-    let dist_arity = 2    
+    let dist_arity = 2
     let dist ls _ = match ls with
       | [ByStrX(_, x); ByStrX(_, y)] ->
           let i1 = big_int_of_hash x in
@@ -729,7 +749,7 @@ module ScillaBuiltIns
       | [t] when is_bystrx_type t -> elab_tfun_with_args sc ts
       | _ -> fail0 "Failed to elaborate"
     let to_bystr ls _ = match ls with
-      | [ByStrX(_, s)] -> 
+      | [ByStrX(_, s)] ->
         let res = build_prim_literal bystr_typ s in
         (match res with
          | Some l' -> pure l'
@@ -737,7 +757,7 @@ module ScillaBuiltIns
       | _ -> builtin_fail "Hashing.to_bystr" ls
 
     let schnorr_gen_key_pair_type = fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
-    let schnorr_gen_key_pair_arity = 0  
+    let schnorr_gen_key_pair_arity = 0
     let schnorr_gen_key_pair ls _ =
       match ls with
       | [] ->
@@ -817,7 +837,7 @@ module ScillaBuiltIns
           (* Scilla semantics is not in-place modification. *)
           let entries' = Caml.Hashtbl.copy entries in
           let _ = Caml.Hashtbl.replace entries' key value in
-          pure @@ Map (tm, entries') 
+          pure @@ Map (tm, entries')
       | _ -> builtin_fail "Map.put" ls
 
 
@@ -848,7 +868,9 @@ module ScillaBuiltIns
     let remove_elab sc ts = match ts with
       | [MapType (kt, vt); u] when kt = u  ->
           elab_tfun_with_args sc [kt; vt]
+
       | _ -> fail0 "Failed to elaborate" 
+
     let remove ls _ = match ls with
       | [Map (tm, entries); key] ->
           (* Scilla semantics is not in-place modification. *)
@@ -866,6 +888,7 @@ module ScillaBuiltIns
     let to_list_elab sc ts = match ts with
       | [MapType (kt, vt)]  -> elab_tfun_with_args sc [kt; vt]
       | _ -> fail0 "Failed to elaborate" 
+
     let to_list ls _ = match ls with
       | [Map ((kt, vt), entries)] ->
           (* The type of the output list will be "Pair (kt) (vt)" *)
@@ -889,7 +912,7 @@ module ScillaBuiltIns
   (*                   Built-in  Dictionary                *)
   (**********************************************************)
 
-  module BuiltInDictionary = struct 
+  module BuiltInDictionary = struct
 
     (* Elaborates the operation type based on the arguments types *)
     type elaborator = typ -> typ list -> (typ, scilla_error list) result      
@@ -901,7 +924,7 @@ module ScillaBuiltIns
        * built-in name
        * arity
        * full, unelaborated type
-       * elaborator, refining the type based on argument 
+       * elaborator, refining the type based on argument
          to support polymorphism -- e.g., for ints and maps
        * executor - operational semantics of the built-in
     *)
@@ -923,6 +946,7 @@ module ScillaBuiltIns
       ("eq", Hashing.eq_arity, Hashing.eq_type, Hashing.eq_elab, Hashing.eq);
       ("dist", Hashing.dist_arity, Hashing.dist_type, elab_id , Hashing.dist);
       ("sha256hash", Hashing.hash_arity, Hashing.hash_type,Hashing.hash_elab, Hashing.sha256hash);
+      ("keccak256hash", Hashing.hash_arity, Hashing.hash_type,Hashing.hash_elab, Hashing.keccak256hash);
       ("to_bystr", Hashing.to_bystr_arity, Hashing.to_bystr_type, Hashing.to_bystr_elab, Hashing.to_bystr);
       ("schnorr_gen_key_pair", Hashing.schnorr_gen_key_pair_arity, Hashing.schnorr_gen_key_pair_type, elab_id, Hashing.schnorr_gen_key_pair);
       ("schnorr_sign", Hashing.schnorr_sign_arity, Hashing.schnorr_sign_type, elab_id, Hashing.schnorr_sign);
@@ -973,7 +997,7 @@ module ScillaBuiltIns
           | None -> Hashtbl.add ht opname (row::[])
         ) built_in_dict;
       ht
-      
+
     (* Dictionary lookup based on the operation name and type *)
     let find_builtin_op op argtypes =
       let opname = get_id op in
