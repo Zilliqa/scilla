@@ -144,9 +144,8 @@ simple_exp :
   { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) } 
 (* Application *)  
 | f = ID;
-  args = nonempty_list(ID)
-  { let xs = List.map (fun i -> Ident (i, toLoc $startpos)) args
-    in (App ((Ident (f, toLoc $startpos)), xs), toLoc $startpos ) }
+  args = nonempty_list(ident)
+  { (App ((Ident (f, toLoc $startpos)), args), toLoc $startpos ) }
 (* Atomic expression *)
 | a = atomic_exp {a} 
 (* Built-in call *)
@@ -156,13 +155,12 @@ simple_exp :
 | LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE
   { (Message es, toLoc $startpos) } 
 (* Data constructor application *)
-| c = CID ts=option(ctargs) args=list(ID)
+| c = CID ts=option(ctargs) args=list(ident)
   { let targs =
       (match ts with
        | None -> []
        | Some ls -> ls) in
-    let xs = List.map (fun i -> Ident (i, toLoc $startpos)) args in
-    (Constr (c, targs, xs), toLoc $startpos)
+    (Constr (c, targs, args), toLoc $startpos)
   }
 (* Match expression *)
 | MATCH; x = ID; WITH; cs=list(exp_pm_clause); END
@@ -223,9 +221,11 @@ msg_entry :
 | i = ID; COLON;  v = ID  { i,  MVar (asIdL v (toLoc $startpos(v))) }
 
 builtin_args :
-| args = nonempty_list(ID) 
-  { List.map (fun i -> Ident (i, dummy_loc)) args }
+| args = nonempty_list(ident) { args }
 | LPAREN; RPAREN { [] }
+
+ident :
+| i = ID { Ident(i, toLoc $startpos) }
 
 type_annot:
 | COLON; t = typ { t }
