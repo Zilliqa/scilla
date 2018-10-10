@@ -253,7 +253,7 @@ module ScillaGas
     let msg = sprintf "Unable to determine gas cost for \"%s\"" op in
     let open Caml in
     let dict = match Hashtbl.find_opt builtin_hashtbl op with | Some rows -> rows | None -> [] in
-    let %bind (_, cost) = tryM dict ~f:matcher ~msg:(mk_error0 msg) in
+    let %bind (_, cost) = tryM dict ~f:matcher ~msg:(fun () -> mk_error0 msg) in
     pure cost
 
 end
