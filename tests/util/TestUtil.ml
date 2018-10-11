@@ -84,10 +84,10 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         Printf.printf "Updated gold for test %s\n" input_file);
       in
       let libdir = FilePath.make_relative dir (env.stdlib_dir test_ctxt) in
-      let args = if use_stdlib then [input_file;libdir] else [input_file] in
+      let args = if use_stdlib then ["-libdir";libdir;input_file] else [input_file] in
       (if (env.print_cli test_ctxt) then
         if use_stdlib then
-          (Printf.printf "\nUsing CLI: %s %s %s\n" runner input_file libdir)
+          (Printf.printf "\nUsing CLI: %s %s %s %s\n" runner "-libdir" libdir input_file)
         else
           (Printf.printf "\nUsing CLI: %s %s\n" runner input_file));
       let update_gold = env.update_gold test_ctxt in

@@ -63,20 +63,34 @@ let import_all_libs ldirs =
   in
     import_libs names
 
-(* Treat 2nd command line argument as a list of stdlib dirs
- * and add it to StdlibTracker to be tracked. *)
-let add_cmd_stdlib () =
-  (* If we have a 2nd command line argument, that is a list
-     of directories to stdlib. Add that to the stdlib tracker. *)
-  if (Array.length Sys.argv) == 3
-  then
-    (let dirs = Sys.argv.(2) in
-    let dir_list = String.split_on_char ';' dirs in
-    StdlibTracker.add_stdlib_dirs dir_list)
+type runner_cli = {
+  input_file : string;
+  stdlib_dirs : string list;
+  simple_errors : bool;
+}
+
+let parse_cli () =
+  let usage = " -libdir /path/to/stdlib [-simple-errors] input.scilla" in
+  let r_stdlib_dir = ref "" in
+  let r_input_file = ref "" in
+  let r_simple_errors = ref false in
+  let speclist = [
+    ("-libdir", Arg.String (fun x -> r_stdlib_dir := x), "Path to stdlib");
+    ("-simple-errors", Arg.Unit (fun () -> r_simple_errors := true), "Print human readable errors instead of in JSONs");
+  ] in 
+  (* Only one input file allowed, so the last anonymous argument will be *it*. *)
+  let anon_handler s = r_input_file := s in
+  let () = Arg.parse speclist anon_handler ("Usage:\n" ^ usage) in
+
+  if !r_input_file = "" || !r_stdlib_dir = "" then
+    (DebugMessage.perr @@ "Usage:\n" ^ Sys.argv.(0) ^ usage ^ "\n"; exit 1);
+
+  let stdlib_dirs = String.split_on_char ';' !r_stdlib_dir in
+    { input_file = !r_input_file; stdlib_dirs = stdlib_dirs; simple_errors = !r_simple_errors }
 
 let stdlib_not_found_err () =
-  printf "\n%s\n"
+  DebugMessage.perr @@ sprintf "\n%s\n"
   ("A path to Scilla stdlib not found. Please set " ^ StdlibTracker.scilla_stdlib_env ^ 
-    " environment variable, or pass as the second command-line argument for this script.\n" ^
-    "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla ./src/stdlib/\n");
+    " environment variable, or pass through command-line argument for this script.\n" ^
+    "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla -libdir ./src/stdlib/\n");
    exit 1
