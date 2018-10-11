@@ -43,10 +43,18 @@ let import_libs names =
     with | _ -> perr (errmsg ^ "Failed to parse.\n"); exit 1
     ) names 
 
+let stdlib_not_found_err () =
+  DebugMessage.perr @@ sprintf "\n%s\n"
+  ("A path to Scilla stdlib not found. Please set " ^ StdlibTracker.scilla_stdlib_env ^ 
+    " environment variable, or pass through command-line argument for this script.\n" ^
+    "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla -libdir ./src/stdlib/\n");
+   exit 1
+
 (* Parse all libraries that can be found in ldirs. *)
 let import_all_libs ldirs =
   (* Get list of scilla libraries in dir *)
   let get_lib_list dir =
+    if not (Sys.file_exists dir) then stdlib_not_found_err ();
     let files = Array.to_list (Sys.readdir dir) in
     List.fold_right (fun file names ->
       if Filename.extension file = ".scilla"
@@ -85,10 +93,3 @@ let parse_cli () =
     (DebugMessage.perr @@ "Usage:\n" ^ Sys.argv.(0) ^ usage ^ "\n"; exit 1);
   let stdlib_dirs = if !r_stdlib_dir = "" then [] else String.split_on_char ';' !r_stdlib_dir in
   { input_file = !r_input_file; stdlib_dirs = stdlib_dirs; simple_errors = !r_simple_errors }
-
-let stdlib_not_found_err () =
-  DebugMessage.perr @@ sprintf "\n%s\n"
-  ("A path to Scilla stdlib not found. Please set " ^ StdlibTracker.scilla_stdlib_env ^ 
-    " environment variable, or pass through command-line argument for this script.\n" ^
-    "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla -libdir ./src/stdlib/\n");
-   exit 1
