@@ -39,20 +39,14 @@ module TCERep = TC.OutputERep
 let gas_limit = 2000
 
 let () =
-  if (Array.length Sys.argv) < 2 || (Array.length Sys.argv) > 3
-  then
-    (printf "%s\n" ("Usage: " ^ Sys.argv.(0) ^ " /path/to/exp.scilla [/path/to/stdlib]");
-    exit 1)
-  else
-  let filename = Sys.argv.(1) in
+  let cli = parse_cli() in
+  let filename = cli.input_file in
   match FrontEndParser.parse_file ScillaParser.exps filename with
   | Some [e] ->
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib = { TC.UntypedSyntax.lname = asId "dummy";
                    TC.UntypedSyntax.lentries = [] } in
-      (* This is an auxiliary executable, it's second argument must
-       * have a list of stdlib dirs, so note that down. *)
-      add_cmd_stdlib ();
+      StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
       let lib_dirs = StdlibTracker.get_stdlib_dirs() in
       if lib_dirs = [] then stdlib_not_found_err ();
       (* Import all libraries in known stdlib paths. *)

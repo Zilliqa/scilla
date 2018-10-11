@@ -84,23 +84,15 @@ let check_events_info einfo =
   | Ok _ -> einfo
 
 let () =
-  if (Array.length Sys.argv) < 2
-  then
-    (perr @@ 
-      scilla_error_to_jstring @@ 
-        mk_error0 (sprintf "Usage: %s foo.scilla\n" Sys.argv.(0))
-    )
-  else (
+    let cli = parse_cli () in
     let open GlobalConfig in
+    StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
     set_debug_level Debug_None;
     (* Testsuite runs this executable with cwd=tests and ends
        up complaining about missing _build directory for logger.
        So disable the logger. *)
     let r = (
-      let%bind cmod = check_parsing Sys.argv.(1) in
-      (* This is an auxiliary executable, it's second argument must
-       * have a list of stdlib dirs, so note that down. *)
-      add_cmd_stdlib();
+      let%bind cmod = check_parsing cli.input_file in
       (* Get list of stdlib dirs. *)
       let lib_dirs = StdlibTracker.get_stdlib_dirs() in
       if lib_dirs = [] then stdlib_not_found_err ();
@@ -116,4 +108,4 @@ let () =
     | Error el -> () (* we've already printed the error(s). *)
     | Ok (cmod, _, event_info) ->
       pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr event_info));
-  )
+
