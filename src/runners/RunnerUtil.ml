@@ -74,17 +74,17 @@ let import_all_libs ldirs =
 type runner_cli = {
   input_file : string;
   stdlib_dirs : string list;
-  simple_errors : bool;
+  json_errors : bool;
 }
 
 let parse_cli () =
   let usage = " -libdir /path/to/stdlib [-simple-errors] input.scilla" in
   let r_stdlib_dir = ref "" in
   let r_input_file = ref "" in
-  let r_simple_errors = ref false in
+  let r_json_errors = ref false in
   let speclist = [
     ("-libdir", Arg.String (fun x -> r_stdlib_dir := x), "Path to stdlib");
-    ("-simple-errors", Arg.Unit (fun () -> r_simple_errors := true), "Print human readable errors instead of in JSONs");
+    ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print human readable errors instead of in JSONs");
   ] in 
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
@@ -92,4 +92,4 @@ let parse_cli () =
   if !r_input_file = "" then
     (DebugMessage.perr @@ "Usage:\n" ^ Sys.argv.(0) ^ usage ^ "\n"; exit 1);
   let stdlib_dirs = if !r_stdlib_dir = "" then [] else String.split_on_char ';' !r_stdlib_dir in
-  { input_file = !r_input_file; stdlib_dirs = stdlib_dirs; simple_errors = !r_simple_errors }
+  { input_file = !r_input_file; stdlib_dirs = stdlib_dirs; json_errors = !r_json_errors }

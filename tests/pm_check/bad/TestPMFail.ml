@@ -36,7 +36,7 @@ module Tests = TestUtil.DiffBasedTests(
       "pm_unreachable_nesting1.scilla";
       "pm_unreachable_nesting2.scilla";
     ]
-    let use_stdlib = true
+    let exit_code : Unix.process_status = WEXITED 1
   end)
 
 let all_tests env = "pm_check_fail_tests" >::: [Tests.add_tests env]

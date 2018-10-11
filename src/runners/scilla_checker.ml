@@ -59,28 +59,28 @@ let check_parsing ctr =
         pure cmod
 
 (* Type check the contract with external libraries *)
-let check_typing cmod elibs =
+let check_typing cmod elibs pp_json =
   let open TC in
   let res = type_module cmod recursion_principles elibs in
   match res with
-  | Error msgs -> pout @@ scilla_error_to_jstring msgs; res
+  | Error msgs -> pout @@ scilla_error_to_string msgs pp_json; res
   | Ok typed_module -> pure @@ typed_module
 
-let check_patterns e =
+let check_patterns e pp_json =
   let res = PMC.pm_check_module e in
   match res with
-  | Error msg -> pout @@ scilla_error_to_jstring msg; res
+  | Error msg -> pout @@ scilla_error_to_string msg pp_json; res
   | Ok pm_checked_module -> pure @@ pm_checked_module
 
-let check_sanity c =
+let check_sanity c pp_json =
   let res = SC.contr_sanity c in
   match res with
-  | Error msg -> pout @@ scilla_error_to_jstring msg; res
+  | Error msg -> pout @@ scilla_error_to_string msg pp_json; res
   | Ok _ -> pure ()
 
-let check_events_info einfo =
+let check_events_info einfo pp_json =
   match einfo with
-  | Error msg -> pout @@ scilla_error_to_jstring msg; einfo
+  | Error msg -> pout @@ scilla_error_to_string msg pp_json; einfo
   | Ok _ -> einfo
 
 let () =
@@ -98,14 +98,15 @@ let () =
       if lib_dirs = [] then stdlib_not_found_err ();
       (* Import whatever libs we want. *)
       let elibs = import_libs cmod.elibs in
-      let%bind (typed_cmod, tenv) = check_typing cmod elibs in
-      let%bind pm_checked_cmod = check_patterns typed_cmod in
-      let%bind _ = check_sanity pm_checked_cmod.contr in
-      let%bind event_info = check_events_info @@ EI.event_info pm_checked_cmod.contr in
+      let pp_json = cli.json_errors in
+      let%bind (typed_cmod, tenv) = check_typing cmod elibs pp_json in
+      let%bind pm_checked_cmod = check_patterns typed_cmod pp_json in
+      let%bind _ = check_sanity pm_checked_cmod.contr pp_json in
+      let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr) pp_json in
       pure @@ (cmod, tenv, event_info)
     ) in
     match r with
-    | Error el -> () (* we've already printed the error(s). *)
+    | Error el -> exit 1 (* we've already printed the error(s). *)
     | Ok (cmod, _, event_info) ->
       pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr event_info));
 

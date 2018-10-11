@@ -64,6 +64,7 @@ let () =
       (match res with
       | Ok _ ->
           printf "%s\n" (Eval.pp_result res lib_fnames)
-      | Error (el, gas_remaining) -> pout @@ scilla_error_gas_jstring gas_remaining el)
+      | Error (el, gas_remaining) -> (pout @@ scilla_error_gas_jstring gas_remaining el); exit 1)
   | Some _ | None ->
-      pout @@ scilla_error_gas_jstring gas_limit (mk_error0 ("Failed to parse input file." ^ filename))
+      (pout @@ scilla_error_gas_jstring gas_limit (mk_error0 ("Failed to parse input file." ^ filename));
+      exit 1)
