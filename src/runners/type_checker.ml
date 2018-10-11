@@ -75,6 +75,7 @@ let () =
     let open GlobalConfig in
     StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
     set_debug_level Debug_None;
+    let pp_json = cli.json_errors in
     let filename = cli.input_file in
     match FrontEndParser.parse_file ScillaParser.exps filename with
     | Some [e] ->
@@ -87,8 +88,9 @@ let () =
          | Ok ((_, (e_typ, _)) as typed_erep) ->
              (match check_patterns typed_erep with
               | Ok _ -> printf "%s\n" (pp_typ e_typ.tp)
-              | Error el -> pout @@ scilla_error_to_jstring el
+              | Error el -> (pout @@ scilla_error_to_string el pp_json; exit 1)
              )
-         | Error el -> pout @@ scilla_error_to_jstring el)
+         | Error el -> (pout @@ scilla_error_to_string el pp_json); exit 1)
     | Some _ | None ->
-        pout @@ scilla_error_to_jstring (mk_error0 "Failed to parse input file")
+        (pout @@ scilla_error_to_string (mk_error0 "Failed to parse input file") pp_json;
+        exit 1)

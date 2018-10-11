@@ -55,7 +55,7 @@ module type TestSuiteInput = sig
   val gold_path : string -> string -> string list
   val test_path : string -> string list
   val runner : string
-  val use_stdlib : bool
+  val exit_code : Unix.process_status
 end
 
 module DiffBasedTests(Input : TestSuiteInput) = struct
@@ -84,17 +84,22 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         Printf.printf "Updated gold for test %s\n" input_file);
       in
       let libdir = FilePath.make_relative dir (env.stdlib_dir test_ctxt) in
-      let args = if use_stdlib then ["-libdir";libdir;input_file] else [input_file] in
+      let use_stdlib = 
+        (* don't pass on stdlib option if it's already in env. *)
+        match Sys.getenv_opt GlobalConfig.StdlibTracker.scilla_stdlib_env with
+        | Some _ -> false | None -> true
+      in
+      let args = if use_stdlib then ["-libdir";libdir;"-jsonerrors";input_file] else [input_file] in
       (if (env.print_cli test_ctxt) then
         if use_stdlib then
-          (Printf.printf "\nUsing CLI: %s %s %s %s\n" runner "-libdir" libdir input_file)
+          (Printf.printf "\nUsing CLI: %s %s %s %s %s\n" runner "-libdir" libdir "-jsonerrors" input_file)
         else
           (Printf.printf "\nUsing CLI: %s %s\n" runner input_file));
       let update_gold = env.update_gold test_ctxt in
       if update_gold then
-        assert_command ~foutput:output_updater ~chdir:dir ~ctxt:test_ctxt evalbin (args)
+        assert_command ~exit_code:exit_code ~use_stderr:true ~foutput:output_updater ~chdir:dir ~ctxt:test_ctxt evalbin (args)
       else
-        assert_command ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (args)) in
+        assert_command ~exit_code:exit_code ~use_stderr:true ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (args)) in
     test :: build_exp_tests env r
 
   let add_tests env =
