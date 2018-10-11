@@ -81,12 +81,10 @@ let parse_cli () =
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
   let () = Arg.parse speclist anon_handler ("Usage:\n" ^ usage) in
-
-  if !r_input_file = "" || !r_stdlib_dir = "" then
+  if !r_input_file = "" then
     (DebugMessage.perr @@ "Usage:\n" ^ Sys.argv.(0) ^ usage ^ "\n"; exit 1);
-
-  let stdlib_dirs = String.split_on_char ';' !r_stdlib_dir in
-    { input_file = !r_input_file; stdlib_dirs = stdlib_dirs; simple_errors = !r_simple_errors }
+  let stdlib_dirs = if !r_stdlib_dir = "" then [] else String.split_on_char ';' !r_stdlib_dir in
+  { input_file = !r_input_file; stdlib_dirs = stdlib_dirs; simple_errors = !r_simple_errors }
 
 let stdlib_not_found_err () =
   DebugMessage.perr @@ sprintf "\n%s\n"
