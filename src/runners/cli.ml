@@ -48,6 +48,9 @@ let process_trace () =
 let process_pplit () =
   if !b_pp_lit then GlobalConfig.set_pp_lit true else GlobalConfig.set_pp_lit false
 
+let process_json_errors () =
+  GlobalConfig.set_use_json_errors !b_json_errors
+
 let validate_main () =
   let msg = 
     (* init.json is mandatory *)
@@ -97,7 +100,6 @@ type ioFiles = {
     input : string;
     libdirs : string list;
     gas_limit : int;
-    json_errors : bool;
 }
 
 let parse () =
@@ -119,7 +121,8 @@ let parse () =
   let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
   let () = process_trace() in
   let () = process_pplit() in
+  let () = process_json_errors() in
   let () = validate_main () in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input;
-     libdirs = !d_libs; gas_limit = !v_gas_limit; json_errors = !b_json_errors}
+     libdirs = !d_libs; gas_limit = !v_gas_limit;}

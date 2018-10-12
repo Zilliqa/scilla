@@ -227,6 +227,9 @@ builtin_args :
 ident :
 | i = ID { Ident(i, toLoc $startpos) }
 
+cident :
+| c = CID { Ident(c, toLoc $startpos) }
+
 type_annot:
 | COLON; t = typ { t }
 
@@ -309,7 +312,7 @@ lmodule :
 | l = library; EOF { l }
 
 imports :
-| IMPORT; els = list(CID) { List.map (fun c -> asIdL c (toLoc $startpos)) els }
+| IMPORT; els = list(cident) { els }
 | { [] }
 
 cmodule:
