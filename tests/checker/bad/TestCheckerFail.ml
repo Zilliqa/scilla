@@ -38,5 +38,5 @@ module Tests = TestUtil.DiffBasedTests(
       "homonymous_vars2.scilla";
       "homonymous_vars3.scilla"
     ]
-    let use_stdlib = true
+    let exit_code : Unix.process_status = WEXITED 1
   end)

@@ -28,5 +28,5 @@ module Tests = TestUtil.DiffBasedTests(
       "crowdfunding.scilla"; "zil-game.scilla"; "fungible-token.scilla"; "auction.scilla";
       "empty.scilla"; "schnorr.scilla"
     ]
-    let use_stdlib = true
+    let exit_code : Unix.process_status = WEXITED 0
   end)
