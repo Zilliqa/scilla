@@ -64,6 +64,10 @@ module ScillaMoneyFlowChecker
   open TypedSyntax
   (*   open SCU *)
 
+  (*******************************************************)
+  (*     Initial traversal: Set every tag to Plain       *)
+  (*******************************************************)
+  
   (* Lift Ident (n, rep) to Ident (n, (Plain, rep)) *)
   let add_plain_to_ident i =
     match i with
@@ -214,5 +218,49 @@ module ScillaMoneyFlowChecker
       MFSyntax.elibs = elibs;
       MFSyntax.contr = mf_init_tag_contract contr }
   
+  (*******************************************************)
+  (*                  Find fixpoint                      *)
+  (*******************************************************)
+
+  let rec mf_tag_expr (erep : MFSyntax.expr_annot) field_env local_env =
+    let (e, (tag, rep)) = erep in
+    let (new_e, new_tag) = 
+      match e with
+      | Literal _ -> (e, tag)
+      | Var i ->
+          (match Hashtbl.find_opt local_env i with
+           | Some t -> (e, t)
+           | None   ->
+               (match Hashtbl.find_opt field_env i with
+                | Some t -> (e, t)
+                | None   -> (e, tag)))
+      | Fun (arg, t, body) ->
+          let (x, x_tag) =
+            match arg with
+            | Ident (v, (tag, _)) -> (v, tag) in
+          let local_env_cp = Hashtbl.copy local_env in
+          let new_local_env = Hashtbl.add local_env_cp x x_tag in
+          match mf_tag_expr body with
+          | (_, (b_tag, _)) as b ->
+              
+      | App (f, actuals) ->
+      | Builtin (i, actuals) ->
+      | Let (i, topt, lhs, rhs) ->
+      | Constr (cname, ts, actuals) ->
+      | MatchExpr (x, clauses) ->
+      | Fixpoint (f, t, body) ->
+      | TFun (tvar, body) ->
+      | TApp (tf, arg_types) ->
+      | Message bs ->    in
+    (new_e, (new_tag, rep))
+
+  (*******************************************************)
+  (*                Main entry function                  *)
+  (*******************************************************)
+
+  let main cmod =
+    let init_mod = mf_init_tag_module cmod in
+    init_mod
+
 end
 
