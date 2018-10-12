@@ -57,6 +57,7 @@ let rec build_contract_tests env name ecode i n =
               "-gaslimit"; Core.Int.to_string testsuit_gas_limit;
               "-imessage"; dir ^ "message_" ^ (i_to_s i) ^ ".json";
               "-istate" ; dir ^ "state_" ^ (i_to_s i) ^ ".json";
+              "-jsonerrors";
               "-iblockchain" ; dir ^ "blockchain_" ^ (i_to_s i) ^ ".json"] in
         (if (env.print_cli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));
         let scillabin = env.bin_dir test_ctxt ^ sep ^ "scilla-runner" in
@@ -109,6 +110,7 @@ let build_contract_init_test env name =
                   "-libdir"; "src" ^ sep ^ "stdlib";
                   "-i"; dir ^ "contract.scilla";
                   "-o"; output_file;
+                  "-jsonerrors";
                   "-gaslimit"; Core.Int.to_string testsuit_gas_limit;
                   "-iblockchain"; dir ^ "blockchain_1.json";]
             in
@@ -142,6 +144,7 @@ let build_misc_tests env =
       (fun test_ctxt ->
         let args = ["-init"; tests_dir_file env.tests_dir test_ctxt "init_bad1.json";
                     "-libdir"; "src" ^ sep ^ "stdlib";
+                    "-jsonerrors";
                     "-i"; tests_dir_file env.tests_dir test_ctxt "contract.scilla";
                     "-o"; output_file test_ctxt "init_bad1_output.json";
                     "-iblockchain"; tests_dir_file env.tests_dir test_ctxt "blockchain_1.json"]
@@ -156,6 +159,7 @@ let build_misc_tests env =
       (fun test_ctxt ->
         let args = ["-init"; tests_dir_file env.tests_dir test_ctxt "init_bad1.json";
                     "-libdir"; "src" ^ sep ^ "stdlib";
+                    "-jsonerrors";
                     "-i"; tests_dir_file env.tests_dir test_ctxt "contract.scilla";
                     "-o"; output_file test_ctxt "init_bad2_output.json";
                     "-iblockchain"; tests_dir_file env.tests_dir test_ctxt "blockchain_1.json"]

@@ -78,7 +78,7 @@ module Tests = TestUtil.DiffBasedTests(
       "to_int.scilla";
       "zip.scilla";
     ]
-    let use_stdlib = true
+    let exit_code : Unix.process_status = WEXITED 0
   end)
 
 let all_tests env = "type_check_success_tests" >::: [type_equiv_tests;Tests.add_tests env]
