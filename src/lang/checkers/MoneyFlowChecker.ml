@@ -221,7 +221,7 @@ module ScillaMoneyFlowChecker
   (*******************************************************)
   (*                  Find fixpoint                      *)
   (*******************************************************)
-
+(*
   let rec mf_tag_expr (erep : MFSyntax.expr_annot) field_env local_env =
     let (e, (tag, rep)) = erep in
     let (new_e, new_tag) = 
@@ -240,9 +240,9 @@ module ScillaMoneyFlowChecker
             | Ident (v, (tag, _)) -> (v, tag) in
           let local_env_cp = Hashtbl.copy local_env in
           let new_local_env = Hashtbl.add local_env_cp x x_tag in
-          match mf_tag_expr body with
-          | (_, (b_tag, _)) as b ->
-              
+          (match mf_tag_expr body with
+           | (_, (b_tag, _)) as b ->
+               (
       | App (f, actuals) ->
       | Builtin (i, actuals) ->
       | Let (i, topt, lhs, rhs) ->
@@ -253,7 +253,7 @@ module ScillaMoneyFlowChecker
       | TApp (tf, arg_types) ->
       | Message bs ->    in
     (new_e, (new_tag, rep))
-
+*)
   (*******************************************************)
   (*                Main entry function                  *)
   (*******************************************************)
