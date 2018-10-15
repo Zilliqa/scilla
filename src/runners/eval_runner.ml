@@ -56,7 +56,7 @@ let () =
         (match envres gas_limit with
         | Ok (env', gas_remaining) -> env', gas_remaining
         | Error (err, gas_remaining) ->
-          pout @@ scilla_error_gas_jstring gas_remaining err;
+          pout @@ scilla_error_gas_string gas_remaining err;
           exit 1;) in
       let lib_fnames = List.map (fun (name, _) -> name) env in
       let res' = Eval.exp_eval_wrapper e env in
@@ -64,7 +64,6 @@ let () =
       (match res with
       | Ok _ ->
           printf "%s\n" (Eval.pp_result res lib_fnames)
-      | Error (el, gas_remaining) -> (pout @@ scilla_error_gas_jstring gas_remaining el); exit 1)
-  | Some _ | None ->
-      (pout @@ scilla_error_gas_jstring gas_limit (mk_error0 ("Failed to parse input file." ^ filename));
-      exit 1)
+      | Error (el, gas_remaining) -> (pout @@ scilla_error_gas_string gas_remaining el ); exit 1)
+  | Some _ | None -> (* Error is printed by the parser. *)
+      exit 1
