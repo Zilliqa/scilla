@@ -18,6 +18,7 @@
 
 
 open Syntax
+open ErrorUtils
 open ParserUtil
 open Core
 open Yojson
@@ -34,7 +35,9 @@ module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
 
 open JSONTypeUtilities
 
-exception Invalid_json of string
+exception Invalid_json of scilla_error list
+
+let mk_invalid_json msg = Invalid_json (mk_error0 msg)
 
 (****************************************************************)
 (*                    Exception wrappers                        *)
@@ -43,13 +46,13 @@ exception Invalid_json of string
 let parse_typ_exn t = 
   (try FrontEndParser.parse_type t
     with _ ->
-      raise (Invalid_json (sprintf "Invalid type in json: %s\n" t)))
+      raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t)))
 
 let member_exn m j =
   let open Basic.Util in
   let v = member m j in
   match v with
-  | `Null -> raise (Invalid_json ("Member '" ^ m ^ "' not found in json"))
+  | `Null -> raise (mk_invalid_json ("Member '" ^ m ^ "' not found in json"))
   | j -> j
 
 (* Given a literal, return its full type name *)
@@ -64,7 +67,7 @@ let literal_type_exn l =
 let build_prim_lit_exn t v =
   let exn_wrapper t v r = 
     match v with
-    | None -> raise (Invalid_json ("Invalid " ^ (pp_typ t) ^ " value " ^ r ^ " in JSON"))
+    | None -> raise (mk_invalid_json ("Invalid " ^ (pp_typ t) ^ " value " ^ r ^ " in JSON"))
     | Some v' -> v'
   in
     exn_wrapper t (build_prim_literal t v) v
@@ -88,13 +91,13 @@ let rec json_to_adtargs cname tlist ajs =
     if provided <> expected then
       let p = Int.to_string provided in
       let e = Int.to_string expected in
-      raise (Invalid_json ("Malformed ADT constructor " ^ cname ^ 
+      raise (mk_invalid_json ("Malformed ADT constructor " ^ cname ^ 
         ": expected " ^ e ^ " args, but provided " ^ p ^ "."))
   in
   let dt =
   (match DataTypeDictionary.lookup_constructor cname with
   | Error emsg ->
-    raise (Invalid_json(emsg))
+    raise (Invalid_json (emsg))
   | Ok (r, _) ->
     r
   ) in
@@ -141,14 +144,14 @@ let rec json_to_adtargs cname tlist ajs =
     let lit = read_adt_json dt.tname j tlist in
       ADTValue (cname, [], lit::[])
   | _ ->
-    raise (Invalid_json ("JSON parsing: Unsupported ADT type"))
+    raise (mk_invalid_json ("JSON parsing: Unsupported ADT type"))
 
 and read_adt_json name j tlist_verify =
   let open Basic.Util in
   let dt =
   (match DataTypeDictionary.lookup_name name with
     | Error emsg ->
-      raise (Invalid_json(emsg))
+      raise (Invalid_json (emsg))
     | Ok r ->
       r
     ) in
@@ -158,17 +161,17 @@ and read_adt_json name j tlist_verify =
       let dt' =
       (match DataTypeDictionary.lookup_constructor constr with
       | Error emsg ->
-        raise (Invalid_json(emsg))
+        raise (Invalid_json (emsg))
       | Ok (r, _) ->
         r
       ) in
       if (dt <> dt') then
-        raise (Invalid_json ("ADT type " ^ dt.tname ^ " does not match constructor " ^ constr));
+        raise (mk_invalid_json ("ADT type " ^ dt.tname ^ " does not match constructor " ^ constr));
       let argtypes = member_exn "argtypes" j |> to_list in
       let arguments = member_exn "arguments" j |> to_list in
       let tlist = json_to_adttyps argtypes in
         json_to_adtargs constr tlist arguments
-  | _ -> raise (Invalid_json ("JSON parsing: error parsing ADT " ^ name))
+  | _ -> raise (mk_invalid_json ("JSON parsing: error parsing ADT " ^ name))
   in
   (* match tlist1 with adt's tlist. *)
   let verify_exn name tlist1 adt =
@@ -178,9 +181,9 @@ and read_adt_json name j tlist_verify =
       else
       let expected = pp_typ_list tlist1 in
       let observed = pp_typ_list tlist2 in
-      raise (Invalid_json ("Type mismatch in parsing ADT " ^ name ^ 
+      raise (mk_invalid_json ("Type mismatch in parsing ADT " ^ name ^ 
                 ". Expected: " ^ expected ^ " vs Observed: " ^ observed))
-    | _ -> raise (Invalid_json ("Type mismatch in parsing ADT " ^ name))
+    | _ -> raise (mk_invalid_json ("Type mismatch in parsing ADT " ^ name))
   in
     (* verify built ADT *)
     verify_exn name tlist_verify res;
@@ -195,7 +198,7 @@ and read_map_json kt vt j =
      let kvallist = mapvalues_from_json kt vt vli (List.length vli) in
      Map ((kt, vt), kvallist)
   | `Null -> Map ((kt, vt), Caml.Hashtbl.create 0)
-  | _ -> raise (Invalid_json ("JSON parsing: error parsing Map"))
+  | _ -> raise (mk_invalid_json ("JSON parsing: error parsing Map"))
  
 and mapvalues_from_json kt vt l size = 
   let open Basic.Util in
@@ -206,7 +209,7 @@ and mapvalues_from_json kt vt l size =
         (match kt with
          | PrimType _ ->
             build_prim_lit_exn kt (to_string kjson)
-         | _ -> raise (Invalid_json ("Key in Map JSON is not a PrimType"))
+         | _ -> raise (mk_invalid_json ("Key in Map JSON is not a PrimType"))
          ) in
       let vjson = member_exn "val" first in
       let vallit =
@@ -218,7 +221,7 @@ and mapvalues_from_json kt vt l size =
               vl
          | PrimType _ ->
             build_prim_lit_exn vt (to_string vjson)
-         | _ -> raise (Invalid_json ("Unknown type in Map value in JSON"))
+         | _ -> raise (mk_invalid_json ("Unknown type in Map value in JSON"))
         ) in
         let m = mapvalues_from_json kt vt remaining size in
           let _ = Caml.Hashtbl.replace m keylit vallit in

@@ -19,6 +19,7 @@
 
 open Syntax
 open Core
+open ErrorUtils
 open EvalUtil
 open MonadUtil
 open EvalMonad
@@ -44,31 +45,35 @@ let reserved_names =
 let pp_result r exclude_names = 
   let enames = List.append exclude_names reserved_names in
   match r with
-  | Error (s, _) -> s
+  | Error (s, _) -> sprint_scilla_error_list s
   | Ok ((e, env), _) ->
       let filter_prelude = fun (k, _) ->
         not (List.mem enames k ~equal:(fun s1 s2 -> s1 = s2))
       in
       sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
 
+(* Makes sure that the literal has no closures in it *)
+(* TODO: Augment with deep checking *)
+let rec is_pure_literal l = match l with
+  | Clo _ -> false
+  | TAbs _ -> false
+  | Msg es -> List.for_all es ~f:(fun (_, l') -> is_pure_literal l')
+  | ADTValue (_, _, es) -> List.for_all es ~f:(fun e -> is_pure_literal e)
+  (* | Map (_, ht) ->
+   *     let es = Caml.Hashtbl.to_alist ht in
+   *     List.for_all es ~f:(fun (k, v) -> is_pure_literal k && is_pure_literal v) *)
+  | _ -> true
+
 (* Serializable literals *)
 let is_serializable_literal l = match l with
-  | Msg _ | ADTValue _ | Map _ -> false
+  | Msg _ | ADTValue _ | Map _ | Clo _ | TAbs _ -> false
   | _ -> true
 
 (* Sanitize before storing into a message *)
 let sanitize_literal l =
   if is_serializable_literal l
   then pure l
-  else fail @@ sprintf "Cannot serialize literal %s" (pp_literal l)
-
-let vals_to_literals vals =
-  mapM vals ~f:(fun arg -> match arg with
-      | Env.ValLit l -> pure l
-      | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
-          fail @@
-          sprintf "Closure arguments in ADT are not supported: %s."
-            (Env.pp_value arg))
+  else fail0 @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
@@ -78,7 +83,7 @@ let rec exp_eval erep env =
   let (e, _) = erep in
   match e with
   | Literal l ->
-      pure (Env.ValLit l, env)
+      pure (l, env)
   | Var i ->
       let%bind v = Env.lookup env i in
       pure @@ (v, env)
@@ -86,30 +91,27 @@ let rec exp_eval erep env =
       let%bind (lval, _) = exp_eval_wrapper lhs env in
       let env' = Env.bind env (get_id i) lval in
       exp_eval_wrapper rhs env'
-  | Message bs as m ->
+  | Message bs ->
       (* Resolve all message payload *)
       let resolve pld = match pld with
         | MTag s -> pure @@ (StringLit s)
-        | MLit l  -> sanitize_literal l
+        | MLit l -> sanitize_literal l
         | MVar i ->
             let%bind v = Env.lookup env i in
-            (match v with
-             | ValLit l -> sanitize_literal l
-             (* Closures are not sendable by messages *)
-             | (ValClosure _ | ValFix _ | ValTypeClosure _) as v ->
-                 fail @@ sprintf
-                   "Cannot store a closure\n%s\nas %s\nin a message\n%s."
-                   (Env.pp_value v)
-                   (get_id i)
-                   (pp_expr m))
+            sanitize_literal v
       in
       let%bind payload_resolved =
         (* Make sure we resolve all the payload *)
         mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ resolve pld) in
-      pure (Env.ValLit (Msg payload_resolved), env)
-  | Fun (arg, t, body) ->
-      let clo = Env.ValClosure (arg, t, body, env) in
-      pure (clo, env)
+      pure (Msg payload_resolved, env)
+  | Fun (formal, _, body) ->
+      (* Apply to an argument *)
+      let runner arg = 
+        let env1 = Env.bind env (get_id formal) arg in
+        let%bind (v, _) = exp_eval_wrapper body env1 in
+        pure v
+      in      
+      pure (Clo runner, env)
   | App (f, actuals) ->
       (* Resolve the actuals *)
       let%bind args =
@@ -120,8 +122,6 @@ let rec exp_eval erep env =
         List.fold_left args ~init:(pure ff)
           ~f:(fun res arg ->
               let%bind v = res in
-              (* printf "Value to be applied: %s\n" (Env.pp_value v);
-               * printf "Argument: %s\n\n" (Env.pp_value arg); *)
               try_apply_as_closure v arg) in
       pure (fully_applied, env)          
   | Constr (cname, ts, actuals) ->
@@ -129,7 +129,7 @@ let rec exp_eval erep env =
       let%bind (_, constr) = fromR @@ lookup_constructor cname in
       let alen = List.length actuals in
       if (constr.arity <> alen)
-      then fail @@ sprintf
+      then fail0 @@ sprintf
           "Constructor %s expects %d arguments, but got %d."
           cname constr.arity alen
       else
@@ -137,16 +137,15 @@ let rec exp_eval erep env =
         let%bind args =
           mapM actuals ~f:(fun arg -> Env.lookup env arg) in
         (* Make sure we only pass "pure" literals, not closures *)
-        let%bind arg_literals = vals_to_literals args in
-        let lit = ADTValue (cname, ts, arg_literals) in
-        pure (Env.ValLit lit, env)
+        let lit = ADTValue (cname, ts, args) in
+        pure (lit, env)
   | MatchExpr (x, clauses) ->
       let%bind v = Env.lookup env x in
       (* Get the branch and the bindings *)
       let%bind ((_, e_branch), bnds) =
         tryM clauses
           (* TODO: add location info to error message. *)
-          ~msg:(sprintf "Match expression failed. No clause matched.")
+          ~msg:(fun () -> mk_error0(sprintf "Match expression failed. No clause matched."))
           ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env
@@ -154,16 +153,25 @@ let rec exp_eval erep env =
       exp_eval_wrapper e_branch env'      
   | Builtin (i, actuals) ->
       let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
-      let%bind arg_literals = vals_to_literals args in
-      let%bind tps = fromR @@ MonadUtil.mapM arg_literals ~f:literal_type in
-      let%bind res = builtin_executor i tps arg_literals in
-      pure (Env.ValLit res, env)
-  | Fixpoint (f, t, body) ->
-      let fix = Env.ValFix (f, t, body, env) in
-      pure (fix, env)
-  | TFun (tvar, body) ->
-      let tclo = Env.ValTypeClosure (tvar, body, env) in
-      pure (tclo, env)
+      let%bind tps = fromR @@ MonadUtil.mapM args ~f:literal_type in
+      let%bind res = builtin_executor i tps args in
+      pure (res, env)
+  | Fixpoint (g, _, body) ->
+      let rec fix arg =
+        let env1 = Env.bind env (get_id g) clo_fix in
+        let%bind (fbody, _) = exp_eval_wrapper body env1 in
+        match fbody with
+        | Clo f -> f arg
+        | _ -> fail0 "Cannot apply fxpoint argument to a value"
+      and clo_fix = Clo fix          
+      in pure (clo_fix, env)
+  | TFun (tv, body) ->
+      let typer arg_type =
+        let body_subst = subst_type_in_expr tv arg_type body in
+        let%bind (v, _) = exp_eval_wrapper body_subst env in
+        pure v
+      in      
+      pure (TAbs typer, env)
   | TApp (tf, arg_types) ->
       let%bind ff = Env.lookup env tf in
       let%bind fully_applied =
@@ -175,40 +183,24 @@ let rec exp_eval erep env =
 (* Applying a function *)
 and try_apply_as_closure v arg =
   match v with
-  | Env.ValLit _ ->
-      fail @@ sprintf "Not a functional value: %s." (Env.pp_value v)
-  | Env.ValClosure (formal, _, body, env) ->
-      (* TODO: add runtime type-checking *)
-      let env1 = Env.bind env (get_id formal) arg in
-      let%bind (v, _) = exp_eval_wrapper body env1 in
-      pure v
-  | Env.ValFix (g, _, body, env) ->
-      let env1 = Env.bind env (get_id g) v in
-      let%bind (v, _) = exp_eval_wrapper body env1 in
-      (match v with
-       | Env.ValClosure (formal, _, cbody, cenv) ->
-           let env2 = Env.bind cenv (get_id formal) arg in
-           let%bind (v, _) = exp_eval_wrapper cbody env2 in
-           pure v
-       | _ ->  fail @@ sprintf "A fixpoint should take a function as a body")
-  | Env.ValTypeClosure _ ->
-      fail @@ sprintf "Cannot apply a type closure to a value argument: %s." (Env.pp_value arg)
+  | Clo clo -> clo arg
+  |  _ ->
+      fail0 @@ sprintf "Not a functional value: %s." (Env.pp_value v)
 
 and try_apply_as_type_closure v arg_type =
   match v with
-  | Env.ValTypeClosure (tv, body, env) ->
-      let body_subst = subst_type_in_expr tv arg_type body in
-      let%bind (v, _) = exp_eval_wrapper body_subst env in
-      pure v      
+  | TAbs tclo -> tclo arg_type
   | _ ->
-      fail @@ sprintf "Not a type closure: %s." (Env.pp_value v)
+      fail0 @@ sprintf "Not a type closure: %s." (Env.pp_value v)
 
 (* Adding gas cost to the reduction *)
 and exp_eval_wrapper expr env =
+  let (_, eloc) = expr in
   let thunk () = exp_eval expr env in
   let%bind cost = fromR @@ EvalGas.expr_static_cost expr in
   let emsg = sprintf "Ran out of gas.\n" in
-  checkwrap_op thunk cost emsg
+  (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
+  checkwrap_op thunk cost (mk_error1 emsg eloc)
 
 
 open EvalSyntax
@@ -218,33 +210,33 @@ open EvalSyntax
 let rec stmt_eval conf stmts =
   match stmts with
   | [] -> pure conf
-  | (s, _) :: sts -> (match s with
+  | (s, sloc) :: sts -> (match s with
       | Load (x, r) ->
           let%bind (l, scon) = Configuration.load conf r in
-          let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
-          let%bind _ = stmt_gas_wrap scon in
+          let conf' = Configuration.bind conf (get_id x) l in
+          let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | Store (x, r) ->
           let%bind v = Configuration.lookup conf r in
           let%bind (conf', scon) = Configuration.store conf (get_id x) v in
-          let%bind _ = stmt_gas_wrap scon in
+          let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | Bind (x, e) ->
           let%bind (lval, _) = exp_eval_wrapper e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
-          let%bind _ = stmt_gas_wrap G_Bind in
+          let%bind _ = stmt_gas_wrap G_Bind sloc in
           stmt_eval conf' sts
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
-          let conf' = Configuration.bind conf (get_id x) (Env.ValLit l) in
-          let%bind _ = stmt_gas_wrap G_ReadFromBC in
+          let conf' = Configuration.bind conf (get_id x) l in
+          let%bind _ = stmt_gas_wrap G_ReadFromBC sloc in
           stmt_eval conf' sts                            
       | MatchStmt (x, clauses) ->
           let%bind v = Env.lookup conf.env x in 
           let%bind ((_, branch_stmts), bnds) =
             tryM clauses
-              ~msg:(sprintf "Value %s\ndoes not match any clause of\n%s."
-                      (Env.pp_value v) (pp_stmt s))
+              ~msg:(fun () -> mk_error0 (sprintf "Value %s\ndoes not match any clause of\n%s."
+                      (Env.pp_value v) (pp_stmt s)))
               ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in 
           (* Update the environment for the branch *)
           let conf' = List.fold_left bnds ~init:conf
@@ -252,25 +244,25 @@ let rec stmt_eval conf stmts =
           let%bind conf'' = stmt_eval conf' branch_stmts in
           (* Restore initial immutable bindings *)
           let cont_conf = {conf'' with env = conf.env} in
-          let%bind _ = stmt_gas_wrap (G_MatchStmt (List.length clauses)) in
+          let%bind _ = stmt_gas_wrap (G_MatchStmt (List.length clauses)) sloc in
           stmt_eval cont_conf sts
       | AcceptPayment ->
           let%bind conf' = Configuration.accept_incoming conf in
-          let%bind _ = stmt_gas_wrap G_AcceptPayment in
+          let%bind _ = stmt_gas_wrap G_AcceptPayment sloc in
           stmt_eval conf' sts
       (* Caution emitting messages does not change balance immediately! *)      
       | SendMsgs ms ->
           let%bind ms_resolved = Configuration.lookup conf ms in
           let%bind (conf', scon) = Configuration.send_messages conf ms_resolved in
-          let%bind _ = stmt_gas_wrap scon in
+          let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | CreateEvnt params ->
           let%bind eparams_resolved = Configuration.lookup conf params in
           let%bind (conf', scon) = Configuration.create_event conf eparams_resolved in
-          let%bind _ = stmt_gas_wrap scon in
+          let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       (* TODO: Implement Throw *)
-      | Throw _ -> fail @@ sprintf "Throw statements are not supported yet."
+      | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
     )
 
 (*******************************************************)
@@ -290,7 +282,7 @@ let check_blockchain_entries entries =
   if c1 && c2 then
     pure entries
   else
-    fail @@sprintf "Mismatch in input blockchain variables:\nexpected:\n%s\nprovided:\n%s\n"
+    fail0 @@sprintf "Mismatch in input blockchain variables:\nexpected:\n%s\nprovided:\n%s\n"
       (pp_literal_map expected) (pp_literal_map entries)
 
 (*******************************************************)
@@ -328,13 +320,11 @@ let init_fields env fs =
   let init_field fname _t fexp =
     let%bind (v, _) = exp_eval_wrapper fexp env in
     match v with
-    | Env.ValClosure _ | Env.ValFix _ | Env.ValTypeClosure _ ->
-        fail @@ sprintf "Closure cannot be stored in a field %s." fname
-    | Env.ValLit l -> pure (fname, l)
+    | l when is_pure_literal l -> pure (fname, l)
+    | _ -> fail0 @@ sprintf "Closure cannot be stored in a field %s." fname
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
-(* TODO: implement type-checking *)
 let init_contract clibs elibs cparams' cfields args init_bal  =
   (* All contracts take a few implicit parameters. *)
   let cparams = CU.append_implict_contract_params cparams' in
@@ -352,14 +342,12 @@ let init_contract clibs elibs cparams' cfields args init_bal  =
       (* For each parameter there is an argument *)
       List.exists args ~f:(fun a -> p = fst a)) in  
   if not (valid_args && valid_params)
-  then fail @@ sprintf
+  then fail0 @@ sprintf
       "Mismatch between the vector of arguments:\n%s\nand expected parameters%s\n"
       (pp_literal_map args) (pp_cparams cparams)
   else
-    (* Init parameters *)
-    let params = List.map args ~f:(fun (n, l) -> (n, Env.ValLit l)) in
     (* Fold params into already initialized libraries, possibly shadowing *)
-    let env = List.fold_left ~init:libenv params 
+    let env = List.fold_left ~init:libenv args
         ~f:(fun e (p, v) -> Env.bind e p v) in
     let%bind fields = init_fields env cfields in
     let balance = init_bal in
@@ -384,15 +372,16 @@ let create_cur_state_fields initcstate curcstate =
         (* Combine filtered list and curcstate *)
         pure (filtered_init @ curcstate)
   else
-    fail @@sprintf "Mismatch in input state variables:\nexpected:\n%s\nprovided:\n%s\n"
+    fail0 @@sprintf "Mismatch in input state variables:\nexpected:\n%s\nprovided:\n%s\n"
                    (pp_literal_map initcstate) (pp_literal_map curcstate)
 
 
 let literal_list_gas llit =
-  mapM ~f:(fun (_, lit) ->
-    let%bind c = fromR @@ EvalGas.literal_cost lit in
-    let dummy () = pure () in (* the literal is already created. *)
-    checkwrap_op dummy c "Ran out of gas") llit
+  mapM ~f:(fun (name, lit) ->
+      let%bind c = fromR @@ EvalGas.literal_cost lit in
+      let dummy () = pure () in (* the literal is already created. *)
+      checkwrap_op dummy c (mk_error0("Ran out of gas initializing " ^ name))
+    ) llit
 
 (* Initialize a module with given arguments and initial balance *)
 let init_module md initargs curargs init_bal bstate elibs =
@@ -424,7 +413,7 @@ let preprocess_message es =
 let get_transition ctr tag =
   let ts = ctr.ctrans in
   match List.find ts ~f:(fun t -> (get_id t.tname) = tag) with
-  | None -> fail @@ sprintf
+  | None -> fail0 @@ sprintf
         "No contract transition for tag %s found." tag
   | Some t ->
       let params = t.tparams in
@@ -444,7 +433,7 @@ let check_message_entries tparams_o entries =
   let uniq_entries = List.for_all entries
       ~f:(fun e -> (List.count entries ~f:(fun e' -> fst e = fst e')) = 1) in
   if not (valid_entries && uniq_entries && valid_params)
-  then fail @@ sprintf
+  then fail0 @@ sprintf
       "Duplicate entries or mismatch b/w message entries:\n%s\nand expected transition parameters%s\n"
       (pp_literal_map entries) (pp_cparams tparams)
   else
@@ -458,20 +447,20 @@ let prepare_for_message contr m =
       let%bind (tparams, tbody) = get_transition contr tag in
       let%bind tenv = check_message_entries tparams other in
       pure (tenv, incoming_amount, tbody)
-  | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal m)
+  | _ -> fail0 @@ sprintf "Not a message literal: %s." (pp_literal m)
 
 (* Subtract the amounts to be transferred *)
 let post_process_msgs cstate outs =
   (* Evey outgoing message should carry an "_amount" tag *)
   let%bind amounts = mapM outs ~f:(fun l -> match l with
       | Msg es -> fromR @@ MessagePayload.get_amount es
-      | _ -> fail @@ sprintf "Not a message literal: %s." (pp_literal l)) in
+      | _ -> fail0 @@ sprintf "Not a message literal: %s." (pp_literal l)) in
   let open Uint128 in
   let to_be_transferred = List.fold_left amounts ~init:zero
       ~f:(fun z a -> add z a) in
   let open ContractState in
   if (compare cstate.balance to_be_transferred) < 0
-  then fail @@ sprintf
+  then fail0 @@ sprintf
       "The balance is too low (%s) to transfer all the funds in the messages (%s)"
       (to_string cstate.balance) (to_string to_be_transferred)
   else
@@ -501,7 +490,7 @@ let handle_message contr cstate bstate m =
   let {env; fields; balance} = cstate in
   (* Add all values to the contract environment *)
   let actual_env = List.fold_left tenv ~init:env
-      ~f:(fun e (n, l) -> Env.bind e n (Env.ValLit l)) in
+      ~f:(fun e (n, l) -> Env.bind e n l) in
   let open Configuration in
 
   (* Create configuration *)  

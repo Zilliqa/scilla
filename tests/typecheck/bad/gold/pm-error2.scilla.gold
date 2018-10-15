@@ -1,4 +1,14 @@
-Type checking failed:
-[typecheck/bad/pm-error2.scilla:3:1] Type error in the initialiser of `f`:
-[typecheck/bad/pm-error2.scilla:4:3] Type error in pattern matching on `c` of type Bool (or one of its branches):
-Types don't match: pattern uses a constructor of type Option, but value of type Bool is given.
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in the initialiser of `f`:\nType error in pattern matching on `c` of type Bool (or one of its branches):\nTypes don't match: pattern uses a constructor of type Option, but value of type Bool is given.",
+      "start_location": {
+        "file": "typecheck/bad/pm-error2.scilla",
+        "line": 4,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

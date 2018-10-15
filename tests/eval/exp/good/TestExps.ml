@@ -35,7 +35,8 @@ let explist = [
   "builtin-rem.scilla";
   "builtin-rem2.scilla";
   "cons.scilla";
-  "fib.scilla";  
+  "fib.scilla";
+  "func_pair.scilla";
   "hash1.scilla";
   "hash2.scilla";  
   "hash3.scilla";
@@ -47,6 +48,14 @@ let explist = [
   "id.scilla";  
   "int_conversions.scilla";
   "int_to_nat.scilla";
+  "keccak256_1.scilla";
+  "keccak256_2.scilla";
+  "keccak256_3.scilla";
+  "keccak256_4.scilla";
+  "keccak256_5.scilla";
+  "ripemd160_1.scilla";
+  "ripemd160_2.scilla";
+  "ripemd160_5.scilla";
   "let-builtin.scilla";
   "let.scilla";
   "list_append.scilla";
@@ -107,7 +116,7 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["eval"; "exp"; "good"; f]
     let runner = "eval-runner"
     let tests = explist
-    let use_stdlib = true
+    let exit_code : Unix.process_status = WEXITED 0
 
   end)
 

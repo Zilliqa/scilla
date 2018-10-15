@@ -1,7 +1,14 @@
-Type checking failed:
-[typecheck/bad/folder-error.scilla:1:1] Type error in the initialiser of `list_map`:
-[typecheck/bad/folder-error.scilla:3:3] Type error in the initialiser of `folder`:
-Cannot elaborate expression of type
-('A -> 'B -> 'B) -> 'B -> List ('A) -> 'B
-applied, as a type function, to type arguments
-['A].
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in the initialiser of `list_map`:\nType error in the initialiser of `folder`:\nCannot elaborate expression of type\n('A -> 'B -> 'B) -> 'B -> List ('A) -> 'B\napplied, as a type function, to type arguments\n['A].",
+      "start_location": {
+        "file": "typecheck/bad/folder-error.scilla",
+        "line": 3,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

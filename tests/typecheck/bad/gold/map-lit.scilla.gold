@@ -1,4 +1,14 @@
-Type checking failed:
-[typecheck/bad/map-lit.scilla:8:1] Type error in the initialiser of `m2`:
-[typecheck/bad/map-lit.scilla:8:10] Type error in built-in application of `put`:
-[typecheck/bad/map-lit.scilla:8:18] Cannot find built-in with name "put" and argument types [Map (Uint32) (Uint32); Uint32; Uint64].
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in the initialiser of `m2`:\nType error in built-in application of `put`:\nCannot find built-in with name \"put\" and argument types [Map (Uint32) (Uint32); Uint32; Uint64].",
+      "start_location": {
+        "file": "typecheck/bad/map-lit.scilla",
+        "line": 8,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

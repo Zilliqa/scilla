@@ -19,6 +19,7 @@
 
 %{
   open Syntax
+  open ErrorUtils
   open ParserUtil
 
   open ParsedSyntax
@@ -143,9 +144,8 @@ simple_exp :
   { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) } 
 (* Application *)  
 | f = ID;
-  args = nonempty_list(ID)
-  { let xs = List.map (fun i -> Ident (i, toLoc $startpos)) args
-    in (App ((Ident (f, toLoc $startpos)), xs), toLoc $startpos ) }
+  args = nonempty_list(ident)
+  { (App ((Ident (f, toLoc $startpos)), args), toLoc $startpos ) }
 (* Atomic expression *)
 | a = atomic_exp {a} 
 (* Built-in call *)
@@ -155,17 +155,16 @@ simple_exp :
 | LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE
   { (Message es, toLoc $startpos) } 
 (* Data constructor application *)
-| c = CID ts=option(ctargs) args=list(ID)
+| c = CID ts=option(ctargs) args=list(ident)
   { let targs =
       (match ts with
        | None -> []
        | Some ls -> ls) in
-    let xs = List.map (fun i -> Ident (i, toLoc $startpos)) args in
-    (Constr (c, targs, xs), toLoc $startpos)
+    (Constr (c, targs, args), toLoc $startpos)
   }
 (* Match expression *)
 | MATCH; x = ID; WITH; cs=list(exp_pm_clause); END
-  { (MatchExpr (Ident (x, toLoc $startpos), cs), toLoc $startpos) }
+  { (MatchExpr (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos) }
 (* Type function *)
 | TFUN; i = TID ARROW; e = exp
   { (TFun (Ident (i, toLoc $startpos), e), toLoc $startpos) } 
@@ -222,9 +221,11 @@ msg_entry :
 | i = ID; COLON;  v = ID  { i,  MVar (asIdL v (toLoc $startpos(v))) }
 
 builtin_args :
-| args = nonempty_list(ID) 
-  { List.map (fun i -> Ident (i, dummy_loc)) args }
+| args = nonempty_list(ident) { args }
 | LPAREN; RPAREN { [] }
+
+ident :
+| i = ID { Ident(i, toLoc $startpos) }
 
 type_annot:
 | COLON; t = typ { t }
@@ -250,7 +251,7 @@ stmt:
 | SEND; m = ID;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | EVENT; m = ID; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | MATCH; x = ID; WITH; cs=list(stmt_pm_clause); END
-  { (MatchStmt (Ident (x, toLoc $startpos), cs), toLoc $startpos)  }
+  { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
 
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;
@@ -273,13 +274,13 @@ transition:
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
   ss = stmts;
   END;
-  { { tname = asIdL t (toLoc $startpos);
+  { { tname = t;
       tparams = params;
       tbody = ss } }
 
 trans_id:
-| c = CID {c};
-| i = ID {i};
+| c = CID { asIdL c (toLoc $startpos(c)) };
+| i = ID { asIdL i (toLoc $startpos(i)) };
 
 field:
 | FIELD; f = ID; COLON; t=typ;
@@ -291,7 +292,7 @@ contract:
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
   fs = list(field);
   ts = list(transition)
-  { { cname   = asIdL c (toLoc $startpos);
+  { { cname   = asIdL c (toLoc $startpos(c));
       cparams = params;
       cfields = fs;
       ctrans  = ts } }

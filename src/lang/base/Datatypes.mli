@@ -17,6 +17,7 @@
 *)
 
 open Syntax
+open ErrorUtils
 open Core
 
 (**********************************************************)
@@ -39,9 +40,9 @@ module DataTypeDictionary : sig
   (* Hiding the actual data type dicionary *)
 
   (*  Get ADT by name  *)
-  val lookup_name : string -> (adt, string) result
+  val lookup_name : string -> (adt, scilla_error list) result
   (*  Get ADT by the constructor  *)
-  val lookup_constructor : string -> (adt * constructor, string) result
+  val lookup_constructor : string -> (adt * constructor, scilla_error list) result
   (* Get typing map for a constructor *)
   val constr_tmap : adt -> string -> (typ list) option
   

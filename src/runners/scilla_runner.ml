@@ -19,6 +19,7 @@
 
 open Syntax
 open Core
+open ErrorUtils
 open EvalUtil
 open Eval
 open DebugMessage
@@ -33,7 +34,7 @@ open MonadUtil.EvalMonad
 (*          Checking initialized libraries          *)
 (****************************************************)
 
-let check_libs clibs elibs name gas_limit =
+let check_libs clibs elibs name gas_limit pp_json =
    let ls = init_libraries clibs elibs in
    (* Are libraries ok? *)
    match ls gas_limit with
@@ -45,19 +46,16 @@ let check_libs clibs elibs name gas_limit =
          name);
       gas_remaining
    | Error (err, gas_remaining) ->
-      perr (sprintf "\nFailed to initialize libraries:\n%s\n" err);
-      perr "Execution stopped";
-      gas_remaining
+      perr @@ scilla_error_gas_string gas_remaining err pp_json;
+      exit 1
 
 (****************************************************)
 (*     Checking initialized contract state          *)
 (****************************************************)
-let check_extract_cstate name res gas_limit = 
+let check_extract_cstate name res gas_limit pp_json = 
   match res gas_limit with
   | Error (err, remaining_gas) ->
-      perr (sprintf "Failed to initialize fields:\n%s\n" err);
-      perr (sprintf"Gas remaining:%s\n" (Int.to_string remaining_gas));
-      perr "Execution stopped";
+      perr @@ scilla_error_gas_string remaining_gas err pp_json;
       exit 1
   | Ok ((_, cstate), remaining_gas) ->
       plog (sprintf "[Initializing %s's fields]\nSuccess!\n"
@@ -68,12 +66,10 @@ let check_extract_cstate name res gas_limit =
 (*   Running the simularion and printing results     *)
 (*****************************************************)
 
-let check_after_step name res gas_limit =
+let check_after_step name res gas_limit pp_json =
   match res gas_limit with
   | Error (err, remaining_gas) ->
-      perr (sprintf "Failed to execute transition in %s:\n%s\n" name err);
-      perr (sprintf"Gas remaining:%s\n" (Int.to_string remaining_gas));
-      perr "Execution halted";
+      perr @@ scilla_error_gas_string remaining_gas err pp_json;
       exit 1
   | Ok ((cstate, outs, events), remaining_gas) ->
       plog (sprintf "Success! Here's what we got:\n" ^
@@ -90,11 +86,11 @@ let input_state_json filename =
   let match_balance ((vname : string), _) : bool = vname = balance_label in
   let bal_lit = match List.find states ~f:match_balance with
     | Some (_, lit) -> lit
-    | None -> raise (JSON.Invalid_json (balance_label ^ " field missing"))
+    | None -> raise (JSON.mk_invalid_json (balance_label ^ " field missing"))
   in
   let bal_int = match bal_lit with
     | UintLit (Uint128L x) -> x
-    | _ -> raise (JSON.Invalid_json (balance_label ^ " invalid"))
+    | _ -> raise (JSON.mk_invalid_json (balance_label ^ " invalid"))
   in
   let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
      no_bal_states, bal_int
@@ -149,13 +145,12 @@ let () =
         let elibs = import_libs cmod.elibs in
         (* Contract library. *)
         let clibs = cmod.libs in
-        let gas_remaining = check_libs clibs elibs cli.input cli.gas_limit in
+        let gas_remaining = check_libs clibs elibs cli.input cli.gas_limit cli.json_errors in
           elibs, gas_remaining
       in
       let elibs, gas_remaining = timer_p "import libs" import_libs_thunk in
   
       (* Checking initialized libraries! *)
-      
  
       (* Retrieve initial parameters *)
       let initargs = 
@@ -163,7 +158,9 @@ let () =
           JSON.ContractState.get_json_data cli.input_init
         with
         | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_init s);
+            perr @@ scilla_error_gas_string gas_remaining 
+                (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init))
+                 cli.json_errors;
             exit 1
       in
       (* Retrieve block chain state  *)
@@ -172,7 +169,9 @@ let () =
         JSON.BlockChainState.get_json_data cli.input_blockchain 
       with
         | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_blockchain s);
+            perr @@ scilla_error_gas_string gas_remaining 
+              (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_blockchain))
+              cli.json_errors;
             exit 1
       in
       let (output_msg_json, output_state_json, output_events_json), gas = 
@@ -182,7 +181,7 @@ let () =
         let init_res = init_module cmod initargs [] Uint128.zero bstate elibs in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
-        let (_, remaining_gas') = check_extract_cstate cli.input init_res gas_remaining in
+        let (_, remaining_gas') = check_extract_cstate cli.input init_res gas_remaining cli.json_errors in
         (plog (sprintf "\nContract initialized successfully\n");
           (`Null, `List [], `List []), remaining_gas')
       else
@@ -191,8 +190,10 @@ let () =
         try
           JSON.Message.get_json_data cli.input_message 
         with
-        | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_message s);
+        | JSON.Invalid_json s ->
+            perr @@ scilla_error_gas_string gas_remaining 
+              (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_message))
+               cli.json_errors;
             exit 1
         in
         let m = Msg mmsg in
@@ -202,8 +203,10 @@ let () =
         try
           input_state_json cli.input_state
         with
-        | JSON.Invalid_json s -> 
-            perr (sprintf "Failed to parse json %s: %s\n" cli.input_state s);
+        | JSON.Invalid_json s ->
+            perr @@ scilla_error_gas_string gas_remaining 
+              (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state))
+               cli.json_errors;
             exit 1
         in
 
@@ -212,7 +215,7 @@ let () =
           let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
           (* Prints stats after the initialization and returns the initial state *)
           (* Will throw an exception if unsuccessful. *)
-          let cstate, gas_remaining' = check_extract_cstate cli.input init_res gas_remaining in
+        let cstate, gas_remaining' = check_extract_cstate cli.input init_res gas_remaining cli.json_errors in
           (* Contract code *)
           let ctr = cmod.contr in
 
@@ -220,7 +223,7 @@ let () =
           plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
           let step_result = handle_message ctr cstate bstate m in
           let (cstate', mlist, elist), gas =
-            check_after_step cli.input step_result gas_remaining' in
+          check_after_step cli.input step_result gas_remaining' cli.json_errors in
           (cstate', mlist, elist), gas
         in
         

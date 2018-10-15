@@ -18,6 +18,7 @@
 
 open Core
 open Syntax
+open ErrorUtils
 open TypeUtil
 
 (*****************************************************************)

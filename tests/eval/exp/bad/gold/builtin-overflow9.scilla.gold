@@ -1,3 +1,11 @@
-Failed execution:
-Cannot apply built-in Uint.add: an overflow/underflow occurred to a list of arguments:[  (Uint32 4294967295),
-  (Uint32 1)].
+{
+  "gas_remaining": 1753,
+  "errors": [
+    {
+      "error_message":
+        "Cannot apply built-in Uint.add: an overflow/underflow occurred to a list of arguments:[  (Uint32 4294967295),\n  (Uint32 1)].",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

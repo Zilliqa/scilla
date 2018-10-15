@@ -1,7 +1,7 @@
 (Int32 8),
 { [fn -> <closure>],
   [f0 -> (Int32 1)],
-  [folder -> <fixpoint>],
+  [folder -> <closure>],
   [three -> (Nat 3)],
   [two -> (Nat 2)],
   [one -> (Nat 1)],

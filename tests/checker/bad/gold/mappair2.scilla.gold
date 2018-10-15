@@ -1,9 +1,56 @@
-
-[checker/bad/mappair2.scilla:92:1] Identifier malMessage1 used more than once
-[checker/bad/mappair2.scilla:105:24] Identifier num1 used more than once
-[checker/bad/mappair2.scilla:94:7] Missing _amount or _recipient in Message
-[checker/bad/mappair2.scilla:107:7] [:0:0] Identifier status used more than once
-[checker/bad/mappair2.scilla:113:1] Paramter _sender in transition malTransition1 cannot be explicit.
-[checker/bad/mappair2.scilla:30:2] Contract parameter _creation_block cannot be explicit.
-
-
+{
+  "errors": [
+    {
+      "error_message": "Identifier malMessage1 used more than once\n",
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 92,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Identifier num1 used more than once\n",
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 105,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Missing _amount or _recipient in Message\n",
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 94,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Identifier status used more than once\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Paramter _sender in transition malTransition1 cannot be explicit.\n",
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 113,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Contract parameter _creation_block cannot be explicit.\n",
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 30,
+        "column": 2
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

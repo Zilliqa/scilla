@@ -113,8 +113,8 @@ let stdlib_dirs = ref []
 let get_stdlib_dirs () =
   let env_dirs = 
     match (Sys.getenv_opt scilla_stdlib_env) with 
-    | Some s -> String.split_on_char ';' s
-    | None -> []
+    | Some s when s != "" -> String.split_on_char ';' s
+    | _ -> []
   in
     List.append env_dirs !stdlib_dirs
 
@@ -135,5 +135,5 @@ let timer_p phase_str f =
   let result = f () in
   let t1 = Sys.time() in
   let t = t1 -. t0 in
-  Printf.printf "Timer (%s): %fs\n" phase_str t;
+  if false then Printf.printf "Timer (%s): %fs\n" phase_str t;
   result

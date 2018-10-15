@@ -1,3 +1,14 @@
-Type checking failed:
-[pm_check/bad/pm2.scilla:7:1] Type error in pattern matching on `b` of type Option (Int32) (or one of its branches):
-Non-exhaustive pattern match.
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in pattern matching on `b` of type Option (Int32) (or one of its branches):\nNon-exhaustive pattern match.",
+      "start_location": {
+        "file": "pm_check/bad/pm2.scilla",
+        "line": 7,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

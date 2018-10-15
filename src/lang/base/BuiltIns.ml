@@ -18,6 +18,7 @@
 
 open Syntax
 open Core
+open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
 open Big_int
@@ -39,7 +40,7 @@ module ScillaBuiltIns
     PrettyPrinters.pp_literal_list ls
 
   let builtin_fail name ls =
-    fail @@ sprintf "Cannot apply built-in %s to a list of arguments:%s."
+    fail0 @@ sprintf "Cannot apply built-in %s to a list of arguments:%s."
       name (print_literal_list ls)
 
   module UsefulLiterals = struct
@@ -134,7 +135,7 @@ module ScillaBuiltIns
              is_uint_type u1 &&
              is_uint_type u2 ->
           elab_tfun_with_args substr_type ts
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
 
     let substr ls _ = match ls with
       | [StringLit x; UintLit (Uint32L s); UintLit (Uint32L e)] ->
@@ -274,13 +275,13 @@ module ScillaBuiltIns
     let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
     let eq_elab t ts = match ts with
       | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args t [i1]
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
 
     let binop_arity = 2
     let binop_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
     let binop_elab t ts = match ts with
       | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args t [i1]
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
 
     let eq ls _ = match ls with
       | [IntLit (Int32L _) as x; IntLit (Int32L _) as y]
@@ -390,7 +391,7 @@ module ScillaBuiltIns
       | 64 -> pure int64_typ
       | 128 -> pure int128_typ
       | 256 -> pure int256_typ
-      | _ -> fail "Failed to convert" 
+      | _ -> fail0 "Failed to convert" 
 
     let to_int_arity = 1
     let to_int_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
@@ -398,7 +399,7 @@ module ScillaBuiltIns
       | [t] when is_int_type t || is_uint_type t ->
           let%bind ityp = mk_int_type w in
           elab_tfun_with_args sc [t; ityp]
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
 
     let to_int_helper ls w = 
       let%bind xs = match ls with
@@ -430,13 +431,13 @@ module ScillaBuiltIns
     let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
     let eq_elab sc ts = match ts with
       | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args sc [i1]
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
 
     let binop_arity = 2
     let binop_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
     let binop_elab sc ts = match ts with
       | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args sc [i1]
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
 
     let eq ls _ = match ls with
       | [UintLit (Uint32L _) as x; UintLit (Uint32L _) as y]
@@ -546,7 +547,7 @@ module ScillaBuiltIns
       | 64 -> pure uint64_typ
       | 128 -> pure uint128_typ
       | 256 -> pure uint256_typ
-      | _ -> fail "Failed to convert" 
+      | _ -> fail0 "Failed to convert" 
 
     let to_uint_arity = 1
     let to_uint_type = tfun_typ "'A" @@ tfun_typ "'B"
@@ -556,7 +557,7 @@ module ScillaBuiltIns
       | [t] when is_uint_type t || is_int_type t ->
           let%bind ityp = mk_uint_type w in
           elab_tfun_with_args sc [t; ityp]
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
 
     let to_uint_helper ls w = 
       let%bind xs = match ls with
@@ -581,7 +582,7 @@ module ScillaBuiltIns
     let to_nat_elab sc ts = match ts with
       | [t] when is_uint_type t ->
           elab_tfun_with_args sc [t]
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
 
     let to_nat ls _ = match ls with
       | [UintLit (Uint32L n)] ->
@@ -630,7 +631,7 @@ module ScillaBuiltIns
     let badd_elab sc ts = match ts with
       | [s; u] when s = bnum_typ && is_uint_type u ->
           elab_tfun_with_args sc ts
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
 
     let badd ls _ = match ls with
       | [BNum x; UintLit y] ->
@@ -638,7 +639,7 @@ module ScillaBuiltIns
           let i2 = big_int_of_string (string_of_uint_lit y) in
           if ge_big_int i2 (big_int_of_int 0)
           then pure @@ BNum (string_of_big_int (add_big_int i1 i2))
-          else fail @@ sprintf
+          else fail0 @@ sprintf
               "Cannot add a negative value (%s) to a block." (string_of_uint_lit y)
       | _ -> builtin_fail "BNum.badd" ls
 
@@ -659,7 +660,29 @@ module ScillaBuiltIns
     (* Create ASCII hexadecimal string from raw binary / bytes. *)
     let tohex s = "0x" ^ (transform_string (Hexa.encode()) s)
     (* Hash raw bytes / binary string. *)
-    let hash s = hash_string (Hash.sha2 256) s
+    let sha256_hasher s = hash_string (Hash.sha2 256) s
+    (* Keccak256 hash raw bytes / binary string. *)
+    let keccak256_hasher s = hash_string (Hash.keccak 256) s
+    (* Ripemd hash raw bytes/ binary string. *)
+    let ripemd160_hasher s = hash_string (Hash.ripemd160 ()) s
+
+    let hash_helper hasher name len ls = match ls with
+      | [l] ->
+          let lstr =
+            (match l with
+            | StringLit s -> s
+            | IntLit il -> bstring_from_int_lit il
+            | UintLit uil -> bstring_from_uint_lit uil
+            | ByStr s | ByStrX (_, s) -> fromhex s
+            (* Anything else, just serialize with SExp. *)
+            | _ -> sexp_of_literal l |> Sexplib.Sexp.to_string) in
+          let lhash = hasher lstr in
+          let lhash_hex = tohex lhash in
+          let lo = build_prim_literal (bystrx_typ len) lhash_hex in
+          (match lo with
+          | Some l' -> pure @@ l'
+          | None -> builtin_fail ("Hashing." ^ name ^ ": internal error, invalid hash") ls)
+      | _ -> builtin_fail ("Hashing." ^ name) ls
 
     let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
     let eq_arity = 2    
@@ -669,7 +692,7 @@ module ScillaBuiltIns
           (* We want both the types to be ByStr with equal width. *)
           is_bystrx_type bstyp1 && is_bystrx_type bstyp2 && bstyp1 = bstyp2
         -> elab_tfun_with_args sc [bstyp1]
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
     let eq ls _ = match ls with
       | [ByStrX (w1, x1); ByStrX(w2, x2)] ->
           pure @@ to_Bool (w1 = w2 && x1 = x2)
@@ -679,24 +702,12 @@ module ScillaBuiltIns
     let hash_arity = 1
     let hash_elab sc ts = match ts with
       | [_]  -> elab_tfun_with_args sc ts
-      | _ -> fail "Failed to elaborate"
-    let sha256hash ls _ = match ls with
-      | [l] ->
-          let lstr = 
-            (match l with
-            | StringLit s -> s
-            | IntLit il -> bstring_from_int_lit il
-            | UintLit uil -> bstring_from_uint_lit uil
-            | ByStr s | ByStrX (_, s) -> fromhex s
-            (* Anything else, just serialize with SExp. *)
-            | _ -> sexp_of_literal l |> Sexplib.Sexp.to_string) in
-          let lhash = hash lstr in
-          let lhash_hex = tohex lhash in 
-          let lo = build_prim_literal (bystrx_typ hash_length) lhash_hex in
-          (match lo with
-          | Some l' -> pure @@ l'
-          | None -> builtin_fail "Hashing.sha256hash: internal error, invalid sha256 hash" ls)
-      | _ -> builtin_fail "Hashing.sha256hash" ls
+      | _ -> fail0 "Failed to elaborate"
+    let sha256hash ls _ = hash_helper sha256_hasher "sha256hash" hash_length ls
+    let keccak256hash ls _ = hash_helper keccak256_hasher "keccak256hash" hash_length ls
+    (* RIPEMD-160 is a 160 bit hash, so define a separate type for it. *)
+    let ripemd160hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ address_length)
+    let ripemd160hash ls _ = hash_helper ripemd160_hasher "ripemd160hash" address_length ls
 
     let big_int_of_hash h =
       let s = match Hex.of_string h with
@@ -726,7 +737,7 @@ module ScillaBuiltIns
     let to_bystr_arity = 1
     let to_bystr_elab sc ts = match ts with
       | [t] when is_bystrx_type t -> elab_tfun_with_args sc ts
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
     let to_bystr ls _ = match ls with
       | [ByStrX(_, s)] -> 
         let res = build_prim_literal bystr_typ s in
@@ -793,7 +804,7 @@ module ScillaBuiltIns
     let contains_elab sc ts = match ts with
       | [MapType (kt, vt); u] when kt = u  ->
           elab_tfun_with_args sc [kt; vt]
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
     let contains ls _ = match ls with
       | [Map (_, entries); key] ->
           let res = Caml.Hashtbl.mem entries key in
@@ -810,7 +821,7 @@ module ScillaBuiltIns
     let put_elab sc ts = match ts with
       | [MapType (kt, vt); kt'; vt'] when kt = kt' && vt = vt'  ->
           elab_tfun_with_args sc [kt; vt]
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
     let put ls _ = match ls with
       | [Map (tm, entries); key; value] ->
           (* Scilla semantics is not in-place modification. *)
@@ -829,7 +840,7 @@ module ScillaBuiltIns
     let get_elab sc ts = match ts with
       | [MapType (kt, vt); kt'] when kt = kt'  ->
           elab_tfun_with_args sc [kt; vt]
-      | _ -> fail "Failed to elaborate"
+      | _ -> fail0 "Failed to elaborate"
     (* Notice that get passes return type *)
     let get ls rt = match ls, rt with
       | [Map (_, entries); key], ADT ("Option", [targ]) ->
@@ -847,7 +858,7 @@ module ScillaBuiltIns
     let remove_elab sc ts = match ts with
       | [MapType (kt, vt); u] when kt = u  ->
           elab_tfun_with_args sc [kt; vt]
-      | _ -> fail "Failed to elaborate" 
+      | _ -> fail0 "Failed to elaborate" 
     let remove ls _ = match ls with
       | [Map (tm, entries); key] ->
           (* Scilla semantics is not in-place modification. *)
@@ -864,7 +875,7 @@ module ScillaBuiltIns
        (list_typ (pair_typ (tvar "'K") (tvar "'V"))))
     let to_list_elab sc ts = match ts with
       | [MapType (kt, vt)]  -> elab_tfun_with_args sc [kt; vt]
-      | _ -> fail "Failed to elaborate" 
+      | _ -> fail0 "Failed to elaborate" 
     let to_list ls _ = match ls with
       | [Map ((kt, vt), entries)] ->
           (* The type of the output list will be "Pair (kt) (vt)" *)
@@ -891,10 +902,10 @@ module ScillaBuiltIns
   module BuiltInDictionary = struct 
 
     (* Elaborates the operation type based on the arguments types *)
-    type elaborator = typ -> typ list -> (typ, string) result      
+    type elaborator = typ -> typ list -> (typ, scilla_error list) result      
 
     (* Takes the expected type as an argument to elaborate the result *)
-    type built_in_executor = literal list -> typ -> (literal, string) result
+    type built_in_executor = literal list -> typ -> (literal, scilla_error list) result
 
     (* A built-in record type:
        * built-in name
@@ -922,6 +933,8 @@ module ScillaBuiltIns
       ("eq", Hashing.eq_arity, Hashing.eq_type, Hashing.eq_elab, Hashing.eq);
       ("dist", Hashing.dist_arity, Hashing.dist_type, elab_id , Hashing.dist);
       ("sha256hash", Hashing.hash_arity, Hashing.hash_type,Hashing.hash_elab, Hashing.sha256hash);
+      ("keccak256hash", Hashing.hash_arity, Hashing.hash_type,Hashing.hash_elab, Hashing.keccak256hash);
+      ("ripemd160hash", Hashing.hash_arity, Hashing.ripemd160hash_type,Hashing.hash_elab, Hashing.ripemd160hash);
       ("to_bystr", Hashing.to_bystr_arity, Hashing.to_bystr_type, Hashing.to_bystr_elab, Hashing.to_bystr);
       ("schnorr_gen_key_pair", Hashing.schnorr_gen_key_pair_arity, Hashing.schnorr_gen_key_pair_type, elab_id, Hashing.schnorr_gen_key_pair);
       ("schnorr_sign", Hashing.schnorr_sign_arity, Hashing.schnorr_sign_type, elab_id, Hashing.schnorr_sign);
@@ -984,12 +997,14 @@ module ScillaBuiltIns
             (* Second: check applicability *)
             let%bind res_type = fun_type_applies type_elab argtypes in
             pure (type_elab, res_type, exec)
-          else fail @@ "Name or arity don't match") in
+          else fail0 @@ "Name or arity don't match") in
       let open Caml in
       let dict = Option.value ~default:[] @@ Hashtbl.find_opt built_in_hashtbl opname in
       let%bind (_, (type_elab, res_type, exec)) = tryM dict ~f:finder
-          ~msg:(sprintf "[%s] Cannot find built-in with name \"%s\" and argument types %s."
-                  (ER.get_loc (get_rep op) |> get_loc_str) opname (pp_typ_list argtypes))
+          ~msg:(fun () ->
+              mk_error1
+                (sprintf "Cannot find built-in with name \"%s\" and argument types %s." opname (pp_typ_list argtypes))
+                (ER.get_loc (get_rep op)))
       in pure (type_elab, res_type, exec)
 
   end

@@ -1,7 +1,28 @@
-
-Type error(s) in contract Empty:
-
-
-[checker/bad/bad_fields1.scilla:4:7] Type error in field bad_foo:
-Values of the type "Int32 -> Int32" cannot be stored.
-
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract Empty:\n",
+      "start_location": {
+        "file": "checker/bad/bad_fields1.scilla",
+        "line": 1,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in field bad_foo:\n",
+      "start_location": {
+        "file": "checker/bad/bad_fields1.scilla",
+        "line": 4,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Values of the type \"Int32 -> Int32\" cannot be stored.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}
