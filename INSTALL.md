@@ -77,3 +77,6 @@ All those libraries can be installed via [opem-user-setup](https://github.com/OC
 ```
 opam install user-setup
 ```
+
+To enable flycheck mode (integration of `scilla-checker` with Emacs for editing Scilla files), install
+flycheck for Emacs. See installation instructions [here](http://www.flycheck.org/en/latest/user/installation.html).

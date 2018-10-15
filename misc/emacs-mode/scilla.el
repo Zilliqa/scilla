@@ -225,4 +225,32 @@
 (provide 'scilla-mode)
 (add-to-list 'auto-mode-alist '("\\.scilla\\'" . scilla-mode))
 
+;; Set scilla-root in your ~/.emacs file as "setq scilla-root /path/to/scilla".
+;;  Note: make sure to set scilla-root *before* loading this file (scilla.el)
+;; If scilla-root has been set and flycheck is available, enable flycheck.
+(if (and (boundp 'scilla-root) (require 'flycheck nil t))
+    (progn
+      ;; derive stdlib and scilla-checker paths from scilla-root.
+      (setq lib-dir (concat scilla-root "/src/stdlib"))
+      (setq checker-bin (concat scilla-root "/bin/scilla-checker"))
+      (if (and  (file-directory-p scilla-root) (file-directory-p lib-dir) (file-exists-p checker-bin))
+          (progn
+            (flycheck-define-checker scilla
+              "A Scilla syntax checker using scilla-checker. See URL `https://www.scilla-lang.org/'."
+              :command ("scilla-checker" "-libdir" (eval lib-dir) source)
+              :error-patterns
+              ((error line-start (file-name) ":" line ":" column ": error: " (message) line-end))
+              :modes scilla-mode
+              )
+            (setq flycheck-scilla-executable checker-bin)
+            (add-to-list 'flycheck-checkers 'scilla)
+            (add-hook 'scilla-mode-hook 'flycheck-mode)
+            ;;(flycheck-mode 1)
+            )
+        (message "Scilla-Flycheck: scilla-root set incorrectly or one of src/stdlib bin/scilla-checker missing.")
+        )
+      )
+  (message "Scilla-FlyCheck: scilla-root not set or flycheck not available.")
+  )
+     
  ;;; scilla.el ends here

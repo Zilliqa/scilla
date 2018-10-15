@@ -129,6 +129,8 @@ An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode
 Add the following line to your ~/.emacs file to load this mode for files ending with .scilla.
 
 ```
+;; For enabling flycheck mode for Scilla (see [INSTALL.md](INSTALL.md)).
+(setq scilla-root "/path/to/scilla/root")
 ;; Scilla mode
 (load-file "/path/to/scilla.el")
 ```
