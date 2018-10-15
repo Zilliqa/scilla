@@ -128,11 +128,14 @@ module ScillaGas
            get (bystrx_width a1) = get (bystrx_width a2)
       -> pure @@ get (bystrx_width a1) * base
     | "sha256hash", _, [a] ->
-        pure @@ (String.length (pp_literal a) + 20) * base
+        (* Block size of sha256hash is 512 *)
+        pure @@ ((String.length (pp_literal a))/64 + 15) * base
     | "keccak256hash", _, [a] ->
-        pure @@ (String.length (pp_literal a) + 20) * base
+        (* Block size of keccak256hash is 1088 *)
+        pure @@ ((String.length (pp_literal a))/136 + 15) * base
     | "ripemd160hash", _, [a] ->
-        pure @@ (String.length (pp_literal a) + 20) * base
+        (* Block size of ripemd160hash is 512 *)
+        pure @@ ((String.length (pp_literal a))/64 + 10) * base
     | "schnorr_gen_key_pair", _, _ -> pure 20 (* TODO *)
     | "schnorr_sign", _, [_;_;ByStr(s)]
     | "schnorr_verify", _, [_;ByStr(s);_] ->
@@ -152,13 +155,11 @@ module ScillaGas
     | [UintLit (Uint32L i)] -> pure @@  (Stdint.Uint32.to_int i) * base
     | _ -> fail0 @@ "Gas cost error for to_nat built-in"
 
-  let int_coster _ args base =
+  let int_coster op args base =
     let base' =
-      (* match op with
-         | "mul" -> base * 2
-         | "div" | "rem" -> base * 4
+       match op with
+         | "mul" | "div" | "rem" -> base * 5
          | _ -> base
-      *) base (* No emperical evidence for charing more for mul / div. *)
     in
     let%bind w = match args with
       | [IntLit i] | [IntLit i; IntLit _] ->
