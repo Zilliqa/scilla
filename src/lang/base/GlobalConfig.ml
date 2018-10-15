@@ -131,9 +131,9 @@ let find_lib_dir name =
 end
 
 let timer_p phase_str f =
-  let t0 = Sys.time() in
+  let t0 = Unix.gettimeofday() in
   let result = f () in
-  let t1 = Sys.time() in
+  let t1 = Unix.gettimeofday() in
   let t = t1 -. t0 in
-  if false then Printf.printf "Timer (%s): %fs\n" phase_str t;
+  if false then Printf.printf "Timer (%s): %.10fs\n" phase_str t;
   result
