@@ -18,10 +18,10 @@ let list_div =
     let iter =
       fun (h : Pair(Int32)(Int32)) =>
       fun (z : Int32) =>
-        let x = Int32 31 in
-        let hh = fst_f h in
+        let x = Int32 2147483640 in
+        let y = Int32 2147483638 in
         (* no accummulation. *)
-        builtin div hh x
+        builtin div y x
      in
      folder iter init l
      

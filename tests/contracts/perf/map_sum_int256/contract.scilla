@@ -18,8 +18,10 @@ let list_sum =
     let iter =
       fun (h : Pair(Int256)(Int256)) =>
       fun (z : Int256) =>
-        let hh = fst_f h in
-        builtin add hh z
+        let x = Int256 28948022309329048855892746252171976963317496166410141009864396001978282409984 in
+        let y = Int256 28948022309329048855892746252171976963317496166410141009864396001978111111999 in
+        (* no accummulation. *)
+        builtin add x y
      in
      folder iter init l
      

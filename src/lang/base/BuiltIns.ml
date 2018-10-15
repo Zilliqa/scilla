@@ -293,6 +293,7 @@ module ScillaBuiltIns
 
     let add ls _ = 
       try 
+        let thunk() = 
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
               pure @@ Int32L(Int32Wrapper.safe_add x y)
@@ -304,11 +305,13 @@ module ScillaBuiltIns
               pure @@ Int256L(Int256Wrapper.safe_add x y)
           | _ -> builtin_fail "Int.add: unsupported types" ls)
         in pure @@ IntLit l
+        in GlobalConfig.timer_p "Int.add" thunk
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Int.add: an overflow/underflow occurred" ls
 
     let sub ls _ = 
       try 
+        let thunk() =
         let%bind l =(match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
               pure @@ Int32L(Int32Wrapper.safe_sub x y)
@@ -320,11 +323,13 @@ module ScillaBuiltIns
               pure @@ Int256L (Int256Wrapper.safe_sub x y)
           | _ -> builtin_fail "Int.sub: unsupported types" ls)
         in pure @@ IntLit l
+        in GlobalConfig.timer_p "Int.sub" thunk
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Int.sub: an overflow/underflow occurred" ls
 
     let mul ls _ = 
       try 
+        let thunk() =
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
               pure @@ Int32L(Int32Wrapper.safe_mul x y)
@@ -336,11 +341,13 @@ module ScillaBuiltIns
               pure @@ Int256L(Int256Wrapper.safe_mul x y)
           | _ -> builtin_fail "Int.mul: unsupported types" ls)
         in pure @@ IntLit l
+        in GlobalConfig.timer_p "Int.mul" thunk
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Int.mul: an overflow/underflow occurred" ls
 
     let div ls _ = 
       try 
+        let thunk() =
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
               pure @@ Int32L(Int32Wrapper.safe_div x y)
@@ -352,11 +359,13 @@ module ScillaBuiltIns
               pure @@ Int256L(Int256Wrapper.safe_div x y)
           | _ -> builtin_fail "Int.div: unsupported types" ls)
         in pure @@ IntLit l
+        in GlobalConfig.timer_p "Int.div" thunk
         with | Division_by_zero | IntOverflow ->
           builtin_fail "Int.div: Division by zero / IntOverflow error occurred" ls
 
     let rem ls  _ =
       try 
+        let thunk() =
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
               pure @@ Int32L(Int32Wrapper.safe_rem x y)
@@ -368,6 +377,7 @@ module ScillaBuiltIns
               pure @@ Int256L(Int256Wrapper.safe_rem x y)
           | _ -> builtin_fail "Int.rem: unsupported types" ls)
         in pure @@ IntLit l
+        in GlobalConfig.timer_p "Int.rem" thunk
       with | Division_by_zero ->
                builtin_fail "Int.rem: Division by zero error occurred" ls
 
@@ -449,6 +459,7 @@ module ScillaBuiltIns
 
     let add ls _ = 
       try 
+        let thunk() = 
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
               pure @@ Uint32L(Uint32Wrapper.safe_add x y)
@@ -460,11 +471,13 @@ module ScillaBuiltIns
               pure @@ Uint256L(Uint256Wrapper.safe_add x y)
           | _ -> builtin_fail "Uint.add: unsupported types" ls)
         in pure @@ UintLit l
+        in GlobalConfig.timer_p "Uint.add" thunk
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Uint.add: an overflow/underflow occurred" ls
 
     let sub ls _ = 
       try 
+        let thunk() = 
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
               pure @@ Uint32L(Uint32Wrapper.safe_sub x y)
@@ -476,11 +489,13 @@ module ScillaBuiltIns
               pure @@ Uint256L(Uint256Wrapper.safe_sub x y)
           | _ -> builtin_fail "Uint.sub: unsupported types" ls)
         in pure @@ UintLit l
+        in GlobalConfig.timer_p "Uint.sub" thunk
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Uint.sub: an overflow/underflow occurred" ls
 
     let mul ls _ = 
       try 
+        let thunk() =
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
               pure @@ Uint32L(Uint32Wrapper.safe_mul x y)
@@ -492,11 +507,13 @@ module ScillaBuiltIns
               pure @@ Uint256L(Uint256Wrapper.safe_mul x y)
           | _ -> builtin_fail "Uint.mul: unsupported types" ls)
         in pure @@ UintLit l
+        in GlobalConfig.timer_p "Uint.mul" thunk
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Uint.mul: an overflow/underflow occurred" ls
 
     let div ls _ = 
       try 
+        let thunk() = 
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
               pure @@ Uint32L(Uint32Wrapper.safe_div x y)
@@ -508,11 +525,13 @@ module ScillaBuiltIns
               pure @@ Uint256L(Uint256Wrapper.safe_div x y)
           | _ -> builtin_fail "Uint.div: unsupported types" ls)
         in pure @@ UintLit l
+        in GlobalConfig.timer_p "Uint.div" thunk
       with | Division_by_zero ->
         builtin_fail "Uint.div: Division by zero / UintOverflow error occurred" ls
 
     let rem ls  _ =
       try 
+        let thunk() =
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
               pure @@ Uint32L(Uint32Wrapper.safe_rem x y)
@@ -524,6 +543,7 @@ module ScillaBuiltIns
               pure @@ Uint256L(Uint256Wrapper.safe_rem x y)
           | _ -> builtin_fail "Uint.rem: unsupported types" ls)
         in pure @@ UintLit l
+        in GlobalConfig.timer_p "Uint.rem" thunk
       with | Division_by_zero ->
         builtin_fail "Uint.rem: Division by zero error occurred" ls
 
@@ -666,7 +686,8 @@ module ScillaBuiltIns
     (* Ripemd hash raw bytes/ binary string. *)
     let ripemd160_hasher s = hash_string (Hash.ripemd160 ()) s
 
-    let hash_helper hasher name len ls = match ls with
+    let hash_helper hasher name len ls = 
+      let thunk() = match ls with
       | [l] ->
           let lstr =
             (match l with
@@ -683,6 +704,7 @@ module ScillaBuiltIns
           | Some l' -> pure @@ l'
           | None -> builtin_fail ("Hashing." ^ name ^ ": internal error, invalid hash") ls)
       | _ -> builtin_fail ("Hashing." ^ name) ls
+      in GlobalConfig.timer_p "hash" thunk
 
     let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
     let eq_arity = 2    

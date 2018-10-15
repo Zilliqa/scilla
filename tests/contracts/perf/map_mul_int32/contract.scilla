@@ -18,10 +18,10 @@ let list_mul =
     let iter =
       fun (h : Pair(Int32)(Int32)) =>
       fun (z : Int32) =>
-        let x = Int32 31 in
-        let hh = fst_f h in
+        let x = Int32 46340 in
+        let y = Int32 46339 in
         (* not accummulating the product *)
-        builtin mul hh x
+        builtin mul y x
      in
      folder iter init l
      

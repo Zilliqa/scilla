@@ -18,8 +18,9 @@ let list_sum =
     let iter =
       fun (h : Pair(Int32)(Int32)) =>
       fun (z : Int32) =>
-        let hh = fst_f h in
-        builtin add hh z
+        let x = Int32 1073741824 in
+        let y = Int32 1073741823 in
+        builtin add x y
      in
      folder iter init l
      

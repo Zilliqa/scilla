@@ -18,10 +18,10 @@ let list_mul =
     let iter =
       fun (h : Pair(Int256)(Int256)) =>
       fun (z : Int256) =>
-        let x = Int256 31 in
-        let hh = fst_f h in
+        let x = Int256 240615969168004511545033772477625056925 in
+        let y = Int256 240615969168004511545033772477625056924 in
         (* not accummulating the product *)
-        builtin mul hh x
+        builtin mul x y
      in
      folder iter init l
      
