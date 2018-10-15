@@ -127,6 +127,29 @@ let rec output_event_json elist =
 
 let () =
   let cli = Cli.parse () in
+  let is_deployment = (cli.input_message = "") in
+  let gas_remaining =
+    let open Unix in
+    (* Subtract gas based on (contract+init) size / message size. *)
+    if is_deployment then
+      let cost = Int64.add (stat cli.input).st_size (stat cli.input_init).st_size in
+      let rem = Int64.sub (Int64.of_int cli.gas_limit) cost in
+      if Int64.compare rem Int64.zero < 0 then
+        (perr @@ scilla_error_gas_jstring 0 @@ 
+              mk_error0 (sprintf "Ran out of gas when parsing contract/init files.\n");
+        exit 1)
+      else
+        Int64.to_int rem
+    else
+      let cost = (stat cli.input_message).st_size in
+      let rem = Int64.sub (Int64.of_int cli.gas_limit) cost in
+      if Int64.compare rem Int64.zero < 0 then
+        (perr @@ scilla_error_gas_jstring 0 @@ 
+              mk_error0 (sprintf "Ran out of gas when parsing message.\n");
+        exit 1)
+      else
+        Int64.to_int rem
+  in
   let parse_module =
     FrontEndParser.parse_file ScillaParser.cmodule cli.input in
   match parse_module with
@@ -144,7 +167,7 @@ let () =
       let clibs = cmod.libs in
   
       (* Checking initialized libraries! *)
-      let gas_remaining = check_libs clibs elibs cli.input cli.gas_limit in
+      let gas_remaining = check_libs clibs elibs cli.input gas_remaining in
  
       (* Retrieve initial parameters *)
       let initargs = 
@@ -167,7 +190,7 @@ let () =
             exit 1
       in
       let (output_msg_json, output_state_json, output_events_json), gas = 
-      if cli.input_message = ""
+      if is_deployment
       then
         (* Initializing the contract's state, just for checking things. *)
         let init_res = init_module cmod initargs [] Uint128.zero bstate elibs in
