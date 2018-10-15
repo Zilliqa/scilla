@@ -98,6 +98,13 @@ let set_pp_lit b =
 
 let get_pp_lit () = !pp_lit
 
+let json_errors = ref false
+
+let set_use_json_errors b =
+  json_errors := b
+
+let use_json_errors () = !json_errors
+
 module StdlibTracker = struct
 
 (* Environment variable: where to look for stdlib.
