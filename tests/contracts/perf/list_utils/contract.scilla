@@ -1,0 +1,301 @@
+import ListUtils PairUtils BoolUtils IntUtils
+
+library Test
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+
+contract Test
+()
+
+field gmap : Map Int32 Int32 = Emp Int32 Int32
+field topkey : Int32 = Int32 0
+
+(* list_reverse, list_append *)
+transition reverse_length()
+  p <- gmap;
+
+  mp = builtin to_list p;
+
+  list_reverse_f = @list_reverse (Pair(Int32)(Int32));
+  mp_rev = list_reverse_f mp;
+  list_append_f = @list_append (Pair(Int32)(Int32));
+  mp_mp_rev = list_append_f mp mp_rev;
+  list_length_f = @list_length (Pair(Int32)(Int32));
+  len = list_length_f mp_mp_rev;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; size : len};
+  msgs = one_msg msg;
+  send msgs
+
+end
+
+(* list_map *)
+transition map()
+  p <- gmap;
+
+  mp = builtin to_list p;
+
+  f =
+  fun (el : (Pair(Int32)(Int32))) =>
+    match el with
+    | Pair a b => a
+    end;
+ 
+  list_map_f = @list_map (Pair(Int32)(Int32)) Int32;
+  w = list_map_f f mp;
+  list_len_f = @list_length (Int32);
+  len = list_len_f w;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; size : len};
+  msgs = one_msg msg;
+  send msgs
+
+end
+
+(* list_filter *)
+transition filter()
+  p <- gmap;
+
+  mp = builtin to_list p;
+
+  f =
+  (* Check if an element is even. *)
+  fun (el : (Pair(Int32)(Int32))) =>
+    match el with
+    | Pair a b =>
+      let two = Int32 2 in
+      let zero = Int32 0 in
+      let r = builtin rem a two in
+       builtin eq r zero
+    end;
+ 
+  list_filter_f = @list_filter (Pair(Int32)(Int32));
+  w = list_filter_f f mp;
+  list_len_f = @list_length (Pair(Int32)(Int32));
+  len = list_len_f w;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; size : len};
+  msgs = one_msg msg;
+  send msgs
+
+end
+
+(* list_unzip and list_zip*)
+transition unzip_zip()
+  p <- gmap;
+  mp = builtin to_list p;
+  f = fun (a : Int32) => fun (b : Int32) => builtin add a b;
+
+  (* Split Map into list of keys and list of values. *)
+  list_unzip_f = @list_unzip Int32 Int32;
+  w = list_unzip_f mp;
+  (* Get separate lists. *)
+  fst_f = @fst (List Int32) (List Int32);
+  snd_f = @snd (List Int32) (List Int32);
+  w1 = fst_f w;
+  w2 = snd_f w;
+
+  (* zip the two lists into one. *)
+  list_zip_with_f = @list_zip_with Int32 Int32 Int32;
+  x = list_zip_with_f f w1 w2;
+
+  (* Take length of appended list. *)
+  list_len_f = @list_length Int32;
+  len = list_len_f x;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; size : len};
+  msgs = one_msg msg;
+  send msgs
+
+end
+
+(* list_to_map and list_eq *)
+transition to_map_eq()
+  p <- gmap;
+
+  mp = builtin to_list p;
+  
+  f =
+  fun (a : Pair(Int32)(Int32)) =>
+  fun (b : Pair(Int32)(Int32)) =>
+    match a with
+    | Pair a1 a2 =>
+      match b with
+      | Pair b1 b2 =>
+        let eq1 = builtin eq a1 b1 in
+        let eq2 = builtin eq a2 b2 in
+        andb eq1 eq2
+      end
+    end;
+
+  (* Convert list back to map *)
+  list_to_map_f = @list_to_map Int32 Int32;
+  w = list_to_map_f mp;
+  (* and then back to list *)
+  x = builtin to_list w;
+  (* compare the results. *)
+  list_eq_f = @list_eq (Pair(Int32)(Int32));
+  eq = list_eq_f f mp x;
+  y = match eq with | True => Int32 1 | False => Int32 1 end;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; eq : y};
+  msgs = one_msg msg;
+  send msgs
+
+end
+
+(* list_mem *)
+transition mem()
+  p <- gmap;
+
+  mp = builtin to_list p;
+  
+  f =
+  fun (a : Pair(Int32)(Int32)) =>
+  fun (b : Pair(Int32)(Int32)) =>
+    match a with
+    | Pair a1 a2 =>
+      match b with
+      | Pair b1 b2 =>
+        let eq1 = builtin eq a1 b1 in
+        let eq2 = builtin eq a2 b2 in
+        andb eq1 eq2
+      end
+    end;
+
+  list_mem_f = @list_mem (Pair(Int32)(Int32));
+  one = Int32 1;
+  two = Int32 2;
+  (* Check if list contains (1, 2) *)
+  h = Pair{Int32 Int32} one two;
+  x = list_mem_f f h mp;
+  y = match x with | True => Int32 1 | False => Int32 1 end;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; mem : y};
+  msgs = one_msg msg;
+  send msgs
+
+end
+
+(* list_sort *)
+transition sort()
+  p <- gmap;
+
+  mp = builtin to_list p;
+  
+  flt =
+  fun (a : Pair(Int32)(Int32)) =>
+  fun (b : Pair(Int32)(Int32)) =>
+    match a with
+    | Pair a1 _ =>
+      match b with
+      | Pair b1 _ =>
+        (* descending sort *)
+        int32_gt a1 b1
+      end
+    end;
+
+  list_sort_f = @list_sort (Pair(Int32)(Int32));
+  sorted = list_sort_f flt mp;
+  list_len_f = @list_length (Pair(Int32)(Int32));
+  x = list_len_f sorted;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; len : x};
+  msgs = one_msg msg;
+  send msgs
+
+end
+
+(* list_forall *)
+transition lforall()
+  p <- gmap;
+
+  mp = builtin to_list p;
+  
+  f =
+  fun (a : Pair(Int32)(Int32)) =>
+    True;
+
+  list_forall_f = @list_forall (Pair(Int32)(Int32));
+  lforall = list_forall_f f mp;
+  y = match lforall with | True => Int32 1 | False => Int32 1 end;  
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; for_all : y};
+  msgs = one_msg msg;
+  send msgs
+
+end
+
+(* list_exists *)
+transition exists()
+  p <- gmap;
+
+  mp = builtin to_list p;
+  
+  f =
+  fun (a : Pair(Int32)(Int32)) =>
+    match a with
+    | Pair k v => int32_neq k v
+    end;
+
+  (* is there an entry where k != v *)
+  list_exists_f = @list_exists (Pair(Int32)(Int32));
+  exists = list_exists_f f mp;
+  y = match exists with | True => Int32 1 | False => Int32 1 end;  
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; exists : y};
+  msgs = one_msg msg;
+  send msgs
+
+end
+
+(* list_find *)
+transition find()
+  p <- gmap;
+
+  mp = builtin to_list p;
+  
+  f =
+  fun (a : Pair(Int32)(Int32)) =>
+    let tenk = Int32 9999 in
+    match a with
+    | Pair k v => int32_eq k tenk
+    end;
+
+  (* is there an entry where k != v *)
+  list_find_f = @list_find (Pair(Int32)(Int32));
+  found = list_find_f f mp;
+  x =
+    match found with
+    | Some _ => Int32 1 | None => Int32 0
+    end;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; found : x};
+  msgs = one_msg msg;
+  send msgs
+
+end
+
+(* list_nth *)
+transition nth()
+  p <- gmap;
+
+  mp = builtin to_list p;
+  
+  list_nth_f = @list_nth (Pair(Int32)(Int32));
+  nth = Int32 9998;
+  found = list_nth_f nth mp;
+  nth_el =
+    match found with
+    | Some (Pair a _) => a | None => Int32 -1
+    end;
+
+  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; nth_el : nth_el};
+  msgs = one_msg msg;
+  send msgs
+
+end
