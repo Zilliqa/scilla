@@ -39,6 +39,13 @@ fi
 
 ./bin/scilla-runner -init ${cdir}/init.json -istate ${cdir}/state_${i}.json -imessage ${cdir}/message_${i}.json -o ${cdir}/output_${i}.json -iblockchain ${cdir}/blockchain_${i}.json -i ${cdir}/contract.scilla -libdir src/stdlib -gaslimit 2000
 
-echo "output.json emitted by interpreter:"
-cat ${cdir}/output_${i}.json
-echo ""
+status=$?
+
+if test $status -eq 0
+then
+    echo "output.json emitted by interpreter:"
+    cat ${cdir}/output_${i}.json
+    echo ""
+else
+    echo "scilla-runner failed"
+fi

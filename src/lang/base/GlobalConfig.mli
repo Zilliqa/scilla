@@ -41,6 +41,10 @@ val set_trace_file : string -> unit
 val set_pp_lit : bool -> unit
 val get_pp_lit : unit -> bool
 
+(* Should error reporting be in JSON format? *)
+val set_use_json_errors : bool -> unit
+val use_json_errors : unit -> bool
+
 module StdlibTracker : sig
 
   (* Environment variable: where to look for stdlib.

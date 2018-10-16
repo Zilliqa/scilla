@@ -48,39 +48,39 @@ module EI = ScillaEventInfo (PMCSRep) (PMCERep)
 
 
 (* Check that the module parses *)
-let check_parsing ctr = 
+let check_parsing ctr  = 
     let parse_module =
       FrontEndParser.parse_file ScillaParser.cmodule ctr in
     match parse_module with
-    | None -> fail0 (sprintf "%s\n" "Failed to parse input file.")
+    | None -> exit 1 (* Error is printed by the parser. *)
     | Some cmod -> 
         plog @@ sprintf
           "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" ctr;
         pure cmod
 
 (* Type check the contract with external libraries *)
-let check_typing cmod elibs pp_json =
+let check_typing cmod elibs  =
   let open TC in
   let res = type_module cmod recursion_principles elibs in
   match res with
-  | Error msgs -> pout @@ scilla_error_to_string msgs pp_json; res
+  | Error msgs -> pout @@ scilla_error_to_string msgs ; res
   | Ok typed_module -> pure @@ typed_module
 
-let check_patterns e pp_json =
+let check_patterns e  =
   let res = PMC.pm_check_module e in
   match res with
-  | Error msg -> pout @@ scilla_error_to_string msg pp_json; res
+  | Error msg -> pout @@ scilla_error_to_string msg ; res
   | Ok pm_checked_module -> pure @@ pm_checked_module
 
-let check_sanity c pp_json =
+let check_sanity c  =
   let res = SC.contr_sanity c in
   match res with
-  | Error msg -> pout @@ scilla_error_to_string msg pp_json; res
+  | Error msg -> pout @@ scilla_error_to_string msg ; res
   | Ok _ -> pure ()
 
-let check_events_info einfo pp_json =
+let check_events_info einfo  =
   match einfo with
-  | Error msg -> pout @@ scilla_error_to_string msg pp_json; einfo
+  | Error msg -> pout @@ scilla_error_to_string msg ; einfo
   | Ok _ -> einfo
 
 let () =
@@ -92,17 +92,16 @@ let () =
        up complaining about missing _build directory for logger.
        So disable the logger. *)
     let r = (
-      let%bind cmod = check_parsing cli.input_file in
+      let%bind cmod = check_parsing cli.input_file  in
       (* Get list of stdlib dirs. *)
       let lib_dirs = StdlibTracker.get_stdlib_dirs() in
       if lib_dirs = [] then stdlib_not_found_err ();
       (* Import whatever libs we want. *)
-      let elibs = import_libs cmod.elibs in
-      let pp_json = cli.json_errors in
-      let%bind (typed_cmod, tenv) = check_typing cmod elibs pp_json in
-      let%bind pm_checked_cmod = check_patterns typed_cmod pp_json in
-      let%bind _ = check_sanity pm_checked_cmod.contr pp_json in
-      let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr) pp_json in
+      let elibs = import_libs cmod.elibs  in
+      let%bind (typed_cmod, tenv) = check_typing cmod elibs  in
+      let%bind pm_checked_cmod = check_patterns typed_cmod  in
+      let%bind _ = check_sanity pm_checked_cmod.contr  in
+      let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr)  in
       pure @@ (cmod, tenv, event_info)
     ) in
     match r with
