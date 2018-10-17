@@ -51,12 +51,6 @@ module ScillaGas
       | ByStrX (w, _) -> pure @@ w
       | ByStr s ->
           pure @@ (String.length s) - 2
-      (* Message: an associative array *)    
-      | Msg m ->
-          foldM ~f:(fun acc (s, lit') ->
-              let%bind cs = literal_cost (StringLit(s)) in
-              let%bind clit' = literal_cost lit' in
-              pure (acc + cs + clit')) ~init:0 m
       (* A dynamic map of literals *)    
       | Map (_, m) ->
           Caml.Hashtbl.fold (fun lit1 lit2 acc' ->

@@ -134,13 +134,6 @@ let rec pp_literal_simplified l =
     | BNum b -> "(BNum " ^ b ^ ")"
     | ByStr s -> "(ByStr " ^ s ^ ")"
     | ByStrX (i, s) -> "(ByStr" ^ (to_string i) ^ " " ^ s ^ ")"
-    | Msg m ->
-      let items = "[" ^
-        List.fold_left m ~init:"" ~f:(fun a (s, l') ->
-          let t = "(" ^ s ^ " : " ^ (pp_literal_simplified l') ^ ")" in
-            if String.is_empty a then t else a ^ " ; " ^ t
-          ) ^ "]" in
-      ("(Message " ^ items ^ ")")
     | Map ((_, _), kv) ->
       (* we don't print mtype as that's printed for every entry. *)
       let items = "[" ^

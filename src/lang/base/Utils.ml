@@ -35,9 +35,7 @@ module type Dictionary = sig
   val to_list : 'a dict -> (key * 'a) list
 end
 
-(* Simple association list implementation of a dictionary.
-   Note that old entries for a key k are removed when a new value is
-   added for k. *)
+(* Simple association list implementation of a dictionary. *)
 module AssocDictionary : Dictionary = struct
 
   type key = string
@@ -46,14 +44,24 @@ module AssocDictionary : Dictionary = struct
 
   let make_dict () = []
 
+  let rec remove k d =
+    match d with
+    | []              -> []
+    | (kd, _) :: rest -> if k = kd then rest else remove k rest
+
   let insert k v d =
-    (k, v) :: (List.filter (fun (k', _) -> not (k = k')) d)
+    (k, v) :: d
 
   let lookup k d =
     match List.find_opt (fun (kd, _) -> k = kd) d with
     | None -> None
     | Some (_, v) -> Some v
 
+  let rec update k v d =
+    match d with
+    | []               -> []
+    | (kd, vd) :: rest -> if k = kd then (k, v) :: rest else (kd, vd) :: (update k v rest)
+      
   let is_empty d =
     match d with
     | [] -> true

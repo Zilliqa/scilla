@@ -114,8 +114,6 @@ type literal =
   | ByStrX of int * string
   (* Hexadecimal byte string without a statically known length. *)
   | ByStr of string
-  (* Message: an associative array *)    
-  | Msg of (string * literal) list
   (* A dynamic map of literals *)
   | Map of mtype * (literal, literal) Hashtbl.t
   (* A constructor in HNF *)      

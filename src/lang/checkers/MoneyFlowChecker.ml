@@ -17,12 +17,14 @@
 
 open Syntax
 open TypeUtil
+open Utils
 
 module MoneyFlowRep (R : Rep) = struct
   type money_tag =
     | Plain
     | Money
     | Map of money_tag
+    | Option of money_tag
     | Top
   [@@deriving sexp]
     (* TODO: Add this if possible *)
@@ -62,6 +64,7 @@ module ScillaMoneyFlowChecker
   (*   module SCU = ContractUtil.ScillaContractUtil (SR) (ER) *)
 
   open TypedSyntax
+  open EMFR
   (*   open SCU *)
 
   (*******************************************************)
@@ -221,31 +224,110 @@ module ScillaMoneyFlowChecker
   (*******************************************************)
   (*                  Find fixpoint                      *)
   (*******************************************************)
-(*
-  let rec mf_tag_expr (erep : MFSyntax.expr_annot) field_env local_env =
+
+  (* Lattice implementation:
+     t1 unifies with t2 if t1 and t2 are equal.
+     Plain = Bottom, so anything supercedes Plain.
+     Nothing else unifies, so return Top in all other cases *)
+  let unify_tags t1 t2 =
+    match t1, t2 with
+    | x, y
+      when x = y -> x
+    | Plain, x
+    | x, Plain   -> x
+    | _, _       -> Top
+
+  let get_id_tag id =
+    match id with
+    | Ident (_, (tag, _)) -> tag
+      
+  let update_id_tag id new_tag =
+    match id with
+    | Ident (v, (_, rep)) -> Ident (v, (new_tag, rep))
+
+  let builtin_tag f args = Map Top
+  
+  let rec mf_tag_expr (erep : MFSyntax.expr_annot) expected_tag field_env local_env =
+    let lookup_var_tag i =
+      match List.find_opt (fun (x, _) -> x = get_id i) local_env  with
+      | Some (_, t) -> t
+      | None ->
+          match List.find_opt (fun (x, _) -> x = get_id i) field_env  with
+          | Some (_, t) -> t
+          | None -> get_id_tag i in
+    let unify t = unify_tags expected_tag t in
     let (e, (tag, rep)) = erep in
-    let (new_e, new_tag) = 
+    let (new_e, new_e_tag, new_field_env, new_local_env, new_changes) = 
       match e with
-      | Literal _ -> (e, tag)
+      | Literal _ -> (e, unify tag, field_env, local_env, false)
       | Var i ->
-          (match Hashtbl.find_opt local_env i with
-           | Some t -> (e, t)
-           | None   ->
-               (match Hashtbl.find_opt field_env i with
-                | Some t -> (e, t)
-                | None   -> (e, tag)))
+          let res_e_tag = unify (lookup_var_tag i) in
+          let new_i = update_id_tag i res_e_tag in
+          (Var new_i, res_e_tag, field_env, local_env, res_e_tag <> lookup_var_tag i)
       | Fun (arg, t, body) ->
-          let (x, x_tag) =
-            match arg with
-            | Ident (v, (tag, _)) -> (v, tag) in
-          let local_env_cp = Hashtbl.copy local_env in
-          let new_local_env = Hashtbl.add local_env_cp x x_tag in
-          (match mf_tag_expr body with
-           | (_, (b_tag, _)) as b ->
-               (
-      | App (f, actuals) ->
-      | Builtin (i, actuals) ->
+          let body_expected_tag =
+            match expected_tag with
+            | Map x -> x
+            | Plain -> Plain
+            | _     -> Top in
+          let body_local_env =
+            AssocDictionary.insert (get_id arg) (get_id_tag arg) local_env in
+          let ((_, (new_body_tag, _)) as new_body, res_body_field_env, res_body_local_env, body_changes) =
+            mf_tag_expr body body_expected_tag field_env body_local_env in
+          let res_arg_tag =
+            match AssocDictionary.lookup (get_id arg) res_body_local_env with
+            | None -> Top
+            | Some x -> x in
+          (Fun (update_id_tag arg res_arg_tag, t, new_body),
+           unify (Map new_body_tag),
+           res_body_field_env,
+           AssocDictionary.remove (get_id arg) res_body_local_env,
+           body_changes || (get_id_tag arg <> res_arg_tag))
+      | App (f, args) ->
+          let new_args = List.map (fun arg -> update_id_tag arg (lookup_var_tag arg)) args in
+          let f_tag = unify_tags (lookup_var_tag f) (Map expected_tag) in
+          let (updated_field_env, updated_local_env) =
+            match AssocDictionary.lookup (get_id f) local_env with
+            | Some _ -> (field_env, AssocDictionary.update (get_id f) f_tag local_env)
+            | None   -> (AssocDictionary.update (get_id f) f_tag field_env, local_env) in
+          let new_tag = 
+            match f_tag with
+            | Map t -> t
+            | _     -> Top in
+          (App (update_id_tag f f_tag, new_args),
+           unify new_tag,
+           updated_field_env,
+           updated_local_env,
+           f_tag <> get_id_tag f || args <> new_args)
+      | Builtin (f, args) ->
+          let new_args = List.map (fun arg -> update_id_tag arg (lookup_var_tag arg)) args in
+          let f_tag = unify_tags (builtin_tag f new_args) (Map expected_tag) in
+          let new_tag = 
+            match f_tag with
+            | Map t -> t
+            | _     -> Top in
+          (Builtin (update_id_tag f f_tag, new_args),
+           new_tag,
+           field_env,
+           local_env,
+           f_tag <> get_id_tag f || args <> new_args)
       | Let (i, topt, lhs, rhs) ->
+          let i_tag = lookup_var_tag i in
+          let ((_, (new_lhs_tag, _)) as new_lhs, lhs_field_env, lhs_local_env, lhs_changes) =
+            mf_tag_expr lhs i_tag field_env local_env in
+          let new_i_tag = unify_tags i_tag new_lhs_tag in
+          let new_i = update_id_tag i new_i_tag in
+          let updated_lhs_local_env = AssocDictionary.insert (get_id i) new_i_tag lhs_local_env in
+          let ((_, (new_rhs_tag, _)) as new_rhs, rhs_field_env, rhs_local_env, rhs_changes) =
+            mf_tag_expr rhs expected_tag lhs_field_env updated_lhs_local_env in
+          let res_local_env = AssocDictionary.remove (get_id i) local_env in
+          let new_tag = unify new_rhs_tag in
+          (Let (new_i, topt, new_lhs, new_rhs),
+           new_tag,
+           rhs_field_env,
+           res_local_env,
+           i_tag <> get_id_tag i || lhs_changes || rhs_changes)
+          
       | Constr (cname, ts, actuals) ->
       | MatchExpr (x, clauses) ->
       | Fixpoint (f, t, body) ->
@@ -253,7 +335,7 @@ module ScillaMoneyFlowChecker
       | TApp (tf, arg_types) ->
       | Message bs ->    in
     (new_e, (new_tag, rep))
-*)
+
   (*******************************************************)
   (*                Main entry function                  *)
   (*******************************************************)
