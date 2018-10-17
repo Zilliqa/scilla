@@ -1,0 +1,17 @@
+{
+    "_tag": "SubmitTransaction",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678906780000000",
+    "params": [
+        {
+            "vname": "recipient",
+            "type": "ByStr20",
+            "value": "0x1234567890123456789012345678906780000000"
+        },
+        {
+            "vname": "amount",
+            "type": "Uint128",
+            "value": "10"
+        }
+    ]
+}
