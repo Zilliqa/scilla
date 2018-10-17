@@ -19,15 +19,16 @@
 
 open Core
 open Lexing
+open PrettyPrinters
+open ErrorUtils
 
 (* TODO: Use DebugMessage perr/pout instead of fprintf. *)
+let print_err msg lexbuf  =
+  let e = mk_error1 msg (toLoc lexbuf.lex_curr_p) in
+  let msg' = scilla_error_to_string e in
+  printf "%s\n" msg'
 
-let print_position outx lexbuf =
-  let pos = lexbuf.lex_curr_p in
-  fprintf outx "file %s: line %d, position %d." pos.pos_fname
-    pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
-
-let parse_file parser filename =
+let parse_file parser filename  =
   In_channel.with_file filename ~f:(fun inx ->
       let lexbuf = Lexing.from_channel inx in
       lexbuf.lex_curr_p  <- { lexbuf.lex_curr_p with pos_fname = filename };
@@ -37,13 +38,13 @@ let parse_file parser filename =
       with
       | ScillaLexer.Error msg 
       | Syntax.SyntaxError msg ->
-          fprintf stderr "Syntax error in %a: %s\n" print_position lexbuf msg;
+          print_err ("Syntax error: " ^ msg) lexbuf;
           None
       | ScillaParser.Error ->
-          fprintf stderr "Syntax error in %a\n" print_position lexbuf;
+          print_err "Syntax error." lexbuf;
           None)
     
-let parse_string parser s =
+let parse_string parser s  =
   let lexbuf = Lexing.from_string s in
   lexbuf.lex_curr_p  <- { lexbuf.lex_curr_p with pos_fname = "Prelude" };
   try
@@ -52,12 +53,10 @@ let parse_string parser s =
   with
   | ScillaLexer.Error msg
   | Syntax.SyntaxError msg ->
-      printf "Lexical error in %a: %s\n" print_position lexbuf msg;
-      fprintf stderr "Lexical in %a: %s\n" print_position lexbuf msg;
+      print_err ("Lexical error: " ^ msg) lexbuf;
       None
   | ScillaParser.Error ->
-      printf "Syntax error in %a\n" print_position lexbuf;
-      fprintf stderr "Syntax error in %a\n" print_position lexbuf;
+      print_err "Syntax error." lexbuf;
       None
 
 let parse_type s =

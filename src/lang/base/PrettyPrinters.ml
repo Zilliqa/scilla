@@ -96,14 +96,15 @@ let scilla_error_to_jstring ?(pp = true) elist =
   else Basic.to_string j
 
 let scilla_error_to_sstring elist =
+  let strip_nl s = Str.global_replace (Str.regexp "[\n]") " " s in
   let pp e =
-    let msg = String.escaped e.emsg in
+    let msg = strip_nl e.emsg in
     (sprintf "%s:%d:%d: error: %s" e.startl.fname e.startl.lnum e.startl.cnum msg)
   in
     (List.fold elist ~init:"" ~f:(fun acc e -> acc ^ "\n" ^ (pp e))) ^ "\n"
 
-let scilla_error_to_string elist pp_json =
-  if pp_json
+let scilla_error_to_string elist  =
+  if GlobalConfig.use_json_errors()
   then scilla_error_to_jstring elist
   else scilla_error_to_sstring elist
 
@@ -113,8 +114,8 @@ let scilla_error_gas_jstring ?(pp = true) gas_remaining elist =
   if pp then Basic.pretty_to_string j
   else Basic.to_string j
 
-let scilla_error_gas_string gas_remaining elist pp_json =
-  if pp_json
+let scilla_error_gas_string gas_remaining elist  =
+  if GlobalConfig.use_json_errors()
   then scilla_error_gas_jstring gas_remaining elist
   else
   (scilla_error_to_sstring elist) ^ (sprintf "Gas remaining: %d\n" gas_remaining)

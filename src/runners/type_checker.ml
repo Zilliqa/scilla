@@ -75,22 +75,20 @@ let () =
     let open GlobalConfig in
     StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
     set_debug_level Debug_None;
-    let pp_json = cli.json_errors in
     let filename = cli.input_file in
-    match FrontEndParser.parse_file ScillaParser.exps filename with
+    match FrontEndParser.parse_file ScillaParser.exps filename  with
     | Some [e] ->
         (* Get list of stdlib dirs. *)
         let lib_dirs = StdlibTracker.get_stdlib_dirs() in
         if lib_dirs = [] then stdlib_not_found_err ();
         (* Import all libs. *)
-        let std_lib = import_all_libs lib_dirs in
+        let std_lib = import_all_libs lib_dirs  in
         (match check_typing e std_lib with
          | Ok ((_, (e_typ, _)) as typed_erep) ->
              (match check_patterns typed_erep with
               | Ok _ -> printf "%s\n" (pp_typ e_typ.tp)
-              | Error el -> (pout @@ scilla_error_to_string el pp_json; exit 1)
+              | Error el -> (pout @@ scilla_error_to_string el ; exit 1)
              )
-         | Error el -> (pout @@ scilla_error_to_string el pp_json); exit 1)
-    | Some _ | None ->
-        (pout @@ scilla_error_to_string (mk_error0 "Failed to parse input file") pp_json;
-        exit 1)
+         | Error el -> (pout @@ scilla_error_to_string el ); exit 1)
+    | Some _ | None -> (* Error is printed by the parser. *)
+        exit 1
