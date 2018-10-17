@@ -245,8 +245,9 @@ module ScillaMoneyFlowChecker
     match id with
     | Ident (v, (_, rep)) -> Ident (v, (new_tag, rep))
 
+  (* TODO: implement tag based on the builtin functions *)
   let builtin_tag _f _args = Map Top
-  
+
   let rec mf_tag_expr (erep : MFSyntax.expr_annot) expected_tag field_env local_env =
     let lookup_var_tag i =
       match AssocDictionary.lookup (get_id i) local_env with
@@ -327,15 +328,77 @@ module ScillaMoneyFlowChecker
            rhs_field_env,
            res_local_env,
            i_tag <> get_id_tag i || lhs_changes || rhs_changes)
-          
-      | Constr (_cname, _ts, _actuals) -> (e, Top, field_env, local_env, false)
-      | MatchExpr (_x, _clauses) -> (e, Top, field_env, local_env, false)
-      | Fixpoint (_f, _t, _body) -> (e, Top, field_env, local_env, false)
+      | Constr (cname, ts, actuals) ->
+          (* TODO: Handle ADTs properly *)
+          let new_actuals = List.map (fun arg -> update_id_tag arg (lookup_var_tag arg)) actuals in
+          (Constr (cname, ts, new_actuals),
+           Top,
+           field_env,
+           local_env,
+           false)
+      | MatchExpr (x, clauses) ->
+          let new_x = update_id_tag x (lookup_var_tag x) in
+          (* TODO: ADTs not handled, so assume all bound variables in patterns are TOP *)
+          let (res_clauses, res_tag, new_field_env, new_local_env, new_changes) =
+            List.fold_right
+              (fun (p, ep) (acc_clauses, acc_res_tag, acc_field_env, acc_local_env, acc_changes) ->
+                 let (res_p, res_ep, res_ep_tag, res_field_env, res_local_env, res_changes) =
+                   mf_tag_pattern p ep acc_res_tag acc_field_env acc_local_env in
+                 ((res_p, res_ep) :: acc_clauses,
+                  res_ep_tag,
+                  res_field_env,
+                  res_local_env,
+                  acc_changes || res_changes))
+              clauses
+              ([], expected_tag, field_env, local_env, (get_id_tag x) <> (get_id_tag new_x)) in
+          (MatchExpr (new_x, res_clauses), res_tag, new_field_env, new_local_env, new_changes)
+      | Fixpoint (f, t, body) ->
+          let f_tag = get_id_tag f in
+          let body_local_env = AssocDictionary.insert (get_id f) (unify f_tag) local_env in
+          let ((_, (body_tag, _)) as new_body, new_field_env, new_local_env, new_changes) =
+            mf_tag_expr body (unify f_tag) field_env body_local_env in
+          let new_f_tag = unify (unify_tags body_tag f_tag) in
+          let new_f = update_id_tag f new_f_tag in
+          let res_local_env = AssocDictionary.remove (get_id f) new_local_env in
+          (Fixpoint (new_f, t, new_body),
+           new_f_tag,
+           new_field_env,
+           res_local_env,
+           f_tag <> new_f_tag || new_changes)
+                                    
+      (* TODO *)
       | TFun (_tvar, _body) -> (e, Top, field_env, local_env, false)
       | TApp (_tf, _arg_types) -> (e, Top, field_env, local_env, false)
       | Message _bs -> (e, Top, field_env, local_env, false) in 
     ((new_e, (new_e_tag, rep)), new_field_env, new_local_env, new_changes || tag <> new_e_tag)
 
+  and mf_tag_pattern p e expected_tag field_env local_env =
+    let rec get_pattern_vars acc p =
+      match p with
+      | Wildcard -> acc
+      | Binder x -> x :: acc
+      | Constructor (s, ps) ->
+          List.fold_left get_pattern_vars acc ps in
+    (* TODO: ADTs not handled, so patterns variables updated to Top *)
+    let rec update_pattern_vars p =
+      match p with
+      | Wildcard -> Wildcard
+      | Binder x -> Binder (update_id_tag x Top)
+      | Constructor (s, ps) ->
+          Constructor (s, List.map update_pattern_vars ps) in
+    let pattern_vars = get_pattern_vars [] p in
+    let sub_local_env =
+      List.fold_left
+        (* TODO: ADTs not handled, so just tag pattern variables to Top *)
+        (fun l_env x -> AssocDictionary.insert x Top l_env) local_env pattern_vars in
+    let ((_, (new_e_tag, _)) as new_e, new_field_env, new_local_env, new_changes) =
+      mf_tag_expr e expected_tag field_env local_env in
+    let res_local_env = 
+      List.fold_left
+        (fun l_env x -> AssocDictionary.remove x l_env) new_local_env pattern_vars in
+    let res_pattern = update_pattern_vars p in
+    (res_pattern, new_e, new_e_tag, new_field_env, res_local_env, new_changes)
+    
   (*******************************************************)
   (*                Main entry function                  *)
   (*******************************************************)
