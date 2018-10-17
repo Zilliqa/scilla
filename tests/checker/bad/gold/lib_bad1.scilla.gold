@@ -2,7 +2,11 @@
   "errors": [
     {
       "error_message": "Type error(s) in contract BadLibTest1:\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/lib_bad1.scilla",
+        "line": 55,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
@@ -46,27 +50,12 @@
     },
     {
       "error_message":
-        "Type error in pattern matching on `b` of type Bool (or one of its branches):\n",
-      "start_location": {
-        "file": "checker/bad/lib_bad1.scilla",
-        "line": 32,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Type error in pattern matching on `c` of type Int32 (or one of its branches):\n",
+        "Type error in pattern matching on `b` of type Bool (or one of its branches):\nType error in pattern matching on `c` of type Int32 (or one of its branches):\nNot an algebraic data type: Int32",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
         "line": 35,
         "column": 7
       },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Not an algebraic data type: Int32",
-      "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ]

@@ -39,20 +39,14 @@ module TCERep = TC.OutputERep
 let gas_limit = 2000
 
 let () =
-  if (Array.length Sys.argv) < 2 || (Array.length Sys.argv) > 3
-  then
-    (printf "%s\n" ("Usage: " ^ Sys.argv.(0) ^ " /path/to/exp.scilla [/path/to/stdlib]");
-    exit 1)
-  else
-  let filename = Sys.argv.(1) in
+  let cli = parse_cli() in
+  let filename = cli.input_file in
   match FrontEndParser.parse_file ScillaParser.exps filename with
   | Some [e] ->
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib = { TC.UntypedSyntax.lname = asId "dummy";
                    TC.UntypedSyntax.lentries = [] } in
-      (* This is an auxiliary executable, it's second argument must
-       * have a list of stdlib dirs, so note that down. *)
-      add_cmd_stdlib ();
+      StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
       let lib_dirs = StdlibTracker.get_stdlib_dirs() in
       if lib_dirs = [] then stdlib_not_found_err ();
       (* Import all libraries in known stdlib paths. *)
@@ -62,7 +56,7 @@ let () =
         (match envres gas_limit with
         | Ok (env', gas_remaining) -> env', gas_remaining
         | Error (err, gas_remaining) ->
-          pout @@ scilla_error_gas_jstring gas_remaining err;
+          pout @@ scilla_error_gas_string gas_remaining err;
           exit 1;) in
       let lib_fnames = List.map (fun (name, _) -> name) env in
       let res' = Eval.exp_eval_wrapper e env in
@@ -70,6 +64,6 @@ let () =
       (match res with
       | Ok _ ->
           printf "%s\n" (Eval.pp_result res lib_fnames)
-      | Error (el, gas_remaining) -> pout @@ scilla_error_gas_jstring gas_remaining el)
-  | Some _ | None ->
-      pout @@ scilla_error_gas_jstring gas_limit (mk_error0 ("Failed to parse input file." ^ filename))
+      | Error (el, gas_remaining) -> (pout @@ scilla_error_gas_string gas_remaining el ); exit 1)
+  | Some _ | None -> (* Error is printed by the parser. *)
+      exit 1

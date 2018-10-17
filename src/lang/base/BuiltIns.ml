@@ -660,7 +660,29 @@ module ScillaBuiltIns
     (* Create ASCII hexadecimal string from raw binary / bytes. *)
     let tohex s = "0x" ^ (transform_string (Hexa.encode()) s)
     (* Hash raw bytes / binary string. *)
-    let hash s = hash_string (Hash.sha2 256) s
+    let sha256_hasher s = hash_string (Hash.sha2 256) s
+    (* Keccak256 hash raw bytes / binary string. *)
+    let keccak256_hasher s = hash_string (Hash.keccak 256) s
+    (* Ripemd hash raw bytes/ binary string. *)
+    let ripemd160_hasher s = hash_string (Hash.ripemd160 ()) s
+
+    let hash_helper hasher name len ls = match ls with
+      | [l] ->
+          let lstr =
+            (match l with
+            | StringLit s -> s
+            | IntLit il -> bstring_from_int_lit il
+            | UintLit uil -> bstring_from_uint_lit uil
+            | ByStr s | ByStrX (_, s) -> fromhex s
+            (* Anything else, just serialize with SExp. *)
+            | _ -> sexp_of_literal l |> Sexplib.Sexp.to_string) in
+          let lhash = hasher lstr in
+          let lhash_hex = tohex lhash in
+          let lo = build_prim_literal (bystrx_typ len) lhash_hex in
+          (match lo with
+          | Some l' -> pure @@ l'
+          | None -> builtin_fail ("Hashing." ^ name ^ ": internal error, invalid hash") ls)
+      | _ -> builtin_fail ("Hashing." ^ name) ls
 
     let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
     let eq_arity = 2    
@@ -681,23 +703,11 @@ module ScillaBuiltIns
     let hash_elab sc ts = match ts with
       | [_]  -> elab_tfun_with_args sc ts
       | _ -> fail0 "Failed to elaborate"
-    let sha256hash ls _ = match ls with
-      | [l] ->
-          let lstr = 
-            (match l with
-            | StringLit s -> s
-            | IntLit il -> bstring_from_int_lit il
-            | UintLit uil -> bstring_from_uint_lit uil
-            | ByStr s | ByStrX (_, s) -> fromhex s
-            (* Anything else, just serialize with SExp. *)
-            | _ -> sexp_of_literal l |> Sexplib.Sexp.to_string) in
-          let lhash = hash lstr in
-          let lhash_hex = tohex lhash in 
-          let lo = build_prim_literal (bystrx_typ hash_length) lhash_hex in
-          (match lo with
-          | Some l' -> pure @@ l'
-          | None -> builtin_fail "Hashing.sha256hash: internal error, invalid sha256 hash" ls)
-      | _ -> builtin_fail "Hashing.sha256hash" ls
+    let sha256hash ls _ = hash_helper sha256_hasher "sha256hash" hash_length ls
+    let keccak256hash ls _ = hash_helper keccak256_hasher "keccak256hash" hash_length ls
+    (* RIPEMD-160 is a 160 bit hash, so define a separate type for it. *)
+    let ripemd160hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ address_length)
+    let ripemd160hash ls _ = hash_helper ripemd160_hasher "ripemd160hash" address_length ls
 
     let big_int_of_hash h =
       let s = match Hex.of_string h with
@@ -938,6 +948,8 @@ module ScillaBuiltIns
       ("eq", Hashing.eq_arity, Hashing.eq_type, Hashing.eq_elab, Hashing.eq);
       ("dist", Hashing.dist_arity, Hashing.dist_type, elab_id , Hashing.dist);
       ("sha256hash", Hashing.hash_arity, Hashing.hash_type,Hashing.hash_elab, Hashing.sha256hash);
+      ("keccak256hash", Hashing.hash_arity, Hashing.hash_type,Hashing.hash_elab, Hashing.keccak256hash);
+      ("ripemd160hash", Hashing.hash_arity, Hashing.ripemd160hash_type,Hashing.hash_elab, Hashing.ripemd160hash);
       ("to_bystr", Hashing.to_bystr_arity, Hashing.to_bystr_type, Hashing.to_bystr_elab, Hashing.to_bystr);
       ("schnorr_gen_key_pair", Hashing.schnorr_gen_key_pair_arity, Hashing.schnorr_gen_key_pair_type, elab_id, Hashing.schnorr_gen_key_pair);
       ("schnorr_sign", Hashing.schnorr_sign_arity, Hashing.schnorr_sign_type, elab_id, Hashing.schnorr_sign);
@@ -1005,7 +1017,8 @@ module ScillaBuiltIns
       let open Caml in
       let dict = Option.value ~default:[] @@ Hashtbl.find_opt built_in_hashtbl opname in
       let%bind (_, (type_elab, res_type, exec)) = tryM dict ~f:finder
-          ~msg:(mk_error1
+          ~msg:(fun () ->
+              mk_error1
                 (sprintf "Cannot find built-in with name \"%s\" and argument types %s." opname (pp_typ_list argtypes))
                 (ER.get_loc (get_rep op)))
       in pure (type_elab, res_type, exec)

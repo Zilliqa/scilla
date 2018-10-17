@@ -98,6 +98,13 @@ let set_pp_lit b =
 
 let get_pp_lit () = !pp_lit
 
+let json_errors = ref false
+
+let set_use_json_errors b =
+  json_errors := b
+
+let use_json_errors () = !json_errors
+
 module StdlibTracker = struct
 
 (* Environment variable: where to look for stdlib.
@@ -113,8 +120,8 @@ let stdlib_dirs = ref []
 let get_stdlib_dirs () =
   let env_dirs = 
     match (Sys.getenv_opt scilla_stdlib_env) with 
-    | Some s -> String.split_on_char ';' s
-    | None -> []
+    | Some s when s != "" -> String.split_on_char ';' s
+    | _ -> []
   in
     List.append env_dirs !stdlib_dirs
 

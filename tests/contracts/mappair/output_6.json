@@ -1,1 +1,11 @@
-Failed to parse json tests/contracts/mappair/state_6.json: Type mismatch in parsing ADT Pair
+{
+  "gas_remaining": 7714,
+  "errors": [
+    {
+      "error_message":
+        "Failed to parse json tests/contracts/mappair/state_6.json:\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ]
+}

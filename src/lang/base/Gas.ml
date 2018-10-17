@@ -128,7 +128,14 @@ module ScillaGas
            get (bystrx_width a1) = get (bystrx_width a2)
       -> pure @@ get (bystrx_width a1) * base
     | "sha256hash", _, [a] ->
-        pure @@ (String.length (pp_literal a) + 20) * base
+        (* Block size of sha256hash is 512 *)
+        pure @@ ((String.length (pp_literal a))/64 + 15) * base
+    | "keccak256hash", _, [a] ->
+        (* Block size of keccak256hash is 1088 *)
+        pure @@ ((String.length (pp_literal a))/136 + 15) * base
+    | "ripemd160hash", _, [a] ->
+        (* Block size of ripemd160hash is 512 *)
+        pure @@ ((String.length (pp_literal a))/64 + 10) * base
     | "schnorr_gen_key_pair", _, _ -> pure 20 (* TODO *)
     | "schnorr_sign", _, [_;_;ByStr(s)]
     | "schnorr_verify", _, [_;ByStr(s);_] ->
@@ -148,13 +155,11 @@ module ScillaGas
     | [UintLit (Uint32L i)] -> pure @@  (Stdint.Uint32.to_int i) * base
     | _ -> fail0 @@ "Gas cost error for to_nat built-in"
 
-  let int_coster _ args base =
+  let int_coster op args base =
     let base' =
-      (* match op with
-         | "mul" -> base * 2
-         | "div" | "rem" -> base * 4
+       match op with
+         | "mul" | "div" | "rem" -> base * 5
          | _ -> base
-      *) base (* No emperical evidence for charing more for mul / div. *)
     in
     let%bind w = match args with
       | [IntLit i] | [IntLit i; IntLit _] ->
@@ -188,6 +193,8 @@ module ScillaGas
     ("dist", [bystrx_typ hash_length; bystrx_typ hash_length], base_coster, 32);
     ("to_bystr", [tvar "'A"], hash_coster, 1);
     ("sha256hash", [tvar "'A"], hash_coster, 1);
+    ("keccak256hash", [tvar "'A"], hash_coster, 1);
+    ("ripemd160hash", [tvar "'A"], hash_coster, 1);
     ("schnorr_gen_key_pair", [], hash_coster, 1);
     ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], hash_coster, 5);
     ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], hash_coster, 5);
@@ -233,14 +240,14 @@ module ScillaGas
   let builtin_cost op_i arg_literals =
     let op = get_id op_i in
     let%bind arg_types = mapM arg_literals ~f:literal_type in
-    let matcher (name, types, fcoster, base) = 
+    let matcher (name, types, fcoster, base) =
       (* The names and type list lengths must match and *)
       if name = op && List.length types = List.length arg_types
          && (List.for_all2_exn ~f:(fun t1 t2 ->
              (* the types should match *)
              type_equiv t1 t2 ||
              (* or the built-in record is generic *)
-             (match t2 with | TypeVar _ -> true | _ -> false)) 
+             (match t2 with | TypeVar _ -> true | _ -> false))
              arg_types types)
       then fcoster op arg_literals base (* this can fail too *)
       else fail0 @@ "Name or arity doesn't match"
@@ -248,7 +255,7 @@ module ScillaGas
     let msg = sprintf "Unable to determine gas cost for \"%s\"" op in
     let open Caml in
     let dict = match Hashtbl.find_opt builtin_hashtbl op with | Some rows -> rows | None -> [] in
-    let %bind (_, cost) = tryM dict ~f:matcher ~msg:(mk_error0 msg) in
+    let %bind (_, cost) = tryM dict ~f:matcher ~msg:(fun () -> mk_error0 msg) in
     pure cost
 
 end

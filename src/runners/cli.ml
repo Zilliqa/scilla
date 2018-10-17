@@ -27,6 +27,7 @@ let f_trace_level = ref ""
 let d_libs = ref []
 let v_gas_limit = ref 0
 let b_pp_lit = ref true
+let b_json_errors = ref false
 
 let usage = "-init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
@@ -46,6 +47,9 @@ let process_trace () =
 
 let process_pplit () =
   if !b_pp_lit then GlobalConfig.set_pp_lit true else GlobalConfig.set_pp_lit false
+
+let process_json_errors () =
+  GlobalConfig.set_use_json_errors !b_json_errors
 
 let validate_main () =
   let msg = 
@@ -111,12 +115,14 @@ let parse () =
     ("-libdir", Arg.String (fun x -> d_libs := x::!d_libs), "Path to directory containing libraries");
     ("-gaslimit", Arg.Int (fun i -> v_gas_limit := i), "Gas limit");
     ("-pplit", Arg.Bool (fun b -> b_pp_lit := b), "Pretty print literals");
+    ("-jsonerrors", Arg.Unit (fun () -> b_json_errors := true), "Print errors in JSON format");
   ] in 
   let ignore_anon _ = () in
   let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
   let () = process_trace() in
   let () = process_pplit() in
+  let () = process_json_errors() in
   let () = validate_main () in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input;
-     libdirs = !d_libs; gas_limit = !v_gas_limit}
+     libdirs = !d_libs; gas_limit = !v_gas_limit;}
