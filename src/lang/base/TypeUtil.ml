@@ -396,6 +396,16 @@ module TypeUtilities
         if validate_bystrx_literal l
         then pure (bystrx_typ b)
         else fail0 @@ (sprintf "Malformed byte string " ^ (pp_literal l))
+    (* Check that messages and events have storable parameters. *)
+    | Msg m -> 
+        let%bind all_storable = foldM ~f:(fun acc (_, l) ->
+            let%bind t = literal_type l in
+            if acc then pure (is_storable_type t) else pure false)
+            ~init:true m
+        in
+        if not all_storable then
+          fail0 @@ sprintf "Message/Event has invalid / non-storable parameters"
+        else pure msg_typ
     | Map ((kt, vt), kv) ->
         if PrimTypes.is_prim_type kt
         then 

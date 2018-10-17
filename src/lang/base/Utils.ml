@@ -27,8 +27,10 @@ module type Dictionary = sig
   type 'a dict
 
   val make_dict : unit -> 'a dict
+  val remove : key -> 'a dict -> 'a dict
   val insert : key -> 'a -> 'a dict -> 'a dict
   val lookup : key -> 'a dict -> 'a option
+  val update : key -> 'a -> 'a dict -> 'a dict
 
   val is_empty : 'a dict -> bool
 
