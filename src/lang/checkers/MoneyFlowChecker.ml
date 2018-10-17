@@ -245,15 +245,15 @@ module ScillaMoneyFlowChecker
     match id with
     | Ident (v, (_, rep)) -> Ident (v, (new_tag, rep))
 
-  let builtin_tag f args = Map Top
+  let builtin_tag _f _args = Map Top
   
   let rec mf_tag_expr (erep : MFSyntax.expr_annot) expected_tag field_env local_env =
     let lookup_var_tag i =
-      match List.find_opt (fun (x, _) -> x = get_id i) local_env  with
-      | Some (_, t) -> t
+      match AssocDictionary.lookup (get_id i) local_env with
+      | Some t -> t
       | None ->
-          match List.find_opt (fun (x, _) -> x = get_id i) field_env  with
-          | Some (_, t) -> t
+          match AssocDictionary.lookup (get_id i) field_env with
+          | Some t -> t
           | None -> get_id_tag i in
     let unify t = unify_tags expected_tag t in
     let (e, (tag, rep)) = erep in
@@ -320,7 +320,7 @@ module ScillaMoneyFlowChecker
           let updated_lhs_local_env = AssocDictionary.insert (get_id i) new_i_tag lhs_local_env in
           let ((_, (new_rhs_tag, _)) as new_rhs, rhs_field_env, rhs_local_env, rhs_changes) =
             mf_tag_expr rhs expected_tag lhs_field_env updated_lhs_local_env in
-          let res_local_env = AssocDictionary.remove (get_id i) local_env in
+          let res_local_env = AssocDictionary.remove (get_id i) rhs_local_env in
           let new_tag = unify new_rhs_tag in
           (Let (new_i, topt, new_lhs, new_rhs),
            new_tag,
@@ -328,13 +328,13 @@ module ScillaMoneyFlowChecker
            res_local_env,
            i_tag <> get_id_tag i || lhs_changes || rhs_changes)
           
-      | Constr (cname, ts, actuals) ->
-      | MatchExpr (x, clauses) ->
-      | Fixpoint (f, t, body) ->
-      | TFun (tvar, body) ->
-      | TApp (tf, arg_types) ->
-      | Message bs ->    in
-    (new_e, (new_tag, rep))
+      | Constr (_cname, _ts, _actuals) -> (e, Top, field_env, local_env, false)
+      | MatchExpr (_x, _clauses) -> (e, Top, field_env, local_env, false)
+      | Fixpoint (_f, _t, _body) -> (e, Top, field_env, local_env, false)
+      | TFun (_tvar, _body) -> (e, Top, field_env, local_env, false)
+      | TApp (_tf, _arg_types) -> (e, Top, field_env, local_env, false)
+      | Message _bs -> (e, Top, field_env, local_env, false) in 
+    ((new_e, (new_e_tag, rep)), new_field_env, new_local_env, new_changes || tag <> new_e_tag)
 
   (*******************************************************)
   (*                Main entry function                  *)
