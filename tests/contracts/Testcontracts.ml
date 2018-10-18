@@ -192,10 +192,11 @@ let add_tests env =
     let schnorrtests = "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 4) in
     let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1) in
     let fungibletokentests = "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8) in
+    let inplace_map_tests = "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 7) in
     let misc_tests = "misc_tests" >::: build_misc_tests env in
 
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f;
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;
                              auctiontests;emptytests;bookstoretests;nonfungibletokentests_expected_f;nonfungibletokentests;
-                             schnorrtests]
+                             schnorrtests; inplace_map_tests]
 

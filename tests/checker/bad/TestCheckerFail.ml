@@ -34,6 +34,7 @@ module Tests = TestUtil.DiffBasedTests(
       "zil_mod.scilla";
       "mappair2.scilla";
       "mappair.scilla";
+      "inplace-map.scilla";
       "homonymous_vars.scilla";
       "homonymous_vars2.scilla";
       "homonymous_vars3.scilla"
