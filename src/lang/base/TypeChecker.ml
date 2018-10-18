@@ -349,26 +349,33 @@ module ScillaTypechecker
              let%bind checked_stmts = type_stmts env' sts get_loc in
              let typed_x = add_type_to_ident x ityp in
              pure @@ add_stmt_to_stmts_env (TypedSyntax.Bind (typed_x, checked_e), rep) checked_stmts
-         | MapUpdate (m, klist, v) ->
+         | MapUpdate (m, klist, vopt) ->
              let%bind (typed_m, typed_klist, typed_v) = wrap_type_serr stmt (
                 let%bind (typed_m, typed_klist, v_type) = type_map_access env m klist in
-                let%bind v_resolv = TEnv.resolveT env.pure (get_id v) ~lopt:(Some (get_rep v)) in
-                let typed_v = rr_typ v_resolv in
-                let%bind _ = assert_type_equiv v_type typed_v.tp in
+                let%bind typed_v = 
+                  (match vopt with
+                   | Some v -> (* This is adding/replacing the value for a key. *) 
+                      let%bind v_resolv = TEnv.resolveT env.pure (get_id v) ~lopt:(Some (get_rep v)) in
+                      let typed_v = rr_typ v_resolv in
+                      let%bind _ = assert_type_equiv v_type typed_v.tp in
+                      let typed_v' = add_type_to_ident v typed_v in
+                      pure @@ (Some typed_v')
+                   | None -> pure None (* This is deleting a key from the map. *)
+                  )
+                in
                 pure @@ (typed_m, typed_klist, typed_v)
              ) in
-             let typed_v = add_type_to_ident v typed_v in
              (* Check rest of the statements. *)
              let%bind checked_stmts = type_stmts env sts get_loc in
              (* Update annotations. *)
              pure @@ add_stmt_to_stmts_env (TypedSyntax.MapUpdate(typed_m, typed_klist, typed_v), rep) checked_stmts
-         | MapGet (v, m, klist) ->
+         | MapGet (v, m, klist, valfetch) ->
              let%bind (typed_m, typed_klist, v_type) = wrap_type_serr stmt (
                 let%bind (typed_m, typed_klist, v_type) = type_map_access env m klist in
                 pure @@ (typed_m, typed_klist, v_type)
              ) in
-             (* The return type of MapGet would be Option v_type. *)
-             let v_type' = ADT("Option", [v_type]) in
+             (* The return type of MapGet would be (Option v_type) or Bool. *)
+             let v_type' = if valfetch then ADT("Option", [v_type]) else ADT("Bool", []) in
              (* Update environment. *)
              let pure' = TEnv.addT (TEnv.copy env.pure) v v_type' in
              let env' = {env with pure = pure'} in
@@ -376,7 +383,7 @@ module ScillaTypechecker
              (* Check rest of the statements. *)
              let%bind checked_stmts = type_stmts env' sts get_loc in
              (* Update annotations. *)
-             pure @@ add_stmt_to_stmts_env (TypedSyntax.MapGet(typed_v, typed_m, typed_klist), rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.MapGet(typed_v, typed_m, typed_klist, valfetch), rep) checked_stmts
          | ReadFromBC (x, bf) ->
              let%bind bt = wrap_type_serr stmt @@ lookup_bc_type bf in
              let pure' = TEnv.addT (TEnv.copy env.pure) x bt in

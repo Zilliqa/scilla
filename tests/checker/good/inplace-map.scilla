@@ -63,3 +63,54 @@ transition test4()
     gmap[not_found] := b
   end
 end
+
+transition test5()
+  a = "H";
+  b = Int32 1;
+  c = Int64 2;
+  delete gmap3[a][b][c]
+end
+
+transition test6()
+  a = "Hi";
+  b = Int32 1;
+  c = Int64 2;
+  delete gmap3[a][b][c]
+end
+
+transition test7()
+  a = "H";
+  b = Int32 1;
+  c = Int64 2;
+  delete gmap3[a]
+end
+
+transition test8()
+  a = "H";
+  b = Int32 1;
+  c = Int64 2;
+  d <- exists  gmap3[a][b][c];
+  match d with
+  | True =>
+    ex = "Exists";
+    gmap[ex] := b
+  | False =>
+    ex = "Doesn't Exist";
+    gmap[ex] := b
+  end
+end
+
+transition test9()
+  a = "H";
+  b = Int32 1;
+  c = Int64 2;
+  d <- exists gmap3[a];
+  match d with
+  | True =>
+    ex = "Exists";
+    gmap[ex] := b
+  | False =>
+    ex = "Doesn't Exist";
+    gmap[ex] := b
+  end
+end

@@ -90,6 +90,8 @@
 %token EVENT
 %token ACCEPT
 %token MAP
+%token DELETE
+%token EXISTS
        
 (*  Other tokens *)
 %token EOF
@@ -256,9 +258,13 @@ stmt:
 | l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos($2)), r), toLoc $startpos) }
 | l=ID; BIND; AND; c=CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
 | l = ID; BIND; r = ID; keys = nonempty_list(map_access)
-  { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys), toLoc $startpos }
+  { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, true), toLoc $startpos }
+| l = ID; BIND; EXISTS; r = ID; keys = nonempty_list(map_access)
+  { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, false), toLoc $startpos }
 | l = ID; keys = nonempty_list(map_access); ASSIGN; r = ID
-  { MapUpdate(asIdL l (toLoc $startpos(l)), keys, asIdL r (toLoc $startpos(r))), toLoc $startpos }
+  { MapUpdate(asIdL l (toLoc $startpos(l)), keys, Some (asIdL r (toLoc $startpos(r)))), toLoc $startpos }
+| DELETE; l = ID; keys = nonempty_list(map_access)
+  { MapUpdate(asIdL l (toLoc $startpos(l)), keys, None), toLoc $startpos }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
 | SEND; m = ID;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | EVENT; m = ID; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }

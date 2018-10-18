@@ -212,10 +212,12 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Load of ER.rep ident * ER.rep ident
     | Store of ER.rep ident * ER.rep ident
     | Bind of ER.rep ident * expr_annot
-    (* m[k1][k2]... := v *)
-    | MapUpdate of ER.rep ident * (ER.rep ident list) * ER.rep ident
-    (* v <- m[k1][k2]... *)
-    | MapGet of ER.rep ident * ER.rep ident * (ER.rep ident list)
+    (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
+    | MapUpdate of ER.rep ident * (ER.rep ident list) * ER.rep ident option
+    (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
+    (* If the bool is set, then we interpret this as value retrieve, 
+       otherwise as an "exists" query. *)
+    | MapGet of ER.rep ident * ER.rep ident * (ER.rep ident list) * bool
     | MatchStmt of ER.rep ident * (pattern * stmt_annot list) list
     | ReadFromBC of ER.rep ident * string
     | AcceptPayment
@@ -245,9 +247,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     (* none *)
     | G_Bind
     (* nesting depth, new value *)
-    | G_MapUpdate of int * literal
+    | G_MapUpdate of int * literal option
     (* nesting depth, literal retrieved *)
-    | G_MapGet of int * literal
+    | G_MapGet of int * literal option
     (* number of clauses *)
     | G_MatchStmt of int
     | G_ReadFromBC
@@ -558,7 +560,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Bind (x, _) ->
         sprintf "Type error in the binding to into `%s`:\n"
            (get_id x)
-    | MapGet (_, m, keys) ->
+    | MapGet (_, m, keys, _) ->
         (sprintf "Type error in getting map value %s" (get_id m)) ^
         (List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ (get_id k) ^ "]")) ^ "\n"
     | MapUpdate (m, keys, _) ->

@@ -76,6 +76,8 @@ rule read =
   | "event"       { EVENT }
   | "field"       { FIELD }      
   | "accept"      { ACCEPT }      
+  | "exists"      { EXISTS }
+  | "delete"      { DELETE }
   | "Emp"         { EMP }
   | "Map"         { MAP }
 

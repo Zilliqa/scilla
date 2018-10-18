@@ -93,9 +93,12 @@ module ScillaGas
         let storage_cost = new_cost - old_cost in
         let op_cost = Int.max old_cost new_cost in
         pure @@ op_cost + storage_cost
-    | G_MapUpdate (n, l)
-    | G_MapGet (n, l) ->
-      let%bind l_cost = (literal_cost l) in
+    | G_MapUpdate (n, lopt)
+    | G_MapGet (n, lopt) ->
+      let%bind l_cost = 
+        (* Deleting a key only has the cost of indexing 
+           (to incentivice removal of data). *)
+        (match lopt with | Some l -> (literal_cost l) | None -> pure 0) in
       pure @@ n + l_cost
     | G_Bind -> pure 1
     | G_MatchStmt num_clauses-> pure num_clauses

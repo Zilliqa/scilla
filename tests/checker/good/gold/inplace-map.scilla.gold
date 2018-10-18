@@ -12,7 +12,12 @@
     { "name": "test1", "params": [] },
     { "name": "test2", "params": [] },
     { "name": "test3", "params": [] },
-    { "name": "test4", "params": [] }
+    { "name": "test4", "params": [] },
+    { "name": "test5", "params": [] },
+    { "name": "test6", "params": [] },
+    { "name": "test7", "params": [] },
+    { "name": "test8", "params": [] },
+    { "name": "test9", "params": [] }
   ],
   "events": []
 }

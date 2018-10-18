@@ -248,32 +248,42 @@ module Configuration = struct
       | None -> fail1 (sprintf "No field \"%s\" in contract.\n" i)
             (ER.get_loc (get_rep k))
 
-  let map_update st m klist v =
+  let map_update st m klist vopt =
     let s = st.fields in
     match List.find s ~f:(fun (z, _) -> z = (get_id m)) with
     | Some (_, Map((_,vt), mlit)) ->
       let rec recurser mlit' klist' vt' =
         (match klist' with
          (* we're at the last key, update literal. *)
-         | [k] -> Caml.Hashtbl.replace mlit' k v;
-            pure @@ (st, G_MapUpdate ((List.length klist), v))
+         | [k] -> 
+            (match vopt with
+            | Some v ->
+              Caml.Hashtbl.replace mlit' k v;
+              pure @@ (st, G_MapUpdate ((List.length klist), (Some v)))
+            | None ->
+              Caml.Hashtbl.remove mlit' k;
+              pure @@ (st, G_MapUpdate ((List.length klist), None)))
          | k :: krest ->
             (* we have more nested maps *)
             (match Caml.Hashtbl.find_opt mlit' k with
              | Some (Map((_, vt''), mlit'')) -> recurser mlit'' krest vt''
              | None ->
-              (* We have more keys remaining, but no entry for "k".
-                 So create an empty map for "k" and then proceed. *)
-                 let mlit'' = Caml.Hashtbl.create 4 in
-                 let%bind (kt'', vt'') = 
-                  (match vt' with
-                   | MapType (keytype, valtype) -> pure (keytype, valtype)
-                   | _ -> fail1 (sprintf "Cannot index into map %s due to non-map type" (get_id m))
-                          (ER.get_loc (get_rep m))
-                  )
-                  in
-                    Caml.Hashtbl.replace mlit' k (Map((kt'', vt''), mlit''));
-                    recurser mlit'' krest vt''
+                if (is_some vopt) then (* not a delete operation. *)
+                  (* We have more keys remaining, but no entry for "k".
+                    So create an empty map for "k" and then proceed. *)
+                  let mlit'' = Caml.Hashtbl.create 4 in
+                  let%bind (kt'', vt'') = 
+                    (match vt' with
+                    | MapType (keytype, valtype) -> pure (keytype, valtype)
+                    | _ -> fail1 (sprintf "Cannot index into map %s due to non-map type" (get_id m))
+                            (ER.get_loc (get_rep m))
+                    )
+                    in
+                      Caml.Hashtbl.replace mlit' k (Map((kt'', vt''), mlit''));
+                      recurser mlit'' krest vt''
+                else
+                  (* No point removing a key that doesn't exist. *)
+                  pure @@ (st, G_MapUpdate ((List.length klist), None))
               (* The remaining keys cannot be used for indexing as
                  we ran out of nested maps. *)
              | _ -> fail1 (sprintf "Cannot index into map %s. Too many index keys." (get_id m))
@@ -288,7 +298,7 @@ module Configuration = struct
     | _ -> fail1 (sprintf "No map field \"%s\" in contract.\n" (get_id m))
             (ER.get_loc (get_rep m))
 
-  let map_get st m klist =
+  let map_get st m klist fetchval =
     let s = st.fields in
     match List.find s ~f:(fun (z, _) -> z = (get_id m)) with
     | Some (_, Map((kt, vt), mlit)) ->
@@ -310,24 +320,34 @@ module Configuration = struct
       let rec recurser mlit' klist' vt' =
         (match klist' with
          | [k] -> 
-          let%bind l_opt = (match Caml.Hashtbl.find_opt mlit' k with
-            | Some l -> pure @@ ADTValue ("Some", [vt'], [l])
+          let%bind res = (match Caml.Hashtbl.find_opt mlit' k with
+            | Some l ->
+              if fetchval
+              then pure @@ ADTValue ("Some", [vt'], [l])
+              else pure @@ ADTValue ("True", [], [])
             | None -> 
               (* Just an assert. *)
               if vt' <> ret_val_type 
               then fail1 (sprintf "Failuing indexing into map %s. Internal error." (get_id m))
                   (ER.get_loc (get_rep m))
-              else pure @@ ADTValue ("None", [vt'], []))
+              else 
+                if fetchval
+                then pure @@ ADTValue ("None", [vt'], [])
+                else pure @@ ADTValue ("False", [], []))
           in
-            pure @@ (l_opt, G_MapGet(List.length klist, l_opt))
+            pure @@ (res, G_MapGet(List.length klist, Some res))
          | k :: krest ->
             (* we have more nested maps *)
             (match Caml.Hashtbl.find_opt mlit' k with
              | Some (Map((_, vt''), mlit'')) -> recurser mlit'' krest vt''
              | None ->
                 (* No element found. Return none. *)
-                let ret = ADTValue ("None", [ret_val_type], []) in
-                pure @@ (ret, G_MapGet(List.length klist, ret))
+                let ret = 
+                  if fetchval
+                  then ADTValue ("None", [ret_val_type], [])
+                  else ADTValue ("False", [], [])
+                in
+                pure @@ (ret, G_MapGet(List.length klist, Some ret))
               (* The remaining keys cannot be used for indexing as
                  we ran out of nested maps. *)
              | _ -> fail1 (sprintf "Cannot index into map %s. Too many index keys." (get_id m))
