@@ -218,13 +218,25 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       | Store (x, r) ->
           let%bind v = Configuration.lookup conf r in
-          let%bind (conf', scon) = Configuration.store conf (get_id x) v in
+          let%bind (conf', scon) = Configuration.store conf x v in
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | Bind (x, e) ->
           let%bind (lval, _) = exp_eval_wrapper e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
           let%bind _ = stmt_gas_wrap G_Bind sloc in
+          stmt_eval conf' sts
+      | MapUpdate(m, klist, r) ->
+          let%bind klist' = mapM ~f:(fun k -> Configuration.lookup conf k) klist in
+          let%bind v = Configuration.lookup conf r in
+          let%bind (conf', scon) = Configuration.map_update conf m klist' v in
+          let%bind _ = stmt_gas_wrap scon sloc in
+          stmt_eval conf' sts
+      | MapGet(x, m, klist) ->
+          let%bind klist' = mapM ~f:(fun k -> Configuration.lookup conf k) klist in
+          let%bind (l, scon) = Configuration.map_get conf m klist' in
+          let conf' = Configuration.bind conf (get_id x) l in
+          let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in

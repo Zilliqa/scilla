@@ -85,6 +85,8 @@ rule read =
   | ':'           { COLON }
   | '.'           { PERIOD }      
   | '|'           { BAR }
+  | '['           { LSQB }
+  | ']'           { RSQB }
   | '('           { LPAREN }
   | ')'           { RPAREN }
   | "{"           { LBRACE }
