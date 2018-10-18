@@ -1,0 +1,12 @@
+{
+    "_tag": "SignTransaction",
+    "_amount": "0",
+    "_sender" : "0xffcdeabcde126786789012345678901234567890",
+    "params": [
+        {
+            "vname": "transactionId",
+            "type": "Uint32",
+            "value": "0"
+        }
+    ]
+}
