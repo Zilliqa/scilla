@@ -1,0 +1,12 @@
+{
+    "_tag": "RevokeSignature",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678906784567890",
+    "params": [
+        {
+            "vname": "transactionId",
+            "type": "Uint32",
+            "value": "1"
+        }
+    ]
+}

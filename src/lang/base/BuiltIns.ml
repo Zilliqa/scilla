@@ -794,6 +794,7 @@ module ScillaBuiltIns
   (* Maps *)
   (***********************************************************)
   module Maps = struct
+    open PrimTypes
     open UsefulLiterals
     open Datatypes.DataTypeDictionary
 
@@ -889,6 +890,20 @@ module ScillaBuiltIns
           in pure (ol)
       | _ -> builtin_fail "Map.to_list" ls
 
+    let size_arity = 1
+    let size_type =
+      tfun_typ "'K" @@ tfun_typ "'V" @@
+      (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
+       uint32_typ)
+    let size_elab sc ts = match ts with
+      | [MapType (kt, vt)]  -> elab_tfun_with_args sc [kt; vt]
+      | _ -> fail0 "Failed to elaborate" 
+    let size ls _ = match ls with
+      | [Map (_, entries)] ->
+          (* The type of the output will be "Uint32" *)
+          let ol = Caml.Hashtbl.length entries in
+          pure (UintLit (Uint32L (Stdint.Uint32.of_int ol)))
+      | _ -> builtin_fail "Map.size" ls
   end
 
 
@@ -946,6 +961,7 @@ module ScillaBuiltIns
       ("get", Maps.get_arity, Maps.get_type, Maps.get_elab, Maps.get);
       ("remove", Maps.remove_arity, Maps.remove_type, Maps.remove_elab, Maps.remove);
       ("to_list", Maps.to_list_arity, Maps.to_list_type, Maps.to_list_elab, Maps.to_list);
+      ("size", Maps.size_arity, Maps.size_type, Maps.size_elab, Maps.size);
 
       (* Integers *)
       ("eq", Int.eq_arity, Int.eq_type, Int.eq_elab, Int.eq);
