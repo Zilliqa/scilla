@@ -27,7 +27,7 @@ open ErrorUtils
 (*                    JSON printing                             *)
 (****************************************************************)
 
-let rec mapvalues_to_json ms = 
+let rec mapvalues_to_json ms =
   Caml.Hashtbl.fold (fun k v a ->
     let kjson = "key", (literal_to_json k) in
     let vjson = "val", (literal_to_json v) in
