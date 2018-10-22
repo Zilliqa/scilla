@@ -103,13 +103,11 @@ let scilla_warning_to_json wlist =
 
 let scilla_error_to_jstring ?(pp = true) elist =
   let j' = scilla_error_to_json elist in
-  let j = `Assoc [("errors", j')] in
-  if pp then Basic.pretty_to_string j
-  else Basic.to_string j
-
-let scilla_warning_to_jstring ?(pp = true) wlist =
-  let j' = scilla_warning_to_json wlist in
-  let j = `Assoc [("warnings", j')] in
+  let k' = scilla_warning_to_json (get_warnings()) in
+  let j = `Assoc [
+    ("errors", j');
+    ("warnings", k');
+  ] in
   if pp then Basic.pretty_to_string j
   else Basic.to_string j
 
@@ -132,7 +130,8 @@ let scilla_warning_to_sstring wlist =
 let scilla_error_to_string elist  =
   if GlobalConfig.use_json_errors()
   then scilla_error_to_jstring elist
-  else scilla_error_to_sstring elist
+  else (scilla_error_to_sstring elist) ^
+       (scilla_warning_to_sstring (get_warnings()))
 
 let scilla_error_gas_jstring ?(pp = true) gas_remaining elist =
   let j' = scilla_error_to_json elist in
