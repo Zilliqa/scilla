@@ -162,6 +162,19 @@ module ScillaMoneyFlowChecker
           MFSyntax.Bind (
             add_plain_to_ident x,
             mf_init_tag_expr e)
+      | MapUpdate (m, ks, v) ->
+          MFSyntax.MapUpdate (
+            add_plain_to_ident m,
+            List.map add_plain_to_ident ks,
+            match v with | None -> None | Some v' -> Some (add_plain_to_ident v')
+          )
+      | MapGet (x, m, ks, retrieve) ->
+          MFSyntax.MapGet (
+            add_plain_to_ident x,
+            add_plain_to_ident m,
+            List.map add_plain_to_ident ks,
+            retrieve
+          )
       | MatchStmt (x, pss) ->
           MFSyntax.MatchStmt (
             add_plain_to_ident x,
@@ -252,7 +265,10 @@ module ScillaMoneyFlowChecker
     | None ->
         match AssocDictionary.lookup (get_id i) field_env with
         | Some t -> t
-        | None -> get_id_tag i
+        | None ->
+            (* TODO: This indicates an identifier bound in a library
+               Set to Top until libraries are handled. *)
+            (* get_id_tag i *) Top
                     
   let update_var_tag i new_tag field_env local_env =
     match AssocDictionary.lookup (get_id i) local_env with
@@ -439,7 +455,28 @@ module ScillaMoneyFlowChecker
         (fun l_env x -> AssocDictionary.remove (get_id x) l_env) new_local_env pattern_vars in
     let res_pattern = update_pattern_vars p in
     (res_pattern, new_e, new_e_tag, new_field_env, res_local_env, new_changes)
+(*    
+  let rec mf_tag_stmt (srep : EMFR.stmt_annot) field_env local_env =
+    let (s, rep) = srep in
     
+
+    | Load of ER.rep ident * ER.rep ident
+    | Store of ER.rep ident * ER.rep ident
+    | Bind of ER.rep ident * expr_annot
+    (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
+    | MapUpdate of ER.rep ident * (ER.rep ident list) * ER.rep ident option
+    (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
+    (* If the bool is set, then we interpret this as value retrieve, 
+       otherwise as an "exists" query. *)
+    | MapGet of ER.rep ident * ER.rep ident * (ER.rep ident list) * bool
+    | MatchStmt of ER.rep ident * (pattern * stmt_annot list) list
+    | ReadFromBC of ER.rep ident * string
+    | AcceptPayment
+    | SendMsgs of ER.rep ident
+    | CreateEvnt of ER.rep ident
+    | Throw of ER.rep ident
+*)
+
   (*******************************************************)
   (*                Main entry function                  *)
   (*******************************************************)
