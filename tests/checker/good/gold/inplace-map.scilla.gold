@@ -1,0 +1,23 @@
+{
+  "name": "Test",
+  "params": [ { "name": "owner", "type": "ByStr20" } ],
+  "fields": [
+    { "name": "gmap", "type": "Map (String) (Int32)" },
+    {
+      "name": "gmap3",
+      "type": "Map (String) (Map (Int32) (Map (Int64) (String)))"
+    }
+  ],
+  "transitions": [
+    { "name": "test1", "params": [] },
+    { "name": "test2", "params": [] },
+    { "name": "test3", "params": [] },
+    { "name": "test4", "params": [] },
+    { "name": "test5", "params": [] },
+    { "name": "test6", "params": [] },
+    { "name": "test7", "params": [] },
+    { "name": "test8", "params": [] },
+    { "name": "test9", "params": [] }
+  ],
+  "events": []
+}

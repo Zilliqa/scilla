@@ -169,6 +169,9 @@ module ScillaPatternchecker
           (match s with
            | Load (i, x) -> pure @@ (CheckedPatternSyntax.Load (i, x), rep)
            | Store (i, x) -> pure @@ (CheckedPatternSyntax.Store (i, x), rep)
+           | MapUpdate (m, klist, v) -> pure @@ (CheckedPatternSyntax.MapUpdate (m, klist, v), rep)
+           | MapGet (v, m, klist, valfetch) -> 
+               pure @@ (CheckedPatternSyntax.MapGet (v, m, klist, valfetch), rep)
            | Bind (i, e) ->
                wrap_pmcheck_serr srep @@ 
                let%bind checked_e = pm_check_expr e in

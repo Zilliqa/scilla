@@ -1,0 +1,18 @@
+[
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "gmap3",
+      "type": "Map (String) (Map (Int32) (Map (Int64) (String)))",
+      "value": [
+        {
+          "key": "H",
+          "val": [ { "key": "1", "val": [ { "key": "2", "val": "H" } ] } ]
+        }
+      ]
+    },
+    {
+      "vname": "gmap",
+      "type": "Map (String) (Int32)",
+      "value": [ { "key": "Hello", "val": "1" } ]
+    }
+]
