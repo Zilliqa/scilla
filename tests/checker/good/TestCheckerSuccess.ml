@@ -26,7 +26,7 @@ module Tests = TestUtil.DiffBasedTests(
     let runner = "scilla-checker"
     let tests = [
       "crowdfunding.scilla"; "zil-game.scilla"; "fungible-token.scilla"; "auction.scilla";
-      "empty.scilla"; "schnorr.scilla"
+      "empty.scilla"; "schnorr.scilla"; "inplace-map.scilla"
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
