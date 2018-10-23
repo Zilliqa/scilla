@@ -151,9 +151,13 @@ module ScillaGas
       when is_bystrx_type a -> pure @@ get (bystrx_width a) * base
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
-  let map_coster _ args base =
+  let map_coster op args base =
     match args with
-    | Map _ :: _ -> pure base
+    | Map (_, m) :: _ -> 
+      (* get and contains do not make a copy of the Map, hence constant. *)
+      (match op with
+      | "get" | "contains" -> pure base 
+      | _ -> pure (base + (base * Caml.Hashtbl.length m)))
     | _ -> fail0 @@ "Gas cost error for map built-in"
 
   let to_nat_coster _ args base =
