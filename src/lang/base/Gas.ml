@@ -43,7 +43,7 @@ module ScillaGas
       | StringLit s ->
           let l = String.length s in
           pure @@ if l <= 20 then 20 else l
-      | BNum _ -> pure @@ 32 (* 256 bits *)
+      | BNum _ -> pure @@ 64 (* Implemented using big-nums. *)
       (* (bit-width, value) *)
       | IntLit x -> pure @@ (int_lit_width x) / 8
       | UintLit x -> pure @@ (uint_lit_width x) / 8
@@ -66,6 +66,7 @@ module ScillaGas
             pure (acc + clit1 + clit2)) m (pure 0)
       (* A constructor in HNF *)      
       | ADTValue (_, _, ll) ->
+          if List.is_empty ll then pure 1 else
           foldM ~f:(fun acc lit' ->
               let%bind clit' = literal_cost lit' in
               pure (acc + clit')) ~init:0 ll
@@ -119,7 +120,8 @@ module ScillaGas
 
   let string_coster op args base =
     match op, args with
-    | "eq", [StringLit s1; StringLit s2]
+    | "eq", [StringLit s1; StringLit s2] ->
+      pure @@ (Int.min (String.length s1) (String.length s2)) * base
     | "concat", [StringLit s1; StringLit s2] ->
         pure @@ (String.length s1 + String.length s2) * base
     | "substr", [StringLit s; UintLit (Uint32L _); UintLit (Uint32L _)] ->
@@ -194,9 +196,9 @@ module ScillaGas
     ("substr", [string_typ; tvar "'A"; tvar "'A"], string_coster, 1);
 
     (* Block numbers *)
-    ("eq", [bnum_typ;bnum_typ], base_coster, 4);
-    ("blt", [bnum_typ;bnum_typ], base_coster, 4);
-    ("badd", [bnum_typ;tvar "'A"], base_coster, 4);
+    ("eq", [bnum_typ;bnum_typ], base_coster, 32);
+    ("blt", [bnum_typ;bnum_typ], base_coster, 32);
+    ("badd", [bnum_typ;tvar "'A"], base_coster, 32);
 
     (* Hashes *)
     ("eq", [tvar "'A"; tvar "'A"], hash_coster, 1);
