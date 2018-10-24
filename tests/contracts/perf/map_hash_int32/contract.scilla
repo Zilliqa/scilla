@@ -13,11 +13,11 @@ let fst_f = @fst Int32 Int32
 (* Sum of elements in list *)
 let list_hash =
   fun (l : List (Pair(Int32)(Int32))) =>
-    let folder = @list_foldr (Pair(Int32)(Int32)) Int32 in
-    let init = Int32 0 in
+    let folder = @list_foldr (Pair(Int32)(Int32)) ByStr32 in
+    let init = 0x0000000000000000000000000000000000000000000000000000000000000000 in
     let iter =
       fun (h : Pair(Int32)(Int32)) =>
-      fun (z : Int32) =>
+      fun (z : ByStr32) =>
         let hh = fst_f h in
         (* no accummulation *)
         builtin sha256hash hh

@@ -13,6 +13,8 @@ let snd_f = @snd String String
 (* List Int32 -> Int32 *)
 (* Sum of elements in list *)
 let list_concat =
+  fun (privk : ByStr32) =>
+  fun (pubk : ByStr33) =>
   fun (l : List (Pair(String)(String))) =>
     let folder = @list_foldr (Pair(String)(String)) String in
     let init = "" in
@@ -23,13 +25,19 @@ let list_concat =
         let ii = snd_f h in
         let x = builtin concat z hh in
         let y = builtin concat x ii in
-        let z = builtin sha256hash y in
+        (* str_to_bystr is not part of Scilla yet. It has been added temporarily on my branch. *)
+        let yy = builtin str_to_bystr y in
+        (* let yyy = 0x0a0a0a0a0a0a0a0a0a0a0a0a0a0a1a1a1a1a1a2a2a1a1a1a1a1a1a1b1b1b1cd in *)
+        (* let yy to_bystr yyy in *)
+        let z = builtin schnorr_sign privk pubk yy in
+        let zz = builtin schnorr_verify pubk yy z in
         y
      in
      folder iter init l
      
 contract Test
-()
+(privk : ByStr32,
+ pubk : ByStr33)
 
 field gmap : Map String String = Emp String String
 
@@ -37,7 +45,7 @@ transition sum()
   p <- gmap;
 
   mp = builtin to_list p;
-  c = list_concat mp;
+  c = list_concat privk pubk mp;
   start = Uint32 0;
   len = Uint32 5;
   d = builtin substr c start len;

@@ -1,0 +1,17 @@
+[
+    {
+        "vname" : "_creation_block",
+        "type" : "BNum",
+        "value" : "1"
+    },
+    {
+      "vname": "pubk",
+      "type": "ByStr33",
+      "value": "0x0331cca11ff9bc747e20fd0aef3425e3fe0a6be27c9cb60348fac0a9077403a029"
+    },
+    {
+      "vname": "privk",
+      "type": "ByStr32",
+      "value": "0x383f7c2af7edcd955bee9b78122d14cbebc7fd12b4efeedc6063cee78de74baf"
+    }
+]
