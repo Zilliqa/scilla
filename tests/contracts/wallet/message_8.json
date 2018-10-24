@@ -1,0 +1,12 @@
+{
+    "_tag": "AddCandidateOwner",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678906784567891",
+    "params": [
+        {
+            "vname": "candidate",
+            "type": "ByStr20",
+            "value": "0x1234567890123456789012345678906784567891"
+        }
+    ]
+}

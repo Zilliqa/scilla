@@ -43,7 +43,7 @@ module ScillaGas
       | StringLit s ->
           let l = String.length s in
           pure @@ if l <= 20 then 20 else l
-      | BNum _ -> pure @@ 32 (* 256 bits *)
+      | BNum _ -> pure @@ 64 (* Implemented using big-nums. *)
       (* (bit-width, value) *)
       | IntLit x -> pure @@ (int_lit_width x) / 8
       | UintLit x -> pure @@ (uint_lit_width x) / 8
@@ -66,6 +66,7 @@ module ScillaGas
             pure (acc + clit1 + clit2)) m (pure 0)
       (* A constructor in HNF *)      
       | ADTValue (_, _, ll) ->
+          if List.is_empty ll then pure 1 else
           foldM ~f:(fun acc lit' ->
               let%bind clit' = literal_cost lit' in
               pure (acc + clit')) ~init:0 ll
@@ -93,6 +94,13 @@ module ScillaGas
         let storage_cost = new_cost - old_cost in
         let op_cost = Int.max old_cost new_cost in
         pure @@ op_cost + storage_cost
+    | G_MapUpdate (n, lopt)
+    | G_MapGet (n, lopt) ->
+      let%bind l_cost = 
+        (* Deleting a key only has the cost of indexing 
+           (to incentivice removal of data). *)
+        (match lopt with | Some l -> (literal_cost l) | None -> pure 0) in
+      pure @@ n + l_cost
     | G_Bind -> pure 1
     | G_MatchStmt num_clauses-> pure num_clauses
     | G_ReadFromBC -> pure 1
@@ -112,7 +120,8 @@ module ScillaGas
 
   let string_coster op args base =
     match op, args with
-    | "eq", [StringLit s1; StringLit s2]
+    | "eq", [StringLit s1; StringLit s2] ->
+      pure @@ (Int.min (String.length s1) (String.length s2)) * base
     | "concat", [StringLit s1; StringLit s2] ->
         pure @@ (String.length s1 + String.length s2) * base
     | "substr", [StringLit s; UintLit (Uint32L _); UintLit (Uint32L _)] ->
@@ -144,9 +153,13 @@ module ScillaGas
       when is_bystrx_type a -> pure @@ get (bystrx_width a) * base
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
-  let map_coster _ args base =
+  let map_coster op args base =
     match args with
-    | Map _ :: _ -> pure base
+    | Map (_, m) :: _ -> 
+      (* get and contains do not make a copy of the Map, hence constant. *)
+      (match op with
+      | "get" | "contains" -> pure base 
+      | _ -> pure (base + (base * Caml.Hashtbl.length m)))
     | _ -> fail0 @@ "Gas cost error for map built-in"
 
   let to_nat_coster _ args base =
@@ -183,9 +196,9 @@ module ScillaGas
     ("substr", [string_typ; tvar "'A"; tvar "'A"], string_coster, 1);
 
     (* Block numbers *)
-    ("eq", [bnum_typ;bnum_typ], base_coster, 4);
-    ("blt", [bnum_typ;bnum_typ], base_coster, 4);
-    ("badd", [bnum_typ;tvar "'A"], base_coster, 4);
+    ("eq", [bnum_typ;bnum_typ], base_coster, 32);
+    ("blt", [bnum_typ;bnum_typ], base_coster, 32);
+    ("badd", [bnum_typ;tvar "'A"], base_coster, 32);
 
     (* Hashes *)
     ("eq", [tvar "'A"; tvar "'A"], hash_coster, 1);
@@ -204,7 +217,8 @@ module ScillaGas
     ("put", [tvar "'A"; tvar "'A"; tvar "'A"], map_coster, 1);
     ("get", [tvar "'A"; tvar "'A"], map_coster, 1);
     ("remove", [tvar "'A"; tvar "'A"], map_coster, 1);
-    ("to_list", [tvar "'A"], map_coster, 1); 
+    ("to_list", [tvar "'A"], map_coster, 1);
+    ("size", [tvar "'A"], map_coster, 1); 
 
     (* Integers *)
     ("eq", [tvar "'A"; tvar "'A"], int_coster, 4);

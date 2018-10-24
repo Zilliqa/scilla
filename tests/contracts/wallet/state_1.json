@@ -1,0 +1,41 @@
+[
+    { "vname": "_balance",
+      "type": "Uint128",
+      "value": "0" },
+    { "vname": "validity_checked",
+      "type": "Bool",
+      "value": {
+          "constructor" : "False",
+          "argtypes"    : [],
+          "arguments"   : []
+      }
+    },
+    { "vname": "contract_valid",
+      "type": "Bool",
+      "value": {
+          "constructor" : "False",
+          "argtypes"    : [],
+          "arguments"   : []
+      }
+    },
+    { "vname": "owners",
+      "type": "Map ByStr20 Bool",
+      "value": []
+    },
+    { "vname": "transactionCount",
+      "type": "Uint32",
+      "value": "0"
+    },
+    { "vname": "signatures",
+      "type": "Map Uint32 (Map ByStr20 Bool)",
+      "value": []
+    },
+    { "vname": "transactions",
+      "type": "Map Uint32 (Pair ByStr20 Uint128)",
+      "value": []
+    },
+    { "vname": "owner_signatures",
+      "type": "Map ByStr20 (Map ByStr20 Bool)",
+      "value": []
+    }
+]
