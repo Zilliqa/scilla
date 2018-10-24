@@ -400,7 +400,7 @@ end
 module ContractInfo = struct
   open ParserUtil.ParsedSyntax
          
-  let get_string (contr : contract) (event_info : (string * (string * typ) list) list) =
+  let get_json (contr : contract) (event_info : (string * (string * typ) list) list) =
     (* 1. contract name *)
     let namej = ("name", `String (get_id contr.cname)) in
     (* 2. parameters *)
@@ -437,7 +437,10 @@ module ContractInfo = struct
     let eventsj = ("events", `List eventslj) in
 
     let finalj = `Assoc (namej :: paramj :: fieldsj :: transj :: eventsj :: []) in
-    pretty_to_string finalj
+      finalj
+    
+    let get_string (contr : contract) (event_info : (string * (string * typ) list) list) =
+      pretty_to_string (get_json contr event_info)
 
 end
 
