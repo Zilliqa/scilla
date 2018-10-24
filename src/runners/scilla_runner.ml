@@ -249,4 +249,8 @@ let () =
         ("events", output_events_json)
       ] in
         Out_channel.with_file cli.output ~f:(fun channel -> 
-          Yojson.pretty_to_string output_json |> Out_channel.output_string channel)
+          if cli.pp_json then
+            Yojson.pretty_to_string output_json |> Out_channel.output_string channel
+          else
+            Yojson.to_string output_json |> Out_channel.output_string channel
+          )
