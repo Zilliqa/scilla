@@ -124,13 +124,18 @@ module ScillaGas
       pure @@ (Int.min (String.length s1) (String.length s2)) * base
     | "concat", [StringLit s1; StringLit s2] ->
         pure @@ (String.length s1 + String.length s2) * base
-    | "substr", [StringLit s; UintLit (Uint32L _); UintLit (Uint32L _)] ->
-        pure @@ (String.length s) * base
+    | "substr", [StringLit s; UintLit (Uint32L i1); UintLit (Uint32L i2)] ->
+        pure @@ (Int.min (String.length s)
+                         (Stdint.Uint32.to_int i1+ Stdint.Uint32.to_int i2))
+                 * base
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
   let hash_coster op args base =
     let open BatOption in
     let%bind types = mapM args ~f:literal_type in
+    let div_ceil x y =
+      if (x % y = 0) then x / y else (x / y) + 1
+    in
     match op, types, args with
     | "eq", [a1;a2], _
       when is_bystrx_type a1 && is_bystrx_type a2 &&
@@ -138,17 +143,20 @@ module ScillaGas
       -> pure @@ get (bystrx_width a1) * base
     | "sha256hash", _, [a] ->
         (* Block size of sha256hash is 512 *)
-        pure @@ ((String.length (pp_literal a))/64 + 15) * base
+        pure @@ (div_ceil (String.length (pp_literal a)) 64) * 15 * base
     | "keccak256hash", _, [a] ->
         (* Block size of keccak256hash is 1088 *)
-        pure @@ ((String.length (pp_literal a))/136 + 15) * base
+        pure @@ (div_ceil (String.length (pp_literal a)) 136) * 15 * base
     | "ripemd160hash", _, [a] ->
         (* Block size of ripemd160hash is 512 *)
-        pure @@ ((String.length (pp_literal a))/64 + 10) * base
-    | "schnorr_gen_key_pair", _, _ -> pure 20 (* TODO *)
-    | "schnorr_sign", _, [_;_;ByStr(s)]
+        pure @@ (div_ceil (String.length (pp_literal a)) 64) * 10 * base
+    | "schnorr_gen_key_pair", _, _ -> pure 20
+    | "schnorr_sign", _, [_;_;ByStr(s)] ->
+        let x = div_ceil ((String.length s) + 66) 64 in
+        pure @@ (350 + (15 * x)) * base
     | "schnorr_verify", _, [_;ByStr(s);_] ->
-        pure @@ (String.length s) * base
+        let x = div_ceil ((String.length s) + 66) 64 in
+        pure @@ (250 + (15 * x)) * base
     | "to_bystr", [a], _
       when is_bystrx_type a -> pure @@ get (bystrx_width a) * base
     | _ -> fail0 @@ "Gas cost error for hash built-in"
@@ -209,8 +217,8 @@ module ScillaGas
     ("keccak256hash", [tvar "'A"], hash_coster, 1);
     ("ripemd160hash", [tvar "'A"], hash_coster, 1);
     ("schnorr_gen_key_pair", [], hash_coster, 1);
-    ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], hash_coster, 5);
-    ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], hash_coster, 5);
+    ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], hash_coster, 1);
+    ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], hash_coster, 1);
 
     (* Maps *)
     ("contains", [tvar "'A"; tvar "'A"], map_coster, 1);
