@@ -145,13 +145,13 @@ module ScillaGas
       -> pure @@ get (bystrx_width a1) * base
     | "sha256hash", _, [a] ->
         (* Block size of sha256hash is 512 *)
-        pure @@ ((blocker a 64) + 15) * base
+        pure @@ ((blocker a 64) * 15) * base
     | "keccak256hash", _, [a] ->
         (* Block size of keccak256hash is 1088 *)
-        pure @@ ((blocker a 136) + 15) * base
+        pure @@ ((blocker a 136) * 15) * base
     | "ripemd160hash", _, [a] ->
         (* Block size of ripemd160hash is 512 *)
-        pure @@ ((blocker a 64) + 10) * base
+        pure @@ ((blocker a 64) * 10) * base
     | "schnorr_gen_key_pair", _, _ -> pure 20 (* TODO *)
     | "schnorr_sign", _, [_;_;ByStr(s)]
     | "schnorr_verify", _, [_;ByStr(s);_] ->
