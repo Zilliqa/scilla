@@ -27,7 +27,7 @@ open ErrorUtils
 (*                    JSON printing                             *)
 (****************************************************************)
 
-let rec mapvalues_to_json ms = 
+let rec mapvalues_to_json ms =
   Caml.Hashtbl.fold (fun k v a ->
     let kjson = "key", (literal_to_json k) in
     let vjson = "val", (literal_to_json v) in
@@ -73,13 +73,14 @@ let literal_to_jstring ?(pp = false) lit =
   if pp then Basic.pretty_to_string j
   else Basic.to_string j
 
+let loc_to_json (l : loc) =
+  `Assoc [
+    ("file", `String l.fname);
+    ("line", `Int l.lnum);
+    ("column", `Int l.cnum);
+  ]
+
 let scilla_error_to_json elist =
-  let loc_to_json (l : loc) =
-    `Assoc [
-      ("file", `String l.fname);
-      ("line", `Int l.lnum);
-      ("column", `Int l.cnum);
-    ] in
   let err_to_json (e : scilla_error) =
     `Assoc [
       ("error_message", `String e.emsg);
@@ -89,9 +90,24 @@ let scilla_error_to_json elist =
   let ejl = List.fold_right elist ~init:[] ~f:(fun e acc -> (err_to_json e) :: acc) in
     `List ejl
 
+let scilla_warning_to_json wlist =
+  let warning_to_json (w : scilla_warning) =
+    `Assoc [
+      ("warning_message", `String w.wmsg);
+      ("start_location", loc_to_json w.wstartl);
+      ("end_location", loc_to_json w.wendl);
+      ("warning_id", `Int w.wid);
+    ] in
+  let ejl = List.fold_right wlist ~init:[] ~f:(fun e acc -> (warning_to_json e) :: acc) in
+    `List ejl
+
 let scilla_error_to_jstring ?(pp = true) elist =
   let j' = scilla_error_to_json elist in
-  let j = `Assoc [("errors", j')] in
+  let k' = scilla_warning_to_json (get_warnings()) in
+  let j = `Assoc [
+    ("errors", j');
+    ("warnings", k');
+  ] in
   if pp then Basic.pretty_to_string j
   else Basic.to_string j
 
@@ -103,14 +119,28 @@ let scilla_error_to_sstring elist =
   in
     (List.fold elist ~init:"" ~f:(fun acc e -> acc ^ "\n" ^ (pp e))) ^ "\n"
 
+let scilla_warning_to_sstring wlist =
+  let strip_nl s = Str.global_replace (Str.regexp "[\n]") " " s in
+  let pp w =
+    let msg = strip_nl w.wmsg in
+    (sprintf "%s:%d:%d: warning: [%d] %s" w.wstartl.fname w.wstartl.lnum w.wstartl.cnum w.wid msg)
+  in
+    (List.fold wlist ~init:"" ~f:(fun acc e -> acc ^ "\n" ^ (pp e))) ^ "\n"
+
 let scilla_error_to_string elist  =
   if GlobalConfig.use_json_errors()
   then scilla_error_to_jstring elist
-  else scilla_error_to_sstring elist
+  else (scilla_error_to_sstring elist) ^
+       (scilla_warning_to_sstring (get_warnings()))
 
 let scilla_error_gas_jstring ?(pp = true) gas_remaining elist =
   let j' = scilla_error_to_json elist in
-  let j = `Assoc [("gas_remaining", `Int gas_remaining); ("errors", j')] in
+  let k' = scilla_warning_to_json (get_warnings ()) in
+  let j = `Assoc [
+    ("gas_remaining", `Int gas_remaining);
+    ("errors", j');
+    ("warnings", k');
+  ] in
   if pp then Basic.pretty_to_string j
   else Basic.to_string j
 
@@ -118,7 +148,9 @@ let scilla_error_gas_string gas_remaining elist  =
   if GlobalConfig.use_json_errors()
   then scilla_error_gas_jstring gas_remaining elist
   else
-  (scilla_error_to_sstring elist) ^ (sprintf "Gas remaining: %d\n" gas_remaining)
+  (scilla_error_to_sstring elist) ^
+  (scilla_warning_to_sstring (get_warnings())) ^
+  (sprintf "Gas remaining: %d\n" gas_remaining)
 
 (*****************************************************)
 (*                Pretty Printers                    *)
