@@ -124,13 +124,20 @@ module ScillaGas
       pure @@ (Int.min (String.length s1) (String.length s2)) * base
     | "concat", [StringLit s1; StringLit s2] ->
         pure @@ (String.length s1 + String.length s2) * base
-    | "substr", [StringLit s; UintLit (Uint32L _); UintLit (Uint32L _)] ->
-        pure @@ (String.length s) * base
+    | "substr", [StringLit s; UintLit (Uint32L i1); UintLit (Uint32L i2)] ->
+        pure @@ (Int.min (String.length s)
+                         (Stdint.Uint32.to_int i1+ Stdint.Uint32.to_int i2))
+                 * base
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
   let hash_coster op args base =
     let open BatOption in
     let%bind types = mapM args ~f:literal_type in
+    let blocker l bsize =
+      let x = String.length (pp_literal l) in
+      let y = bsize in
+      if (x % y = 0) then x / y else (x / y) + 1
+    in
     match op, types, args with
     | "eq", [a1;a2], _
       when is_bystrx_type a1 && is_bystrx_type a2 &&
@@ -138,13 +145,13 @@ module ScillaGas
       -> pure @@ get (bystrx_width a1) * base
     | "sha256hash", _, [a] ->
         (* Block size of sha256hash is 512 *)
-        pure @@ ((String.length (pp_literal a))/64 + 15) * base
+        pure @@ ((blocker a 64) + 15) * base
     | "keccak256hash", _, [a] ->
         (* Block size of keccak256hash is 1088 *)
-        pure @@ ((String.length (pp_literal a))/136 + 15) * base
+        pure @@ ((blocker a 136) + 15) * base
     | "ripemd160hash", _, [a] ->
         (* Block size of ripemd160hash is 512 *)
-        pure @@ ((String.length (pp_literal a))/64 + 10) * base
+        pure @@ ((blocker a 64) + 10) * base
     | "schnorr_gen_key_pair", _, _ -> pure 20 (* TODO *)
     | "schnorr_sign", _, [_;_;ByStr(s)]
     | "schnorr_verify", _, [_;ByStr(s);_] ->
