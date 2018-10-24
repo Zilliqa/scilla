@@ -28,11 +28,12 @@ let d_libs = ref []
 let v_gas_limit = ref 0
 let b_pp_lit = ref true
 let b_json_errors = ref false
+let b_pp_json = ref true
 
 let usage = "-init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
     " -o output.json -i input.scilla [-tracefile filename] [-tracelevel none|stmt|exp ]" ^
-    " -gaslimit i [-libdir dirpath] [-pplit true|false]"
+    " -gaslimit i [-libdir dirpath] [-pplit true|false] [-disable-pp-json]"
 
 let print_usage () = 
   Printf.fprintf stderr "Mandatory and optional flags:\n%s %s\n" Sys.argv.(0) usage
@@ -100,6 +101,7 @@ type ioFiles = {
     input : string;
     libdirs : string list;
     gas_limit : int;
+    pp_json : bool;
 }
 
 let parse () =
@@ -116,6 +118,7 @@ let parse () =
     ("-gaslimit", Arg.Int (fun i -> v_gas_limit := i), "Gas limit");
     ("-pplit", Arg.Bool (fun b -> b_pp_lit := b), "Pretty print literals");
     ("-jsonerrors", Arg.Unit (fun () -> b_json_errors := true), "Print errors in JSON format");
+    ("-disable-pp-json", Arg.Unit (fun () -> b_pp_json := false), "Disable pretty printing of JSONs");
   ] in 
   let ignore_anon _ = () in
   let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
@@ -125,4 +128,4 @@ let parse () =
   let () = validate_main () in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input;
-     libdirs = !d_libs; gas_limit = !v_gas_limit;}
+     libdirs = !d_libs; gas_limit = !v_gas_limit; pp_json = !b_pp_json}
