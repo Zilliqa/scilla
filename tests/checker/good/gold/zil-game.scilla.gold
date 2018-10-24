@@ -1,23 +1,29 @@
 {
-  "name": "ZilGame",
-  "params": [
-    { "name": "owner", "type": "ByStr20" },
-    { "name": "player_a", "type": "ByStr20" },
-    { "name": "player_b", "type": "ByStr20" },
-    { "name": "puzzle", "type": "ByStr32" }
-  ],
-  "fields": [
-    { "name": "player_a_hash", "type": "Option (ByStr32)" },
-    { "name": "player_b_hash", "type": "Option (ByStr32)" },
-    { "name": "timer", "type": "Option (BNum)" }
-  ],
-  "transitions": [
-    { "name": "Play", "params": [ { "name": "guess", "type": "ByStr32" } ] },
-    {
-      "name": "ClaimReward",
-      "params": [ { "name": "solution", "type": "Int128" } ]
-    },
-    { "name": "Withdraw", "params": [] }
-  ],
-  "events": [ { "name": "GameOver", "params": [] } ]
+  "contract_info": {
+    "name": "ZilGame",
+    "params": [
+      { "name": "owner", "type": "ByStr20" },
+      { "name": "player_a", "type": "ByStr20" },
+      { "name": "player_b", "type": "ByStr20" },
+      { "name": "puzzle", "type": "ByStr32" }
+    ],
+    "fields": [
+      { "name": "player_a_hash", "type": "Option (ByStr32)" },
+      { "name": "player_b_hash", "type": "Option (ByStr32)" },
+      { "name": "timer", "type": "Option (BNum)" }
+    ],
+    "transitions": [
+      {
+        "name": "Play",
+        "params": [ { "name": "guess", "type": "ByStr32" } ]
+      },
+      {
+        "name": "ClaimReward",
+        "params": [ { "name": "solution", "type": "Int128" } ]
+      },
+      { "name": "Withdraw", "params": [] }
+    ],
+    "events": [ { "name": "GameOver", "params": [] } ]
+  },
+  "warnings": []
 }

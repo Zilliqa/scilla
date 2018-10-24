@@ -1,48 +1,54 @@
 {
-  "name": "FungibleToken",
-  "params": [
-    { "name": "owner", "type": "ByStr20" },
-    { "name": "total_tokens", "type": "Uint128" }
-  ],
-  "fields": [
-    { "name": "balances", "type": "Map (ByStr20) (Uint128)" },
-    { "name": "allowed", "type": "Map (ByStr20) (Map (ByStr20) (Uint128))" }
-  ],
-  "transitions": [
-    {
-      "name": "BalanceOf",
-      "params": [ { "name": "tokenOwner", "type": "ByStr20" } ]
-    },
-    { "name": "TotalSupply", "params": [] },
-    {
-      "name": "Transfer",
-      "params": [
-        { "name": "to", "type": "ByStr20" },
-        { "name": "tokens", "type": "Uint128" }
-      ]
-    },
-    {
-      "name": "TransferFrom",
-      "params": [
-        { "name": "from", "type": "ByStr20" },
-        { "name": "to", "type": "ByStr20" },
-        { "name": "tokens", "type": "Uint128" }
-      ]
-    },
-    {
-      "name": "Approve",
-      "params": [
-        { "name": "spender", "type": "ByStr20" },
-        { "name": "tokens", "type": "Uint128" }
-      ]
-    },
-    {
-      "name": "Allowance",
-      "params": [
-        { "name": "tokenOwner", "type": "ByStr20" },
-        { "name": "spender", "type": "ByStr20" }
-      ]
-    }
-  ],
-  "events": []
+  "contract_info": {
+    "name": "FungibleToken",
+    "params": [
+      { "name": "owner", "type": "ByStr20" },
+      { "name": "total_tokens", "type": "Uint128" }
+    ],
+    "fields": [
+      { "name": "balances", "type": "Map (ByStr20) (Uint128)" },
+      {
+        "name": "allowed",
+        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))"
+      }
+    ],
+    "transitions": [
+      {
+        "name": "BalanceOf",
+        "params": [ { "name": "tokenOwner", "type": "ByStr20" } ]
+      },
+      { "name": "TotalSupply", "params": [] },
+      {
+        "name": "Transfer",
+        "params": [
+          { "name": "to", "type": "ByStr20" },
+          { "name": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "TransferFrom",
+        "params": [
+          { "name": "from", "type": "ByStr20" },
+          { "name": "to", "type": "ByStr20" },
+          { "name": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "Approve",
+        "params": [
+          { "name": "spender", "type": "ByStr20" },
+          { "name": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "Allowance",
+        "params": [
+          { "name": "tokenOwner", "type": "ByStr20" },
+          { "name": "spender", "type": "ByStr20" }
+        ]
+      }
+    ],
+    "events": []
+  },
+  "warnings": []
 }

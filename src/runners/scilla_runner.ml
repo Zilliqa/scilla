@@ -246,7 +246,8 @@ let () =
         "gas_remaining", `String (Int.to_string gas);
         ("message", output_msg_json); 
         ("states", output_state_json);
-        ("events", output_events_json)
+        ("events", output_events_json);
+        (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
       ] in
         Out_channel.with_file cli.output ~f:(fun channel -> 
           if cli.pp_json then
