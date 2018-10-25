@@ -24,7 +24,6 @@ open Syntax
 open TypeUtil
 open PrimTypes
 open Schnorr
-open PrettyPrinters
 
 module ScillaGas
     (SR : Rep)
@@ -143,13 +142,16 @@ module ScillaGas
       -> pure @@ get (bystrx_width a1) * base
     | "sha256hash", _, [a] ->
         (* Block size of sha256hash is 512 *)
-        pure @@ (div_ceil (String.length (pp_literal a)) 64) * 15 * base
+        let%bind l = literal_cost a in
+        pure @@ (div_ceil l 64) * 15 * base
     | "keccak256hash", _, [a] ->
         (* Block size of keccak256hash is 1088 *)
-        pure @@ (div_ceil (String.length (pp_literal a)) 136) * 15 * base
+        let%bind l = literal_cost a in
+        pure @@ (div_ceil l 136) * 15 * base
     | "ripemd160hash", _, [a] ->
         (* Block size of ripemd160hash is 512 *)
-        pure @@ (div_ceil (String.length (pp_literal a)) 64) * 10 * base
+        let%bind l = literal_cost a in
+        pure @@ (div_ceil l 64) * 10 * base
     | "schnorr_gen_key_pair", _, _ -> pure 20
     | "schnorr_sign", _, [_;_;ByStr(s)] ->
         let x = div_ceil ((String.length s) + 66) 64 in

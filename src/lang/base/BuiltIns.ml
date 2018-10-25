@@ -97,7 +97,7 @@ module ScillaBuiltIns
       let buf = Bytes.create 32 in
       let _ = Uint256.to_bytes_big_endian ui buf 0 in
         Bytes.to_string buf
-
+  
   (*******************************************************)
   (**************** String *******************************)
   (*******************************************************)
@@ -666,16 +666,35 @@ module ScillaBuiltIns
     (* Ripemd hash raw bytes/ binary string. *)
     let ripemd160_hasher s = hash_string (Hash.ripemd160 ()) s
 
+    (* Serialize a literal for hashing *)
+    let rec serialize_literal = function
+    | StringLit s -> pure s
+    | IntLit il -> pure @@ bstring_from_int_lit il
+    | UintLit uil -> pure @@ bstring_from_uint_lit uil
+    | ByStr s | ByStrX (_, s) -> pure @@ fromhex s
+    | Map (_, tbl) ->
+      Caml.Hashtbl.fold (fun k v acc ->
+        let%bind acc' = acc in
+        let%bind ks = serialize_literal k in
+        let%bind vs = serialize_literal v in
+          pure @@ (acc' ^ ks ^ vs)
+      ) tbl (pure "")
+    | ADTValue(constr, _, llst) ->
+      foldM ~f:(fun acc l ->
+        let%bind sl = serialize_literal l in
+        pure (acc ^ sl)
+      ) ~init:constr llst
+    | Msg mlist ->
+      foldM ~f:(fun acc (k, v) ->
+        let%bind sv = serialize_literal v in
+        pure (acc ^ k ^ sv)
+      ) ~init:"" mlist
+    | BNum b -> pure b
+    | Clo _ | TAbs _  -> fail0 "Cannot serialize closures or type abstractions."
+
     let hash_helper hasher name len ls = match ls with
       | [l] ->
-          let lstr =
-            (match l with
-            | StringLit s -> s
-            | IntLit il -> bstring_from_int_lit il
-            | UintLit uil -> bstring_from_uint_lit uil
-            | ByStr s | ByStrX (_, s) -> fromhex s
-            (* Anything else, just serialize with SExp. *)
-            | _ -> sexp_of_literal l |> Sexplib.Sexp.to_string) in
+          let%bind lstr = serialize_literal l in
           let lhash = hasher lstr in
           let lhash_hex = tohex lhash in
           let lo = build_prim_literal (bystrx_typ len) lhash_hex in
