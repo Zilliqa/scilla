@@ -246,7 +246,12 @@ let () =
         "gas_remaining", `String (Int.to_string gas);
         ("message", output_msg_json); 
         ("states", output_state_json);
-        ("events", output_events_json)
+        ("events", output_events_json);
+        (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
       ] in
         Out_channel.with_file cli.output ~f:(fun channel -> 
-          Yojson.pretty_to_string output_json |> Out_channel.output_string channel)
+          if cli.pp_json then
+            Yojson.pretty_to_string output_json |> Out_channel.output_string channel
+          else
+            Yojson.to_string output_json |> Out_channel.output_string channel
+          )

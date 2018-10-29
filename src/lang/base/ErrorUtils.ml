@@ -54,3 +54,30 @@ let sprint_scilla_error_list elist =
 let mk_error0 msg = [{ emsg = msg; startl = dummy_loc; endl = dummy_loc }]
 let mk_error1 msg sloc = [{ emsg = msg; startl = sloc; endl = dummy_loc }]
 let mk_error2 msg sloc eloc = [{ emsg = msg; startl = sloc; endl = eloc }]
+
+type scilla_warning = {
+  wmsg : string;
+  wstartl : loc;
+  wendl : loc;
+  wid : int;
+}
+
+let warnings_list = ref []
+
+(* flag a warning, specifying a message and a warning "id". 
+   The "id" can be used to enable or disable specific warnings.
+ *)
+let warn0 msg id =
+  let warning = { wmsg = msg; wstartl = dummy_loc; wendl = dummy_loc; wid = id } in
+  warnings_list := warning::!warnings_list
+
+let warn1 msg id sloc =
+  let warning = { wmsg = msg; wstartl = sloc; wendl = dummy_loc; wid = id } in
+  warnings_list := warning::!warnings_list
+
+let warn2 msg id sloc eloc =
+  let warning = { wmsg = msg; wstartl = sloc; wendl = eloc; wid = id } in
+  warnings_list := warning::!warnings_list
+
+let get_warnings () =
+  !warnings_list

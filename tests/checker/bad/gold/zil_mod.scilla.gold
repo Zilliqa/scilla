@@ -25,5 +25,6 @@
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
-  ]
+  ],
+  "warnings": []
 }

@@ -239,7 +239,10 @@
               "A Scilla syntax checker using scilla-checker. See URL `https://www.scilla-lang.org/'."
               :command ("scilla-checker" "-libdir" (eval lib-dir) source)
               :error-patterns
-              ((error line-start (file-name) ":" line ":" column ": error: " (message) line-end))
+              (
+               (error line-start (file-name) ":" line ":" column ": error: " (message) line-end)
+               (warning line-start (file-name) ":" line ":" column ": warning: [" (id (one-or-more alnum)) "] " (message) line-end)
+               )
               :modes scilla-mode
               )
             (setq flycheck-scilla-executable checker-bin)
