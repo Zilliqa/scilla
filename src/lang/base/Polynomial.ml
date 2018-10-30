@@ -35,7 +35,7 @@ type 'a polynomial = 'a term list
 
 (* If a variable occurs more than once in a term,
  * combine the occurrences by adding the powers. *)
-let canonicalize_term (t : 'a term) =
+let canonicalize_term (t : 'a term) : 'a term =
   let (c, vplist) = t in
   if c = 0 then (0, []) else
   (* check if the first element of the list occurs again later, 
@@ -57,7 +57,7 @@ let canonicalize_term (t : 'a term) =
 
 (* Check if two terms are equivalent. 
  * ~coef=false ignores co-efficients in the comparison. *)
-let eq_term ?(coef=true) t1' t2' =
+let eq_term ?(coef=true) (t1' : 'a term) (t2' : 'a term) =
   let t1, t2 = canonicalize_term t1', canonicalize_term t2' in
   let (c1, vplist1), (c2, vplist2) = t1, t2 in
   (not coef || (c1 = c2)) && (List.length vplist1 = List.length vplist2) &&
@@ -67,13 +67,13 @@ let eq_term ?(coef=true) t1' t2' =
     )
   )
 
-let mul_term t1 t2 =
+let mul_term (t1 : 'a term) (t2 : 'a term) : 'a term =
   let (c1, vplist1), (c2, vplist2) = t1, t2 in
   canonicalize_term (c1 * c2, vplist1 @ vplist2)
 
 (* If a term occurs more than once in a polynomial,
  * combine the occurrences by adding up the co-efficients. *)
-let canonicalize_pn tlist' =
+let canonicalize_pn (tlist' : 'a polynomial) : 'a polynomial =
   (* Canonicalize each term first. *)
   let tlist = List.map tlist' ~f:(fun t -> canonicalize_term t) in
   (* Combine first term with same terms later on, and recursively for the remaining terms. *)
@@ -97,17 +97,17 @@ let canonicalize_pn tlist' =
     merger tlist
 
 (* Check if two polynomials are equivalent. *)
-let eq_pn p1' p2' =
+let eq_pn (p1' : 'a polynomial) (p2' : 'a polynomial) =
  let p1, p2 = canonicalize_pn p1', canonicalize_pn p2' in
  (List.length p1 = List.length p2) &&
   List.for_all p1 ~f:(fun t1 -> List.exists p2 ~f:(fun t2 -> eq_term t1 t2 ))
 
 (* Add two polynomials. *)
-let add_pn p1 p2 =
+let add_pn (p1 : 'a polynomial) (p2 : 'a polynomial) =
   canonicalize_pn (p1 @ p2)
 
 (* Multiply two polynomials. *)
-let mul_pn p1 p2 =
+let mul_pn (p1 : 'a polynomial) (p2 : 'a polynomial) =
   let prods = List.map p1 ~f:(fun t1 ->
     (* multiply t1 with each term of p2. *)
     List.map p2 ~f:(fun t2 -> mul_term t1 t2))
