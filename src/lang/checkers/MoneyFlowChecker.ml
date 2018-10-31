@@ -18,7 +18,6 @@
 open Syntax
 open TypeUtil
 open Utils
-open Printf
 
 module MoneyFlowRep (R : Rep) = struct
   type money_tag =
@@ -301,7 +300,7 @@ module ScillaMoneyFlowChecker
         else AssocDictionary.update (get_id x) new_tag env
   
   (* TODO: implement tag based on the builtin functions *)
-  let builtin_tag _f _args = Map Top
+  let builtin_tag _f _args = Map Bottom
 
   let rec get_pattern_vars acc p =
     match p with
@@ -312,7 +311,6 @@ module ScillaMoneyFlowChecker
 
   let update_pattern_vars_tags p local_env =
     let rec walk p =
-      (* TODO: ADTs not handled, so patterns variables updated to Top *)
       match p with
       | Wildcard -> Wildcard
       | Binder x -> Binder (update_id_tag x (lookup_var_tag x local_env))
@@ -323,14 +321,12 @@ module ScillaMoneyFlowChecker
   let insert_pattern_vars_into_env p local_env =
     let pattern_vars = get_pattern_vars [] p in
     List.fold_left
-      (* TODO: ADTs not handled, so just tag pattern variables to Top *)
       (fun l_env x ->
          AssocDictionary.insert (get_id x) (get_id_tag x) l_env) local_env pattern_vars
       
   let remove_pattern_vars_from_env p local_env =
     let pattern_vars = get_pattern_vars [] p in
     List.fold_left
-      (* TODO: ADTs not handled, so just tag pattern variables to Top *)
       (fun l_env x -> AssocDictionary.remove (get_id x) l_env) local_env pattern_vars    
 
   let unify_pattern_tags ps =
@@ -451,7 +447,6 @@ module ScillaMoneyFlowChecker
            res_local_env,
            lhs_changes || rhs_changes || new_i_tag <> get_id_tag i)
       | Constr (cname, ts, args) ->
-          (* TODO: Handle ADTs properly *)
           let new_args = List.map (fun arg -> update_id_tag arg (lookup_var_tag2 arg local_env field_env)) args in
           let (args_changes, _) =
             List.fold_left
@@ -460,15 +455,19 @@ module ScillaMoneyFlowChecker
                  | [] -> (false, [])
                  | x :: rest -> (acc_changes || (get_id_tag x) <> (get_id_tag arg), rest))
               (false, new_args) args in
+          let tag =
+            match cname with
+            | "None" -> Option Bottom
+            | "Some" -> Option (List.fold_left (fun _ arg -> (get_id_tag arg)) Bottom new_args)
+            | "True"
+            | "False" -> NotMoney
+            | _ -> Top in
           (Constr (cname, ts, new_args),
-           Top,
+           tag,
            field_env,
            local_env,
            args_changes)
       | MatchExpr (x, clauses) ->
-          (* TODO: ADTs not handled, so assume all bound variables in patterns are TOP
-             Actually, we can consider pattern variables as let-variables. 
-             Then we just need to establish the connection between the scrutinee and the pattern variables.*)
           let (res_clauses, res_tag, new_field_env, new_local_env, clause_changes) =
             List.fold_right
               (fun (p, ep) (acc_clauses, acc_res_tag, acc_field_env, acc_local_env, acc_changes) ->
@@ -476,7 +475,6 @@ module ScillaMoneyFlowChecker
                    insert_pattern_vars_into_env p acc_local_env in
                  let ((_, (new_e_tag, _)) as new_e, new_field_env, new_local_env, new_changes) =
                    mf_tag_expr ep expected_tag acc_field_env sub_local_env in
-                 (* TODO: Move this when ADTs are supported *)
                  let new_p = update_pattern_vars_tags p new_local_env in
                  let res_local_env = remove_pattern_vars_from_env p new_local_env in
                  ((new_p, new_e) :: acc_clauses,
@@ -525,7 +523,7 @@ module ScillaMoneyFlowChecker
                  | MVar x ->
                      (s, MVar (update_id_tag x (lookup_var_tag2 x new_local_env new_field_env)))) bs in
           (Message updated_bs,
-           Top,
+           NotMoney,
            new_field_env,
            new_local_env,
            bs <> updated_bs) in
@@ -673,23 +671,26 @@ module ScillaMoneyFlowChecker
       | SendMsgs m ->
           let m_tag = unify_tags NotMoney (lookup_var_tag m local_env) in
           let new_m = update_id_tag m m_tag in
+          let new_local_env = AssocDictionary.update (get_id m) m_tag local_env in
           (SendMsgs new_m,
            field_env,
-           local_env,
+           new_local_env,
            (get_id_tag m) <> m_tag)
       | CreateEvnt e ->
           let e_tag = unify_tags NotMoney (lookup_var_tag e local_env) in
           let new_e = update_id_tag e e_tag in
+          let new_local_env = AssocDictionary.update (get_id e) e_tag local_env in
           (CreateEvnt new_e,
            field_env,
-           local_env,
+           new_local_env,
            (get_id_tag e) <> e_tag)
       | Throw x ->
           let x_tag = unify_tags NotMoney (lookup_var_tag x local_env) in
           let new_x = update_id_tag x x_tag in
+          let new_local_env = AssocDictionary.update (get_id x) x_tag local_env in
           (Throw new_x,
            field_env,
-           local_env,
+           new_local_env,
            (get_id_tag x) <> x_tag) in
     ((new_s, rep), new_field_env, new_local_env, changes)
 
@@ -701,13 +702,10 @@ module ScillaMoneyFlowChecker
              match s with
              | Load (x, _)
              | Bind (x, _)
-             | MapGet (x, _, _, _) -> AssocDictionary.insert (get_id x) (get_id_tag x) acc_env
+             | MapGet (x, _, _, _)
+             | ReadFromBC (x, _)
+               -> AssocDictionary.insert (get_id x) (get_id_tag x) acc_env
              | _ -> acc_env) local_env ss in
-      let _ =
-        List.iter
-          (fun (k, v) -> printf "%s : %s\n" k (EMFR.sexp_of_money_tag v |> Sexplib.Sexp.to_string))
-          (AssocDictionary.to_list init_local_env) in
-      let _ = printf "----------\n" in
       List.fold_right
         (fun s (acc_ss, acc_field_env, acc_local_env, acc_changes) ->
            let (new_s, new_field_env, new_local_env, new_changes) =
