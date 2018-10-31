@@ -28,15 +28,16 @@ module ScillaEventInfo
 
     (* Given a message and a current list of event info, extract
      * info from message and append to the list. *)
-    let extract_from_message _ m acc =
+    let extract_from_message b m acc =
+      let bloc = (ER.get_loc (get_rep b)) in
       (* Check if this is for an event. *)
       (match (List.find_opt (fun (label, _) -> label = eventname_label) m) with
        | Some (_, epld) ->
            let emsg = "Error determining event name\n" in
            let%bind eventname = match epld with
              | MTag s -> pure s
-             | MLit l -> (match l with | StringLit s -> pure s | _ -> fail0 emsg)
-             | MVar _ -> fail0 emsg 
+             | MLit l -> (match l with | StringLit s -> pure s | _ -> fail1 emsg bloc)
+             | MVar _ -> fail1 emsg bloc
            in
            (* Get the type of the event parameters. *)
            let filtered_m = List.filter (fun (label, _) -> not (label = eventname_label)) m in
@@ -59,8 +60,8 @@ module ScillaEventInfo
                       acc ^ (Printf.sprintf "(%s : %s); " n (pp_typ t))) "[" tplist
                   ^ "]" in 
                 if m_types <> tlist then 
-                  fail0 @@ Printf.sprintf "Parameter mismatch for event %s. %s vs %s\n"
-                    eventname (printer tlist) (printer m_types)
+                  fail1 (Printf.sprintf "Parameter mismatch for event %s. %s vs %s\n"
+                    eventname (printer tlist) (printer m_types)) bloc
                 else
                   pure @@ acc
             | None -> (* No entry. *)
