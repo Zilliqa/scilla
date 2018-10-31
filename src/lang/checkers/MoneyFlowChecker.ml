@@ -21,7 +21,8 @@ open Utils
 
 module MoneyFlowRep (R : Rep) = struct
   type money_tag =
-    | Plain
+    | Bottom
+    | NotMoney
     | Money
     | Map of money_tag
     | Option of money_tag
@@ -37,14 +38,14 @@ module MoneyFlowRep (R : Rep) = struct
 
   let mk_id s =
     match s with
-    | Ident (n, r) -> Ident (n, (Plain, r))
+    | Ident (n, r) -> Ident (n, (Bottom, r))
 
   let mk_id_address s = mk_id (R.mk_id_address s)
   let mk_id_uint128 s = mk_id (R.mk_id_uint128 s)
   let mk_id_bnum    s = mk_id (R.mk_id_bnum s)
   let mk_id_string  s = mk_id (R.mk_id_string s)
   
-  let parse_rep s = (Plain, R.parse_rep s)
+  let parse_rep s = (Bottom, R.parse_rep s)
   let get_rep_str r = match r with | (_, rr) -> R.get_rep_str rr
 end
 
@@ -68,18 +69,18 @@ module ScillaMoneyFlowChecker
   (*   open SCU *)
 
   (*******************************************************)
-  (*     Initial traversal: Set every tag to Plain       *)
+  (*     Initial traversal: Set every tag to Bottom      *)
   (*******************************************************)
   
-  (* Lift Ident (n, rep) to Ident (n, (Plain, rep)) *)
-  let add_plain_to_ident i =
+  (* Lift Ident (n, rep) to Ident (n, (Bottom, rep)) *)
+  let add_bottom_to_ident i =
     match i with
-    | Ident (name, rep) -> Ident (name, (EMFR.Plain, rep))
+    | Ident (name, rep) -> Ident (name, (EMFR.Bottom, rep))
   
   let rec mf_init_tag_pattern p =
     match p with
     | Wildcard -> MFSyntax.Wildcard
-    | Binder x -> MFSyntax.Binder (add_plain_to_ident x)
+    | Binder x -> MFSyntax.Binder (add_bottom_to_ident x)
     | Constructor (cn, ps) ->
         MFSyntax.Constructor (
           cn,
@@ -89,7 +90,7 @@ module ScillaMoneyFlowChecker
     match p with
     | MTag s -> MFSyntax.MTag s
     | MLit l -> MFSyntax.MLit l
-    | MVar v -> MFSyntax.MVar (add_plain_to_ident v)
+    | MVar v -> MFSyntax.MVar (add_bottom_to_ident v)
   
   let rec mf_init_tag_expr erep =
     let (e, rep) = erep in
@@ -98,23 +99,23 @@ module ScillaMoneyFlowChecker
       | Literal l ->
           MFSyntax.Literal l
       | Var i ->
-          MFSyntax.Var (add_plain_to_ident i)
+          MFSyntax.Var (add_bottom_to_ident i)
       |  Fun (arg, t, body) ->
           MFSyntax.Fun (
-              add_plain_to_ident arg,
+              add_bottom_to_ident arg,
               t,
               mf_init_tag_expr body)
       | App (f, actuals) ->
           MFSyntax.App (
-              add_plain_to_ident f, 
-              List.map add_plain_to_ident actuals)
+              add_bottom_to_ident f, 
+              List.map add_bottom_to_ident actuals)
       | Builtin (i, actuals) ->
           MFSyntax.Builtin (
-              add_plain_to_ident i,
-              List.map add_plain_to_ident actuals)
+              add_bottom_to_ident i,
+              List.map add_bottom_to_ident actuals)
       | Let (i, topt, lhs, rhs) ->
           MFSyntax.Let (
-              add_plain_to_ident i,
+              add_bottom_to_ident i,
               topt,
               mf_init_tag_expr lhs,
               mf_init_tag_expr rhs)
@@ -122,29 +123,29 @@ module ScillaMoneyFlowChecker
           MFSyntax.Constr (
               cname,
               ts,
-              List.map add_plain_to_ident actuals)
+              List.map add_bottom_to_ident actuals)
       | MatchExpr (x, clauses) ->
           MFSyntax.MatchExpr (
-              add_plain_to_ident x,
+              add_bottom_to_ident x,
               List.map (fun (p, e) ->
                   (mf_init_tag_pattern p, mf_init_tag_expr e)) clauses)
       | Fixpoint (f, t, body) ->
           MFSyntax.Fixpoint (
-              add_plain_to_ident f,
+              add_bottom_to_ident f,
               t,
               mf_init_tag_expr body)
       | TFun (tvar, body) ->
           MFSyntax.TFun (
-              add_plain_to_ident tvar,
+              add_bottom_to_ident tvar,
               mf_init_tag_expr body)
       | TApp (tf, arg_types) ->
           MFSyntax.TApp (
-              add_plain_to_ident tf,
+              add_bottom_to_ident tf,
               arg_types)
       | Message bs ->
           MFSyntax.Message (
               List.map (fun (s, p) -> (s, mf_init_tag_payload p)) bs) in
-    (res_e, (EMFR.Plain, rep))
+    (res_e, (EMFR.Bottom, rep))
 
   let rec mf_init_tag_stmt srep =
     let (s, rep) = srep in
@@ -152,53 +153,53 @@ module ScillaMoneyFlowChecker
       match s with
       | Load (x, y) ->
           MFSyntax.Load (
-            add_plain_to_ident x,
-            add_plain_to_ident y)
+            add_bottom_to_ident x,
+            add_bottom_to_ident y)
       | Store (x, y) -> 
           MFSyntax.Store (
-            add_plain_to_ident x,
-            add_plain_to_ident y)
+            add_bottom_to_ident x,
+            add_bottom_to_ident y)
       | Bind (x, e) ->
           MFSyntax.Bind (
-            add_plain_to_ident x,
+            add_bottom_to_ident x,
             mf_init_tag_expr e)
       | MapUpdate (m, ks, v) ->
           MFSyntax.MapUpdate (
-            add_plain_to_ident m,
-            List.map add_plain_to_ident ks,
-            match v with | None -> None | Some v' -> Some (add_plain_to_ident v')
+            add_bottom_to_ident m,
+            List.map add_bottom_to_ident ks,
+            match v with | None -> None | Some v' -> Some (add_bottom_to_ident v')
           )
       | MapGet (x, m, ks, retrieve) ->
           MFSyntax.MapGet (
-            add_plain_to_ident x,
-            add_plain_to_ident m,
-            List.map add_plain_to_ident ks,
+            add_bottom_to_ident x,
+            add_bottom_to_ident m,
+            List.map add_bottom_to_ident ks,
             retrieve
           )
       | MatchStmt (x, pss) ->
           MFSyntax.MatchStmt (
-            add_plain_to_ident x,
+            add_bottom_to_ident x,
             List.map (fun (p, ss) ->
                 (mf_init_tag_pattern p,
                  List.map mf_init_tag_stmt ss)) pss)
       | ReadFromBC (x, s) ->
           MFSyntax.ReadFromBC (
-            add_plain_to_ident x, s)
+            add_bottom_to_ident x, s)
       | AcceptPayment ->
           MFSyntax.AcceptPayment
       | SendMsgs x ->
-          MFSyntax.SendMsgs (add_plain_to_ident x)
+          MFSyntax.SendMsgs (add_bottom_to_ident x)
       | CreateEvnt x ->
-          MFSyntax.CreateEvnt (add_plain_to_ident x)
+          MFSyntax.CreateEvnt (add_bottom_to_ident x)
       | Throw x ->
-          MFSyntax.Throw (add_plain_to_ident x) in
+          MFSyntax.Throw (add_bottom_to_ident x) in
     (res_s, rep)
 
   let mf_init_tag_transition transition =
     let { tname ; tparams ; tbody } = transition in
     { MFSyntax.tname = tname;
       MFSyntax.tparams =
-        List.map (fun (x, t) -> (add_plain_to_ident x, t)) tparams;
+        List.map (fun (x, t) -> (add_bottom_to_ident x, t)) tparams;
       MFSyntax.tbody =
         List.map mf_init_tag_stmt tbody }
   
@@ -206,10 +207,10 @@ module ScillaMoneyFlowChecker
     let { cname ; cparams ; cfields ; ctrans } = contract in
     { MFSyntax.cname = cname;
       MFSyntax.cparams =
-        List.map (fun (x, t) -> (add_plain_to_ident x, t)) cparams;
+        List.map (fun (x, t) -> (add_bottom_to_ident x, t)) cparams;
       MFSyntax.cfields =
         List.map (fun (x, t, e) ->
-            (add_plain_to_ident x,
+            (add_bottom_to_ident x,
              t,
              mf_init_tag_expr e)) cfields;
       MFSyntax.ctrans =
@@ -220,7 +221,7 @@ module ScillaMoneyFlowChecker
     { MFSyntax.lname = lname;
       MFSyntax.lentries = List.map
           (fun { lname ; lexp } ->
-             { MFSyntax.lname = add_plain_to_ident lname ;
+             { MFSyntax.lname = add_bottom_to_ident lname ;
                MFSyntax.lexp = mf_init_tag_expr lexp }) lentries }
   
   let mf_init_tag_module cmod =
@@ -248,16 +249,17 @@ module ScillaMoneyFlowChecker
       
   (* Lattice implementation:
      t1 unifies with t2 if t1 and t2 are equal.
-     Plain = Bottom, so anything supercedes Plain.
      Nothing else unifies, so return Top in all other cases *)
   let rec unify_tags t1 t2 =
     match t1, t2 with
     | Map x, Map y ->
         Map (unify_tags x y)
+    | Option x, Option y ->
+        Option (unify_tags x y)
     | x, y
       when x = y -> x
-    | Plain, x
-    | x, Plain   -> x
+    | Bottom, x
+    | x, Bottom   -> x
     | _, _       -> Top
 
   let unify_tag_with_option t1 t2 =
@@ -273,13 +275,6 @@ module ScillaMoneyFlowChecker
     match id with
     | Ident (v, (_, rep)) -> Ident (v, (new_tag, rep))
 
-(*  let lookup_var_tag i field_env local_env =
-    match AssocDictionary.lookup (get_id i) local_env with
-    | Some t -> t
-    | None ->
-        match AssocDictionary.lookup (get_id i) field_env with
-        | Some t -> t
-        | None -> get_id_tag i *)
   let lookup_var_tag i env =
     match AssocDictionary.lookup (get_id i) env with
     | Some t -> t
@@ -350,7 +345,9 @@ module ScillaMoneyFlowChecker
     let (e, (tag, rep)) = erep in
     let (new_e, new_e_tag, new_field_env, new_local_env, new_changes) = 
       match e with
-      | Literal _ -> (e, tag, field_env, local_env, false)
+      | Literal _ ->
+          (* TODO: Deduce tag from type? *)
+          (e, tag, field_env, local_env, false)
       | Var i ->
           let new_i_tag = unify (lookup_var_tag2 i local_env field_env) in
           let new_i = update_id_tag i new_i_tag in
@@ -360,16 +357,13 @@ module ScillaMoneyFlowChecker
           let body_expected_tag =
             match expected_tag with
             | Map x -> x
-            | Plain -> Plain
+            | Bottom -> Bottom
             | _     -> Top in
           let body_local_env =
             AssocDictionary.insert (get_id arg) (get_id_tag arg) local_env in
           let ((_, (new_body_tag, _)) as new_body, res_field_env, res_body_local_env, body_changes) =
             mf_tag_expr body body_expected_tag field_env body_local_env in
-          let res_arg_tag =
-            match AssocDictionary.lookup (get_id arg) res_body_local_env with
-            | None -> Top
-            | Some x -> x in
+          let res_arg_tag = lookup_var_tag arg res_body_local_env in
           (Fun (update_id_tag arg res_arg_tag, t, new_body),
            Map new_body_tag,
            res_field_env,
@@ -390,6 +384,7 @@ module ScillaMoneyFlowChecker
           let new_e_tag = 
             match f_tag with
             | Map t -> t
+            | Bottom -> Bottom
             | _     -> Top in
           (App (new_f, new_args),
            new_e_tag,
@@ -411,6 +406,7 @@ module ScillaMoneyFlowChecker
           let new_e_tag = 
             match f_tag with
             | Map t -> t
+            | Bottom -> Bottom
             | _     -> Top in
           (Builtin (new_f, new_args),
            new_e_tag,
@@ -503,7 +499,7 @@ module ScillaMoneyFlowChecker
                  | MVar x ->
                      (s, MVar (update_id_tag x (lookup_var_tag2 x new_local_env new_field_env)))) bs in
           (Message updated_bs,
-           Plain,
+           Top,
            new_field_env,
            new_local_env,
            bs <> updated_bs) in
@@ -560,7 +556,7 @@ module ScillaMoneyFlowChecker
       | MapUpdate (m, ks, v_opt) ->
           let v_tag =
             match v_opt with
-            | None -> Plain
+            | None -> Bottom
             | Some v -> lookup_var_tag v local_env in
           let m_tag_usage = List.fold_left (fun acc _ -> Map acc) v_tag ks in
           let m_tag = unify_tags m_tag_usage (lookup_var_tag m field_env) in
@@ -593,10 +589,10 @@ module ScillaMoneyFlowChecker
             then
               match x_tag with
               | Option t -> t
-              | Plain -> Plain
+              | Bottom -> Bottom
               | _ -> Top
             else
-              Plain in
+              Bottom in
           let m_tag_usage =
             List.fold_left (fun acc _ -> Map acc) val_tag ks in
           let m_tag = unify_tags m_tag_usage (lookup_var_tag m field_env) in
@@ -604,7 +600,12 @@ module ScillaMoneyFlowChecker
           let new_field_env = AssocDictionary.update (get_id m) m_tag field_env in
           let new_local_env = AssocDictionary.remove (get_id x) local_env in
           let new_ks = update_ids_tags ks new_local_env in
-          let new_x_tag = unify_tags x_tag val_tag in
+          let new_x_tag =
+            if fetch
+            then
+              unify_tags x_tag (Option val_tag)
+            else
+              NotMoney (* Bool *) in
           let new_x = update_id_tag x new_x_tag in
           (MapGet (new_x, new_m, new_ks, fetch),
            new_field_env,
@@ -633,8 +634,7 @@ module ScillaMoneyFlowChecker
            new_local_env,
            clause_changes || (get_id_tag x) <> x_tag)
       | ReadFromBC (x, s) ->
-          let bc_tag = if s = "_balance" then Money else Plain in
-          let x_tag = unify_tags bc_tag (lookup_var_tag x local_env) in
+          let x_tag = unify_tags NotMoney (lookup_var_tag x local_env) in
           let new_x = update_id_tag x x_tag in
           let new_local_env = AssocDictionary.remove (get_id x) local_env in
           (ReadFromBC (new_x, s),
@@ -643,21 +643,21 @@ module ScillaMoneyFlowChecker
            (get_id_tag x) <> x_tag)
       | AcceptPayment -> (AcceptPayment, field_env, local_env, false)
       | SendMsgs m ->
-          let m_tag = unify_tags Top (lookup_var_tag m local_env) in
+          let m_tag = unify_tags NotMoney (lookup_var_tag m local_env) in
           let new_m = update_id_tag m m_tag in
           (SendMsgs new_m,
            field_env,
            local_env,
            (get_id_tag m) <> m_tag)
       | CreateEvnt e ->
-          let e_tag = unify_tags Top (lookup_var_tag e local_env) in
+          let e_tag = unify_tags NotMoney (lookup_var_tag e local_env) in
           let new_e = update_id_tag e e_tag in
           (CreateEvnt new_e,
            field_env,
            local_env,
            (get_id_tag e) <> e_tag)
       | Throw x ->
-          let x_tag = unify_tags Top (lookup_var_tag x local_env) in
+          let x_tag = unify_tags NotMoney (lookup_var_tag x local_env) in
           let new_x = update_id_tag x x_tag in
           (Throw new_x,
            field_env,
@@ -690,8 +690,8 @@ module ScillaMoneyFlowChecker
       let empty_local_env = AssocDictionary.make_dict() in
       let implicit_local_env =
         AssocDictionary.insert "_amount" Money 
-          (AssocDictionary.insert "_recipient" Plain 
-             (AssocDictionary.insert "_tag" Plain empty_local_env)) in
+          (AssocDictionary.insert "_recipient" NotMoney
+             (AssocDictionary.insert "_tag" NotMoney empty_local_env)) in
       let param_local_env =
         List.fold_left
           (fun acc_env (p, _) ->
@@ -725,7 +725,7 @@ module ScillaMoneyFlowChecker
         List.fold_left
           (fun acc_env (f, _, e) ->
              let ((_, (e_tag, _)), _, _, _) =
-                  mf_tag_expr e Plain (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) in
+                  mf_tag_expr e Bottom (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) in
              AssocDictionary.insert (get_id f) e_tag acc_env)
           param_field_env
           cfields in
