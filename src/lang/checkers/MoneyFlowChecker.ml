@@ -687,11 +687,16 @@ module ScillaMoneyFlowChecker
 
     let mf_tag_transition t field_env =
       let { tname ; tparams ; tbody } = t in
+      let empty_local_env = AssocDictionary.make_dict() in
+      let implicit_local_env =
+        AssocDictionary.insert "_amount" Money 
+          (AssocDictionary.insert "_recipient" Plain 
+             (AssocDictionary.insert "_tag" Plain empty_local_env)) in
       let param_local_env =
         List.fold_left
           (fun acc_env (p, _) ->
              AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
-          (AssocDictionary.make_dict())
+          implicit_local_env
           tparams in
       let (new_tbody, new_field_env, new_local_env, body_changes) =
         mf_tag_stmts tbody field_env param_local_env in
@@ -708,11 +713,13 @@ module ScillaMoneyFlowChecker
 
     let mf_tag_contract c =
       let { cname ; cparams ; cfields ; ctrans } = c in
+      let empty_field_env = AssocDictionary.make_dict () in
+      let implicit_field_env = AssocDictionary.insert "_balance" Money empty_field_env in
       let param_field_env =
         List.fold_left
           (fun acc_env (p, _) ->
              AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
-          (AssocDictionary.make_dict())
+          implicit_field_env
           cparams in
       let init_field_env =
         List.fold_left
@@ -722,7 +729,7 @@ module ScillaMoneyFlowChecker
              AssocDictionary.insert (get_id f) e_tag acc_env)
           param_field_env
           cfields in
-      let rec tagger transitions field_env=
+      let rec tagger transitions field_env =
         let (new_ts, new_field_env, ctrans_changes) =
           List.fold_right
             (fun t (acc_ts, acc_field_env, acc_changes) ->
@@ -731,7 +738,8 @@ module ScillaMoneyFlowChecker
                (new_t :: acc_ts, new_field_env, acc_changes || t_changes))
             transitions ([], field_env, false) in
         if ctrans_changes
-        then tagger new_ts new_field_env 
+        then
+          tagger new_ts new_field_env
         else (new_ts, new_field_env) in
       let (new_ctrans, new_field_env) = tagger ctrans init_field_env in
       let new_fields =

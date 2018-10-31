@@ -35,6 +35,8 @@ module type Dictionary = sig
   val is_empty : 'a dict -> bool
 
   val to_list : 'a dict -> (key * 'a) list
+
+  val size : 'a dict -> int
 end
 
 (* Simple association list implementation of a dictionary. *)
@@ -70,6 +72,8 @@ module AssocDictionary : Dictionary = struct
     | _ -> false
 
   let to_list d = d
+
+  let size d = List.length d
 end
 
 exception InternalError of string
