@@ -37,6 +37,8 @@ module ScillaEventInfo
            let%bind eventname = match epld with
              | MTag s -> pure s
              | MLit l -> (match l with | StringLit s -> pure s | _ -> fail1 emsg bloc)
+             (* Variables are not allowed for eventname_label to ensure that
+              * all possible events can be determined statically. *)
              | MVar _ -> fail1 emsg bloc
            in
            (* Get the type of the event parameters. *)
