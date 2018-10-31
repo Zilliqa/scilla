@@ -484,16 +484,16 @@ module ScillaMoneyFlowChecker
           (e, Top, field_env, local_env, false)
       | Message bs ->
           (* Find _amount initializer and update env if necessary *)
-          let (new_field_env, new_local_env, env_changes) =
+          let (new_field_env, new_local_env) =
             match List.find_opt (fun (s, _) -> s = "_amount") bs with
             | None
             | Some (_, MTag _)
-            | Some (_, MLit _) -> (field_env, local_env, false)
+            | Some (_, MLit _) -> (field_env, local_env)
             | Some (_, MVar x) ->
                 let old_env_tag = lookup_var_tag x local_env in
                 let new_env_tag = unify_tags Money old_env_tag in
                 let (new_local_env, new_field_env) = update_var_tag2 x new_env_tag local_env field_env in
-                (new_field_env, new_local_env, new_env_tag <> old_env_tag) in
+                (new_field_env, new_local_env) in
           let updated_bs =
             List.map
               (fun (s, p) ->
@@ -506,7 +506,7 @@ module ScillaMoneyFlowChecker
            Plain,
            new_field_env,
            new_local_env,
-           env_changes || bs <> updated_bs) in
+           bs <> updated_bs) in
     let e_tag = unify new_e_tag in
     ((new_e, (e_tag, rep)), new_field_env, new_local_env, new_changes || tag <> e_tag)
     
