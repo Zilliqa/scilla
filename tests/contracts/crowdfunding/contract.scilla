@@ -6,11 +6,6 @@ import BoolUtils
 
 library Crowdfunding
 
-let one_msg = 
-  fun (msg : Message) => 
-    let nil_msg = Nil {Message} in
-    Cons {Message} msg nil_msg
-    
 let check_update = 
   fun (bs : Map ByStr20 Uint128) =>
   fun (_sender : ByStr20) =>
