@@ -298,9 +298,47 @@ module ScillaMoneyFlowChecker
         if new_tag = t
         then env
         else AssocDictionary.update (get_id x) new_tag env
+
+  let option_map f x_opt =
+    match x_opt with
+    | None -> None
+    | Some x -> Some (f x)
   
-  (* TODO: implement tag based on the builtin functions *)
-  let builtin_tag _f _args = Map Bottom
+  let builtin_tags expected_tag f args_tags =
+    let unify t = unify_tags expected_tag t in
+    match get_id f, args_tags with
+    | "put", m :: rest
+    | "remove", m :: rest ->
+        let co_domain_tag = 
+          match m with
+          | Map t -> t
+          | _     -> Bottom in
+        (unify (Map co_domain_tag),
+         (unify (Map co_domain_tag)) :: (List.map (fun _ -> Bottom) rest))
+    | "get", m :: rest ->
+        let co_domain_tag = 
+          match m with
+          | Map t -> t
+          | _     -> Bottom in
+        let expected_co_domain =
+          match expected_tag with
+          | Option t -> t
+          | _        -> Bottom in
+        (unify (Option co_domain_tag),
+         (Map (unify_tags expected_co_domain co_domain_tag)) :: (List.map (fun _ -> Bottom) rest))
+      | "contains", m :: rest ->
+          let co_domain_tag = 
+            match m with
+            | Map t -> t
+            | _     -> Bottom in
+        let expected_co_domain =
+          match expected_tag with
+          | Option t -> t
+          | _        -> Bottom in
+          (unify NotMoney,
+           (Map (unify_tags expected_co_domain co_domain_tag)) :: (List.map (fun _ -> Bottom) rest))
+      | _, _ -> 
+          (unify Bottom, (List.map (fun _ -> Bottom) args_tags))
 
   let rec get_pattern_vars acc p =
     match p with
@@ -411,27 +449,33 @@ module ScillaMoneyFlowChecker
            new_local_env,
            args_changes || f_tag <> get_id_tag f)
       | Builtin (f, args) ->
-          let new_args = List.map (fun arg -> update_id_tag arg (lookup_var_tag2 arg local_env field_env)) args in
-          let (args_changes, _) =
-            List.fold_left
-              (fun (acc_changes, new_args_acc) arg ->
-                 match new_args_acc with
-                 | [] -> (false, [])
-                 | x :: rest -> (acc_changes || (get_id_tag x) <> (get_id_tag arg), rest))
-              (false, new_args) args in
-          let f_tag = unify_tags (builtin_tag f new_args) (Map expected_tag) in
+          let args_tags = List.map (fun arg -> lookup_var_tag2 arg local_env field_env) args in
+          let (res_tag, args_tags_usage) = builtin_tags expected_tag f args_tags in
+          let final_args_tags =
+            List.map2
+              (fun arg_tag arg_tag_usage -> unify_tags arg_tag arg_tag_usage)
+              args_tags
+              args_tags_usage in
+          let (final_args, final_field_env, final_local_env, changes) =
+            List.fold_right2
+              (fun arg arg_tag (acc_args, acc_field_env, acc_local_env, acc_changes) ->
+                 let (new_local_env, new_field_env) =
+                   update_var_tag2 arg arg_tag acc_local_env acc_field_env in
+                 ((update_id_tag arg arg_tag) :: acc_args,
+                  new_field_env,
+                  new_local_env,
+                  acc_changes || (get_id_tag arg) <> arg_tag))
+              args
+              final_args_tags
+              ([], field_env, local_env, false) in
+          let f_tag = unify_tags (get_id_tag f)
+              (unify_tags (Map res_tag) (Map expected_tag)) in
           let new_f = update_id_tag f f_tag in
-          (* Update library entry tag? *)
-          let new_e_tag = 
-            match f_tag with
-            | Map t -> t
-            | Bottom -> Bottom
-            | _     -> Top in
-          (Builtin (new_f, new_args),
-           new_e_tag,
-           field_env,
-           local_env,
-           args_changes || f_tag <> get_id_tag f)
+          (Builtin (new_f, final_args),
+           res_tag,
+           final_field_env,
+           final_local_env,
+           changes || f_tag <> get_id_tag f)
       | Let (i, topt, lhs, rhs) ->
           let ((_, (new_lhs_tag, _)) as new_lhs, lhs_field_env, lhs_local_env, lhs_changes) =
             mf_tag_expr lhs (get_id_tag i) field_env local_env in
@@ -706,6 +750,12 @@ module ScillaMoneyFlowChecker
              | ReadFromBC (x, _)
                -> AssocDictionary.insert (get_id x) (get_id_tag x) acc_env
              | _ -> acc_env) local_env ss in
+      let open Printf in
+      let _ =
+        List.iter
+          (fun (k, v) -> printf "%s : %s\n" k (EMFR.sexp_of_money_tag v |> Sexplib.Sexp.to_string))
+          (AssocDictionary.to_list init_local_env) in
+      let _ = printf "----------\n" in
       List.fold_right
         (fun s (acc_ss, acc_field_env, acc_local_env, acc_changes) ->
            let (new_s, new_field_env, new_local_env, new_changes) =
