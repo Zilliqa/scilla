@@ -1,14 +1,8 @@
 {
-  "gas_remaining": "7130",
-  "message": {
-    "_tag": "Main",
-    "_amount": "100",
-    "_accepted": "false",
-    "_recipient": "0x12345678901234567890123456789012345678ab",
-    "params": [ { "vname": "code", "type": "Int32", "value": "9" } ]
-  },
+  "gas_remaining": "7253",
+  "message": null,
   "states": [
-    { "vname": "_balance", "type": "Uint128", "value": "200" },
+    { "vname": "_balance", "type": "Uint128", "value": "300" },
     {
       "vname": "backers",
       "type": "Map (ByStr20) (Uint128)",
@@ -24,14 +18,15 @@
   ],
   "events": [
     {
-      "_eventname": "ClaimedBack",
+      "_eventname": "ClaimBackSuccess",
       "params": [
         {
-          "vname": "claimed_by",
+          "vname": "caller",
           "type": "ByStr20",
           "value": "0x12345678901234567890123456789012345678ab"
         },
-        { "vname": "amount", "type": "Uint128", "value": "100" }
+        { "vname": "amount", "type": "Uint128", "value": "100" },
+        { "vname": "code", "type": "Int32", "value": "9" }
       ]
     }
   ]

@@ -1,12 +1,6 @@
 {
-  "gas_remaining": "7429",
-  "message": {
-    "_tag": "",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x12345678901234567890123456789012345678cd",
-    "params": [ { "vname": "code", "type": "Int32", "value": "4" } ]
-  },
+  "gas_remaining": "7434",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "300" },
     {
@@ -23,5 +17,18 @@
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "GetFundsFailure",
+      "params": [
+        {
+          "vname": "caller",
+          "type": "ByStr20",
+          "value": "0x12345678901234567890123456789012345678cd"
+        },
+        { "vname": "amount", "type": "Uint128", "value": "0" },
+        { "vname": "code", "type": "Int32", "value": "4" }
+      ]
+    }
+  ]
 }
