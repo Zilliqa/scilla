@@ -1,12 +1,6 @@
 {
-  "gas_remaining": "7292",
-  "message": {
-    "_tag": "",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x12345678901234567890123456789012345678cd",
-    "params": [ { "vname": "code", "type": "Int32", "value": "3" } ]
-  },
+  "gas_remaining": "7297",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "300" },
     {
@@ -23,5 +17,18 @@
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "DonationFailure",
+      "params": [
+        {
+          "vname": "donor",
+          "type": "ByStr20",
+          "value": "0x12345678901234567890123456789012345678cd"
+        },
+        { "vname": "amount", "type": "Uint128", "value": "200" },
+        { "vname": "code", "type": "Int32", "value": "3" }
+      ]
+    }
+  ]
 }
