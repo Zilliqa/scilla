@@ -1,14 +1,6 @@
 {
-  "gas_remaining": "7114",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [
-      { "vname": "transferred", "type": "Uint128", "value": "20" }
-    ]
-  },
+  "gas_remaining": "7119",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -28,5 +20,22 @@
       "value": []
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "TransferSuccess",
+      "params": [
+        {
+          "vname": "sender",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567890"
+        },
+        {
+          "vname": "recipient",
+          "type": "ByStr20",
+          "value": "0x44345678901234567890123456789012345678cd"
+        },
+        { "vname": "amount", "type": "Uint128", "value": "20" }
+      ]
+    }
+  ]
 }

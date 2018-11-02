@@ -10,7 +10,8 @@ let one_msg =
   fun (msg : Message) => 
     let nil_msg = Nil {Message} in
     Cons {Message} msg nil_msg
-    
+
+
 let check_update = 
   fun (bs : Map ByStr20 Uint128) =>
   fun (_sender : ByStr20) =>
@@ -98,8 +99,11 @@ transition GetFunds ()
     | True => 
       tt = True;
       funded := tt;
+  	  msg  = {_tag : ""; _recipient : owner; _amount : bal}; 
+	  msgs = one_msg msg;
 	  e = {_eventname : "GetFundsSuccess"; caller : owner; amount : bal; code : got_funds_code};
-      event e
+      event e;
+	  send msgs
     end
   end   
 end
@@ -135,8 +139,11 @@ transition ClaimBack ()
       | Some v =>
         bs1 = builtin remove bs _sender;
         backers := bs1;
+	    msg  = {_tag : ""; _recipient : _sender; _amount : v};
+	    msgs = one_msg msg;
 	    e = { _eventname : "ClaimBackSuccess"; caller : _sender; amount : v; code : reclaimed_code};
-        event e
+        event e;
+	    send msgs
       end
     end
   end  
