@@ -16,7 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-
 %{
   open Syntax
   open ErrorUtils
@@ -297,8 +296,8 @@ transition:
       tbody = ss } }
 
 trans_id:
-| c = CID { asIdL c (toLoc $startpos(c)) };
-| i = ID { asIdL i (toLoc $startpos(i)) };
+| c = CID { asIdL c (toLoc $startpos(c)) }
+| i = ID { asIdL i (toLoc $startpos(i)) }
 
 field:
 | FIELD; f = ID; COLON; t=typ;
@@ -336,3 +335,4 @@ cmodule:
       libs = ls;
       elibs = els;
       contr = c } }
+
