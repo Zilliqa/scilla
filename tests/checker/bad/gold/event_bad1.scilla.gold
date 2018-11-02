@@ -3,7 +3,11 @@
     {
       "error_message":
         "Parameter mismatch for event ClaimedBack. [(amount : Uint128); ] vs [(claimed_by : ByStr20); (amount : Uint128); ]\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/event_bad1.scilla",
+        "line": 163,
+        "column": 11
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "7167",
+  "gas_remaining": "7013",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
@@ -34,5 +34,22 @@
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "ApproveSuccess",
+      "params": [
+        {
+          "vname": "approver",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567890"
+        },
+        {
+          "vname": "spender",
+          "type": "ByStr20",
+          "value": "0x64345678901234567890123456789012345678cd"
+        },
+        { "vname": "amount", "type": "Uint128", "value": "600" }
+      ]
+    }
+  ]
 }
