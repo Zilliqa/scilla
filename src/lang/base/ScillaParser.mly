@@ -297,8 +297,8 @@ transition:
       tbody = ss } }
 
 trans_id:
-| c = CID { asIdL c (toLoc $startpos(c)) };
-| i = ID { asIdL i (toLoc $startpos(i)) };
+| c = CID { asIdL c (toLoc $startpos(c)) }
+| i = ID { asIdL i (toLoc $startpos(i)) }
 
 field:
 | FIELD; f = ID; COLON; t=typ;
