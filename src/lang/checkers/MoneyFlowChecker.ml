@@ -965,12 +965,15 @@ module ScillaMoneyFlowChecker
       | Fixpoint (_f, _t, _body) ->
           (* TODO: Library functions and polymorphism not yet handled. *)
           (e, Top, field_env, local_env, false)
-      | TFun (_tvar, _body) ->
-          (* TODO: Polymorphism not yet handled *)
-          (e, Top, field_env, local_env, false)
-      | TApp (_tf, _arg_types) ->
-          (* TODO: Polymorphism not yet handled *)
-          (e, Top, field_env, local_env, false)
+      | TFun (tvar, body) ->
+          let ((_, (new_body_tag, _)) as new_body, new_field_env, new_local_env, changes) =
+            mf_tag_expr body expected_tag field_env local_env in
+          (TFun (tvar, new_body), new_body_tag, new_field_env, new_local_env, changes)
+      | TApp (tf, arg_types) ->
+          let tf_env_tag = lookup_var_tag2 tf local_env field_env in
+          let new_tf_tag = lub_tags tf_env_tag (get_id_tag tf) in
+          let new_tf = update_id_tag tf new_tf_tag in
+          (TApp (new_tf, arg_types), new_tf_tag, field_env, local_env, false)
       | Message bs ->
           (* Find initializers and update env as appropriate *)
           let (new_bs, new_field_env, new_local_env, changes) =
