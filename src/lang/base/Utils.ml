@@ -51,7 +51,7 @@ module AssocDictionary : Dictionary = struct
   let rec remove k d =
     match d with
     | []              -> []
-    | (kd, _) :: rest -> if k = kd then rest else remove k rest
+    | (kd, vd) :: rest -> if k = kd then rest else (kd, vd) :: (remove k rest)
 
   let insert k v d =
     (k, v) :: d
