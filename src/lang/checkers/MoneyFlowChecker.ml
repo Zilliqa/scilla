@@ -26,6 +26,7 @@ module MoneyFlowRep (R : Rep) = struct
     | Money
     | Map of money_tag
     | Option of money_tag
+    | Pair of money_tag * money_tag
     | Top
   [@@deriving sexp]
     (* TODO: Add this if possible *)
@@ -61,12 +62,9 @@ module ScillaMoneyFlowChecker
   module EMFR = MoneyFlowRep (ER)
   module TypedSyntax = ScillaSyntax (SR) (ER)
   module MFSyntax = ScillaSyntax (SMFR) (EMFR)
-  (*   module TU = TypeUtilities (SR) (ER) *)
-  (*   module SCU = ContractUtil.ScillaContractUtil (SR) (ER) *)
 
   open TypedSyntax
   open EMFR
-  (*   open SCU *)
 
   (*******************************************************)
   (*     Initial traversal: Set every tag to Bottom      *)
@@ -258,8 +256,10 @@ module ScillaMoneyFlowChecker
         Map (lub_tags x y)
     | Option x, Option y ->
         Option (lub_tags x y)
-    | x, y
-      when x = y -> x
+    | Pair (x1, x2), Pair (y1, y2) ->
+        Pair (lub_tags x1 y1, lub_tags x2 y2)
+    | Money, Money -> Money
+    | NotMoney, NotMoney -> NotMoney
     | _, _       -> Top
 
   (* Greatest lower bound in the money_tag lattice. *)
@@ -273,15 +273,12 @@ module ScillaMoneyFlowChecker
         Map (glb_tags x y)
     | Option x, Option y ->
         Option (glb_tags x y)
-    | x, y
-      when x = y -> x
+    | Pair (x1, x2), Pair (y1, y2) ->
+        Pair (glb_tags x1 y1, glb_tags x2 y2)
+    | Money, Money -> Money
+    | NotMoney, NotMoney -> NotMoney
     | _, _       -> Bottom
 
-  let lub_tag_with_option t1 t2 =
-    match t2 with
-    | Some t -> lub_tags t1 t
-    | None -> t1
-  
   let get_id_tag id =
     match id with
     | Ident (_, (tag, _)) -> tag
@@ -304,20 +301,6 @@ module ScillaMoneyFlowChecker
     match AssocDictionary.lookup (get_id i) env1 with
     | Some _ -> (AssocDictionary.update (get_id i) t env1, env2)
     | None -> (env1, AssocDictionary.update (get_id i) t env2)
-
-  let insert_or_update_in_env x new_tag env =
-    let old_tag = AssocDictionary.lookup (get_id x) env in
-    match old_tag with
-    | None -> AssocDictionary.insert (get_id x) new_tag env
-    | Some t ->
-        if new_tag = t
-        then env
-        else AssocDictionary.update (get_id x) new_tag env
-
-  let option_map f x_opt =
-    match x_opt with
-    | None -> None
-    | Some x -> Some (f x)
 
   (* Calculate the signature of a builtin function.
 
@@ -775,10 +758,17 @@ module ScillaMoneyFlowChecker
   let update_pattern_vars_tags p local_env =
     let rec walk p =
       match p with
-      | Wildcard -> Wildcard
-      | Binder x -> Binder (update_id_tag x (lookup_var_tag x local_env))
+      | Wildcard -> (Wildcard, false)
+      | Binder x ->
+          let new_x = update_id_tag x (lookup_var_tag x local_env) in
+          (Binder new_x, get_id_tag x <> get_id_tag new_x)
       | Constructor (s, ps) ->
-          Constructor (s, List.map walk ps) in
+          let (new_ps, ps_changes) =
+            List.fold_right
+              (fun p (acc_ps, acc_changes) ->
+                 let (new_p, p_changes) = walk p in
+                 (new_p :: acc_ps, acc_changes || p_changes)) ps ([], false) in
+          (Constructor (s, new_ps), ps_changes) in
     walk p
 
   let insert_pattern_vars_into_env p local_env =
@@ -807,6 +797,16 @@ module ScillaMoneyFlowChecker
                | _ -> Top)
           | "True"
           | "False" -> lub_tags acc_tag NotMoney
+          | "Pair" ->
+              (match ps with
+               | [ ps1 ; ps2 ] ->
+                     (match acc_tag with
+                    | Pair (t1, t2) -> 
+                        Pair (walk t1 ps1, walk t2 ps2)
+                    | Bottom ->
+                        Pair (walk Bottom ps1, walk Bottom ps2)
+                    | _ -> Top)
+               | _ -> Top)
           | _ -> Top in
     List.fold_left walk Bottom ps
   
@@ -930,6 +930,11 @@ module ScillaMoneyFlowChecker
             | "Some" -> Option (List.fold_left (fun _ arg -> (get_id_tag arg)) Bottom new_args)
             | "True"
             | "False" -> NotMoney
+            | "Pair" ->
+                (match new_args with
+                 | [ new_arg1; new_arg2 ] ->
+                     Pair (get_id_tag new_arg1, get_id_tag new_arg2)
+                 | _ -> Top)
             | _ -> Top in
           (Constr (cname, ts, new_args),
            tag,
@@ -944,13 +949,13 @@ module ScillaMoneyFlowChecker
                    insert_pattern_vars_into_env p acc_local_env in
                  let ((_, (new_e_tag, _)) as new_e, new_field_env, new_local_env, new_changes) =
                    mf_tag_expr ep expected_tag acc_field_env sub_local_env in
-                 let new_p = update_pattern_vars_tags p new_local_env in
+                 let (new_p, p_changes) = update_pattern_vars_tags p new_local_env in
                  let res_local_env = remove_pattern_vars_from_env p new_local_env in
                  ((new_p, new_e) :: acc_clauses,
                   lub_tags acc_res_tag new_e_tag,
                   new_field_env,
                   res_local_env,
-                  acc_changes || new_changes || p <> new_p))
+                  acc_changes || new_changes || p_changes))
               clauses
               ([], expected_tag, field_env, local_env, false) in
           let x_tag_usage = lub_pattern_tags (List.map (fun (p, _) -> p) res_clauses) in
@@ -1117,12 +1122,12 @@ module ScillaMoneyFlowChecker
                    insert_pattern_vars_into_env p acc_local_env in
                  let (new_stmts, new_field_env, s_local_env, s_changes) =
                    mf_tag_stmts sp acc_field_env sub_local_env in
-                 let new_p = update_pattern_vars_tags p s_local_env in
+                 let (new_p, p_changes) = update_pattern_vars_tags p s_local_env in
                  let new_local_env = remove_pattern_vars_from_env p s_local_env in
                  ((new_p, new_stmts) :: acc_clauses,
                   new_field_env,
                   new_local_env,
-                  acc_changes || s_changes || p <> new_p))
+                  acc_changes || s_changes || p_changes))
               clauses
               ([], field_env, local_env, false) in
           let x_tag_usage = lub_pattern_tags (List.map (fun (p, _) -> p) res_clauses) in
@@ -1177,8 +1182,8 @@ module ScillaMoneyFlowChecker
              | Load (x, _)
              | Bind (x, _)
              | MapGet (x, _, _, _)
-             | ReadFromBC (x, _)
-               -> AssocDictionary.insert (get_id x) (get_id_tag x) acc_env
+             | ReadFromBC (x, _) ->
+                 AssocDictionary.insert (get_id x) (get_id_tag x) acc_env
              | _ -> acc_env) local_env ss in
       List.fold_right
         (fun s (acc_ss, acc_field_env, acc_local_env, acc_changes) ->
@@ -1193,6 +1198,7 @@ module ScillaMoneyFlowChecker
 
     let mf_tag_transition t field_env =
       let { tname ; tparams ; tbody } = t in
+
       let empty_local_env = AssocDictionary.make_dict() in
       let implicit_local_env =
         AssocDictionary.insert "_amount" Money 
