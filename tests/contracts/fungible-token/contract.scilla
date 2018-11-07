@@ -74,18 +74,17 @@ transition Transfer (to : ByStr20, tokens : Uint128)
     | True =>
       (* subtract tokens from _sender and add it to to *)
       new_sender_bal = builtin sub b tokens;
-      new_balances = builtin put bl _sender new_sender_bal;
-      to_bal = builtin get new_balances to;
-      match to_bal with
-      | Some x =>
-        new_to_bal = builtin add x tokens;
-        new_balances2 = builtin put new_balances to new_to_bal;
-        balances := new_balances2
-      | None =>
-        new_balances3 = builtin put new_balances to tokens;
-        balances := new_balances3
+      balances[_sender] := new_sender_bal;
+
+      (* Adds tokens to `to` address *)
+      to_bal <- balances[to];
+      new_to_bal = match to_bal with
+      | Some x => builtin add x tokens
+      | None => tokens
       end;
-  	  e = {_eventname : "TransferSuccess"; sender : _sender; recipient : to; amount : tokens};
+  	  balances[to] := new_to_bal;
+
+      e = {_eventname : "TransferSuccess"; sender : _sender; recipient : to; amount : tokens};
       event e
     | False =>
       (* balance not sufficient. *)
@@ -154,18 +153,7 @@ transition TransferFrom (from : ByStr20, to : ByStr20, tokens : Uint128)
 end
 
 transition Approve (spender : ByStr20, tokens : Uint128)
-  al <- allowed;
-  sender_map = builtin get al _sender;
-  match sender_map with
-  | Some m =>
-    allowed_to_spender = builtin put m spender tokens;
-    allowed_new = builtin put al _sender allowed_to_spender;
-    allowed := allowed_new
-  | None =>
-    allowed_to_spender = let m = Emp ByStr20 Uint128 in builtin put m spender tokens;
-    allowed_new = builtin put al _sender allowed_to_spender;
-    allowed := allowed_new
-  end;
+  allowed[_sender][spender] := tokens;
   e = {_eventname : "ApproveSuccess"; approver : _sender; spender : spender; amount : tokens};
   event e
 end
