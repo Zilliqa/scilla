@@ -44,16 +44,14 @@ transition testMapPair ()
     one = Int32 1;
     two = Int32 2;
     p = Pair {(Int32) (Int32)} one two;   
-    gmap_new = builtin put gmap_tmp _sender p;
-    gmap := gmap_new;  
+    gmap[_sender] := p;
     send no_msg
   | True =>
     gmap_tmp <- gmap;  
     three = Int32 3;
     four = Int32 4;
     p = Pair {(Int32) (Int32)} three four;   
-    gmap_new = builtin put gmap_tmp _sender p;
-    gmap := gmap_new;  
+    gmap[_sender] := p;
     send no_msg
   end
 end
