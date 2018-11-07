@@ -19,6 +19,8 @@
 (* Library to create and operate on multivariate polynomials *)
 
 open Core
+open MonadUtil
+open Core.Result.Let_syntax
 
 (* Variables in the polynomial are of type 'a.
  * Representation: co-efficient * (variable ^ pow) list
@@ -113,6 +115,33 @@ let mul_pn (p1 : 'a polynomial) (p2 : 'a polynomial) =
     List.map p2 ~f:(fun t2 -> mul_term t1 t2))
   in
     canonicalize_pn (List.concat prods)
+
+(* Replace every variable in the polynomial using a replacer. *)
+let var_replace_pn (pn : 'a polynomial) ~(f:'a -> ('a, 'b) result) =
+  let term_replacer (ter : 'a term) =
+    let (coef, vlist) = ter in
+      let%bind vlist' = mapM ~f:(fun (v, i1) ->
+        let%bind v' = f v in
+        pure (v', i1)
+      ) vlist in
+      pure (coef, vlist')
+  in
+    mapM ~f:(fun t -> term_replacer t) pn
+
+(* Print a polynomial, calling ~f to print a variable. *)
+let sprint_pn (pn : 'a polynomial) ~(f: 'a -> string) =
+  let sprint_term (coef, vplist) =
+    if coef = 0 then "" else
+    List.fold_left vplist ~init:(if coef = 1 then "" else (Int.to_string coef))
+      ~f:(fun acc (v, p) ->
+        (if acc = "" then "" else ".") ^ 
+        (if p = 0 then acc
+        else if p = 1 then (acc ^ "(" ^ (f v) ^ ")")
+        else (acc ^ "(" ^ (f v) ^ " ^ " ^ (Int.to_string p) ^ ")"))
+      )
+  in
+  List.fold_left pn ~init:"" ~f:(fun acc t -> 
+    (if acc = "" then "" else acc ^ " + ") ^ sprint_term t)
 
 (*********** Utilities to build polynomials easily **************)
 

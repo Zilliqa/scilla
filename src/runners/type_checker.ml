@@ -89,9 +89,11 @@ let () =
         (match check_typing e std_lib with
          | Ok ((_, (e_typ, _)) as typed_erep) ->
              (match check_patterns typed_erep with
-              | Ok _ ->
-                if cli.gua_flag then (let _ = analyze_gas typed_erep in ());
-                printf "%s\n" (pp_typ e_typ.tp)
+              | Ok _ -> 
+                (match analyze_gas typed_erep with
+                 | Ok _ ->
+                   printf "%s\n" (pp_typ e_typ.tp)
+                 | Error el -> (pout @@ scilla_error_to_string el ; exit 1))
               | Error el -> (pout @@ scilla_error_to_string el ; exit 1)
              )
          | Error el -> (pout @@ scilla_error_to_string el ); exit 1)

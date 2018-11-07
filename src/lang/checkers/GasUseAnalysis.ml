@@ -106,31 +106,58 @@ module ScillaGUA
 
   end
 
-  (* Given a signature, substitute actual arguments into the formal parameters. *)
-  let substitute_actuals f (params, ressize, gup) actuals =
+  (* Given a signature, substitute actual arguments into the formal parameters. 
+   * If resolve_actuals is true, then the actuals are resolved from genv before substitution.
+   *)
+  let substitute_actuals ?(resolve_actuals=true) f genv (params, ressize, gup) actuals =
     if List.length params != List.length actuals then
       fail1 "Number of actual arguments and formal parameters mismatch" (ER.get_loc (get_rep f))
     else
       (* replace param with actual in baseref. *)
-      let baseref_replacer param actual b' = 
-        match b' with
-        | Var i -> if (get_id i) = (get_id param) then Var (actual) else b'
-        | Const _ -> b'
+      let baseref_replacer param actual b = 
+        match b with
+        | Var i -> 
+          if (get_id i) = (get_id param)
+          then
+            if resolve_actuals
+            then
+              let%bind (_, resr, _) = 
+                GUAEnv.resolvS genv (get_id actual) ~lopt:(Some(get_rep actual)) in
+              pure resr
+            else
+              pure @@ Base(Var(actual))
+          else
+             pure @@ Base(b)
+        | Const _ -> pure @@ Base(b)
       in
       (* replace param with actual in sizeref. *)
       let sizeref_replacer param actual s' =
         let rec replacer s =
           match s with
-          | Base b -> Base (baseref_replacer param actual b)
-          | Length s' -> Length (replacer s')
-          | Component s' -> Component (replacer s')
-          | Fst s' -> Fst (replacer s') | Snd s' -> Snd (replacer s')
-          | Container s' -> Container (replacer s')
-          | PairS (s1', s2') -> PairS (replacer s1', replacer s2')
+          | Base b -> baseref_replacer param actual b
+          | Length s' ->
+            let%bind r = replacer s' in
+            pure @@ Length (r)
+          | Component s' ->
+            let%bind r = replacer s' in
+            pure @@ Component r
+          | Fst s' ->
+            let%bind r = replacer s' in
+            pure @@ Fst r
+          | Snd s' ->
+            let%bind r = replacer s' in
+            pure @@ Snd r
+          | Container s' ->
+            let%bind r = replacer s' in
+            pure @@ Container r
+          | PairS (s1', s2') ->
+            let%bind r1 = replacer s1' in
+            let%bind r2 = replacer s2' in
+            pure @@ PairS (r1, r2)
           | SApp (id, srlist) ->
             let id' = if (get_id id) = (get_id param) then actual else id in
-            let srlist' = List.map (fun v -> replacer v) srlist in
-            SApp (id', srlist')
+            let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
+            pure @@ SApp (id', srlist')
         in
         replacer s'
       in
@@ -138,25 +165,33 @@ module ScillaGUA
       let guref_replacer param actual v' =
         let rec replacer v = 
           match v with
-          | SizeOf s -> SizeOf (sizeref_replacer param actual s)
-          | BranchTaken (i, sr) -> BranchTaken (i, sizeref_replacer param actual sr)
+          | SizeOf s ->
+            let%bind r = (sizeref_replacer param actual s) in
+            pure @@ SizeOf r
+          | BranchTaken (i, sr) -> 
+            let%bind r = sizeref_replacer param actual sr in
+            pure @@ BranchTaken (i, r)
           | GApp (id, gurlist) ->
             let id' = if (get_id id) = (get_id param) then actual else id in
-            let gurlist' = List.map (fun v -> replacer v) gurlist in
-            GApp (id', gurlist')
+            let%bind gurlist' = mapM ~f:(fun v -> replacer v) gurlist in
+            pure @@ GApp (id', gurlist')
         in
         replacer v'
       in
       (* replace param with actual in a signature. *)
       let polynomial_replacer param actual pol =
-        let term_replacer ter =
-          let (coef, gurlist) = ter in
-            (coef, List.map (fun (v, i1) -> (guref_replacer param actual v, i1)) gurlist)
-        in
-          List.map (fun t -> term_replacer t) pol
+        var_replace_pn pol ~f:(fun gur -> guref_replacer param actual gur)
       in
-      let ressize' = List.fold_left2 (fun sr param actual -> sizeref_replacer param actual sr) ressize params actuals in
-      let gup' = List.fold_left2 (fun pol param actual -> polynomial_replacer param actual pol) gup params actuals in
+      let%bind ressize' = List.fold_left2 (fun sr' param actual ->
+        let%bind sr = sr' in
+        sizeref_replacer param actual sr
+      ) (pure ressize) params actuals in
+      let%bind gup' = List.fold_left2 (fun pol' param actual ->
+        let%bind pol = pol' in
+        polynomial_replacer param actual pol
+      ) (pure gup) params actuals in
+      (* We have substitued parameters with actual arguments.
+         So the first component of the result is empty. *)
       pure ([], ressize', gup')
 
   (* Expand all SApps in sr which have a bound signature in genv. *)
@@ -209,11 +244,11 @@ module ScillaGUA
       let (p : signature) = ([], b, empty_pn) in
       let genv' = GUAEnv.addS genv (get_id arg) p in
       let%bind (sargs, rsize, rgas) = gua_expr genv' body in
-      (* We have signature for the body, just add b as a parameter to that function signature. *)
+      (* We have signature for the body, just add arg as a parameter to that function signature. *)
       pure (arg::sargs, rsize, (add_pn rgas cc))
     | App (f, actuals) ->
       (* if we have a signature for f, substitute it, otherwise build a lambda. *)
-      let%bind (params, ressize, gup) = GUAEnv.resolvS genv (get_id f) in
+      let%bind (params, ressize, gup) = GUAEnv.resolvS genv (get_id f) ~lopt:(Some(get_rep f))in
       if params = [] then
         (* We don't have the signature for f, so create a lambda. *)
         let srparams = List.map (fun i -> Base(Var(i))) actuals in
@@ -223,7 +258,7 @@ module ScillaGUA
         pure ([], u, (add_pn v cc))
       else
         (* Subtitute actuals into the parameters of the signature. *)
-        let%bind (a, ressize, gup) = substitute_actuals f (params, ressize, gup) actuals in
+        let%bind (a, ressize, gup) = substitute_actuals f genv (params, ressize, gup) actuals in
         (* Expand all lambdas that we can. *)
         let%bind ressize' = expand_sapps genv ressize in
         let%bind gup' =  expand_gapps genv gup in
@@ -253,14 +288,14 @@ module ScillaGUA
         | "Cons" | "Some" ->
           (* TypeChecker will ensure that actuals has unit length. *)
           let arg = List.nth actuals 0 in
-          let%bind (_, compsize, _) = GUAEnv.resolvS genv (get_id arg) in
+          let%bind (_, compsize, _) = GUAEnv.resolvS genv (get_id arg) ~lopt:(Some(get_rep arg)) in
           pure @@ Container(compsize)
         | "Pair" ->
           (* TypeChecker will ensure that actuals has two elements. *)
           let arg0 = List.nth actuals 0 in
           let arg1 = List.nth actuals 1 in
-          let%bind (_, compsize0, _) = GUAEnv.resolvS genv (get_id arg0) in
-          let%bind (_, compsize1, _) = GUAEnv.resolvS genv (get_id arg1) in
+          let%bind (_, compsize0, _) = GUAEnv.resolvS genv (get_id arg0) ~lopt:(Some(get_rep arg0)) in
+          let%bind (_, compsize1, _) = GUAEnv.resolvS genv (get_id arg1) ~lopt:(Some(get_rep arg1)) in
           pure @@ PairS(compsize0, compsize1)
         | _ -> fail1 (Printf.sprintf "Unsupported constructor %s in gas analysis." cname)
                      (ER.get_loc rep)
@@ -268,10 +303,17 @@ module ScillaGUA
       in
         pure ([], ressize, cc)
     | MatchExpr (x, clauses) ->
-      let%bind (_, xsize, _) = GUAEnv.resolvS genv (get_id x) in
-      (* TODO: How to express sizeref of result across branches?
-       *       Using the result sizeref of the last branch now. *)
-      let%bind (res, _) = foldM ~f:(fun ((_, _, apn), i) (pat, branch) ->
+      let%bind (_, xsize, _) = GUAEnv.resolvS genv (get_id x) ~lopt:(Some(get_rep x)) in
+      (*  1. TODO: How to express sizeref of result across branches?
+       *     Currently we're using the result sizeref of the last branch. 
+       *  2. If the return type of the MatchExpr is a function then then
+       *     the arguments (first component of the signature) cannot begin
+       *     ignored as we're doing now. 
+       *     TODO: Normalize argument names and merge them. This can be done
+       *     by calling substitute_actuals with resolve_actuals false and having
+       *     a common set of actuals names for all branches.
+       *)
+      let%bind ((args, ressize, gup), _) = foldM ~f:(fun ((_, _, apn), i) (pat, branch) ->
         let%bind genv' = bind_pattern genv xsize pat in
         let%bind (_, bsize, bgu) = gua_expr genv' branch in
         (* combine branch gas use with other branches using "i" as a weight. *)
@@ -279,7 +321,7 @@ module ScillaGUA
         let bpn = mul_pn bgu (single_simple_pn weight) in
         pure (([], bsize, add_pn apn bpn), i+1)
       ) ~init:(([], xsize, empty_pn), 0) clauses in
-      pure res
+      pure (args, ressize, add_pn gup cc)
     | Fixpoint (f, _, _) ->
       fail1 (Printf.sprintf "Fixpoint %s not supported yet." (get_id f)) (ER.get_loc (get_rep f))
     | TFun (tvar, _) ->
@@ -289,9 +331,14 @@ module ScillaGUA
     | Message _ ->
       fail0 "Messages not supported yet."
 
+  let sprint_gu_pn pn =
+    sprint_pn pn ~f:(fun _ -> "x")
+
   (* A simple wrapper to analyze an isolated expression. *)
   let gua_expr_wrapper erep =
     let genv = GUAEnv.mk () in
-    gua_expr genv erep
+    let%bind (_, _, pn) = gua_expr genv erep in
+    Printf.printf "Gas usage polynomial: %s\n" (sprint_gu_pn pn);
+    pure pn
 
   end
