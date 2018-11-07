@@ -82,6 +82,8 @@ let import_all_libs ldirs  =
 type runner_cli = {
   input_file : string;
   stdlib_dirs : string list;
+  (* Run gas use analysis? *)
+  gua_flag : bool;
 }
 
 let parse_cli () =
@@ -89,8 +91,10 @@ let parse_cli () =
   let r_stdlib_dir = ref "" in
   let r_input_file = ref "" in
   let r_json_errors = ref false in
+  let r_gua = ref false in
   let speclist = [
     ("-libdir", Arg.String (fun x -> r_stdlib_dir := x), "Path to stdlib");
+    ("-gua", Arg.Unit (fun () -> r_gua := true), "Run gas use analysis and print use polynomial.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
   ] in 
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
@@ -100,4 +104,4 @@ let parse_cli () =
     (DebugMessage.perr @@ "Usage:\n" ^ Sys.argv.(0) ^ usage ^ "\n"; exit 1);
   GlobalConfig.set_use_json_errors !r_json_errors;
   let stdlib_dirs = if !r_stdlib_dir = "" then [] else String.split_on_char ';' !r_stdlib_dir in
-  { input_file = !r_input_file; stdlib_dirs = stdlib_dirs; }
+  { input_file = !r_input_file; stdlib_dirs = stdlib_dirs; gua_flag = !r_gua }

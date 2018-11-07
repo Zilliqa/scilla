@@ -113,3 +113,17 @@ let mul_pn (p1 : 'a polynomial) (p2 : 'a polynomial) =
     List.map p2 ~f:(fun t2 -> mul_term t1 t2))
   in
     canonicalize_pn (List.concat prods)
+
+(*********** Utilities to build polynomials easily **************)
+
+(* Build a polynomial with only a constant term. *)
+let const_pn i : 'a polynomial =
+  [(i, [])]
+
+(* Build an empty polynomial. *)
+let empty_pn : 'a polynomial = []
+
+(* Build a polynomial with a single variable v.
+ * p = v *)
+let single_simple_pn v : 'a polynomial =
+  [(1, [(v, 1)])]

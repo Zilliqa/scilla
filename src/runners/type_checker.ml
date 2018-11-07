@@ -29,7 +29,7 @@ open MonadUtil
 open Result.Let_syntax
 open PatternChecker
 open PrettyPrinters
-
+open GasUseAnalysis
 
 module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
@@ -40,6 +40,8 @@ module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
 
 module PM_Checker = ScillaPatternchecker (TCSRep) (TCERep)
+
+module GUA_Checker = ScillaGUA(TCSRep)(TCERep)
 
 (* Check that the expression parses *)
 let check_parsing filename = 
@@ -69,6 +71,7 @@ let check_typing e elibs =
   pure @@ typed_e
 
 let check_patterns e = PM_Checker.pm_check_expr e
+let analyze_gas e = GUA_Checker.gua_expr_wrapper e
     
 let () =
     let cli = parse_cli () in
@@ -86,7 +89,9 @@ let () =
         (match check_typing e std_lib with
          | Ok ((_, (e_typ, _)) as typed_erep) ->
              (match check_patterns typed_erep with
-              | Ok _ -> printf "%s\n" (pp_typ e_typ.tp)
+              | Ok _ ->
+                if cli.gua_flag then (let _ = analyze_gas typed_erep in ());
+                printf "%s\n" (pp_typ e_typ.tp)
               | Error el -> (pout @@ scilla_error_to_string el ; exit 1)
              )
          | Error el -> (pout @@ scilla_error_to_string el ); exit 1)
