@@ -251,9 +251,15 @@ module ScillaGUA
       let%bind (params, ressize, gup) = GUAEnv.resolvS genv (get_id f) ~lopt:(Some(get_rep f))in
       if params = [] then
         (* We don't have the signature for f, so create a lambda. *)
-        let srparams = List.map (fun i -> Base(Var(i))) actuals in
+        let%bind srparams = mapM ~f:(fun i ->
+            let%bind (_, sref, _) = GUAEnv.resolvS genv (get_id i) in
+            pure sref
+          ) actuals in
         let u = SApp(f, srparams) in
-        let guparams = List.map (fun i -> SizeOf(Base(Var(i)))) actuals in
+        let%bind guparams = mapM ~f:(fun i ->
+            let%bind (_, sref, _) = GUAEnv.resolvS genv (get_id i) in
+            pure @@ SizeOf (sref)
+          ) actuals in
         let v = single_simple_pn (GApp (f, guparams)) in
         pure ([], u, (add_pn v cc))
       else
