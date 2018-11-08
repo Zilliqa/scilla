@@ -307,7 +307,7 @@ module ScillaGUA
       (*  1. TODO: How to express sizeref of result across branches?
        *     Currently we're using the result sizeref of the last branch. 
        *  2. If the return type of the MatchExpr is a function then then
-       *     the arguments (first component of the signature) cannot begin
+       *     the arguments (first component of the signature) cannot be
        *     ignored as we're doing now. 
        *     TODO: Normalize argument names and merge them. This can be done
        *     by calling substitute_actuals with resolve_actuals false and having
@@ -331,14 +331,67 @@ module ScillaGUA
     | Message _ ->
       fail0 "Messages not supported yet."
 
-  let sprint_gu_pn pn =
-    sprint_pn pn ~f:(fun _ -> "x")
+  (* Given a baseref, print a string for it. *)
+  let sprint_baseref = function
+    | Var i -> (get_id) i
+    | Const (t, i) -> Printf.sprintf "Value of %s with size %d" (pp_typ t) i
+
+  (* Given a size reference, print a description for it. *)
+  let rec sprint_sizeref = function
+    | Base b -> sprint_baseref b
+    (* For List and Map types. *)
+    | Length sr'-> "Length of: " ^ (sprint_sizeref sr')
+    (* For components of Lists, Maps and Option. *)
+    | Component sr' -> "Component of: " ^ (sprint_sizeref sr')
+    (* For first and second component of Pair *)
+    | Fst sr' -> "First component of the Pair: " ^ (sprint_sizeref sr')
+    | Snd sr' -> "Second component of the Pair: " ^ (sprint_sizeref sr')
+    (* Constructing a List / Map or Option from. *)
+    | Container sr' -> "Container around: " ^ (sprint_sizeref sr')
+    (* Constructing a Pair from. *)
+    | PairS (sr1, sr2) -> "Pair of (" ^ (sprint_sizeref sr1) ^ ")(" ^ (sprint_sizeref sr2) ^ ")"
+    | SApp (id, srlist) -> "SApp (" ^ (get_id id) ^ ", " ^
+      (List.fold_left (fun acc sr -> acc ^ (sprint_sizeref sr)) "" srlist) ^ ")"
+
+
+  (* Given a gas use reference, print a description for it. *)
+  let rec sprint_guref = function
+    | SizeOf s -> sprint_sizeref s
+    | BranchTaken (i, s) -> (Printf.sprintf "Probability of branch %d in MatchExpr %s" i (sprint_sizeref s))
+    | GApp (id, gurlist) -> "GApp (" ^ (get_id id) ^ ", " ^
+      (List.fold_left (fun acc gur -> acc ^ (sprint_guref gur)) "" gurlist) ^ ")"
+
+  let sprint_gu (params, _, pn) =
+    let sym_map : (guref, string) Hashtbl.t = Hashtbl.create 16 in
+    let syms = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" in
+    let next_sim_idx = ref 0 in
+    let pols = sprint_pn pn ~f:(fun gur -> 
+      match Hashtbl.find_opt sym_map gur with
+      | Some c -> c
+      | None ->
+        let i = (!next_sim_idx) in
+        let _ = next_sim_idx := !next_sim_idx + 1 in
+        let c = String.sub syms (i mod 52) 1 in
+        let _ = Hashtbl.add sym_map gur c in
+        c
+    ) in
+    let args = 
+      if (params = []) then "" else 
+      "Parameter list: " ^ 
+        (List.fold_left (fun acc p -> acc ^ (get_id p) ^ " ") "( " params) ^ ")\n"
+    in
+    let legs = 
+      if Hashtbl.length sym_map = 0 then "" else
+      "\nLegend:\n" ^
+        (Hashtbl.fold (fun k v acc -> acc ^ "\n" ^ v ^ ": " ^ (sprint_guref k)) sym_map "")
+    in
+      (args ^ pols ^ legs)
 
   (* A simple wrapper to analyze an isolated expression. *)
   let gua_expr_wrapper erep =
     let genv = GUAEnv.mk () in
-    let%bind (_, _, pn) = gua_expr genv erep in
-    Printf.printf "Gas usage polynomial: %s\n" (sprint_gu_pn pn);
-    pure pn
+    let%bind sign = gua_expr genv erep in
+    Printf.printf "Gas usage polynomial:\n%s\n\n" (sprint_gu sign);
+    pure sign
 
   end
