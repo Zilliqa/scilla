@@ -58,6 +58,8 @@ module ScillaGUA
     | Container of sizeref
     (* Constructing a Pair from. *)
     | PairS of sizeref * sizeref
+    (* Result of a builtin. *)
+    | BApp of string * sizeref list
     (* Lambda for unknown sizeref (from applying higher order functions). 
      * TODO: Use "sizeref" instead of "ident" to handle applying wrapped functions,
              where for example `x = fst arg` and we're applying `x`. *)
@@ -154,6 +156,9 @@ module ScillaGUA
             let%bind r1 = replacer s1' in
             let%bind r2 = replacer s2' in
             pure @@ PairS (r1, r2)
+          | BApp (b, srlist) ->
+            let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
+            pure @@ BApp (b, srlist')
           | SApp (id, srlist) ->
             let id' = if (get_id id) = (get_id param) then actual else id in
             let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
@@ -256,10 +261,8 @@ module ScillaGUA
             pure sref
           ) actuals in
         let u = SApp(f, srparams) in
-        let%bind guparams = mapM ~f:(fun i ->
-            let%bind (_, sref, _) = GUAEnv.resolvS genv (get_id i) in
-            pure @@ SizeOf (sref)
-          ) actuals in
+        (* Parameters to the gas use polynomial is in terms of srparams. *)
+        let guparams = List.map (fun i -> SizeOf (i)) srparams in
         let v = single_simple_pn (GApp (f, guparams)) in
         pure ([], u, (add_pn v cc))
       else
@@ -269,11 +272,18 @@ module ScillaGUA
         let%bind ressize' = expand_sapps genv ressize in
         let%bind gup' =  expand_gapps genv gup in
         pure (a, ressize', (add_pn gup' cc))
-    | Builtin (_, actuals) ->
-      (* TODO: *)
-      let p = List.fold_left (fun acc v -> add_pn acc [(10, [(SizeOf(Base(Var(v))), 1)])]) empty_pn actuals in
-      (* How to encode size of builtin result? *)
-      let s = Base(Const(PrimTypes.int32_typ, 1)) in
+    | Builtin (b, actuals) ->
+      (* Resolve actuals into sizeref parameters. *)
+      let%bind srparams = mapM ~f:(fun i ->
+          let%bind (_, sref, _) = GUAEnv.resolvS genv (get_id i) in
+          pure sref
+        ) actuals in
+      (* The resolved sizeref parameters also serve as inputs to the builtin *)
+      let guparams = List.map (fun i -> SizeOf (i)) srparams in
+      (* TODO: Build a polynomial based on guparams and the builtin being executed. *)
+      let p = List.fold_left (fun acc v -> add_pn acc [(10, [(v, 1)])]) empty_pn guparams in
+      (* Encode result sizeref as a BApp term. *)
+      let s = BApp ((get_id b), srparams) in
       pure ([], s, (add_pn p cc))
     | Let (i, _, lhs, rhs) ->
       let%bind lhs_sig = gua_expr genv lhs in
@@ -356,8 +366,10 @@ module ScillaGUA
     | Container sr' -> "Container around: " ^ (sprint_sizeref sr')
     (* Constructing a Pair from. *)
     | PairS (sr1, sr2) -> "Pair of (" ^ (sprint_sizeref sr1) ^ ")(" ^ (sprint_sizeref sr2) ^ ")"
-    | SApp (id, srlist) -> "SApp (" ^ (get_id id) ^ ", " ^
-      (List.fold_left (fun acc sr -> acc ^ (sprint_sizeref sr)) "" srlist) ^ ")"
+    | BApp (b, srlist) -> "Builtin result of " ^ b ^ "(" ^
+      (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
+    | SApp (id, srlist) -> "SApp " ^ (get_id id) ^ "( " ^
+      (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
 
 
   (* Given a gas use reference, print a description for it. *)
