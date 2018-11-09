@@ -19,8 +19,8 @@
 (* Library to create and operate on multivariate polynomials *)
 
 open Core
-open MonadUtil
-open Core.Result.Let_syntax
+
+exception Polynomial_error of string
 
 (* Variables in the polynomial are of type 'a.
  * Representation: co-efficient * (variable ^ pow) list
@@ -117,16 +117,47 @@ let mul_pn (p1 : 'a polynomial) (p2 : 'a polynomial) =
     canonicalize_pn (List.concat prods)
 
 (* Replace every variable in the polynomial using a replacer. *)
-let var_replace_pn (pn : 'a polynomial) ~(f:'a -> ('a, 'b) result) =
+let var_replace_pn (pn : 'a polynomial) ~(f:'a -> 'a) =
   let term_replacer (ter : 'a term) =
     let (coef, vlist) = ter in
-      let%bind vlist' = mapM ~f:(fun (v, i1) ->
-        let%bind v' = f v in
-        pure (v', i1)
-      ) vlist in
-      pure (coef, vlist')
+      let vlist' = List.map vlist ~f:(fun (v, i1) ->
+        let v' = f v in
+          (v', i1)
+      ) in
+      (coef, vlist')
   in
-    mapM ~f:(fun t -> term_replacer t) pn
+    List.map pn ~f:(fun t -> term_replacer t)
+
+(* Expand parameters in a polynomial into full polynomials. 
+ * TODO: Make this efficient. *)
+let expand_parameters_pn (pn' : 'a polynomial) ~(f: 'a -> 'a polynomial option) =
+  let pn = canonicalize_pn pn' in
+  (* Expand at-most one variable in term. *)
+  let expand_parameters_term ((coef, vplist) : 'a term) : 'a polynomial =
+    (* Partition vplist based on whether a variable should be substituted. *)
+    let (nosubl, subl) = List.partition_tf vplist ~f:(fun (v, _) -> is_none (f v)) in
+    match subl with
+    | (svar, spow) :: restsub ->
+      (* Substitute svar only (one substitution at-most to keep things simple). *)
+      let rest_pol = [(coef, nosubl @ restsub)] in
+      let subst_pol = BatOption.get (f svar) in
+      if spow < 0 then raise (Polynomial_error "Cannot expand paramter with non-positive power") else
+      let subst_pols = List.init spow ~f:(fun _ -> subst_pol) in
+      List.fold subst_pols ~init:rest_pol ~f:(fun acc p -> mul_pn acc p)
+    | [] -> [(coef, vplist)] (* nothing to substitute *)
+  in
+  (* Until no more substitutions, keep expanding. *)
+  let rec subst pn =
+    (* Expand at-most once in each term and accummulate the result. *)
+    let pn' = List.fold pn ~init:[] ~f:(fun accum t ->
+      let t' = expand_parameters_term t in
+      add_pn accum t'
+    ) in
+    let pn'' = canonicalize_pn pn' in
+    (* Repeat, till stabilization. *)
+    if eq_pn pn'' pn then pn'' else subst pn''
+  in
+    subst pn
 
 (* Print a polynomial, calling ~f to print a variable. *)
 let sprint_pn (pn : 'a polynomial) ~(f: 'a -> string) =

@@ -71,5 +71,33 @@ let t5_pn = test_case (fun _ ->
   let b = eq_pn sq sq' in
   assert_bool "polynomial multiplication test failed" b)
 
+let t6_pn = test_case (fun _ ->
+  (* A^2 + 2AB + B^2 *)
+  let a = [(1, [('A', 2)]); (1, [('B', 2)]); (2, [('A', 1);('B', 1)])] in
+  let f c = if c = 'B' then Some [(1, [('A', 2)])] else None in
+  let b = expand_parameters_pn a ~f:f in
+  let _ = Printf.fprintf stderr "\nPolynomial: %s\n" (sprint_pn b ~f:(fun c -> if c = 'A' then "A" else if c = 'B' then "B" else "X")) in
+  let bexpected = [(1, [('A', 2)]); (2, [('A', 3)]); (1, [('A', 4)])] in
+  let res = eq_pn b bexpected in
+  assert_bool "polynomial parameter substitution test failed" res)
+
+let t7_pn = test_case (fun _ ->
+  (* A^2 + 2AB + B^2 *)
+  let a = [(1, [('A', 2)]); (1, [('B', 2)]); (2, [('A', 1);('B', 1)])] in
+  let f c = 
+    if c = 'B' then Some [(2, [('C', 2)]); (2, [('A', 1)])] (* 2(c^2) + 2*a *)
+    else if c = 'C' then Some [(3, [('A', 5);('D', 1)])] (* 3(a^5)d *)
+    else None 
+  in
+  let b = expand_parameters_pn a ~f:f in
+  (*
+    let _ = Printf.fprintf stderr "\nPolynomial: %s\n" 
+      (sprint_pn b ~f:(function | 'A' -> "A" | 'B' -> "B" | 'C' -> "C" | 'D' -> "D" | _ -> "X")) in
+  *)
+  let bexpected = [(9, [('A', 2)]); (324, [('A', 20);('D', 4)]); (108, [('A', 11);('D', 2)])] in
+  let res = eq_pn b bexpected in
+  assert_bool "polynomial parameter substitution test failed" res)
+
+
 (* The test to be called from Testsuite. *)
-let polynomial_tests = "polynomial_tests" >::: ([t1_pn;t2_pn;t3_pn;t4_pn;t5_pn])
+let polynomial_tests = "polynomial_tests" >::: ([t1_pn;t2_pn;t3_pn;t4_pn;t5_pn;t6_pn;t7_pn])
