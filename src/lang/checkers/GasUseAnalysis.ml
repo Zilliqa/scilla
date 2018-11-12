@@ -29,6 +29,7 @@ module ScillaGUA
     (ER : sig
        include Rep
        val get_type : rep -> PlainTypes.t inferred_type
+       val mk_id : loc ident -> typ -> rep ident
      end) = struct
 
   module SER = SR
@@ -111,6 +112,67 @@ module ScillaGUA
 
   end
 
+  (* Given a baseref, print a string for it. *)
+  let sprint_baseref = function
+    | Var i -> (get_id) i
+    | Const (t, i) -> Printf.sprintf "Value of %s with size %d" (pp_typ t) i
+
+  (* Given a size reference, print a description for it. *)
+  let rec sprint_sizeref = function
+    | Base b -> sprint_baseref b
+    (* For List and Map types. *)
+    | Length sr'-> "Length of: " ^ (sprint_sizeref sr')
+    (* For components of Lists, Maps and Option. *)
+    | Component sr' -> "Component of: " ^ (sprint_sizeref sr')
+    (* For first and second component of Pair *)
+    | Fst sr' -> "First component of the Pair: " ^ (sprint_sizeref sr')
+    | Snd sr' -> "Second component of the Pair: " ^ (sprint_sizeref sr')
+    (* Constructing a List / Map or Option from. *)
+    | Container sr' -> "Container around: " ^ (sprint_sizeref sr')
+    (* Constructing a Pair from. *)
+    | PairS (sr1, sr2) -> "Pair of (" ^ (sprint_sizeref sr1) ^ ")(" ^ (sprint_sizeref sr2) ^ ")"
+    | BranchTaken (i, s) -> (Printf.sprintf "Probability of branch %d in MatchExpr %s" i (sprint_sizeref s))
+    | BApp (b, srlist) -> "Result of builtin " ^ b ^ "(" ^
+      (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
+    | SApp (id, srlist) -> "SApp " ^ (get_id id) ^ "( " ^
+      (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
+
+  (* Given a gas use reference, print a description for it. *)
+  let rec sprint_guref = function
+    | SizeOf s -> sprint_sizeref s
+    | GApp (id, gurlist) -> "GApp (" ^ (get_id id) ^ ", " ^
+      (List.fold_left (fun acc gur -> acc ^ (sprint_sizeref gur)) "" gurlist) ^ ")"
+    | GPol pn -> "GPol(" ^ (sprint_gup  pn) ^ ")"
+  and sprint_gup pn =
+    let sym_map : (guref, string) Hashtbl.t = Hashtbl.create 16 in
+    let syms = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" in
+    let next_sim_idx = ref 0 in
+    let pols = sprint_pn pn ~f:(fun gur -> 
+      match Hashtbl.find_opt sym_map gur with
+      | Some c -> c
+      | None ->
+        let i = (!next_sim_idx) in
+        let _ = next_sim_idx := !next_sim_idx + 1 in
+        let c = String.sub syms (i mod 52) 1 in
+        let _ = Hashtbl.add sym_map gur c in
+        c
+    ) in
+    let legs = 
+      if Hashtbl.length sym_map = 0 then "" else
+      "\nLegend:\n" ^
+        (Hashtbl.fold (fun k v acc -> acc ^ "\n" ^ v ^ ": " ^ (sprint_guref k)) sym_map "")
+    in
+      (pols ^ legs)
+
+  let sprint_signature (params, _, pn) =
+    let args = 
+      if (params = []) then "" else 
+      "Parameter list: " ^ 
+        (List.fold_left (fun acc p -> acc ^ (get_id p) ^ " ") "( " params) ^ ")\n"
+    in
+    (args ^ sprint_gup pn)
+
+
   (* Given a signature, substitute actual arguments into the formal parameters.
    * This function does not resolve the actuals into their sizerefs (only name substitution).
    * TODO: Currently unused. This may be useful in evaluating MatchExpr where each
@@ -180,26 +242,49 @@ module ScillaGUA
     (* replace param with actual in baseref. *)
     let substitute_resolved_actual_baseref param actual b = 
       match b with
-      | Var i when (get_id i) = (get_id param) -> actual
-      | _ -> Base b
+      | Var i when (get_id i) = (get_id param) -> pure actual
+      | _ -> pure @@ Base b
     in
     let rec replacer s =
       match s with
       | Base b -> substitute_resolved_actual_baseref param actual b
-      | Length s' -> Length (replacer s')
-      | Component s' -> Component (replacer s')
-      | Fst s' -> Fst (replacer s')
-      | Snd s' -> Snd (replacer s')
-      | Container s' -> Container (replacer s')
-      | PairS (s1', s2') -> PairS (replacer s1', replacer s2')
-      | BranchTaken (i, sr) -> BranchTaken (i, replacer sr)
+      | Length s' ->
+        let%bind r = replacer s' in
+        pure @@ Length (r)
+      | Component s' ->
+        let%bind r = replacer s' in
+        pure @@ Component r
+      | Fst s' ->
+        let%bind r = replacer s' in
+        pure @@ Fst r
+      | Snd s' ->
+        let%bind r = replacer s' in
+        pure @@ Snd r
+      | Container s' ->
+        let%bind r = replacer s' in
+        pure @@ Container r
+      | PairS (s1', s2') ->
+        let%bind r1 = replacer s1' in
+        let%bind r2 = replacer s2' in
+        pure @@ PairS (r1, r2)
+      | BranchTaken (i, sr) ->
+        let%bind r = replacer sr in
+        pure @@ BranchTaken (i, r)
       | BApp (b, srlist) ->
-        let srlist' = List.map (fun v -> replacer v) srlist in
-        BApp (b, srlist')
+        let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
+        pure @@ BApp (b, srlist')
       | SApp (id, srlist) ->
+        let%bind id' = if (get_id id) = (get_id param) then
+          (* We know what to do only when "actual" is Base(Var(_)). *)
+          (match actual with
+          | Base(Var(id'')) -> pure id''
+          (* See TODO in definition of sizeref where SApp should have sizeref instead of ident. *)
+          | _ ->fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id))
+          )
+        else pure id in
         (* We don't do anything with id as that will be expanded (not just resolved). *)
-        let srlist' = List.map (fun v -> replacer v) srlist in
-        SApp (id, srlist')
+        let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
+        pure @@ SApp (id', srlist')
     in
       replacer s'
 
@@ -207,33 +292,60 @@ module ScillaGUA
   let rec substitute_resolved_actual_guref param actual v =
     match v with
     | SizeOf s ->
-      let r = (substitute_resolved_actual_sizeref param actual s) in
-      SizeOf r
+      let%bind r = (substitute_resolved_actual_sizeref param actual s) in
+      pure @@ SizeOf r
     | GApp (id, gurlist) ->
+      let%bind id' = if (get_id id) = (get_id param)
+      then
+        (* We know what to do only when "actual" is Base(Var(_)). *)
+        (match actual with
+        | Base(Var(id'')) -> pure id''
+        (* See TODO in definition of sizeref where SApp should have guref instead of ident. *)
+        | _ ->fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id))
+        )
+      else pure id in
       (* We don't do anything with id as that will be expanded (not just resolved). *)
-      let gurlist' = List.map (fun v -> substitute_resolved_actual_sizeref param actual v) gurlist in
-      GApp (id, gurlist')
-    | GPol p -> GPol (polynomial_replacer param actual p)
+      let%bind gurlist' = mapM ~f:(fun v -> substitute_resolved_actual_sizeref param actual v) gurlist in
+      pure @@ GApp (id', gurlist')
+    | GPol p ->
+      let%bind p' = polynomial_replacer param actual p in
+      pure @@ GPol (p')
   and
   (* replace param with actual in a gu polynomial. *)
   polynomial_replacer param actual pol =
-    var_replace_pn pol ~f:(fun gur -> substitute_resolved_actual_guref param actual gur)
+    let exception Resolv_error of scilla_error list in
+    let pol' = 
+      try 
+        (* This circus with exceptions is to avoid having
+          * Polynomial utilities deal with our "result". *)
+        pure @@ var_replace_pn pol ~f:(fun gur ->
+          (match substitute_resolved_actual_guref param actual gur with
+          | Ok (gur') -> gur'
+          | Error s -> raise (Resolv_error s))
+        )
+      with
+      | Resolv_error s -> fail s
+      | Polynomial_error s -> fail0 s
+    in
+      pol'
 
   let substitute_resolved_actuals_sizeref_list ressize params actuals =
     if List.length params != List.length actuals then
       fail0 "Number of actual arguments and formal parameters mismatch in sizeref substitution."
     else
-      pure @@ List.fold_left2 (fun sr param actual ->
+      List.fold_left2 (fun sr' param actual ->
+        let%bind sr = sr' in
         substitute_resolved_actual_sizeref param actual sr
-      ) ressize params actuals
+      ) (pure ressize) params actuals
 
   let substitute_resolved_actuals_guref_list gup params actuals =
     if List.length params != List.length actuals then
       fail0 "Number of actual arguments and formal parameters mismatch in guref substitution."
     else
-      pure @@ List.fold_left2 (fun pol param actual ->
+      List.fold_left2 (fun pol' param actual ->
+        let%bind pol = pol' in
         polynomial_replacer param actual pol
-      ) gup params actuals
+      ) (pure gup) params actuals
 
   (* Resolve and expand variables and lambdas (whenever possible) in sr and pol. *)
   let resolve_expand genv sr pol =
@@ -276,7 +388,7 @@ module ScillaGUA
             let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
             pure @@ BApp (b, srlist')
           | SApp (id, srlist) ->
-            let%bind (args, sr, _) = GUAEnv.resolvS genv (get_id id) in
+            let%bind (args, sr, _) = GUAEnv.resolvS genv (get_id id) ~lopt:(Some(get_rep id)) in
             if args = []
             then
               (* No known expansion  *)
@@ -295,7 +407,7 @@ module ScillaGUA
           let%bind r = (sizeref_resolver s) in
           pure @@ SizeOf r
         | GApp (id, gurlist) ->
-          let%bind (args, _, gup) = GUAEnv.resolvS genv (get_id id) in
+          let%bind (args, _, gup) = GUAEnv.resolvS genv (get_id id) ~lopt:(Some(get_rep id)) in
           if args = []
           then
             (* No known expansion  *)
@@ -401,9 +513,9 @@ module ScillaGUA
       let%bind rhs_sig = gua_expr genv' rhs in
       (* gas consumption is sum of both. *)
       let (args, ressize, gup) = rhs_sig in
-      let (_, _, gup') = lhs_sig in
-      (* Gas cost for this let expression is sum of LHS cost and RHS cost. *)
-      let p = add_pn gup gup' in
+      let (lhs_args, _, gup') = lhs_sig in
+      (* Gas cost for this let expression is sum of LHS cost (if not a function) and RHS cost. *)
+      let p = if lhs_args <> [] then gup else add_pn gup gup' in
       pure (args, ressize, (add_pn p cc))
     | Constr (cname, _, actuals) ->
       let%bind ressize = 
@@ -450,79 +562,42 @@ module ScillaGUA
       pure (args, ressize, add_pn gup cc)
     | Fixpoint (f, _, _) ->
       fail1 (Printf.sprintf "Fixpoint %s not supported yet." (get_id f)) (ER.get_loc (get_rep f))
-    | TFun (tvar, _) ->
-      fail1 (Printf.sprintf "Type variable %s not supported yet." (get_id tvar)) (ER.get_loc (get_rep tvar))
+    | TFun (_, body) ->
+      (* Nothing to do except analyzing the body. *)
+      let%bind (sargs, rsize, rgas) = gua_expr genv body in
+      pure (sargs, rsize, (add_pn rgas cc))      
     | TApp (tf, _) ->
-      fail1 (Printf.sprintf "Type instantiation %s not supported yet." (get_id tf)) (ER.get_loc (get_rep tf))
+      (* Just return the signature of tf. *)
+      GUAEnv.resolvS genv (get_id tf) ~lopt:(Some(get_rep tf))
     | Message _ ->
       fail0 "Messages not supported yet."
 
-  (* Given a baseref, print a string for it. *)
-  let sprint_baseref = function
-    | Var i -> (get_id) i
-    | Const (t, i) -> Printf.sprintf "Value of %s with size %d" (pp_typ t) i
+  (* Hardcode signature for folds. *)
+  let analyze_folds genv =
+    (*  list_foldr: forall 'A . forall 'B . g:('A -> 'B -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
+    let a = ER.mk_id (mk_ident "a") (ADT("List", [TypeVar("'A")])) in
+    let g = ER.mk_id (mk_ident "g") (FunType(TypeVar("'A"), FunType(TypeVar("'B"), TypeVar("'B")))) in
+    let b = ER.mk_id (mk_ident "b") (TypeVar("'B")) in
+    let lendep = SizeOf(Length(Base(Var(a)))) in
+    let gapp = GApp(g, [Component(Base(Var(a))); Base(Var(b))]) in
+    (* Gas use polynomial = Length(a) * GApp(g, [Component(a), b]) *)
+    let gupol = mul_pn (single_simple_pn lendep) (single_simple_pn gapp) in
+    let ressize = SApp(g, [Base(Var(a));Base(Var(b))]) in
+    let list_foldr_signature = ([g;b;a], ressize, gupol) in
+    GUAEnv.addS genv "list_foldr" list_foldr_signature
 
-  (* Given a size reference, print a description for it. *)
-  let rec sprint_sizeref = function
-    | Base b -> sprint_baseref b
-    (* For List and Map types. *)
-    | Length sr'-> "Length of: " ^ (sprint_sizeref sr')
-    (* For components of Lists, Maps and Option. *)
-    | Component sr' -> "Component of: " ^ (sprint_sizeref sr')
-    (* For first and second component of Pair *)
-    | Fst sr' -> "First component of the Pair: " ^ (sprint_sizeref sr')
-    | Snd sr' -> "Second component of the Pair: " ^ (sprint_sizeref sr')
-    (* Constructing a List / Map or Option from. *)
-    | Container sr' -> "Container around: " ^ (sprint_sizeref sr')
-    (* Constructing a Pair from. *)
-    | PairS (sr1, sr2) -> "Pair of (" ^ (sprint_sizeref sr1) ^ ")(" ^ (sprint_sizeref sr2) ^ ")"
-    | BranchTaken (i, s) -> (Printf.sprintf "Probability of branch %d in MatchExpr %s" i (sprint_sizeref s))
-    | BApp (b, srlist) -> "Result of builtin " ^ b ^ "(" ^
-      (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
-    | SApp (id, srlist) -> "SApp " ^ (get_id id) ^ "( " ^
-      (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
-
-
-  (* Given a gas use reference, print a description for it. *)
-  let sprint_guref = function
-    | SizeOf s -> sprint_sizeref s
-    | GApp (id, gurlist) -> "GApp (" ^ (get_id id) ^ ", " ^
-      (List.fold_left (fun acc gur -> acc ^ (sprint_sizeref gur)) "" gurlist) ^ ")"
-    | GPol _ -> "GPol" (* TODO *)
-
-  let sprint_gu (params, _, pn) =
-    let sym_map : (guref, string) Hashtbl.t = Hashtbl.create 16 in
-    let syms = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" in
-    let next_sim_idx = ref 0 in
-    let pols = sprint_pn pn ~f:(fun gur -> 
-      match Hashtbl.find_opt sym_map gur with
-      | Some c -> c
-      | None ->
-        let i = (!next_sim_idx) in
-        let _ = next_sim_idx := !next_sim_idx + 1 in
-        let c = String.sub syms (i mod 52) 1 in
-        let _ = Hashtbl.add sym_map gur c in
-        c
-    ) in
-    let args = 
-      if (params = []) then "" else 
-      "Parameter list: " ^ 
-        (List.fold_left (fun acc p -> acc ^ (get_id p) ^ " ") "( " params) ^ ")\n"
-    in
-    let legs = 
-      if Hashtbl.length sym_map = 0 then "" else
-      "\nLegend:\n" ^
-        (Hashtbl.fold (fun k v acc -> acc ^ "\n" ^ v ^ ": " ^ (sprint_guref k)) sym_map "")
-    in
-      (args ^ pols ^ legs)
+  (* Expand polynomials that contain GPol. *)
+  let expand_parameters pol =
+    expand_parameters_pn pol ~f:(function | SizeOf _ | GApp _ -> None | GPol p -> Some p)
 
   (* A simple wrapper to analyze an isolated expression. *)
   let gua_expr_wrapper erep =
     let genv = GUAEnv.mk () in
-    let%bind (params, sr, pol) = gua_expr genv erep in
+    let genv' = analyze_folds genv in
+    let%bind (params, sr, pol) = gua_expr genv' erep in
     (* Expand all parameters (GPol) in the polynomial. *)
-    let pol' = expand_parameters_pn pol ~f:(function | SizeOf _ | GApp _ -> None | GPol p -> Some p) in
-    Printf.printf "Gas usage polynomial:\n%s\n\n" (sprint_gu (params, sr, pol'));
+    let pol' = expand_parameters pol in
+    Printf.printf "Gas usage polynomial:\n%s\n\n" (sprint_signature (params, sr, pol'));
     pure (params, sr, pol')
 
   end
