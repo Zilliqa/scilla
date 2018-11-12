@@ -140,7 +140,7 @@ module ScillaGUA
   (* Given a gas use reference, print a description for it. *)
   let rec sprint_guref = function
     | SizeOf s -> sprint_sizeref s
-    | GApp (id, gurlist) -> "GApp (" ^ (get_id id) ^ ", " ^
+    | GApp (id, gurlist) -> "Cost of calling " ^ (get_id id) ^ "(" ^
       (List.fold_left (fun acc gur -> acc ^ (sprint_sizeref gur)) "" gurlist) ^ ")"
     | GPol pn -> "GPol(" ^ (sprint_gup  pn) ^ ")"
   and sprint_gup pn =
