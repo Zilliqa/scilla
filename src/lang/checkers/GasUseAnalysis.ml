@@ -141,7 +141,7 @@ module ScillaGUA
   let rec sprint_guref = function
     | SizeOf s -> sprint_sizeref s
     | GApp (id, gurlist) -> "Cost of calling " ^ (get_id id) ^ "(" ^
-      (List.fold_left (fun acc gur -> acc ^ (sprint_sizeref gur)) "" gurlist) ^ ")"
+      (List.fold_left (fun acc gur -> acc ^ (if acc = "" then "" else ", ") ^ (sprint_sizeref gur)) "" gurlist) ^ ")"
     | GPol pn -> "GPol(" ^ (sprint_gup  pn) ^ ")"
   and sprint_gup pn =
     let sym_map : (guref, string) Hashtbl.t = Hashtbl.create 16 in
@@ -451,10 +451,17 @@ module ScillaGUA
     | Constructor (cname, plist) ->
       (match cname with
       | "True" | "False" | "Nil" | "None" -> pure @@ genv
-      | "Cons" | "Some" ->
+      | "Some" ->
         (* TypeChecker will ensure that plist has unit length. *)
         let arg = List.nth plist 0 in
         bind_pattern genv (Component(msref)) arg
+      | "Cons" ->
+        (* TypeChecker will ensure that plist has two elements. *)
+        let arg0 = List.nth plist 0 in
+        let arg1 = List.nth plist 1 in
+        let%bind genv' = bind_pattern genv (Component(msref)) arg0 in
+        let%bind genv'' = bind_pattern genv' (msref) arg1 in
+        pure genv''
       | "Pair" ->
         (* TypeChecker will ensure that plist has two elements. *)
         let arg0 = List.nth plist 0 in
@@ -584,7 +591,14 @@ module ScillaGUA
     let gupol = mul_pn (single_simple_pn lendep) (single_simple_pn gapp) in
     let ressize = SApp(g, [Base(Var(a));Base(Var(b))]) in
     let list_foldr_signature = ([g;b;a], ressize, gupol) in
-    GUAEnv.addS genv "list_foldr" list_foldr_signature
+    let genv' = GUAEnv.addS genv "list_foldr" list_foldr_signature in
+    (* list_foldl: forall 'A . forall 'B . g:('B -> 'A -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
+    let gapp' = GApp(g, [Base(Var(b)); Component(Base(Var(a)));]) in
+    let gupol' = mul_pn (single_simple_pn lendep) (single_simple_pn gapp') in
+    let ressize' = SApp(g, [Base(Var(b));Base(Var(a))]) in
+    let list_foldl_signature = ([g;b;a], ressize', gupol') in
+    let gapp'' = GUAEnv.addS genv' "list_foldl" list_foldl_signature in
+    gapp''
 
   (* Expand polynomials that contain GPol. *)
   let expand_parameters pol =
