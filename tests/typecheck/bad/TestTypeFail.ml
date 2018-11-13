@@ -141,6 +141,7 @@ module Tests = TestUtil.DiffBasedTests(
     let tests = [
       "adt-error1.scilla";
       "branch-mismatch.scilla";
+      "builtin-tvar.scilla";
       "fun2.scilla";
       "fun3.scilla";
       "fun4.scilla";

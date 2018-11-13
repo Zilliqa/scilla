@@ -76,7 +76,6 @@ let t6_pn = test_case (fun _ ->
   let a = [(1, [('A', 2)]); (1, [('B', 2)]); (2, [('A', 1);('B', 1)])] in
   let f c = if c = 'B' then Some [(1, [('A', 2)])] else None in
   let b = expand_parameters_pn a ~f:f in
-  let _ = Printf.fprintf stderr "\nPolynomial: %s\n" (sprint_pn b ~f:(fun c -> if c = 'A' then "A" else if c = 'B' then "B" else "X")) in
   let bexpected = [(1, [('A', 2)]); (2, [('A', 3)]); (1, [('A', 4)])] in
   let res = eq_pn b bexpected in
   assert_bool "polynomial parameter substitution test failed" res)

@@ -471,6 +471,116 @@ module ScillaGUA
         pure genv''
       | _ -> fail0 (Printf.sprintf "Unsupported constructor %s in gas analysis." cname))
 
+
+  (* built-in op costs are propotional to size of data they operate on. *)
+  (* TODO: Have all numbers in one place. Integrate with Gas.ml *)
+  let builtin_cost op params =
+
+    let open PrimTypes in
+    let ops = get_id op in
+    let opl = ER.get_loc (get_rep op) in
+    (* Types of our paramters. *)
+    let tparams = List.map (fun p -> (ER.get_type (get_rep p)).tp) params in
+
+    let tvar a = TypeVar (a) in
+    (* Make a simple identifier of type 'A *)
+    let si a = ER.mk_id (mk_ident a) (tvar "'A") in
+     (* Make a simple polynomial from string a *)
+    let sp a = single_simple_pn (SizeOf(Base(Var(si a)))) in
+    let arg_err s = "Incorrect arguments to builtin %s" ^ s in
+    let ressize op actuals =
+      (* These must be resolved in the caller when expanding the lambdas. *)
+      let srparams = List.map (fun i -> Base(Var(i))) actuals in
+      BApp (op, srparams)
+    in
+
+    match ops with
+    | "eq" ->
+      if List.length params <> 2 then fail1 (arg_err ops) opl else
+      (* TODO: Use max(a, b)? This one is ok for now for a worst case report. *)
+      let%bind pn =
+        let t = List.nth tparams 0 in
+        (match t with
+          | PrimType _ when is_int_type t ->
+            (match (int_width t) with
+             | Some 32 | Some 64 -> pure @@ const_pn 4
+             | Some 128 -> pure @@ const_pn 8
+             | Some 256 -> pure @@ const_pn 16
+             | _ -> fail1 (arg_err ops) opl
+             )
+          (*  eq (a, b) = a. *)
+          | PrimType _ when t = string_typ -> pure @@ sp "a"
+          | PrimType _ when t = bnum_typ -> pure @@ const_pn 32
+          (*  eq (a, b) = a. *)
+          | PrimType _ when t = bystr_typ -> pure @@ sp "a"
+          | _ ->
+            (match bystrx_width t with
+            | Some w -> pure @@ const_pn w
+            | None -> fail1 (arg_err ops) opl
+            )
+        )
+      in
+      pure ([si "a"; si "b"], ressize ops params, pn)
+    | "concat" -> (* concat(a, b) = a + b *)
+      if List.length params <> 2 then fail1 (arg_err ops) opl else
+      pure ([si "a"; si "b"], ressize ops params, add_pn (sp "a") (sp "b"))
+    | "substr" -> (* substr(a, o, l) = a *)
+      if List.length params <> 3 then fail1 (arg_err ops) opl else
+      pure ([si "a"; si "o"; si "l"], ressize ops params, sp "a")
+    | "blt" | "badd" -> (* blt/badd(a, b) = 32 *)
+      if List.length params <> 3 then fail1 (arg_err ops) opl else
+      pure ([si "a"; si "b"], ressize ops params, const_pn 32)
+    | "dist" -> (* dist(a, b) = 32 *)
+      if List.length params <> 2 then fail1 (arg_err ops) opl else
+      pure ([si "a"; si "b"], ressize ops params, const_pn 32)
+    | "to_bystr" -> (* to_bystr(a) = a *)
+      if List.length params <> 1 then fail1 (arg_err ops) opl else
+      pure ([si "a"], ressize ops params, sp "a")
+    | "sha256hash" | "ripemd160hash" | "keccak256hash" ->
+      (* hash(a) = a * 15. TODO: Support functions in polynomial. *)
+      if List.length params <> 1 then fail1 (arg_err ops) opl else
+      pure ([si "a"], ressize ops params, mul_pn (sp "a") (const_pn 15))
+    | "schnorr_gen_key_pair" ->
+      if List.length params <> 0 then fail1 (arg_err ops) opl else
+      pure ([si "a"; si "b"], ressize ops params, const_pn 20)
+    | "schnorr_sign" -> (* sign(a) = (a * 15) + 350 *)
+      (* TODO: Support functions in polynomial. *)
+      if List.length params <> 3 then fail1 (arg_err ops) opl else
+      pure ([si "a"; si "b"; si "m"], ressize ops params, add_pn (mul_pn (sp "a") (const_pn 15)) (const_pn 350))
+    | "schnorr_verify" -> (* sign(a) = (a * 15) + 250 *)
+      (* TODO: Support functions in polynomial. *)
+      if List.length params <> 3 then fail1 (arg_err ops) opl else
+      pure ([si "a"; si "b"; si "m"], ressize ops params, add_pn (mul_pn (sp "a") (const_pn 15)) (const_pn 250))
+    | "contains" | "get" -> (* contains/get(m, key) = 1 *)
+      if List.length params <> 2 then fail1 (arg_err ops) opl else
+      pure ([si "m"; si "key"], ressize ops params, const_pn 1)
+    | "put" -> (* put(m, key, value) = 1 + Length (m) *)
+      if List.length params <> 3 then fail1 (arg_err ops) opl else
+      let pol = single_simple_pn (SizeOf(Length(Base(Var(si "m"))))) in
+      pure ([si "m"; si "key"; si "val"], ressize ops params, add_pn pol (const_pn 1))
+    | "remove" -> (* remove(m, key) = 1 + Length (m) *)
+      if List.length params <> 2 then fail1 (arg_err ops) opl else
+      let pol = single_simple_pn (SizeOf(Length(Base(Var(si "m"))))) in
+      pure ([si "m"; si "key"], ressize ops params, add_pn pol (const_pn 1))
+    | "to_list" | "size" -> (* 1 + length (m) *)
+      if List.length params <> 1 then fail1 (arg_err ops) opl else
+      let pol = single_simple_pn (SizeOf(Length(Base(Var(si "m"))))) in
+      pure ([si "m"], ressize ops params, add_pn pol (const_pn 1))
+    | "add" | "sub" | "mul" | "div" | "rem" |
+      "to_int32" | "to_int64" | "to_int128" | "to_int256" |
+      "to_uint32" | "to_uint64" | "to_uint128" | "to_uint256" ->
+      if List.length params <> 2 && List.length params <> 1 then fail1 (arg_err ops) opl else
+      let base = match ops with | "mul" | "div" | "rem" -> 20 | _ -> 4 in
+      let%bind c = 
+        (match int_width (List.nth tparams 0) with
+         | Some 32 | Some 64 -> pure base
+         | Some 128 -> pure @@ base * 2
+         | Some 256 -> pure @@ base * 4
+         | _ -> fail1 (arg_err ops) opl
+        ) in
+      pure ([si "a"; si "b"], ressize ops params, const_pn c)
+    | _ -> fail1 ("Unknown builtin " ^ ops) opl
+
   (* Return gas use and result sizeref polynomials of evaluating an expression. *)
   let rec gua_expr genv (erep : expr_annot) =
     let%bind c = Gas.expr_static_cost erep in
@@ -498,22 +608,22 @@ module ScillaGUA
       let u = SApp(f, srparams) in
       let v = single_simple_pn (GApp (f, srparams)) in
       (* Expand all lambdas that we can. *)
-      let%bind (ressize', gup') =  resolve_expand genv u v in
+      let%bind (ressize', gup') = resolve_expand genv u v in
       (* TODO: Return value having no arguments implies partial application not supported. *)
       pure ([], ressize', (add_pn gup' cc))
     | Builtin (b, actuals) ->
-      (* Resolve actuals into sizeref parameters. *)
-      let%bind srparams = mapM ~f:(fun i ->
-          let%bind (_, sref, _) = GUAEnv.resolvS genv (get_id i) in
-          pure sref
-        ) actuals in
-      (* The resolved sizeref parameters also serve as inputs to the builtin *)
-      let guparams = List.map (fun i -> SizeOf (i)) srparams in
-      (* TODO: Build a polynomial based on guparams and the builtin being executed. *)
-      let p = List.fold_left (fun acc v -> add_pn acc [(10, [(v, 1)])]) empty_pn guparams in
-      (* Encode result sizeref as a BApp term. *)
-      let s = BApp ((get_id b), srparams) in
-      pure ([], s, (add_pn p cc))
+      (* Handle builtin-s like we handle function application. *)
+      let%bind bsig = builtin_cost b actuals in
+      let genv' = GUAEnv.addS genv (get_id b) bsig in
+      (* We have the function signature ready, apply and expand it. *)
+      (* Build a lambda for "f". It will be expanded next (along with inner lambdas if possible). *)
+      let srparams = List.map (fun i -> Base(Var(i))) actuals in
+      let u = SApp(b, srparams) in
+      let v = single_simple_pn (GApp (b, srparams)) in
+      (* Expand all lambdas that we can. *)
+      let%bind (ressize', gup') = resolve_expand genv' u v in
+      (* TODO: Return value having no arguments implies partial application not supported. *)
+      pure ([], ressize', (add_pn gup' cc))
     | Let (i, _, lhs, rhs) ->
       let%bind lhs_sig = gua_expr genv lhs in
       let genv' = GUAEnv.addS genv (get_id i) lhs_sig in

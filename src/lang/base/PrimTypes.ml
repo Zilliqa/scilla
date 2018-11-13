@@ -51,6 +51,17 @@ let msg_typ = PrimType msg_str
 let bystr_typ = PrimType bystr_str
 let bystrx_typ b = PrimType (bystrx_str ^ Int.to_string b)
 
+let int_width t =
+  if t = int32_typ then Some 32 else
+  if t = int64_typ then Some 64 else
+  if t = int128_typ then Some 128 else
+  if t = int256_typ then Some 256 else
+  if t = uint32_typ then Some 32 else
+  if t = uint64_typ then Some 64 else 
+  if t = uint128_typ then Some 128 else 
+  if t = uint256_typ then Some 256 else
+  None
+
 (* Given a ByStrX string, return integer X *)
 let bystrx_width t =
   match t with
