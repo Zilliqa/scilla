@@ -78,13 +78,6 @@ let makeErrorEvent =
     fun (errorCode: Uint32) =>
         {_eventname: "Error"; raisedAt: location; code: errorCode }
 
-let changeBoolToString =
-    fun (flag: Bool) =>
-        match flag with
-        | True => "True"
-        | False => "False"
-        end
-
 (* Error codes *)
 let code_success = Uint32 0
 let code_failure = Uint32 1
@@ -329,7 +322,8 @@ transition setApprovalForAll(to: ByStr20, approved: Bool)
     | True =>
         (* Check if sender has an existing record on the operatorApproval *)
         operatorApprovals[_sender][to] := approved;
-        approvedStr = changeBoolToString approved;
+        (* Stringify boolean value to be emitted in the event *)
+        approvedStr = bool_to_string approved;
         e = {_eventname: "setApprovalForAll successful"; from: _sender; recipient: to; status: approvedStr};
         event e
     | False =>

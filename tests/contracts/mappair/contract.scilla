@@ -40,14 +40,12 @@ transition testMapPair ()
   is_owner = builtin eq owner _sender;
   match is_owner with
   | False =>
-    gmap_tmp <- gmap;  
     one = Int32 1;
     two = Int32 2;
     p = Pair {(Int32) (Int32)} one two;   
     gmap[_sender] := p;
     send no_msg
   | True =>
-    gmap_tmp <- gmap;  
     three = Int32 3;
     four = Int32 4;
     p = Pair {(Int32) (Int32)} three four;   

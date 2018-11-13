@@ -86,8 +86,7 @@ transition Bid ()
           | True =>
             accept;
             hbPrev <- highestBidder;
-            prs <- pendingReturns;
-
+            
             match hbPrev with
             | Some prevHighestBidder =>
               (* There is already a highest bidder *)
