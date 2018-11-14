@@ -28,6 +28,7 @@ open Result.Let_syntax
 open RunnerUtil
 open PatternChecker
 open SanityChecker
+open GasUseAnalysis
 open Recursion
 open EventInfo
 
@@ -45,6 +46,8 @@ module PMCERep = PMC.EPR
 
 module SC = ScillaSanityChecker (PMCSRep) (PMCERep)
 module EI = ScillaEventInfo (PMCSRep) (PMCERep)
+
+module GUA = ScillaGUA (TCSRep) (TCERep)
 
 
 (* Check that the module parses *)
@@ -83,6 +86,17 @@ let check_events_info einfo  =
   | Error msg -> pout @@ scilla_error_to_string msg ; einfo
   | Ok _ -> einfo
 
+let analyze_print_gas cmod typed_elibs =
+  let res = GUA.gua_module cmod typed_elibs in
+  match res with
+  | Error msg -> pout @@ scilla_error_to_string msg ; res
+  | Ok cpol ->
+    let _ = List.iter ~f:(fun (i, pol) ->
+        pout @@ sprintf "Gas use polynomial for transition %s:\n%s\n\n" (get_id i)
+          (GUA.sprint_gup pol)
+      ) cpol;
+    in res
+
 let () =
     let cli = parse_cli () in
     let open GlobalConfig in
@@ -98,10 +112,11 @@ let () =
       if lib_dirs = [] then stdlib_not_found_err ();
       (* Import whatever libs we want. *)
       let elibs = import_libs cmod.elibs  in
-      let%bind (typed_cmod, tenv) = check_typing cmod elibs  in
+      let%bind (typed_cmod, tenv, typed_elibs) = check_typing cmod elibs  in
       let%bind pm_checked_cmod = check_patterns typed_cmod  in
       let%bind _ = check_sanity pm_checked_cmod.contr  in
       let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr)  in
+      let%bind _ = if cli.gua_flag then analyze_print_gas typed_cmod typed_elibs else pure [] in
       pure @@ (cmod, tenv, event_info)
     ) in
     match r with

@@ -559,7 +559,7 @@ module ScillaTypechecker
       (* TODO : rec_libs should be added to the contract somehow *)
       (rec_libs : UntypedSyntax.lib_entry list)
       (elibs : UntypedSyntax.library list)
-    : (TypedSyntax.cmodule * stmt_tenv, scilla_error list) result =
+    : (TypedSyntax.cmodule * stmt_tenv * TypedSyntax.library list, scilla_error list) result =
 
     let {cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
@@ -619,17 +619,30 @@ module ScillaTypechecker
     (* Step 7: Lift contract parameters to ETR.rep ident *)
     let typed_params = List.map cparams
         ~f:(fun (id, t) -> (add_type_to_id id (mk_qual_tp t), t)) in
+
+    (* Split external and contract libraries.
+     * Note that the typed libs are in reverse order
+     * (libs in Step1 and Step2 reverses the libraries). *)
+    let typed_clibs, typed_elibs =
+        match md.libs with
+        | Some _ -> (* There is a contract library. *)
+          (List.hd libs), 
+          (match List.tl libs with
+          | Some elibs_rev -> List.rev elibs_rev
+          | None -> [])
+        | None -> None, List.rev libs
+    in
     
     if emsgs' = []
     (* Return pure environment *)  
     then pure ({TypedSyntax.cname = mod_cname;
-                TypedSyntax.libs = List.hd libs;
+                TypedSyntax.libs = typed_clibs;
                 TypedSyntax.elibs = mod_elibs;
                 TypedSyntax.contr =
                   {TypedSyntax.cname = ctr_cname;
                    TypedSyntax.cparams = typed_params;
                    TypedSyntax.cfields = typed_fields;
-                   TypedSyntax.ctrans = typed_trans}}, env)
+                   TypedSyntax.ctrans = typed_trans}}, env, typed_elibs)
     (* Return error messages *)
     else fail @@ emsgs'
 

@@ -45,6 +45,8 @@ module ScillaGUA
     | Var of ER.rep ident
     (* Constant of type and size. *)
     | Const of typ * int
+    (* An input coming from the block chain state. *)
+    | BCState of string
 
   type sizeref =
     (* For sizes of PrimTypes, function value (and instantiations for TVars?). *)
@@ -59,6 +61,8 @@ module ScillaGUA
     | Container of sizeref
     (* Constructing a Pair from. *)
     | PairS of sizeref * sizeref
+    (* To represent a message, each sizeref its components. *)
+    | MsgS of sizeref list
     (* Depends on which Branch "i" of `match ident with` is taken. *)
     | BranchTaken of int * sizeref
     (* Result of a builtin. *)
@@ -86,36 +90,11 @@ module ScillaGUA
    * the final signature to not have these lambdas. *)
   type signature = (ER.rep ident list) * sizeref * guref polynomial
 
-  module GUAEnv = struct
-    open Utils.AssocDictionary
-    (* A map from identifier strings to their signatures. *)
-    type t = signature dict
-
-    (* Make an empty environment. *)
-    let mk = make_dict
-
-    (* In env, add mapping id => s *)
-    let addS env id s =
-      insert id s env
-
-    (* In env, resolve id => s and return s (fails if cannot resolve). *)
-    let resolvS ?lopt:(lopt = None) env id =
-      match lookup id env with
-      | Some s -> pure s
-      | None ->
-        let sloc = (match lopt with
-        | Some l -> ER.get_loc l
-        | None -> dummy_loc) in
-          fail1 (Printf.sprintf
-            "Couldn't resolve the identifier in gas use analysis: \"%s\".\n" id)
-            sloc
-
-  end
-
   (* Given a baseref, print a string for it. *)
   let sprint_baseref = function
     | Var i -> (get_id) i
     | Const (t, i) -> Printf.sprintf "Value of %s with size %d" (pp_typ t) i
+    | BCState s -> "BlockChain: " ^ s
 
   (* Given a size reference, print a description for it. *)
   let rec sprint_sizeref = function
@@ -131,6 +110,8 @@ module ScillaGUA
     | Container sr' -> "Container around: " ^ (sprint_sizeref sr')
     (* Constructing a Pair from. *)
     | PairS (sr1, sr2) -> "Pair of (" ^ (sprint_sizeref sr1) ^ ")(" ^ (sprint_sizeref sr2) ^ ")"
+    | MsgS srlist -> "Message (" ^
+      (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
     | BranchTaken (i, s) -> (Printf.sprintf "Probability of branch %d in MatchExpr %s" i (sprint_sizeref s))
     | BApp (b, srlist) -> "Result of builtin " ^ b ^ "(" ^
       (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
@@ -172,6 +153,38 @@ module ScillaGUA
     in
     (args ^ sprint_gup pn)
 
+  module GUAEnv = struct
+    open Utils.AssocDictionary
+    (* A map from identifier strings to their signatures. *)
+    type t = signature dict
+
+    (* Make an empty environment. *)
+    let mk = make_dict
+
+    (* In env, add mapping id => s *)
+    let addS env id s =
+      insert id s env
+
+    (* In env, resolve id => s and return s (fails if cannot resolve). *)
+    let resolvS ?lopt:(lopt = None) env id =
+      match lookup id env with
+      | Some s -> pure s
+      | None ->
+        let sloc = (match lopt with
+        | Some l -> ER.get_loc l
+        | None -> dummy_loc) in
+          fail1 (Printf.sprintf
+            "Couldn't resolve the identifier in gas use analysis: \"%s\".\n" id)
+            sloc
+
+    let pp env =
+      let l = to_list env in
+      List.fold_left (fun acc (k, sign) ->
+        acc ^
+          "Signature for " ^ k ^ ": " ^ (sprint_signature sign) ^ "----\n"
+      ) "" l
+
+  end
 
   (* Given a signature, substitute actual arguments into the formal parameters.
    * This function does not resolve the actuals into their sizerefs (only name substitution).
@@ -201,6 +214,9 @@ module ScillaGUA
           | Container s' -> Container (replacer s')
           | PairS (s1', s2') -> PairS (replacer s1', replacer s2')
           | BranchTaken (i, sr) -> BranchTaken (i, replacer sr)
+          | MsgS srlist ->
+            let srlist' = List.map (fun v -> replacer v) srlist in
+            MsgS (srlist')
           | BApp (b, srlist) ->
             let srlist' = List.map (fun v -> replacer v) srlist in
             BApp (b, srlist')
@@ -270,6 +286,9 @@ module ScillaGUA
       | BranchTaken (i, sr) ->
         let%bind r = replacer sr in
         pure @@ BranchTaken (i, r)
+      | MsgS srlist ->
+        let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
+        pure @@ MsgS (srlist')
       | BApp (b, srlist) ->
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ BApp (b, srlist')
@@ -355,7 +374,7 @@ module ScillaGUA
           let%bind (_, resr, _) =
             GUAEnv.resolvS genv (get_id i) ~lopt:(Some(get_rep i)) in
           pure resr
-        | Const _ -> pure @@ Base(b)
+        | Const _ | BCState _ -> pure @@ Base(b)
       in
       (* replace param with actual in sizeref. *)
       let sizeref_resolver s' =
@@ -384,6 +403,9 @@ module ScillaGUA
           | BranchTaken (i, sr) ->
             let%bind r = resolver sr in
             pure @@ BranchTaken (i, r)
+          | MsgS srlist ->
+            let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
+            pure @@ MsgS (srlist')
           | BApp (b, srlist) ->
             let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
             pure @@ BApp (b, srlist')
@@ -528,7 +550,7 @@ module ScillaGUA
       if List.length params <> 3 then fail1 (arg_err ops) opl else
       pure ([si "a"; si "o"; si "l"], ressize ops params, sp "a")
     | "blt" | "badd" -> (* blt/badd(a, b) = 32 *)
-      if List.length params <> 3 then fail1 (arg_err ops) opl else
+      if List.length params <> 2 then fail1 (arg_err ops) opl else
       pure ([si "a"; si "b"], ressize ops params, const_pn 32)
     | "dist" -> (* dist(a, b) = 32 *)
       if List.length params <> 2 then fail1 (arg_err ops) opl else
@@ -566,7 +588,7 @@ module ScillaGUA
       if List.length params <> 1 then fail1 (arg_err ops) opl else
       let pol = single_simple_pn (SizeOf(Length(Base(Var(si "m"))))) in
       pure ([si "m"], ressize ops params, add_pn pol (const_pn 1))
-    | "add" | "sub" | "mul" | "div" | "rem" |
+    | "add" | "sub" | "mul" | "div" | "rem" | "lt" |
       "to_int32" | "to_int64" | "to_int128" | "to_int256" |
       "to_uint32" | "to_uint64" | "to_uint128" | "to_uint256" ->
       if List.length params <> 2 && List.length params <> 1 then fail1 (arg_err ops) opl else
@@ -678,7 +700,7 @@ module ScillaGUA
       ) ~init:(([], xsize, empty_pn), 0) clauses in
       pure (args, ressize, add_pn gup cc)
     | Fixpoint (f, _, _) ->
-      fail1 (Printf.sprintf "Fixpoint %s not supported yet." (get_id f)) (ER.get_loc (get_rep f))
+      fail1 (Printf.sprintf "Fixpoint %s not supported." (get_id f)) (ER.get_loc (get_rep f))
     | TFun (_, body) ->
       (* Nothing to do except analyzing the body. *)
       let%bind (sargs, rsize, rgas) = gua_expr genv body in
@@ -686,8 +708,22 @@ module ScillaGUA
     | TApp (tf, _) ->
       (* Just return the signature of tf. *)
       GUAEnv.resolvS genv (get_id tf) ~lopt:(Some(get_rep tf))
-    | Message _ ->
-      fail0 "Messages not supported yet."
+    | Message plist ->
+       (* Similar to "Literal", we only spend a small cost (cc) for message creation
+        * but charge based on size of message in SendStmt. *)
+        let%bind splist = mapM ~f:(fun (_, pl) ->
+          (match pl with
+          | MTag s -> pure @@ Base(Const(PrimTypes.string_typ, String.length s))
+          | MLit l ->
+            let%bind lt = TU.literal_type l in
+            let%bind lc = Gas.literal_cost l in
+            pure @@ Base(Const(lt, lc))
+          | MVar i ->
+            let%bind (_, irs, _) = GUAEnv.resolvS genv (get_id i) ~lopt:(Some(get_rep i)) in
+            pure irs
+          )
+        ) plist in
+        pure ([], MsgS(splist), cc)
 
   (* Hardcode signature for folds. *)
   let analyze_folds genv =
@@ -713,6 +749,146 @@ module ScillaGUA
   (* Expand polynomials that contain GPol. *)
   let expand_parameters pol =
     expand_parameters_pn pol ~f:(function | SizeOf _ | GApp _ -> None | GPol p -> Some p)
+
+  (* Return gas use and result sizeref polynomials of evaluating a sequence of statements. *)
+  let rec gua_stmt genv gupol (stmts : stmt_annot list) =
+    match stmts with
+    | [] -> pure gupol
+    | (s, sloc) :: sts ->
+      (match s with
+        | Load (x, r) ->
+          (* The cost of load depends on the size of the state variable. *)
+          let gupol' = add_pn gupol (single_simple_pn (SizeOf(Base(Var(r))))) in
+          let signx = ([], Base(Var(r)), empty_pn) in
+          let genv' = GUAEnv.addS genv (get_id x) signx in
+          gua_stmt genv' gupol' sts
+        | Store (_, r) ->
+          (* The cost of store depends on the original size and the new size *)
+          (* TODO: Incorporate actual cost from Gas.ml which has max() and subtract. *)
+          let gupol' = add_pn gupol (single_simple_pn (SizeOf(Base(Var(r))))) in
+          gua_stmt genv gupol' sts
+        | Bind (x, e) ->
+          let%bind signe = gua_expr genv e in
+          let genv' = GUAEnv.addS genv (get_id x) signe in
+          (* Simple constant const for binding. *)
+          let gupol' = add_pn gupol (const_pn 1) in
+          gua_stmt genv' gupol' sts
+        | MapUpdate(_, klist, ropt) ->
+          let nindices = (const_pn (List.length klist)) in
+          let c = (match ropt with
+          | Some i -> single_simple_pn (SizeOf(Base(Var(i)))) (* update *)
+          | None -> empty_pn) (* delete *)in
+          let gupol' = add_pn nindices c in
+          let gupol'' = add_pn gupol gupol' in
+          gua_stmt genv gupol'' sts
+        | MapGet(x, m, klist, fetchval) ->
+          let nindices = (const_pn (List.length klist)) in
+          let (sign, pol) =
+            if fetchval then 
+              let ressize = List.fold_left (fun acc _ -> Component(acc)) (Base(Var(m))) klist in
+              ([], ressize, empty_pn), (add_pn nindices (single_simple_pn (SizeOf(ressize))))
+            else
+              (* TODO: How to represent result of `exists` in map? ?*)
+              ([], Base(Var(m)), empty_pn), nindices
+          in
+          let genv' = GUAEnv.addS genv (get_id x) sign in
+          let gupol' = add_pn pol gupol in
+          gua_stmt genv' gupol' sts
+        | ReadFromBC (x, bf) ->
+          (* Bind x to blockchain variable bf *)
+          let signx = ([], Base(BCState(bf)), empty_pn) in
+          (* Constant cost of 1 to load a blockchain variable. *)
+          let gupol' = add_pn gupol (const_pn 1) in
+          let genv' = GUAEnv.addS genv (get_id x) signx in
+          gua_stmt genv' gupol' sts
+        | MatchStmt (x, clauses) ->
+          let%bind (_, xsize, _) = GUAEnv.resolvS genv (get_id x) ~lopt:(Some(get_rep x)) in
+          let num_clauses = const_pn (List.length clauses) in
+          let%bind (gupol', _) = foldM ~f:(fun (apn, i) (pat, branch) ->
+            let%bind genv' = bind_pattern genv xsize pat in
+            let%bind bgu = gua_stmt genv' empty_pn branch in
+            (* combine branch gas use with other branches using "i" as a weight. *)
+            let weight = SizeOf (BranchTaken (i, xsize)) in
+            let bpn = mul_pn bgu (single_simple_pn weight) in
+            pure (add_pn apn bpn, i+1)
+          ) ~init:(add_pn gupol num_clauses, 0) clauses in
+          gua_stmt genv gupol' sts
+        | AcceptPayment ->
+          (* Constant cost of 1. *)
+          gua_stmt genv (add_pn gupol (const_pn 1)) sts
+        | SendMsgs i | CreateEvnt i->
+          (* We can at best convey the size of i *)
+          let%bind (_, s, _) = GUAEnv.resolvS genv (get_id i) ~lopt:(Some(get_rep i)) in
+          let gupol' = add_pn gupol (single_simple_pn (SizeOf(s))) in
+          gua_stmt genv gupol' sts
+        | _ -> fail1 "Unsupported statement" (SR.get_loc sloc)
+      )
+
+  (* Bind identifiers to just sizeref wrappers of themselves. *)
+  let identity_bind_ident_list genv idlist =
+    List.fold_left (fun acc_genv i ->
+        let i' = Base(Var(i)) in
+        GUAEnv.addS acc_genv (get_id i) ([], i', empty_pn)
+      ) genv idlist
+
+  let gua_transition genv (trans : transition) =
+    let open PrimTypes in
+    let si a t = ER.mk_id (mk_ident a) t in
+    let all_params =[
+        ((si ContractUtil.MessagePayload.sender_label (bystrx_typ 20)), (bystrx_typ 20));
+        ((si ContractUtil.MessagePayload.amount_label uint128_typ), uint128_typ)
+      ] 
+      @ trans.tparams in
+    (* Add params to the environment. *)
+    let genv' = identity_bind_ident_list genv 
+      (List.map (fun (i, _) -> i) all_params) in
+    (* TODO: Add bytesize of message.json. *)
+    gua_stmt genv' empty_pn trans.tbody
+
+  (* Bind lib entries to signatures. *)
+  let gua_libentries genv (lel : lib_entry list) =
+    foldM ~f:(fun genv le ->
+      let%bind esig = gua_expr genv le.lexp in
+      pure @@ GUAEnv.addS genv (get_id le.lname) esig
+    ) ~init:(genv) lel
+
+  let gua_module (cmod : cmodule) (elibs : library list) =
+    (* Get bindings for folds *)
+    let genv_folds = analyze_folds (GUAEnv.mk ()) in
+
+    (* Analyze external libraries first *)
+    let%bind genv_elibs =
+      foldM ~f:(fun genv lib -> gua_libentries genv lib) ~init:genv_folds 
+        (List.map (fun l -> l.lentries) elibs)
+    in
+
+    (* Analyze contract libraries *)
+    let%bind genv_lib =
+      match cmod.libs with
+      | Some l -> gua_libentries genv_elibs l.lentries
+      | None -> pure @@ GUAEnv.mk()
+    in
+
+    (* Bind contract parameters. *)
+    let si a t = ER.mk_id (mk_ident a) t in
+    let all_cparams =[
+        ((si ContractUtil.creation_block_label PrimTypes.bnum_typ), PrimTypes.bnum_typ);
+      ]
+      @ cmod.contr.cparams
+    in
+    let genv_cparams = identity_bind_ident_list genv_lib
+      (List.map (fun (i, _) -> i) all_cparams) in
+
+    (* Bind state variables. *)
+    (* TODO: account for the cost of evaluating state initializers. *)
+    let genv_cfields = identity_bind_ident_list genv_cparams
+      (List.map (fun (i, _, _) -> i) cmod.contr.cfields) in
+    (* Analyse each transition and report it's gas use polynomial. *)
+    let%bind pols = mapM ~f:(fun tr ->
+      let%bind pol = gua_transition genv_cfields tr in
+      pure @@ (tr.tname, expand_parameters pol)
+    ) cmod.contr.ctrans in
+    pure pols
 
   (* A simple wrapper to analyze an isolated expression. *)
   let gua_expr_wrapper erep =
