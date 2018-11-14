@@ -765,7 +765,8 @@ module ScillaGUA
         | Store (_, r) ->
           (* The cost of store depends on the original size and the new size *)
           (* TODO: Incorporate actual cost from Gas.ml which has max() and subtract. *)
-          let gupol' = add_pn gupol (single_simple_pn (SizeOf(Base(Var(r))))) in
+          let%bind (_, rs, _) = GUAEnv.resolvS genv (get_id r) in
+          let gupol' = add_pn gupol (single_simple_pn (SizeOf (rs))) in
           gua_stmt genv gupol' sts
         | Bind (x, e) ->
           let%bind signe = gua_expr genv e in
