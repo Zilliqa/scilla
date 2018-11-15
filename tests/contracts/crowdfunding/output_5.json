@@ -1,8 +1,14 @@
 {
-  "gas_remaining": "7253",
-  "message": null,
+  "gas_remaining": "7128",
+  "message": {
+    "_tag": "",
+    "_amount": "100",
+    "_accepted": "false",
+    "_recipient": "0x12345678901234567890123456789012345678ab",
+    "params": []
+  },
   "states": [
-    { "vname": "_balance", "type": "Uint128", "value": "300" },
+    { "vname": "_balance", "type": "Uint128", "value": "200" },
     {
       "vname": "backers",
       "type": "Map (ByStr20) (Uint128)",

@@ -1,14 +1,6 @@
 {
-  "gas_remaining": "7554",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x12345678901234567890123456789012345678cd",
-    "params": [
-      { "vname": "total_tokens", "type": "Uint128", "value": "10000" }
-    ]
-  },
+  "gas_remaining": "7599",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -27,5 +19,17 @@
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "TotalSupply",
+      "params": [
+        {
+          "vname": "caller",
+          "type": "ByStr20",
+          "value": "0x12345678901234567890123456789012345678cd"
+        },
+        { "vname": "balance", "type": "Uint128", "value": "10000" }
+      ]
+    }
+  ]
 }
