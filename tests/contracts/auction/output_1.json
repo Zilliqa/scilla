@@ -1,12 +1,6 @@
 {
-  "gas_remaining": "7187",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "true",
-    "_recipient": "0x12345678901234567890123456789012345678ab",
-    "params": [ { "vname": "code", "type": "Int32", "value": "4" } ]
-  },
+  "gas_remaining": "7190",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "100" },
     { "vname": "highestBid", "type": "Uint128", "value": "100" },
@@ -30,5 +24,18 @@
       "value": []
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "Bid",
+      "params": [
+        { "vname": "code", "type": "Int32", "value": "4" },
+        {
+          "vname": "addr",
+          "type": "ByStr20",
+          "value": "0x12345678901234567890123456789012345678ab"
+        },
+        { "vname": "amount", "type": "Uint128", "value": "100" }
+      ]
+    }
+  ]
 }

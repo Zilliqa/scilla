@@ -1,12 +1,6 @@
 {
-  "gas_remaining": "6910",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x1234567890123456789012345678901234567892",
-    "params": [ { "vname": "code", "type": "Uint32", "value": "0" } ]
-  },
+  "gas_remaining": "6967",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -49,5 +43,22 @@
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "setApprovalForAll successful",
+      "params": [
+        {
+          "vname": "from",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567892"
+        },
+        {
+          "vname": "recipient",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567891"
+        },
+        { "vname": "status", "type": "String", "value": "True" }
+      ]
+    }
+  ]
 }
