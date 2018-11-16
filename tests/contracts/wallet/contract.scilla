@@ -1,4 +1,4 @@
-import ListUtils IntUtils
+import ListUtils
 
 (***************************************************)
 (*               Associated library                *)
@@ -209,12 +209,10 @@ end
 
 (* Sign off on an existing transaction *)
 transition SignTransaction (transactionId : Uint32)
-  (* Helper function *)
-  sender_mem = address_mem _sender;
 
   (* Only the owner is allowed to sign off transactions *)
   owners_tmp <- owners;
-  sender_is_owner = sender_mem owners_tmp;
+  sender_is_owner = address_mem _sender owners_tmp;
   match sender_is_owner with
   | False =>
     e = mk_error_event non_owner_cannot_sign_err_code;
@@ -237,7 +235,7 @@ transition SignTransaction (transactionId : Uint32)
         event e
       | Some sigs =>
         (* Sender must not have signed already *)
-        sender_has_signed = sender_mem sigs;
+        sender_has_signed = address_mem _sender sigs;
         match sender_has_signed with
         | True =>
           e = mk_error_event already_signed_err_code;
@@ -407,13 +405,13 @@ end
 
 (* Sign off on new owner. *)
 transition SignOffNewOwner (candidate : ByStr20)
-  (* Helpers *)
-  sender_mem = address_mem _sender;
+
+
   t = True;
 
   (* Only owners are allowed to sign off new owners *)
   owners_tmp <- owners;
-  sender_is_owner = sender_mem owners_tmp;
+  sender_is_owner = address_mem _sender owners_tmp;
   match sender_is_owner with
   | False =>
     e = mk_error_event non_owner_cannot_sign_err_code;
@@ -428,7 +426,7 @@ transition SignOffNewOwner (candidate : ByStr20)
       event e
     | Some sigs =>
       (* Sender must not have signed already *)
-      sender_has_signed = sender_mem sigs;
+      sender_has_signed = address_mem _sender sigs;
       match sender_has_signed with
       | True =>
         e = mk_error_event already_signed_err_code;
@@ -460,7 +458,7 @@ transition ClaimOwnership ()
     current_owners <- owners;
     no_of_owners = builtin size current_owners;
     no_of_sigs = builtin size sigs;
-    all_have_signed = uint32_eq no_of_sigs no_of_owners;
+    all_have_signed = builtin eq no_of_sigs no_of_owners;
     match all_have_signed with
     | False =>
       (* Not enough signatures *)
