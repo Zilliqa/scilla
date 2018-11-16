@@ -769,11 +769,13 @@ module ScillaGUA
           let gupol' = add_pn gupol (single_simple_pn (SizeOf (rs))) in
           gua_stmt genv gupol' sts
         | Bind (x, e) ->
-          let%bind signe = gua_expr genv e in
-          let genv' = GUAEnv.addS genv (get_id x) signe in
+          let%bind (a, s, p) = gua_expr genv e in
+          let genv' = GUAEnv.addS genv (get_id x) (a, s, p) in
           (* Simple constant const for binding. *)
           let gupol' = add_pn gupol (const_pn 1) in
-          gua_stmt genv' gupol' sts
+          (* if a is empty, accumulate the cost of executing expr. *)
+          let gupol'' = if a = [] then add_pn gupol' p else gupol' in
+          gua_stmt genv' gupol'' sts
         | MapUpdate(_, klist, ropt) ->
           let nindices = (const_pn (List.length klist)) in
           let%bind c = (match ropt with
