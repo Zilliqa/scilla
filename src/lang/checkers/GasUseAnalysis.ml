@@ -509,7 +509,7 @@ module ScillaGUA
     let si a = ER.mk_id (mk_ident a) (tvar "'A") in
      (* Make a simple polynomial from string a *)
     let sp a = single_simple_pn (SizeOf(Base(Var(si a)))) in
-    let arg_err s = "Incorrect arguments to builtin %s" ^ s in
+    let arg_err s = "Incorrect arguments to builtin " ^ s in
     let ressize op actuals =
       (* These must be resolved in the caller when expanding the lambdas. *)
       let srparams = List.map (fun i -> Base(Var(i))) actuals in
@@ -523,7 +523,7 @@ module ScillaGUA
       let%bind pn =
         let t = List.nth tparams 0 in
         (match t with
-          | PrimType _ when is_int_type t ->
+          | PrimType _ when is_int_type t || is_uint_type t ->
             (match (int_width t) with
              | Some 32 | Some 64 -> pure @@ const_pn 4
              | Some 128 -> pure @@ const_pn 8
