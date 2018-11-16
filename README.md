@@ -54,6 +54,10 @@ If the checker only returns the contract structure in JSON format, it
 means that the contract has no type errors. Otherwise, a type error
 trace is provided.
 
+The checker can be run with the optional flag `-gua` to enable the
+experimental "Gas Use Analysis" that reports a worst case gas consumption
+for each transition in the contract.
+
 #### Executing a simple transition
 
 From the project root, execute
