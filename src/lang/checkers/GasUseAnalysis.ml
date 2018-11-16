@@ -24,6 +24,15 @@ open MonadUtil
 open Polynomial
 open Core.Result.Let_syntax
 
+(* If this setting is set to true, then the analysis just sums
+ * up the gas use polynomials of all branches of a "match-with".
+ * This makes the output "pretty", but is slightly less precise.
+ * Otherwise, a "probability parameter" is assigned to each branch
+ * which acts as a weight, and a weighted sum of the polynomials
+ * of all branches is computed. This makes the output "ugly", but
+ * more informative. *)
+let merge_branch_polynomials = true
+
 module ScillaGUA
     (SR : Rep)
     (ER : sig
@@ -564,15 +573,15 @@ module ScillaGUA
       pure ([si "a"], ressize ops params, mul_pn (sp "a") (const_pn 15))
     | "schnorr_gen_key_pair" ->
       if List.length params <> 0 then fail1 (arg_err ops) opl else
-      pure ([si "a"; si "b"], ressize ops params, const_pn 20)
-    | "schnorr_sign" -> (* sign(a) = (a * 15) + 350 *)
+      pure ([], ressize ops params, const_pn 20)
+    | "schnorr_sign" -> (* sign(m) = (m * 15) + 350 *)
       (* TODO: Support functions in polynomial. *)
       if List.length params <> 3 then fail1 (arg_err ops) opl else
-      pure ([si "a"; si "b"; si "m"], ressize ops params, add_pn (mul_pn (sp "a") (const_pn 15)) (const_pn 350))
-    | "schnorr_verify" -> (* sign(a) = (a * 15) + 250 *)
+      pure ([si "a"; si "b"; si "m"], ressize ops params, add_pn (mul_pn (sp "m") (const_pn 15)) (const_pn 350))
+    | "schnorr_verify" -> (* sign(m) = (m * 15) + 250 *)
       (* TODO: Support functions in polynomial. *)
       if List.length params <> 3 then fail1 (arg_err ops) opl else
-      pure ([si "a"; si "b"; si "m"], ressize ops params, add_pn (mul_pn (sp "a") (const_pn 15)) (const_pn 250))
+      pure ([si "a"; si "m"; si "b"], ressize ops params, add_pn (mul_pn (sp "m") (const_pn 15)) (const_pn 250))
     | "contains" | "get" -> (* contains/get(m, key) = 1 *)
       if List.length params <> 2 then fail1 (arg_err ops) opl else
       pure ([si "m"; si "key"], ressize ops params, const_pn 1)
@@ -694,8 +703,13 @@ module ScillaGUA
         let%bind genv' = bind_pattern genv xsize pat in
         let%bind (_, bsize, bgu) = gua_expr genv' branch in
         (* combine branch gas use with other branches using "i" as a weight. *)
-        let weight = SizeOf (BranchTaken (i, xsize)) in
-        let bpn = mul_pn bgu (single_simple_pn weight) in
+        let weight =
+          if merge_branch_polynomials then
+            const_pn 1
+          else
+            single_simple_pn (SizeOf (BranchTaken (i, xsize)))
+        in
+        let bpn = mul_pn bgu weight (* (single_simple_pn weight) *) in
         pure (([], bsize, add_pn apn bpn), i+1)
       ) ~init:(([], xsize, empty_pn), 0) clauses in
       pure (args, ressize, add_pn gup cc)
@@ -813,8 +827,13 @@ module ScillaGUA
             let%bind genv' = bind_pattern genv xsize pat in
             let%bind bgu = gua_stmt genv' empty_pn branch in
             (* combine branch gas use with other branches using "i" as a weight. *)
-            let weight = SizeOf (BranchTaken (i, xsize)) in
-            let bpn = mul_pn bgu (single_simple_pn weight) in
+            let weight =
+              if merge_branch_polynomials then
+                const_pn 1
+              else
+                single_simple_pn (SizeOf (BranchTaken (i, xsize)))
+            in
+            let bpn = mul_pn bgu weight in
             pure (add_pn apn bpn, i+1)
           ) ~init:(add_pn gupol num_clauses, 0) clauses in
           gua_stmt genv gupol' sts
