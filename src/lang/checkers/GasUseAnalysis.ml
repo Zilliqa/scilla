@@ -776,9 +776,11 @@ module ScillaGUA
           gua_stmt genv' gupol' sts
         | MapUpdate(_, klist, ropt) ->
           let nindices = (const_pn (List.length klist)) in
-          let c = (match ropt with
-          | Some i -> single_simple_pn (SizeOf(Base(Var(i)))) (* update *)
-          | None -> empty_pn) (* delete *)in
+          let%bind c = (match ropt with
+          | Some i ->
+            let%bind (_, rs, _) = GUAEnv.resolvS genv (get_id i) in
+            pure @@ single_simple_pn (SizeOf(rs)) (* update *)
+          | None -> pure @@ empty_pn) (* delete *)in
           let gupol' = add_pn nindices c in
           let gupol'' = add_pn gupol gupol' in
           gua_stmt genv gupol'' sts
