@@ -38,7 +38,10 @@ list of `;` separated paths.
 #### Type-checking a standalone closed expression:
 
 From the project root, execute
+
+```
 ./bin/type-checker -libdir src/stdlib/ tests/typecheck/good/addr.scilla
+```
 
 Instead of `addr.scilla`, other files in `tests/typecheck` may be tried.
 
