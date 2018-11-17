@@ -162,14 +162,15 @@ let expand_parameters_pn (pn' : 'a polynomial) ~(f: 'a -> 'a polynomial option) 
 (* Print a polynomial, calling ~f to print a variable. *)
 let sprint_pn (pn : 'a polynomial) ~(f: 'a -> string) =
   let sprint_term (coef, vplist) =
-    if coef = 0 then "" else
-    List.fold_left vplist ~init:(if coef = 1 then "" else (Int.to_string coef))
+    if coef = 0 then "0" else
+    List.fold_left vplist ~init:(Int.to_string coef)
       ~f:(fun acc (v, p) ->
         (if p = 0 then acc
         else if p = 1 then (acc ^ "(" ^ (f v) ^ ")")
         else (acc ^ "(" ^ (f v) ^ " ^ " ^ (Int.to_string p) ^ ")"))
       )
   in
+  if pn = [] then "0" else
   List.fold_left pn ~init:"" ~f:(fun acc t -> 
     (if acc = "" then "" else acc ^ " + ") ^ sprint_term t)
 
