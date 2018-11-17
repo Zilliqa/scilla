@@ -31,6 +31,7 @@ open SanityChecker
 open GasUseAnalysis
 open Recursion
 open EventInfo
+open MoneyFlowChecker
 
 module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
@@ -49,6 +50,7 @@ module EI = ScillaEventInfo (PMCSRep) (PMCERep)
 
 module GUA = ScillaGUA (TCSRep) (TCERep)
 
+module MF = ScillaMoneyFlowChecker (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr  = 
@@ -117,14 +119,21 @@ let () =
       let%bind _ = check_sanity pm_checked_cmod.contr  in
       let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr)  in
       let%bind _ = if cli.gua_flag then analyze_print_gas typed_cmod typed_elibs else pure [] in
-      pure @@ (cmod, tenv, event_info)
+      let mf_field_tags = MF.main typed_cmod in
+      pure @@ (cmod, mf_field_tags, tenv, event_info)
     ) in
     match r with
     | Error el -> exit 1 (* we've already printed the error(s). *)
-    | Ok (cmod, _, event_info) ->
+    | Ok (cmod, mf_field_tags, _, event_info) ->
       let j = `Assoc [
         ("contract_info", (JSON.ContractInfo.get_json cmod.contr event_info));
-        ("warnings", scilla_warning_to_json (get_warnings()))
+        ("warnings", scilla_warning_to_json (get_warnings()));
+        ("tags",
+           `List
+             (List.map
+                mf_field_tags
+                ~f:(fun (i, t) ->
+                    `Assoc [("field", `String i);
+                            ("tag", `String (MF.EMFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string))])))
       ] in
       pout (sprintf "%s\n" (Yojson.pretty_to_string j));
-
