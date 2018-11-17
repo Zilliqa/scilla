@@ -51,7 +51,7 @@ Gas anlaysis may be used on standalone closed expressions as:
 ./bin/type-checker -gua -libdir src/stdlib/ tests/gas_use_analysis/expr/list_append.scilla
 ```
 
-#### Type-checking a contract
+#### Type-checking a contract and running analyses
 
 From the project root, execute
 
@@ -74,7 +74,29 @@ The checker can be run with the optional flags:
 
  - `-gua` to enable the experimental "Gas Use Analysis" that reports a worst case
  gas consumption for each transition in the contract.
- - `-mfc` to enable the money-flow checker and print its results.
+ - `-mfc` to enable the cash-flow analyser and print its results (the
+   tags come first).
+
+For example, from the root foldeer of the project, run
+
+```
+./bin/scilla-checker -gua -mfc tests/contracts/crowdfunding/contract.scilla 
+```
+
+Amongst other information, the result will include:
+
+```
+{
+  "tags": [
+    { "field": "owner", "tag": "NotMoney" },
+    { "field": "max_block", "tag": "NotMoney" },
+    { "field": "goal", "tag": "Money" },
+    { "field": "backers", "tag": "(Map Money)" },
+    { "field": "funded", "tag": "NotMoney" }
+  ]
+}
+```
+
 
 #### Executing a simple transition
 
