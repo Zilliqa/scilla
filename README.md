@@ -35,6 +35,17 @@ standard library can alternatively be specified in the environment
 variable `SCILLA_STDLIB_PATH`. This must be an absolute path (or a
 list of `;` separated paths.
 
+#### Type-checking a standalone closed expression:
+
+From the project root, execute
+./bin/type-checker -libdir src/stdlib/ tests/typecheck/good/addr.scilla
+
+Instead of `addr.scilla`, other files in `tests/typecheck` may be tried.
+
+Gas anlaysis may be used on standalone closed expressions as:
+
+./bin/type-checker -gua -libdir src/stdlib/ tests/gas_use_analysis/expr/list_append.scilla
+
 #### Type-checking a contract
 
 From the project root, execute
@@ -54,9 +65,11 @@ If the checker only returns the contract structure in JSON format, it
 means that the contract has no type errors. Otherwise, a type error
 trace is provided.
 
-The checker can be run with the optional flag `-gua` to enable the
-experimental "Gas Use Analysis" that reports a worst case gas consumption
-for each transition in the contract.
+The checker can be run with the optional flags:
+
+ - `-gua` to enable the experimental "Gas Use Analysis" that reports a worst case
+ gas consumption for each transition in the contract.
+ - `-mfc` to enable the money-flow checker and print its results.
 
 #### Executing a simple transition
 
