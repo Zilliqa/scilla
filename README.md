@@ -47,7 +47,9 @@ Instead of `addr.scilla`, other files in `tests/typecheck` may be tried.
 
 Gas anlaysis may be used on standalone closed expressions as:
 
+```
 ./bin/type-checker -gua -libdir src/stdlib/ tests/gas_use_analysis/expr/list_append.scilla
+```
 
 #### Type-checking a contract
 
