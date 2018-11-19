@@ -1,0 +1,9 @@
+String
+Gas usage polynomial:
+2(a) + 45 + 1(b) + 5(c)
+Legend:
+
+a: Result of builtin concat(Result of builtin concat(Value of String with size 20,Value of String with size 20),Value of String with size 20)
+b: Result of builtin concat(Value of String with size 20,Value of String with size 20)
+c: Value of String with size 20
+

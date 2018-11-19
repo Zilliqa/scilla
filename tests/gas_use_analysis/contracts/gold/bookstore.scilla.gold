@@ -1,0 +1,76 @@
+Gas use polynomial for transition addMember:
+59 + 1(a) + 3(b)
+Legend:
+
+b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Uint32 with size 4)
+a: Pair of (name)(memberType)
+
+Gas use polynomial for transition addBook:
+1(a) + 25 + 2(b) + 1(c) + 1(d)
+Legend:
+
+b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Uint32 with size 4)
+c: Pair of (book_title)(author)
+a: bookInventory
+d: Container around: bookID
+
+Gas use polynomial for transition removeBook:
+1
+
+Gas use polynomial for transition updateBook:
+1(a) + 23 + 2(b) + 1(c)
+Legend:
+
+b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Uint32 with size 4)
+a: bookInventory
+c: Pair of (book_title)(author)
+
+{
+  "contract_info": {
+    "name": "BookStore",
+    "params": [
+      { "name": "owner", "type": "ByStr20" },
+      { "name": "storeName", "type": "String" }
+    ],
+    "fields": [
+      { "name": "members", "type": "Map (ByStr20) (Pair (String) (Uint32))" },
+      { "name": "lastBookID", "type": "Option (Uint32)" },
+      {
+        "name": "bookInventory",
+        "type": "Map (Uint32) (Pair (String) (String))"
+      }
+    ],
+    "transitions": [
+      {
+        "name": "addMember",
+        "params": [
+          { "name": "name", "type": "String" },
+          { "name": "addr", "type": "ByStr20" },
+          { "name": "memberType", "type": "Uint32" }
+        ]
+      },
+      {
+        "name": "addBook",
+        "params": [
+          { "name": "book_title", "type": "String" },
+          { "name": "author", "type": "String" },
+          { "name": "bookID", "type": "Uint32" }
+        ]
+      },
+      {
+        "name": "removeBook",
+        "params": [ { "name": "book_id", "type": "Uint32" } ]
+      },
+      {
+        "name": "updateBook",
+        "params": [
+          { "name": "book_id", "type": "Uint32" },
+          { "name": "book_title", "type": "String" },
+          { "name": "author", "type": "String" }
+        ]
+      }
+    ],
+    "events": []
+  },
+  "warnings": []
+}

@@ -6,7 +6,7 @@
   (libraries core oUnit testcontracts
              testexps testexpsfail
              testtypes testtypefail
-             testpmfail
+             testpmfail testgasexpr testgascontracts
              testchecker testinteger256)
   (flags (-cclib -lstdc++ -cclib -lcrypto))
 )

@@ -24,6 +24,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
     let test_path f = ["checker"; "good"; f]
     let runner = "scilla-checker"
+    let additional_args = []
     let tests = [
       "crowdfunding.scilla"; "zil-game.scilla"; "fungible-token.scilla"; "auction.scilla";
       "empty.scilla"; "schnorr.scilla"; "inplace-map.scilla"

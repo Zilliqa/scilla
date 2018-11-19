@@ -1,0 +1,8 @@
+Int32 -> Int32 -> (Int32 -> Int32 -> Int32) -> Int32
+Gas usage polynomial:
+Parameter list: ( a b flt )
+1(a) + 6
+Legend:
+
+a: Cost of calling flt(b, a)
+

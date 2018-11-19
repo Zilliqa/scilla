@@ -1,0 +1,73 @@
+Gas use polynomial for transition Bid:
+304 + 1(a) + 3(b) + 2(c) + 1(d) + 1(e) + 2(f) + 2(g) + 2(h)
+Legend:
+
+b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
+c: highestBid
+a: ended
+g: _amount
+d: highestBidder
+h: Message (Value of String with size 20,Value of Int32 with size 4,_sender,_amount)
+e: Component of: pendingReturns
+f: Container around: _sender
+
+Gas use polynomial for transition Withdraw:
+1(a) + 23 + 1(b) + 1(c) + 1(d)
+Legend:
+
+b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
+a: pendingReturns
+d: Container around: Message (Value of String with size 20,_sender,Component of: Result of builtin get(pendingReturns,_sender),Value of Int32 with size 4)
+c: Message (Value of String with size 20,_sender)
+
+Gas use polynomial for transition AuctionEnd:
+154 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f)
+Legend:
+
+b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
+e: Message (Value of String with size 20,highestBid)
+d: highestBid
+a: ended
+c: Value of Bool with size 0
+f: Container around: Message (Value of String with size 20,beneficiary,highestBid,Value of Int32 with size 4,highestBid)
+
+{
+  "contract_info": {
+    "name": "OpenAuction",
+    "params": [
+      { "name": "auctionStart", "type": "BNum" },
+      { "name": "biddingTime", "type": "Uint128" },
+      { "name": "beneficiary", "type": "ByStr20" }
+    ],
+    "fields": [
+      { "name": "ended", "type": "Bool" },
+      { "name": "highestBidder", "type": "Option (ByStr20)" },
+      { "name": "highestBid", "type": "Uint128" },
+      { "name": "pendingReturns", "type": "Map (ByStr20) (Uint128)" }
+    ],
+    "transitions": [
+      { "name": "Bid", "params": [] },
+      { "name": "Withdraw", "params": [] },
+      { "name": "AuctionEnd", "params": [] }
+    ],
+    "events": [
+      {
+        "name": "Auction ended",
+        "params": [ { "name": "highest_bid", "type": "Uint128" } ]
+      },
+      {
+        "name": "Withdraw Successful",
+        "params": [ { "name": "addr", "type": "ByStr20" } ]
+      },
+      {
+        "name": "Bid",
+        "params": [
+          { "name": "code", "type": "Int32" },
+          { "name": "addr", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" }
+        ]
+      }
+    ]
+  },
+  "warnings": []
+}

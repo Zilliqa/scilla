@@ -1,0 +1,48 @@
+Gas use polynomial for transition sign_and_verify:
+1(a) + 1(b) + 1010 + 45(c) + 2(d) + 1(e) + 1(f) + 1(g) + 1(h) + 1(i)
+Legend:
+
+g: Container around: First component of the Pair: SApp schnorr_gen_key_pair( )
+b: priv_key
+a: pub_key
+f: Cost of calling schnorr_gen_key_pair()
+i: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Result of builtin schnorr_sign(First component of the Pair: SApp schnorr_gen_key_pair( ),Second component of the Pair: SApp schnorr_gen_key_pair( ),msg))
+e: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 24)
+d: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 20)
+c: msg
+h: Container around: Second component of the Pair: SApp schnorr_gen_key_pair( )
+
+Gas use polynomial for transition verify:
+1(a) + 279 + 15(b) + 1(c) + 2(d)
+Legend:
+
+b: msg
+c: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 23)
+a: pub_key
+d: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 20)
+
+{
+  "contract_info": {
+    "name": "Schnorr",
+    "params": [],
+    "fields": [
+      { "name": "priv_key", "type": "Option (ByStr32)" },
+      { "name": "pub_key", "type": "Option (ByStr33)" }
+    ],
+    "transitions": [
+      {
+        "name": "sign_and_verify",
+        "params": [ { "name": "msg", "type": "ByStr" } ]
+      },
+      {
+        "name": "verify",
+        "params": [
+          { "name": "msg", "type": "ByStr" },
+          { "name": "sig", "type": "ByStr64" }
+        ]
+      }
+    ],
+    "events": []
+  },
+  "warnings": []
+}

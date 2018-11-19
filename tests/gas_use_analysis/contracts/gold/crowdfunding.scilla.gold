@@ -1,0 +1,102 @@
+Gas use polynomial for transition Donate:
+105 + 1(a) + 1(b) + 3(c) + 1(d)
+Legend:
+
+a: backers
+c: Message (Value of String with size 20,_sender,_amount,Value of Int32 with size 4)
+d: Component of: Value of Option with size 0
+b: Length of: backers
+
+Gas use polynomial for transition GetFunds:
+156 + 2(a) + 1(b) + 1(c) + 1(d) + 1(e)
+Legend:
+
+a: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
+e: Container around: Message (Value of String with size 20,owner,_balance)
+b: _balance
+c: Value of Bool with size 0
+d: Message (Value of String with size 20,owner,_balance,Value of Int32 with size 4)
+
+Gas use polynomial for transition ClaimBack:
+100 + 3(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 1(g) + 1(h)
+Legend:
+
+a: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
+e: Length of: backers
+h: Container around: Message (Value of String with size 20,_sender,Component of: Result of builtin get(backers,_sender))
+d: funded
+c: _balance
+b: backers
+g: Message (Value of String with size 20,_sender,Component of: Result of builtin get(backers,_sender),Value of Int32 with size 4)
+f: Result of builtin remove(backers,_sender)
+
+{
+  "contract_info": {
+    "name": "Crowdfunding",
+    "params": [
+      { "name": "owner", "type": "ByStr20" },
+      { "name": "max_block", "type": "BNum" },
+      { "name": "goal", "type": "Uint128" }
+    ],
+    "fields": [
+      { "name": "backers", "type": "Map (ByStr20) (Uint128)" },
+      { "name": "funded", "type": "Bool" }
+    ],
+    "transitions": [
+      { "name": "Donate", "params": [] },
+      { "name": "GetFunds", "params": [] },
+      { "name": "ClaimBack", "params": [] }
+    ],
+    "events": [
+      {
+        "name": "ClaimBackSuccess",
+        "params": [
+          { "name": "caller", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" },
+          { "name": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "name": "ClaimBackFailure",
+        "params": [
+          { "name": "caller", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" },
+          { "name": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "name": "GetFundsSuccess",
+        "params": [
+          { "name": "caller", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" },
+          { "name": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "name": "GetFundsFailure",
+        "params": [
+          { "name": "caller", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" },
+          { "name": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "name": "DonationSuccess",
+        "params": [
+          { "name": "donor", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" },
+          { "name": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "name": "DonationFailure",
+        "params": [
+          { "name": "donor", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" },
+          { "name": "code", "type": "Int32" }
+        ]
+      }
+    ]
+  },
+  "warnings": []
+}

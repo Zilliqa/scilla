@@ -1,0 +1,168 @@
+Gas use polynomial for transition balanceOf:
+8 + 1(a) + 1(b)
+Legend:
+
+a: Component of: ownedTokenCount
+b: Message (Value of String with size 20,Value of Uint256 with size 32)
+
+Gas use polynomial for transition ownerOf:
+12 + 1(a) + 1(b) + 1(c)
+Legend:
+
+b: Message (Value of String with size 20,tokenId,Component of: Component of: tokenOwnerMap)
+a: Component of: tokenOwnerMap
+c: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
+
+Gas use polynomial for transition mint:
+72 + 1(a) + 2(b) + 1(c) + 1(d) + 1(e) + 1(f) + 1(g)
+Legend:
+
+f: Value of Uint256 with size 32
+c: Component of: ownedTokenCount
+a: tokenOwnerMap
+e: Result of builtin add(Component of: Component of: ownedTokenCount,Value of Uint256 with size 32)
+g: Message (Value of String with size 20,_sender,to,tokenId)
+d: to
+b: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
+
+Gas use polynomial for transition transferFrom:
+215 + 1(a) + 1(b) + 1(c) + 1(d) + 4(e) + 1(f) + 1(g) + 1(h) + 1(i) + 1(j) + 1(k) + 1(l)
+Legend:
+
+a: Component of: tokenOwnerMap
+l: Message (Value of String with size 23,_sender,to,tokenId)
+b: tokenOwnerMap
+k: Value of Uint256 with size 32
+j: Result of builtin sub(Component of: Component of: ownedTokenCount,Value of Uint256 with size 32)
+h: to
+f: Component of: ownedTokenCount
+g: Component of: ownedTokenCount
+d: operatorApprovals
+i: ownedTokenCount
+c: tokenApprovals
+e: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
+
+Gas use polynomial for transition approve:
+82 + 1(a) + 1(b) + 1(c) + 2(d) + 1(e) + 1(f)
+Legend:
+
+a: Component of: tokenOwnerMap
+b: tokenOwnerMap
+f: Message (Value of String with size 20,_sender,to,tokenId)
+e: to
+c: operatorApprovals
+d: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
+
+Gas use polynomial for transition setApprovalForAll:
+1(a) + 48 + 1(b) + 1(c) + 1(d)
+Legend:
+
+c: Message (Value of String with size 28,_sender,to,Value of String with size 20)
+a: operatorApprovals
+d: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
+b: approved
+
+{
+  "contract_info": {
+    "name": "NonfungibleToken",
+    "params": [
+      { "name": "contractOwner", "type": "ByStr20" },
+      { "name": "name", "type": "String" },
+      { "name": "symbol", "type": "String" }
+    ],
+    "fields": [
+      { "name": "tokenOwnerMap", "type": "Map (Uint256) (ByStr20)" },
+      { "name": "ownedTokenCount", "type": "Map (ByStr20) (Uint256)" },
+      { "name": "tokenApprovals", "type": "Map (Uint256) (ByStr20)" },
+      {
+        "name": "operatorApprovals",
+        "type": "Map (ByStr20) (Map (ByStr20) (Bool))"
+      }
+    ],
+    "transitions": [
+      {
+        "name": "balanceOf",
+        "params": [ { "name": "address", "type": "ByStr20" } ]
+      },
+      {
+        "name": "ownerOf",
+        "params": [ { "name": "tokenId", "type": "Uint256" } ]
+      },
+      {
+        "name": "mint",
+        "params": [
+          { "name": "to", "type": "ByStr20" },
+          { "name": "tokenId", "type": "Uint256" }
+        ]
+      },
+      {
+        "name": "transferFrom",
+        "params": [
+          { "name": "from", "type": "ByStr20" },
+          { "name": "to", "type": "ByStr20" },
+          { "name": "tokenId", "type": "Uint256" }
+        ]
+      },
+      {
+        "name": "approve",
+        "params": [
+          { "name": "to", "type": "ByStr20" },
+          { "name": "tokenId", "type": "Uint256" }
+        ]
+      },
+      {
+        "name": "setApprovalForAll",
+        "params": [
+          { "name": "to", "type": "ByStr20" },
+          { "name": "approved", "type": "Bool" }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "setApprovalForAll successful",
+        "params": [
+          { "name": "from", "type": "ByStr20" },
+          { "name": "recipient", "type": "ByStr20" },
+          { "name": "status", "type": "String" }
+        ]
+      },
+      {
+        "name": "Approve successful",
+        "params": [
+          { "name": "from", "type": "ByStr20" },
+          { "name": "approvedTo", "type": "ByStr20" },
+          { "name": "token", "type": "Uint256" }
+        ]
+      },
+      {
+        "name": "transferFrom successful",
+        "params": [
+          { "name": "from", "type": "ByStr20" },
+          { "name": "recipient", "type": "ByStr20" },
+          { "name": "token", "type": "Uint256" }
+        ]
+      },
+      {
+        "name": "Mint successful",
+        "params": [
+          { "name": "by", "type": "ByStr20" },
+          { "name": "recipient", "type": "ByStr20" },
+          { "name": "token", "type": "Uint256" }
+        ]
+      },
+      {
+        "name": "ownerOf",
+        "params": [
+          { "name": "id", "type": "Uint256" },
+          { "name": "owner", "type": "ByStr20" }
+        ]
+      },
+      {
+        "name": "balanceOf",
+        "params": [ { "name": "bal", "type": "Uint256" } ]
+      }
+    ]
+  },
+  "warnings": []
+}

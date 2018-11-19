@@ -1,0 +1,174 @@
+Gas use polynomial for transition BalanceOf:
+1(a) + 8 + 1(b) + 1(c)
+Legend:
+
+b: Message (Value of String with size 20,tokenOwner,Component of: Result of builtin get(balances,tokenOwner))
+c: Message (Value of String with size 20,tokenOwner,Value of Uint128 with size 16)
+a: balances
+
+Gas use polynomial for transition TotalSupply:
+2 + 1(a)
+Legend:
+
+a: Message (Value of String with size 20,_sender,total_tokens)
+
+Gas use polynomial for transition Transfer:
+1(a) + 65 + 1(b) + 1(c) + 1(d) + 1(e) + 2(f)
+Legend:
+
+b: Component of: balances
+c: Result of builtin sub(tokens,tokens)
+f: Message (Value of String with size 20,_sender,to,Value of Uint128 with size 16)
+d: tokens
+e: Message (Value of String with size 20,_sender,to,tokens)
+a: balances
+
+Gas use polynomial for transition TransferFrom:
+1(a) + 1(b) + 109 + 1(c) + 1(d) + 2(e) + 1(f) + 1(g) + 1(h) + 1(i) + 1(j) + 1(k) + 3(l)
+Legend:
+
+f: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(Component of: First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Component of: Result of builtin get(allowed,from),_sender)),tokens)),to,Result of builtin add(Component of: Result of builtin get(Result of builtin put(balances,from,Result of builtin sub(Component of: First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Component of: Result of builtin get(allowed,from),_sender)),tokens)),to),tokens))
+d: Result of builtin put(balances,from,Result of builtin sub(Component of: First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Component of: Result of builtin get(allowed,from),_sender)),tokens))
+b: allowed
+j: Result of builtin put(allowed,from,Result of builtin put(Component of: Result of builtin get(allowed,from),_sender,Result of builtin sub(tokens,tokens)))
+l: Message (Value of String with size 20,from,to,Value of Uint128 with size 16)
+i: Length of: allowed
+k: Message (Value of String with size 20,from,to,tokens)
+g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(Component of: First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Component of: Result of builtin get(allowed,from),_sender)),tokens)),to,tokens)
+e: Length of: Result of builtin put(balances,from,Result of builtin sub(Component of: First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Component of: Result of builtin get(allowed,from),_sender)),tokens))
+a: balances
+h: Length of: Component of: Result of builtin get(allowed,from)
+c: Length of: balances
+
+Gas use polynomial for transition Approve:
+4 + 1(a) + 1(b)
+Legend:
+
+b: Message (Value of String with size 20,_sender,spender,tokens)
+a: tokens
+
+Gas use polynomial for transition Allowance:
+1(a) + 14 + 1(b) + 2(c)
+Legend:
+
+c: Message (Value of String with size 20,tokenOwner,spender,Value of Uint128 with size 16)
+b: Message (Value of String with size 20,tokenOwner,spender,Component of: Result of builtin get(Component of: Result of builtin get(allowed,tokenOwner),spender))
+a: allowed
+
+{
+  "contract_info": {
+    "name": "FungibleToken",
+    "params": [
+      { "name": "owner", "type": "ByStr20" },
+      { "name": "total_tokens", "type": "Uint128" }
+    ],
+    "fields": [
+      { "name": "balances", "type": "Map (ByStr20) (Uint128)" },
+      {
+        "name": "allowed",
+        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))"
+      }
+    ],
+    "transitions": [
+      {
+        "name": "BalanceOf",
+        "params": [ { "name": "tokenOwner", "type": "ByStr20" } ]
+      },
+      { "name": "TotalSupply", "params": [] },
+      {
+        "name": "Transfer",
+        "params": [
+          { "name": "to", "type": "ByStr20" },
+          { "name": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "TransferFrom",
+        "params": [
+          { "name": "from", "type": "ByStr20" },
+          { "name": "to", "type": "ByStr20" },
+          { "name": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "Approve",
+        "params": [
+          { "name": "spender", "type": "ByStr20" },
+          { "name": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "Allowance",
+        "params": [
+          { "name": "tokenOwner", "type": "ByStr20" },
+          { "name": "spender", "type": "ByStr20" }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "Allowance",
+        "params": [
+          { "name": "owner", "type": "ByStr20" },
+          { "name": "spender", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "ApproveSuccess",
+        "params": [
+          { "name": "approver", "type": "ByStr20" },
+          { "name": "spender", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "TransferFromFailure",
+        "params": [
+          { "name": "sender", "type": "ByStr20" },
+          { "name": "recipient", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "TransferFromSuccess",
+        "params": [
+          { "name": "sender", "type": "ByStr20" },
+          { "name": "recipient", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "TransferFailure",
+        "params": [
+          { "name": "sender", "type": "ByStr20" },
+          { "name": "recipient", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "TransferSuccess",
+        "params": [
+          { "name": "sender", "type": "ByStr20" },
+          { "name": "recipient", "type": "ByStr20" },
+          { "name": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "TotalSupply",
+        "params": [
+          { "name": "caller", "type": "ByStr20" },
+          { "name": "balance", "type": "Uint128" }
+        ]
+      },
+      {
+        "name": "BalanceOf",
+        "params": [
+          { "name": "address", "type": "ByStr20" },
+          { "name": "balance", "type": "Uint128" }
+        ]
+      }
+    ]
+  },
+  "warnings": []
+}

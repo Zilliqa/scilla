@@ -16,28 +16,25 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-
-open OUnit2
+let explist = [
+  "auction.scilla";
+  "bookstore.scilla";
+  "crowdfunding.scilla";
+  "zil-game.scilla";
+  "fungible-token.scilla";
+  "nonfungible-token.scilla";
+  "schnorr.scilla";
+  "helloworld.scilla";
+]
 
 module Tests = TestUtil.DiffBasedTests(
   struct
-    let gold_path dir f = [dir; "pm_check"; "bad"; "gold"; f ^ ".gold" ]
-    let test_path f = ["pm_check"; "bad"; f]
-    let runner = "type-checker"
-    let additional_args = []
-    let tests = [
-      "pm1.scilla";
-      "pm2.scilla";
-      "pm3.scilla";
-      "pm_nesting1.scilla";
-      "pm_nesting2.scilla";
-      "pm_nesting3.scilla";
-      "pm_unreachable1.scilla";
-      "pm_unreachable2.scilla";
-      "pm_unreachable_nesting1.scilla";
-      "pm_unreachable_nesting2.scilla";
-    ]
-    let exit_code : Unix.process_status = WEXITED 1
+    let gold_path dir f = [dir; "gas_use_analysis"; "contracts"; "gold"; f ^ ".gold" ]
+    let test_path f = ["gas_use_analysis"; "contracts"; f]
+    let runner = "scilla-checker"
+    let additional_args = ["-gua"]
+    let tests = explist
+    let exit_code : Unix.process_status = WEXITED 0
+
   end)
 
-let all_tests env = "pm_check_fail_tests" >::: [Tests.add_tests env]

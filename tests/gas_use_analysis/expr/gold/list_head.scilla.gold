@@ -1,0 +1,5 @@
+forall 'A. List ('A) -> Option ('A)
+Gas usage polynomial:
+Parameter list: ( l )
+8
+

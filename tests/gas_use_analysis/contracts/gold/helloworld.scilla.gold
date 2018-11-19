@@ -1,0 +1,35 @@
+Gas use polynomial for transition setHello:
+39 + 2(a) + 1(b)
+Legend:
+
+a: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
+b: msg
+
+Gas use polynomial for transition getHello:
+1(a) + 2 + 1(b)
+Legend:
+
+b: Message (Value of String with size 20,welcome_msg)
+a: welcome_msg
+
+{
+  "contract_info": {
+    "name": "HelloWorld",
+    "params": [ { "name": "owner", "type": "ByStr20" } ],
+    "fields": [ { "name": "welcome_msg", "type": "String" } ],
+    "transitions": [
+      {
+        "name": "setHello",
+        "params": [ { "name": "msg", "type": "String" } ]
+      },
+      { "name": "getHello", "params": [] }
+    ],
+    "events": [
+      {
+        "name": "getHello()",
+        "params": [ { "name": "msg", "type": "String" } ]
+      }
+    ]
+  },
+  "warnings": []
+}
