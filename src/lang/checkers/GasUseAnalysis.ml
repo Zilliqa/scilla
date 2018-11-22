@@ -206,16 +206,19 @@ module ScillaGUA
       fail1 "Number of actual arguments and formal parameters mismatch" (ER.get_loc (get_rep f))
     else
       (* replace param with actual in baseref. *)
-      let baseref_replacer param actual b = 
+      let baseref_replacer param_actual_map b =
         match b with
-        | Var i when (get_id i) = (get_id param) -> Var actual
+        | Var i ->
+          (match List.assoc_opt (get_id i) param_actual_map with
+          | Some act -> Var act
+          | None -> b)
         | _ -> b
       in
       (* replace param with actual in sizeref. *)
-      let sizeref_replacer param actual s' =
+      let sizeref_replacer param_actual_map s' =
         let rec replacer s =
           match s with
-          | Base b -> Base (baseref_replacer param actual b)
+          | Base b -> Base (baseref_replacer param_actual_map b)
           | Length s' -> Length (replacer s')
           | Component s' -> Component (replacer s')
           | Fst s' -> Fst (replacer s')
@@ -230,49 +233,57 @@ module ScillaGUA
             let srlist' = List.map (fun v -> replacer v) srlist in
             BApp (b, srlist')
           | SApp (id, srlist) ->
-            let id' = if (get_id id) = (get_id param) then actual else id in
+            let id' =
+              (match List.assoc_opt (get_id id) param_actual_map with
+              | Some id'' -> id''
+              | None -> id)
+            in
             let srlist' = List.map (fun v -> replacer v) srlist in
             SApp (id', srlist')
         in
         replacer s'
       in
       (* replace param with actual in guref. *)
-      let rec guref_replacer param actual v =
+      let rec guref_replacer param_actual_map v =
         match v with
         | SizeOf s ->
-          let r = (sizeref_replacer param actual s) in
+          let r = (sizeref_replacer param_actual_map s) in
           SizeOf r
         | GApp (id, gurlist) ->
-          let id' = if (get_id id) = (get_id param) then actual else id in
-          let gurlist' = List.map (fun v -> sizeref_replacer param actual v) gurlist in
+          let id' =
+            (match List.assoc_opt (get_id id) param_actual_map with
+            | Some id'' -> id''
+            | None -> id)
+          in
+          let gurlist' = List.map (fun v -> sizeref_replacer param_actual_map v) gurlist in
           GApp (id', gurlist')
-        | GPol p -> GPol (polynomial_replacer param actual p)
+        | GPol p -> GPol (polynomial_replacer param_actual_map p)
       and
       (* replace param with actual in a signature. *)
-      polynomial_replacer param actual pol =
-        var_replace_pn pol ~f:(fun gur -> guref_replacer param actual gur)
+      polynomial_replacer param_actual_map pol =
+        var_replace_pn pol ~f:(fun gur -> guref_replacer param_actual_map gur)
       in
-      let ressize' = List.fold_left2 (fun sr param actual ->
-        sizeref_replacer param actual sr
-      ) ressize params actuals in
-      let gup' = List.fold_left2 (fun pol param actual ->
-        polynomial_replacer param actual pol
-      ) gup params actuals in
+      let param_actual_map = List.combine params actuals in
+      let ressize' = sizeref_replacer param_actual_map ressize in
+      let gup' = polynomial_replacer param_actual_map gup in
       (* We have substitued parameters with actual arguments.
          So the first component of the result is empty. *)
       pure ([], ressize', gup')
 
   (* replace param with actual in sizeref. *)
-  let substitute_resolved_actual_sizeref param actual s' =
+  let substitute_resolved_actual_sizeref param_actual_map s' =
     (* replace param with actual in baseref. *)
-    let substitute_resolved_actual_baseref param actual b = 
+    let substitute_resolved_actual_baseref param_actual_map b =
       match b with
-      | Var i when (get_id i) = (get_id param) -> pure actual
+      | Var i ->
+        (match List.assoc_opt (get_id i) param_actual_map with
+        | Some act -> pure @@ act
+        | None -> pure @@ Base b)
       | _ -> pure @@ Base b
     in
     let rec replacer s =
       match s with
-      | Base b -> substitute_resolved_actual_baseref param actual b
+      | Base b -> substitute_resolved_actual_baseref param_actual_map b
       | Length s' ->
         let%bind r = replacer s' in
         pure @@ Length (r)
@@ -302,14 +313,17 @@ module ScillaGUA
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ BApp (b, srlist')
       | SApp (id, srlist) ->
-        let%bind id' = if (get_id id) = (get_id param) then
-          (* We know what to do only when "actual" is Base(Var(_)). *)
-          (match actual with
-          | Base(Var(id'')) -> pure id''
-          (* See TODO in definition of sizeref where SApp should have sizeref instead of ident. *)
-          | _ ->fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id))
-          )
-        else pure id in
+        let%bind id' =
+          (match List.assoc_opt (get_id id) param_actual_map with
+          | Some act ->
+            (* We know what to do only when "actual" is Base(Var(_)). *)
+            (match act with
+            | Base(Var(id'')) -> pure id''
+            (* See TODO in definition of sizeref where SApp should have sizeref instead of ident. *)
+            | _ ->fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id))
+            )
+          | None -> pure id)
+        in
         (* We don't do anything with id as that will be expanded (not just resolved). *)
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ SApp (id', srlist')
@@ -317,37 +331,39 @@ module ScillaGUA
       replacer s'
 
   (* replace param with actual in guref. *)
-  let rec substitute_resolved_actual_guref param actual v =
+  let rec substitute_resolved_actual_guref param_actual_map v =
     match v with
     | SizeOf s ->
-      let%bind r = (substitute_resolved_actual_sizeref param actual s) in
+      let%bind r = (substitute_resolved_actual_sizeref param_actual_map s) in
       pure @@ SizeOf r
     | GApp (id, gurlist) ->
-      let%bind id' = if (get_id id) = (get_id param)
-      then
-        (* We know what to do only when "actual" is Base(Var(_)). *)
-        (match actual with
-        | Base(Var(id'')) -> pure id''
-        (* See TODO in definition of sizeref where SApp should have guref instead of ident. *)
-        | _ ->fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id))
-        )
-      else pure id in
+      let%bind id' =
+        (match List.assoc_opt (get_id id) param_actual_map with
+        | Some act ->
+          (* We know what to do only when "actual" is Base(Var(_)). *)
+          (match act with
+          | Base(Var(id'')) -> pure id''
+          (* See TODO in definition of sizeref where SApp should have guref instead of ident. *)
+          | _ ->fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id))
+          )
+        | None -> pure id)
+      in
       (* We don't do anything with id as that will be expanded (not just resolved). *)
-      let%bind gurlist' = mapM ~f:(fun v -> substitute_resolved_actual_sizeref param actual v) gurlist in
+      let%bind gurlist' = mapM ~f:(fun v -> substitute_resolved_actual_sizeref param_actual_map v) gurlist in
       pure @@ GApp (id', gurlist')
     | GPol p ->
-      let%bind p' = polynomial_replacer param actual p in
+      let%bind p' = polynomial_replacer param_actual_map p in
       pure @@ GPol (p')
   and
   (* replace param with actual in a gu polynomial. *)
-  polynomial_replacer param actual pol =
+  polynomial_replacer param_actual_map pol =
     let exception Resolv_error of scilla_error list in
     let pol' = 
       try 
         (* This circus with exceptions is to avoid having
           * Polynomial utilities deal with our "result". *)
         pure @@ var_replace_pn pol ~f:(fun gur ->
-          (match substitute_resolved_actual_guref param actual gur with
+          (match substitute_resolved_actual_guref param_actual_map gur with
           | Ok (gur') -> gur'
           | Error s -> raise (Resolv_error s))
         )
@@ -361,23 +377,17 @@ module ScillaGUA
     if List.length params != List.length actuals then
       fail0 "Number of actual arguments and formal parameters mismatch in sizeref substitution."
     else
-      List.fold_left2 (fun sr' param actual ->
-        let%bind sr = sr' in
-        substitute_resolved_actual_sizeref param actual sr
-      ) (pure ressize) params actuals
+      substitute_resolved_actual_sizeref (List.combine params actuals) ressize
 
   let substitute_resolved_actuals_guref_list gup params actuals =
     if List.length params != List.length actuals then
       fail0 "Number of actual arguments and formal parameters mismatch in guref substitution."
     else
-      List.fold_left2 (fun pol' param actual ->
-        let%bind pol = pol' in
-        polynomial_replacer param actual pol
-      ) (pure gup) params actuals
+      polynomial_replacer (List.combine params actuals) gup
 
   (* Resolve and expand variables and lambdas (whenever possible) in sr and pol. *)
   let resolve_expand genv sr pol =
-      let baseref_resolver b = 
+      let baseref_resolver b =
         match b with
         | Var i -> 
           let%bind (_, resr, _) =
@@ -426,7 +436,8 @@ module ScillaGUA
               let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
               pure @@ SApp (id, srlist')
             else
-              let%bind sr' = substitute_resolved_actuals_sizeref_list sr args srlist in
+              let args' = List.map (fun i -> get_id i) args in
+              let%bind sr' = substitute_resolved_actuals_sizeref_list sr args' srlist in
               resolver sr'
         in
         resolver s'
@@ -445,7 +456,8 @@ module ScillaGUA
             let%bind gurlist' = mapM ~f:(fun v -> sizeref_resolver v) gurlist in
             pure @@ GApp (id, gurlist')
           else
-            let%bind sr' = substitute_resolved_actuals_guref_list gup args gurlist in
+            let args' = List.map (fun i -> get_id i) args in
+            let%bind sr' = substitute_resolved_actuals_guref_list gup args' gurlist in
             let%bind p = polynomial_resolver sr' in
             pure @@ GPol p
         | GPol p ->

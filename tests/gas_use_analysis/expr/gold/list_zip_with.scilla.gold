@@ -1,0 +1,10 @@
+forall 'A. forall 'B. forall 'C. ('A -> 'B -> 'C) -> List ('A) -> List ('B) -> List ('C)
+Gas usage polynomial:
+Parameter list: ( f m1 m2 )
+3(a) + 40 + 35(b) + 1(b)(c)
+Legend:
+
+c: Cost of calling f(Component of: m1, Component of: Value of Option with size 0)
+b: Length of: m1
+a: Length of: First component of the Pair: Pair of (Value of List with size 0)(m2)
+

@@ -29,6 +29,8 @@ let explist = [
   "list_map.scilla";
   "list_sort.scilla";
   "list_tail.scilla";
+  "list_zip.scilla";
+  "list_zip_with.scilla";
 ]
 
 module Tests = TestUtil.DiffBasedTests(

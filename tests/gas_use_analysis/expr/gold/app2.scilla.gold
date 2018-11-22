@@ -1,8 +1,9 @@
 String -> String -> String
 Gas usage polynomial:
 Parameter list: ( a b )
-2(a) + 4
+1(a) + 1(b) + 4
 Legend:
 
-a: a
+b: a
+a: b
 
