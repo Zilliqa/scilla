@@ -2,9 +2,9 @@ Gas use polynomial for transition Donate:
 105 + 1(a) + 1(b) + 3(c) + 1(d)
 Legend:
 
+d: Component of: max (Value of Option with size 0,Container around: Result of builtin put(backers,_sender,_amount))
 a: backers
 c: Message (Value of String with size 20,_sender,_amount,Value of Int32 with size 4)
-d: Component of: Value of Option with size 0
 b: Length of: backers
 
 Gas use polynomial for transition GetFunds:
@@ -21,14 +21,14 @@ Gas use polynomial for transition ClaimBack:
 100 + 3(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 1(g) + 1(h)
 Legend:
 
+f: Result of builtin remove(backers,_sender)
+g: Message (Value of String with size 20,_sender,Component of: Result of builtin get(backers,_sender),Value of Int32 with size 4)
 a: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
-e: Length of: backers
 h: Container around: Message (Value of String with size 20,_sender,Component of: Result of builtin get(backers,_sender))
+e: Length of: backers
 d: funded
 c: _balance
 b: backers
-g: Message (Value of String with size 20,_sender,Component of: Result of builtin get(backers,_sender),Value of Int32 with size 4)
-f: Result of builtin remove(backers,_sender)
 
 {
   "contract_info": {

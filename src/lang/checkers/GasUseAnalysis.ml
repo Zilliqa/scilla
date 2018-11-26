@@ -74,6 +74,8 @@ module ScillaGUA
     | MsgS of sizeref list
     (* Depends on which Branch "i" of `match ident with` is taken. *)
     | BranchTaken of int * sizeref
+    (* Arbitrary math function of sizerefs. *)
+    | MFun of string * sizeref list
     (* Result of a builtin. *)
     | BApp of string * sizeref list
     (* Lambda for unknown sizeref (from applying higher order functions). 
@@ -122,6 +124,8 @@ module ScillaGUA
     | MsgS srlist -> "Message (" ^
       (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
     | BranchTaken (i, s) -> (Printf.sprintf "Probability of branch %d in MatchExpr %s" i (sprint_sizeref s))
+    | MFun (s, srlist) -> s ^ " (" ^
+      (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
     | BApp (b, srlist) -> "Result of builtin " ^ b ^ "(" ^
       (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
     | SApp (id, srlist) -> "SApp " ^ (get_id id) ^ "( " ^
@@ -232,6 +236,9 @@ module ScillaGUA
           | BApp (b, srlist) ->
             let srlist' = List.map (fun v -> replacer v) srlist in
             BApp (b, srlist')
+          | MFun (s, srlist) ->
+            let srlist' = List.map (fun v -> replacer v) srlist in
+            MFun (s, srlist')
           | SApp (id, srlist) ->
             let id' =
               (match List.assoc_opt (get_id id) param_actual_map with
@@ -312,6 +319,9 @@ module ScillaGUA
       | BApp (b, srlist) ->
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ BApp (b, srlist')
+      | MFun (s, srlist) ->
+        let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
+        pure @@ MFun (s, srlist')
       | SApp (id, srlist) ->
         let%bind id' =
           (match List.assoc_opt (get_id id) param_actual_map with
@@ -428,6 +438,9 @@ module ScillaGUA
           | BApp (b, srlist) ->
             let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
             pure @@ BApp (b, srlist')
+          | MFun (s, srlist) ->
+            let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
+            pure @@ MFun (s, srlist')
           | SApp (id, srlist) ->
             let%bind (args, sr, _) = GUAEnv.resolvS genv (get_id id) ~lopt:(Some(get_rep id)) in
             if args = []
@@ -702,29 +715,38 @@ module ScillaGUA
         pure ([], ressize, cc)
     | MatchExpr (x, clauses) ->
       let%bind (_, xsize, _) = GUAEnv.resolvS genv (get_id x) ~lopt:(Some(get_rep x)) in
-      (*  1. TODO: How to express sizeref of result across branches?
-       *     Currently we're using the result sizeref of the last branch. 
-       *  2. If the return type of the MatchExpr is a function then the
-       *     arguments (first component of the signature) cannot be
+      (*   TODO: If the return type of the MatchExpr is a function then
+       *     the arguments (first component of the signature) cannot be
        *     ignored as we're doing now. 
        *     TODO: Normalize argument names and merge them. This can be done
        *     having a common set of actuals names for all branches.
        *     (Use substitute_actuals to replace with a common set of param names).
        *)
-      let%bind ((args, ressize, gup), _) = foldM ~f:(fun ((_, _, apn), i) (pat, branch) ->
+      if List.length clauses > 1 then
+        let%bind ((args, ressize, gup), _) = foldM ~f:(fun ((_, asizes, apn), i) (pat, branch) ->
+          let%bind genv' = bind_pattern genv xsize pat in
+          let%bind (_, bsize, bgu) = gua_expr genv' branch in
+          (* combine branch gas use with other branches using "i" as a weight. *)
+          let weight =
+            if merge_branch_polynomials then
+              const_pn 1
+            else
+              single_simple_pn (SizeOf (BranchTaken (i, xsize)))
+          in
+          let bpn = mul_pn bgu weight (* (single_simple_pn weight) *) in
+          let%bind rsize =
+            (match asizes with
+            | MFun (s, srlist) -> pure (MFun(s, bsize::srlist))
+            | _ -> fail1 "Internal error in calculating gas usage of match-with" (ER.get_loc (get_rep x))
+            ) in
+          pure (([], rsize, add_pn apn bpn), i+1)
+        ) ~init:(([], MFun("max", []), empty_pn), 0) clauses in
+        pure (args, ressize, add_pn gup cc)
+      else
+        let (pat, branch) = (List.nth clauses 0) in
         let%bind genv' = bind_pattern genv xsize pat in
-        let%bind (_, bsize, bgu) = gua_expr genv' branch in
-        (* combine branch gas use with other branches using "i" as a weight. *)
-        let weight =
-          if merge_branch_polynomials then
-            const_pn 1
-          else
-            single_simple_pn (SizeOf (BranchTaken (i, xsize)))
-        in
-        let bpn = mul_pn bgu weight (* (single_simple_pn weight) *) in
-        pure (([], bsize, add_pn apn bpn), i+1)
-      ) ~init:(([], xsize, empty_pn), 0) clauses in
-      pure (args, ressize, add_pn gup cc)
+        let%bind (args, bsize, bgu) = gua_expr genv' branch in
+        pure (args, bsize, add_pn bgu cc)
     | Fixpoint (f, _, _) ->
       fail1 (Printf.sprintf "Fixpoint %s not supported." (get_id f)) (ER.get_loc (get_rep f))
     | TFun (_, body) ->

@@ -1,15 +1,16 @@
 Gas use polynomial for transition Bid:
-304 + 1(a) + 3(b) + 2(c) + 1(d) + 1(e) + 2(f) + 2(g) + 2(h)
+304 + 1(a) + 3(b) + 1(c) + 1(d) + 1(e) + 1(f) + 2(g) + 2(h) + 2(i)
 Legend:
 
 b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
 c: highestBid
 a: ended
-g: _amount
+h: _amount
 d: highestBidder
-h: Message (Value of String with size 20,Value of Int32 with size 4,_sender,_amount)
+i: Message (Value of String with size 20,Value of Int32 with size 4,_sender,_amount)
 e: Component of: pendingReturns
-f: Container around: _sender
+f: max (highestBid,Result of builtin add(highestBid,Component of: Component of: pendingReturns))
+g: Container around: _sender
 
 Gas use polynomial for transition Withdraw:
 1(a) + 23 + 1(b) + 1(c) + 1(d)
