@@ -1,6 +1,6 @@
 {
   "contract_info": {
-    "name": "Empty",
+    "vname": "Empty",
     "params": [],
     "fields": [],
     "transitions": [],

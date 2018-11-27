@@ -1,50 +1,50 @@
 {
   "contract_info": {
-    "name": "FungibleToken",
+    "vname": "FungibleToken",
     "params": [
-      { "name": "owner", "type": "ByStr20" },
-      { "name": "total_tokens", "type": "Uint128" }
+      { "vname": "owner", "type": "ByStr20" },
+      { "vname": "total_tokens", "type": "Uint128" }
     ],
     "fields": [
-      { "name": "balances", "type": "Map (ByStr20) (Uint128)" },
+      { "vname": "balances", "type": "Map (ByStr20) (Uint128)" },
       {
-        "name": "allowed",
+        "vname": "allowed",
         "type": "Map (ByStr20) (Map (ByStr20) (Uint128))"
       }
     ],
     "transitions": [
       {
-        "name": "BalanceOf",
-        "params": [ { "name": "tokenOwner", "type": "ByStr20" } ]
+        "vname": "BalanceOf",
+        "params": [ { "vname": "tokenOwner", "type": "ByStr20" } ]
       },
-      { "name": "TotalSupply", "params": [] },
+      { "vname": "TotalSupply", "params": [] },
       {
-        "name": "Transfer",
+        "vname": "Transfer",
         "params": [
-          { "name": "to", "type": "ByStr20" },
-          { "name": "tokens", "type": "Uint128" }
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
         ]
       },
       {
-        "name": "TransferFrom",
+        "vname": "TransferFrom",
         "params": [
-          { "name": "from", "type": "ByStr20" },
-          { "name": "to", "type": "ByStr20" },
-          { "name": "tokens", "type": "Uint128" }
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
         ]
       },
       {
-        "name": "Approve",
+        "vname": "Approve",
         "params": [
-          { "name": "spender", "type": "ByStr20" },
-          { "name": "tokens", "type": "Uint128" }
+          { "vname": "spender", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
         ]
       },
       {
-        "name": "Allowance",
+        "vname": "Allowance",
         "params": [
-          { "name": "tokenOwner", "type": "ByStr20" },
-          { "name": "spender", "type": "ByStr20" }
+          { "vname": "tokenOwner", "type": "ByStr20" },
+          { "vname": "spender", "type": "ByStr20" }
         ]
       }
     ],
