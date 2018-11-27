@@ -1,14 +1,18 @@
 {
-  "gas_remaining": "6216",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x1234567890123456789012345678901234567891",
-    "params": [ { "vname": "code", "type": "Uint32", "value": "0" } ]
-  },
+  "gas_remaining": "6419",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "tokenApprovals",
+      "type": "Map (Uint256) (ByStr20)",
+      "value": []
+    },
+    {
+      "vname": "operatorApprovals",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "value": []
+    },
     {
       "vname": "ownedTokenCount",
       "type": "Map (ByStr20) (Uint256)",
@@ -24,17 +28,24 @@
         { "key": "2", "val": "0x1234567890123456789012345678901234567892" },
         { "key": "1", "val": "0x1234567890123456789012345678901234567893" }
       ]
-    },
-    {
-      "vname": "tokenApprovals",
-      "type": "Map (Uint256) (ByStr20)",
-      "value": []
-    },
-    {
-      "vname": "operatorApprovals",
-      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
-      "value": []
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "transferFrom successful",
+      "params": [
+        {
+          "vname": "from",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567891"
+        },
+        {
+          "vname": "recipient",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567893"
+        },
+        { "vname": "token", "type": "Uint256", "value": "1" }
+      ]
+    }
+  ]
 }

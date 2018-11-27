@@ -1,12 +1,6 @@
 {
-  "gas_remaining": "6796",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x1234567890123456789012345678901234567894",
-    "params": [ { "vname": "code", "type": "Uint32", "value": "2" } ]
-  },
+  "gas_remaining": "6810",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -35,5 +29,13 @@
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "Error",
+      "params": [
+        { "vname": "raisedAt", "type": "String", "value": "transferFrom" },
+        { "vname": "code", "type": "Uint32", "value": "2" }
+      ]
+    }
+  ]
 }

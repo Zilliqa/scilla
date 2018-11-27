@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "7408",
+  "gas_remaining": "7326",
   "message": {
     "_tag": "Main",
     "_amount": "100",
@@ -9,11 +9,6 @@
   },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "200" },
-    {
-      "vname": "pendingReturns",
-      "type": "Map (ByStr20) (Uint128)",
-      "value": []
-    },
     { "vname": "highestBid", "type": "Uint128", "value": "200" },
     {
       "vname": "highestBidder",
@@ -25,10 +20,26 @@
       }
     },
     {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Uint128)",
+      "value": []
+    },
+    {
       "vname": "ended",
       "type": "Bool",
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "Withdraw Successful",
+      "params": [
+        {
+          "vname": "addr",
+          "type": "ByStr20",
+          "value": "0x12345678901234567890123456789012345678ab"
+        }
+      ]
+    }
+  ]
 }

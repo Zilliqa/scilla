@@ -402,35 +402,35 @@ module ContractInfo = struct
          
   let get_json (contr : contract) (event_info : (string * (string * typ) list) list) =
     (* 1. contract name *)
-    let namej = ("name", `String (get_id contr.cname)) in
+    let namej = ("vname", `String (get_id contr.cname)) in
     (* 2. parameters *)
     let paraml = contr.cparams in
     let paramlj = List.map paraml ~f: (fun (i, t) ->
-        `Assoc [("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
+        `Assoc [("vname", `String (get_id i)); ("type", `String (pp_typ t))]) in
     let paramj = ("params", `List paramlj) in
     (* 3. fields *)
     let fieldsl = contr.cfields in
     let fieldslj = List.map fieldsl ~f: (fun (i, t, _) ->
-        `Assoc [("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
+        `Assoc [("vname", `String (get_id i)); ("type", `String (pp_typ t))]) in
     let fieldsj = ("fields", `List fieldslj) in
     (* 4. transitions *)
     let transl = contr.ctrans in
     let translj = List.map transl ~f: (fun t ->
         (* 4a. transition name *)
-        let namej = ("name", `String (get_id t.tname)) in
+        let namej = ("vname", `String (get_id t.tname)) in
         (* 4b. transition parameters *)
         let paraml = t.tparams in
         let paramlj = List.map paraml ~f: (fun (i, t) ->
-            `Assoc[("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
+            `Assoc[("vname", `String (get_id i)); ("type", `String (pp_typ t))]) in
         let paramj = ("params", `List paramlj) in
         `Assoc (namej :: paramj :: [] )) in
     
     let transj = ("transitions", `List translj) in
     (* 5. event info *)
     let eventslj = List.map event_info ~f: (fun (eventname, plist) ->
-        let namej = ("name", `String (eventname)) in
+        let namej = ("vname", `String (eventname)) in
         let paramlj = List.map plist ~f: (fun (pname, ptype) ->
-          `Assoc [("name", `String pname); ("type", `String (pp_typ ptype))]) in
+          `Assoc [("vname", `String pname); ("type", `String (pp_typ ptype))]) in
         let paramj = ("params", `List paramlj) in
           `Assoc (namej :: paramj :: [])
       ) in
