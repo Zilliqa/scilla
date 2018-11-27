@@ -107,7 +107,7 @@ let () =
         then
           let cf_field_tags = CF.main typed_cmod in
           let j = `Assoc [
-              ("tags",
+              ("cashflow_tags",
                `List
                  (List.map
                     cf_field_tags
