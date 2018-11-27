@@ -32,68 +32,68 @@ b: backers
 
 {
   "contract_info": {
-    "name": "Crowdfunding",
+    "vname": "Crowdfunding",
     "params": [
-      { "name": "owner", "type": "ByStr20" },
-      { "name": "max_block", "type": "BNum" },
-      { "name": "goal", "type": "Uint128" }
+      { "vname": "owner", "type": "ByStr20" },
+      { "vname": "max_block", "type": "BNum" },
+      { "vname": "goal", "type": "Uint128" }
     ],
     "fields": [
-      { "name": "backers", "type": "Map (ByStr20) (Uint128)" },
-      { "name": "funded", "type": "Bool" }
+      { "vname": "backers", "type": "Map (ByStr20) (Uint128)" },
+      { "vname": "funded", "type": "Bool" }
     ],
     "transitions": [
-      { "name": "Donate", "params": [] },
-      { "name": "GetFunds", "params": [] },
-      { "name": "ClaimBack", "params": [] }
+      { "vname": "Donate", "params": [] },
+      { "vname": "GetFunds", "params": [] },
+      { "vname": "ClaimBack", "params": [] }
     ],
     "events": [
       {
-        "name": "ClaimBackSuccess",
+        "vname": "ClaimBackSuccess",
         "params": [
-          { "name": "caller", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" },
-          { "name": "code", "type": "Int32" }
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
         ]
       },
       {
-        "name": "ClaimBackFailure",
+        "vname": "ClaimBackFailure",
         "params": [
-          { "name": "caller", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" },
-          { "name": "code", "type": "Int32" }
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
         ]
       },
       {
-        "name": "GetFundsSuccess",
+        "vname": "GetFundsSuccess",
         "params": [
-          { "name": "caller", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" },
-          { "name": "code", "type": "Int32" }
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
         ]
       },
       {
-        "name": "GetFundsFailure",
+        "vname": "GetFundsFailure",
         "params": [
-          { "name": "caller", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" },
-          { "name": "code", "type": "Int32" }
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
         ]
       },
       {
-        "name": "DonationSuccess",
+        "vname": "DonationSuccess",
         "params": [
-          { "name": "donor", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" },
-          { "name": "code", "type": "Int32" }
+          { "vname": "donor", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
         ]
       },
       {
-        "name": "DonationFailure",
+        "vname": "DonationFailure",
         "params": [
-          { "name": "donor", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" },
-          { "name": "code", "type": "Int32" }
+          { "vname": "donor", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
         ]
       }
     ]

@@ -64,103 +64,103 @@ b: approved
 
 {
   "contract_info": {
-    "name": "NonfungibleToken",
+    "vname": "NonfungibleToken",
     "params": [
-      { "name": "contractOwner", "type": "ByStr20" },
-      { "name": "name", "type": "String" },
-      { "name": "symbol", "type": "String" }
+      { "vname": "contractOwner", "type": "ByStr20" },
+      { "vname": "name", "type": "String" },
+      { "vname": "symbol", "type": "String" }
     ],
     "fields": [
-      { "name": "tokenOwnerMap", "type": "Map (Uint256) (ByStr20)" },
-      { "name": "ownedTokenCount", "type": "Map (ByStr20) (Uint256)" },
-      { "name": "tokenApprovals", "type": "Map (Uint256) (ByStr20)" },
+      { "vname": "tokenOwnerMap", "type": "Map (Uint256) (ByStr20)" },
+      { "vname": "ownedTokenCount", "type": "Map (ByStr20) (Uint256)" },
+      { "vname": "tokenApprovals", "type": "Map (Uint256) (ByStr20)" },
       {
-        "name": "operatorApprovals",
+        "vname": "operatorApprovals",
         "type": "Map (ByStr20) (Map (ByStr20) (Bool))"
       }
     ],
     "transitions": [
       {
-        "name": "balanceOf",
-        "params": [ { "name": "address", "type": "ByStr20" } ]
+        "vname": "balanceOf",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
       },
       {
-        "name": "ownerOf",
-        "params": [ { "name": "tokenId", "type": "Uint256" } ]
+        "vname": "ownerOf",
+        "params": [ { "vname": "tokenId", "type": "Uint256" } ]
       },
       {
-        "name": "mint",
+        "vname": "mint",
         "params": [
-          { "name": "to", "type": "ByStr20" },
-          { "name": "tokenId", "type": "Uint256" }
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokenId", "type": "Uint256" }
         ]
       },
       {
-        "name": "transferFrom",
+        "vname": "transferFrom",
         "params": [
-          { "name": "from", "type": "ByStr20" },
-          { "name": "to", "type": "ByStr20" },
-          { "name": "tokenId", "type": "Uint256" }
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokenId", "type": "Uint256" }
         ]
       },
       {
-        "name": "approve",
+        "vname": "approve",
         "params": [
-          { "name": "to", "type": "ByStr20" },
-          { "name": "tokenId", "type": "Uint256" }
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokenId", "type": "Uint256" }
         ]
       },
       {
-        "name": "setApprovalForAll",
+        "vname": "setApprovalForAll",
         "params": [
-          { "name": "to", "type": "ByStr20" },
-          { "name": "approved", "type": "Bool" }
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "approved", "type": "Bool" }
         ]
       }
     ],
     "events": [
       {
-        "name": "setApprovalForAll successful",
+        "vname": "setApprovalForAll successful",
         "params": [
-          { "name": "from", "type": "ByStr20" },
-          { "name": "recipient", "type": "ByStr20" },
-          { "name": "status", "type": "String" }
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "status", "type": "String" }
         ]
       },
       {
-        "name": "Approve successful",
+        "vname": "Approve successful",
         "params": [
-          { "name": "from", "type": "ByStr20" },
-          { "name": "approvedTo", "type": "ByStr20" },
-          { "name": "token", "type": "Uint256" }
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "approvedTo", "type": "ByStr20" },
+          { "vname": "token", "type": "Uint256" }
         ]
       },
       {
-        "name": "transferFrom successful",
+        "vname": "transferFrom successful",
         "params": [
-          { "name": "from", "type": "ByStr20" },
-          { "name": "recipient", "type": "ByStr20" },
-          { "name": "token", "type": "Uint256" }
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "token", "type": "Uint256" }
         ]
       },
       {
-        "name": "Mint successful",
+        "vname": "Mint successful",
         "params": [
-          { "name": "by", "type": "ByStr20" },
-          { "name": "recipient", "type": "ByStr20" },
-          { "name": "token", "type": "Uint256" }
+          { "vname": "by", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "token", "type": "Uint256" }
         ]
       },
       {
-        "name": "ownerOf",
+        "vname": "ownerOf",
         "params": [
-          { "name": "id", "type": "Uint256" },
-          { "name": "owner", "type": "ByStr20" }
+          { "vname": "id", "type": "Uint256" },
+          { "vname": "owner", "type": "ByStr20" }
         ]
       },
       {
-        "name": "balanceOf",
-        "params": [ { "name": "bal", "type": "Uint256" } ]
+        "vname": "balanceOf",
+        "params": [ { "vname": "bal", "type": "Uint256" } ]
       }
     ]
   },

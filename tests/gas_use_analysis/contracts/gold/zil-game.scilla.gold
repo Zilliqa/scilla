@@ -33,30 +33,30 @@ a: _balance
 
 {
   "contract_info": {
-    "name": "ZilGame",
+    "vname": "ZilGame",
     "params": [
-      { "name": "owner", "type": "ByStr20" },
-      { "name": "player_a", "type": "ByStr20" },
-      { "name": "player_b", "type": "ByStr20" },
-      { "name": "puzzle", "type": "ByStr32" }
+      { "vname": "owner", "type": "ByStr20" },
+      { "vname": "player_a", "type": "ByStr20" },
+      { "vname": "player_b", "type": "ByStr20" },
+      { "vname": "puzzle", "type": "ByStr32" }
     ],
     "fields": [
-      { "name": "player_a_hash", "type": "Option (ByStr32)" },
-      { "name": "player_b_hash", "type": "Option (ByStr32)" },
-      { "name": "timer", "type": "Option (BNum)" }
+      { "vname": "player_a_hash", "type": "Option (ByStr32)" },
+      { "vname": "player_b_hash", "type": "Option (ByStr32)" },
+      { "vname": "timer", "type": "Option (BNum)" }
     ],
     "transitions": [
       {
-        "name": "Play",
-        "params": [ { "name": "guess", "type": "ByStr32" } ]
+        "vname": "Play",
+        "params": [ { "vname": "guess", "type": "ByStr32" } ]
       },
       {
-        "name": "ClaimReward",
-        "params": [ { "name": "solution", "type": "Int128" } ]
+        "vname": "ClaimReward",
+        "params": [ { "vname": "solution", "type": "Int128" } ]
       },
-      { "name": "Withdraw", "params": [] }
+      { "vname": "Withdraw", "params": [] }
     ],
-    "events": [ { "name": "GameOver", "params": [] } ]
+    "events": [ { "vname": "GameOver", "params": [] } ]
   },
   "warnings": []
 }

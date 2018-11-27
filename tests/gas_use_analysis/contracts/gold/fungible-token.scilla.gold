@@ -57,115 +57,115 @@ a: allowed
 
 {
   "contract_info": {
-    "name": "FungibleToken",
+    "vname": "FungibleToken",
     "params": [
-      { "name": "owner", "type": "ByStr20" },
-      { "name": "total_tokens", "type": "Uint128" }
+      { "vname": "owner", "type": "ByStr20" },
+      { "vname": "total_tokens", "type": "Uint128" }
     ],
     "fields": [
-      { "name": "balances", "type": "Map (ByStr20) (Uint128)" },
+      { "vname": "balances", "type": "Map (ByStr20) (Uint128)" },
       {
-        "name": "allowed",
+        "vname": "allowed",
         "type": "Map (ByStr20) (Map (ByStr20) (Uint128))"
       }
     ],
     "transitions": [
       {
-        "name": "BalanceOf",
-        "params": [ { "name": "tokenOwner", "type": "ByStr20" } ]
+        "vname": "BalanceOf",
+        "params": [ { "vname": "tokenOwner", "type": "ByStr20" } ]
       },
-      { "name": "TotalSupply", "params": [] },
+      { "vname": "TotalSupply", "params": [] },
       {
-        "name": "Transfer",
+        "vname": "Transfer",
         "params": [
-          { "name": "to", "type": "ByStr20" },
-          { "name": "tokens", "type": "Uint128" }
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
         ]
       },
       {
-        "name": "TransferFrom",
+        "vname": "TransferFrom",
         "params": [
-          { "name": "from", "type": "ByStr20" },
-          { "name": "to", "type": "ByStr20" },
-          { "name": "tokens", "type": "Uint128" }
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
         ]
       },
       {
-        "name": "Approve",
+        "vname": "Approve",
         "params": [
-          { "name": "spender", "type": "ByStr20" },
-          { "name": "tokens", "type": "Uint128" }
+          { "vname": "spender", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
         ]
       },
       {
-        "name": "Allowance",
+        "vname": "Allowance",
         "params": [
-          { "name": "tokenOwner", "type": "ByStr20" },
-          { "name": "spender", "type": "ByStr20" }
+          { "vname": "tokenOwner", "type": "ByStr20" },
+          { "vname": "spender", "type": "ByStr20" }
         ]
       }
     ],
     "events": [
       {
-        "name": "Allowance",
+        "vname": "Allowance",
         "params": [
-          { "name": "owner", "type": "ByStr20" },
-          { "name": "spender", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" }
+          { "vname": "owner", "type": "ByStr20" },
+          { "vname": "spender", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
         ]
       },
       {
-        "name": "ApproveSuccess",
+        "vname": "ApproveSuccess",
         "params": [
-          { "name": "approver", "type": "ByStr20" },
-          { "name": "spender", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" }
+          { "vname": "approver", "type": "ByStr20" },
+          { "vname": "spender", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
         ]
       },
       {
-        "name": "TransferFromFailure",
+        "vname": "TransferFromFailure",
         "params": [
-          { "name": "sender", "type": "ByStr20" },
-          { "name": "recipient", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" }
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
         ]
       },
       {
-        "name": "TransferFromSuccess",
+        "vname": "TransferFromSuccess",
         "params": [
-          { "name": "sender", "type": "ByStr20" },
-          { "name": "recipient", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" }
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
         ]
       },
       {
-        "name": "TransferFailure",
+        "vname": "TransferFailure",
         "params": [
-          { "name": "sender", "type": "ByStr20" },
-          { "name": "recipient", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" }
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
         ]
       },
       {
-        "name": "TransferSuccess",
+        "vname": "TransferSuccess",
         "params": [
-          { "name": "sender", "type": "ByStr20" },
-          { "name": "recipient", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" }
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
         ]
       },
       {
-        "name": "TotalSupply",
+        "vname": "TotalSupply",
         "params": [
-          { "name": "caller", "type": "ByStr20" },
-          { "name": "balance", "type": "Uint128" }
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "balance", "type": "Uint128" }
         ]
       },
       {
-        "name": "BalanceOf",
+        "vname": "BalanceOf",
         "params": [
-          { "name": "address", "type": "ByStr20" },
-          { "name": "balance", "type": "Uint128" }
+          { "vname": "address", "type": "ByStr20" },
+          { "vname": "balance", "type": "Uint128" }
         ]
       }
     ]

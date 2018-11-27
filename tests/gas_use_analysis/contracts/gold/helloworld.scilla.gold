@@ -14,20 +14,20 @@ a: welcome_msg
 
 {
   "contract_info": {
-    "name": "HelloWorld",
-    "params": [ { "name": "owner", "type": "ByStr20" } ],
-    "fields": [ { "name": "welcome_msg", "type": "String" } ],
+    "vname": "HelloWorld",
+    "params": [ { "vname": "owner", "type": "ByStr20" } ],
+    "fields": [ { "vname": "welcome_msg", "type": "String" } ],
     "transitions": [
       {
-        "name": "setHello",
-        "params": [ { "name": "msg", "type": "String" } ]
+        "vname": "setHello",
+        "params": [ { "vname": "msg", "type": "String" } ]
       },
-      { "name": "getHello", "params": [] }
+      { "vname": "getHello", "params": [] }
     ],
     "events": [
       {
-        "name": "getHello()",
-        "params": [ { "name": "msg", "type": "String" } ]
+        "vname": "getHello()",
+        "params": [ { "vname": "msg", "type": "String" } ]
       }
     ]
   },

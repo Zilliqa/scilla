@@ -27,46 +27,49 @@ c: Pair of (book_title)(author)
 
 {
   "contract_info": {
-    "name": "BookStore",
+    "vname": "BookStore",
     "params": [
-      { "name": "owner", "type": "ByStr20" },
-      { "name": "storeName", "type": "String" }
+      { "vname": "owner", "type": "ByStr20" },
+      { "vname": "storeName", "type": "String" }
     ],
     "fields": [
-      { "name": "members", "type": "Map (ByStr20) (Pair (String) (Uint32))" },
-      { "name": "lastBookID", "type": "Option (Uint32)" },
       {
-        "name": "bookInventory",
+        "vname": "members",
+        "type": "Map (ByStr20) (Pair (String) (Uint32))"
+      },
+      { "vname": "lastBookID", "type": "Option (Uint32)" },
+      {
+        "vname": "bookInventory",
         "type": "Map (Uint32) (Pair (String) (String))"
       }
     ],
     "transitions": [
       {
-        "name": "addMember",
+        "vname": "addMember",
         "params": [
-          { "name": "name", "type": "String" },
-          { "name": "addr", "type": "ByStr20" },
-          { "name": "memberType", "type": "Uint32" }
+          { "vname": "name", "type": "String" },
+          { "vname": "addr", "type": "ByStr20" },
+          { "vname": "memberType", "type": "Uint32" }
         ]
       },
       {
-        "name": "addBook",
+        "vname": "addBook",
         "params": [
-          { "name": "book_title", "type": "String" },
-          { "name": "author", "type": "String" },
-          { "name": "bookID", "type": "Uint32" }
+          { "vname": "book_title", "type": "String" },
+          { "vname": "author", "type": "String" },
+          { "vname": "bookID", "type": "Uint32" }
         ]
       },
       {
-        "name": "removeBook",
-        "params": [ { "name": "book_id", "type": "Uint32" } ]
+        "vname": "removeBook",
+        "params": [ { "vname": "book_id", "type": "Uint32" } ]
       },
       {
-        "name": "updateBook",
+        "vname": "updateBook",
         "params": [
-          { "name": "book_id", "type": "Uint32" },
-          { "name": "book_title", "type": "String" },
-          { "name": "author", "type": "String" }
+          { "vname": "book_id", "type": "Uint32" },
+          { "vname": "book_title", "type": "String" },
+          { "vname": "author", "type": "String" }
         ]
       }
     ],

@@ -34,38 +34,38 @@ f: Container around: Message (Value of String with size 20,beneficiary,highestBi
 
 {
   "contract_info": {
-    "name": "OpenAuction",
+    "vname": "OpenAuction",
     "params": [
-      { "name": "auctionStart", "type": "BNum" },
-      { "name": "biddingTime", "type": "Uint128" },
-      { "name": "beneficiary", "type": "ByStr20" }
+      { "vname": "auctionStart", "type": "BNum" },
+      { "vname": "biddingTime", "type": "Uint128" },
+      { "vname": "beneficiary", "type": "ByStr20" }
     ],
     "fields": [
-      { "name": "ended", "type": "Bool" },
-      { "name": "highestBidder", "type": "Option (ByStr20)" },
-      { "name": "highestBid", "type": "Uint128" },
-      { "name": "pendingReturns", "type": "Map (ByStr20) (Uint128)" }
+      { "vname": "ended", "type": "Bool" },
+      { "vname": "highestBidder", "type": "Option (ByStr20)" },
+      { "vname": "highestBid", "type": "Uint128" },
+      { "vname": "pendingReturns", "type": "Map (ByStr20) (Uint128)" }
     ],
     "transitions": [
-      { "name": "Bid", "params": [] },
-      { "name": "Withdraw", "params": [] },
-      { "name": "AuctionEnd", "params": [] }
+      { "vname": "Bid", "params": [] },
+      { "vname": "Withdraw", "params": [] },
+      { "vname": "AuctionEnd", "params": [] }
     ],
     "events": [
       {
-        "name": "Auction ended",
-        "params": [ { "name": "highest_bid", "type": "Uint128" } ]
+        "vname": "Auction ended",
+        "params": [ { "vname": "highest_bid", "type": "Uint128" } ]
       },
       {
-        "name": "Withdraw Successful",
-        "params": [ { "name": "addr", "type": "ByStr20" } ]
+        "vname": "Withdraw Successful",
+        "params": [ { "vname": "addr", "type": "ByStr20" } ]
       },
       {
-        "name": "Bid",
+        "vname": "Bid",
         "params": [
-          { "name": "code", "type": "Int32" },
-          { "name": "addr", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" }
+          { "vname": "code", "type": "Int32" },
+          { "vname": "addr", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
         ]
       }
     ]
