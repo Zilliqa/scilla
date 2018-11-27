@@ -343,24 +343,17 @@ let message_to_json message =
   (* extract out "_tag", "_amount", "_accepted" and "_recipient" parts of the message *)
   let (_, taglit) = List.find_exn message ~f:(fun (x, _) -> x = tag_label) in
   let (_, amountlit) = List.find_exn message ~f:(fun (x, _) -> x = amount_label) in
-  let acceptedlit = List.find message ~f:(fun (x, _) -> x = accepted_label) in
   (* message_to_json may be used to print both output and input message. Choose label accordingly. *)
   let (toORfrom, tofromlit) = List.find_exn message ~f:(fun (x, _) -> x = recipient_label || x = sender_label) in
   let tofrom_label = if toORfrom = recipient_label then recipient_label else sender_label in
   let tags = get_string_literal taglit in
   let amounts = get_uint_literal amountlit in
-  (* In case we're trying to print an input message, there won't be an "_accepted" field *)
-  let accepteds = 
-    if is_some acceptedlit
-    then get_string_literal (snd (BatOption.get acceptedlit))
-    else Some "false" in
   let tofroms = get_address_literal tofromlit in
   (* Get a list without any of these components *)
   let filtered_list = List.filter message 
-      ~f:(fun (x, _) -> not ((x = tag_label) || (x = amount_label) || (x = recipient_label) || x = accepted_label)) in
+      ~f:(fun (x, _) -> not ((x = tag_label) || (x = amount_label) || (x = recipient_label))) in
     `Assoc [(tag_label, `String (BatOption.get tags)); 
                  (amount_label, `String (BatOption.get amounts));
-                 (accepted_label, `String (BatOption.get accepteds));
                  (tofrom_label, `String (BatOption.get tofroms));
                  ("params", `List (slist_to_json filtered_list))] 
 
