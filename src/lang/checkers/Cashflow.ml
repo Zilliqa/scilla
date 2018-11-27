@@ -21,13 +21,13 @@ open Utils
 
 module CashflowRep (R : Rep) = struct
   type money_tag =
-    | Bottom
+    | NoInfo
     | NotMoney
     | Money
     | Map of money_tag
     | Option of money_tag
     | Pair of money_tag * money_tag
-    | Top
+    | Inconsistent
   [@@deriving sexp]
     (* TODO: Add this if possible *)
   (*    | ADT of t *)
@@ -39,14 +39,14 @@ module CashflowRep (R : Rep) = struct
 
   let mk_id s =
     match s with
-    | Ident (n, r) -> Ident (n, (Bottom, r))
+    | Ident (n, r) -> Ident (n, (NoInfo, r))
 
   let mk_id_address s = mk_id (R.mk_id_address s)
   let mk_id_uint128 s = mk_id (R.mk_id_uint128 s)
   let mk_id_bnum    s = mk_id (R.mk_id_bnum s)
   let mk_id_string  s = mk_id (R.mk_id_string s)
   
-  let parse_rep s = (Bottom, R.parse_rep s)
+  let parse_rep s = (NoInfo, R.parse_rep s)
   let get_rep_str r = match r with | (_, rr) -> R.get_rep_str rr
 end
 
@@ -67,18 +67,18 @@ module ScillaCashflowChecker
   open ECFR
 
   (*******************************************************)
-  (*     Initial traversal: Set every tag to Bottom      *)
+  (*     Initial traversal: Set every tag to NoInfo      *)
   (*******************************************************)
   
-  (* Lift Ident (n, rep) to Ident (n, (Bottom, rep)) *)
-  let add_bottom_to_ident i =
+  (* Lift Ident (n, rep) to Ident (n, (NoInfo, rep)) *)
+  let add_noinfo_to_ident i =
     match i with
-    | Ident (name, rep) -> Ident (name, (ECFR.Bottom, rep))
+    | Ident (name, rep) -> Ident (name, (ECFR.NoInfo, rep))
   
   let rec cf_init_tag_pattern p =
     match p with
     | Wildcard -> CFSyntax.Wildcard
-    | Binder x -> CFSyntax.Binder (add_bottom_to_ident x)
+    | Binder x -> CFSyntax.Binder (add_noinfo_to_ident x)
     | Constructor (cn, ps) ->
         CFSyntax.Constructor (
           cn,
@@ -88,7 +88,7 @@ module ScillaCashflowChecker
     match p with
     | MTag s -> CFSyntax.MTag s
     | MLit l -> CFSyntax.MLit l
-    | MVar v -> CFSyntax.MVar (add_bottom_to_ident v)
+    | MVar v -> CFSyntax.MVar (add_noinfo_to_ident v)
   
   let rec cf_init_tag_expr erep =
     let (e, rep) = erep in
@@ -97,23 +97,23 @@ module ScillaCashflowChecker
       | Literal l ->
           CFSyntax.Literal l
       | Var i ->
-          CFSyntax.Var (add_bottom_to_ident i)
+          CFSyntax.Var (add_noinfo_to_ident i)
       |  Fun (arg, t, body) ->
           CFSyntax.Fun (
-              add_bottom_to_ident arg,
+              add_noinfo_to_ident arg,
               t,
               cf_init_tag_expr body)
       | App (f, actuals) ->
           CFSyntax.App (
-              add_bottom_to_ident f, 
-              List.map add_bottom_to_ident actuals)
+              add_noinfo_to_ident f, 
+              List.map add_noinfo_to_ident actuals)
       | Builtin (i, actuals) ->
           CFSyntax.Builtin (
-              add_bottom_to_ident i,
-              List.map add_bottom_to_ident actuals)
+              add_noinfo_to_ident i,
+              List.map add_noinfo_to_ident actuals)
       | Let (i, topt, lhs, rhs) ->
           CFSyntax.Let (
-              add_bottom_to_ident i,
+              add_noinfo_to_ident i,
               topt,
               cf_init_tag_expr lhs,
               cf_init_tag_expr rhs)
@@ -121,29 +121,29 @@ module ScillaCashflowChecker
           CFSyntax.Constr (
               cname,
               ts,
-              List.map add_bottom_to_ident actuals)
+              List.map add_noinfo_to_ident actuals)
       | MatchExpr (x, clauses) ->
           CFSyntax.MatchExpr (
-              add_bottom_to_ident x,
+              add_noinfo_to_ident x,
               List.map (fun (p, e) ->
                   (cf_init_tag_pattern p, cf_init_tag_expr e)) clauses)
       | Fixpoint (f, t, body) ->
           CFSyntax.Fixpoint (
-              add_bottom_to_ident f,
+              add_noinfo_to_ident f,
               t,
               cf_init_tag_expr body)
       | TFun (tvar, body) ->
           CFSyntax.TFun (
-              add_bottom_to_ident tvar,
+              add_noinfo_to_ident tvar,
               cf_init_tag_expr body)
       | TApp (tf, arg_types) ->
           CFSyntax.TApp (
-              add_bottom_to_ident tf,
+              add_noinfo_to_ident tf,
               arg_types)
       | Message bs ->
           CFSyntax.Message (
               List.map (fun (s, p) -> (s, cf_init_tag_payload p)) bs) in
-    (res_e, (ECFR.Bottom, rep))
+    (res_e, (ECFR.NoInfo, rep))
 
   let rec cf_init_tag_stmt srep =
     let (s, rep) = srep in
@@ -151,53 +151,53 @@ module ScillaCashflowChecker
       match s with
       | Load (x, y) ->
           CFSyntax.Load (
-            add_bottom_to_ident x,
-            add_bottom_to_ident y)
+            add_noinfo_to_ident x,
+            add_noinfo_to_ident y)
       | Store (x, y) -> 
           CFSyntax.Store (
-            add_bottom_to_ident x,
-            add_bottom_to_ident y)
+            add_noinfo_to_ident x,
+            add_noinfo_to_ident y)
       | Bind (x, e) ->
           CFSyntax.Bind (
-            add_bottom_to_ident x,
+            add_noinfo_to_ident x,
             cf_init_tag_expr e)
       | MapUpdate (m, ks, v) ->
           CFSyntax.MapUpdate (
-            add_bottom_to_ident m,
-            List.map add_bottom_to_ident ks,
-            match v with | None -> None | Some v' -> Some (add_bottom_to_ident v')
+            add_noinfo_to_ident m,
+            List.map add_noinfo_to_ident ks,
+            match v with | None -> None | Some v' -> Some (add_noinfo_to_ident v')
           )
       | MapGet (x, m, ks, retrieve) ->
           CFSyntax.MapGet (
-            add_bottom_to_ident x,
-            add_bottom_to_ident m,
-            List.map add_bottom_to_ident ks,
+            add_noinfo_to_ident x,
+            add_noinfo_to_ident m,
+            List.map add_noinfo_to_ident ks,
             retrieve
           )
       | MatchStmt (x, pss) ->
           CFSyntax.MatchStmt (
-            add_bottom_to_ident x,
+            add_noinfo_to_ident x,
             List.map (fun (p, ss) ->
                 (cf_init_tag_pattern p,
                  List.map cf_init_tag_stmt ss)) pss)
       | ReadFromBC (x, s) ->
           CFSyntax.ReadFromBC (
-            add_bottom_to_ident x, s)
+            add_noinfo_to_ident x, s)
       | AcceptPayment ->
           CFSyntax.AcceptPayment
       | SendMsgs x ->
-          CFSyntax.SendMsgs (add_bottom_to_ident x)
+          CFSyntax.SendMsgs (add_noinfo_to_ident x)
       | CreateEvnt x ->
-          CFSyntax.CreateEvnt (add_bottom_to_ident x)
+          CFSyntax.CreateEvnt (add_noinfo_to_ident x)
       | Throw x ->
-          CFSyntax.Throw (add_bottom_to_ident x) in
+          CFSyntax.Throw (add_noinfo_to_ident x) in
     (res_s, rep)
 
   let cf_init_tag_transition transition =
     let { tname ; tparams ; tbody } = transition in
     { CFSyntax.tname = tname;
       CFSyntax.tparams =
-        List.map (fun (x, t) -> (add_bottom_to_ident x, t)) tparams;
+        List.map (fun (x, t) -> (add_noinfo_to_ident x, t)) tparams;
       CFSyntax.tbody =
         List.map cf_init_tag_stmt tbody }
   
@@ -205,10 +205,10 @@ module ScillaCashflowChecker
     let { cname ; cparams ; cfields ; ctrans } = contract in
     { CFSyntax.cname = cname;
       CFSyntax.cparams =
-        List.map (fun (x, t) -> (add_bottom_to_ident x, t)) cparams;
+        List.map (fun (x, t) -> (add_noinfo_to_ident x, t)) cparams;
       CFSyntax.cfields =
         List.map (fun (x, t, e) ->
-            (add_bottom_to_ident x,
+            (add_noinfo_to_ident x,
              t,
              cf_init_tag_expr e)) cfields;
       CFSyntax.ctrans =
@@ -219,7 +219,7 @@ module ScillaCashflowChecker
     { CFSyntax.lname = lname;
       CFSyntax.lentries = List.map
           (fun { lname ; lexp } ->
-             { CFSyntax.lname = add_bottom_to_ident lname ;
+             { CFSyntax.lname = add_noinfo_to_ident lname ;
                CFSyntax.lexp = cf_init_tag_expr lexp }) lentries }
   
   let cf_init_tag_module cmod =
@@ -248,36 +248,32 @@ module ScillaCashflowChecker
   (* Least upper bound in the money_tag lattice. *)
   let rec lub_tags t1 t2 =
     match t1, t2 with
-    | Top, _
-    | _, Top -> Top
-    | Bottom, x
-    | x, Bottom   -> x
-    | Map x, Map y ->
-        Map (lub_tags x y)
-    | Option x, Option y ->
-        Option (lub_tags x y)
+    | Inconsistent , _
+    | _            , Inconsistent  -> Inconsistent
+    | NoInfo       , x
+    | x            , NoInfo        -> x
+    | Map x        , Map y         -> Map (lub_tags x y)
+    | Option x     , Option y      -> Option (lub_tags x y)
     | Pair (x1, x2), Pair (y1, y2) ->
         Pair (lub_tags x1 y1, lub_tags x2 y2)
-    | Money, Money -> Money
-    | NotMoney, NotMoney -> NotMoney
-    | _, _       -> Top
+    | Money        , Money         -> Money
+    | NotMoney     , NotMoney      -> NotMoney
+    | _            , _             -> Inconsistent
 
   (* Greatest lower bound in the money_tag lattice. *)
   let rec glb_tags t1 t2 =
     match t1, t2 with
-    | Top, x
-    | x, Top -> x
-    | Bottom, _
-    | _, Bottom -> Bottom
-    | Map x, Map y ->
-        Map (glb_tags x y)
-    | Option x, Option y ->
-        Option (glb_tags x y)
+    | Inconsistent , x
+    | x            , Inconsistent  -> x
+    | NoInfo       , _
+    | _            , NoInfo        -> NoInfo
+    | Map x        , Map y         -> Map (glb_tags x y)
+    | Option x     , Option y      -> Option (glb_tags x y)
     | Pair (x1, x2), Pair (y1, y2) ->
         Pair (glb_tags x1 y1, glb_tags x2 y2)
-    | Money, Money -> Money
-    | NotMoney, NotMoney -> NotMoney
-    | _, _       -> Bottom
+    | Money        , Money         -> Money
+    | NotMoney     , NotMoney      -> NotMoney
+    | _            , _             -> NoInfo
 
   let get_id_tag id =
     match id with
@@ -345,283 +341,283 @@ module ScillaCashflowChecker
         (fun (glb_res_tag, glb_args_tags) (c_res_tag, c_args_tags) ->
            ( glb_tags glb_res_tag c_res_tag,
              List.map2 glb_tags glb_args_tags c_args_tags ))
-        ( Top , List.map (fun _ -> Top ) args_tags ) c in
+        ( Inconsistent , List.map (fun _ -> Inconsistent ) args_tags ) c in
     let (c_r, c_as) =
       match get_id f with
       | "put" ->
           let c_r_sigs =
             match res_tag with
-            | Map t  -> [ ( Map t      , [ Map t      ; NotMoney ; t      ] ) ]
-            | Bottom -> [ ( Map Bottom , [ Map Bottom ; NotMoney ; Bottom ] ) ]
-            | _      -> [ ( Top        , [ Map Bottom ; NotMoney ; Bottom ] ) ] in
+            | Map t  -> [ ( Map t        , [ Map t      ; NotMoney ; t      ] ) ]
+            | NoInfo -> [ ( Map NoInfo   , [ Map NoInfo ; NotMoney ; NoInfo ] ) ]
+            | _      -> [ ( Inconsistent , [ Map NoInfo ; NotMoney ; NoInfo ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ m ; k ; v ] ->
                 let m_sig =
                   match m with
-                  | Map t  -> [ ( Map t      , [ Map t      ; NotMoney ; t      ] ) ] 
-                  | Bottom -> [ ( Map Bottom , [ Map Bottom ; NotMoney ; Bottom ] ) ] 
-                  | _      -> [ ( Map Bottom , [ Top        ; NotMoney ; Bottom ] ) ] in
+                  | Map t  -> [ ( Map t      , [ Map t        ; NotMoney ; t      ] ) ] 
+                  | NoInfo -> [ ( Map NoInfo , [ Map NoInfo   ; NotMoney ; NoInfo ] ) ] 
+                  | _      -> [ ( Map NoInfo , [ Inconsistent ; NotMoney ; NoInfo ] ) ] in
                 let k_sig =
                   match k with
                   | NotMoney
-                  | Bottom   -> [ ( Map Bottom , [ Map Bottom ; NotMoney ; Bottom ] ) ]
-                  | _        -> [ ( Map Bottom , [ Map Bottom ; Top      ; Bottom ] ) ] in
+                  | NoInfo   -> [ ( Map NoInfo , [ Map NoInfo ; NotMoney     ; NoInfo ] ) ]
+                  | _        -> [ ( Map NoInfo , [ Map NoInfo ; Inconsistent ; NoInfo ] ) ] in
                 let v_sig =
                   match v with
                   | _        -> [ ( Map v , [ Map v ; NotMoney ; v ] ) ] in
                 [ m_sig ; k_sig ; v_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "remove" ->
           let c_r_sigs =
             match res_tag with
-            | Map t  -> [ ( Map t      , [ Map t      ; NotMoney ] ) ]
-            | Bottom -> [ ( Map Bottom , [ Map Bottom ; NotMoney ] ) ]
-            | _      -> [ ( Top        , [ Map Bottom ; NotMoney ] ) ] in
+            | Map t  -> [ ( Map t        , [ Map t      ; NotMoney ] ) ]
+            | NoInfo -> [ ( Map NoInfo   , [ Map NoInfo ; NotMoney ] ) ]
+            | _      -> [ ( Inconsistent , [ Map NoInfo ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ m ; k ] ->
                 let m_sig =
                   match m with
-                  | Map t  -> [ ( Map t      , [ Map t      ; NotMoney ] ) ] 
-                  | Bottom -> [ ( Map Bottom , [ Map Bottom ; NotMoney ] ) ] 
-                  | _      -> [ ( Map Bottom , [ Top        ; NotMoney ] ) ] in
+                  | Map t  -> [ ( Map t      , [ Map t        ; NotMoney ] ) ] 
+                  | NoInfo -> [ ( Map NoInfo , [ Map NoInfo   ; NotMoney ] ) ] 
+                  | _      -> [ ( Map NoInfo , [ Inconsistent ; NotMoney ] ) ] in
                 let k_sig =
                   match k with
                   | NotMoney
-                  | Bottom   -> [ ( Map Bottom , [ Map Bottom ; NotMoney ] ) ]
-                  | _        -> [ ( Map Bottom , [ Map Bottom ; Top      ] ) ] in
+                  | NoInfo   -> [ ( Map NoInfo , [ Map NoInfo ; NotMoney     ] ) ]
+                  | _        -> [ ( Map NoInfo , [ Map NoInfo ; Inconsistent ] ) ] in
                 [ m_sig ; k_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "get" ->
           let c_r_sigs =
             match res_tag with
             | Option t -> [ ( Option t      , [ Map t      ; NotMoney ] ) ]
-            | Bottom   -> [ ( Option Bottom , [ Map Bottom ; NotMoney ] ) ]
-            | _        -> [ ( Top           , [ Map Bottom ; NotMoney ] ) ] in
+            | NoInfo   -> [ ( Option NoInfo , [ Map NoInfo ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent  , [ Map NoInfo ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ m ; k ] ->
                 let m_sig =
                   match m with
-                  | Map t  -> [ ( Option t      , [ Map t      ; NotMoney ] ) ] 
-                  | Bottom -> [ ( Option Bottom , [ Map Bottom ; NotMoney ] ) ] 
-                  | _      -> [ ( Option Bottom , [ Top        ; NotMoney ] ) ] in
+                  | Map t  -> [ ( Option t      , [ Map t        ; NotMoney ] ) ] 
+                  | NoInfo -> [ ( Option NoInfo , [ Map NoInfo   ; NotMoney ] ) ] 
+                  | _      -> [ ( Option NoInfo , [ Inconsistent ; NotMoney ] ) ] in
                 let k_sig =
                   match k with
                   | NotMoney
-                  | Bottom   -> [ ( Option Bottom , [ Map Bottom ; NotMoney ] ) ]
-                  | _        -> [ ( Option Bottom , [ Map Bottom ; Top      ] ) ] in
+                  | NoInfo   -> [ ( Option NoInfo , [ Map NoInfo ; NotMoney     ] ) ]
+                  | _        -> [ ( Option NoInfo , [ Map NoInfo ; Inconsistent ] ) ] in
                 [ m_sig ; k_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "contains" ->
           let c_r_sigs =
             match res_tag with
             | NotMoney
-            | Bottom   -> [ ( NotMoney , [ Map Bottom ; NotMoney ] ) ]
-            | _        -> [ ( Top      , [ Map Bottom ; NotMoney ] ) ] in
+            | NoInfo   -> [ ( NotMoney     , [ Map NoInfo ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ Map NoInfo ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ m ; k ] ->
                 let m_sig =
                   match m with
-                  | Map t  -> [ ( NotMoney , [ Map t      ; NotMoney ] ) ] 
-                  | Bottom -> [ ( NotMoney , [ Map Bottom ; NotMoney ] ) ] 
-                  | _      -> [ ( NotMoney , [ Top        ; NotMoney ] ) ] in
+                  | Map t  -> [ ( NotMoney , [ Map t        ; NotMoney ] ) ] 
+                  | NoInfo -> [ ( NotMoney , [ Map NoInfo   ; NotMoney ] ) ] 
+                  | _      -> [ ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
                 let k_sig =
                   match k with
                   | NotMoney
-                  | Bottom   -> [ ( NotMoney , [ Map Bottom ; NotMoney ] ) ]
-                  | _        -> [ ( NotMoney , [ Map Bottom ; Top      ] ) ] in
+                  | NoInfo   -> [ ( NotMoney , [ Map NoInfo ; NotMoney     ] ) ]
+                  | _        -> [ ( NotMoney , [ Map NoInfo ; Inconsistent ] ) ] in
                 [ m_sig ; k_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "to_list" ->
           (* TODO : Handle lists *)
           let c_r_sigs =
-            [ ( Top , [ Map Bottom ] ) ] in
+            [ ( Inconsistent , [ Map NoInfo ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ m ] ->
                 let m_sig =
                   match m with
-                  | Map t  -> [ ( Top , [ Map t      ] ) ] 
-                  | Bottom -> [ ( Top , [ Map Bottom ] ) ] 
-                  | _      -> [ ( Top , [ Top        ] ) ] in
+                  | Map t  -> [ ( Inconsistent , [ Map t        ] ) ] 
+                  | NoInfo -> [ ( Inconsistent , [ Map NoInfo   ] ) ] 
+                  | _      -> [ ( Inconsistent , [ Inconsistent ] ) ] in
                 [ m_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "size" ->
           let c_r_sigs =
             match res_tag with
             | NotMoney
-            | Bottom   -> [ ( NotMoney , [ Map Bottom ] ) ]
-            | _        -> [ ( Top      , [ Map Bottom ] ) ] in
+            | NoInfo   -> [ ( NotMoney     , [ Map NoInfo ] ) ]
+            | _        -> [ ( Inconsistent , [ Map NoInfo ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ m ] ->
                 let m_sig =
                   match m with
-                  | Map t  -> [ ( NotMoney , [ Map t      ] ) ] 
-                  | Bottom -> [ ( NotMoney , [ Map Bottom ] ) ] 
-                  | _      -> [ ( NotMoney , [ Top        ] ) ] in
+                  | Map t  -> [ ( NotMoney , [ Map t        ] ) ] 
+                  | NoInfo -> [ ( NotMoney , [ Map NoInfo   ] ) ] 
+                  | _      -> [ ( NotMoney , [ Inconsistent ] ) ] in
                 [ m_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "eq"
       | "lt" ->
           let c_r_sigs =
             match res_tag with
             | NotMoney
-            | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                            ( NotMoney , [ Money    ; Money    ] ) ]
-            | _        -> [ ( Top      , [ NotMoney ; NotMoney ] ) ;
-                            ( Top      , [ Money    ; Money    ] ) ] in
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ;
+                            ( NotMoney     , [ Money    ; Money    ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ;
+                            ( Inconsistent , [ Money    ; Money    ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
-                  | Money    -> [ ( NotMoney , [ Money    ; Money    ] ) ] 
-                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ]
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                                  ( NotMoney , [ Money    ; Money    ] ) ]
-                  | _        -> [ ( NotMoney , [ Top      ; Bottom   ] ) ] in
+                  | Money    -> [ ( NotMoney , [ Money        ; Money    ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ;
+                                  ( NotMoney , [ Money        ; Money    ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ; NoInfo   ] ) ] in
                 let v2_sig =
                   match v2 with
-                  | Money    -> [ ( NotMoney , [ Money    ; Money    ] ) ] 
-                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ]
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                                  ( NotMoney , [ Money    ; Money    ] ) ]
-                  | _        -> [ ( NotMoney , [ Bottom   ; Top      ] ) ] in
+                  | Money    -> [ ( NotMoney , [ Money    ; Money        ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
+                                  ( NotMoney , [ Money    ; Money        ] ) ]
+                  | _        -> [ ( NotMoney , [ NoInfo   ; Inconsistent ] ) ] in
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "add"
       | "sub" ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ]
-            | Money    -> [ ( Money    , [ Money    ; Money    ] ) ]
-            | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                            ( Money    , [ Money    ; Money    ] ) ]
-            | _        -> [ ( Top      , [ NotMoney ; NotMoney ] ) ;
-                            ( Top      , [ Money    ; Money    ] ) ] in
+            | NotMoney -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
+            | Money    -> [ ( Money        , [ Money    ; Money    ] ) ]
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ;
+                            ( Money        , [ Money    ; Money    ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ;
+                            ( Inconsistent , [ Money    ; Money    ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
-                  | Money    -> [ ( Money    , [ Money    ; Money    ] ) ] 
-                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ]
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                                  ( Money    , [ Money    ; Money    ] ) ]
-                  | _        -> [ ( NotMoney , [ Top      ; NotMoney ] ) ;
-                                  ( Money    , [ Top      ; Money    ] ) ] in
+                  | Money    -> [ ( Money    , [ Money        ; Money    ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ;
+                                  ( Money    , [ Money        ; Money    ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ; NotMoney ] ) ;
+                                  ( Money    , [ Inconsistent ; Money    ] ) ] in
                 let v2_sig =
                   match v2 with
-                  | Money    -> [ ( Money    , [ Money    ; Money    ] ) ] 
-                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ]
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                                  ( Money    , [ Money    ; Money    ] ) ]
-                  | _        -> [ ( NotMoney , [ NotMoney ; Top      ] ) ;
-                                  ( Money    , [ Money    ; Top      ] ) ] in
+                  | Money    -> [ ( Money    , [ Money    ; Money        ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
+                                  ( Money    , [ Money    ; Money        ] ) ]
+                  | _        -> [ ( NotMoney , [ NotMoney ; Inconsistent ] ) ;
+                                  ( Money    , [ Money    ; Inconsistent ] ) ] in
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "mul" ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ]
-            | Money    -> [ ( Money    , [ NotMoney ; Money    ] ) ;
-                            ( Money    , [ Money    ; NotMoney ] ) ]
-            | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                            ( Money    , [ NotMoney ; Money    ] ) ;
-                            ( Money    , [ Money    ; NotMoney ] ) ]
-            | _        -> [ ( Top      , [ NotMoney ; NotMoney ] ) ;
-                            ( Top      , [ NotMoney ; Money    ] ) ;
-                            ( Top      , [ Money    ; NotMoney ] ) ] in
+            | NotMoney -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
+            | Money    -> [ ( Money        , [ NotMoney ; Money    ] ) ;
+                            ( Money        , [ Money    ; NotMoney ] ) ]
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ;
+                            ( Money        , [ NotMoney ; Money    ] ) ;
+                            ( Money        , [ Money    ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ;
+                            ( Inconsistent , [ NotMoney ; Money    ] ) ;
+                            ( Inconsistent , [ Money    ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
-                  | Money    -> [ ( Money    , [ Money    ; NotMoney ] ) ] 
-                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                                  ( Money    , [ NotMoney ; Money    ] ) ]
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                                  ( Money    , [ NotMoney ; Money    ] ) ;
-                                  ( Money    , [ Money    ; NotMoney ] ) ]
-                  | _        -> [ ( Money    , [ Top      ; Money    ] ) ;
-                                  ( Money    , [ Top      ; NotMoney ] ) ;
-                                  ( NotMoney , [ Top      ; NotMoney ] ) ] in
+                  | Money    -> [ ( Money    , [ Money        ; NotMoney ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ;
+                                  ( Money    , [ NotMoney     ; Money    ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ;
+                                  ( Money    , [ NotMoney     ; Money    ] ) ;
+                                  ( Money    , [ Money        ; NotMoney ] ) ]
+                  | _        -> [ ( Money    , [ Inconsistent ; Money    ] ) ;
+                                  ( Money    , [ Inconsistent ; NotMoney ] ) ;
+                                  ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
                 let v2_sig =
                   match v2 with
-                  | Money    -> [ ( Money    , [ NotMoney ; Money    ] ) ] 
-                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                                  ( Money    , [ Money    ; NotMoney ] ) ]
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                                  ( Money    , [ NotMoney ; Money    ] ) ;
-                                  ( Money    , [ Money    ; NotMoney ] ) ]
-                  | _        -> [ ( Money    , [ Money    ; Top      ] ) ;
-                                  ( Money    , [ NotMoney ; Top      ] ) ;
-                                  ( NotMoney , [ NotMoney ; Top      ] ) ] in
+                  | Money    -> [ ( Money    , [ NotMoney ; Money        ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
+                                  ( Money    , [ Money    ; NotMoney     ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
+                                  ( Money    , [ NotMoney ; Money        ] ) ;
+                                  ( Money    , [ Money    ; NotMoney     ] ) ]
+                  | _        -> [ ( Money    , [ Money    ; Inconsistent ] ) ;
+                                  ( Money    , [ NotMoney ; Inconsistent ] ) ;
+                                  ( NotMoney , [ NotMoney ; Inconsistent ] ) ] in
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "div"
       | "rem" ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ]
-            | Money    -> [ ( Money    , [ Money    ; NotMoney ] ) ]
-            | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                            ( Money    , [ Money    ; NotMoney ] ) ]
-            | _        -> [ ( Top      , [ NotMoney ; NotMoney ] ) ;
-                            ( Top      , [ Money    ; NotMoney ] ) ] in
+            | NotMoney -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
+            | Money    -> [ ( Money        , [ Money    ; NotMoney ] ) ]
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ;
+                            ( Money        , [ Money    ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ;
+                            ( Inconsistent , [ Money    ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
-                  | Money    -> [ ( Money    , [ Money    ; NotMoney ] ) ] 
-                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ]
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                                  ( Money    , [ Money    ; NotMoney ] ) ]
-                  | _        -> [ ( Money    , [ Top      ; NotMoney ] ) ;
-                                  ( NotMoney , [ Top      ; NotMoney ] ) ] in
+                  | Money    -> [ ( Money    , [ Money        ; NotMoney ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ;
+                                  ( Money    , [ Money        ; NotMoney ] ) ]
+                  | _        -> [ ( Money    , [ Inconsistent ; NotMoney ] ) ;
+                                  ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
                 let v2_sig =
                   match v2 with
                   | NotMoney
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ;
-                                  ( Money    , [ Money    ; NotMoney ] ) ]
-                  | _        -> [ ( Money    , [ Money    ; Top      ] ) ;
-                                  ( NotMoney , [ NotMoney ; Top      ] ) ] in
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
+                                  ( Money    , [ Money    ; NotMoney     ] ) ]
+                  | _        -> [ ( Money    , [ Money    ; Inconsistent ] ) ;
+                                  ( NotMoney , [ NotMoney ; Inconsistent ] ) ] in
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "to_int32"
       | "to_int64"
@@ -630,34 +626,34 @@ module ScillaCashflowChecker
       | "to_nat"    ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney -> [ ( NotMoney , [ NotMoney ] ) ]
-            | Money    -> [ ( Money    , [ Money    ] ) ]
-            | Bottom   -> [ ( NotMoney , [ NotMoney ] ) ;
-                            ( Money    , [ Money    ] ) ]
-            | _        -> [ ( Top      , [ NotMoney ] ) ;
-                            ( Top      , [ Money    ] ) ] in
+            | NotMoney -> [ ( NotMoney     , [ NotMoney ] ) ]
+            | Money    -> [ ( Money        , [ Money    ] ) ]
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ] ) ;
+                            ( Money        , [ Money    ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ] ) ;
+                            ( Inconsistent , [ Money    ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ v1 ] ->
                 let v1_sig =
                   match v1 with
-                  | Money    -> [ ( Money    , [ Money    ] ) ] 
-                  | NotMoney -> [ ( NotMoney , [ NotMoney ] ) ]
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ] ) ;
-                                  ( Money    , [ Money    ] ) ]
-                  | _        -> [ ( Money    , [ Top      ] ) ;
-                                  ( NotMoney , [ Top      ] ) ] in
+                  | Money    -> [ ( Money    , [ Money        ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney     ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ] ) ;
+                                  ( Money    , [ Money        ] ) ]
+                  | _        -> [ ( Money    , [ Inconsistent ] ) ;
+                                  ( NotMoney , [ Inconsistent ] ) ] in
                 [ v1_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "schnorr_gen_key_pair" ->
           (* TODO: Support pairs *)
           let c_r_sigs =
-            [ ( Top , [ ] ) ] in
+            [ ( Inconsistent , [ ] ) ] in
           let c_as_sigs =
-            [ [ ( Top , List.map (fun _ -> Top) args_tags ) ] ] in
+            [ [ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ] ] in
           (c_r_sigs, c_as_sigs)
       | "sha256hash"
       | "keccak256hash"
@@ -666,20 +662,20 @@ module ScillaCashflowChecker
           let c_r_sigs =
             match res_tag with
             | NotMoney
-            | Bottom   -> [ ( NotMoney , [ NotMoney ] ) ]
-            | _        -> [ ( Top      , [ NotMoney ] ) ] in
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ] ) ] in
           let c_as_sigs = 
             match args_tags with
             | [ v1 ] ->
                 let v1_sig =
                   match v1 with
                   | NotMoney
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ] ) ]
-                  | _        -> [ ( NotMoney , [ Top      ] ) ] in
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ] ) ] in
                 [ v1_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "concat"
       | "blt"
@@ -688,25 +684,25 @@ module ScillaCashflowChecker
           let c_r_sigs =
             match res_tag with
             | NotMoney
-            | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ]
-            | _        -> [ ( Top      , [ NotMoney ; NotMoney ] ) ] in
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
                   | NotMoney
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ]
-                  | _        -> [ ( NotMoney , [ Top      ; NotMoney ] ) ] in
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
                 let v2_sig =
                   match v2 with
                   | NotMoney
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ] ) ]
-                  | _        -> [ ( NotMoney , [ NotMoney ; Top      ] ) ] in
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ]
+                  | _        -> [ ( NotMoney , [ NotMoney ; Inconsistent ] ) ] in
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "substr"
       | "schnorr_sign"
@@ -714,37 +710,37 @@ module ScillaCashflowChecker
           let c_r_sigs =
             match res_tag with
             | NotMoney
-            | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ; NotMoney ] ) ]
-            | _        -> [ ( Top      , [ NotMoney ; NotMoney ; NotMoney ] ) ] in
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ v1 ; v2 ; v3 ] ->
                 let v1_sig =
                   match v1 with
                   | NotMoney
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ; NotMoney ] ) ]
-                  | _        -> [ ( NotMoney , [ Top      ; NotMoney ; NotMoney ] ) ] in
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ; NotMoney ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ; NotMoney ; NotMoney ] ) ] in
                 let v2_sig =
                   match v2 with
                   | NotMoney
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ; NotMoney ] ) ]
-                  | _        -> [ ( NotMoney , [ NotMoney ; Top      ; NotMoney ] ) ] in
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ; NotMoney ] ) ]
+                  | _        -> [ ( NotMoney , [ NotMoney ; Inconsistent ; NotMoney ] ) ] in
                 let v3_sig =
                   match v3 with
                   | NotMoney
-                  | Bottom   -> [ ( NotMoney , [ NotMoney ; NotMoney ; NotMoney ] ) ]
-                  | _        -> [ ( NotMoney , [ NotMoney ; NotMoney ; Top      ] ) ] in
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney ; NotMoney     ] ) ]
+                  | _        -> [ ( NotMoney , [ NotMoney ; NotMoney ; Inconsistent ] ) ] in
                 [ v1_sig ; v2_sig ; v3_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Top , List.map (fun _ -> Top) args_tags ) ]] in
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | _ -> 
           (* Error *)
           let c_r_sigs =
-            [ ( Top , List.map (fun _ -> Top) args_tags ) ] in
+            [ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ] in
           let c_as_sigs =
-            [ [ ( Top , List.map (fun _ -> Top) args_tags ) ] ] in
+            [ [ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ] ] in
           (c_r_sigs, c_as_sigs) in
     lub_sigs c_r c_as
 
@@ -789,12 +785,12 @@ module ScillaCashflowChecker
       | Binder x -> lub_tags (get_id_tag x) acc_tag
       | Constructor (s, ps) ->
           match s with
-          | "None" -> lub_tags (Option Bottom) acc_tag
+          | "None" -> lub_tags (Option NoInfo) acc_tag
           | "Some" ->
               (match acc_tag with
-               | Bottom   -> Option (List.fold_left walk Bottom ps)
+               | NoInfo   -> Option (List.fold_left walk NoInfo ps)
                | Option t -> Option (List.fold_left walk t ps)
-               | _ -> Top)
+               | _ -> Inconsistent)
           | "True"
           | "False" -> lub_tags acc_tag NotMoney
           | "Pair" ->
@@ -803,12 +799,12 @@ module ScillaCashflowChecker
                      (match acc_tag with
                     | Pair (t1, t2) -> 
                         Pair (walk t1 ps1, walk t2 ps2)
-                    | Bottom ->
-                        Pair (walk Bottom ps1, walk Bottom ps2)
-                    | _ -> Top)
-               | _ -> Top)
-          | _ -> Top in
-    List.fold_left walk Bottom ps
+                    | NoInfo ->
+                        Pair (walk NoInfo ps1, walk NoInfo ps2)
+                    | _ -> Inconsistent)
+               | _ -> Inconsistent)
+          | _ -> Inconsistent in
+    List.fold_left walk NoInfo ps
   
   let update_var_tag_payload p local_env =
     match p with
@@ -817,7 +813,7 @@ module ScillaCashflowChecker
     | MVar v ->
         let tag =
           match AssocDictionary.lookup (get_id v) local_env with
-          | None -> Top (* Should not happen *)
+          | None -> Inconsistent (* Should not happen *)
           | Some t -> t in
         match v with
         | Ident (name, (_, rep)) -> CFSyntax.MVar (Ident (name, (tag, rep)))
@@ -839,8 +835,8 @@ module ScillaCashflowChecker
           let body_expected_tag =
             match expected_tag with
             | Map x -> x
-            | Bottom -> Bottom
-            | _     -> Top in
+            | NoInfo -> NoInfo
+            | _     -> Inconsistent in
           let body_local_env =
             AssocDictionary.insert (get_id arg) (get_id_tag arg) local_env in
           let ((_, (new_body_tag, _)) as new_body, res_field_env, res_body_local_env, body_changes) =
@@ -866,8 +862,8 @@ module ScillaCashflowChecker
           let new_e_tag = 
             match f_tag with
             | Map t -> t
-            | Bottom -> Bottom
-            | _     -> Top in
+            | NoInfo -> NoInfo
+            | _     -> Inconsistent in
           (App (new_f, new_args),
            new_e_tag,
            new_field_env,
@@ -926,16 +922,16 @@ module ScillaCashflowChecker
               (false, new_args) args in
           let tag =
             match cname with
-            | "None" -> Option Bottom
-            | "Some" -> Option (List.fold_left (fun _ arg -> (get_id_tag arg)) Bottom new_args)
+            | "None" -> Option NoInfo
+            | "Some" -> Option (List.fold_left (fun _ arg -> (get_id_tag arg)) NoInfo new_args)
             | "True"
             | "False" -> NotMoney
             | "Pair" ->
                 (match new_args with
                  | [ new_arg1; new_arg2 ] ->
                      Pair (get_id_tag new_arg1, get_id_tag new_arg2)
-                 | _ -> Top)
-            | _ -> Top in
+                 | _ -> Inconsistent)
+            | _ -> Inconsistent in
           (Constr (cname, ts, new_args),
            tag,
            field_env,
@@ -969,7 +965,7 @@ module ScillaCashflowChecker
            clause_changes || (get_id_tag x) <> new_x_tag)
       | Fixpoint (_f, _t, _body) ->
           (* TODO: Library functions and polymorphism not yet handled. *)
-          (e, Top, field_env, local_env, false)
+          (e, Inconsistent, field_env, local_env, false)
       | TFun (tvar, body) ->
           let ((_, (new_body_tag, _)) as new_body, new_field_env, new_local_env, changes) =
             cf_tag_expr body expected_tag field_env local_env in
@@ -993,7 +989,7 @@ module ScillaCashflowChecker
                        | "_amount" -> Money
                        | "_tag"
                        | "_recipient" -> NotMoney
-                       | _ -> Bottom in
+                       | _ -> NoInfo in
                      let old_env_tag = lookup_var_tag2 x acc_local_env acc_field_env in
                      let new_x_tag = lub_tags usage_tag old_env_tag in
                      let new_x = update_id_tag x new_x_tag in
@@ -1059,7 +1055,7 @@ module ScillaCashflowChecker
       | MapUpdate (m, ks, v_opt) ->
           let v_tag =
             match v_opt with
-            | None -> Bottom
+            | None -> NoInfo
             | Some v -> lookup_var_tag v local_env in
           let m_tag_usage = List.fold_left (fun acc _ -> Map acc) v_tag ks in
           let m_tag = lub_tags m_tag_usage (lookup_var_tag m field_env) in
@@ -1075,7 +1071,7 @@ module ScillaCashflowChecker
                     (fun acc_tag _ ->
                        match acc_tag with
                        | Map t -> t
-                       | _ -> Top) m_tag ks in
+                       | _ -> Inconsistent) m_tag ks in
                 let new_v_tag = lub_tags v_tag_usage v_tag in
                 let new_v = update_id_tag v new_v_tag in
                 let new_local_env =
@@ -1092,10 +1088,10 @@ module ScillaCashflowChecker
             then
               match x_tag with
               | Option t -> t
-              | Bottom -> Bottom
-              | _ -> Top
+              | NoInfo -> NoInfo
+              | _ -> Inconsistent
             else
-              Bottom in
+              NoInfo in
           let m_tag_usage =
             List.fold_left (fun acc _ -> Map acc) val_tag ks in
           let m_tag = lub_tags m_tag_usage (lookup_var_tag m field_env) in
@@ -1237,7 +1233,7 @@ module ScillaCashflowChecker
         List.fold_left
           (fun acc_env (f, _, e) ->
              let ((_, (e_tag, _)), _, _, _) =
-                  cf_tag_expr e Bottom (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) in
+                  cf_tag_expr e NoInfo (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) in
              AssocDictionary.insert (get_id f) e_tag acc_env)
           param_field_env
           cfields in
