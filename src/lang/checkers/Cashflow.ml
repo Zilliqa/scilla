@@ -58,13 +58,13 @@ module ScillaCashflowChecker
        val get_type : rep -> PlainTypes.t inferred_type
      end) = struct
 
-  module SMFR = SR
-  module EMFR = CashflowRep (ER)
+  module SCFR = SR
+  module ECFR = CashflowRep (ER)
   module TypedSyntax = ScillaSyntax (SR) (ER)
-  module MFSyntax = ScillaSyntax (SMFR) (EMFR)
+  module CFSyntax = ScillaSyntax (SCFR) (ECFR)
 
   open TypedSyntax
-  open EMFR
+  open ECFR
 
   (*******************************************************)
   (*     Initial traversal: Set every tag to Bottom      *)
@@ -73,165 +73,165 @@ module ScillaCashflowChecker
   (* Lift Ident (n, rep) to Ident (n, (Bottom, rep)) *)
   let add_bottom_to_ident i =
     match i with
-    | Ident (name, rep) -> Ident (name, (EMFR.Bottom, rep))
+    | Ident (name, rep) -> Ident (name, (ECFR.Bottom, rep))
   
-  let rec mf_init_tag_pattern p =
+  let rec cf_init_tag_pattern p =
     match p with
-    | Wildcard -> MFSyntax.Wildcard
-    | Binder x -> MFSyntax.Binder (add_bottom_to_ident x)
+    | Wildcard -> CFSyntax.Wildcard
+    | Binder x -> CFSyntax.Binder (add_bottom_to_ident x)
     | Constructor (cn, ps) ->
-        MFSyntax.Constructor (
+        CFSyntax.Constructor (
           cn,
-          List.map mf_init_tag_pattern ps)
+          List.map cf_init_tag_pattern ps)
 
-  let mf_init_tag_payload p =
+  let cf_init_tag_payload p =
     match p with
-    | MTag s -> MFSyntax.MTag s
-    | MLit l -> MFSyntax.MLit l
-    | MVar v -> MFSyntax.MVar (add_bottom_to_ident v)
+    | MTag s -> CFSyntax.MTag s
+    | MLit l -> CFSyntax.MLit l
+    | MVar v -> CFSyntax.MVar (add_bottom_to_ident v)
   
-  let rec mf_init_tag_expr erep =
+  let rec cf_init_tag_expr erep =
     let (e, rep) = erep in
     let res_e = 
       match e with
       | Literal l ->
-          MFSyntax.Literal l
+          CFSyntax.Literal l
       | Var i ->
-          MFSyntax.Var (add_bottom_to_ident i)
+          CFSyntax.Var (add_bottom_to_ident i)
       |  Fun (arg, t, body) ->
-          MFSyntax.Fun (
+          CFSyntax.Fun (
               add_bottom_to_ident arg,
               t,
-              mf_init_tag_expr body)
+              cf_init_tag_expr body)
       | App (f, actuals) ->
-          MFSyntax.App (
+          CFSyntax.App (
               add_bottom_to_ident f, 
               List.map add_bottom_to_ident actuals)
       | Builtin (i, actuals) ->
-          MFSyntax.Builtin (
+          CFSyntax.Builtin (
               add_bottom_to_ident i,
               List.map add_bottom_to_ident actuals)
       | Let (i, topt, lhs, rhs) ->
-          MFSyntax.Let (
+          CFSyntax.Let (
               add_bottom_to_ident i,
               topt,
-              mf_init_tag_expr lhs,
-              mf_init_tag_expr rhs)
+              cf_init_tag_expr lhs,
+              cf_init_tag_expr rhs)
       | Constr (cname, ts, actuals) ->
-          MFSyntax.Constr (
+          CFSyntax.Constr (
               cname,
               ts,
               List.map add_bottom_to_ident actuals)
       | MatchExpr (x, clauses) ->
-          MFSyntax.MatchExpr (
+          CFSyntax.MatchExpr (
               add_bottom_to_ident x,
               List.map (fun (p, e) ->
-                  (mf_init_tag_pattern p, mf_init_tag_expr e)) clauses)
+                  (cf_init_tag_pattern p, cf_init_tag_expr e)) clauses)
       | Fixpoint (f, t, body) ->
-          MFSyntax.Fixpoint (
+          CFSyntax.Fixpoint (
               add_bottom_to_ident f,
               t,
-              mf_init_tag_expr body)
+              cf_init_tag_expr body)
       | TFun (tvar, body) ->
-          MFSyntax.TFun (
+          CFSyntax.TFun (
               add_bottom_to_ident tvar,
-              mf_init_tag_expr body)
+              cf_init_tag_expr body)
       | TApp (tf, arg_types) ->
-          MFSyntax.TApp (
+          CFSyntax.TApp (
               add_bottom_to_ident tf,
               arg_types)
       | Message bs ->
-          MFSyntax.Message (
-              List.map (fun (s, p) -> (s, mf_init_tag_payload p)) bs) in
-    (res_e, (EMFR.Bottom, rep))
+          CFSyntax.Message (
+              List.map (fun (s, p) -> (s, cf_init_tag_payload p)) bs) in
+    (res_e, (ECFR.Bottom, rep))
 
-  let rec mf_init_tag_stmt srep =
+  let rec cf_init_tag_stmt srep =
     let (s, rep) = srep in
     let res_s = 
       match s with
       | Load (x, y) ->
-          MFSyntax.Load (
+          CFSyntax.Load (
             add_bottom_to_ident x,
             add_bottom_to_ident y)
       | Store (x, y) -> 
-          MFSyntax.Store (
+          CFSyntax.Store (
             add_bottom_to_ident x,
             add_bottom_to_ident y)
       | Bind (x, e) ->
-          MFSyntax.Bind (
+          CFSyntax.Bind (
             add_bottom_to_ident x,
-            mf_init_tag_expr e)
+            cf_init_tag_expr e)
       | MapUpdate (m, ks, v) ->
-          MFSyntax.MapUpdate (
+          CFSyntax.MapUpdate (
             add_bottom_to_ident m,
             List.map add_bottom_to_ident ks,
             match v with | None -> None | Some v' -> Some (add_bottom_to_ident v')
           )
       | MapGet (x, m, ks, retrieve) ->
-          MFSyntax.MapGet (
+          CFSyntax.MapGet (
             add_bottom_to_ident x,
             add_bottom_to_ident m,
             List.map add_bottom_to_ident ks,
             retrieve
           )
       | MatchStmt (x, pss) ->
-          MFSyntax.MatchStmt (
+          CFSyntax.MatchStmt (
             add_bottom_to_ident x,
             List.map (fun (p, ss) ->
-                (mf_init_tag_pattern p,
-                 List.map mf_init_tag_stmt ss)) pss)
+                (cf_init_tag_pattern p,
+                 List.map cf_init_tag_stmt ss)) pss)
       | ReadFromBC (x, s) ->
-          MFSyntax.ReadFromBC (
+          CFSyntax.ReadFromBC (
             add_bottom_to_ident x, s)
       | AcceptPayment ->
-          MFSyntax.AcceptPayment
+          CFSyntax.AcceptPayment
       | SendMsgs x ->
-          MFSyntax.SendMsgs (add_bottom_to_ident x)
+          CFSyntax.SendMsgs (add_bottom_to_ident x)
       | CreateEvnt x ->
-          MFSyntax.CreateEvnt (add_bottom_to_ident x)
+          CFSyntax.CreateEvnt (add_bottom_to_ident x)
       | Throw x ->
-          MFSyntax.Throw (add_bottom_to_ident x) in
+          CFSyntax.Throw (add_bottom_to_ident x) in
     (res_s, rep)
 
-  let mf_init_tag_transition transition =
+  let cf_init_tag_transition transition =
     let { tname ; tparams ; tbody } = transition in
-    { MFSyntax.tname = tname;
-      MFSyntax.tparams =
+    { CFSyntax.tname = tname;
+      CFSyntax.tparams =
         List.map (fun (x, t) -> (add_bottom_to_ident x, t)) tparams;
-      MFSyntax.tbody =
-        List.map mf_init_tag_stmt tbody }
+      CFSyntax.tbody =
+        List.map cf_init_tag_stmt tbody }
   
-  let mf_init_tag_contract contract =
+  let cf_init_tag_contract contract =
     let { cname ; cparams ; cfields ; ctrans } = contract in
-    { MFSyntax.cname = cname;
-      MFSyntax.cparams =
+    { CFSyntax.cname = cname;
+      CFSyntax.cparams =
         List.map (fun (x, t) -> (add_bottom_to_ident x, t)) cparams;
-      MFSyntax.cfields =
+      CFSyntax.cfields =
         List.map (fun (x, t, e) ->
             (add_bottom_to_ident x,
              t,
-             mf_init_tag_expr e)) cfields;
-      MFSyntax.ctrans =
-        List.map mf_init_tag_transition ctrans }
+             cf_init_tag_expr e)) cfields;
+      CFSyntax.ctrans =
+        List.map cf_init_tag_transition ctrans }
   
-  let mf_init_tag_library lib =
+  let cf_init_tag_library lib =
     let { lname ; lentries } = lib in
-    { MFSyntax.lname = lname;
-      MFSyntax.lentries = List.map
+    { CFSyntax.lname = lname;
+      CFSyntax.lentries = List.map
           (fun { lname ; lexp } ->
-             { MFSyntax.lname = add_bottom_to_ident lname ;
-               MFSyntax.lexp = mf_init_tag_expr lexp }) lentries }
+             { CFSyntax.lname = add_bottom_to_ident lname ;
+               CFSyntax.lexp = cf_init_tag_expr lexp }) lentries }
   
-  let mf_init_tag_module cmod =
+  let cf_init_tag_module cmod =
     let { cname; libs; elibs; contr } = cmod in
     let res_libs =
       match libs with
       | None -> None
-      | Some l -> Some (mf_init_tag_library l) in
-    { MFSyntax.cname = cname;
-      MFSyntax.libs = res_libs;
-      MFSyntax.elibs = elibs;
-      MFSyntax.contr = mf_init_tag_contract contr }
+      | Some l -> Some (cf_init_tag_library l) in
+    { CFSyntax.cname = cname;
+      CFSyntax.libs = res_libs;
+      CFSyntax.elibs = elibs;
+      CFSyntax.contr = cf_init_tag_contract contr }
   
   (*******************************************************)
   (*                  Find fixpoint                      *)
@@ -243,7 +243,7 @@ module ScillaCashflowChecker
   (* all declared local variable and their tags. Then    *)
   (* they are traversed again to extrapolate new tags.   *)
   (*******************************************************)
-  open MFSyntax
+  open CFSyntax
       
   (* Least upper bound in the money_tag lattice. *)
   let rec lub_tags t1 t2 =
@@ -812,17 +812,17 @@ module ScillaCashflowChecker
   
   let update_var_tag_payload p local_env =
     match p with
-    | MTag s -> MFSyntax.MTag s
-    | MLit l -> MFSyntax.MLit l
+    | MTag s -> CFSyntax.MTag s
+    | MLit l -> CFSyntax.MLit l
     | MVar v ->
         let tag =
           match AssocDictionary.lookup (get_id v) local_env with
           | None -> Top (* Should not happen *)
           | Some t -> t in
         match v with
-        | Ident (name, (_, rep)) -> MFSyntax.MVar (Ident (name, (tag, rep)))
+        | Ident (name, (_, rep)) -> CFSyntax.MVar (Ident (name, (tag, rep)))
 
-  let rec mf_tag_expr erep expected_tag field_env local_env =
+  let rec cf_tag_expr erep expected_tag field_env local_env =
     let lub t = lub_tags expected_tag t in
     let (e, (tag, rep)) = erep in
     let (new_e, new_e_tag, new_field_env, new_local_env, new_changes) = 
@@ -844,7 +844,7 @@ module ScillaCashflowChecker
           let body_local_env =
             AssocDictionary.insert (get_id arg) (get_id_tag arg) local_env in
           let ((_, (new_body_tag, _)) as new_body, res_field_env, res_body_local_env, body_changes) =
-            mf_tag_expr body body_expected_tag field_env body_local_env in
+            cf_tag_expr body body_expected_tag field_env body_local_env in
           let res_arg_tag = lookup_var_tag arg res_body_local_env in
           (Fun (update_id_tag arg res_arg_tag, t, new_body),
            Map new_body_tag,
@@ -903,10 +903,10 @@ module ScillaCashflowChecker
            changes || f_tag <> get_id_tag f)
       | Let (i, topt, lhs, rhs) ->
           let ((_, (new_lhs_tag, _)) as new_lhs, lhs_field_env, lhs_local_env, lhs_changes) =
-            mf_tag_expr lhs (get_id_tag i) field_env local_env in
+            cf_tag_expr lhs (get_id_tag i) field_env local_env in
           let updated_lhs_local_env = AssocDictionary.insert (get_id i) new_lhs_tag lhs_local_env in
           let ((_, (new_rhs_tag, _)) as new_rhs, rhs_field_env, rhs_local_env, rhs_changes) =
-            mf_tag_expr rhs expected_tag lhs_field_env updated_lhs_local_env in
+            cf_tag_expr rhs expected_tag lhs_field_env updated_lhs_local_env in
           let new_i_tag = lookup_var_tag i rhs_local_env in
           let new_i = update_id_tag i new_i_tag in
           let res_local_env = AssocDictionary.remove (get_id i) rhs_local_env in
@@ -948,7 +948,7 @@ module ScillaCashflowChecker
                  let sub_local_env =
                    insert_pattern_vars_into_env p acc_local_env in
                  let ((_, (new_e_tag, _)) as new_e, new_field_env, new_local_env, new_changes) =
-                   mf_tag_expr ep expected_tag acc_field_env sub_local_env in
+                   cf_tag_expr ep expected_tag acc_field_env sub_local_env in
                  let (new_p, p_changes) = update_pattern_vars_tags p new_local_env in
                  let res_local_env = remove_pattern_vars_from_env p new_local_env in
                  ((new_p, new_e) :: acc_clauses,
@@ -972,7 +972,7 @@ module ScillaCashflowChecker
           (e, Top, field_env, local_env, false)
       | TFun (tvar, body) ->
           let ((_, (new_body_tag, _)) as new_body, new_field_env, new_local_env, changes) =
-            mf_tag_expr body expected_tag field_env local_env in
+            cf_tag_expr body expected_tag field_env local_env in
           (TFun (tvar, new_body), new_body_tag, new_field_env, new_local_env, changes)
       | TApp (tf, arg_types) ->
           let tf_env_tag = lookup_var_tag2 tf local_env field_env in
@@ -1009,7 +1009,7 @@ module ScillaCashflowChecker
     let e_tag = lub new_e_tag in
     ((new_e, (e_tag, rep)), new_field_env, new_local_env, new_changes || tag <> e_tag)
     
-  let mf_update_tag_for_field_assignment f x field_env local_env =
+  let cf_update_tag_for_field_assignment f x field_env local_env =
     let x_tag = lookup_var_tag x local_env in
     let f_tag = lookup_var_tag f field_env in
     let new_tag = lub_tags x_tag f_tag in
@@ -1025,13 +1025,13 @@ module ScillaCashflowChecker
          let i_tag = lookup_var_tag i env in
          update_id_tag i i_tag) ids
   
-  let rec mf_tag_stmt (srep : MFSyntax.stmt_annot) field_env local_env =
+  let rec cf_tag_stmt (srep : CFSyntax.stmt_annot) field_env local_env =
     let (s, rep) = srep in
     let (new_s, new_field_env, new_local_env, changes) =
       match s with
       | Load (x, f) ->
           let (new_f, new_x, new_field_env, tmp_local_env) =
-            mf_update_tag_for_field_assignment f x field_env local_env in
+            cf_update_tag_for_field_assignment f x field_env local_env in
           (* x is no longer in scope, so remove from local_env *)
           let new_local_env = AssocDictionary.remove (get_id x) tmp_local_env in
           (Load (new_x, new_f),
@@ -1040,7 +1040,7 @@ module ScillaCashflowChecker
            (get_id_tag new_x) <> (get_id_tag x) || (get_id_tag new_f) <> (get_id_tag f))
       | Store (f, x) ->
           let (new_f, new_x, new_field_env, new_local_env) =
-            mf_update_tag_for_field_assignment f x field_env local_env in
+            cf_update_tag_for_field_assignment f x field_env local_env in
           (Store (new_f, new_x),
            new_field_env,
            new_local_env,
@@ -1049,7 +1049,7 @@ module ScillaCashflowChecker
           let x_tag = lookup_var_tag x local_env in
           let e_local_env = AssocDictionary.remove (get_id x) local_env in
           let ((_, (new_e_tag, _)) as new_e, new_field_env, new_local_env, e_changes) =
-            mf_tag_expr e x_tag field_env e_local_env in
+            cf_tag_expr e x_tag field_env e_local_env in
           let new_x_tag = lub_tags x_tag new_e_tag in
           let new_x = update_id_tag x new_x_tag in
           (Bind (new_x, new_e),
@@ -1121,7 +1121,7 @@ module ScillaCashflowChecker
                  let sub_local_env =
                    insert_pattern_vars_into_env p acc_local_env in
                  let (new_stmts, new_field_env, s_local_env, s_changes) =
-                   mf_tag_stmts sp acc_field_env sub_local_env in
+                   cf_tag_stmts sp acc_field_env sub_local_env in
                  let (new_p, p_changes) = update_pattern_vars_tags p s_local_env in
                  let new_local_env = remove_pattern_vars_from_env p s_local_env in
                  ((new_p, new_stmts) :: acc_clauses,
@@ -1173,7 +1173,7 @@ module ScillaCashflowChecker
            (get_id_tag x) <> x_tag) in
     ((new_s, rep), new_field_env, new_local_env, changes)
 
-    and mf_tag_stmts ss field_env local_env =
+    and cf_tag_stmts ss field_env local_env =
       let init_local_env =
         List.fold_left
           (fun acc_env srep ->
@@ -1188,7 +1188,7 @@ module ScillaCashflowChecker
       List.fold_right
         (fun s (acc_ss, acc_field_env, acc_local_env, acc_changes) ->
            let (new_s, new_field_env, new_local_env, new_changes) =
-             mf_tag_stmt s acc_field_env acc_local_env in
+             cf_tag_stmt s acc_field_env acc_local_env in
            (new_s :: acc_ss,
             new_field_env,
             new_local_env,
@@ -1196,7 +1196,7 @@ module ScillaCashflowChecker
         ss
         ([], field_env, init_local_env, false)
 
-    let mf_tag_transition t field_env =
+    let cf_tag_transition t field_env =
       let { tname ; tparams ; tbody } = t in
 
       let empty_local_env = AssocDictionary.make_dict() in
@@ -1211,7 +1211,7 @@ module ScillaCashflowChecker
           implicit_local_env
           tparams in
       let (new_tbody, new_field_env, new_local_env, body_changes) =
-        mf_tag_stmts tbody field_env param_local_env in
+        cf_tag_stmts tbody field_env param_local_env in
       let (new_params, new_changes) =
         List.fold_right
           (fun (p, typ) (acc_ps, acc_changes) ->
@@ -1223,7 +1223,7 @@ module ScillaCashflowChecker
        new_field_env,
        new_changes)
 
-    let mf_tag_contract c =
+    let cf_tag_contract c =
       let { cname ; cparams ; cfields ; ctrans } = c in
       let empty_field_env = AssocDictionary.make_dict () in
       let implicit_field_env = AssocDictionary.insert "_balance" Money empty_field_env in
@@ -1237,7 +1237,7 @@ module ScillaCashflowChecker
         List.fold_left
           (fun acc_env (f, _, e) ->
              let ((_, (e_tag, _)), _, _, _) =
-                  mf_tag_expr e Bottom (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) in
+                  cf_tag_expr e Bottom (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) in
              AssocDictionary.insert (get_id f) e_tag acc_env)
           param_field_env
           cfields in
@@ -1246,7 +1246,7 @@ module ScillaCashflowChecker
           List.fold_right
             (fun t (acc_ts, acc_field_env, acc_changes) ->
                let (new_t, new_field_env, t_changes) =
-                 mf_tag_transition t acc_field_env in
+                 cf_tag_transition t acc_field_env in
                (new_t :: acc_ts, new_field_env, acc_changes || t_changes))
             transitions ([], field_env, false) in
         if ctrans_changes
@@ -1271,9 +1271,9 @@ module ScillaCashflowChecker
         cfields = new_fields ;
         ctrans = new_ctrans }
 
-    let mf_tag_module m =
+    let cf_tag_module m =
       let { cname ; libs ; elibs ; contr } = m in
-      let new_contr = mf_tag_contract contr in
+      let new_contr = cf_tag_contract contr in
       { cname = cname ;
         libs = libs ;
         elibs = elibs ;
@@ -1284,8 +1284,8 @@ module ScillaCashflowChecker
   (*******************************************************)
 
   let main cmod =
-    let init_mod = mf_init_tag_module cmod in
-    let new_mod = mf_tag_module init_mod in
+    let init_mod = cf_init_tag_module cmod in
+    let new_mod = cf_tag_module init_mod in
     (List.map (fun (p, _) -> (get_id p, get_id_tag p)) new_mod.contr.cparams)
     @
     (List.map (fun (f, _, _) -> (get_id f, get_id_tag f)) new_mod.contr.cfields)

@@ -46,7 +46,7 @@ module PMCERep = PMC.EPR
 
 module SC = ScillaSanityChecker (PMCSRep) (PMCERep)
 module EI = ScillaEventInfo (PMCSRep) (PMCERep)
-module MF = ScillaCashflowChecker (TCSRep) (TCERep)
+module CF = ScillaCashflowChecker (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr  = 
@@ -105,15 +105,15 @@ let () =
       let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr)  in
       let _ = if cli.cf_flag
         then
-          let mf_field_tags = MF.main typed_cmod in
+          let cf_field_tags = CF.main typed_cmod in
           let j = `Assoc [
               ("tags",
                `List
                  (List.map
-                    mf_field_tags
+                    cf_field_tags
                     ~f:(fun (i, t) ->
                         `Assoc [("field", `String i);
-                                ("tag", `String (MF.EMFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string))])))
+                                ("tag", `String (CF.ECFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string))])))
             ] in
           pout (sprintf "%s\n" (Yojson.pretty_to_string j)); ()
         else
