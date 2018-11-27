@@ -11,8 +11,8 @@ Legend:
 
 b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Uint32 with size 4)
 c: Pair of (book_title)(author)
+d: bookID
 a: bookInventory
-d: Container around: bookID
 
 Gas use polynomial for transition removeBook:
 1

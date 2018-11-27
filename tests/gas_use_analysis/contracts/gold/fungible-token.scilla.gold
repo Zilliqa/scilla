@@ -4,7 +4,7 @@ Legend:
 
 c: Message (Value of String with size 20,tokenOwner,Value of Uint128 with size 16)
 a: balances
-b: Message (Value of String with size 20,tokenOwner,Component of: Result of builtin get(balances,tokenOwner))
+b: Message (Value of String with size 20,tokenOwner,Result of builtin get(balances,tokenOwner))
 
 Gas use polynomial for transition TotalSupply:
 2 + 1(a)
@@ -17,28 +17,28 @@ Gas use polynomial for transition Transfer:
 Legend:
 
 b: Component of: balances
+d: max (tokens,Result of builtin add(Component of: balances,tokens))
 f: Message (Value of String with size 20,_sender,to,Value of Uint128 with size 16)
 c: Result of builtin sub(tokens,tokens)
 e: Message (Value of String with size 20,_sender,to,tokens)
 a: balances
-d: max (tokens,Result of builtin add(Component of: Component of: balances,tokens))
 
 Gas use polynomial for transition TransferFrom:
 1(a) + 1(b) + 109 + 1(c) + 1(d) + 2(e) + 1(f) + 1(g) + 1(h) + 1(i) + 1(j) + 1(k) + 3(l)
 Legend:
 
+j: Result of builtin put(allowed,from,Result of builtin put(Result of builtin get(allowed,from),_sender,Result of builtin sub(tokens,tokens)))
+e: Length of: Result of builtin put(balances,from,Result of builtin sub(First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
 b: allowed
-h: Length of: Component of: Result of builtin get(allowed,from)
-d: Result of builtin put(balances,from,Result of builtin sub(Component of: First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Component of: Result of builtin get(allowed,from),_sender)),tokens))
 l: Message (Value of String with size 20,from,to,Value of Uint128 with size 16)
-j: Result of builtin put(allowed,from,Result of builtin put(Component of: Result of builtin get(allowed,from),_sender,Result of builtin sub(tokens,tokens)))
+d: Result of builtin put(balances,from,Result of builtin sub(First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
 i: Length of: allowed
 k: Message (Value of String with size 20,from,to,tokens)
+h: Length of: Result of builtin get(allowed,from)
+g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to,tokens)
 a: balances
-g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(Component of: First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Component of: Result of builtin get(allowed,from),_sender)),tokens)),to,tokens)
-f: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(Component of: First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Component of: Result of builtin get(allowed,from),_sender)),tokens)),to,Result of builtin add(Component of: Result of builtin get(Result of builtin put(balances,from,Result of builtin sub(Component of: First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Component of: Result of builtin get(allowed,from),_sender)),tokens)),to),tokens))
 c: Length of: balances
-e: Length of: Result of builtin put(balances,from,Result of builtin sub(Component of: First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Component of: Result of builtin get(allowed,from),_sender)),tokens))
+f: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to,Result of builtin add(Result of builtin get(Result of builtin put(balances,from,Result of builtin sub(First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to),tokens))
 
 Gas use polynomial for transition Approve:
 4 + 1(a) + 1(b)
@@ -52,7 +52,7 @@ Gas use polynomial for transition Allowance:
 Legend:
 
 c: Message (Value of String with size 20,tokenOwner,spender,Value of Uint128 with size 16)
-b: Message (Value of String with size 20,tokenOwner,spender,Component of: Result of builtin get(Component of: Result of builtin get(allowed,tokenOwner),spender))
+b: Message (Value of String with size 20,tokenOwner,spender,Result of builtin get(Result of builtin get(allowed,tokenOwner),spender))
 a: allowed
 
 {

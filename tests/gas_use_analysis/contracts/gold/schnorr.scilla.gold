@@ -2,10 +2,10 @@ Gas use polynomial for transition sign_and_verify:
 1(a) + 1(b) + 1010 + 45(c) + 2(d) + 1(e) + 1(f) + 1(g) + 1(h) + 1(i)
 Legend:
 
+h: Second component of the Pair: SApp schnorr_gen_key_pair( )
 b: priv_key
 a: pub_key
-h: Container around: Second component of the Pair: SApp schnorr_gen_key_pair( )
-g: Container around: First component of the Pair: SApp schnorr_gen_key_pair( )
+g: First component of the Pair: SApp schnorr_gen_key_pair( )
 f: Cost of calling schnorr_gen_key_pair()
 e: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 24)
 i: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Result of builtin schnorr_sign(First component of the Pair: SApp schnorr_gen_key_pair( ),Second component of the Pair: SApp schnorr_gen_key_pair( ),msg))

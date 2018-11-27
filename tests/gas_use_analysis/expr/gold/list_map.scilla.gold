@@ -1,7 +1,7 @@
 forall 'A. forall 'B. ('A -> 'B) -> List ('A) -> List ('B)
 Gas usage polynomial:
 Parameter list: ( f l )
-5(a) + 1(a)(b) + 11
+5(a) + 1(b)(a) + 11
 Legend:
 
 a: Length of: l

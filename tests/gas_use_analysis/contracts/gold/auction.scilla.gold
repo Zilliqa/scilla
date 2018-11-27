@@ -8,9 +8,9 @@ a: ended
 h: _amount
 d: highestBidder
 i: Message (Value of String with size 20,Value of Int32 with size 4,_sender,_amount)
+g: _sender
 e: Component of: pendingReturns
-f: max (highestBid,Result of builtin add(highestBid,Component of: Component of: pendingReturns))
-g: Container around: _sender
+f: max (highestBid,Result of builtin add(highestBid,Component of: pendingReturns))
 
 Gas use polynomial for transition Withdraw:
 1(a) + 23 + 1(b) + 1(c) + 1(d)
@@ -18,7 +18,7 @@ Legend:
 
 b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
 a: pendingReturns
-d: Container around: Message (Value of String with size 20,_sender,Component of: Result of builtin get(pendingReturns,_sender),Value of Int32 with size 4)
+d: Container around: Message (Value of String with size 20,_sender,Result of builtin get(pendingReturns,_sender),Value of Int32 with size 4)
 c: Message (Value of String with size 20,_sender)
 
 Gas use polynomial for transition AuctionEnd:

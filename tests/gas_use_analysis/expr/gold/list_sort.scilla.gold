@@ -1,7 +1,7 @@
 forall 'A. ('A -> 'A -> Bool) -> List ('A) -> List ('A)
 Gas usage polynomial:
 Parameter list: ( flt ls )
-14(a) + 19(a)(b) + 1(a)(b)(c) + 16
+14(a) + 19(b)(a) + 1(b)(c)(a) + 16
 Legend:
 
 c: Cost of calling flt(Component of: Value of List with size 0, Component of: ls)

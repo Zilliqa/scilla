@@ -2,13 +2,13 @@ Gas use polynomial for transition Play:
 1(a) + 224 + 4(b) + 1(c) + 1(d) + 2(e) + 1(f) + 1(g)
 Legend:
 
+d: max (guess,player_a_hash)
 c: player_a_hash
 a: timer
 b: Container around: Message (Value of String with size 4,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
 f: player_b_hash
-g: max (Container around: guess,Container around: Component of: player_b_hash)
-e: max (Container around: Result of builtin badd(Value of Uint32 with size 4,Value of Uint32 with size 4),Container around: Component of: timer)
-d: max (Container around: guess,Container around: Component of: player_a_hash)
+g: max (guess,player_b_hash)
+e: max (Result of builtin badd(Value of Uint32 with size 4,Value of Uint32 with size 4),timer)
 
 Gas use polynomial for transition ClaimReward:
 1(a) + 310 + 2(b) + 1(c) + 1(d) + 30(e) + 1(f) + 1(g)

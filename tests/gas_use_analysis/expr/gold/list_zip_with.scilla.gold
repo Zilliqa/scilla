@@ -5,6 +5,6 @@ Parameter list: ( f m1 m2 )
 Legend:
 
 b: Length of: m1
-a: Length of: First component of the Pair: max (Pair of (Value of List with size 0)(m2),Pair of (Container around: SApp f( m1,Component of: max (Value of Option with size 0,Container around: Component of: Second component of the Pair: Pair of (Value of List with size 0)(m2))))(max (Value of List with size 0,Component of: max (Value of Option with size 0,Container around: Second component of the Pair: Pair of (Value of List with size 0)(m2)))))
-c: Cost of calling f(Component of: m1, Component of: max (Value of Option with size 0,Container around: Component of: Second component of the Pair: Pair of (Value of List with size 0)(m2)))
+a: Length of: First component of the Pair: max (Pair of (Value of List with size 0)(m2),Pair of (Container around: SApp f( m1,max (Value of Option with size 0,Component of: Second component of the Pair: Pair of (Value of List with size 0)(m2))))(max (Value of List with size 0,max (Value of Option with size 0,Second component of the Pair: Pair of (Value of List with size 0)(m2)))))
+c: Cost of calling f(Component of: m1, max (Value of Option with size 0,Component of: Second component of the Pair: Pair of (Value of List with size 0)(m2)))
 

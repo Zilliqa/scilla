@@ -2,14 +2,14 @@ Gas use polynomial for transition balanceOf:
 8 + 1(a) + 1(b)
 Legend:
 
+b: Message (Value of String with size 20,max (Value of Uint256 with size 32,Component of: ownedTokenCount))
 a: Component of: ownedTokenCount
-b: Message (Value of String with size 20,max (Value of Uint256 with size 32,Component of: Component of: ownedTokenCount))
 
 Gas use polynomial for transition ownerOf:
 12 + 1(a) + 1(b) + 1(c)
 Legend:
 
-b: Message (Value of String with size 20,tokenId,Component of: Component of: tokenOwnerMap)
+b: Message (Value of String with size 20,tokenId,Component of: tokenOwnerMap)
 a: Component of: tokenOwnerMap
 c: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
 
@@ -21,9 +21,9 @@ f: Value of Uint256 with size 32
 c: Component of: ownedTokenCount
 a: tokenOwnerMap
 g: Message (Value of String with size 20,_sender,to,tokenId)
-e: Result of builtin add(Component of: Component of: ownedTokenCount,Value of Uint256 with size 32)
 d: to
 b: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
+e: Result of builtin add(Component of: ownedTokenCount,Value of Uint256 with size 32)
 
 Gas use polynomial for transition transferFrom:
 215 + 1(a) + 1(b) + 1(c) + 1(d) + 4(e) + 1(f) + 1(g) + 1(h) + 1(i) + 1(j) + 1(k) + 1(l)
@@ -31,15 +31,15 @@ Legend:
 
 a: Component of: tokenOwnerMap
 l: Message (Value of String with size 23,_sender,to,tokenId)
-j: Result of builtin sub(Component of: Component of: ownedTokenCount,Value of Uint256 with size 32)
 b: tokenOwnerMap
 h: to
 f: Component of: ownedTokenCount
 g: Component of: ownedTokenCount
 d: operatorApprovals
 i: ownedTokenCount
-k: max (Value of Uint256 with size 32,Result of builtin add(Component of: Component of: ownedTokenCount,Value of Uint256 with size 32))
+j: Result of builtin sub(Component of: ownedTokenCount,Value of Uint256 with size 32)
 c: tokenApprovals
+k: max (Value of Uint256 with size 32,Result of builtin add(Component of: ownedTokenCount,Value of Uint256 with size 32))
 e: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
 
 Gas use polynomial for transition approve:

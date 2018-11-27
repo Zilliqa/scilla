@@ -510,7 +510,9 @@ module ScillaGUA
       | "Some" ->
         (* TypeChecker will ensure that plist has unit length. *)
         let arg = List.nth plist 0 in
-        bind_pattern genv (Component(msref)) arg
+        (* Note: Not wrapping with "Component" to simplify the output. *)
+        (* bind_pattern genv (Component(msref)) arg *)
+        bind_pattern genv (msref) arg
       | "Cons" ->
         (* TypeChecker will ensure that plist has two elements. *)
         let arg0 = List.nth plist 0 in
@@ -700,6 +702,7 @@ module ScillaGUA
           (* TypeChecker will ensure that actuals has unit length. *)
           let arg = List.nth actuals 0 in
           let%bind (_, compsize, _) = GUAEnv.resolvS genv (get_id arg) ~lopt:(Some(get_rep arg)) in
+          if cname = "Some" then pure compsize else
           pure @@ Container(compsize)
         | "Pair" ->
           (* TypeChecker will ensure that actuals has two elements. *)
@@ -794,9 +797,43 @@ module ScillaGUA
     let gapp'' = GUAEnv.addS genv' "list_foldl" list_foldl_signature in
     gapp''
 
+  let rec simplify_sizeref sr =
+    match sr with
+    | Component sr' ->
+      (match sr' with
+      | Container sr'' -> simplify_sizeref sr''
+      | _ -> Component (simplify_sizeref sr'))
+    | Container sr' ->
+      ( match sr' with
+      | Component sr'' -> simplify_sizeref sr''
+      | _ -> Container (simplify_sizeref sr'))
+    | Base _ as b -> b
+    | Length s' -> Length (simplify_sizeref s')
+    | Fst s' -> Fst (simplify_sizeref s')
+    | Snd s' -> Snd (simplify_sizeref s')
+    | PairS (s1', s2') -> PairS (simplify_sizeref s1', simplify_sizeref s2')
+    | BranchTaken (i, sr) -> BranchTaken (i, simplify_sizeref sr)
+    | MsgS srlist ->
+      let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
+      MsgS (srlist')
+    | BApp (b, srlist) ->
+      let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
+      BApp (b, srlist')
+    | MFun (s, srlist) ->
+      let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
+      MFun (s, srlist')
+    | SApp (id, srlist) ->
+      let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
+      SApp (id, srlist')
+
   (* Expand polynomials that contain GPol. *)
-  let expand_parameters pol =
-    expand_parameters_pn pol ~f:(function | SizeOf _ | GApp _ -> None | GPol p -> Some p)
+  let rec expand_parameters pol =
+    expand_parameters_pn pol ~f:(function 
+    | SizeOf sr -> Some (single_simple_pn (SizeOf (simplify_sizeref sr)))
+    | GApp (i, srlist) ->
+      let srlist' = List.map (fun sr -> simplify_sizeref sr) srlist in
+      Some (single_simple_pn (GApp (i, srlist')))
+    | GPol p -> Some (expand_parameters p))
 
   (* Return gas use and result sizeref polynomials of evaluating a sequence of statements. *)
   let rec gua_stmt genv gupol (stmts : stmt_annot list) =
