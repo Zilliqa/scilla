@@ -103,21 +103,29 @@ let () =
       let%bind pm_checked_cmod = check_patterns typed_cmod  in
       let%bind _ = check_sanity pm_checked_cmod.contr  in
       let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr)  in
-      let mf_field_tags = MF.main typed_cmod in
-      pure @@ (cmod, mf_field_tags, tenv, event_info)
+      let _ = if cli.mfc_flag
+        then
+          let mf_field_tags = MF.main typed_cmod in
+          let j = `Assoc [
+              ("tags",
+               `List
+                 (List.map
+                    mf_field_tags
+                    ~f:(fun (i, t) ->
+                        `Assoc [("field", `String i);
+                                ("tag", `String (MF.EMFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string))])))
+            ] in
+          pout (sprintf "%s\n" (Yojson.pretty_to_string j)); ()
+        else
+          ()
+      in
+      pure @@ (cmod, tenv, event_info)
     ) in
     match r with
     | Error el -> exit 1 (* we've already printed the error(s). *)
-    | Ok (cmod, mf_field_tags, _, event_info) ->
+    | Ok (cmod, _, event_info) ->
       let j = `Assoc [
         ("contract_info", (JSON.ContractInfo.get_json cmod.contr event_info));
         ("warnings", scilla_warning_to_json (get_warnings()));
-        ("tags",
-           `List
-             (List.map
-                mf_field_tags
-                ~f:(fun (i, t) ->
-                    `Assoc [("field", `String i);
-                            ("tag", `String (MF.EMFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string))])))
       ] in
       pout (sprintf "%s\n" (Yojson.pretty_to_string j));
