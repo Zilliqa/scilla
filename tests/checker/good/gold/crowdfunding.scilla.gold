@@ -1,33 +1,33 @@
 {
   "contract_info": {
-    "name": "Crowdfunding",
+    "vname": "Crowdfunding",
     "params": [
-      { "name": "owner", "type": "ByStr20" },
-      { "name": "max_block", "type": "BNum" },
-      { "name": "goal", "type": "Uint128" }
+      { "vname": "owner", "type": "ByStr20" },
+      { "vname": "max_block", "type": "BNum" },
+      { "vname": "goal", "type": "Uint128" }
     ],
     "fields": [
-      { "name": "backers", "type": "Map (ByStr20) (Uint128)" },
-      { "name": "funded", "type": "Bool" }
+      { "vname": "backers", "type": "Map (ByStr20) (Uint128)" },
+      { "vname": "funded", "type": "Bool" }
     ],
     "transitions": [
-      { "name": "Donate", "params": [] },
-      { "name": "GetFunds", "params": [] },
-      { "name": "ClaimBack", "params": [] }
+      { "vname": "Donate", "params": [] },
+      { "vname": "GetFunds", "params": [] },
+      { "vname": "ClaimBack", "params": [] }
     ],
     "events": [
       {
-        "name": "ClaimedBack",
+        "vname": "ClaimedBack",
         "params": [
-          { "name": "claimed_by", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" }
+          { "vname": "claimed_by", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
         ]
       },
       {
-        "name": "DonationAccepted",
+        "vname": "DonationAccepted",
         "params": [
-          { "name": "donor", "type": "ByStr20" },
-          { "name": "amount", "type": "Uint128" }
+          { "vname": "donor", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
         ]
       }
     ]
