@@ -30,7 +30,7 @@ open PatternChecker
 open SanityChecker
 open Recursion
 open EventInfo
-open MoneyFlowChecker
+open Cashflow
 
 module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
@@ -46,7 +46,7 @@ module PMCERep = PMC.EPR
 
 module SC = ScillaSanityChecker (PMCSRep) (PMCERep)
 module EI = ScillaEventInfo (PMCSRep) (PMCERep)
-module MF = ScillaMoneyFlowChecker (TCSRep) (TCERep)
+module MF = ScillaCashflowChecker (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr  = 
@@ -103,7 +103,7 @@ let () =
       let%bind pm_checked_cmod = check_patterns typed_cmod  in
       let%bind _ = check_sanity pm_checked_cmod.contr  in
       let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr)  in
-      let _ = if cli.mfc_flag
+      let _ = if cli.cf_flag
         then
           let mf_field_tags = MF.main typed_cmod in
           let j = `Assoc [

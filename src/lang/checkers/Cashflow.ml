@@ -19,7 +19,7 @@ open Syntax
 open TypeUtil
 open Utils
 
-module MoneyFlowRep (R : Rep) = struct
+module CashflowRep (R : Rep) = struct
   type money_tag =
     | Bottom
     | NotMoney
@@ -51,7 +51,7 @@ module MoneyFlowRep (R : Rep) = struct
 end
 
 
-module ScillaMoneyFlowChecker
+module ScillaCashflowChecker
     (SR : Rep)
     (ER : sig
        include Rep
@@ -59,7 +59,7 @@ module ScillaMoneyFlowChecker
      end) = struct
 
   module SMFR = SR
-  module EMFR = MoneyFlowRep (ER)
+  module EMFR = CashflowRep (ER)
   module TypedSyntax = ScillaSyntax (SR) (ER)
   module MFSyntax = ScillaSyntax (SMFR) (EMFR)
 
