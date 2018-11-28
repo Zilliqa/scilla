@@ -3,8 +3,8 @@ Gas use polynomial for transition Donate:
 Legend:
 
 a: backers
-d: max (Value of Option with size 0,Result of builtin put(backers,_sender,_amount))
 c: Message (Value of String with size 20,_sender,_amount,Value of Int32 with size 4)
+d: Max (Value of Option with size 0,Result of builtin put(backers,_sender,_amount))
 b: Length of: backers
 
 Gas use polynomial for transition GetFunds:

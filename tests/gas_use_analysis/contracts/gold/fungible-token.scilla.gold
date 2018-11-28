@@ -17,8 +17,8 @@ Gas use polynomial for transition Transfer:
 Legend:
 
 b: Component of: balances
-d: max (tokens,Result of builtin add(Component of: balances,tokens))
 f: Message (Value of String with size 20,_sender,to,Value of Uint128 with size 16)
+d: Max (tokens,Result of builtin add(Component of: balances,tokens))
 c: Result of builtin sub(tokens,tokens)
 e: Message (Value of String with size 20,_sender,to,tokens)
 a: balances
@@ -28,17 +28,17 @@ Gas use polynomial for transition TransferFrom:
 Legend:
 
 j: Result of builtin put(allowed,from,Result of builtin put(Result of builtin get(allowed,from),_sender,Result of builtin sub(tokens,tokens)))
-e: Length of: Result of builtin put(balances,from,Result of builtin sub(First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
 b: allowed
+e: Length of: Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens))
 l: Message (Value of String with size 20,from,to,Value of Uint128 with size 16)
-d: Result of builtin put(balances,from,Result of builtin sub(First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
+g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens)),to,tokens)
 i: Length of: allowed
 k: Message (Value of String with size 20,from,to,tokens)
 h: Length of: Result of builtin get(allowed,from)
-g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to,tokens)
 a: balances
 c: Length of: balances
-f: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to,Result of builtin add(Result of builtin get(Result of builtin put(balances,from,Result of builtin sub(First component of the Pair: Pair of (Result of builtin get(balances,from))(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to),tokens))
+f: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens)),to,Result of builtin add(Result of builtin get(Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens)),to),tokens))
+d: Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens))
 
 Gas use polynomial for transition Approve:
 4 + 1(a) + 1(b)

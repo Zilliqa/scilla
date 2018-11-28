@@ -24,15 +24,6 @@ open MonadUtil
 open Polynomial
 open Core.Result.Let_syntax
 
-(* If this setting is set to true, then the analysis just sums
- * up the gas use polynomials of all branches of a "match-with".
- * This makes the output "pretty", but is slightly less precise.
- * Otherwise, a "probability parameter" is assigned to each branch
- * which acts as a weight, and a weighted sum of the polynomials
- * of all branches is computed. This makes the output "ugly", but
- * more informative. *)
-let merge_branch_polynomials = true
-
 module ScillaGUA
     (SR : Rep)
     (ER : sig
@@ -72,8 +63,8 @@ module ScillaGUA
     | PairS of sizeref * sizeref
     (* To represent a message, each sizeref its components. *)
     | MsgS of sizeref list
-    (* Depends on which Branch "i" of `match ident with` is taken. *)
-    | BranchTaken of int * sizeref
+    (* An abstract maximum across branches. *)
+    | MaxB of sizeref list
     (* Arbitrary math function of sizerefs. *)
     | MFun of string * sizeref list
     (* Result of a builtin. *)
@@ -123,7 +114,8 @@ module ScillaGUA
     | PairS (sr1, sr2) -> "Pair of (" ^ (sprint_sizeref sr1) ^ ")(" ^ (sprint_sizeref sr2) ^ ")"
     | MsgS srlist -> "Message (" ^
       (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
-    | BranchTaken (i, s) -> (Printf.sprintf "Probability of branch %d in MatchExpr %s" i (sprint_sizeref s))
+    | MaxB srlist ->  "Max (" ^
+      (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
     | MFun (s, srlist) -> s ^ " (" ^
       (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
     | BApp (b, srlist) -> "Result of builtin " ^ b ^ "(" ^
@@ -229,13 +221,15 @@ module ScillaGUA
           | Snd s' -> Snd (replacer s')
           | Container s' -> Container (replacer s')
           | PairS (s1', s2') -> PairS (replacer s1', replacer s2')
-          | BranchTaken (i, sr) -> BranchTaken (i, replacer sr)
           | MsgS srlist ->
             let srlist' = List.map (fun v -> replacer v) srlist in
             MsgS (srlist')
           | BApp (b, srlist) ->
             let srlist' = List.map (fun v -> replacer v) srlist in
             BApp (b, srlist')
+          | MaxB srlist ->
+            let srlist' = List.map (fun v -> replacer v) srlist in
+            MaxB (srlist')
           | MFun (s, srlist) ->
             let srlist' = List.map (fun v -> replacer v) srlist in
             MFun (s, srlist')
@@ -310,15 +304,15 @@ module ScillaGUA
         let%bind r1 = replacer s1' in
         let%bind r2 = replacer s2' in
         pure @@ PairS (r1, r2)
-      | BranchTaken (i, sr) ->
-        let%bind r = replacer sr in
-        pure @@ BranchTaken (i, r)
       | MsgS srlist ->
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ MsgS (srlist')
       | BApp (b, srlist) ->
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ BApp (b, srlist')
+      | MaxB srlist ->
+        let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
+        pure @@ MaxB srlist'
       | MFun (s, srlist) ->
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ MFun (s, srlist')
@@ -429,15 +423,15 @@ module ScillaGUA
             let%bind r1 = resolver s1' in
             let%bind r2 = resolver s2' in
             pure @@ PairS (r1, r2)
-          | BranchTaken (i, sr) ->
-            let%bind r = resolver sr in
-            pure @@ BranchTaken (i, r)
           | MsgS srlist ->
             let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
             pure @@ MsgS (srlist')
           | BApp (b, srlist) ->
             let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
             pure @@ BApp (b, srlist')
+          | MaxB srlist ->
+            let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
+            pure @@ MaxB srlist'
           | MFun (s, srlist) ->
             let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
             pure @@ MFun (s, srlist')
@@ -702,6 +696,7 @@ module ScillaGUA
           (* TypeChecker will ensure that actuals has unit length. *)
           let arg = List.nth actuals 0 in
           let%bind (_, compsize, _) = GUAEnv.resolvS genv (get_id arg) ~lopt:(Some(get_rep arg)) in
+          (* Note: Ignoring "Some" to make outputs more readable. *)
           if cname = "Some" then pure compsize else
           pure @@ Container(compsize)
         | "Pair" ->
@@ -726,24 +721,16 @@ module ScillaGUA
        *     (Use substitute_actuals to replace with a common set of param names).
        *)
       if List.length clauses > 1 then
-        let%bind ((args, ressize, gup), _) = foldM ~f:(fun ((_, asizes, apn), i) (pat, branch) ->
+        let%bind (args, ressize, gup) = foldM ~f:(fun (_, asizes, apn) (pat, branch) ->
           let%bind genv' = bind_pattern genv xsize pat in
-          let%bind (_, bsize, bgu) = gua_expr genv' branch in
-          (* combine branch gas use with other branches using "i" as a weight. *)
-          let weight =
-            if merge_branch_polynomials then
-              const_pn 1
-            else
-              single_simple_pn (SizeOf (BranchTaken (i, xsize)))
-          in
-          let bpn = mul_pn bgu weight (* (single_simple_pn weight) *) in
+          let%bind (_, bsize, bpn) = gua_expr genv' branch in
           let%bind rsize =
             (match asizes with
-            | MFun (s, srlist) -> pure (MFun(s, bsize::srlist))
+            | MaxB srlist -> pure (MaxB(bsize::srlist))
             | _ -> fail1 "Internal error in calculating gas usage of match-with" (ER.get_loc (get_rep x))
             ) in
-          pure (([], rsize, add_pn apn bpn), i+1)
-        ) ~init:(([], MFun("max", []), empty_pn), 0) clauses in
+          pure ([], rsize, add_pn apn bpn)
+        ) ~init:([], MaxB([]), empty_pn) clauses in
         pure (args, ressize, add_pn gup cc)
       else
         let (pat, branch) = (List.nth clauses 0) in
@@ -807,12 +794,17 @@ module ScillaGUA
       ( match sr' with
       | Component sr'' -> simplify_sizeref sr''
       | _ -> Container (simplify_sizeref sr'))
+    | Fst s' ->
+      (match s' with
+      | PairS (s1', _) -> (simplify_sizeref s1')
+      | _ -> Fst (simplify_sizeref s'))
+    | Snd s' ->
+      (match s' with
+      | PairS(_, s2') -> (simplify_sizeref s2')
+      | _ -> Snd (simplify_sizeref s'))
     | Base _ as b -> b
     | Length s' -> Length (simplify_sizeref s')
-    | Fst s' -> Fst (simplify_sizeref s')
-    | Snd s' -> Snd (simplify_sizeref s')
     | PairS (s1', s2') -> PairS (simplify_sizeref s1', simplify_sizeref s2')
-    | BranchTaken (i, sr) -> BranchTaken (i, simplify_sizeref sr)
     | MsgS srlist ->
       let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
       MsgS (srlist')
@@ -822,6 +814,9 @@ module ScillaGUA
     | MFun (s, srlist) ->
       let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
       MFun (s, srlist')
+    | MaxB srlist ->
+      let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
+      MaxB srlist'
     | SApp (id, srlist) ->
       let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
       SApp (id, srlist')
@@ -894,19 +889,11 @@ module ScillaGUA
         | MatchStmt (x, clauses) ->
           let%bind (_, xsize, _) = GUAEnv.resolvS genv (get_id x) ~lopt:(Some(get_rep x)) in
           let num_clauses = const_pn (List.length clauses) in
-          let%bind (gupol', _) = foldM ~f:(fun (apn, i) (pat, branch) ->
+          let%bind gupol' = foldM ~f:(fun apn (pat, branch) ->
             let%bind genv' = bind_pattern genv xsize pat in
-            let%bind bgu = gua_stmt genv' empty_pn branch in
-            (* combine branch gas use with other branches using "i" as a weight. *)
-            let weight =
-              if merge_branch_polynomials then
-                const_pn 1
-              else
-                single_simple_pn (SizeOf (BranchTaken (i, xsize)))
-            in
-            let bpn = mul_pn bgu weight in
-            pure (add_pn apn bpn, i+1)
-          ) ~init:(add_pn gupol num_clauses, 0) clauses in
+            let%bind bpn = gua_stmt genv' empty_pn branch in
+            pure (add_pn apn bpn)
+          ) ~init:(add_pn gupol num_clauses) clauses in
           gua_stmt genv gupol' sts
         | AcceptPayment ->
           (* Constant cost of 1. *)

@@ -2,7 +2,7 @@ Gas use polynomial for transition balanceOf:
 8 + 1(a) + 1(b)
 Legend:
 
-b: Message (Value of String with size 20,max (Value of Uint256 with size 32,Component of: ownedTokenCount))
+b: Message (Value of String with size 20,Max (Value of Uint256 with size 32,Component of: ownedTokenCount))
 a: Component of: ownedTokenCount
 
 Gas use polynomial for transition ownerOf:
@@ -38,8 +38,8 @@ g: Component of: ownedTokenCount
 d: operatorApprovals
 i: ownedTokenCount
 j: Result of builtin sub(Component of: ownedTokenCount,Value of Uint256 with size 32)
+k: Max (Value of Uint256 with size 32,Result of builtin add(Component of: ownedTokenCount,Value of Uint256 with size 32))
 c: tokenApprovals
-k: max (Value of Uint256 with size 32,Result of builtin add(Component of: ownedTokenCount,Value of Uint256 with size 32))
 e: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
 
 Gas use polynomial for transition approve:
@@ -57,8 +57,8 @@ Gas use polynomial for transition setApprovalForAll:
 1(a) + 48 + 1(b) + 1(c) + 1(d)
 Legend:
 
+c: Message (Value of String with size 28,_sender,to,Max (Value of String with size 20,Value of String with size 20))
 a: operatorApprovals
-c: Message (Value of String with size 28,_sender,to,max (Value of String with size 20,Value of String with size 20))
 d: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
 b: approved
 
