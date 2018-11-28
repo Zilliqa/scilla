@@ -1,0 +1,32 @@
+{
+    "_tag": "makeOrder",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678901234567890",
+    "params": [
+        {
+            "vname": "tokenA",
+            "type": "ByStr20",
+            "value" : "0x1234567890123456789012345678901234567001" 
+        },
+        {
+            "vname": "valueA",
+            "type": "Uint128",
+            "value" : "100" 
+        },
+        {
+            "vname": "tokenB",
+            "type": "ByStr20",
+            "value" : "0x1234567890123456789012345678901234567002" 
+        },
+        {
+            "vname": "valueB",
+            "type": "Uint128",
+            "value" : "200" 
+        },
+        {
+            "vname": "expirationBlock",
+            "type": "BNum",
+            "value" : "200" 
+        }
+    ]
+}
