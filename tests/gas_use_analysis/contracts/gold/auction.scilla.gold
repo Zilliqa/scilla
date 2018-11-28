@@ -5,12 +5,12 @@ Legend:
 b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
 c: highestBid
 a: ended
-f: Max (highestBid,Result of builtin add(highestBid,Component of: pendingReturns))
+f: Max (highestBid,Result of builtin add(highestBid,Element of: pendingReturns))
 h: _amount
 d: highestBidder
 i: Message (Value of String with size 20,Value of Int32 with size 4,_sender,_amount)
 g: _sender
-e: Component of: pendingReturns
+e: Element of: pendingReturns
 
 Gas use polynomial for transition Withdraw:
 1(a) + 23 + 1(b) + 1(c) + 1(d)

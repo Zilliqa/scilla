@@ -5,5 +5,5 @@ Parameter list: ( f l )
 Legend:
 
 a: Length of: l
-b: Cost of calling f(Component of: l)
+b: Cost of calling f(Element of: l)
 

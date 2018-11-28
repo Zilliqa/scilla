@@ -4,7 +4,7 @@ Parameter list: ( flt ls )
 14(a) + 19(b)(a) + 1(b)(c)(a) + 16
 Legend:
 
-c: Cost of calling flt(Component of: Value of List with size 0, Component of: ls)
+c: Cost of calling flt(Element of: Value of List with size 0, Element of: ls)
 b: Length of: Value of List with size 0
 a: Length of: ls
 

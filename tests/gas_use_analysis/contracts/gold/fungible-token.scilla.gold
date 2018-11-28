@@ -16,9 +16,9 @@ Gas use polynomial for transition Transfer:
 1(a) + 65 + 1(b) + 1(c) + 1(d) + 1(e) + 2(f)
 Legend:
 
-b: Component of: balances
+b: Element of: balances
 f: Message (Value of String with size 20,_sender,to,Value of Uint128 with size 16)
-d: Max (tokens,Result of builtin add(Component of: balances,tokens))
+d: Max (tokens,Result of builtin add(Element of: balances,tokens))
 c: Result of builtin sub(tokens,tokens)
 e: Message (Value of String with size 20,_sender,to,tokens)
 a: balances

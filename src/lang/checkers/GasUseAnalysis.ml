@@ -53,15 +53,15 @@ module ScillaGUA
     | Base of baseref
     (* For List and Map types. *)
     | Length of sizeref
-    (* For components of Lists, Maps and Option. *)
-    | Component of sizeref
-    (* For first and second component of Pair *)
+    (* For Elements of Lists and Maps. *)
+    | Element of sizeref
+    (* For first and second Element of Pair *)
     | Fst of sizeref | Snd of sizeref
-    (* Constructing a List / Map or Option from. *)
+    (* Constructing a List / Map from. *)
     | Container of sizeref
     (* Constructing a Pair from. *)
     | PairS of sizeref * sizeref
-    (* To represent a message, each sizeref its components. *)
+    (* To represent a message, each sizeref its Elements. *)
     | MsgS of sizeref list
     (* An abstract maximum across branches. *)
     | MaxB of sizeref list
@@ -103,12 +103,12 @@ module ScillaGUA
     | Base b -> sprint_baseref b
     (* For List and Map types. *)
     | Length sr'-> "Length of: " ^ (sprint_sizeref sr')
-    (* For components of Lists, Maps and Option. *)
-    | Component sr' -> "Component of: " ^ (sprint_sizeref sr')
-    (* For first and second component of Pair *)
-    | Fst sr' -> "First component of the Pair: " ^ (sprint_sizeref sr')
-    | Snd sr' -> "Second component of the Pair: " ^ (sprint_sizeref sr')
-    (* Constructing a List / Map or Option from. *)
+    (* For Elements of Lists and Maps. *)
+    | Element sr' -> "Element of: " ^ (sprint_sizeref sr')
+    (* For first and second Element of Pair *)
+    | Fst sr' -> "First Element of the Pair: " ^ (sprint_sizeref sr')
+    | Snd sr' -> "Second Element of the Pair: " ^ (sprint_sizeref sr')
+    (* Constructing a List / Map from. *)
     | Container sr' -> "Container around: " ^ (sprint_sizeref sr')
     (* Constructing a Pair from. *)
     | PairS (sr1, sr2) -> "Pair of (" ^ (sprint_sizeref sr1) ^ ")(" ^ (sprint_sizeref sr2) ^ ")"
@@ -216,7 +216,7 @@ module ScillaGUA
           match s with
           | Base b -> Base (baseref_replacer param_actual_map b)
           | Length s' -> Length (replacer s')
-          | Component s' -> Component (replacer s')
+          | Element s' -> Element (replacer s')
           | Fst s' -> Fst (replacer s')
           | Snd s' -> Snd (replacer s')
           | Container s' -> Container (replacer s')
@@ -268,7 +268,7 @@ module ScillaGUA
       let ressize' = sizeref_replacer param_actual_map ressize in
       let gup' = polynomial_replacer param_actual_map gup in
       (* We have substitued parameters with actual arguments.
-         So the first component of the result is empty. *)
+         So the first Element of the result is empty. *)
       pure ([], ressize', gup')
 
   (* replace param with actual in sizeref. *)
@@ -288,9 +288,9 @@ module ScillaGUA
       | Length s' ->
         let%bind r = replacer s' in
         pure @@ Length (r)
-      | Component s' ->
+      | Element s' ->
         let%bind r = replacer s' in
-        pure @@ Component r
+        pure @@ Element r
       | Fst s' ->
         let%bind r = replacer s' in
         pure @@ Fst r
@@ -407,9 +407,9 @@ module ScillaGUA
           | Length s' ->
             let%bind r = resolver s' in
             pure @@ Length (r)
-          | Component s' ->
+          | Element s' ->
             let%bind r = resolver s' in
-            pure @@ Component r
+            pure @@ Element r
           | Fst s' ->
             let%bind r = resolver s' in
             pure @@ Fst r
@@ -504,14 +504,14 @@ module ScillaGUA
       | "Some" ->
         (* TypeChecker will ensure that plist has unit length. *)
         let arg = List.nth plist 0 in
-        (* Note: Not wrapping with "Component" to simplify the output. *)
-        (* bind_pattern genv (Component(msref)) arg *)
+        (* Note: Not wrapping with "Element" to simplify the output. *)
+        (* bind_pattern genv (Element(msref)) arg *)
         bind_pattern genv (msref) arg
       | "Cons" ->
         (* TypeChecker will ensure that plist has two elements. *)
         let arg0 = List.nth plist 0 in
         let arg1 = List.nth plist 1 in
-        let%bind genv' = bind_pattern genv (Component(msref)) arg0 in
+        let%bind genv' = bind_pattern genv (Element(msref)) arg0 in
         let%bind genv'' = bind_pattern genv' (msref) arg1 in
         pure genv''
       | "Pair" ->
@@ -714,7 +714,7 @@ module ScillaGUA
     | MatchExpr (x, clauses) ->
       let%bind (_, xsize, _) = GUAEnv.resolvS genv (get_id x) ~lopt:(Some(get_rep x)) in
       (*   TODO: If the return type of the MatchExpr is a function then
-       *     the arguments (first component of the signature) cannot be
+       *     the arguments (first Element of the signature) cannot be
        *     ignored as we're doing now. 
        *     TODO: Normalize argument names and merge them. This can be done
        *     having a common set of actuals names for all branches.
@@ -770,14 +770,14 @@ module ScillaGUA
     let g = ER.mk_id (mk_ident "g") (FunType(TypeVar("'A"), FunType(TypeVar("'B"), TypeVar("'B")))) in
     let b = ER.mk_id (mk_ident "b") (TypeVar("'B")) in
     let lendep = SizeOf(Length(Base(Var(a)))) in
-    let gapp = GApp(g, [Component(Base(Var(a))); Base(Var(b))]) in
-    (* Gas use polynomial = Length(a) * GApp(g, [Component(a), b]) *)
+    let gapp = GApp(g, [Element(Base(Var(a))); Base(Var(b))]) in
+    (* Gas use polynomial = Length(a) * GApp(g, [Element(a), b]) *)
     let gupol = mul_pn (single_simple_pn lendep) (single_simple_pn gapp) in
     let ressize = SApp(g, [Base(Var(a));Base(Var(b))]) in
     let list_foldr_signature = ([g;b;a], ressize, gupol) in
     let genv' = GUAEnv.addS genv "list_foldr" list_foldr_signature in
     (* list_foldl: forall 'A . forall 'B . g:('B -> 'A -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
-    let gapp' = GApp(g, [Base(Var(b)); Component(Base(Var(a)));]) in
+    let gapp' = GApp(g, [Base(Var(b)); Element(Base(Var(a)));]) in
     let gupol' = mul_pn (single_simple_pn lendep) (single_simple_pn gapp') in
     let ressize' = SApp(g, [Base(Var(b));Base(Var(a))]) in
     let list_foldl_signature = ([g;b;a], ressize', gupol') in
@@ -786,13 +786,13 @@ module ScillaGUA
 
   let rec simplify_sizeref sr =
     match sr with
-    | Component sr' ->
+    | Element sr' ->
       (match sr' with
       | Container sr'' -> simplify_sizeref sr''
-      | _ -> Component (simplify_sizeref sr'))
+      | _ -> Element (simplify_sizeref sr'))
     | Container sr' ->
       ( match sr' with
-      | Component sr'' -> simplify_sizeref sr''
+      | Element sr'' -> simplify_sizeref sr''
       | _ -> Container (simplify_sizeref sr'))
     | Fst s' ->
       (match s' with
@@ -870,7 +870,7 @@ module ScillaGUA
           let nindices = (const_pn (List.length klist)) in
           let (sign, pol) =
             if fetchval then 
-              let ressize = List.fold_left (fun acc _ -> Component(acc)) (Base(Var(m))) klist in
+              let ressize = List.fold_left (fun acc _ -> Element(acc)) (Base(Var(m))) klist in
               ([], ressize, empty_pn), (add_pn nindices (single_simple_pn (SizeOf(ressize))))
             else
               (* TODO: How to represent result of `exists` in map? ?*)

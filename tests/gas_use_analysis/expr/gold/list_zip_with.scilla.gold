@@ -4,7 +4,7 @@ Parameter list: ( f m1 m2 )
 3(a) + 40 + 35(b) + 1(b)(c)
 Legend:
 
-c: Cost of calling f(Component of: m1, Max (Value of Option with size 0,Component of: m2))
+c: Cost of calling f(Element of: m1, Max (Value of Option with size 0,Element of: m2))
 b: Length of: m1
-a: Length of: First component of the Pair: Max (Pair of (Value of List with size 0)(m2),Pair of (Container around: SApp f( m1,Max (Value of Option with size 0,Component of: m2)))(Max (Value of List with size 0,Max (Value of Option with size 0,m2))))
+a: Length of: First Element of the Pair: Max (Pair of (Value of List with size 0)(m2),Pair of (Container around: SApp f( m1,Max (Value of Option with size 0,Element of: m2)))(Max (Value of List with size 0,Max (Value of Option with size 0,m2))))
 

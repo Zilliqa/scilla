@@ -4,6 +4,6 @@ Parameter list: ( f l1 l2 )
 28 + 30(a) + 1(a)(b)
 Legend:
 
-b: Cost of calling f(Component of: l1, Max (Value of Option with size 0,Component of: l2))
+b: Cost of calling f(Element of: l1, Max (Value of Option with size 0,Element of: l2))
 a: Length of: l1
 
