@@ -194,38 +194,37 @@ and read_adt_json name j tlist_verify =
 and read_map_json kt vt j =
   match j with
   | `List vli ->
-     let kvallist = mapvalues_from_json kt vt vli (List.length vli) in
-     Map ((kt, vt), kvallist)
+     let m = Caml.Hashtbl.create (List.length vli) in
+     let _ = mapvalues_from_json m kt vt vli in
+     Map ((kt, vt), m)
   | `Null -> Map ((kt, vt), Caml.Hashtbl.create 0)
   | _ -> raise (mk_invalid_json ("JSON parsing: error parsing Map"))
  
-and mapvalues_from_json kt vt l size = 
+and mapvalues_from_json m kt vt l =
   let open Basic.Util in
-  match l with
-  | first :: remaining ->
-      let kjson = member_exn "key" first in
-      let keylit = 
-        (match kt with
-         | PrimType _ ->
-            build_prim_lit_exn kt (to_string kjson)
-         | _ -> raise (mk_invalid_json ("Key in Map JSON is not a PrimType"))
-         ) in
-      let vjson = member_exn "val" first in
-      let vallit =
-        (match vt with
-         | MapType (kt', vt') ->
-            read_map_json kt' vt' vjson
-         | ADT (name, tlist) ->
-            let vl = read_adt_json name vjson tlist in
-              vl
-         | PrimType _ ->
-            build_prim_lit_exn vt (to_string vjson)
-         | _ -> raise (mk_invalid_json ("Unknown type in Map value in JSON"))
+  List.iter l ~f:(fun first ->
+    let kjson = member_exn "key" first in
+    let keylit =
+      (match kt with
+        | PrimType _ ->
+          build_prim_lit_exn kt (to_string kjson)
+        | _ -> raise (mk_invalid_json ("Key in Map JSON is not a PrimType"))
         ) in
-        let m = mapvalues_from_json kt vt remaining size in
-          let _ = Caml.Hashtbl.replace m keylit vallit in
-          m
-  | [] -> (Caml.Hashtbl.create size)
+    let vjson = member_exn "val" first in
+    let vallit =
+      (match vt with
+        | MapType (kt', vt') ->
+          read_map_json kt' vt' vjson
+        | ADT (name, tlist) ->
+          let vl = read_adt_json name vjson tlist in
+            vl
+        | PrimType _ ->
+          build_prim_lit_exn vt (to_string vjson)
+        | _ -> raise (mk_invalid_json ("Unknown type in Map value in JSON"))
+      ) in
+      let _ = Caml.Hashtbl.replace m keylit vallit in
+      ()
+  )
 
 and json_to_lit t v =
   let open Basic.Util in
