@@ -1,9 +1,9 @@
 {
   "gas_remaining": "7029",
+  "_accepted": "false",
   "message": {
     "_tag": "TransferFrom",
     "_amount": "0",
-    "_accepted": "false",
     "_recipient": "0x1234567890123456789012345678901234567001",
     "params": [
       {
