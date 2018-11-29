@@ -1,5 +1,9 @@
 import PairUtils
 
+(* Simple DEX : P2P Token Trades    *)
+(* Disclaimer: This contract is experimental and meant for testing purposes only *)
+(* DO NOT USE THIS CONTRACT IN PRODUCTION *)
+
 library SimpleDex
 
 (* Pair helpers *)
@@ -89,11 +93,15 @@ let computePendingReturnsVal =
       | Some value =>
         builtin add value incomingTokensAmt
       end
-    | None => zero
+    | None => incomingTokensAmt
     end
 
 let success = "Success"
 let error = "Error"
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
 
 contract SimpleDex
 (contractOwner: ByStr20)
@@ -232,16 +240,100 @@ transition fillOrder(orderId: ByStr32)
   end
 end
 
+
+(* Allows users to claim back their tokens from the smart contract *)
+transition ClaimBack(token: ByStr20)
+  getCurrentAddress <- contractAddress;
+  match getCurrentAddress with
+  | Some cAddress =>
+    getAmtOutstanding <- pendingReturns[_sender][token];
+    match getAmtOutstanding with
+    | Some amtOutstanding =>
+        delete pendingReturns[_sender][token];
+        e = {_eventname: "Claimback Successful"; caller: _sender; tokenAddr: token; amt: amtOutstanding };
+        event e;
+        (* Transfer tokens from _sender to the contract address  *)
+        msgs = let tag = "TransferFrom" in 
+               transaction_msg_as_list token tag cAddress _sender amtOutstanding;
+        send msgs
+    | None =>
+        e = let func = "claimBack" in
+            let error_msg = "No Pending Returns for Sender and Contract Address found" in 
+            make_event error func error_msg;
+        event e
+    end
+  | None =>
+    
+  end
+end
+
+
+(* Maker can cancel his order *)
+transition cancelOrder(orderId: ByStr32)
+  getOrderInfo <- orderInfo[orderId];
+  match getOrderInfo with
+  | Some orderInfo => 
+      makerAddr = let getMakerAddr = @fst (ByStr20)(BNum) in
+                  getMakerAddr orderInfo;
+      checkSender = builtin eq makerAddr _sender;
+      match checkSender with
+      | True =>
+        (* Sender is the maker, proceed with cancellation *)
+        fetchOrder <- orderbook[orderId];
+        match fetchOrder with
+        | Some order =>
+          bids = fst_pair order;
+          tokenA = getAddressFromPair bids;
+          valueA = getValueFromPair bids;
+
+          (* Updates taker with the tokens that he is entitled to claim *)
+          pr <- pendingReturns;
+          takerAmt = computePendingReturnsVal pr valueA tokenA _sender;
+          pendingReturns[_sender][tokenA] := takerAmt;
+          
+          (* Delete orders from the orderbook and orderinfo *)
+          delete orderInfo[orderId];
+          delete orderbook[orderId];
+
+          e = {_eventname: "Cancel order successful"; hash: orderId };
+          event e
+          (* @note: For consistency, we use claimback instead of sending the tokens  *)
+          (* back to the maker *)
+        | None =>
+          e = let func = "cancelOrder" in
+              let error_msg = "OrderID not found" in 
+              make_event error func error_msg;
+          event e
+        end
+
+      | False =>
+        (* Unauthorized transaction *)
+        e = let func = "cancelOrder" in
+            let error_msg = "Sender is not maker of the order" in 
+            make_event error func error_msg;
+        event e
+      end
+  | None =>
+      (* Order ID not found *)
+      e = let func = "cancelOrder" in
+          let error_msg = "OrderID not found" in 
+          make_event error func error_msg;
+      event e
+  end
+end
+
 (* Only contract owner can update the contract address *)
 transition updateContractAddress(address: ByStr20)
   isOwner = builtin eq contractOwner _sender;
   match isOwner with
   | False =>
+    (* Not contract owner *)
     e = let func = "updateContractAddress" in
         let error_msg = "Unauthorized" in 
         make_event error func error_msg;
     event e
   | True =>
+    (* Updates the contract address *)
     currentAddress <- contractAddress;
     match currentAddress with
     | None =>
@@ -252,6 +344,7 @@ transition updateContractAddress(address: ByStr20)
           make_event success func error_msg;
       event e
     | Some v =>
+      (* Contract address can only be updated once *)
       e = let func = "updateContractAddress" in
           let error_msg = "Contract address has already been initialized" in 
           make_event error func error_msg;

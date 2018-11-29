@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "998589",
+  "gas_remaining": "998993",
   "message": {
     "_tag": "TransferFrom",
     "_amount": "0",
@@ -9,12 +9,12 @@
       {
         "vname": "from",
         "type": "ByStr20",
-        "value": "0x1234567890123456789012345678901234567899"
+        "value": "0x1234567890123456789012345678901234567000"
       },
       {
         "vname": "to",
         "type": "ByStr20",
-        "value": "0x1234567890123456789012345678901234567000"
+        "value": "0x1234567890123456789012345678901234567890"
       },
       { "vname": "tokens", "type": "Uint128", "value": "200" }
     ]
@@ -45,15 +45,7 @@
       "vname": "pendingReturns",
       "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
       "value": [
-        {
-          "key": "0x1234567890123456789012345678901234567890",
-          "val": [
-            {
-              "key": "0x1234567890123456789012345678901234567002",
-              "val": "200"
-            }
-          ]
-        },
+        { "key": "0x1234567890123456789012345678901234567890", "val": [] },
         {
           "key": "0x1234567890123456789012345678901234567899",
           "val": [
@@ -68,14 +60,19 @@
   ],
   "events": [
     {
-      "_eventname": "Order Filled",
+      "_eventname": "Claimback Successful",
       "params": [
         {
-          "vname": "hash",
-          "type": "ByStr32",
-          "value":
-            "0xcb478abde2c28d1808655f39a97d68bec72e7cd29240a0c5e78cfa76590891f1"
-        }
+          "vname": "caller",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567890"
+        },
+        {
+          "vname": "tokenAddr",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567002"
+        },
+        { "vname": "amt", "type": "Uint128", "value": "200" }
       ]
     }
   ]

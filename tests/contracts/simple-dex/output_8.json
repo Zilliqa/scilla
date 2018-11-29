@@ -1,24 +1,6 @@
 {
-  "gas_remaining": "998589",
-  "message": {
-    "_tag": "TransferFrom",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x1234567890123456789012345678901234567002",
-    "params": [
-      {
-        "vname": "from",
-        "type": "ByStr20",
-        "value": "0x1234567890123456789012345678901234567899"
-      },
-      {
-        "vname": "to",
-        "type": "ByStr20",
-        "value": "0x1234567890123456789012345678901234567000"
-      },
-      { "vname": "tokens", "type": "Uint128", "value": "200" }
-    ]
-  },
+  "gas_remaining": "998978",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -49,15 +31,6 @@
           "key": "0x1234567890123456789012345678901234567890",
           "val": [
             {
-              "key": "0x1234567890123456789012345678901234567002",
-              "val": "200"
-            }
-          ]
-        },
-        {
-          "key": "0x1234567890123456789012345678901234567899",
-          "val": [
-            {
               "key": "0x1234567890123456789012345678901234567001",
               "val": "100"
             }
@@ -68,7 +41,7 @@
   ],
   "events": [
     {
-      "_eventname": "Order Filled",
+      "_eventname": "Cancel order successful",
       "params": [
         {
           "vname": "hash",
