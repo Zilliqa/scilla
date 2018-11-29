@@ -254,8 +254,7 @@ module ScillaCashflowChecker
     | x            , NoInfo        -> x
     | Map x        , Map y         -> Map (lub_tags x y)
     | Option x     , Option y      -> Option (lub_tags x y)
-    | Pair (x1, x2), Pair (y1, y2) ->
-        Pair (lub_tags x1 y1, lub_tags x2 y2)
+    | Pair (x1, x2), Pair (y1, y2) -> Pair (lub_tags x1 y1, lub_tags x2 y2)
     | Money        , Money         -> Money
     | NotMoney     , NotMoney      -> NotMoney
     | _            , _             -> Inconsistent
@@ -269,11 +268,14 @@ module ScillaCashflowChecker
     | _            , NoInfo        -> NoInfo
     | Map x        , Map y         -> Map (glb_tags x y)
     | Option x     , Option y      -> Option (glb_tags x y)
-    | Pair (x1, x2), Pair (y1, y2) ->
-        Pair (glb_tags x1 y1, glb_tags x2 y2)
+    | Pair (x1, x2), Pair (y1, y2) -> Pair (glb_tags x1 y1, glb_tags x2 y2)
     | Money        , Money         -> Money
     | NotMoney     , NotMoney      -> NotMoney
     | _            , _             -> NoInfo
+
+  (*******************************************************)
+  (*      Helper functions for local variables           *)
+  (*******************************************************)
 
   let get_id_tag id =
     match id with
@@ -288,6 +290,12 @@ module ScillaCashflowChecker
     | Some t -> t
     | None -> get_id_tag i
   
+  let update_ids_tags ids env =
+    List.map
+      (fun i ->
+         let i_tag = lookup_var_tag i env in
+         update_id_tag i i_tag) ids
+
   let lookup_var_tag2 i env1 env2 =
     match AssocDictionary.lookup (get_id i) env1 with
     | Some t -> t
@@ -297,6 +305,10 @@ module ScillaCashflowChecker
     match AssocDictionary.lookup (get_id i) env1 with
     | Some _ -> (AssocDictionary.update (get_id i) t env1, env2)
     | None -> (env1, AssocDictionary.update (get_id i) t env2)
+
+  (*******************************************************)
+  (*      Helper functions for builtin functions         *)
+  (*******************************************************)
 
   (* Calculate the signature of a builtin function.
 
@@ -322,7 +334,6 @@ module ScillaCashflowChecker
      resulting set of candidate signatures C.
 
      Step 3: Calculate the greatest lower bound of C. *)
-     
   let builtin_signature f res_tag args_tags =
     let lub_sigs c_rs c_ass =
       let c =
@@ -444,7 +455,7 @@ module ScillaCashflowChecker
                 [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "to_list" ->
-          (* TODO : Handle lists *)
+          (* Lists not supported, so use Inconsistent *)
           let c_r_sigs =
             [ ( Inconsistent , [ Map NoInfo ] ) ] in
           let c_as_sigs =
@@ -649,11 +660,16 @@ module ScillaCashflowChecker
                 [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "schnorr_gen_key_pair" ->
-          (* TODO: Support pairs *)
           let c_r_sigs =
-            [ ( Inconsistent , [ ] ) ] in
+            [ ( Pair (NotMoney, NotMoney) , [ ] ) ] in
           let c_as_sigs =
-            [ [ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ] ] in
+            match args_tags with
+            | [] ->
+                let arg_sig = [ ( Pair (NotMoney, NotMoney) , [ ] ) ] in
+                [ arg_sig ]
+            | _  ->
+                (* Error *)
+                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "sha256hash"
       | "keccak256hash"
@@ -744,6 +760,10 @@ module ScillaCashflowChecker
           (c_r_sigs, c_as_sigs) in
     lub_sigs c_r c_as
 
+  (*******************************************************)
+  (*            Helper functions for patterns            *)
+  (*******************************************************)
+
   let rec get_pattern_vars acc p =
     match p with
     | Wildcard -> acc
@@ -778,6 +798,7 @@ module ScillaCashflowChecker
     List.fold_left
       (fun l_env x -> AssocDictionary.remove (get_id x) l_env) local_env pattern_vars    
 
+  (* Find least upper bound of scrutinee based on patterns and pattern tags *)
   let lub_pattern_tags ps =
     let rec walk acc_tag p =
       match p with
@@ -806,6 +827,10 @@ module ScillaCashflowChecker
           | _ -> Inconsistent in
     List.fold_left walk NoInfo ps
   
+  (*******************************************************)
+  (*            Main cashflow analyzer                   *)
+  (*******************************************************)
+
   let update_var_tag_payload p local_env =
     match p with
     | MTag s -> CFSyntax.MTag s
@@ -824,7 +849,10 @@ module ScillaCashflowChecker
     let (new_e, new_e_tag, new_field_env, new_local_env, new_changes) = 
       match e with
       | Literal _ ->
-          (* TODO: Deduce tag from type? *)
+          (* No need to deduce tag from type. 
+             If the literal is a number, then nothing can be deduced, 
+             and if it is not a number, the tag of relevant variables 
+             will be deduced from their usage. *)
           (e, tag, field_env, local_env, false)
       | Var i ->
           let new_i_tag = lub (lookup_var_tag2 i local_env field_env) in
@@ -832,6 +860,7 @@ module ScillaCashflowChecker
           let (new_local_env, new_field_env) = update_var_tag2 i new_i_tag local_env field_env in
           (Var new_i, new_i_tag, new_field_env, new_local_env, new_i_tag <> (get_id_tag i))
       | Fun (arg, t, body) ->
+          (* Using Map tag to represent functions as well as maps *)
           let body_expected_tag =
             match expected_tag with
             | Map x -> x
@@ -842,10 +871,11 @@ module ScillaCashflowChecker
           let ((_, (new_body_tag, _)) as new_body, res_field_env, res_body_local_env, body_changes) =
             cf_tag_expr body body_expected_tag field_env body_local_env in
           let res_arg_tag = lookup_var_tag arg res_body_local_env in
+          let new_local_env = AssocDictionary.remove (get_id arg) res_body_local_env in
           (Fun (update_id_tag arg res_arg_tag, t, new_body),
            Map new_body_tag,
            res_field_env,
-           AssocDictionary.remove (get_id arg) res_body_local_env,
+           new_local_env,
            body_changes || (get_id_tag arg <> res_arg_tag))
       | App (f, args) ->
           let new_args = List.map (fun arg -> update_id_tag arg (lookup_var_tag2 arg local_env field_env)) args in
@@ -889,8 +919,7 @@ module ScillaCashflowChecker
               args
               final_args_tags
               ([], field_env, local_env, false) in
-          let f_tag = lub_tags (get_id_tag f)
-              (lub_tags (Map res_tag) (Map expected_tag)) in
+          let f_tag = lub_tags (Map res_tag) (Map expected_tag) in
           let new_f = update_id_tag f f_tag in
           (Builtin (new_f, final_args),
            res_tag,
@@ -964,15 +993,15 @@ module ScillaCashflowChecker
            res_local_env,
            clause_changes || (get_id_tag x) <> new_x_tag)
       | Fixpoint (_f, _t, _body) ->
-          (* TODO: Library functions and polymorphism not yet handled. *)
+          (* Library functions not handled. *)
           (e, Inconsistent, field_env, local_env, false)
       | TFun (tvar, body) ->
+          (* Ignore polymorphism. *)
           let ((_, (new_body_tag, _)) as new_body, new_field_env, new_local_env, changes) =
             cf_tag_expr body expected_tag field_env local_env in
           (TFun (tvar, new_body), new_body_tag, new_field_env, new_local_env, changes)
       | TApp (tf, arg_types) ->
-          let tf_env_tag = lookup_var_tag2 tf local_env field_env in
-          let new_tf_tag = lub_tags tf_env_tag (get_id_tag tf) in
+          let new_tf_tag = lookup_var_tag2 tf local_env field_env in
           let new_tf = update_id_tag tf new_tf_tag in
           (TApp (new_tf, arg_types), new_tf_tag, field_env, local_env, false)
       | Message bs ->
@@ -1004,7 +1033,8 @@ module ScillaCashflowChecker
            changes) in
     let e_tag = lub new_e_tag in
     ((new_e, (e_tag, rep)), new_field_env, new_local_env, new_changes || tag <> e_tag)
-    
+
+  (* Helper function for Load and Store - ensure field and local have same tag *)
   let cf_update_tag_for_field_assignment f x field_env local_env =
     let x_tag = lookup_var_tag x local_env in
     let f_tag = lookup_var_tag f field_env in
@@ -1015,12 +1045,6 @@ module ScillaCashflowChecker
     let new_local_env = AssocDictionary.update (get_id x) new_tag local_env in
     (new_f, new_x, new_field_env, new_local_env)
 
-  let update_ids_tags ids env =
-    List.map
-      (fun i ->
-         let i_tag = lookup_var_tag i env in
-         update_id_tag i i_tag) ids
-  
   let rec cf_tag_stmt (srep : CFSyntax.stmt_annot) field_env local_env =
     let (s, rep) = srep in
     let (new_s, new_field_env, new_local_env, changes) =
