@@ -1,12 +1,7 @@
 {
-  "gas_remaining": "7346",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [ { "vname": "code", "type": "Uint32", "value": "1" } ]
-  },
+  "gas_remaining": "7540",
+  "_accepted": "false",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {

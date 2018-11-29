@@ -1,30 +1,9 @@
 {
-  "gas_remaining": "6252",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x1234567890123456789012345678901234567891",
-    "params": [ { "vname": "code", "type": "Uint32", "value": "0" } ]
-  },
+  "gas_remaining": "6453",
+  "_accepted": "false",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    {
-      "vname": "ownedTokenCount",
-      "type": "Map (ByStr20) (Uint256)",
-      "value": [
-        { "key": "0x1234567890123456789012345678901234567892", "val": "1" },
-        { "key": "0x1234567890123456789012345678901234567891", "val": "1" }
-      ]
-    },
-    {
-      "vname": "tokenOwnerMap",
-      "type": "Map (Uint256) (ByStr20)",
-      "value": [
-        { "key": "2", "val": "0x1234567890123456789012345678901234567891" },
-        { "key": "1", "val": "0x1234567890123456789012345678901234567892" }
-      ]
-    },
     {
       "vname": "operatorApprovals",
       "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
@@ -48,7 +27,40 @@
       "vname": "tokenApprovals",
       "type": "Map (Uint256) (ByStr20)",
       "value": []
+    },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (ByStr20) (Uint256)",
+      "value": [
+        { "key": "0x1234567890123456789012345678901234567892", "val": "1" },
+        { "key": "0x1234567890123456789012345678901234567891", "val": "1" }
+      ]
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "value": [
+        { "key": "2", "val": "0x1234567890123456789012345678901234567891" },
+        { "key": "1", "val": "0x1234567890123456789012345678901234567892" }
+      ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "transferFrom successful",
+      "params": [
+        {
+          "vname": "from",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567891"
+        },
+        {
+          "vname": "recipient",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567891"
+        },
+        { "vname": "token", "type": "Uint256", "value": "2" }
+      ]
+    }
+  ]
 }

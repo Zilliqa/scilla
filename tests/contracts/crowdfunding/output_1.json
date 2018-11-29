@@ -1,5 +1,6 @@
 {
-  "gas_remaining": "7365",
+  "gas_remaining": "7363",
+  "_accepted": "true",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "100" },

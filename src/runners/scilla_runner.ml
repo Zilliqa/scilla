@@ -71,13 +71,13 @@ let check_after_step name res gas_limit  =
   | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
       exit 1
-  | Ok ((cstate, outs, events), remaining_gas) ->
+  | Ok ((cstate, outs, events, accepted_b), remaining_gas) ->
       plog (sprintf "Success! Here's what we got:\n" ^
             (* sprintf "%s" (ContractState.pp cstate) ^ *)
             sprintf "Emitted messages:\n%s\n\n" (pp_literal_list outs) ^
             sprintf"Gas remaining:%s\n" (Int.to_string remaining_gas) ^
             sprintf "Emitted events:\n%s\n\n" (pp_literal_list events));
-       (cstate, outs, events), remaining_gas
+       (cstate, outs, events, accepted_b), remaining_gas
 
 (* Parse the input state json and extract out _balance separately *)
 let input_state_json filename = 
@@ -189,7 +189,7 @@ let () =
               (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_blockchain));
             exit 1
       in
-      let (output_msg_json, output_state_json, output_events_json), gas = 
+      let (output_msg_json, output_state_json, output_events_json, accepted_b), gas = 
       if is_deployment
       then
         (* Initializing the contract's state, just for checking things. *)
@@ -198,7 +198,7 @@ let () =
         (* Will throw an exception if unsuccessful. *)
         let (_, remaining_gas') = check_extract_cstate cli.input init_res gas_remaining in
         (plog (sprintf "\nContract initialized successfully\n");
-          (`Null, `List [], `List []), remaining_gas')
+          (`Null, `List [], `List [], false), remaining_gas')
       else
         (* Not initialization, execute transition specified in the message *)
         (let mmsg = 
@@ -234,16 +234,17 @@ let () =
         plog (sprintf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg));
         plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
         let step_result = handle_message ctr cstate bstate m in
-        let (cstate', mlist, elist), gas =
+        let (cstate', mlist, elist, accepted_b), gas =
           check_after_step cli.input step_result gas_remaining' in
       
         let osj = output_state_json cstate' in
         let omj = output_message_json mlist in
         let oej = `List (output_event_json elist) in
-          (omj, osj, oej), gas)
+          (omj, osj, oej, accepted_b), gas)
       in
       let output_json = `Assoc [
         "gas_remaining", `String (Int.to_string gas);
+        ContractUtil.accepted_label, `String (Bool.to_string accepted_b);
         ("message", output_msg_json); 
         ("states", output_state_json);
         ("events", output_events_json);

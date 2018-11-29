@@ -1,9 +1,9 @@
 {
-  "gas_remaining": "7270",
+  "gas_remaining": "7190",
+  "_accepted": "false",
   "message": {
     "_tag": "Main",
     "_amount": "200",
-    "_accepted": "false",
     "_recipient": "0x1234567890123456789012345678901234567890",
     "params": [
       { "vname": "code", "type": "Int32", "value": "9" },
@@ -35,5 +35,12 @@
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "Auction ended",
+      "params": [
+        { "vname": "highest_bid", "type": "Uint128", "value": "200" }
+      ]
+    }
+  ]
 }

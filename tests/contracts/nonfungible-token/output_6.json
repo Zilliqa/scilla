@@ -1,18 +1,7 @@
 {
-  "gas_remaining": "7170",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x1234567890123456789012345678901234567892",
-    "params": [
-      {
-        "vname": "owner",
-        "type": "ByStr20",
-        "value": "0x1234567890123456789012345678901234567892"
-      }
-    ]
-  },
+  "gas_remaining": "7280",
+  "_accepted": "false",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -41,5 +30,17 @@
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "ownerOf",
+      "params": [
+        { "vname": "id", "type": "Uint256", "value": "1" },
+        {
+          "vname": "owner",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567892"
+        }
+      ]
+    }
+  ]
 }
