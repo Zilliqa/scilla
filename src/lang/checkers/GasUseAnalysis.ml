@@ -504,7 +504,7 @@ module ScillaGUA
       | "Some" ->
         (* TypeChecker will ensure that plist has unit length. *)
         let arg = List.nth plist 0 in
-        (* Note: Not wrapping with "Element" to simplify the output. *)
+        (* Note: Not wrapping with "Element of" to simplify the output. *)
         (* bind_pattern genv (Element(msref)) arg *)
         bind_pattern genv (msref) arg
       | "Cons" ->
