@@ -1,4 +1,10 @@
 {
+  "cashflow_tags": [
+    { "field": "priv_key", "tag": "(Option NotMoney)" },
+    { "field": "pub_key", "tag": "(Option NotMoney)" }
+  ]
+}
+{
   "contract_info": {
     "vname": "Schnorr",
     "params": [],

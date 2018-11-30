@@ -24,6 +24,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["checker"; "bad"; f]
     let runner = "scilla-checker"
+    let custom_args = ["-cf"]
     let tests = [
       "bad_fields1.scilla";
       "bad_fields2.scilla";

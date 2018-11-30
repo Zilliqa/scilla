@@ -24,6 +24,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "pm_check"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["pm_check"; "bad"; f]
     let runner = "type-checker"      
+    let custom_args = []
     let tests = [
       "pm1.scilla";
       "pm2.scilla";

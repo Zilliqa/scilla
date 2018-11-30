@@ -115,6 +115,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "eval"; "exp"; "good"; "gold"; f ^ ".gold" ]
     let test_path f = ["eval"; "exp"; "good"; f]
     let runner = "eval-runner"
+    let custom_args = []
     let tests = explist
     let exit_code : Unix.process_status = WEXITED 0
 
