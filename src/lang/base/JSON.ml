@@ -71,6 +71,11 @@ let build_prim_lit_exn t v =
   in
     exn_wrapper t (build_prim_literal t v) v
 
+let constr_pattern_arg_types_exn dt cname =
+  match constr_pattern_arg_types dt cname with
+  | Error emsg -> raise (Invalid_json (emsg))
+  | Ok s ->s
+
 (****************************************************************)
 (*                    JSON parsing                              *)
 (****************************************************************)
@@ -100,50 +105,12 @@ let rec json_to_adtargs cname tlist ajs =
   | Ok (r, _) ->
     r
   ) in
-  match cname with
-  | "Some" ->
-    verify_args_exn cname (List.length ajs) 1;
-    let j = List.nth_exn ajs 0 in
-    let t = List.nth_exn tlist 0 in
-    let lit = json_to_lit t j in
-      ADTValue (cname, tlist, (lit::[]))
-  | "None" ->
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, tlist, [])
-  | "True" | "False" -> 
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, [], []) 
-  | "Pair" ->
-    verify_args_exn cname (List.length ajs) 2;
-    let j1 = List.nth_exn ajs 0 in
-    let t1 = List.nth_exn tlist 0 in
-    let lit1 = json_to_lit t1 j1 in
-    let j2 = List.nth_exn ajs 1 in
-    let t2 = List.nth_exn tlist 1 in
-    let lit2 = json_to_lit t2 j2 in
-      ADTValue (cname, tlist, (lit1::lit2::[]))
-  | "Nil" ->
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, tlist, [])
-  | "Cons" ->
-    verify_args_exn cname (List.length ajs) 2;
-    let j1 = List.nth_exn ajs 0 in (* first element in the list *)
-    let j2 = List.nth_exn ajs 1 in (* rest of the list *)
-    let t = List.nth_exn tlist 0 in (* type of element of list *)
-    let lit1 = json_to_lit t j1 in
-    (* We know that the "rest of the list" is an ADT. *)
-    let lit2 = read_adt_json dt.tname j2 tlist in
-      ADTValue (cname, tlist, (lit1::lit2::[]))
-  | "Zero" ->
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, [], [])
-  | "Succ" ->
-    verify_args_exn cname (List.length ajs) 1;
-    let j = List.nth_exn ajs 0 in (* successor of *)
-    let lit = read_adt_json dt.tname j tlist in
-      ADTValue (cname, [], lit::[])
-  | _ ->
-    raise (mk_invalid_json ("JSON parsing: Unsupported ADT type"))
+  (* For each component literal of our ADT, calculate it's type.
+   * This is essentially using DataTypes.constr_tmap and substituting safely. *)
+  let tmap = constr_pattern_arg_types_exn (ADT(dt.tname, tlist)) cname in
+  verify_args_exn cname (List.length ajs) (List.length tmap);
+  let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t j) in
+    ADTValue(cname, tlist, llist)
 
 and read_adt_json name j tlist_verify =
   let open Basic.Util in
@@ -194,38 +161,37 @@ and read_adt_json name j tlist_verify =
 and read_map_json kt vt j =
   match j with
   | `List vli ->
-     let kvallist = mapvalues_from_json kt vt vli (List.length vli) in
-     Map ((kt, vt), kvallist)
+     let m = Caml.Hashtbl.create (List.length vli) in
+     let _ = mapvalues_from_json m kt vt vli in
+     Map ((kt, vt), m)
   | `Null -> Map ((kt, vt), Caml.Hashtbl.create 0)
   | _ -> raise (mk_invalid_json ("JSON parsing: error parsing Map"))
  
-and mapvalues_from_json kt vt l size = 
+and mapvalues_from_json m kt vt l =
   let open Basic.Util in
-  match l with
-  | first :: remaining ->
-      let kjson = member_exn "key" first in
-      let keylit = 
-        (match kt with
-         | PrimType _ ->
-            build_prim_lit_exn kt (to_string kjson)
-         | _ -> raise (mk_invalid_json ("Key in Map JSON is not a PrimType"))
-         ) in
-      let vjson = member_exn "val" first in
-      let vallit =
-        (match vt with
-         | MapType (kt', vt') ->
-            read_map_json kt' vt' vjson
-         | ADT (name, tlist) ->
-            let vl = read_adt_json name vjson tlist in
-              vl
-         | PrimType _ ->
-            build_prim_lit_exn vt (to_string vjson)
-         | _ -> raise (mk_invalid_json ("Unknown type in Map value in JSON"))
+  List.iter l ~f:(fun first ->
+    let kjson = member_exn "key" first in
+    let keylit =
+      (match kt with
+        | PrimType _ ->
+          build_prim_lit_exn kt (to_string kjson)
+        | _ -> raise (mk_invalid_json ("Key in Map JSON is not a PrimType"))
         ) in
-        let m = mapvalues_from_json kt vt remaining size in
-          let _ = Caml.Hashtbl.replace m keylit vallit in
-          m
-  | [] -> (Caml.Hashtbl.create size)
+    let vjson = member_exn "val" first in
+    let vallit =
+      (match vt with
+        | MapType (kt', vt') ->
+          read_map_json kt' vt' vjson
+        | ADT (name, tlist) ->
+          let vl = read_adt_json name vjson tlist in
+            vl
+        | PrimType _ ->
+          build_prim_lit_exn vt (to_string vjson)
+        | _ -> raise (mk_invalid_json ("Unknown type in Map value in JSON"))
+      ) in
+      let _ = Caml.Hashtbl.replace m keylit vallit in
+      ()
+  )
 
 and json_to_lit t v =
   let open Basic.Util in
@@ -344,24 +310,17 @@ let message_to_json message =
   (* extract out "_tag", "_amount", "_accepted" and "_recipient" parts of the message *)
   let (_, taglit) = List.find_exn message ~f:(fun (x, _) -> x = tag_label) in
   let (_, amountlit) = List.find_exn message ~f:(fun (x, _) -> x = amount_label) in
-  let acceptedlit = List.find message ~f:(fun (x, _) -> x = accepted_label) in
   (* message_to_json may be used to print both output and input message. Choose label accordingly. *)
   let (toORfrom, tofromlit) = List.find_exn message ~f:(fun (x, _) -> x = recipient_label || x = sender_label) in
   let tofrom_label = if toORfrom = recipient_label then recipient_label else sender_label in
   let tags = get_string_literal taglit in
   let amounts = get_uint_literal amountlit in
-  (* In case we're trying to print an input message, there won't be an "_accepted" field *)
-  let accepteds = 
-    if is_some acceptedlit
-    then get_string_literal (snd (BatOption.get acceptedlit))
-    else Some "false" in
   let tofroms = get_address_literal tofromlit in
   (* Get a list without any of these components *)
   let filtered_list = List.filter message 
-      ~f:(fun (x, _) -> not ((x = tag_label) || (x = amount_label) || (x = recipient_label) || x = accepted_label)) in
+      ~f:(fun (x, _) -> not ((x = tag_label) || (x = amount_label) || (x = recipient_label))) in
     `Assoc [(tag_label, `String (BatOption.get tags)); 
                  (amount_label, `String (BatOption.get amounts));
-                 (accepted_label, `String (BatOption.get accepteds));
                  (tofrom_label, `String (BatOption.get tofroms));
                  ("params", `List (slist_to_json filtered_list))] 
 
