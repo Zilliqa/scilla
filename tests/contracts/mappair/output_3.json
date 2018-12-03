@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "7283",
+  "gas_remaining": "7281",
   "_accepted": "false",
   "message": {
     "_tag": "Main",
@@ -27,6 +27,7 @@
         ]
       }
     },
+    { "vname": "llist", "type": "List (List (Int64))", "value": [] },
     {
       "vname": "gnat",
       "type": "Nat",

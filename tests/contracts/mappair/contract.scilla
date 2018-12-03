@@ -34,6 +34,8 @@ field gpair : Pair (List(Int64)) (Option (Bool)) =
     let n = None {Bool} in
     Pair {(List(Int64)) (Option(Bool))} el n
 
+field llist : List (List(Int64)) = Nil {(List(Int64))}
+
 field gnat : Nat = Zero
 
 transition testMapPair ()
@@ -79,6 +81,16 @@ transition incNat ()
   gnat := m;
   i = nat_to_int m;
   msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; nat : i};
+  msgs = one_msg msg;
+  send msgs
+end
+
+transition lflatten ()
+  n <- llist;
+  lfl = @list_flatten (Int64);
+  m = lfl n;
+  len = let my_list_length = @list_length Int64 in my_list_length m;
+  msg = {_tag : ""; _recipient : _sender; _amount : Uint128 0; listLength : len};
   msgs = one_msg msg;
   send msgs
 end

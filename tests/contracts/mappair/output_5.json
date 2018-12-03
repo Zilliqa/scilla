@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "7448",
+  "gas_remaining": "7446",
   "_accepted": "false",
   "message": {
     "_tag": "Main",
@@ -26,6 +26,7 @@
         ]
       }
     },
+    { "vname": "llist", "type": "List (List (Int64))", "value": [] },
     {
       "vname": "gpair",
       "type": "Pair (List (Int64)) (Option (Bool))",
