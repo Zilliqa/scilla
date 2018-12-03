@@ -146,6 +146,25 @@ module Event : sig
 
 end
 
+module CashflowInfo : sig
+  (* Given a list of pairs with of fields and cashflow tags for a contract, 
+     give a string JSON with these details:
+
+     {
+       "cashflow_tags" : [
+         { "field" : "owners",
+           "tag" : "NotMoney" },
+         { "field" : "donations",
+           "tag" : "MapMoney" }
+       ]
+     }
+
+  *)
+
+  val get_json : (string * string) list -> Yojson.json
+end
+
+
 open ErrorUtils
 exception Invalid_json of scilla_error list
 val mk_invalid_json : string -> exn

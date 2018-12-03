@@ -1,5 +1,5 @@
-{ "cashflow_tags": [] }
 {
+  "cashflow_tags": [],
   "contract_info": {
     "vname": "Empty",
     "params": [],

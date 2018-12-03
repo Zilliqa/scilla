@@ -84,6 +84,12 @@ let check_events_info einfo  =
   | Error msg -> pout @@ scilla_error_to_string msg ; einfo
   | Ok _ -> einfo
 
+let check_cashflow typed_cmod =
+  let j = CF.main typed_cmod in
+  List.map j
+    ~f:(fun (i, t) -> 
+        (i, CF.ECFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string))
+      
 let () =
     let cli = parse_cli () in
     let open GlobalConfig in
@@ -103,29 +109,21 @@ let () =
       let%bind pm_checked_cmod = check_patterns typed_cmod  in
       let%bind _ = check_sanity pm_checked_cmod.contr  in
       let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr)  in
-      let _ = if cli.cf_flag
-        then
-          let cf_field_tags = CF.main typed_cmod in
-          let j = `Assoc [
-              ("cashflow_tags",
-               `List
-                 (List.map
-                    cf_field_tags
-                    ~f:(fun (i, t) ->
-                        `Assoc [("field", `String i);
-                                ("tag", `String (CF.ECFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string))])))
-            ] in
-          pout (sprintf "%s\n" (Yojson.pretty_to_string j)); ()
-        else
-          ()
-      in
-      pure @@ (cmod, tenv, event_info)
+      let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
+      pure @@ (cmod, tenv, event_info, cf_info_opt)
     ) in
     match r with
     | Error el -> exit 1 (* we've already printed the error(s). *)
-    | Ok (cmod, _, event_info) ->
-      let j = `Assoc [
-        ("contract_info", (JSON.ContractInfo.get_json cmod.contr event_info));
-        ("warnings", scilla_warning_to_json (get_warnings()));
-      ] in
-      pout (sprintf "%s\n" (Yojson.pretty_to_string j));
+    | Ok (cmod, _, event_info, cf_info_opt) ->
+        let base_output =
+          [
+            ("contract_info", (JSON.ContractInfo.get_json cmod.contr event_info));
+            ("warnings", scilla_warning_to_json (get_warnings()));
+          ] in
+        let output_with_cf =
+          match cf_info_opt with
+          | None -> base_output
+          | Some cf_info -> ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: base_output in
+        let j = `Assoc output_with_cf in
+        pout (sprintf "%s\n" (Yojson.pretty_to_string j));
+        

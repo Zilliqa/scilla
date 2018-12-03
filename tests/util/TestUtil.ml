@@ -94,9 +94,10 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
       let args = custom_args @ common_args in
       (if (env.print_cli test_ctxt) then
         if use_stdlib then
-          (Printf.printf "\nUsing CLI: %s %s %s %s %s %s\n" runner (List.fold_left (fun acc s -> acc ^ " " ^ s) "" custom_args) "-libdir" libdir "-jsonerrors" input_file)
-        else
-          (Printf.printf "\nUsing CLI: %s %s %s %s\n" runner (List.fold_left (fun acc s -> acc ^ " " ^ s) "" custom_args) "-jsonerrors" input_file));
+          (if (env.print_cli test_ctxt) then
+             (Printf.printf "\nUsing CLI: "; List.iter (fun arg -> Printf.printf "%s " arg) args);
+          );
+      );
       let update_gold = env.update_gold test_ctxt in
       if update_gold then
         assert_command ~exit_code:exit_code ~use_stderr:true ~foutput:output_updater ~chdir:dir ~ctxt:test_ctxt evalbin (args)

@@ -4,9 +4,7 @@
     { "field": "total_tokens", "tag": "NoInfo" },
     { "field": "balances", "tag": "(Map NoInfo)" },
     { "field": "allowed", "tag": "(Map(Map NoInfo))" }
-  ]
-}
-{
+  ],
   "contract_info": {
     "vname": "FungibleToken",
     "params": [

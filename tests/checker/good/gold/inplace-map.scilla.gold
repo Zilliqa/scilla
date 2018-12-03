@@ -3,9 +3,7 @@
     { "field": "owner", "tag": "NotMoney" },
     { "field": "gmap", "tag": "(Map NoInfo)" },
     { "field": "gmap3", "tag": "(Map(Map(Map NoInfo)))" }
-  ]
-}
-{
+  ],
   "contract_info": {
     "vname": "Test",
     "params": [ { "vname": "owner", "type": "ByStr20" } ],

@@ -428,3 +428,15 @@ module Event = struct
       Basic.to_string j
 
 end
+
+module CashflowInfo = struct
+
+  let get_json tags =
+    `List
+      (List.map
+         tags
+         ~f:(fun (i, t) ->
+             `Assoc [("field", `String i);
+                     ("tag", `String t)]))
+  
+end

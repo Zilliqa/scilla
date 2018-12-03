@@ -7,9 +7,7 @@
     { "field": "player_a_hash", "tag": "(Option NoInfo)" },
     { "field": "player_b_hash", "tag": "(Option NoInfo)" },
     { "field": "timer", "tag": "(Option NoInfo)" }
-  ]
-}
-{
+  ],
   "contract_info": {
     "vname": "ZilGame",
     "params": [
