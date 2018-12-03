@@ -71,6 +71,11 @@ let build_prim_lit_exn t v =
   in
     exn_wrapper t (build_prim_literal t v) v
 
+let constr_pattern_arg_types_exn dt cname =
+  match constr_pattern_arg_types dt cname with
+  | Error emsg -> raise (Invalid_json (emsg))
+  | Ok s ->s
+
 (****************************************************************)
 (*                    JSON parsing                              *)
 (****************************************************************)
@@ -100,50 +105,12 @@ let rec json_to_adtargs cname tlist ajs =
   | Ok (r, _) ->
     r
   ) in
-  match cname with
-  | "Some" ->
-    verify_args_exn cname (List.length ajs) 1;
-    let j = List.nth_exn ajs 0 in
-    let t = List.nth_exn tlist 0 in
-    let lit = json_to_lit t j in
-      ADTValue (cname, tlist, (lit::[]))
-  | "None" ->
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, tlist, [])
-  | "True" | "False" -> 
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, [], []) 
-  | "Pair" ->
-    verify_args_exn cname (List.length ajs) 2;
-    let j1 = List.nth_exn ajs 0 in
-    let t1 = List.nth_exn tlist 0 in
-    let lit1 = json_to_lit t1 j1 in
-    let j2 = List.nth_exn ajs 1 in
-    let t2 = List.nth_exn tlist 1 in
-    let lit2 = json_to_lit t2 j2 in
-      ADTValue (cname, tlist, (lit1::lit2::[]))
-  | "Nil" ->
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, tlist, [])
-  | "Cons" ->
-    verify_args_exn cname (List.length ajs) 2;
-    let j1 = List.nth_exn ajs 0 in (* first element in the list *)
-    let j2 = List.nth_exn ajs 1 in (* rest of the list *)
-    let t = List.nth_exn tlist 0 in (* type of element of list *)
-    let lit1 = json_to_lit t j1 in
-    (* We know that the "rest of the list" is an ADT. *)
-    let lit2 = read_adt_json dt.tname j2 tlist in
-      ADTValue (cname, tlist, (lit1::lit2::[]))
-  | "Zero" ->
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, [], [])
-  | "Succ" ->
-    verify_args_exn cname (List.length ajs) 1;
-    let j = List.nth_exn ajs 0 in (* successor of *)
-    let lit = read_adt_json dt.tname j tlist in
-      ADTValue (cname, [], lit::[])
-  | _ ->
-    raise (mk_invalid_json ("JSON parsing: Unsupported ADT type"))
+  (* For each component literal of our ADT, calculate it's type.
+   * This is essentially using DataTypes.constr_tmap and substituting safely. *)
+  let tmap = constr_pattern_arg_types_exn (ADT(dt.tname, tlist)) cname in
+  verify_args_exn cname (List.length ajs) (List.length tmap);
+  let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t j) in
+    ADTValue(cname, tlist, llist)
 
 and read_adt_json name j tlist_verify =
   let open Basic.Util in
