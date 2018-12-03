@@ -937,13 +937,8 @@ module ScillaCashflowChecker
            lhs_changes || rhs_changes || new_i_tag <> get_id_tag i)
       | Constr (cname, ts, args) ->
           let new_args = List.map (fun arg -> update_id_tag arg (lookup_var_tag2 arg local_env field_env)) args in
-          let (args_changes, _) =
-            List.fold_left
-              (fun (acc_changes, new_args_acc) arg ->
-                 match new_args_acc with
-                 | [] -> (false, [])
-                 | x :: rest -> (acc_changes || (get_id_tag x) <> (get_id_tag arg), rest))
-              (false, new_args) args in
+          let args_changes =
+            List.exists2 (fun arg new_arg -> (get_id_tag arg) <> (get_id_tag new_arg)) args new_args in
           let tag =
             match cname with
             | "None" -> Option NoInfo
