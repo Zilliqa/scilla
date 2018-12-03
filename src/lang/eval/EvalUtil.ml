@@ -401,17 +401,6 @@ module Configuration = struct
       | [] -> pure true
       | m :: _ -> fail0 @@ sprintf "This is not a message:\n%s" (pp_literal m)
 
-  (* Convert Scilla list to OCaml list *)
-  let get_list_literal v =
-      let rec convert_to_list = (function
-        | ADTValue ("Nil", _, []) -> pure []
-        | ADTValue ("Cons", _, [h; t]) ->
-            let%bind rest = convert_to_list t in
-            pure @@ h :: rest
-        | l -> fail0 @@ sprintf "The literal is not a list:\n%s" (pp_literal l))
-      in
-      convert_to_list v
-
   let validate_outgoing_message m' =
     let open ContractUtil.MessagePayload in
     match m' with
@@ -428,7 +417,7 @@ module Configuration = struct
     | _ -> fail0 @@ sprintf "Literal %s is not a message, cannot be sent." (pp_literal m')
 
   let send_messages conf ms =
-    let%bind ls' = get_list_literal ms in
+    let%bind ls' = fromR @@ Datatypes.scilla_list_to_ocaml ms in
     let%bind ls = mapM ~f:validate_outgoing_message ls' in
     let old_emitted = conf.emitted in
     let emitted = old_emitted @ ls in

@@ -11,7 +11,7 @@
         "constructor": "Pair",
         "argtypes": [ "List (Int64)", "Option (Bool)" ],
         "arguments": [
-          { "constructor": "Nil", "argtypes": [ "Int64" ], "arguments": [] },
+          [],
           { "constructor": "None", "argtypes": [ "Bool" ], "arguments": [] }
         ]
       }
