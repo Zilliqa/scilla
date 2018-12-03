@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "7191",
+  "gas_remaining": "7189",
   "_accepted": "false",
   "message": {
     "_tag": "",
@@ -26,6 +26,7 @@
         ]
       }
     },
+    { "vname": "plist", "type": "List (Option (Int32))", "value": [] },
     {
       "vname": "gnat",
       "type": "Nat",

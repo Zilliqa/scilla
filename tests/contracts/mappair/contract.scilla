@@ -35,6 +35,7 @@ field gpair : Pair (List(Int64)) (Option (Bool)) =
     Pair {(List(Int64)) (Option(Bool))} el n
 
 field llist : List (List(Int64)) = Nil {(List(Int64))}
+field plist : List(Option(Int32)) = Nil {(Option(Int32))}
 
 field gnat : Nat = Zero
 
@@ -93,6 +94,15 @@ transition lflatten ()
   msg = {_tag : ""; _recipient : _sender; _amount : Uint128 0; listLength : len};
   msgs = one_msg msg;
   send msgs
+end
+
+transition optlist ()
+  n <- plist;
+  len = let my_list_length = @list_length (Option(Int32)) in my_list_length n;
+  msg = {_tag : ""; _recipient : _sender; _amount : Uint128 0; listLength : len};
+  msgs = one_msg msg;
+  send msgs
+ 
 end
 
 (* This transition sends out a malformed message. Will flag error. *)
