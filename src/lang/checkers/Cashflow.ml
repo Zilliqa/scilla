@@ -897,11 +897,6 @@ module ScillaCashflowChecker
       | Builtin (f, args) ->
           let args_tags = List.map (fun arg -> lookup_var_tag2 arg local_env field_env) args in
           let (res_tag, args_tags_usage) = builtin_signature f expected_tag args_tags in
-          let final_args_tags =
-            List.map2
-              (fun arg_tag arg_tag_usage -> lub_tags arg_tag arg_tag_usage)
-              args_tags
-              args_tags_usage in
           let (final_args, final_field_env, final_local_env, changes) =
             List.fold_right2
               (fun arg arg_tag (acc_args, acc_field_env, acc_local_env, acc_changes) ->
@@ -912,7 +907,7 @@ module ScillaCashflowChecker
                   new_local_env,
                   acc_changes || (get_id_tag arg) <> arg_tag))
               args
-              final_args_tags
+              args_tags_usage
               ([], field_env, local_env, false) in
           let f_tag = lub_tags (Map res_tag) (Map expected_tag) in
           let new_f = update_id_tag f f_tag in
