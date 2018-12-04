@@ -74,6 +74,16 @@ let liftPair1 m x = match m with
   | Ok z -> Ok (z, x)
   | Error _ as err -> err
 
+(* Return the first error applying f to elements of ls.
+ * Returns true if all elements satisfy f. *)
+let rec forallM ~f ls = match ls with
+  | x :: ls' ->
+    (match f x with
+    | Ok _ -> forallM ~f:f ls'
+    | Error _ as e -> e
+    )
+  | [] -> Ok true
+
 (****************************************************************)
 (*           A monad for `Eval` and related utilites            *)
 (****************************************************************)
@@ -211,5 +221,19 @@ module EvalMonad = struct
        match m remaining_gas with
        | Ok (z, es) -> Ok ((z, x), es)
        | Error _ as err -> err)
+
+(* Return the first error applying f to elements of ls.
+ * Returns true if all elements satisfy f. *)
+  let forallM ~f ls =
+    let rec doForall ls remaining_gas =
+      match ls with
+      | x :: ls' ->
+        (match (f x) remaining_gas with
+        | Ok (_, remaining_gas') -> doForall ls' remaining_gas'
+        | Error _ as e -> e
+        )
+      | [] -> Ok (true, remaining_gas)
+    in
+    (fun remaining_gas -> doForall ls remaining_gas)
 
 end (* module EvalMonad *)
