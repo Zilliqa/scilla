@@ -130,7 +130,7 @@ module ScillaGas
                  * base
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
-  let hash_coster op args base =
+  let crypto_coster op args base =
     let open BatOption in
     let%bind types = mapM args ~f:literal_type in
     let div_ceil x y =
@@ -208,17 +208,17 @@ module ScillaGas
     ("blt", [bnum_typ;bnum_typ], base_coster, 32);
     ("badd", [bnum_typ;tvar "'A"], base_coster, 32);
 
-    (* Hashes *)
-    ("eq", [tvar "'A"; tvar "'A"], hash_coster, 1);
+    (* Crypto *)
+    ("eq", [tvar "'A"; tvar "'A"], crypto_coster, 1);
     (* We currently only support `dist` for ByStr32. *)
     ("dist", [bystrx_typ hash_length; bystrx_typ hash_length], base_coster, 32);
-    ("to_bystr", [tvar "'A"], hash_coster, 1);
-    ("sha256hash", [tvar "'A"], hash_coster, 1);
-    ("keccak256hash", [tvar "'A"], hash_coster, 1);
-    ("ripemd160hash", [tvar "'A"], hash_coster, 1);
-    ("schnorr_gen_key_pair", [], hash_coster, 1);
-    ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], hash_coster, 1);
-    ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], hash_coster, 1);
+    ("to_bystr", [tvar "'A"], crypto_coster, 1);
+    ("sha256hash", [tvar "'A"], crypto_coster, 1);
+    ("keccak256hash", [tvar "'A"], crypto_coster, 1);
+    ("ripemd160hash", [tvar "'A"], crypto_coster, 1);
+    ("schnorr_gen_key_pair", [], crypto_coster, 1);
+    ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], crypto_coster, 1);
+    ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster, 1);
 
     (* Maps *)
     ("contains", [tvar "'A"; tvar "'A"], map_coster, 1);
