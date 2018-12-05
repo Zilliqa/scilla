@@ -123,11 +123,13 @@ type literal =
   (* An embedded closure *)
   | Clo of (literal -> 
             (literal, scilla_error list, 
-             (literal, scilla_error list) EvalMonad.eresult) EvalMonad.CPSMonad.t)
+             (literal * (string * literal) list, scilla_error list) 
+               EvalMonad.eresult) EvalMonad.CPSMonad.t)
   (* A type abstraction *)
   | TAbs of (typ -> 
              (literal, scilla_error list, 
-              (literal, scilla_error list) EvalMonad.eresult) EvalMonad.CPSMonad.t)
+              (literal * (string * literal) list, scilla_error list) 
+                EvalMonad.eresult) EvalMonad.CPSMonad.t)
 [@@deriving sexp]
 
 
