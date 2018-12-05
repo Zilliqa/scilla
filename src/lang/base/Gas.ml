@@ -65,7 +65,34 @@ module ScillaGas
             let%bind clit2 = literal_cost lit2 in
             pure (acc + clit1 + clit2)) m (pure 0)
       (* A constructor in HNF *)      
-      | ADTValue (_, _, ll) ->
+      | ADTValue (cn, _, ll) as als ->
+        (* Make a special case for Lists, to avoid overflowing recursion. *)
+        if cn = "Cons"
+        then
+          let size = ref 0 in
+          let seen_nil = ref false in
+          let elm = ref als in
+          (* TODO: How to have monadic result inside a while loop? *)
+          let err = (Utils.mk_internal_error "Error computing gas cost, malformed list.") in
+          while not !seen_nil do
+            (match !elm with
+            | ADTValue (cn, _, ll) ->
+              if cn = "Cons" then
+                ((match literal_cost (List.nth_exn ll 0) with
+                | Error _ -> raise err;
+                | Ok elm_cost ->
+                  size := !size + elm_cost;
+                );
+                elm := (List.nth_exn ll 1))
+              else if cn = "Nil" then
+                (size := !size + 1;
+                seen_nil := true)
+              else raise err
+            | _ -> raise err
+            )
+          done;
+          pure !size
+        else
           if List.is_empty ll then pure 1 else
           foldM ~f:(fun acc lit' ->
               let%bind clit' = literal_cost lit' in
