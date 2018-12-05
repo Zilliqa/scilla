@@ -33,12 +33,6 @@ let lookup_constructor_exn cn =
   | Error emsg -> raise (Utils.InternalError (emsg))
   | Ok s-> s
 
-let scilla_list_to_ocaml_exn ls =
-  let ls' = Datatypes.scilla_list_to_ocaml ls in
-  match ls' with
-  | Error emsg -> raise (Utils.InternalError (emsg))
-  | Ok ls'' -> ls''
-
 (****************************************************************)
 (*                    JSON printing                             *)
 (****************************************************************)
