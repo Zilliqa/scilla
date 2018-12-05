@@ -165,6 +165,7 @@ let scilla_list_to_ocaml v =
 
 (* Call iter for each element of the list v. *)
 let scilla_list_iterator iter v =
+  let err = (Utils.mk_internal_error "Malformed Scilla list, error while traversing.") in
   let seen_nil = ref false in
   let elm = ref v in
   while not !seen_nil do
@@ -173,9 +174,11 @@ let scilla_list_iterator iter v =
       if cn = "Cons" then
         (iter(v');
         elm := (List.nth_exn ll 1))
-      else 
+      else if cn = "Nil" then
         seen_nil := true
-    | _ -> ()
+      else
+        raise err
+    | _ -> raise err
     )
   done;
 
