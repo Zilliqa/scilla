@@ -52,6 +52,7 @@ let () =
       (* Import all libraries in known stdlib paths. *)
       let elibs = import_all_libs lib_dirs in
       let envres = Eval.init_libraries (Some clib) elibs in
+      
       let env, gas_remaining = 
         (match envres gas_limit with
         | Ok (env', gas_remaining) -> env', gas_remaining
