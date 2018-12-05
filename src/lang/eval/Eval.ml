@@ -1,4 +1,4 @@
- (*
+(*
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
@@ -15,7 +15,6 @@
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-
 
 open Syntax
 open Core

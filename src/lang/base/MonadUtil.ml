@@ -98,25 +98,25 @@ module EvalMonad = struct
    * produces eresult (with a new value for remaining_gas). *)
   module CPSMonad = struct
 
-      type nonrec ('a, 'b, 'c) t = int -> (('a, 'b) eresult -> 'c) -> 'c
+      type nonrec ('a, 'b, 'c) t = (('a, 'b) eresult -> 'c) -> int -> 'c
 
       (* This does charge any gas. *)
-      let return x = (fun remaining_gas k -> k @@ Ok (x, remaining_gas))
+      let return x = (fun k remaining_gas-> k @@ Ok (x, remaining_gas))
 
       let bind x ~f =
-        (fun remaining_gas k ->
+        (fun k remaining_gas ->
            let k' r = (match r with
              | Error _ as x'  -> k x'
-             | Ok (z, remaining_gas') -> (f z) remaining_gas' k) in
-           x remaining_gas k'
+             | Ok (z, remaining_gas') -> (f z) k remaining_gas') in
+           x k' remaining_gas
         )
 
       let map x ~f = 
-        (fun remaining_gas k ->
+        (fun k remaining_gas->
            let k' r = (match r with
            | Error _ as x' -> k x'
            | Ok (z, remaining_gas') -> k @@ Ok ((f z), remaining_gas')) in
-           x remaining_gas k'
+           x  k' remaining_gas
         )
 
       let map = `Custom map
@@ -126,7 +126,8 @@ module EvalMonad = struct
   include Monad.Make3 (CPSMonad)
 
   (* Monadic evaluation results *)
-  let fail (s : scilla_error list) = (fun remaining_gas -> Error (s, remaining_gas))
+  let fail (s : scilla_error list) = 
+    (fun k remaining_gas -> k @@ Error (s, remaining_gas))
   let pure e = return e
 
   (* fail with just a message, no location info. *)
@@ -148,21 +149,21 @@ module EvalMonad = struct
 
   (* Wrap an op with cost check when op returns "result". *)
   let checkwrap_opR op_thunk cost =
-    (fun remaining_gas ->
+    (fun k remaining_gas ->
        if (remaining_gas >= cost)
        then 
-         let res = op_thunk() in
-         mapR res (remaining_gas - cost)
+         let res = op_thunk () in
+         k @@ mapR res (remaining_gas - cost)
        else 
-         Error (mk_error0 "Ran out of gas", remaining_gas))
+         k @@ Error (mk_error0 "Ran out of gas", remaining_gas))
 
   (* Wrap an op with cost check when op returns "eresult". *)
   let checkwrap_op op_thunk cost emsg =
-    (fun remaining_gas ->
+    (fun k remaining_gas ->
        if remaining_gas >= cost then
-         op_thunk() (remaining_gas - cost)
+          op_thunk () k (remaining_gas - cost)
        else
-         Error (emsg, remaining_gas))
+         k @@ Error (emsg, remaining_gas))
 
   open Let_syntax
 
@@ -206,14 +207,16 @@ module EvalMonad = struct
 
   (* Try all variants in the list, pick the first successful one *)
   let tryM ~f ls ~msg =
-    let rec doTry ls remaining_cost =
+    let rec doTry ls k remaining_cost =
       match ls with
       | x :: ls' ->
-          (match (f x) remaining_cost  with
-           | Ok (z, remaining_cost') -> Ok ((x, z), remaining_cost')
-           | Error (_, remaining_cost') -> doTry ls' remaining_cost')
-      | [] -> Error (msg (), remaining_cost)
+          let k' r = (
+            match r with
+            | Ok (z, remaining_cost') -> k @@ Ok ((x, z), remaining_cost')
+            | Error (_, remaining_cost') -> doTry ls' k remaining_cost') in
+          (f x) k' remaining_cost
+      | _ -> k @@ Error (msg (), remaining_cost)
     in
-    (fun remaining_cost -> doTry ls remaining_cost)
+    (fun k remaining_cost -> doTry ls k remaining_cost)
 
 end (* module EvalMonad *)

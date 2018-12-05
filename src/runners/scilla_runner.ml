@@ -29,6 +29,7 @@ open Stdint
 open RunnerUtil
 open GlobalConfig
 open MonadUtil.EvalMonad
+open Let_syntax
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -37,7 +38,9 @@ open MonadUtil.EvalMonad
 let check_libs clibs elibs name gas_limit =
    let ls = init_libraries clibs elibs in
    (* Are libraries ok? *)
-   match ls gas_limit with
+   let k0 r = (
+     let%bind z = r in snd z) in
+   match ls k0 gas_limit with
    | Ok (res, gas_remaining) ->
        plog (sprintf
          "\n[Initializing libraries]:\n%s\n\nLibraries for [%s] are on. All seems fine so far!\n\n"
