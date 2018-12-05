@@ -375,7 +375,32 @@ module TypeUtilities
   (*                     Typing literals                          *)
   (****************************************************************)
 
-  let rec literal_type l =
+  let literal_type l =
+    let open PrimTypes in 
+    match l with
+    | IntLit (Int32L _) -> pure int32_typ
+    | IntLit (Int64L _) -> pure int64_typ
+    | IntLit (Int128L _) -> pure int128_typ
+    | IntLit (Int256L _) -> pure int256_typ
+    | UintLit (Uint32L _) -> pure uint32_typ
+    | UintLit (Uint64L _) -> pure uint64_typ
+    | UintLit (Uint128L _) -> pure uint128_typ
+    | UintLit (Uint256L _) -> pure uint256_typ
+    | StringLit _ -> pure string_typ
+    | BNum _ -> pure bnum_typ
+    | ByStr _ -> pure bystr_typ
+    | ByStrX (b, _) ->pure (bystrx_typ b)
+    (* Check that messages and events have storable parameters. *)
+    | Msg _ -> pure msg_typ
+    | Map ((kt, vt), _) -> pure (MapType (kt, vt))
+    | ADTValue (cname, ts, _) ->
+        let%bind (adt, _) = DataTypeDictionary.lookup_constructor cname in
+        pure @@ ADT(adt.tname, ts)
+    | Clo _ -> fail0 @@ "Cannot type runtime closure."
+    | TAbs _ -> fail0 @@ "Cannot type runtime type function."
+
+  (* Verifies a literal to be wellformed and returns it's type. *)
+  let rec is_wellformed_lit l =
     let open PrimTypes in 
     match l with
     | IntLit (Int32L _) -> pure int32_typ
@@ -399,7 +424,7 @@ module TypeUtilities
     (* Check that messages and events have storable parameters. *)
     | Msg m -> 
         let%bind all_storable = foldM ~f:(fun acc (_, l) ->
-            let%bind t = literal_type l in
+            let%bind t = is_wellformed_lit l in
             if acc then pure (is_storable_type t) else pure false)
             ~init:true m
         in
@@ -413,8 +438,8 @@ module TypeUtilities
           let%bind valid = Caml.Hashtbl.fold (fun k v res' ->
               let%bind res = res' in
               if not res then pure @@ res else
-                let%bind kt' = literal_type k in
-                let%bind vt' = literal_type v in
+                let%bind kt' = is_wellformed_lit k in
+                let%bind vt' = is_wellformed_lit v in
                 pure @@
                 ((type_equiv kt kt') && (type_equiv vt vt'))
             ) kv (pure true) in
@@ -443,7 +468,7 @@ module TypeUtilities
         else
           let res = ADT(tname, ts) in
           let%bind tmap = constr_pattern_arg_types res cname in
-          let%bind arg_typs = mapM ~f:(fun l -> literal_type l) args in
+          let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
           let args_valid = List.for_all2_exn tmap arg_typs 
               ~f:(fun t1 t2 -> type_equiv t1 t2) in
           if not args_valid
@@ -451,6 +476,7 @@ module TypeUtilities
           else pure @@ res
     | Clo _ -> fail0 @@ "Cannot type-check runtime closure."
     | TAbs _ -> fail0 @@ "Cannot type-check runtime type function."
+
 end
 
 (*****************************************************************)

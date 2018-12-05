@@ -347,51 +347,62 @@ let init_contract clibs elibs cparams' cfields args init_bal  =
   let cparams = CU.append_implict_contract_params cparams' in
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
-  let pnames = List.map cparams ~f:(fun (i, _) -> get_id i) in
-  let valid_args = List.for_all args ~f:(fun a ->
-      (* For each argument there is a parameter *)
-      let ex = List.exists pnames ~f:(fun p -> p = fst a) in
-      (* Each argument name occurrs once *)
-      let uniq = (List.count args ~f:(fun e -> fst e = fst a)) = 1 in
-      (* printf "Param: %s, exists: %b, uniq: %b\n" p ex uniq; *)
-      ex && uniq) in
-  let valid_params = List.for_all pnames ~f:(fun p ->
-      (* For each parameter there is an argument *)
-      List.exists args ~f:(fun a -> p = fst a)) in  
-  if not (valid_args && valid_params)
-  then fail0 @@ sprintf
-      "Mismatch between the vector of arguments:\n%s\nand expected parameters%s\n"
-      (pp_literal_map args) (pp_cparams cparams)
-  else
-    (* Fold params into already initialized libraries, possibly shadowing *)
-    let env = List.fold_left ~init:libenv args
-        ~f:(fun e (p, v) -> Env.bind e p v) in
-    let%bind fields = init_fields env cfields in
-    let balance = init_bal in
-    let open ContractState in
-    let cstate = {env; fields; balance} in
-    pure cstate
+  (* Is there an argument that is not a parameter? *)
+  let%bind _ = forallM ~f:(fun a ->
+    let%bind atyp = fromR @@ literal_type (snd a) in
+    let emsg () = mk_error0 
+        (sprintf "Parameter %s : %s is not specified in the contract.\n" (fst a) (pp_typ atyp)) in
+    (* For each argument there should be a parameter *)
+    let%bind (_, mp) = tryM ~f:(fun (ps, pt) -> 
+        let%bind at = fromR @@ literal_type (snd a) in
+        if ((get_id ps) = (fst a) && pt = at)
+          then pure true else fail0 ""
+    ) cparams ~msg:emsg in
+    pure mp
+  ) args in
+  let%bind _ = forallM ~f:(fun (p, _) ->
+    (* For each parameter there should be exactly one argument. *)
+    if (List.count args ~f:(fun a -> (get_id p) = fst a)) <> 1
+    then fail0 (sprintf "Parameter %s must occur exactly once in input.\n" (get_id p))
+    else pure true
+  ) cparams in
+  (* Fold params into already initialized libraries, possibly shadowing *)
+  let env = List.fold_left ~init:libenv args
+      ~f:(fun e (p, v) -> Env.bind e p v) in
+  let%bind fields = init_fields env cfields in
+  let balance = init_bal in
+  let open ContractState in
+  let cstate = {env; fields; balance} in
+  pure cstate
 
 (* Combine initialized state with info from current state *)
 let create_cur_state_fields initcstate curcstate =
   (* If there's a field in curcstate that isn't in initcstate,
      flag it as invalid input state *)
-  let invalid = List.exists curcstate ~f:(fun (s, _) ->
-    not (List.exists initcstate ~f:(fun (t, _) -> s = t))) in
+  let%bind _ = forallM ~f:(fun (s, lc) ->
+    let%bind t_lc = fromR @@ literal_type lc in
+    let emsg () = mk_error0 
+        (sprintf "Field %s : %s not defined in the contract\n" s (pp_typ t_lc)) in
+    let%bind (_, ex) = tryM ~f:(fun (t, li) ->
+        let%bind t1 = fromR @@ literal_type lc in
+        let%bind t2 = fromR @@ literal_type li in
+        if (s = t && (type_equiv t1 t2))
+          then pure true else fail0 ""
+    ) initcstate ~msg:emsg in
+    pure ex
+  ) curcstate in
   (* Each entry name is unique *)
-  let uniq_entries = List.for_all curcstate
-      ~f:(fun e -> (List.count curcstate ~f:(fun e' -> fst e = fst e')) = 1) in
-  if (not invalid) && uniq_entries then
-    (* Get only those fields from initcstate that are not in curcstate *)
-    let filtered_init = List.filter initcstate 
-        ~f:(fun (s, _) -> not (List.exists curcstate 
-            ~f:(fun (s1, _) -> s = s1))) in
-        (* Combine filtered list and curcstate *)
-        pure (filtered_init @ curcstate)
-  else
-    fail0 @@sprintf "Mismatch in input state variables:\nexpected:\n%s\nprovided:\n%s\n"
-                   (pp_literal_map initcstate) (pp_literal_map curcstate)
-
+  let%bind _ = forallM ~f:(fun (e, _) ->
+    if (List.count curcstate ~f:(fun (e', _) -> e = e') > 1)
+    then fail0 (sprintf "Field %s occurs more than once in input.\n" e)
+    else pure true
+  ) initcstate in
+  (* Get only those fields from initcstate that are not in curcstate *)
+  let filtered_init = List.filter initcstate 
+    ~f:(fun (s, _) -> not (List.exists curcstate 
+        ~f:(fun (s1, _) -> s = s1))) in
+    (* Combine filtered list and curcstate *)
+    pure (filtered_init @ curcstate)
 
 let literal_list_gas llit =
   mapM ~f:(fun (name, lit) ->
