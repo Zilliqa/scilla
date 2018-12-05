@@ -163,6 +163,22 @@ let scilla_list_to_ocaml v =
   in
   convert_to_list v
 
+(* Call iter for each element of the list v. *)
+let scilla_list_iterator iter v =
+  let seen_nil = ref false in
+  let elm = ref v in
+  while not !seen_nil do
+    (match !elm with
+    | ADTValue (cn, _, ll) as v' ->
+      if cn = "Cons" then
+        (iter(v');
+        elm := (List.nth_exn ll 1))
+      else 
+        seen_nil := true
+    | _ -> ()
+    )
+  done;
+
 (* TODO: support user_defined data types *)
 
 

@@ -70,28 +70,19 @@ module ScillaGas
         if cn = "Cons"
         then
           let size = ref 0 in
-          let seen_nil = ref false in
-          let elm = ref als in
           (* TODO: How to have monadic result inside a while loop? *)
           let err = (Utils.mk_internal_error "Error computing gas cost, malformed list.") in
-          while not !seen_nil do
-            (match !elm with
-            | ADTValue (cn, _, ll) ->
-              if cn = "Cons" then
-                ((match literal_cost (List.nth_exn ll 0) with
+          let iter = function
+            | ADTValue (_, _, ls) ->
+              (match literal_cost (List.nth_exn ls 0) with
                 | Error _ -> raise err;
                 | Ok elm_cost ->
                   size := !size + elm_cost;
                 );
-                elm := (List.nth_exn ll 1))
-              else if cn = "Nil" then
-                (size := !size + 1;
-                seen_nil := true)
-              else raise err
             | _ -> raise err
-            )
-          done;
-          pure !size
+          in
+          Datatypes.scilla_list_iterator iter als;
+          pure (!size + 1)
         else
           if List.is_empty ll then pure 1 else
           foldM ~f:(fun acc lit' ->

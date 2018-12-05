@@ -80,9 +80,16 @@ and literal_to_json lit =
      if a.tname = "List"
     then
       (* We make an exception for Lists and print them as a JSON array. *)
-      let ls' = scilla_list_to_ocaml_exn ls in
-      let ls'' = List.map ls' ~f:(fun a -> literal_to_json a) in
-      `List ls''
+      let jlist = ref [] in
+      let siter = function
+        | ADTValue (_, _, ll) ->
+          let le = literal_to_json (List.nth_exn ll 0) in
+          jlist := le :: (!jlist)
+        | _ -> raise (Utils.mk_internal_error "Malformed list when printing to JSON")
+      in
+      scilla_list_iterator siter ls;
+      let ls' = List.rev !jlist in
+      `List ls'
     else
       let argtl = adttyps_to_json t in
       let argl = adtargs_to_json v in

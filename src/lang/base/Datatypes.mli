@@ -56,3 +56,4 @@ module DataTypeDictionary : sig
 end
 
 val scilla_list_to_ocaml : literal -> (literal list, scilla_error list) result
+val scilla_list_iterator : (literal -> unit) -> literal -> unit
