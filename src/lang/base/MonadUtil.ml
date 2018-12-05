@@ -52,11 +52,26 @@ let rec foldrM ~f ~init ls = match ls with
 (* Monadic map for error *)
 let rec mapM ~f ls = match ls with
   | x :: ls' ->
-      (match f x, mapM ~f:f ls' with
-       | Ok z, Ok zs -> Ok (z :: zs)
-       | Error _ as err, _ -> err
-       | _, (Error _ as err) -> err)
-  | [] -> Ok []
+      let%bind z = f x in
+      let%bind zs = mapM ~f:f ls' in
+      pure (z :: zs)
+  | [] -> pure []
+
+let liftPair1 m x = 
+  let%bind z = m in
+  pure (z, x)
+
+let liftPair2 x m = 
+  let%bind z = m in
+  pure (x, z)
+
+(* Return the first error applying f to elements of ls.
+ * Returns true if all elements satisfy f. *)
+let rec forallM ~f ls = match ls with
+  | x :: ls' ->
+      let%bind _ = f x in 
+      forallM ~f:f ls'
+  | [] -> pure true
 
 (* Try all variants in the list, pick the first successful one *)
 let rec tryM ~f ls ~msg = match ls with
@@ -65,24 +80,6 @@ let rec tryM ~f ls ~msg = match ls with
        | Ok z -> Ok (x, z)
        | Error _ -> tryM ~f:f ls' ~msg)
   | [] -> Error (msg ())
-
-let liftPair2 x m = match m with
-  | Ok z -> Ok (x, z)
-  | Error _ as err -> err
-
-let liftPair1 m x = match m with
-  | Ok z -> Ok (z, x)
-  | Error _ as err -> err
-
-(* Return the first error applying f to elements of ls.
- * Returns true if all elements satisfy f. *)
-let rec forallM ~f ls = match ls with
-  | x :: ls' ->
-    (match f x with
-    | Ok _ -> forallM ~f:f ls'
-    | Error _ as e -> e
-    )
-  | [] -> Ok true
 
 (****************************************************************)
 (*           A monad for `Eval` and related utilites            *)
@@ -172,31 +169,37 @@ module EvalMonad = struct
         let%bind res = f init x in
         foldM ~f:f ~init:res ls'
     | [] -> pure init
-
+              
   (* Monadic fold-right for error *)
   let rec foldrM ~f ~init ls = match ls with
     | x :: ls' ->
-        let%bind rest = foldrM ~f:f ~init:init ls' in
-        f rest x
+      let%bind rest = foldrM ~f:f ~init:init ls' in
+      f rest x
     | [] -> pure init
-
+              
   (* Monadic map for error *)
-  let mapM ~f ls = 
-    let rec doMap ls remaining_cost =
-      match ls with
-      | x :: ls' ->
-          let r1 = f x in
-          (match r1 remaining_cost with
-           | Ok(z, remaining_cost') ->
-               let z' = (doMap ls' remaining_cost') in
-               (match z' with
-                | Ok (z'', remaining_cost'') -> Ok (z :: z'', remaining_cost'')
-                | Error _ as x' -> x')
-           | Error _ as x' -> x')
+  let rec mapM ~f ls = match ls with
+    | x :: ls' ->
+        let%bind z = f x in
+        let%bind zs = mapM ~f:f ls' in
+        pure (z :: zs)
+    | [] -> pure []
 
-      | [] -> Ok ([], remaining_cost)
-    in
-    (fun remaining_cost -> doMap ls remaining_cost)
+  let liftPair1 m x = 
+    let%bind z = m in
+    pure (z, x)
+      
+  let liftPair2 x m = 
+    let%bind z = m in
+    pure (x, z)
+
+(* Return the first error applying f to elements of ls.
+ * Returns true if all elements satisfy f. *)
+  let rec forallM ~f ls = match ls with
+    | x :: ls' ->
+        let%bind _ = f x in 
+        forallM ~f:f ls'
+    | [] -> pure true
 
   (* Try all variants in the list, pick the first successful one *)
   let tryM ~f ls ~msg =
@@ -209,31 +212,5 @@ module EvalMonad = struct
       | [] -> Error (msg (), remaining_cost)
     in
     (fun remaining_cost -> doTry ls remaining_cost)
-
-  let liftPair2 x m = 
-    (fun remaining_gas ->
-       match m remaining_gas with
-       | Ok (z, es) -> Ok ((x, z), es)
-       | Error _ as err -> err)
-
-  let liftPair1 m x =
-    (fun remaining_gas ->
-       match m remaining_gas with
-       | Ok (z, es) -> Ok ((z, x), es)
-       | Error _ as err -> err)
-
-(* Return the first error applying f to elements of ls.
- * Returns true if all elements satisfy f. *)
-  let forallM ~f ls =
-    let rec doForall ls remaining_gas =
-      match ls with
-      | x :: ls' ->
-        (match (f x) remaining_gas with
-        | Ok (_, remaining_gas') -> doForall ls' remaining_gas'
-        | Error _ as e -> e
-        )
-      | [] -> Ok (true, remaining_gas)
-    in
-    (fun remaining_gas -> doForall ls remaining_gas)
 
 end (* module EvalMonad *)
