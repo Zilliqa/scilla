@@ -34,7 +34,7 @@ module Exp_descriptions = struct
 
   let add_neg dsc c_name =
     match dsc with
-    | Pos _ -> raise (InternalError (sprintf "Internal error: Can only add negative constructor %s to Neg description" c_name))
+    | Pos _ -> raise (mk_internal_error (sprintf "Internal error: Can only add negative constructor %s to Neg description" c_name))
     | Neg cs -> Neg (c_name :: cs)
 
   let rec build_dsc ctx dsc sps =
@@ -42,7 +42,7 @@ module Exp_descriptions = struct
     | [] -> dsc
     | (c_name, args) :: ctx_rest ->
         match sps with
-        | [] -> raise (InternalError "Internal error: Cannot build expression description from pattern match context")
+        | [] -> raise (mk_internal_error "Internal error: Cannot build expression description from pattern match context")
         | (_, _, dargs) :: spss ->
             build_dsc ctx_rest (Pos (c_name, List.rev args @ (dsc :: dargs))) spss
 
@@ -54,7 +54,7 @@ module Exp_descriptions = struct
   let pos_ctx ctx =
     match ctx with
     | (c_name, args) :: rest -> augment_ctx rest (Pos (c_name, List.rev args))
-    | [] -> raise (InternalError "Internal error: pattern match context is empty")
+    | [] -> raise (mk_internal_error "Internal error: pattern match context is empty")
 end
 
 

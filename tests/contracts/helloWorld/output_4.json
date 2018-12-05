@@ -2,6 +2,11 @@
   "gas_remaining": 7847,
   "errors": [
     {
+      "error_message": "_balance field missing",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
       "error_message":
         "Failed to parse json tests/contracts/helloWorld/state_4.json:\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

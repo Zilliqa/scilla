@@ -268,7 +268,7 @@ module ScillaTypechecker
     let actuals_with_types =
       match List.zip actuals tqargs with
       | Some l -> l
-      | None -> raise (InternalError "Different number of actuals and Types of actuals")  in
+      | None -> raise (mk_internal_error "Different number of actuals and Types of actuals")  in
     let typed_actuals = List.map actuals_with_types ~f:(fun (a, t) -> add_type_to_ident a t) in
     pure @@ (targs, typed_actuals)
 

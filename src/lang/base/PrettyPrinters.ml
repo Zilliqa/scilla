@@ -24,6 +24,22 @@ open PrimTypes
 open ErrorUtils
 
 (****************************************************************)
+(*                    Exception wrappers                        *)
+(****************************************************************)
+
+let lookup_constructor_exn cn =
+  let t = Datatypes.DataTypeDictionary.lookup_constructor cn in
+  match t with
+  | Error emsg -> raise (Utils.InternalError (emsg))
+  | Ok s-> s
+
+let scilla_list_to_ocaml_exn ls =
+  let ls' = Datatypes.scilla_list_to_ocaml ls in
+  match ls' with
+  | Error emsg -> raise (Utils.InternalError (emsg))
+  | Ok ls'' -> ls''
+
+(****************************************************************)
 (*                    JSON printing                             *)
 (****************************************************************)
 
@@ -58,7 +74,16 @@ and literal_to_json lit =
   | UintLit x -> `String (string_of_uint_lit x)
   | Map ((_, _), kvs) ->
       `List (mapvalues_to_json kvs)
-  | ADTValue (n, t, v) ->
+  | ADTValue (n, t, v) as ls ->
+    let open Datatypes in
+    let (a, _) = lookup_constructor_exn n in
+     if a.tname = "List"
+    then
+      (* We make an exception for Lists and print them as a JSON array. *)
+      let ls' = scilla_list_to_ocaml_exn ls in
+      let ls'' = List.map ls' ~f:(fun a -> literal_to_json a) in
+      `List ls''
+    else
       let argtl = adttyps_to_json t in
       let argl = adtargs_to_json v in
         `Assoc [

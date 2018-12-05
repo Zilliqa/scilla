@@ -7,7 +7,25 @@
             "constructor": "Pair",
             "argtypes": [ "List (Int64)", "Option (Bool)" ],
             "arguments": [
-                ["3", "2"],
+                {
+                    "constructor": "Cons",
+                    "argtypes": [ "Int64" ],
+                    "arguments": [
+                        "3",
+                        {
+                            "constructor": "Cons",
+                            "argtypes": [ "Int64" ],
+                            "arguments": [
+                                "2",
+                                {
+                                    "constructor": "Nil",
+                                    "argtypes": [ "Int64" ],
+                                    "arguments": ["121"]
+                                }
+                            ]
+                        }
+                    ]
+                },
                 {
                     "constructor": "Some",
                     "argtypes": [ "Bool" ],
