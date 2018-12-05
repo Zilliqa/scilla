@@ -165,6 +165,7 @@ let scilla_list_to_ocaml v =
 
 (* Call iter for each element of the list v. *)
 let scilla_list_iterator iter v =
+  (* TODO: How to have monadic result inside a while loop? *)
   let err = (Utils.mk_internal_error "Malformed Scilla list, error while traversing.") in
   let seen_nil = ref false in
   let elm = ref v in

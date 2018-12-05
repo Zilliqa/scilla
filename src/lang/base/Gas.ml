@@ -70,7 +70,6 @@ module ScillaGas
         if cn = "Cons"
         then
           let size = ref 0 in
-          (* TODO: How to have monadic result inside a while loop? *)
           let err = (Utils.mk_internal_error "Error computing gas cost, malformed list.") in
           let iter = function
             | ADTValue (_, _, ls) ->
