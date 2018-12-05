@@ -201,6 +201,9 @@ and exp_eval_wrapper expr env =
   (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
   checkwrap_op thunk cost (mk_error1 emsg eloc)
 
+let init_kont = (function
+    | EvalMonad.Ok ((r, _), g) -> Ok (r, g)
+    | Error _ as err -> err)
 
 open EvalSyntax
 (*******************************************************)
@@ -325,10 +328,11 @@ let init_libraries clibs elibs =
   let libs = Recursion.recursion_principles @ (combine_libs clibs elibs) in
 
   DebugMessage.plog ("Loading library functions.");
-  List.fold_left libs ~init:(pure Env.empty)
+  let lbs = List.fold_left libs ~init:(pure Env.empty)
     ~f:(fun eres lentry ->
         let%bind env = eres in
-        init_lib_entry env lentry)
+        init_lib_entry env lentry) in
+  lbs 
 
 (* Initialize fields in a constant environment *)
 let init_fields env fs =
