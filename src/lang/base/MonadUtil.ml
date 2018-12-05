@@ -96,31 +96,34 @@ module EvalMonad = struct
    * returns a function "(int -> ('a, 'b) eresult", which
    * when executed with "remaining_gas" as the argument
    * produces eresult (with a new value for remaining_gas). *)
-  include Monad.Make2 (struct
+  module CPSMonad = struct
 
-      type nonrec ('a, 'b) t = int -> ('a, 'b) eresult
+      type nonrec ('a, 'b, 'c) t = int -> (('a, 'b) eresult -> 'c) -> 'c
+
+      (* This does charge any gas. *)
+      let return x = (fun remaining_gas k -> k @@ Ok (x, remaining_gas))
 
       let bind x ~f =
-        (fun remaining_gas ->
-           let r = x remaining_gas in
-           match r with
-           | Error _ as x'  -> x'
-           | Ok (z, remaining_gas') -> (f z) remaining_gas'
+        (fun remaining_gas k ->
+           let k' r = (match r with
+             | Error _ as x'  -> k x'
+             | Ok (z, remaining_gas') -> (f z) remaining_gas' k) in
+           x remaining_gas k'
         )
 
-      let map x ~f =
-        (fun remaining_gas ->
-           let r = x remaining_gas in
-           match r with
-           | Error _ as x' -> x'
-           | Ok (z, remaining_gas') -> Ok ((f z), remaining_gas'))
+      let map x ~f = 
+        (fun remaining_gas k ->
+           let k' r = (match r with
+           | Error _ as x' -> k x'
+           | Ok (z, remaining_gas') -> k @@ Ok ((f z), remaining_gas')) in
+           x remaining_gas k'
+        )
 
       let map = `Custom map
 
-      (* This does charge any gas. *)
-      let return x = (fun remaining_gas -> Ok (x, remaining_gas))
+    end             
 
-    end)
+  include Monad.Make3 (CPSMonad)
 
   (* Monadic evaluation results *)
   let fail (s : scilla_error list) = (fun remaining_gas -> Error (s, remaining_gas))
