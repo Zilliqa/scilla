@@ -201,9 +201,13 @@ and exp_eval_wrapper expr env =
   (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
   checkwrap_op thunk cost (mk_error1 emsg eloc)
 
-let exp_eval_wrapper_no_cps expr env k remaining_gas = 
-  let k0 = fun x -> x in 
-  let eval_res = exp_eval_wrapper expr env k0 remaining_gas in
+
+let exp_eval_wrapper_no_cps expr env k gas = 
+  let init_kont r gas' = (match r with 
+    | Ok z -> Ok (z, gas')
+    | Error msg -> Error (msg, gas'))
+  in
+  let eval_res = exp_eval_wrapper expr env init_kont gas in
   k eval_res
 
 open EvalSyntax
@@ -282,7 +286,8 @@ let rec stmt_eval conf stmts =
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       (* TODO: Implement Throw *)
-      | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
+      | _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
+      (* | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc *)
     )
 
 (*******************************************************)
