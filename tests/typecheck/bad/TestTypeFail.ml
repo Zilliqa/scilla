@@ -35,7 +35,7 @@ open TestTypeUtils
  * the literal is malformed. Do not pass good literals. *)
 let make_bad_lit_test l =
   let is_invalid_literal l =
-    let v = literal_type l in
+    let v = is_wellformed_lit l in
     match v with
     | Error _ -> true
     | Ok _ -> false

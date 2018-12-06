@@ -122,6 +122,15 @@ and read_adt_json name j tlist_verify =
       r
     ) in
   let res = match j with
+  | `List vli ->
+    (* We make an exception for Lists, allowing them to be stored flatly. *)
+    if dt.tname <> "List" then
+      raise (Invalid_json (mk_error0 "ADT value is a JSON array, but type is not List"))
+    else
+      let etyp = List.nth_exn tlist_verify 0 in
+      List.fold_right vli
+        ~f:(fun vl acc -> (ADTValue("Cons", [etyp], [(json_to_lit etyp vl);acc])))
+        ~init:(ADTValue("Nil", [etyp], []))
   | `Assoc _ ->
       let constr = member_exn "constructor" j |> to_string in
       let dt' =
@@ -178,19 +187,8 @@ and mapvalues_from_json m kt vt l =
         | _ -> raise (mk_invalid_json ("Key in Map JSON is not a PrimType"))
         ) in
     let vjson = member_exn "val" first in
-    let vallit =
-      (match vt with
-        | MapType (kt', vt') ->
-          read_map_json kt' vt' vjson
-        | ADT (name, tlist) ->
-          let vl = read_adt_json name vjson tlist in
-            vl
-        | PrimType _ ->
-          build_prim_lit_exn vt (to_string vjson)
-        | _ -> raise (mk_invalid_json ("Unknown type in Map value in JSON"))
-      ) in
-      let _ = Caml.Hashtbl.replace m keylit vallit in
-      ()
+    let vallit = json_to_lit vt vjson in
+    Caml.Hashtbl.replace m keylit vallit
   )
 
 and json_to_lit t v =

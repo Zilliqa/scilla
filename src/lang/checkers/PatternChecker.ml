@@ -62,7 +62,7 @@ module ScillaPatternchecker
           let _ = Array.set reachable i true in
           let e = match List.nth clauses i with
             | Some (_, e) -> e
-            | None -> raise (InternalError (sprintf "Pattern index %d too high (or low)" i))
+            | None -> raise (mk_internal_error (sprintf "Pattern index %d too high (or low)" i))
           in
           pure @@ Success e
       | ([], [], []) :: sps_rest ->
