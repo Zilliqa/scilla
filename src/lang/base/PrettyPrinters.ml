@@ -33,12 +33,6 @@ let lookup_constructor_exn cn =
   | Error emsg -> raise (Utils.InternalError (emsg))
   | Ok s-> s
 
-let scilla_list_to_ocaml_exn ls =
-  let ls' = Datatypes.scilla_list_to_ocaml ls in
-  match ls' with
-  | Error emsg -> raise (Utils.InternalError (emsg))
-  | Ok ls'' -> ls''
-
 (****************************************************************)
 (*                    JSON printing                             *)
 (****************************************************************)
@@ -80,9 +74,11 @@ and literal_to_json lit =
      if a.tname = "List"
     then
       (* We make an exception for Lists and print them as a JSON array. *)
-      let ls' = scilla_list_to_ocaml_exn ls in
-      let ls'' = List.map ls' ~f:(fun a -> literal_to_json a) in
-      `List ls''
+      (match Datatypes.scilla_list_to_ocaml_rev ls with
+      | Ok ls' -> 
+        let ls'' = List.rev_map ls' ~f:(fun a -> literal_to_json a) in
+        `List ls''
+      | Error emsg -> raise (Utils.InternalError emsg))
     else
       let argtl = adttyps_to_json t in
       let argl = adtargs_to_json v in

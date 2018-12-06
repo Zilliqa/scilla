@@ -65,7 +65,21 @@ module ScillaGas
             let%bind clit2 = literal_cost lit2 in
             pure (acc + clit1 + clit2)) m (pure 0)
       (* A constructor in HNF *)      
-      | ADTValue (_, _, ll) ->
+      | ADTValue (cn, _, ll) as als ->
+        (* Make a special case for Lists, to avoid overflowing recursion. *)
+        if cn = "Cons"
+        then
+          let rec walk elm acc_cost =
+            match elm with
+            | ADTValue ("Cons", _, [l;ll]) ->
+              let%bind lcost = literal_cost l in
+              walk ll (acc_cost + lcost)
+            | ADTValue ("Nil", _, _) ->
+              pure (acc_cost + 1)
+            | _ -> fail0 "Malformed list while computing literal cost"
+          in
+          walk als 0
+        else
           if List.is_empty ll then pure 1 else
           foldM ~f:(fun acc lit' ->
               let%bind clit' = literal_cost lit' in
