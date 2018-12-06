@@ -123,7 +123,7 @@ let () =
     | Error el -> exit 1 (* we've already printed the error(s). *)
     | Ok (cmod, _, event_info) ->
       let j = `Assoc [
-        ("contract_info", (JSON.ContractInfo.get_json cmod.contr event_info));
+        ("contract_info", (JSON.ContractInfo.get_json cmod.smver cmod.contr event_info));
         ("warnings", scilla_warning_to_json (get_warnings()))
       ] in
       pout (sprintf "%s\n" (Yojson.pretty_to_string j));

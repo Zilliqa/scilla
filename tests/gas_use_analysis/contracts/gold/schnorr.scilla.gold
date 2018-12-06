@@ -3,12 +3,12 @@ Gas use polynomial for transition sign_and_verify:
 Legend:
 
 h: Second Element of the Pair: SApp schnorr_gen_key_pair( )
-b: priv_key
 a: pub_key
+b: priv_key
 g: First Element of the Pair: SApp schnorr_gen_key_pair( )
-f: Cost of calling schnorr_gen_key_pair()
 e: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 24)
 i: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Result of builtin schnorr_sign(First Element of the Pair: SApp schnorr_gen_key_pair( ),Second Element of the Pair: SApp schnorr_gen_key_pair( ),msg))
+f: Cost of calling schnorr_gen_key_pair()
 d: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 20)
 c: msg
 
@@ -16,13 +16,14 @@ Gas use polynomial for transition verify:
 1(a) + 279 + 15(b) + 1(c) + 2(d)
 Legend:
 
+a: pub_key
 b: msg
 c: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 23)
-a: pub_key
 d: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 20)
 
 {
   "contract_info": {
+    "scilla_major_version": "0",
     "vname": "Schnorr",
     "params": [],
     "fields": [

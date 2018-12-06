@@ -19,38 +19,38 @@ Legend:
 
 f: Value of Uint256 with size 32
 c: Element of: ownedTokenCount
+e: Result of builtin add(Element of: ownedTokenCount,Value of Uint256 with size 32)
 a: tokenOwnerMap
 g: Message (Value of String with size 20,_sender,to,tokenId)
 d: to
 b: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
-e: Result of builtin add(Element of: ownedTokenCount,Value of Uint256 with size 32)
 
 Gas use polynomial for transition transferFrom:
 215 + 1(a) + 1(b) + 1(c) + 1(d) + 4(e) + 1(f) + 1(g) + 1(h) + 1(i) + 1(j) + 1(k) + 1(l)
 Legend:
 
-a: Element of: tokenOwnerMap
-l: Message (Value of String with size 23,_sender,to,tokenId)
-b: tokenOwnerMap
-h: to
-f: Element of: ownedTokenCount
-g: Element of: ownedTokenCount
-d: operatorApprovals
 i: ownedTokenCount
+l: Message (Value of String with size 23,_sender,to,tokenId)
+f: Element of: ownedTokenCount
+a: Element of: tokenOwnerMap
+d: operatorApprovals
+h: to
 j: Result of builtin sub(Element of: ownedTokenCount,Value of Uint256 with size 32)
-k: Max (Value of Uint256 with size 32,Result of builtin add(Element of: ownedTokenCount,Value of Uint256 with size 32))
 c: tokenApprovals
+k: Max (Value of Uint256 with size 32,Result of builtin add(Element of: ownedTokenCount,Value of Uint256 with size 32))
 e: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
+b: tokenOwnerMap
+g: Element of: ownedTokenCount
 
 Gas use polynomial for transition approve:
 82 + 1(a) + 1(b) + 1(c) + 2(d) + 1(e) + 1(f)
 Legend:
 
+c: operatorApprovals
 a: Element of: tokenOwnerMap
 b: tokenOwnerMap
-f: Message (Value of String with size 20,_sender,to,tokenId)
 e: to
-c: operatorApprovals
+f: Message (Value of String with size 20,_sender,to,tokenId)
 d: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
 
 Gas use polynomial for transition setApprovalForAll:
@@ -58,12 +58,13 @@ Gas use polynomial for transition setApprovalForAll:
 Legend:
 
 c: Message (Value of String with size 28,_sender,to,Max (Value of String with size 20,Value of String with size 20))
+b: approved
 a: operatorApprovals
 d: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
-b: approved
 
 {
   "contract_info": {
+    "scilla_major_version": "0",
     "vname": "NonfungibleToken",
     "params": [
       { "vname": "contractOwner", "type": "ByStr20" },

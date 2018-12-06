@@ -104,6 +104,6 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
 
   let add_tests env =
     let exptests = build_exp_tests env tests in
-    "exptests" >::: exptests
+    "gua_tests" >::: exptests
     
 end

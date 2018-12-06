@@ -1,3 +1,5 @@
+scilla_version 0
+
 (* Bookstore Contract *)
 (* This example contract demonstrates how a CRUD app can be built. *)
 

@@ -10,9 +10,9 @@ Gas use polynomial for transition addBook:
 Legend:
 
 b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Uint32 with size 4)
-c: Pair of (book_title)(author)
 d: bookID
 a: bookInventory
+c: Pair of (book_title)(author)
 
 Gas use polynomial for transition removeBook:
 1
@@ -22,11 +22,12 @@ Gas use polynomial for transition updateBook:
 Legend:
 
 b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Uint32 with size 4)
-a: bookInventory
 c: Pair of (book_title)(author)
+a: bookInventory
 
 {
   "contract_info": {
+    "scilla_major_version": "0",
     "vname": "BookStore",
     "params": [
       { "vname": "owner", "type": "ByStr20" },

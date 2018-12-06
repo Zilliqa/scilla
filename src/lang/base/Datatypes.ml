@@ -151,7 +151,8 @@ module DataTypeDictionary = struct
 end
 
 
-(* Convert Scilla list to OCaml list *)
+(* Convert Scilla list to OCaml list.
+ * Not tail recursive. Don't use for long lists. *)
 let scilla_list_to_ocaml v =
   let open Result.Let_syntax in
   let rec convert_to_list = (function
@@ -162,6 +163,18 @@ let scilla_list_to_ocaml v =
     | _ -> fail0 @@ sprintf "Cannot convert scilla list to ocaml list:\n")
   in
   convert_to_list v
+
+(* Convert Scilla list to reverse OCaml list.
+ * Tail recursive. *)
+let scilla_list_to_ocaml_rev v =
+  let rec convert_to_list l acc =
+    match l with
+    | ADTValue ("Nil", _, []) -> pure acc
+    | ADTValue ("Cons", _, [h;t]) ->
+        convert_to_list t (h::acc)
+    | _ -> fail0 @@ sprintf "Cannot convert scilla list to reverse ocaml list:\n"
+  in
+  convert_to_list v []
 
 (* TODO: support user_defined data types *)
 

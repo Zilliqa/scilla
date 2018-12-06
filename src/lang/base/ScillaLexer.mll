@@ -80,6 +80,7 @@ rule read =
   | "delete"      { DELETE }
   | "Emp"         { EMP }
   | "Map"         { MAP }
+  | "scilla_version" { SCILLA_VERSION }
 
 
   (* Separators *)    

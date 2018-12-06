@@ -2,9 +2,9 @@ Gas use polynomial for transition BalanceOf:
 1(a) + 8 + 1(b) + 1(c)
 Legend:
 
+b: Message (Value of String with size 20,tokenOwner,Result of builtin get(balances,tokenOwner))
 c: Message (Value of String with size 20,tokenOwner,Value of Uint128 with size 16)
 a: balances
-b: Message (Value of String with size 20,tokenOwner,Result of builtin get(balances,tokenOwner))
 
 Gas use polynomial for transition TotalSupply:
 2 + 1(a)
@@ -16,36 +16,36 @@ Gas use polynomial for transition Transfer:
 1(a) + 65 + 1(b) + 1(c) + 1(d) + 1(e) + 2(f)
 Legend:
 
-b: Element of: balances
 f: Message (Value of String with size 20,_sender,to,Value of Uint128 with size 16)
-d: Max (tokens,Result of builtin add(Element of: balances,tokens))
-c: Result of builtin sub(tokens,tokens)
 e: Message (Value of String with size 20,_sender,to,tokens)
 a: balances
+b: Element of: balances
+d: Max (tokens,Result of builtin add(Element of: balances,tokens))
+c: Result of builtin sub(tokens,tokens)
 
 Gas use polynomial for transition TransferFrom:
 1(a) + 1(b) + 109 + 1(c) + 1(d) + 2(e) + 1(f) + 1(g) + 1(h) + 1(i) + 1(j) + 1(k) + 3(l)
 Legend:
 
-j: Result of builtin put(allowed,from,Result of builtin put(Result of builtin get(allowed,from),_sender,Result of builtin sub(tokens,tokens)))
-b: allowed
-e: Length of: Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens))
-l: Message (Value of String with size 20,from,to,Value of Uint128 with size 16)
-g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens)),to,tokens)
 i: Length of: allowed
+e: Length of: Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens))
+a: balances
+b: allowed
+j: Result of builtin put(allowed,from,Result of builtin put(Result of builtin get(allowed,from),_sender,Result of builtin sub(tokens,tokens)))
+g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens)),to,tokens)
+c: Length of: balances
+d: Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens))
 k: Message (Value of String with size 20,from,to,tokens)
 h: Length of: Result of builtin get(allowed,from)
-a: balances
-c: Length of: balances
+l: Message (Value of String with size 20,from,to,Value of Uint128 with size 16)
 f: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens)),to,Result of builtin add(Result of builtin get(Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens)),to),tokens))
-d: Result of builtin put(balances,from,Result of builtin sub(Result of builtin get(balances,from),tokens))
 
 Gas use polynomial for transition Approve:
 4 + 1(a) + 1(b)
 Legend:
 
-b: Message (Value of String with size 20,_sender,spender,tokens)
 a: tokens
+b: Message (Value of String with size 20,_sender,spender,tokens)
 
 Gas use polynomial for transition Allowance:
 1(a) + 14 + 1(b) + 2(c)
@@ -57,6 +57,7 @@ a: allowed
 
 {
   "contract_info": {
+    "scilla_major_version": "0",
     "vname": "FungibleToken",
     "params": [
       { "vname": "owner", "type": "ByStr20" },

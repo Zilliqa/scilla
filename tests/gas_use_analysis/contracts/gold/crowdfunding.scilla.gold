@@ -12,8 +12,8 @@ Gas use polynomial for transition GetFunds:
 Legend:
 
 a: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
-e: Container around: Message (Value of String with size 20,owner,_balance)
 b: _balance
+e: Container around: Message (Value of String with size 20,owner,_balance)
 c: Value of Bool with size 0
 d: Message (Value of String with size 20,owner,_balance,Value of Int32 with size 4)
 
@@ -21,17 +21,18 @@ Gas use polynomial for transition ClaimBack:
 100 + 3(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 1(g) + 1(h)
 Legend:
 
-f: Result of builtin remove(backers,_sender)
-a: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
-h: Container around: Message (Value of String with size 20,_sender,Result of builtin get(backers,_sender))
 e: Length of: backers
+a: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
+b: backers
+h: Container around: Message (Value of String with size 20,_sender,Result of builtin get(backers,_sender))
 g: Message (Value of String with size 20,_sender,Result of builtin get(backers,_sender),Value of Int32 with size 4)
+f: Result of builtin remove(backers,_sender)
 d: funded
 c: _balance
-b: backers
 
 {
   "contract_info": {
+    "scilla_major_version": "0",
     "vname": "Crowdfunding",
     "params": [
       { "vname": "owner", "type": "ByStr20" },

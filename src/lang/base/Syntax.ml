@@ -24,6 +24,9 @@ open ErrorUtils
 
 exception SyntaxError of string
 
+(* Version of the interpreter (major, minor, patch) *)
+let scilla_version = (0, 0, 0)
+
 type 'rep ident =
   | Ident of string * 'rep
 [@@deriving sexp]
@@ -288,7 +291,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
   (* Contract module: libary + contract definiton *)
   type cmodule =
-    { cname : SR.rep ident;
+    { smver : int;                (* Scilla major version of the contract. *)
+      cname : SR.rep ident;
       libs  : library option;     (* lib functions defined in the module *)
       elibs : SR.rep ident list;  (* list of imports / external libs *)
       contr : contract }

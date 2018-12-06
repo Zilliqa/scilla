@@ -3,13 +3,13 @@ Gas use polynomial for transition Bid:
 Legend:
 
 b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
-c: highestBid
 a: ended
-f: Max (highestBid,Result of builtin add(highestBid,Element of: pendingReturns))
 h: _amount
-d: highestBidder
+c: highestBid
 i: Message (Value of String with size 20,Value of Int32 with size 4,_sender,_amount)
 g: _sender
+d: highestBidder
+f: Max (highestBid,Result of builtin add(highestBid,Element of: pendingReturns))
 e: Element of: pendingReturns
 
 Gas use polynomial for transition Withdraw:
@@ -17,8 +17,8 @@ Gas use polynomial for transition Withdraw:
 Legend:
 
 b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
-a: pendingReturns
 d: Container around: Message (Value of String with size 20,_sender,Result of builtin get(pendingReturns,_sender),Value of Int32 with size 4)
+a: pendingReturns
 c: Message (Value of String with size 20,_sender)
 
 Gas use polynomial for transition AuctionEnd:
@@ -26,14 +26,15 @@ Gas use polynomial for transition AuctionEnd:
 Legend:
 
 b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
-e: Message (Value of String with size 20,highestBid)
 d: highestBid
+e: Message (Value of String with size 20,highestBid)
 a: ended
 c: Value of Bool with size 0
 f: Container around: Message (Value of String with size 20,beneficiary,highestBid,Value of Int32 with size 4,highestBid)
 
 {
   "contract_info": {
+    "scilla_major_version": "0",
     "vname": "OpenAuction",
     "params": [
       { "vname": "auctionStart", "type": "BNum" },

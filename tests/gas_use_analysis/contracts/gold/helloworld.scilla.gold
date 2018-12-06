@@ -9,11 +9,12 @@ Gas use polynomial for transition getHello:
 1(a) + 2 + 1(b)
 Legend:
 
-b: Message (Value of String with size 20,welcome_msg)
 a: welcome_msg
+b: Message (Value of String with size 20,welcome_msg)
 
 {
   "contract_info": {
+    "scilla_major_version": "0",
     "vname": "HelloWorld",
     "params": [ { "vname": "owner", "type": "ByStr20" } ],
     "fields": [ { "vname": "welcome_msg", "type": "String" } ],
