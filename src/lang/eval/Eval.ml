@@ -78,6 +78,13 @@ let sanitize_literal l =
 (* A monadic big-step evaluator for Scilla expressions *)
 (*******************************************************)
 
+(* [Evaluation in CPS]
+
+   The following evaluator is implemented in a monadic style, with the
+   monad, at the moment to be CPS, with the specialised return result
+   type as described in [Specialising the Return Type of Closures].
+ *)
+
 let rec exp_eval erep env =
   let (e, _) = erep in
   match e with

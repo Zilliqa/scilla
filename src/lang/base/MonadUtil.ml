@@ -142,7 +142,11 @@ module EvalMonad = struct
     | Core.Error s -> fail s
     | Core.Ok a -> pure a
 
-  (* Wrap an op with cost check when op returns "result". *)
+  (* [Wrappers for Gas Accounting]
+     
+     TODO
+
+  *)
   let checkwrap_opR op_thunk cost =
     (fun k remaining_gas ->
        if (remaining_gas >= cost)
@@ -152,7 +156,6 @@ module EvalMonad = struct
        else 
          k (Error (mk_error0 "Ran out of gas")) remaining_gas)
 
-  (* Wrap an op with cost check when op returns "eresult". *)
   let checkwrap_op op_thunk cost emsg =
     (fun k remaining_gas ->
        if remaining_gas >= cost then
