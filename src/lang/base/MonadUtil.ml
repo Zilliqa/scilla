@@ -20,6 +20,46 @@ open Core
 open Result.Let_syntax
 open ErrorUtils
 
+(* [Evaluation in CPS]
+
+   The following module implements the standard CPS, together with the
+   posible failure result. The `CPSMonad` is later specialised to
+   implement state-passing (for gas accounting) by means of
+   insantiating it suitably in `EvalMonad` to take an additional
+   parameter of type `int` for gas accounting.
+
+*)
+
+module CPSMonad = struct
+  
+  type nonrec ('a, 'b, 'c) t = (('a, 'b) result -> 'c) -> 'c
+    
+  let return x = (fun k -> k @@ Ok x)
+                 
+  let bind x ~f =
+    fun k ->
+      let k' r = (match r with
+          | Ok z -> (f z) k
+          | Error _ as x'  -> k x'
+            ) in
+      x k'
+          
+  let map x ~f = 
+    fun k->
+      let k' r = (match r with
+          | Error _ as x' -> k x'
+          | Ok z -> k @@ Ok (f z)
+        ) in
+      x  k'
+        
+  let map = `Custom map
+      
+end             
+
+(****************************************************************)
+(*               Result monad and its utilitis                  *)
+(****************************************************************)
+
 (* Monadic evaluation results *)
 let fail (s : scilla_error list) = Error s
 let pure e = return e
@@ -30,10 +70,6 @@ let fail0 (msg : string) = fail @@ mk_error0 msg
 let fail1 msg sloc = fail @@ mk_error1 msg sloc
 (* fail with a message and both start and end locations. *)
 let fail2 msg sloc eloc = fail @@ mk_error2 msg sloc eloc
-
-(****************************************************************)
-(*               Utilities for the result monad                 *)
-(****************************************************************)
 
 (* Monadic fold-left for error *)
 let rec foldM ~f ~init ls = match ls with
@@ -82,46 +118,8 @@ let rec tryM ~f ls ~msg = match ls with
   | [] -> Error (msg ())
 
 (****************************************************************)
-(*           A monad for `Eval` and related utilites            *)
+(*           A gas-aware monad for `Eval` and related utilites  *)
 (****************************************************************)
-
-(* [Evaluation in CPS]
-
-   The following module implements the standard CPS, together with the
-   posible failure result. The `CPSMonad` is later specialised to
-   implement state-passing (for gas accounting) by means of
-   insantiating it suitably in `EvalMonad` to take an additional
-   parameter of type `int` for gas accounting.
-
-*)
-
-module CPSMonad = struct
-  
-  type nonrec ('a, 'b, 'c) t = (('a, 'b) result -> 'c) -> 'c
-    
-  let return x = (fun k -> k @@ Ok x)
-                 
-  let bind x ~f =
-    fun k ->
-      let k' r = (match r with
-          | Ok z -> (f z) k
-          | Error _ as x'  -> k x'
-            ) in
-      x k'
-        
-  
-  let map x ~f = 
-    fun k->
-      let k' r = (match r with
-          | Error _ as x' -> k x'
-          | Ok z -> k @@ Ok (f z)
-        ) in
-      x  k'
-        
-  let map = `Custom map
-      
-end             
-
 
 module EvalMonad = struct
 
