@@ -242,6 +242,7 @@ let () =
           (omj, osj, oej, accepted_b), gas)
       in
       let output_json = `Assoc [
+        ("scilla_major_version", `String (Int.to_string cmod.smver));
         "gas_remaining", `String (Int.to_string gas);
         ContractUtil.accepted_label, `String (Bool.to_string accepted_b);
         ("message", output_msg_json); 
