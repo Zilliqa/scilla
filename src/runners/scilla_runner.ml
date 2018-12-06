@@ -28,8 +28,6 @@ open PrettyPrinters
 open Stdint
 open RunnerUtil
 open GlobalConfig
-open MonadUtil.EvalMonad
-open Let_syntax
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -38,7 +36,7 @@ open Let_syntax
 let check_libs clibs elibs name gas_limit =
    let ls = init_libraries clibs elibs in
    (* Are libraries ok? *)
-   match ls (fun x -> x) gas_limit with
+   match ls Eval.init_gas_kont gas_limit with
    | Ok (res, gas_remaining) ->
        plog (sprintf
          "\n[Initializing libraries]:\n%s\n\nLibraries for [%s] are on. All seems fine so far!\n\n"
@@ -54,7 +52,7 @@ let check_libs clibs elibs name gas_limit =
 (*     Checking initialized contract state          *)
 (****************************************************)
 let check_extract_cstate name res gas_limit = 
-  match res (fun x -> x) gas_limit with
+  match res Eval.init_gas_kont gas_limit with
   | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
       exit 1
@@ -68,7 +66,7 @@ let check_extract_cstate name res gas_limit =
 (*****************************************************)
 
 let check_after_step name res gas_limit  =
-  match res (fun x -> x) gas_limit with
+  match res Eval.init_gas_kont gas_limit with
   | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
       exit 1

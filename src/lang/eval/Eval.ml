@@ -201,23 +201,30 @@ and exp_eval_wrapper expr env =
   (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
   checkwrap_op thunk cost (mk_error1 emsg eloc)
 
+(* [Initial Gas-Passing Continuation]
+
+   The following function is used as an initial continuation to
+   "bootstrap" the gas-aware computation and then retrieve not just
+   the result, but also the remaining gas.
+
+*)
+let init_gas_kont r gas' = (match r with 
+    | Ok z -> Ok (z, gas')
+    | Error msg -> Error (msg, gas'))
+
 (* [Continuation for Expression Evaluation]
 
    The following function implements an impedance matcher. Even though
    it takes a continuation `k` from the callee, it starts evaluating
-   an expression `expr` in a "basic" continaution `init_kont` with a
-   _fixed_ result type (cf [Specialising the Return Type of
-   Closures]). In short, it fully evaluates an expression with the
-   fixed continuation, after which the result is passed further to the
-   callee's continuation `k`.
+   an expression `expr` in a "basic" continaution `init_gas_kont` (cf.
+   [Initial Gas-Passing Continuation]) with a _fixed_ result type (cf
+   [Specialising the Return Type of Closures]). In short, it fully
+   evaluates an expression with the fixed continuation, after which
+   the result is passed further to the callee's continuation `k`.
 
 *)
 let exp_eval_wrapper_no_cps expr env k gas = 
-  let init_kont r gas' = (match r with 
-    | Ok z -> Ok (z, gas')
-    | Error msg -> Error (msg, gas'))
-  in
-  let eval_res = exp_eval_wrapper expr env init_kont gas in
+  let eval_res = exp_eval_wrapper expr env init_gas_kont gas in
   let (res, remaining_gas) = (match eval_res with 
     | Ok (z, g) -> (Ok z, g)
     | Error (m, g) -> (Error m, g)) in
