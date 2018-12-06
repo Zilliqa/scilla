@@ -38,9 +38,7 @@ open Let_syntax
 let check_libs clibs elibs name gas_limit =
    let ls = init_libraries clibs elibs in
    (* Are libraries ok? *)
-   let k0 r = (
-     let%bind z = r in snd z) in
-   match ls k0 gas_limit with
+   match ls (fun x -> x) gas_limit with
    | Ok (res, gas_remaining) ->
        plog (sprintf
          "\n[Initializing libraries]:\n%s\n\nLibraries for [%s] are on. All seems fine so far!\n\n"
@@ -56,7 +54,7 @@ let check_libs clibs elibs name gas_limit =
 (*     Checking initialized contract state          *)
 (****************************************************)
 let check_extract_cstate name res gas_limit = 
-  match res gas_limit with
+  match res (fun x -> x) gas_limit with
   | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
       exit 1
@@ -70,7 +68,7 @@ let check_extract_cstate name res gas_limit =
 (*****************************************************)
 
 let check_after_step name res gas_limit  =
-  match res gas_limit with
+  match res (fun x -> x) gas_limit with
   | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
       exit 1

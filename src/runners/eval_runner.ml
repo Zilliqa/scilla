@@ -53,14 +53,14 @@ let () =
       let elibs = import_all_libs lib_dirs in
       let envres = Eval.init_libraries (Some clib) elibs in
       let env, gas_remaining = 
-        (match envres Eval.init_kont gas_limit with
+        (match envres (fun x -> x) gas_limit with
         | Ok (env', gas_remaining) -> env', gas_remaining
         | Error (err, gas_remaining) ->
           pout @@ scilla_error_gas_string gas_remaining err;
           exit 1;) in
-      let lib_fnames = List.map (fun (name, _) -> name) env in
+      let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
       let res' = Eval.exp_eval_wrapper e env in
-      let res = res' Eval.init_kont gas_remaining in
+      let res = res' (fun x -> x) gas_remaining in
       (match res with
       | Ok _ ->
           printf "%s\n" (Eval.pp_result res lib_fnames)

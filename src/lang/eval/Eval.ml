@@ -201,9 +201,10 @@ and exp_eval_wrapper expr env =
   (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
   checkwrap_op thunk cost (mk_error1 emsg eloc)
 
-let init_kont = (function
-    | EvalMonad.Ok ((r, _), g) -> Ok (r, g)
-    | Error _ as err -> err)
+let exp_eval_wrapper_no_cps expr env k remaining_gas = 
+  let k0 = fun x -> x in 
+  let eval_res = exp_eval_wrapper expr env k0 remaining_gas in
+  k eval_res
 
 open EvalSyntax
 (*******************************************************)
@@ -224,7 +225,7 @@ let rec stmt_eval conf stmts =
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | Bind (x, e) ->
-          let%bind (lval, _) = exp_eval_wrapper e conf.env in
+          let%bind (lval, _) = exp_eval_wrapper_no_cps e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
           let%bind _ = stmt_gas_wrap G_Bind sloc in
           stmt_eval conf' sts
@@ -321,7 +322,7 @@ let combine_libs clibs elibs =
 (* Initializing libraries of a contract *)
 let init_libraries clibs elibs =
   let init_lib_entry env {lname = id; lexp = e } = (
-    let%bind (v, _) = exp_eval_wrapper e env in
+    let%bind (v, _) = exp_eval_wrapper_no_cps e env in
     let env' = Env.bind env (get_id id) v in
     pure env') in
 
@@ -338,7 +339,7 @@ let init_libraries clibs elibs =
 let init_fields env fs =
   (* Initialize a field in a constant environment *)
   let init_field fname _t fexp =
-    let%bind (v, _) = exp_eval_wrapper fexp env in
+    let%bind (v, _) = exp_eval_wrapper_no_cps fexp env in
     match v with
     | l when is_pure_literal l -> pure (fname, l)
     | _ -> fail0 @@ sprintf "Closure cannot be stored in a field %s." fname
