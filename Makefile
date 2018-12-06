@@ -12,7 +12,7 @@ all:
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Build only scilla-checker and scilla-runner
-blockchain:
+slim:
 	dune build src/runners/scilla_runner.exe
 	dune build src/runners/scilla_checker.exe
 	@test -L bin || mkdir bin; ln -s _build/default/src/runners/*.exe bin/
