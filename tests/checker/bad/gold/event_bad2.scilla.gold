@@ -4,7 +4,7 @@
       "error_message": "Error determining event name\n",
       "start_location": {
         "file": "checker/bad/event_bad2.scilla",
-        "line": 145,
+        "line": 147,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

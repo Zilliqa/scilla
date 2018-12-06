@@ -181,6 +181,10 @@ let scilla_error_gas_string gas_remaining elist  =
 (*                Pretty Printers                    *)
 (*****************************************************)
 
+let scilla_version_string =
+  let (major, minor, patch) = scilla_version in
+  sprintf "%d.%d.%d" major minor patch
+
 let rec pp_literal_simplified l =
     let open Int in
     match l with
