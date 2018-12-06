@@ -151,7 +151,8 @@ module DataTypeDictionary = struct
 end
 
 
-(* Convert Scilla list to OCaml list *)
+(* Convert Scilla list to OCaml list.
+ * Not tail recursive. Don't use for long lists. *)
 let scilla_list_to_ocaml v =
   let open Result.Let_syntax in
   let rec convert_to_list = (function
@@ -163,25 +164,17 @@ let scilla_list_to_ocaml v =
   in
   convert_to_list v
 
-(* Call iter for each element of the list v. *)
-let scilla_list_iterator iter v =
-  (* TODO: How to have monadic result inside a while loop? *)
-  let err = (Utils.mk_internal_error "Malformed Scilla list, error while traversing.") in
-  let seen_nil = ref false in
-  let elm = ref v in
-  while not !seen_nil do
-    (match !elm with
-    | ADTValue (cn, _, ll) as v' ->
-      if cn = "Cons" then
-        (iter(v');
-        elm := (List.nth_exn ll 1))
-      else if cn = "Nil" then
-        seen_nil := true
-      else
-        raise err
-    | _ -> raise err
-    )
-  done;
+(* Convert Scilla list to reverse OCaml list.
+ * Tail recursive. *)
+let scilla_list_to_ocaml_rev v =
+  let rec convert_to_list l acc =
+    match l with
+    | ADTValue ("Nil", _, []) -> pure acc
+    | ADTValue ("Cons", _, [h;t]) ->
+        convert_to_list t (h::acc)
+    | _ -> fail0 @@ sprintf "Cannot convert scilla list to reverse ocaml list:\n"
+  in
+  convert_to_list v []
 
 (* TODO: support user_defined data types *)
 

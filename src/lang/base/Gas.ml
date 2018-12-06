@@ -69,19 +69,16 @@ module ScillaGas
         (* Make a special case for Lists, to avoid overflowing recursion. *)
         if cn = "Cons"
         then
-          let size = ref 0 in
-          let err = (Utils.mk_internal_error "Error computing gas cost, malformed list.") in
-          let iter = function
-            | ADTValue (_, _, ls) ->
-              (match literal_cost (List.nth_exn ls 0) with
-                | Error _ -> raise err;
-                | Ok elm_cost ->
-                  size := !size + elm_cost;
-                );
-            | _ -> raise err
+          let rec walk elm acc_cost =
+            match elm with
+            | ADTValue ("Cons", _, [l;ll]) ->
+              let%bind lcost = literal_cost l in
+              walk ll (acc_cost + lcost)
+            | ADTValue ("Nil", _, _) ->
+              pure (acc_cost + 1)
+            | _ -> fail0 "Malformed list while computing literal cost"
           in
-          Datatypes.scilla_list_iterator iter als;
-          pure (!size + 1)
+          walk als 0
         else
           if List.is_empty ll then pure 1 else
           foldM ~f:(fun acc lit' ->
