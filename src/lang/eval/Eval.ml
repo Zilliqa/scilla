@@ -201,14 +201,18 @@ and exp_eval_wrapper expr env =
   (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
   checkwrap_op thunk cost (mk_error1 emsg eloc)
 
-
+(* An impedance matcher: starting the expressions evaluation 
+   and getting its result and gas back. *)
 let exp_eval_wrapper_no_cps expr env k gas = 
   let init_kont r gas' = (match r with 
     | Ok z -> Ok (z, gas')
     | Error msg -> Error (msg, gas'))
   in
   let eval_res = exp_eval_wrapper expr env init_kont gas in
-  k eval_res
+  let (res, remaining_gas) = (match eval_res with 
+    | Ok (z, g) -> (Ok z, g)
+    | Error (m, g) -> (Error m, g)) in
+  k res remaining_gas
 
 open EvalSyntax
 (*******************************************************)
