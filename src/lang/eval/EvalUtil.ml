@@ -128,8 +128,9 @@ let builtin_executor i arg_tps arg_lits =
 (* Add a check that the just evaluated statement was in our gas limit. *)
 let stmt_gas_wrap scon sloc =
   let%bind cost = fromR @@ EvalGas.stmt_cost scon in
+  let err = (mk_error1 "Ran out of gas evaluating statement" sloc) in 
   let dummy () = pure () in (* the operation is already executed unfortunately *)
-    checkwrap_op dummy cost (mk_error1 "Ran out of gas evaluating statement" sloc)
+    checkwrap_op dummy cost err
 
 (*****************************************************)
 (* Update-only execution environment for expressions *)
