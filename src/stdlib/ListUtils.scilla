@@ -111,11 +111,11 @@ let list_flatten =
 let list_length =
   tfun 'A =>
   fun (l : List 'A) =>
-    let folder = @list_foldr 'A Uint32 in
+    let folder = @list_foldl 'A Uint32 in
     let init = Uint32 0 in
     let iter =
-      fun (h : 'A) =>
       fun (z : Uint32) =>
+      fun (h : 'A) =>
         let one = Uint32 1 in
           builtin add one z
      in
