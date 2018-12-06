@@ -85,44 +85,45 @@ let rec tryM ~f ls ~msg = match ls with
 (*           A monad for `Eval` and related utilites            *)
 (****************************************************************)
 
+(* [Evaluation in CPS]
+
+   The following module implements the standard CPS, together with the
+   posible failure result. The `CPSMonad` is later specialised to
+   implement state-passing (for gas accounting) by means of
+   insantiating it suitably in `EvalMonad` to take an additional
+   parameter of type `int` for gas accounting.
+
+*)
+
+module CPSMonad = struct
+  
+  type nonrec ('a, 'b, 'c) t = (('a, 'b) result -> 'c) -> 'c
+    
+  let return x = (fun k -> k @@ Ok x)
+                 
+  let bind x ~f =
+    fun k ->
+      let k' r = (match r with
+          | Ok z -> (f z) k
+          | Error _ as x'  -> k x'
+            ) in
+      x k'
+        
+  
+  let map x ~f = 
+    fun k->
+      let k' r = (match r with
+          | Error _ as x' -> k x'
+          | Ok z -> k @@ Ok (f z)
+        ) in
+      x  k'
+        
+  let map = `Custom map
+      
+end             
+
+
 module EvalMonad = struct
-
-  (* Extended result type, to track remaining gas. *)
-  (* type ('a, 'b) eresult =
-   *   | Ok of 'a
-   *   | Error of 'b *)
-
-  (* Each eval operation that passes through this monad 
-   * returns a function "(int -> ('a, 'b) eresult", which
-   * when executed with "remaining_gas" as the argument
-   * produces eresult (with a new value for remaining_gas). *)
-  module CPSMonad = struct
-
-      type nonrec ('a, 'b, 'c) t = (('a, 'b) result -> 'c) -> 'c
-
-      (* This does charge any gas. *)
-      let return x = (fun k -> k @@ Ok x)
-
-      let bind x ~f =
-        fun k ->
-          let k' r = (match r with
-              | Ok z -> (f z) k
-              | Error _ as x'  -> k x'
-            ) in
-          x k'
-
-
-      let map x ~f = 
-        fun k->
-          let k' r = (match r with
-              | Error _ as x' -> k x'
-              | Ok z -> k @@ Ok (f z)
-            ) in
-          x  k'
-
-      let map = `Custom map
-
-    end             
 
   include Monad.Make3 (CPSMonad)
 
@@ -142,11 +143,6 @@ module EvalMonad = struct
     match r with
     | Core.Error s -> fail s
     | Core.Ok a -> pure a
-
-  (* let mapR r remaining_gas =
-   *   match r with
-   *   | Core.Error s -> Error (s, remaining_gas)
-   *   | Core.Ok a -> Ok (a, remaining_gas) *)
 
   (* Wrap an op with cost check when op returns "result". *)
   let checkwrap_opR op_thunk cost =

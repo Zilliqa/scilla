@@ -104,6 +104,22 @@ let sexp_of_uint_lit i =
 
 let uint_lit_of_sexp _ = raise (SyntaxError "uint_lit_of_sexp not implemented")
 
+(* [Specialising the Return Type of Closures]
+
+   The syntax for literals implements a _shallow embedding_ of
+   closures and type abstractions (cf. constructors `Clo` and `TAbs`).
+   Since our computations are all in CPS (cf. [Evaluation in CPS]), so
+   should be the computations, encapsulated by those two forms.
+   However, for the time being, we want to keep the type `literal`
+   non-parametric. This is at odds with the priniciple of keeping
+   computations in CPS parametric in their result type.
+
+   Therefore, for now we have a compromise of fixing the result of
+   evaluating expressions to be as below. In order to restore the
+   genericity enabled by CPS, we provide an "impedance matcher",
+   described in [Continuation for Expression Evaluation]. 
+
+*)
 type literal =
   | StringLit of string
   (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
@@ -124,12 +140,12 @@ type literal =
   | Clo of (literal -> 
             (literal, scilla_error list, 
              int -> ((literal * (string * literal) list) * int, scilla_error list * int) result) 
-              EvalMonad.CPSMonad.t)
+              CPSMonad.t)
   (* A type abstraction *)
   | TAbs of (typ -> 
              (literal, scilla_error list, 
-             int -> ((literal * (string * literal) list) * int, scilla_error list * int) result) 
-               EvalMonad.CPSMonad.t)
+              int -> ((literal * (string * literal) list) * int, scilla_error list * int) result) 
+               CPSMonad.t)
 [@@deriving sexp]
 
 

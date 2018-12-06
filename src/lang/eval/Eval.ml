@@ -201,8 +201,17 @@ and exp_eval_wrapper expr env =
   (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
   checkwrap_op thunk cost (mk_error1 emsg eloc)
 
-(* An impedance matcher: starting the expressions evaluation 
-   and getting its result and gas back. *)
+(* [Continuation for Expression Evaluation]
+
+   The following function implements an impedance matcher. Even though
+   it takes a continuation `k` from the callee, it starts evaluating
+   an expression `expr` in a "basic" continaution `init_kont` with a
+   _fixed_ result type (cf [Specialising the Return Type of
+   Closures]). In short, it fully evaluates an expression with the
+   fixed continuation, after which the result is passed further to the
+   callee's continuation `k`.
+
+*)
 let exp_eval_wrapper_no_cps expr env k gas = 
   let init_kont r gas' = (match r with 
     | Ok z -> Ok (z, gas')
