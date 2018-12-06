@@ -1,3 +1,5 @@
+scilla_version 0
+
 (* The purpose of this test contract is to demonstrate that *)
 (* type errors in different library functions are independently *)
 (* handled by the type checker. *)
