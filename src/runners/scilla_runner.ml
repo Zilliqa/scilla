@@ -29,6 +29,7 @@ open Stdint
 open RunnerUtil
 open GlobalConfig
 open MonadUtil.EvalMonad
+open Let_syntax
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -37,7 +38,7 @@ open MonadUtil.EvalMonad
 let check_libs clibs elibs name gas_limit =
    let ls = init_libraries clibs elibs in
    (* Are libraries ok? *)
-   match ls gas_limit with
+   match ls (fun x -> x) gas_limit with
    | Ok (res, gas_remaining) ->
        plog (sprintf
          "\n[Initializing libraries]:\n%s\n\nLibraries for [%s] are on. All seems fine so far!\n\n"
@@ -53,7 +54,7 @@ let check_libs clibs elibs name gas_limit =
 (*     Checking initialized contract state          *)
 (****************************************************)
 let check_extract_cstate name res gas_limit = 
-  match res gas_limit with
+  match res (fun x -> x) gas_limit with
   | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
       exit 1
@@ -67,7 +68,7 @@ let check_extract_cstate name res gas_limit =
 (*****************************************************)
 
 let check_after_step name res gas_limit  =
-  match res gas_limit with
+  match res (fun x -> x) gas_limit with
   | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
       exit 1
@@ -175,8 +176,8 @@ let () =
           JSON.ContractState.get_json_data cli.input_init
         with
         | JSON.Invalid_json s -> 
-            perr @@ scilla_error_gas_string gas_remaining 
-                (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init));
+            perr @@ scilla_error_gas_string gas_remaining
+              (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init)));
             exit 1
       in
       (* Retrieve block chain state  *)
@@ -186,7 +187,7 @@ let () =
       with
         | JSON.Invalid_json s -> 
             perr @@ scilla_error_gas_string gas_remaining 
-              (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_blockchain));
+              (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_blockchain)));
             exit 1
       in
       let (output_msg_json, output_state_json, output_events_json, accepted_b), gas = 
@@ -207,7 +208,7 @@ let () =
         with
         | JSON.Invalid_json s ->
             perr @@ scilla_error_gas_string gas_remaining 
-              (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_message));
+              (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_message)));
             exit 1
         in
         let m = Msg mmsg in
@@ -219,7 +220,7 @@ let () =
         with
         | JSON.Invalid_json s ->
             perr @@ scilla_error_gas_string gas_remaining 
-              (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state));
+              (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state)));
             exit 1
         in
 

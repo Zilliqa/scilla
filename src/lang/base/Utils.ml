@@ -62,4 +62,6 @@ module AssocDictionary : Dictionary = struct
   let to_list d = d
 end
 
-exception InternalError of string
+open ErrorUtils
+exception InternalError of scilla_error list
+let mk_internal_error msg = InternalError (mk_error0 msg)

@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "7464",
+  "gas_remaining": "7460",
   "_accepted": "false",
   "message": {
     "_tag": "Main",
@@ -20,6 +20,8 @@
         ]
       }
     },
+    { "vname": "llist", "type": "List (List (Int64))", "value": [] },
+    { "vname": "plist", "type": "List (Option (Int32))", "value": [] },
     {
       "vname": "gpair",
       "type": "Pair (List (Int64)) (Option (Bool))",
@@ -27,25 +29,7 @@
         "constructor": "Pair",
         "argtypes": [ "List (Int64)", "Option (Bool)" ],
         "arguments": [
-          {
-            "constructor": "Cons",
-            "argtypes": [ "Int64" ],
-            "arguments": [
-              "3",
-              {
-                "constructor": "Cons",
-                "argtypes": [ "Int64" ],
-                "arguments": [
-                  "2",
-                  {
-                    "constructor": "Nil",
-                    "argtypes": [ "Int64" ],
-                    "arguments": []
-                  }
-                ]
-              }
-            ]
-          },
+          [ "3", "2" ],
           {
             "constructor": "Some",
             "argtypes": [ "Bool" ],

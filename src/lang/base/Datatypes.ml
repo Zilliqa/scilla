@@ -150,6 +150,19 @@ module DataTypeDictionary = struct
 
 end
 
+
+(* Convert Scilla list to OCaml list *)
+let scilla_list_to_ocaml v =
+  let open Result.Let_syntax in
+  let rec convert_to_list = (function
+    | ADTValue ("Nil", _, []) -> pure []
+    | ADTValue ("Cons", _, [h; t]) ->
+        let%bind rest = convert_to_list t in
+        pure @@ h :: rest
+    | _ -> fail0 @@ sprintf "Cannot convert scilla list to ocaml list:\n")
+  in
+  convert_to_list v
+
 (* TODO: support user_defined data types *)
 
 
