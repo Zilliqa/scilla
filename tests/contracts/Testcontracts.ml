@@ -169,7 +169,22 @@ let build_misc_tests env =
           assert_command ~exit_code:expected_code ~ctxt:test_ctxt (scillabin env.bin_dir test_ctxt) args
       ) in
 
-      [test1;test2]
+    let test3 =
+    "misc_test_badjson_3" >::
+      (fun test_ctxt ->
+        let args = ["-init"; tests_dir_file env.tests_dir test_ctxt "init_bad3.json";
+                    "-libdir"; "src" ^ sep ^ "stdlib";
+                    "-jsonerrors";
+                    "-i"; tests_dir_file env.tests_dir test_ctxt "contract.scilla";
+                    "-o"; output_file test_ctxt "init_bad2_output.json";
+                    "-iblockchain"; tests_dir_file env.tests_dir test_ctxt "blockchain_1.json"]
+        in
+        (if (env.print_cli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));
+        let expected_code : Unix.process_status = WEXITED 1 in
+          assert_command ~exit_code:expected_code ~ctxt:test_ctxt (scillabin env.bin_dir test_ctxt) args
+      ) in
+
+      [test1;test2;test3]
 
 let add_tests env = 
     let succ_code : Unix.process_status = WEXITED 0 in
