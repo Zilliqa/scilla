@@ -129,8 +129,8 @@ open ParserUtil.ParsedSyntax
           ]
         }
   *)
-  val get_string : contract -> (string * (string * Syntax.typ) list) list -> string
-  val get_json : contract -> (string * (string * Syntax.typ) list) list -> Yojson.json
+  val get_string : int -> contract -> (string * (string * Syntax.typ) list) list -> string
+  val get_json : int -> contract -> (string * (string * Syntax.typ) list) list -> Yojson.json
 
 end
 

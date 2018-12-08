@@ -561,7 +561,7 @@ module ScillaTypechecker
       (elibs : UntypedSyntax.library list)
     : (TypedSyntax.cmodule * stmt_tenv, scilla_error list) result =
 
-    let {cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
+    let {smver = mod_smver;cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
     wrap_with_info (msg, SR.get_loc (get_rep ctr_cname)) @@
@@ -622,7 +622,8 @@ module ScillaTypechecker
     
     if emsgs' = []
     (* Return pure environment *)  
-    then pure ({TypedSyntax.cname = mod_cname;
+    then pure ({TypedSyntax.smver = mod_smver;
+                TypedSyntax.cname = mod_cname;
                 TypedSyntax.libs = List.hd libs;
                 TypedSyntax.elibs = mod_elibs;
                 TypedSyntax.contr =

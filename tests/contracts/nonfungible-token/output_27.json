@@ -1,5 +1,6 @@
 {
-  "gas_remaining": "7034",
+  "scilla_major_version": "0",
+  "gas_remaining": "7030",
   "_accepted": "false",
   "message": null,
   "states": [

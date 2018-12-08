@@ -29,6 +29,7 @@ open Stdint
 open RunnerUtil
 open GlobalConfig
 open MonadUtil.EvalMonad
+open Let_syntax
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -37,7 +38,7 @@ open MonadUtil.EvalMonad
 let check_libs clibs elibs name gas_limit =
    let ls = init_libraries clibs elibs in
    (* Are libraries ok? *)
-   match ls gas_limit with
+   match ls (fun x -> x) gas_limit with
    | Ok (res, gas_remaining) ->
        plog (sprintf
          "\n[Initializing libraries]:\n%s\n\nLibraries for [%s] are on. All seems fine so far!\n\n"
@@ -53,7 +54,7 @@ let check_libs clibs elibs name gas_limit =
 (*     Checking initialized contract state          *)
 (****************************************************)
 let check_extract_cstate name res gas_limit = 
-  match res gas_limit with
+  match res (fun x -> x) gas_limit with
   | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
       exit 1
@@ -67,7 +68,7 @@ let check_extract_cstate name res gas_limit =
 (*****************************************************)
 
 let check_after_step name res gas_limit  =
-  match res gas_limit with
+  match res (fun x -> x) gas_limit with
   | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
       exit 1
@@ -179,6 +180,29 @@ let () =
               (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init)));
             exit 1
       in
+
+      (* Check for version mismatch. Subtract penalty for mist-match. *)
+      let emsg = scilla_error_gas_string
+        (gas_remaining - Gas.version_mismatch_penalty)
+        (mk_error0 ("Scilla version mismatch\n"))
+      in
+      let init_json_scilla_version = List.fold_left initargs ~init:None ~f:(fun found (name, lit) ->
+        if is_some found then found else
+        if name = ContractUtil.scilla_version_label
+        then match lit with | UintLit(Uint32L v) -> Some v | _ -> None
+        else None
+      ) in
+      let _ =
+        match init_json_scilla_version with
+        | Some ijv ->
+          let (mver, _, _) = scilla_version in
+          let ijv' = Uint32.to_int ijv in
+          if ijv' <> mver || mver <> cmod.smver
+          then
+            (perr emsg; exit 1)
+        | None -> (perr emsg; exit 1)
+      in
+
       (* Retrieve block chain state  *)
       let bstate = 
       try
@@ -243,6 +267,7 @@ let () =
           (omj, osj, oej, accepted_b), gas)
       in
       let output_json = `Assoc [
+        ("scilla_major_version", `String (Int.to_string cmod.smver));
         "gas_remaining", `String (Int.to_string gas);
         ContractUtil.accepted_label, `String (Bool.to_string accepted_b);
         ("message", output_msg_json); 
