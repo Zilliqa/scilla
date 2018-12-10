@@ -180,6 +180,29 @@ let () =
               (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init)));
             exit 1
       in
+
+      (* Check for version mismatch. Subtract penalty for mist-match. *)
+      let emsg = scilla_error_gas_string
+        (gas_remaining - Gas.version_mismatch_penalty)
+        (mk_error0 ("Scilla version mismatch\n"))
+      in
+      let init_json_scilla_version = List.fold_left initargs ~init:None ~f:(fun found (name, lit) ->
+        if is_some found then found else
+        if name = ContractUtil.scilla_version_label
+        then match lit with | UintLit(Uint32L v) -> Some v | _ -> None
+        else None
+      ) in
+      let _ =
+        match init_json_scilla_version with
+        | Some ijv ->
+          let (mver, _, _) = scilla_version in
+          let ijv' = Uint32.to_int ijv in
+          if ijv' <> mver || mver <> cmod.smver
+          then
+            (perr emsg; exit 1)
+        | None -> (perr emsg; exit 1)
+      in
+
       (* Retrieve block chain state  *)
       let bstate = 
       try

@@ -109,7 +109,9 @@ module ScillaSanityChecker
 
     (* Contract parameters cannot have names of implicit ones. *)
     let e = 
-      match (List.find_opt (fun (s, _) -> get_id s = ContractUtil.creation_block_label) contr.cparams) with
+      match (List.find_opt (fun (s, _) ->
+          (get_id s = ContractUtil.creation_block_label) || (get_id s = ContractUtil.scilla_version_label)
+        ) contr.cparams) with
       | Some (s, _) ->
         e @ mk_error1 (Core.sprintf "Contract parameter %s cannot be explicit.\n" (get_id s))
             (ER.get_loc @@ get_rep s) 
