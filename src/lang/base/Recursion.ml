@@ -91,18 +91,35 @@ module NatRec = struct
 
     module Foldr = struct
       (* The type of the fixpoint argument *)
-      let fix_type = parse_type "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
+      let fix_type = parse_type "('A -> 'B -> 'B) -> ('B -> 'B) -> 'B -> (List 'A) -> 'B"
+      (* The fixpoint defined in continuation passing style. *)
       let (_, loc) as fix_arg = parse_expr ( 
-          "fun (f : 'A -> 'B -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
-          "match l with " ^
-          " | Cons h t => let res = g f z t in " ^
-          "   f h res " ^
-          " | Nil => z " ^
-          "end"
+          "fun (f : 'A -> 'B -> 'B) => \n" ^
+          "fun (k : 'B -> 'B) => \n" ^
+          "fun (z : 'B) => \n" ^
+          "fun (l: List 'A) => \n" ^
+          "  match l with \n" ^
+          "  | Cons h t => \n" ^
+          "    let kk = fun (zz : 'B) => \n" ^
+          "      let fapp = f h zz in \n" ^
+          "      k fapp \n" ^
+          "    in \n" ^
+          "    g f kk z t \n" ^
+          "  | Nil => k z \n" ^
+          "  end"
         )
+
+      let fix_wrap_type = parse_type ("('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B")
+      (* A wrapper around the CPS fixpoint *)
+      let (_, loc') as fix_wrap_arg = parse_expr (
+        "fun (f : 'A -> 'B -> 'B) => fun (z : 'B) => fun (l : List 'A) => \n" ^
+        "  let k = fun (zz : 'B) => zz in \n" ^
+        "  g f k z l \n")
+
       let id = mk_ident "list_foldr"
       let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
-      let fold = (TFun(avar, (TFun (bvar, fold_fix), loc)), loc)
+      let fold_wrap = (Let (g, None, fold_fix, fix_wrap_arg), loc')
+      let fold = (TFun(avar, (TFun (bvar, fold_wrap), loc)), loc)
       let entry = {lname = id; lexp = fold}
     end
 
