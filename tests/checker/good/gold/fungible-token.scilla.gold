@@ -1,4 +1,10 @@
 {
+  "cashflow_tags": [
+    { "field": "owner", "tag": "NoInfo" },
+    { "field": "total_tokens", "tag": "NoInfo" },
+    { "field": "balances", "tag": "(Map NoInfo)" },
+    { "field": "allowed", "tag": "(Map(Map NoInfo))" }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "FungibleToken",
