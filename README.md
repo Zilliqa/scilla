@@ -54,6 +54,11 @@ If the checker only returns the contract structure in JSON format, it
 means that the contract has no type errors. Otherwise, a type error
 trace is provided.
 
+The checker can be run with the following optional flags:
+
+- `-cf` to enable the cashflow checker and print its results.
+
+
 #### Executing a simple transition
 
 From the project root, execute

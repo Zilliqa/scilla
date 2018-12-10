@@ -62,7 +62,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "typecheck"; "good"; "gold"; f ^ ".gold" ]
     let test_path f = ["typecheck"; "good"; f]
     let runner = "type-checker"
-    let additional_args = []
+    let custom_args = []
     let tests = [
       "branch-match.scilla";
       "fun.scilla";

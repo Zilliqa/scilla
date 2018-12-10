@@ -1,4 +1,8 @@
 {
+  "cashflow_tags": [
+    { "field": "priv_key", "tag": "(Option NotMoney)" },
+    { "field": "pub_key", "tag": "(Option NotMoney)" }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Schnorr",

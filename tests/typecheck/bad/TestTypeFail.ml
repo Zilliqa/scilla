@@ -137,8 +137,8 @@ module Tests = TestUtil.DiffBasedTests(
   struct
     let gold_path dir f = [dir; "typecheck"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["typecheck"; "bad"; f]
-    let runner = "type-checker"
-    let additional_args = []
+    let runner = "type-checker"      
+    let custom_args = []
     let tests = [
       "adt-error1.scilla";
       "branch-mismatch.scilla";
