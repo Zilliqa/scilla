@@ -223,12 +223,13 @@ module ScillaCashflowChecker
                CFSyntax.lexp = cf_init_tag_expr lexp }) lentries }
   
   let cf_init_tag_module cmod =
-    let { cname; libs; elibs; contr } = cmod in
+    let { smver; cname; libs; elibs; contr } = cmod in
     let res_libs =
       match libs with
       | None -> None
       | Some l -> Some (cf_init_tag_library l) in
-    { CFSyntax.cname = cname;
+    { CFSyntax.smver = smver;
+      CFSyntax.cname = cname;
       CFSyntax.libs = res_libs;
       CFSyntax.elibs = elibs;
       CFSyntax.contr = cf_init_tag_contract contr }
@@ -1277,9 +1278,10 @@ module ScillaCashflowChecker
         ctrans = new_ctrans }
 
     let cf_tag_module m =
-      let { cname ; libs ; elibs ; contr } = m in
+      let { smver; cname ; libs ; elibs ; contr } = m in
       let new_contr = cf_tag_contract contr in
-      { cname = cname ;
+      { smver = smver;
+        cname = cname ;
         libs = libs ;
         elibs = elibs ;
         contr = new_contr }

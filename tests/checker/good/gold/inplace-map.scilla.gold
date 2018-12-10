@@ -5,6 +5,7 @@
     { "field": "gmap3", "tag": "(Map(Map(Map NoInfo)))" }
   ],
   "contract_info": {
+    "scilla_major_version": "0",
     "vname": "Test",
     "params": [ { "vname": "owner", "type": "ByStr20" } ],
     "fields": [

@@ -9,6 +9,7 @@
     { "field": "pendingReturns", "tag": "(Map Money)" }
   ],
   "contract_info": {
+    "scilla_major_version": "0",
     "vname": "OpenAuction",
     "params": [
       { "vname": "auctionStart", "type": "BNum" },

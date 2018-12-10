@@ -24,6 +24,9 @@ open ErrorUtils
 
 exception SyntaxError of string
 
+(* Version of the interpreter (major, minor, patch) *)
+let scilla_version = (0, 0, 0)
+
 type 'rep ident =
   | Ident of string * 'rep
 [@@deriving sexp]
@@ -104,6 +107,22 @@ let sexp_of_uint_lit i =
 
 let uint_lit_of_sexp _ = raise (SyntaxError "uint_lit_of_sexp not implemented")
 
+(* [Specialising the Return Type of Closures]
+
+   The syntax for literals implements a _shallow embedding_ of
+   closures and type abstractions (cf. constructors `Clo` and `TAbs`).
+   Since our computations are all in CPS (cf. [Evaluation in CPS]), so
+   should be the computations, encapsulated by those two forms.
+   However, for the time being, we want to keep the type `literal`
+   non-parametric. This is at odds with the priniciple of keeping
+   computations in CPS parametric in their result type.
+
+   Therefore, for now we have a compromise of fixing the result of
+   evaluating expressions to be as below. In order to restore the
+   genericity enabled by CPS, we provide an "impedance matcher",
+   described in [Continuation for Expression Evaluation]. 
+
+*)
 type literal =
   | StringLit of string
   (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
@@ -123,13 +142,13 @@ type literal =
   (* An embedded closure *)
   | Clo of (literal -> 
             (literal, scilla_error list, 
-             (literal * (string * literal) list, scilla_error list) 
-               EvalMonad.eresult) EvalMonad.CPSMonad.t)
+             int -> ((literal * (string * literal) list) * int, scilla_error list * int) result) 
+              CPSMonad.t)
   (* A type abstraction *)
   | TAbs of (typ -> 
              (literal, scilla_error list, 
-              (literal * (string * literal) list, scilla_error list) 
-                EvalMonad.eresult) EvalMonad.CPSMonad.t)
+              int -> ((literal * (string * literal) list) * int, scilla_error list * int) result) 
+               CPSMonad.t)
 [@@deriving sexp]
 
 
@@ -288,7 +307,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
   (* Contract module: libary + contract definiton *)
   type cmodule =
-    { cname : SR.rep ident;
+    { smver : int;                (* Scilla major version of the contract. *)
+      cname : SR.rep ident;
       libs  : library option;     (* lib functions defined in the module *)
       elibs : SR.rep ident list;  (* list of imports / external libs *)
       contr : contract }

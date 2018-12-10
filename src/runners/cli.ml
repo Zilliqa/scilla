@@ -106,6 +106,12 @@ type ioFiles = {
 
 let parse () =
   let speclist = [
+    ("-version", Arg.Unit (fun () -> 
+        DebugMessage.pout
+          (Core.Printf.sprintf "Scilla version: %s\n" PrettyPrinters.scilla_version_string);
+          if true then exit 0; (* if "true" to avoid warning on exit 0 *)
+          ()
+      ), "Print Scilla version and exit");
     ("-init", Arg.String (fun x -> f_input_init := x), "Path to initialization json");
     ("-istate", Arg.String (fun x -> f_input_state := x), "Path to state input json");
     ("-imessage", Arg.String (fun x -> f_input_message := x), "Path to message input json");

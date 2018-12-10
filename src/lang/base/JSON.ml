@@ -42,6 +42,11 @@ let mk_invalid_json msg = Invalid_json (mk_error0 msg)
 (*                    Exception wrappers                        *)
 (****************************************************************)
 
+let from_file f =
+  try Basic.from_file f
+    with
+    | Yojson.Json_error s -> raise (mk_invalid_json s)
+
 let parse_typ_exn t = 
   (try FrontEndParser.parse_type t
     with _ ->
@@ -259,7 +264,7 @@ module ContractState = struct
 (** Returns a list of (vname:string,value:literal) items
     Invalid inputs in the json are ignored **)
 let get_json_data filename  =
-  let json = Basic.from_file filename in
+  let json = from_file filename in
   (* input json is a list of key/value pairs *)
   let jlist = json |> Basic.Util.to_list in
     List.map jlist ~f:jobj_to_statevar
@@ -291,7 +296,7 @@ module Message = struct
   Invalid inputs in the json are ignored **)
 let get_json_data filename =
   let open Basic.Util in
-  let json = Basic.from_file filename in
+  let json = from_file filename in
   let tags = member_exn tag_label json |> to_string in
   let amounts = member_exn amount_label json |> to_string in
   let senders = member_exn sender_label json |> to_string in
@@ -345,7 +350,7 @@ module BlockChainState = struct
   (**  Returns a list of (vname:string,value:literal) items
    **  from the json in the input filename. **)
 let get_json_data filename  =
-  let json = Basic.from_file filename in
+  let json = from_file filename in
   (* input json is a list of key/value pairs *)
   let jlist = json |> Basic.Util.to_list in
     List.map jlist ~f:jobj_to_statevar
@@ -357,7 +362,9 @@ end
 module ContractInfo = struct
   open ParserUtil.ParsedSyntax
          
-  let get_json (contr : contract) (event_info : (string * (string * typ) list) list) =
+  let get_json cmver (contr : contract) (event_info : (string * (string * typ) list) list) =
+    (* 0. contract version *)
+    let verj = ("scilla_major_version", `String (Int.to_string cmver)) in
     (* 1. contract name *)
     let namej = ("vname", `String (get_id contr.cname)) in
     (* 2. parameters *)
@@ -393,11 +400,11 @@ module ContractInfo = struct
       ) in
     let eventsj = ("events", `List eventslj) in
 
-    let finalj = `Assoc (namej :: paramj :: fieldsj :: transj :: eventsj :: []) in
+    let finalj = `Assoc (verj :: namej :: paramj :: fieldsj :: transj :: eventsj :: []) in
       finalj
     
-    let get_string (contr : contract) (event_info : (string * (string * typ) list) list) =
-      pretty_to_string (get_json contr event_info)
+    let get_string cver (contr : contract) (event_info : (string * (string * typ) list) list) =
+      pretty_to_string (get_json cver contr event_info)
 
 end
 

@@ -78,6 +78,13 @@ let sanitize_literal l =
 (* A monadic big-step evaluator for Scilla expressions *)
 (*******************************************************)
 
+(* [Evaluation in CPS]
+
+   The following evaluator is implemented in a monadic style, with the
+   monad, at the moment to be CPS, with the specialised return result
+   type as described in [Specialising the Return Type of Closures].
+ *)
+
 let rec exp_eval erep env =
   let (e, _) = erep in
   match e with
@@ -201,10 +208,34 @@ and exp_eval_wrapper expr env =
   (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
   checkwrap_op thunk cost (mk_error1 emsg eloc)
 
-let exp_eval_wrapper_no_cps expr env k remaining_gas = 
-  let k0 = fun x -> x in 
-  let eval_res = exp_eval_wrapper expr env k0 remaining_gas in
-  k eval_res
+(* [Initial Gas-Passing Continuation]
+
+   The following function is used as an initial continuation to
+   "bootstrap" the gas-aware computation and then retrieve not just
+   the result, but also the remaining gas.
+
+*)
+let init_gas_kont r gas' = (match r with 
+    | Ok z -> Ok (z, gas')
+    | Error msg -> Error (msg, gas'))
+
+(* [Continuation for Expression Evaluation]
+
+   The following function implements an impedance matcher. Even though
+   it takes a continuation `k` from the callee, it starts evaluating
+   an expression `expr` in a "basic" continaution `init_gas_kont` (cf.
+   [Initial Gas-Passing Continuation]) with a _fixed_ result type (cf
+   [Specialising the Return Type of Closures]). In short, it fully
+   evaluates an expression with the fixed continuation, after which
+   the result is passed further to the callee's continuation `k`.
+
+*)
+let exp_eval_wrapper_no_cps expr env k gas = 
+  let eval_res = exp_eval_wrapper expr env init_gas_kont gas in
+  let (res, remaining_gas) = (match eval_res with 
+    | Ok (z, g) -> (Ok z, g)
+    | Error (m, g) -> (Error m, g)) in
+  k res remaining_gas
 
 open EvalSyntax
 (*******************************************************)
@@ -282,7 +313,8 @@ let rec stmt_eval conf stmts =
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       (* TODO: Implement Throw *)
-      | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
+      | _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
+      (* | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc *)
     )
 
 (*******************************************************)

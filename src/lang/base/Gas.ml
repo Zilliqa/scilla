@@ -26,6 +26,9 @@ open PrimTypes
 open Schnorr
 open PrettyPrinters
 
+(* Arbitrarily picked, the largest prime less than 100. *)
+let version_mismatch_penalty = 97
+
 module ScillaGas
     (SR : Rep)
     (ER : Rep) = struct

@@ -4,7 +4,7 @@
       "error_message": "Type error(s) in contract BadLibTest1:\n",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
-        "line": 55,
+        "line": 57,
         "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -13,7 +13,7 @@
       "error_message": "Type error in library one_msg:\n\n",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
-        "line": 7,
+        "line": 9,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -28,7 +28,7 @@
       "error_message": "Type error in library two_msg:\n\n",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
-        "line": 16,
+        "line": 18,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -43,7 +43,7 @@
       "error_message": "Type error in library andb:\n\n",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
-        "line": 29,
+        "line": 31,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -53,7 +53,7 @@
         "Type error in pattern matching on `b` of type Bool (or one of its branches):\nType error in pattern matching on `c` of type Int32 (or one of its branches):\nNot an algebraic data type: Int32",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
-        "line": 35,
+        "line": 37,
         "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

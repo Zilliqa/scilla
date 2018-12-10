@@ -92,6 +92,12 @@ let parse_cli () =
   let r_json_errors = ref false in
   let r_cf = ref false in
   let speclist = [
+    ("-version", Arg.Unit (fun () -> 
+        DebugMessage.pout
+          (sprintf "Scilla version: %s\n" PrettyPrinters.scilla_version_string);
+          if true then exit 0; (* if "true" to avoid warning on exit 0 *)
+          ()
+      ), "Print Scilla version and exit");
     ("-libdir", Arg.String (fun x -> r_stdlib_dir := x), "Path to stdlib");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");

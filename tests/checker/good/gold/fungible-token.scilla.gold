@@ -6,6 +6,7 @@
     { "field": "allowed", "tag": "(Map(Map NoInfo))" }
   ],
   "contract_info": {
+    "scilla_major_version": "0",
     "vname": "FungibleToken",
     "params": [
       { "vname": "owner", "type": "ByStr20" },

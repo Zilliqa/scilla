@@ -117,8 +117,8 @@ let () =
     | Ok (cmod, _, event_info, cf_info_opt) ->
         let base_output =
           [
-            ("contract_info", (JSON.ContractInfo.get_json cmod.contr event_info));
-            ("warnings", scilla_warning_to_json (get_warnings()));
+            ("contract_info", (JSON.ContractInfo.get_json cmod.smver cmod.contr event_info));
+            ("warnings", scilla_warning_to_json (get_warnings()))
           ] in
         let output_with_cf =
           match cf_info_opt with
@@ -126,4 +126,3 @@ let () =
           | Some cf_info -> ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: base_output in
         let j = `Assoc output_with_cf in
         pout (sprintf "%s\n" (Yojson.pretty_to_string j));
-        

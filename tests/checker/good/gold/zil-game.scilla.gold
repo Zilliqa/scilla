@@ -9,6 +9,7 @@
     { "field": "timer", "tag": "(Option NoInfo)" }
   ],
   "contract_info": {
+    "scilla_major_version": "0",
     "vname": "ZilGame",
     "params": [
       { "vname": "owner", "type": "ByStr20" },
