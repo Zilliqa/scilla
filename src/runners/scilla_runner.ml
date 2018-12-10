@@ -154,7 +154,8 @@ let () =
   match parse_module with
   | None -> 
     (* Error is printed by the parser. *)
-    plog (sprintf "%s\n" "Failed to parse input file.")
+    plog (sprintf "%s\n" "Failed to parse input file.");
+    exit 1
   | Some cmod ->
       plog (sprintf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" cli.input);
 
