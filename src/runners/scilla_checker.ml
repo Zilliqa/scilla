@@ -123,7 +123,6 @@ let () =
       let%bind _ = check_sanity pm_checked_cmod.contr  in
       let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr)  in
       let%bind _ = if cli.gua_flag then analyze_print_gas typed_cmod typed_elibs else pure [] in
-      pure @@ (cmod, tenv, event_info)
       let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
       pure @@ (cmod, tenv, event_info, cf_info_opt)
     ) in
