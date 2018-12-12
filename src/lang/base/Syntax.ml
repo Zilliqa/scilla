@@ -292,7 +292,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       tbody   : stmt_annot list }
 
   type type_def =
-    { cname : ER.rep ident; ctype : typ option }
+    { cname : ER.rep ident; ctype : typ list option }
   
   type lib_entry =
     | LibVar of ER.rep ident * expr_annot

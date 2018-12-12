@@ -318,7 +318,7 @@ contract:
       ctrans  = ts } }
 
 tconstr :
-| BAR; tn = CID; OF; t = typ
+| BAR; tn = CID; OF; t = nonempty_list(targ)
   { { cname = asIdL tn (toLoc $startpos); ctype = Some t }}
 | BAR; tn = CID
   { { cname = asIdL tn (toLoc $startpos); ctype = None }}
