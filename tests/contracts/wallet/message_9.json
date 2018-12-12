@@ -1,0 +1,12 @@
+{
+    "_tag": "SignOffNewOwner",
+    "_amount": "0",
+    "_sender" : "0xffcdeabcde126786789012345678901234567890",
+    "params": [
+        {
+            "vname": "candidate",
+            "type": "ByStr20",
+            "value": "0x1234567890123456789012345678906784567891"
+        }
+    ]
+}

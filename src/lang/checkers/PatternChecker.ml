@@ -62,7 +62,7 @@ module ScillaPatternchecker
           let _ = Array.set reachable i true in
           let e = match List.nth clauses i with
             | Some (_, e) -> e
-            | None -> raise (InternalError (sprintf "Pattern index %d too high (or low)" i))
+            | None -> raise (mk_internal_error (sprintf "Pattern index %d too high (or low)" i))
           in
           pure @@ Success e
       | ([], [], []) :: sps_rest ->
@@ -169,6 +169,9 @@ module ScillaPatternchecker
           (match s with
            | Load (i, x) -> pure @@ (CheckedPatternSyntax.Load (i, x), rep)
            | Store (i, x) -> pure @@ (CheckedPatternSyntax.Store (i, x), rep)
+           | MapUpdate (m, klist, v) -> pure @@ (CheckedPatternSyntax.MapUpdate (m, klist, v), rep)
+           | MapGet (v, m, klist, valfetch) -> 
+               pure @@ (CheckedPatternSyntax.MapGet (v, m, klist, valfetch), rep)
            | Bind (i, e) ->
                wrap_pmcheck_serr srep @@ 
                let%bind checked_e = pm_check_expr e in
@@ -235,7 +238,7 @@ module ScillaPatternchecker
               CheckedPatternSyntax.ctrans = checked_trans }
 
   let pm_check_module md =
-    let { cname = mod_cname; libs; elibs = mod_elibs; contr } = md in
+    let { smver = mod_smver; cname = mod_cname; libs; elibs = mod_elibs; contr } = md in
     let { cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let init_msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
     wrap_with_info (init_msg, dummy_loc) @@
@@ -264,7 +267,8 @@ module ScillaPatternchecker
     
     if emsgs'' = []
     (* Return pure environment *)  
-    then pure @@ {CheckedPatternSyntax.cname = mod_cname;
+    then pure @@ {CheckedPatternSyntax.smver = mod_smver;
+                  CheckedPatternSyntax.cname = mod_cname;
                   CheckedPatternSyntax.libs = checked_lib;
                   CheckedPatternSyntax.elibs = mod_elibs;
                   CheckedPatternSyntax.contr =

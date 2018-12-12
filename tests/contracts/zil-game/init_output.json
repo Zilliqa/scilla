@@ -1,1 +1,8 @@
-{ "gas_remaining": "1829", "message": null, "states": [], "events": [] }
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "576",
+  "_accepted": "false",
+  "message": null,
+  "states": [],
+  "events": []
+}

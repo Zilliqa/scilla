@@ -1,8 +1,29 @@
 {
-  "gas_remaining": "1736",
+  "scilla_major_version": "0",
+  "gas_remaining": "7612",
+  "_accepted": "false",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "gpair",
+      "type": "Pair (List (Int64)) (Option (Bool))",
+      "value": {
+        "constructor": "Pair",
+        "argtypes": [ "List (Int64)", "Option (Bool)" ],
+        "arguments": [
+          [],
+          { "constructor": "None", "argtypes": [ "Bool" ], "arguments": [] }
+        ]
+      }
+    },
+    { "vname": "llist", "type": "List (List (Int64))", "value": [] },
+    { "vname": "plist", "type": "List (Option (Int32))", "value": [] },
+    {
+      "vname": "gnat",
+      "type": "Nat",
+      "value": { "constructor": "Zero", "argtypes": [], "arguments": [] }
+    },
     {
       "vname": "gmap",
       "type": "Map (ByStr20) (Pair (Int32) (Int32))",
@@ -16,23 +37,6 @@
           }
         }
       ]
-    },
-    {
-      "vname": "gpair",
-      "type": "Pair (List (Int64)) (Option (Bool))",
-      "value": {
-        "constructor": "Pair",
-        "argtypes": [ "List (Int64)", "Option (Bool)" ],
-        "arguments": [
-          { "constructor": "Nil", "argtypes": [ "Int64" ], "arguments": [] },
-          { "constructor": "None", "argtypes": [ "Bool" ], "arguments": [] }
-        ]
-      }
-    },
-    {
-      "vname": "gnat",
-      "type": "Nat",
-      "value": { "constructor": "Zero", "argtypes": [], "arguments": [] }
     }
   ],
   "events": []

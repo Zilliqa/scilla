@@ -129,7 +129,9 @@ open ParserUtil.ParsedSyntax
           ]
         }
   *)
-  val get_string : contract -> (string * (string * Syntax.typ) list) list -> string
+  val get_string : int -> contract -> (string * (string * Syntax.typ) list) list -> string
+  val get_json : int -> contract -> (string * (string * Syntax.typ) list) list -> Yojson.json
+
 end
 
 module Event : sig
@@ -143,6 +145,25 @@ module Event : sig
   val event_to_json : (string * Syntax.literal) list -> Yojson.json
 
 end
+
+module CashflowInfo : sig
+  (* Given a list of pairs with of fields and cashflow tags for a contract, 
+     give a string JSON with these details:
+
+     {
+       "cashflow_tags" : [
+         { "field" : "owners",
+           "tag" : "NotMoney" },
+         { "field" : "donations",
+           "tag" : "MapMoney" }
+       ]
+     }
+
+  *)
+
+  val get_json : (string * string) list -> Yojson.json
+end
+
 
 open ErrorUtils
 exception Invalid_json of scilla_error list

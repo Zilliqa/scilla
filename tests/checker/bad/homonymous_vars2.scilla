@@ -1,0 +1,23 @@
+scilla_version 0
+
+library Wallet
+
+let f =
+  fun (a : Uint128) =>
+  fun (b : Uint128) =>
+    builtin lt a b
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract Wallet()
+
+(* Submit a transaction for future signoff *)
+transition SubmitTransaction (sxamount : Uint128)
+end
+
+(* Execute signed-off transaction *)
+transition ExecuteTransaction ()
+  bal <- _balance;
+  not_enough_money = f bal sxamount
+end

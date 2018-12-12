@@ -54,3 +54,6 @@ module DataTypeDictionary : sig
   val pair_typ : typ -> typ -> typ
 
 end
+
+val scilla_list_to_ocaml : literal -> (literal list, scilla_error list) result
+val scilla_list_to_ocaml_rev : literal -> (literal list, scilla_error list) result

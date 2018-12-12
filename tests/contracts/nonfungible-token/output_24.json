@@ -1,12 +1,8 @@
 {
-  "gas_remaining": "1455",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x1234567890123456789012345678901234567892",
-    "params": [ { "vname": "code", "type": "Uint32", "value": "4" } ]
-  },
+  "scilla_major_version": "0",
+  "gas_remaining": "6915",
+  "_accepted": "false",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -35,5 +31,13 @@
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "Error",
+      "params": [
+        { "vname": "raisedAt", "type": "String", "value": "transferFrom" },
+        { "vname": "code", "type": "Uint32", "value": "4" }
+      ]
+    }
+  ]
 }

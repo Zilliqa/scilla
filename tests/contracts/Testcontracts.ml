@@ -29,7 +29,7 @@ let rec print_args args =
 
 let sep = Filename.dir_sep
 
-let testsuit_gas_limit = 2000
+let testsuit_gas_limit = 8000
 
 (* 
  * Build tests to invoke scilla-runner with the right arguments, for
@@ -43,7 +43,8 @@ let rec build_contract_tests env name ecode i n =
     (* function to run scilla-runner and check exit code *)
       (fun test_ctxt ->
         (* Files for the contract are in examples/contract/(crowdfunding|zil-game|etc). *)
-        let dir = env.tests_dir test_ctxt ^ sep ^ "contracts" ^ sep ^
+        let tests_dir = FilePath.make_relative (Sys.getcwd()) (env.tests_dir test_ctxt) in
+        let dir = tests_dir ^ sep ^ "contracts" ^ sep ^
           name ^ sep in
         let tmpdir = bracket_tmpdir test_ctxt in 
         let output_file = tmpdir ^ sep ^ name ^ "_output_"
@@ -56,23 +57,43 @@ let rec build_contract_tests env name ecode i n =
               "-gaslimit"; Core.Int.to_string testsuit_gas_limit;
               "-imessage"; dir ^ "message_" ^ (i_to_s i) ^ ".json";
               "-istate" ; dir ^ "state_" ^ (i_to_s i) ^ ".json";
+              "-jsonerrors";
               "-iblockchain" ; dir ^ "blockchain_" ^ (i_to_s i) ^ ".json"] in
         (if (env.print_cli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));
         let scillabin = env.bin_dir test_ctxt ^ sep ^ "scilla-runner" in
-           (* Ensure that the executable exists with 0 *)
-          (assert_command ~exit_code:ecode ~ctxt:test_ctxt ~use_stderr:true scillabin args;
+           (* Ensure that the executable exists with ecode *)
            let goldoutput_file = dir ^ "output_" ^ (i_to_s i) ^ ".json" in
-           let g = load_file goldoutput_file in
-           if ecode = WEXITED 0 then
+           let update_gold = env.update_gold test_ctxt in
+           let exit_succ : Unix.process_status = WEXITED 0 in
+           (* Expected success tests *)
+           if ecode = exit_succ then
+             (assert_command ~exit_code:ecode ~ctxt:test_ctxt ~use_stderr:true scillabin args;
              let o = load_file output_file in
-             let update_gold = env.update_gold test_ctxt in
+             let g = load_file goldoutput_file in
              if update_gold then
               (Printf.printf "Updating gold output for test %s\n" (name^"_"^(i_to_s i));
                 save_to_file o goldoutput_file);
              (* Compare output.json with a gold output in the contract directory *)
              assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o)) ~ctxt:test_ctxt
-               ~msg:(Core.sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g) g o);
-      ) 
+               ~msg:(Core.sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g) g o)
+           else (* Expected failure tests *)
+             (let output_verifier s =
+                let output = stream_to_string s in
+                let gold_output = load_file goldoutput_file in
+                  assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o))
+                   ~printer:(fun s -> s) gold_output output;
+              in
+              let output_updater s =
+                let output = stream_to_string s in
+                (save_to_file output goldoutput_file;
+                 Printf.printf "Updated gold output for test %s\n" (name^"_"^(i_to_s i)))
+              in
+              if update_gold then
+                assert_command ~exit_code:ecode ~foutput:output_updater ~ctxt:test_ctxt ~use_stderr:true scillabin args
+              else
+                assert_command ~exit_code:ecode ~foutput:output_verifier ~ctxt:test_ctxt ~use_stderr:true scillabin args
+              )
+          )
       in
       test :: (build_contract_tests env name ecode (i+1) n)
 
@@ -89,6 +110,7 @@ let build_contract_init_test env name =
                   "-libdir"; "src" ^ sep ^ "stdlib";
                   "-i"; dir ^ "contract.scilla";
                   "-o"; output_file;
+                  "-jsonerrors";
                   "-gaslimit"; Core.Int.to_string testsuit_gas_limit;
                   "-iblockchain"; dir ^ "blockchain_1.json";]
             in
@@ -122,6 +144,7 @@ let build_misc_tests env =
       (fun test_ctxt ->
         let args = ["-init"; tests_dir_file env.tests_dir test_ctxt "init_bad1.json";
                     "-libdir"; "src" ^ sep ^ "stdlib";
+                    "-jsonerrors";
                     "-i"; tests_dir_file env.tests_dir test_ctxt "contract.scilla";
                     "-o"; output_file test_ctxt "init_bad1_output.json";
                     "-iblockchain"; tests_dir_file env.tests_dir test_ctxt "blockchain_1.json"]
@@ -136,6 +159,7 @@ let build_misc_tests env =
       (fun test_ctxt ->
         let args = ["-init"; tests_dir_file env.tests_dir test_ctxt "init_bad1.json";
                     "-libdir"; "src" ^ sep ^ "stdlib";
+                    "-jsonerrors";
                     "-i"; tests_dir_file env.tests_dir test_ctxt "contract.scilla";
                     "-o"; output_file test_ctxt "init_bad2_output.json";
                     "-iblockchain"; tests_dir_file env.tests_dir test_ctxt "blockchain_1.json"]
@@ -145,7 +169,22 @@ let build_misc_tests env =
           assert_command ~exit_code:expected_code ~ctxt:test_ctxt (scillabin env.bin_dir test_ctxt) args
       ) in
 
-      [test1;test2]
+    let test3 =
+    "misc_test_badjson_3" >::
+      (fun test_ctxt ->
+        let args = ["-init"; tests_dir_file env.tests_dir test_ctxt "init_bad3.json";
+                    "-libdir"; "src" ^ sep ^ "stdlib";
+                    "-jsonerrors";
+                    "-i"; tests_dir_file env.tests_dir test_ctxt "contract.scilla";
+                    "-o"; output_file test_ctxt "init_bad2_output.json";
+                    "-iblockchain"; tests_dir_file env.tests_dir test_ctxt "blockchain_1.json"]
+        in
+        (if (env.print_cli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));
+        let expected_code : Unix.process_status = WEXITED 1 in
+          assert_command ~exit_code:expected_code ~ctxt:test_ctxt (scillabin env.bin_dir test_ctxt) args
+      ) in
+
+      [test1;test2;test3]
 
 let add_tests env = 
     let succ_code : Unix.process_status = WEXITED 0 in
@@ -160,19 +199,21 @@ let add_tests env =
     let helloWorldtests = "helloWorld" >:::(build_contract_tests env "helloWorld" succ_code 1 3) in
     let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 4 8) in
     let auctiontests = "auction" >:::(build_contract_tests env "auction" succ_code 1 8) in
-    let mappairtests = "mappair" >:::(build_contract_tests env "mappair" succ_code 1 5) in
+    let mappairtests = "mappair" >:::(build_contract_tests env "mappair" succ_code 1 7) in
     let bookstoretests = "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10) in
-    let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 6 11) in
+    let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 8 14) in
     let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12) in
     let nonfungibletokentests_expected_f = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27) in
     let schnorrtests = "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 4) in
     let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1) in
     let fungibletokentests = "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8) in
+    let inplace_map_tests = "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14) in
+    let wallettests = "wallet" >:::(build_contract_tests env "wallet" succ_code 1 11) in
     let treetests = "tree" >:::(build_contract_tests env "tree" succ_code 1 1) in
     let misc_tests = "misc_tests" >::: build_misc_tests env in
 
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f;
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;
-                             auctiontests;emptytests;bookstoretests;nonfungibletokentests_expected_f;nonfungibletokentests; treetests;
-                             schnorrtests]
+                             auctiontests;emptytests;bookstoretests;nonfungibletokentests_expected_f;nonfungibletokentests;
+                             wallettests;schnorrtests;inplace_map_tests;treetests;]
 

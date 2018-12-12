@@ -1,5 +1,5 @@
 {
-  "gas_remaining": 1747,
+  "gas_remaining": 1746,
   "errors": [
     {
       "error_message":
@@ -11,5 +11,6 @@
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
-  ]
+  ],
+  "warnings": []
 }

@@ -1,12 +1,8 @@
 {
-  "gas_remaining": "1472",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [ { "vname": "code", "type": "Uint32", "value": "0" } ]
-  },
+  "scilla_major_version": "0",
+  "gas_remaining": "7182",
+  "_accepted": "false",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -14,13 +10,6 @@
       "type": "Map (ByStr20) (Uint256)",
       "value": [
         { "key": "0x1234567890123456789012345678901234567892", "val": "1" }
-      ]
-    },
-    {
-      "vname": "tokenOwnerMap",
-      "type": "Map (Uint256) (ByStr20)",
-      "value": [
-        { "key": "1", "val": "0x1234567890123456789012345678901234567892" }
       ]
     },
     {
@@ -32,7 +21,31 @@
       "vname": "operatorApprovals",
       "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
       "value": []
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "value": [
+        { "key": "1", "val": "0x1234567890123456789012345678901234567892" }
+      ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "Mint successful",
+      "params": [
+        {
+          "vname": "by",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567890"
+        },
+        {
+          "vname": "recipient",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567892"
+        },
+        { "vname": "token", "type": "Uint256", "value": "1" }
+      ]
+    }
+  ]
 }

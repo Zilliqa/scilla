@@ -42,6 +42,11 @@ let mk_invalid_json msg = Invalid_json (mk_error0 msg)
 (*                    Exception wrappers                        *)
 (****************************************************************)
 
+let from_file f =
+  try Basic.from_file f
+    with
+    | Yojson.Json_error s -> raise (mk_invalid_json s)
+
 let parse_typ_exn t = 
   (try FrontEndParser.parse_type t
     with _ ->
@@ -70,6 +75,11 @@ let build_prim_lit_exn t v =
     | Some v' -> v'
   in
     exn_wrapper t (build_prim_literal t v) v
+
+let constr_pattern_arg_types_exn dt cname =
+  match constr_pattern_arg_types dt cname with
+  | Error emsg -> raise (Invalid_json (emsg))
+  | Ok s ->s
 
 (****************************************************************)
 (*                    JSON parsing                              *)
@@ -100,50 +110,12 @@ let rec json_to_adtargs cname tlist ajs =
   | Ok (r, _) ->
     r
   ) in
-  match cname with
-  | "Some" ->
-    verify_args_exn cname (List.length ajs) 1;
-    let j = List.nth_exn ajs 0 in
-    let t = List.nth_exn tlist 0 in
-    let lit = json_to_lit t j in
-      ADTValue (cname, tlist, (lit::[]))
-  | "None" ->
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, tlist, [])
-  | "True" | "False" -> 
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, [], []) 
-  | "Pair" ->
-    verify_args_exn cname (List.length ajs) 2;
-    let j1 = List.nth_exn ajs 0 in
-    let t1 = List.nth_exn tlist 0 in
-    let lit1 = json_to_lit t1 j1 in
-    let j2 = List.nth_exn ajs 1 in
-    let t2 = List.nth_exn tlist 1 in
-    let lit2 = json_to_lit t2 j2 in
-      ADTValue (cname, tlist, (lit1::lit2::[]))
-  | "Nil" ->
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, tlist, [])
-  | "Cons" ->
-    verify_args_exn cname (List.length ajs) 2;
-    let j1 = List.nth_exn ajs 0 in (* first element in the list *)
-    let j2 = List.nth_exn ajs 1 in (* rest of the list *)
-    let t = List.nth_exn tlist 0 in (* type of element of list *)
-    let lit1 = json_to_lit t j1 in
-    (* We know that the "rest of the list" is an ADT. *)
-    let lit2 = read_adt_json dt.tname j2 tlist in
-      ADTValue (cname, tlist, (lit1::lit2::[]))
-  | "Zero" ->
-    verify_args_exn cname (List.length ajs) 0;
-    ADTValue (cname, [], [])
-  | "Succ" ->
-    verify_args_exn cname (List.length ajs) 1;
-    let j = List.nth_exn ajs 0 in (* successor of *)
-    let lit = read_adt_json dt.tname j tlist in
-      ADTValue (cname, [], lit::[])
-  | _ ->
-    raise (mk_invalid_json ("JSON parsing: Unsupported ADT type"))
+  (* For each component literal of our ADT, calculate it's type.
+   * This is essentially using DataTypes.constr_tmap and substituting safely. *)
+  let tmap = constr_pattern_arg_types_exn (ADT(dt.tname, tlist)) cname in
+  verify_args_exn cname (List.length ajs) (List.length tmap);
+  let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t j) in
+    ADTValue(cname, tlist, llist)
 
 and read_adt_json name j tlist_verify =
   let open Basic.Util in
@@ -155,6 +127,15 @@ and read_adt_json name j tlist_verify =
       r
     ) in
   let res = match j with
+  | `List vli ->
+    (* We make an exception for Lists, allowing them to be stored flatly. *)
+    if dt.tname <> "List" then
+      raise (Invalid_json (mk_error0 "ADT value is a JSON array, but type is not List"))
+    else
+      let etyp = List.nth_exn tlist_verify 0 in
+      List.fold_right vli
+        ~f:(fun vl acc -> (ADTValue("Cons", [etyp], [(json_to_lit etyp vl);acc])))
+        ~init:(ADTValue("Nil", [etyp], []))
   | `Assoc _ ->
       let constr = member_exn "constructor" j |> to_string in
       let dt' =
@@ -194,38 +175,26 @@ and read_adt_json name j tlist_verify =
 and read_map_json kt vt j =
   match j with
   | `List vli ->
-     let kvallist = mapvalues_from_json kt vt vli (List.length vli) in
-     Map ((kt, vt), kvallist)
+     let m = Caml.Hashtbl.create (List.length vli) in
+     let _ = mapvalues_from_json m kt vt vli in
+     Map ((kt, vt), m)
   | `Null -> Map ((kt, vt), Caml.Hashtbl.create 0)
   | _ -> raise (mk_invalid_json ("JSON parsing: error parsing Map"))
  
-and mapvalues_from_json kt vt l size = 
+and mapvalues_from_json m kt vt l =
   let open Basic.Util in
-  match l with
-  | first :: remaining ->
-      let kjson = member_exn "key" first in
-      let keylit = 
-        (match kt with
-         | PrimType _ ->
-            build_prim_lit_exn kt (to_string kjson)
-         | _ -> raise (mk_invalid_json ("Key in Map JSON is not a PrimType"))
-         ) in
-      let vjson = member_exn "val" first in
-      let vallit =
-        (match vt with
-         | MapType (kt', vt') ->
-            read_map_json kt' vt' vjson
-         | ADT (name, tlist) ->
-            let vl = read_adt_json name vjson tlist in
-              vl
-         | PrimType _ ->
-            build_prim_lit_exn vt (to_string vjson)
-         | _ -> raise (mk_invalid_json ("Unknown type in Map value in JSON"))
+  List.iter l ~f:(fun first ->
+    let kjson = member_exn "key" first in
+    let keylit =
+      (match kt with
+        | PrimType _ ->
+          build_prim_lit_exn kt (to_string kjson)
+        | _ -> raise (mk_invalid_json ("Key in Map JSON is not a PrimType"))
         ) in
-        let m = mapvalues_from_json kt vt remaining size in
-          let _ = Caml.Hashtbl.replace m keylit vallit in
-          m
-  | [] -> (Caml.Hashtbl.create size)
+    let vjson = member_exn "val" first in
+    let vallit = json_to_lit vt vjson in
+    Caml.Hashtbl.replace m keylit vallit
+  )
 
 and json_to_lit t v =
   let open Basic.Util in
@@ -295,7 +264,7 @@ module ContractState = struct
 (** Returns a list of (vname:string,value:literal) items
     Invalid inputs in the json are ignored **)
 let get_json_data filename  =
-  let json = Basic.from_file filename in
+  let json = from_file filename in
   (* input json is a list of key/value pairs *)
   let jlist = json |> Basic.Util.to_list in
     List.map jlist ~f:jobj_to_statevar
@@ -327,7 +296,7 @@ module Message = struct
   Invalid inputs in the json are ignored **)
 let get_json_data filename =
   let open Basic.Util in
-  let json = Basic.from_file filename in
+  let json = from_file filename in
   let tags = member_exn tag_label json |> to_string in
   let amounts = member_exn amount_label json |> to_string in
   let senders = member_exn sender_label json |> to_string in
@@ -344,24 +313,17 @@ let message_to_json message =
   (* extract out "_tag", "_amount", "_accepted" and "_recipient" parts of the message *)
   let (_, taglit) = List.find_exn message ~f:(fun (x, _) -> x = tag_label) in
   let (_, amountlit) = List.find_exn message ~f:(fun (x, _) -> x = amount_label) in
-  let acceptedlit = List.find message ~f:(fun (x, _) -> x = accepted_label) in
   (* message_to_json may be used to print both output and input message. Choose label accordingly. *)
   let (toORfrom, tofromlit) = List.find_exn message ~f:(fun (x, _) -> x = recipient_label || x = sender_label) in
   let tofrom_label = if toORfrom = recipient_label then recipient_label else sender_label in
   let tags = get_string_literal taglit in
   let amounts = get_uint_literal amountlit in
-  (* In case we're trying to print an input message, there won't be an "_accepted" field *)
-  let accepteds = 
-    if is_some acceptedlit
-    then get_string_literal (snd (BatOption.get acceptedlit))
-    else Some "false" in
   let tofroms = get_address_literal tofromlit in
   (* Get a list without any of these components *)
   let filtered_list = List.filter message 
-      ~f:(fun (x, _) -> not ((x = tag_label) || (x = amount_label) || (x = recipient_label) || x = accepted_label)) in
+      ~f:(fun (x, _) -> not ((x = tag_label) || (x = amount_label) || (x = recipient_label))) in
     `Assoc [(tag_label, `String (BatOption.get tags)); 
                  (amount_label, `String (BatOption.get amounts));
-                 (accepted_label, `String (BatOption.get accepteds));
                  (tofrom_label, `String (BatOption.get tofroms));
                  ("params", `List (slist_to_json filtered_list))] 
 
@@ -388,7 +350,7 @@ module BlockChainState = struct
   (**  Returns a list of (vname:string,value:literal) items
    **  from the json in the input filename. **)
 let get_json_data filename  =
-  let json = Basic.from_file filename in
+  let json = from_file filename in
   (* input json is a list of key/value pairs *)
   let jlist = json |> Basic.Util.to_list in
     List.map jlist ~f:jobj_to_statevar
@@ -400,44 +362,49 @@ end
 module ContractInfo = struct
   open ParserUtil.ParsedSyntax
          
-  let get_string (contr : contract) (event_info : (string * (string * typ) list) list) =
+  let get_json cmver (contr : contract) (event_info : (string * (string * typ) list) list) =
+    (* 0. contract version *)
+    let verj = ("scilla_major_version", `String (Int.to_string cmver)) in
     (* 1. contract name *)
-    let namej = ("name", `String (get_id contr.cname)) in
+    let namej = ("vname", `String (get_id contr.cname)) in
     (* 2. parameters *)
     let paraml = contr.cparams in
     let paramlj = List.map paraml ~f: (fun (i, t) ->
-        `Assoc [("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
+        `Assoc [("vname", `String (get_id i)); ("type", `String (pp_typ t))]) in
     let paramj = ("params", `List paramlj) in
     (* 3. fields *)
     let fieldsl = contr.cfields in
     let fieldslj = List.map fieldsl ~f: (fun (i, t, _) ->
-        `Assoc [("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
+        `Assoc [("vname", `String (get_id i)); ("type", `String (pp_typ t))]) in
     let fieldsj = ("fields", `List fieldslj) in
     (* 4. transitions *)
     let transl = contr.ctrans in
     let translj = List.map transl ~f: (fun t ->
         (* 4a. transition name *)
-        let namej = ("name", `String (get_id t.tname)) in
+        let namej = ("vname", `String (get_id t.tname)) in
         (* 4b. transition parameters *)
         let paraml = t.tparams in
         let paramlj = List.map paraml ~f: (fun (i, t) ->
-            `Assoc[("name", `String (get_id i)); ("type", `String (pp_typ t))]) in
+            `Assoc[("vname", `String (get_id i)); ("type", `String (pp_typ t))]) in
         let paramj = ("params", `List paramlj) in
         `Assoc (namej :: paramj :: [] )) in
     
     let transj = ("transitions", `List translj) in
     (* 5. event info *)
     let eventslj = List.map event_info ~f: (fun (eventname, plist) ->
-        let namej = ("name", `String (eventname)) in
+        let namej = ("vname", `String (eventname)) in
         let paramlj = List.map plist ~f: (fun (pname, ptype) ->
-          `Assoc [("name", `String pname); ("type", `String (pp_typ ptype))]) in
+          `Assoc [("vname", `String pname); ("type", `String (pp_typ ptype))]) in
         let paramj = ("params", `List paramlj) in
           `Assoc (namej :: paramj :: [])
       ) in
     let eventsj = ("events", `List eventslj) in
 
-    let finalj = `Assoc (namej :: paramj :: fieldsj :: transj :: eventsj :: []) in
-    pretty_to_string finalj
+    let finalj = `Assoc (verj :: namej :: paramj :: fieldsj :: transj :: eventsj :: []) in
+      finalj
+    
+    let get_string cver (contr : contract) (event_info : (string * (string * typ) list) list) =
+      pretty_to_string (get_json cver contr event_info)
 
 end
 
@@ -465,4 +432,16 @@ module Event = struct
     else
       Basic.to_string j
 
+end
+
+module CashflowInfo = struct
+
+  let get_json tags =
+    `List
+      (List.map
+         tags
+         ~f:(fun (i, t) ->
+             `Assoc [("field", `String i);
+                     ("tag", `String t)]))
+  
 end

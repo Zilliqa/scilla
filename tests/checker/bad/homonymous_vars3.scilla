@@ -1,0 +1,16 @@
+scilla_version 0
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract Wallet()
+
+(* Submit a transaction for future signoff *)
+transition SubmitTransaction (sxamount : Uint128)
+end
+
+(* Execute signed-off transaction *)
+transition ExecuteTransaction ()
+  bal <- _balance;
+  not_enough_money = Some {Uint128} sxamount
+end

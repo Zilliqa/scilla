@@ -1,0 +1,17 @@
+[
+    { 
+        "vname" : "_scilla_version",
+        "type" : "Uint32",
+        "value" : "0"
+    },
+    {
+        "vname" : "owner",
+        "type" : "ByStr20", 
+        "value" : "0x12345678901234567890123456789012345678ab"
+    },
+    {
+        "vname" : "_creation_block",
+        "type" : "BNum",
+        "value" : "1"
+    }
+]

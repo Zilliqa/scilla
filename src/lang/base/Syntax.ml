@@ -24,6 +24,9 @@ open ErrorUtils
 
 exception SyntaxError of string
 
+(* Version of the interpreter (major, minor, patch) *)
+let scilla_version = (0, 0, 0)
+
 type 'rep ident =
   | Ident of string * 'rep
 [@@deriving sexp]
@@ -104,6 +107,22 @@ let sexp_of_uint_lit i =
 
 let uint_lit_of_sexp _ = raise (SyntaxError "uint_lit_of_sexp not implemented")
 
+(* [Specialising the Return Type of Closures]
+
+   The syntax for literals implements a _shallow embedding_ of
+   closures and type abstractions (cf. constructors `Clo` and `TAbs`).
+   Since our computations are all in CPS (cf. [Evaluation in CPS]), so
+   should be the computations, encapsulated by those two forms.
+   However, for the time being, we want to keep the type `literal`
+   non-parametric. This is at odds with the priniciple of keeping
+   computations in CPS parametric in their result type.
+
+   Therefore, for now we have a compromise of fixing the result of
+   evaluating expressions to be as below. In order to restore the
+   genericity enabled by CPS, we provide an "impedance matcher",
+   described in [Continuation for Expression Evaluation]. 
+
+*)
 type literal =
   | StringLit of string
   (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
@@ -121,9 +140,15 @@ type literal =
   (* A constructor in HNF *)      
   | ADTValue of string * typ list * literal list
   (* An embedded closure *)
-  | Clo of (literal -> int -> (literal, scilla_error list) EvalMonad.eresult)
+  | Clo of (literal -> 
+            (literal, scilla_error list, 
+             int -> ((literal * (string * literal) list) * int, scilla_error list * int) result) 
+              CPSMonad.t)
   (* A type abstraction *)
-  | TAbs of (typ -> int -> (literal, scilla_error list) EvalMonad.eresult)
+  | TAbs of (typ -> 
+             (literal, scilla_error list, 
+              int -> ((literal * (string * literal) list) * int, scilla_error list * int) result) 
+               CPSMonad.t)
 [@@deriving sexp]
 
 
@@ -212,6 +237,12 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Load of ER.rep ident * ER.rep ident
     | Store of ER.rep ident * ER.rep ident
     | Bind of ER.rep ident * expr_annot
+    (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
+    | MapUpdate of ER.rep ident * (ER.rep ident list) * ER.rep ident option
+    (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
+    (* If the bool is set, then we interpret this as value retrieve, 
+       otherwise as an "exists" query. *)
+    | MapGet of ER.rep ident * ER.rep ident * (ER.rep ident list) * bool
     | MatchStmt of ER.rep ident * (pattern * stmt_annot list) list
     | ReadFromBC of ER.rep ident * string
     | AcceptPayment
@@ -240,6 +271,10 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | G_Store of (literal * literal)
     (* none *)
     | G_Bind
+    (* nesting depth, new value *)
+    | G_MapUpdate of int * literal option
+    (* nesting depth, literal retrieved *)
+    | G_MapGet of int * literal option
     (* number of clauses *)
     | G_MatchStmt of int
     | G_ReadFromBC
@@ -275,7 +310,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
   (* Contract module: libary + contract definiton *)
   type cmodule =
-    { cname : SR.rep ident;
+    { smver : int;                (* Scilla major version of the contract. *)
+      cname : SR.rep ident;
       libs  : library option;     (* lib functions defined in the module *)
       elibs : SR.rep ident list;  (* list of imports / external libs *)
       contr : contract }
@@ -553,6 +589,12 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Bind (x, _) ->
         sprintf "Type error in the binding to into `%s`:\n"
            (get_id x)
+    | MapGet (_, m, keys, _) ->
+        (sprintf "Type error in getting map value %s" (get_id m)) ^
+        (List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ (get_id k) ^ "]")) ^ "\n"
+    | MapUpdate (m, keys, _) ->
+        (sprintf "Type error in updating map %s" (get_id m)) ^
+        (List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ (get_id k) ^ "]")) ^ "\n"
     | MatchStmt (x, _) ->
         sprintf
           "Type error in pattern matching on `%s`%s (or one of its branches):\n"
@@ -577,10 +619,30 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Ok _ -> res
     | Error e -> Error ({emsg = msg; startl = sloc; endl = dummy_loc}::e)
 
-  let wrap_err e phase ?opt:(opt = "") = wrap_with_info (get_failure_msg e phase opt)
+  let wrap_err e phase ?opt:(opt = "") res =
+    match res with
+    | Ok _ -> res
+    (* Handle a special case where we're dealing with the most precise error. *)
+    | Error (e' :: []) ->
+      let m, l = get_failure_msg e phase opt in
+      if e'.startl = dummy_loc then
+        Error (mk_error1 (m ^ e'.emsg) l)
+      else
+        Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
+    | _ -> wrap_with_info (get_failure_msg e phase opt) res
 
-  let wrap_serr s phase ?opt:(opt = "") =
-    wrap_with_info (get_failure_msg_stmt s phase opt)
+  let wrap_serr s phase ?opt:(opt = "") res =
+    match res with
+    | Ok _ -> res
+      (* Handle a special case where we're dealing with the most precise error. *)
+    | Error (e' :: []) ->
+      let m, l = get_failure_msg_stmt s phase opt in
+      if e'.startl = dummy_loc then
+        Error (mk_error1 (m ^ e'.emsg) l)
+      else
+        Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
+    | _ ->
+      wrap_with_info (get_failure_msg_stmt s phase opt) res
   
 end
 

@@ -1,0 +1,32 @@
+{
+  "cashflow_tags": [
+    { "field": "owner", "tag": "NotMoney" },
+    { "field": "gmap", "tag": "(Map NoInfo)" },
+    { "field": "gmap3", "tag": "(Map(Map(Map NoInfo)))" }
+  ],
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Test",
+    "params": [ { "vname": "owner", "type": "ByStr20" } ],
+    "fields": [
+      { "vname": "gmap", "type": "Map (String) (Int32)" },
+      {
+        "vname": "gmap3",
+        "type": "Map (String) (Map (Int32) (Map (Int64) (String)))"
+      }
+    ],
+    "transitions": [
+      { "vname": "test1", "params": [] },
+      { "vname": "test2", "params": [] },
+      { "vname": "test3", "params": [] },
+      { "vname": "test4", "params": [] },
+      { "vname": "test5", "params": [] },
+      { "vname": "test6", "params": [] },
+      { "vname": "test7", "params": [] },
+      { "vname": "test8", "params": [] },
+      { "vname": "test9", "params": [] }
+    ],
+    "events": []
+  },
+  "warnings": []
+}

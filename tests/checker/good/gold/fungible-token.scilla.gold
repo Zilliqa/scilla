@@ -1,48 +1,61 @@
 {
-  "name": "FungibleToken",
-  "params": [
-    { "name": "owner", "type": "ByStr20" },
-    { "name": "total_tokens", "type": "Uint128" }
+  "cashflow_tags": [
+    { "field": "owner", "tag": "NoInfo" },
+    { "field": "total_tokens", "tag": "NoInfo" },
+    { "field": "balances", "tag": "(Map NoInfo)" },
+    { "field": "allowed", "tag": "(Map(Map NoInfo))" }
   ],
-  "fields": [
-    { "name": "balances", "type": "Map (ByStr20) (Uint128)" },
-    { "name": "allowed", "type": "Map (ByStr20) (Map (ByStr20) (Uint128))" }
-  ],
-  "transitions": [
-    {
-      "name": "BalanceOf",
-      "params": [ { "name": "tokenOwner", "type": "ByStr20" } ]
-    },
-    { "name": "TotalSupply", "params": [] },
-    {
-      "name": "Transfer",
-      "params": [
-        { "name": "to", "type": "ByStr20" },
-        { "name": "tokens", "type": "Uint128" }
-      ]
-    },
-    {
-      "name": "TransferFrom",
-      "params": [
-        { "name": "from", "type": "ByStr20" },
-        { "name": "to", "type": "ByStr20" },
-        { "name": "tokens", "type": "Uint128" }
-      ]
-    },
-    {
-      "name": "Approve",
-      "params": [
-        { "name": "spender", "type": "ByStr20" },
-        { "name": "tokens", "type": "Uint128" }
-      ]
-    },
-    {
-      "name": "Allowance",
-      "params": [
-        { "name": "tokenOwner", "type": "ByStr20" },
-        { "name": "spender", "type": "ByStr20" }
-      ]
-    }
-  ],
-  "events": []
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "FungibleToken",
+    "params": [
+      { "vname": "owner", "type": "ByStr20" },
+      { "vname": "total_tokens", "type": "Uint128" }
+    ],
+    "fields": [
+      { "vname": "balances", "type": "Map (ByStr20) (Uint128)" },
+      {
+        "vname": "allowed",
+        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))"
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "BalanceOf",
+        "params": [ { "vname": "tokenOwner", "type": "ByStr20" } ]
+      },
+      { "vname": "TotalSupply", "params": [] },
+      {
+        "vname": "Transfer",
+        "params": [
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "TransferFrom",
+        "params": [
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "Approve",
+        "params": [
+          { "vname": "spender", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "Allowance",
+        "params": [
+          { "vname": "tokenOwner", "type": "ByStr20" },
+          { "vname": "spender", "type": "ByStr20" }
+        ]
+      }
+    ],
+    "events": []
+  },
+  "warnings": []
 }

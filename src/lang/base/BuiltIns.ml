@@ -646,9 +646,9 @@ module ScillaBuiltIns
   end
 
   (***********************************************************)
-  (******************** Byte Strings *************************)
+  (******************** Crypto Builtins *************************)
   (***********************************************************)
-  module Hashing = struct
+  module Crypto = struct
     open UsefulLiterals
     open Cryptokit
     open PrimTypes
@@ -681,8 +681,8 @@ module ScillaBuiltIns
           let lo = build_prim_literal (bystrx_typ len) lhash_hex in
           (match lo with
           | Some l' -> pure @@ l'
-          | None -> builtin_fail ("Hashing." ^ name ^ ": internal error, invalid hash") ls)
-      | _ -> builtin_fail ("Hashing." ^ name) ls
+          | None -> builtin_fail ("Crypto." ^ name ^ ": internal error, invalid hash") ls)
+      | _ -> builtin_fail ("Crypto." ^ name) ls
 
     let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
     let eq_arity = 2    
@@ -696,7 +696,7 @@ module ScillaBuiltIns
     let eq ls _ = match ls with
       | [ByStrX (w1, x1); ByStrX(w2, x2)] ->
           pure @@ to_Bool (w1 = w2 && x1 = x2)
-      | _ -> builtin_fail "Hashing.eq" ls
+      | _ -> builtin_fail "Crypto.eq" ls
 
     let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ hash_length)
     let hash_arity = 1
@@ -728,9 +728,9 @@ module ScillaBuiltIns
           let i = build_prim_literal uint256_typ (string_of_big_int dist) in
           (match i with
            | Some ui -> pure ui
-           | None -> builtin_fail "Hashing.dist: Error building Uint256 from hash distance" ls
+           | None -> builtin_fail "Crypto.dist: Error building Uint256 from hash distance" ls
           )
-      | _ -> builtin_fail "Hashing.dist" ls
+      | _ -> builtin_fail "Crypto.dist" ls
 
     (* ByStrX -> ByStr *)
     let to_bystr_type = tfun_typ "'A" @@ fun_typ (tvar "'A") bystr_typ
@@ -743,8 +743,8 @@ module ScillaBuiltIns
         let res = build_prim_literal bystr_typ s in
         (match res with
          | Some l' -> pure l'
-         | None -> builtin_fail "Hashing.to_bystr: internal error" ls)
-      | _ -> builtin_fail "Hashing.to_bystr" ls
+         | None -> builtin_fail "Crypto.to_bystr: internal error" ls)
+      | _ -> builtin_fail "Crypto.to_bystr" ls
 
     let schnorr_gen_key_pair_type = fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
     let schnorr_gen_key_pair_arity = 0  
@@ -794,6 +794,7 @@ module ScillaBuiltIns
   (* Maps *)
   (***********************************************************)
   module Maps = struct
+    open PrimTypes
     open UsefulLiterals
     open Datatypes.DataTypeDictionary
 
@@ -889,6 +890,20 @@ module ScillaBuiltIns
           in pure (ol)
       | _ -> builtin_fail "Map.to_list" ls
 
+    let size_arity = 1
+    let size_type =
+      tfun_typ "'K" @@ tfun_typ "'V" @@
+      (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
+       uint32_typ)
+    let size_elab sc ts = match ts with
+      | [MapType (kt, vt)]  -> elab_tfun_with_args sc [kt; vt]
+      | _ -> fail0 "Failed to elaborate" 
+    let size ls _ = match ls with
+      | [Map (_, entries)] ->
+          (* The type of the output will be "Uint32" *)
+          let ol = Caml.Hashtbl.length entries in
+          pure (UintLit (Uint32L (Stdint.Uint32.of_int ol)))
+      | _ -> builtin_fail "Map.size" ls
   end
 
 
@@ -930,15 +945,15 @@ module ScillaBuiltIns
       ("badd", BNum.badd_arity, BNum.badd_type, BNum.badd_elab , BNum.badd);
 
       (* Hashes *)
-      ("eq", Hashing.eq_arity, Hashing.eq_type, Hashing.eq_elab, Hashing.eq);
-      ("dist", Hashing.dist_arity, Hashing.dist_type, elab_id , Hashing.dist);
-      ("sha256hash", Hashing.hash_arity, Hashing.hash_type,Hashing.hash_elab, Hashing.sha256hash);
-      ("keccak256hash", Hashing.hash_arity, Hashing.hash_type,Hashing.hash_elab, Hashing.keccak256hash);
-      ("ripemd160hash", Hashing.hash_arity, Hashing.ripemd160hash_type,Hashing.hash_elab, Hashing.ripemd160hash);
-      ("to_bystr", Hashing.to_bystr_arity, Hashing.to_bystr_type, Hashing.to_bystr_elab, Hashing.to_bystr);
-      ("schnorr_gen_key_pair", Hashing.schnorr_gen_key_pair_arity, Hashing.schnorr_gen_key_pair_type, elab_id, Hashing.schnorr_gen_key_pair);
-      ("schnorr_sign", Hashing.schnorr_sign_arity, Hashing.schnorr_sign_type, elab_id, Hashing.schnorr_sign);
-      ("schnorr_verify", Hashing.schnorr_verify_arity, Hashing.schnorr_verify_type, elab_id, Hashing.schnorr_verify);
+      ("eq", Crypto.eq_arity, Crypto.eq_type, Crypto.eq_elab, Crypto.eq);
+      ("dist", Crypto.dist_arity, Crypto.dist_type, elab_id , Crypto.dist);
+      ("sha256hash", Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.sha256hash);
+      ("keccak256hash", Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash);
+      ("ripemd160hash", Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash);
+      ("to_bystr", Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr);
+      ("schnorr_gen_key_pair", Crypto.schnorr_gen_key_pair_arity, Crypto.schnorr_gen_key_pair_type, elab_id, Crypto.schnorr_gen_key_pair);
+      ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign);
+      ("schnorr_verify", Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify);
 
       (* Maps *)
       ("contains", Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains);
@@ -946,6 +961,7 @@ module ScillaBuiltIns
       ("get", Maps.get_arity, Maps.get_type, Maps.get_elab, Maps.get);
       ("remove", Maps.remove_arity, Maps.remove_type, Maps.remove_elab, Maps.remove);
       ("to_list", Maps.to_list_arity, Maps.to_list_type, Maps.to_list_elab, Maps.to_list);
+      ("size", Maps.size_arity, Maps.size_type, Maps.size_elab, Maps.size);
 
       (* Integers *)
       ("eq", Int.eq_arity, Int.eq_type, Int.eq_elab, Int.eq);
@@ -1001,7 +1017,8 @@ module ScillaBuiltIns
       let open Caml in
       let dict = Option.value ~default:[] @@ Hashtbl.find_opt built_in_hashtbl opname in
       let%bind (_, (type_elab, res_type, exec)) = tryM dict ~f:finder
-          ~msg:(mk_error1
+          ~msg:(fun () ->
+              mk_error1
                 (sprintf "Cannot find built-in with name \"%s\" and argument types %s." opname (pp_typ_list argtypes))
                 (ER.get_loc (get_rep op)))
       in pure (type_elab, res_type, exec)

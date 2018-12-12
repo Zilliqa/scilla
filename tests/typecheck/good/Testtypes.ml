@@ -61,7 +61,8 @@ module Tests = TestUtil.DiffBasedTests(
   struct
     let gold_path dir f = [dir; "typecheck"; "good"; "gold"; f ^ ".gold" ]
     let test_path f = ["typecheck"; "good"; f]
-    let runner = "type-checker"      
+    let runner = "type-checker"
+    let custom_args = []
     let tests = [
       "branch-match.scilla";
       "fun.scilla";
@@ -78,7 +79,7 @@ module Tests = TestUtil.DiffBasedTests(
       "to_int.scilla";
       "zip.scilla";
     ]
-    let use_stdlib = true
+    let exit_code : Unix.process_status = WEXITED 0
   end)
 
 let all_tests env = "type_check_success_tests" >::: [type_equiv_tests;Tests.add_tests env]

@@ -1,4 +1,4 @@
- (*
+(*
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
@@ -15,7 +15,6 @@
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-
 
 open Syntax
 open Core
@@ -83,6 +82,13 @@ let sanitize_literal l =
 (* A monadic big-step evaluator for Scilla expressions *)
 (*******************************************************)
 
+(* [Evaluation in CPS]
+
+   The following evaluator is implemented in a monadic style, with the
+   monad, at the moment to be CPS, with the specialised return result
+   type as described in [Specialising the Return Type of Closures].
+ *)
+
 let rec exp_eval erep env =
   let (e, _) = erep in
   match e with
@@ -149,7 +155,7 @@ let rec exp_eval erep env =
       let%bind ((_, e_branch), bnds) =
         tryM clauses
           (* TODO: add location info to error message. *)
-          ~msg:(mk_error0(sprintf "Match expression failed. No clause matched."))
+          ~msg:(fun () -> mk_error0(sprintf "Match expression failed. No clause matched."))
           ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env
@@ -206,6 +212,34 @@ and exp_eval_wrapper expr env =
   (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
   checkwrap_op thunk cost (mk_error1 emsg eloc)
 
+(* [Initial Gas-Passing Continuation]
+
+   The following function is used as an initial continuation to
+   "bootstrap" the gas-aware computation and then retrieve not just
+   the result, but also the remaining gas.
+
+*)
+let init_gas_kont r gas' = (match r with 
+    | Ok z -> Ok (z, gas')
+    | Error msg -> Error (msg, gas'))
+
+(* [Continuation for Expression Evaluation]
+
+   The following function implements an impedance matcher. Even though
+   it takes a continuation `k` from the callee, it starts evaluating
+   an expression `expr` in a "basic" continaution `init_gas_kont` (cf.
+   [Initial Gas-Passing Continuation]) with a _fixed_ result type (cf
+   [Specialising the Return Type of Closures]). In short, it fully
+   evaluates an expression with the fixed continuation, after which
+   the result is passed further to the callee's continuation `k`.
+
+*)
+let exp_eval_wrapper_no_cps expr env k gas = 
+  let eval_res = exp_eval_wrapper expr env init_gas_kont gas in
+  let (res, remaining_gas) = (match eval_res with 
+    | Ok (z, g) -> (Ok z, g)
+    | Error (m, g) -> (Error m, g)) in
+  k res remaining_gas
 
 open EvalSyntax
 (*******************************************************)
@@ -222,13 +256,30 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       | Store (x, r) ->
           let%bind v = Configuration.lookup conf r in
-          let%bind (conf', scon) = Configuration.store conf (get_id x) v in
+          let%bind (conf', scon) = Configuration.store conf x v in
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | Bind (x, e) ->
-          let%bind (lval, _) = exp_eval_wrapper e conf.env in
+          let%bind (lval, _) = exp_eval_wrapper_no_cps e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
           let%bind _ = stmt_gas_wrap G_Bind sloc in
+          stmt_eval conf' sts
+      | MapUpdate(m, klist, ropt) ->
+          let%bind klist' = mapM ~f:(fun k -> Configuration.lookup conf k) klist in
+          let%bind v = (match ropt with
+            | Some r ->
+                let%bind v = Configuration.lookup conf r in
+                pure (Some v)
+            | None -> pure None)
+          in
+          let%bind (conf', scon) = Configuration.map_update conf m klist' v in
+          let%bind _ = stmt_gas_wrap scon sloc in
+          stmt_eval conf' sts
+      | MapGet(x, m, klist, fetchval) ->
+          let%bind klist' = mapM ~f:(fun k -> Configuration.lookup conf k) klist in
+          let%bind (l, scon) = Configuration.map_get conf m klist' fetchval in
+          let conf' = Configuration.bind conf (get_id x) l in
+          let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
@@ -239,7 +290,7 @@ let rec stmt_eval conf stmts =
           let%bind v = Env.lookup conf.env x in 
           let%bind ((_, branch_stmts), bnds) =
             tryM clauses
-              ~msg:(mk_error0 (sprintf "Value %s\ndoes not match any clause of\n%s."
+              ~msg:(fun () -> mk_error0 (sprintf "Value %s\ndoes not match any clause of\n%s."
                       (Env.pp_value v) (pp_stmt s)))
               ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in 
           (* Update the environment for the branch *)
@@ -266,7 +317,8 @@ let rec stmt_eval conf stmts =
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       (* TODO: Implement Throw *)
-      | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
+      | _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
+      (* | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc *)
     )
 
 (*******************************************************)
@@ -306,7 +358,7 @@ let combine_libs clibs elibs =
 (* Initializing libraries of a contract *)
 let init_libraries clibs elibs =
   let init_lib_entry env id e = (
-    let%bind (v, _) = exp_eval_wrapper e env in
+    let%bind (v, _) = exp_eval_wrapper_no_cps e env in
     let env' = Env.bind env (get_id id) v in
     pure env') in
 
@@ -325,7 +377,7 @@ let init_libraries clibs elibs =
 let init_fields env fs =
   (* Initialize a field in a constant environment *)
   let init_field fname _t fexp =
-    let%bind (v, _) = exp_eval_wrapper fexp env in
+    let%bind (v, _) = exp_eval_wrapper_no_cps fexp env in
     match v with
     | l when is_pure_literal l -> pure (fname, l)
     | _ -> fail0 @@ sprintf "Closure cannot be stored in a field %s." fname
@@ -337,51 +389,62 @@ let init_contract clibs elibs cparams' cfields args init_bal  =
   let cparams = CU.append_implict_contract_params cparams' in
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
-  let pnames = List.map cparams ~f:(fun (i, _) -> get_id i) in
-  let valid_args = List.for_all args ~f:(fun a ->
-      (* For each argument there is a parameter *)
-      let ex = List.exists pnames ~f:(fun p -> p = fst a) in
-      (* Each argument name occurrs once *)
-      let uniq = (List.count args ~f:(fun e -> fst e = fst a)) = 1 in
-      (* printf "Param: %s, exists: %b, uniq: %b\n" p ex uniq; *)
-      ex && uniq) in
-  let valid_params = List.for_all pnames ~f:(fun p ->
-      (* For each parameter there is an argument *)
-      List.exists args ~f:(fun a -> p = fst a)) in  
-  if not (valid_args && valid_params)
-  then fail0 @@ sprintf
-      "Mismatch between the vector of arguments:\n%s\nand expected parameters%s\n"
-      (pp_literal_map args) (pp_cparams cparams)
-  else
-    (* Fold params into already initialized libraries, possibly shadowing *)
-    let env = List.fold_left ~init:libenv args
-        ~f:(fun e (p, v) -> Env.bind e p v) in
-    let%bind fields = init_fields env cfields in
-    let balance = init_bal in
-    let open ContractState in
-    let cstate = {env; fields; balance} in
-    pure cstate
+  (* Is there an argument that is not a parameter? *)
+  let%bind _ = forallM ~f:(fun a ->
+    let%bind atyp = fromR @@ literal_type (snd a) in
+    let emsg () = mk_error0 
+        (sprintf "Parameter %s : %s is not specified in the contract.\n" (fst a) (pp_typ atyp)) in
+    (* For each argument there should be a parameter *)
+    let%bind (_, mp) = tryM ~f:(fun (ps, pt) -> 
+        let%bind at = fromR @@ literal_type (snd a) in
+        if ((get_id ps) = (fst a) && pt = at)
+          then pure true else fail0 ""
+    ) cparams ~msg:emsg in
+    pure mp
+  ) args in
+  let%bind _ = forallM ~f:(fun (p, _) ->
+    (* For each parameter there should be exactly one argument. *)
+    if (List.count args ~f:(fun a -> (get_id p) = fst a)) <> 1
+    then fail0 (sprintf "Parameter %s must occur exactly once in input.\n" (get_id p))
+    else pure true
+  ) cparams in
+  (* Fold params into already initialized libraries, possibly shadowing *)
+  let env = List.fold_left ~init:libenv args
+      ~f:(fun e (p, v) -> Env.bind e p v) in
+  let%bind fields = init_fields env cfields in
+  let balance = init_bal in
+  let open ContractState in
+  let cstate = {env; fields; balance} in
+  pure cstate
 
 (* Combine initialized state with info from current state *)
 let create_cur_state_fields initcstate curcstate =
   (* If there's a field in curcstate that isn't in initcstate,
      flag it as invalid input state *)
-  let invalid = List.exists curcstate ~f:(fun (s, _) ->
-    not (List.exists initcstate ~f:(fun (t, _) -> s = t))) in
+  let%bind _ = forallM ~f:(fun (s, lc) ->
+    let%bind t_lc = fromR @@ literal_type lc in
+    let emsg () = mk_error0 
+        (sprintf "Field %s : %s not defined in the contract\n" s (pp_typ t_lc)) in
+    let%bind (_, ex) = tryM ~f:(fun (t, li) ->
+        let%bind t1 = fromR @@ literal_type lc in
+        let%bind t2 = fromR @@ literal_type li in
+        if (s = t && (type_equiv t1 t2))
+          then pure true else fail0 ""
+    ) initcstate ~msg:emsg in
+    pure ex
+  ) curcstate in
   (* Each entry name is unique *)
-  let uniq_entries = List.for_all curcstate
-      ~f:(fun e -> (List.count curcstate ~f:(fun e' -> fst e = fst e')) = 1) in
-  if (not invalid) && uniq_entries then
-    (* Get only those fields from initcstate that are not in curcstate *)
-    let filtered_init = List.filter initcstate 
-        ~f:(fun (s, _) -> not (List.exists curcstate 
-            ~f:(fun (s1, _) -> s = s1))) in
-        (* Combine filtered list and curcstate *)
-        pure (filtered_init @ curcstate)
-  else
-    fail0 @@sprintf "Mismatch in input state variables:\nexpected:\n%s\nprovided:\n%s\n"
-                   (pp_literal_map initcstate) (pp_literal_map curcstate)
-
+  let%bind _ = forallM ~f:(fun (e, _) ->
+    if (List.count curcstate ~f:(fun (e', _) -> e = e') > 1)
+    then fail0 (sprintf "Field %s occurs more than once in input.\n" e)
+    else pure true
+  ) initcstate in
+  (* Get only those fields from initcstate that are not in curcstate *)
+  let filtered_init = List.filter initcstate 
+    ~f:(fun (s, _) -> not (List.exists curcstate 
+        ~f:(fun (s1, _) -> s = s1))) in
+    (* Combine filtered list and curcstate *)
+    pure (filtered_init @ curcstate)
 
 let literal_list_gas llit =
   mapM ~f:(fun (name, lit) ->
@@ -474,16 +537,6 @@ let post_process_msgs cstate outs =
     let balance = sub cstate.balance to_be_transferred in
     pure {cstate with balance}
 
-let append_accepted_state msgs accepted =
-  let f m =
-    match m with
-    | Msg m' ->
-      let s = Bool.to_string accepted in
-      let i = (MessagePayload.accepted_label, StringLit s) in
-        Msg (i :: m')
-    | _ -> m (* Not a message. Is this possible? *)
-  in
-    List.map ~f:f msgs
 (* 
 Handle message:
 * contr : Syntax.contract - code of the contract (containing transitions)
@@ -520,11 +573,10 @@ let handle_message contr cstate bstate m =
     balance = conf'.balance
   } in
   let new_msgs = conf'.emitted in
-  let new_msgs' = append_accepted_state new_msgs conf'.accepted in
   let new_events = conf'.events in
   (* Make sure that we aren't too generous and subract funds *)
-  let%bind cstate'' = post_process_msgs cstate' new_msgs' in
+  let%bind cstate'' = post_process_msgs cstate' new_msgs in
 
   (*Return new contract state, messages and events *)
-  pure (cstate'', new_msgs', new_events)
-    
+  pure (cstate'', new_msgs, new_events, conf'.accepted)
+

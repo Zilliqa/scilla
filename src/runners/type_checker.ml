@@ -71,30 +71,24 @@ let check_typing e elibs =
 let check_patterns e = PM_Checker.pm_check_expr e
     
 let () =
-  if (Array.length Sys.argv) < 2
-  then
-    (perr (sprintf "Usage: %s foo.scilla\n" Sys.argv.(0))
-    )
-  else (
+    let cli = parse_cli () in
     let open GlobalConfig in
+    StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
     set_debug_level Debug_None;
-    let filename = Sys.argv.(1) in
-    match FrontEndParser.parse_file ScillaParser.exps filename with
+    let filename = cli.input_file in
+    match FrontEndParser.parse_file ScillaParser.exps filename  with
     | Some [e] ->
-        (* This is an auxiliary executable, it's second argument must
-         * have a list of stdlib dirs, so note that down. *)
-        add_cmd_stdlib();
         (* Get list of stdlib dirs. *)
         let lib_dirs = StdlibTracker.get_stdlib_dirs() in
         if lib_dirs = [] then stdlib_not_found_err ();
         (* Import all libs. *)
-        let std_lib = import_all_libs lib_dirs in
+        let std_lib = import_all_libs lib_dirs  in
         (match check_typing e std_lib with
          | Ok ((_, (e_typ, _)) as typed_erep) ->
              (match check_patterns typed_erep with
               | Ok _ -> printf "%s\n" (pp_typ e_typ.tp)
-              | Error el -> pout @@ scilla_error_to_jstring el
+              | Error el -> (pout @@ scilla_error_to_string el ; exit 1)
              )
-         | Error el -> pout @@ scilla_error_to_jstring el)
-    | Some _ | None ->
-        pout @@ scilla_error_to_jstring (mk_error0 "Failed to parse input file"))
+         | Error el -> (pout @@ scilla_error_to_string el ); exit 1)
+    | Some _ | None -> (* Error is printed by the parser. *)
+        exit 1

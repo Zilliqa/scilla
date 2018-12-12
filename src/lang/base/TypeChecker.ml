@@ -236,8 +236,8 @@ module ScillaTypechecker
                let rtp = t.tp in
                if is_storable_type rtp
                then pure @@ TypedSyntax.MVar (add_type_to_ident i t)
-               else fail0 @@ sprintf
-                   "Cannot send values of type %s." (pp_typ rtp))
+               else fail1 (sprintf "Cannot send values of type %s." (pp_typ rtp))
+                          (ER.get_loc (get_rep i)))
         in
         let%bind typed_bs =
           (* Make sure we resolve all the payload *)
@@ -268,7 +268,7 @@ module ScillaTypechecker
     let actuals_with_types =
       match List.zip actuals tqargs with
       | Some l -> l
-      | None -> raise (InternalError "Different number of actuals and Types of actuals")  in
+      | None -> raise (mk_internal_error "Different number of actuals and Types of actuals")  in
     let typed_actuals = List.map actuals_with_types ~f:(fun (a, t) -> add_type_to_ident a t) in
     pure @@ (targs, typed_actuals)
 
@@ -281,6 +281,27 @@ module ScillaTypechecker
     pure   : TEnv.t;
     fields : TEnv.t;
   }
+
+  (* Return typed map accesses and the accessed value's type. *)
+  (* (m[k1][k2]... -> (typed_m, typed_k_list, type_of_accessed_value) *)
+  let type_map_access env m' keys' =
+    let%bind t' = TEnv.resolveT env.fields (get_id m') ~lopt:(Some (get_rep m'))  in
+    let rec helper t keys =
+      match t, keys with
+      | MapType (kt, vt), k :: rest ->
+        let%bind k_t = TEnv.resolveT env.pure (get_id k) ~lopt:(Some (get_rep k)) in
+        let%bind _ = assert_type_equiv kt (rr_typ k_t).tp in
+        let%bind (typed_keys, res) = helper vt rest in
+        let typed_k = add_type_to_ident k (rr_typ k_t) in
+        pure @@ (typed_k::typed_keys, res)
+      (* If there are no more keys left, we have the result type. *)
+      | _, [] -> pure @@ ([], t)
+      | _ , k :: _ -> fail1 (sprintf "Type failure in map access. Cannot index into key %s" (get_id k))
+                        (ER.get_loc (get_rep k))
+    in
+      let%bind (typed_keys, res) = helper (rr_typ t').tp keys' in
+      let typed_m = add_type_to_ident m' (rr_typ t') in
+      pure (typed_m, typed_keys, res)
 
   let add_stmt_to_stmts_env s repstmts =
     match repstmts with
@@ -295,7 +316,7 @@ module ScillaTypechecker
         (match s with
          | Load (x, f) ->
              let%bind (next_env, ident_type) = wrap_type_serr stmt (
-                 let%bind fr = TEnv.resolveT env.fields (get_id f) in
+                 let%bind fr = TEnv.resolveT env.fields (get_id f) ~lopt:(Some (get_rep f)) in
                  let pure' = TEnv.addT (TEnv.copy env.pure) x (rr_typ fr).tp in
                  let next_env = {env with pure = pure'} in
                  pure @@ (next_env, rr_typ fr)
@@ -310,10 +331,10 @@ module ScillaTypechecker
                wrap_type_serr stmt (
                  fail0 @@ sprintf
                    "Writing to the field `%s` is prohibited." (get_id f)) 
-             else          
+             else
                let%bind (checked_stmts, f_type, r_type) = wrap_type_serr stmt (
-                   let%bind fr = TEnv.resolveT env.fields (get_id f) in
-                   let%bind r = TEnv.resolveT env.pure (get_id r) in
+                   let%bind fr = TEnv.resolveT env.fields (get_id f) ~lopt:(Some (get_rep f)) in
+                   let%bind r = TEnv.resolveT env.pure (get_id r) ~lopt:(Some (get_rep r)) in
                    let%bind _ = assert_type_equiv (rr_typ fr).tp (rr_typ r).tp in
                    let%bind checked_stmts = type_stmts env sts get_loc in
                    pure @@ (checked_stmts, rr_typ fr, rr_typ r)
@@ -328,6 +349,41 @@ module ScillaTypechecker
              let%bind checked_stmts = type_stmts env' sts get_loc in
              let typed_x = add_type_to_ident x ityp in
              pure @@ add_stmt_to_stmts_env (TypedSyntax.Bind (typed_x, checked_e), rep) checked_stmts
+         | MapUpdate (m, klist, vopt) ->
+             let%bind (typed_m, typed_klist, typed_v) = wrap_type_serr stmt (
+                let%bind (typed_m, typed_klist, v_type) = type_map_access env m klist in
+                let%bind typed_v = 
+                  (match vopt with
+                   | Some v -> (* This is adding/replacing the value for a key. *) 
+                      let%bind v_resolv = TEnv.resolveT env.pure (get_id v) ~lopt:(Some (get_rep v)) in
+                      let typed_v = rr_typ v_resolv in
+                      let%bind _ = assert_type_equiv v_type typed_v.tp in
+                      let typed_v' = add_type_to_ident v typed_v in
+                      pure @@ (Some typed_v')
+                   | None -> pure None (* This is deleting a key from the map. *)
+                  )
+                in
+                pure @@ (typed_m, typed_klist, typed_v)
+             ) in
+             (* Check rest of the statements. *)
+             let%bind checked_stmts = type_stmts env sts get_loc in
+             (* Update annotations. *)
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.MapUpdate(typed_m, typed_klist, typed_v), rep) checked_stmts
+         | MapGet (v, m, klist, valfetch) ->
+             let%bind (typed_m, typed_klist, v_type) = wrap_type_serr stmt (
+                let%bind (typed_m, typed_klist, v_type) = type_map_access env m klist in
+                pure @@ (typed_m, typed_klist, v_type)
+             ) in
+             (* The return type of MapGet would be (Option v_type) or Bool. *)
+             let v_type' = if valfetch then ADT("Option", [v_type]) else ADT("Bool", []) in
+             (* Update environment. *)
+             let pure' = TEnv.addT (TEnv.copy env.pure) v v_type' in
+             let env' = {env with pure = pure'} in
+             let typed_v = add_type_to_ident v (mk_qual_tp v_type') in
+             (* Check rest of the statements. *)
+             let%bind checked_stmts = type_stmts env' sts get_loc in
+             (* Update annotations. *)
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.MapGet(typed_v, typed_m, typed_klist, valfetch), rep) checked_stmts
          | ReadFromBC (x, bf) ->
              let%bind bt = wrap_type_serr stmt @@ lookup_bc_type bf in
              let pure' = TEnv.addT (TEnv.copy env.pure) x bt in
@@ -344,9 +400,10 @@ module ScillaTypechecker
                    ~lopt:(Some (get_rep x)) in
                let sctype = rr_typ sctyp in
                let sct = sctype.tp in
-               let msg = sprintf " of type %s" (pp_typ sct) in
+               let msg = sprintf "Error in pattern matching \"%s\" of type %s" (get_id x) (pp_typ sct) in
+               let sloc = ER.get_loc (get_rep x) in
                let typed_x = add_type_to_ident x sctype in
-               let%bind checked_clauses = wrap_type_serr stmt ~opt:msg @@
+               let%bind checked_clauses = wrap_with_info (msg, sloc) @@
                  mapM clauses ~f:(fun (ptrn, ex) ->
                      type_match_stmt_branch env sct ptrn ex get_loc ) in
                let%bind checked_stmts = type_stmts env sts get_loc in
@@ -398,7 +455,7 @@ module ScillaTypechecker
     let append_params = CU.append_implict_trans_params tparams in
     let tenv1 = TEnv.addTs tenv0 append_params in
     let env = {env0 with pure = tenv1} in
-    let msg = sprintf "Type error in transition %s:\n" (get_id tname) in
+    let msg = sprintf "Type error(s) in transition %s:\n" (get_id tname) in
     let%bind (typed_stmts, _) = wrap_with_info (msg, SR.get_loc (get_rep tname)) @@
       type_stmts env tbody ER.get_loc in
     pure @@ ({ TypedSyntax.tname = tname ;
@@ -511,10 +568,10 @@ module ScillaTypechecker
       (elibs : UntypedSyntax.library list)
     : (TypedSyntax.cmodule * stmt_tenv, scilla_error list) result =
 
-    let {cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
+    let {smver = mod_smver;cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
-    wrap_with_info (msg, dummy_loc) @@
+    wrap_with_info (msg, SR.get_loc (get_rep ctr_cname)) @@
     
     (* Step 0: Type check recursion principles *)
     let%bind (_, tenv0) = type_rec_libs rec_libs in
@@ -572,7 +629,8 @@ module ScillaTypechecker
     
     if emsgs' = []
     (* Return pure environment *)  
-    then pure ({TypedSyntax.cname = mod_cname;
+    then pure ({TypedSyntax.smver = mod_smver;
+                TypedSyntax.cname = mod_cname;
                 TypedSyntax.libs = List.hd libs;
                 TypedSyntax.elibs = mod_elibs;
                 TypedSyntax.contr =

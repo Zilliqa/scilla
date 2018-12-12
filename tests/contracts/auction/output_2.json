@@ -1,12 +1,8 @@
 {
-  "gas_remaining": "1448",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "true",
-    "_recipient": "0x12345678901234567890123456789012345678ab",
-    "params": [ { "vname": "code", "type": "Int32", "value": "5" } ]
-  },
+  "scilla_major_version": "0",
+  "gas_remaining": "7144",
+  "_accepted": "true",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "300" },
     { "vname": "highestBid", "type": "Uint128", "value": "200" },
@@ -20,17 +16,30 @@
       }
     },
     {
+      "vname": "ended",
+      "type": "Bool",
+      "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+    },
+    {
       "vname": "pendingReturns",
       "type": "Map (ByStr20) (Uint128)",
       "value": [
         { "key": "0x12345678901234567890123456789012345678ab", "val": "100" }
       ]
-    },
-    {
-      "vname": "ended",
-      "type": "Bool",
-      "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "Bid",
+      "params": [
+        { "vname": "code", "type": "Int32", "value": "5" },
+        {
+          "vname": "addr",
+          "type": "ByStr20",
+          "value": "0x12345678901234567890123456789012345678ab"
+        },
+        { "vname": "amount", "type": "Uint128", "value": "200" }
+      ]
+    }
+  ]
 }

@@ -1,0 +1,69 @@
+[
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "value": [
+        {
+          "key": "0x1234567890123456789012345678906784567891",
+          "val": [
+            {
+              "key": "0x1234567890123456789012345678906784567890",
+              "val": {
+                "constructor": "True",
+                "argtypes": [],
+                "arguments": []
+              }
+            },
+            {
+              "key": "0xabcdeabcde123456786782345678901234567890",
+              "val": {
+                "constructor": "True",
+                "argtypes": [],
+                "arguments": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "vname": "validity_checked",
+      "type": "Bool",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "contract_valid",
+      "type": "Bool",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
+      "value": [
+        {
+          "key": "0x1234567890123456789012345678906784567890",
+          "val": { "constructor": "True", "argtypes": [], "arguments": [] }
+        },
+        {
+          "key": "0xffcdeabcde126786789012345678901234567890",
+          "val": { "constructor": "True", "argtypes": [], "arguments": [] }
+        },
+        {
+          "key": "0xabcdeabcde123456786782345678901234567890",
+          "val": { "constructor": "True", "argtypes": [], "arguments": [] }
+        }
+      ]
+    },
+    { "vname": "transactionCount", "type": "Uint32", "value": "0" },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "value": []
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
+      "value": []
+    }
+]

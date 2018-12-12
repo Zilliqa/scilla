@@ -1,3 +1,5 @@
+scilla_version 0
+
 (* This contract implements a fungible token interface a la ERC20.*)
 (* This contract does not fire events *)
 
@@ -6,13 +8,6 @@
 (*               Associated library                *)
 (***************************************************)
 library FungibleToken
-
-let one_msg = 
-  fun (msg : Message) => 
-  let nil_msg = Nil {Message} in
-  Cons {Message} msg nil_msg
-
-let no_msg = Nil {Message}
 
 let min_int =
   fun (a : Uint128) => fun (b : Uint128) =>
@@ -58,20 +53,17 @@ transition BalanceOf (tokenOwner : ByStr20)
   val = builtin get bl tokenOwner;
   match val with
   | Some v =>
-    msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; bal : v };
-    msgs = one_msg msg;
-    send msgs
+	e = {_eventname : "BalanceOf"; address : tokenOwner; balance : v};
+	event e
   | None =>
-    msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; bal : Uint128 0 };
-    msgs = one_msg msg;
-    send msgs
+	e = {_eventname : "BalanceOf"; address : tokenOwner; balance : Uint128 0};
+    event e
   end
 end
 
 transition TotalSupply ()
-  msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; total_tokens : total_tokens};
-  msgs = one_msg msg;
-  send msgs
+  e = {_eventname : "TotalSupply"; caller : _sender; balance : total_tokens};
+  event e
 end
 
 transition Transfer (to : ByStr20, tokens : Uint128)
@@ -84,38 +76,33 @@ transition Transfer (to : ByStr20, tokens : Uint128)
     | True =>
       (* subtract tokens from _sender and add it to to *)
       new_sender_bal = builtin sub b tokens;
-      new_balances = builtin put bl _sender new_sender_bal;
-      to_bal = builtin get new_balances to;
-      match to_bal with
-      | Some x =>
-        new_to_bal = builtin add x tokens;
-        new_balances2 = builtin put new_balances to new_to_bal;
-        balances := new_balances2
-      | None =>
-        new_balances3 = builtin put new_balances to tokens;
-        balances := new_balances3
+      balances[_sender] := new_sender_bal;
+
+      (* Adds tokens to `to` address *)
+      to_bal <- balances[to];
+      new_to_bal = match to_bal with
+      | Some x => builtin add x tokens
+      | None => tokens
       end;
-      msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; transferred : tokens };
-      msgs = one_msg msg;
-      send msgs
+  	  balances[to] := new_to_bal;
+
+      e = {_eventname : "TransferSuccess"; sender : _sender; recipient : to; amount : tokens};
+      event e
     | False =>
       (* balance not sufficient. *)
-      msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; transferred : Uint128 0 };
-      msgs = one_msg msg;
-      send msgs
+  	  e = {_eventname : "TransferFailure"; sender : _sender; recipient : to; amount : Uint128 0};
+      event e
     end
   | None =>
     (* no balance record, can't transfer *)
-    msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; transferred : Uint128 0 };
-    msgs = one_msg msg;
-    send msgs
+  	e = {_eventname : "TransferFailure"; sender : _sender; recipient : to; amount : Uint128 0};
+    event e
   end
 end
 
 transition TransferFrom (from : ByStr20, to : ByStr20, tokens : Uint128)
   bl <- balances;
   al <- allowed;
-  m_disallowed = "Transfer not allowed";
   bal = builtin get bl from;
   (* Check if _sender has been authorized by "from" *)
   allowed_from = builtin get al from;
@@ -140,51 +127,37 @@ transition TransferFrom (from : ByStr20, to : ByStr20, tokens : Uint128)
         | Some tb =>
           to_bal_new = builtin add tb tokens;
           balances_2 = builtin put balances_1 to to_bal_new;
-          balances := balances_2;
-          send no_msg
+          balances := balances_2
         | None =>
           (* "to" has no balance. So just set it to tokens *)
           balances_3 = builtin put balances_1 to tokens;
-          balances := balances_3;
-          send no_msg
+          balances := balances_3
         end;
         (* reduce "allowed" by "tokens" *)
         new_allowed = builtin sub b tokens;
         new_m = builtin put m _sender new_allowed;
         new_allowed = builtin put al from new_m;
-        allowed := new_allowed
+        allowed := new_allowed;
+  		e = {_eventname : "TransferFromSuccess"; sender : from; recipient : to; amount : tokens};
+  		event e
       | False =>
-        msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; message : m_disallowed };
-        msgs = one_msg msg;
-        send msgs
+  		e = {_eventname : "TransferFromFailure"; sender : from; recipient : to; amount : Uint128 0};
+  		event e
       end
     | _ =>
-      msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; message : m_disallowed };
-      msgs = one_msg msg;
-      send msgs
+	  e = {_eventname : "TransferFromFailure"; sender : from; recipient : to; amount : Uint128 0};
+  	  event e
     end
   | None =>
-    msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; message : m_disallowed };
-    msgs = one_msg msg;
-    send msgs
+	e = {_eventname : "TransferFromFailure"; sender : from; recipient : to; amount : Uint128 0};
+	event e
   end
 end
 
 transition Approve (spender : ByStr20, tokens : Uint128)
-  al <- allowed;
-  sender_map = builtin get al _sender;
-  match sender_map with
-  | Some m =>
-    allowed_to_spender = builtin put m spender tokens;
-    allowed_new = builtin put al _sender allowed_to_spender;
-    allowed := allowed_new;
-    send no_msg
-  | None =>
-    allowed_to_spender = let m = Emp ByStr20 Uint128 in builtin put m spender tokens;
-    allowed_new = builtin put al _sender allowed_to_spender;
-    allowed := allowed_new;
-    send no_msg
-  end
+  allowed[_sender][spender] := tokens;
+  e = {_eventname : "ApproveSuccess"; approver : _sender; spender : spender; amount : tokens};
+  event e
 end
 
 transition Allowance (tokenOwner : ByStr20, spender : ByStr20)
@@ -195,17 +168,14 @@ transition Allowance (tokenOwner : ByStr20, spender : ByStr20)
     spender_allowance = builtin get m spender;
     match spender_allowance with
     | Some n =>
-      msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; allowed : n };
-      msgs = one_msg msg;
-      send msgs
+  	  e = {_eventname : "Allowance"; owner : tokenOwner; spender : spender; amount : n};
+  	  event e
     | None =>
-      msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; allowed : Uint128 0 };
-      msgs = one_msg msg;
-      send msgs
+  	  e = {_eventname : "Allowance"; owner : tokenOwner; spender : spender; amount : Uint128 0};
+  	  event e
     end
   | None =>
-    msg = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; allowed : Uint128 0 };
-    msgs = one_msg msg;
-    send msgs
+	e = {_eventname : "Allowance"; owner : tokenOwner; spender : spender; amount : Uint128 0};
+	event e
   end
 end

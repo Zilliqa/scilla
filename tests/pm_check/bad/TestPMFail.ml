@@ -24,6 +24,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "pm_check"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["pm_check"; "bad"; f]
     let runner = "type-checker"      
+    let custom_args = []
     let tests = [
       "pm1.scilla";
       "pm2.scilla";
@@ -36,7 +37,7 @@ module Tests = TestUtil.DiffBasedTests(
       "pm_unreachable_nesting1.scilla";
       "pm_unreachable_nesting2.scilla";
     ]
-    let use_stdlib = true
+    let exit_code : Unix.process_status = WEXITED 1
   end)
 
 let all_tests env = "pm_check_fail_tests" >::: [Tests.add_tests env]

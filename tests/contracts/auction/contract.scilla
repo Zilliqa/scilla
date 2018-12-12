@@ -1,3 +1,5 @@
+scilla_version 0
+
 (***************************************************)
 (*               Associated library                *)
 (***************************************************)
@@ -54,77 +56,70 @@ field pendingReturns : Map ByStr20 Uint128 = Emp ByStr20 Uint128
 
 (* Transition 1: bidding *)
 transition Bid ()
-  blk <- & BLOCKNUMBER;
-  endtime = builtin badd auctionStart biddingTime;
-  after_end = let one = Uint128 1 
+    blk <- & BLOCKNUMBER;
+    endtime = builtin badd auctionStart biddingTime;
+    after_end = let one = Uint128 1 
     in builtin badd endtime one;
-  e <- ended;
-  in_time = blk_leq after_end blk;
-  flag1 = orb in_time e;
-  early = blk_leq blk auctionStart;
-  match early with
- 	| True =>
+    e <- ended;
+    in_time = blk_leq after_end blk;
+    flag1 = orb in_time e;
+    early = blk_leq blk auctionStart;
+    match early with
+    | True =>
       msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : too_early_to_bid_code};
       msgs = one_msg msg;
       send msgs
-	| False =>
-  	match flag1 with
-    | True => 
-      msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : late_to_bid_code};
-      msgs = one_msg msg;
-      send msgs
     | False =>
-      hb <- highestBid;
-      tmp1 = builtin lt hb _amount;
-      match tmp1 with 
-      | False =>
-        msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : bid_too_low_code};
-        msgs = one_msg msg;
-        send msgs
-      | True =>
-        accept;
-        hbPrev <- highestBidder;
-        prs <- pendingReturns;
-        match hbPrev with
-        | Some v => 
-          tmp2 = builtin contains prs v;
-          match tmp2 with
+        match flag1 with
+        | True => 
+          msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : late_to_bid_code};
+          msgs = one_msg msg;
+          send msgs
+        | False =>
+          hb <- highestBid;
+          
+          (* Checks if the bid is too low *)
+          sufficientBid = builtin lt hb _amount;
+          match sufficientBid with 
+          | False =>
+            msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : bid_too_low_code};
+            msgs = one_msg msg;
+            send msgs
           | True =>
-            pr = builtin get prs v;
-            match pr with
-            | Some pr =>
-              hs1 = builtin add pr hb;
-              prs1 = builtin put prs v hs1;
-              pendingReturns := prs1;
+            accept;
+            hbPrev <- highestBidder;
+            
+            match hbPrev with
+            | Some prevHighestBidder =>
+              (* There is already a highest bidder *)
+              option_pendingReturnsForPrevHB <- pendingReturns[prevHighestBidder];
+              
+              getPRForPrevHighestBidder = match option_pendingReturnsForPrevHB with
+              | Some pendingReturnsForPrevHB =>
+                (* User already has some balance in the pending returns that is not claimed *)
+                builtin add hb pendingReturnsForPrevHB
+              | None => hb
+                (* Prev highest bidder has no pending returns. *)
+              end;
+              pendingReturns[prevHighestBidder] := getPRForPrevHighestBidder;
+              
+              (* Update the highest bidder *)
               bidder = Some {ByStr20} _sender;
               highestBidder := bidder;
               highestBid := _amount;
-              msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : bid_accepted_code};
-              msgs = one_msg msg;
-              send msgs
-            | None => 
+              e = {_eventname: "Bid"; code: bid_accepted_code; addr: _sender; amount: _amount};
+              event e
+            | None =>
+              (* Process first bid *)
+              first_bidder = Some {ByStr20} _sender;
+              highestBidder := first_bidder;
+              highestBid := _amount;
+              e = {_eventname: "Bid"; code: first_bid_accepted_code; addr: _sender; amount: _amount};
+              event e
             end
-          | False =>
-            prs1 = builtin put prs v hb; 
-            pendingReturns := prs1;
-            bidder = Some {ByStr20} _sender;
-            highestBidder := bidder;
-            highestBid := _amount;
-            msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : bid_accepted_code};
-            msgs = one_msg msg;
-            send msgs
           end
-        | None =>
-          first_bidder = Some {ByStr20} _sender;
-          highestBidder := first_bidder;
-          highestBid := _amount;
-          msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : first_bid_accepted_code};
-          msgs = one_msg msg;
-          send msgs
         end
-      end
     end
-  end
 end  
   
 
@@ -137,9 +132,10 @@ transition Withdraw ()
     msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : nothing_to_withdraw_code};
     msgs = one_msg msg;
     send msgs
-	| Some v =>
-    prs1 = builtin remove prs _sender; 
-    pendingReturns := prs1;
+  | Some v =>
+    delete pendingReturns[_sender];
+    e = {_eventname: "Withdraw Successful"; addr: _sender};
+    event e;
     msg  = {_tag : "Main"; _recipient : _sender; _amount : v; code : money_sent_code};
     msgs = one_msg msg;
     send msgs
@@ -161,9 +157,11 @@ transition AuctionEnd ()
     msgs = one_msg msg;
     send msgs
   | True =>
-    tt = True;
-    ended := tt;    
+    val = True;
+    ended := val;
     hb <- highestBid;
+    e = {_eventname: "Auction ended"; highest_bid: hb};
+    event e;
     msg  = {_tag : "Main"; _recipient : beneficiary; _amount : hb; code : auction_end_code; highest_bid : hb};
     msgs = one_msg msg;
     send msgs

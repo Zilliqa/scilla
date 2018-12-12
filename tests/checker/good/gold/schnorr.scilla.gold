@@ -1,22 +1,30 @@
 {
-  "name": "Schnorr",
-  "params": [],
-  "fields": [
-    { "name": "priv_key", "type": "Option (ByStr32)" },
-    { "name": "pub_key", "type": "Option (ByStr33)" }
+  "cashflow_tags": [
+    { "field": "priv_key", "tag": "(Option NotMoney)" },
+    { "field": "pub_key", "tag": "(Option NotMoney)" }
   ],
-  "transitions": [
-    {
-      "name": "sign_and_verify",
-      "params": [ { "name": "msg", "type": "ByStr" } ]
-    },
-    {
-      "name": "verify",
-      "params": [
-        { "name": "msg", "type": "ByStr" },
-        { "name": "sig", "type": "ByStr64" }
-      ]
-    }
-  ],
-  "events": []
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Schnorr",
+    "params": [],
+    "fields": [
+      { "vname": "priv_key", "type": "Option (ByStr32)" },
+      { "vname": "pub_key", "type": "Option (ByStr33)" }
+    ],
+    "transitions": [
+      {
+        "vname": "sign_and_verify",
+        "params": [ { "vname": "msg", "type": "ByStr" } ]
+      },
+      {
+        "vname": "verify",
+        "params": [
+          { "vname": "msg", "type": "ByStr" },
+          { "vname": "sig", "type": "ByStr64" }
+        ]
+      }
+    ],
+    "events": []
+  },
+  "warnings": []
 }

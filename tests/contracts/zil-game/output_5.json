@@ -1,9 +1,10 @@
 {
-  "gas_remaining": "1477",
+  "scilla_major_version": "0",
+  "gas_remaining": "7160",
+  "_accepted": "false",
   "message": {
     "_tag": "Main",
     "_amount": "0",
-    "_accepted": "false",
     "_recipient": "0xffcdeabcde123456789012345678901234567890",
     "params": [ { "vname": "code", "type": "Int32", "value": "5" } ]
   },

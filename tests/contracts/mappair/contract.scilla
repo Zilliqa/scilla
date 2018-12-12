@@ -1,3 +1,5 @@
+scilla_version 0
+
 import ListUtils PairUtils NatUtils
 
 library Test
@@ -34,26 +36,25 @@ field gpair : Pair (List(Int64)) (Option (Bool)) =
     let n = None {Bool} in
     Pair {(List(Int64)) (Option(Bool))} el n
 
+field llist : List (List(Int64)) = Nil {(List(Int64))}
+field plist : List(Option(Int32)) = Nil {(Option(Int32))}
+
 field gnat : Nat = Zero
 
 transition testMapPair ()
   is_owner = builtin eq owner _sender;
   match is_owner with
   | False =>
-    gmap_tmp <- gmap;  
     one = Int32 1;
     two = Int32 2;
     p = Pair {(Int32) (Int32)} one two;   
-    gmap_new = builtin put gmap_tmp _sender p;
-    gmap := gmap_new;  
+    gmap[_sender] := p;
     send no_msg
   | True =>
-    gmap_tmp <- gmap;  
     three = Int32 3;
     four = Int32 4;
     p = Pair {(Int32) (Int32)} three four;   
-    gmap_new = builtin put gmap_tmp _sender p;
-    gmap := gmap_new;  
+    gmap[_sender] := p;
     send no_msg
   end
 end
@@ -85,6 +86,25 @@ transition incNat ()
   msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; nat : i};
   msgs = one_msg msg;
   send msgs
+end
+
+transition lflatten ()
+  n <- llist;
+  lfl = @list_flatten (Int64);
+  m = lfl n;
+  len = let my_list_length = @list_length Int64 in my_list_length m;
+  msg = {_tag : ""; _recipient : _sender; _amount : Uint128 0; listLength : len};
+  msgs = one_msg msg;
+  send msgs
+end
+
+transition optlist ()
+  n <- plist;
+  len = let my_list_length = @list_length (Option(Int32)) in my_list_length n;
+  msg = {_tag : ""; _recipient : _sender; _amount : Uint128 0; listLength : len};
+  msgs = one_msg msg;
+  send msgs
+ 
 end
 
 (* This transition sends out a malformed message. Will flag error. *)

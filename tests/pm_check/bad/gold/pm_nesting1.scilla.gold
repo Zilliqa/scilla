@@ -2,18 +2,14 @@
   "errors": [
     {
       "error_message":
-        "Type error in pattern matching on `y` of type List (Option (Int32)) (or one of its branches):\n",
+        "Type error in pattern matching on `y` of type List (Option (Int32)) (or one of its branches):\nNon-exhaustive pattern match.",
       "start_location": {
         "file": "pm_check/bad/pm_nesting1.scilla",
         "line": 9,
         "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Non-exhaustive pattern match.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
     }
-  ]
+  ],
+  "warnings": []
 }

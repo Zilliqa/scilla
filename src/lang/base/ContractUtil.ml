@@ -32,8 +32,7 @@ module MessagePayload = struct
   let tag_label = "_tag"
   let amount_label = "_amount"
   let sender_label = "_sender"
-  let recipient_label = "_recipient"
-  let accepted_label = "_accepted"
+  let recipient_label = "_recipient"  
   let eventname_label = "_eventname"
 
   let get_value_for_entry lab f es = 
@@ -72,6 +71,8 @@ end
 
 let balance_label = "_balance"
 let creation_block_label = "_creation_block"
+let scilla_version_label = "_scilla_version"
+let accepted_label = "_accepted"
 
 let no_store_fields =
   [balance_label]
@@ -91,7 +92,8 @@ module ScillaContractUtil
   let append_implict_contract_params tparams =
     let open PrimTypes in 
     let creation_block = (ER.mk_id_bnum creation_block_label, bnum_typ) in
-    creation_block :: tparams
+    let scilla_version_init = (ER.mk_id_bnum scilla_version_label, uint32_typ) in
+    creation_block :: scilla_version_init :: tparams
 
   let append_implict_trans_params tparams =
     let open PrimTypes in

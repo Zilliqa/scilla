@@ -1,0 +1,204 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract Test:\n",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 7,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition test1:\n",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 13,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Error in pattern matching \"is_owner\" of type Bool",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 15,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in updating map gmap[k]\nType mismatch: Int32 expected, but String provided.",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 19,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition test2:\n",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 34,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in updating map gmap3[c][b][c]\nType mismatch: String expected, but Int64 provided.",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 38,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition test4:\n",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 41,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in updating map gmap3[a]\nType mismatch: Map (Int32) (Map (Int64) (String)) expected, but String provided.",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 45,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition test3:\n",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 49,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in getting map value gmap3[a][b][c][a]\nType failure in map access. Cannot index into key a",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 53,
+        "column": 23
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition test4:\n",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 63,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Error in pattern matching \"d\" of type Option (Map (Int64) (String))",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 68,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in updating map gmap[dd]\nType mismatch: String expected, but Map (Int64) (String) provided.",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 70,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition test6:\n",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 84,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in updating map gmap[a][b][c]\nType failure in map access. Cannot index into key b",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 88,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition test7:\n",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 91,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in updating map gmap3[b]\nType mismatch: String expected, but Int32 provided.",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 95,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition test8:\n",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 98,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in getting map value gmap3[a][c][c]\nType mismatch: Int32 expected, but Int64 provided.",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 102,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition test9:\n",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 113,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in getting map value gmap[a][b][c]\nType failure in map access. Cannot index into key b",
+      "start_location": {
+        "file": "checker/bad/inplace-map.scilla",
+        "line": 117,
+        "column": 23
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -27,17 +27,19 @@ module type Dictionary = sig
   type 'a dict
 
   val make_dict : unit -> 'a dict
+  val remove : key -> 'a dict -> 'a dict
   val insert : key -> 'a -> 'a dict -> 'a dict
   val lookup : key -> 'a dict -> 'a option
+  val update : key -> 'a -> 'a dict -> 'a dict
 
   val is_empty : 'a dict -> bool
 
   val to_list : 'a dict -> (key * 'a) list
+
+  val size : 'a dict -> int
 end
 
-(* Simple association list implementation of a dictionary.
-   Note that old entries for a key k are removed when a new value is
-   added for k. *)
+(* Simple association list implementation of a dictionary. *)
 module AssocDictionary : Dictionary = struct
 
   type key = string
@@ -46,20 +48,34 @@ module AssocDictionary : Dictionary = struct
 
   let make_dict () = []
 
+  let rec remove k d =
+    match d with
+    | []              -> []
+    | (kd, vd) :: rest -> if k = kd then rest else (kd, vd) :: (remove k rest)
+
   let insert k v d =
-    (k, v) :: (List.filter (fun (k', _) -> not (k = k')) d)
+    (k, v) :: d
 
   let lookup k d =
     match List.find_opt (fun (kd, _) -> k = kd) d with
     | None -> None
     | Some (_, v) -> Some v
 
+  let rec update k v d =
+    match d with
+    | []               -> []
+    | (kd, vd) :: rest -> if k = kd then (k, v) :: rest else (kd, vd) :: (update k v rest)
+      
   let is_empty d =
     match d with
     | [] -> true
     | _ -> false
 
   let to_list d = d
+
+  let size d = List.length d
 end
 
-exception InternalError of string
+open ErrorUtils
+exception InternalError of scilla_error list
+let mk_internal_error msg = InternalError (mk_error0 msg)

@@ -1,3 +1,5 @@
+scilla_version 0
+
 (***************************************************)
 (*               Associated library                *)
 (***************************************************)
@@ -72,6 +74,12 @@ let isApprovedOrOwner =
         let isOwnerOrApproved =  orb isOwner isApproved in
         orb isOwnerOrApproved isApprovedForAll
 
+(* Error events *)
+let makeErrorEvent =
+    fun (location: String) =>
+    fun (errorCode: Uint32) =>
+        {_eventname: "Error"; raisedAt: location; code: errorCode }
+
 (* Error codes *)
 let code_success = Uint32 0
 let code_failure = Uint32 1
@@ -110,37 +118,27 @@ field operatorApprovals: Map ByStr20 (Map ByStr20 Bool)
 (* immutable field *)
 
 (* @notice Count all NFTs assigned to an owner *)
-(* @dev: Event should be emitted once scilla is ready *)
 transition balanceOf(address: ByStr20) 
-    otc <- ownedTokenCount;
-    balance = builtin get otc address;
-    balance_1 = match balance with
+    optionBal <- ownedTokenCount[address];
+    balance = match optionBal with
     | Some bal => bal
     | None => Uint256 0
     end;
-    msg = {_tag : Main; _recipient: _sender; _amount: Uint128 0;
-    balance : balance_1};
-    msgs = one_msg msg;
-    send msgs
+    e = {_eventname: "balanceOf"; bal: balance};
+    event e
 end
 
 
-(* @notice Count all NFTs assigned to an owner *)
-(* @dev: Event should be emitted once scilla is ready *)
+(* Get the owner of a particular tokenId *)
 transition ownerOf(tokenId: Uint256) 
-    copy_tokenOwnerMap <- tokenOwnerMap;
-    someVal = builtin get copy_tokenOwnerMap tokenId;
+    someVal <- tokenOwnerMap[tokenId];
     match someVal with
     | Some val =>
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            owner : val};
-        msgs = one_msg msg;
-        send msgs
+        e = {_eventname: "ownerOf"; id: tokenId; owner: val};
+        event e
     | None =>
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : code_not_found};
-        msgs = one_msg msg;
-        send msgs
+        e = let raisedAt = "ownerOf" in makeErrorEvent raisedAt code_not_found;
+        event e
     end
 end
 
@@ -156,46 +154,36 @@ transition mint(to: ByStr20, tokenId: Uint256)
     | True =>
         currentTokenOwnerMap <- tokenOwnerMap;
         (* Check if token exists *)
-        tokenExist = builtin contains currentTokenOwnerMap tokenId;
+        tokenExist <- exists tokenOwnerMap[tokenId];
         match tokenExist with
         | True =>
             (* Token exists, return error code *)
-            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                code : code_token_exists};
-            msgs = one_msg msg;
-            send msgs
+            e = let raisedAt = "mint" in makeErrorEvent raisedAt code_token_exists;
+            event e
         | False =>
             (* Mint token *)
-            newtokenOwnerMap = builtin put currentTokenOwnerMap tokenId to;
-            tokenOwnerMap := newtokenOwnerMap;
+            tokenOwnerMap[tokenId] := to;
             (* add to owner count *)
-            curr_otc <- ownedTokenCount;
-            userCnt = builtin get curr_otc to;
+            userCnt <- ownedTokenCount[to];
             match userCnt with
             | Some val =>
                 (* Append to existing results *)
-                one = Uint256 1;
-                new_val = builtin add val one;
-                new_otc = builtin put curr_otc to new_val;
-                ownedTokenCount := new_otc
+                newVal= let one = Uint256 1 in builtin add val one;
+                ownedTokenCount[to] := newVal
             | None =>
                 (* User does not have existing tokens *)
-                new_val = Uint256 1;
-                new_otc = builtin put curr_otc to new_val;
-                ownedTokenCount := new_otc
+                newVal = Uint256 1;
+                ownedTokenCount[to] := newVal
             end;
 
-            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                code : code_success};
-            msgs = one_msg msg;
-            send msgs
+            (* Emit success event *)
+            e = {_eventname: "Mint successful"; by: _sender; recipient: to; token: tokenId};
+            event e
         end
     | False =>
         (* Unauthorized transaction - sender is not the contract owner*)
-         msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : code_not_authorized};
-        msgs = one_msg msg;
-        send msgs
+        e = let raisedAt = "mint" in makeErrorEvent raisedAt code_not_authorized;
+        event e
     end
 
     
@@ -211,15 +199,16 @@ transition transferFrom(from: ByStr20, to: ByStr20, tokenId: Uint256)
     copy_operatorApproval <- operatorApprovals;
 
     (* Get tokenOwner ByStr20 *)
-    getTokenOwner = builtin get copy_tokenOwnerMap tokenId;
+    getTokenOwner <- tokenOwnerMap[tokenId];
     match getTokenOwner with
     | None =>
         (* Token not found *)
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                code : code_not_found};
-                msgs = one_msg msg;
-                send msgs
+        e = let raisedAt = "transferFrom" in makeErrorEvent raisedAt code_not_found;
+        event e
+        
     | Some tokenOwner =>
+        
+        (* Libary functions to check for conditions *)
         checkOwner = isTokenOwner _sender tokenId copy_tokenOwnerMap;
         checkApproved = isApproved _sender tokenId copy_tokenApprovals;
         checkApprovedForAll = isApprovedForAll _sender tokenOwner copy_operatorApproval;
@@ -229,77 +218,55 @@ transition transferFrom(from: ByStr20, to: ByStr20, tokenId: Uint256)
         match isFromTokenOwner with
         | False =>
             (* From address is not the same as the tokenOwner    *)
-            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                    code : code_bad_request };
-                    msgs = one_msg msg;
-                    send msgs
+            e = let raisedAt = "transferFrom" in makeErrorEvent raisedAt code_bad_request;
+            event e
         | True => 
-
             (* isApprovedOrOwner checks if any of the three conditions are met *)
             isAuthorized = isApprovedOrOwner checkOwner checkApproved checkApprovedForAll;
 
             match isAuthorized with
             | True =>
-
                 (* Remove from Approval *)
                 match checkApproved with
                 | True =>
                     (* Remove entry from approvals at the token level *)
-                    new_tokenApprovals = builtin remove copy_tokenApprovals tokenId; 
-                    tokenApprovals := new_tokenApprovals
+                    delete tokenApprovals[tokenId] 
                 | False =>
                 end;
 
                 (* Change tokenOwnerMap *)
-                new_tokenOwnerMap = builtin put copy_tokenOwnerMap tokenId to;
-                tokenOwnerMap := new_tokenOwnerMap;
+                tokenOwnerMap[tokenId] := to;
 
                 (* Change Count *)
                 curr_otc <- ownedTokenCount;
 
                 (*subtract one from previous token owner *)
-                val = builtin get curr_otc from;
-                match val with
-                | Some a1 =>
-                    a2  = let one = Uint256 1 in builtin sub a1 one;
-                    otc_1 = builtin put curr_otc from a2;
-                    ownedTokenCount := otc_1
+                somePrevBal <- ownedTokenCount[from];
+                match somePrevBal with
+                | Some prevBal =>
+                    newBal  = let one = Uint256 1 in builtin sub prevBal one;
+                    ownedTokenCount[from] := newBal
                 | None =>
-                    msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                    code : code_unexpected_error};
-                    msgs = one_msg msg;
-                    send msgs
+                    e = let raisedAt = "transferFrom" in makeErrorEvent raisedAt code_unexpected_error;
+                    event e
                 end;
 
                 (* add one to the new token owner *)
-                otc_2 <- ownedTokenCount;
-                userCnt = builtin get otc_2 to;
-                match userCnt with
+                userCnt <- ownedTokenCount[to];
+                (* Calculate the new token count value for recipient *)
+                newVal = let one = Uint256 1 in match userCnt with
                 | Some val =>
                     (* Add to existing value *)
-                    one = Uint256 1;
-                    new_val = builtin add val one;
-                    new_otc = builtin put otc_2 to new_val;
-                    ownedTokenCount := new_otc
-                | None =>
-                    (* User do not have existing token counts. Create new entry *)
-                    new_val = Uint256 1;
-                    new_otc = builtin put otc_2 to new_val;
-                    ownedTokenCount := new_otc
+                    builtin add val one
+                | None => one
                 end;
-
-                
-
-                msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                    code : code_success};
-                msgs = one_msg msg;
-                send msgs
+                ownedTokenCount[to] := newVal; 
+                e = {_eventname: "transferFrom successful"; from: _sender; recipient: to; token: tokenId}; 
+                event e
             | False =>
                 (* Unauthorized transaction *)
-                msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                    code : code_not_authorized};
-                msgs = one_msg msg;
-                send msgs
+                e = let raisedAt = "transferFrom" in makeErrorEvent raisedAt code_not_authorized;
+                event e
             end
         end
     end
@@ -318,14 +285,12 @@ transition approve(to: ByStr20, tokenId: Uint256)
     copy_operatorApproval <- operatorApprovals;
 
     (* Get tokenOwner ByStr20 *)
-    getTokenOwner = builtin get copy_tokenOwnerMap tokenId;
+    getTokenOwner <- tokenOwnerMap[tokenId];
     match getTokenOwner with
     | None =>
         (* Token not found *)
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                code : code_not_found};
-                msgs = one_msg msg;
-                send msgs
+        e = let raisedAt = "approve" in makeErrorEvent raisedAt code_not_found;
+        event e
     | Some tokenOwner =>
         checkApprovedForAll = isApprovedForAll _sender tokenOwner copy_operatorApproval;
         checkOwner = isTokenOwner _sender tokenId copy_tokenOwnerMap;
@@ -333,20 +298,14 @@ transition approve(to: ByStr20, tokenId: Uint256)
         match isAuthorized with
         | True =>
             (* add to token approval mapping *)
-            copy_tokenApprovals <- tokenApprovals;
-            new_tokenApprovals = builtin put copy_tokenApprovals tokenId to;
-            tokenApprovals := new_tokenApprovals;
-
-            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                code : code_success};
-            msgs = one_msg msg;
-            send msgs
+            tokenApprovals[tokenId] := to;
+            (* Emit event *)
+            e = {_eventname: "Approve successful"; from: _sender; approvedTo: to; token: tokenId};
+            event e
         | False =>
             (* Unauthorized transaction *)
-            msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-                code : code_not_authorized};
-            msgs = one_msg msg;
-            send msgs
+            e = let raisedAt = "approve" in makeErrorEvent raisedAt code_not_authorized;
+            event e
         end
     end
 end
@@ -364,27 +323,13 @@ transition setApprovalForAll(to: ByStr20, approved: Bool)
     match isValidOperation with
     | True =>
         (* Check if sender has an existing record on the operatorApproval *)
-        previous_operatorRecord = builtin get copy_operatorApproval _sender;
-        match previous_operatorRecord with
-        | Some record =>
-            (* Append new entry to the operatorRecords *)
-            new_entry = builtin put record to approved;
-            new_operatorRecord = builtin put copy_operatorApproval _sender new_entry;
-            operatorApprovals := new_operatorRecord
-        | None =>
-            (* make a new entry *)
-            new_entry = let m = Emp ByStr20 Bool in builtin put m to approved;
-            new_operatorRecord = builtin put copy_operatorApproval _sender new_entry;
-            operatorApprovals := new_operatorRecord
-        end;
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : code_success};
-        msgs = one_msg msg;
-        send msgs
+        operatorApprovals[_sender][to] := approved;
+        (* Stringify boolean value to be emitted in the event *)
+        approvedStr = bool_to_string approved;
+        e = {_eventname: "setApprovalForAll successful"; from: _sender; recipient: to; status: approvedStr};
+        event e
     | False =>
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
-            code : code_failure};
-        msgs = one_msg msg;
-        send msgs
+        e = let raisedAt = "setApprovalForAll" in makeErrorEvent raisedAt code_not_authorized;
+        event e
     end
 end

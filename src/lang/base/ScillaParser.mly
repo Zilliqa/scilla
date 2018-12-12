@@ -16,7 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-
 %{
   open Syntax
   open ErrorUtils
@@ -50,6 +49,8 @@
 %token SEMICOLON
 %token COLON
 %token BAR
+%token LSQB
+%token RSQB
 %token LPAREN
 %token RPAREN
 %token ARROW
@@ -88,6 +89,9 @@
 %token EVENT
 %token ACCEPT
 %token MAP
+%token DELETE
+%token EXISTS
+%token SCILLA_VERSION
 %token TYPE
 %token OF
        
@@ -146,9 +150,8 @@ simple_exp :
   { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) } 
 (* Application *)  
 | f = ID;
-  args = nonempty_list(ID)
-  { let xs = List.map (fun i -> Ident (i, toLoc $startpos)) args
-    in (App ((Ident (f, toLoc $startpos)), xs), toLoc $startpos ) }
+  args = nonempty_list(ident)
+  { (App ((Ident (f, toLoc $startpos)), args), toLoc $startpos ) }
 (* Atomic expression *)
 | a = atomic_exp {a} 
 (* Built-in call *)
@@ -158,17 +161,16 @@ simple_exp :
 | LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE
   { (Message es, toLoc $startpos) } 
 (* Data constructor application *)
-| c = CID ts=option(ctargs) args=list(ID)
+| c = CID ts=option(ctargs) args=list(ident)
   { let targs =
       (match ts with
        | None -> []
        | Some ls -> ls) in
-    let xs = List.map (fun i -> Ident (i, toLoc $startpos)) args in
-    (Constr (c, targs, xs), toLoc $startpos)
+    (Constr (c, targs, args), toLoc $startpos)
   }
 (* Match expression *)
 | MATCH; x = ID; WITH; cs=list(exp_pm_clause); END
-  { (MatchExpr (Ident (x, toLoc $startpos), cs), toLoc $startpos) }
+  { (MatchExpr (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos) }
 (* Type function *)
 | TFUN; i = TID ARROW; e = exp
   { (TFun (Ident (i, toLoc $startpos), e), toLoc $startpos) } 
@@ -205,7 +207,10 @@ lit :
 
 ctargs:
 | LBRACE; ts = list(targ); RBRACE { ts }
-                             
+
+map_access:
+| LSQB; i = ident; RSQB { i }
+
 pattern:
 | UNDERSCORE { Wildcard }
 | x = ID {Binder (Ident (x, toLoc $startpos))}
@@ -225,9 +230,14 @@ msg_entry :
 | i = ID; COLON;  v = ID  { i,  MVar (asIdL v (toLoc $startpos(v))) }
 
 builtin_args :
-| args = nonempty_list(ID) 
-  { List.map (fun i -> Ident (i, dummy_loc)) args }
+| args = nonempty_list(ident) { args }
 | LPAREN; RPAREN { [] }
+
+ident :
+| i = ID { Ident(i, toLoc $startpos) }
+
+cident :
+| c = CID { Ident(c, toLoc $startpos) }
 
 type_annot:
 | COLON; t = typ { t }
@@ -249,11 +259,19 @@ stmt:
 | l = ID; ASSIGN; r = ID { (Store (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos($2)), r), toLoc $startpos) }
 | l=ID; BIND; AND; c=CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
+| l = ID; BIND; r = ID; keys = nonempty_list(map_access)
+  { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, true), toLoc $startpos }
+| l = ID; BIND; EXISTS; r = ID; keys = nonempty_list(map_access)
+  { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, false), toLoc $startpos }
+| l = ID; keys = nonempty_list(map_access); ASSIGN; r = ID
+  { MapUpdate(asIdL l (toLoc $startpos(l)), keys, Some (asIdL r (toLoc $startpos(r)))), toLoc $startpos }
+| DELETE; l = ID; keys = nonempty_list(map_access)
+  { MapUpdate(asIdL l (toLoc $startpos(l)), keys, None), toLoc $startpos }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
 | SEND; m = ID;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | EVENT; m = ID; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | MATCH; x = ID; WITH; cs=list(stmt_pm_clause); END
-  { (MatchStmt (Ident (x, toLoc $startpos), cs), toLoc $startpos)  }
+  { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
 
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;
@@ -276,13 +294,13 @@ transition:
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
   ss = stmts;
   END;
-  { { tname = asIdL t (toLoc $startpos);
+  { { tname = t;
       tparams = params;
       tbody = ss } }
 
 trans_id:
-| c = CID {c};
-| i = ID {i};
+| c = CID { asIdL c (toLoc $startpos(c)) }
+| i = ID { asIdL i (toLoc $startpos(i)) }
 
 field:
 | FIELD; f = ID; COLON; t=typ;
@@ -294,7 +312,7 @@ contract:
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
   fs = list(field);
   ts = list(transition)
-  { { cname   = asIdL c (toLoc $startpos);
+  { { cname   = asIdL c (toLoc $startpos(c));
       cparams = params;
       cfields = fs;
       ctrans  = ts } }
@@ -319,12 +337,14 @@ lmodule :
 | l = library; EOF { l }
 
 imports :
-| IMPORT; els = list(CID) { List.map (fun c -> asIdL c (toLoc $startpos)) els }
+| IMPORT; els = list(cident) { els }
 | { [] }
 
 cmodule:
-| els = imports; ls = option(library); c = contract; EOF
-  { { cname = c.cname;
+| SCILLA_VERSION; cver = NUMLIT; els = imports; ls = option(library); c = contract; EOF
+  { { smver = Big_int.int_of_big_int cver;
+      cname = c.cname;
       libs = ls;
       elibs = els;
       contr = c } }
+

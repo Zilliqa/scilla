@@ -1,7 +1,12 @@
 {
-  "name": "Empty",
-  "params": [],
-  "fields": [],
-  "transitions": [],
-  "events": []
+  "cashflow_tags": [],
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Empty",
+    "params": [],
+    "fields": [],
+    "transitions": [],
+    "events": []
+  },
+  "warnings": []
 }

@@ -1,20 +1,33 @@
 {
-  "name": "OpenAuction",
-  "params": [
-    { "name": "auctionStart", "type": "BNum" },
-    { "name": "biddingTime", "type": "Uint128" },
-    { "name": "beneficiary", "type": "ByStr20" }
+  "cashflow_tags": [
+    { "field": "auctionStart", "tag": "NotMoney" },
+    { "field": "biddingTime", "tag": "NotMoney" },
+    { "field": "beneficiary", "tag": "NotMoney" },
+    { "field": "ended", "tag": "NotMoney" },
+    { "field": "highestBidder", "tag": "(Option NotMoney)" },
+    { "field": "highestBid", "tag": "Money" },
+    { "field": "pendingReturns", "tag": "(Map Money)" }
   ],
-  "fields": [
-    { "name": "ended", "type": "Bool" },
-    { "name": "highestBidder", "type": "Option (ByStr20)" },
-    { "name": "highestBid", "type": "Uint128" },
-    { "name": "pendingReturns", "type": "Map (ByStr20) (Uint128)" }
-  ],
-  "transitions": [
-    { "name": "Bid", "params": [] },
-    { "name": "Withdraw", "params": [] },
-    { "name": "AuctionEnd", "params": [] }
-  ],
-  "events": []
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "OpenAuction",
+    "params": [
+      { "vname": "auctionStart", "type": "BNum" },
+      { "vname": "biddingTime", "type": "Uint128" },
+      { "vname": "beneficiary", "type": "ByStr20" }
+    ],
+    "fields": [
+      { "vname": "ended", "type": "Bool" },
+      { "vname": "highestBidder", "type": "Option (ByStr20)" },
+      { "vname": "highestBid", "type": "Uint128" },
+      { "vname": "pendingReturns", "type": "Map (ByStr20) (Uint128)" }
+    ],
+    "transitions": [
+      { "vname": "Bid", "params": [] },
+      { "vname": "Withdraw", "params": [] },
+      { "vname": "AuctionEnd", "params": [] }
+    ],
+    "events": []
+  },
+  "warnings": []
 }

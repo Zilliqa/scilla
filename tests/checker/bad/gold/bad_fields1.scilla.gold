@@ -2,14 +2,18 @@
   "errors": [
     {
       "error_message": "Type error(s) in contract Empty:\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/bad_fields1.scilla",
+        "line": 3,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message": "Type error in field bad_foo:\n",
       "start_location": {
         "file": "checker/bad/bad_fields1.scilla",
-        "line": 4,
+        "line": 6,
         "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -20,5 +24,6 @@
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
-  ]
+  ],
+  "warnings": []
 }

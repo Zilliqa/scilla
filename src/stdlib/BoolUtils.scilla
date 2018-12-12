@@ -28,3 +28,9 @@ let negb = fun (b : Bool) =>
   | True => False
   | False => True
   end
+
+let bool_to_string = fun (flag: Bool) =>
+    match flag with
+    | True => "True"
+    | False => "False"
+    end

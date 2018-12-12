@@ -1,0 +1,118 @@
+scilla_version 0
+
+import ListUtils PairUtils NatUtils
+
+library Test
+
+contract Test
+(owner: ByStr20)
+
+field gmap : Map String Int32 = Emp String Int32
+field gmap3 : Map String (Map Int32 (Map (Int64) (String))) = Emp String (Map Int32 (Map (Int64) (String)))
+
+transition test1 ()
+  is_owner = builtin eq owner _sender;
+  match is_owner with
+  | True =>
+    one = Int32 1;
+    k = "Hello";
+    gmap[k] := one
+  | False =>
+    k = "Hello";
+    t <- gmap[k];
+    j = "World";
+    match t with
+    | Some tt =>
+      gmap[j] := tt
+    | None =>
+      zero = Int32 0;
+      gmap[j] := zero
+    end
+  end
+end
+
+transition test2()
+  a = "H";
+  b = Int32 1;
+  c = Int64 2;
+  gmap3[a][b][c] := a
+end
+
+transition test3()
+  a = "H";
+  b = Int32 1;
+  c = Int64 2;
+  d <- gmap3[a][b][c];
+  match d with
+  | Some dd =>
+    gmap[dd] := b
+  | None =>
+    not_found = "NotFound";
+    gmap[not_found] := b
+  end
+end
+
+transition test4()
+  a = "Hi";
+  b = Int32 1;
+  c = Int64 2;
+  d <- gmap3[a][b][c];
+  match d with
+  | Some dd =>
+    gmap[dd] := b
+  | None =>
+    not_found = "NotFound";
+    gmap[not_found] := b
+  end
+end
+
+transition test5()
+  a = "H";
+  b = Int32 1;
+  c = Int64 2;
+  delete gmap3[a][b][c]
+end
+
+transition test6()
+  a = "Hi";
+  b = Int32 1;
+  c = Int64 2;
+  delete gmap3[a][b][c]
+end
+
+transition test7()
+  a = "H";
+  b = Int32 1;
+  c = Int64 2;
+  delete gmap3[a]
+end
+
+transition test8()
+  a = "H";
+  b = Int32 1;
+  c = Int64 2;
+  d <- exists  gmap3[a][b][c];
+  match d with
+  | True =>
+    ex = "Exists";
+    gmap[ex] := b
+  | False =>
+    ex = "Doesn't Exist";
+    gmap[ex] := b
+  end
+end
+
+transition test9()
+  a = "H";
+  b = Int32 1;
+  c = Int64 2;
+  d <- exists gmap3[a];
+  match d with
+  | True =>
+    ex = "Exists";
+    gmap[ex] := b
+  | False =>
+    ex = "Doesn't Exist";
+    gmap[ex] := b
+  end
+end

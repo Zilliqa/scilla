@@ -26,6 +26,9 @@ open PrimTypes
 open Schnorr
 open PrettyPrinters
 
+(* Arbitrarily picked, the largest prime less than 100. *)
+let version_mismatch_penalty = 97
+
 module ScillaGas
     (SR : Rep)
     (ER : Rep) = struct
@@ -43,7 +46,7 @@ module ScillaGas
       | StringLit s ->
           let l = String.length s in
           pure @@ if l <= 20 then 20 else l
-      | BNum _ -> pure @@ 32 (* 256 bits *)
+      | BNum _ -> pure @@ 64 (* Implemented using big-nums. *)
       (* (bit-width, value) *)
       | IntLit x -> pure @@ (int_lit_width x) / 8
       | UintLit x -> pure @@ (uint_lit_width x) / 8
@@ -65,7 +68,22 @@ module ScillaGas
             let%bind clit2 = literal_cost lit2 in
             pure (acc + clit1 + clit2)) m (pure 0)
       (* A constructor in HNF *)      
-      | ADTValue (_, _, ll) ->
+      | ADTValue (cn, _, ll) as als ->
+        (* Make a special case for Lists, to avoid overflowing recursion. *)
+        if cn = "Cons"
+        then
+          let rec walk elm acc_cost =
+            match elm with
+            | ADTValue ("Cons", _, [l;ll]) ->
+              let%bind lcost = literal_cost l in
+              walk ll (acc_cost + lcost)
+            | ADTValue ("Nil", _, _) ->
+              pure (acc_cost + 1)
+            | _ -> fail0 "Malformed list while computing literal cost"
+          in
+          walk als 0
+        else
+          if List.is_empty ll then pure 1 else
           foldM ~f:(fun acc lit' ->
               let%bind clit' = literal_cost lit' in
               pure (acc + clit')) ~init:0 ll
@@ -93,6 +111,13 @@ module ScillaGas
         let storage_cost = new_cost - old_cost in
         let op_cost = Int.max old_cost new_cost in
         pure @@ op_cost + storage_cost
+    | G_MapUpdate (n, lopt)
+    | G_MapGet (n, lopt) ->
+      let%bind l_cost = 
+        (* Deleting a key only has the cost of indexing 
+           (to incentivice removal of data). *)
+        (match lopt with | Some l -> (literal_cost l) | None -> pure 0) in
+      pure @@ n + l_cost
     | G_Bind -> pure 1
     | G_MatchStmt num_clauses-> pure num_clauses
     | G_ReadFromBC -> pure 1
@@ -112,38 +137,54 @@ module ScillaGas
 
   let string_coster op args base =
     match op, args with
-    | "eq", [StringLit s1; StringLit s2]
+    | "eq", [StringLit s1; StringLit s2] ->
+      pure @@ (Int.min (String.length s1) (String.length s2)) * base
     | "concat", [StringLit s1; StringLit s2] ->
         pure @@ (String.length s1 + String.length s2) * base
-    | "substr", [StringLit s; UintLit (Uint32L _); UintLit (Uint32L _)] ->
-        pure @@ (String.length s) * base
+    | "substr", [StringLit s; UintLit (Uint32L i1); UintLit (Uint32L i2)] ->
+        pure @@ (Int.min (String.length s)
+                         (Stdint.Uint32.to_int i1+ Stdint.Uint32.to_int i2))
+                 * base
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
-  let hash_coster op args base =
+  let crypto_coster op args base =
     let open BatOption in
     let%bind types = mapM args ~f:literal_type in
+    let div_ceil x y =
+      if (x % y = 0) then x / y else (x / y) + 1
+    in
     match op, types, args with
     | "eq", [a1;a2], _
       when is_bystrx_type a1 && is_bystrx_type a2 &&
            get (bystrx_width a1) = get (bystrx_width a2)
       -> pure @@ get (bystrx_width a1) * base
     | "sha256hash", _, [a] ->
-        pure @@ (String.length (pp_literal a) + 20) * base
+        (* Block size of sha256hash is 512 *)
+        pure @@ (div_ceil (String.length (pp_literal a)) 64) * 15 * base
     | "keccak256hash", _, [a] ->
-        pure @@ (String.length (pp_literal a) + 20) * base
+        (* Block size of keccak256hash is 1088 *)
+        pure @@ (div_ceil (String.length (pp_literal a)) 136) * 15 * base
     | "ripemd160hash", _, [a] ->
-        pure @@ (String.length (pp_literal a) + 20) * base
-    | "schnorr_gen_key_pair", _, _ -> pure 20 (* TODO *)
-    | "schnorr_sign", _, [_;_;ByStr(s)]
+        (* Block size of ripemd160hash is 512 *)
+        pure @@ (div_ceil (String.length (pp_literal a)) 64) * 10 * base
+    | "schnorr_gen_key_pair", _, _ -> pure 20
+    | "schnorr_sign", _, [_;_;ByStr(s)] ->
+        let x = div_ceil ((String.length s) + 66) 64 in
+        pure @@ (350 + (15 * x)) * base
     | "schnorr_verify", _, [_;ByStr(s);_] ->
-        pure @@ (String.length s) * base
+        let x = div_ceil ((String.length s) + 66) 64 in
+        pure @@ (250 + (15 * x)) * base
     | "to_bystr", [a], _
       when is_bystrx_type a -> pure @@ get (bystrx_width a) * base
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
-  let map_coster _ args base =
+  let map_coster op args base =
     match args with
-    | Map _ :: _ -> pure base
+    | Map (_, m) :: _ -> 
+      (* get and contains do not make a copy of the Map, hence constant. *)
+      (match op with
+      | "get" | "contains" -> pure base 
+      | _ -> pure (base + (base * Caml.Hashtbl.length m)))
     | _ -> fail0 @@ "Gas cost error for map built-in"
 
   let to_nat_coster _ args base =
@@ -152,13 +193,11 @@ module ScillaGas
     | [UintLit (Uint32L i)] -> pure @@  (Stdint.Uint32.to_int i) * base
     | _ -> fail0 @@ "Gas cost error for to_nat built-in"
 
-  let int_coster _ args base =
+  let int_coster op args base =
     let base' =
-      (* match op with
-         | "mul" -> base * 2
-         | "div" | "rem" -> base * 4
+       match op with
+         | "mul" | "div" | "rem" -> base * 5
          | _ -> base
-      *) base (* No emperical evidence for charing more for mul / div. *)
     in
     let%bind w = match args with
       | [IntLit i] | [IntLit i; IntLit _] ->
@@ -182,28 +221,29 @@ module ScillaGas
     ("substr", [string_typ; tvar "'A"; tvar "'A"], string_coster, 1);
 
     (* Block numbers *)
-    ("eq", [bnum_typ;bnum_typ], base_coster, 4);
-    ("blt", [bnum_typ;bnum_typ], base_coster, 4);
-    ("badd", [bnum_typ;tvar "'A"], base_coster, 4);
+    ("eq", [bnum_typ;bnum_typ], base_coster, 32);
+    ("blt", [bnum_typ;bnum_typ], base_coster, 32);
+    ("badd", [bnum_typ;tvar "'A"], base_coster, 32);
 
-    (* Hashes *)
-    ("eq", [tvar "'A"; tvar "'A"], hash_coster, 1);
+    (* Crypto *)
+    ("eq", [tvar "'A"; tvar "'A"], crypto_coster, 1);
     (* We currently only support `dist` for ByStr32. *)
     ("dist", [bystrx_typ hash_length; bystrx_typ hash_length], base_coster, 32);
-    ("to_bystr", [tvar "'A"], hash_coster, 1);
-    ("sha256hash", [tvar "'A"], hash_coster, 1);
-    ("keccak256hash", [tvar "'A"], hash_coster, 1);
-    ("ripemd160hash", [tvar "'A"], hash_coster, 1);
-    ("schnorr_gen_key_pair", [], hash_coster, 1);
-    ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], hash_coster, 5);
-    ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], hash_coster, 5);
+    ("to_bystr", [tvar "'A"], crypto_coster, 1);
+    ("sha256hash", [tvar "'A"], crypto_coster, 1);
+    ("keccak256hash", [tvar "'A"], crypto_coster, 1);
+    ("ripemd160hash", [tvar "'A"], crypto_coster, 1);
+    ("schnorr_gen_key_pair", [], crypto_coster, 1);
+    ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], crypto_coster, 1);
+    ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster, 1);
 
     (* Maps *)
     ("contains", [tvar "'A"; tvar "'A"], map_coster, 1);
     ("put", [tvar "'A"; tvar "'A"; tvar "'A"], map_coster, 1);
     ("get", [tvar "'A"; tvar "'A"], map_coster, 1);
     ("remove", [tvar "'A"; tvar "'A"], map_coster, 1);
-    ("to_list", [tvar "'A"], map_coster, 1); 
+    ("to_list", [tvar "'A"], map_coster, 1);
+    ("size", [tvar "'A"], map_coster, 1); 
 
     (* Integers *)
     ("eq", [tvar "'A"; tvar "'A"], int_coster, 4);
@@ -253,7 +293,7 @@ module ScillaGas
     let msg = sprintf "Unable to determine gas cost for \"%s\"" op in
     let open Caml in
     let dict = match Hashtbl.find_opt builtin_hashtbl op with | Some rows -> rows | None -> [] in
-    let %bind (_, cost) = tryM dict ~f:matcher ~msg:(mk_error0 msg) in
+    let %bind (_, cost) = tryM dict ~f:matcher ~msg:(fun () -> mk_error0 msg) in
     pure cost
 
 end

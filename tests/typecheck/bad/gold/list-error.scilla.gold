@@ -1,18 +1,15 @@
 {
   "errors": [
     {
-      "error_message": "Type error in the initialiser of `l4`:\n",
+      "error_message":
+        "Type error in the initialiser of `l4`:\nConstructor Cons expects 2 arguments, but got 1.",
       "start_location": {
         "file": "typecheck/bad/list-error.scilla",
         "line": 20,
         "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Constructor Cons expects 2 arguments, but got 1.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
     }
-  ]
+  ],
+  "warnings": []
 }

@@ -82,6 +82,7 @@ module TypeUtilities
   module MakeTEnv : MakeTEnvFunctor
     
   val literal_type : literal -> (typ, scilla_error list) result
+  val is_wellformed_lit : literal -> (typ, scilla_error list) result
 
   (* Useful generic types *)
   val fun_typ : typ -> typ -> typ

@@ -1,12 +1,8 @@
 {
-  "gas_remaining": "1679",
-  "message": {
-    "_tag": "Main",
-    "_amount": "0",
-    "_accepted": "false",
-    "_recipient": "0x12345678901234567890123456789012345678cd",
-    "params": [ { "vname": "bal", "type": "Uint128", "value": "10000" } ]
-  },
+  "scilla_major_version": "0",
+  "gas_remaining": "7398",
+  "_accepted": "false",
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -25,5 +21,17 @@
       "value": []
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "BalanceOf",
+      "params": [
+        {
+          "vname": "address",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567890"
+        },
+        { "vname": "balance", "type": "Uint128", "value": "10000" }
+      ]
+    }
+  ]
 }

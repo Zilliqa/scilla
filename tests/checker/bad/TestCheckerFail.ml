@@ -24,17 +24,22 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["checker"; "bad"; f]
     let runner = "scilla-checker"
+    let custom_args = ["-cf"]
     let tests = [
       "bad_fields1.scilla";
       "bad_fields2.scilla";
       "bad_fields2.scilla";
       "unbound.scilla";
       "event_bad1.scilla";
+      "event_bad2.scilla";
       "lib_bad1.scilla";
       "zil_mod.scilla";
       "mappair2.scilla";
       "mappair.scilla";
-      "homonymous_vars.scilla"
+      "inplace-map.scilla";
+      "homonymous_vars.scilla";
+      "homonymous_vars2.scilla";
+      "homonymous_vars3.scilla"
     ]
-    let use_stdlib = true
+    let exit_code : Unix.process_status = WEXITED 1
   end)

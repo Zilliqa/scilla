@@ -1,28 +1,15 @@
 {
   "errors": [
     {
-      "error_message": "Type error in the initialiser of `list_map`:\n",
-      "start_location": {
-        "file": "typecheck/bad/map-error.scilla",
-        "line": 1,
-        "column": 1
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error in application of `folder`:\n",
+      "error_message":
+        "Type error in the initialiser of `list_map`:\nType error in application of `folder`:\nType mismatch: 'A -> 'B -> 'B expected, but 'A -> List ('B) -> List ('B) provided.",
       "start_location": {
         "file": "typecheck/bad/map-error.scilla",
         "line": 8,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Type mismatch: 'A -> 'B -> 'B expected, but 'A -> List ('B) -> List ('B) provided.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
     }
-  ]
+  ],
+  "warnings": []
 }

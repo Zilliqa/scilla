@@ -30,6 +30,7 @@ open PatternChecker
 open SanityChecker
 open Recursion
 open EventInfo
+open Cashflow
 
 module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
@@ -45,75 +46,83 @@ module PMCERep = PMC.EPR
 
 module SC = ScillaSanityChecker (PMCSRep) (PMCERep)
 module EI = ScillaEventInfo (PMCSRep) (PMCERep)
-
+module CF = ScillaCashflowChecker (TCSRep) (TCERep)
 
 (* Check that the module parses *)
-let check_parsing ctr = 
+let check_parsing ctr  = 
     let parse_module =
       FrontEndParser.parse_file ScillaParser.cmodule ctr in
     match parse_module with
-    | None -> fail0 (sprintf "%s\n" "Failed to parse input file.")
+    | None -> exit 1 (* Error is printed by the parser. *)
     | Some cmod -> 
         plog @@ sprintf
           "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" ctr;
         pure cmod
 
 (* Type check the contract with external libraries *)
-let check_typing cmod elibs =
+let check_typing cmod elibs  =
   let open TC in
   let res = type_module cmod recursion_principles elibs in
   match res with
-  | Error msgs -> pout @@ scilla_error_to_jstring msgs; res
+  | Error msgs -> pout @@ scilla_error_to_string msgs ; res
   | Ok typed_module -> pure @@ typed_module
 
-let check_patterns e =
+let check_patterns e  =
   let res = PMC.pm_check_module e in
   match res with
-  | Error msg -> pout @@ scilla_error_to_jstring msg; res
+  | Error msg -> pout @@ scilla_error_to_string msg ; res
   | Ok pm_checked_module -> pure @@ pm_checked_module
 
-let check_sanity c =
+let check_sanity c  =
   let res = SC.contr_sanity c in
   match res with
-  | Error msg -> pout @@ scilla_error_to_jstring msg; res
+  | Error msg -> pout @@ scilla_error_to_string msg ; res
   | Ok _ -> pure ()
 
-let check_events_info einfo =
+let check_events_info einfo  =
   match einfo with
-  | Error msg -> pout @@ scilla_error_to_jstring msg; einfo
+  | Error msg -> pout @@ scilla_error_to_string msg ; einfo
   | Ok _ -> einfo
 
+let check_cashflow typed_cmod =
+  let j = CF.main typed_cmod in
+  List.map j
+    ~f:(fun (i, t) -> 
+        (i, CF.ECFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string))
+      
 let () =
-  if (Array.length Sys.argv) < 2
-  then
-    (perr @@ 
-      scilla_error_to_jstring @@ 
-        mk_error0 (sprintf "Usage: %s foo.scilla\n" Sys.argv.(0))
-    )
-  else (
+    let cli = parse_cli () in
     let open GlobalConfig in
+    StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
     set_debug_level Debug_None;
     (* Testsuite runs this executable with cwd=tests and ends
        up complaining about missing _build directory for logger.
        So disable the logger. *)
     let r = (
-      let%bind cmod = check_parsing Sys.argv.(1) in
-      (* This is an auxiliary executable, it's second argument must
-       * have a list of stdlib dirs, so note that down. *)
-      add_cmd_stdlib();
+      let%bind cmod = check_parsing cli.input_file  in
       (* Get list of stdlib dirs. *)
       let lib_dirs = StdlibTracker.get_stdlib_dirs() in
       if lib_dirs = [] then stdlib_not_found_err ();
       (* Import whatever libs we want. *)
-      let elibs = import_libs cmod.elibs in
-      let%bind (typed_cmod, tenv) = check_typing cmod elibs in
-      let%bind pm_checked_cmod = check_patterns typed_cmod in
-      let%bind _ = check_sanity pm_checked_cmod.contr in
-      let%bind event_info = check_events_info @@ EI.event_info pm_checked_cmod.contr in
-      pure @@ (cmod, tenv, event_info)
+      let elibs = import_libs cmod.elibs  in
+      let%bind (typed_cmod, tenv) = check_typing cmod elibs  in
+      let%bind pm_checked_cmod = check_patterns typed_cmod  in
+      let%bind _ = check_sanity pm_checked_cmod.contr  in
+      let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr)  in
+      let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
+      pure @@ (cmod, tenv, event_info, cf_info_opt)
     ) in
     match r with
-    | Error el -> () (* we've already printed the error(s). *)
-    | Ok (cmod, _, event_info) ->
-      pout (sprintf "%s\n" (JSON.ContractInfo.get_string cmod.contr event_info));
-  )
+    | Error el -> exit 1 (* we've already printed the error(s). *)
+    | Ok (cmod, _, event_info, cf_info_opt) ->
+        let base_output =
+          [
+            ("contract_info", (JSON.ContractInfo.get_json cmod.smver cmod.contr event_info));
+            ("warnings", scilla_warning_to_json (get_warnings()))
+          ] in
+        let output_with_cf =
+          match cf_info_opt with
+          | None -> base_output
+          | Some cf_info -> ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: base_output in
+        let j = `Assoc output_with_cf in
+        pout (sprintf "%s\n" (Yojson.pretty_to_string j));

@@ -35,7 +35,7 @@ open TestTypeUtils
  * the literal is malformed. Do not pass good literals. *)
 let make_bad_lit_test l =
   let is_invalid_literal l =
-    let v = literal_type l in
+    let v = is_wellformed_lit l in
     match v with
     | Error _ -> true
     | Ok _ -> false
@@ -138,6 +138,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "typecheck"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["typecheck"; "bad"; f]
     let runner = "type-checker"      
+    let custom_args = []
     let tests = [
       "adt-error1.scilla";
       "branch-mismatch.scilla";
@@ -156,7 +157,7 @@ module Tests = TestUtil.DiffBasedTests(
       "folder-error.scilla";
       "some.scilla";
     ]
-    let use_stdlib = true
+    let exit_code : Unix.process_status = WEXITED 1
   end)
 
 let all_tests env = "type_check_fail_tests" >::: [lit_typ_tests;Tests.add_tests env]

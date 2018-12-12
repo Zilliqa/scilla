@@ -1,0 +1,33 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract Wallet:\n",
+      "start_location": {
+        "file": "checker/bad/homonymous_vars2.scilla",
+        "line": 13,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition ExecuteTransaction:\n",
+      "start_location": {
+        "file": "checker/bad/homonymous_vars2.scilla",
+        "line": 20,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `not_enough_money`:\nType error in application of `f`:\nCouldn't resolve the identifier \"sxamount\".\n",
+      "start_location": {
+        "file": "checker/bad/homonymous_vars2.scilla",
+        "line": 22,
+        "column": 28
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

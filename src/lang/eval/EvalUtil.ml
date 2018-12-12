@@ -128,8 +128,9 @@ let builtin_executor i arg_tps arg_lits =
 (* Add a check that the just evaluated statement was in our gas limit. *)
 let stmt_gas_wrap scon sloc =
   let%bind cost = fromR @@ EvalGas.stmt_cost scon in
+  let err = (mk_error1 "Ran out of gas evaluating statement" sloc) in 
   let dummy () = pure () in (* the operation is already executed unfortunately *)
-    checkwrap_op dummy cost (mk_error1 "Ran out of gas evaluating statement" sloc)
+    checkwrap_op dummy cost err
 
 (*****************************************************)
 (* Update-only execution environment for expressions *)
@@ -222,15 +223,16 @@ module Configuration = struct
 
   (*  Manipulations with configuartion *)
   
-  let store st k l =
+  let store st i l =
+    let k = get_id i in
     let s = st.fields in
     match List.find s ~f:(fun (z, _) -> z = k) with
     | Some (_, l') -> pure @@
         ({st with
           fields = (k, l) :: List.filter ~f:(fun z -> fst z <> k) s}
         , G_Store(l', l))
-    | None -> fail0 @@ sprintf
-          "No field \"%s\" in fields:\n%s" k (pp_literal_map s)
+    | None -> fail1 (sprintf "No field \"%s\" in contract.\n" k)
+          (ER.get_loc (get_rep i))
 
   let load st k =
     let i = get_id k in
@@ -244,8 +246,122 @@ module Configuration = struct
       let s = st.fields in
       match List.find ~f:(fun z -> fst z = i) s with 
       | Some x -> pure @@ (snd x, G_Load(snd x))
-      | None -> fail0 @@ sprintf
-            "No field \"%s\" in field map:\n%s" i (pp_literal_map s)
+      | None -> fail1 (sprintf "No field \"%s\" in contract.\n" i)
+            (ER.get_loc (get_rep k))
+
+  let map_update st m klist vopt =
+    let s = st.fields in
+    match List.find s ~f:(fun (z, _) -> z = (get_id m)) with
+    | Some (_, Map((_,vt), mlit)) ->
+      let rec recurser mlit' klist' vt' =
+        (match klist' with
+         (* we're at the last key, update literal. *)
+         | [k] -> 
+            (match vopt with
+            | Some v ->
+              Caml.Hashtbl.replace mlit' k v;
+              pure @@ (st, G_MapUpdate ((List.length klist), (Some v)))
+            | None ->
+              Caml.Hashtbl.remove mlit' k;
+              pure @@ (st, G_MapUpdate ((List.length klist), None)))
+         | k :: krest ->
+            (* we have more nested maps *)
+            (match Caml.Hashtbl.find_opt mlit' k with
+             | Some (Map((_, vt''), mlit'')) -> recurser mlit'' krest vt''
+             | None ->
+                if (is_some vopt) then (* not a delete operation. *)
+                  (* We have more keys remaining, but no entry for "k".
+                    So create an empty map for "k" and then proceed. *)
+                  let mlit'' = Caml.Hashtbl.create 4 in
+                  let%bind (kt'', vt'') = 
+                    (match vt' with
+                    | MapType (keytype, valtype) -> pure (keytype, valtype)
+                    | _ -> fail1 (sprintf "Cannot index into map %s due to non-map type" (get_id m))
+                            (ER.get_loc (get_rep m))
+                    )
+                    in
+                      Caml.Hashtbl.replace mlit' k (Map((kt'', vt''), mlit''));
+                      recurser mlit'' krest vt''
+                else
+                  (* No point removing a key that doesn't exist. *)
+                  pure @@ (st, G_MapUpdate ((List.length klist), None))
+              (* The remaining keys cannot be used for indexing as
+                 we ran out of nested maps. *)
+             | _ -> fail1 (sprintf "Cannot index into map %s. Too many index keys." (get_id m))
+                      (ER.get_loc (get_rep m))
+            )
+          (* this cannot occur. *)
+          | [] -> fail1 (sprintf "Internal error in updating map %s." (get_id m))
+                    (ER.get_loc (get_rep m))
+        )
+      in
+        recurser mlit klist vt
+    | _ -> fail1 (sprintf "No map field \"%s\" in contract.\n" (get_id m))
+            (ER.get_loc (get_rep m))
+
+  let map_get st m klist fetchval =
+    let s = st.fields in
+    match List.find s ~f:(fun (z, _) -> z = (get_id m)) with
+    | Some (_, Map((kt, vt), mlit)) ->
+
+      (* The return type of this `MapGet` is Option (ret_val_type) *)
+      let%bind ret_val_type =
+        let rec recurser t nkeys =
+          (match t, nkeys with
+          | MapType (_, _), 0 -> pure vt
+          | MapType (_, vt'), 1 -> pure vt'
+          | MapType (_, vt'), nkeys' when nkeys' > 1 -> recurser vt' (nkeys-1)
+          | _, _ -> fail1 (sprintf "Cannot index into map %s: Too many index keys or non-map type" (get_id m))
+                    (ER.get_loc (get_rep m))
+          )
+        in
+          recurser (MapType(kt, vt)) (List.length klist)
+      in
+      (* Recursively, index with each key and provide the indexed value. *)
+      let rec recurser mlit' klist' vt' =
+        (match klist' with
+         | [k] -> 
+          let%bind res = (match Caml.Hashtbl.find_opt mlit' k with
+            | Some l ->
+              if fetchval
+              then pure @@ ADTValue ("Some", [vt'], [l])
+              else pure @@ ADTValue ("True", [], [])
+            | None -> 
+              (* Just an assert. *)
+              if vt' <> ret_val_type 
+              then fail1 (sprintf "Failuing indexing into map %s. Internal error." (get_id m))
+                  (ER.get_loc (get_rep m))
+              else 
+                if fetchval
+                then pure @@ ADTValue ("None", [vt'], [])
+                else pure @@ ADTValue ("False", [], []))
+          in
+            pure @@ (res, G_MapGet(List.length klist, Some res))
+         | k :: krest ->
+            (* we have more nested maps *)
+            (match Caml.Hashtbl.find_opt mlit' k with
+             | Some (Map((_, vt''), mlit'')) -> recurser mlit'' krest vt''
+             | None ->
+                (* No element found. Return none. *)
+                let ret = 
+                  if fetchval
+                  then ADTValue ("None", [ret_val_type], [])
+                  else ADTValue ("False", [], [])
+                in
+                pure @@ (ret, G_MapGet(List.length klist, Some ret))
+              (* The remaining keys cannot be used for indexing as
+                 we ran out of nested maps. *)
+             | _ -> fail1 (sprintf "Cannot index into map %s. Too many index keys." (get_id m))
+                      (ER.get_loc (get_rep m))
+            )
+         (* this cannot occur. *)
+          | [] -> fail1 (sprintf "Internal error in retriving from map %s." (get_id m))
+                    (ER.get_loc (get_rep m))
+        )
+      in
+        recurser mlit klist vt
+    | _ -> fail1 (sprintf "No map field \"%s\" in contract.\n" (get_id m))
+            (ER.get_loc (get_rep m))
 
   let bind st k v =
     let e = st.env in
@@ -286,17 +402,6 @@ module Configuration = struct
       | [] -> pure true
       | m :: _ -> fail0 @@ sprintf "This is not a message:\n%s" (pp_literal m)
 
-  (* Convert Scilla list to OCaml list *)
-  let get_list_literal v =
-      let rec convert_to_list = (function
-        | ADTValue ("Nil", _, []) -> pure []
-        | ADTValue ("Cons", _, [h; t]) ->
-            let%bind rest = convert_to_list t in
-            pure @@ h :: rest
-        | l -> fail0 @@ sprintf "The literal is not a list:\n%s" (pp_literal l))
-      in
-      convert_to_list v
-
   let validate_outgoing_message m' =
     let open ContractUtil.MessagePayload in
     match m' with
@@ -313,7 +418,7 @@ module Configuration = struct
     | _ -> fail0 @@ sprintf "Literal %s is not a message, cannot be sent." (pp_literal m')
 
   let send_messages conf ms =
-    let%bind ls' = get_list_literal ms in
+    let%bind ls' = fromR @@ Datatypes.scilla_list_to_ocaml ms in
     let%bind ls = mapM ~f:validate_outgoing_message ls' in
     let old_emitted = conf.emitted in
     let emitted = old_emitted @ ls in

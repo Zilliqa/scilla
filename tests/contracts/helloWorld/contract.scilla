@@ -1,3 +1,5 @@
+scilla_version 0
+
 (* HelloWorld contract *)
 
 import ListUtils
@@ -42,7 +44,6 @@ end
 
 transition getHello ()
     r <- welcome_msg;
-    msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; msg : r};
-    msgs = one_msg msg;
-    send msgs
+    e = {_eventname: "getHello()"; msg: r};
+    event e
 end

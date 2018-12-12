@@ -1,0 +1,59 @@
+(* A simple contract that exhibits a non-trivial cash-flow and several *)
+(* cash-flow bugs, violating, in particular, the linearity of the *)
+(* contract wrt. to the funds it stores: *)
+
+(* 1. An update in the True-branch of put overrides previous money stored *)
+(* in the  same entry. *)
+
+(* 2. The False-branch of put does not record the donation in the "folks" *)
+(* field. *)
+
+(* 3. The withdraw field does not voids the entry of the _sender in *)
+(* "folks" upon withdrawing money. *)
+
+library ISteal
+
+let my_condition =
+  fun (b : BNum) =>
+    let anchor = block 100 in
+    builtin blt anchor b 
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+contract ISteal ()
+
+field count : Uint128 = Uint128 0
+field folks : Map ByStr20 Uint128 = Emp ByStr20 Uint128
+
+transition put()
+  f <- folks;
+  b <- &BLOCKNUMBER;
+  c = my_condition b;
+  match c with
+  | True =>
+    accept;
+    (* Bug 1: may override the amount for _sender in "folks". *)
+    f1 = builtin put f _sender _amount;
+    folks := f1
+  | False =>
+    (* Bugrror 2: accept funds silently. *)
+    accept
+  end
+end
+
+transition get()
+  f <- folks;
+  x = builtin get f _sender;
+  match x with
+  | Some a =>
+    msg = {_tag : ""; _recipient : _sender; _amount : a};
+    msgs = one_msg msg;
+    (* Bug 3: forget to update "folks". *)
+    send msgs    
+  | None =>
+  end
+end
+    
