@@ -6,8 +6,8 @@ scilla_version 0
 library BinaryTree
 
 type Tree =
-| Leaf
-| Node of Tree Tree
+| Leaf of ()
+| Node of (Tree, Tree, Tree)
 
 
 (***************************************************)

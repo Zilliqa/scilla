@@ -318,10 +318,8 @@ contract:
       ctrans  = ts } }
 
 tconstr :
-| BAR; tn = CID; OF; t = nonempty_list(targ)
-  { { cname = asIdL tn (toLoc $startpos); ctype = Some t }}
-| BAR; tn = CID
-  { { cname = asIdL tn (toLoc $startpos); ctype = None }}
+| BAR; tn = CID; OF; LPAREN; t = separated_list(COMMA, targ); RPAREN;
+  { { cname = asIdL tn (toLoc $startpos); ctype = t }}
 
 libentry :
 | LET; ns = ID; EQ; e= exp { LibVar (asIdL ns (toLoc $startpos(ns)), e) }
