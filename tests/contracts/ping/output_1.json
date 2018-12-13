@@ -1,12 +1,12 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7579",
+  "gas_remaining": "7567",
   "_accepted": "false",
   "message": {
     "_tag": "Pong",
     "_amount": "0",
     "_recipient": "0x2992d4dfafd282e8a8b3c776eb9fc907d321e21a",
-    "params": [ { "vname": "code", "type": "Int32", "value": "1" } ]
+    "params": []
   },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
@@ -21,5 +21,5 @@
       }
     }
   ],
-  "events": []
+  "events": [ { "_eventname": "CallingPong", "params": [] } ]
 }
