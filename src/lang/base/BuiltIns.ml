@@ -396,7 +396,7 @@ module ScillaBuiltIns
     let to_int_arity = 1
     let to_int_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
     let to_int_elab w sc ts = match ts with
-      | [t] when is_int_type t || is_uint_type t ->
+      | [t] when is_int_type t || is_uint_type t || (t = string_typ) ->
           let%bind ityp = mk_int_type w in
           elab_tfun_with_args sc [t; ityp]
       | _ -> fail0 "Failed to elaborate"
@@ -405,6 +405,7 @@ module ScillaBuiltIns
       let%bind xs = match ls with
         | [IntLit x] -> pure @@ string_of_int_lit x
         | [UintLit x] -> pure @@ string_of_uint_lit x
+        | [StringLit x] -> pure x
         | _ -> builtin_fail (sprintf "Int.to_int%i" w) ls
       in
         let%bind ityp = mk_int_type w in
@@ -554,7 +555,7 @@ module ScillaBuiltIns
         (fun_typ (tvar "'A") (option_typ (tvar "'B")))
 
     let to_uint_elab w sc ts = match ts with
-      | [t] when is_uint_type t || is_int_type t ->
+      | [t] when is_uint_type t || is_int_type t || (t = string_typ) ->
           let%bind ityp = mk_uint_type w in
           elab_tfun_with_args sc [t; ityp]
       | _ -> fail0 "Failed to elaborate"
@@ -563,6 +564,7 @@ module ScillaBuiltIns
       let%bind xs = match ls with
         | [IntLit x] -> pure @@ string_of_int_lit x
         | [UintLit x] -> pure @@ string_of_uint_lit x
+        | [StringLit x] -> pure x
         | _ -> builtin_fail (sprintf "UInt.to_uint%i" w) ls
       in
         let%bind ityp = mk_uint_type w in

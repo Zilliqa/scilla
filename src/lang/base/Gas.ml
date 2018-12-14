@@ -193,6 +193,15 @@ module ScillaGas
     | [UintLit (Uint32L i)] -> pure @@  (Stdint.Uint32.to_int i) * base
     | _ -> fail0 @@ "Gas cost error for to_nat built-in"
 
+  let int_conversion_coster w _ args base =
+    match args with
+    | [IntLit _] | [UintLit _] | [StringLit _] ->
+      if w = 32 || w = 64 then pure base
+      else if w = 128 then pure (base * 2)
+      else if w = 256 then pure (base * 4)
+      else fail0 @@ "Gas cost error for integer conversion"
+    | _ -> fail0 @@ "Gas cost due to incorrect arguments for int conversion"
+
   let int_coster op args base =
     let base' =
        match op with
@@ -253,14 +262,14 @@ module ScillaGas
     ("mul", [tvar "'A"; tvar "'A"], int_coster, 4);
     ("div", [tvar "'A"; tvar "'A"], int_coster, 4);
     ("rem", [tvar "'A"; tvar "'A"], int_coster, 4);
-    ("to_int32", [tvar "'A"], int_coster, 4);
-    ("to_int64", [tvar "'A"], int_coster, 4);
-    ("to_int128", [tvar "'A"], int_coster, 4);
-    ("to_int256", [tvar "'A"], int_coster, 4);
-    ("to_uint32", [tvar "'A"], int_coster, 4);
-    ("to_uint64", [tvar "'A"], int_coster, 4);
-    ("to_uint128", [tvar "'A"], int_coster, 4);
-    ("to_uint256", [tvar "'A"], int_coster, 4);
+    ("to_int32", [tvar "'A"], int_conversion_coster 32, 4);
+    ("to_int64", [tvar "'A"], int_conversion_coster 64, 4);
+    ("to_int128", [tvar "'A"], int_conversion_coster 128, 4);
+    ("to_int256", [tvar "'A"], int_conversion_coster 256, 4);
+    ("to_uint32", [tvar "'A"], int_conversion_coster 32, 4);
+    ("to_uint64", [tvar "'A"], int_conversion_coster 64, 4);
+    ("to_uint128", [tvar "'A"], int_conversion_coster 128, 4);
+    ("to_uint256", [tvar "'A"], int_conversion_coster 256, 4);
     ("to_nat", [tvar "'A"], to_nat_coster, 1);
   ]
 
