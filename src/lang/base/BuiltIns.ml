@@ -765,6 +765,27 @@ module ScillaBuiltIns
          | None -> builtin_fail "Crypto.to_bystr: internal error" ls)
       | _ -> builtin_fail "Crypto.to_bystr" ls
 
+    (* ByStrX + ByStrY -> ByStr(X+Y)*)
+    let concat_type = tfun_typ "'A" @@ tfun_typ "'B" @@ tfun_typ "'C" @@
+                      fun_typ (tvar "'A") (fun_typ (tvar "'B") (tvar "'C"))
+    let concat_arity = 2
+    let concat_elab sc ts = match ts with
+      | [t1;t2] when is_bystrx_type t1 && is_bystrx_type t2 ->
+        let t1w = BatOption.get (bystrx_width t1) in
+        let t2w = BatOption.get (bystrx_width t2) in
+        elab_tfun_with_args sc (ts @ [(bystrx_typ (t1w+t2w))])
+      | _ -> fail0 "Failed to elaborate"
+    let concat ls _ = match ls with
+      | [ByStrX(w1, s1);ByStrX(w2, s2)] -> 
+        let res = build_prim_literal 
+          (bystrx_typ (w1+w2)) 
+          (s1 ^ (Core.String.sub s2 ~pos:2 ~len:((Core.String.length s2) - 2))) in
+        (match res with
+         | Some l' -> pure l'
+         | None -> builtin_fail "Crypto.concat: internal error" ls)
+      | _ -> builtin_fail "Crypto.bystr" ls
+
+
     let schnorr_gen_key_pair_type = fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
     let schnorr_gen_key_pair_arity = 0  
     let schnorr_gen_key_pair ls _ =
@@ -964,7 +985,7 @@ module ScillaBuiltIns
       ("blt", BNum.blt_arity, BNum.blt_type, elab_id , BNum.blt);
       ("badd", BNum.badd_arity, BNum.badd_type, BNum.badd_elab , BNum.badd);
 
-      (* Hashes *)
+      (* Crypto *)
       ("eq", Crypto.eq_arity, Crypto.eq_type, Crypto.eq_elab, Crypto.eq);
       ("dist", Crypto.dist_arity, Crypto.dist_type, elab_id , Crypto.dist);
       ("sha256hash", Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.sha256hash);
@@ -974,6 +995,7 @@ module ScillaBuiltIns
       ("schnorr_gen_key_pair", Crypto.schnorr_gen_key_pair_arity, Crypto.schnorr_gen_key_pair_type, elab_id, Crypto.schnorr_gen_key_pair);
       ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign);
       ("schnorr_verify", Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify);
+      ("concat", Crypto.concat_arity, Crypto.concat_type, Crypto.concat_elab, Crypto.concat);
 
       (* Maps *)
       ("contains", Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains);

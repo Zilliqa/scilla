@@ -179,6 +179,9 @@ module ScillaGas
         pure @@ (250 + (15 * x)) * base
     | "to_bystr", [a], _
       when is_bystrx_type a -> pure @@ get (bystrx_width a) * base
+    | "concat", [a1;a2], _
+      when is_bystrx_type a1 && is_bystrx_type a2 ->
+      pure @@ (get(bystrx_width a1) + get(bystrx_width a2)) * base
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
   let map_coster op args base =
@@ -249,6 +252,7 @@ module ScillaGas
     ("schnorr_gen_key_pair", [], crypto_coster, 1);
     ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], crypto_coster, 1);
     ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster, 1);
+    ("concat", [tvar "'A"; tvar "'A"], crypto_coster, 1);
 
     (* Maps *)
     ("contains", [tvar "'A"; tvar "'A"], map_coster, 1);

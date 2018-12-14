@@ -65,10 +65,12 @@ module Tests = TestUtil.DiffBasedTests(
     let custom_args = []
     let tests = [
       "branch-match.scilla";
+      "builtin-strings.scilla";
       "fun.scilla";
       "fun1.scilla";
       "addr.scilla";
       "app.scilla";
+      "hash1.scilla";
       "list1.scilla";
       "pm1.scilla";
       "pm2.scilla";
