@@ -319,7 +319,7 @@ contract:
 
 tconstr :
 | BAR; tn = CID; OF; LPAREN; t = separated_list(COMMA, targ); RPAREN;
-  { { cname = asIdL tn (toLoc $startpos); ctype = t }}
+  { { cname = asIdL tn (toLoc $startpos); c_arg_types = t }}
 
 libentry :
 | LET; ns = ID; EQ; e= exp { LibVar (asIdL ns (toLoc $startpos(ns)), e) }

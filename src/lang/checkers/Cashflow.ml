@@ -215,8 +215,8 @@ module ScillaCashflowChecker
         List.map cf_init_tag_transition ctrans }
     
   let cf_init_tag_type_def tdef =
-    let { cname ; ctype } = tdef in
-    { CFSyntax.cname = add_noinfo_to_ident cname ; CFSyntax.ctype = ctype }
+    let { cname ; c_arg_types } = tdef in
+    { CFSyntax.cname = add_noinfo_to_ident cname ; CFSyntax.c_arg_types = c_arg_types }
   
   let cf_init_tag_library lib =
     let { lname ; lentries } = lib in

@@ -210,9 +210,9 @@ module ScillaPatternchecker
             match entry with
             | LibTyp (tname, typs) ->
                 let lifted_typs = List.map typs
-                    ~f:(fun { cname; ctype } ->
+                    ~f:(fun { cname; c_arg_types } ->
                         { CheckedPatternSyntax.cname = cname;
-                          CheckedPatternSyntax.ctype = ctype }) in
+                          CheckedPatternSyntax.c_arg_types = c_arg_types }) in
                 pure @@ CheckedPatternSyntax.LibTyp (tname, lifted_typs)
             | LibVar (entryname, lexp) -> 
                 let msg = sprintf "Error during pattern-match checking of library %s:\n" (get_id entryname) in
