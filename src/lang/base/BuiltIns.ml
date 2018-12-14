@@ -141,6 +141,23 @@ module ScillaBuiltIns
       | [StringLit x; UintLit (Uint32L s); UintLit (Uint32L e)] ->
           pure @@ StringLit (Core.String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
       | _ -> builtin_fail "String.substr" ls
+
+    let to_string_arity = 1
+    let to_string_type = tfun_typ "'A" (fun_typ (tvar "'A") (string_typ))
+    let to_string_elab _ ts = match ts with
+      | [t] when is_int_type t || is_uint_type t ||
+                 is_bystrx_type t || t = bystr_typ ->
+          elab_tfun_with_args to_string_type ts
+      | _ -> fail0 "Failed to elaborate"
+
+    let to_string ls _ =
+      let%bind s = match ls with
+        | [IntLit x] -> pure @@ string_of_int_lit x
+        | [UintLit x] -> pure @@ string_of_uint_lit x
+        | [ByStr x] | [ByStrX (_, x)] -> pure x
+        | _ -> builtin_fail (sprintf "String.to_string") ls
+      in pure (BatOption.get (build_prim_literal string_typ s))
+
   end
 
   (*******************************************************)
@@ -940,6 +957,7 @@ module ScillaBuiltIns
       ("eq", String.eq_arity, String.eq_type, elab_id, String.eq);
       ("concat", String.concat_arity, String.concat_type, elab_id, String.concat);
       ("substr", String.substr_arity, String.substr_type, String.substr_elab, String.substr);
+      ("to_string", String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string);
 
       (* Block numbers *)
       ("eq", BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq);

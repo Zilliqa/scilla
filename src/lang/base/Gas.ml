@@ -145,6 +145,9 @@ module ScillaGas
         pure @@ (Int.min (String.length s)
                          (Stdint.Uint32.to_int i1+ Stdint.Uint32.to_int i2))
                  * base
+    | "to_string", [l] ->
+      let%bind c = literal_cost l in
+      pure @@ (c * base)
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
   let crypto_coster op args base =
@@ -228,6 +231,7 @@ module ScillaGas
     ("eq", [string_typ;string_typ], string_coster, 1);
     ("concat", [string_typ;string_typ], string_coster, 1);
     ("substr", [string_typ; tvar "'A"; tvar "'A"], string_coster, 1);
+    ("to_string", [tvar "'A"], string_coster, 1);
 
     (* Block numbers *)
     ("eq", [bnum_typ;bnum_typ], base_coster, 32);

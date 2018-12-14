@@ -28,4 +28,17 @@ let s3 = fconcat s2 b in
 let startp = Uint32 0 in
 let endp = Uint32 17 in
 let res = fsubstr s3 startp endp in
+
+let bs = 0x1212ab in
+let bsx = builtin to_bystr bs in
+let bss = builtin to_string bs in
+let bsxs = builtin to_string bsx in
+
+let i = Int32 1223 in
+let j = Uint128 98985656562323 in
+let k = Int64 -1232365654879 in
+let is = builtin to_string i in
+let js = builtin to_string j in
+let ks = builtin to_string k in
+
 res
