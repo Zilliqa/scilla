@@ -223,6 +223,15 @@ module ScillaBuiltIns
       (* Division_by_zero is taken care of by underlying implementation. *)
       rem a b
 
+    let safe_pow a b =
+      let rec pow acc b' =
+        if b' = Uint32.zero then
+          acc
+        else
+          pow (safe_mul a acc) (Uint32.sub b' Uint32.one)
+      in
+      pow one b
+
     let safe_lt a b =
       if (compare a b) < 0 then true else false
 
@@ -263,6 +272,15 @@ module ScillaBuiltIns
     let safe_rem a b =
       (* Division_by_zero is taken care of by underlying implementation. *)
       rem a b
+
+    let safe_pow a b =
+      let rec pow acc b' =
+        if b' = Uint32.zero then
+          acc
+        else
+          pow (safe_mul a acc) (Uint32.sub b' Uint32.one)
+      in
+      pow one b
 
     let safe_lt a b =
       if (compare a b) < 0 then true else false
@@ -387,6 +405,28 @@ module ScillaBuiltIns
         in pure @@ IntLit l
       with | Division_by_zero ->
                builtin_fail "Int.rem: Division by zero error occurred" ls
+
+    let pow_arity = 2
+    let pow_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (uint32_typ) (tvar "'A"))
+    let pow_elab t ts = match ts with
+    | [i1; i2] when is_int_type i1 && (i2 = uint32_typ) ->
+       elab_tfun_with_args t [i1]
+    | _ -> fail0 "Failed to elaborate"
+    let pow ls _ = 
+    try 
+      let%bind l = (match ls with
+        | [IntLit (Int32L x); UintLit (Uint32L y)] ->
+            pure @@ Int32L(Int32Wrapper.safe_pow x y)
+        | [IntLit (Int64L x); UintLit (Uint32L y)] ->
+            pure @@ Int64L(Int64Wrapper.safe_pow x y)
+        | [IntLit (Int128L x); UintLit (Uint32L y)] ->
+            pure @@ Int128L(Int128Wrapper.safe_pow x y)
+        | [IntLit (Int256L x); UintLit (Uint32L y)] ->
+            pure @@ Int256L(Int256Wrapper.safe_pow x y)
+        | _ -> builtin_fail "Int.pow: unsupported types" ls)
+      in pure @@ IntLit l
+    with | IntOverflow | IntUnderflow ->
+      builtin_fail "Int.pow: an overflow/underflow occurred" ls
 
     let lt ls _ =
       try 
@@ -544,6 +584,28 @@ module ScillaBuiltIns
         in pure @@ UintLit l
       with | Division_by_zero ->
         builtin_fail "Uint.rem: Division by zero error occurred" ls
+
+    let pow_arity = 2
+    let pow_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (uint32_typ) (tvar "'A"))
+    let pow_elab t ts = match ts with
+    | [i1; i2] when is_uint_type i1 && (i2 = uint32_typ) ->
+       elab_tfun_with_args t [i1]
+    | _ -> fail0 "Failed to elaborate"
+    let pow ls _ = 
+      try 
+        let%bind l = (match ls with
+          | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
+              pure @@ Uint32L(Uint32Wrapper.safe_pow x y)
+          | [UintLit (Uint64L x); UintLit (Uint32L y)] ->
+              pure @@ Uint64L(Uint64Wrapper.safe_pow x y)
+          | [UintLit (Uint128L x); UintLit (Uint32L y)] ->
+              pure @@ Uint128L(Uint128Wrapper.safe_pow x y)
+          | [UintLit (Uint256L x); UintLit (Uint32L y)] ->
+              pure @@ Uint256L(Uint256Wrapper.safe_pow x y)
+          | _ -> builtin_fail "Int.pow: unsupported types" ls)
+        in pure @@ UintLit l
+      with | IntOverflow | IntUnderflow ->
+        builtin_fail "Int.pow: an overflow/underflow occurred" ls
 
     let lt ls _ =
       try 
@@ -1013,6 +1075,7 @@ module ScillaBuiltIns
       ("mul", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.mul);
       ("div", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.div);
       ("rem", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.rem);
+      ("pow", Int.pow_arity, Int.pow_type, Int.pow_elab, Int.pow);
       ("to_int32", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 32, Int.to_int32);
       ("to_int64", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 64, Int.to_int64);
       ("to_int128", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 128, Int.to_int128);
@@ -1026,6 +1089,7 @@ module ScillaBuiltIns
       ("mul", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.mul);
       ("div", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.div);
       ("rem", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.rem);
+      ("pow", Uint.pow_arity, Uint.pow_type, Uint.pow_elab, Uint.pow);
       ("to_uint32", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 32, Uint.to_uint32);
       ("to_uint64", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 64, Uint.to_uint64);
       ("to_uint128", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 128, Uint.to_uint128);

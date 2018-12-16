@@ -209,15 +209,19 @@ module ScillaGas
     | _ -> fail0 @@ "Gas cost due to incorrect arguments for int conversion"
 
   let int_coster op args base =
-    let base' =
+    let%bind base' =
        match op with
-         | "mul" | "div" | "rem" -> base * 5
-         | _ -> base
+        | "mul" | "div" | "rem" -> pure (base * 5)
+        | "pow" ->
+          (match args with 
+          | [_; UintLit(Uint32L p)] -> pure (base * 5 * (Stdint.Uint32.to_int p))
+          | _ -> fail0 @@ "Gas cost error for built-in pow")
+        | _ -> pure base
     in
     let%bind w = match args with
-      | [IntLit i] | [IntLit i; IntLit _] ->
+      | [IntLit i; _] ->
         pure @@ int_lit_width i
-      | [UintLit i] | [UintLit i; UintLit _] ->
+      | [UintLit i; _] ->
         pure @@ uint_lit_width i
       | _ -> fail0 @@ "Gas cost error for integer built-in"
     in
@@ -270,6 +274,7 @@ module ScillaGas
     ("mul", [tvar "'A"; tvar "'A"], int_coster, 4);
     ("div", [tvar "'A"; tvar "'A"], int_coster, 4);
     ("rem", [tvar "'A"; tvar "'A"], int_coster, 4);
+    ("pow", [tvar "'A"; uint32_typ], int_coster, 4);
     ("to_int32", [tvar "'A"], int_conversion_coster 32, 4);
     ("to_int64", [tvar "'A"], int_conversion_coster 64, 4);
     ("to_int128", [tvar "'A"], int_conversion_coster 128, 4);
