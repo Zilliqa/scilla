@@ -68,6 +68,6 @@ coveralls:
 	mkdir -p _build/coverage
 	BISECT_ENABLE=YES make
 	BISECT_FILE=_build/coverage/bisect ./bin/testsuite
-	bisect-ppx-report -ignore-missing-files -I _build/ -coveralls coverage.json -service-name travis-ci -service-job-id $TRAVIS_JOB_ID _build/coverage/bisect*.out
+	bisect-ppx-report -ignore-missing-files -I _build/ -coveralls coverage.json -service-name travis-ci -service-job-id ${TRAVIS_JOB_ID} _build/coverage/bisect*.out
 	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs
 	make clean
