@@ -60,7 +60,7 @@ coverage :
 	-mkdir /tmp/scilla
 	BISECT_ENABLE=YES make
 	BISECT_FILE=/tmp/scilla/bisect ./bin/testsuite
-	bisect-ppx-report -I _build/default/ -html coverage/ /tmp/scilla/bisect*.out
+	bisect-ppx-report -I _build/default/ -html _coverage/ /tmp/scilla/bisect*.out
 	-rm -r /tmp/scilla
 	make clean
 
