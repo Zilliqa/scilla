@@ -24,6 +24,7 @@ open OUnit2
  * in both Scilla source parser and the JSON parser against
  * building bad literals. *)
 open Syntax
+open PlainEvalLit        
 open ParserUtil
 open PrimTypes
 open PrettyPrinters

@@ -19,6 +19,7 @@
 open Core
 open Datatypes
 open Syntax
+open PlainEvalLit
 open EvalUtil
 open MonadUtil
 open Result.Let_syntax

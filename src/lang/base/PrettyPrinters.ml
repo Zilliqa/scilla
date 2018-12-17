@@ -22,6 +22,7 @@ open Syntax
 open Yojson
 open PrimTypes
 open ErrorUtils
+open PlainEvalLit
 
 (****************************************************************)
 (*                    Exception wrappers                        *)

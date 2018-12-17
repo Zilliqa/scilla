@@ -19,6 +19,7 @@
 open Syntax
 open ErrorUtils
 open Core
+open PlainEvalLit
 
 module ScillaBuiltIns
     (SR : Rep)

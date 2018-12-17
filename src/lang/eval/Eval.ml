@@ -17,6 +17,8 @@
 *)
 
 open Syntax
+(* TODO: generalise me for debugging! *)
+open PlainEvalLit
 open Core
 open ErrorUtils
 open EvalUtil

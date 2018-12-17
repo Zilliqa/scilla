@@ -17,6 +17,7 @@
 *)
 
 open Syntax
+open PlainEvalLit
 open Core
 open ErrorUtils
 open MonadUtil

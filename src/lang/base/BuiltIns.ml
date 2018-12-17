@@ -25,6 +25,7 @@ open Big_int
 open Stdint
 open TypeUtil
 open Integer256
+open PlainEvalLit
 
 exception IntOverflow
 exception IntUnderflow

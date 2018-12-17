@@ -127,12 +127,26 @@ module type EvalRes = sig
   type 't res
 end
 
-type 't eval_res =
-  ('t, scilla_error list, 
-   int -> (('t * (string * 't) list) * int, scilla_error list * int) result) 
-    CPSMonad.t
-    
-type literal =
+(* module type LiteralsSig = functor
+ *   (ERes : EvalRes) -> sig
+ *   type literal =
+ *   | StringLit of string
+ *   | IntLit of int_lit
+ *   | UintLit of uint_lit
+ *   | BNum of string
+ *   | ByStrX of int * string
+ *   | ByStr of string
+ *   | Msg of (string * literal) list
+ *   | Map of mtype * (literal, literal) Hashtbl.t
+ *   | ADTValue of string * typ list * literal list
+ *   | Clo of (literal -> literal ERes.res)
+ *   | TAbs of (typ -> literal ERes.res)
+ * [@@deriving sexp]
+ * end *)
+
+module Literals (ERes : EvalRes) = struct
+
+  type literal =
   | StringLit of string
   (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
   | IntLit of int_lit
@@ -149,10 +163,19 @@ type literal =
   (* A constructor in HNF *)      
   | ADTValue of string * typ list * literal list
   (* An embedded closure *)
-  | Clo of (literal -> literal eval_res)
+  | Clo of (literal -> literal ERes.res)
   (* A type abstraction *)
-  | TAbs of (typ -> literal eval_res)
+  | TAbs of (typ -> literal ERes.res)
 [@@deriving sexp]
+end
+
+module PlainEvalRes = struct
+  type 't res =
+    ('t, scilla_error list, 
+     int -> (('t * (string * 't) list) * int, scilla_error list * int) result) 
+      CPSMonad.t    
+end
+module PlainEvalLit = Literals (PlainEvalRes)
 
 
 (*******************************************************)
@@ -182,6 +205,9 @@ end
 (*******************************************************)
 
 module ScillaSyntax (SR : Rep) (ER : Rep) = struct
+
+  module Lit = PlainEvalLit
+  open Lit
 
 (*******************************************************)
 (*                   Expressions                       *)

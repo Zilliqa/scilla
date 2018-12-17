@@ -55,5 +55,7 @@ module DataTypeDictionary : sig
 
 end
 
+open PlainEvalLit
+
 val scilla_list_to_ocaml : literal -> (literal list, scilla_error list) result
 val scilla_list_to_ocaml_rev : literal -> (literal list, scilla_error list) result

@@ -22,6 +22,8 @@ open Syntax
 open Stdint
 open Integer256
 
+open PlainEvalLit
+
 let int32_str = "Int32"
 let int64_str = "Int64"
 let int128_str = "Int128"
@@ -212,3 +214,4 @@ let build_prim_literal t v =
   | x when is_bystrx_type x -> build_bystrx t v
   | x when is_int_type x || is_uint_type x -> build_int t v
   | _ -> None
+

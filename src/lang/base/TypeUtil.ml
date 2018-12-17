@@ -24,6 +24,7 @@ open MonadUtil
 open Result.Let_syntax
 open Datatypes
 open PrettyPrinters
+open PlainEvalLit
 
 (****************************************************************)
 (*                Inferred types and qualifiers                 *)

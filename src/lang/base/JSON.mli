@@ -28,16 +28,16 @@ module ContractState : sig
    **  Returns a list of (vname:string,value:literal) items
    **  from the json in the input filename. Invalid inputs in the json are ignored 
    **)
-  val get_json_data : string -> (string * Syntax.literal) list
+  val get_json_data : string -> (string * Syntax.PlainEvalLit.literal) list
   (** 
    ** Prints a list of state variables (string, literal)
    ** as a json and returns it as a string.
    ** pp enables pretty printing.
    **)
-  val state_to_string : ?pp:bool -> ((string * Syntax.literal) list) -> string
+  val state_to_string : ?pp:bool -> ((string * Syntax.PlainEvalLit.literal) list) -> string
 
   (* Get a json object from given states *)
-  val state_to_json : ((string * Syntax.literal) list) -> Yojson.json
+  val state_to_json : ((string * Syntax.PlainEvalLit.literal) list) -> Yojson.json
 
 end
 
@@ -68,7 +68,7 @@ module Message : sig
 (** Parses and returns a list of (pname,pval), with
   "_tag", "_sender" and "_amount" at the beginning of this list.
   Invalid inputs in the json are ignored **)
-  val get_json_data : string -> (string * Syntax.literal) list
+  val get_json_data : string -> (string * Syntax.PlainEvalLit.literal) list
 
   (** 
    ** Prints a message (string, literal) as a json to the 
@@ -78,9 +78,9 @@ module Message : sig
    ** with the actual params themselves in an array json with
    ** name "params" (as described in comment in .mli file).
    **)
-  val message_to_jstring : ?pp:bool -> ((string * Syntax.literal) list) -> string
+  val message_to_jstring : ?pp:bool -> ((string * Syntax.PlainEvalLit.literal) list) -> string
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
-  val message_to_json : ((string * Syntax.literal) list) -> Yojson.json
+  val message_to_json : ((string * Syntax.PlainEvalLit.literal) list) -> Yojson.json
 
 end
 
@@ -90,7 +90,7 @@ module BlockChainState : sig
    **  Returns a list of (vname:string,value:literal) items
    **  from the json in the input filename.
    **)
-  val get_json_data : string -> (string * Syntax.literal) list
+  val get_json_data : string -> (string * Syntax.PlainEvalLit.literal) list
 
 end
 
@@ -140,9 +140,9 @@ module Event : sig
    ** Prints an Event "(string, literal) list" as a json to the 
    ** and returns the string. pp enables pretty printing.
    **)
-  val event_to_jstring : ?pp:bool -> (string * Syntax.literal) list -> string
+  val event_to_jstring : ?pp:bool -> (string * Syntax.PlainEvalLit.literal) list -> string
   (* Same as Event_to_jstring, but instead gives out raw json, not it's string *)
-  val event_to_json : (string * Syntax.literal) list -> Yojson.json
+  val event_to_json : (string * Syntax.PlainEvalLit.literal) list -> Yojson.json
 
 end
 

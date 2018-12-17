@@ -18,6 +18,7 @@
 
 
 open Syntax
+open PlainEvalLit
 
 (****************************************************************)
 (*                     PrimType utilities                        *)

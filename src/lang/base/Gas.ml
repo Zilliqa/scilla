@@ -25,6 +25,7 @@ open TypeUtil
 open PrimTypes
 open Schnorr
 open PrettyPrinters
+open PlainEvalLit
 
 (* Arbitrarily picked, the largest prime less than 100. *)
 let version_mismatch_penalty = 97

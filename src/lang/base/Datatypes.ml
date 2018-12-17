@@ -19,6 +19,7 @@
 open Syntax
 open Core
 open MonadUtil
+open PlainEvalLit
 
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)

@@ -18,6 +18,7 @@
 
 
 open Syntax
+open PlainEvalLit
 open ErrorUtils
 open ParserUtil
 open Core
