@@ -19,7 +19,8 @@ branches:
   only: 
     - master
 before_install:
-- sudo add-apt-repository -u -y ppa:avsm/ppa
+- sudo add-apt-repository -y ppa:avsm/ppa
+- sudo apt-get update
 - sudo apt-get install opam
 - opam init -y
 - opam switch -y 4.06.1
