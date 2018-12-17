@@ -118,11 +118,20 @@ let uint_lit_of_sexp _ = raise (SyntaxError "uint_lit_of_sexp not implemented")
    computations in CPS parametric in their result type.
 
    Therefore, for now we have a compromise of fixing the result of
-   evaluating expressions to be as below. In order to restore the
-   genericity enabled by CPS, we provide an "impedance matcher",
-   described in [Continuation for Expression Evaluation]. 
+   evaluating expressions to be as prescribed by `eval_res`. In order
+   to restore the genericity enabled by CPS, we provide an "impedance
+   matcher", described in [Continuation for Expression Evaluation].
 
 *)
+module type EvalRes = sig
+  type 't res
+end
+
+type 't eval_res =
+  ('t, scilla_error list, 
+   int -> (('t * (string * 't) list) * int, scilla_error list * int) result) 
+    CPSMonad.t
+    
 type literal =
   | StringLit of string
   (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
@@ -140,15 +149,9 @@ type literal =
   (* A constructor in HNF *)      
   | ADTValue of string * typ list * literal list
   (* An embedded closure *)
-  | Clo of (literal -> 
-            (literal, scilla_error list, 
-             int -> ((literal * (string * literal) list) * int, scilla_error list * int) result) 
-              CPSMonad.t)
+  | Clo of (literal -> literal eval_res)
   (* A type abstraction *)
-  | TAbs of (typ -> 
-             (literal, scilla_error list, 
-              int -> ((literal * (string * literal) list) * int, scilla_error list * int) result) 
-               CPSMonad.t)
+  | TAbs of (typ -> literal eval_res)
 [@@deriving sexp]
 
 
