@@ -11,6 +11,7 @@ addons:
     - libssl-dev
     - libboost-system-dev
     - aspcud
+    - bubblewrap
 cache:
   directories:
   - $HOME/.opam
