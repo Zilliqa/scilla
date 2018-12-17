@@ -14,6 +14,7 @@ than the one specified below.
 Required ubuntu packages can be installed as below:
 
 ```
+sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
 sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev
 ```
@@ -24,7 +25,7 @@ opam packages using the commands listed below:
 ```
 opam init -y
 opam switch -y 4.06.1
-opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign
+opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx
 ```
 
 The above three commands can, alternatively, be run using the make target `opamdep`
