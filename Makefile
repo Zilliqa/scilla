@@ -50,4 +50,24 @@ zilliqa-docker:
 opamdep:
 	opam init -y
 	opam switch -y 4.06.1
-	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign
+	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx
+
+
+.PHONY : coverage
+coverage :
+	make clean
+	mkdir -p _build/coverage
+	BISECT_ENABLE=YES make
+	BISECT_FILE=_build/coverage/bisect ./bin/testsuite
+	bisect-ppx-report -I _build/default/ -html _coverage/ _build/coverage/bisect*.out
+	make clean
+
+.PHONY : coveralls
+coveralls:
+	make clean
+	mkdir -p _build/coverage
+	BISECT_ENABLE=YES make
+	BISECT_FILE=_build/coverage/bisect ./bin/testsuite
+	bisect-ppx-report -ignore-missing-files -I _build/ -coveralls coverage.json -service-name travis-ci -service-job-id ${TRAVIS_JOB_ID} _build/coverage/bisect*.out
+	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs
+	make clean
