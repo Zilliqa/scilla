@@ -17,5 +17,6 @@
   (preprocess (pps ppx_sexp_conv
                     ppx_let 
                     ppx_deriving.show
+                    bisect_ppx -exclude-file=../../bisect.exclude
                     ppx_deriving_yojson))
   (synopsis "Scilla workbench implementation."))
