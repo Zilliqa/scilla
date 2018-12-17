@@ -244,6 +244,7 @@ module ScillaGas
     ("eq", [bnum_typ;bnum_typ], base_coster, 32);
     ("blt", [bnum_typ;bnum_typ], base_coster, 32);
     ("badd", [bnum_typ;tvar "'A"], base_coster, 32);
+    ("bsub", [bnum_typ;bnum_typ], base_coster, 32);
 
     (* Crypto *)
     ("eq", [tvar "'A"; tvar "'A"], crypto_coster, 1);

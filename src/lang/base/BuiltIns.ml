@@ -724,6 +724,25 @@ module ScillaBuiltIns
               "Cannot add a negative value (%s) to a block." (string_of_uint_lit y)
       | _ -> builtin_fail "BNum.badd" ls
 
+    let bsub_arity = 2    
+    let bsub_type =
+      tfun_typ "'A" @@ tfun_typ "'B" @@
+      (fun_typ (tvar "'A") @@ fun_typ (tvar "'B") int256_typ)
+    (* Elaborator to run with arbitrary uints *)
+    let bsub_elab sc ts = match ts with
+      | [b1; b2] when b1 = bnum_typ && b2 = bnum_typ ->
+          elab_tfun_with_args sc ts
+      | _ -> fail0 "Failed to elaborate"
+    let bsub ls _ = match ls with
+      | [BNum x; BNum y] ->
+          let i1 = big_int_of_string x in
+          let i2 = big_int_of_string y in
+          let d = Big_int.sub_big_int i1 i2 in
+          (match build_prim_literal int256_typ (Big_int.string_of_big_int d) with
+          | Some l -> pure l
+          | None -> fail0 @@ sprintf "Unable to express result of BNum subtraction in Int256")
+      | _ -> builtin_fail "BNum.bsub" ls
+
   end
 
   (***********************************************************)
@@ -1046,6 +1065,7 @@ module ScillaBuiltIns
       ("eq", BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq);
       ("blt", BNum.blt_arity, BNum.blt_type, elab_id , BNum.blt);
       ("badd", BNum.badd_arity, BNum.badd_type, BNum.badd_elab , BNum.badd);
+      ("bsub", BNum.bsub_arity, BNum.bsub_type, BNum.bsub_elab , BNum.bsub);
 
       (* Crypto *)
       ("eq", Crypto.eq_arity, Crypto.eq_type, Crypto.eq_elab, Crypto.eq);
