@@ -232,7 +232,9 @@ let init_gas_kont r gas' = (match r with
    the result is passed further to the callee's continuation `k`.
 
 *)
-let exp_eval_wrapper_no_cps expr env k gas = 
+
+(* Make me a part of the EvalRes module *)
+let exp_eval_wrapper_reify expr env k gas = 
   let eval_res = exp_eval_wrapper expr env init_gas_kont gas in
   let (res, remaining_gas) = (match eval_res with 
     | Ok (z, g) -> (Ok z, g)
@@ -258,7 +260,7 @@ let rec stmt_eval conf stmts =
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | Bind (x, e) ->
-          let%bind (lval, _) = exp_eval_wrapper_no_cps e conf.env in
+          let%bind (lval, _) = exp_eval_wrapper_reify e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
           let%bind _ = stmt_gas_wrap G_Bind sloc in
           stmt_eval conf' sts
@@ -356,7 +358,7 @@ let combine_libs clibs elibs =
 (* Initializing libraries of a contract *)
 let init_libraries clibs elibs =
   let init_lib_entry env {lname = id; lexp = e } = (
-    let%bind (v, _) = exp_eval_wrapper_no_cps e env in
+    let%bind (v, _) = exp_eval_wrapper_reify e env in
     let env' = Env.bind env (get_id id) v in
     pure env') in
 
@@ -373,7 +375,7 @@ let init_libraries clibs elibs =
 let init_fields env fs =
   (* Initialize a field in a constant environment *)
   let init_field fname _t fexp =
-    let%bind (v, _) = exp_eval_wrapper_no_cps fexp env in
+    let%bind (v, _) = exp_eval_wrapper_reify fexp env in
     match v with
     | l when is_pure_literal l -> pure (fname, l)
     | _ -> fail0 @@ sprintf "Closure cannot be stored in a field %s." fname
