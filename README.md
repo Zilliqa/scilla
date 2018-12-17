@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/Zilliqa/scilla.svg?token=7qzjATfZuxTQvRjMHPVQ&branch=master)](https://travis-ci.com/Zilliqa/scilla)
 [![License](https://img.shields.io/cran/l/devtools.svg)](https://github.com/Zilliqa/scilla/blob/master/LICENSE)
 [![Gitter chat](http://img.shields.io/badge/chat-on%20gitter-077a8f.svg)](https://gitter.im/Zilliqa/SmartContract)
-[![Coverage Status](https://coveralls.io/repos/github/Zilliqa/scilla/badge.svg)](https://coveralls.io/github/Zilliqa/scilla)
+[![Coverage Status](https://coveralls.io/repos/github/Zilliqa/scilla/badge.svg?branch=master)](https://coveralls.io/github/Zilliqa/scilla?branch=master)
 
 <p align="center">
   <a href="https://scilla-lang.org/"><img src="https://github.com/Zilliqa/scilla/blob/master/imgs/scilla-logo-color.jpg" width="200" height="200"></a>
