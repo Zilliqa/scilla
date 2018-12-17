@@ -19,7 +19,8 @@ branches:
   only: 
     - master
 before_install:
-- sh <(curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
+- sudo add-apt-repository -u -y ppa:avsm/ppa
+- sudo apt-get install opam
 - opam init -y
 - opam switch -y 4.06.1
 - opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx
