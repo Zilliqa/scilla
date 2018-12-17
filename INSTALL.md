@@ -14,6 +14,7 @@ than the one specified below.
 Required ubuntu packages can be installed as below:
 
 ```
+sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
 sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev
 ```

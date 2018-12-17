@@ -64,3 +64,14 @@ coverage :
 	-rm -r /tmp/scilla
 	make clean
 
+.PHONY : coveralls
+coveralls:
+	make clean
+	-rm -r /tmp/scilla
+	-mkdir /tmp/scilla
+	BISECT_ENABLE=YES make
+	BISECT_FILE=/tmp/scilla/bisect ./bin/testsuite
+	bisect-ppx-report -ignore-missing-files -I _build/ -coveralls coverage.json -service-name travis-ci -service-job-id $TRAVIS_JOB_ID /tmp/scilla/bisect*.out
+	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs
+	-rm -r /tmp/scilla
+	make clean

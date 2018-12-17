@@ -19,7 +19,7 @@ branches:
   only: 
     - master
 before_install:
-- wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sudo sh -s /usr/local/bin
+- sh <(curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
 - opam init -y
 - opam switch -y 4.06.1
 - opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx
@@ -27,3 +27,4 @@ before_install:
 - rm $HOME/.opam/log/*
 script:
 - make test
+- make coveralls
