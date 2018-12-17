@@ -1,0 +1,690 @@
+<html>
+  <head>
+    <title>Coverage report</title>
+    <link rel="stylesheet" href="../../../coverage.css" />
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="../../../index.html">
+          <span class="dirname">src/lang/base/</span>PrimTypes.ml
+        </a>
+      </h1>
+      <h2>91.76%</h2>
+    </div>
+    <div id="navbar">
+      <span class="unvisited" style="top:29.91%"></span>
+      <span class="unvisited" style="top:53.74%"></span>
+      <span class="unvisited" style="top:54.67%"></span>
+      <span class="unvisited" style="top:63.08%"></span>
+      <span class="unvisited" style="top:76.64%"></span>
+      <span class="unvisited" style="top:77.10%"></span>
+      <span class="some-visited" style="top:79.91%"></span>
+      <span class="some-visited" style="top:83.18%"></span>
+      <span class="unvisited" style="top:83.64%"></span>
+      <span class="some-visited" style="top:88.32%"></span>
+      <span class="unvisited" style="top:88.79%"></span>
+      <span class="some-visited" style="top:92.06%"></span>
+      <span class="unvisited" style="top:92.52%"></span>
+      <span class="some-visited" style="top:95.79%"></span>
+      <span class="unvisited" style="top:100.00%"></span>
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span > </span>
+<a id="L6"></a><span > </span>
+<a id="L7"></a><span > </span>
+<a id="L8"></a><span > </span>
+<a id="L9"></a><span > </span>
+<a id="L10"></a><span > </span>
+<a id="L11"></a><span > </span>
+<a id="L12"></a><span > </span>
+<a id="L13"></a><span > </span>
+<a id="L14"></a><span > </span>
+<a id="L15"></a><span > </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span > </span>
+<a id="L18"></a><span > </span>
+<a id="L19"></a><span > </span>
+<a id="L20"></a><span > </span>
+<a id="L21"></a><span > </span>
+<a id="L22"></a><span > </span>
+<a id="L23"></a><span > </span>
+<a id="L24"></a><span > </span>
+<a id="L25"></a><span class="visited"> </span>
+<a id="L26"></a><span class="visited"> </span>
+<a id="L27"></a><span class="visited"> </span>
+<a id="L28"></a><span class="visited"> </span>
+<a id="L29"></a><span class="visited"> </span>
+<a id="L30"></a><span class="visited"> </span>
+<a id="L31"></a><span class="visited"> </span>
+<a id="L32"></a><span class="visited"> </span>
+<a id="L33"></a><span class="visited"> </span>
+<a id="L34"></a><span class="visited"> </span>
+<a id="L35"></a><span class="visited"> </span>
+<a id="L36"></a><span class="visited"> </span>
+<a id="L37"></a><span > </span>
+<a id="L38"></a><span class="visited"> </span>
+<a id="L39"></a><span > </span>
+<a id="L40"></a><span class="visited"> </span>
+<a id="L41"></a><span class="visited"> </span>
+<a id="L42"></a><span class="visited"> </span>
+<a id="L43"></a><span class="visited"> </span>
+<a id="L44"></a><span class="visited"> </span>
+<a id="L45"></a><span class="visited"> </span>
+<a id="L46"></a><span class="visited"> </span>
+<a id="L47"></a><span class="visited"> </span>
+<a id="L48"></a><span class="visited"> </span>
+<a id="L49"></a><span class="visited"> </span>
+<a id="L50"></a><span class="visited"> </span>
+<a id="L51"></a><span class="visited"> </span>
+<a id="L52"></a><span class="visited"> </span>
+<a id="L53"></a><span > </span>
+<a id="L54"></a><span > </span>
+<a id="L55"></a><span > </span>
+<a id="L56"></a><span class="visited"> </span>
+<a id="L57"></a><span class="visited"> </span>
+<a id="L58"></a><span class="visited"> </span>
+<a id="L59"></a><span class="visited"> </span>
+<a id="L60"></a><span class="visited"> </span>
+<a id="L61"></a><span class="visited"> </span>
+<a id="L62"></a><span > </span>
+<a id="L63"></a><span class="visited"> </span>
+<a id="L64"></a><span class="unvisited"> </span>
+<a id="L65"></a><span > </span>
+<a id="L66"></a><span > </span>
+<a id="L67"></a><span class="visited"> </span>
+<a id="L68"></a><span > </span>
+<a id="L69"></a><span > </span>
+<a id="L70"></a><span > </span>
+<a id="L71"></a><span > </span>
+<a id="L72"></a><span class="visited"> </span>
+<a id="L73"></a><span class="visited"> </span>
+<a id="L74"></a><span > </span>
+<a id="L75"></a><span class="visited"> </span>
+<a id="L76"></a><span class="visited"> </span>
+<a id="L77"></a><span class="visited"> </span>
+<a id="L78"></a><span class="visited"> </span>
+<a id="L79"></a><span > </span>
+<a id="L80"></a><span class="visited"> </span>
+<a id="L81"></a><span class="visited"> </span>
+<a id="L82"></a><span class="visited"> </span>
+<a id="L83"></a><span class="visited"> </span>
+<a id="L84"></a><span class="visited"> </span>
+<a id="L85"></a><span class="visited"> </span>
+<a id="L86"></a><span > </span>
+<a id="L87"></a><span class="visited"> </span>
+<a id="L88"></a><span class="visited"> </span>
+<a id="L89"></a><span class="visited"> </span>
+<a id="L90"></a><span class="visited"> </span>
+<a id="L91"></a><span class="visited"> </span>
+<a id="L92"></a><span class="visited"> </span>
+<a id="L93"></a><span > </span>
+<a id="L94"></a><span > </span>
+<a id="L95"></a><span class="visited"> </span>
+<a id="L96"></a><span class="visited"> </span>
+<a id="L97"></a><span class="visited"> </span>
+<a id="L98"></a><span > </span>
+<a id="L99"></a><span > </span>
+<a id="L100"></a><span > </span>
+<a id="L101"></a><span > </span>
+<a id="L102"></a><span > </span>
+<a id="L103"></a><span > </span>
+<a id="L104"></a><span > </span>
+<a id="L105"></a><span class="visited"> </span>
+<a id="L106"></a><span > </span>
+<a id="L107"></a><span class="visited"> </span>
+<a id="L108"></a><span class="visited"> </span>
+<a id="L109"></a><span class="visited"> </span>
+<a id="L110"></a><span class="visited"> </span>
+<a id="L111"></a><span class="visited"> </span>
+<a id="L112"></a><span class="visited"> </span>
+<a id="L113"></a><span class="visited"> </span>
+<a id="L114"></a><span class="visited"> </span>
+<a id="L115"></a><span class="unvisited"> </span>
+<a id="L116"></a><span > </span>
+<a id="L117"></a><span class="unvisited"> </span>
+<a id="L118"></a><span > </span>
+<a id="L119"></a><span > </span>
+<a id="L120"></a><span > </span>
+<a id="L121"></a><span > </span>
+<a id="L122"></a><span class="visited"> </span>
+<a id="L123"></a><span class="visited"> </span>
+<a id="L124"></a><span > </span>
+<a id="L125"></a><span class="visited"> </span>
+<a id="L126"></a><span > </span>
+<a id="L127"></a><span class="visited"> </span>
+<a id="L128"></a><span class="visited"> </span>
+<a id="L129"></a><span class="visited"> </span>
+<a id="L130"></a><span class="visited"> </span>
+<a id="L131"></a><span class="visited"> </span>
+<a id="L132"></a><span class="visited"> </span>
+<a id="L133"></a><span class="visited"> </span>
+<a id="L134"></a><span class="visited"> </span>
+<a id="L135"></a><span class="unvisited"> </span>
+<a id="L136"></a><span class="visited"> </span>
+<a id="L137"></a><span > </span>
+<a id="L138"></a><span > </span>
+<a id="L139"></a><span class="visited"> </span>
+<a id="L140"></a><span > </span>
+<a id="L141"></a><span class="visited"> </span>
+<a id="L142"></a><span class="visited"> </span>
+<a id="L143"></a><span class="visited"> </span>
+<a id="L144"></a><span class="visited"> </span>
+<a id="L145"></a><span class="visited"> </span>
+<a id="L146"></a><span > </span>
+<a id="L147"></a><span > </span>
+<a id="L148"></a><span class="visited"> </span>
+<a id="L149"></a><span > </span>
+<a id="L150"></a><span class="visited"> </span>
+<a id="L151"></a><span class="visited"> </span>
+<a id="L152"></a><span class="visited"> </span>
+<a id="L153"></a><span class="visited"> </span>
+<a id="L154"></a><span class="visited"> </span>
+<a id="L155"></a><span > </span>
+<a id="L156"></a><span class="visited"> </span>
+<a id="L157"></a><span class="visited"> </span>
+<a id="L158"></a><span > </span>
+<a id="L159"></a><span class="visited"> </span>
+<a id="L160"></a><span class="visited"> </span>
+<a id="L161"></a><span > </span>
+<a id="L162"></a><span class="visited"> </span>
+<a id="L163"></a><span > </span>
+<a id="L164"></a><span class="unvisited"> </span>
+<a id="L165"></a><span class="unvisited"> </span>
+<a id="L166"></a><span > </span>
+<a id="L167"></a><span > </span>
+<a id="L168"></a><span > </span>
+<a id="L169"></a><span > </span>
+<a id="L170"></a><span class="visited"> </span>
+<a id="L171"></a><span class="some-visited"> </span>
+<a id="L172"></a><span > </span>
+<a id="L173"></a><span class="visited"> </span>
+<a id="L174"></a><span class="visited"> </span>
+<a id="L175"></a><span > </span>
+<a id="L176"></a><span class="visited"> </span>
+<a id="L177"></a><span class="visited"> </span>
+<a id="L178"></a><span class="some-visited"> </span>
+<a id="L179"></a><span class="unvisited"> </span>
+<a id="L180"></a><span > </span>
+<a id="L181"></a><span > </span>
+<a id="L182"></a><span > </span>
+<a id="L183"></a><span > </span>
+<a id="L184"></a><span class="visited"> </span>
+<a id="L185"></a><span class="visited"> </span>
+<a id="L186"></a><span class="visited"> </span>
+<a id="L187"></a><span class="visited"> </span>
+<a id="L188"></a><span class="visited"> </span>
+<a id="L189"></a><span class="some-visited"> </span>
+<a id="L190"></a><span class="unvisited"> </span>
+<a id="L191"></a><span > </span>
+<a id="L192"></a><span class="visited"> </span>
+<a id="L193"></a><span class="visited"> </span>
+<a id="L194"></a><span > </span>
+<a id="L195"></a><span class="visited"> </span>
+<a id="L196"></a><span class="visited"> </span>
+<a id="L197"></a><span class="some-visited"> </span>
+<a id="L198"></a><span class="unvisited"> </span>
+<a id="L199"></a><span > </span>
+<a id="L200"></a><span > </span>
+<a id="L201"></a><span > </span>
+<a id="L202"></a><span > </span>
+<a id="L203"></a><span class="visited"> </span>
+<a id="L204"></a><span class="visited"> </span>
+<a id="L205"></a><span class="some-visited"> </span>
+<a id="L206"></a><span > </span>
+<a id="L207"></a><span > </span>
+<a id="L208"></a><span class="visited"> </span>
+<a id="L209"></a><span class="visited"> </span>
+<a id="L210"></a><span class="visited"> </span>
+<a id="L211"></a><span class="visited"> </span>
+<a id="L212"></a><span class="visited"> </span>
+<a id="L213"></a><span class="visited"> </span>
+<a id="L214"></a><span class="unvisited"> </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1">  1</a>
+<a href="#L2">  2</a>
+<a href="#L3">  3</a>
+<a href="#L4">  4</a>
+<a href="#L5">  5</a>
+<a href="#L6">  6</a>
+<a href="#L7">  7</a>
+<a href="#L8">  8</a>
+<a href="#L9">  9</a>
+<a href="#L10"> 10</a>
+<a href="#L11"> 11</a>
+<a href="#L12"> 12</a>
+<a href="#L13"> 13</a>
+<a href="#L14"> 14</a>
+<a href="#L15"> 15</a>
+<a href="#L16"> 16</a>
+<a href="#L17"> 17</a>
+<a href="#L18"> 18</a>
+<a href="#L19"> 19</a>
+<a href="#L20"> 20</a>
+<a href="#L21"> 21</a>
+<a href="#L22"> 22</a>
+<a href="#L23"> 23</a>
+<a href="#L24"> 24</a>
+<a href="#L25"> 25</a>
+<a href="#L26"> 26</a>
+<a href="#L27"> 27</a>
+<a href="#L28"> 28</a>
+<a href="#L29"> 29</a>
+<a href="#L30"> 30</a>
+<a href="#L31"> 31</a>
+<a href="#L32"> 32</a>
+<a href="#L33"> 33</a>
+<a href="#L34"> 34</a>
+<a href="#L35"> 35</a>
+<a href="#L36"> 36</a>
+<a href="#L37"> 37</a>
+<a href="#L38"> 38</a>
+<a href="#L39"> 39</a>
+<a href="#L40"> 40</a>
+<a href="#L41"> 41</a>
+<a href="#L42"> 42</a>
+<a href="#L43"> 43</a>
+<a href="#L44"> 44</a>
+<a href="#L45"> 45</a>
+<a href="#L46"> 46</a>
+<a href="#L47"> 47</a>
+<a href="#L48"> 48</a>
+<a href="#L49"> 49</a>
+<a href="#L50"> 50</a>
+<a href="#L51"> 51</a>
+<a href="#L52"> 52</a>
+<a href="#L53"> 53</a>
+<a href="#L54"> 54</a>
+<a href="#L55"> 55</a>
+<a href="#L56"> 56</a>
+<a href="#L57"> 57</a>
+<a href="#L58"> 58</a>
+<a href="#L59"> 59</a>
+<a href="#L60"> 60</a>
+<a href="#L61"> 61</a>
+<a href="#L62"> 62</a>
+<a href="#L63"> 63</a>
+<a href="#L64"> 64</a>
+<a href="#L65"> 65</a>
+<a href="#L66"> 66</a>
+<a href="#L67"> 67</a>
+<a href="#L68"> 68</a>
+<a href="#L69"> 69</a>
+<a href="#L70"> 70</a>
+<a href="#L71"> 71</a>
+<a href="#L72"> 72</a>
+<a href="#L73"> 73</a>
+<a href="#L74"> 74</a>
+<a href="#L75"> 75</a>
+<a href="#L76"> 76</a>
+<a href="#L77"> 77</a>
+<a href="#L78"> 78</a>
+<a href="#L79"> 79</a>
+<a href="#L80"> 80</a>
+<a href="#L81"> 81</a>
+<a href="#L82"> 82</a>
+<a href="#L83"> 83</a>
+<a href="#L84"> 84</a>
+<a href="#L85"> 85</a>
+<a href="#L86"> 86</a>
+<a href="#L87"> 87</a>
+<a href="#L88"> 88</a>
+<a href="#L89"> 89</a>
+<a href="#L90"> 90</a>
+<a href="#L91"> 91</a>
+<a href="#L92"> 92</a>
+<a href="#L93"> 93</a>
+<a href="#L94"> 94</a>
+<a href="#L95"> 95</a>
+<a href="#L96"> 96</a>
+<a href="#L97"> 97</a>
+<a href="#L98"> 98</a>
+<a href="#L99"> 99</a>
+<a href="#L100">100</a>
+<a href="#L101">101</a>
+<a href="#L102">102</a>
+<a href="#L103">103</a>
+<a href="#L104">104</a>
+<a href="#L105">105</a>
+<a href="#L106">106</a>
+<a href="#L107">107</a>
+<a href="#L108">108</a>
+<a href="#L109">109</a>
+<a href="#L110">110</a>
+<a href="#L111">111</a>
+<a href="#L112">112</a>
+<a href="#L113">113</a>
+<a href="#L114">114</a>
+<a href="#L115">115</a>
+<a href="#L116">116</a>
+<a href="#L117">117</a>
+<a href="#L118">118</a>
+<a href="#L119">119</a>
+<a href="#L120">120</a>
+<a href="#L121">121</a>
+<a href="#L122">122</a>
+<a href="#L123">123</a>
+<a href="#L124">124</a>
+<a href="#L125">125</a>
+<a href="#L126">126</a>
+<a href="#L127">127</a>
+<a href="#L128">128</a>
+<a href="#L129">129</a>
+<a href="#L130">130</a>
+<a href="#L131">131</a>
+<a href="#L132">132</a>
+<a href="#L133">133</a>
+<a href="#L134">134</a>
+<a href="#L135">135</a>
+<a href="#L136">136</a>
+<a href="#L137">137</a>
+<a href="#L138">138</a>
+<a href="#L139">139</a>
+<a href="#L140">140</a>
+<a href="#L141">141</a>
+<a href="#L142">142</a>
+<a href="#L143">143</a>
+<a href="#L144">144</a>
+<a href="#L145">145</a>
+<a href="#L146">146</a>
+<a href="#L147">147</a>
+<a href="#L148">148</a>
+<a href="#L149">149</a>
+<a href="#L150">150</a>
+<a href="#L151">151</a>
+<a href="#L152">152</a>
+<a href="#L153">153</a>
+<a href="#L154">154</a>
+<a href="#L155">155</a>
+<a href="#L156">156</a>
+<a href="#L157">157</a>
+<a href="#L158">158</a>
+<a href="#L159">159</a>
+<a href="#L160">160</a>
+<a href="#L161">161</a>
+<a href="#L162">162</a>
+<a href="#L163">163</a>
+<a href="#L164">164</a>
+<a href="#L165">165</a>
+<a href="#L166">166</a>
+<a href="#L167">167</a>
+<a href="#L168">168</a>
+<a href="#L169">169</a>
+<a href="#L170">170</a>
+<a href="#L171">171</a>
+<a href="#L172">172</a>
+<a href="#L173">173</a>
+<a href="#L174">174</a>
+<a href="#L175">175</a>
+<a href="#L176">176</a>
+<a href="#L177">177</a>
+<a href="#L178">178</a>
+<a href="#L179">179</a>
+<a href="#L180">180</a>
+<a href="#L181">181</a>
+<a href="#L182">182</a>
+<a href="#L183">183</a>
+<a href="#L184">184</a>
+<a href="#L185">185</a>
+<a href="#L186">186</a>
+<a href="#L187">187</a>
+<a href="#L188">188</a>
+<a href="#L189">189</a>
+<a href="#L190">190</a>
+<a href="#L191">191</a>
+<a href="#L192">192</a>
+<a href="#L193">193</a>
+<a href="#L194">194</a>
+<a href="#L195">195</a>
+<a href="#L196">196</a>
+<a href="#L197">197</a>
+<a href="#L198">198</a>
+<a href="#L199">199</a>
+<a href="#L200">200</a>
+<a href="#L201">201</a>
+<a href="#L202">202</a>
+<a href="#L203">203</a>
+<a href="#L204">204</a>
+<a href="#L205">205</a>
+<a href="#L206">206</a>
+<a href="#L207">207</a>
+<a href="#L208">208</a>
+<a href="#L209">209</a>
+<a href="#L210">210</a>
+<a href="#L211">211</a>
+<a href="#L212">212</a>
+<a href="#L213">213</a>
+<a href="#L214">214</a>
+</pre>
+        <pre id="code">
+(*
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+*)
+
+
+open Core
+open Syntax
+open Stdint
+open Integer256
+
+let int32_str = <span data-count="310">"</span>Int32"
+let int64_str = <span data-count="310">"</span>Int64"
+let int128_str = <span data-count="310">"</span>Int128"
+let int256_str = <span data-count="310">"</span>Int256"
+let uint32_str = <span data-count="310">"</span>Uint32"
+let uint64_str = <span data-count="310">"</span>Uint64"
+let uint128_str = <span data-count="310">"</span>Uint128"
+let uint256_str = <span data-count="310">"</span>Uint256"
+let string_str = <span data-count="310">"</span>String"
+let bnum_str = <span data-count="310">"</span>BNum"
+let msg_str = <span data-count="310">"</span>Message"
+let bystr_str = <span data-count="310">"</span>ByStr"
+(* ByStrX will have X appended below. *)
+let bystrx_str = <span data-count="310">"</span>ByStr"
+
+let int32_typ = <span data-count="310">P</span>rimType int32_str
+let int64_typ = <span data-count="310">P</span>rimType int64_str
+let int128_typ = <span data-count="310">P</span>rimType int128_str
+let int256_typ = <span data-count="310">P</span>rimType int256_str
+let uint32_typ = <span data-count="310">P</span>rimType uint32_str
+let uint64_typ = <span data-count="310">P</span>rimType uint64_str
+let uint128_typ = <span data-count="310">P</span>rimType uint128_str
+let uint256_typ = <span data-count="310">P</span>rimType uint256_str
+let string_typ = <span data-count="310">P</span>rimType string_str
+let bnum_typ = <span data-count="310">P</span>rimType bnum_str
+let msg_typ = <span data-count="310">P</span>rimType msg_str
+let bystr_typ = <span data-count="310">P</span>rimType bystr_str
+let bystrx_typ b = <span data-count="9532">P</span>rimType (bystrx_str ^ Int.to_string b)
+
+(* Given a ByStrX string, return integer X *)
+let bystrx_width t =
+  <span data-count="41585">m</span>atch t with
+  | <span data-count="41585">P</span>rimType s -&gt;
+    let re = <span data-count="41585">S</span>tr.regexp "ByStr\\([0-9]+\\)$" in
+    <span data-count="41585">i</span>f Str.string_match re s 0 then
+      <span data-count="3743">l</span>et b = <span data-count="3743">I</span>nt.of_string (Str.matched_group 1 s) in
+      <span data-count="3743">S</span>ome b
+    else
+      <span data-count="37842">N</span>one
+  | <span data-count="0">_</span> -&gt; None
+
+let prim_types_except_bystrx =
+    <span data-count="310">[</span>int32_typ; int64_typ; int128_typ; int256_typ;
+     uint32_typ; uint64_typ; uint128_typ; uint256_typ;
+     string_typ; bnum_typ; msg_typ; bystr_typ]
+
+let is_prim_type t =
+  <span data-count="35875">m</span>atch t with
+  | <span data-count="35874">P</span>rimType _ -&gt;
+    (match (bystrx_width t) with
+    | <span data-count="2172">S</span>ome _ -&gt; true (* bystrx_typ *)
+    | <span data-count="33702">N</span>one -&gt;
+      List.mem ~equal:(fun t1 t2 -&gt; <span data-count="243337">t</span>1 = t2) prim_types_except_bystrx t)
+  | <span data-count="1">_</span> -&gt; false
+
+let is_int_type = <span data-count="310">f</span>unction
+  | <span data-count="2472">x</span> when <span data-count="9868">x</span> = int32_typ ||
+           <span data-count="6302">x</span> = int64_typ ||
+           <span data-count="5524">x</span> = int128_typ ||
+           <span data-count="2577">x</span> = int256_typ -&gt; true
+  | <span data-count="2462">_</span> -&gt; false
+
+let is_uint_type = <span data-count="310">f</span>unction
+  | <span data-count="3146">x</span> when <span data-count="7972">x</span> = uint32_typ ||
+           <span data-count="4796">x</span> = uint64_typ ||
+           <span data-count="4408">x</span> = uint128_typ ||
+           <span data-count="1118">x</span> = uint256_typ -&gt; true
+  | <span data-count="840">_</span> -&gt; false
+
+let is_bystrx_type t =
+  <span data-count="4972">m</span>atch bystrx_width t with
+  | <span data-count="832">S</span>ome _ -&gt; true
+  | <span data-count="4140">N</span>one -&gt; false
+
+(****************************************************************)
+(*                 Primitive Literal Utilities                  *)
+(****************************************************************)
+
+(* Is string representation of integer valid for integer typ. *)
+let validate_int_string t x =
+    <span data-count="4084">t</span>ry
+      match t with
+      | <span data-count="1432">t</span>' when <span data-count="4084">t</span>' = int32_typ -&gt; Int32.to_string (Int32.of_string x) = x
+      | <span data-count="237">t</span>' when <span data-count="2652">t</span>' = int64_typ -&gt; Int64.to_string (Int64.of_string x) = x
+      | <span data-count="39">t</span>' when <span data-count="2415">t</span>' = int128_typ -&gt; Int128.to_string (Int128.of_string x) = x
+      | <span data-count="18">t</span>' when <span data-count="2376">t</span>' = int256_typ -&gt; Int256.to_string (Int256.of_string x) = x
+      | <span data-count="1267">t</span>' when <span data-count="2358">t</span>' = uint32_typ -&gt; Uint32.to_string (Uint32.of_string x) = x
+      | <span data-count="25">t</span>' when <span data-count="1091">t</span>' = uint64_typ -&gt; Uint64.to_string (Uint64.of_string x) = x
+      | <span data-count="887">t</span>' when <span data-count="1066">t</span>' = uint128_typ -&gt; Uint128.to_string (Uint128.of_string x) = x
+      | <span data-count="179">t</span>' when <span data-count="179">t</span>' = uint256_typ -&gt; Uint256.to_string (Uint256.of_string x) = x
+      | <span data-count="0">_</span> -&gt; false
+    with
+    | <span data-count="0">_</span> -&gt; false
+
+(* Given an integer type and the value (as string),
+   build IntLit or UintLit out of it. *)
+let build_int t v =
+  <span data-count="4087">l</span>et validator_wrapper l= 
+    <span data-count="4084">i</span>f validate_int_string t v then <span data-count="4080">S</span>ome l else <span data-count="4">N</span>one
+  in
+  <span data-count="4087">t</span>ry 
+    (match t with
+    | <span data-count="1433">x</span> when <span data-count="4087">x</span> = int32_typ   -&gt; validator_wrapper (IntLit (Int32L (Int32.of_string v)))
+    | <span data-count="238">x</span> when <span data-count="2654">x</span> = int64_typ   -&gt; validator_wrapper (IntLit (Int64L (Int64.of_string v)))
+    | <span data-count="39">x</span> when <span data-count="2416">x</span> = int128_typ  -&gt; validator_wrapper (IntLit (Int128L (Stdint.Int128.of_string v)))
+    | <span data-count="18">x</span> when <span data-count="2377">x</span> = int256_typ  -&gt; validator_wrapper (IntLit (Int256L (Int256.of_string v)))
+    | <span data-count="1268">x</span> when <span data-count="2359">x</span> = uint32_typ  -&gt; validator_wrapper (UintLit (Uint32L (Stdint.Uint32.of_string v)))
+    | <span data-count="25">x</span> when <span data-count="1091">x</span> = uint64_typ  -&gt; validator_wrapper (UintLit (Uint64L (Stdint.Uint64.of_string v)))
+    | <span data-count="887">x</span> when <span data-count="1066">x</span> = uint128_typ -&gt; validator_wrapper (UintLit (Uint128L (Stdint.Uint128.of_string v)))
+    | <span data-count="179">x</span> when <span data-count="179">x</span> = uint256_typ -&gt; validator_wrapper (UintLit (Uint256L (Uint256.of_string v)))
+    | <span data-count="0">_</span> -&gt; None)
+  with | <span data-count="3">_</span> -&gt; None
+
+let int_lit_width i =
+  <span data-count="1143">m</span>atch i with | <span data-count="749">I</span>nt32L _ -&gt; 32 | <span data-count="203">I</span>nt64L _ -&gt; 64 | <span data-count="155">I</span>nt128L _ -&gt; 128 | <span data-count="36">I</span>nt256L _ -&gt; 256
+
+let string_of_int_lit i = <span data-count="930">m</span>atch i with
+  | <span data-count="602">I</span>nt32L i' -&gt; Int32.to_string i'
+  | <span data-count="167">I</span>nt64L i' -&gt; Int64.to_string i'
+  | <span data-count="140">I</span>nt128L i' -&gt; Int128.to_string i'
+  | <span data-count="21">I</span>nt256L i' -&gt; Int256.to_string i'
+
+let uint_lit_width i =
+  <span data-count="1024">m</span>atch i with | <span data-count="369">U</span>int32L _ -&gt; 32 | <span data-count="155">U</span>int64L _ -&gt; 64 | <span data-count="354">U</span>int128L _ -&gt; 128 | <span data-count="146">U</span>int256L _ -&gt; 256
+
+let string_of_uint_lit i = <span data-count="899">m</span>atch i with
+  | <span data-count="189">U</span>int32L i' -&gt; Uint32.to_string i'
+  | <span data-count="117">U</span>int64L i' -&gt; Uint64.to_string i'
+  | <span data-count="479">U</span>int128L i' -&gt; Uint128.to_string i'
+  | <span data-count="114">U</span>int256L i' -&gt; Uint256.to_string i'
+
+let validate_bnum_literal b = <span data-count="277">m</span>atch b with
+  | <span data-count="277">B</span>Num v -&gt;
+    let s, re =
+    <span data-count="277">v</span>, Str.regexp "[0-9]+$" in
+    <span data-count="277">i</span>f Str.string_match re s 0
+    then
+      <span data-count="277">t</span>rue
+    else
+      <span data-count="0">f</span>alse
+  | <span data-count="0">_</span> -&gt; false
+
+(* Given an integer string, build a BNum literal,
+   or return None on invalid input. *)
+let build_bnum v =
+  <span data-count="277">l</span>et b = <span data-count="277">B</span>Num (v) in
+  <span data-count="277">i</span>f validate_bnum_literal b then <span data-count="277">S</span>ome b else <span data-count="0">N</span>one
+
+let validate_bystrx_literal b = <span data-count="600">m</span>atch b with
+  | <span data-count="600">B</span>yStrX (w, s) -&gt;
+    let s, re, l =
+      <span data-count="600">s</span>, Str.regexp "0x[0-9a-f]+$", w in
+    <span data-count="600">i</span>f <span data-count="600">S</span>tr.string_match re s 0 &amp;&amp; <span data-count="600">(</span>String.length s)-2 = (l * 2)
+    then <span data-count="600">t</span>rue else <span data-count="0">f</span>alse
+  | <span data-count="0">_</span> -&gt; false
+
+(* Given a hexadecimal byte string, build a ByStrX
+   literal or return None on invalid input. *)
+let build_bystrx t v =
+  <span data-count="600">l</span>et w = <span data-count="600">b</span>ystrx_width t in
+  <span data-count="600">m</span>atch w with
+  | <span data-count="600">S</span>ome b -&gt;
+    let v' = <span data-count="600">S</span>tring.lowercase v in
+    <span data-count="600">l</span>et bs = <span data-count="600">B</span>yStrX (b, v') in
+    <span data-count="600">i</span>f validate_bystrx_literal bs then <span data-count="600">S</span>ome bs else <span data-count="0">N</span>one
+  | <span data-count="0">N</span>one -&gt; None
+
+let validate_bystr_literal b = <span data-count="5">m</span>atch b with
+  | <span data-count="5">B</span>yStr s -&gt;
+    let s, re =
+      <span data-count="5">s</span>, Str.regexp "0x[0-9a-f]+$" in
+    <span data-count="5">i</span>f <span data-count="5">S</span>tr.string_match re s 0 &amp;&amp; <span data-count="5">(</span>(String.length s)-2) % 2 = 0
+    then <span data-count="5">t</span>rue else <span data-count="0">f</span>alse
+  | <span data-count="0">_</span> -&gt; false
+
+(* Given a hexadecimal byte string, build a ByStr
+   literal or return None on invalid input. *)
+let build_bystr v =
+  <span data-count="5">l</span>et v' = <span data-count="5">S</span>tring.lowercase v in
+  <span data-count="5">l</span>et bs = <span data-count="5">B</span>yStr v' in
+  <span data-count="5">i</span>f validate_bystr_literal bs then <span data-count="5">S</span>ome bs else <span data-count="0">N</span>one
+
+let build_prim_literal t v =
+  <span data-count="5214">m</span>atch t with
+  | <span data-count="245">x</span> when <span data-count="5214">x</span> = string_typ -&gt; Some (StringLit v)
+  | <span data-count="277">x</span> when <span data-count="4969">x</span> = bnum_typ -&gt; build_bnum v
+  | <span data-count="5">x</span> when <span data-count="4692">x</span> = bystr_typ -&gt; build_bystr v
+  | <span data-count="600">x</span> when <span data-count="4687">i</span>s_bystrx_type x -&gt; build_bystrx t v
+  | <span data-count="4087">x</span> when <span data-count="8174">i</span>s_int_type x || <span data-count="2359">i</span>s_uint_type x -&gt; build_int t v
+  | <span data-count="0">_</span> -&gt; None
+</pre>
+      </div>
+    </div>
+    <div id="footer">Generated on 2018-12-17 14:37:09 by <a href="https://github.com/aantron/bisect_ppx">Bisect_ppx</a> 1.3.4</div>
+    <script src="../../../coverage.js"></script>
+  </body>
+</html>

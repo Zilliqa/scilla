@@ -1,0 +1,270 @@
+<html>
+  <head>
+    <title>Coverage report</title>
+    <link rel="stylesheet" href="../../../coverage.css" />
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="../../../index.html">
+          <span class="dirname">src/lang/checkers/</span>EventInfo.ml
+        </a>
+      </h1>
+      <h2>100.00%</h2>
+    </div>
+    <div id="navbar">
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span > </span>
+<a id="L6"></a><span > </span>
+<a id="L7"></a><span > </span>
+<a id="L8"></a><span > </span>
+<a id="L9"></a><span > </span>
+<a id="L10"></a><span > </span>
+<a id="L11"></a><span > </span>
+<a id="L12"></a><span > </span>
+<a id="L13"></a><span > </span>
+<a id="L14"></a><span > </span>
+<a id="L15"></a><span > </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span > </span>
+<a id="L18"></a><span > </span>
+<a id="L19"></a><span > </span>
+<a id="L20"></a><span > </span>
+<a id="L21"></a><span > </span>
+<a id="L22"></a><span > </span>
+<a id="L23"></a><span > </span>
+<a id="L24"></a><span > </span>
+<a id="L25"></a><span > </span>
+<a id="L26"></a><span > </span>
+<a id="L27"></a><span > </span>
+<a id="L28"></a><span > </span>
+<a id="L29"></a><span > </span>
+<a id="L30"></a><span > </span>
+<a id="L31"></a><span class="visited"> </span>
+<a id="L32"></a><span class="visited"> </span>
+<a id="L33"></a><span > </span>
+<a id="L34"></a><span class="visited"> </span>
+<a id="L35"></a><span class="visited"> </span>
+<a id="L36"></a><span class="visited"> </span>
+<a id="L37"></a><span > </span>
+<a id="L38"></a><span > </span>
+<a id="L39"></a><span > </span>
+<a id="L40"></a><span > </span>
+<a id="L41"></a><span > </span>
+<a id="L42"></a><span > </span>
+<a id="L43"></a><span > </span>
+<a id="L44"></a><span > </span>
+<a id="L45"></a><span > </span>
+<a id="L46"></a><span > </span>
+<a id="L47"></a><span > </span>
+<a id="L48"></a><span > </span>
+<a id="L49"></a><span > </span>
+<a id="L50"></a><span > </span>
+<a id="L51"></a><span > </span>
+<a id="L52"></a><span > </span>
+<a id="L53"></a><span > </span>
+<a id="L54"></a><span > </span>
+<a id="L55"></a><span > </span>
+<a id="L56"></a><span > </span>
+<a id="L57"></a><span > </span>
+<a id="L58"></a><span > </span>
+<a id="L59"></a><span > </span>
+<a id="L60"></a><span > </span>
+<a id="L61"></a><span > </span>
+<a id="L62"></a><span > </span>
+<a id="L63"></a><span > </span>
+<a id="L64"></a><span > </span>
+<a id="L65"></a><span > </span>
+<a id="L66"></a><span > </span>
+<a id="L67"></a><span > </span>
+<a id="L68"></a><span > </span>
+<a id="L69"></a><span > </span>
+<a id="L70"></a><span > </span>
+<a id="L71"></a><span > </span>
+<a id="L72"></a><span > </span>
+<a id="L73"></a><span class="visited"> </span>
+<a id="L74"></a><span > </span>
+<a id="L75"></a><span > </span>
+<a id="L76"></a><span > </span>
+<a id="L77"></a><span class="visited"> </span>
+<a id="L78"></a><span > </span>
+<a id="L79"></a><span > </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1"> 1</a>
+<a href="#L2"> 2</a>
+<a href="#L3"> 3</a>
+<a href="#L4"> 4</a>
+<a href="#L5"> 5</a>
+<a href="#L6"> 6</a>
+<a href="#L7"> 7</a>
+<a href="#L8"> 8</a>
+<a href="#L9"> 9</a>
+<a href="#L10">10</a>
+<a href="#L11">11</a>
+<a href="#L12">12</a>
+<a href="#L13">13</a>
+<a href="#L14">14</a>
+<a href="#L15">15</a>
+<a href="#L16">16</a>
+<a href="#L17">17</a>
+<a href="#L18">18</a>
+<a href="#L19">19</a>
+<a href="#L20">20</a>
+<a href="#L21">21</a>
+<a href="#L22">22</a>
+<a href="#L23">23</a>
+<a href="#L24">24</a>
+<a href="#L25">25</a>
+<a href="#L26">26</a>
+<a href="#L27">27</a>
+<a href="#L28">28</a>
+<a href="#L29">29</a>
+<a href="#L30">30</a>
+<a href="#L31">31</a>
+<a href="#L32">32</a>
+<a href="#L33">33</a>
+<a href="#L34">34</a>
+<a href="#L35">35</a>
+<a href="#L36">36</a>
+<a href="#L37">37</a>
+<a href="#L38">38</a>
+<a href="#L39">39</a>
+<a href="#L40">40</a>
+<a href="#L41">41</a>
+<a href="#L42">42</a>
+<a href="#L43">43</a>
+<a href="#L44">44</a>
+<a href="#L45">45</a>
+<a href="#L46">46</a>
+<a href="#L47">47</a>
+<a href="#L48">48</a>
+<a href="#L49">49</a>
+<a href="#L50">50</a>
+<a href="#L51">51</a>
+<a href="#L52">52</a>
+<a href="#L53">53</a>
+<a href="#L54">54</a>
+<a href="#L55">55</a>
+<a href="#L56">56</a>
+<a href="#L57">57</a>
+<a href="#L58">58</a>
+<a href="#L59">59</a>
+<a href="#L60">60</a>
+<a href="#L61">61</a>
+<a href="#L62">62</a>
+<a href="#L63">63</a>
+<a href="#L64">64</a>
+<a href="#L65">65</a>
+<a href="#L66">66</a>
+<a href="#L67">67</a>
+<a href="#L68">68</a>
+<a href="#L69">69</a>
+<a href="#L70">70</a>
+<a href="#L71">71</a>
+<a href="#L72">72</a>
+<a href="#L73">73</a>
+<a href="#L74">74</a>
+<a href="#L75">75</a>
+<a href="#L76">76</a>
+<a href="#L77">77</a>
+<a href="#L78">78</a>
+<a href="#L79">79</a>
+</pre>
+        <pre id="code">
+open TypeUtil
+open Syntax
+open PrimTypes
+open ContractUtil.MessagePayload
+open MonadUtil
+open Core.Result.Let_syntax
+
+module ScillaEventInfo
+    (SR : Rep)
+    (ER : sig
+       include Rep
+       val get_type : rep -&gt; PlainTypes.t inferred_type
+     end) = struct
+
+  module SER = SR
+  module EER = ER
+  module EISyntax = ScillaSyntax (SR) (ER)
+  module TU = TypeUtilities (SR) (ER)
+  module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
+
+  open EISyntax
+  open TU
+  open SCU
+
+  (* Given a contract, return a list of events it may create,
+   * and the parameter types of the event. *)
+  let event_info (contr : contract) =
+
+    (* Given a message and a current list of event info, extract
+     * info from message and append to the list. *)
+    <span data-count="9">l</span>et extract_from_message b m acc =
+      <span data-count="74">l</span>et bloc = <span data-count="74">(</span>ER.get_loc (get_rep b)) in
+      (* Check if this is for an event. *)
+      <span data-count="74">(</span>match (List.find_opt (fun (label, _) -&gt; <span data-count="273">l</span>abel = eventname_label) m) with
+       | <span data-count="8">S</span>ome (_, epld) -&gt;
+           let emsg = <span data-count="8">"</span>Error determining event name\n" in
+           let%bind eventname = match epld with
+             | MTag s -&gt; pure s
+             | MLit l -&gt; (match l with | StringLit s -&gt; pure s | _ -&gt; fail1 emsg bloc)
+             (* Variables are not allowed for eventname_label to ensure that
+              * all possible events can be determined statically. *)
+             | MVar _ -&gt; fail1 emsg bloc
+           in
+           (* Get the type of the event parameters. *)
+           let filtered_m = List.filter (fun (label, _) -&gt; not (label = eventname_label)) m in
+           let%bind m_types = mapM ~f:(fun (fname, pl) -&gt;
+               let%bind t = 
+                 (match pl with
+                  | MTag _ -&gt; pure string_typ
+                  | MLit l -&gt; literal_type l
+                  | MVar v -&gt; 
+                      let t' = ER.get_type (get_rep v) in
+                      pure t'.tp
+                 )in pure (fname, t)
+             ) filtered_m in
+           (* If we already have an entry for "eventname" in "acc", 
+             * check that the type matches. Add entry otherwise. *)
+           (match (List.find_opt (fun (n, _) -&gt; n = eventname) acc) with
+            | Some (_, tlist) -&gt; (* verify types match *)
+                let printer tplist =
+                  List.fold_left (fun acc (n, t) -&gt; 
+                      acc ^ (Printf.sprintf "(%s : %s); " n (pp_typ t))) "[" tplist
+                  ^ "]" in 
+                if m_types &lt;&gt; tlist then 
+                  fail1 (Printf.sprintf "Parameter mismatch for event %s. %s vs %s\n"
+                    eventname (printer tlist) (printer m_types)) bloc
+                else
+                  pure @@ acc
+            | None -&gt; (* No entry. *)
+                let entry = (eventname, m_types) in
+                pure (entry :: acc)
+           )
+       | <span data-count="66">N</span>one -&gt; (* Not for an event. *) pure acc
+      ) in
+
+    
+    <span data-count="9">f</span>old_over_messages contr ~init:[] ~f:extract_from_message
+
+end
+</pre>
+      </div>
+    </div>
+    <div id="footer">Generated on 2018-12-17 14:37:09 by <a href="https://github.com/aantron/bisect_ppx">Bisect_ppx</a> 1.3.4</div>
+    <script src="../../../coverage.js"></script>
+  </body>
+</html>

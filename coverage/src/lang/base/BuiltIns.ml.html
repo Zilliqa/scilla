@@ -1,0 +1,3193 @@
+<html>
+  <head>
+    <title>Coverage report</title>
+    <link rel="stylesheet" href="../../../coverage.css" />
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="../../../index.html">
+          <span class="dirname">src/lang/base/</span>BuiltIns.ml
+        </a>
+      </h1>
+      <h2>84.88%</h2>
+    </div>
+    <div id="navbar">
+      <span class="unvisited" style="top:11.48%"></span>
+      <span class="unvisited" style="top:12.16%"></span>
+      <span class="unvisited" style="top:13.42%"></span>
+      <span class="unvisited" style="top:13.91%"></span>
+      <span class="some-visited" style="top:17.32%"></span>
+      <span class="unvisited" style="top:17.41%"></span>
+      <span class="unvisited" style="top:19.07%"></span>
+      <span class="unvisited" style="top:23.35%"></span>
+      <span class="unvisited" style="top:23.74%"></span>
+      <span class="unvisited" style="top:24.12%"></span>
+      <span class="unvisited" style="top:28.40%"></span>
+      <span class="some-visited" style="top:31.42%"></span>
+      <span class="some-visited" style="top:32.98%"></span>
+      <span class="unvisited" style="top:37.45%"></span>
+      <span class="unvisited" style="top:37.55%"></span>
+      <span class="unvisited" style="top:38.23%"></span>
+      <span class="unvisited" style="top:38.33%"></span>
+      <span class="unvisited" style="top:39.11%"></span>
+      <span class="unvisited" style="top:40.86%"></span>
+      <span class="unvisited" style="top:43.58%"></span>
+      <span class="some-visited" style="top:45.04%"></span>
+      <span class="some-visited" style="top:46.60%"></span>
+      <span class="some-visited" style="top:48.15%"></span>
+      <span class="unvisited" style="top:48.54%"></span>
+      <span class="unvisited" style="top:49.71%"></span>
+      <span class="unvisited" style="top:50.10%"></span>
+      <span class="unvisited" style="top:51.26%"></span>
+      <span class="unvisited" style="top:52.63%"></span>
+      <span class="unvisited" style="top:52.72%"></span>
+      <span class="unvisited" style="top:53.31%"></span>
+      <span class="unvisited" style="top:53.40%"></span>
+      <span class="unvisited" style="top:53.50%"></span>
+      <span class="unvisited" style="top:54.47%"></span>
+      <span class="unvisited" style="top:56.13%"></span>
+      <span class="unvisited" style="top:56.23%"></span>
+      <span class="unvisited" style="top:56.91%"></span>
+      <span class="unvisited" style="top:58.17%"></span>
+      <span class="unvisited" style="top:59.82%"></span>
+      <span class="unvisited" style="top:60.70%"></span>
+      <span class="unvisited" style="top:61.67%"></span>
+      <span class="unvisited" style="top:62.45%"></span>
+      <span class="unvisited" style="top:62.65%"></span>
+      <span class="some-visited" style="top:65.76%"></span>
+      <span class="unvisited" style="top:66.54%"></span>
+      <span class="unvisited" style="top:66.63%"></span>
+      <span class="unvisited" style="top:68.00%"></span>
+      <span class="unvisited" style="top:68.58%"></span>
+      <span class="unvisited" style="top:71.11%"></span>
+      <span class="unvisited" style="top:71.30%"></span>
+      <span class="unvisited" style="top:71.98%"></span>
+      <span class="unvisited" style="top:72.57%"></span>
+      <span class="unvisited" style="top:72.67%"></span>
+      <span class="unvisited" style="top:73.15%"></span>
+      <span class="unvisited" style="top:73.25%"></span>
+      <span class="unvisited" style="top:73.35%"></span>
+      <span class="unvisited" style="top:73.44%"></span>
+      <span class="unvisited" style="top:73.54%"></span>
+      <span class="unvisited" style="top:73.64%"></span>
+      <span class="unvisited" style="top:73.74%"></span>
+      <span class="unvisited" style="top:73.83%"></span>
+      <span class="unvisited" style="top:73.93%"></span>
+      <span class="unvisited" style="top:75.39%"></span>
+      <span class="unvisited" style="top:75.49%"></span>
+      <span class="unvisited" style="top:76.75%"></span>
+      <span class="unvisited" style="top:78.60%"></span>
+      <span class="unvisited" style="top:79.09%"></span>
+      <span class="unvisited" style="top:80.93%"></span>
+      <span class="unvisited" style="top:82.10%"></span>
+      <span class="unvisited" style="top:82.88%"></span>
+      <span class="unvisited" style="top:83.85%"></span>
+      <span class="unvisited" style="top:84.53%"></span>
+      <span class="unvisited" style="top:85.51%"></span>
+      <span class="unvisited" style="top:86.67%"></span>
+      <span class="unvisited" style="top:87.55%"></span>
+      <span class="unvisited" style="top:88.13%"></span>
+      <span class="unvisited" style="top:98.83%"></span>
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span > </span>
+<a id="L6"></a><span > </span>
+<a id="L7"></a><span > </span>
+<a id="L8"></a><span > </span>
+<a id="L9"></a><span > </span>
+<a id="L10"></a><span > </span>
+<a id="L11"></a><span > </span>
+<a id="L12"></a><span > </span>
+<a id="L13"></a><span > </span>
+<a id="L14"></a><span > </span>
+<a id="L15"></a><span > </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span > </span>
+<a id="L18"></a><span > </span>
+<a id="L19"></a><span > </span>
+<a id="L20"></a><span > </span>
+<a id="L21"></a><span > </span>
+<a id="L22"></a><span > </span>
+<a id="L23"></a><span > </span>
+<a id="L24"></a><span > </span>
+<a id="L25"></a><span > </span>
+<a id="L26"></a><span > </span>
+<a id="L27"></a><span > </span>
+<a id="L28"></a><span > </span>
+<a id="L29"></a><span > </span>
+<a id="L30"></a><span > </span>
+<a id="L31"></a><span > </span>
+<a id="L32"></a><span > </span>
+<a id="L33"></a><span > </span>
+<a id="L34"></a><span > </span>
+<a id="L35"></a><span > </span>
+<a id="L36"></a><span > </span>
+<a id="L37"></a><span > </span>
+<a id="L38"></a><span > </span>
+<a id="L39"></a><span > </span>
+<a id="L40"></a><span class="visited"> </span>
+<a id="L41"></a><span > </span>
+<a id="L42"></a><span > </span>
+<a id="L43"></a><span class="visited"> </span>
+<a id="L44"></a><span > </span>
+<a id="L45"></a><span > </span>
+<a id="L46"></a><span > </span>
+<a id="L47"></a><span class="visited"> </span>
+<a id="L48"></a><span class="visited"> </span>
+<a id="L49"></a><span > </span>
+<a id="L50"></a><span > </span>
+<a id="L51"></a><span > </span>
+<a id="L52"></a><span > </span>
+<a id="L53"></a><span > </span>
+<a id="L54"></a><span class="visited"> </span>
+<a id="L55"></a><span > </span>
+<a id="L56"></a><span > </span>
+<a id="L57"></a><span > </span>
+<a id="L58"></a><span > </span>
+<a id="L59"></a><span > </span>
+<a id="L60"></a><span > </span>
+<a id="L61"></a><span class="visited"> </span>
+<a id="L62"></a><span > </span>
+<a id="L63"></a><span > </span>
+<a id="L64"></a><span > </span>
+<a id="L65"></a><span class="visited"> </span>
+<a id="L66"></a><span class="visited"> </span>
+<a id="L67"></a><span class="visited"> </span>
+<a id="L68"></a><span class="visited"> </span>
+<a id="L69"></a><span class="visited"> </span>
+<a id="L70"></a><span class="visited"> </span>
+<a id="L71"></a><span class="visited"> </span>
+<a id="L72"></a><span class="visited"> </span>
+<a id="L73"></a><span class="visited"> </span>
+<a id="L74"></a><span class="visited"> </span>
+<a id="L75"></a><span class="visited"> </span>
+<a id="L76"></a><span class="visited"> </span>
+<a id="L77"></a><span class="visited"> </span>
+<a id="L78"></a><span class="visited"> </span>
+<a id="L79"></a><span class="visited"> </span>
+<a id="L80"></a><span class="visited"> </span>
+<a id="L81"></a><span class="visited"> </span>
+<a id="L82"></a><span > </span>
+<a id="L83"></a><span class="visited"> </span>
+<a id="L84"></a><span class="visited"> </span>
+<a id="L85"></a><span class="visited"> </span>
+<a id="L86"></a><span class="visited"> </span>
+<a id="L87"></a><span class="visited"> </span>
+<a id="L88"></a><span class="visited"> </span>
+<a id="L89"></a><span class="visited"> </span>
+<a id="L90"></a><span class="visited"> </span>
+<a id="L91"></a><span class="visited"> </span>
+<a id="L92"></a><span class="visited"> </span>
+<a id="L93"></a><span class="visited"> </span>
+<a id="L94"></a><span class="visited"> </span>
+<a id="L95"></a><span class="visited"> </span>
+<a id="L96"></a><span class="visited"> </span>
+<a id="L97"></a><span class="visited"> </span>
+<a id="L98"></a><span class="visited"> </span>
+<a id="L99"></a><span class="visited"> </span>
+<a id="L100"></a><span > </span>
+<a id="L101"></a><span > </span>
+<a id="L102"></a><span > </span>
+<a id="L103"></a><span > </span>
+<a id="L104"></a><span > </span>
+<a id="L105"></a><span > </span>
+<a id="L106"></a><span > </span>
+<a id="L107"></a><span > </span>
+<a id="L108"></a><span > </span>
+<a id="L109"></a><span > </span>
+<a id="L110"></a><span > </span>
+<a id="L111"></a><span > </span>
+<a id="L112"></a><span > </span>
+<a id="L113"></a><span class="visited"> </span>
+<a id="L114"></a><span class="visited"> </span>
+<a id="L115"></a><span class="visited"> </span>
+<a id="L116"></a><span class="visited"> </span>
+<a id="L117"></a><span > </span>
+<a id="L118"></a><span class="unvisited"> </span>
+<a id="L119"></a><span > </span>
+<a id="L120"></a><span class="visited"> </span>
+<a id="L121"></a><span class="visited"> </span>
+<a id="L122"></a><span class="visited"> </span>
+<a id="L123"></a><span class="visited"> </span>
+<a id="L124"></a><span > </span>
+<a id="L125"></a><span class="unvisited"> </span>
+<a id="L126"></a><span > </span>
+<a id="L127"></a><span class="visited"> </span>
+<a id="L128"></a><span > </span>
+<a id="L129"></a><span class="visited"> </span>
+<a id="L130"></a><span > </span>
+<a id="L131"></a><span > </span>
+<a id="L132"></a><span class="visited"> </span>
+<a id="L133"></a><span class="visited"> </span>
+<a id="L134"></a><span class="visited"> </span>
+<a id="L135"></a><span class="visited"> </span>
+<a id="L136"></a><span class="visited"> </span>
+<a id="L137"></a><span > </span>
+<a id="L138"></a><span class="unvisited"> </span>
+<a id="L139"></a><span > </span>
+<a id="L140"></a><span class="visited"> </span>
+<a id="L141"></a><span class="visited"> </span>
+<a id="L142"></a><span > </span>
+<a id="L143"></a><span class="unvisited"> </span>
+<a id="L144"></a><span > </span>
+<a id="L145"></a><span > </span>
+<a id="L146"></a><span > </span>
+<a id="L147"></a><span > </span>
+<a id="L148"></a><span > </span>
+<a id="L149"></a><span > </span>
+<a id="L150"></a><span > </span>
+<a id="L151"></a><span > </span>
+<a id="L152"></a><span > </span>
+<a id="L153"></a><span > </span>
+<a id="L154"></a><span > </span>
+<a id="L155"></a><span > </span>
+<a id="L156"></a><span > </span>
+<a id="L157"></a><span > </span>
+<a id="L158"></a><span > </span>
+<a id="L159"></a><span > </span>
+<a id="L160"></a><span > </span>
+<a id="L161"></a><span > </span>
+<a id="L162"></a><span > </span>
+<a id="L163"></a><span > </span>
+<a id="L164"></a><span > </span>
+<a id="L165"></a><span > </span>
+<a id="L166"></a><span class="visited"> </span>
+<a id="L167"></a><span > </span>
+<a id="L168"></a><span class="visited"> </span>
+<a id="L169"></a><span class="visited"> </span>
+<a id="L170"></a><span > </span>
+<a id="L171"></a><span class="visited"> </span>
+<a id="L172"></a><span class="visited"> </span>
+<a id="L173"></a><span class="visited"> </span>
+<a id="L174"></a><span > </span>
+<a id="L175"></a><span > </span>
+<a id="L176"></a><span class="visited"> </span>
+<a id="L177"></a><span > </span>
+<a id="L178"></a><span class="some-visited"> </span>
+<a id="L179"></a><span class="unvisited"> </span>
+<a id="L180"></a><span > </span>
+<a id="L181"></a><span class="visited"> </span>
+<a id="L182"></a><span class="visited"> </span>
+<a id="L183"></a><span class="visited"> </span>
+<a id="L184"></a><span > </span>
+<a id="L185"></a><span > </span>
+<a id="L186"></a><span class="visited"> </span>
+<a id="L187"></a><span > </span>
+<a id="L188"></a><span > </span>
+<a id="L189"></a><span class="visited"> </span>
+<a id="L190"></a><span class="visited"> </span>
+<a id="L191"></a><span > </span>
+<a id="L192"></a><span class="visited"> </span>
+<a id="L193"></a><span class="visited"> </span>
+<a id="L194"></a><span class="visited"> </span>
+<a id="L195"></a><span class="visited"> </span>
+<a id="L196"></a><span class="unvisited"> </span>
+<a id="L197"></a><span > </span>
+<a id="L198"></a><span > </span>
+<a id="L199"></a><span > </span>
+<a id="L200"></a><span > </span>
+<a id="L201"></a><span class="visited"> </span>
+<a id="L202"></a><span > </span>
+<a id="L203"></a><span class="visited"> </span>
+<a id="L204"></a><span > </span>
+<a id="L205"></a><span > </span>
+<a id="L206"></a><span > </span>
+<a id="L207"></a><span class="visited"> </span>
+<a id="L208"></a><span > </span>
+<a id="L209"></a><span > </span>
+<a id="L210"></a><span class="visited"> </span>
+<a id="L211"></a><span > </span>
+<a id="L212"></a><span > </span>
+<a id="L213"></a><span > </span>
+<a id="L214"></a><span > </span>
+<a id="L215"></a><span > </span>
+<a id="L216"></a><span > </span>
+<a id="L217"></a><span > </span>
+<a id="L218"></a><span class="visited"> </span>
+<a id="L219"></a><span > </span>
+<a id="L220"></a><span class="visited"> </span>
+<a id="L221"></a><span class="visited"> </span>
+<a id="L222"></a><span class="visited"> </span>
+<a id="L223"></a><span > </span>
+<a id="L224"></a><span > </span>
+<a id="L225"></a><span class="visited"> </span>
+<a id="L226"></a><span > </span>
+<a id="L227"></a><span class="visited"> </span>
+<a id="L228"></a><span class="visited"> </span>
+<a id="L229"></a><span class="visited"> </span>
+<a id="L230"></a><span > </span>
+<a id="L231"></a><span > </span>
+<a id="L232"></a><span class="visited"> </span>
+<a id="L233"></a><span > </span>
+<a id="L234"></a><span class="visited"> </span>
+<a id="L235"></a><span > </span>
+<a id="L236"></a><span class="visited"> </span>
+<a id="L237"></a><span class="visited"> </span>
+<a id="L238"></a><span class="visited"> </span>
+<a id="L239"></a><span class="visited"> </span>
+<a id="L240"></a><span class="unvisited"> </span>
+<a id="L241"></a><span > </span>
+<a id="L242"></a><span > </span>
+<a id="L243"></a><span > </span>
+<a id="L244"></a><span class="unvisited"> </span>
+<a id="L245"></a><span > </span>
+<a id="L246"></a><span > </span>
+<a id="L247"></a><span > </span>
+<a id="L248"></a><span class="unvisited"> </span>
+<a id="L249"></a><span > </span>
+<a id="L250"></a><span > </span>
+<a id="L251"></a><span class="visited"> </span>
+<a id="L252"></a><span > </span>
+<a id="L253"></a><span > </span>
+<a id="L254"></a><span > </span>
+<a id="L255"></a><span > </span>
+<a id="L256"></a><span > </span>
+<a id="L257"></a><span > </span>
+<a id="L258"></a><span > </span>
+<a id="L259"></a><span > </span>
+<a id="L260"></a><span > </span>
+<a id="L261"></a><span > </span>
+<a id="L262"></a><span > </span>
+<a id="L263"></a><span > </span>
+<a id="L264"></a><span > </span>
+<a id="L265"></a><span > </span>
+<a id="L266"></a><span > </span>
+<a id="L267"></a><span > </span>
+<a id="L268"></a><span > </span>
+<a id="L269"></a><span > </span>
+<a id="L270"></a><span > </span>
+<a id="L271"></a><span > </span>
+<a id="L272"></a><span > </span>
+<a id="L273"></a><span > </span>
+<a id="L274"></a><span class="visited"> </span>
+<a id="L275"></a><span class="visited"> </span>
+<a id="L276"></a><span class="visited"> </span>
+<a id="L277"></a><span class="visited"> </span>
+<a id="L278"></a><span class="visited"> </span>
+<a id="L279"></a><span > </span>
+<a id="L280"></a><span class="visited"> </span>
+<a id="L281"></a><span class="visited"> </span>
+<a id="L282"></a><span class="visited"> </span>
+<a id="L283"></a><span class="visited"> </span>
+<a id="L284"></a><span class="visited"> </span>
+<a id="L285"></a><span > </span>
+<a id="L286"></a><span class="visited"> </span>
+<a id="L287"></a><span class="visited"> </span>
+<a id="L288"></a><span class="visited"> </span>
+<a id="L289"></a><span class="visited"> </span>
+<a id="L290"></a><span class="visited"> </span>
+<a id="L291"></a><span > </span>
+<a id="L292"></a><span class="unvisited"> </span>
+<a id="L293"></a><span > </span>
+<a id="L294"></a><span > </span>
+<a id="L295"></a><span class="visited"> </span>
+<a id="L296"></a><span > </span>
+<a id="L297"></a><span > </span>
+<a id="L298"></a><span > </span>
+<a id="L299"></a><span > </span>
+<a id="L300"></a><span > </span>
+<a id="L301"></a><span > </span>
+<a id="L302"></a><span > </span>
+<a id="L303"></a><span > </span>
+<a id="L304"></a><span > </span>
+<a id="L305"></a><span > </span>
+<a id="L306"></a><span > </span>
+<a id="L307"></a><span class="visited"> </span>
+<a id="L308"></a><span > </span>
+<a id="L309"></a><span > </span>
+<a id="L310"></a><span > </span>
+<a id="L311"></a><span class="visited"> </span>
+<a id="L312"></a><span > </span>
+<a id="L313"></a><span > </span>
+<a id="L314"></a><span > </span>
+<a id="L315"></a><span > </span>
+<a id="L316"></a><span > </span>
+<a id="L317"></a><span > </span>
+<a id="L318"></a><span > </span>
+<a id="L319"></a><span > </span>
+<a id="L320"></a><span > </span>
+<a id="L321"></a><span > </span>
+<a id="L322"></a><span > </span>
+<a id="L323"></a><span class="some-visited"> </span>
+<a id="L324"></a><span > </span>
+<a id="L325"></a><span > </span>
+<a id="L326"></a><span > </span>
+<a id="L327"></a><span class="visited"> </span>
+<a id="L328"></a><span > </span>
+<a id="L329"></a><span > </span>
+<a id="L330"></a><span > </span>
+<a id="L331"></a><span > </span>
+<a id="L332"></a><span > </span>
+<a id="L333"></a><span > </span>
+<a id="L334"></a><span > </span>
+<a id="L335"></a><span > </span>
+<a id="L336"></a><span > </span>
+<a id="L337"></a><span > </span>
+<a id="L338"></a><span > </span>
+<a id="L339"></a><span class="some-visited"> </span>
+<a id="L340"></a><span > </span>
+<a id="L341"></a><span > </span>
+<a id="L342"></a><span > </span>
+<a id="L343"></a><span class="visited"> </span>
+<a id="L344"></a><span > </span>
+<a id="L345"></a><span > </span>
+<a id="L346"></a><span > </span>
+<a id="L347"></a><span > </span>
+<a id="L348"></a><span > </span>
+<a id="L349"></a><span > </span>
+<a id="L350"></a><span > </span>
+<a id="L351"></a><span > </span>
+<a id="L352"></a><span > </span>
+<a id="L353"></a><span > </span>
+<a id="L354"></a><span > </span>
+<a id="L355"></a><span class="visited"> </span>
+<a id="L356"></a><span > </span>
+<a id="L357"></a><span > </span>
+<a id="L358"></a><span > </span>
+<a id="L359"></a><span class="visited"> </span>
+<a id="L360"></a><span > </span>
+<a id="L361"></a><span > </span>
+<a id="L362"></a><span > </span>
+<a id="L363"></a><span > </span>
+<a id="L364"></a><span > </span>
+<a id="L365"></a><span > </span>
+<a id="L366"></a><span > </span>
+<a id="L367"></a><span > </span>
+<a id="L368"></a><span > </span>
+<a id="L369"></a><span > </span>
+<a id="L370"></a><span > </span>
+<a id="L371"></a><span class="visited"> </span>
+<a id="L372"></a><span > </span>
+<a id="L373"></a><span > </span>
+<a id="L374"></a><span > </span>
+<a id="L375"></a><span class="visited"> </span>
+<a id="L376"></a><span > </span>
+<a id="L377"></a><span class="visited"> </span>
+<a id="L378"></a><span > </span>
+<a id="L379"></a><span class="visited"> </span>
+<a id="L380"></a><span > </span>
+<a id="L381"></a><span class="visited"> </span>
+<a id="L382"></a><span > </span>
+<a id="L383"></a><span class="visited"> </span>
+<a id="L384"></a><span > </span>
+<a id="L385"></a><span class="unvisited"> </span>
+<a id="L386"></a><span class="unvisited"> </span>
+<a id="L387"></a><span > </span>
+<a id="L388"></a><span > </span>
+<a id="L389"></a><span class="visited"> </span>
+<a id="L390"></a><span class="visited"> </span>
+<a id="L391"></a><span class="visited"> </span>
+<a id="L392"></a><span class="visited"> </span>
+<a id="L393"></a><span class="unvisited"> </span>
+<a id="L394"></a><span class="unvisited"> </span>
+<a id="L395"></a><span > </span>
+<a id="L396"></a><span class="visited"> </span>
+<a id="L397"></a><span class="visited"> </span>
+<a id="L398"></a><span class="visited"> </span>
+<a id="L399"></a><span class="visited"> </span>
+<a id="L400"></a><span > </span>
+<a id="L401"></a><span > </span>
+<a id="L402"></a><span class="unvisited"> </span>
+<a id="L403"></a><span > </span>
+<a id="L404"></a><span > </span>
+<a id="L405"></a><span > </span>
+<a id="L406"></a><span > </span>
+<a id="L407"></a><span > </span>
+<a id="L408"></a><span > </span>
+<a id="L409"></a><span > </span>
+<a id="L410"></a><span > </span>
+<a id="L411"></a><span > </span>
+<a id="L412"></a><span > </span>
+<a id="L413"></a><span > </span>
+<a id="L414"></a><span > </span>
+<a id="L415"></a><span > </span>
+<a id="L416"></a><span > </span>
+<a id="L417"></a><span class="visited"> </span>
+<a id="L418"></a><span class="visited"> </span>
+<a id="L419"></a><span class="visited"> </span>
+<a id="L420"></a><span class="unvisited"> </span>
+<a id="L421"></a><span > </span>
+<a id="L422"></a><span > </span>
+<a id="L423"></a><span > </span>
+<a id="L424"></a><span > </span>
+<a id="L425"></a><span > </span>
+<a id="L426"></a><span > </span>
+<a id="L427"></a><span > </span>
+<a id="L428"></a><span > </span>
+<a id="L429"></a><span > </span>
+<a id="L430"></a><span class="visited"> </span>
+<a id="L431"></a><span class="visited"> </span>
+<a id="L432"></a><span class="visited"> </span>
+<a id="L433"></a><span class="visited"> </span>
+<a id="L434"></a><span class="visited"> </span>
+<a id="L435"></a><span > </span>
+<a id="L436"></a><span class="visited"> </span>
+<a id="L437"></a><span class="visited"> </span>
+<a id="L438"></a><span class="visited"> </span>
+<a id="L439"></a><span class="visited"> </span>
+<a id="L440"></a><span class="visited"> </span>
+<a id="L441"></a><span > </span>
+<a id="L442"></a><span class="visited"> </span>
+<a id="L443"></a><span class="visited"> </span>
+<a id="L444"></a><span class="visited"> </span>
+<a id="L445"></a><span class="visited"> </span>
+<a id="L446"></a><span class="visited"> </span>
+<a id="L447"></a><span > </span>
+<a id="L448"></a><span class="unvisited"> </span>
+<a id="L449"></a><span > </span>
+<a id="L450"></a><span > </span>
+<a id="L451"></a><span class="visited"> </span>
+<a id="L452"></a><span > </span>
+<a id="L453"></a><span > </span>
+<a id="L454"></a><span > </span>
+<a id="L455"></a><span > </span>
+<a id="L456"></a><span > </span>
+<a id="L457"></a><span > </span>
+<a id="L458"></a><span > </span>
+<a id="L459"></a><span > </span>
+<a id="L460"></a><span > </span>
+<a id="L461"></a><span > </span>
+<a id="L462"></a><span > </span>
+<a id="L463"></a><span class="some-visited"> </span>
+<a id="L464"></a><span > </span>
+<a id="L465"></a><span > </span>
+<a id="L466"></a><span > </span>
+<a id="L467"></a><span class="visited"> </span>
+<a id="L468"></a><span > </span>
+<a id="L469"></a><span > </span>
+<a id="L470"></a><span > </span>
+<a id="L471"></a><span > </span>
+<a id="L472"></a><span > </span>
+<a id="L473"></a><span > </span>
+<a id="L474"></a><span > </span>
+<a id="L475"></a><span > </span>
+<a id="L476"></a><span > </span>
+<a id="L477"></a><span > </span>
+<a id="L478"></a><span > </span>
+<a id="L479"></a><span class="some-visited"> </span>
+<a id="L480"></a><span > </span>
+<a id="L481"></a><span > </span>
+<a id="L482"></a><span > </span>
+<a id="L483"></a><span class="visited"> </span>
+<a id="L484"></a><span > </span>
+<a id="L485"></a><span > </span>
+<a id="L486"></a><span > </span>
+<a id="L487"></a><span > </span>
+<a id="L488"></a><span > </span>
+<a id="L489"></a><span > </span>
+<a id="L490"></a><span > </span>
+<a id="L491"></a><span > </span>
+<a id="L492"></a><span > </span>
+<a id="L493"></a><span > </span>
+<a id="L494"></a><span > </span>
+<a id="L495"></a><span class="some-visited"> </span>
+<a id="L496"></a><span > </span>
+<a id="L497"></a><span > </span>
+<a id="L498"></a><span > </span>
+<a id="L499"></a><span class="unvisited"> </span>
+<a id="L500"></a><span > </span>
+<a id="L501"></a><span > </span>
+<a id="L502"></a><span > </span>
+<a id="L503"></a><span > </span>
+<a id="L504"></a><span > </span>
+<a id="L505"></a><span > </span>
+<a id="L506"></a><span > </span>
+<a id="L507"></a><span > </span>
+<a id="L508"></a><span > </span>
+<a id="L509"></a><span > </span>
+<a id="L510"></a><span > </span>
+<a id="L511"></a><span class="unvisited"> </span>
+<a id="L512"></a><span > </span>
+<a id="L513"></a><span > </span>
+<a id="L514"></a><span > </span>
+<a id="L515"></a><span class="unvisited"> </span>
+<a id="L516"></a><span > </span>
+<a id="L517"></a><span > </span>
+<a id="L518"></a><span > </span>
+<a id="L519"></a><span > </span>
+<a id="L520"></a><span > </span>
+<a id="L521"></a><span > </span>
+<a id="L522"></a><span > </span>
+<a id="L523"></a><span > </span>
+<a id="L524"></a><span > </span>
+<a id="L525"></a><span > </span>
+<a id="L526"></a><span > </span>
+<a id="L527"></a><span class="unvisited"> </span>
+<a id="L528"></a><span > </span>
+<a id="L529"></a><span > </span>
+<a id="L530"></a><span > </span>
+<a id="L531"></a><span class="visited"> </span>
+<a id="L532"></a><span > </span>
+<a id="L533"></a><span class="visited"> </span>
+<a id="L534"></a><span > </span>
+<a id="L535"></a><span class="visited"> </span>
+<a id="L536"></a><span > </span>
+<a id="L537"></a><span class="visited"> </span>
+<a id="L538"></a><span > </span>
+<a id="L539"></a><span class="visited"> </span>
+<a id="L540"></a><span > </span>
+<a id="L541"></a><span class="unvisited"> </span>
+<a id="L542"></a><span class="unvisited"> </span>
+<a id="L543"></a><span > </span>
+<a id="L544"></a><span > </span>
+<a id="L545"></a><span class="visited"> </span>
+<a id="L546"></a><span class="visited"> </span>
+<a id="L547"></a><span class="visited"> </span>
+<a id="L548"></a><span class="unvisited"> </span>
+<a id="L549"></a><span class="unvisited"> </span>
+<a id="L550"></a><span class="unvisited"> </span>
+<a id="L551"></a><span > </span>
+<a id="L552"></a><span class="visited"> </span>
+<a id="L553"></a><span class="visited"> </span>
+<a id="L554"></a><span > </span>
+<a id="L555"></a><span > </span>
+<a id="L556"></a><span class="visited"> </span>
+<a id="L557"></a><span class="visited"> </span>
+<a id="L558"></a><span > </span>
+<a id="L559"></a><span > </span>
+<a id="L560"></a><span class="unvisited"> </span>
+<a id="L561"></a><span > </span>
+<a id="L562"></a><span > </span>
+<a id="L563"></a><span > </span>
+<a id="L564"></a><span > </span>
+<a id="L565"></a><span > </span>
+<a id="L566"></a><span > </span>
+<a id="L567"></a><span > </span>
+<a id="L568"></a><span > </span>
+<a id="L569"></a><span > </span>
+<a id="L570"></a><span > </span>
+<a id="L571"></a><span > </span>
+<a id="L572"></a><span > </span>
+<a id="L573"></a><span > </span>
+<a id="L574"></a><span > </span>
+<a id="L575"></a><span class="visited"> </span>
+<a id="L576"></a><span class="visited"> </span>
+<a id="L577"></a><span class="unvisited"> </span>
+<a id="L578"></a><span class="unvisited"> </span>
+<a id="L579"></a><span > </span>
+<a id="L580"></a><span class="visited"> </span>
+<a id="L581"></a><span class="visited"> </span>
+<a id="L582"></a><span class="visited"> </span>
+<a id="L583"></a><span class="visited"> </span>
+<a id="L584"></a><span > </span>
+<a id="L585"></a><span class="unvisited"> </span>
+<a id="L586"></a><span > </span>
+<a id="L587"></a><span class="visited"> </span>
+<a id="L588"></a><span class="visited"> </span>
+<a id="L589"></a><span class="visited"> </span>
+<a id="L590"></a><span class="visited"> </span>
+<a id="L591"></a><span class="visited"> </span>
+<a id="L592"></a><span > </span>
+<a id="L593"></a><span class="visited"> </span>
+<a id="L594"></a><span class="visited"> </span>
+<a id="L595"></a><span > </span>
+<a id="L596"></a><span class="visited"> </span>
+<a id="L597"></a><span > </span>
+<a id="L598"></a><span class="unvisited"> </span>
+<a id="L599"></a><span > </span>
+<a id="L600"></a><span > </span>
+<a id="L601"></a><span > </span>
+<a id="L602"></a><span > </span>
+<a id="L603"></a><span > </span>
+<a id="L604"></a><span > </span>
+<a id="L605"></a><span > </span>
+<a id="L606"></a><span > </span>
+<a id="L607"></a><span > </span>
+<a id="L608"></a><span > </span>
+<a id="L609"></a><span > </span>
+<a id="L610"></a><span class="visited"> </span>
+<a id="L611"></a><span class="visited"> </span>
+<a id="L612"></a><span class="visited"> </span>
+<a id="L613"></a><span class="visited"> </span>
+<a id="L614"></a><span > </span>
+<a id="L615"></a><span class="unvisited"> </span>
+<a id="L616"></a><span > </span>
+<a id="L617"></a><span class="visited"> </span>
+<a id="L618"></a><span class="visited"> </span>
+<a id="L619"></a><span class="visited"> </span>
+<a id="L620"></a><span class="visited"> </span>
+<a id="L621"></a><span class="visited"> </span>
+<a id="L622"></a><span class="visited"> </span>
+<a id="L623"></a><span class="visited"> </span>
+<a id="L624"></a><span class="unvisited"> </span>
+<a id="L625"></a><span > </span>
+<a id="L626"></a><span class="visited"> </span>
+<a id="L627"></a><span > </span>
+<a id="L628"></a><span class="visited"> </span>
+<a id="L629"></a><span > </span>
+<a id="L630"></a><span > </span>
+<a id="L631"></a><span class="visited"> </span>
+<a id="L632"></a><span class="visited"> </span>
+<a id="L633"></a><span > </span>
+<a id="L634"></a><span class="unvisited"> </span>
+<a id="L635"></a><span > </span>
+<a id="L636"></a><span class="visited"> </span>
+<a id="L637"></a><span class="visited"> </span>
+<a id="L638"></a><span class="visited"> </span>
+<a id="L639"></a><span class="visited"> </span>
+<a id="L640"></a><span class="visited"> </span>
+<a id="L641"></a><span class="visited"> </span>
+<a id="L642"></a><span class="unvisited"> </span>
+<a id="L643"></a><span > </span>
+<a id="L644"></a><span class="unvisited"> </span>
+<a id="L645"></a><span > </span>
+<a id="L646"></a><span > </span>
+<a id="L647"></a><span > </span>
+<a id="L648"></a><span > </span>
+<a id="L649"></a><span > </span>
+<a id="L650"></a><span > </span>
+<a id="L651"></a><span > </span>
+<a id="L652"></a><span > </span>
+<a id="L653"></a><span > </span>
+<a id="L654"></a><span > </span>
+<a id="L655"></a><span > </span>
+<a id="L656"></a><span > </span>
+<a id="L657"></a><span > </span>
+<a id="L658"></a><span > </span>
+<a id="L659"></a><span class="visited"> </span>
+<a id="L660"></a><span > </span>
+<a id="L661"></a><span class="visited"> </span>
+<a id="L662"></a><span > </span>
+<a id="L663"></a><span class="visited"> </span>
+<a id="L664"></a><span > </span>
+<a id="L665"></a><span class="visited"> </span>
+<a id="L666"></a><span > </span>
+<a id="L667"></a><span class="visited"> </span>
+<a id="L668"></a><span > </span>
+<a id="L669"></a><span class="visited"> </span>
+<a id="L670"></a><span class="visited"> </span>
+<a id="L671"></a><span > </span>
+<a id="L672"></a><span class="visited"> </span>
+<a id="L673"></a><span class="visited"> </span>
+<a id="L674"></a><span class="visited"> </span>
+<a id="L675"></a><span class="visited"> </span>
+<a id="L676"></a><span class="some-visited"> </span>
+<a id="L677"></a><span > </span>
+<a id="L678"></a><span class="visited"> </span>
+<a id="L679"></a><span class="visited"> </span>
+<a id="L680"></a><span class="visited"> </span>
+<a id="L681"></a><span class="visited"> </span>
+<a id="L682"></a><span class="visited"> </span>
+<a id="L683"></a><span class="visited"> </span>
+<a id="L684"></a><span class="unvisited"> </span>
+<a id="L685"></a><span class="unvisited"> </span>
+<a id="L686"></a><span > </span>
+<a id="L687"></a><span class="visited"> </span>
+<a id="L688"></a><span class="visited"> </span>
+<a id="L689"></a><span > </span>
+<a id="L690"></a><span class="visited"> </span>
+<a id="L691"></a><span class="visited"> </span>
+<a id="L692"></a><span > </span>
+<a id="L693"></a><span class="visited"> </span>
+<a id="L694"></a><span > </span>
+<a id="L695"></a><span class="visited"> </span>
+<a id="L696"></a><span class="visited"> </span>
+<a id="L697"></a><span class="visited"> </span>
+<a id="L698"></a><span class="visited"> </span>
+<a id="L699"></a><span class="unvisited"> </span>
+<a id="L700"></a><span > </span>
+<a id="L701"></a><span class="visited"> </span>
+<a id="L702"></a><span class="visited"> </span>
+<a id="L703"></a><span class="visited"> </span>
+<a id="L704"></a><span class="visited"> </span>
+<a id="L705"></a><span class="unvisited"> </span>
+<a id="L706"></a><span class="visited"> </span>
+<a id="L707"></a><span class="visited"> </span>
+<a id="L708"></a><span > </span>
+<a id="L709"></a><span class="visited"> </span>
+<a id="L710"></a><span class="visited"> </span>
+<a id="L711"></a><span > </span>
+<a id="L712"></a><span > </span>
+<a id="L713"></a><span class="visited"> </span>
+<a id="L714"></a><span class="visited"> </span>
+<a id="L715"></a><span class="visited"> </span>
+<a id="L716"></a><span > </span>
+<a id="L717"></a><span > </span>
+<a id="L718"></a><span class="visited"> </span>
+<a id="L719"></a><span class="visited"> </span>
+<a id="L720"></a><span class="visited"> </span>
+<a id="L721"></a><span class="visited"> </span>
+<a id="L722"></a><span class="visited"> </span>
+<a id="L723"></a><span class="visited"> </span>
+<a id="L724"></a><span class="visited"> </span>
+<a id="L725"></a><span class="visited"> </span>
+<a id="L726"></a><span class="visited"> </span>
+<a id="L727"></a><span class="visited"> </span>
+<a id="L728"></a><span class="visited"> </span>
+<a id="L729"></a><span class="visited"> </span>
+<a id="L730"></a><span class="visited"> </span>
+<a id="L731"></a><span class="unvisited"> </span>
+<a id="L732"></a><span > </span>
+<a id="L733"></a><span class="unvisited"> </span>
+<a id="L734"></a><span > </span>
+<a id="L735"></a><span > </span>
+<a id="L736"></a><span class="visited"> </span>
+<a id="L737"></a><span class="visited"> </span>
+<a id="L738"></a><span class="visited"> </span>
+<a id="L739"></a><span class="visited"> </span>
+<a id="L740"></a><span class="unvisited"> </span>
+<a id="L741"></a><span class="visited"> </span>
+<a id="L742"></a><span class="visited"> </span>
+<a id="L743"></a><span class="visited"> </span>
+<a id="L744"></a><span class="visited"> </span>
+<a id="L745"></a><span class="visited"> </span>
+<a id="L746"></a><span class="unvisited"> </span>
+<a id="L747"></a><span class="unvisited"> </span>
+<a id="L748"></a><span > </span>
+<a id="L749"></a><span class="visited"> </span>
+<a id="L750"></a><span class="visited"> </span>
+<a id="L751"></a><span > </span>
+<a id="L752"></a><span class="unvisited"> </span>
+<a id="L753"></a><span class="unvisited"> </span>
+<a id="L754"></a><span class="unvisited"> </span>
+<a id="L755"></a><span class="unvisited"> </span>
+<a id="L756"></a><span class="unvisited"> </span>
+<a id="L757"></a><span class="unvisited"> </span>
+<a id="L758"></a><span class="unvisited"> </span>
+<a id="L759"></a><span class="unvisited"> </span>
+<a id="L760"></a><span class="unvisited"> </span>
+<a id="L761"></a><span > </span>
+<a id="L762"></a><span class="visited"> </span>
+<a id="L763"></a><span > </span>
+<a id="L764"></a><span > </span>
+<a id="L765"></a><span > </span>
+<a id="L766"></a><span class="visited"> </span>
+<a id="L767"></a><span > </span>
+<a id="L768"></a><span class="visited"> </span>
+<a id="L769"></a><span class="visited"> </span>
+<a id="L770"></a><span class="visited"> </span>
+<a id="L771"></a><span class="visited"> </span>
+<a id="L772"></a><span class="visited"> </span>
+<a id="L773"></a><span class="visited"> </span>
+<a id="L774"></a><span class="visited"> </span>
+<a id="L775"></a><span class="unvisited"> </span>
+<a id="L776"></a><span class="unvisited"> </span>
+<a id="L777"></a><span > </span>
+<a id="L778"></a><span class="visited"> </span>
+<a id="L779"></a><span > </span>
+<a id="L780"></a><span > </span>
+<a id="L781"></a><span > </span>
+<a id="L782"></a><span class="visited"> </span>
+<a id="L783"></a><span > </span>
+<a id="L784"></a><span class="visited"> </span>
+<a id="L785"></a><span class="visited"> </span>
+<a id="L786"></a><span class="visited"> </span>
+<a id="L787"></a><span class="visited"> </span>
+<a id="L788"></a><span class="visited"> </span>
+<a id="L789"></a><span class="unvisited"> </span>
+<a id="L790"></a><span > </span>
+<a id="L791"></a><span > </span>
+<a id="L792"></a><span > </span>
+<a id="L793"></a><span > </span>
+<a id="L794"></a><span > </span>
+<a id="L795"></a><span > </span>
+<a id="L796"></a><span > </span>
+<a id="L797"></a><span > </span>
+<a id="L798"></a><span > </span>
+<a id="L799"></a><span > </span>
+<a id="L800"></a><span > </span>
+<a id="L801"></a><span class="visited"> </span>
+<a id="L802"></a><span > </span>
+<a id="L803"></a><span class="visited"> </span>
+<a id="L804"></a><span > </span>
+<a id="L805"></a><span class="visited"> </span>
+<a id="L806"></a><span class="visited"> </span>
+<a id="L807"></a><span > </span>
+<a id="L808"></a><span class="unvisited"> </span>
+<a id="L809"></a><span class="visited"> </span>
+<a id="L810"></a><span class="visited"> </span>
+<a id="L811"></a><span class="visited"> </span>
+<a id="L812"></a><span class="visited"> </span>
+<a id="L813"></a><span class="unvisited"> </span>
+<a id="L814"></a><span > </span>
+<a id="L815"></a><span > </span>
+<a id="L816"></a><span class="visited"> </span>
+<a id="L817"></a><span > </span>
+<a id="L818"></a><span class="visited"> </span>
+<a id="L819"></a><span > </span>
+<a id="L820"></a><span > </span>
+<a id="L821"></a><span > </span>
+<a id="L822"></a><span class="visited"> </span>
+<a id="L823"></a><span class="visited"> </span>
+<a id="L824"></a><span > </span>
+<a id="L825"></a><span class="visited"> </span>
+<a id="L826"></a><span class="visited"> </span>
+<a id="L827"></a><span class="visited"> </span>
+<a id="L828"></a><span > </span>
+<a id="L829"></a><span class="visited"> </span>
+<a id="L830"></a><span class="visited"> </span>
+<a id="L831"></a><span class="visited"> </span>
+<a id="L832"></a><span class="unvisited"> </span>
+<a id="L833"></a><span > </span>
+<a id="L834"></a><span > </span>
+<a id="L835"></a><span > </span>
+<a id="L836"></a><span class="visited"> </span>
+<a id="L837"></a><span > </span>
+<a id="L838"></a><span class="visited"> </span>
+<a id="L839"></a><span > </span>
+<a id="L840"></a><span > </span>
+<a id="L841"></a><span class="visited"> </span>
+<a id="L842"></a><span class="visited"> </span>
+<a id="L843"></a><span > </span>
+<a id="L844"></a><span class="unvisited"> </span>
+<a id="L845"></a><span > </span>
+<a id="L846"></a><span class="visited"> </span>
+<a id="L847"></a><span class="visited"> </span>
+<a id="L848"></a><span class="visited"> </span>
+<a id="L849"></a><span class="visited"> </span>
+<a id="L850"></a><span class="visited"> </span>
+<a id="L851"></a><span class="visited"> </span>
+<a id="L852"></a><span class="unvisited"> </span>
+<a id="L853"></a><span > </span>
+<a id="L854"></a><span class="visited"> </span>
+<a id="L855"></a><span > </span>
+<a id="L856"></a><span class="visited"> </span>
+<a id="L857"></a><span > </span>
+<a id="L858"></a><span > </span>
+<a id="L859"></a><span class="visited"> </span>
+<a id="L860"></a><span class="visited"> </span>
+<a id="L861"></a><span > </span>
+<a id="L862"></a><span class="unvisited"> </span>
+<a id="L863"></a><span class="visited"> </span>
+<a id="L864"></a><span class="visited"> </span>
+<a id="L865"></a><span > </span>
+<a id="L866"></a><span class="visited"> </span>
+<a id="L867"></a><span class="visited"> </span>
+<a id="L868"></a><span class="visited"> </span>
+<a id="L869"></a><span class="unvisited"> </span>
+<a id="L870"></a><span > </span>
+<a id="L871"></a><span > </span>
+<a id="L872"></a><span class="visited"> </span>
+<a id="L873"></a><span > </span>
+<a id="L874"></a><span class="visited"> </span>
+<a id="L875"></a><span > </span>
+<a id="L876"></a><span > </span>
+<a id="L877"></a><span class="visited"> </span>
+<a id="L878"></a><span class="visited"> </span>
+<a id="L879"></a><span class="unvisited"> </span>
+<a id="L880"></a><span class="visited"> </span>
+<a id="L881"></a><span class="visited"> </span>
+<a id="L882"></a><span > </span>
+<a id="L883"></a><span class="visited"> </span>
+<a id="L884"></a><span class="visited"> </span>
+<a id="L885"></a><span class="visited"> </span>
+<a id="L886"></a><span > </span>
+<a id="L887"></a><span class="visited"> </span>
+<a id="L888"></a><span class="visited"> </span>
+<a id="L889"></a><span class="visited"> </span>
+<a id="L890"></a><span class="visited"> </span>
+<a id="L891"></a><span class="unvisited"> </span>
+<a id="L892"></a><span > </span>
+<a id="L893"></a><span class="visited"> </span>
+<a id="L894"></a><span > </span>
+<a id="L895"></a><span class="visited"> </span>
+<a id="L896"></a><span > </span>
+<a id="L897"></a><span > </span>
+<a id="L898"></a><span class="visited"> </span>
+<a id="L899"></a><span class="visited"> </span>
+<a id="L900"></a><span class="unvisited"> </span>
+<a id="L901"></a><span class="visited"> </span>
+<a id="L902"></a><span class="visited"> </span>
+<a id="L903"></a><span > </span>
+<a id="L904"></a><span class="visited"> </span>
+<a id="L905"></a><span class="visited"> </span>
+<a id="L906"></a><span class="unvisited"> </span>
+<a id="L907"></a><span > </span>
+<a id="L908"></a><span > </span>
+<a id="L909"></a><span > </span>
+<a id="L910"></a><span > </span>
+<a id="L911"></a><span class="visited"> </span>
+<a id="L912"></a><span > </span>
+<a id="L913"></a><span > </span>
+<a id="L914"></a><span > </span>
+<a id="L915"></a><span > </span>
+<a id="L916"></a><span > </span>
+<a id="L917"></a><span > </span>
+<a id="L918"></a><span > </span>
+<a id="L919"></a><span > </span>
+<a id="L920"></a><span > </span>
+<a id="L921"></a><span > </span>
+<a id="L922"></a><span > </span>
+<a id="L923"></a><span > </span>
+<a id="L924"></a><span > </span>
+<a id="L925"></a><span > </span>
+<a id="L926"></a><span > </span>
+<a id="L927"></a><span > </span>
+<a id="L928"></a><span > </span>
+<a id="L929"></a><span > </span>
+<a id="L930"></a><span > </span>
+<a id="L931"></a><span > </span>
+<a id="L932"></a><span > </span>
+<a id="L933"></a><span > </span>
+<a id="L934"></a><span > </span>
+<a id="L935"></a><span > </span>
+<a id="L936"></a><span > </span>
+<a id="L937"></a><span > </span>
+<a id="L938"></a><span > </span>
+<a id="L939"></a><span > </span>
+<a id="L940"></a><span > </span>
+<a id="L941"></a><span > </span>
+<a id="L942"></a><span > </span>
+<a id="L943"></a><span > </span>
+<a id="L944"></a><span > </span>
+<a id="L945"></a><span > </span>
+<a id="L946"></a><span > </span>
+<a id="L947"></a><span > </span>
+<a id="L948"></a><span > </span>
+<a id="L949"></a><span > </span>
+<a id="L950"></a><span > </span>
+<a id="L951"></a><span > </span>
+<a id="L952"></a><span > </span>
+<a id="L953"></a><span > </span>
+<a id="L954"></a><span > </span>
+<a id="L955"></a><span > </span>
+<a id="L956"></a><span > </span>
+<a id="L957"></a><span > </span>
+<a id="L958"></a><span > </span>
+<a id="L959"></a><span > </span>
+<a id="L960"></a><span > </span>
+<a id="L961"></a><span > </span>
+<a id="L962"></a><span > </span>
+<a id="L963"></a><span > </span>
+<a id="L964"></a><span > </span>
+<a id="L965"></a><span > </span>
+<a id="L966"></a><span > </span>
+<a id="L967"></a><span > </span>
+<a id="L968"></a><span > </span>
+<a id="L969"></a><span > </span>
+<a id="L970"></a><span > </span>
+<a id="L971"></a><span > </span>
+<a id="L972"></a><span > </span>
+<a id="L973"></a><span > </span>
+<a id="L974"></a><span > </span>
+<a id="L975"></a><span > </span>
+<a id="L976"></a><span > </span>
+<a id="L977"></a><span > </span>
+<a id="L978"></a><span > </span>
+<a id="L979"></a><span > </span>
+<a id="L980"></a><span > </span>
+<a id="L981"></a><span > </span>
+<a id="L982"></a><span > </span>
+<a id="L983"></a><span > </span>
+<a id="L984"></a><span > </span>
+<a id="L985"></a><span > </span>
+<a id="L986"></a><span > </span>
+<a id="L987"></a><span > </span>
+<a id="L988"></a><span > </span>
+<a id="L989"></a><span > </span>
+<a id="L990"></a><span > </span>
+<a id="L991"></a><span > </span>
+<a id="L992"></a><span > </span>
+<a id="L993"></a><span > </span>
+<a id="L994"></a><span > </span>
+<a id="L995"></a><span class="visited"> </span>
+<a id="L996"></a><span > </span>
+<a id="L997"></a><span class="visited"> </span>
+<a id="L998"></a><span class="visited"> </span>
+<a id="L999"></a><span class="visited"> </span>
+<a id="L1000"></a><span class="visited"> </span>
+<a id="L1001"></a><span class="visited"> </span>
+<a id="L1002"></a><span > </span>
+<a id="L1003"></a><span class="visited"> </span>
+<a id="L1004"></a><span > </span>
+<a id="L1005"></a><span > </span>
+<a id="L1006"></a><span > </span>
+<a id="L1007"></a><span class="visited"> </span>
+<a id="L1008"></a><span class="visited"> </span>
+<a id="L1009"></a><span class="visited"> </span>
+<a id="L1010"></a><span > </span>
+<a id="L1011"></a><span > </span>
+<a id="L1012"></a><span > </span>
+<a id="L1013"></a><span > </span>
+<a id="L1014"></a><span > </span>
+<a id="L1015"></a><span > </span>
+<a id="L1016"></a><span class="unvisited"> </span>
+<a id="L1017"></a><span class="visited"> </span>
+<a id="L1018"></a><span class="visited"> </span>
+<a id="L1019"></a><span > </span>
+<a id="L1020"></a><span > </span>
+<a id="L1021"></a><span > </span>
+<a id="L1022"></a><span > </span>
+<a id="L1023"></a><span > </span>
+<a id="L1024"></a><span > </span>
+<a id="L1025"></a><span > </span>
+<a id="L1026"></a><span > </span>
+<a id="L1027"></a><span > </span>
+<a id="L1028"></a><span > </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1">   1</a>
+<a href="#L2">   2</a>
+<a href="#L3">   3</a>
+<a href="#L4">   4</a>
+<a href="#L5">   5</a>
+<a href="#L6">   6</a>
+<a href="#L7">   7</a>
+<a href="#L8">   8</a>
+<a href="#L9">   9</a>
+<a href="#L10">  10</a>
+<a href="#L11">  11</a>
+<a href="#L12">  12</a>
+<a href="#L13">  13</a>
+<a href="#L14">  14</a>
+<a href="#L15">  15</a>
+<a href="#L16">  16</a>
+<a href="#L17">  17</a>
+<a href="#L18">  18</a>
+<a href="#L19">  19</a>
+<a href="#L20">  20</a>
+<a href="#L21">  21</a>
+<a href="#L22">  22</a>
+<a href="#L23">  23</a>
+<a href="#L24">  24</a>
+<a href="#L25">  25</a>
+<a href="#L26">  26</a>
+<a href="#L27">  27</a>
+<a href="#L28">  28</a>
+<a href="#L29">  29</a>
+<a href="#L30">  30</a>
+<a href="#L31">  31</a>
+<a href="#L32">  32</a>
+<a href="#L33">  33</a>
+<a href="#L34">  34</a>
+<a href="#L35">  35</a>
+<a href="#L36">  36</a>
+<a href="#L37">  37</a>
+<a href="#L38">  38</a>
+<a href="#L39">  39</a>
+<a href="#L40">  40</a>
+<a href="#L41">  41</a>
+<a href="#L42">  42</a>
+<a href="#L43">  43</a>
+<a href="#L44">  44</a>
+<a href="#L45">  45</a>
+<a href="#L46">  46</a>
+<a href="#L47">  47</a>
+<a href="#L48">  48</a>
+<a href="#L49">  49</a>
+<a href="#L50">  50</a>
+<a href="#L51">  51</a>
+<a href="#L52">  52</a>
+<a href="#L53">  53</a>
+<a href="#L54">  54</a>
+<a href="#L55">  55</a>
+<a href="#L56">  56</a>
+<a href="#L57">  57</a>
+<a href="#L58">  58</a>
+<a href="#L59">  59</a>
+<a href="#L60">  60</a>
+<a href="#L61">  61</a>
+<a href="#L62">  62</a>
+<a href="#L63">  63</a>
+<a href="#L64">  64</a>
+<a href="#L65">  65</a>
+<a href="#L66">  66</a>
+<a href="#L67">  67</a>
+<a href="#L68">  68</a>
+<a href="#L69">  69</a>
+<a href="#L70">  70</a>
+<a href="#L71">  71</a>
+<a href="#L72">  72</a>
+<a href="#L73">  73</a>
+<a href="#L74">  74</a>
+<a href="#L75">  75</a>
+<a href="#L76">  76</a>
+<a href="#L77">  77</a>
+<a href="#L78">  78</a>
+<a href="#L79">  79</a>
+<a href="#L80">  80</a>
+<a href="#L81">  81</a>
+<a href="#L82">  82</a>
+<a href="#L83">  83</a>
+<a href="#L84">  84</a>
+<a href="#L85">  85</a>
+<a href="#L86">  86</a>
+<a href="#L87">  87</a>
+<a href="#L88">  88</a>
+<a href="#L89">  89</a>
+<a href="#L90">  90</a>
+<a href="#L91">  91</a>
+<a href="#L92">  92</a>
+<a href="#L93">  93</a>
+<a href="#L94">  94</a>
+<a href="#L95">  95</a>
+<a href="#L96">  96</a>
+<a href="#L97">  97</a>
+<a href="#L98">  98</a>
+<a href="#L99">  99</a>
+<a href="#L100"> 100</a>
+<a href="#L101"> 101</a>
+<a href="#L102"> 102</a>
+<a href="#L103"> 103</a>
+<a href="#L104"> 104</a>
+<a href="#L105"> 105</a>
+<a href="#L106"> 106</a>
+<a href="#L107"> 107</a>
+<a href="#L108"> 108</a>
+<a href="#L109"> 109</a>
+<a href="#L110"> 110</a>
+<a href="#L111"> 111</a>
+<a href="#L112"> 112</a>
+<a href="#L113"> 113</a>
+<a href="#L114"> 114</a>
+<a href="#L115"> 115</a>
+<a href="#L116"> 116</a>
+<a href="#L117"> 117</a>
+<a href="#L118"> 118</a>
+<a href="#L119"> 119</a>
+<a href="#L120"> 120</a>
+<a href="#L121"> 121</a>
+<a href="#L122"> 122</a>
+<a href="#L123"> 123</a>
+<a href="#L124"> 124</a>
+<a href="#L125"> 125</a>
+<a href="#L126"> 126</a>
+<a href="#L127"> 127</a>
+<a href="#L128"> 128</a>
+<a href="#L129"> 129</a>
+<a href="#L130"> 130</a>
+<a href="#L131"> 131</a>
+<a href="#L132"> 132</a>
+<a href="#L133"> 133</a>
+<a href="#L134"> 134</a>
+<a href="#L135"> 135</a>
+<a href="#L136"> 136</a>
+<a href="#L137"> 137</a>
+<a href="#L138"> 138</a>
+<a href="#L139"> 139</a>
+<a href="#L140"> 140</a>
+<a href="#L141"> 141</a>
+<a href="#L142"> 142</a>
+<a href="#L143"> 143</a>
+<a href="#L144"> 144</a>
+<a href="#L145"> 145</a>
+<a href="#L146"> 146</a>
+<a href="#L147"> 147</a>
+<a href="#L148"> 148</a>
+<a href="#L149"> 149</a>
+<a href="#L150"> 150</a>
+<a href="#L151"> 151</a>
+<a href="#L152"> 152</a>
+<a href="#L153"> 153</a>
+<a href="#L154"> 154</a>
+<a href="#L155"> 155</a>
+<a href="#L156"> 156</a>
+<a href="#L157"> 157</a>
+<a href="#L158"> 158</a>
+<a href="#L159"> 159</a>
+<a href="#L160"> 160</a>
+<a href="#L161"> 161</a>
+<a href="#L162"> 162</a>
+<a href="#L163"> 163</a>
+<a href="#L164"> 164</a>
+<a href="#L165"> 165</a>
+<a href="#L166"> 166</a>
+<a href="#L167"> 167</a>
+<a href="#L168"> 168</a>
+<a href="#L169"> 169</a>
+<a href="#L170"> 170</a>
+<a href="#L171"> 171</a>
+<a href="#L172"> 172</a>
+<a href="#L173"> 173</a>
+<a href="#L174"> 174</a>
+<a href="#L175"> 175</a>
+<a href="#L176"> 176</a>
+<a href="#L177"> 177</a>
+<a href="#L178"> 178</a>
+<a href="#L179"> 179</a>
+<a href="#L180"> 180</a>
+<a href="#L181"> 181</a>
+<a href="#L182"> 182</a>
+<a href="#L183"> 183</a>
+<a href="#L184"> 184</a>
+<a href="#L185"> 185</a>
+<a href="#L186"> 186</a>
+<a href="#L187"> 187</a>
+<a href="#L188"> 188</a>
+<a href="#L189"> 189</a>
+<a href="#L190"> 190</a>
+<a href="#L191"> 191</a>
+<a href="#L192"> 192</a>
+<a href="#L193"> 193</a>
+<a href="#L194"> 194</a>
+<a href="#L195"> 195</a>
+<a href="#L196"> 196</a>
+<a href="#L197"> 197</a>
+<a href="#L198"> 198</a>
+<a href="#L199"> 199</a>
+<a href="#L200"> 200</a>
+<a href="#L201"> 201</a>
+<a href="#L202"> 202</a>
+<a href="#L203"> 203</a>
+<a href="#L204"> 204</a>
+<a href="#L205"> 205</a>
+<a href="#L206"> 206</a>
+<a href="#L207"> 207</a>
+<a href="#L208"> 208</a>
+<a href="#L209"> 209</a>
+<a href="#L210"> 210</a>
+<a href="#L211"> 211</a>
+<a href="#L212"> 212</a>
+<a href="#L213"> 213</a>
+<a href="#L214"> 214</a>
+<a href="#L215"> 215</a>
+<a href="#L216"> 216</a>
+<a href="#L217"> 217</a>
+<a href="#L218"> 218</a>
+<a href="#L219"> 219</a>
+<a href="#L220"> 220</a>
+<a href="#L221"> 221</a>
+<a href="#L222"> 222</a>
+<a href="#L223"> 223</a>
+<a href="#L224"> 224</a>
+<a href="#L225"> 225</a>
+<a href="#L226"> 226</a>
+<a href="#L227"> 227</a>
+<a href="#L228"> 228</a>
+<a href="#L229"> 229</a>
+<a href="#L230"> 230</a>
+<a href="#L231"> 231</a>
+<a href="#L232"> 232</a>
+<a href="#L233"> 233</a>
+<a href="#L234"> 234</a>
+<a href="#L235"> 235</a>
+<a href="#L236"> 236</a>
+<a href="#L237"> 237</a>
+<a href="#L238"> 238</a>
+<a href="#L239"> 239</a>
+<a href="#L240"> 240</a>
+<a href="#L241"> 241</a>
+<a href="#L242"> 242</a>
+<a href="#L243"> 243</a>
+<a href="#L244"> 244</a>
+<a href="#L245"> 245</a>
+<a href="#L246"> 246</a>
+<a href="#L247"> 247</a>
+<a href="#L248"> 248</a>
+<a href="#L249"> 249</a>
+<a href="#L250"> 250</a>
+<a href="#L251"> 251</a>
+<a href="#L252"> 252</a>
+<a href="#L253"> 253</a>
+<a href="#L254"> 254</a>
+<a href="#L255"> 255</a>
+<a href="#L256"> 256</a>
+<a href="#L257"> 257</a>
+<a href="#L258"> 258</a>
+<a href="#L259"> 259</a>
+<a href="#L260"> 260</a>
+<a href="#L261"> 261</a>
+<a href="#L262"> 262</a>
+<a href="#L263"> 263</a>
+<a href="#L264"> 264</a>
+<a href="#L265"> 265</a>
+<a href="#L266"> 266</a>
+<a href="#L267"> 267</a>
+<a href="#L268"> 268</a>
+<a href="#L269"> 269</a>
+<a href="#L270"> 270</a>
+<a href="#L271"> 271</a>
+<a href="#L272"> 272</a>
+<a href="#L273"> 273</a>
+<a href="#L274"> 274</a>
+<a href="#L275"> 275</a>
+<a href="#L276"> 276</a>
+<a href="#L277"> 277</a>
+<a href="#L278"> 278</a>
+<a href="#L279"> 279</a>
+<a href="#L280"> 280</a>
+<a href="#L281"> 281</a>
+<a href="#L282"> 282</a>
+<a href="#L283"> 283</a>
+<a href="#L284"> 284</a>
+<a href="#L285"> 285</a>
+<a href="#L286"> 286</a>
+<a href="#L287"> 287</a>
+<a href="#L288"> 288</a>
+<a href="#L289"> 289</a>
+<a href="#L290"> 290</a>
+<a href="#L291"> 291</a>
+<a href="#L292"> 292</a>
+<a href="#L293"> 293</a>
+<a href="#L294"> 294</a>
+<a href="#L295"> 295</a>
+<a href="#L296"> 296</a>
+<a href="#L297"> 297</a>
+<a href="#L298"> 298</a>
+<a href="#L299"> 299</a>
+<a href="#L300"> 300</a>
+<a href="#L301"> 301</a>
+<a href="#L302"> 302</a>
+<a href="#L303"> 303</a>
+<a href="#L304"> 304</a>
+<a href="#L305"> 305</a>
+<a href="#L306"> 306</a>
+<a href="#L307"> 307</a>
+<a href="#L308"> 308</a>
+<a href="#L309"> 309</a>
+<a href="#L310"> 310</a>
+<a href="#L311"> 311</a>
+<a href="#L312"> 312</a>
+<a href="#L313"> 313</a>
+<a href="#L314"> 314</a>
+<a href="#L315"> 315</a>
+<a href="#L316"> 316</a>
+<a href="#L317"> 317</a>
+<a href="#L318"> 318</a>
+<a href="#L319"> 319</a>
+<a href="#L320"> 320</a>
+<a href="#L321"> 321</a>
+<a href="#L322"> 322</a>
+<a href="#L323"> 323</a>
+<a href="#L324"> 324</a>
+<a href="#L325"> 325</a>
+<a href="#L326"> 326</a>
+<a href="#L327"> 327</a>
+<a href="#L328"> 328</a>
+<a href="#L329"> 329</a>
+<a href="#L330"> 330</a>
+<a href="#L331"> 331</a>
+<a href="#L332"> 332</a>
+<a href="#L333"> 333</a>
+<a href="#L334"> 334</a>
+<a href="#L335"> 335</a>
+<a href="#L336"> 336</a>
+<a href="#L337"> 337</a>
+<a href="#L338"> 338</a>
+<a href="#L339"> 339</a>
+<a href="#L340"> 340</a>
+<a href="#L341"> 341</a>
+<a href="#L342"> 342</a>
+<a href="#L343"> 343</a>
+<a href="#L344"> 344</a>
+<a href="#L345"> 345</a>
+<a href="#L346"> 346</a>
+<a href="#L347"> 347</a>
+<a href="#L348"> 348</a>
+<a href="#L349"> 349</a>
+<a href="#L350"> 350</a>
+<a href="#L351"> 351</a>
+<a href="#L352"> 352</a>
+<a href="#L353"> 353</a>
+<a href="#L354"> 354</a>
+<a href="#L355"> 355</a>
+<a href="#L356"> 356</a>
+<a href="#L357"> 357</a>
+<a href="#L358"> 358</a>
+<a href="#L359"> 359</a>
+<a href="#L360"> 360</a>
+<a href="#L361"> 361</a>
+<a href="#L362"> 362</a>
+<a href="#L363"> 363</a>
+<a href="#L364"> 364</a>
+<a href="#L365"> 365</a>
+<a href="#L366"> 366</a>
+<a href="#L367"> 367</a>
+<a href="#L368"> 368</a>
+<a href="#L369"> 369</a>
+<a href="#L370"> 370</a>
+<a href="#L371"> 371</a>
+<a href="#L372"> 372</a>
+<a href="#L373"> 373</a>
+<a href="#L374"> 374</a>
+<a href="#L375"> 375</a>
+<a href="#L376"> 376</a>
+<a href="#L377"> 377</a>
+<a href="#L378"> 378</a>
+<a href="#L379"> 379</a>
+<a href="#L380"> 380</a>
+<a href="#L381"> 381</a>
+<a href="#L382"> 382</a>
+<a href="#L383"> 383</a>
+<a href="#L384"> 384</a>
+<a href="#L385"> 385</a>
+<a href="#L386"> 386</a>
+<a href="#L387"> 387</a>
+<a href="#L388"> 388</a>
+<a href="#L389"> 389</a>
+<a href="#L390"> 390</a>
+<a href="#L391"> 391</a>
+<a href="#L392"> 392</a>
+<a href="#L393"> 393</a>
+<a href="#L394"> 394</a>
+<a href="#L395"> 395</a>
+<a href="#L396"> 396</a>
+<a href="#L397"> 397</a>
+<a href="#L398"> 398</a>
+<a href="#L399"> 399</a>
+<a href="#L400"> 400</a>
+<a href="#L401"> 401</a>
+<a href="#L402"> 402</a>
+<a href="#L403"> 403</a>
+<a href="#L404"> 404</a>
+<a href="#L405"> 405</a>
+<a href="#L406"> 406</a>
+<a href="#L407"> 407</a>
+<a href="#L408"> 408</a>
+<a href="#L409"> 409</a>
+<a href="#L410"> 410</a>
+<a href="#L411"> 411</a>
+<a href="#L412"> 412</a>
+<a href="#L413"> 413</a>
+<a href="#L414"> 414</a>
+<a href="#L415"> 415</a>
+<a href="#L416"> 416</a>
+<a href="#L417"> 417</a>
+<a href="#L418"> 418</a>
+<a href="#L419"> 419</a>
+<a href="#L420"> 420</a>
+<a href="#L421"> 421</a>
+<a href="#L422"> 422</a>
+<a href="#L423"> 423</a>
+<a href="#L424"> 424</a>
+<a href="#L425"> 425</a>
+<a href="#L426"> 426</a>
+<a href="#L427"> 427</a>
+<a href="#L428"> 428</a>
+<a href="#L429"> 429</a>
+<a href="#L430"> 430</a>
+<a href="#L431"> 431</a>
+<a href="#L432"> 432</a>
+<a href="#L433"> 433</a>
+<a href="#L434"> 434</a>
+<a href="#L435"> 435</a>
+<a href="#L436"> 436</a>
+<a href="#L437"> 437</a>
+<a href="#L438"> 438</a>
+<a href="#L439"> 439</a>
+<a href="#L440"> 440</a>
+<a href="#L441"> 441</a>
+<a href="#L442"> 442</a>
+<a href="#L443"> 443</a>
+<a href="#L444"> 444</a>
+<a href="#L445"> 445</a>
+<a href="#L446"> 446</a>
+<a href="#L447"> 447</a>
+<a href="#L448"> 448</a>
+<a href="#L449"> 449</a>
+<a href="#L450"> 450</a>
+<a href="#L451"> 451</a>
+<a href="#L452"> 452</a>
+<a href="#L453"> 453</a>
+<a href="#L454"> 454</a>
+<a href="#L455"> 455</a>
+<a href="#L456"> 456</a>
+<a href="#L457"> 457</a>
+<a href="#L458"> 458</a>
+<a href="#L459"> 459</a>
+<a href="#L460"> 460</a>
+<a href="#L461"> 461</a>
+<a href="#L462"> 462</a>
+<a href="#L463"> 463</a>
+<a href="#L464"> 464</a>
+<a href="#L465"> 465</a>
+<a href="#L466"> 466</a>
+<a href="#L467"> 467</a>
+<a href="#L468"> 468</a>
+<a href="#L469"> 469</a>
+<a href="#L470"> 470</a>
+<a href="#L471"> 471</a>
+<a href="#L472"> 472</a>
+<a href="#L473"> 473</a>
+<a href="#L474"> 474</a>
+<a href="#L475"> 475</a>
+<a href="#L476"> 476</a>
+<a href="#L477"> 477</a>
+<a href="#L478"> 478</a>
+<a href="#L479"> 479</a>
+<a href="#L480"> 480</a>
+<a href="#L481"> 481</a>
+<a href="#L482"> 482</a>
+<a href="#L483"> 483</a>
+<a href="#L484"> 484</a>
+<a href="#L485"> 485</a>
+<a href="#L486"> 486</a>
+<a href="#L487"> 487</a>
+<a href="#L488"> 488</a>
+<a href="#L489"> 489</a>
+<a href="#L490"> 490</a>
+<a href="#L491"> 491</a>
+<a href="#L492"> 492</a>
+<a href="#L493"> 493</a>
+<a href="#L494"> 494</a>
+<a href="#L495"> 495</a>
+<a href="#L496"> 496</a>
+<a href="#L497"> 497</a>
+<a href="#L498"> 498</a>
+<a href="#L499"> 499</a>
+<a href="#L500"> 500</a>
+<a href="#L501"> 501</a>
+<a href="#L502"> 502</a>
+<a href="#L503"> 503</a>
+<a href="#L504"> 504</a>
+<a href="#L505"> 505</a>
+<a href="#L506"> 506</a>
+<a href="#L507"> 507</a>
+<a href="#L508"> 508</a>
+<a href="#L509"> 509</a>
+<a href="#L510"> 510</a>
+<a href="#L511"> 511</a>
+<a href="#L512"> 512</a>
+<a href="#L513"> 513</a>
+<a href="#L514"> 514</a>
+<a href="#L515"> 515</a>
+<a href="#L516"> 516</a>
+<a href="#L517"> 517</a>
+<a href="#L518"> 518</a>
+<a href="#L519"> 519</a>
+<a href="#L520"> 520</a>
+<a href="#L521"> 521</a>
+<a href="#L522"> 522</a>
+<a href="#L523"> 523</a>
+<a href="#L524"> 524</a>
+<a href="#L525"> 525</a>
+<a href="#L526"> 526</a>
+<a href="#L527"> 527</a>
+<a href="#L528"> 528</a>
+<a href="#L529"> 529</a>
+<a href="#L530"> 530</a>
+<a href="#L531"> 531</a>
+<a href="#L532"> 532</a>
+<a href="#L533"> 533</a>
+<a href="#L534"> 534</a>
+<a href="#L535"> 535</a>
+<a href="#L536"> 536</a>
+<a href="#L537"> 537</a>
+<a href="#L538"> 538</a>
+<a href="#L539"> 539</a>
+<a href="#L540"> 540</a>
+<a href="#L541"> 541</a>
+<a href="#L542"> 542</a>
+<a href="#L543"> 543</a>
+<a href="#L544"> 544</a>
+<a href="#L545"> 545</a>
+<a href="#L546"> 546</a>
+<a href="#L547"> 547</a>
+<a href="#L548"> 548</a>
+<a href="#L549"> 549</a>
+<a href="#L550"> 550</a>
+<a href="#L551"> 551</a>
+<a href="#L552"> 552</a>
+<a href="#L553"> 553</a>
+<a href="#L554"> 554</a>
+<a href="#L555"> 555</a>
+<a href="#L556"> 556</a>
+<a href="#L557"> 557</a>
+<a href="#L558"> 558</a>
+<a href="#L559"> 559</a>
+<a href="#L560"> 560</a>
+<a href="#L561"> 561</a>
+<a href="#L562"> 562</a>
+<a href="#L563"> 563</a>
+<a href="#L564"> 564</a>
+<a href="#L565"> 565</a>
+<a href="#L566"> 566</a>
+<a href="#L567"> 567</a>
+<a href="#L568"> 568</a>
+<a href="#L569"> 569</a>
+<a href="#L570"> 570</a>
+<a href="#L571"> 571</a>
+<a href="#L572"> 572</a>
+<a href="#L573"> 573</a>
+<a href="#L574"> 574</a>
+<a href="#L575"> 575</a>
+<a href="#L576"> 576</a>
+<a href="#L577"> 577</a>
+<a href="#L578"> 578</a>
+<a href="#L579"> 579</a>
+<a href="#L580"> 580</a>
+<a href="#L581"> 581</a>
+<a href="#L582"> 582</a>
+<a href="#L583"> 583</a>
+<a href="#L584"> 584</a>
+<a href="#L585"> 585</a>
+<a href="#L586"> 586</a>
+<a href="#L587"> 587</a>
+<a href="#L588"> 588</a>
+<a href="#L589"> 589</a>
+<a href="#L590"> 590</a>
+<a href="#L591"> 591</a>
+<a href="#L592"> 592</a>
+<a href="#L593"> 593</a>
+<a href="#L594"> 594</a>
+<a href="#L595"> 595</a>
+<a href="#L596"> 596</a>
+<a href="#L597"> 597</a>
+<a href="#L598"> 598</a>
+<a href="#L599"> 599</a>
+<a href="#L600"> 600</a>
+<a href="#L601"> 601</a>
+<a href="#L602"> 602</a>
+<a href="#L603"> 603</a>
+<a href="#L604"> 604</a>
+<a href="#L605"> 605</a>
+<a href="#L606"> 606</a>
+<a href="#L607"> 607</a>
+<a href="#L608"> 608</a>
+<a href="#L609"> 609</a>
+<a href="#L610"> 610</a>
+<a href="#L611"> 611</a>
+<a href="#L612"> 612</a>
+<a href="#L613"> 613</a>
+<a href="#L614"> 614</a>
+<a href="#L615"> 615</a>
+<a href="#L616"> 616</a>
+<a href="#L617"> 617</a>
+<a href="#L618"> 618</a>
+<a href="#L619"> 619</a>
+<a href="#L620"> 620</a>
+<a href="#L621"> 621</a>
+<a href="#L622"> 622</a>
+<a href="#L623"> 623</a>
+<a href="#L624"> 624</a>
+<a href="#L625"> 625</a>
+<a href="#L626"> 626</a>
+<a href="#L627"> 627</a>
+<a href="#L628"> 628</a>
+<a href="#L629"> 629</a>
+<a href="#L630"> 630</a>
+<a href="#L631"> 631</a>
+<a href="#L632"> 632</a>
+<a href="#L633"> 633</a>
+<a href="#L634"> 634</a>
+<a href="#L635"> 635</a>
+<a href="#L636"> 636</a>
+<a href="#L637"> 637</a>
+<a href="#L638"> 638</a>
+<a href="#L639"> 639</a>
+<a href="#L640"> 640</a>
+<a href="#L641"> 641</a>
+<a href="#L642"> 642</a>
+<a href="#L643"> 643</a>
+<a href="#L644"> 644</a>
+<a href="#L645"> 645</a>
+<a href="#L646"> 646</a>
+<a href="#L647"> 647</a>
+<a href="#L648"> 648</a>
+<a href="#L649"> 649</a>
+<a href="#L650"> 650</a>
+<a href="#L651"> 651</a>
+<a href="#L652"> 652</a>
+<a href="#L653"> 653</a>
+<a href="#L654"> 654</a>
+<a href="#L655"> 655</a>
+<a href="#L656"> 656</a>
+<a href="#L657"> 657</a>
+<a href="#L658"> 658</a>
+<a href="#L659"> 659</a>
+<a href="#L660"> 660</a>
+<a href="#L661"> 661</a>
+<a href="#L662"> 662</a>
+<a href="#L663"> 663</a>
+<a href="#L664"> 664</a>
+<a href="#L665"> 665</a>
+<a href="#L666"> 666</a>
+<a href="#L667"> 667</a>
+<a href="#L668"> 668</a>
+<a href="#L669"> 669</a>
+<a href="#L670"> 670</a>
+<a href="#L671"> 671</a>
+<a href="#L672"> 672</a>
+<a href="#L673"> 673</a>
+<a href="#L674"> 674</a>
+<a href="#L675"> 675</a>
+<a href="#L676"> 676</a>
+<a href="#L677"> 677</a>
+<a href="#L678"> 678</a>
+<a href="#L679"> 679</a>
+<a href="#L680"> 680</a>
+<a href="#L681"> 681</a>
+<a href="#L682"> 682</a>
+<a href="#L683"> 683</a>
+<a href="#L684"> 684</a>
+<a href="#L685"> 685</a>
+<a href="#L686"> 686</a>
+<a href="#L687"> 687</a>
+<a href="#L688"> 688</a>
+<a href="#L689"> 689</a>
+<a href="#L690"> 690</a>
+<a href="#L691"> 691</a>
+<a href="#L692"> 692</a>
+<a href="#L693"> 693</a>
+<a href="#L694"> 694</a>
+<a href="#L695"> 695</a>
+<a href="#L696"> 696</a>
+<a href="#L697"> 697</a>
+<a href="#L698"> 698</a>
+<a href="#L699"> 699</a>
+<a href="#L700"> 700</a>
+<a href="#L701"> 701</a>
+<a href="#L702"> 702</a>
+<a href="#L703"> 703</a>
+<a href="#L704"> 704</a>
+<a href="#L705"> 705</a>
+<a href="#L706"> 706</a>
+<a href="#L707"> 707</a>
+<a href="#L708"> 708</a>
+<a href="#L709"> 709</a>
+<a href="#L710"> 710</a>
+<a href="#L711"> 711</a>
+<a href="#L712"> 712</a>
+<a href="#L713"> 713</a>
+<a href="#L714"> 714</a>
+<a href="#L715"> 715</a>
+<a href="#L716"> 716</a>
+<a href="#L717"> 717</a>
+<a href="#L718"> 718</a>
+<a href="#L719"> 719</a>
+<a href="#L720"> 720</a>
+<a href="#L721"> 721</a>
+<a href="#L722"> 722</a>
+<a href="#L723"> 723</a>
+<a href="#L724"> 724</a>
+<a href="#L725"> 725</a>
+<a href="#L726"> 726</a>
+<a href="#L727"> 727</a>
+<a href="#L728"> 728</a>
+<a href="#L729"> 729</a>
+<a href="#L730"> 730</a>
+<a href="#L731"> 731</a>
+<a href="#L732"> 732</a>
+<a href="#L733"> 733</a>
+<a href="#L734"> 734</a>
+<a href="#L735"> 735</a>
+<a href="#L736"> 736</a>
+<a href="#L737"> 737</a>
+<a href="#L738"> 738</a>
+<a href="#L739"> 739</a>
+<a href="#L740"> 740</a>
+<a href="#L741"> 741</a>
+<a href="#L742"> 742</a>
+<a href="#L743"> 743</a>
+<a href="#L744"> 744</a>
+<a href="#L745"> 745</a>
+<a href="#L746"> 746</a>
+<a href="#L747"> 747</a>
+<a href="#L748"> 748</a>
+<a href="#L749"> 749</a>
+<a href="#L750"> 750</a>
+<a href="#L751"> 751</a>
+<a href="#L752"> 752</a>
+<a href="#L753"> 753</a>
+<a href="#L754"> 754</a>
+<a href="#L755"> 755</a>
+<a href="#L756"> 756</a>
+<a href="#L757"> 757</a>
+<a href="#L758"> 758</a>
+<a href="#L759"> 759</a>
+<a href="#L760"> 760</a>
+<a href="#L761"> 761</a>
+<a href="#L762"> 762</a>
+<a href="#L763"> 763</a>
+<a href="#L764"> 764</a>
+<a href="#L765"> 765</a>
+<a href="#L766"> 766</a>
+<a href="#L767"> 767</a>
+<a href="#L768"> 768</a>
+<a href="#L769"> 769</a>
+<a href="#L770"> 770</a>
+<a href="#L771"> 771</a>
+<a href="#L772"> 772</a>
+<a href="#L773"> 773</a>
+<a href="#L774"> 774</a>
+<a href="#L775"> 775</a>
+<a href="#L776"> 776</a>
+<a href="#L777"> 777</a>
+<a href="#L778"> 778</a>
+<a href="#L779"> 779</a>
+<a href="#L780"> 780</a>
+<a href="#L781"> 781</a>
+<a href="#L782"> 782</a>
+<a href="#L783"> 783</a>
+<a href="#L784"> 784</a>
+<a href="#L785"> 785</a>
+<a href="#L786"> 786</a>
+<a href="#L787"> 787</a>
+<a href="#L788"> 788</a>
+<a href="#L789"> 789</a>
+<a href="#L790"> 790</a>
+<a href="#L791"> 791</a>
+<a href="#L792"> 792</a>
+<a href="#L793"> 793</a>
+<a href="#L794"> 794</a>
+<a href="#L795"> 795</a>
+<a href="#L796"> 796</a>
+<a href="#L797"> 797</a>
+<a href="#L798"> 798</a>
+<a href="#L799"> 799</a>
+<a href="#L800"> 800</a>
+<a href="#L801"> 801</a>
+<a href="#L802"> 802</a>
+<a href="#L803"> 803</a>
+<a href="#L804"> 804</a>
+<a href="#L805"> 805</a>
+<a href="#L806"> 806</a>
+<a href="#L807"> 807</a>
+<a href="#L808"> 808</a>
+<a href="#L809"> 809</a>
+<a href="#L810"> 810</a>
+<a href="#L811"> 811</a>
+<a href="#L812"> 812</a>
+<a href="#L813"> 813</a>
+<a href="#L814"> 814</a>
+<a href="#L815"> 815</a>
+<a href="#L816"> 816</a>
+<a href="#L817"> 817</a>
+<a href="#L818"> 818</a>
+<a href="#L819"> 819</a>
+<a href="#L820"> 820</a>
+<a href="#L821"> 821</a>
+<a href="#L822"> 822</a>
+<a href="#L823"> 823</a>
+<a href="#L824"> 824</a>
+<a href="#L825"> 825</a>
+<a href="#L826"> 826</a>
+<a href="#L827"> 827</a>
+<a href="#L828"> 828</a>
+<a href="#L829"> 829</a>
+<a href="#L830"> 830</a>
+<a href="#L831"> 831</a>
+<a href="#L832"> 832</a>
+<a href="#L833"> 833</a>
+<a href="#L834"> 834</a>
+<a href="#L835"> 835</a>
+<a href="#L836"> 836</a>
+<a href="#L837"> 837</a>
+<a href="#L838"> 838</a>
+<a href="#L839"> 839</a>
+<a href="#L840"> 840</a>
+<a href="#L841"> 841</a>
+<a href="#L842"> 842</a>
+<a href="#L843"> 843</a>
+<a href="#L844"> 844</a>
+<a href="#L845"> 845</a>
+<a href="#L846"> 846</a>
+<a href="#L847"> 847</a>
+<a href="#L848"> 848</a>
+<a href="#L849"> 849</a>
+<a href="#L850"> 850</a>
+<a href="#L851"> 851</a>
+<a href="#L852"> 852</a>
+<a href="#L853"> 853</a>
+<a href="#L854"> 854</a>
+<a href="#L855"> 855</a>
+<a href="#L856"> 856</a>
+<a href="#L857"> 857</a>
+<a href="#L858"> 858</a>
+<a href="#L859"> 859</a>
+<a href="#L860"> 860</a>
+<a href="#L861"> 861</a>
+<a href="#L862"> 862</a>
+<a href="#L863"> 863</a>
+<a href="#L864"> 864</a>
+<a href="#L865"> 865</a>
+<a href="#L866"> 866</a>
+<a href="#L867"> 867</a>
+<a href="#L868"> 868</a>
+<a href="#L869"> 869</a>
+<a href="#L870"> 870</a>
+<a href="#L871"> 871</a>
+<a href="#L872"> 872</a>
+<a href="#L873"> 873</a>
+<a href="#L874"> 874</a>
+<a href="#L875"> 875</a>
+<a href="#L876"> 876</a>
+<a href="#L877"> 877</a>
+<a href="#L878"> 878</a>
+<a href="#L879"> 879</a>
+<a href="#L880"> 880</a>
+<a href="#L881"> 881</a>
+<a href="#L882"> 882</a>
+<a href="#L883"> 883</a>
+<a href="#L884"> 884</a>
+<a href="#L885"> 885</a>
+<a href="#L886"> 886</a>
+<a href="#L887"> 887</a>
+<a href="#L888"> 888</a>
+<a href="#L889"> 889</a>
+<a href="#L890"> 890</a>
+<a href="#L891"> 891</a>
+<a href="#L892"> 892</a>
+<a href="#L893"> 893</a>
+<a href="#L894"> 894</a>
+<a href="#L895"> 895</a>
+<a href="#L896"> 896</a>
+<a href="#L897"> 897</a>
+<a href="#L898"> 898</a>
+<a href="#L899"> 899</a>
+<a href="#L900"> 900</a>
+<a href="#L901"> 901</a>
+<a href="#L902"> 902</a>
+<a href="#L903"> 903</a>
+<a href="#L904"> 904</a>
+<a href="#L905"> 905</a>
+<a href="#L906"> 906</a>
+<a href="#L907"> 907</a>
+<a href="#L908"> 908</a>
+<a href="#L909"> 909</a>
+<a href="#L910"> 910</a>
+<a href="#L911"> 911</a>
+<a href="#L912"> 912</a>
+<a href="#L913"> 913</a>
+<a href="#L914"> 914</a>
+<a href="#L915"> 915</a>
+<a href="#L916"> 916</a>
+<a href="#L917"> 917</a>
+<a href="#L918"> 918</a>
+<a href="#L919"> 919</a>
+<a href="#L920"> 920</a>
+<a href="#L921"> 921</a>
+<a href="#L922"> 922</a>
+<a href="#L923"> 923</a>
+<a href="#L924"> 924</a>
+<a href="#L925"> 925</a>
+<a href="#L926"> 926</a>
+<a href="#L927"> 927</a>
+<a href="#L928"> 928</a>
+<a href="#L929"> 929</a>
+<a href="#L930"> 930</a>
+<a href="#L931"> 931</a>
+<a href="#L932"> 932</a>
+<a href="#L933"> 933</a>
+<a href="#L934"> 934</a>
+<a href="#L935"> 935</a>
+<a href="#L936"> 936</a>
+<a href="#L937"> 937</a>
+<a href="#L938"> 938</a>
+<a href="#L939"> 939</a>
+<a href="#L940"> 940</a>
+<a href="#L941"> 941</a>
+<a href="#L942"> 942</a>
+<a href="#L943"> 943</a>
+<a href="#L944"> 944</a>
+<a href="#L945"> 945</a>
+<a href="#L946"> 946</a>
+<a href="#L947"> 947</a>
+<a href="#L948"> 948</a>
+<a href="#L949"> 949</a>
+<a href="#L950"> 950</a>
+<a href="#L951"> 951</a>
+<a href="#L952"> 952</a>
+<a href="#L953"> 953</a>
+<a href="#L954"> 954</a>
+<a href="#L955"> 955</a>
+<a href="#L956"> 956</a>
+<a href="#L957"> 957</a>
+<a href="#L958"> 958</a>
+<a href="#L959"> 959</a>
+<a href="#L960"> 960</a>
+<a href="#L961"> 961</a>
+<a href="#L962"> 962</a>
+<a href="#L963"> 963</a>
+<a href="#L964"> 964</a>
+<a href="#L965"> 965</a>
+<a href="#L966"> 966</a>
+<a href="#L967"> 967</a>
+<a href="#L968"> 968</a>
+<a href="#L969"> 969</a>
+<a href="#L970"> 970</a>
+<a href="#L971"> 971</a>
+<a href="#L972"> 972</a>
+<a href="#L973"> 973</a>
+<a href="#L974"> 974</a>
+<a href="#L975"> 975</a>
+<a href="#L976"> 976</a>
+<a href="#L977"> 977</a>
+<a href="#L978"> 978</a>
+<a href="#L979"> 979</a>
+<a href="#L980"> 980</a>
+<a href="#L981"> 981</a>
+<a href="#L982"> 982</a>
+<a href="#L983"> 983</a>
+<a href="#L984"> 984</a>
+<a href="#L985"> 985</a>
+<a href="#L986"> 986</a>
+<a href="#L987"> 987</a>
+<a href="#L988"> 988</a>
+<a href="#L989"> 989</a>
+<a href="#L990"> 990</a>
+<a href="#L991"> 991</a>
+<a href="#L992"> 992</a>
+<a href="#L993"> 993</a>
+<a href="#L994"> 994</a>
+<a href="#L995"> 995</a>
+<a href="#L996"> 996</a>
+<a href="#L997"> 997</a>
+<a href="#L998"> 998</a>
+<a href="#L999"> 999</a>
+<a href="#L1000">1000</a>
+<a href="#L1001">1001</a>
+<a href="#L1002">1002</a>
+<a href="#L1003">1003</a>
+<a href="#L1004">1004</a>
+<a href="#L1005">1005</a>
+<a href="#L1006">1006</a>
+<a href="#L1007">1007</a>
+<a href="#L1008">1008</a>
+<a href="#L1009">1009</a>
+<a href="#L1010">1010</a>
+<a href="#L1011">1011</a>
+<a href="#L1012">1012</a>
+<a href="#L1013">1013</a>
+<a href="#L1014">1014</a>
+<a href="#L1015">1015</a>
+<a href="#L1016">1016</a>
+<a href="#L1017">1017</a>
+<a href="#L1018">1018</a>
+<a href="#L1019">1019</a>
+<a href="#L1020">1020</a>
+<a href="#L1021">1021</a>
+<a href="#L1022">1022</a>
+<a href="#L1023">1023</a>
+<a href="#L1024">1024</a>
+<a href="#L1025">1025</a>
+<a href="#L1026">1026</a>
+<a href="#L1027">1027</a>
+<a href="#L1028">1028</a>
+</pre>
+        <pre id="code">
+(*
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+*)
+
+open Syntax
+open Core
+open ErrorUtils
+open MonadUtil
+open Result.Let_syntax
+open Big_int
+open Stdint
+open TypeUtil
+open Integer256
+
+exception IntOverflow
+exception IntUnderflow
+
+module ScillaBuiltIns
+    (SR : Rep)
+    (ER : Rep) = struct
+
+  module BuiltinTypeUtilities = TypeUtilities (SR) (ER)
+  open BuiltinTypeUtilities
+
+  let print_literal_list ls =
+    <span data-count="15">P</span>rettyPrinters.pp_literal_list ls
+
+  let builtin_fail name ls =
+    <span data-count="15">f</span>ail0 @@ sprintf "Cannot apply built-in %s to a list of arguments:%s."
+      name (print_literal_list ls)
+
+  module UsefulLiterals = struct
+    let true_lit = <span data-count="574">A</span>DTValue ("True", [], [])
+    let false_lit = <span data-count="574">A</span>DTValue ("False", [], [])
+
+    let some_lit l =
+      let%bind t = literal_type l in
+      pure @@ ADTValue ("Some", [t], [l])
+
+    let none_lit t = <span data-count="20">A</span>DTValue ("None", [t], [])
+
+    let pair_lit l1 l2 =
+      let%bind t1 = literal_type l1 in
+      let%bind t2 = literal_type l2 in
+      pure @@ ADTValue ("Pair", [t1;t2], [l1;l2])
+
+    let to_Bool b = <span data-count="308">i</span>f b then <span data-count="110">t</span>rue_lit else <span data-count="198">f</span>alse_lit
+  end
+
+  (* Convert int_lit to raw byte string. *)
+  let bstring_from_int_lit = <span data-count="574">f</span>unction
+    | <span data-count="3">I</span>nt32L i -&gt;
+      let buf = <span data-count="3">B</span>ytes.create 4 in
+      <span data-count="3">l</span>et _ = <span data-count="3">I</span>nt32.to_bytes_big_endian i buf 0 in
+        <span data-count="3">B</span>ytes.to_string buf
+    | <span data-count="3">I</span>nt64L i -&gt;
+      let buf = <span data-count="3">B</span>ytes.create 8 in
+      <span data-count="3">l</span>et _ = <span data-count="3">I</span>nt64.to_bytes_big_endian i buf 0 in
+        <span data-count="3">B</span>ytes.to_string buf
+    | <span data-count="5">I</span>nt128L i -&gt;
+      let buf = <span data-count="5">B</span>ytes.create 16 in
+      <span data-count="5">l</span>et _ = <span data-count="5">I</span>nt128.to_bytes_big_endian i buf 0 in
+        <span data-count="5">B</span>ytes.to_string buf
+    | <span data-count="3">I</span>nt256L i -&gt;
+      let buf = <span data-count="3">B</span>ytes.create 32 in
+      <span data-count="3">l</span>et _ = <span data-count="3">I</span>nt256.to_bytes_big_endian i buf 0 in
+        <span data-count="3">B</span>ytes.to_string buf
+  (* Convert uint_lit to raw byte string. *)
+  let bstring_from_uint_lit = <span data-count="574">f</span>unction
+    | <span data-count="3">U</span>int32L ui -&gt;
+      let buf = <span data-count="3">B</span>ytes.create 4 in
+      <span data-count="3">l</span>et _ = <span data-count="3">U</span>int32.to_bytes_big_endian ui buf 0 in
+        <span data-count="3">B</span>ytes.to_string buf
+    | <span data-count="3">U</span>int64L ui -&gt;
+      let buf = <span data-count="3">B</span>ytes.create 8 in
+      <span data-count="3">l</span>et _ = <span data-count="3">U</span>int64.to_bytes_big_endian ui buf 0 in
+        <span data-count="3">B</span>ytes.to_string buf
+    | <span data-count="3">U</span>int128L ui -&gt;
+      let buf = <span data-count="3">B</span>ytes.create 16 in
+      <span data-count="3">l</span>et _ = <span data-count="3">U</span>int128.to_bytes_big_endian ui buf 0 in
+        <span data-count="3">B</span>ytes.to_string buf
+    | <span data-count="3">U</span>int256L ui -&gt;
+      let buf = <span data-count="3">B</span>ytes.create 32 in
+      <span data-count="3">l</span>et _ = <span data-count="3">U</span>int256.to_bytes_big_endian ui buf 0 in
+        <span data-count="3">B</span>ytes.to_string buf
+
+  (*******************************************************)
+  (**************** String *******************************)
+  (*******************************************************)
+
+  (* String operations *)
+  module String = struct
+    open UsefulLiterals
+    open PrimTypes
+    open Datatypes.DataTypeDictionary
+
+    (* let string_eq_type = FunType (string_typ, FunType (string_typ, )) *)
+
+    let eq_arity = <span data-count="574">2</span>    
+    let eq_type = <span data-count="574">f</span>un_typ string_typ @@ fun_typ string_typ bool_typ
+    let eq ls _ = <span data-count="8">m</span>atch ls with
+      | <span data-count="8">[</span>StringLit x; StringLit y] -&gt;
+          pure @@ to_Bool (x = y)
+      | <span data-count="0">_</span> -&gt; builtin_fail "String.eq" ls
+
+    let concat_arity = <span data-count="574">2</span>    
+    let concat_type = <span data-count="574">f</span>un_typ string_typ @@ fun_typ string_typ string_typ    
+    let concat ls _ = <span data-count="3">m</span>atch ls with
+      | <span data-count="3">[</span>StringLit x; StringLit y] -&gt;
+          pure @@ StringLit (x ^ y)
+      | <span data-count="0">_</span> -&gt; builtin_fail "String.concat" ls
+
+    let substr_arity = <span data-count="574">3</span>    
+    let substr_type =
+      <span data-count="574">t</span>fun_typ "'A" @@ tfun_typ "'B" @@ tfun_typ "'C" @@
+      (fun_typ (tvar "'A") @@ fun_typ (tvar "'B") @@ fun_typ (tvar "'C") string_typ)
+    (* Elaborator to run with arbitrary uints *)
+    let substr_elab _ ts = <span data-count="1">m</span>atch ts with
+      | <span data-count="1">[</span>s; u1; u2]
+        when <span data-count="2">s</span> = string_typ &amp;&amp;
+             <span data-count="2">i</span>s_uint_type u1 &amp;&amp;
+             <span data-count="1">i</span>s_uint_type u2 -&gt;
+          elab_tfun_with_args substr_type ts
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate"
+
+    let substr ls _ = <span data-count="1">m</span>atch ls with
+      | <span data-count="1">[</span>StringLit x; UintLit (Uint32L s); UintLit (Uint32L e)] -&gt;
+          pure @@ StringLit (Core.String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
+      | <span data-count="0">_</span> -&gt; builtin_fail "String.substr" ls
+  end
+
+  (*******************************************************)
+  (* Manipulating with arbitrary integer representations *)
+  (*******************************************************)
+  module type IntRep = sig
+    type t
+    val compare : t -&gt; t -&gt; int
+    val add: t -&gt; t -&gt; t
+    val sub: t -&gt; t -&gt; t
+    val mul: t -&gt; t -&gt; t
+    val div: t -&gt; t -&gt; t
+    val rem : t -&gt; t -&gt; t
+    val zero: t
+    val one : t
+    val min_int: t
+  end
+
+  module StdIntWrapper(R: IntRep) = struct
+    open R
+
+    let safe_add a b =
+      <span data-count="42">l</span>et r = <span data-count="42">a</span>dd a b in
+      (* if a &gt; 0 &amp;&amp; b &gt; 0 &amp;&amp; r &lt; 0 then we have an overflow*)
+      <span data-count="42">i</span>f (<span data-count="42">(</span>compare a zero) &gt; 0 &amp;&amp; <span data-count="72">(</span>compare b zero) &gt; 0 &amp;&amp; <span data-count="33">(</span>compare r zero) &lt; 0) 
+      then <span data-count="1">r</span>aise IntOverflow
+      (* if a &lt; 0 &amp;&amp; b &lt; 0 &amp;&amp; r &gt; 0 then we have an underflow*)
+      else <span data-count="41">i</span>f (<span data-count="41">(</span>compare a zero) &lt; 0 &amp;&amp; <span data-count="2">(</span>compare b zero) &lt; 0 &amp;&amp; <span data-count="1">(</span>compare r zero) &gt; 0) 
+      then <span data-count="1">r</span>aise IntUnderflow
+      else <span data-count="40">r</span>
+
+    let safe_sub a b =
+      <span data-count="8">l</span>et r = <span data-count="8">R</span>.sub a b in
+      (* if a &gt; 0 &amp;&amp; b &lt; 0 &amp;&amp; r &lt; 0 then we have an overflow *)
+      <span data-count="8">i</span>f (<span data-count="8">(</span>compare a zero) &gt; 0 &amp;&amp; <span data-count="14">(</span>compare b zero) &lt; 0 &amp;&amp; <span data-count="0">(</span>compare r zero) &lt; 0) 
+      then <span data-count="0">r</span>aise IntOverflow
+      (* if a &lt; 0 &amp;&amp; b &gt; 0 &amp;&amp; r &gt; 0 then we have an underflow*)
+      else <span data-count="8">i</span>f (<span data-count="8">(</span>compare a zero) &lt; 0 &amp;&amp; <span data-count="2">(</span>compare b zero) &gt; 0 &amp;&amp; <span data-count="1">(</span>compare r zero) &gt; 0) 
+      then <span data-count="1">r</span>aise IntUnderflow
+      else <span data-count="7">r</span>
+
+    let safe_mul a b  =
+      <span data-count="9">l</span>et r = <span data-count="9">m</span>ul a b in
+      (* http://www.informit.com/articles/article.aspx?p=1959565&amp;seqNum=13 *)
+      (* if b &lt; 0 &amp;&amp; a = int_min OR if b != 0 &amp;&amp; r / b != a *)
+      <span data-count="9">i</span>f <span data-count="9">(</span>compare b zero) &lt; 0 &amp;&amp; <span data-count="2">a</span> = min_int then <span data-count="1">r</span>aise IntOverflow else
+      <span data-count="8">i</span>f compare b zero &lt;&gt; 0
+      then
+        <span data-count="8">l</span>et d = <span data-count="8">d</span>iv r b in
+        <span data-count="8">i</span>f (compare d a &lt;&gt; 0)
+        then <span data-count="2">r</span>aise IntOverflow
+        else <span data-count="6">r</span>
+      else <span data-count="0">r</span>
+
+    let safe_div a b =
+      (* Integer overflow during division occurs in a very specific case. *)
+      (* https://stackoverflow.com/a/30400252/2128804 *)
+      <span data-count="7">i</span>f <span data-count="7">a</span> = min_int &amp;&amp; <span data-count="2">b</span> = (sub zero one) then <span data-count="2">r</span>aise IntOverflow else
+        (* Division_by_zero is taken care of by underlying implementation. *)
+        <span data-count="5">d</span>iv a b
+
+    let safe_rem a b =
+      (* Division_by_zero is taken care of by underlying implementation. *)
+      <span data-count="3">r</span>em a b
+
+    let safe_lt a b =
+      <span data-count="41">i</span>f (compare a b) &lt; 0 then <span data-count="15">t</span>rue else <span data-count="26">f</span>alse
+
+  end
+
+  module StdUintWrapper(R: IntRep) = struct
+    open R
+
+    let safe_add a b =
+      <span data-count="36">l</span>et r = <span data-count="36">a</span>dd a b in
+      (* if r &lt; a || r &lt; b then we have an overflow *)
+      <span data-count="36">i</span>f (<span data-count="36">(</span>compare r a) &lt; 0 || <span data-count="34">(</span>compare r b) &lt; 0)
+      then <span data-count="2">r</span>aise IntOverflow
+      else <span data-count="34">r</span>
+
+    let safe_sub a b =
+      <span data-count="7">l</span>et r = <span data-count="7">s</span>ub a b in
+      (* if a &lt; b then we have an underflow *)
+      <span data-count="7">i</span>f (compare a b) &lt; 0
+      then <span data-count="1">r</span>aise IntUnderflow
+      else <span data-count="6">r</span>
+
+    let safe_mul a b  =
+      <span data-count="5">l</span>et r = <span data-count="5">m</span>ul a b in
+      (* if b != 0 &amp;&amp; r / b != a *)
+      <span data-count="5">i</span>f compare b zero &lt;&gt; 0
+      then
+        <span data-count="5">l</span>et d = <span data-count="5">d</span>iv r b in
+        <span data-count="5">i</span>f (compare d a &lt;&gt; 0)
+        then <span data-count="1">r</span>aise IntOverflow
+        else <span data-count="4">r</span>
+      else <span data-count="0">r</span>
+
+    let safe_div a b =
+      (* Division_by_zero is taken care of by underlying implementation. *)
+      <span data-count="0">d</span>iv a b
+        
+    let safe_rem a b =
+      (* Division_by_zero is taken care of by underlying implementation. *)
+      <span data-count="0">r</span>em a b
+
+    let safe_lt a b =
+      <span data-count="59">i</span>f (compare a b) &lt; 0 then <span data-count="20">t</span>rue else <span data-count="39">f</span>alse
+
+  end
+
+  (* Instantiating the functors *)
+  module Int32Wrapper = StdIntWrapper(Int32)
+  module Int64Wrapper = StdIntWrapper(Int64)
+  module Int128Wrapper = StdIntWrapper(Int128)
+  module Int256Wrapper = StdIntWrapper(Int256)
+  module Uint32Wrapper = StdUintWrapper(Uint32)
+  module Uint64Wrapper = StdUintWrapper(Uint64)
+  module Uint128Wrapper = StdUintWrapper(Uint128)
+  module Uint256Wrapper = StdUintWrapper(Uint256)
+
+  (*******************************************************)
+  (*******************************************************)
+
+  (* Integer operations *)
+  module Int = struct
+    open UsefulLiterals
+    open PrimTypes
+    open Datatypes.DataTypeDictionary
+
+    let eq_arity = <span data-count="574">2</span>
+    let eq_type = <span data-count="574">t</span>fun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
+    let eq_elab t ts = <span data-count="584">m</span>atch ts with
+      | <span data-count="486">[</span>i1; i2] when <span data-count="1168">i</span>1 = i2 &amp;&amp; <span data-count="584">i</span>s_int_type i1 -&gt; elab_tfun_with_args t [i1]
+      | <span data-count="98">_</span> -&gt; fail0 "Failed to elaborate"
+
+    let binop_arity = <span data-count="574">2</span>
+    let binop_type = <span data-count="574">t</span>fun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
+    let binop_elab t ts = <span data-count="116">m</span>atch ts with
+      | <span data-count="115">[</span>i1; i2] when <span data-count="232">i</span>1 = i2 &amp;&amp; <span data-count="115">i</span>s_int_type i1 -&gt; elab_tfun_with_args t [i1]
+      | <span data-count="1">_</span> -&gt; fail0 "Failed to elaborate"
+
+    let eq ls _ = <span data-count="71">m</span>atch ls with
+      | <span data-count="44">[</span>IntLit (Int32L _) as x; IntLit (Int32L _) as y]
+      | <span data-count="17">[</span>IntLit (Int64L _) as x; IntLit (Int64L _) as y]
+      | <span data-count="6">[</span>IntLit (Int128L _) as x; IntLit (Int128L _) as y]
+      | <span data-count="4">[</span>IntLit (Int256L _) as x; IntLit (Int256L _) as y] -&gt;
+        pure @@ to_Bool (x = y)
+      | <span data-count="0">_</span> -&gt; builtin_fail "Int.eq: unsupported types" ls
+
+    let add ls _ = 
+      <span data-count="42">t</span>ry 
+        let%bind l = (match ls with
+          | [IntLit (Int32L x); IntLit (Int32L y)] -&gt;
+              pure @@ Int32L(Int32Wrapper.safe_add x y)
+          | [IntLit (Int64L x); IntLit (Int64L y)] -&gt;
+              pure @@ Int64L(Int64Wrapper.safe_add x y)
+          | [IntLit (Int128L x); IntLit (Int128L y)] -&gt;
+              pure @@ Int128L(Int128Wrapper.safe_add x y)
+          | [IntLit (Int256L x); IntLit (Int256L y)] -&gt;
+              pure @@ Int256L(Int256Wrapper.safe_add x y)
+          | _ -&gt; builtin_fail "Int.add: unsupported types" ls)
+        in pure @@ IntLit l
+      with | <span data-count="1">I</span>ntOverflow | <span data-count="1">I</span>ntUnderflow -&gt;
+        builtin_fail "Int.add: an overflow/underflow occurred" ls
+
+    let sub ls _ = 
+      <span data-count="8">t</span>ry 
+        let%bind l =(match ls with
+          | [IntLit (Int32L x); IntLit (Int32L y)] -&gt;
+              pure @@ Int32L(Int32Wrapper.safe_sub x y)
+          | [IntLit (Int64L x); IntLit (Int64L y)] -&gt;
+              pure @@ Int64L(Int64Wrapper.safe_sub x y)
+          | [IntLit (Int128L x); IntLit (Int128L y)] -&gt;
+              pure @@ Int128L (Int128Wrapper.safe_sub x y)
+          | [IntLit (Int256L x); IntLit (Int256L y)] -&gt;
+              pure @@ Int256L (Int256Wrapper.safe_sub x y)
+          | _ -&gt; builtin_fail "Int.sub: unsupported types" ls)
+        in pure @@ IntLit l
+      with | <span data-count="0">I</span>ntOverflow | <span data-count="1">I</span>ntUnderflow -&gt;
+        builtin_fail "Int.sub: an overflow/underflow occurred" ls
+
+    let mul ls _ = 
+      <span data-count="9">t</span>ry 
+        let%bind l = (match ls with
+          | [IntLit (Int32L x); IntLit (Int32L y)] -&gt;
+              pure @@ Int32L(Int32Wrapper.safe_mul x y)
+          | [IntLit (Int64L x); IntLit (Int64L y)] -&gt;
+              pure @@ Int64L(Int64Wrapper.safe_mul x y)
+          | [IntLit (Int128L x); IntLit (Int128L y)] -&gt;
+              pure @@ Int128L(Int128Wrapper.safe_mul x y)
+          | [IntLit (Int256L x); IntLit (Int256L y)] -&gt;
+              pure @@ Int256L(Int256Wrapper.safe_mul x y)
+          | _ -&gt; builtin_fail "Int.mul: unsupported types" ls)
+        in pure @@ IntLit l
+      with | <span data-count="3">I</span>ntOverflow | <span data-count="0">I</span>ntUnderflow -&gt;
+        builtin_fail "Int.mul: an overflow/underflow occurred" ls
+
+    let div ls _ = 
+      <span data-count="7">t</span>ry 
+        let%bind l = (match ls with
+          | [IntLit (Int32L x); IntLit (Int32L y)] -&gt;
+              pure @@ Int32L(Int32Wrapper.safe_div x y)
+          | [IntLit (Int64L x); IntLit (Int64L y)] -&gt;
+              pure @@ Int64L(Int64Wrapper.safe_div x y)
+          | [IntLit (Int128L x); IntLit (Int128L y)] -&gt;
+              pure @@ Int128L(Int128Wrapper.safe_div x y)
+          | [IntLit (Int256L x); IntLit (Int256L y)] -&gt;
+              pure @@ Int256L(Int256Wrapper.safe_div x y)
+          | _ -&gt; builtin_fail "Int.div: unsupported types" ls)
+        in pure @@ IntLit l
+        with | <span data-count="2">D</span>ivision_by_zero | <span data-count="2">I</span>ntOverflow -&gt;
+          builtin_fail "Int.div: Division by zero / IntOverflow error occurred" ls
+
+    let rem ls  _ =
+      <span data-count="3">t</span>ry 
+        let%bind l = (match ls with
+          | [IntLit (Int32L x); IntLit (Int32L y)] -&gt;
+              pure @@ Int32L(Int32Wrapper.safe_rem x y)
+          | [IntLit (Int64L x); IntLit (Int64L y)] -&gt;
+              pure @@ Int64L(Int64Wrapper.safe_rem x y)
+          | [IntLit (Int128L x); IntLit (Int128L y)] -&gt;
+              pure @@ Int128L(Int128Wrapper.safe_rem x y)
+          | [IntLit (Int256L x); IntLit (Int256L y)] -&gt;
+              pure @@ Int256L(Int256Wrapper.safe_rem x y)
+          | _ -&gt; builtin_fail "Int.rem: unsupported types" ls)
+        in pure @@ IntLit l
+      with | <span data-count="1">D</span>ivision_by_zero -&gt;
+               builtin_fail "Int.rem: Division by zero error occurred" ls
+
+    let lt ls _ =
+      <span data-count="41">t</span>ry 
+        (match ls with
+          | <span data-count="21">[</span>IntLit (Int32L x); IntLit (Int32L y)] -&gt;
+              pure @@ to_Bool (Int32Wrapper.safe_lt x y)
+          | <span data-count="4">[</span>IntLit (Int64L x); IntLit (Int64L y)] -&gt;
+              pure @@ to_Bool (Int64Wrapper.safe_lt x y)
+          | <span data-count="12">[</span>IntLit (Int128L x); IntLit (Int128L y)] -&gt;
+              pure @@ to_Bool (Int128Wrapper.safe_lt x y)
+          | <span data-count="4">[</span>IntLit (Int256L x); IntLit (Int256L y)] -&gt;
+              pure @@ to_Bool (Int256Wrapper.safe_lt x y)
+          | <span data-count="0">_</span> -&gt; builtin_fail "Int.lt: unsupported types" ls)
+        with | <span data-count="0">I</span>ntOverflow | <span data-count="0">I</span>ntUnderflow -&gt;
+          builtin_fail "Int.lt: an overflow/underflow occurred" ls
+
+    let mk_int_type w = <span data-count="13">m</span>atch w with
+      | <span data-count="8">3</span>2 -&gt; pure int32_typ
+      | <span data-count="3">6</span>4 -&gt; pure int64_typ
+      | <span data-count="2">1</span>28 -&gt; pure int128_typ
+      | <span data-count="0">2</span>56 -&gt; pure int256_typ
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to convert" 
+
+    let to_int_arity = <span data-count="574">1</span>
+    let to_int_type = <span data-count="574">t</span>fun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
+    let to_int_elab w sc ts = <span data-count="7">m</span>atch ts with
+      | <span data-count="7">[</span>t] when <span data-count="14">i</span>s_int_type t || <span data-count="5">i</span>s_uint_type t -&gt;
+          let%bind ityp = mk_int_type w in
+          elab_tfun_with_args sc [t; ityp]
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate"
+
+    let to_int_helper ls w = 
+      let%bind xs = match ls with
+        | [IntLit x] -&gt; pure @@ string_of_int_lit x
+        | [UintLit x] -&gt; pure @@ string_of_uint_lit x
+        | _ -&gt; builtin_fail (sprintf "Int.to_int%i" w) ls
+      in
+        let%bind ityp = mk_int_type w in
+        (match build_prim_literal ityp xs with
+        | Some lit -&gt;
+          pure (ADTValue ("Some", [ityp], [lit]))
+        | None -&gt;
+          pure (ADTValue ("None", [ityp], [])))
+
+    let to_int32 ls _ = <span data-count="4">t</span>o_int_helper ls 32
+    let to_int64 ls _ = <span data-count="1">t</span>o_int_helper ls 64
+    let to_int128 ls _ = <span data-count="1">t</span>o_int_helper ls 128
+    let to_int256 ls _ = <span data-count="0">t</span>o_int_helper ls 256
+
+  end
+
+  (* Unsigned integer operation *)
+  module Uint = struct
+    open UsefulLiterals
+    open PrimTypes
+    open Datatypes.DataTypeDictionary
+
+    let eq_arity = <span data-count="574">2</span>
+    let eq_type = <span data-count="574">t</span>fun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
+    let eq_elab sc ts = <span data-count="1012">m</span>atch ts with
+      | <span data-count="428">[</span>i1; i2] when <span data-count="2024">i</span>1 = i2 &amp;&amp; <span data-count="1012">i</span>s_uint_type i1 -&gt; elab_tfun_with_args sc [i1]
+      | <span data-count="584">_</span> -&gt; fail0 "Failed to elaborate"
+
+    let binop_arity = <span data-count="574">2</span>
+    let binop_type = <span data-count="574">t</span>fun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
+    let binop_elab sc ts = <span data-count="260">m</span>atch ts with
+      | <span data-count="144">[</span>i1; i2] when <span data-count="520">i</span>1 = i2 &amp;&amp; <span data-count="259">i</span>s_uint_type i1 -&gt; elab_tfun_with_args sc [i1]
+      | <span data-count="116">_</span> -&gt; fail0 "Failed to elaborate"
+
+    let eq ls _ = <span data-count="26">m</span>atch ls with
+      | <span data-count="5">[</span>UintLit (Uint32L _) as x; UintLit (Uint32L _) as y]
+      | <span data-count="8">[</span>UintLit (Uint64L _) as x; UintLit (Uint64L _) as y]
+      | <span data-count="7">[</span>UintLit (Uint128L _) as x; UintLit (Uint128L _) as y]
+      | <span data-count="6">[</span>UintLit (Uint256L _) as x; UintLit (Uint256L _) as y] -&gt;
+        pure @@ to_Bool (x = y)
+      | <span data-count="0">_</span> -&gt; builtin_fail "Uint.eq: unsupported types" ls
+
+    let add ls _ = 
+      <span data-count="36">t</span>ry 
+        let%bind l = (match ls with
+          | [UintLit (Uint32L x); UintLit (Uint32L y)] -&gt;
+              pure @@ Uint32L(Uint32Wrapper.safe_add x y)
+          | [UintLit (Uint64L x); UintLit (Uint64L y)] -&gt;
+              pure @@ Uint64L(Uint64Wrapper.safe_add x y)
+          | [UintLit (Uint128L x); UintLit (Uint128L y)] -&gt;
+              pure @@ Uint128L(Uint128Wrapper.safe_add x y)
+          | [UintLit (Uint256L x); UintLit (Uint256L y)] -&gt;
+              pure @@ Uint256L(Uint256Wrapper.safe_add x y)
+          | _ -&gt; builtin_fail "Uint.add: unsupported types" ls)
+        in pure @@ UintLit l
+      with | <span data-count="2">I</span>ntOverflow | <span data-count="0">I</span>ntUnderflow -&gt;
+        builtin_fail "Uint.add: an overflow/underflow occurred" ls
+
+    let sub ls _ = 
+      <span data-count="7">t</span>ry 
+        let%bind l = (match ls with
+          | [UintLit (Uint32L x); UintLit (Uint32L y)] -&gt;
+              pure @@ Uint32L(Uint32Wrapper.safe_sub x y)
+          | [UintLit (Uint64L x); UintLit (Uint64L y)] -&gt;
+              pure @@ Uint64L(Uint64Wrapper.safe_sub x y)
+          | [UintLit (Uint128L x); UintLit (Uint128L y)] -&gt;
+              pure @@ Uint128L(Uint128Wrapper.safe_sub x y)
+          | [UintLit (Uint256L x); UintLit (Uint256L y)] -&gt;
+              pure @@ Uint256L(Uint256Wrapper.safe_sub x y)
+          | _ -&gt; builtin_fail "Uint.sub: unsupported types" ls)
+        in pure @@ UintLit l
+      with | <span data-count="0">I</span>ntOverflow | <span data-count="1">I</span>ntUnderflow -&gt;
+        builtin_fail "Uint.sub: an overflow/underflow occurred" ls
+
+    let mul ls _ = 
+      <span data-count="5">t</span>ry 
+        let%bind l = (match ls with
+          | [UintLit (Uint32L x); UintLit (Uint32L y)] -&gt;
+              pure @@ Uint32L(Uint32Wrapper.safe_mul x y)
+          | [UintLit (Uint64L x); UintLit (Uint64L y)] -&gt;
+              pure @@ Uint64L(Uint64Wrapper.safe_mul x y)
+          | [UintLit (Uint128L x); UintLit (Uint128L y)] -&gt;
+              pure @@ Uint128L(Uint128Wrapper.safe_mul x y)
+          | [UintLit (Uint256L x); UintLit (Uint256L y)] -&gt;
+              pure @@ Uint256L(Uint256Wrapper.safe_mul x y)
+          | _ -&gt; builtin_fail "Uint.mul: unsupported types" ls)
+        in pure @@ UintLit l
+      with | <span data-count="1">I</span>ntOverflow | <span data-count="0">I</span>ntUnderflow -&gt;
+        builtin_fail "Uint.mul: an overflow/underflow occurred" ls
+
+    let div ls _ = 
+      <span data-count="0">t</span>ry 
+        let%bind l = (match ls with
+          | [UintLit (Uint32L x); UintLit (Uint32L y)] -&gt;
+              pure @@ Uint32L(Uint32Wrapper.safe_div x y)
+          | [UintLit (Uint64L x); UintLit (Uint64L y)] -&gt;
+              pure @@ Uint64L(Uint64Wrapper.safe_div x y)
+          | [UintLit (Uint128L x); UintLit (Uint128L y)] -&gt;
+              pure @@ Uint128L(Uint128Wrapper.safe_div x y)
+          | [UintLit (Uint256L x); UintLit (Uint256L y)] -&gt;
+              pure @@ Uint256L(Uint256Wrapper.safe_div x y)
+          | _ -&gt; builtin_fail "Uint.div: unsupported types" ls)
+        in pure @@ UintLit l
+      with | <span data-count="0">D</span>ivision_by_zero -&gt;
+        builtin_fail "Uint.div: Division by zero / UintOverflow error occurred" ls
+
+    let rem ls  _ =
+      <span data-count="0">t</span>ry 
+        let%bind l = (match ls with
+          | [UintLit (Uint32L x); UintLit (Uint32L y)] -&gt;
+              pure @@ Uint32L(Uint32Wrapper.safe_rem x y)
+          | [UintLit (Uint64L x); UintLit (Uint64L y)] -&gt;
+              pure @@ Uint64L(Uint64Wrapper.safe_rem x y)
+          | [UintLit (Uint128L x); UintLit (Uint128L y)] -&gt;
+              pure @@ Uint128L(Uint128Wrapper.safe_rem x y)
+          | [UintLit (Uint256L x); UintLit (Uint256L y)] -&gt;
+              pure @@ Uint256L(Uint256Wrapper.safe_rem x y)
+          | _ -&gt; builtin_fail "Uint.rem: unsupported types" ls)
+        in pure @@ UintLit l
+      with | <span data-count="0">D</span>ivision_by_zero -&gt;
+        builtin_fail "Uint.rem: Division by zero error occurred" ls
+
+    let lt ls _ =
+      <span data-count="59">t</span>ry 
+        (match ls with
+          | <span data-count="8">[</span>UintLit (Uint32L x); UintLit (Uint32L y)] -&gt;
+              pure @@ to_Bool (Uint32Wrapper.safe_lt x y)
+          | <span data-count="30">[</span>UintLit (Uint64L x); UintLit (Uint64L y)] -&gt;
+              pure @@ to_Bool (Uint64Wrapper.safe_lt x y)
+          | <span data-count="15">[</span>UintLit (Uint128L x); UintLit (Uint128L y)] -&gt;
+              pure @@ to_Bool (Uint128Wrapper.safe_lt x y)
+          | <span data-count="6">[</span>UintLit (Uint256L x); UintLit (Uint256L y)] -&gt;
+              pure @@ to_Bool (Uint256Wrapper.safe_lt x y)
+          | <span data-count="0">_</span> -&gt; builtin_fail "Uint.lt: unsupported types" ls)
+      with | <span data-count="0">I</span>ntOverflow | <span data-count="0">I</span>ntUnderflow -&gt;
+        builtin_fail "Uint.lt: an overflow/underflow occurred" ls
+
+    let mk_uint_type w = <span data-count="286">m</span>atch w with
+      | <span data-count="282">3</span>2 -&gt; pure uint32_typ
+      | <span data-count="4">6</span>4 -&gt; pure uint64_typ
+      | <span data-count="0">1</span>28 -&gt; pure uint128_typ
+      | <span data-count="0">2</span>56 -&gt; pure uint256_typ
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to convert" 
+
+    let to_uint_arity = <span data-count="574">1</span>
+    let to_uint_type = <span data-count="574">t</span>fun_typ "'A" @@ tfun_typ "'B"
+        (fun_typ (tvar "'A") (option_typ (tvar "'B")))
+
+    let to_uint_elab w sc ts = <span data-count="278">m</span>atch ts with
+      | <span data-count="278">[</span>t] when <span data-count="556">i</span>s_uint_type t || <span data-count="141">i</span>s_int_type t -&gt;
+          let%bind ityp = mk_uint_type w in
+          elab_tfun_with_args sc [t; ityp]
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate"
+
+    let to_uint_helper ls w = 
+      let%bind xs = match ls with
+        | [IntLit x] -&gt; pure @@ string_of_int_lit x
+        | [UintLit x] -&gt; pure @@ string_of_uint_lit x
+        | _ -&gt; builtin_fail (sprintf "UInt.to_uint%i" w) ls
+      in
+        let%bind ityp = mk_uint_type w in
+        (match build_prim_literal ityp xs with
+        | Some lit -&gt;
+          pure (ADTValue ("Some", [ityp], [lit]))
+        | None -&gt;
+          pure (ADTValue ("None", [ityp], [])))
+
+    let to_uint32 ls _ = <span data-count="6">t</span>o_uint_helper ls 32
+    let to_uint64 ls _ = <span data-count="2">t</span>o_uint_helper ls 64
+    let to_uint128 ls _ = <span data-count="0">t</span>o_uint_helper ls 128
+    let to_uint256 ls _ = <span data-count="0">t</span>o_uint_helper ls 256
+
+    let to_nat_arity = <span data-count="574">1</span>
+    let to_nat_type = <span data-count="574">t</span>fun_typ "'A" @@ (fun_typ (tvar "'A") nat_typ)
+    let to_nat_elab sc ts = <span data-count="48">m</span>atch ts with
+      | <span data-count="48">[</span>t] when <span data-count="48">i</span>s_uint_type t -&gt;
+          elab_tfun_with_args sc [t]
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate"
+
+    let to_nat ls _ = <span data-count="3">m</span>atch ls with
+      | <span data-count="3">[</span>UintLit (Uint32L n)] -&gt;
+        let zero = <span data-count="3">A</span>DTValue ("Zero", [], []) in
+        <span data-count="3">l</span>et rec nat_builder (i : Uint32.t) =
+          <span data-count="7">i</span>f i = Uint32.zero then <span data-count="3">z</span>ero
+          else
+            <span data-count="4">l</span>et prev = <span data-count="4">n</span>at_builder (Uint32.sub i Uint32.one) in
+            <span data-count="4">A</span>DTValue ("Succ", [], (prev::[]))
+        in
+        <span data-count="3">p</span>ure (nat_builder n)
+      (* Other integer widths can be in the library, using integer conversions. *)
+      | <span data-count="0">_</span> -&gt; builtin_fail "Uint.to_nat only supported for Uint32" ls
+
+  end
+
+  (***********************************************************)
+  (* Working with block numbers *)
+  (***********************************************************)
+  module BNum = struct
+    open UsefulLiterals
+    open PrimTypes
+    open Datatypes.DataTypeDictionary
+
+    let eq_type = <span data-count="574">f</span>un_typ bnum_typ @@ fun_typ bnum_typ bool_typ
+    let eq_arity = <span data-count="574">2</span>    
+    let eq ls _ = <span data-count="16">m</span>atch ls with
+      | <span data-count="16">[</span>BNum x; BNum y] -&gt;
+          pure @@ to_Bool (x = y)
+      | <span data-count="0">_</span> -&gt; builtin_fail "BNum.eq" ls
+
+    let blt_type = <span data-count="574">f</span>un_typ bnum_typ @@ fun_typ bnum_typ bool_typ
+    let blt_arity = <span data-count="574">2</span>    
+    let blt ls _ = <span data-count="25">m</span>atch ls with
+      | <span data-count="25">[</span>BNum x; BNum y] -&gt; pure (
+          let i1 = <span data-count="25">b</span>ig_int_of_string x in
+          <span data-count="25">l</span>et i2 = <span data-count="25">b</span>ig_int_of_string y in
+          <span data-count="25">t</span>o_Bool (lt_big_int i1 i2))
+      | <span data-count="0">_</span> -&gt; builtin_fail "BNum.blt" ls
+
+    let badd_arity = <span data-count="574">2</span>    
+    let badd_type =
+      <span data-count="574">t</span>fun_typ "'A" @@ tfun_typ "'B" @@
+      (fun_typ (tvar "'A") @@ fun_typ (tvar "'B") bnum_typ)
+    (* Elaborator to run with arbitrary uints *)
+    let badd_elab sc ts = <span data-count="23">m</span>atch ts with
+      | <span data-count="23">[</span>s; u] when <span data-count="46">s</span> = bnum_typ &amp;&amp; <span data-count="23">i</span>s_uint_type u -&gt;
+          elab_tfun_with_args sc ts
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate"
+
+    let badd ls _ = <span data-count="16">m</span>atch ls with
+      | <span data-count="16">[</span>BNum x; UintLit y] -&gt;
+          let i1 = <span data-count="16">b</span>ig_int_of_string x in
+          <span data-count="16">l</span>et i2 = <span data-count="16">b</span>ig_int_of_string (string_of_uint_lit y) in
+          <span data-count="16">i</span>f ge_big_int i2 (big_int_of_int 0)
+          then <span data-count="16">p</span>ure @@ BNum (string_of_big_int (add_big_int i1 i2))
+          else <span data-count="0">f</span>ail0 @@ sprintf
+              "Cannot add a negative value (%s) to a block." (string_of_uint_lit y)
+      | <span data-count="0">_</span> -&gt; builtin_fail "BNum.badd" ls
+
+  end
+
+  (***********************************************************)
+  (******************** Crypto Builtins *************************)
+  (***********************************************************)
+  module Crypto = struct
+    open UsefulLiterals
+    open Cryptokit
+    open PrimTypes
+    open Datatypes.DataTypeDictionary
+    open Schnorr
+
+    (* Create binary / bytes from ASCII hexadecimal string 0x... *)
+    let fromhex s = <span data-count="6">t</span>ransform_string (Hexa.decode()) (Core.String.sub s ~pos:2 ~len:((Core.String.length s)-2))
+    (* Create ASCII hexadecimal string from raw binary / bytes. *)
+    let tohex s = <span data-count="56">"</span>0x" ^ (transform_string (Hexa.encode()) s)
+    (* Hash raw bytes / binary string. *)
+    let sha256_hasher s = <span data-count="22">h</span>ash_string (Hash.sha2 256) s
+    (* Keccak256 hash raw bytes / binary string. *)
+    let keccak256_hasher s = <span data-count="20">h</span>ash_string (Hash.keccak 256) s
+    (* Ripemd hash raw bytes/ binary string. *)
+    let ripemd160_hasher s = <span data-count="14">h</span>ash_string (Hash.ripemd160 ()) s
+
+    let hash_helper hasher name len ls = <span data-count="56">m</span>atch ls with
+      | <span data-count="56">[</span>l] -&gt;
+          let lstr =
+            <span data-count="56">(</span>match l with
+            | <span data-count="3">S</span>tringLit s -&gt; s
+            | <span data-count="14">I</span>ntLit il -&gt; bstring_from_int_lit il
+            | <span data-count="12">U</span>intLit uil -&gt; bstring_from_uint_lit uil
+            | <span data-count="0">B</span>yStr s | <span data-count="6">B</span>yStrX (_, s) -&gt; fromhex s
+            (* Anything else, just serialize with SExp. *)
+            | <span data-count="21">_</span> -&gt; sexp_of_literal l |&gt; <span data-count="21">S</span>explib.Sexp.to_string) in
+          <span data-count="56">l</span>et lhash = <span data-count="56">h</span>asher lstr in
+          <span data-count="56">l</span>et lhash_hex = <span data-count="56">t</span>ohex lhash in
+          <span data-count="56">l</span>et lo = <span data-count="56">b</span>uild_prim_literal (bystrx_typ len) lhash_hex in
+          <span data-count="56">(</span>match lo with
+          | <span data-count="56">S</span>ome l' -&gt; pure @@ l'
+          | <span data-count="0">N</span>one -&gt; builtin_fail ("Crypto." ^ name ^ ": internal error, invalid hash") ls)
+      | <span data-count="0">_</span> -&gt; builtin_fail ("Crypto." ^ name) ls
+
+    let eq_type = <span data-count="574">t</span>fun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
+    let eq_arity = <span data-count="574">2</span>    
+    let eq_elab sc ts =
+      <span data-count="98">m</span>atch ts with
+      | <span data-count="69">[</span>bstyp1; bstyp2] when
+          (* We want both the types to be ByStr with equal width. *)
+          <span data-count="196">i</span>s_bystrx_type bstyp1 &amp;&amp; <span data-count="138">i</span>s_bystrx_type bstyp2 &amp;&amp; <span data-count="69">b</span>styp1 = bstyp2
+        -&gt; elab_tfun_with_args sc [bstyp1]
+      | <span data-count="29">_</span> -&gt; fail0 "Failed to elaborate"
+    let eq ls _ = <span data-count="46">m</span>atch ls with
+      | <span data-count="46">[</span>ByStrX (w1, x1); ByStrX(w2, x2)] -&gt;
+          pure @@ to_Bool (<span data-count="46">w</span>1 = w2 &amp;&amp; <span data-count="46">x</span>1 = x2)
+      | <span data-count="0">_</span> -&gt; builtin_fail "Crypto.eq" ls
+
+    let hash_type = <span data-count="574">t</span>fun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ hash_length)
+    let hash_arity = <span data-count="574">1</span>
+    let hash_elab sc ts = <span data-count="60">m</span>atch ts with
+      | <span data-count="60">[</span>_]  -&gt; elab_tfun_with_args sc ts
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate"
+    let sha256hash ls _ = <span data-count="22">h</span>ash_helper sha256_hasher "sha256hash" hash_length ls
+    let keccak256hash ls _ = <span data-count="20">h</span>ash_helper keccak256_hasher "keccak256hash" hash_length ls
+    (* RIPEMD-160 is a 160 bit hash, so define a separate type for it. *)
+    let ripemd160hash_type = <span data-count="574">t</span>fun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ address_length)
+    let ripemd160hash ls _ = <span data-count="14">h</span>ash_helper ripemd160_hasher "ripemd160hash" address_length ls
+
+    let big_int_of_hash h =
+      <span data-count="24">l</span>et s = <span data-count="24">m</span>atch Hex.of_string h with
+        | <span data-count="24">`</span>Hex s -&gt; s
+      in <span data-count="24">B</span>ig_int.big_int_of_string s
+
+    (* TODO: define for other ByStrX types? *)
+    let dist_type = <span data-count="574">f</span>un_typ (bystrx_typ hash_length) @@ fun_typ (bystrx_typ hash_length) uint128_typ
+    let dist_arity = <span data-count="574">2</span>    
+    let dist ls _ = <span data-count="12">m</span>atch ls with
+      | <span data-count="12">[</span>ByStrX(_, x); ByStrX(_, y)] -&gt;
+          let i1 = <span data-count="12">b</span>ig_int_of_hash x in
+          <span data-count="12">l</span>et i2 = <span data-count="12">b</span>ig_int_of_hash y in
+          <span data-count="12">l</span>et two256 = <span data-count="12">p</span>ower_big_int_positive_big_int (big_int_of_int 2) (big_int_of_int 256) in
+          <span data-count="12">l</span>et i1' = <span data-count="12">m</span>od_big_int i1 two256 in
+          <span data-count="12">l</span>et i2' = <span data-count="12">m</span>od_big_int i2 two256 in
+          <span data-count="12">l</span>et dist = <span data-count="12">a</span>bs_big_int (sub_big_int i1' i2') in
+          <span data-count="12">l</span>et i = <span data-count="12">b</span>uild_prim_literal uint256_typ (string_of_big_int dist) in
+          <span data-count="12">(</span>match i with
+           | <span data-count="12">S</span>ome ui -&gt; pure ui
+           | <span data-count="0">N</span>one -&gt; builtin_fail "Crypto.dist: Error building Uint256 from hash distance" ls
+          )
+      | <span data-count="0">_</span> -&gt; builtin_fail "Crypto.dist" ls
+
+    (* ByStrX -&gt; ByStr *)
+    let to_bystr_type = <span data-count="574">t</span>fun_typ "'A" @@ fun_typ (tvar "'A") bystr_typ
+    let to_bystr_arity = <span data-count="574">1</span>
+    let to_bystr_elab sc ts = <span data-count="1">m</span>atch ts with
+      | <span data-count="1">[</span>t] when <span data-count="1">i</span>s_bystrx_type t -&gt; elab_tfun_with_args sc ts
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate"
+    let to_bystr ls _ = <span data-count="1">m</span>atch ls with
+      | <span data-count="1">[</span>ByStrX(_, s)] -&gt; 
+        let res = <span data-count="1">b</span>uild_prim_literal bystr_typ s in
+        <span data-count="1">(</span>match res with
+         | <span data-count="1">S</span>ome l' -&gt; pure l'
+         | <span data-count="0">N</span>one -&gt; builtin_fail "Crypto.to_bystr: internal error" ls)
+      | <span data-count="0">_</span> -&gt; builtin_fail "Crypto.to_bystr" ls
+
+    let schnorr_gen_key_pair_type = <span data-count="574">f</span>un_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
+    let schnorr_gen_key_pair_arity = <span data-count="574">0</span>  
+    let schnorr_gen_key_pair ls _ =
+      <span data-count="0">m</span>atch ls with
+      | <span data-count="0">[</span>] -&gt;
+        let privK, pubK = <span data-count="0">g</span>enKeyPair () in
+        <span data-count="0">l</span>et privK_lit_o = <span data-count="0">b</span>uild_prim_literal (bystrx_typ privkey_len) privK in
+        <span data-count="0">l</span>et pubK_lit_o = <span data-count="0">b</span>uild_prim_literal (bystrx_typ pubkey_len) pubK in
+        <span data-count="0">(</span>match privK_lit_o, pubK_lit_o with
+        | <span data-count="0">S</span>ome privK', Some pubK' -&gt; pair_lit privK' pubK'
+        | <span data-count="0">_</span> -&gt; builtin_fail "schnorr_gen_key_pair: internal error, invalid private/public key(s)." ls)
+      | <span data-count="0">_</span> -&gt; builtin_fail "schnorr_gen_key_pair" ls
+
+    let schnorr_sign_type = <span data-count="574">f</span>un_typ (bystrx_typ privkey_len) @@ (* private key *)
+                            fun_typ (bystrx_typ pubkey_len) @@ (* public key *)
+                            fun_typ (bystr_typ) @@ (* message to be signed *)
+                            (bystrx_typ signature_len) (* signature *)
+    let schnorr_sign_arity = <span data-count="574">3</span>
+    let schnorr_sign ls _ =
+      <span data-count="1">m</span>atch ls with
+      | <span data-count="1">[</span>ByStrX(privklen, privkey); ByStrX(pubklen, pubkey); ByStr(msg)]
+          when <span data-count="2">p</span>rivklen = privkey_len &amp;&amp; <span data-count="1">p</span>ubklen = pubkey_len -&gt;
+        let s = <span data-count="1">s</span>ign privkey pubkey msg in
+        <span data-count="1">l</span>et s' = <span data-count="1">b</span>uild_prim_literal (bystrx_typ signature_len) s in
+        <span data-count="1">(</span>match s' with
+        | <span data-count="1">S</span>ome s'' -&gt; pure s''
+        | <span data-count="0">N</span>one -&gt; builtin_fail "schnorr_sign: internal error, invalid signature." ls)
+      | <span data-count="0">_</span> -&gt; builtin_fail "schnorr_sign" ls
+
+    let schnorr_verify_type = <span data-count="574">f</span>un_typ (bystrx_typ pubkey_len) @@ (* public key *)
+                              fun_typ (bystr_typ) @@ (* signed message *)
+                              fun_typ (bystrx_typ signature_len) @@ (* signature *)
+                              bool_typ
+    let schnorr_verify_arity = <span data-count="574">3</span>
+    let schnorr_verify ls _ =
+      <span data-count="4">m</span>atch ls with
+      | <span data-count="4">[</span>ByStrX(pubklen, pubkey); ByStr(msg); ByStrX(siglen, signature)]
+          when <span data-count="8">s</span>iglen = signature_len &amp;&amp; <span data-count="4">p</span>ubklen = pubkey_len -&gt;
+        let v = <span data-count="4">v</span>erify pubkey msg signature in
+        <span data-count="4">p</span>ure @@ to_Bool v
+      | <span data-count="0">_</span> -&gt; builtin_fail "schnorr_verify" ls
+
+  end
+
+  (***********************************************************)
+  (* Maps *)
+  (***********************************************************)
+  module Maps = struct
+    open PrimTypes
+    open UsefulLiterals
+    open Datatypes.DataTypeDictionary
+
+    let contains_arity = <span data-count="574">2</span>
+    let contains_type =
+      <span data-count="574">t</span>fun_typ "'K" @@ tfun_typ "'V" @@
+      (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@ fun_typ (tvar "'K") bool_typ)
+    let contains_elab sc ts = <span data-count="19">m</span>atch ts with
+      | <span data-count="19">[</span>MapType (kt, vt); u] when <span data-count="19">k</span>t = u  -&gt;
+          elab_tfun_with_args sc [kt; vt]
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate"
+    let contains ls _ = <span data-count="12">m</span>atch ls with
+      | <span data-count="12">[</span>Map (_, entries); key] -&gt;
+          let res = <span data-count="12">C</span>aml.Hashtbl.mem entries key in
+          <span data-count="12">p</span>ure @@ to_Bool res
+      | <span data-count="0">_</span> -&gt; builtin_fail "Map.contains" ls
+
+
+    let put_arity = <span data-count="574">3</span>
+    let put_type =
+      <span data-count="574">t</span>fun_typ "'K" @@ tfun_typ "'V" @@
+      (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
+       fun_typ (tvar "'K") @@
+       fun_typ (tvar "'V") (map_typ (tvar "'K") (tvar "'V")))
+    let put_elab sc ts = <span data-count="146">m</span>atch ts with
+      | <span data-count="145">[</span>MapType (kt, vt); kt'; vt'] when <span data-count="292">k</span>t = kt' &amp;&amp; <span data-count="146">v</span>t = vt'  -&gt;
+          elab_tfun_with_args sc [kt; vt]
+      | <span data-count="1">_</span> -&gt; fail0 "Failed to elaborate"
+    let put ls _ = <span data-count="78">m</span>atch ls with
+      | <span data-count="78">[</span>Map (tm, entries); key; value] -&gt;
+          (* Scilla semantics is not in-place modification. *)
+          let entries' = <span data-count="78">C</span>aml.Hashtbl.copy entries in
+          <span data-count="78">l</span>et _ = <span data-count="78">C</span>aml.Hashtbl.replace entries' key value in
+          <span data-count="78">p</span>ure @@ Map (tm, entries') 
+      | <span data-count="0">_</span> -&gt; builtin_fail "Map.put" ls
+
+
+    (* Must take result type into the account *)
+    let get_arity = <span data-count="574">2</span>
+    let get_type =
+      <span data-count="574">t</span>fun_typ "'K" @@ tfun_typ "'V" @@
+      (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
+       fun_typ (tvar "'K") (option_typ (tvar "'V")))
+    let get_elab sc ts = <span data-count="78">m</span>atch ts with
+      | <span data-count="78">[</span>MapType (kt, vt); kt'] when <span data-count="78">k</span>t = kt'  -&gt;
+          elab_tfun_with_args sc [kt; vt]
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate"
+    (* Notice that get passes return type *)
+    let get ls rt = <span data-count="63">m</span>atch ls, rt with
+      | <span data-count="63">[</span>Map (_, entries); key], ADT ("Option", [targ]) -&gt;
+          let res = <span data-count="63">C</span>aml.Hashtbl.find_opt entries key in
+          <span data-count="63">(</span>match res with
+           | <span data-count="20">N</span>one -&gt; pure @@ none_lit targ
+           | <span data-count="43">S</span>ome v -&gt; some_lit v)
+      | <span data-count="0">_</span> -&gt; builtin_fail "Map.get" ls
+
+    let remove_arity = <span data-count="574">2</span>
+    let remove_type =
+      <span data-count="574">t</span>fun_typ "'K" @@ tfun_typ "'V" @@
+      (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
+       fun_typ (tvar "'K") (map_typ (tvar "'K") (tvar "'V")))
+    let remove_elab sc ts = <span data-count="11">m</span>atch ts with
+      | <span data-count="11">[</span>MapType (kt, vt); u] when <span data-count="11">k</span>t = u  -&gt;
+          elab_tfun_with_args sc [kt; vt]
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate" 
+    let remove ls _ = <span data-count="7">m</span>atch ls with
+      | <span data-count="7">[</span>Map (tm, entries); key] -&gt;
+          (* Scilla semantics is not in-place modification. *)
+          let entries' = <span data-count="7">C</span>aml.Hashtbl.copy entries in
+          <span data-count="7">l</span>et _ = <span data-count="7">C</span>aml.Hashtbl.remove entries' key in
+          <span data-count="7">p</span>ure @@ Map (tm, entries')
+      | <span data-count="0">_</span> -&gt; builtin_fail "Map.remove" ls
+
+
+    let to_list_arity = <span data-count="574">1</span>
+    let to_list_type =
+      <span data-count="574">t</span>fun_typ "'K" @@ tfun_typ "'V" @@
+      (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
+       (list_typ (pair_typ (tvar "'K") (tvar "'V"))))
+    let to_list_elab sc ts = <span data-count="1">m</span>atch ts with
+      | <span data-count="1">[</span>MapType (kt, vt)]  -&gt; elab_tfun_with_args sc [kt; vt]
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate" 
+    let to_list ls _ = <span data-count="1">m</span>atch ls with
+      | <span data-count="1">[</span>Map ((kt, vt), entries)] -&gt;
+          (* The type of the output list will be "Pair (kt) (vt)" *)
+          let otyp = <span data-count="1">p</span>air_typ kt vt in
+          <span data-count="1">l</span>et nil = <span data-count="1">A</span>DTValue ("Nil", (otyp::[]), []) in
+          <span data-count="1">l</span>et ol = <span data-count="1">C</span>aml.Hashtbl.fold
+              (fun k v accum -&gt;
+               <span data-count="3">l</span>et kv = <span data-count="3">A</span>DTValue ("Pair", (kt::vt::[]), k::v::[]) in
+               <span data-count="3">l</span>et kvl = <span data-count="3">A</span>DTValue ("Cons", (otyp::[]), (kv::accum::[])) in
+               <span data-count="3">k</span>vl) entries nil
+          in <span data-count="1">p</span>ure (ol)
+      | <span data-count="0">_</span> -&gt; builtin_fail "Map.to_list" ls
+
+    let size_arity = <span data-count="574">1</span>
+    let size_type =
+      <span data-count="574">t</span>fun_typ "'K" @@ tfun_typ "'V" @@
+      (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
+       uint32_typ)
+    let size_elab sc ts = <span data-count="5">m</span>atch ts with
+      | <span data-count="5">[</span>MapType (kt, vt)]  -&gt; elab_tfun_with_args sc [kt; vt]
+      | <span data-count="0">_</span> -&gt; fail0 "Failed to elaborate" 
+    let size ls _ = <span data-count="5">m</span>atch ls with
+      | <span data-count="5">[</span>Map (_, entries)] -&gt;
+          (* The type of the output will be "Uint32" *)
+          let ol = <span data-count="5">C</span>aml.Hashtbl.length entries in
+          <span data-count="5">p</span>ure (UintLit (Uint32L (Stdint.Uint32.of_int ol)))
+      | <span data-count="0">_</span> -&gt; builtin_fail "Map.size" ls
+  end
+
+
+  (* Identity elaborator *)
+  let elab_id = <span data-count="574">f</span>un t _ -&gt; <span data-count="106">p</span>ure t
+
+  (**********************************************************)
+  (*                   Built-in  Dictionary                *)
+  (**********************************************************)
+
+  module BuiltInDictionary = struct 
+
+    (* Elaborates the operation type based on the arguments types *)
+    type elaborator = typ -&gt; typ list -&gt; (typ, scilla_error list) result      
+
+    (* Takes the expected type as an argument to elaborate the result *)
+    type built_in_executor = literal list -&gt; typ -&gt; (literal, scilla_error list) result
+
+    (* A built-in record type:
+       * built-in name
+       * arity
+       * full, unelaborated type
+       * elaborator, refining the type based on argument 
+         to support polymorphism -- e.g., for ints and maps
+       * executor - operational semantics of the built-in
+    *)
+    type built_in_record = string * int * typ * elaborator * built_in_executor
+
+    (* All built-in functions *)
+    let built_in_dict : built_in_record list = [
+      (* Strings *)
+      ("eq", String.eq_arity, String.eq_type, elab_id, String.eq);
+      ("concat", String.concat_arity, String.concat_type, elab_id, String.concat);
+      ("substr", String.substr_arity, String.substr_type, String.substr_elab, String.substr);
+
+      (* Block numbers *)
+      ("eq", BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq);
+      ("blt", BNum.blt_arity, BNum.blt_type, elab_id , BNum.blt);
+      ("badd", BNum.badd_arity, BNum.badd_type, BNum.badd_elab , BNum.badd);
+
+      (* Hashes *)
+      ("eq", Crypto.eq_arity, Crypto.eq_type, Crypto.eq_elab, Crypto.eq);
+      ("dist", Crypto.dist_arity, Crypto.dist_type, elab_id , Crypto.dist);
+      ("sha256hash", Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.sha256hash);
+      ("keccak256hash", Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash);
+      ("ripemd160hash", Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash);
+      ("to_bystr", Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr);
+      ("schnorr_gen_key_pair", Crypto.schnorr_gen_key_pair_arity, Crypto.schnorr_gen_key_pair_type, elab_id, Crypto.schnorr_gen_key_pair);
+      ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign);
+      ("schnorr_verify", Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify);
+
+      (* Maps *)
+      ("contains", Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains);
+      ("put", Maps.put_arity, Maps.put_type, Maps.put_elab, Maps.put);
+      ("get", Maps.get_arity, Maps.get_type, Maps.get_elab, Maps.get);
+      ("remove", Maps.remove_arity, Maps.remove_type, Maps.remove_elab, Maps.remove);
+      ("to_list", Maps.to_list_arity, Maps.to_list_type, Maps.to_list_elab, Maps.to_list);
+      ("size", Maps.size_arity, Maps.size_type, Maps.size_elab, Maps.size);
+
+      (* Integers *)
+      ("eq", Int.eq_arity, Int.eq_type, Int.eq_elab, Int.eq);
+      ("lt", Int.eq_arity, Int.eq_type, Int.eq_elab, Int.lt);
+      ("add", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.add);
+      ("sub", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.sub);
+      ("mul", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.mul);
+      ("div", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.div);
+      ("rem", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.rem);
+      ("to_int32", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 32, Int.to_int32);
+      ("to_int64", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 64, Int.to_int64);
+      ("to_int128", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 128, Int.to_int128);
+      ("to_int256", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 256, Int.to_int256);
+
+      (* Unsigned integers *)
+      ("eq", Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.eq);
+      ("lt", Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.lt);
+      ("add", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.add);
+      ("sub", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.sub);
+      ("mul", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.mul);
+      ("div", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.div);
+      ("rem", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.rem);
+      ("to_uint32", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 32, Uint.to_uint32);
+      ("to_uint64", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 64, Uint.to_uint64);
+      ("to_uint128", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 128, Uint.to_uint128);
+      ("to_uint256", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 256, Uint.to_uint256);
+      ("to_nat", Uint.to_nat_arity, Uint.to_nat_type, Uint.to_nat_elab, Uint.to_nat);
+    ]
+
+    let built_in_hashtbl =
+      <span data-count="574">l</span>et open Caml in
+      let ht : ((string, built_in_record list) Hashtbl.t) = Hashtbl.create 64 in
+      <span data-count="574">L</span>ist.iter (fun row -&gt;
+          <span data-count="25256">l</span>et (opname, _, _, _, _) = <span data-count="25256">r</span>ow in
+          <span data-count="25256">m</span>atch Hashtbl.find_opt ht opname with
+          | <span data-count="5740">S</span>ome p -&gt;  Hashtbl.add ht opname (row::p)
+          | <span data-count="19516">N</span>one -&gt; Hashtbl.add ht opname (row::[])
+        ) built_in_dict;
+      <span data-count="574">h</span>t
+      
+    (* Dictionary lookup based on the operation name and type *)
+    let find_builtin_op op argtypes =
+      <span data-count="2020">l</span>et opname = <span data-count="2020">g</span>et_id op in
+      <span data-count="2020">l</span>et finder = <span data-count="2020">(</span>function <span data-count="2854">(</span>name, arity, optype, elab, exec) -&gt;
+          if <span data-count="2854">n</span>ame = opname &amp;&amp; <span data-count="2854">a</span>rity = List.length argtypes
+          then
+            (* First: elaborate based on argument types *)
+            let%bind type_elab = elab optype argtypes in
+            (* Second: check applicability *)
+            let%bind res_type = fun_type_applies type_elab argtypes in
+            pure (type_elab, res_type, exec)
+          else <span data-count="0">f</span>ail0 @@ "Name or arity don't match") in
+      <span data-count="2020">l</span>et open Caml in
+      let dict = <span data-count="2020">O</span>ption.value ~default:[] @@ Hashtbl.find_opt built_in_hashtbl opname in
+      let%bind (_, (type_elab, res_type, exec)) = tryM dict ~f:finder
+          ~msg:(fun () -&gt;
+              mk_error1
+                (sprintf "Cannot find built-in with name \"%s\" and argument types %s." opname (pp_typ_list argtypes))
+                (ER.get_loc (get_rep op)))
+      in pure (type_elab, res_type, exec)
+
+  end
+
+end
+</pre>
+      </div>
+    </div>
+    <div id="footer">Generated on 2018-12-17 14:37:09 by <a href="https://github.com/aantron/bisect_ppx">Bisect_ppx</a> 1.3.4</div>
+    <script src="../../../coverage.js"></script>
+  </body>
+</html>

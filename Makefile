@@ -51,3 +51,16 @@ opamdep:
 	opam init -y
 	opam switch -y 4.06.1
 	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx
+
+
+.PHONY : coverage
+coverage :
+	make clean
+	-rm -r /tmp/scilla
+	-mkdir /tmp/scilla
+	BISECT_ENABLE=YES make
+	BISECT_FILE=/tmp/scilla/bisect ./bin/testsuite
+	bisect-ppx-report -I _build/default/ -html coverage/ /tmp/scilla/bisect*.out
+	-rm -r /tmp/scilla
+	make clean
+

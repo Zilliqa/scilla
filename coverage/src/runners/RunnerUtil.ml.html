@@ -1,0 +1,385 @@
+<html>
+  <head>
+    <title>Coverage report</title>
+    <link rel="stylesheet" href="../../coverage.css" />
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="../../index.html">
+          <span class="dirname">src/runners/</span>RunnerUtil.ml
+        </a>
+      </h1>
+      <h2>76.00%</h2>
+    </div>
+    <div id="navbar">
+      <span class="unvisited" style="top:33.04%"></span>
+      <span class="unvisited" style="top:33.93%"></span>
+      <span class="unvisited" style="top:38.39%"></span>
+      <span class="unvisited" style="top:39.29%"></span>
+      <span class="unvisited" style="top:42.86%"></span>
+      <span class="unvisited" style="top:43.75%"></span>
+      <span class="unvisited" style="top:47.32%"></span>
+      <span class="unvisited" style="top:50.89%"></span>
+      <span class="unvisited" style="top:57.14%"></span>
+      <span class="unvisited" style="top:58.04%"></span>
+      <span class="unvisited" style="top:65.18%"></span>
+      <span class="unvisited" style="top:85.71%"></span>
+      <span class="unvisited" style="top:87.50%"></span>
+      <span class="unvisited" style="top:88.39%"></span>
+      <span class="unvisited" style="top:97.32%"></span>
+      <span class="some-visited" style="top:99.11%"></span>
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span > </span>
+<a id="L6"></a><span > </span>
+<a id="L7"></a><span > </span>
+<a id="L8"></a><span > </span>
+<a id="L9"></a><span > </span>
+<a id="L10"></a><span > </span>
+<a id="L11"></a><span > </span>
+<a id="L12"></a><span > </span>
+<a id="L13"></a><span > </span>
+<a id="L14"></a><span > </span>
+<a id="L15"></a><span > </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span > </span>
+<a id="L18"></a><span > </span>
+<a id="L19"></a><span > </span>
+<a id="L20"></a><span > </span>
+<a id="L21"></a><span > </span>
+<a id="L22"></a><span > </span>
+<a id="L23"></a><span > </span>
+<a id="L24"></a><span > </span>
+<a id="L25"></a><span > </span>
+<a id="L26"></a><span > </span>
+<a id="L27"></a><span > </span>
+<a id="L28"></a><span > </span>
+<a id="L29"></a><span > </span>
+<a id="L30"></a><span class="visited"> </span>
+<a id="L31"></a><span class="visited"> </span>
+<a id="L32"></a><span class="visited"> </span>
+<a id="L33"></a><span class="visited"> </span>
+<a id="L34"></a><span class="visited"> </span>
+<a id="L35"></a><span class="visited"> </span>
+<a id="L36"></a><span class="visited"> </span>
+<a id="L37"></a><span class="unvisited"> </span>
+<a id="L38"></a><span class="unvisited"> </span>
+<a id="L39"></a><span class="visited"> </span>
+<a id="L40"></a><span class="visited"> </span>
+<a id="L41"></a><span class="visited"> </span>
+<a id="L42"></a><span class="visited"> </span>
+<a id="L43"></a><span class="unvisited"> </span>
+<a id="L44"></a><span class="unvisited"> </span>
+<a id="L45"></a><span class="visited"> </span>
+<a id="L46"></a><span > </span>
+<a id="L47"></a><span class="visited"> </span>
+<a id="L48"></a><span class="unvisited"> </span>
+<a id="L49"></a><span class="unvisited"> </span>
+<a id="L50"></a><span > </span>
+<a id="L51"></a><span > </span>
+<a id="L52"></a><span > </span>
+<a id="L53"></a><span class="unvisited"> </span>
+<a id="L54"></a><span > </span>
+<a id="L55"></a><span > </span>
+<a id="L56"></a><span > </span>
+<a id="L57"></a><span class="unvisited"> </span>
+<a id="L58"></a><span > </span>
+<a id="L59"></a><span > </span>
+<a id="L60"></a><span > </span>
+<a id="L61"></a><span > </span>
+<a id="L62"></a><span class="visited"> </span>
+<a id="L63"></a><span class="visited"> </span>
+<a id="L64"></a><span class="unvisited"> </span>
+<a id="L65"></a><span class="unvisited"> </span>
+<a id="L66"></a><span class="visited"> </span>
+<a id="L67"></a><span class="visited"> </span>
+<a id="L68"></a><span class="visited"> </span>
+<a id="L69"></a><span > </span>
+<a id="L70"></a><span class="visited"> </span>
+<a id="L71"></a><span class="visited"> </span>
+<a id="L72"></a><span > </span>
+<a id="L73"></a><span class="unvisited"> </span>
+<a id="L74"></a><span > </span>
+<a id="L75"></a><span > </span>
+<a id="L76"></a><span class="visited"> </span>
+<a id="L77"></a><span class="visited"> </span>
+<a id="L78"></a><span class="visited"> </span>
+<a id="L79"></a><span > </span>
+<a id="L80"></a><span class="visited"> </span>
+<a id="L81"></a><span > </span>
+<a id="L82"></a><span > </span>
+<a id="L83"></a><span > </span>
+<a id="L84"></a><span > </span>
+<a id="L85"></a><span > </span>
+<a id="L86"></a><span > </span>
+<a id="L87"></a><span > </span>
+<a id="L88"></a><span > </span>
+<a id="L89"></a><span class="visited"> </span>
+<a id="L90"></a><span class="visited"> </span>
+<a id="L91"></a><span class="visited"> </span>
+<a id="L92"></a><span class="visited"> </span>
+<a id="L93"></a><span class="visited"> </span>
+<a id="L94"></a><span class="visited"> </span>
+<a id="L95"></a><span > </span>
+<a id="L96"></a><span class="unvisited"> </span>
+<a id="L97"></a><span > </span>
+<a id="L98"></a><span class="unvisited"> </span>
+<a id="L99"></a><span class="unvisited"> </span>
+<a id="L100"></a><span > </span>
+<a id="L101"></a><span class="visited"> </span>
+<a id="L102"></a><span class="visited"> </span>
+<a id="L103"></a><span class="visited"> </span>
+<a id="L104"></a><span > </span>
+<a id="L105"></a><span > </span>
+<a id="L106"></a><span class="visited"> </span>
+<a id="L107"></a><span class="visited"> </span>
+<a id="L108"></a><span class="visited"> </span>
+<a id="L109"></a><span class="unvisited"> </span>
+<a id="L110"></a><span class="visited"> </span>
+<a id="L111"></a><span class="some-visited"> </span>
+<a id="L112"></a><span class="visited"> </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1">  1</a>
+<a href="#L2">  2</a>
+<a href="#L3">  3</a>
+<a href="#L4">  4</a>
+<a href="#L5">  5</a>
+<a href="#L6">  6</a>
+<a href="#L7">  7</a>
+<a href="#L8">  8</a>
+<a href="#L9">  9</a>
+<a href="#L10"> 10</a>
+<a href="#L11"> 11</a>
+<a href="#L12"> 12</a>
+<a href="#L13"> 13</a>
+<a href="#L14"> 14</a>
+<a href="#L15"> 15</a>
+<a href="#L16"> 16</a>
+<a href="#L17"> 17</a>
+<a href="#L18"> 18</a>
+<a href="#L19"> 19</a>
+<a href="#L20"> 20</a>
+<a href="#L21"> 21</a>
+<a href="#L22"> 22</a>
+<a href="#L23"> 23</a>
+<a href="#L24"> 24</a>
+<a href="#L25"> 25</a>
+<a href="#L26"> 26</a>
+<a href="#L27"> 27</a>
+<a href="#L28"> 28</a>
+<a href="#L29"> 29</a>
+<a href="#L30"> 30</a>
+<a href="#L31"> 31</a>
+<a href="#L32"> 32</a>
+<a href="#L33"> 33</a>
+<a href="#L34"> 34</a>
+<a href="#L35"> 35</a>
+<a href="#L36"> 36</a>
+<a href="#L37"> 37</a>
+<a href="#L38"> 38</a>
+<a href="#L39"> 39</a>
+<a href="#L40"> 40</a>
+<a href="#L41"> 41</a>
+<a href="#L42"> 42</a>
+<a href="#L43"> 43</a>
+<a href="#L44"> 44</a>
+<a href="#L45"> 45</a>
+<a href="#L46"> 46</a>
+<a href="#L47"> 47</a>
+<a href="#L48"> 48</a>
+<a href="#L49"> 49</a>
+<a href="#L50"> 50</a>
+<a href="#L51"> 51</a>
+<a href="#L52"> 52</a>
+<a href="#L53"> 53</a>
+<a href="#L54"> 54</a>
+<a href="#L55"> 55</a>
+<a href="#L56"> 56</a>
+<a href="#L57"> 57</a>
+<a href="#L58"> 58</a>
+<a href="#L59"> 59</a>
+<a href="#L60"> 60</a>
+<a href="#L61"> 61</a>
+<a href="#L62"> 62</a>
+<a href="#L63"> 63</a>
+<a href="#L64"> 64</a>
+<a href="#L65"> 65</a>
+<a href="#L66"> 66</a>
+<a href="#L67"> 67</a>
+<a href="#L68"> 68</a>
+<a href="#L69"> 69</a>
+<a href="#L70"> 70</a>
+<a href="#L71"> 71</a>
+<a href="#L72"> 72</a>
+<a href="#L73"> 73</a>
+<a href="#L74"> 74</a>
+<a href="#L75"> 75</a>
+<a href="#L76"> 76</a>
+<a href="#L77"> 77</a>
+<a href="#L78"> 78</a>
+<a href="#L79"> 79</a>
+<a href="#L80"> 80</a>
+<a href="#L81"> 81</a>
+<a href="#L82"> 82</a>
+<a href="#L83"> 83</a>
+<a href="#L84"> 84</a>
+<a href="#L85"> 85</a>
+<a href="#L86"> 86</a>
+<a href="#L87"> 87</a>
+<a href="#L88"> 88</a>
+<a href="#L89"> 89</a>
+<a href="#L90"> 90</a>
+<a href="#L91"> 91</a>
+<a href="#L92"> 92</a>
+<a href="#L93"> 93</a>
+<a href="#L94"> 94</a>
+<a href="#L95"> 95</a>
+<a href="#L96"> 96</a>
+<a href="#L97"> 97</a>
+<a href="#L98"> 98</a>
+<a href="#L99"> 99</a>
+<a href="#L100">100</a>
+<a href="#L101">101</a>
+<a href="#L102">102</a>
+<a href="#L103">103</a>
+<a href="#L104">104</a>
+<a href="#L105">105</a>
+<a href="#L106">106</a>
+<a href="#L107">107</a>
+<a href="#L108">108</a>
+<a href="#L109">109</a>
+<a href="#L110">110</a>
+<a href="#L111">111</a>
+<a href="#L112">112</a>
+</pre>
+        <pre id="code">
+(*
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+*)
+
+
+
+open Printf
+open Syntax
+open GlobalConfig
+open ErrorUtils
+open PrettyPrinters
+open DebugMessage
+
+(* Parse external libraries "names" (by looking for in StdlibTracker). *)
+let import_libs names =
+  <span data-count="302">L</span>ist.map (fun id -&gt; 
+    <span data-count="957">l</span>et name = <span data-count="957">g</span>et_id id in
+    <span data-count="957">l</span>et sloc = <span data-count="957">g</span>et_rep id in
+    <span data-count="957">l</span>et errmsg = <span data-count="957">(</span>sprintf "%s. " ("Failed to import library " ^ name)) in
+    <span data-count="957">l</span>et dir = <span data-count="957">S</span>tdlibTracker.find_lib_dir name in
+    <span data-count="957">l</span>et open Core in 
+    let f = <span data-count="957">m</span>atch dir with
+      | <span data-count="0">N</span>one -&gt; perr @@ scilla_error_to_string
+         (mk_error1 (errmsg ^ "Not found.\n") sloc); <span data-count="0">e</span>xit 1
+      | <span data-count="957">S</span>ome d -&gt; d ^ Filename.dir_sep ^ name ^ ".scilla" in
+    <span data-count="957">t</span>ry
+      let parse_lib = <span data-count="957">F</span>rontEndParser.parse_file ScillaParser.lmodule f  in
+      <span data-count="957">m</span>atch parse_lib with
+      | <span data-count="0">N</span>one -&gt; perr @@ scilla_error_to_string
+          (mk_error1 (errmsg ^ "Failed to parse.\n") sloc); <span data-count="0">e</span>xit 1
+      | <span data-count="957">S</span>ome lib -&gt;
+        plog (sprintf "%s\n" "Successfully imported external library " ^ name);
+        <span data-count="957">l</span>ib
+    with | <span data-count="0">_</span> -&gt; perr @@ scilla_error_to_string 
+          (mk_error1 (errmsg ^ "Failed to parse.\n") sloc); <span data-count="0">e</span>xit 1
+    ) names 
+
+let stdlib_not_found_err () =
+  <span data-count="0">(</span>perr @@ scilla_error_to_string (mk_error0 
+    ("A path to Scilla stdlib not found. Please set " ^ StdlibTracker.scilla_stdlib_env ^ 
+     " environment variable, or pass through command-line argument for this script.\n" ^
+     "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla -libdir ./src/stdlib/\n"));
+   <span data-count="0">e</span>xit 1)
+
+(* Parse all libraries that can be found in ldirs. *)
+let import_all_libs ldirs  =
+  (* Get list of scilla libraries in dir *)
+  <span data-count="154">l</span>et get_lib_list dir =
+    <span data-count="154">i</span>f not (Sys.file_exists dir) then
+      <span data-count="0">(</span>perr @@ scilla_error_to_string (mk_error0 "Invalid stdlib director provided");
+       <span data-count="0">e</span>xit 1);
+    <span data-count="154">l</span>et files = <span data-count="154">A</span>rray.to_list (Sys.readdir dir) in
+    <span data-count="154">L</span>ist.fold_right (fun file names -&gt;
+      <span data-count="770">i</span>f Filename.extension file = ".scilla"
+      then 
+        <span data-count="770">l</span>et name = <span data-count="770">F</span>ilename.remove_extension (Filename.basename file) in
+          <span data-count="770">a</span>sId name :: names
+      else
+        <span data-count="0">n</span>ames) files []
+  in
+  (* Make a list of all libraries and parse them through import_libs above. *)
+  <span data-count="154">l</span>et names = <span data-count="154">L</span>ist.fold_right (fun dir names -&gt;
+    <span data-count="154">l</span>et names' = <span data-count="154">g</span>et_lib_list dir in
+      <span data-count="154">L</span>ist.append names names') ldirs []
+  in
+    <span data-count="154">i</span>mport_libs names 
+
+type runner_cli = {
+  input_file : string;
+  stdlib_dirs : string list;
+  cf_flag : bool;
+}
+
+let parse_cli () =
+  <span data-count="177">l</span>et usage = <span data-count="177">"</span> -libdir /path/to/stdlib [-simple-errors] input.scilla" in
+  <span data-count="177">l</span>et r_stdlib_dir = <span data-count="177">r</span>ef "" in
+  <span data-count="177">l</span>et r_input_file = <span data-count="177">r</span>ef "" in
+  <span data-count="177">l</span>et r_json_errors = <span data-count="177">r</span>ef false in
+  <span data-count="177">l</span>et r_cf = <span data-count="177">r</span>ef false in
+  <span data-count="177">l</span>et speclist = <span data-count="177">[</span>
+    ("-version", Arg.Unit (fun () -&gt; 
+        <span data-count="0">D</span>ebugMessage.pout
+          (sprintf "Scilla version: %s\n" PrettyPrinters.scilla_version_string);
+          <span data-count="0">i</span>f true then <span data-count="0">e</span>xit 0; (* if "true" to avoid warning on exit 0 *)
+          <span data-count="0">(</span>)
+      ), "Print Scilla version and exit");
+    ("-libdir", Arg.String (fun x -&gt; <span data-count="177">r</span>_stdlib_dir := x), "Path to stdlib");
+    ("-cf", Arg.Unit (fun () -&gt; <span data-count="21">r</span>_cf := true), "Run cashflow checker and print results.");
+    ("-jsonerrors", Arg.Unit (fun () -&gt; <span data-count="177">r</span>_json_errors := true), "Print errors in JSON format");
+  ] in 
+  (* Only one input file allowed, so the last anonymous argument will be *it*. *)
+  <span data-count="177">l</span>et anon_handler s = <span data-count="177">r</span>_input_file := s in
+  <span data-count="177">l</span>et () = <span data-count="177">A</span>rg.parse speclist anon_handler ("Usage:\n" ^ usage) in
+  <span data-count="177">i</span>f !r_input_file = "" then
+    <span data-count="0">(</span>DebugMessage.perr @@ "Usage:\n" ^ Sys.argv.(0) ^ usage ^ "\n"; <span data-count="0">e</span>xit 1);
+  <span data-count="177">G</span>lobalConfig.set_use_json_errors !r_json_errors;
+  <span data-count="177">l</span>et stdlib_dirs = <span data-count="177">i</span>f !r_stdlib_dir = "" then <span data-count="0">[</span>] else <span data-count="177">S</span>tring.split_on_char ';' !r_stdlib_dir in
+  <span data-count="177">{</span> input_file = !r_input_file; stdlib_dirs = stdlib_dirs; cf_flag = !r_cf }
+</pre>
+      </div>
+    </div>
+    <div id="footer">Generated on 2018-12-17 14:37:09 by <a href="https://github.com/aantron/bisect_ppx">Bisect_ppx</a> 1.3.4</div>
+    <script src="../../coverage.js"></script>
+  </body>
+</html>
