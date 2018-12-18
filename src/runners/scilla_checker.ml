@@ -35,8 +35,12 @@ open Cashflow
 module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
 module PERep = ParserRep
-  
-module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
+
+module ADTC = ADTChecker.ScillaADTChecker (PSRep) (PERep)
+module ADTCSRep = ADTC.OutputSRep
+module ADTCERep = ADTC.OutputERep
+
+module TC = TypeChecker.ScillaTypechecker (ADTCSRep) (ADTCERep)
 module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
 
@@ -60,9 +64,17 @@ let check_parsing ctr  =
         pure cmod
 
 (* Type check the contract with external libraries *)
-let check_typing cmod elibs  =
+let check_adt cmod elibs  =
+  let open ADTC in
+  let res = adt_check_module cmod recursion_principles elibs in
+  match res with
+  | Error msgs -> pout @@ scilla_error_to_string msgs ; res
+  | Ok adt_checked_module -> pure @@ adt_checked_module
+
+(* Type check the contract with external libraries *)
+let check_typing cmod rprin elibs  =
   let open TC in
-  let res = type_module cmod recursion_principles elibs in
+  let res = type_module cmod rprin elibs in
   match res with
   | Error msgs -> pout @@ scilla_error_to_string msgs ; res
   | Ok typed_module -> pure @@ typed_module
@@ -105,7 +117,8 @@ let () =
       if lib_dirs = [] then stdlib_not_found_err ();
       (* Import whatever libs we want. *)
       let elibs = import_libs cmod.elibs  in
-      let%bind (typed_cmod, tenv) = check_typing cmod elibs  in
+      let%bind (adtchecked_cmod, adtchecked_rec_principles, adtchecked_elibs) = check_adt cmod elibs in
+      let%bind (typed_cmod, tenv) = check_typing adtchecked_cmod adtchecked_rec_principles adtchecked_elibs  in
       let%bind pm_checked_cmod = check_patterns typed_cmod  in
       let%bind _ = check_sanity pm_checked_cmod.contr  in
       let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr)  in
