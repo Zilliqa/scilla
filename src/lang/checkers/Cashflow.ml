@@ -601,31 +601,22 @@ module ScillaCashflowChecker
       | "pow" ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
-            | Money    -> [ ( Money        , [ Money    ; NotMoney ] ) ]
-            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ;
-                            ( Money        , [ Money    ; NotMoney ] ) ]
-            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ;
-                            ( Inconsistent , [ Money    ; NotMoney ] ) ] in
+            | NotMoney
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
-                  | Money    -> [ ( Money    , [ Money        ; NotMoney ] ) ] 
-                  | NotMoney -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
-                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ;
-                                  ( Money    , [ Money        ; NotMoney ] ) ]
-                  | _        -> [ ( Money    , [ Inconsistent ; NotMoney ] ) ;
-                                  ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
                 let v2_sig =
                   match v2 with
-                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
-                                  ( Money    , [ Money    ; NotMoney     ] ) ]
-                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
-                                  ( Money    , [ Money    ; NotMoney     ] ) ]
-                  | _        -> [ ( Money    , [ Money    ; Inconsistent ] ) ;
-                                  ( NotMoney , [ NotMoney ; Inconsistent ] ) ] in
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ]
+                  | _        -> [ ( NotMoney , [ NotMoney ; Inconsistent ] ) ] in
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
