@@ -151,53 +151,76 @@ module ScillaRecursion
       
   let recursion_lib_entry is_adt_type_valid lib_entry =
     match lib_entry with
-    | LibVar (n, e) -> pure @@ RecursionSyntax.LibVar (n, recursion_exp e)
+    | LibVar (n, e) -> pure @@ (RecursionSyntax.LibVar (n, recursion_exp e), None)
     | LibTyp (tname, ctr_defs) ->
         let%bind checked_ctr_defs =
           mapM ~f:(fun ({ cname ; c_arg_types } : ctr_def) ->
               let error_loc = ER.get_loc (get_rep cname) in
-              let%bind _ = forallM ~f:(fun c_arg -> recursion_adt_constructor_arg is_adt_type_valid c_arg error_loc) c_arg_types in
-              pure @@ { RecursionSyntax.cname ; RecursionSyntax.c_arg_types }) ctr_defs in
+              let%bind recursion_c_arg_types = mapM ~f:(fun c_arg -> recursion_adt_constructor_arg is_adt_type_valid c_arg error_loc) c_arg_types in
+              pure @@ { RecursionSyntax.cname = cname ; RecursionSyntax.c_arg_types = recursion_c_arg_types }) ctr_defs in
+        let (datatype_ctrs, datatype_tmap) =
+          List.fold_right ctr_defs ~init:([], [])
+            ~f:(fun ctr_def (ctrs, maps) ->
+                let { cname ; c_arg_types } = ctr_def in
+                let ctr = { Datatypes.cname = get_id cname ; Datatypes.arity = List.length c_arg_types } in
+                let map = ( get_id cname, c_arg_types ) in
+                ( ctr :: ctrs, map :: maps )) in
         (* Add type to ADTs in scope once checked. Adding the type after checking prevents inductive definitions. *)
-        pure @@ RecursionSyntax.LibTyp (tname, checked_ctr_defs)
-  
+        pure @@
+        ( RecursionSyntax.LibTyp (tname, checked_ctr_defs),
+          Some { Datatypes.tname = get_id tname ;
+                 (* Polymorphic definitions disallowed for the time being *)
+                 Datatypes.tparams = [] ;
+                 Datatypes.tconstr = datatype_ctrs ;
+                 Datatypes.tmap = datatype_tmap } )
+            
+    
   let recursion_library lib =
     let { lname ; lentries } = lib in
-    let open Caml in
-    let declared_adts : ((string, unit) Hashtbl.t) = Hashtbl.create 5 in
-    let is_adt_type_valid adt_name =
+    let is_adt_type_valid adts_in_scope adt_name =
       (* Check if type has already been declared *)
-      match Hashtbl.find_opt declared_adts adt_name with
+      match List.findi adts_in_scope ~f:(fun _ n -> n = adt_name) with
       | Some _ -> pure @@ ()
       | None ->
-          (* Not declared. Check if type exists as builtin ADT *)
-          let%bind _ = DataTypeDictionary.lookup_name adt_name in
-          pure @@ () in
-    let%bind recursion_entries =
-      mapM ~f:(fun entry ->
-          let%bind new_entry = recursion_lib_entry is_adt_type_valid entry in
-          let _ =
-            match new_entry with
-            | LibVar _ -> ()
-            | LibTyp (tname, _) -> Hashtbl.add declared_adts (get_id tname) () in
-          pure @@ new_entry) lentries in
-    pure @@ { RecursionSyntax.lname = lname ; RecursionSyntax.lentries = recursion_entries }
+          (* Check if the name is a builtin ADT *)
+          let%bind _ = DataTypeDictionary.lookup_name adt_name
+          in pure @@ () in
+    let%bind (recursion_entries, adts, _) =
+      foldrM
+        ~f:(fun (rec_entries, datatypes, adts_in_scope) entry ->
+            let%bind (new_entry, adt_opt) = recursion_lib_entry (is_adt_type_valid adts_in_scope) entry in
+            match adt_opt with
+            (* LibVar *)
+            | None -> pure @@ (new_entry :: rec_entries, datatypes, adts_in_scope)
+            (* LibTyp *)
+            | Some adt ->
+                pure @@ (new_entry :: rec_entries, adt :: datatypes, adt.tname :: adts_in_scope ))
+        ~init:([], [], [])
+        lentries in
+    pure @@ (
+      { RecursionSyntax.lname = lname ; RecursionSyntax.lentries = recursion_entries },
+      adts)
 
   let recursion_module
       (md : cmodule)
       (recursion_principles : lib_entry list)
       (ext_libs : library list)
-    : (RecursionSyntax.cmodule * RecursionSyntax.lib_entry list * RecursionSyntax.library list, scilla_error list) result =
+    : (RecursionSyntax.cmodule * (RecursionSyntax.lib_entry list) * (RecursionSyntax.library list), scilla_error list) result =
     let { smver ; cname ; libs ; elibs ; contr } = md in
-    let%bind recursion_elibs = mapM ~f:recursion_library ext_libs in
+    let%bind rec_elibs_and_adts = mapM ~f:recursion_library ext_libs in
+    let (recursion_elibs, elibs_adts_unflattened) = List.unzip rec_elibs_and_adts in
+    let _ = List.iter (List.concat elibs_adts_unflattened) ~f:DataTypeDictionary.add_adt in
     let%bind recursion_md_libs =
       match libs with
       | None -> pure @@ None
       | Some l ->
-          let%bind recursion_l = recursion_library l in
+          (* TODO: Ensure elib ADTs are in scope for md_lib datatype constructors *)
+          let%bind (recursion_l, recursion_adts) = recursion_library l in
+          let _ = List.iter recursion_adts ~f:DataTypeDictionary.add_adt in
           pure @@ Some recursion_l in
     (* TODO: Recursion principles should be generated by this phase *)
-    let%bind recursion_rprins = mapM recursion_principles ~f:(fun rprin -> recursion_lib_entry (fun _ -> pure @@ true) rprin) in
+    let%bind recursion_rprins_adts = mapM recursion_principles ~f:(fun rprin -> recursion_lib_entry (fun _ -> pure @@ ()) rprin) in
+    let (recursion_rprins, _) = List.unzip recursion_rprins_adts in
     let recursion_contr = recursion_contract contr in
     pure @@ (
       { RecursionSyntax.smver = smver ;

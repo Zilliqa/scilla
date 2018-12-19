@@ -121,6 +121,14 @@ module DataTypeDictionary = struct
       adt_name_dict;
     ht
 
+  let add_adt (new_adt : adt) =
+    let open Caml in
+    let _ = Hashtbl.add adt_name_dict new_adt.tname new_adt in
+    let _ = List.iter 
+        (fun ctr -> Hashtbl.add adt_cons_dict ctr.cname (new_adt, ctr))
+        new_adt.tconstr in
+    ()
+  
   (*  Get ADT by name *)
   let lookup_name name =
     let open Caml in
