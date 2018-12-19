@@ -56,6 +56,7 @@ module type TestSuiteInput = sig
   val test_path : string -> string list
   val runner : string
   val exit_code : Unix.process_status
+  val custom_args : string list
 end
 
 module DiffBasedTests(Input : TestSuiteInput) = struct
@@ -89,12 +90,11 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         match Sys.getenv_opt GlobalConfig.StdlibTracker.scilla_stdlib_env with
         | Some _ -> false | None -> true
       in
-      let args = if use_stdlib then ["-libdir";libdir;"-jsonerrors";input_file] else ["-jsonerrors";input_file] in
+      let common_args = if use_stdlib then ["-libdir";libdir;"-jsonerrors";input_file] else ["-jsonerrors";input_file] in
+      let args = custom_args @ common_args in
       (if (env.print_cli test_ctxt) then
-        if use_stdlib then
-          (Printf.printf "\nUsing CLI: %s %s %s %s %s\n" runner "-libdir" libdir "-jsonerrors" input_file)
-        else
-          (Printf.printf "\nUsing CLI: %s %s %s\n" runner "-jsonerrors" input_file));
+         (Printf.printf "\nUsing CLI: "; List.iter (fun arg -> Printf.printf "%s " arg) args);
+      );
       let update_gold = env.update_gold test_ctxt in
       if update_gold then
         assert_command ~exit_code:exit_code ~use_stderr:true ~foutput:output_updater ~chdir:dir ~ctxt:test_ctxt evalbin (args)
