@@ -1,0 +1,12 @@
+{
+  "gas_remaining": 960,
+  "errors": [
+    {
+      "error_message":
+        "Cannot apply built-in Int.pow: an overflow/underflow occurred to a list of arguments:[  (Int32 100),\n  (Uint32 40)].",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
