@@ -1,0 +1,4 @@
+(* Expected: Overflow *)
+let a = Int32 100 in
+let b = Uint32 40 in
+builtin pow a b
