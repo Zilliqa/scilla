@@ -487,12 +487,16 @@ module ScillaTypechecker
   (**************************************************************)
       
   let type_rec_libs rec_libs =
-    (* TODO : Add lib_typs to type environment *)
-    let (lib_vars, _lib_typs) =
+    let (lib_vars, lib_types) =
       List.partition_map rec_libs
         ~f:(fun le -> match le with
             | LibVar (n, e) -> `Fst (n, e)
-            | LibTyp (n, ts) -> `Snd (n, ts)) in
+            | LibTyp (n, ts) ->`Snd (n, ts)) in
+    (* recursion primitives must not contain type declarations *)
+    let%bind _ =
+      match lib_types with
+      | _ :: _ -> fail0 @@ "Type declarations not allowed in recursion primitives"
+      | [] -> pure () in
     let env0 = TEnv.copy TEnv.mk in
     foldM lib_vars ~init:([], env0)
       ~f:(fun (entry_acc, env_acc) (rn, body) ->
@@ -505,14 +509,28 @@ module ScillaTypechecker
           let new_env = TEnv.addT (TEnv.copy env_acc) rn ar.tp in
           pure @@ (new_entries, new_env))
 
+  (* Check that ADT constructors are well-formed.
+     Declared ADTs and constructors are added to stored datatypes 
+     by ADTChecker.
+     Checking for ADT types in scope and multiple usages of the 
+     same constructor name takes place in ADTChecker. *)
+  let type_lib_typ_ctrs env (ctr_defs : ctr_def list) =
+    forallM
+      ~f:(fun ctr_def ->
+          forallM
+            ~f:(fun c_arg_type ->
+                TEnv.is_wf_type env c_arg_type)
+            ctr_def.c_arg_types )
+      ctr_defs
 
   let type_library env0 { lname ; lentries = ents } =
     let%bind (typed_entries, new_tenv, errs, _) =
       foldM ~init:([], env0, [], []) ents
         ~f:(fun (acc, env, errs, blist) lib_entry ->
             match lib_entry with
-            (* TODO: Handle this properly *)
-            | LibTyp _ -> pure @@ (acc, env, errs, blist)
+            | LibTyp (_, ctr_defs) ->
+                let%bind _ = type_lib_typ_ctrs env ctr_defs in
+                pure @@ (acc, env, errs, blist)
             | LibVar (ln, le) -> 
                 let msg = sprintf
                     "Type error in library %s:\n\n" (get_id ln) in
