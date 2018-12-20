@@ -318,7 +318,9 @@ contract:
       ctrans  = ts } }
 
 tconstr :
-| BAR; tn = CID; OF; LPAREN; t = separated_list(COMMA, targ); RPAREN;
+| BAR; tn = CID;
+  { { cname = asIdL tn (toLoc $startpos); c_arg_types = [] } }
+| BAR; tn = CID; OF; t = nonempty_list(targ);
   { { cname = asIdL tn (toLoc $startpos); c_arg_types = t }}
 
 libentry :

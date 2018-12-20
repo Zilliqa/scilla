@@ -6,8 +6,8 @@ scilla_version 0
 library BinaryTree
 
 type Tree =
-| Leaf of ()
-| Node of (Tree, Tree, Tree)
+| Leaf
+| Node of (Pair Uint32 Uint32) Bool
 
 
 (***************************************************)
