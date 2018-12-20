@@ -23,6 +23,7 @@ utop: all
 
 # Build and run tests
 test: all
+	./tests/cpp_check_version.sh
 	./bin/testsuite
 
 # Clean up
