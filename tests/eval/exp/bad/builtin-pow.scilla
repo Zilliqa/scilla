@@ -1,0 +1,4 @@
+(* Expected: Bad type. *)
+let a = Int32 100 in
+let b = Uint32 2 in
+builtin pow b a
