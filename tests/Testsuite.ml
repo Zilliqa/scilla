@@ -43,11 +43,11 @@ let main =
   let pm_tests_bad = TestPMFail.all_tests env in
   let checker_tests = TestChecker.checker_tests env in
   let integer256_tests = TestInteger256.integer256_tests in
-  let schnorr_tests = TestSchnorr.schnorr_tests env in
+  let signature_tests = TestSignatures.signature_tests env in
 
   let all_tests = "all_tests" >:::
                   [type_tests_bad; type_tests_good; exp_tests_good; exp_tests_bad;
-                   pm_tests_bad; schnorr_tests;
+                   pm_tests_bad; signature_tests;
                    contract_tests; checker_tests; integer256_tests] in
 
   (* Run all tests *)

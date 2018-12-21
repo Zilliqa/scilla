@@ -16,22 +16,21 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open ErrorUtils
+
 val privkey_len : int
 val pubkey_len : int
 val signature_len : int
 
-(* Generate a private key / public key pair. 
- * The output is a hex string pair representing 
- * privkey_len / pubkey_len bytes of the keys
- *)
-val genKeyPair : unit -> (string * string)
+(* Given a private key, return it's public key. *)
+val pk_from_sk : string -> (string, scilla_error list) result
 
-(* Given private key, public key and message,
+(* Given private key and message,
  * sign the message and return the signature.
  *)
-val sign : string -> string -> string -> string
+val sign : string -> string -> (string, scilla_error list) result
 
 (* Given public key, message and a signature, verify
  * that the message was indeed signed by the public key.
  *)
-val verify : string -> string -> string -> bool
+val verify : string -> string -> string -> (bool, scilla_error list) result
