@@ -141,6 +141,23 @@ module ScillaBuiltIns
       | [StringLit x; UintLit (Uint32L s); UintLit (Uint32L e)] ->
           pure @@ StringLit (Core.String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
       | _ -> builtin_fail "String.substr" ls
+
+    let to_string_arity = 1
+    let to_string_type = tfun_typ "'A" (fun_typ (tvar "'A") (string_typ))
+    let to_string_elab _ ts = match ts with
+      | [t] when is_int_type t || is_uint_type t ||
+                 is_bystrx_type t || t = bystr_typ ->
+          elab_tfun_with_args to_string_type ts
+      | _ -> fail0 "Failed to elaborate"
+
+    let to_string ls _ =
+      let%bind s = match ls with
+        | [IntLit x] -> pure @@ string_of_int_lit x
+        | [UintLit x] -> pure @@ string_of_uint_lit x
+        | [ByStr x] | [ByStrX (_, x)] -> pure x
+        | _ -> builtin_fail (sprintf "String.to_string") ls
+      in pure (BatOption.get (build_prim_literal string_typ s))
+
   end
 
   (*******************************************************)
@@ -206,6 +223,15 @@ module ScillaBuiltIns
       (* Division_by_zero is taken care of by underlying implementation. *)
       rem a b
 
+    let safe_pow a b =
+      let rec pow acc b' =
+        if b' = Uint32.zero then
+          acc
+        else
+          pow (safe_mul a acc) (Uint32.sub b' Uint32.one)
+      in
+      pow one b
+
     let safe_lt a b =
       if (compare a b) < 0 then true else false
 
@@ -246,6 +272,15 @@ module ScillaBuiltIns
     let safe_rem a b =
       (* Division_by_zero is taken care of by underlying implementation. *)
       rem a b
+
+    let safe_pow a b =
+      let rec pow acc b' =
+        if b' = Uint32.zero then
+          acc
+        else
+          pow (safe_mul a acc) (Uint32.sub b' Uint32.one)
+      in
+      pow one b
 
     let safe_lt a b =
       if (compare a b) < 0 then true else false
@@ -371,6 +406,28 @@ module ScillaBuiltIns
       with | Division_by_zero ->
                builtin_fail "Int.rem: Division by zero error occurred" ls
 
+    let pow_arity = 2
+    let pow_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (uint32_typ) (tvar "'A"))
+    let pow_elab t ts = match ts with
+    | [i1; i2] when is_int_type i1 && (i2 = uint32_typ) ->
+       elab_tfun_with_args t [i1]
+    | _ -> fail0 "Failed to elaborate"
+    let pow ls _ = 
+    try 
+      let%bind l = (match ls with
+        | [IntLit (Int32L x); UintLit (Uint32L y)] ->
+            pure @@ Int32L(Int32Wrapper.safe_pow x y)
+        | [IntLit (Int64L x); UintLit (Uint32L y)] ->
+            pure @@ Int64L(Int64Wrapper.safe_pow x y)
+        | [IntLit (Int128L x); UintLit (Uint32L y)] ->
+            pure @@ Int128L(Int128Wrapper.safe_pow x y)
+        | [IntLit (Int256L x); UintLit (Uint32L y)] ->
+            pure @@ Int256L(Int256Wrapper.safe_pow x y)
+        | _ -> builtin_fail "Int.pow: unsupported types" ls)
+      in pure @@ IntLit l
+    with | IntOverflow | IntUnderflow ->
+      builtin_fail "Int.pow: an overflow/underflow occurred" ls
+
     let lt ls _ =
       try 
         (match ls with
@@ -396,7 +453,7 @@ module ScillaBuiltIns
     let to_int_arity = 1
     let to_int_type = tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
     let to_int_elab w sc ts = match ts with
-      | [t] when is_int_type t || is_uint_type t ->
+      | [t] when is_int_type t || is_uint_type t || (t = string_typ) ->
           let%bind ityp = mk_int_type w in
           elab_tfun_with_args sc [t; ityp]
       | _ -> fail0 "Failed to elaborate"
@@ -405,6 +462,7 @@ module ScillaBuiltIns
       let%bind xs = match ls with
         | [IntLit x] -> pure @@ string_of_int_lit x
         | [UintLit x] -> pure @@ string_of_uint_lit x
+        | [StringLit x] -> pure x
         | _ -> builtin_fail (sprintf "Int.to_int%i" w) ls
       in
         let%bind ityp = mk_int_type w in
@@ -527,6 +585,28 @@ module ScillaBuiltIns
       with | Division_by_zero ->
         builtin_fail "Uint.rem: Division by zero error occurred" ls
 
+    let pow_arity = 2
+    let pow_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (uint32_typ) (tvar "'A"))
+    let pow_elab t ts = match ts with
+    | [i1; i2] when is_uint_type i1 && (i2 = uint32_typ) ->
+       elab_tfun_with_args t [i1]
+    | _ -> fail0 "Failed to elaborate"
+    let pow ls _ = 
+      try 
+        let%bind l = (match ls with
+          | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
+              pure @@ Uint32L(Uint32Wrapper.safe_pow x y)
+          | [UintLit (Uint64L x); UintLit (Uint32L y)] ->
+              pure @@ Uint64L(Uint64Wrapper.safe_pow x y)
+          | [UintLit (Uint128L x); UintLit (Uint32L y)] ->
+              pure @@ Uint128L(Uint128Wrapper.safe_pow x y)
+          | [UintLit (Uint256L x); UintLit (Uint32L y)] ->
+              pure @@ Uint256L(Uint256Wrapper.safe_pow x y)
+          | _ -> builtin_fail "Int.pow: unsupported types" ls)
+        in pure @@ UintLit l
+      with | IntOverflow | IntUnderflow ->
+        builtin_fail "Int.pow: an overflow/underflow occurred" ls
+
     let lt ls _ =
       try 
         (match ls with
@@ -554,7 +634,7 @@ module ScillaBuiltIns
         (fun_typ (tvar "'A") (option_typ (tvar "'B")))
 
     let to_uint_elab w sc ts = match ts with
-      | [t] when is_uint_type t || is_int_type t ->
+      | [t] when is_uint_type t || is_int_type t || (t = string_typ) ->
           let%bind ityp = mk_uint_type w in
           elab_tfun_with_args sc [t; ityp]
       | _ -> fail0 "Failed to elaborate"
@@ -563,6 +643,7 @@ module ScillaBuiltIns
       let%bind xs = match ls with
         | [IntLit x] -> pure @@ string_of_int_lit x
         | [UintLit x] -> pure @@ string_of_uint_lit x
+        | [StringLit x] -> pure x
         | _ -> builtin_fail (sprintf "UInt.to_uint%i" w) ls
       in
         let%bind ityp = mk_uint_type w in
@@ -642,6 +723,25 @@ module ScillaBuiltIns
           else fail0 @@ sprintf
               "Cannot add a negative value (%s) to a block." (string_of_uint_lit y)
       | _ -> builtin_fail "BNum.badd" ls
+
+    let bsub_arity = 2    
+    let bsub_type =
+      tfun_typ "'A" @@ tfun_typ "'B" @@
+      (fun_typ (tvar "'A") @@ fun_typ (tvar "'B") int256_typ)
+    (* Elaborator to run with arbitrary uints *)
+    let bsub_elab sc ts = match ts with
+      | [b1; b2] when b1 = bnum_typ && b2 = bnum_typ ->
+          elab_tfun_with_args sc ts
+      | _ -> fail0 "Failed to elaborate"
+    let bsub ls _ = match ls with
+      | [BNum x; BNum y] ->
+          let i1 = big_int_of_string x in
+          let i2 = big_int_of_string y in
+          let d = Big_int.sub_big_int i1 i2 in
+          (match build_prim_literal int256_typ (Big_int.string_of_big_int d) with
+          | Some l -> pure l
+          | None -> fail0 @@ sprintf "Unable to express result of BNum subtraction in Int256")
+      | _ -> builtin_fail "BNum.bsub" ls
 
   end
 
@@ -745,6 +845,27 @@ module ScillaBuiltIns
          | Some l' -> pure l'
          | None -> builtin_fail "Crypto.to_bystr: internal error" ls)
       | _ -> builtin_fail "Crypto.to_bystr" ls
+
+    (* ByStrX + ByStrY -> ByStr(X+Y)*)
+    let concat_type = tfun_typ "'A" @@ tfun_typ "'B" @@ tfun_typ "'C" @@
+                      fun_typ (tvar "'A") (fun_typ (tvar "'B") (tvar "'C"))
+    let concat_arity = 2
+    let concat_elab sc ts = match ts with
+      | [t1;t2] when is_bystrx_type t1 && is_bystrx_type t2 ->
+        let t1w = BatOption.get (bystrx_width t1) in
+        let t2w = BatOption.get (bystrx_width t2) in
+        elab_tfun_with_args sc (ts @ [(bystrx_typ (t1w+t2w))])
+      | _ -> fail0 "Failed to elaborate"
+    let concat ls _ = match ls with
+      | [ByStrX(w1, s1);ByStrX(w2, s2)] -> 
+        let res = build_prim_literal 
+          (bystrx_typ (w1+w2)) 
+          (s1 ^ (Core.String.sub s2 ~pos:2 ~len:((Core.String.length s2) - 2))) in
+        (match res with
+         | Some l' -> pure l'
+         | None -> builtin_fail "Crypto.concat: internal error" ls)
+      | _ -> builtin_fail "Crypto.bystr" ls
+
 
     let schnorr_gen_key_pair_type = fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
     let schnorr_gen_key_pair_arity = 0  
@@ -938,13 +1059,15 @@ module ScillaBuiltIns
       ("eq", String.eq_arity, String.eq_type, elab_id, String.eq);
       ("concat", String.concat_arity, String.concat_type, elab_id, String.concat);
       ("substr", String.substr_arity, String.substr_type, String.substr_elab, String.substr);
+      ("to_string", String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string);
 
       (* Block numbers *)
       ("eq", BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq);
       ("blt", BNum.blt_arity, BNum.blt_type, elab_id , BNum.blt);
       ("badd", BNum.badd_arity, BNum.badd_type, BNum.badd_elab , BNum.badd);
+      ("bsub", BNum.bsub_arity, BNum.bsub_type, BNum.bsub_elab , BNum.bsub);
 
-      (* Hashes *)
+      (* Crypto *)
       ("eq", Crypto.eq_arity, Crypto.eq_type, Crypto.eq_elab, Crypto.eq);
       ("dist", Crypto.dist_arity, Crypto.dist_type, elab_id , Crypto.dist);
       ("sha256hash", Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.sha256hash);
@@ -954,6 +1077,7 @@ module ScillaBuiltIns
       ("schnorr_gen_key_pair", Crypto.schnorr_gen_key_pair_arity, Crypto.schnorr_gen_key_pair_type, elab_id, Crypto.schnorr_gen_key_pair);
       ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign);
       ("schnorr_verify", Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify);
+      ("concat", Crypto.concat_arity, Crypto.concat_type, Crypto.concat_elab, Crypto.concat);
 
       (* Maps *)
       ("contains", Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains);
@@ -971,6 +1095,7 @@ module ScillaBuiltIns
       ("mul", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.mul);
       ("div", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.div);
       ("rem", Int.binop_arity, Int.binop_type, Int.binop_elab, Int.rem);
+      ("pow", Int.pow_arity, Int.pow_type, Int.pow_elab, Int.pow);
       ("to_int32", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 32, Int.to_int32);
       ("to_int64", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 64, Int.to_int64);
       ("to_int128", Int.to_int_arity, Int.to_int_type, Int.to_int_elab 128, Int.to_int128);
@@ -984,6 +1109,7 @@ module ScillaBuiltIns
       ("mul", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.mul);
       ("div", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.div);
       ("rem", Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.rem);
+      ("pow", Uint.pow_arity, Uint.pow_type, Uint.pow_elab, Uint.pow);
       ("to_uint32", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 32, Uint.to_uint32);
       ("to_uint64", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 64, Uint.to_uint64);
       ("to_uint128", Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab 128, Uint.to_uint128);
