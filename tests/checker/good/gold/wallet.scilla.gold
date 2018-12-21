@@ -1,0 +1,76 @@
+{
+  "cashflow_tags": [
+    { "field": "initial_owners", "tag": "NoInfo" },
+    { "field": "required_signatures", "tag": "NotMoney" },
+    { "field": "validity_checked", "tag": "NotMoney" },
+    { "field": "contract_valid", "tag": "NotMoney" },
+    { "field": "owners", "tag": "(Map NotMoney)" },
+    { "field": "transactionCount", "tag": "NotMoney" },
+    { "field": "signatures", "tag": "(Map(Map NotMoney))" },
+    { "field": "transactions", "tag": "(Map Inconsistent)" },
+    { "field": "owner_signatures", "tag": "(Map(Map NotMoney))" }
+  ],
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Wallet",
+    "params": [
+      { "vname": "initial_owners", "type": "List (ByStr20)" },
+      { "vname": "required_signatures", "type": "Uint32" }
+    ],
+    "fields": [
+      { "vname": "validity_checked", "type": "Bool" },
+      { "vname": "contract_valid", "type": "Bool" },
+      { "vname": "owners", "type": "Map (ByStr20) (Bool)" },
+      { "vname": "transactionCount", "type": "Uint32" },
+      {
+        "vname": "signatures",
+        "type": "Map (Uint32) (Map (ByStr20) (Bool))"
+      },
+      { "vname": "transactions", "type": "Map (Uint32) (Transaction)" },
+      {
+        "vname": "owner_signatures",
+        "type": "Map (ByStr20) (Map (ByStr20) (Bool))"
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "SubmitTransaction",
+        "params": [
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "SignTransaction",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      },
+      {
+        "vname": "ExecuteTransaction",
+        "params": [
+          { "vname": "transactionId", "type": "Uint32" },
+          { "vname": "tag", "type": "String" }
+        ]
+      },
+      {
+        "vname": "RevokeSignature",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      },
+      {
+        "vname": "RevokeOwnerSignature",
+        "params": [ { "vname": "new_owner", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "AddCandidateOwner",
+        "params": [ { "vname": "candidate", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "SignOffNewOwner",
+        "params": [ { "vname": "candidate", "type": "ByStr20" } ]
+      },
+      { "vname": "ClaimOwnership", "params": [] },
+      { "vname": "AddFunds", "params": [] }
+    ],
+    "events": []
+  },
+  "warnings": []
+}

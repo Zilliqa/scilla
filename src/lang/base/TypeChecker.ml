@@ -524,20 +524,26 @@ module ScillaTypechecker
       ctr_defs
 
   let type_library env0 { lname ; lentries = ents } =
+    let msg = sprintf
+        "Type error in library %s:\n\n" (get_id lname) in
+    wrap_with_info (msg, SR.get_loc (get_rep lname)) @@
     let%bind (typed_entries, new_tenv, errs, _) =
       foldM ~init:([], env0, [], []) ents
         ~f:(fun (acc, env, errs, blist) lib_entry ->
             match lib_entry with
-            | LibTyp (_, ctr_defs) ->
+            | LibTyp (tname, ctr_defs) ->
+                let msg = sprintf
+                    "Type error in library type %s:\n\n" (get_id tname) in
+                wrap_with_info (msg, ER.get_loc (get_rep tname)) @@
                 let%bind _ = type_lib_typ_ctrs env ctr_defs in
                 pure @@ (acc, env, errs, blist)
             | LibVar (ln, le) -> 
                 let msg = sprintf
-                    "Type error in library %s:\n\n" (get_id ln) in
+                    "Type error in library variable %s:\n\n" (get_id ln) in
                 let dep_on_blist = free_vars_dep_check le blist in
                 (* If exp depends on a blacklisted exp, then let's ignore it. *)
                 if dep_on_blist then pure @@ (acc, env, errs, ln :: blist) else
-                  let res = wrap_with_info (msg, ER.get_loc (get_rep ln)) (type_expr env le) in
+                  let res = wrap_with_info (msg, SR.get_loc (get_rep lname)) (type_expr env le) in
                   match res with
                   | Error e ->
                       (* A new original failure. Add to blocklist and move on. *)
