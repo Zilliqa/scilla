@@ -29,5 +29,5 @@ before_install:
 - eval `opam config env`
 - rm $HOME/.opam/log/*
 script:
-- make test
-- make coveralls
+- CPLUS_INCLUDE_PATH=${HOME}/openssl/install/include LIBRARY_PATH=${HOME}/openssl/install/lib C_INCLUDE_PATH=${HOME}/openssl/install/include make test
+- CPLUS_INCLUDE_PATH=${HOME}/openssl/install/include LIBRARY_PATH=${HOME}/openssl/install/lib C_INCLUDE_PATH=${HOME}/openssl/install/include make coveralls
