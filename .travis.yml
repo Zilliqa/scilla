@@ -10,7 +10,6 @@ addons:
     - libgmp-dev
     - libssl-dev
     - libboost-system-dev
-    - libsecp256k1-dev
     - aspcud
 
 cache:
@@ -21,6 +20,9 @@ branches:
   only: 
     - master
 before_install:
+- sudo add-apt-repository ppa:tah83/secp256k1 -y
+- sudo apt-get update
+- sudo apt-get install libsecp256k1-dev
 - wget https://github.com/ocaml/opam/releases/download/2.0.0/opam-2.0.0-x86_64-linux
 - sudo mv opam-2.0.0-x86_64-linux /usr/local/bin/opam
 - sudo chmod a+x /usr/local/bin/opam
