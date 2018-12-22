@@ -2,7 +2,7 @@ scilla_version 0
 
 import PairUtils
 
-library Schnorr
+library Ecdsa
 
 let one_msg = 
   fun (msg : Message) => 
@@ -12,7 +12,7 @@ let one_msg =
 let fst_f = @fst (ByStr32) (ByStr33)
 let snd_f = @snd (ByStr32) (ByStr33)
 
-contract Schnorr
+contract Ecdsa
 ()
 
 field priv_key : Option (ByStr32) = None {ByStr32}
@@ -26,8 +26,8 @@ transition sign_and_verify (msg : ByStr)
     match privk_o with
     | Some privk =>
       (* We have both privk and pubk. Sign the message. *)
-      sig = builtin schnorr_sign privk pubk msg;
-      ver = builtin schnorr_verify pubk msg sig;
+      sig = builtin ecdsa_sign privk msg;
+      ver = builtin ecdsa_verify pubk msg sig;
       match ver with
       | True =>
         m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "signed and verified" };
@@ -49,7 +49,7 @@ transition sign_and_verify (msg : ByStr)
     privk = fst_f kpair;
     pubk = snd_f kpair;
     (* We have both privk and pubk. Sign the message. *)
-    sig = builtin schnorr_sign privk pubk msg;
+    sig = builtin ecdsa_sign privk msg;
     m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; signature : sig };
     mone = one_msg m;
     (* Update state *)
@@ -65,7 +65,7 @@ transition verify(msg : ByStr, sig : ByStr64)
   pubk_o <- pub_key;
   match pubk_o with
   | Some pubk =>
-    sig = builtin schnorr_verify pubk msg sig;
+    sig = builtin ecdsa_verify pubk msg sig;
     match sig with
     | True =>
       m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "verification successful" };

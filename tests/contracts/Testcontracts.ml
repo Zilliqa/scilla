@@ -205,6 +205,7 @@ let add_tests env =
     let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12) in
     let nonfungibletokentests_expected_f = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27) in
     let schnorrtests = "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 4) in
+    let ecdsatests = "ecdsa" >:::(build_contract_tests env "ecdsa" succ_code 1 4) in
     let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1) in
     let fungibletokentests = "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8) in
     let inplace_map_tests = "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14) in
@@ -214,5 +215,5 @@ let add_tests env =
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f;
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;
                              auctiontests;emptytests;bookstoretests;nonfungibletokentests_expected_f;nonfungibletokentests;
-                             wallettests;schnorrtests;inplace_map_tests]
+                             wallettests;schnorrtests;inplace_map_tests;ecdsatests]
 
