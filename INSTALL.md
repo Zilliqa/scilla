@@ -52,6 +52,11 @@ eval `opam config env`
 
 The dependencies can be installed via [Homebrew](https://brew.sh/):
 
+Note: pending PR at https://github.com/DomT4/homebrew-crypto/pull/95/commits/9c62017362aa973afad75616046d14006f31be6a
+```
+brew tap iantanwx/crypto
+```
+
 ```
 brew install ocaml opam pkg-config libffi openssl boost secp256k1
 opam init
