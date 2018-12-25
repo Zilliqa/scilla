@@ -1,16 +1,15 @@
 Gas use polynomial for transition setHello:
-39 + 2(a) + 1(b)
+121 + 2(a) + 1(b)
 Legend:
 
-a: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
 b: msg
+a: _sender
 
 Gas use polynomial for transition getHello:
-1(a) + 2 + 1(b)
+2(a) + 22
 Legend:
 
 a: welcome_msg
-b: Message (Value of String with size 20,welcome_msg)
 
 {
   "contract_info": {

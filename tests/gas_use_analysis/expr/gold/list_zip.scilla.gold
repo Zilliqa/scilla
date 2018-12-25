@@ -4,6 +4,6 @@ Parameter list: ( m1 m2 )
 3(a) + 34 + 37(b)
 Legend:
 
-a: Length of: First Element of the Pair: Max (Pair of (Value of List with size 0)(m2),Pair of (Container around: Pair of (m1)(Max (Value of Option with size 0,Element of: m2)))(Max (Value of List with size 0,Max (Value of Option with size 0,m2))))
 b: Length of: m1
+a: Length of: Max (1((1)) + 1((m2)),1((1((1((m1)) + 1((Max (1,Element of: 1((1)) + 1((m2))))))) + 1((1((1)) + 1((m2)))))) + 1((Max (1,Max (1,1((1)) + 1((m2)))))))
 

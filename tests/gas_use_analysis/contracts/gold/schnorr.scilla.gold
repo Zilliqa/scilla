@@ -1,25 +1,22 @@
 Gas use polynomial for transition sign_and_verify:
-1(a) + 1(b) + 1010 + 45(c) + 2(d) + 1(e) + 1(f) + 1(g) + 1(h) + 1(i)
+1(a) + 1(b) + 1222 + 45(c) + 4(d) + 1(e) + 2(f) + 1(g)
 Legend:
 
-h: Second Element of the Pair: SApp schnorr_gen_key_pair( )
 a: pub_key
 b: priv_key
-g: First Element of the Pair: SApp schnorr_gen_key_pair( )
-e: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 24)
-i: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Result of builtin schnorr_sign(First Element of the Pair: SApp schnorr_gen_key_pair( ),Second Element of the Pair: SApp schnorr_gen_key_pair( ),msg))
-f: Cost of calling schnorr_gen_key_pair()
-d: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 20)
+d: _sender
+f: SApp schnorr_gen_key_pair( )
+e: Cost of calling schnorr_gen_key_pair()
 c: msg
+g: Result of builtin schnorr_sign(SApp schnorr_gen_key_pair( ),SApp schnorr_gen_key_pair( ),msg)
 
 Gas use polynomial for transition verify:
-1(a) + 279 + 15(b) + 1(c) + 2(d)
+1(a) + 453 + 15(b) + 3(c)
 Legend:
 
 a: pub_key
+c: _sender
 b: msg
-c: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 23)
-d: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of String with size 20)
 
 {
   "contract_info": {

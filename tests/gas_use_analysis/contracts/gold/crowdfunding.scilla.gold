@@ -1,31 +1,29 @@
 Gas use polynomial for transition Donate:
-105 + 1(a) + 1(b) + 3(c) + 1(d)
+177 + 1(a) + 1(b) + 3(c) + 3(d) + 1(e)
 Legend:
 
 a: backers
-c: Message (Value of String with size 20,_sender,_amount,Value of Int32 with size 4)
-d: Max (Value of Option with size 0,Result of builtin put(backers,_sender,_amount))
+d: _amount
+c: _sender
+e: Max (1,Result of builtin put(backers,_sender,_amount))
 b: Length of: backers
 
 Gas use polynomial for transition GetFunds:
-156 + 2(a) + 1(b) + 1(c) + 1(d) + 1(e)
+282 + 2(a) + 3(b) + 2(c)
 Legend:
 
-a: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
+c: owner
 b: _balance
-e: Container around: Message (Value of String with size 20,owner,_balance)
-c: Value of Bool with size 0
-d: Message (Value of String with size 20,owner,_balance,Value of Int32 with size 4)
+a: _sender
 
 Gas use polynomial for transition ClaimBack:
-100 + 3(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 1(g) + 1(h)
+265 + 5(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 2(g)
 Legend:
 
 e: Length of: backers
-a: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
 b: backers
-h: Container around: Message (Value of String with size 20,_sender,Result of builtin get(backers,_sender))
-g: Message (Value of String with size 20,_sender,Result of builtin get(backers,_sender),Value of Int32 with size 4)
+a: _sender
+g: Result of builtin get(backers,_sender)
 f: Result of builtin remove(backers,_sender)
 d: funded
 c: _balance

@@ -1,29 +1,32 @@
 Gas use polynomial for transition addMember:
-59 + 1(a) + 3(b)
+182 + 1(a) + 1(b) + 3(c)
 Legend:
 
-b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Uint32 with size 4)
-a: Pair of (name)(memberType)
+b: memberType
+a: name
+c: _sender
 
 Gas use polynomial for transition addBook:
-1(a) + 25 + 2(b) + 1(c) + 1(d)
+1(a) + 107 + 2(b) + 1(c) + 1(d) + 1(e)
 Legend:
 
-b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Uint32 with size 4)
-d: bookID
+e: bookID
+c: book_title
+b: _sender
 a: bookInventory
-c: Pair of (book_title)(author)
+d: author
 
 Gas use polynomial for transition removeBook:
 1
 
 Gas use polynomial for transition updateBook:
-1(a) + 23 + 2(b) + 1(c)
+1(a) + 105 + 2(b) + 1(c) + 1(d)
 Legend:
 
-b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Uint32 with size 4)
-c: Pair of (book_title)(author)
+b: _sender
+c: book_title
 a: bookInventory
+d: author
 
 {
   "contract_info": {

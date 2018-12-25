@@ -1,66 +1,65 @@
 Gas use polynomial for transition balanceOf:
-8 + 1(a) + 1(b)
+28 + 1(a) + 1(b)
 Legend:
 
-b: Message (Value of String with size 20,Max (Value of Uint256 with size 32,Element of: ownedTokenCount))
+b: Max (32,Element of: ownedTokenCount)
 a: Element of: ownedTokenCount
 
 Gas use polynomial for transition ownerOf:
-12 + 1(a) + 1(b) + 1(c)
+76 + 2(a) + 1(b)
 Legend:
 
-b: Message (Value of String with size 20,tokenId,Element of: tokenOwnerMap)
+b: tokenId
 a: Element of: tokenOwnerMap
-c: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
 
 Gas use polynomial for transition mint:
-72 + 1(a) + 2(b) + 1(c) + 1(d) + 1(e) + 1(f) + 1(g)
+212 + 1(a) + 1(b) + 2(c) + 1(d) + 1(e) + 1(f)
 Legend:
 
-f: Value of Uint256 with size 32
-c: Element of: ownedTokenCount
-e: Result of builtin add(Element of: ownedTokenCount,Value of Uint256 with size 32)
+f: tokenId
+b: Element of: ownedTokenCount
+e: _sender
 a: tokenOwnerMap
-g: Message (Value of String with size 20,_sender,to,tokenId)
-d: to
-b: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
+c: to
+d: Result of builtin add(Element of: ownedTokenCount,32)
 
 Gas use polynomial for transition transferFrom:
-215 + 1(a) + 1(b) + 1(c) + 1(d) + 4(e) + 1(f) + 1(g) + 1(h) + 1(i) + 1(j) + 1(k) + 1(l)
+414 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 2(g) + 1(h) + 1(i) + 1(j) + 1(k) + 1(l)
 Legend:
 
-i: ownedTokenCount
-l: Message (Value of String with size 23,_sender,to,tokenId)
-f: Element of: ownedTokenCount
+l: tokenId
+h: ownedTokenCount
+e: Element of: ownedTokenCount
+i: Result of builtin sub(Element of: ownedTokenCount,32)
 a: Element of: tokenOwnerMap
+k: _sender
 d: operatorApprovals
-h: to
-j: Result of builtin sub(Element of: ownedTokenCount,Value of Uint256 with size 32)
+g: to
 c: tokenApprovals
-k: Max (Value of Uint256 with size 32,Result of builtin add(Element of: ownedTokenCount,Value of Uint256 with size 32))
-e: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
+j: Max (32,Result of builtin add(Element of: ownedTokenCount,32))
 b: tokenOwnerMap
-g: Element of: ownedTokenCount
+f: Element of: ownedTokenCount
 
 Gas use polynomial for transition approve:
-82 + 1(a) + 1(b) + 1(c) + 2(d) + 1(e) + 1(f)
+190 + 1(a) + 1(b) + 1(c) + 2(d) + 1(e) + 1(f)
 Legend:
 
 c: operatorApprovals
 a: Element of: tokenOwnerMap
 b: tokenOwnerMap
-e: to
-f: Message (Value of String with size 20,_sender,to,tokenId)
-d: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
+e: _sender
+d: to
+f: tokenId
 
 Gas use polynomial for transition setApprovalForAll:
-1(a) + 48 + 1(b) + 1(c) + 1(d)
+1(a) + 120 + 1(b) + 1(c) + 1(d) + 1(e)
 Legend:
 
-c: Message (Value of String with size 28,_sender,to,Max (Value of String with size 20,Value of String with size 20))
+d: to
+e: Max (20,20)
 b: approved
+c: _sender
 a: operatorApprovals
-d: Message (Value of String with size 20,Value of String with size 20,Value of Uint32 with size 4)
 
 {
   "contract_info": {

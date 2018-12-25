@@ -1,9 +1,9 @@
 forall 'A. ('A -> 'A -> Bool) -> List ('A) -> List ('A) -> Bool
 Gas usage polynomial:
 Parameter list: ( f l1 l2 )
-28 + 30(a) + 1(a)(b)
+28 + 30(a) + 1(b)(a)
 Legend:
 
-b: Cost of calling f(Element of: l1, Max (Value of Option with size 0,Element of: l2))
 a: Length of: l1
+b: Cost of calling f(Element of: l1, Max (1,Element of: l2))
 

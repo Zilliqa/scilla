@@ -43,26 +43,20 @@ module ScillaGUA
   (* Every size or gas use will depend on an ident (arg or free var) or on a constant. *)
   type baseref =
     | Var of ER.rep ident
-    (* Constant of type and size. *)
-    | Const of typ * int
+    (* Numerical constant *)
+    | Const of int
     (* An input coming from the block chain state. *)
     | BCState of string
 
   type sizeref =
-    (* For sizes of PrimTypes, function value (and instantiations for TVars?). *)
+    (* For sizes of PrimTypes, function value. *)
     | Base of baseref
     (* For List and Map types. *)
     | Length of sizeref
     (* For Elements of Lists and Maps. *)
     | Element of sizeref
-    (* For first and second Element of Pair *)
-    | Fst of sizeref | Snd of sizeref
-    (* Constructing a List / Map from. *)
-    | Container of sizeref
-    (* Constructing a Pair from. *)
-    | PairS of sizeref * sizeref
-    (* To represent a message, each sizeref its Elements. *)
-    | MsgS of sizeref list
+    (* A polynomial function of other sizerefs *)
+    | SPol of sizeref polynomial
     (* An abstract maximum across branches. *)
     | MaxB of sizeref list
     (* Arbitrary math function of sizerefs. *)
@@ -95,7 +89,7 @@ module ScillaGUA
   (* Given a baseref, print a string for it. *)
   let sprint_baseref = function
     | Var i -> (get_id) i
-    | Const (t, i) -> Printf.sprintf "Value of %s with size %d" (pp_typ t) i
+    | Const i -> Printf.sprintf "%d" i
     | BCState s -> "BlockChain: " ^ s
 
   (* Given a size reference, print a description for it. *)
@@ -105,15 +99,7 @@ module ScillaGUA
     | Length sr'-> "Length of: " ^ (sprint_sizeref sr')
     (* For Elements of Lists and Maps. *)
     | Element sr' -> "Element of: " ^ (sprint_sizeref sr')
-    (* For first and second Element of Pair *)
-    | Fst sr' -> "First Element of the Pair: " ^ (sprint_sizeref sr')
-    | Snd sr' -> "Second Element of the Pair: " ^ (sprint_sizeref sr')
-    (* Constructing a List / Map from. *)
-    | Container sr' -> "Container around: " ^ (sprint_sizeref sr')
-    (* Constructing a Pair from. *)
-    | PairS (sr1, sr2) -> "Pair of (" ^ (sprint_sizeref sr1) ^ ")(" ^ (sprint_sizeref sr2) ^ ")"
-    | MsgS srlist -> "Message (" ^
-      (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
+    | SPol pn -> sprint_pn pn ~f:(fun sr -> "(" ^ sprint_sizeref sr ^ ")")
     | MaxB srlist ->  "Max (" ^
       (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
     | MFun (s, srlist) -> s ^ " (" ^
@@ -217,13 +203,7 @@ module ScillaGUA
           | Base b -> Base (baseref_replacer param_actual_map b)
           | Length s' -> Length (replacer s')
           | Element s' -> Element (replacer s')
-          | Fst s' -> Fst (replacer s')
-          | Snd s' -> Snd (replacer s')
-          | Container s' -> Container (replacer s')
-          | PairS (s1', s2') -> PairS (replacer s1', replacer s2')
-          | MsgS srlist ->
-            let srlist' = List.map (fun v -> replacer v) srlist in
-            MsgS (srlist')
+          | SPol sp -> SPol (polynomial_replacer sp)
           | BApp (b, srlist) ->
             let srlist' = List.map (fun v -> replacer v) srlist in
             BApp (b, srlist')
@@ -241,8 +221,11 @@ module ScillaGUA
             in
             let srlist' = List.map (fun v -> replacer v) srlist in
             SApp (id', srlist')
+        and polynomial_replacer pol =
+          var_replace_pn pol ~f:(fun sr -> replacer sr)
         in
         replacer s'
+
       in
       (* replace param with actual in guref. *)
       let rec guref_replacer param_actual_map v =
@@ -291,22 +274,9 @@ module ScillaGUA
       | Element s' ->
         let%bind r = replacer s' in
         pure @@ Element r
-      | Fst s' ->
-        let%bind r = replacer s' in
-        pure @@ Fst r
-      | Snd s' ->
-        let%bind r = replacer s' in
-        pure @@ Snd r
-      | Container s' ->
-        let%bind r = replacer s' in
-        pure @@ Container r
-      | PairS (s1', s2') ->
-        let%bind r1 = replacer s1' in
-        let%bind r2 = replacer s2' in
-        pure @@ PairS (r1, r2)
-      | MsgS srlist ->
-        let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
-        pure @@ MsgS (srlist')
+      | SPol sp ->
+        let%bind p' = polynomial_replacer sp in
+        pure @@ SPol (p')
       | BApp (b, srlist) ->
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ BApp (b, srlist')
@@ -331,6 +301,24 @@ module ScillaGUA
         (* We don't do anything with id as that will be expanded (not just resolved). *)
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ SApp (id', srlist')
+    and
+    (* replace param with actual in a sizeref polynomial. *)
+    polynomial_replacer pol =
+      let exception Resolv_error of scilla_error list in
+      let pol' = 
+        try 
+          (* This circus with exceptions is to avoid having
+            * Polynomial utilities deal with our "result". *)
+          pure @@ var_replace_pn pol ~f:(fun sr ->
+            (match replacer sr with
+            | Ok (sr') -> sr'
+            | Error s -> raise (Resolv_error s))
+          )
+        with
+        | Resolv_error s -> fail s
+        | Polynomial_error s -> fail0 s
+      in
+        pol'
     in
       replacer s'
 
@@ -410,22 +398,9 @@ module ScillaGUA
           | Element s' ->
             let%bind r = resolver s' in
             pure @@ Element r
-          | Fst s' ->
-            let%bind r = resolver s' in
-            pure @@ Fst r
-          | Snd s' ->
-            let%bind r = resolver s' in
-            pure @@ Snd r
-          | Container s' ->
-            let%bind r = resolver s' in
-            pure @@ Container r
-          | PairS (s1', s2') ->
-            let%bind r1 = resolver s1' in
-            let%bind r2 = resolver s2' in
-            pure @@ PairS (r1, r2)
-          | MsgS srlist ->
-            let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
-            pure @@ MsgS (srlist')
+          | SPol sp ->
+            let%bind p' = polynomial_resolver sp in
+            pure @@ SPol p'
           | BApp (b, srlist) ->
             let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
             pure @@ BApp (b, srlist')
@@ -446,6 +421,23 @@ module ScillaGUA
               let args' = List.map (fun i -> get_id i) args in
               let%bind sr' = substitute_resolved_actuals_sizeref_list sr args' srlist in
               resolver sr'
+        (* replace param with actual in a signature. *)
+        and polynomial_resolver pol =
+          let exception Resolv_error of scilla_error list in
+          let pol' = 
+            try 
+              (* This circus with exceptions is to avoid having
+                * Polynomial utilities deal with our "result". *)
+              pure @@ var_replace_pn pol ~f:(fun sr ->
+                (match resolver sr with
+                | Ok (sr') -> sr'
+                | Error s -> raise (Resolv_error s))
+              )
+            with
+            | Resolv_error s -> fail s
+            | Polynomial_error s -> fail0 s
+          in
+            pol'
         in
         resolver s'
       in
@@ -504,8 +496,6 @@ module ScillaGUA
       | "Some" ->
         (* TypeChecker will ensure that plist has unit length. *)
         let arg = List.nth plist 0 in
-        (* Note: Not wrapping with "Element of" to simplify the output. *)
-        (* bind_pattern genv (Element(msref)) arg *)
         bind_pattern genv (msref) arg
       | "Cons" ->
         (* TypeChecker will ensure that plist has two elements. *)
@@ -518,8 +508,9 @@ module ScillaGUA
         (* TypeChecker will ensure that plist has two elements. *)
         let arg0 = List.nth plist 0 in
         let arg1 = List.nth plist 1 in
-        let%bind genv' = bind_pattern genv (Fst(msref)) arg0 in
-        let%bind genv'' = bind_pattern genv' (Snd(msref)) arg1 in
+        (* Bind both to the original element. *)
+        let%bind genv' = bind_pattern genv (msref) arg0 in
+        let%bind genv'' = bind_pattern genv' (msref) arg1 in
         pure genv''
       | _ -> fail0 (Printf.sprintf "Unsupported constructor %s in gas analysis." cname))
 
@@ -641,8 +632,7 @@ module ScillaGUA
     match e with
     | Literal l ->
       let%bind ss = Gas.literal_cost l in
-      let t = (ER.get_type rep).tp in
-      pure @@ ([], Base(Const(t, ss)), cc)
+      pure @@ ([], Base(Const(ss)), cc)
     | Var i ->
       let%bind (args, ressize, gup) = GUAEnv.resolvS genv (get_id i) ~lopt:(Some(get_rep i)) in
       pure (args, ressize, (add_pn gup cc))
@@ -689,23 +679,23 @@ module ScillaGUA
     | Constr (cname, _, actuals) ->
       let%bind ressize = 
         (match cname with
-        | "True" | "False" -> pure @@ Base(Const(ADT("Bool", []), 0))
-        | "Nil" -> pure @@ Base(Const(ADT("List", []), 0))
-        | "None" -> pure @@ Base(Const(ADT("Option", []), 0))
-        | "Cons" | "Some" ->
+        | "True" | "False" -> pure @@ Base(Const(1))
+        | "Nil" -> pure @@ Base(Const(1))
+        | "None" -> pure @@ Base(Const(1))
+        | "Some" ->
           (* TypeChecker will ensure that actuals has unit length. *)
           let arg = List.nth actuals 0 in
           let%bind (_, compsize, _) = GUAEnv.resolvS genv (get_id arg) ~lopt:(Some(get_rep arg)) in
-          (* Note: Ignoring "Some" to make outputs more readable. *)
-          if cname = "Some" then pure compsize else
-          pure @@ Container(compsize)
-        | "Pair" ->
+          pure @@ compsize
+        | "Pair" | "Cons" ->
           (* TypeChecker will ensure that actuals has two elements. *)
           let arg0 = List.nth actuals 0 in
           let arg1 = List.nth actuals 1 in
           let%bind (_, compsize0, _) = GUAEnv.resolvS genv (get_id arg0) ~lopt:(Some(get_rep arg0)) in
           let%bind (_, compsize1, _) = GUAEnv.resolvS genv (get_id arg1) ~lopt:(Some(get_rep arg1)) in
-          pure @@ PairS(compsize0, compsize1)
+          let compsize0' = single_simple_pn compsize0 in
+          let compsize1' = single_simple_pn compsize1 in
+          pure @@ SPol(add_pn compsize0' compsize1')
         | _ -> fail1 (Printf.sprintf "Unsupported constructor %s in gas analysis." cname)
                      (ER.get_loc rep)
         )
@@ -749,19 +739,21 @@ module ScillaGUA
     | Message plist ->
        (* Similar to "Literal", we only spend a small cost (cc) for message creation
         * but charge based on size of message in SendStmt. *)
-        let%bind splist = mapM ~f:(fun (_, pl) ->
+        let%bind splist = foldM ~f:(fun acc (_, pl) ->
           (match pl with
-          | MTag s -> pure @@ Base(Const(PrimTypes.string_typ, String.length s))
+          | MTag s -> 
+            let sr = Base(Const(String.length s)) in
+            let sr' = single_simple_pn sr in
+            pure (add_pn acc sr')
           | MLit l ->
-            let%bind lt = TU.literal_type l in
             let%bind lc = Gas.literal_cost l in
-            pure @@ Base(Const(lt, lc))
+            pure (add_pn acc (const_pn lc))
           | MVar i ->
             let%bind (_, irs, _) = GUAEnv.resolvS genv (get_id i) ~lopt:(Some(get_rep i)) in
-            pure irs
+            pure (add_pn acc (single_simple_pn  irs))
           )
-        ) plist in
-        pure ([], MsgS(splist), cc)
+        ) ~init:empty_pn plist in
+        pure ([], SPol(splist), cc)
 
   (* Hardcode signature for folds. *)
   let analyze_folds genv =
@@ -784,50 +776,28 @@ module ScillaGUA
     let gapp'' = GUAEnv.addS genv' "list_foldl" list_foldl_signature in
     gapp''
 
-  let rec simplify_sizeref sr =
-    match sr with
-    | Element sr' ->
-      (match sr' with
-      | Container sr'' -> simplify_sizeref sr''
-      | _ -> Element (simplify_sizeref sr'))
-    | Container sr' ->
-      ( match sr' with
-      | Element sr'' -> simplify_sizeref sr''
-      | _ -> Container (simplify_sizeref sr'))
-    | Fst s' ->
-      (match s' with
-      | PairS (s1', _) -> (simplify_sizeref s1')
-      | _ -> Fst (simplify_sizeref s'))
-    | Snd s' ->
-      (match s' with
-      | PairS(_, s2') -> (simplify_sizeref s2')
-      | _ -> Snd (simplify_sizeref s'))
-    | Base _ as b -> b
-    | Length s' -> Length (simplify_sizeref s')
-    | PairS (s1', s2') -> PairS (simplify_sizeref s1', simplify_sizeref s2')
-    | MsgS srlist ->
-      let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
-      MsgS (srlist')
-    | BApp (b, srlist) ->
-      let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
-      BApp (b, srlist')
-    | MFun (s, srlist) ->
-      let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
-      MFun (s, srlist')
-    | MaxB srlist ->
-      let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
-      MaxB srlist'
-    | SApp (id, srlist) ->
-      let srlist' = List.map (fun v -> simplify_sizeref v) srlist in
-      SApp (id, srlist')
+  let rec sizeref_to_guref sr = match sr with
+    | Base _ | Length _| Element _ | MaxB _ | MFun _ | BApp _ | SApp _ -> SizeOf (sr)
+    | SPol p ->
+      let term_replacer t =
+        let (coef, vars) = t in
+        let vars' = List.map (fun (v, p) ->
+          let v' = sizeref_to_guref v in
+          (v', p)
+        ) vars in
+        (coef, vars')
+      in
+      let gpol = List.map (fun t -> term_replacer t) p in
+      GPol (gpol)
 
   (* Expand polynomials that contain GPol. *)
   let rec expand_parameters pol =
-    expand_parameters_pn pol ~f:(function 
-    | SizeOf sr -> Some (single_simple_pn (SizeOf (simplify_sizeref sr)))
-    | GApp (i, srlist) ->
-      let srlist' = List.map (fun sr -> simplify_sizeref sr) srlist in
-      Some (single_simple_pn (GApp (i, srlist')))
+    expand_parameters_pn pol ~f:(function
+    | SizeOf sr ->
+      (match sr with
+      | Base (Const c) -> Some(const_pn c)
+      | _ -> Some (single_simple_pn (sizeref_to_guref sr)))
+    | GApp _ -> None (* TODO *)
     | GPol p -> Some (expand_parameters p))
 
   (* Return gas use and result sizeref polynomials of evaluating a sequence of statements. *)

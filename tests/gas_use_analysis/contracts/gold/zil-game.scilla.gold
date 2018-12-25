@@ -1,35 +1,34 @@
 Gas use polynomial for transition Play:
-1(a) + 224 + 4(b) + 1(c) + 1(d) + 2(e) + 1(f) + 1(g)
+1(a) + 324 + 4(b) + 1(c) + 1(d) + 2(e) + 1(f) + 1(g)
 Legend:
 
-b: Container around: Message (Value of String with size 4,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
-c: player_a_hash
 g: Max (guess,player_b_hash)
-e: Max (Result of builtin badd(Value of Uint32 with size 4,Value of Uint32 with size 4),timer)
-f: player_b_hash
+c: player_a_hash
+b: _sender
 d: Max (guess,player_a_hash)
+f: player_b_hash
+e: Max (Result of builtin badd(4,4),timer)
 a: timer
 
 Gas use polynomial for transition ClaimReward:
-1(a) + 310 + 2(b) + 1(c) + 1(d) + 30(e) + 1(f) + 1(g)
+1(a) + 369 + 2(b) + 1(c) + 1(d) + 30(e) + 2(f) + 1(g)
 Legend:
 
 f: _balance
-b: Container around: Message (Value of String with size 4,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
 a: timer
-g: Container around: Message (Value of String with size 4,Max (owner,player_b,player_a,Max (Max (owner,player_b),player_a)),_balance,Value of Int32 with size 4)
 e: solution
+b: _sender
 c: player_a_hash
+g: Max (owner,player_b,player_a,Max (Max (owner,player_b),player_a))
 d: player_b_hash
 
 Gas use polynomial for transition Withdraw:
-126 + 1(a) + 1(b) + 1(c) + 1(d)
+180 + 2(a) + 1(b) + 1(c)
 Legend:
 
-c: Container around: Message (Value of String with size 4,owner,_balance,Value of Int32 with size 4)
-d: Container around: Message (Value of String with size 4,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
+b: owner
+c: _sender
 a: _balance
-b: Message (Value of String with size 20)
 
 {
   "contract_info": {

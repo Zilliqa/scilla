@@ -1,36 +1,31 @@
 Gas use polynomial for transition Bid:
-304 + 1(a) + 3(b) + 1(c) + 1(d) + 1(e) + 1(f) + 2(g) + 2(h) + 2(i)
+475 + 1(a) + 7(b) + 1(c) + 1(d) + 1(e) + 1(f) + 4(g)
 Legend:
 
-b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
 a: ended
-h: _amount
+g: _amount
 c: highestBid
-i: Message (Value of String with size 20,Value of Int32 with size 4,_sender,_amount)
-g: _sender
 d: highestBidder
+b: _sender
 f: Max (highestBid,Result of builtin add(highestBid,Element of: pendingReturns))
 e: Element of: pendingReturns
 
 Gas use polynomial for transition Withdraw:
-1(a) + 23 + 1(b) + 1(c) + 1(d)
+1(a) + 109 + 3(b) + 1(c)
 Legend:
 
-b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
-d: Container around: Message (Value of String with size 20,_sender,Result of builtin get(pendingReturns,_sender),Value of Int32 with size 4)
+c: Result of builtin get(pendingReturns,_sender)
 a: pendingReturns
-c: Message (Value of String with size 20,_sender)
+b: _sender
 
 Gas use polynomial for transition AuctionEnd:
-154 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f)
+241 + 1(a) + 1(b) + 4(c) + 1(d)
 Legend:
 
-b: Container around: Message (Value of String with size 20,_sender,Value of Uint128 with size 16,Value of Int32 with size 4)
-d: highestBid
-e: Message (Value of String with size 20,highestBid)
+c: highestBid
 a: ended
-c: Value of Bool with size 0
-f: Container around: Message (Value of String with size 20,beneficiary,highestBid,Value of Int32 with size 4,highestBid)
+b: _sender
+d: beneficiary
 
 {
   "contract_info": {
