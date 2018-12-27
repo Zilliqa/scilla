@@ -36,7 +36,7 @@ let explist = [
   "builtin-pow.scilla";
   "builtin-rem.scilla";
   "builtin-rem2.scilla";
-  "builtin-rem2.scilla";
+  "builtin-rem3.scilla";
   "builtin-badd.scilla";
   "builtin-bsub.scilla";
   "cons.scilla";
