@@ -31,6 +31,7 @@ let res = fsubstr s3 startp endp in
 
 let bs = 0x1212ab in
 let bsx = builtin to_bystr bs in
+let bsxh = builtin sha256hash bsx in
 let bss = builtin to_string bs in
 let bsxs = builtin to_string bsx in
 

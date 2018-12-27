@@ -287,7 +287,7 @@ let binary_tests inputs = List.fold_left (fun tl (lhs, rhs) ->
   let mul = binary_test_create lhs rhs "mul" in
   let div = binary_test_create lhs rhs "div" in
   let rem = binary_test_create lhs rhs "rem" in
-  let compare = binary_test_create rhs lhs "compare" in
+  let compare = binary_test_create lhs rhs "compare" in
   (* repeat tests with LHS and RHS interchanged. *)
   let add_rev = binary_test_create rhs lhs "add" in
   let sub_rev = binary_test_create rhs lhs "sub" in
