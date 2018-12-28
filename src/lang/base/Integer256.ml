@@ -97,7 +97,7 @@ module Uint256 = struct
     { high = Uint128.logor a.high b.high; low = Uint128.logor a.low b.low }
 
   let logxor a b =
-    { high = Uint128.logxor a.high b.high; low = Uint128.logxor a.low b.high }
+    { high = Uint128.logxor a.high b.high; low = Uint128.logxor a.low b.low }
 
   let lognot a =
     { high = Uint128.lognot a.high; low = Uint128.lognot a.low }
@@ -295,12 +295,12 @@ module Int256 = struct
   let shift_left a shift =
     Uint256.shift_left a shift
 
-  let shift_right a shift =
-    Uint256.shift_right a shift
-
   (* For signed, logical and arithmetic right shifts are different. *)
-  let shift_right_logical _ _ =
-    raise (Failure "Int256: shift_right_logical not implemented")
+  let shift_right _ _ =
+    raise (Failure "Int256: shift_right not implemented")
+
+  let shift_right_logical a shift =
+    Uint256.shift_right a shift
 
   let logand a b =
     Uint256.logand a b
