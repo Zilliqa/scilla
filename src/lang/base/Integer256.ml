@@ -269,8 +269,8 @@ module Uint256 = struct
     ()
 
   let to_bytes_little_endian ui buf off =
-    let _ = Uint128.to_bytes_big_endian ui.low buf off in
-    let _ = Uint128.to_bytes_big_endian ui.high buf (off+16) in
+    let _ = Uint128.to_bytes_little_endian ui.low buf off in
+    let _ = Uint128.to_bytes_little_endian ui.high buf (off+16) in
     ()
 
 end

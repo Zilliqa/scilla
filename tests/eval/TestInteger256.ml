@@ -300,7 +300,7 @@ let binary_tests inputs = List.fold_left (fun tl (lhs, rhs) ->
 
 end
 
-let logic_op_tests = test_case (fun _ ->
+let non_arithmetic_tests = test_case (fun _ ->
   let err = "Error in logical operation test(s)." in
 
   let ofs = Int256.of_string in
@@ -320,6 +320,18 @@ let logic_op_tests = test_case (fun _ ->
   assert_bool err (Int256.shift_right_logical (ofs "1") 1 = (ofs "0"));
   assert_bool err (Int256.shift_right_logical (ofs "-1") 1 = (ofs int256_max_str));
   (* TODO: Int256.shift_right is not implemented yet. *)
+  assert_bool err (Int256.setbit (ofs "0") 0 = (ofs "1"));
+  assert_bool err (Int256.setbit (ofs "0") 255 = (ofs int256_min_str));
+  assert_bool err (Int256.clearbit (ofs "1") 0 = (ofs "0"));
+  assert_bool err (Int256.clearbit (ofs int256_min_str) 255 = (ofs "0"));
+  (* Test little-endian. *)
+  let buf = Bytes.create 32 in
+  let _ = Int256.to_bytes_little_endian (ofs "1") buf 0 in
+  let s1 = Bytes.to_string buf in
+  let _ = Int256.to_bytes_big_endian (Int256.shift_left (ofs "1") 248) buf 0 in
+  let s2 = Bytes.to_string buf in
+  assert_bool err (s1 = s2);
+  assert_bool err (Int256.abs (ofs "-1") = (ofs "1"));
 
   let ofs = Uint256.of_string in
   assert_bool err (Uint256.logand (ofs "1") (ofs "1") = (ofs "1"));
@@ -338,9 +350,17 @@ let logic_op_tests = test_case (fun _ ->
   assert_bool err (Uint256.shift_left (ofs "1") 256 = (ofs "0"));
   assert_bool err (Uint256.shift_right_logical (ofs "1") 1 = (ofs "0"));
   assert_bool err (Uint256.shift_right_logical (ofs uint256_max_str) 255 = (ofs"1"));
+  assert_bool err (Uint256.shift_right_logical (ofs uint256_max_str) 256 = (ofs "0"));
+  assert_bool err (Uint256.shift_right_logical (ofs uint256_max_str) 128 = (ofs (Uint128.to_string Uint128.max_int)));
+  assert_bool err (Uint256.shift_right_logical (ofs uint256_max_str) 255 = (ofs"1"));
   (* both the "shift_right"s are same for unsigned integers *)
   assert_bool err (Uint256.shift_right (ofs "1") 1 = (ofs "0"));
   assert_bool err (Uint256.shift_right (ofs uint256_max_str) 255 = (ofs"1"));
+  assert_bool err (Uint256.setbit (ofs "0") 0 = (ofs "1"));
+  assert_bool err (Uint256.setbit (ofs "0") 255 = (Uint256.add (Uint256.div (ofs uint256_max_str) (ofs "2")) (ofs "1")));
+  assert_bool err (Uint256.clearbit (ofs "1") 0 = (ofs "0"));
+  assert_bool err (Uint256.clearbit (Uint256.add (Uint256.div (ofs uint256_max_str) (ofs "2")) (ofs "1")) 255 = (ofs "0"));
+  assert_bool err (Uint256.abs (ofs "1") = (ofs "1"));
 
 )
 
@@ -355,4 +375,4 @@ let int256_tests_list = List.append (t1_int::t2_int::t3_int::[]) list_int256
 let int256_tests = "int256_tests" >::: int256_tests_list
 
 (* The test to be called from Testsuite. *)
-let integer256_tests = "integer256_tests" >::: (uint256_tests::int256_tests::logic_op_tests::[])
+let integer256_tests = "integer256_tests" >::: (uint256_tests::int256_tests::non_arithmetic_tests::[])
