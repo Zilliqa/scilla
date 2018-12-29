@@ -70,11 +70,11 @@ transition Transfer (to : ByStr20, tokens : Uint128)
     can_do = le_int tokens b;
     match can_do with
     | True =>
-      (* subtract tokens from _sender and add it to to *)
+      (* subtract tokens from _sender and add it to "to" *)
       new_sender_bal = builtin sub b tokens;
       balances[_sender] := new_sender_bal;
 
-      (* Adds tokens to `to` address *)
+      (* Adds tokens to "to" address *)
       to_bal <- balances[to];
       new_to_bal = match to_bal with
       | Some x => builtin add x tokens
