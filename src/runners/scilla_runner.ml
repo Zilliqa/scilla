@@ -101,17 +101,21 @@ let output_state_json (cstate : EvalUtil.ContractState.t) =
   let concatlist = List.cons ballit cstate.fields in
     JSON.ContractState.state_to_json concatlist;;
 
-let output_message_json mlist =
+let output_message_json gas_remaining mlist =
   match mlist with
-  (* TODO: What should we do with  more than one output message? *)
-  | first_message :: [] -> 
-    (match first_message with 
+  | [one_message] ->
+    (match one_message with
      | Msg m ->
         JSON.Message.message_to_json m
      | _ -> `Null
     )
-  (* There will be at least one output message *)
-  | _ -> `Null
+  | [] -> `Null
+  | _ ->
+    (* TODO: Allow more than one message once main blockchain is ready *)
+    perr @@ scilla_error_gas_string gas_remaining
+      (mk_error0 "Sending more than one message not currently permitted");
+    exit 1
+
 
 let rec output_event_json elist =
   match elist with
@@ -261,7 +265,7 @@ let () =
           check_after_step cli.input step_result gas_remaining' in
       
         let osj = output_state_json cstate' in
-        let omj = output_message_json mlist in
+        let omj = output_message_json gas mlist in
         let oej = `List (output_event_json elist) in
           (omj, osj, oej, accepted_b), gas)
       in
