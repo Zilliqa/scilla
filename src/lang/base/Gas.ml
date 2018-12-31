@@ -170,11 +170,13 @@ module ScillaGas
     | "ripemd160hash", _, [a] ->
         (* Block size of ripemd160hash is 512 *)
         pure @@ (div_ceil (String.length (pp_literal a)) 64) * 10 * base
-    | "schnorr_gen_key_pair", _, _ -> pure 20
-    | "schnorr_sign", _, [_;_;ByStr(s)] ->
+    | "ec_gen_key_pair", _, _ -> pure 20
+    | "schnorr_sign", _, [_;_;ByStr(s)]
+    | "ecdsa_sign", _, [_;ByStr(s)] ->
         let x = div_ceil ((String.length s) + 66) 64 in
         pure @@ (350 + (15 * x)) * base
-    | "schnorr_verify", _, [_;ByStr(s);_] ->
+    | "schnorr_verify", _, [_;ByStr(s);_]
+    | "ecdsa_verify", _, [_;ByStr(s);_] ->
         let x = div_ceil ((String.length s) + 66) 64 in
         pure @@ (250 + (15 * x)) * base
     | "to_bystr", [a], _
@@ -254,9 +256,11 @@ module ScillaGas
     ("sha256hash", [tvar "'A"], crypto_coster, 1);
     ("keccak256hash", [tvar "'A"], crypto_coster, 1);
     ("ripemd160hash", [tvar "'A"], crypto_coster, 1);
-    ("schnorr_gen_key_pair", [], crypto_coster, 1);
+    ("ec_gen_key_pair", [], crypto_coster, 1);
     ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], crypto_coster, 1);
     ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster, 1);
+    ("ecdsa_sign", [bystrx_typ Secp256k1Wrapper.privkey_len; bystr_typ], crypto_coster, 1);
+    ("ecdsa_verify", [bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster, 1);
     ("concat", [tvar "'A"; tvar "'A"], crypto_coster, 1);
 
     (* Maps *)
