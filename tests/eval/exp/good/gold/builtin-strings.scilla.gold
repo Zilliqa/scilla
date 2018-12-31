@@ -7,6 +7,7 @@
   [i -> (Int32 1223)],
   [bsxs -> (String "0x1212ab")],
   [bss -> (String "0x1212ab")],
+  [bsxh -> (ByStr32 0xf1e61f561058722347a052f80b457da69c86f6ce34b9560337247136aaf11cb8)],
   [bsx -> (ByStr 0x1212ab)],
   [bs -> (ByStr3 0x1212ab)],
   [res -> (String "scilla is awesome")],
