@@ -45,7 +45,7 @@ transition sign_and_verify (msg : ByStr)
     end
   | None =>
     (* We don't have a key-pair, generate one and store it. *)
-    kpair = builtin schnorr_gen_key_pair ();
+    kpair = builtin ec_gen_key_pair ();
     privk = fst_f kpair;
     pubk = snd_f kpair;
     (* We have both privk and pubk. Sign the message. *)
@@ -82,4 +82,24 @@ transition verify(msg : ByStr, sig : ByStr64)
     mone = one_msg m;
     send mone
   end
+end
+
+transition gen_sign_verify (msg : ByStr)
+      (* We don't have a key-pair, generate one and store it. *)
+    kpair = builtin ec_gen_key_pair ();
+    privk = fst_f kpair;
+    pubk = snd_f kpair;
+    (* We have both privk and pubk. Sign the message. *)
+    sig = builtin schnorr_sign privk pubk msg;
+    verified = builtin schnorr_verify pubk msg sig;
+    match verified with
+    | True =>
+      m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "verification successful" };
+      mone = one_msg m;
+      send mone
+    | False =>
+      m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "verification failed" };
+      mone = one_msg m;
+      send mone
+    end
 end

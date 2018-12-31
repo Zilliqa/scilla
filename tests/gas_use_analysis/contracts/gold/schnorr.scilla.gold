@@ -2,13 +2,13 @@ Gas use polynomial for transition sign_and_verify:
 1(a) + 1(b) + 1222 + 45(c) + 4(d) + 1(e) + 2(f) + 1(g)
 Legend:
 
+f: SApp ec_gen_key_pair( )
 a: pub_key
 b: priv_key
 d: _sender
-f: SApp schnorr_gen_key_pair( )
-e: Cost of calling schnorr_gen_key_pair()
 c: msg
-g: Result of builtin schnorr_sign(SApp schnorr_gen_key_pair( ),SApp schnorr_gen_key_pair( ),msg)
+g: Result of builtin schnorr_sign(SApp ec_gen_key_pair( ),SApp ec_gen_key_pair( ),msg)
+e: Cost of calling ec_gen_key_pair()
 
 Gas use polynomial for transition verify:
 1(a) + 453 + 15(b) + 3(c)

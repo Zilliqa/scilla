@@ -7,4 +7,13 @@ let f = fun (z : Int32) =>
 in
 let a = Int32 100 in
 let b = Int32 2 in
-f a b
+let c = f a b in
+let d = Int32 1 in
+let e = Int32 0 in
+let g = builtin mul d e in
+let h = Uint32 1 in
+let i = Uint32 0 in
+builtin mul h i
+
+
+

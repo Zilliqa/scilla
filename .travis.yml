@@ -20,13 +20,17 @@ branches:
   only: 
     - master
 before_install:
+- ./scripts/build_openssl.sh
+- sudo add-apt-repository ppa:tah83/secp256k1 -y
+- sudo apt-get update
+- sudo apt-get install libsecp256k1-dev
 - wget https://github.com/ocaml/opam/releases/download/2.0.0/opam-2.0.0-x86_64-linux
 - sudo mv opam-2.0.0-x86_64-linux /usr/local/bin/opam
 - sudo chmod a+x /usr/local/bin/opam
 - opam init --disable-sandboxing -y --compiler=4.06.1
-- opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx
+- opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
 - eval `opam config env`
 - rm $HOME/.opam/log/*
 script:
-- make test
-- make coveralls
+- CPLUS_INCLUDE_PATH=${HOME}/openssl/install/include LIBRARY_PATH=${HOME}/openssl/install/lib LD_LIBRARY_PATH=${HOME}/openssl/install/lib make test
+- CPLUS_INCLUDE_PATH=${HOME}/openssl/install/include LIBRARY_PATH=${HOME}/openssl/install/lib LD_LIBRARY_PATH=${HOME}/openssl/install/lib make coveralls

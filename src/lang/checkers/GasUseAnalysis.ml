@@ -583,7 +583,7 @@ module ScillaGUA
       (* hash(a) = a * 15. TODO: Support functions in polynomial. *)
       if List.length params <> 1 then fail1 (arg_err ops) opl else
       pure ([si "a"], ressize ops params, mul_pn (sp "a") (const_pn 15))
-    | "schnorr_gen_key_pair" ->
+    | "ec_gen_key_pair" ->
       if List.length params <> 0 then fail1 (arg_err ops) opl else
       pure ([], ressize ops params, const_pn 20)
     | "schnorr_sign" -> (* sign(m) = (m * 15) + 350 *)

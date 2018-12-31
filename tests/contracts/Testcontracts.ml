@@ -197,14 +197,15 @@ let add_tests env =
     let pingtests = "ping" >:::(build_contract_tests env "ping" succ_code 0 3) in
     let pongtests = "pong" >:::(build_contract_tests env "pong" succ_code 0 3) in
     let helloWorldtests = "helloWorld" >:::(build_contract_tests env "helloWorld" succ_code 1 3) in
-    let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 4 8) in
+    let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 4 9) in
     let auctiontests = "auction" >:::(build_contract_tests env "auction" succ_code 1 8) in
     let mappairtests = "mappair" >:::(build_contract_tests env "mappair" succ_code 1 7) in
     let bookstoretests = "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10) in
     let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 8 14) in
     let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12) in
     let nonfungibletokentests_expected_f = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27) in
-    let schnorrtests = "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 4) in
+    let schnorrtests = "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 5) in
+    let ecdsatests = "ecdsa" >:::(build_contract_tests env "ecdsa" succ_code 1 4) in
     let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1) in
     let fungibletokentests = "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8) in
     let inplace_map_tests = "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14) in
@@ -214,5 +215,5 @@ let add_tests env =
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f;
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;
                              auctiontests;emptytests;bookstoretests;nonfungibletokentests_expected_f;nonfungibletokentests;
-                             wallettests;schnorrtests;inplace_map_tests]
+                             wallettests;schnorrtests;inplace_map_tests;ecdsatests]
 

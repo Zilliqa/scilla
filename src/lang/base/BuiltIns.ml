@@ -867,9 +867,9 @@ module ScillaBuiltIns
       | _ -> builtin_fail "Crypto.bystr" ls
 
 
-    let schnorr_gen_key_pair_type = fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
-    let schnorr_gen_key_pair_arity = 0  
-    let schnorr_gen_key_pair ls _ =
+    let ec_gen_key_pair_type = fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
+    let ec_gen_key_pair_arity = 0  
+    let ec_gen_key_pair ls _ =
       match ls with
       | [] ->
         let privK, pubK = genKeyPair () in
@@ -877,8 +877,8 @@ module ScillaBuiltIns
         let pubK_lit_o = build_prim_literal (bystrx_typ pubkey_len) pubK in
         (match privK_lit_o, pubK_lit_o with
         | Some privK', Some pubK' -> pair_lit privK' pubK'
-        | _ -> builtin_fail "schnorr_gen_key_pair: internal error, invalid private/public key(s)." ls)
-      | _ -> builtin_fail "schnorr_gen_key_pair" ls
+        | _ -> builtin_fail "ec_gen_key_pair: internal error, invalid private/public key(s)." ls)
+      | _ -> builtin_fail "ec_gen_key_pair" ls
 
     let schnorr_sign_type = fun_typ (bystrx_typ privkey_len) @@ (* private key *)
                             fun_typ (bystrx_typ pubkey_len) @@ (* public key *)
@@ -908,6 +908,36 @@ module ScillaBuiltIns
         let v = verify pubkey msg signature in
         pure @@ to_Bool v
       | _ -> builtin_fail "schnorr_verify" ls
+
+    let ecdsa_sign_type = fun_typ (bystrx_typ Secp256k1Wrapper.privkey_len) @@ (* private key *)
+                            fun_typ (bystr_typ) @@ (* message to be signed *)
+                            (bystrx_typ Secp256k1Wrapper.signature_len) (* signature *)
+    let ecdsa_sign_arity = 2
+    let ecdsa_sign ls _ =
+      let open Secp256k1Wrapper in
+      match ls with
+      | [ByStrX(privklen, privkey); ByStr(msg)]
+          when privklen = privkey_len ->
+        let%bind s = sign privkey msg in
+        let s' = build_prim_literal (bystrx_typ signature_len) s in
+        (match s' with
+        | Some s'' -> pure s''
+        | None -> builtin_fail "ecdsa_sign: internal error, invalid signature." ls)
+      | _ -> builtin_fail "ecdsa_sign" ls
+
+    let ecdsa_verify_type = fun_typ (bystrx_typ Secp256k1Wrapper.pubkey_len) @@ (* public key *)
+                              fun_typ (bystr_typ) @@ (* signed message *)
+                              fun_typ (bystrx_typ Secp256k1Wrapper.signature_len) @@ (* signature *)
+                              bool_typ
+    let ecdsa_verify_arity = 3
+    let ecdsa_verify ls _ =
+      let open Secp256k1Wrapper in
+      match ls with
+      | [ByStrX(pubklen, pubkey); ByStr(msg); ByStrX(siglen, signature)]
+          when siglen = signature_len && pubklen = pubkey_len ->
+        let%bind v = verify pubkey msg signature in
+        pure @@ to_Bool v
+      | _ -> builtin_fail "ecdsa_verify" ls
 
   end
 
@@ -1074,9 +1104,11 @@ module ScillaBuiltIns
       ("keccak256hash", Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash);
       ("ripemd160hash", Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash);
       ("to_bystr", Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr);
-      ("schnorr_gen_key_pair", Crypto.schnorr_gen_key_pair_arity, Crypto.schnorr_gen_key_pair_type, elab_id, Crypto.schnorr_gen_key_pair);
+      ("ec_gen_key_pair", Crypto.ec_gen_key_pair_arity, Crypto.ec_gen_key_pair_type, elab_id, Crypto.ec_gen_key_pair);
       ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign);
       ("schnorr_verify", Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify);
+      ("ecdsa_sign", Crypto.ecdsa_sign_arity, Crypto.ecdsa_sign_type, elab_id, Crypto.ecdsa_sign);
+      ("ecdsa_verify", Crypto.ecdsa_verify_arity, Crypto.ecdsa_verify_type, elab_id, Crypto.ecdsa_verify);
       ("concat", Crypto.concat_arity, Crypto.concat_type, Crypto.concat_elab, Crypto.concat);
 
       (* Maps *)
