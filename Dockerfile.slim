@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgmp-dev \
     libffi-dev \
     libssl-dev \
+    libsecp256k1-dev \
     libboost-system-dev \
     && rm -rf /var/lib/apt/lists/*
 
