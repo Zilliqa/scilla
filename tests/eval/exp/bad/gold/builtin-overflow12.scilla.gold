@@ -1,0 +1,12 @@
+{
+  "gas_remaining": 1740,
+  "errors": [
+    {
+      "error_message":
+        "Cannot apply built-in Int.sub: an overflow/underflow occurred to a list of arguments:[  (Int256 57896044618658097711785492504343953926634992332820282019728792003956564819967),\n  (Int256 -2)].",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

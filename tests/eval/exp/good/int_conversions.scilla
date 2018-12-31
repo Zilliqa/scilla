@@ -16,5 +16,8 @@ let res7 = builtin to_int32 nums1 in
 let res8 = builtin to_int64 nums1 in
 let res9 = builtin to_uint64 nums2 in
 let res10 = builtin to_int64 nums2 in
+let res11 = builtin to_uint128 nums1 in
+let res12 = builtin to_uint256 nums1 in
+let res13 = builtin to_int256 nums2 in
 
 Uint32 0
