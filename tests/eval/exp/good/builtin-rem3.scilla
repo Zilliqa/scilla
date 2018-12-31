@@ -1,0 +1,10 @@
+(* Expected result: 117 *)
+let f = fun (z : Uint32) =>
+    let b = Uint32 40 in
+    fun (c : Uint32) =>
+    	let t = builtin rem b c in
+	builtin add z t
+in
+let a = Uint32 100 in
+let b = Uint32 23 in
+f a b
