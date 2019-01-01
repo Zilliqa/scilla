@@ -1,8 +1,6 @@
 scilla_version 0
 
 (* This contract implements a fungible token interface a la ERC20.*)
-(* This contract does not fire events *)
-
 
 (***************************************************)
 (*               Associated library                *)
@@ -49,9 +47,8 @@ field balances : Map ByStr20 Uint128 =
 field allowed : Map ByStr20 (Map ByStr20 Uint128) = Emp ByStr20 (Map ByStr20 Uint128)
 
 transition BalanceOf (tokenOwner : ByStr20)
-  bl <- balances;
-  val = builtin get bl tokenOwner;
-  match val with
+  bal <- balances[tokenOwner];
+  match bal with
   | Some v =>
 	e = {_eventname : "BalanceOf"; address : tokenOwner; balance : v};
 	event e
@@ -67,30 +64,29 @@ transition TotalSupply ()
 end
 
 transition Transfer (to : ByStr20, tokens : Uint128)
-  bl <- balances;
-  bal = builtin get bl _sender;
+  bal <- balances[_sender];
   match bal with
   | Some b =>
     can_do = le_int tokens b;
     match can_do with
     | True =>
-      (* subtract tokens from _sender and add it to to *)
+      (* subtract tokens from _sender and add it to "to" *)
       new_sender_bal = builtin sub b tokens;
       balances[_sender] := new_sender_bal;
 
-      (* Adds tokens to `to` address *)
+      (* Adds tokens to "to" address *)
       to_bal <- balances[to];
       new_to_bal = match to_bal with
       | Some x => builtin add x tokens
       | None => tokens
       end;
-  	  balances[to] := new_to_bal;
 
+  	  balances[to] := new_to_bal;
       e = {_eventname : "TransferSuccess"; sender : _sender; recipient : to; amount : tokens};
       event e
     | False =>
       (* balance not sufficient. *)
-  	  e = {_eventname : "TransferFailure"; sender : _sender; recipient : to; amount : Uint128 0};
+      e = {_eventname : "TransferFailure"; sender : _sender; recipient : to; amount : Uint128 0};
       event e
     end
   | None =>
@@ -101,52 +97,42 @@ transition Transfer (to : ByStr20, tokens : Uint128)
 end
 
 transition TransferFrom (from : ByStr20, to : ByStr20, tokens : Uint128)
-  bl <- balances;
-  al <- allowed;
-  bal = builtin get bl from;
+  bal <- balances[from];
   (* Check if _sender has been authorized by "from" *)
-  allowed_from = builtin get al from;
-  match allowed_from with
-  | Some m =>
-    (* How many tokens has _sender been authorized to transfer, by "from" *)
-    sender_allowed_from = builtin get m _sender;
-    all = Pair { (Option Uint128) (Option Uint128)} bal sender_allowed_from;
-    match all with
-    | Pair (Some a) (Some b) =>
-      (* We can only transfer the minimum of available or authorized tokens *)
-      t = min_int a b;
-      can_do = le_int tokens t;
-      match can_do with
-      | True =>
-        (* tokens is what we should subtract from "from" and add to "to" *)
-        new_from_bal = builtin sub a tokens;
-        balances_1 = builtin put bl from new_from_bal;
-        balances := balances_1;
-        to_bal = builtin get balances_1 to;
-        match to_bal with
-        | Some tb =>
-          to_bal_new = builtin add tb tokens;
-          balances_2 = builtin put balances_1 to to_bal_new;
-          balances := balances_2
-        | None =>
-          (* "to" has no balance. So just set it to tokens *)
-          balances_3 = builtin put balances_1 to tokens;
-          balances := balances_3
-        end;
-        (* reduce "allowed" by "tokens" *)
-        new_allowed = builtin sub b tokens;
-        new_m = builtin put m _sender new_allowed;
-        new_allowed = builtin put al from new_m;
-        allowed := new_allowed;
-  		e = {_eventname : "TransferFromSuccess"; sender : from; recipient : to; amount : tokens};
-  		event e
-      | False =>
-  		e = {_eventname : "TransferFromFailure"; sender : from; recipient : to; amount : Uint128 0};
-  		event e
-      end
-    | _ =>
-	  e = {_eventname : "TransferFromFailure"; sender : from; recipient : to; amount : Uint128 0};
-  	  event e
+  sender_allowed_from <- allowed[from][_sender];
+  match bal with
+  | Some a =>
+    match sender_allowed_from with
+    | Some b =>
+        (* We can only transfer the minimum of available or authorized tokens *)
+        t = min_int a b;
+        can_do = le_int tokens t;
+        match can_do with
+        | True =>
+            (* tokens is what we should subtract from "from" and add to "to" *)
+            new_from_bal = builtin sub a tokens;
+            balances[from] := new_from_bal;
+            to_bal <- balances[to];
+            match to_bal with
+            | Some tb =>
+                new_to_bal = builtin add tb tokens;
+                balances[to] := new_to_bal
+            | None =>
+                (* "to" has no balance. So just set it to tokens *)
+                balances[to] := tokens
+            end;
+            (* reduce "allowed" by "tokens" *)
+            new_allowed = builtin sub b tokens;
+            allowed[from][_sender] := new_allowed;
+            e = {_eventname : "TransferFromSuccess"; sender : from; recipient : to; amount : tokens};
+            event e
+        | False =>
+            e = {_eventname : "TransferFromFailure"; sender : from; recipient : to; amount : Uint128 0};
+            event e
+        end
+    | None =>
+        e = {_eventname : "TransferFromFailure"; sender : from; recipient : to; amount : Uint128 0};
+        event e
     end
   | None =>
 	e = {_eventname : "TransferFromFailure"; sender : from; recipient : to; amount : Uint128 0};
@@ -161,21 +147,13 @@ transition Approve (spender : ByStr20, tokens : Uint128)
 end
 
 transition Allowance (tokenOwner : ByStr20, spender : ByStr20)
-  al <- allowed;
-  towner_map = builtin get al tokenOwner;
-  match towner_map with
-  | Some m =>
-    spender_allowance = builtin get m spender;
-    match spender_allowance with
-    | Some n =>
-  	  e = {_eventname : "Allowance"; owner : tokenOwner; spender : spender; amount : n};
-  	  event e
-    | None =>
-  	  e = {_eventname : "Allowance"; owner : tokenOwner; spender : spender; amount : Uint128 0};
-  	  event e
-    end
+  spender_allowance <- allowed[tokenOwner][spender];
+  match spender_allowance with
+  | Some n =>
+      e = {_eventname : "Allowance"; owner : tokenOwner; spender : spender; amount : n};
+      event e
   | None =>
-	e = {_eventname : "Allowance"; owner : tokenOwner; spender : spender; amount : Uint128 0};
-	event e
+      e = {_eventname : "Allowance"; owner : tokenOwner; spender : spender; amount : Uint128 0};
+      event e
   end
 end
