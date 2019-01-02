@@ -14,14 +14,12 @@ than the one specified below.
 On machines older than Ubuntu 18.04, run these additional commands first:
 
 ```
-echo C2E26883F764FE1AC706B72EB7643EF4190731AF | sudo apt-key add -
 sudo add-apt-repository ppa:tah83/secp256k1 -y
 ```
 
 Required ubuntu packages can be installed as below:
 
 ```
-echo 630F626C9FD811EBC19DF0955B2D0C5561707B09 | sudo apt-key add - # avsm/ppa
 sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
 sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev
