@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "6866",
+  "gas_remaining": "6894",
   "_accepted": "false",
   "message": null,
   "states": [
@@ -26,13 +26,13 @@
     },
     {
       "vname": "transactions",
-      "type": "Map (Uint32) (Pair (ByStr20) (Uint128))",
+      "type": "Map (Uint32) (Transaction)",
       "value": [
         {
           "key": "1",
           "val": {
-            "constructor": "Pair",
-            "argtypes": [ "ByStr20", "Uint128" ],
+            "constructor": "Trans",
+            "argtypes": [],
             "arguments": [
               "0x1234567890123456789012345678906780000000", "100"
             ]
