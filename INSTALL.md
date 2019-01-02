@@ -68,7 +68,7 @@ brew tap iantanwx/crypto
 ```
 
 ```
-brew install ocaml opam pkg-config libffi openssl boost secp256k1
+brew install ocaml opam pkg-config libffi openssl@1.1 boost secp256k1
 opam init
 opam switch -y 4.06.1
 opam install angstrom batteries core cryptokit fileutils hex num oUnit ppx_deriving ppx_deriving_yojson ppx_let ppx_sexp_conv stdint yojson menhir dune ctypes ctypes-foreign bisect_ppx secp256k1
