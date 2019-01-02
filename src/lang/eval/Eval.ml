@@ -364,11 +364,24 @@ let init_libraries clibs elibs =
 
   let libs = Recursion.recursion_principles @ (combine_libs clibs elibs) in
 
-  DebugMessage.plog ("Loading library functions.");
+  DebugMessage.plog ("Loading library types and functions.");
   List.fold_left libs ~init:(pure Env.empty)
     ~f:(fun eres lentry ->
         match lentry with
-        | LibTyp _ -> eres
+        | LibTyp (tname, ctr_defs) ->
+            let open Datatypes.DataTypeDictionary in
+            let (ctrs, tmaps) = List.fold_right ctr_defs ~init:([], [])
+                ~f:(fun ctr_def (tmp_ctrs, tmp_tmaps) ->
+                    let { cname ; c_arg_types } = ctr_def in
+                    ( { Datatypes.cname = get_id cname ;
+                        Datatypes.arity = List.length c_arg_types } :: tmp_ctrs,
+                      ( get_id cname, c_arg_types ) :: tmp_tmaps )) in
+            let adt = { Datatypes.tname = get_id tname ;
+                        Datatypes.tparams = [] ;
+                        Datatypes.tconstr = ctrs ;
+                        Datatypes.tmap = tmaps } in
+            let _ = add_adt adt in
+            eres
         | LibVar (lname, lexp) ->
             let%bind env = eres in
             init_lib_entry env lname lexp)
