@@ -63,26 +63,27 @@ let lookup_adt_name_exn name =
 
 (* Generate a parser. *)
 let rec gen_parser (t : typ) : (Basic.json -> literal) =
+  let open Basic in
   match t with
   | PrimType _ ->
     (match t with
-    | x when x = string_typ -> (fun j -> StringLit (Basic.to_string j))
-    | x when x = bnum_typ -> (fun j -> BNum (Basic.to_string j))
-    | x when x = bystr_typ -> (fun j -> ByStr (String.lowercase (Basic.to_string j)))
+    | x when x = string_typ -> (fun j -> StringLit (Util.to_string j))
+    | x when x = bnum_typ -> (fun j -> BNum (Util.to_string j))
+    | x when x = bystr_typ -> (fun j -> ByStr (String.lowercase (Util.to_string j)))
     | x when is_bystrx_type x ->
       let w = bystrx_width x in
       (match w with
       | None -> raise (mk_invalid_json "Invalid ByStrX type")
-      | Some w' -> (fun j -> ByStrX (w', String.lowercase (Basic.to_string j)))
+      | Some w' -> (fun j -> ByStrX (w', String.lowercase (Util.to_string j)))
       )
-    | x when x = int32_typ -> (fun j -> IntLit(Int32L (Int32.of_string (Basic.to_string j))))
-    | x when x = int64_typ -> (fun j -> IntLit(Int64L (Int64.of_string (Basic.to_string j))))
-    | x when x = int128_typ -> (fun j -> IntLit(Int128L (Stdint.Int128.of_string (Basic.to_string j))))
-    | x when x = int256_typ -> (fun j -> IntLit(Int256L (Integer256.Int256.of_string (Basic.to_string j))))
-    | x when x = uint32_typ -> (fun j -> UintLit(Uint32L (Stdint.Uint32.of_string (Basic.to_string j))))
-    | x when x = uint64_typ -> (fun j -> UintLit(Uint64L (Stdint.Uint64.of_string (Basic.to_string j))))
-    | x when x = uint128_typ -> (fun j -> UintLit(Uint128L (Stdint.Uint128.of_string (Basic.to_string j))))
-    | x when x = uint256_typ -> (fun j -> UintLit(Uint256L (Integer256.Uint256.of_string (Basic.to_string j))))
+    | x when x = int32_typ -> (fun j -> IntLit(Int32L (Int32.of_string (Util.to_string j))))
+    | x when x = int64_typ -> (fun j -> IntLit(Int64L (Int64.of_string (Util.to_string j))))
+    | x when x = int128_typ -> (fun j -> IntLit(Int128L (Stdint.Int128.of_string (Util.to_string j))))
+    | x when x = int256_typ -> (fun j -> IntLit(Int256L (Integer256.Int256.of_string (Util.to_string j))))
+    | x when x = uint32_typ -> (fun j -> UintLit(Uint32L (Stdint.Uint32.of_string (Util.to_string j))))
+    | x when x = uint64_typ -> (fun j -> UintLit(Uint64L (Stdint.Uint64.of_string (Util.to_string j))))
+    | x when x = uint128_typ -> (fun j -> UintLit(Uint128L (Stdint.Uint128.of_string (Util.to_string j))))
+    | x when x = uint256_typ -> (fun j -> UintLit(Uint256L (Integer256.Uint256.of_string (Util.to_string j))))
     | _ -> raise (mk_invalid_json "Invalid primitive type")
     )
   | MapType (kt, vt) ->
@@ -113,7 +114,7 @@ let rec gen_parser (t : typ) : (Basic.json -> literal) =
         let parser j =
           match j with
           | `Assoc _ ->
-            let arguments = member_exn "arguments" j |> Basic.Util.to_list in
+            let arguments = member_exn "arguments" j |> Util.to_list in
             if List.length tmap <> List.length arguments
             then raise (mk_invalid_json "Invalid arguments to ADT in JSON") else
             let arg_lits = List.map2_exn arg_parsers arguments ~f:(fun p a -> p a) in
@@ -135,7 +136,7 @@ let rec gen_parser (t : typ) : (Basic.json -> literal) =
     (fun j ->
       let cn = match j with
         | `Assoc _ ->
-            (member_exn "constructor" j |> Basic.Util.to_string)
+            (member_exn "constructor" j |> Util.to_string)
         | `List _ -> "List" (* for efficiency, Lists can be stored flatly. *)
         | _ -> raise (mk_invalid_json "Invalid construct in ADT JSON")
       in
@@ -144,3 +145,6 @@ let rec gen_parser (t : typ) : (Basic.json -> literal) =
       | None -> raise (mk_invalid_json "Unknown constructor in ADT JSON")
     )
   | _ -> raise (mk_invalid_json "Invalid type")
+
+let parse_json t j =
+  (gen_parser t) j
