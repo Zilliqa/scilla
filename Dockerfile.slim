@@ -7,7 +7,7 @@ COPY . /scilla
 
 WORKDIR /scilla
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN add-apt-repository ppa:tah83/secp256k1 -y && apt-get update && apt-get install -y --no-install-recommends \
     curl \
     build-essential \
     m4 \
