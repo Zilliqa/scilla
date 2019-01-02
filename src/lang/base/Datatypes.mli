@@ -46,7 +46,7 @@ module DataTypeDictionary : sig
   (* Get typing map for a constructor *)
   val constr_tmap : adt -> string -> (typ list) option
 
-  val add_adt : adt -> unit
+  val add_adt : adt -> (unit, scilla_error list) result
     
   (*  Built-in ADTs  *)
   val bool_typ : typ

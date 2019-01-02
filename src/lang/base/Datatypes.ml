@@ -123,19 +123,17 @@ module DataTypeDictionary = struct
 
   let add_adt (new_adt : adt) =
     let open Caml in
-    let _ =
-      match Hashtbl.find_opt adt_name_dict new_adt.tname with
-      | Some _ -> fail0 @@ sprintf "Multiple declarations of type %s" new_adt.tname
-      | None ->
-          let _ = Hashtbl.add adt_name_dict new_adt.tname new_adt in
-          forallM
-            ~f:(fun ctr ->
-                match Hashtbl.find_opt adt_cons_dict ctr.cname with
-                | Some _ -> fail0 @@ sprintf "Multiple declarations of type constructor %s" ctr.cname
-                | None ->
-                    pure @@ Hashtbl.add adt_cons_dict ctr.cname (new_adt, ctr))
-            new_adt.tconstr in
-    ()
+    match Hashtbl.find_opt adt_name_dict new_adt.tname with
+    | Some _ ->
+        fail0 @@ sprintf "Multiple declarations of type %s" new_adt.tname
+    | None ->
+        let _ = Hashtbl.add adt_name_dict new_adt.tname new_adt in
+        foldM new_adt.tconstr ~init:()
+          ~f:(fun () ctr ->
+              match Hashtbl.find_opt adt_cons_dict ctr.cname with
+              | Some _ -> fail0 @@ sprintf "Multiple declarations of type constructor %s" ctr.cname
+              | None ->
+                  pure @@ Hashtbl.add adt_cons_dict ctr.cname (new_adt, ctr))
   
   (*  Get ADT by name *)
   let lookup_name name =

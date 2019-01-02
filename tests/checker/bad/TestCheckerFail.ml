@@ -39,7 +39,10 @@ module Tests = TestUtil.DiffBasedTests(
       "inplace-map.scilla";
       "homonymous_vars.scilla";
       "homonymous_vars2.scilla";
-      "homonymous_vars3.scilla"
+      "homonymous_vars3.scilla";
+      "bad_adt_1.scilla";
+      "bad_adt_2.scilla";
+      "bad_adt_3.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
