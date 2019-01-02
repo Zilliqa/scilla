@@ -145,6 +145,9 @@ module ScillaGas
         pure @@ (Int.min (String.length s)
                          (Stdint.Uint32.to_int i1+ Stdint.Uint32.to_int i2))
                  * base
+    | "to_string", [l] ->
+      let%bind c = literal_cost l in
+      pure @@ (c * base)
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
   let crypto_coster op args base =
@@ -167,15 +170,20 @@ module ScillaGas
     | "ripemd160hash", _, [a] ->
         (* Block size of ripemd160hash is 512 *)
         pure @@ (div_ceil (String.length (pp_literal a)) 64) * 10 * base
-    | "schnorr_gen_key_pair", _, _ -> pure 20
-    | "schnorr_sign", _, [_;_;ByStr(s)] ->
+    | "ec_gen_key_pair", _, _ -> pure 20
+    | "schnorr_sign", _, [_;_;ByStr(s)]
+    | "ecdsa_sign", _, [_;ByStr(s)] ->
         let x = div_ceil ((String.length s) + 66) 64 in
         pure @@ (350 + (15 * x)) * base
-    | "schnorr_verify", _, [_;ByStr(s);_] ->
+    | "schnorr_verify", _, [_;ByStr(s);_]
+    | "ecdsa_verify", _, [_;ByStr(s);_] ->
         let x = div_ceil ((String.length s) + 66) 64 in
         pure @@ (250 + (15 * x)) * base
     | "to_bystr", [a], _
       when is_bystrx_type a -> pure @@ get (bystrx_width a) * base
+    | "concat", [a1;a2], _
+      when is_bystrx_type a1 && is_bystrx_type a2 ->
+      pure @@ (get(bystrx_width a1) + get(bystrx_width a2)) * base
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
   let map_coster op args base =
@@ -193,16 +201,29 @@ module ScillaGas
     | [UintLit (Uint32L i)] -> pure @@  (Stdint.Uint32.to_int i) * base
     | _ -> fail0 @@ "Gas cost error for to_nat built-in"
 
+  let int_conversion_coster w _ args base =
+    match args with
+    | [IntLit _] | [UintLit _] | [StringLit _] ->
+      if w = 32 || w = 64 then pure base
+      else if w = 128 then pure (base * 2)
+      else if w = 256 then pure (base * 4)
+      else fail0 @@ "Gas cost error for integer conversion"
+    | _ -> fail0 @@ "Gas cost due to incorrect arguments for int conversion"
+
   let int_coster op args base =
-    let base' =
+    let%bind base' =
        match op with
-         | "mul" | "div" | "rem" -> base * 5
-         | _ -> base
+        | "mul" | "div" | "rem" -> pure (base * 5)
+        | "pow" ->
+          (match args with 
+          | [_; UintLit(Uint32L p)] -> pure (base * 5 * (Stdint.Uint32.to_int p))
+          | _ -> fail0 @@ "Gas cost error for built-in pow")
+        | _ -> pure base
     in
     let%bind w = match args with
-      | [IntLit i] | [IntLit i; IntLit _] ->
+      | [IntLit i; _] ->
         pure @@ int_lit_width i
-      | [UintLit i] | [UintLit i; UintLit _] ->
+      | [UintLit i; _] ->
         pure @@ uint_lit_width i
       | _ -> fail0 @@ "Gas cost error for integer built-in"
     in
@@ -219,11 +240,13 @@ module ScillaGas
     ("eq", [string_typ;string_typ], string_coster, 1);
     ("concat", [string_typ;string_typ], string_coster, 1);
     ("substr", [string_typ; tvar "'A"; tvar "'A"], string_coster, 1);
+    ("to_string", [tvar "'A"], string_coster, 1);
 
     (* Block numbers *)
     ("eq", [bnum_typ;bnum_typ], base_coster, 32);
     ("blt", [bnum_typ;bnum_typ], base_coster, 32);
     ("badd", [bnum_typ;tvar "'A"], base_coster, 32);
+    ("bsub", [bnum_typ;bnum_typ], base_coster, 32);
 
     (* Crypto *)
     ("eq", [tvar "'A"; tvar "'A"], crypto_coster, 1);
@@ -233,9 +256,12 @@ module ScillaGas
     ("sha256hash", [tvar "'A"], crypto_coster, 1);
     ("keccak256hash", [tvar "'A"], crypto_coster, 1);
     ("ripemd160hash", [tvar "'A"], crypto_coster, 1);
-    ("schnorr_gen_key_pair", [], crypto_coster, 1);
+    ("ec_gen_key_pair", [], crypto_coster, 1);
     ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], crypto_coster, 1);
     ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster, 1);
+    ("ecdsa_sign", [bystrx_typ Secp256k1Wrapper.privkey_len; bystr_typ], crypto_coster, 1);
+    ("ecdsa_verify", [bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster, 1);
+    ("concat", [tvar "'A"; tvar "'A"], crypto_coster, 1);
 
     (* Maps *)
     ("contains", [tvar "'A"; tvar "'A"], map_coster, 1);
@@ -253,14 +279,15 @@ module ScillaGas
     ("mul", [tvar "'A"; tvar "'A"], int_coster, 4);
     ("div", [tvar "'A"; tvar "'A"], int_coster, 4);
     ("rem", [tvar "'A"; tvar "'A"], int_coster, 4);
-    ("to_int32", [tvar "'A"], int_coster, 4);
-    ("to_int64", [tvar "'A"], int_coster, 4);
-    ("to_int128", [tvar "'A"], int_coster, 4);
-    ("to_int256", [tvar "'A"], int_coster, 4);
-    ("to_uint32", [tvar "'A"], int_coster, 4);
-    ("to_uint64", [tvar "'A"], int_coster, 4);
-    ("to_uint128", [tvar "'A"], int_coster, 4);
-    ("to_uint256", [tvar "'A"], int_coster, 4);
+    ("pow", [tvar "'A"; uint32_typ], int_coster, 4);
+    ("to_int32", [tvar "'A"], int_conversion_coster 32, 4);
+    ("to_int64", [tvar "'A"], int_conversion_coster 64, 4);
+    ("to_int128", [tvar "'A"], int_conversion_coster 128, 4);
+    ("to_int256", [tvar "'A"], int_conversion_coster 256, 4);
+    ("to_uint32", [tvar "'A"], int_conversion_coster 32, 4);
+    ("to_uint64", [tvar "'A"], int_conversion_coster 64, 4);
+    ("to_uint128", [tvar "'A"], int_conversion_coster 128, 4);
+    ("to_uint256", [tvar "'A"], int_conversion_coster 256, 4);
     ("to_nat", [tvar "'A"], to_nat_coster, 1);
   ]
 

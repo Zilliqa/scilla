@@ -30,6 +30,7 @@ let explist = [
   "builtin-remzero.scilla";
   "builtin-overflow10.scilla";
   "builtin-overflow11.scilla";
+  "builtin-overflow12.scilla";
   "builtin-overflow1.scilla";
   "builtin-overflow2.scilla";
   "builtin-overflow3.scilla";
@@ -39,6 +40,8 @@ let explist = [
   "builtin-overflow7.scilla";
   "builtin-overflow8.scilla";
   "builtin-overflow9.scilla";
+  "builtin-pow.scilla";
+  "builtin-pow2.scilla";
   "msg_error2.scilla";
   "msg_error3.scilla";
   "msg_error.scilla";

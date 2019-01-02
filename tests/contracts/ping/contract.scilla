@@ -7,10 +7,6 @@ let one_msg =
     let nil_msg = Nil {Message} in
       Cons {Message} msg nil_msg
 
-let game_over = Int32 0
-let calling_pong = Int32 1
-let addr_not_set = Int32 2
-
 (***************************************************)
 (*             The contract definition             *)
 (***************************************************)
@@ -32,20 +28,20 @@ transition Ping ()
     is_game_over = builtin lt cnt one;
     match is_game_over with
     | True =>
-      msg = {_tag : Main; _recipient : _sender; _amount : Uint128 0; code : game_over};
-      msgs = one_msg msg;
-      send msgs
+      msg = {_eventname : "GameOver"};
+      event msg
     | False =>
       deccount = builtin sub cnt one;
       count := deccount;
-      msg = {_tag : Pong; _recipient : pongAddr; _amount : Uint128 0; code : calling_pong};
+      msg = {_tag : Pong; _recipient : pongAddr; _amount : Uint128 0};
       msgs = one_msg msg;
-      send msgs
+      send msgs;
+      e = {_eventname : "CallingPong"};
+      event e
     end
   | None =>
-    msg = {_tag : Main; _recipient : _sender; _amount : Uint128 0; code : addr_not_set};
-    msgs = one_msg msg;
-    send msgs
+    msg = {_eventname : "AddressNotSet"};
+    event msg
   end
 end
 

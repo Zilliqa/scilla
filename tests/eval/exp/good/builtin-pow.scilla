@@ -1,0 +1,7 @@
+(* Expected 10000 *)
+let a = Int32 100 in
+let b = Uint32 2 in
+let x = builtin pow a b in
+let c = Uint32 10 in
+builtin pow c b
+
