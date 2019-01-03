@@ -11,6 +11,19 @@ than the one specified below.
 
 ### Ubuntu
 
+On machines older than Ubuntu 18.04, run these additional commands first: The last three lines must also be added to your `~/.bashrc`.
+
+```
+# Add Ubuntu PPA for libsecp256k1-dev
+sudo add-apt-repository ppa:tah83/secp256k1 -y
+# Fetch, build and install OpenSSL 1.1.1 into ${HOME}/openssl.
+./scripts/build_openssl.sh
+# Exports for using OpenSSL 1.1.1 built above, instead of system OpenSSL.
+export CPLUS_INCLUDE_PATH="${HOME}/openssl/install/include:${CPLUS_INCLUDE_PATH}"
+export LIBRARY_PATH="${HOME}/openssl/install/lib:${LIBRARY_PATH}"
+export LD_LIBRARY_PATH="${HOME}/openssl/install/lib:${LD_LIBRARY_PATH}"
+```
+
 Required ubuntu packages can be installed as below:
 
 ```
@@ -62,7 +75,7 @@ brew tap iantanwx/crypto
 ```
 
 ```
-brew install ocaml opam pkg-config libffi openssl boost secp256k1
+brew install ocaml opam pkg-config libffi openssl@1.1 boost secp256k1
 opam init
 opam switch -y 4.06.1
 opam install angstrom batteries core cryptokit fileutils hex num oUnit ppx_deriving ppx_deriving_yojson ppx_let ppx_sexp_conv stdint yojson menhir dune ctypes ctypes-foreign bisect_ppx secp256k1
