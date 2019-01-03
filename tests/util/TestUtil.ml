@@ -57,6 +57,7 @@ module type TestSuiteInput = sig
   val runner : string
   val exit_code : Unix.process_status
   val custom_args : string list
+  val lib_override : string list option
 end
 
 module DiffBasedTests(Input : TestSuiteInput) = struct
@@ -84,12 +85,22 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         (save_to_file output goldoutput_file;
         Printf.printf "Updated gold for test %s\n" input_file);
       in
-      let libdir = FilePath.make_relative dir (env.stdlib_dir test_ctxt) in
-      let use_stdlib = 
-        (* don't pass on stdlib option if it's already in env. *)
-        match Sys.getenv_opt GlobalConfig.StdlibTracker.scilla_stdlib_env with
-        | Some _ -> false | None -> true
+      let use_stdlib =
+        match lib_override with
+        (* Override stdlib env setting if needed *)
+        | Some _ -> true
+        | None -> 
+            (* don't pass on stdlib option if it's already in env. *)
+            match Sys.getenv_opt GlobalConfig.StdlibTracker.scilla_stdlib_env with
+            | Some _ -> false
+            | None -> true
       in
+      let libdir =
+        let path = 
+          match lib_override with
+          | None -> env.stdlib_dir test_ctxt
+          | Some p -> String.concat Filename.dir_sep p in
+        FilePath.make_relative dir path in
       let common_args = if use_stdlib then ["-libdir";libdir;"-jsonerrors";input_file] else ["-jsonerrors";input_file] in
       let args = custom_args @ common_args in
       (if (env.print_cli test_ctxt) then

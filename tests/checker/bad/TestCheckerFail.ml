@@ -25,6 +25,7 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["checker"; "bad"; f]
     let runner = "scilla-checker"
     let custom_args = ["-cf"]
+    let lib_override = None
     let tests = [
       "bad_fields1.scilla";
       "bad_fields2.scilla";
@@ -44,6 +45,24 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_adt_2.scilla";
       "bad_adt_3.scilla";
       "bad_adt_4.scilla";
+    ]
+    let exit_code : Unix.process_status = WEXITED 1
+  end)
+
+module LibTests = TestUtil.DiffBasedTests(
+  struct
+    let gold_path dir f = [dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
+    let test_path f = ["checker"; "bad"; f]
+    let runner = "scilla-checker"
+    let custom_args = ["-cf"]
+    let lib_override = Some ["checker"; "bad"; "lib"]
+    let tests = [
+      "bad_adt_lib_1.scilla";
+      "bad_adt_lib_2.scilla";
+      "bad_adt_lib_3.scilla";
+      "bad_adt_lib_4.scilla";
+      "bad_adt_lib_5.scilla";
+      "bad_adt_lib_6.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

@@ -1,0 +1,5 @@
+library BadADTLib3b
+
+type TestType1 =
+| Item1 of Int32
+| Item2

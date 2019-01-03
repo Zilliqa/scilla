@@ -291,18 +291,23 @@ module ScillaRecursion
     let { smver ; cname ; libs ; elibs ; contr } = md in
     wrap_with_info (
       sprintf "Type error(s) in contract %s:\n" (get_id contr.cname), SR.get_loc (get_rep contr.cname)) @@
-    
-    let%bind ((rec_elibs, adts), emsgs) =
-      foldM ext_libs ~init:(([], []), [])
+
+    let ((rec_elibs, adts), emsgs) =
+      List.fold_left ext_libs ~init:(([], []), [])
         ~f:(fun ((rec_elibs_acc, adts_acc), emsgs_acc) ext_lib ->
-            let%bind ((rec_elib, elib_adt), emsg) =
+            let ((rec_elib, elib_adt), emsg) =
               match recursion_library ext_lib with
-              | Ok (lib, adt) -> Ok ((lib :: rec_elibs_acc, adt :: adts_acc), emsgs_acc)
-              | Error el -> Ok ((rec_elibs_acc, adts_acc), emsgs_acc @ el) in
-            pure ((rec_elib, elib_adt), emsg)) in
+              | Ok (lib, adt) -> ((lib :: rec_elibs_acc, adt :: adts_acc), emsgs_acc)
+              | Error el -> ((rec_elibs_acc, adts_acc), emsgs_acc @ el) in
+            ((rec_elib, elib_adt), emsg)) in
     let recursion_elibs = List.rev rec_elibs in
     let elibs_adts = List.concat (List.rev adts) in
-    let _ = List.iter elibs_adts ~f:(fun adt -> let _ = DataTypeDictionary.add_adt adt in ()) in
+    let emsgs =
+      List.fold_left elibs_adts ~init:emsgs
+        ~f:(fun emsgs_acc adt ->
+            match DataTypeDictionary.add_adt adt with
+            | Ok _ -> emsgs_acc
+            | Error e -> emsgs_acc @ e) in
     
     let%bind (recursion_md_libs, emsgs) =
       match libs with
