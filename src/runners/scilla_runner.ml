@@ -85,11 +85,11 @@ let input_state_json filename =
   let match_balance ((vname : string), _) : bool = vname = balance_label in
   let bal_lit = match List.find states ~f:match_balance with
     | Some (_, lit) -> lit
-    | None -> raise (JSON.mk_invalid_json (balance_label ^ " field missing"))
+    | None -> raise (mk_invalid_json (balance_label ^ " field missing"))
   in
   let bal_int = match bal_lit with
     | UintLit (Uint128L x) -> x
-    | _ -> raise (JSON.mk_invalid_json (balance_label ^ " invalid"))
+    | _ -> raise (mk_invalid_json (balance_label ^ " invalid"))
   in
   let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
      no_bal_states, bal_int
@@ -178,7 +178,7 @@ let () =
         try 
           JSON.ContractState.get_json_data cli.input_init
         with
-        | JSON.Invalid_json s -> 
+        | Invalid_json s -> 
             perr @@ scilla_error_gas_string gas_remaining
               (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init)));
             exit 1
@@ -211,7 +211,7 @@ let () =
       try
         JSON.BlockChainState.get_json_data cli.input_blockchain 
       with
-        | JSON.Invalid_json s -> 
+        | Invalid_json s -> 
             perr @@ scilla_error_gas_string gas_remaining 
               (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_blockchain)));
             exit 1
@@ -232,7 +232,7 @@ let () =
         try
           JSON.Message.get_json_data cli.input_message 
         with
-        | JSON.Invalid_json s ->
+        | Invalid_json s ->
             perr @@ scilla_error_gas_string gas_remaining 
               (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_message)));
             exit 1
@@ -244,7 +244,7 @@ let () =
         try
           input_state_json cli.input_state
         with
-        | JSON.Invalid_json s ->
+        | Invalid_json s ->
             perr @@ scilla_error_gas_string gas_remaining 
               (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state)));
             exit 1

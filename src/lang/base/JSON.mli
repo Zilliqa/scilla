@@ -163,8 +163,3 @@ module CashflowInfo : sig
 
   val get_json : (string * string) list -> Yojson.json
 end
-
-
-open ErrorUtils
-exception Invalid_json of scilla_error list
-val mk_invalid_json : string -> exn
