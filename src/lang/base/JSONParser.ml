@@ -54,13 +54,33 @@ let lookup_adt_name_exn name =
   | Ok s -> s
 
 (*************************************)
+(*********** ADT parsers *************)
+(*************************************)
+
+let adt_parsers =
+  let open Caml in
+  let ht : ((string, Basic.json -> literal) Hashtbl.t) = Hashtbl.create 10 in
+  ht
+
+let add_adt_parser adt_name parser =
+  let open Caml in
+  let _ = Hashtbl.add adt_parsers adt_name parser in
+  ()
+
+let lookup_adt_parser adt_name =
+  let open Caml in
+  match Hashtbl.find_opt adt_parsers adt_name with
+  | None -> raise (mk_invalid_json (sprintf "ADT %s not found" adt_name))
+  | Some p -> p
+
+(*************************************)
 (******** Parser Generator ***********)
 (*************************************)
 
 (* Generate a parser. *)
 let gen_parser (t' : typ) : (Basic.json -> literal) =
   let open Basic in
-    let rec recurser t adt_parsers =
+    let rec recurser t =
     match t with
     | PrimType _ ->
       (match t with
@@ -84,8 +104,8 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
       | _ -> raise (mk_invalid_json "Invalid primitive type")
       )
     | MapType (kt, vt) ->
-      let kp = recurser kt adt_parsers in
-      let vp = recurser vt adt_parsers in
+      let kp = recurser kt in
+      let vp = recurser vt in
       (fun j ->
         match j with
         | `List jlist ->
@@ -104,22 +124,28 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
       let a = lookup_adt_name_exn name in
       (* Build a parser for each constructor of this ADT. *)
       (* TODO: Use an efficient dictionary. Custom ADTs _can_ have many constructors. *)
-      let cn_parsers adt_parsers =
+      let cn_parsers =
         List.fold a.tconstr ~init:(AssocDictionary.make_dict()) ~f:(fun maps cn ->
           let tmap = constr_pattern_arg_types_exn t cn.cname in
           let arg_parsers = List.map tmap ~f:(fun t ->
-            (match AssocDictionary.lookup (pp_typ t) adt_parsers with
-            | Some arg_parser -> arg_parser
-            | None -> recurser t adt_parsers
-            )
-          ) in
+              match t with
+              | ADT (sub_name, _) ->
+                  (* Lazy lookup, since not all ADT parsers may be available yet *)
+                  (fun () -> lookup_adt_parser sub_name)
+              | _ ->
+                  let p = recurser t in
+                  (fun () -> p)) in
           let parser j =
             match j with
             | `Assoc _ ->
               let arguments = member_exn "arguments" j |> Util.to_list in
               if List.length tmap <> List.length arguments
-              then raise (mk_invalid_json "Invalid arguments to ADT in JSON") else
-              let arg_lits = List.map2_exn arg_parsers arguments ~f:(fun p a -> p a) in
+              then raise (mk_invalid_json "Invalid arguments to ADT in JSON")
+              else
+                let arg_lits = List.map2_exn arg_parsers arguments
+                    ~f:(fun p a ->
+                        (* Apply thunk, and then apply to argument *)
+                        (p ()) a) in
               ADTValue(cn.cname, tlist, arg_lits)
             | `List vli ->
               (* We make an exception for Lists, allowing them to be stored flatly. *)
@@ -129,7 +155,9 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
                 let eparser = List.nth_exn arg_parsers 0 in
                 let etyp = List.nth_exn tmap 0 in
                 List.fold_right vli
-                  ~f:(fun vl acc -> (ADTValue("Cons", [etyp], [(eparser vl);acc])))
+                  ~f:(fun vl acc ->
+                      (* Apply eparser thunk, and then apply to argument *)
+                      (ADTValue("Cons", [etyp], [((eparser ()) vl);acc])))
                   ~init:(ADTValue("Nil", [etyp], []))
             | _ -> raise (mk_invalid_json "Invalid ADT in JSON")
           in
@@ -146,15 +174,15 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
         | Some parser -> parser j
         | None -> raise (mk_invalid_json ("Unknown constructor " ^ cn ^ " in ADT JSON"))
       in
-      let rec adt_parser_fix j =
-        let adt_parsers' = (AssocDictionary.update (pp_typ t) adt_parser_fix adt_parsers) in
-        let cn_parsers' = cn_parsers adt_parsers' in
-        adt_parser cn_parsers' j
-      in
-      adt_parser_fix
+      (* Create parser *)
+      let p = adt_parser cn_parsers in
+      (* Add parser to hashtable *)
+      let _ = add_adt_parser name p in
+      (* Return parser *)
+      p
     | _ -> raise (mk_invalid_json "Invalid type")
   in
-  recurser t' (AssocDictionary.make_dict())
+  recurser t'
 
 let parse_json t j =
   (gen_parser t) j
