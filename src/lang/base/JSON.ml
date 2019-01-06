@@ -211,7 +211,7 @@ let jobj_to_statevar json =
   let tstring = member_exn "type" json |> to_string in
   let t = parse_typ_exn tstring in
   let v = member_exn "value" json in
-  if true (* TODO: Add command line flag. *)
+  if GlobalConfig.validate_json () (* TODO: Add command line flag. *)
   then
     (n, json_to_lit t v)
   else
