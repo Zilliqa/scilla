@@ -31,6 +31,7 @@ module ParserRep = struct
   let get_loc l = l
   let mk_id_address s = Ident (s, dummy_loc)
   let mk_id_uint128 s = Ident (s, dummy_loc)
+  let mk_id_uint32 s = Ident (s, dummy_loc)
   let mk_id_bnum    s = Ident (s, dummy_loc)
   let mk_id_string  s = Ident (s, dummy_loc)
 

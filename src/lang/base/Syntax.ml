@@ -162,6 +162,7 @@ module type Rep = sig
 
   val mk_id_address : string -> rep ident
   val mk_id_uint128 : string -> rep ident
+  val mk_id_uint32  : string -> rep ident
   val mk_id_bnum    : string -> rep ident
   val mk_id_string  : string -> rep ident
 
