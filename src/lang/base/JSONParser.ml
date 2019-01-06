@@ -57,9 +57,13 @@ let lookup_adt_name_exn name =
 (*********** ADT parsers *************)
 (*************************************)
 
+type adt_parser_entry =
+  | Incomplete (* Parser not completely constructed. *)
+  | Parser of (Basic.json -> literal)
+
 let adt_parsers =
   let open Caml in
-  let ht : ((string, Basic.json -> literal) Hashtbl.t) = Hashtbl.create 10 in
+  let ht : ((string, adt_parser_entry) Hashtbl.t) = Hashtbl.create 10 in
   ht
 
 let add_adt_parser adt_name parser =
@@ -126,7 +130,7 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
       )
     | ADT (name, tlist) ->
       (* Add a dummy entry for "t" in our table, to prevent recursive calls. *)
-      let _ = add_adt_parser (pp_typ t) (fun _ -> StringLit ("")) in
+      let _ = add_adt_parser (pp_typ t) Incomplete in
 
       let a = lookup_adt_name_exn name in
       (* Build a parser for each constructor of this ADT. *)
@@ -141,7 +145,7 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
               (fun () -> lookup_adt_parser (pp_typ t))
             | None ->
               let p = recurser t in
-              (fun () -> p)
+              (fun () -> Parser p)
           ) in
           let parser j =
             match j with
@@ -151,21 +155,29 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
               then raise (mk_invalid_json "Invalid arguments to ADT in JSON")
               else
                 let arg_lits = List.map2_exn arg_parsers arguments
-                    ~f:(fun p a ->
-                        (* Apply thunk, and then apply to argument *)
-                        (p ()) a) in
-              ADTValue(cn.cname, tlist, arg_lits)
+                  ~f:(fun p a ->
+                      (* Apply thunk, and then apply to argument *)
+                      match p () with
+                      | Incomplete -> raise (mk_invalid_json "Attempt to call an incomplete JSON parser")
+                      | Parser p' -> (p' a)
+                  ) in
+                ADTValue(cn.cname, tlist, arg_lits)
             | `List vli ->
               (* We make an exception for Lists, allowing them to be stored flatly. *)
               if name <> "List" then
                 raise (mk_invalid_json "ADT value is a JSON array, but type is not List")
               else
                 let eparser = List.nth_exn arg_parsers 0 in
+                let eparser' = 
+                  (match eparser () with
+                  | Incomplete -> raise (mk_invalid_json "Attempt to call an incomplete JSON parser")
+                  | Parser p' -> p')
+                in
                 let etyp = List.nth_exn tmap 0 in
                 List.fold_right vli
                   ~f:(fun vl acc ->
                       (* Apply eparser thunk, and then apply to argument *)
-                      (ADTValue("Cons", [etyp], [((eparser ()) vl);acc])))
+                      (ADTValue("Cons", [etyp], [(eparser' vl);acc])))
                   ~init:(ADTValue("Nil", [etyp], []))
             | _ -> raise (mk_invalid_json "Invalid ADT in JSON")
           in
@@ -185,7 +197,7 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
       (* Create parser *)
       let p = adt_parser cn_parsers in
       (* Add parser to hashtable *)
-      let _ = add_adt_parser (pp_typ t) p in
+      let _ = add_adt_parser (pp_typ t) (Parser p) in
       (* Return parser *)
       p
     | _ -> raise (mk_invalid_json "Invalid type")
