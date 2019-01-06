@@ -14,6 +14,11 @@
         "type" : "BNum" ,
         "value" : "199"
     },
+    {
+        "vname" : "_this_address",
+        "type" : "ByStr20",
+        "value" : "0xabfeccdc9012345678901234567890f777567890"
+    },
     { 
         "vname" : "goal",
         "type" : "Uint128",
