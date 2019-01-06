@@ -64,8 +64,12 @@ let adt_parsers =
 
 let add_adt_parser adt_name parser =
   let open Caml in
-  let _ = Hashtbl.add adt_parsers adt_name parser in
+  let _ = Hashtbl.replace adt_parsers adt_name parser in
   ()
+
+let lookup_adt_parser_opt adt_name =
+  let open Caml in
+  Hashtbl.find_opt adt_parsers adt_name
 
 let lookup_adt_parser adt_name =
   let open Caml in
@@ -121,6 +125,9 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
         | _ -> raise (mk_invalid_json "Invalid map in JSON")
       )
     | ADT (name, tlist) ->
+      (* Add a dummy entry for "t" in our table, to prevent recursive calls. *)
+      let _ = add_adt_parser (pp_typ t) (fun _ -> StringLit ("")) in
+
       let a = lookup_adt_name_exn name in
       (* Build a parser for each constructor of this ADT. *)
       (* TODO: Use an efficient dictionary. Custom ADTs _can_ have many constructors. *)
@@ -128,13 +135,14 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
         List.fold a.tconstr ~init:(AssocDictionary.make_dict()) ~f:(fun maps cn ->
           let tmap = constr_pattern_arg_types_exn t cn.cname in
           let arg_parsers = List.map tmap ~f:(fun t ->
-              match t with
-              | ADT (sub_name, _) ->
-                  (* Lazy lookup, since not all ADT parsers may be available yet *)
-                  (fun () -> lookup_adt_parser sub_name)
-              | _ ->
-                  let p = recurser t in
-                  (fun () -> p)) in
+            match lookup_adt_parser_opt (pp_typ t) with
+            | Some _ ->
+              (* Lazy lookup, to avoid using dummy parsers set above. *)
+              (fun () -> lookup_adt_parser (pp_typ t))
+            | None ->
+              let p = recurser t in
+              (fun () -> p)
+          ) in
           let parser j =
             match j with
             | `Assoc _ ->
@@ -177,7 +185,7 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
       (* Create parser *)
       let p = adt_parser cn_parsers in
       (* Add parser to hashtable *)
-      let _ = add_adt_parser name p in
+      let _ = add_adt_parser (pp_typ t) p in
       (* Return parser *)
       p
     | _ -> raise (mk_invalid_json "Invalid type")
