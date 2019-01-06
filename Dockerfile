@@ -25,6 +25,9 @@ RUN apt-get update \
     libboost-system-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN make opamdep && echo \
+RUN ./scripts/build_openssl.sh && \
+    make opamdep && echo \
     ". ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true " >> ~/.bashrc && \
-    eval `opam config env` && make
+    eval `opam config env` && \
+    # build_openssl.sh builds and install OpenSSL 1.1.1 in ${HOME}/openssl/install
+    CPLUS_INCLUDE_PATH=${HOME}/openssl/install/include LIBRARY_PATH=${HOME}/openssl/install/lib LD_LIBRARY_PATH=${HOME}/openssl/install/lib make
