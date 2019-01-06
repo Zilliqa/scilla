@@ -71,6 +71,7 @@ end
 
 let balance_label = "_balance"
 let creation_block_label = "_creation_block"
+let this_address_label = "_this_address"
 let scilla_version_label = "_scilla_version"
 let accepted_label = "_accepted"
 
@@ -92,8 +93,9 @@ module ScillaContractUtil
   let append_implict_contract_params tparams =
     let open PrimTypes in 
     let creation_block = (ER.mk_id_bnum creation_block_label, bnum_typ) in
-    let scilla_version_init = (ER.mk_id_bnum scilla_version_label, uint32_typ) in
-    creation_block :: scilla_version_init :: tparams
+    let this_address = (ER.mk_id_address this_address_label, bystrx_typ address_length) in
+    let scilla_version_init = (ER.mk_id_uint32 scilla_version_label, uint32_typ) in
+    creation_block :: scilla_version_init :: this_address :: tparams
 
   let append_implict_trans_params tparams =
     let open PrimTypes in

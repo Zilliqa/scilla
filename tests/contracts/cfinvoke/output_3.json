@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7481",
+  "gas_remaining": "7461",
   "_accepted": "false",
   "message": {
     "_tag": "GetFunds",

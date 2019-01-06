@@ -43,6 +43,7 @@ module CashflowRep (R : Rep) = struct
 
   let mk_id_address s = mk_id (R.mk_id_address s)
   let mk_id_uint128 s = mk_id (R.mk_id_uint128 s)
+  let mk_id_uint32 s = mk_id (R.mk_id_uint32 s)
   let mk_id_bnum    s = mk_id (R.mk_id_bnum s)
   let mk_id_string  s = mk_id (R.mk_id_string s)
   
