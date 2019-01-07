@@ -21,15 +21,23 @@ RUN apt-get update \
     libgmp-dev \
     libffi-dev \
     libssl-dev \
-    git \
     libsecp256k1-dev \
     libboost-system-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN ./scripts/build_openssl.sh && \
-    make opamdep && echo \
-    ". ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true " >> ~/.bashrc && \
-    eval `opam config env` && \
-    # build_openssl.sh builds and install OpenSSL 1.1.1 in ${HOME}/openssl/install
-    echo 'export LD_LIBRARY_PATH=${HOME}/openssl/install/lib:${LD_LIBRARY_PATH}' >> ~/.bashrc
-    CPLUS_INCLUDE_PATH=${HOME}/openssl/install/include LIBRARY_PATH=${HOME}/openssl/install/lib LD_LIBRARY_PATH=${HOME}/openssl/install/lib make
+ARG OPENSSL_INSTALL_DIR=/opt/openssl
+ENV CPLUS_INCLUDE_PATH=${OPENSSL_INSTALL_DIR}/include
+ENV LIBRARY_PATH=${OPENSSL_INSTALL_DIR}/lib
+ENV LD_LIBRARY_PATH=${OPENSSL_INSTALL_DIR}/lib
+
+RUN cd ${HOME} \
+    && curl -LO https://github.com/openssl/openssl/archive/OpenSSL_1_1_1a.tar.gz \
+    && tar zxvf OpenSSL_1_1_1a.tar.gz && cd openssl-OpenSSL_1_1_1a \
+    && ./config --prefix=${OPENSSL_INSTALL_DIR} --openssldir=${OPENSSL_INSTALL_DIR} \
+    && make -j$(nproc) && make install && cd ${HOME} \
+    && rm -rf OpenSSL_1_1_1a.tar.gz openssl-OpenSSL_1_1_1a
+
+RUN cd /scilla && make opamdep \
+    && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
+    && eval `opam config env` && \
+    make
