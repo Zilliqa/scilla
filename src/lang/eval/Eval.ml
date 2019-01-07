@@ -85,7 +85,7 @@ let sanitize_literal l =
    type as described in [Specialising the Return Type of Closures].
  *)
 
-let rec exp_eval erep env =
+let rec exp_eval erep env  =
   let (e, _) = erep in
   match e with
   | Literal l ->
@@ -206,7 +206,7 @@ and exp_eval_wrapper expr env =
   let%bind cost = fromR @@ EvalGas.expr_static_cost expr in
   let emsg = sprintf "Ran out of gas.\n" in
   (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
-  checkwrap_op thunk cost (mk_error1 emsg eloc)
+  checkwrap_op thunk (Uint64.of_int cost) (mk_error1 emsg eloc)
 
 (* [Initial Gas-Passing Continuation]
 
@@ -444,7 +444,7 @@ let literal_list_gas llit =
   mapM ~f:(fun (name, lit) ->
       let%bind c = fromR @@ EvalGas.literal_cost lit in
       let dummy () = pure () in (* the literal is already created. *)
-      checkwrap_op dummy c (mk_error0("Ran out of gas initializing " ^ name))
+      checkwrap_op dummy (Uint64.of_int c) (mk_error0("Ran out of gas initializing " ^ name))
     ) llit
 
 (* Initialize a module with given arguments and initial balance *)

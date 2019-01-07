@@ -45,14 +45,14 @@ let builtin_executor i arg_tps arg_lits =
     fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op i arg_tps in
   let%bind cost = fromR @@ EvalGas.builtin_cost i arg_lits in
   let res () = op arg_lits ret_typ in
-  checkwrap_opR res cost
+  checkwrap_opR res (Uint64.of_int cost)
 
 (* Add a check that the just evaluated statement was in our gas limit. *)
 let stmt_gas_wrap scon sloc =
   let%bind cost = fromR @@ EvalGas.stmt_cost scon in
   let err = (mk_error1 "Ran out of gas evaluating statement" sloc) in 
   let dummy () = pure () in (* the operation is already executed unfortunately *)
-    checkwrap_op dummy cost err
+    checkwrap_op dummy (Uint64.of_int cost) err
 
 (*****************************************************)
 (* Update-only execution environment for expressions *)
