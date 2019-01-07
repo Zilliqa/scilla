@@ -74,7 +74,7 @@ let check_after_step name res gas_limit  =
       plog (sprintf "Success! Here's what we got:\n" ^
             (* sprintf "%s" (ContractState.pp cstate) ^ *)
             sprintf "Emitted messages:\n%s\n\n" (pp_literal_list outs) ^
-            sprintf"Gas remaining:%s\n" (Int.to_string remaining_gas) ^
+            sprintf"Gas remaining:%s\n" (Uint64.to_string remaining_gas) ^
             sprintf "Emitted events:\n%s\n\n" (pp_literal_list events));
        (cstate, outs, events, accepted_b), remaining_gas
 
@@ -135,23 +135,22 @@ let () =
     let open Unix in
     (* Subtract gas based on (contract+init) size / message size. *)
     if is_deployment then
-      let cost = Int64.add (stat cli.input).st_size (stat cli.input_init).st_size in
-      let rem = Int64.sub (Int64.of_int cli.gas_limit) cost in
-      if Int64.compare rem Int64.zero < 0 then
-        (perr @@ scilla_error_gas_jstring 0 @@ 
+      let cost' = Int64.add (stat cli.input).st_size (stat cli.input_init).st_size in
+      let cost = Uint64.of_int64 cost' in
+      if (Uint64.compare cli.gas_limit cost) < 0 then
+        (perr @@ scilla_error_gas_jstring Uint64.zero @@ 
               mk_error0 (sprintf "Ran out of gas when parsing contract/init files.\n");
         exit 1)
       else
-        Int64.to_int rem
+        Uint64.sub cli.gas_limit cost
     else
-      let cost = (stat cli.input_message).st_size in
-      let rem = Int64.sub (Int64.of_int cli.gas_limit) cost in
-      if Int64.compare rem Int64.zero < 0 then
-        (perr @@ scilla_error_gas_jstring 0 @@ 
+      let cost = Uint64.of_int64 (stat cli.input_message).st_size in
+      if (Uint64.compare cli.gas_limit cost) < 0 then
+        (perr @@ scilla_error_gas_jstring Uint64.zero @@ 
               mk_error0 (sprintf "Ran out of gas when parsing message.\n");
         exit 1)
       else
-        Int64.to_int rem
+        Uint64.sub cli.gas_limit cost
   in
   let parse_module =
     FrontEndParser.parse_file ScillaParser.cmodule cli.input in
@@ -186,7 +185,7 @@ let () =
 
       (* Check for version mismatch. Subtract penalty for mist-match. *)
       let emsg = scilla_error_gas_string
-        (gas_remaining - Gas.version_mismatch_penalty)
+        (Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty))
         (mk_error0 ("Scilla version mismatch\n"))
       in
       let init_json_scilla_version = List.fold_left initargs ~init:None ~f:(fun found (name, lit) ->
@@ -271,7 +270,7 @@ let () =
       in
       let output_json = `Assoc [
         ("scilla_major_version", `String (Int.to_string cmod.smver));
-        "gas_remaining", `String (Int.to_string gas);
+        "gas_remaining", `String (Uint64.to_string gas);
         ContractUtil.accepted_label, `String (Bool.to_string accepted_b);
         ("message", output_msg_json); 
         ("states", output_state_json);

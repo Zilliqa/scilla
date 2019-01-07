@@ -36,7 +36,7 @@ module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
 
 
-let gas_limit = 2000
+let gas_limit = Stdint.Uint64.of_int 2000
 
 let () =
   let cli = parse_cli() in
