@@ -21,6 +21,7 @@ RUN apt-get update \
     libgmp-dev \
     libffi-dev \
     libssl-dev \
+    git \
     libsecp256k1-dev \
     libboost-system-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -30,4 +31,5 @@ RUN ./scripts/build_openssl.sh && \
     ". ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true " >> ~/.bashrc && \
     eval `opam config env` && \
     # build_openssl.sh builds and install OpenSSL 1.1.1 in ${HOME}/openssl/install
+    echo 'export LD_LIBRARY_PATH=${HOME}/openssl/install/lib:${LD_LIBRARY_PATH}' >> ~/.bashrc
     CPLUS_INCLUDE_PATH=${HOME}/openssl/install/include LIBRARY_PATH=${HOME}/openssl/install/lib LD_LIBRARY_PATH=${HOME}/openssl/install/lib make
