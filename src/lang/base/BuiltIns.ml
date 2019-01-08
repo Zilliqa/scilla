@@ -53,10 +53,15 @@ module ScillaBuiltIns
 
     let none_lit t = ADTValue ("None", [t], [])
 
-    let pair_lit l1 l2 =
+(* This is only used in the disabled signature builtins.
+ * Commenting this out to prevent "unused function" warning.
+ *)
+(*
+      let pair_lit l1 l2 =
       let%bind t1 = literal_type l1 in
       let%bind t2 = literal_type l2 in
       pure @@ ADTValue ("Pair", [t1;t2], [l1;l2])
+*)
 
     let to_Bool b = if b then true_lit else false_lit
   end
@@ -867,6 +872,8 @@ module ScillaBuiltIns
       | _ -> builtin_fail "Crypto.bystr" ls
 
 
+(* Disabling signature builtins that involve private key - unsafe. *)
+(*
     let ec_gen_key_pair_type = fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
     let ec_gen_key_pair_arity = 0  
     let ec_gen_key_pair ls _ =
@@ -895,7 +902,7 @@ module ScillaBuiltIns
         | Some s'' -> pure s''
         | None -> builtin_fail "schnorr_sign: internal error, invalid signature." ls)
       | _ -> builtin_fail "schnorr_sign" ls
-
+ *)
     let schnorr_verify_type = fun_typ (bystrx_typ pubkey_len) @@ (* public key *)
                               fun_typ (bystr_typ) @@ (* signed message *)
                               fun_typ (bystrx_typ signature_len) @@ (* signature *)
@@ -909,7 +916,9 @@ module ScillaBuiltIns
         pure @@ to_Bool v
       | _ -> builtin_fail "schnorr_verify" ls
 
-    let ecdsa_sign_type = fun_typ (bystrx_typ Secp256k1Wrapper.privkey_len) @@ (* private key *)
+(* Disabling signature builtins that involve private key - unsafe. *)
+(*
+   let ecdsa_sign_type = fun_typ (bystrx_typ Secp256k1Wrapper.privkey_len) @@ (* private key *)
                             fun_typ (bystr_typ) @@ (* message to be signed *)
                             (bystrx_typ Secp256k1Wrapper.signature_len) (* signature *)
     let ecdsa_sign_arity = 2
@@ -924,6 +933,7 @@ module ScillaBuiltIns
         | Some s'' -> pure s''
         | None -> builtin_fail "ecdsa_sign: internal error, invalid signature." ls)
       | _ -> builtin_fail "ecdsa_sign" ls
+*)
 
     let ecdsa_verify_type = fun_typ (bystrx_typ Secp256k1Wrapper.pubkey_len) @@ (* public key *)
                               fun_typ (bystr_typ) @@ (* signed message *)
@@ -1104,10 +1114,10 @@ module ScillaBuiltIns
       ("keccak256hash", Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash);
       ("ripemd160hash", Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash);
       ("to_bystr", Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr);
-      ("ec_gen_key_pair", Crypto.ec_gen_key_pair_arity, Crypto.ec_gen_key_pair_type, elab_id, Crypto.ec_gen_key_pair);
-      ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign);
+      (* ("ec_gen_key_pair", Crypto.ec_gen_key_pair_arity, Crypto.ec_gen_key_pair_type, elab_id, Crypto.ec_gen_key_pair); *)
+      (* ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign); *)
       ("schnorr_verify", Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify);
-      ("ecdsa_sign", Crypto.ecdsa_sign_arity, Crypto.ecdsa_sign_type, elab_id, Crypto.ecdsa_sign);
+      (* ("ecdsa_sign", Crypto.ecdsa_sign_arity, Crypto.ecdsa_sign_type, elab_id, Crypto.ecdsa_sign); *)
       ("ecdsa_verify", Crypto.ecdsa_verify_arity, Crypto.ecdsa_verify_type, elab_id, Crypto.ecdsa_verify);
       ("concat", Crypto.concat_arity, Crypto.concat_type, Crypto.concat_elab, Crypto.concat);
 

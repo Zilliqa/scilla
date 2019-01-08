@@ -6,7 +6,7 @@
         {
             "vname" : "msg",
             "type" : "ByStr",
-            "value" : "0x0ffe45aa23"
+            "value" : "0xff0ffe45aa23"
         },
         {
             "vname" : "sig",
