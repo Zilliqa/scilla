@@ -1,17 +1,13 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "6887",
+  "gas_remaining": "6890",
   "_accepted": "false",
   "message": {
     "_tag": "Main",
     "_amount": "0",
     "_recipient": "0x12345678901234567890123456789012345678ab",
     "params": [
-      {
-        "vname": "status",
-        "type": "String",
-        "value": "verification successful"
-      }
+      { "vname": "status", "type": "String", "value": "verification failed" }
     ]
   },
   "states": [
