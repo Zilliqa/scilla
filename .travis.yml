@@ -15,6 +15,7 @@ addons:
 cache:
   directories:
   - $HOME/.opam
+  - $HOME/openssl
 sudo: required
 branches:
   only: 
