@@ -25,10 +25,11 @@ let f_input = ref ""
 let f_trace_file = ref ""
 let f_trace_level = ref ""
 let d_libs = ref []
-let v_gas_limit = ref 0
+let v_gas_limit = ref (Stdint.Uint64.zero)
 let b_pp_lit = ref true
 let b_json_errors = ref false
 let b_pp_json = ref true
+let b_validate_json = ref true
 
 let usage = "-init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
@@ -51,6 +52,9 @@ let process_pplit () =
 
 let process_json_errors () =
   GlobalConfig.set_use_json_errors !b_json_errors
+
+let process_json_validation () =
+  GlobalConfig.set_validate_json !b_validate_json
 
 let validate_main () =
   let msg = 
@@ -81,13 +85,10 @@ let validate_main () =
     if (!f_input_message = "") <> (!f_input_state = "") 
       then msg5 ^ "Input message and input state can both be present or both absent\n"
       else msg5 in
-  let msg7 = 
-    (* gas limit is mandatory *)
-    if !v_gas_limit <= 0 then msg6 ^ "Invalid gas limit specified" else msg6 in
-  if msg7 <> ""
+  if msg6 <> ""
   then
     (print_usage ();
-     Printf.fprintf stderr "%s\n" msg7;
+     Printf.fprintf stderr "%s\n" msg6;
      exit 1)
   else 
     ()
@@ -100,7 +101,7 @@ type ioFiles = {
     output : string;
     input : string;
     libdirs : string list;
-    gas_limit : int;
+    gas_limit : Stdint.uint64;
     pp_json : bool;
 }
 
@@ -121,16 +122,27 @@ let parse () =
     ("-tracefile", Arg.String (fun x -> f_trace_file := x), "Path to trace file. (prints to stdout if no file specified)");
     ("-tracelevel", Arg.String (fun x -> f_trace_level := x), "Trace level: none|stmt|exp. (default none)");
     ("-libdir", Arg.String (fun x -> d_libs := x::!d_libs), "Path to directory containing libraries");
-    ("-gaslimit", Arg.Int (fun i -> v_gas_limit := i), "Gas limit");
+    ("-gaslimit", Arg.String
+      (fun i ->
+        let g = 
+          try
+            Stdint.Uint64.of_string i
+          with
+          | _ -> DebugMessage.perr @@ (Printf.sprintf "Invalid gaslimit %s\n" i); exit 1;
+        in
+        v_gas_limit := g)
+      , "Gas limit");
     ("-pplit", Arg.Bool (fun b -> b_pp_lit := b), "Pretty print literals");
     ("-jsonerrors", Arg.Unit (fun () -> b_json_errors := true), "Print errors in JSON format");
     ("-disable-pp-json", Arg.Unit (fun () -> b_pp_json := false), "Disable pretty printing of JSONs");
+    ("-disable-validate-json", Arg.Unit (fun () -> b_validate_json := false), "Disable validation of input JSONs");
   ] in 
   let ignore_anon _ = () in
   let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
   let () = process_trace() in
   let () = process_pplit() in
   let () = process_json_errors() in
+  let () = process_json_validation() in
   let () = validate_main () in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input;
