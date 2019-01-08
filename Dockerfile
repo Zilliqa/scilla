@@ -25,6 +25,19 @@ RUN apt-get update \
     libboost-system-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN make opamdep && echo \
-    ". ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true " >> ~/.bashrc && \
-    eval `opam config env` && make
+ARG OPENSSL_INSTALL_DIR=/opt/openssl
+ENV CPLUS_INCLUDE_PATH=${OPENSSL_INSTALL_DIR}/include
+ENV LIBRARY_PATH=${OPENSSL_INSTALL_DIR}/lib
+ENV LD_LIBRARY_PATH=${OPENSSL_INSTALL_DIR}/lib
+
+RUN cd ${HOME} \
+    && curl -LO https://github.com/openssl/openssl/archive/OpenSSL_1_1_1a.tar.gz \
+    && tar zxvf OpenSSL_1_1_1a.tar.gz && cd openssl-OpenSSL_1_1_1a \
+    && ./config --prefix=${OPENSSL_INSTALL_DIR} --openssldir=${OPENSSL_INSTALL_DIR} \
+    && make -j$(nproc) && make install && cd ${HOME} \
+    && rm -rf OpenSSL_1_1_1a.tar.gz openssl-OpenSSL_1_1_1a
+
+RUN cd /scilla && make opamdep \
+    && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
+    && eval `opam config env` && \
+    make
