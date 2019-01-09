@@ -81,4 +81,4 @@ let t2' = test_case (fun _ ->
 
 let ecdsa_tests = "ecda_tests" >::: [t1';t2']
 
-let signature_tests _ = "signature_tess" >::: [schnorr_tests; ecdsa_tests]
+let signature_tests _ = "signature_tests" >::: [schnorr_tests; ecdsa_tests]
