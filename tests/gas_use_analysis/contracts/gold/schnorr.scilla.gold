@@ -1,21 +1,9 @@
-Gas use polynomial for transition sign_and_verify:
-1(a) + 1(b) + 1222 + 45(c) + 4(d) + 1(e) + 2(f) + 1(g)
-Legend:
-
-f: SApp ec_gen_key_pair( )
-a: pub_key
-b: priv_key
-d: _sender
-c: msg
-g: Result of builtin schnorr_sign(SApp ec_gen_key_pair( ),SApp ec_gen_key_pair( ),msg)
-e: Cost of calling ec_gen_key_pair()
-
 Gas use polynomial for transition verify:
 1(a) + 453 + 15(b) + 3(c)
 Legend:
 
-a: pub_key
 c: _sender
+a: pub_key
 b: msg
 
 {
@@ -23,15 +11,8 @@ b: msg
     "scilla_major_version": "0",
     "vname": "Schnorr",
     "params": [],
-    "fields": [
-      { "vname": "priv_key", "type": "Option (ByStr32)" },
-      { "vname": "pub_key", "type": "Option (ByStr33)" }
-    ],
+    "fields": [ { "vname": "pub_key", "type": "Option (ByStr33)" } ],
     "transitions": [
-      {
-        "vname": "sign_and_verify",
-        "params": [ { "vname": "msg", "type": "ByStr" } ]
-      },
       {
         "vname": "verify",
         "params": [
