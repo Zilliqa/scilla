@@ -380,7 +380,7 @@ let init_libraries clibs elibs =
                         Datatypes.tparams = [] ;
                         Datatypes.tconstr = ctrs ;
                         Datatypes.tmap = tmaps } in
-            let _ = add_adt adt in
+            let _ = add_adt adt (get_rep tname) in
             eres
         | LibVar (lname, lexp) ->
             let%bind env = eres in
