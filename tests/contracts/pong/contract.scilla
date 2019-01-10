@@ -33,7 +33,7 @@ transition Pong ()
     | False =>
       deccount = builtin sub cnt one;
       count := deccount;
-      msg = {_tag : Ping; _recipient : pingAddr; _amount : Uint128 0};
+      msg = {_tag : "Ping"; _recipient : pingAddr; _amount : Uint128 0};
       msgs = one_msg msg;
       send msgs;
       e = {_eventname : "CallingPing"};
@@ -42,7 +42,7 @@ transition Pong ()
   | None =>
     msg = {_eventname : "AddressNotSet"};
     event msg
-  end
+  end 
 end
 
 transition SetPingAddr (pingAddr : ByStr20)
