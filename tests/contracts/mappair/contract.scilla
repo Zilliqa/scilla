@@ -12,7 +12,7 @@ let one_msg =
     Cons {Message} msg nil_msg
 
 let flip_obool =
-  fun (ob : Option (Bool)) =>
+  fun (ob : Option (Bool)) => 
     let t = True in
     let f = False in
     match ob with
@@ -118,9 +118,9 @@ end
 (* This transition sends out a malformed message. Will flag error. *)
 transition malMessage2()
   (* duplicate field *)
-  msg = { _tag: "Main"; _recipient : _sender; _amount : Uint128 0; status : "foo"; status : "bar" };
+  msg = { _tag: "Main"; _recipient : _sender; _amount : Uint128 0; status : "foo"};
   msgs = one_msg msg;
-  send msgs
+  send msgs 
 end
 
 (* This transition disallowed arguments. Will flag error. *)
