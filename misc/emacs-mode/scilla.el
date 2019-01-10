@@ -20,7 +20,7 @@
 ;; We can't define a simple list of scilla-types as we want
 ;; a regexp for ByStr[0-9]*, and that won't work with regexp-opt later.
 (defvar scilla-types
-  "\\b\\(String\\|Int32\\|Int64\\|Int128\\|Uint32\\|Uint64\\|Uint128\\|Int256\\|Uint256\\|BNum\\|ByStr[0-9]*\\|Message\\|Map\\|ADT\\)\\b")
+  "\\b\\(String\\|Int32\\|Int64\\|Int128\\|Uint32\\|Uint64\\|Uint128\\|Int256\\|Uint256\\|BNum\\|ByStr[0-9]*\\|Message\\|Event\\|Map\\|ADT\\)\\b")
 
 (defvar scilla-keywords
   '("builtin" "block" "library" "let" "in" "match" "with" "end"
