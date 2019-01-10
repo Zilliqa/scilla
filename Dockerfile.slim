@@ -25,10 +25,10 @@ RUN apt-get update \
     libboost-system-dev \
     && rm -rf /var/lib/apt/lists/*
 
-ARG OPENSSL_INSTALL_DIR=/opt/openssl
-ENV CPLUS_INCLUDE_PATH=${OPENSSL_INSTALL_DIR}/include
-ENV LIBRARY_PATH=${OPENSSL_INSTALL_DIR}/lib
-ENV LD_LIBRARY_PATH=${OPENSSL_INSTALL_DIR}/lib
+# ARG OPENSSL_INSTALL_DIR=/opt/openssl
+# ENV CPLUS_INCLUDE_PATH=${OPENSSL_INSTALL_DIR}/include
+# ENV LIBRARY_PATH=${OPENSSL_INSTALL_DIR}/lib
+# ENV LD_LIBRARY_PATH=${OPENSSL_INSTALL_DIR}/lib
 
 # RUN cd ${HOME} \
 #     && curl -LO https://github.com/openssl/openssl/archive/OpenSSL_1_1_1a.tar.gz \
