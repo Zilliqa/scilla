@@ -5,7 +5,5 @@
   (libraries ctypes ctypes.foreign cryptokit)
   (c_names generate_dsa_nonce)
   (cxx_names c_schnorr DataConversion Schnorr)
-  (cxx_flags -std=c++11)
-  ;; This is to link to OpenSSL on Mac.
-  (ocamlopt_flags (-ccopt -L/usr/local/opt/openssl/lib))
-)
+  (cxx_flags -std=c++11 -I/usr/local/opt/openssl/include)
+  )
