@@ -61,7 +61,7 @@ to setup the environment for your current shell.
 eval `opam config env`
 ```
 
-Scilla requires OpenSSL 1.1+ and if your platform does not have packages for this, you may need to build OpenSSL
+Scilla requires OpenSSL 1.0.2 and if your platform does not have packages for this, you may need to build OpenSSL
 yourself and set $CPLUS_INCLUDE_PATH, $LIBRARY_PATH and $LD_LIBRARY_PATH accordingly (if you install OpenSSL in
 a non-default path).
 
