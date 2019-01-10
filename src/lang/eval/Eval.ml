@@ -440,13 +440,6 @@ let create_cur_state_fields initcstate curcstate =
     (* Combine filtered list and curcstate *)
     pure (filtered_init @ curcstate)
 
-let literal_list_gas llit =
-  mapM ~f:(fun (name, lit) ->
-      let%bind c = fromR @@ EvalGas.literal_cost lit in
-      let dummy () = pure () in (* the literal is already created. *)
-      checkwrap_op dummy (Uint64.of_int c) (mk_error0("Ran out of gas initializing " ^ name))
-    ) llit
-
 (* Initialize a module with given arguments and initial balance *)
 let init_module md initargs curargs init_bal bstate elibs =
   let {libs; contr; _} = md in
@@ -454,9 +447,6 @@ let init_module md initargs curargs init_bal bstate elibs =
   let%bind initcstate =
     init_contract libs elibs cparams cfields initargs init_bal in
   let%bind curfields = create_cur_state_fields initcstate.fields curargs in
-  (* Gas accounting for params and state fields. *)
-  let%bind _ = literal_list_gas curfields in
-  let%bind _ = literal_list_gas initargs in
   (* blockchain input provided is only validated and not used here. *)
   let%bind _ = check_blockchain_entries bstate in
   let cstate = { initcstate with fields = curfields } in
