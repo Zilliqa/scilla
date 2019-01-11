@@ -31,7 +31,7 @@
       "value": []
     },
     { "vname": "transactions",
-      "type": "Map Uint32 (Pair ByStr20 Uint128)",
+      "type": "Map Uint32 Transaction",
       "value": []
     },
     { "vname": "owner_signatures",
