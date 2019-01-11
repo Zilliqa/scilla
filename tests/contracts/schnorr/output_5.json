@@ -1,0 +1,39 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "6770",
+  "_accepted": "false",
+  "message": {
+    "_tag": "Main",
+    "_amount": "0",
+    "_recipient": "0x12345678901234567890123456789012345678ab",
+    "params": [
+      {
+        "vname": "status",
+        "type": "String",
+        "value": "verification successful"
+      }
+    ]
+  },
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "priv_key",
+      "type": "Option (ByStr32)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "ByStr32" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "pub_key",
+      "type": "Option (ByStr33)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "ByStr33" ],
+        "arguments": []
+      }
+    }
+  ],
+  "events": []
+}

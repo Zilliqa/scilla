@@ -22,6 +22,7 @@ open Syntax
 open Yojson
 open PrimTypes
 open ErrorUtils
+open Stdint
 
 (****************************************************************)
 (*                    Exception wrappers                        *)
@@ -158,7 +159,7 @@ let scilla_error_gas_jstring ?(pp = true) gas_remaining elist =
   let j' = scilla_error_to_json elist in
   let k' = scilla_warning_to_json (get_warnings ()) in
   let j = `Assoc [
-    ("gas_remaining", `Int gas_remaining);
+    ("gas_remaining", `String (Uint64.to_string gas_remaining));
     ("errors", j');
     ("warnings", k');
   ] in
@@ -171,7 +172,7 @@ let scilla_error_gas_string gas_remaining elist  =
   else
   (scilla_error_to_sstring elist) ^
   (scilla_warning_to_sstring (get_warnings())) ^
-  (sprintf "Gas remaining: %d\n" gas_remaining)
+  (sprintf "Gas remaining: %s\n" (Uint64.to_string gas_remaining))
 
 (*****************************************************)
 (*                Pretty Printers                    *)

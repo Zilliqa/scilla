@@ -27,7 +27,7 @@ module Tests = TestUtil.DiffBasedTests(
     let custom_args = ["-cf"]
     let tests = [
       "crowdfunding.scilla"; "zil-game.scilla"; "fungible-token.scilla"; "auction.scilla";
-      "empty.scilla"; "schnorr.scilla"; "inplace-map.scilla"
+      "empty.scilla"; "schnorr.scilla"; "ecdsa.scilla"; "inplace-map.scilla"
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)

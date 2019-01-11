@@ -55,3 +55,8 @@ transition multipleMsgs()
   msgs2 = Cons {Message} msg2 msgs1;
   send msgs2
 end
+
+transition contrAddr()
+  msg1 = {_eventname : "ContractAddress"; addr : _this_address };
+  event msg1
+end

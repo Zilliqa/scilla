@@ -19,6 +19,7 @@
 open Core
 open Result.Let_syntax
 open ErrorUtils
+open Stdint
 
 (* [Evaluation in CPS]
 
@@ -149,17 +150,17 @@ module EvalMonad = struct
   *)
   let checkwrap_opR op_thunk cost =
     (fun k remaining_gas ->
-       if (remaining_gas >= cost)
+       if (Uint64.compare remaining_gas cost) >= 0
        then 
          let res = op_thunk () in
-         k res (remaining_gas - cost)
+         k res (Uint64.sub remaining_gas cost)
        else 
          k (Error (mk_error0 "Ran out of gas")) remaining_gas)
 
   let checkwrap_op op_thunk cost emsg =
     (fun k remaining_gas ->
-       if remaining_gas >= cost then
-          op_thunk () k (remaining_gas - cost)
+       if (Uint64.compare remaining_gas cost) >= 0 then
+          op_thunk () k (Uint64.sub remaining_gas cost)
        else
          k (Error emsg) remaining_gas)
 

@@ -1,0 +1,20 @@
+{
+  "cashflow_tags": [ { "field": "pub_key", "tag": "(Option Inconsistent)" } ],
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Ecdsa",
+    "params": [],
+    "fields": [ { "vname": "pub_key", "type": "Option (ByStr33)" } ],
+    "transitions": [
+      {
+        "vname": "verify",
+        "params": [
+          { "vname": "msg", "type": "ByStr" },
+          { "vname": "sig", "type": "ByStr64" }
+        ]
+      }
+    ],
+    "events": []
+  },
+  "warnings": []
+}
