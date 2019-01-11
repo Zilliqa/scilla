@@ -34,10 +34,6 @@ module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
 
 open JSONTypeUtilities
 
-exception Invalid_json of scilla_error list
-
-let mk_invalid_json msg = Invalid_json (mk_error0 msg)
-
 (****************************************************************)
 (*                    Exception wrappers                        *)
 (****************************************************************)
@@ -215,7 +211,11 @@ let jobj_to_statevar json =
   let tstring = member_exn "type" json |> to_string in
   let t = parse_typ_exn tstring in
   let v = member_exn "value" json in
+  if GlobalConfig.validate_json () (* TODO: Add command line flag. *)
+  then
     (n, json_to_lit t v)
+  else
+    (n, JSONParser.parse_json t v)
 
 
 (****************************************************************)

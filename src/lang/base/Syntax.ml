@@ -21,6 +21,7 @@ open Core
 open Sexplib.Std
 open MonadUtil
 open ErrorUtils
+open Stdint
 
 exception SyntaxError of string
 
@@ -84,25 +85,25 @@ let address_length = 20
 let hash_length = 32
 
 type int_lit =
-  | Int32L of int32 | Int64L of int64 | Int128L of Stdint.int128 | Int256L of Integer256.int256
+  | Int32L of int32 | Int64L of int64 | Int128L of int128 | Int256L of Integer256.int256
 
 let sexp_of_int_lit i = 
   match i with 
   | Int32L i' -> Sexp.Atom ("Int32 " ^ Int32.to_string i')
   | Int64L i' -> Sexp.Atom ("Int64 " ^ Int64.to_string i')
-  | Int128L i' -> Sexp.Atom ("Int128 " ^ Stdint.Int128.to_string i')
+  | Int128L i' -> Sexp.Atom ("Int128 " ^ Int128.to_string i')
   | Int256L i' -> Sexp.Atom ("Int256 " ^ Integer256.Int256.to_string i')
 
 let int_lit_of_sexp _ = raise (SyntaxError "int_lit_of_sexp not implemented")
 
 type uint_lit =
-  | Uint32L of Stdint.uint32 | Uint64L of Stdint.uint64 | Uint128L of Stdint.uint128 | Uint256L of Integer256.uint256
+  | Uint32L of uint32 | Uint64L of uint64 | Uint128L of uint128 | Uint256L of Integer256.uint256
 
 let sexp_of_uint_lit i = 
   match i with 
-  | Uint32L i' -> Sexp.Atom ("Uint32 " ^ Stdint.Uint32.to_string i')
-  | Uint64L i' -> Sexp.Atom ("Uint64 " ^ Stdint.Uint64.to_string i')
-  | Uint128L i' -> Sexp.Atom ("Uint128 " ^ Stdint.Uint128.to_string i')
+  | Uint32L i' -> Sexp.Atom ("Uint32 " ^ Uint32.to_string i')
+  | Uint64L i' -> Sexp.Atom ("Uint64 " ^ Uint64.to_string i')
+  | Uint128L i' -> Sexp.Atom ("Uint128 " ^ Uint128.to_string i')
   | Uint256L i' -> Sexp.Atom ("Uint256 " ^ Integer256.Uint256.to_string i')
 
 let uint_lit_of_sexp _ = raise (SyntaxError "uint_lit_of_sexp not implemented")
@@ -142,12 +143,12 @@ type literal =
   (* An embedded closure *)
   | Clo of (literal -> 
             (literal, scilla_error list, 
-             int -> ((literal * (string * literal) list) * int, scilla_error list * int) result) 
+             uint64 -> ((literal * (string * literal) list) * uint64, scilla_error list * uint64) result) 
               CPSMonad.t)
   (* A type abstraction *)
   | TAbs of (typ -> 
              (literal, scilla_error list, 
-              int -> ((literal * (string * literal) list) * int, scilla_error list * int) result) 
+              uint64 -> ((literal * (string * literal) list) * uint64, scilla_error list * uint64) result) 
                CPSMonad.t)
 [@@deriving sexp]
 
@@ -162,6 +163,7 @@ module type Rep = sig
 
   val mk_id_address : string -> rep ident
   val mk_id_uint128 : string -> rep ident
+  val mk_id_uint32  : string -> rep ident
   val mk_id_bnum    : string -> rep ident
   val mk_id_string  : string -> rep ident
 

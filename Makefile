@@ -8,13 +8,13 @@ default: all
 # multiple subcommands and uses the library.
 # The library can be loaded in utop for interactive testing.
 all:
-	CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:/usr/local/opt/openssl/include dune build @install
+	dune build @install
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Build only scilla-checker and scilla-runner
 slim:
-	CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:/usr/local/opt/openssl/include dune build src/runners/scilla_runner.exe
-	CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:/usr/local/opt/openssl/include dune build src/runners/scilla_checker.exe
+	dune build src/runners/scilla_runner.exe
+	dune build src/runners/scilla_checker.exe
 	@test -L bin || mkdir bin; ln -s _build/default/src/runners/*.exe bin/
 
 # Launch utop such that it finds the libraroes.

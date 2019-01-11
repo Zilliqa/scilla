@@ -105,6 +105,13 @@ let set_use_json_errors b =
 
 let use_json_errors () = !json_errors
 
+let validate_json_b = ref false
+
+let set_validate_json b =
+  validate_json_b := b
+
+let validate_json () = !validate_json_b
+
 module StdlibTracker = struct
 
 (* Environment variable: where to look for stdlib.
