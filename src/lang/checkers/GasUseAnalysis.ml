@@ -900,8 +900,11 @@ module ScillaGUA
   (* Bind lib entries to signatures. *)
   let gua_libentries genv (lel : lib_entry list) =
     foldM ~f:(fun genv le ->
-      let%bind esig = gua_expr genv le.lexp in
-      pure @@ GUAEnv.addS genv (get_id le.lname) esig
+      match le with
+      | LibVar (lname, lexp) ->
+        let%bind esig = gua_expr genv lexp in
+        pure @@ GUAEnv.addS genv (get_id lname) esig
+      | LibTyp _ -> pure genv
     ) ~init:(genv) lel
 
   let gua_module (cmod : cmodule) (elibs : library list) =

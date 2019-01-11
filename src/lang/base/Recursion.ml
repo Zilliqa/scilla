@@ -48,7 +48,7 @@ module NatRec = struct
       let id = mk_ident "nat_fold"
       let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
       let fold = (TFun(tvar, fold_fix), loc)
-      let entry = {lname = id; lexp = fold}
+      let entry = LibVar (id, fold)
     end
 
     module Foldr = struct
@@ -86,7 +86,7 @@ module NatRec = struct
       let id = mk_ident "list_foldl"      
       let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
       let fold = (TFun(avar, (TFun (bvar, fold_fix), loc)), loc)
-      let entry = {lname = id; lexp = fold}
+      let entry = LibVar (id, fold)
     end
 
     module Foldr = struct
@@ -103,7 +103,7 @@ module NatRec = struct
       let id = mk_ident "list_foldr"
       let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
       let fold = (TFun(avar, (TFun (bvar, fold_fix), loc)), loc)
-      let entry = {lname = id; lexp = fold}
+      let entry = LibVar (id, fold)
     end
 
   end

@@ -38,7 +38,11 @@ module CU = ScillaContractUtil (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 (***************************************************)    
 
 let reserved_names =
-  List.map ~f:(fun {lname = x; _} -> get_id x) Recursion.recursion_principles
+  List.map ~f:(fun entry ->
+      match entry with
+      | LibVar (lname, _) -> get_id lname
+      | LibTyp (tname, _) -> get_id tname)
+    Recursion.recursion_principles
 
 (* Printing result *)
 let pp_result r exclude_names = 
@@ -353,19 +357,34 @@ let combine_libs clibs elibs =
 
 (* Initializing libraries of a contract *)
 let init_libraries clibs elibs =
-  let init_lib_entry env {lname = id; lexp = e } = (
+  let init_lib_entry env id e = (
     let%bind (v, _) = exp_eval_wrapper_no_cps e env in
     let env' = Env.bind env (get_id id) v in
     pure env') in
 
   let libs = Recursion.recursion_principles @ (combine_libs clibs elibs) in
 
-  DebugMessage.plog ("Loading library functions.");
-  let lbs = List.fold_left libs ~init:(pure Env.empty)
+  DebugMessage.plog ("Loading library types and functions.");
+  List.fold_left libs ~init:(pure Env.empty)
     ~f:(fun eres lentry ->
-        let%bind env = eres in
-        init_lib_entry env lentry) in
-  lbs 
+        match lentry with
+        | LibTyp (tname, ctr_defs) ->
+            let open Datatypes.DataTypeDictionary in
+            let (ctrs, tmaps) = List.fold_right ctr_defs ~init:([], [])
+                ~f:(fun ctr_def (tmp_ctrs, tmp_tmaps) ->
+                    let { cname ; c_arg_types } = ctr_def in
+                    ( { Datatypes.cname = get_id cname ;
+                        Datatypes.arity = List.length c_arg_types } :: tmp_ctrs,
+                      ( get_id cname, c_arg_types ) :: tmp_tmaps )) in
+            let adt = { Datatypes.tname = get_id tname ;
+                        Datatypes.tparams = [] ;
+                        Datatypes.tconstr = ctrs ;
+                        Datatypes.tmap = tmaps } in
+            let _ = add_adt adt (get_rep tname) in
+            eres
+        | LibVar (lname, lexp) ->
+            let%bind env = eres in
+            init_lib_entry env lname lexp)
 
 (* Initialize fields in a constant environment *)
 let init_fields env fs =

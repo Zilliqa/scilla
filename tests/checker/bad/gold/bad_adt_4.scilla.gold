@@ -1,0 +1,37 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract BadLib:\n",
+      "start_location": {
+        "file": "checker/bad/bad_adt_4.scilla",
+        "line": 15,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in library WalletLib:\n",
+      "start_location": {
+        "file": "checker/bad/bad_adt_4.scilla",
+        "line": 6,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in library type TestType1:\n",
+      "start_location": {
+        "file": "checker/bad/bad_adt_4.scilla",
+        "line": 8,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "ADT TestType2 not found",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

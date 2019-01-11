@@ -41,6 +41,7 @@ module Tests = TestUtil.DiffBasedTests(
     let custom_args = ["-gua"]
     let tests = explist
     let exit_code : Unix.process_status = WEXITED 0
+    let lib_override = None
 
   end)
 
