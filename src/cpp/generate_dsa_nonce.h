@@ -26,13 +26,21 @@
 #ifndef _GENERATE_DSA_NONCE_H_
 #define _GENERATE_DSA_NONCE_H_
 
+#include <openssl/opensslv.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* Only needed for OpenSSL before 1.1.0g */
+#if OPENSSL_VERSION_NUMBER < 0x1010007fL
+
 int BN_generate_dsa_nonce(BIGNUM *out, const BIGNUM *range, const BIGNUM *priv,
                           const unsigned char *message, size_t message_len,
                           BN_CTX *ctx);
+
+#endif  /* OPENSSL_VERSION_NUMBER */
+
 #ifdef __cplusplus
 }
 #endif
