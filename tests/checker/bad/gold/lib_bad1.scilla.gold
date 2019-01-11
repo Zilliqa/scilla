@@ -10,11 +10,20 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type error in library one_msg:\n\n",
+      "error_message": "Type error in library BadLib1:\n\n",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
-        "line": 9,
-        "column": 5
+        "line": 7,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in library variable one_msg:\n\n",
+      "start_location": {
+        "file": "checker/bad/lib_bad1.scilla",
+        "line": 7,
+        "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
@@ -25,11 +34,11 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type error in library two_msg:\n\n",
+      "error_message": "Type error in library variable two_msg:\n\n",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
-        "line": 18,
-        "column": 5
+        "line": 7,
+        "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
@@ -40,11 +49,11 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type error in library andb:\n\n",
+      "error_message": "Type error in library variable andb:\n\n",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
-        "line": 31,
-        "column": 5
+        "line": 7,
+        "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },

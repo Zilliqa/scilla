@@ -1,0 +1,14 @@
+scilla_version 0
+
+import BadADTLib3a
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+library BadLib
+
+type MyTestType1 =
+| Item3
+
+
+contract BadLib ()

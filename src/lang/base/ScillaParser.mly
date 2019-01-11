@@ -92,6 +92,8 @@
 %token DELETE
 %token EXISTS
 %token SCILLA_VERSION
+%token TYPE
+%token OF
        
 (*  Other tokens *)
 %token EOF
@@ -315,8 +317,16 @@ contract:
       cfields = fs;
       ctrans  = ts } }
 
+tconstr :
+| BAR; tn = CID;
+  { { cname = asIdL tn (toLoc $startpos); c_arg_types = [] } }
+| BAR; tn = CID; OF; t = nonempty_list(targ);
+  { { cname = asIdL tn (toLoc $startpos); c_arg_types = t }}
+
 libentry :
-| LET; ns = ID; EQ; e= exp { { lname = asIdL ns (toLoc $startpos(ns)) ; lexp = e } }
+| LET; ns = ID; EQ; e= exp { LibVar (asIdL ns (toLoc $startpos(ns)), e) }
+| TYPE; tname = CID; EQ; constrs = list(tconstr)
+  { LibTyp (asIdL tname (toLoc $startpos), constrs) }
 
 library :
 | LIBRARY; n = CID; ls = list(libentry);

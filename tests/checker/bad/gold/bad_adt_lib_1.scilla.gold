@@ -1,0 +1,23 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract BadLib:\n",
+      "start_location": {
+        "file": "checker/bad/bad_adt_lib_1.scilla",
+        "line": 9,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Multiple declarations of type BadType",
+      "start_location": {
+        "file": "checker/bad/lib/BadADTLib1.scilla",
+        "line": 7,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
