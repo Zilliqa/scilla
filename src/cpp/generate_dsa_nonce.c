@@ -32,6 +32,7 @@
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 #include <openssl/ossl_typ.h>
+#include <openssl/opensslv.h>
 #include "generate_dsa_nonce.h"
 
 /*
@@ -51,6 +52,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Only needed for OpenSSL before 1.1.0g */
+#if OPENSSL_VERSION_NUMBER < 0x1010007fL
 
 int BN_generate_dsa_nonce(BIGNUM *out, const BIGNUM *range,
                           const BIGNUM *priv, const unsigned char *message,
@@ -119,6 +123,9 @@ int BN_generate_dsa_nonce(BIGNUM *out, const BIGNUM *range,
     OPENSSL_cleanse(private_bytes, sizeof(private_bytes));
     return ret;
 }
+
+#endif /* OPENSSL_VERSION_NUMBER */
+
 #ifdef __cplusplus
 }
 #endif
