@@ -81,6 +81,8 @@ rule read =
   | "Emp"         { EMP }
   | "Map"         { MAP }
   | "scilla_version" { SCILLA_VERSION }
+  | "type"        { TYPE }
+  | "of"          { OF }
 
 
   (* Separators *)    

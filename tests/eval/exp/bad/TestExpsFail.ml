@@ -55,6 +55,7 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["eval"; "exp"; "bad"; f]
     let runner = "eval-runner"
     let custom_args = []
+    let lib_override = None
     let tests = explist
     let exit_code : Unix.process_status = WEXITED 1
 

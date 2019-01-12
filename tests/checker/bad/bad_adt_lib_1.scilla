@@ -1,0 +1,9 @@
+scilla_version 0
+
+import BadADTLib1
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+
+contract BadLib ()

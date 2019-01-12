@@ -214,14 +214,22 @@ module ScillaCashflowChecker
              cf_init_tag_expr e)) cfields;
       CFSyntax.ctrans =
         List.map cf_init_tag_transition ctrans }
+    
+  let cf_init_tag_type_def tdef =
+    let { cname ; c_arg_types } = tdef in
+    { CFSyntax.cname = add_noinfo_to_ident cname ; CFSyntax.c_arg_types = c_arg_types }
   
   let cf_init_tag_library lib =
     let { lname ; lentries } = lib in
+    let init_tag_entry entry =
+      match entry with
+      | LibVar (lname, lexp) ->
+          CFSyntax.LibVar (add_noinfo_to_ident lname, cf_init_tag_expr lexp)
+      | LibTyp (lname, type_defs) ->
+          CFSyntax.LibTyp (add_noinfo_to_ident lname,
+                           List.map cf_init_tag_type_def type_defs) in
     { CFSyntax.lname = lname;
-      CFSyntax.lentries = List.map
-          (fun { lname ; lexp } ->
-             { CFSyntax.lname = add_noinfo_to_ident lname ;
-               CFSyntax.lexp = cf_init_tag_expr lexp }) lentries }
+      CFSyntax.lentries = List.map init_tag_entry lentries }
   
   let cf_init_tag_module cmod =
     let { smver; cname; libs; elibs; contr } = cmod in

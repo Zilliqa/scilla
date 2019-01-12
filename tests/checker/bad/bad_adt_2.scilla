@@ -1,0 +1,16 @@
+scilla_version 0
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+library WalletLib
+
+type TestType1 =
+| Item1 of Int32
+| Item2
+
+type TestType2 =
+| Item3 of Int32
+| Item3
+
+contract BadLib ()
