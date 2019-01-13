@@ -1061,6 +1061,13 @@ module ScillaBuiltIns
   (* Identity elaborator *)
   let elab_id = fun t _ -> pure t
 
+  (* Create dummy uses for these so that their functions don't create a warning. *)
+  let _ = 
+    [("ec_gen_key_pair", Crypto.ec_gen_key_pair_arity, Crypto.ec_gen_key_pair_type, elab_id, Crypto.ec_gen_key_pair);
+    ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign);
+    ("ecdsa_sign", Crypto.ecdsa_sign_arity, Crypto.ecdsa_sign_type, elab_id, Crypto.ecdsa_sign);]
+
+
   (**********************************************************)
   (*                   Built-in  Dictionary                *)
   (**********************************************************)
@@ -1104,10 +1111,10 @@ module ScillaBuiltIns
       ("keccak256hash", Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash);
       ("ripemd160hash", Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash);
       ("to_bystr", Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr);
-      ("ec_gen_key_pair", Crypto.ec_gen_key_pair_arity, Crypto.ec_gen_key_pair_type, elab_id, Crypto.ec_gen_key_pair);
-      ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign);
+      (* ("ec_gen_key_pair", Crypto.ec_gen_key_pair_arity, Crypto.ec_gen_key_pair_type, elab_id, Crypto.ec_gen_key_pair); *)
+      (* ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign); *)
       ("schnorr_verify", Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify);
-      ("ecdsa_sign", Crypto.ecdsa_sign_arity, Crypto.ecdsa_sign_type, elab_id, Crypto.ecdsa_sign);
+      (* ("ecdsa_sign", Crypto.ecdsa_sign_arity, Crypto.ecdsa_sign_type, elab_id, Crypto.ecdsa_sign); *)
       ("ecdsa_verify", Crypto.ecdsa_verify_arity, Crypto.ecdsa_verify_type, elab_id, Crypto.ecdsa_verify);
       ("concat", Crypto.concat_arity, Crypto.concat_type, Crypto.concat_elab, Crypto.concat);
 

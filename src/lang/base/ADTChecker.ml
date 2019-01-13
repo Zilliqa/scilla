@@ -237,11 +237,11 @@ module ScillaRecursion
         (* Add type to ADTs in scope once checked. Adding the type after checking prevents inductive definitions. *)
         pure @@
         ( RecursionSyntax.LibTyp (tname, checked_ctr_defs),
-          Some { Datatypes.tname = get_id tname ;
-                 (* Polymorphic definitions disallowed for the time being *)
-                 Datatypes.tparams = [] ;
-                 Datatypes.tconstr = datatype_ctrs ;
-                 Datatypes.tmap = datatype_tmap } )
+          Some ({ Datatypes.tname = get_id tname ;
+                  (* Polymorphic definitions disallowed for the time being *)
+                  Datatypes.tparams = [] ;
+                  Datatypes.tconstr = datatype_ctrs ;
+                  Datatypes.tmap = datatype_tmap }, ER.get_loc (get_rep tname)))
             
   let recursion_library lib =
     let { lname ; lentries } = lib in
@@ -271,9 +271,9 @@ module ScillaRecursion
             (* LibVar *)
             | None -> pure @@ (new_entry :: rec_entries, datatypes, adts_in_scope, adt_ctrs_in_scope)
             (* LibTyp *)
-            | Some adt ->
+            | Some (adt, loc) ->
                 pure @@ (new_entry :: rec_entries,
-                         adt :: datatypes,
+                         (adt, loc) :: datatypes,
                          adt.tname :: adts_in_scope,
                          (List.map adt.tconstr ~f:(fun ctr -> ctr.cname)) @ adt_ctrs_in_scope ))
         ~init:([], [], [], [])
@@ -304,8 +304,8 @@ module ScillaRecursion
     let elibs_adts = List.concat (List.rev adts) in
     let emsgs =
       List.fold_left elibs_adts ~init:emsgs
-        ~f:(fun emsgs_acc adt ->
-            match DataTypeDictionary.add_adt adt with
+        ~f:(fun emsgs_acc (adt, loc) ->
+            match DataTypeDictionary.add_adt adt loc with
             | Ok _ -> emsgs_acc
             | Error e -> emsgs_acc @ e) in
     
@@ -317,8 +317,8 @@ module ScillaRecursion
           match recursion_library l with
           | Ok (recursion_l, recursion_adts) ->
               let new_emsgs = List.fold_left recursion_adts ~init:emsgs
-                  ~f:(fun emsgs_acc adt ->
-                      match DataTypeDictionary.add_adt adt with
+                  ~f:(fun emsgs_acc (adt, loc) ->
+                      match DataTypeDictionary.add_adt adt loc with
                       | Ok _ -> emsgs
                       | Error e -> emsgs_acc @ e) in
               Ok (Some recursion_l, new_emsgs)

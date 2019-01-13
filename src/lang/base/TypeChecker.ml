@@ -44,6 +44,7 @@ module TypecheckerERep (R : Rep) = struct
 
   let mk_id_address s = mk_id (R.mk_id_address s) (bystrx_typ address_length)
   let mk_id_uint128 s = mk_id (R.mk_id_uint128 s) uint128_typ
+  let mk_id_uint32 s = mk_id (R.mk_id_uint128 s) uint32_typ
   let mk_id_bnum    s = mk_id (R.mk_id_bnum s) bnum_typ
   let mk_id_string  s = mk_id (R.mk_id_string s) string_typ
   

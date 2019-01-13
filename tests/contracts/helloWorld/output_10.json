@@ -1,0 +1,22 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7609",
+  "_accepted": "false",
+  "message": null,
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    { "vname": "welcome_msg", "type": "String", "value": "Hello World" }
+  ],
+  "events": [
+    {
+      "_eventname": "ContractAddress",
+      "params": [
+        {
+          "vname": "addr",
+          "type": "ByStr20",
+          "value": "0xabfeccdc9012345678901234567890f777567890"
+        }
+      ]
+    }
+  ]
+}
