@@ -60,7 +60,6 @@ rule read =
   (* Keywords *)          
   | "forall"      { FORALL }      
   | "builtin"     { BUILTIN }      
-  | "block"       { BLOCK }      
   | "library"     { LIBRARY }
   | "import"      { IMPORT }
   | "let"         { LET }
