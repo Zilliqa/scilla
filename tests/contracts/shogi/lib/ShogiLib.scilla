@@ -1,0 +1,301 @@
+library ShogiLib
+
+(* Pieces in the game *)
+type Piece =
+(* 玉 *)
+| King
+(* 金 *)
+| GoldGeneral
+(* 銀 *)
+| SilverGeneral
+(* 桂 *)
+| Knight
+(* 香 *)
+| Lance
+(* 歩 *)
+| Pawn
+(* 飛 *)
+| Rook
+(* 角 *)
+| Bishop
+
+let lance  = Lance
+let knight = Knight
+let silver = SilverGeneral
+let gold   = GoldGeneral
+let king   = King
+let rook   = Rook
+let bishop = Bishop
+let pawn   = Pawn
+
+type PromotionStatus =
+| NotPromoted
+| Promoted
+
+let not_promoted = NotPromoted
+let promoted     = Promoted
+
+type SquareContents =
+(* Square is occupied by a possibly promoted piece owned by a player *)
+| Occupied of Piece PromotionStatus ByStr20
+(* Square is free *)
+| Free
+
+let free = Free
+
+(* Direction of movement *)
+type Direction =
+| East
+| SouthEast
+| South
+| SouthWest
+| West
+| NorthWest
+| North
+| NorthEast
+
+(* Shorthand for a set of coordinates on the board *)
+type Square =
+| Square of Uint32 Uint32
+
+(* Possible actions a player can take *)
+type Action =
+(* Move a piece *)
+(* Square : The current position of the piece *)
+(* Direction : The direction of movement *)
+(* Uint32 : The number of squares to move *)
+(* Bool : Promote the piece after movement *)
+| Move of Square Direction Uint32 Bool
+(* Place a captured piece *)
+(* Piece : The captured piece to be placed *)
+(* Square : The position on the board to place it *)
+| Place of Piece Square
+(* Resign and award win to the opponent *)
+| Resign
+
+(* Initial state of the board *)
+let initial_board =
+  fun (player1 : ByStr20) =>
+  fun (player2 : ByStr20) => 
+    (* Row and column numbers *)
+    let row1 = Uint32 1 in                                 
+    let row2 = Uint32 2 in                                 
+    let row3 = Uint32 3 in                                 
+    let row4 = Uint32 4 in                                 
+    let row5 = Uint32 5 in                                 
+    let row6 = Uint32 6 in                                 
+    let row7 = Uint32 7 in                                 
+    let row8 = Uint32 8 in                                 
+    let row9 = Uint32 9 in                                 
+    let column1 = Uint32 1 in                              
+    let column2 = Uint32 2 in                              
+    let column3 = Uint32 3 in                              
+    let column4 = Uint32 4 in                              
+    let column5 = Uint32 5 in                              
+    let column6 = Uint32 6 in                              
+    let column7 = Uint32 7 in                              
+    let column8 = Uint32 8 in                              
+    let column9 = Uint32 9 in
+    (* Squares *)
+    let square11 = Square row1 column1 in
+    let square12 = Square row1 column2 in
+    let square13 = Square row1 column3 in
+    let square14 = Square row1 column4 in
+    let square15 = Square row1 column5 in
+    let square16 = Square row1 column6 in
+    let square17 = Square row1 column7 in
+    let square18 = Square row1 column8 in
+    let square19 = Square row1 column9 in
+    let square21 = Square row2 column1 in
+    let square22 = Square row2 column2 in
+    let square23 = Square row2 column3 in
+    let square24 = Square row2 column4 in
+    let square25 = Square row2 column5 in
+    let square26 = Square row2 column6 in
+    let square27 = Square row2 column7 in
+    let square28 = Square row2 column8 in
+    let square29 = Square row2 column9 in
+    let square31 = Square row3 column1 in
+    let square32 = Square row3 column2 in
+    let square33 = Square row3 column3 in
+    let square34 = Square row3 column4 in
+    let square35 = Square row3 column5 in
+    let square36 = Square row3 column6 in
+    let square37 = Square row3 column7 in
+    let square38 = Square row3 column8 in
+    let square39 = Square row3 column9 in
+    let square41 = Square row4 column1 in
+    let square42 = Square row4 column2 in
+    let square43 = Square row4 column3 in
+    let square44 = Square row4 column4 in
+    let square45 = Square row4 column5 in
+    let square46 = Square row4 column6 in
+    let square47 = Square row4 column7 in
+    let square48 = Square row4 column8 in
+    let square49 = Square row4 column9 in
+    let square51 = Square row5 column1 in
+    let square52 = Square row5 column2 in
+    let square53 = Square row5 column3 in
+    let square54 = Square row5 column4 in
+    let square55 = Square row5 column5 in
+    let square56 = Square row5 column6 in
+    let square57 = Square row5 column7 in
+    let square58 = Square row5 column8 in
+    let square59 = Square row5 column9 in
+    let square61 = Square row6 column1 in
+    let square62 = Square row6 column2 in
+    let square63 = Square row6 column3 in
+    let square64 = Square row6 column4 in
+    let square65 = Square row6 column5 in
+    let square66 = Square row6 column6 in
+    let square67 = Square row6 column7 in
+    let square68 = Square row6 column8 in
+    let square69 = Square row6 column9 in
+    let square71 = Square row7 column1 in
+    let square72 = Square row7 column2 in
+    let square73 = Square row7 column3 in
+    let square74 = Square row7 column4 in
+    let square75 = Square row7 column5 in
+    let square76 = Square row7 column6 in
+    let square77 = Square row7 column7 in
+    let square78 = Square row7 column8 in
+    let square79 = Square row7 column9 in
+    let square81 = Square row8 column1 in
+    let square82 = Square row8 column2 in
+    let square83 = Square row8 column3 in
+    let square84 = Square row8 column4 in
+    let square85 = Square row8 column5 in
+    let square86 = Square row8 column6 in
+    let square87 = Square row8 column7 in
+    let square88 = Square row8 column8 in
+    let square89 = Square row8 column9 in
+    let square91 = Square row9 column1 in
+    let square92 = Square row9 column2 in
+    let square93 = Square row9 column3 in
+    let square94 = Square row9 column4 in
+    let square95 = Square row9 column5 in
+    let square96 = Square row9 column6 in
+    let square97 = Square row9 column7 in
+    let square98 = Square row9 column8 in
+    let square99 = Square row9 column9 in
+    (* Square contents *)
+    let lance1   = Occupied lance  not_promoted player1 in
+    let knight1  = Occupied knight not_promoted player1 in
+    let silver1  = Occupied silver not_promoted player1 in
+    let gold1    = Occupied gold   not_promoted player1 in
+    let king1    = Occupied king   not_promoted player1 in
+    let bishop1  = Occupied bishop not_promoted player1 in
+    let rook1    = Occupied rook   not_promoted player1 in
+    let pawn1    = Occupied pawn   not_promoted player1 in
+    let lance2   = Occupied lance  not_promoted player2 in
+    let knight2  = Occupied knight not_promoted player2 in
+    let silver2  = Occupied silver not_promoted player2 in
+    let gold2    = Occupied gold   not_promoted player2 in
+    let king2    = Occupied king   not_promoted player2 in
+    let bishop2  = Occupied bishop not_promoted player2 in
+    let rook2    = Occupied rook   not_promoted player2 in
+    let pawn2    = Occupied pawn   not_promoted player2 in
+    (* Insert pieces into board map *)
+    let board = Emp Square SquareContents in
+    let board = builtin put board square11 lance1  in
+    let board = builtin put board square12 knight1 in
+    let board = builtin put board square13 silver1 in
+    let board = builtin put board square14 gold1   in
+    let board = builtin put board square15 king1   in
+    let board = builtin put board square16 gold1   in
+    let board = builtin put board square17 silver1 in
+    let board = builtin put board square18 knight1 in
+    let board = builtin put board square19 lance1  in
+    let board = builtin put board square21 free    in
+    let board = builtin put board square22 bishop1 in
+    let board = builtin put board square23 free    in
+    let board = builtin put board square24 free    in
+    let board = builtin put board square25 free    in
+    let board = builtin put board square26 free    in
+    let board = builtin put board square27 free    in
+    let board = builtin put board square28 rook1   in
+    let board = builtin put board square29 free    in
+    let board = builtin put board square31 pawn1   in
+    let board = builtin put board square32 pawn1   in
+    let board = builtin put board square33 pawn1   in
+    let board = builtin put board square34 pawn1   in
+    let board = builtin put board square35 pawn1   in
+    let board = builtin put board square36 pawn1   in
+    let board = builtin put board square37 pawn1   in
+    let board = builtin put board square38 pawn1   in
+    let board = builtin put board square39 pawn1   in
+    let board = builtin put board square41 free    in
+    let board = builtin put board square42 free    in
+    let board = builtin put board square43 free    in
+    let board = builtin put board square44 free    in
+    let board = builtin put board square45 free    in
+    let board = builtin put board square46 free    in
+    let board = builtin put board square47 free    in
+    let board = builtin put board square48 free    in
+    let board = builtin put board square49 free    in
+    let board = builtin put board square51 free    in
+    let board = builtin put board square52 free    in
+    let board = builtin put board square53 free    in
+    let board = builtin put board square54 free    in
+    let board = builtin put board square55 free    in
+    let board = builtin put board square56 free    in
+    let board = builtin put board square57 free    in
+    let board = builtin put board square58 free    in
+    let board = builtin put board square59 free    in
+    let board = builtin put board square61 free    in
+    let board = builtin put board square62 free    in
+    let board = builtin put board square63 free    in
+    let board = builtin put board square64 free    in
+    let board = builtin put board square65 free    in
+    let board = builtin put board square66 free    in
+    let board = builtin put board square67 free    in
+    let board = builtin put board square68 free    in
+    let board = builtin put board square69 free    in
+    let board = builtin put board square71 pawn2   in
+    let board = builtin put board square72 pawn2   in
+    let board = builtin put board square73 pawn2   in
+    let board = builtin put board square74 pawn2   in
+    let board = builtin put board square75 pawn2   in
+    let board = builtin put board square76 pawn2   in
+    let board = builtin put board square77 pawn2   in
+    let board = builtin put board square78 pawn2   in
+    let board = builtin put board square79 pawn2   in
+    let board = builtin put board square81 free    in
+    let board = builtin put board square82 rook2   in
+    let board = builtin put board square83 free    in
+    let board = builtin put board square84 free    in
+    let board = builtin put board square85 free    in
+    let board = builtin put board square86 free    in
+    let board = builtin put board square87 free    in
+    let board = builtin put board square88 bishop2 in
+    let board = builtin put board square89 free    in
+    let board = builtin put board square91 lance2  in
+    let board = builtin put board square92 knight2 in
+    let board = builtin put board square93 silver2 in
+    let board = builtin put board square94 gold2   in
+    let board = builtin put board square95 king2   in
+    let board = builtin put board square96 gold2   in
+    let board = builtin put board square97 silver2 in
+    let board = builtin put board square98 knight2 in
+    let board = builtin put board square99 lance2  in
+    board
+
+let init_captured_pieces =
+  fun (player1 : ByStr20) =>
+  fun (player2 : ByStr20) =>
+    let zero = Uint32 0 in
+    (* Pieces map - all empty *)
+    let pieces = Emp Piece Uint32 in
+    let pieces = builtin put pieces lance  zero in
+    let pieces = builtin put pieces knight zero in
+    let pieces = builtin put pieces silver zero in
+    let pieces = builtin put pieces gold   zero in
+    (* Kings cannot be captured without ending the game *)
+    let pieces = builtin put pieces bishop zero in
+    let pieces = builtin put pieces rook   zero in
+    let pieces = builtin put pieces pawn   zero in
+    (* Captured pieces map *)
+    let res = Emp ByStr20 (Map Piece Uint32) in
+    let res = builtin put res player1 pieces in
+    let res = builtin put res player2 pieces in
+    res
