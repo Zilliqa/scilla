@@ -41,16 +41,9 @@ let createOrderId =
     let l5 = Cons {ByStr32} hashBlock l4 in
     builtin sha256hash l5
 
-(* Creates order "struct" *)
-let createOrder =
-  fun (tokenA : ByStr20) =>
-  fun (tokenB : ByStr20) =>
-  fun (valueA: Uint128) =>
-  fun (valueB: Uint128) =>
-    let p1 = Pair{ByStr20 Uint128} tokenA valueA in
-    let p2 = Pair{ByStr20 Uint128} tokenB valueB in
-    let finalPair = Pair { (Pair(ByStr20)(Uint128)) (Pair(ByStr20)(Uint128))} p1 p2 in
-    finalPair
+(* Order = { tokenA, valueA, tokenB, valueB } *)
+type Order =
+| Order_ADT of ByStr20 Uint128 ByStr20 Uint128
 
 
 (* Create one transaction message *)
@@ -113,9 +106,8 @@ contract SimpleDex
 (* @param: valueA: total units of token A offered by maker *)
 (* @param: tokenB: Contract address of token B *)
 (* @param: valueB: total units of token B requsted by maker *)
-field orderbook : Map ByStr32 ( Pair ( Pair (ByStr20) (Uint128)) ( Pair (ByStr20) (Uint128)))
-                  = Emp ByStr32 ( Pair( Pair (ByStr20) (Uint128)) ( Pair (ByStr20) (Uint128)))
-
+field orderbook : Map ByStr32 Order
+                  = Emp ByStr32 Order
 (* Order info stores the mapping ( orderId => (tokenOwnerAddress, expirationBlock)) *)
 field orderInfo : Map ByStr32 (Pair (ByStr20)(BNum)) = Emp ByStr32 (Pair (ByStr20) (BNum))
 
@@ -132,7 +124,7 @@ transition makeOrder(tokenA: ByStr20, valueA: Uint128, tokenB: ByStr20, valueB: 
   match validExpirationBlock with
   | True =>
     (* Creates a new order *)
-    newOrder = createOrder tokenA tokenB valueA valueB;
+    newOrder = Order_ADT tokenA valueA tokenB valueB;
     orderId = createOrderId tokenA tokenB valueA valueB expirationBlock;
     orderbook[orderId] := newOrder;
 
@@ -161,7 +153,7 @@ end
 transition fillOrder(orderId: ByStr32)
   getOrder <- orderbook[orderId];
   match getOrder with
-  | Some order =>
+  | Some (Order_ADT tokenA valueA tokenB valueB)=>
     (* Check the expiration block *)
     optionOrderInfo <- orderInfo[orderId];
     match optionOrderInfo with
@@ -172,12 +164,6 @@ transition fillOrder(orderId: ByStr32)
                               builtin blt currentBlock expirationBlock;
       match blockBeforeExpiration with
       | True =>
-        bids = fst_pair order;
-        asks = snd_pair order;
-        tokenA = getAddressFromPair bids;
-        valueA = getValueFromPair bids;
-        tokenB = getAddressFromPair asks;
-        valueB = getValueFromPair asks;
         makerAddr = let getMakerAddr = @fst (ByStr20)(BNum) in
                     getMakerAddr info; 
         (* Updates taker with the tokens that he is entitled to claim *)
@@ -254,10 +240,7 @@ transition cancelOrder(orderId: ByStr32)
         (* Sender is the maker, proceed with cancellation *)
         fetchOrder <- orderbook[orderId];
         match fetchOrder with
-        | Some order =>
-          bids = fst_pair order;
-          tokenA = getAddressFromPair bids;
-          valueA = getValueFromPair bids;
+        | Some (Order_ADT tokenA valueA _ _)=>
 
           (* Updates taker with the tokens that he is entitled to claim *)
           pr <- pendingReturns;

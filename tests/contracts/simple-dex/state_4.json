@@ -6,7 +6,7 @@
     },
     {
         "vname": "orderbook",
-        "type": "Map (ByStr32) (Pair (Pair (ByStr20) (Uint128)) (Pair (ByStr20) (Uint128)))",
+        "type": "Map (ByStr32) (Order)",
         "value": []
     },
     {
