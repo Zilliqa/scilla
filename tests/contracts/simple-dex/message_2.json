@@ -1,32 +1,12 @@
 {
-    "_tag": "makeOrder",
+    "_tag": "fillOrder",
     "_amount": "0",
-    "_sender" : "0x1234567890123456789012345678901234567890",
+    "_sender" : "0x1234567890123456789012345678901234567899",
     "params": [
         {
-            "vname": "tokenA",
-            "type": "ByStr20",
-            "value" : "0x1234567890123456789012345678901234567001" 
-        },
-        {
-            "vname": "valueA",
-            "type": "Uint128",
-            "value" : "100" 
-        },
-        {
-            "vname": "tokenB",
-            "type": "ByStr20",
-            "value" : "0x1234567890123456789012345678901234567002" 
-        },
-        {
-            "vname": "valueB",
-            "type": "Uint128",
-            "value" : "200" 
-        },
-        {
-            "vname": "expirationBlock",
-            "type": "BNum",
-            "value" : "200" 
+            "vname": "orderId",
+            "type": "ByStr32",
+            "value" : "0xcb478abde2c28d1808655f39a97d68bec72e7cd29240a0c5e78cfa76590891f1" 
         }
     ]
 }

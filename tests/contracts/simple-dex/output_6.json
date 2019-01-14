@@ -1,36 +1,10 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7209",
+  "gas_remaining": "7495",
   "_accepted": "false",
-  "message": {
-    "_tag": "TransferFrom",
-    "_amount": "0",
-    "_recipient": "0x1234567890123456789012345678901234567001",
-    "params": [
-      {
-        "vname": "from",
-        "type": "ByStr20",
-        "value": "0x1234567890123456789012345678901234567000"
-      },
-      {
-        "vname": "to",
-        "type": "ByStr20",
-        "value": "0x1234567890123456789012345678901234567899"
-      },
-      { "vname": "tokens", "type": "Uint128", "value": "100" }
-    ]
-  },
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    {
-      "vname": "contractAddress",
-      "type": "Option (ByStr20)",
-      "value": {
-        "constructor": "Some",
-        "argtypes": [ "ByStr20" ],
-        "arguments": [ "0x1234567890123456789012345678901234567000" ]
-      }
-    },
     {
       "vname": "orderbook",
       "type":
@@ -53,19 +27,14 @@
   ],
   "events": [
     {
-      "_eventname": "Claimback Successful",
+      "_eventname": "Error",
       "params": [
+        { "vname": "raisedAt", "type": "String", "value": "claimBack" },
         {
-          "vname": "caller",
-          "type": "ByStr20",
-          "value": "0x1234567890123456789012345678901234567899"
-        },
-        {
-          "vname": "tokenAddr",
-          "type": "ByStr20",
-          "value": "0x1234567890123456789012345678901234567001"
-        },
-        { "vname": "amt", "type": "Uint128", "value": "100" }
+          "vname": "message",
+          "type": "String",
+          "value": "No Pending Returns for Sender and Contract Address found"
+        }
       ]
     }
   ]

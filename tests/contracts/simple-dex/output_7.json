@@ -1,19 +1,10 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7472",
+  "gas_remaining": "7303",
   "_accepted": "false",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    {
-      "vname": "contractAddress",
-      "type": "Option (ByStr20)",
-      "value": {
-        "constructor": "Some",
-        "argtypes": [ "ByStr20" ],
-        "arguments": [ "0x1234567890123456789012345678901234567000" ]
-      }
-    },
     {
       "vname": "orderbook",
       "type":
@@ -29,20 +20,27 @@
       "vname": "pendingReturns",
       "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
       "value": [
-        { "key": "0x1234567890123456789012345678901234567890", "val": [] },
-        { "key": "0x1234567890123456789012345678901234567899", "val": [] }
+        {
+          "key": "0x1234567890123456789012345678901234567890",
+          "val": [
+            {
+              "key": "0x1234567890123456789012345678901234567001",
+              "val": "100"
+            }
+          ]
+        }
       ]
     }
   ],
   "events": [
     {
-      "_eventname": "Error",
+      "_eventname": "Cancel order successful",
       "params": [
-        { "vname": "raisedAt", "type": "String", "value": "claimBack" },
         {
-          "vname": "message",
-          "type": "String",
-          "value": "No Pending Returns for Sender and Contract Address found"
+          "vname": "hash",
+          "type": "ByStr32",
+          "value":
+            "0xcb478abde2c28d1808655f39a97d68bec72e7cd29240a0c5e78cfa76590891f1"
         }
       ]
     }

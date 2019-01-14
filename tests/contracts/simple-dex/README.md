@@ -21,15 +21,12 @@ This contract is built for testing. Do not use this contract in production
 
 | Number | Description | Expected Result |
 |---|---|---|
-|1| DEX Contract owner updates the contract address | Success |
-|2| Maker makes an order to trade valueA of tokenA for valueB of tokenB | Success |
-|3| Taker fills order | Success |
-|4| Another taker fills order of the same ID. | Failure |
-|5| Maker claims back the funds. Contract calls another smart contract to transfer tokens to maker. | Success |
-|6| Taker claims back the funds. Contract calls another smart contract to transfer tokens to taker. | Success |
-|7| Taker tries to reclaim the funds | Failure |
-|8| Maker cancels order | Success |
-|9| Sender (who is not the maker) tries to cancel order | Failure |
-
-
+|1| Maker makes an order to trade valueA of tokenA for valueB of tokenB | Success |
+|2| Taker fills order | Success |
+|3| Another taker fills order of the same ID. | Failure |
+|4| Maker claims back the funds. Contract calls another smart contract to transfer tokens to maker. | Success |
+|5| Taker claims back the funds. Contract calls another smart contract to transfer tokens to taker. | Success |
+|6| Taker tries to reclaim the funds | Failure |
+|7| Maker cancels order | Success |
+|8| Sender (who is not the maker) tries to cancel order | Failure |
 

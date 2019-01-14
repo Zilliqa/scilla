@@ -5,19 +5,6 @@
         "value": "0"
     },
     {
-        "vname": "contractAddress",
-        "type": "Option (ByStr20)",
-        "value": {
-            "constructor": "Some",
-            "argtypes": [
-                "ByStr20"
-            ],
-            "arguments": [
-                "0x1234567890123456789012345678901234567000"
-            ]
-        }
-    },
-    {
         "vname": "orderbook",
         "type": "Map (ByStr32) (Pair (Pair (ByStr20) (Uint128)) (Pair (ByStr20) (Uint128)))",
         "value": []
@@ -33,12 +20,7 @@
         "value": [
             {
                 "key": "0x1234567890123456789012345678901234567890",
-                "val": [
-                    {
-                        "key": "0x1234567890123456789012345678901234567002",
-                        "val": "200"
-                    }
-                ]
+                "val": []
             },
             {
                 "key": "0x1234567890123456789012345678901234567899",
