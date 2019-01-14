@@ -71,7 +71,6 @@
 (* Keywords *)    
 %token BUILTIN
 %token FORALL
-%token BLOCK
 %token EMP
 %token LIBRARY
 %token IMPORT
@@ -183,8 +182,6 @@ simple_exp :
 | l = lit      { (Literal l, toLoc $startpos) } 
                
 lit :        
-| BLOCK;
-  n = NUMLIT   { build_prim_literal_exn PrimTypes.bnum_typ (Big_int.string_of_big_int n) }
 | i = CID;
   n = NUMLIT   {
     let string_of_n = Big_int.string_of_big_int n in
