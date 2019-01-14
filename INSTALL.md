@@ -11,7 +11,7 @@ than the one specified below.
 
 ### Ubuntu
 
-On machines with Ubuntu strictly older than 18.04, run these additional commands first: The last three lines must also be added to your `~/.bashrc`.
+On machines with Ubuntu strictly older than 18.04, run these additional commands first:
 
 ```
 # Add Ubuntu PPA for libsecp256k1-dev
