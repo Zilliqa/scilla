@@ -591,8 +591,8 @@ player2 : ByStr20
 )
 
 (* Initialize board *)
-field board : Map Square SquareContents = initial_board player1 player2
-field captured_pieces : Map ByStr20 (Map Piece Uint32) = init_captured_pieces player1 player2
+field board : Map Uint32 (Map Uint32 SquareContents) = initial_board player1 player2
+field captured_pieces : Map ByStr20 (Map Uint32 Uint32) = init_captured_pieces player1 player2
 (* player1 moves first *)
 (* player_in_turn = None indicates that game is over *)
 field player_in_turn : Option ByStr20 = Some {ByStr20} player1
@@ -624,10 +624,11 @@ transition PlayerAction (action : Action)
         player_in_turn := none;
         some_opponent = Some {ByStr20} opponent;
         winner := some_opponent
-      | Place piece square =>
+      | Place piece (Square row column) =>
         (* Place a captured piece on the board *)
         (* Check that player has captured piece available *)
-        capture_count <- captured_pieces[_sender][piece];
+        piece_no = piece_to_int piece;
+        capture_count <- captured_pieces[_sender][piece_no];
         match capture_count with
         | None => 
           (* This should not happen *)
@@ -646,15 +647,15 @@ transition PlayerAction (action : Action)
             event e
           | True =>
             (* Check if desired square is available *)
-            target_square_content <- board[square];
+            target_square_content <- board[row][column];
             match target_square_content with
             | Some Free =>
               (* Remove from captured pieces, and place on board *)
               one = Uint32 1;
               new_count = builtin sub count one;
-              captured_pieces[_sender][piece] := new_count;
+              captured_pieces[_sender][piece_no] := new_count;
               new_contents = Occupied piece not_promoted _sender;
-              board[square] := new_contents
+              board[row][column] := new_contents
             | _ =>
               (* Square does not exist on board, or square is occupied *)
               err = illegal_action;
@@ -664,80 +665,64 @@ transition PlayerAction (action : Action)
           end
         end
       | Move square direction distance promote =>
-        (* Find the contents of the origin square *)
-        contents <- board[square];
-        match contents with
-        | Some (Occupied piece promotion_status owner) =>
-          correct_owner = builtin eq owner current_player;
-          match correct_owner with
-          | False =>
-            err = illegal_action;
-            e = mk_error_event err;
-            event e
-          | True =>
-            player_1_moves = builtin eq current_player player1;
-            path = movement_path square piece promotion_status direction distance player_1_moves;
-            match path with
-            | Nil => 
+        match square with
+        | Square row column =>
+          (* Find the contents of the origin square *)
+          contents <- board[row][column];
+          match contents with
+          | Some (Occupied piece promotion_status owner) =>
+            correct_owner = builtin eq owner current_player;
+            match correct_owner with
+            | False =>
               err = illegal_action;
               e = mk_error_event err;
               event e
-            | Cons target_square intervening_squares =>
-              (* Piece is allowed to move as requested. Check for blocking pieces.  *)
-              board_tmp <- board;
-              blocked_path = 
-                let exister = @list_exists Square in
-                let occupied_predicate =
-                  fun (square : Square) =>
-                    let contents = builtin get board_tmp square in
-                    match contents with
-                    | Some (Occupied _ _ _) => True
-                    | Some  Free            => False
-                    | None                  => False (* Should never happen *)
-                    end in
-                exister occupied_predicate intervening_squares;
-              match blocked_path with
-              | True => 
+            | True =>
+              player_1_moves = builtin eq current_player player1;
+              path = movement_path square piece promotion_status direction distance player_1_moves;
+              match path with
+              | Nil => 
                 err = illegal_action;
                 e = mk_error_event err;
                 event e
-              | False =>
-                (* Check contents of target square *)
-                contents_at_target <- board[target_square];
-                match contents_at_target with
-                | None =>
-                  (* Moving off the board *)
+              | Cons target_square intervening_squares =>
+                (* Piece is allowed to move as requested. Check for blocking pieces.  *)
+                board_tmp <- board;
+                blocked_path = 
+                  let exister = @list_exists Square in
+                  let occupied_predicate =
+                    fun (square : Square) =>
+                      match square with
+                      | Square row column =>
+                        let row_contents = builtin get board_tmp row in
+                        match row_contents with
+                        | None            => False (* Should never happen *)
+                        | Some row_map =>
+                          let contents = builtin get row_map column in
+                          match contents with
+                          | Some (Occupied _ _ _) => True
+                          | Some  Free            => False
+                          | None                  => False (* Should never happen *)
+                          end
+                        end
+                      end in
+                    exister occupied_predicate intervening_squares;
+                match blocked_path with
+                | True => 
                   err = illegal_action;
                   e = mk_error_event err;
                   event e
-                | Some  Free  => 
-                  (* No piece captured *)
-                  (* Check promotion part of move *)
-                  new_promotion_status_opt = perform_promotion promote promotion_status square target_square player_1_moves;
-                  match new_promotion_status_opt with
+                | False =>
+                  (* Check contents of target square *)
+                  contents_at_target <- board[row][column];
+                  match contents_at_target with
                   | None =>
-                    (* Illegal promotion *)
+                    (* Moving off the board *)
                     err = illegal_action;
                     e = mk_error_event err;
                     event e
-                  | Some new_promotion_status =>
-                    (* Move piece *)
-                    (* Source square is no longer occupied *)
-                    board[square] := free;
-                    (* Update target square *)
-                    new_contents_at_target = Occupied piece new_promotion_status current_player
-                  end
-                | Some (Occupied captured_piece _ captured_owner) =>
-                  (* Target square is occupied. Check ownership *)
-                  captured_owner_is_current_player = builtin eq captured_owner current_player;
-                  match captured_owner_is_current_player with
-                  | True =>
-                    (* Target square is blocked *)
-                    err = illegal_action;
-                    e = mk_error_event err;
-                    event e
-                  | False =>
-                    (* Opponent piece captured. *)
+                  | Some  Free  => 
+                    (* No piece captured *)
                     (* Check promotion part of move *)
                     new_promotion_status_opt = perform_promotion promote promotion_status square target_square player_1_moves;
                     match new_promotion_status_opt with
@@ -747,30 +732,58 @@ transition PlayerAction (action : Action)
                       e = mk_error_event err;
                       event e
                     | Some new_promotion_status =>
-                      (* Move own piece *)
-                      board[square] := free;
+                      (* Move piece *)
+                      (* Source square is no longer occupied *)
+                      board[row][column] := free;
                       (* Update target square *)
-                      new_contents_at_target = Occupied piece new_promotion_status current_player;
-                      (* Check if captured piece is the king *)
-                      match captured_piece with
-                      | King =>
-                        (* Game is won *)
-                        none = None {ByStr20};
-                        player_in_turn := none;
-                        some_current_player = Some {ByStr20} current_player;
-                        winner := some_current_player
-                      | _ =>
-                        (* Add captured piece to list of captured pieces *)
-                        captured_count_opt <- captured_pieces[current_player][captured_piece];
-                        match captured_count_opt with
-                        | None =>
-                          err = internal_error;
-                          e = mk_error_event err;
-                          event e
-                        | Some count =>
-                          one = Uint32 1;
-                          new_captured_count = builtin add count one;
-                          captured_pieces[current_player][captured_piece] := new_captured_count
+                      new_contents_at_target = Occupied piece new_promotion_status current_player
+                    end
+                  | Some (Occupied captured_piece _ captured_owner) =>
+                    (* Target square is occupied. Check ownership *)
+                    captured_owner_is_current_player = builtin eq captured_owner current_player;
+                    match captured_owner_is_current_player with
+                    | True =>
+                      (* Target square is blocked *)
+                      err = illegal_action;
+                      e = mk_error_event err;
+                      event e
+                    | False =>
+                      (* Opponent piece captured. *)
+                      (* Check promotion part of move *)
+                      new_promotion_status_opt = perform_promotion promote promotion_status square target_square player_1_moves;
+                      match new_promotion_status_opt with
+                      | None =>
+                        (* Illegal promotion *)
+                        err = illegal_action;
+                        e = mk_error_event err;
+                        event e
+                      | Some new_promotion_status =>
+                        (* Move own piece *)
+                        board[row][column] := free;
+                        (* Update target square *)
+                        new_contents_at_target = Occupied piece new_promotion_status current_player;
+                        (* Check if captured piece is the king *)
+                        match captured_piece with
+                        | King =>
+                          (* Game is won *)
+                          none = None {ByStr20};
+                          player_in_turn := none;
+                          some_current_player = Some {ByStr20} current_player;
+                          winner := some_current_player
+                        | _ =>
+                          (* Add captured piece to list of captured pieces *)
+                          captured_piece_no = piece_to_int captured_piece;
+                          captured_count_opt <- captured_pieces[current_player][captured_piece_no];
+                          match captured_count_opt with
+                          | None =>
+                            err = internal_error;
+                            e = mk_error_event err;
+                            event e
+                          | Some count =>
+                            one = Uint32 1;
+                            new_captured_count = builtin add count one;
+                            captured_pieces[current_player][captured_piece_no] := new_captured_count
+                          end
                         end
                       end
                     end
@@ -778,27 +791,27 @@ transition PlayerAction (action : Action)
                 end
               end
             end
+           | _ =>
+             (* No piece on the square, or square does not exist *)
+             err = illegal_action;
+             e = mk_error_event err;
+             event e
           end
-        | _ =>
-          (* No piece on the square, or square does not exist *)
-          err = illegal_action;
-          e = mk_error_event err;
-          event e
         end
-      end;
-      (* Check if a winner has been found *)
-      win <- winner;
-      match win with
-      | Some player =>
-        (* Game is over. Announce winner *)
-        e = mk_winner_event player player1 player2;
-        event e
-      | None =>
-        (* Set player_in_turn to opposite player *)
-        next_player = get_next_player current_player player1 player2;
-        next_player_opt = Some {ByStr20} next_player;
-        player_in_turn := next_player_opt
       end
+    end;
+    (* Check if a winner has been found *)
+    win <- winner;
+    match win with
+    | Some player =>
+      (* Game is over. Announce winner *)
+      e = mk_winner_event player player1 player2;
+      event e
+    | None =>
+      (* Set player_in_turn to opposite player *)
+      next_player = get_next_player current_player player1 player2;
+      next_player_opt = Some {ByStr20} next_player;
+      player_in_turn := next_player_opt
     end
   end
 end
