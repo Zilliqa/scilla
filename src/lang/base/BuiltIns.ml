@@ -846,6 +846,21 @@ module ScillaBuiltIns
          | None -> builtin_fail "Crypto.to_bystr: internal error" ls)
       | _ -> builtin_fail "Crypto.to_bystr" ls
 
+    let to_uint256_type = tfun_typ "'A" @@ fun_typ (tvar "'A") uint256_typ
+    let to_uint256_arity = 1
+    let to_uint256_elab sc ts = match ts with
+      | [t] when (match bystrx_width t with | Some w when w <= 32 -> true | _ -> false) ->
+        elab_tfun_with_args sc ts
+      | _ -> fail0 "Failed to elaborate"
+    let to_uint256 ls _ = match ls with
+      | [ByStrX(w, s)] when w <= 32 ->
+        let rem = (32 - w) * 2 in
+        let pad = "0x" ^ Caml.String.make rem '0' in
+        let s' = pad ^ (Core.String.sub s ~pos:2 ~len:((Core.String.length s)-2)) in
+        let u = Integer256.Uint256.of_bytes_big_endian (Bytes.of_string (fromhex s')) 0 in
+        pure (UintLit (Uint256L u))
+      | _ -> builtin_fail "Crypto.to_uint256" ls
+
     (* ByStrX + ByStrY -> ByStr(X+Y)*)
     let concat_type = tfun_typ "'A" @@ tfun_typ "'B" @@ tfun_typ "'C" @@
                       fun_typ (tvar "'A") (fun_typ (tvar "'B") (tvar "'C"))
@@ -1107,6 +1122,7 @@ module ScillaBuiltIns
       (* Crypto *)
       ("eq", Crypto.eq_arity, Crypto.eq_type, Crypto.eq_elab, Crypto.eq);
       ("dist", Crypto.dist_arity, Crypto.dist_type, elab_id , Crypto.dist);
+      ("to_uint256", Crypto.to_uint256_arity, Crypto.to_uint256_type, Crypto.to_uint256_elab, Crypto.to_uint256);
       ("sha256hash", Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.sha256hash);
       ("keccak256hash", Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash);
       ("ripemd160hash", Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash);
