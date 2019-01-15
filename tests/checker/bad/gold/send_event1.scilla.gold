@@ -4,7 +4,7 @@
       "error_message": "Type error(s) in contract ZilGame:\n",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
-        "line": 127,
+        "line": 140,
         "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -13,7 +13,7 @@
       "error_message": "Type error(s) in transition ClaimReward:\n",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
-        "line": 189,
+        "line": 202,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -22,7 +22,7 @@
       "error_message": "Error in pattern matching \"ttc\" of type Bool",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
-        "line": 194,
+        "line": 207,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -31,7 +31,7 @@
       "error_message": "Error in pattern matching \"is_valid\" of type Bool",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
-        "line": 204,
+        "line": 217,
         "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -41,7 +41,7 @@
         "Error in create event `msgs`:\nType mismatch: Event expected, but List (Message) provided.",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
-        "line": 209,
+        "line": 222,
         "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -50,7 +50,7 @@
       "error_message": "Type error(s) in transition Withdraw:\n",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
-        "line": 222,
+        "line": 235,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -60,7 +60,7 @@
         "Error in pattern matching \"good_to_go\" of type Bool",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
-        "line": 229,
+        "line": 242,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -70,7 +70,7 @@
         "Error in sending messages `e`:\nType mismatch: List (Message) expected, but Event provided.",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
-        "line": 234,
+        "line": 247,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
