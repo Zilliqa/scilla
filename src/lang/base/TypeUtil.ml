@@ -251,6 +251,12 @@ module TypeUtilities
     | Unit -> false
     | _ -> true
 
+  let get_msgevnt_type m =
+    if (List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.tag_label) m)
+    then pure PrimTypes.msg_typ else
+    if (List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.eventname_label) m)
+    then pure PrimTypes.event_typ else
+    fail0 ("Invalid message construct. Neither for send nor for event.")
 
   let pp_typ_list ts =
     let tss = List.map ~f:(fun t -> pp_typ t) ts in
@@ -391,7 +397,7 @@ module TypeUtilities
     | ByStr _ -> pure bystr_typ
     | ByStrX (b, _) ->pure (bystrx_typ b)
     (* Check that messages and events have storable parameters. *)
-    | Msg _ -> pure msg_typ
+    | Msg bs -> get_msgevnt_type bs
     | Map ((kt, vt), _) -> pure (MapType (kt, vt))
     | ADTValue (cname, ts, _) ->
         let%bind (adt, _) = DataTypeDictionary.lookup_constructor cname in
@@ -422,7 +428,8 @@ module TypeUtilities
         then pure (bystrx_typ b)
         else fail0 @@ (sprintf "Malformed byte string " ^ (pp_literal l))
     (* Check that messages and events have storable parameters. *)
-    | Msg m -> 
+    | Msg m ->
+        let%bind msg_typ = get_msgevnt_type m in
         let%bind all_storable = foldM ~f:(fun acc (_, l) ->
             let%bind t = is_wellformed_lit l in
             if acc then pure (is_storable_type t) else pure false)
