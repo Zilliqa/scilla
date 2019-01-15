@@ -1,0 +1,5 @@
+let hex = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff11 in
+(* above string is 66 bytes, hence invalid for builtin to_uint256. *)
+let res15 = builtin to_uint256 hex in
+
+Uint32 0
