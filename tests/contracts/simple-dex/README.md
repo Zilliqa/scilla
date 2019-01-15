@@ -12,10 +12,9 @@ This contract is built for testing. Do not use this contract in production
 
 
 ## Sequence of events
-1. Contract owner updates the contract with the contract address using `updateContractAddress(ByStr20)`
-2. Maker makes an order through `makeOrder`. This will invoke a `transferFrom` transition in tokenA's fungible contract to transfer tokens from maker's address to dex contract address
-3. Taker fills an order using `fillOrder(orderId)`. This will invoke a `transferFrom` transition in tokenB's fungible contract to transfer tokens from taker's address to DEX contract address
-4. Maker and Taker can claim back if there are `pendingReturns`. To claim back tokens, maker/taker can call the `ClaimBack(tokenContractAddress)`. This will invoke the `transferFrom` transition in token's fungible contract to transfer tokens from DEX contract address to `_sender`.
+1. Maker makes an order through `makeOrder`. This will invoke a `transferFrom` transition in tokenA's fungible contract to transfer tokens from maker's address to dex contract address
+2. Taker fills an order using `fillOrder(orderId)`. This will invoke a `transferFrom` transition in tokenB's fungible contract to transfer tokens from taker's address to DEX contract address
+3. Maker and Taker can claim back if there are `pendingReturns`. To claim back tokens, maker/taker can call the `ClaimBack(tokenContractAddress)`. This will invoke the `transferFrom` transition in token's fungible contract to transfer tokens from DEX contract address to `_sender`.
 
 ## Test Cases
 

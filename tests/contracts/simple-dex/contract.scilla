@@ -9,8 +9,6 @@ import PairUtils
 library SimpleDex
 
 (* Pair helpers *)
-let fst_pair = @fst (Pair (ByStr20) (Uint128)) (Pair(ByStr20) (Uint128))
-let snd_pair = @snd (Pair (ByStr20) (Uint128)) (Pair(ByStr20) (Uint128))
 let getAddressFromPair = @fst (ByStr20) (Uint128)
 let getValueFromPair = @snd (ByStr20) (Uint128)
 
@@ -21,30 +19,14 @@ let make_event =
   fun (msg: String) =>
     { _eventname : label ; raisedAt: location; message: msg}
 
-(* Create an orderID based on the hash of the parameters *)
-let createOrderId = 
-  fun (tokenA : ByStr20) =>
-  fun (tokenB : ByStr20) =>
-  fun (valueA: Uint128) =>
-  fun (valueB: Uint128) =>
-  fun (expirationBlock: BNum) =>
-    let hashTokenA = builtin sha256hash tokenA in
-    let hashTokenB = builtin sha256hash tokenB in
-    let hashValueA = builtin sha256hash valueA in
-    let hashValueB = builtin sha256hash valueB in
-    let hashBlock = builtin sha256hash expirationBlock in
-    let nil_list = Nil {ByStr32} in
-    let l1 = Cons {ByStr32} hashTokenA nil_list in
-    let l2 = Cons {ByStr32} hashValueA l1 in
-    let l3 = Cons {ByStr32} hashTokenB l2 in
-    let l4 = Cons {ByStr32} hashValueB l3 in
-    let l5 = Cons {ByStr32} hashBlock l4 in
-    builtin sha256hash l5
-
 (* Order = { tokenA, valueA, tokenB, valueB } *)
 type Order =
 | Order_ADT of ByStr20 Uint128 ByStr20 Uint128
 
+(* Create an orderID based on the hash of the parameters *)
+let createOrderId = 
+  fun (order: Order) =>
+    builtin sha256hash order
 
 (* Create one transaction message *)
 let transaction_msg =
@@ -125,7 +107,7 @@ transition makeOrder(tokenA: ByStr20, valueA: Uint128, tokenB: ByStr20, valueB: 
   | True =>
     (* Creates a new order *)
     newOrder = Order_ADT tokenA valueA tokenB valueB;
-    orderId = createOrderId tokenA tokenB valueA valueB expirationBlock;
+    orderId = createOrderId newOrder;
     orderbook[orderId] := newOrder;
 
     (* Updates orderInfo with maker's address and expiration blocknumber *)
