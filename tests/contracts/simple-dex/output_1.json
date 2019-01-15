@@ -28,9 +28,9 @@
       "value": [
         {
           "key":
-            "0xd1dae8f9553ed794aa6c85b98a922d7399ea953f57c4b0df327ba3cd27937d74",
+            "0x28daf796b2415d81ced8cfbe260c1474ab2b69d0149431da690fc32682fefd63",
           "val": {
-            "constructor": "Order_ADT",
+            "constructor": "Order",
             "argtypes": [],
             "arguments": [
               "0x1234567890123456789012345678901234567001", "100",
@@ -46,7 +46,7 @@
       "value": [
         {
           "key":
-            "0xd1dae8f9553ed794aa6c85b98a922d7399ea953f57c4b0df327ba3cd27937d74",
+            "0x28daf796b2415d81ced8cfbe260c1474ab2b69d0149431da690fc32682fefd63",
           "val": {
             "constructor": "Pair",
             "argtypes": [ "ByStr20", "BNum" ],
@@ -71,7 +71,7 @@
           "vname": "hash",
           "type": "ByStr32",
           "value":
-            "0xd1dae8f9553ed794aa6c85b98a922d7399ea953f57c4b0df327ba3cd27937d74"
+            "0x28daf796b2415d81ced8cfbe260c1474ab2b69d0149431da690fc32682fefd63"
         }
       ]
     }

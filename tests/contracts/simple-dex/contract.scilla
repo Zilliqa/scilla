@@ -21,7 +21,7 @@ let make_event =
 
 (* Order = { tokenA, valueA, tokenB, valueB } *)
 type Order =
-| Order_ADT of ByStr20 Uint128 ByStr20 Uint128
+| Order of ByStr20 Uint128 ByStr20 Uint128
 
 (* Create an orderID based on the hash of the parameters *)
 let createOrderId = 
@@ -106,7 +106,7 @@ transition makeOrder(tokenA: ByStr20, valueA: Uint128, tokenB: ByStr20, valueB: 
   match validExpirationBlock with
   | True =>
     (* Creates a new order *)
-    newOrder = Order_ADT tokenA valueA tokenB valueB;
+    newOrder = Order tokenA valueA tokenB valueB;
     orderId = createOrderId newOrder;
     orderbook[orderId] := newOrder;
 
@@ -135,7 +135,7 @@ end
 transition fillOrder(orderId: ByStr32)
   getOrder <- orderbook[orderId];
   match getOrder with
-  | Some (Order_ADT tokenA valueA tokenB valueB)=>
+  | Some (Order tokenA valueA tokenB valueB)=>
     (* Check the expiration block *)
     optionOrderInfo <- orderInfo[orderId];
     match optionOrderInfo with
@@ -222,7 +222,7 @@ transition cancelOrder(orderId: ByStr32)
         (* Sender is the maker, proceed with cancellation *)
         fetchOrder <- orderbook[orderId];
         match fetchOrder with
-        | Some (Order_ADT tokenA valueA _ _)=>
+        | Some (Order tokenA valueA _ _)=>
 
           (* Updates taker with the tokens that he is entitled to claim *)
           pr <- pendingReturns;
