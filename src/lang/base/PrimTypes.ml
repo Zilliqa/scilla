@@ -33,6 +33,7 @@ let uint256_str = "Uint256"
 let string_str = "String"
 let bnum_str = "BNum"
 let msg_str = "Message"
+let event_str = "Event"
 let bystr_str = "ByStr"
 (* ByStrX will have X appended below. *)
 let bystrx_str = "ByStr"
@@ -48,6 +49,7 @@ let uint256_typ = PrimType uint256_str
 let string_typ = PrimType string_str
 let bnum_typ = PrimType bnum_str
 let msg_typ = PrimType msg_str
+let event_typ = PrimType event_str
 let bystr_typ = PrimType bystr_str
 let bystrx_typ b = PrimType (bystrx_str ^ Int.to_string b)
 
@@ -66,7 +68,7 @@ let bystrx_width t =
 let prim_types_except_bystrx =
     [int32_typ; int64_typ; int128_typ; int256_typ;
      uint32_typ; uint64_typ; uint128_typ; uint256_typ;
-     string_typ; bnum_typ; msg_typ; bystr_typ]
+     string_typ; bnum_typ; msg_typ; event_typ; bystr_typ]
 
 let is_prim_type t =
   match t with

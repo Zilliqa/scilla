@@ -30,6 +30,8 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_fields1.scilla";
       "bad_fields2.scilla";
       "bad_fields2.scilla";
+      "send_event1.scilla";
+      "send_event2.scilla";
       "unbound.scilla";
       "event_bad1.scilla";
       "event_bad2.scilla";
