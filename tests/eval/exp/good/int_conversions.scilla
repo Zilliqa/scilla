@@ -20,4 +20,11 @@ let res11 = builtin to_uint128 nums1 in
 let res12 = builtin to_uint256 nums1 in
 let res13 = builtin to_int256 nums2 in
 
+
+let hex1 = 0x01 in
+let res14 = builtin to_uint256 hex1 in
+let hex2 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff in
+(* expected output is Uint256.max *)
+let res15 = builtin to_uint256 hex2 in
+
 Uint32 0
