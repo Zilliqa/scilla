@@ -1,0 +1,80 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract ZilGame:\n",
+      "start_location": {
+        "file": "checker/bad/send_event1.scilla",
+        "line": 140,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition ClaimReward:\n",
+      "start_location": {
+        "file": "checker/bad/send_event1.scilla",
+        "line": 202,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Error in pattern matching \"ttc\" of type Bool",
+      "start_location": {
+        "file": "checker/bad/send_event1.scilla",
+        "line": 207,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Error in pattern matching \"is_valid\" of type Bool",
+      "start_location": {
+        "file": "checker/bad/send_event1.scilla",
+        "line": 217,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Error in create event `msgs`:\nType mismatch: Event expected, but List (Message) provided.",
+      "start_location": {
+        "file": "checker/bad/send_event1.scilla",
+        "line": 222,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition Withdraw:\n",
+      "start_location": {
+        "file": "checker/bad/send_event1.scilla",
+        "line": 235,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Error in pattern matching \"good_to_go\" of type Bool",
+      "start_location": {
+        "file": "checker/bad/send_event1.scilla",
+        "line": 242,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Error in sending messages `e`:\nType mismatch: List (Message) expected, but Event provided.",
+      "start_location": {
+        "file": "checker/bad/send_event1.scilla",
+        "line": 247,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

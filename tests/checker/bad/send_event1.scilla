@@ -1,4 +1,5 @@
 scilla_version 0
+
 (***************************************************)
 (*               Associated library                *)
 (***************************************************)
@@ -218,7 +219,7 @@ transition ClaimReward(solution: Int128)
       msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0;
               code : wrong__sender_or_solution};
       msgs = one_msg msg;
-      send msgs        
+      event msgs        
     | True  =>
       winner = determine_winner puzzle pa pb player_a player_b owner; 
       bal <- _balance;
@@ -243,7 +244,7 @@ transition Withdraw ()
     msg = {_tag : Main; _recipient : owner; _amount : bal; code : here_is_the_reward};
     msgs = one_msg msg;
     e = { _eventname : "GameOver" };
-    event e;
+    send e;
     send msgs
   | False =>
     msg = {_tag : Main; _recipient : _sender; _amount : Uint128 0; code : cannot_withdraw};

@@ -273,6 +273,18 @@ module Uint256 = struct
     let _ = Uint128.to_bytes_little_endian ui.high buf (off+16) in
     ()
 
+  let of_bytes_big_endian buff off =
+    {
+      high = Uint128.of_bytes_big_endian buff off;
+      low = Uint128.of_bytes_big_endian buff (off+16)
+    }
+
+  let of_bytes_little_endian buff off =
+    {
+      low = Uint128.of_bytes_little_endian buff off;
+      high = Uint128.of_bytes_little_endian buff (off+16)
+    }
+
 end
 
 (*  https://github.com/andrenth/ocaml-stdint/blob/master/lib/int128_stubs.c *)
@@ -402,6 +414,12 @@ module Int256 = struct
 
   let to_bytes_little_endian i buf off =
     Uint256.to_bytes_little_endian i buf off
+
+  let of_bytes_big_endian buf off =
+    Uint256.of_bytes_big_endian buf off
+
+  let of_bytes_little_endian buf off =
+    Uint256.of_bytes_little_endian buf off
 
 end
 

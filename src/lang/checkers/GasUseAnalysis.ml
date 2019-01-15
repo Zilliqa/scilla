@@ -573,9 +573,6 @@ module ScillaGUA
     | "blt" | "badd" -> (* blt/badd(a, b) = 32 *)
       if List.length params <> 2 then fail1 (arg_err ops) opl else
       pure ([si "a"; si "b"], ressize ops params, const_pn 32)
-    | "dist" -> (* dist(a, b) = 32 *)
-      if List.length params <> 2 then fail1 (arg_err ops) opl else
-      pure ([si "a"; si "b"], ressize ops params, const_pn 32)
     | "to_bystr" -> (* to_bystr(a) = a *)
       if List.length params <> 1 then fail1 (arg_err ops) opl else
       pure ([si "a"], ressize ops params, sp "a")
@@ -614,14 +611,21 @@ module ScillaGUA
       "to_uint32" | "to_uint64" | "to_uint128" | "to_uint256" ->
       if List.length params <> 2 && List.length params <> 1 then fail1 (arg_err ops) opl else
       let base = match ops with | "mul" | "div" | "rem" -> 20 | _ -> 4 in
-      let%bind c = 
+      let%bind c =
+        let arg0 = List.nth tparams 0 in
+        (* Check if this is ByStrX -> Uint256 when X <= 32. *)
+        if (match bystrx_width arg0 with | Some w when w <= 32 -> true | _ -> false) && ops = "to_uint256"
+          then pure (base * 4) else
         (match int_width (List.nth tparams 0) with
          | Some 32 | Some 64 -> pure base
          | Some 128 -> pure @@ base * 2
          | Some 256 -> pure @@ base * 4
          | _ -> fail1 (arg_err ops) opl
         ) in
-      pure ([si "a"; si "b"], ressize ops params, const_pn c)
+      let sig_args =
+        (match ops with | "add" | "sub" | "mul" | "div" | "rem" | "lt" -> [si "a"; si "b"] | _ -> [si "a"])
+      in
+      pure (sig_args, ressize ops params, const_pn c)
     | _ -> fail1 ("Unknown builtin " ^ ops) opl
 
   (* Return gas use and result sizeref polynomials of evaluating an expression. *)

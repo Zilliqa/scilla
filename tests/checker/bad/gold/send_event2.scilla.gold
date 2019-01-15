@@ -1,0 +1,117 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract ZilGame:\n",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 140,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition Play:\n",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 154,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Error in pattern matching \"c\" of type Bool",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 159,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Error in pattern matching \"isa\" of type Bool",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 169,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in storing value of `hopt` into the field `player_a_hash`:\nType error in storing value of `tm1` into the field `timer`:\nType error in the binding to into `msgs`:\nType error in application of `one_msg`:\nType mismatch: Message expected, but Event provided.",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 178,
+        "column": 14
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition ClaimReward:\n",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 202,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Error in pattern matching \"ttc\" of type Bool",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 207,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Error in pattern matching \"is_valid\" of type Bool",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 217,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `msg`:\nInvalid message construct. Neither for send nor for event.",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 219,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition Withdraw:\n",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 235,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Error in pattern matching \"good_to_go\" of type Bool",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 242,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Error in create event `e`:\nType mismatch: Event expected, but Message provided.",
+      "start_location": {
+        "file": "checker/bad/send_event2.scilla",
+        "line": 247,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

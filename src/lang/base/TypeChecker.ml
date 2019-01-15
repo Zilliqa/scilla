@@ -223,7 +223,7 @@ module ScillaTypechecker
         let%bind _ = TEnv.is_wf_type tenv res_type in
         pure @@ (TypedSyntax.TApp (add_type_to_ident tf tf_rr, arg_types), (mk_qual_tp res_type, rep))
     | Message bs ->
-        let open PrimTypes in 
+        let%bind msg_typ = get_msgevnt_type bs in
         let payload_type pld =
           (match pld with
            | MTag m -> pure @@ TypedSyntax.MTag m
@@ -428,7 +428,7 @@ module ScillaTypechecker
                  ~lopt:(Some (get_rep i)) in
              let i_type = rr_typ r in
              let%bind _ = wrap_type_serr stmt @@
-               assert_type_equiv msg_typ i_type.tp in
+               assert_type_equiv event_typ i_type.tp in
              let typed_i = add_type_to_ident i i_type in
              let%bind checked_stmts = type_stmts env sts get_loc in
              pure @@ add_stmt_to_stmts_env (TypedSyntax.CreateEvnt typed_i, rep) checked_stmts
