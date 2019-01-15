@@ -1,0 +1,12 @@
+{
+    "_tag": "fillOrder",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678901234567899",
+    "params": [
+        {
+            "vname": "orderId",
+            "type": "ByStr32",
+            "value" : "0xcb478abde2c28d1808655f39a97d68bec72e7cd29240a0c5e78cfa76590891f1" 
+        }
+    ]
+}
