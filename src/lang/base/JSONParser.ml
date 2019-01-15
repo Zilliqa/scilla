@@ -134,7 +134,6 @@ let gen_parser (t' : typ) : (Basic.json -> literal) =
 
       let a = lookup_adt_name_exn name in
       (* Build a parser for each constructor of this ADT. *)
-      (* TODO: Use an efficient dictionary. Custom ADTs _can_ have many constructors. *)
       let cn_parsers =
         List.fold a.tconstr ~init:(AssocDictionary.make_dict()) ~f:(fun maps cn ->
           let tmap = constr_pattern_arg_types_exn t cn.cname in

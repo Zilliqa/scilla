@@ -189,7 +189,3 @@ let scilla_list_to_ocaml_rev v =
     | _ -> fail0 @@ sprintf "Cannot convert scilla list to reverse ocaml list:\n"
   in
   convert_to_list v []
-
-(* TODO: support user_defined data types *)
-
-
