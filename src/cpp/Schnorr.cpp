@@ -1,20 +1,18 @@
 /*
- * Copyright (c) 2018 Zilliqa
- * This source code is being disclosed to you solely for the purpose of your
- * participation in testing Zilliqa. You may view, compile and run the code for
- * that purpose and pursuant to the protocols and algorithms that are programmed
- * into, and intended by, the code. You may not do anything else with the code
- * without express permission from Zilliqa Research Pte. Ltd., including
- * modifying or publishing the code (or any part of it), and developing or
- * forming another public or private blockchain network. This source code is
- * provided 'as is' and no warranties are given as to title or non-infringement,
- * merchantability or fitness for purpose and, to the extent permitted by law,
- * all liability for your use of the code is disclaimed. Some programs in this
- * code are governed by the GNU General Public License v3.0 (available at
- * https://www.gnu.org/licenses/gpl-3.0.en.html) ('GPLv3'). The programs that
- * are governed by GPLv3.0 are those programs that are located in the folders
- * src/depends and tests/depends and which include a reference to GPLv3 in their
- * program files.
+ * Copyright (C) 2019 Zilliqa
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /*
@@ -28,6 +26,7 @@
 #include <openssl/err.h>
 #include <openssl/obj_mac.h>
 #include "Sha2.h"
+#include "generate_dsa_nonce.h"
 
 #include <array>
 
@@ -60,7 +59,7 @@ Curve::Curve()
 
 Curve::~Curve() {}
 
-shared_ptr<BIGNUM> BIGNUMSerialize::GetNumber(const vector<unsigned char>& src,
+shared_ptr<BIGNUM> BIGNUMSerialize::GetNumber(const bytes& src,
                                               unsigned int offset,
                                               unsigned int size) {
   if (size <= 0) {
@@ -69,6 +68,8 @@ shared_ptr<BIGNUM> BIGNUMSerialize::GetNumber(const vector<unsigned char>& src,
     return nullptr;
   }
 
+  // This mutex is to prevent multi-threaded issues with the use of openssl
+  // functions
   lock_guard<mutex> g(m_mutexBIGNUM);
 
   if (offset + size <= src.size()) {
@@ -85,7 +86,7 @@ shared_ptr<BIGNUM> BIGNUMSerialize::GetNumber(const vector<unsigned char>& src,
   return nullptr;
 }
 
-void BIGNUMSerialize::SetNumber(vector<unsigned char>& dst, unsigned int offset,
+void BIGNUMSerialize::SetNumber(bytes& dst, unsigned int offset,
                                 unsigned int size, shared_ptr<BIGNUM> value) {
   if (size <= 0) {
     LOG_GENERAL(WARNING, "assertion failed (" << __FILE__ << ":" << __LINE__
@@ -93,6 +94,8 @@ void BIGNUMSerialize::SetNumber(vector<unsigned char>& dst, unsigned int offset,
     return;
   }
 
+  // This mutex is to prevent multi-threaded issues with the use of openssl
+  // functions
   lock_guard<mutex> g(m_mutexBIGNUM);
 
   const int actual_bn_size = BN_num_bytes(value.get());
@@ -126,9 +129,13 @@ void BIGNUMSerialize::SetNumber(vector<unsigned char>& dst, unsigned int offset,
   // }
 }
 
-shared_ptr<EC_POINT> ECPOINTSerialize::GetNumber(
-    const vector<unsigned char>& src, unsigned int offset, unsigned int size) {
+shared_ptr<EC_POINT> ECPOINTSerialize::GetNumber(const bytes& src,
+                                                 unsigned int offset,
+                                                 unsigned int size) {
   shared_ptr<BIGNUM> bnvalue = BIGNUMSerialize::GetNumber(src, offset, size);
+
+  // This mutex is to prevent multi-threaded issues with the use of openssl
+  // functions
   lock_guard<mutex> g(m_mutexECPOINT);
 
   if (bnvalue != nullptr) {
@@ -149,11 +156,13 @@ shared_ptr<EC_POINT> ECPOINTSerialize::GetNumber(
   return nullptr;
 }
 
-void ECPOINTSerialize::SetNumber(vector<unsigned char>& dst,
-                                 unsigned int offset, unsigned int size,
+void ECPOINTSerialize::SetNumber(bytes& dst, unsigned int offset,
+                                 unsigned int size,
                                  shared_ptr<EC_POINT> value) {
   shared_ptr<BIGNUM> bnvalue;
   {
+    // This mutex is to prevent multi-threaded issues with the use of openssl
+    // functions
     std::lock_guard<mutex> g(m_mutexECPOINT);
 
     unique_ptr<BN_CTX, void (*)(BN_CTX*)> ctx(BN_CTX_new(), BN_CTX_free);
@@ -198,7 +207,7 @@ PrivKey::PrivKey() : m_d(BN_new(), BN_clear_free), m_initialized(false) {
   }
 }
 
-PrivKey::PrivKey(const vector<unsigned char>& src, unsigned int offset) {
+PrivKey::PrivKey(const bytes& src, unsigned int offset) {
   if (Deserialize(src, offset) != 0) {
     LOG_GENERAL(WARNING, "We failed to init PrivKey.");
   }
@@ -222,8 +231,7 @@ PrivKey::~PrivKey() {}
 
 bool PrivKey::Initialized() const { return m_initialized; }
 
-unsigned int PrivKey::Serialize(vector<unsigned char>& dst,
-                                unsigned int offset) const {
+unsigned int PrivKey::Serialize(bytes& dst, unsigned int offset) const {
   // LOG_MARKER();
 
   if (m_initialized) {
@@ -233,8 +241,7 @@ unsigned int PrivKey::Serialize(vector<unsigned char>& dst,
   return PRIV_KEY_SIZE;
 }
 
-int PrivKey::Deserialize(const vector<unsigned char>& src,
-                         unsigned int offset) {
+int PrivKey::Deserialize(const bytes& src, unsigned int offset) {
   // LOG_MARKER();
 
   try {
@@ -304,7 +311,7 @@ PubKey::PubKey(const PrivKey& privkey)
   }
 }
 
-PubKey::PubKey(const vector<unsigned char>& src, unsigned int offset) {
+PubKey::PubKey(const bytes& src, unsigned int offset) {
   if (Deserialize(src, offset) != 0) {
     LOG_GENERAL(WARNING, "We failed to init PubKey.");
   }
@@ -334,8 +341,7 @@ PubKey::~PubKey() {}
 
 bool PubKey::Initialized() const { return m_initialized; }
 
-unsigned int PubKey::Serialize(vector<unsigned char>& dst,
-                               unsigned int offset) const {
+unsigned int PubKey::Serialize(bytes& dst, unsigned int offset) const {
   if (m_initialized) {
     ECPOINTSerialize::SetNumber(dst, offset, PUB_KEY_SIZE, m_P);
   }
@@ -343,7 +349,7 @@ unsigned int PubKey::Serialize(vector<unsigned char>& dst,
   return PUB_KEY_SIZE;
 }
 
-int PubKey::Deserialize(const vector<unsigned char>& src, unsigned int offset) {
+int PubKey::Deserialize(const bytes& src, unsigned int offset) {
   // LOG_MARKER();
 
   try {
@@ -439,7 +445,7 @@ Signature::Signature()
   }
 }
 
-Signature::Signature(const vector<unsigned char>& src, unsigned int offset) {
+Signature::Signature(const bytes& src, unsigned int offset) {
   if (Deserialize(src, offset) != 0) {
     LOG_GENERAL(WARNING, "We failed to init Signature.");
   }
@@ -471,8 +477,7 @@ Signature::~Signature() {}
 
 bool Signature::Initialized() const { return m_initialized; }
 
-unsigned int Signature::Serialize(vector<unsigned char>& dst,
-                                  unsigned int offset) const {
+unsigned int Signature::Serialize(bytes& dst, unsigned int offset) const {
   // LOG_MARKER();
 
   if (m_initialized) {
@@ -484,8 +489,7 @@ unsigned int Signature::Serialize(vector<unsigned char>& dst,
   return SIGNATURE_CHALLENGE_SIZE + SIGNATURE_RESPONSE_SIZE;
 }
 
-int Signature::Deserialize(const vector<unsigned char>& src,
-                           unsigned int offset) {
+int Signature::Deserialize(const bytes& src, unsigned int offset) {
   // LOG_MARKER();
 
   try {
@@ -538,6 +542,9 @@ const Curve& Schnorr::GetCurve() const { return m_curve; }
 
 pair<PrivKey, PubKey> Schnorr::GenKeyPair() {
   // LOG_MARKER();
+
+  // This mutex is to prevent multi-threaded issues with the use of openssl
+  // functions
   lock_guard<mutex> g(m_mutexSchnorr);
 
   PrivKey privkey;
@@ -546,15 +553,18 @@ pair<PrivKey, PubKey> Schnorr::GenKeyPair() {
   return make_pair(PrivKey(privkey), PubKey(pubkey));
 }
 
-bool Schnorr::Sign(const vector<unsigned char>& message, const PrivKey& privkey,
+bool Schnorr::Sign(const bytes& message, const PrivKey& privkey,
                    const PubKey& pubkey, Signature& result) {
   return Sign(message, 0, message.size(), privkey, pubkey, result);
 }
 
-bool Schnorr::Sign(const vector<unsigned char>& message, unsigned int offset,
-                   unsigned int size, const PrivKey& privkey,
-                   const PubKey& pubkey, Signature& result) {
+bool Schnorr::Sign(const bytes& message, unsigned int offset, unsigned int size,
+                   const PrivKey& privkey, const PubKey& pubkey,
+                   Signature& result) {
   // LOG_MARKER();
+
+  // This mutex is to prevent multi-threaded issues with the use of openssl
+  // functions
   lock_guard<mutex> g(m_mutexSchnorr);
 
   // Initial checks
@@ -595,7 +605,7 @@ bool Schnorr::Sign(const vector<unsigned char>& message, unsigned int offset,
   // 6. If s = 0 goto 1.
   // 7  Signature on m is (r, s)
 
-  vector<unsigned char> buf(PUBKEY_COMPRESSED_SIZE_BYTES);
+  bytes buf(PUBKEY_COMPRESSED_SIZE_BYTES);
   SHA2<HASH_TYPE::HASH_VARIANT_256> sha2;
 
   bool err = false;  // detect error
@@ -612,14 +622,13 @@ bool Schnorr::Sign(const vector<unsigned char>& message, unsigned int offset,
 
       // 1. Generate a random k from [1,..., order-1]
       do {
-#if 0
         err = (BN_generate_dsa_nonce(
                    k.get(), m_curve.m_order.get(), privkey.m_d.get(),
                    static_cast<const unsigned char*>(message.data()),
                    message.size(), ctx.get()) == 0);
-#else
-        err = (BN_rand(k.get(), BN_num_bits(m_curve.m_order.get()), -1, 0) == 0);
-#endif
+
+        // err =
+        // (BN_rand(k.get(), BN_num_bits(m_curve.m_order.get()), -1, 0) == 0);
         if (err) {
           LOG_GENERAL(WARNING, "Random generation failed");
           return false;
@@ -667,7 +676,7 @@ bool Schnorr::Sign(const vector<unsigned char>& message, unsigned int offset,
 
       // Hash message
       sha2.Update(message, offset, size);
-      vector<unsigned char> digest = sha2.Finalize();
+      bytes digest = sha2.Finalize();
 
       // Build the challenge
       err =
@@ -719,15 +728,18 @@ bool Schnorr::Sign(const vector<unsigned char>& message, unsigned int offset,
   return (res == 0);
 }
 
-bool Schnorr::Verify(const vector<unsigned char>& message,
-                     const Signature& toverify, const PubKey& pubkey) {
+bool Schnorr::Verify(const bytes& message, const Signature& toverify,
+                     const PubKey& pubkey) {
   return Verify(message, 0, message.size(), toverify, pubkey);
 }
 
-bool Schnorr::Verify(const vector<unsigned char>& message, unsigned int offset,
+bool Schnorr::Verify(const bytes& message, unsigned int offset,
                      unsigned int size, const Signature& toverify,
                      const PubKey& pubkey) {
   // LOG_MARKER();
+
+  // This mutex is to prevent multi-threaded issues with the use of openssl
+  // functions
   lock_guard<mutex> g(m_mutexSchnorr);
 
   // Initial checks
@@ -763,7 +775,7 @@ bool Schnorr::Verify(const vector<unsigned char>& message, unsigned int offset,
     // 4. r' = H(Q, kpub, m)
     // 5. return r' == r
 
-    vector<unsigned char> buf(PUBKEY_COMPRESSED_SIZE_BYTES);
+    bytes buf(PUBKEY_COMPRESSED_SIZE_BYTES);
     SHA2<HASH_TYPE::HASH_VARIANT_256> sha2;
 
     bool err = false;
@@ -848,7 +860,7 @@ bool Schnorr::Verify(const vector<unsigned char>& message, unsigned int offset,
 
       // 4.3 Hash message
       sha2.Update(message, offset, size);
-      vector<unsigned char> digest = sha2.Finalize();
+      bytes digest = sha2.Finalize();
 
       // 5. return r' == r
       err2 = (BN_bin2bn(digest.data(), digest.size(), challenge_built.get()) ==
@@ -882,6 +894,9 @@ bool Schnorr::Verify(const vector<unsigned char>& message, unsigned int offset,
 
 void Schnorr::PrintPoint(const EC_POINT* point) {
   // LOG_MARKER();
+
+  // This mutex is to prevent multi-threaded issues with the use of openssl
+  // functions
   lock_guard<mutex> g(m_mutexSchnorr);
 
   unique_ptr<BIGNUM, void (*)(BIGNUM*)> x(BN_new(), BN_clear_free);

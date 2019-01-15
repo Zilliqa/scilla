@@ -25,6 +25,7 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["pm_check"; "bad"; f]
     let runner = "type-checker"      
     let custom_args = []
+    let lib_override = None
     let tests = [
       "pm1.scilla";
       "pm2.scilla";

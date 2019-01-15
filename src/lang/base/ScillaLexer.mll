@@ -60,7 +60,6 @@ rule read =
   (* Keywords *)          
   | "forall"      { FORALL }      
   | "builtin"     { BUILTIN }      
-  | "block"       { BLOCK }      
   | "library"     { LIBRARY }
   | "import"      { IMPORT }
   | "let"         { LET }
@@ -81,6 +80,8 @@ rule read =
   | "Emp"         { EMP }
   | "Map"         { MAP }
   | "scilla_version" { SCILLA_VERSION }
+  | "type"        { TYPE }
+  | "of"          { OF }
 
 
   (* Separators *)    

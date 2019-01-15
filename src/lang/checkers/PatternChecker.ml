@@ -206,12 +206,18 @@ module ScillaPatternchecker
   let pm_check_library l =
     let { lname = libname; lentries } = l in
     let%bind checked_lentries = mapM
-      ~f:(fun entry ->
-           let { lname = entryname; lexp } = entry in
-           let msg = sprintf "Error during pattern-match checking of library %s:\n" (get_id entryname) in
-           let%bind checked_lexp = wrap_with_info (msg, ER.get_loc (get_rep entryname)) @@ pm_check_expr lexp in
-           pure @@ { CheckedPatternSyntax.lname = entryname;
-                     CheckedPatternSyntax.lexp = checked_lexp }) lentries in
+        ~f:(fun entry ->
+            match entry with
+            | LibTyp (tname, typs) ->
+                let lifted_typs = List.map typs
+                    ~f:(fun { cname; c_arg_types } ->
+                        { CheckedPatternSyntax.cname = cname;
+                          CheckedPatternSyntax.c_arg_types = c_arg_types }) in
+                pure @@ CheckedPatternSyntax.LibTyp (tname, lifted_typs)
+            | LibVar (entryname, lexp) -> 
+                let msg = sprintf "Error during pattern-match checking of library %s:\n" (get_id entryname) in
+                let%bind checked_lexp = wrap_with_info (msg, ER.get_loc (get_rep entryname)) @@ pm_check_expr lexp in
+                pure @@ CheckedPatternSyntax.LibVar (entryname, checked_lexp)) lentries in
     pure @@ { CheckedPatternSyntax.lname = libname;
               CheckedPatternSyntax.lentries = checked_lentries }
 
