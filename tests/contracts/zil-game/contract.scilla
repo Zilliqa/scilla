@@ -15,6 +15,19 @@ let one_msg =
 
 let no_msg = Nil {Message}
 
+let hash_dist =
+  fun (h0 : ByStr32) =>
+  fun (h1 : ByStr32) =>
+    let h00 = builtin to_uint256 h0 in
+    let h11 = builtin to_uint256 h1 in
+    let lt = builtin lt h00 h11 in
+    match lt with
+    | False =>
+      builtin sub h00 h11
+    | True =>
+      builtin sub h11 h00
+    end
+
 let update_hash = 
   fun (oh : Option ByStr32) =>
   fun (h : ByStr32) =>
@@ -96,8 +109,8 @@ let determine_winner =
     let gab = Pair { (Option ByStr32) (Option ByStr32) } guess_a guess_b in
     match gab with
     | Pair (Some ga) (Some gb) =>
-      let d1 = builtin dist puzzle ga in
-      let d2 = builtin dist puzzle gb in
+      let d1 = hash_dist puzzle ga in
+      let d2 = hash_dist puzzle gb in
       let c1 = builtin lt d1 d2 in
       match c1 with 
       | True => pa

@@ -161,6 +161,9 @@ module ScillaGas
       when is_bystrx_type a1 && is_bystrx_type a2 &&
            get (bystrx_width a1) = get (bystrx_width a2)
       -> pure @@ get (bystrx_width a1) * base
+    | "to_uint256", [a], _ 
+      when (is_bystrx_type a) && get (bystrx_width a) <= 32 ->
+      pure (32 * base)
     | "sha256hash", _, [a] ->
         (* Block size of sha256hash is 512 *)
         pure @@ (div_ceil (String.length (pp_literal a)) 64) * 15 * base
@@ -250,9 +253,8 @@ module ScillaGas
 
     (* Crypto *)
     ("eq", [tvar "'A"; tvar "'A"], crypto_coster, 1);
-    (* We currently only support `dist` for ByStr32. *)
-    ("dist", [bystrx_typ hash_length; bystrx_typ hash_length], base_coster, 32);
     ("to_bystr", [tvar "'A"], crypto_coster, 1);
+    ("to_uint256", [tvar "'A"], crypto_coster, 1);
     ("sha256hash", [tvar "'A"], crypto_coster, 1);
     ("keccak256hash", [tvar "'A"], crypto_coster, 1);
     ("ripemd160hash", [tvar "'A"], crypto_coster, 1);
