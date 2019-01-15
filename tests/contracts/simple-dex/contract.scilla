@@ -56,21 +56,13 @@ let transaction_msg_as_list =
 (* If no existing records are found, return `incomingTokensAmt` *)
 (* else, return `incomingTokenAmt` + existing value *)
 let computePendingReturnsVal =
-  fun ( pendingReturns : Map (ByStr20) (Map ByStr20 Uint128) ) =>
+  fun ( prevVal : Option Uint128 ) =>
   fun ( incomingTokensAmt : Uint128 ) =>
-  fun ( incomingTokenAddr: ByStr20 ) =>
-  fun ( recipientAddr: ByStr20 ) =>
-    let zero = Uint128 0 in
-    let map1  = builtin get pendingReturns recipientAddr in
-    match map1 with
+    match prevVal with
     | Some v =>
-      let prevVal = builtin get v incomingTokenAddr in
-      match prevVal with
-      | None => incomingTokensAmt
-      | Some value =>
-        builtin add value incomingTokensAmt
-      end
-    | None => incomingTokensAmt
+      builtin add v incomingTokensAmt
+    | None =>
+      incomingTokensAmt
     end
 
 let success = "Success"
@@ -149,12 +141,12 @@ transition fillOrder(orderId: ByStr32)
         makerAddr = let getMakerAddr = @fst (ByStr20)(BNum) in
                     getMakerAddr info; 
         (* Updates taker with the tokens that he is entitled to claim *)
-        pr <- pendingReturns;
-        takerAmt = computePendingReturnsVal pr valueA tokenA _sender;
+        prevVal <- pendingReturns[_sender][tokenA];
+        takerAmt = computePendingReturnsVal prevVal valueA;
         pendingReturns[_sender][tokenA] := takerAmt;
 
-        pr2 <- pendingReturns;
-        makerAmt = computePendingReturnsVal pr2 valueB tokenB makerAddr ;
+        prevVal <- pendingReturns[makerAddr][tokenB];
+        makerAmt = computePendingReturnsVal prevVal valueB;
         pendingReturns[makerAddr][tokenB] := makerAmt;
         
         (* Delete orders from the orderbook and orderinfo *)
@@ -225,8 +217,8 @@ transition cancelOrder(orderId: ByStr32)
         | Some (Order tokenA valueA _ _)=>
 
           (* Updates taker with the tokens that he is entitled to claim *)
-          pr <- pendingReturns;
-          takerAmt = computePendingReturnsVal pr valueA tokenA _sender;
+          prevVal <- pendingReturns[_sender][tokenA];
+          takerAmt = computePendingReturnsVal prevVal valueA;
           pendingReturns[_sender][tokenA] := takerAmt;
           
           (* Delete orders from the orderbook and orderinfo *)
