@@ -11,18 +11,11 @@ than the one specified below.
 
 ### Ubuntu
 
-On machines with Ubuntu 18.04 or later, run these additional commands first: The last three lines must also be added to your `~/.bashrc`.
+On machines with Ubuntu strictly older than 18.04, run these additional commands first:
 
 ```
 # Add Ubuntu PPA for libsecp256k1-dev
 sudo add-apt-repository ppa:tah83/secp256k1 -y
-# Fetch, build and install OpenSSL 1.0.2n into ${HOME}/openssl.
-./scripts/build_openssl.sh
-# Exports for using OpenSSL 1.0.2n built above, instead of system OpenSSL.
-export CPLUS_INCLUDE_PATH="${HOME}/openssl/install/include:${CPLUS_INCLUDE_PATH}"
-export C_INCLUDE_PATH="${HOME}/openssl/install/include:${CPLUS_INCLUDE_PATH}"
-export LIBRARY_PATH="${HOME}/openssl/install/lib:${LIBRARY_PATH}"
-export LD_LIBRARY_PATH="${HOME}/openssl/install/lib:${LD_LIBRARY_PATH}"
 ```
 
 Required ubuntu packages can be installed as below:
