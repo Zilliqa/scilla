@@ -475,8 +475,8 @@ let movement_path =
 let perform_promotion =
   fun (promote : Bool) =>
   fun (promotion_status : PromotionStatus) =>
-  fun (origin : Square) =>
-  fun (target : Square) =>
+  fun (origin_row : Uint32) =>
+  fun (target_row : Uint32) =>
   fun (player_1_in_turn : Bool) =>
     match promote with
     | False =>
@@ -495,16 +495,8 @@ let perform_promotion =
           (* Move must occur on row 7 or higher *)
           let seven = Uint32 7 in
           (* Attacking northwards *)
-          let origin_not_in_opponent_territory =
-            match origin with
-            | Square origin_row _ =>
-              builtin lt origin_row seven
-            end in
-          let target_not_in_opponent_territory =
-            match target with
-            | Square target_row _ =>
-              builtin lt target_row seven
-            end in
+          let origin_not_in_opponent_territory = builtin lt origin_row seven in
+          let target_not_in_opponent_territory = builtin lt target_row seven in
           let not_in_opponent_territory = andb origin_not_in_opponent_territory target_not_in_opponent_territory in
           match not_in_opponent_territory with
           | True =>
@@ -517,16 +509,8 @@ let perform_promotion =
           (* Move must occur on row 3 or lower *)
           let three = Uint32 3 in
           (* Attacking northwards *)
-          let origin_not_in_opponent_territory =
-            match origin with
-            | Square origin_row _ =>
-              builtin lt three origin_row
-            end in
-          let target_not_in_opponent_territory =
-            match target with
-            | Square target_row _ =>
-              builtin lt three target_row
-            end in
+          let origin_not_in_opponent_territory = builtin lt three origin_row in
+          let target_not_in_opponent_territory = builtin lt three target_row in
           let not_in_opponent_territory = andb origin_not_in_opponent_territory target_not_in_opponent_territory in
           match not_in_opponent_territory with
           | True =>
@@ -685,7 +669,7 @@ transition PlayerAction (action : Action)
                 err = illegal_action;
                 e = mk_error_event err;
                 event e
-              | Cons target_square intervening_squares =>
+              | Cons (Square target_row target_column) intervening_squares =>
                 (* Piece is allowed to move as requested. Check for blocking pieces.  *)
                 board_tmp <- board;
                 blocked_path = 
@@ -714,7 +698,7 @@ transition PlayerAction (action : Action)
                   event e
                 | False =>
                   (* Check contents of target square *)
-                  contents_at_target <- board[row][column];
+                  contents_at_target <- board[target_row][target_column];
                   match contents_at_target with
                   | None =>
                     (* Moving off the board *)
@@ -724,7 +708,7 @@ transition PlayerAction (action : Action)
                   | Some  Free  => 
                     (* No piece captured *)
                     (* Check promotion part of move *)
-                    new_promotion_status_opt = perform_promotion promote promotion_status square target_square player_1_moves;
+                    new_promotion_status_opt = perform_promotion promote promotion_status row target_row player_1_moves;
                     match new_promotion_status_opt with
                     | None =>
                       (* Illegal promotion *)
@@ -736,7 +720,8 @@ transition PlayerAction (action : Action)
                       (* Source square is no longer occupied *)
                       board[row][column] := free;
                       (* Update target square *)
-                      new_contents_at_target = Occupied piece new_promotion_status current_player
+                      new_contents_at_target = Occupied piece new_promotion_status current_player;
+                      board[target_row][target_column] := new_contents_at_target
                     end
                   | Some (Occupied captured_piece _ captured_owner) =>
                     (* Target square is occupied. Check ownership *)
@@ -750,7 +735,7 @@ transition PlayerAction (action : Action)
                     | False =>
                       (* Opponent piece captured. *)
                       (* Check promotion part of move *)
-                      new_promotion_status_opt = perform_promotion promote promotion_status square target_square player_1_moves;
+                      new_promotion_status_opt = perform_promotion promote promotion_status row target_row player_1_moves;
                       match new_promotion_status_opt with
                       | None =>
                         (* Illegal promotion *)
@@ -762,6 +747,7 @@ transition PlayerAction (action : Action)
                         board[row][column] := free;
                         (* Update target square *)
                         new_contents_at_target = Occupied piece new_promotion_status current_player;
+                        board[target_row][target_column] := new_contents_at_target;
                         (* Check if captured piece is the king *)
                         match captured_piece with
                         | King =>
