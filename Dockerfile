@@ -1,9 +1,10 @@
 # escape=\
 ARG BASE_IMAGE=ubuntu:16.04
+ARG MAJOR_VERSION=0
 
 FROM ${BASE_IMAGE}
 
-COPY . /scilla
+COPY . /scilla/${MAJOR_VERSION}
 
 WORKDIR /scilla
 
