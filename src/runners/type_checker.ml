@@ -62,7 +62,6 @@ let check_typing e elibs =
                   ParsedSyntax.lentries = recursion_principles } in
   let%bind (typed_rec_libs, tenv0) = type_library TEnv.mk rec_lib in
   (* Step 1: Type check external libraries *)
-  (* TODO: Cache this information unless its version changed! *)
   let%bind (_, tenv1) = MonadUtil.foldM elibs ~init:([], tenv0)
       ~f:(fun (lib_acc, env_acc) elib ->
           let%bind (lib, new_env) = type_library env_acc elib in

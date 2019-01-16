@@ -29,8 +29,6 @@ module CashflowRep (R : Rep) = struct
     | Pair of money_tag * money_tag
     | Inconsistent
   [@@deriving sexp]
-    (* TODO: Add this if possible *)
-  (*    | ADT of t *)
       
   type rep = money_tag * R.rep
   [@@deriving sexp]

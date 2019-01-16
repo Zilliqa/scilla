@@ -93,8 +93,10 @@ module MakeTEnv: MakeTEnvFunctor = functor
     let rr_loc rr = R.get_loc (rr.rep)
     let rr_rep rr = rr.rep
     let rr_typ rr = rr.qt
-    (*  TODO: Also print rep *)
-    let rr_pp  rr = (rr_typ rr).tp |> pp_typ
+    let rr_pp  rr = 
+      let t = (rr_typ rr).tp |> pp_typ in
+      let r = Sexp.to_string @@ R.sexp_of_rep (rr_rep rr) in
+      "(" ^ t ^ ", " ^ r ^ ")"
     let mk_qual_tp tp =  Q.mk_qualified_type tp
 
     module TEnv = struct
@@ -152,7 +154,6 @@ module MakeTEnv: MakeTEnvFunctor = functor
         in
         is_wf_typ' t []
 
-      (* TODO: Add support for tvars *)    
       let pp ?f:(f = fun _ -> true) env  =
         let lst = List.filter (to_list env) ~f:f in
         let ps = List.map lst

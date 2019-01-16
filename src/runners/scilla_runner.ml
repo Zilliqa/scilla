@@ -111,7 +111,6 @@ let output_message_json gas_remaining mlist =
     )
   | [] -> `Null
   | _ ->
-    (* TODO: Allow more than one message once main blockchain is ready *)
     perr @@ scilla_error_gas_string gas_remaining
       (mk_error0 "Sending more than one message not currently permitted");
     exit 1

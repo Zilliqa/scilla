@@ -319,7 +319,7 @@ let non_arithmetic_tests = test_case (fun _ ->
   assert_bool err (Int256.shift_left (ofs "1") 256 = (ofs "0"));
   assert_bool err (Int256.shift_right_logical (ofs "1") 1 = (ofs "0"));
   assert_bool err (Int256.shift_right_logical (ofs "-1") 1 = (ofs int256_max_str));
-  (* TODO: Int256.shift_right is not implemented yet. *)
+
   assert_bool err (Int256.setbit (ofs "0") 0 = (ofs "1"));
   assert_bool err (Int256.setbit (ofs "0") 255 = (ofs int256_min_str));
   assert_bool err (Int256.clearbit (ofs "1") 0 = (ofs "0"));
