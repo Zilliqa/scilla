@@ -121,7 +121,10 @@ let parse () =
     ("-i", Arg.String (fun x -> f_input := x), "Path to scilla contract");
     ("-tracefile", Arg.String (fun x -> f_trace_file := x), "Path to trace file. (prints to stdout if no file specified)");
     ("-tracelevel", Arg.String (fun x -> f_trace_level := x), "Trace level: none|stmt|exp. (default none)");
-    ("-libdir", Arg.String (fun x -> d_libs := x::!d_libs), "Path to directory containing libraries");
+    ("-libdir", Arg.String (fun x ->
+        let xl = if x = "" then [] else String.split_on_char ';' x in
+        d_libs := !d_libs @ xl
+      ), "Path(s) to directory containing libraries seperated by ';'");
     ("-gaslimit", Arg.String
       (fun i ->
         let g = 
