@@ -1,12 +1,13 @@
 # escape=\
 ARG BASE_IMAGE=ubuntu:16.04
-ARG MAJOR_VERSION=0
 
 FROM ${BASE_IMAGE}
 
+ARG MAJOR_VERSION=0
+
 COPY . /scilla/${MAJOR_VERSION}
 
-WORKDIR /scilla
+WORKDIR /scilla/${MAJOR_VERSION}
 
 RUN apt-get update \
     && apt-get install -y software-properties-common \
@@ -26,7 +27,7 @@ RUN apt-get update \
     libboost-system-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN cd /scilla && make opamdep \
+RUN cd /scilla/${MAJOR_VERSION} && make opamdep \
     && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
     && eval `opam config env` && \
     make
