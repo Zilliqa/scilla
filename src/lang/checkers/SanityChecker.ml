@@ -78,8 +78,8 @@ module ScillaSanityChecker
       (* Use location of "b" to represent the location of msg. *)
       let eloc = ER.get_loc @@ get_rep b in
 
-      (* No repeating message field. TODO: use eloc below as "msg" has no location info. *)
-      let e = e @ check_duplicate_ident SR.get_loc (List.map (fun (s, _) -> SR.mk_id_string s) msg) in
+      (* No repeating message field. *)
+      let e = e @ check_duplicate_ident (fun _ -> eloc) (List.map (fun (s, _) -> SR.mk_id_string s) msg) in
 
       (* Either "_tag" or "_eventname" must be present. *)
       let e = if (List.exists (fun (s, _) -> s = tag_label) msg)
