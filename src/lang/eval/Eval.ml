@@ -154,7 +154,6 @@ let rec exp_eval erep env  =
       (* Get the branch and the bindings *)
       let%bind ((_, e_branch), bnds) =
         tryM clauses
-          (* TODO: add location info to error message. *)
           ~msg:(fun () -> mk_error1 (sprintf "Match expression failed. No clause matched.") loc)
           ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in
       (* Update the environment for the branch *)

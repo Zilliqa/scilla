@@ -143,11 +143,7 @@ module EvalMonad = struct
     | Core.Error s -> fail s
     | Core.Ok a -> pure a
 
-  (* [Wrappers for Gas Accounting]
-     
-     TODO
-
-  *)
+  (* [Wrappers for Gas Accounting]  *)
   let checkwrap_opR op_thunk cost =
     (fun k remaining_gas ->
        if (Uint64.compare remaining_gas cost) >= 0
