@@ -70,7 +70,26 @@
       { "vname": "ClaimOwnership", "params": [] },
       { "vname": "AddFunds", "params": [] }
     ],
-    "events": []
+    "events": [
+      {
+        "vname": "WalletError",
+        "params": [ { "vname": "err_code", "type": "Int32" } ]
+      },
+      { "vname": "New owner approved", "params": [] },
+      {
+        "vname": "Owner signed",
+        "params": [ { "vname": "signature_count", "type": "Uint32" } ]
+      },
+      { "vname": "Candiate owner added", "params": [] },
+      {
+        "vname": "Transaction signed",
+        "params": [ { "vname": "signature_count", "type": "Uint32" } ]
+      },
+      {
+        "vname": "Transaction created",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      }
+    ]
   },
   "warnings": []
 }

@@ -40,7 +40,9 @@ module ScillaSanityChecker
   open SCU
 
   (* Basic sanity tests on the contract. *)
-  let contr_sanity (contr : contract) =
+  let contr_sanity (cmod : cmodule) =
+
+    let contr = cmod.contr in
 
     (* Check if there are duplicate entries in "ilist". *)
     let check_duplicate_ident gloc ilist =
@@ -95,7 +97,7 @@ module ScillaSanityChecker
       in
         pure e (* as required by "fold_over_messages" *)
     in
-    let%bind e = fold_over_messages contr ~init:e ~f:check_message in
+    let%bind e = fold_over_messages cmod ~init:e ~f:check_message in
 
     (* Transition parameters cannot have names as that of implicit ones. *)
     let e = List.fold_left (fun e t -> 
