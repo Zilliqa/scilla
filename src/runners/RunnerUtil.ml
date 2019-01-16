@@ -87,7 +87,7 @@ type runner_cli = {
 
 let parse_cli () =
   let usage = " -libdir /path/to/stdlib [-simple-errors] input.scilla" in
-  let r_stdlib_dir = ref "" in
+  let r_stdlib_dir = ref [] in
   let r_input_file = ref "" in
   let r_json_errors = ref false in
   let r_cf = ref false in
@@ -98,7 +98,11 @@ let parse_cli () =
           if true then exit 0; (* if "true" to avoid warning on exit 0 *)
           ()
       ), "Print Scilla version and exit");
-    ("-libdir", Arg.String (fun x -> r_stdlib_dir := x), "Path to stdlib");
+    ("-libdir", Arg.String (fun x ->
+           let xl = if x = "" then [] else String.split_on_char ';' x in
+           r_stdlib_dir := !r_stdlib_dir @ xl
+        ),
+      "Path(s) to libraries separated with ';'");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
   ] in 
@@ -108,5 +112,4 @@ let parse_cli () =
   if !r_input_file = "" then
     (DebugMessage.perr @@ "Usage:\n" ^ Sys.argv.(0) ^ usage ^ "\n"; exit 1);
   GlobalConfig.set_use_json_errors !r_json_errors;
-  let stdlib_dirs = if !r_stdlib_dir = "" then [] else String.split_on_char ';' !r_stdlib_dir in
-  { input_file = !r_input_file; stdlib_dirs = stdlib_dirs; cf_flag = !r_cf }
+  { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; cf_flag = !r_cf }
