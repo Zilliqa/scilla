@@ -34,8 +34,7 @@ clean:
 
 # Build a standalone scilla docker
 docker:
-	MAJOR_VERSION=$$(grep -r scilla_version src/lang/base/Syntax.ml|cut -d ',' -f1|cut -d '(' -f2); \
-	docker build --build-arg MAJOR_VERSION=$${MAJOR_VERSION} .
+	docker build .
 
 # Build a zilliqa-plus-scilla docker based on from zilliqa image ZILLIQA_IMAGE
 zilliqa-docker:
@@ -46,8 +45,7 @@ zilliqa-docker:
 		echo "" && \
 		exit 1; \
 	fi
-	MAJOR_VERSION=$$(grep -r scilla_version src/lang/base/Syntax.ml|cut -d ',' -f1|cut -d '(' -f2); \
-	docker build --build-arg BASE_IMAGE=$(ZILLIQA_IMAGE) --build-arg MAJOR_VERSION=$${MAJOR_VERSION} .
+	docker build --build-arg BASE_IMAGE=$(ZILLIQA_IMAGE) .
 
 opamdep:
 	opam init -y
