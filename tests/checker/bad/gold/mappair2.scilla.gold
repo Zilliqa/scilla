@@ -29,7 +29,11 @@
     },
     {
       "error_message": "Identifier status used more than once\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 109,
+        "column": 7
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {

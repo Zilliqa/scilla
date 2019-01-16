@@ -222,7 +222,6 @@ let jobj_to_statevar json =
 (*                    JSON printing                             *)
 (****************************************************************)
 
-(* TODO: Putting these in JSON_pp causes cyclic dependence. *)
 let state_to_json state =
   let (vname, lit) = state in
   `Assoc [ 

@@ -588,7 +588,7 @@ module ScillaTypechecker
             
   let type_module
       (md : UntypedSyntax.cmodule)
-      (* TODO : rec_libs should be added to the contract somehow *)
+      (* TODO, issue #225 : rec_libs should be added to the libraries when we allow custom, inductive ADTs *)
       (rec_libs : UntypedSyntax.lib_entry list)
       (elibs : UntypedSyntax.library list)
     : (TypedSyntax.cmodule * stmt_tenv, scilla_error list) result =
