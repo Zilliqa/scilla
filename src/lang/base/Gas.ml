@@ -87,9 +87,9 @@ module ScillaGas
           foldM ~f:(fun acc lit' ->
               let%bind clit' = literal_cost lit' in
               pure (acc + clit')) ~init:0 ll
-      (* TODO: Check this *)
-      | Clo _ -> pure @@ 0
-      | TAbs _ -> pure @@ 0
+      (* Constant cost for forming a closure (similar to expr_static_cost below). *)
+      | Clo _ -> pure @@ 1
+      | TAbs _ -> pure @@ 1
 
   let expr_static_cost erep =
     let (e, _) = erep in
@@ -200,7 +200,6 @@ module ScillaGas
 
   let to_nat_coster _ args base =
     match args with
-    (* TODO: Is this good? *)
     | [UintLit (Uint32L i)] -> pure @@  (Stdint.Uint32.to_int i) * base
     | _ -> fail0 @@ "Gas cost error for to_nat built-in"
 

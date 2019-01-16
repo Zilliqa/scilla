@@ -310,7 +310,7 @@ module Configuration = struct
 
   (* Check that message is well-formed before adding to the sending pool *)
   let rec validate_messages ls =
-    (* TODO: implement more checks *)
+    (* Note: We don't need a whole lot of checks as the checker does it. *)
     let validate_msg_payload pl =
       let has_tag = List.exists pl ~f:(fun (k, _) -> k = "tag") in      
       if has_tag then pure true
