@@ -88,8 +88,8 @@ let check_patterns e  =
   | Error msg -> pout @@ scilla_error_to_string msg ; res
   | Ok pm_checked_module -> pure @@ pm_checked_module
 
-let check_sanity c  =
-  let res = SC.contr_sanity c in
+let check_sanity m  =
+  let res = SC.contr_sanity m in
   match res with
   | Error msg -> pout @@ scilla_error_to_string msg ; res
   | Ok _ -> pure ()
@@ -133,8 +133,8 @@ let () =
       let%bind (recursion_cmod, recursion_rec_principles, recursion_elibs) = check_recursion cmod elibs in
       let%bind (typed_cmod, tenv, typed_elibs) = check_typing recursion_cmod recursion_rec_principles recursion_elibs  in
       let%bind pm_checked_cmod = check_patterns typed_cmod  in
-      let%bind _ = check_sanity pm_checked_cmod.contr  in
-      let%bind event_info = check_events_info (EI.event_info pm_checked_cmod.contr)  in
+      let%bind _ = check_sanity pm_checked_cmod  in
+      let%bind event_info = check_events_info (EI.event_info pm_checked_cmod)  in
       let%bind _ = if cli.gua_flag then analyze_print_gas typed_cmod typed_elibs else pure [] in
       let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
       pure @@ (cmod, tenv, event_info, cf_info_opt)

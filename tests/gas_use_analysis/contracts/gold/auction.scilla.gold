@@ -66,5 +66,16 @@ d: beneficiary
       }
     ]
   },
-  "warnings": []
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/auction.scilla",
+        "line": 128,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
 }

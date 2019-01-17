@@ -97,5 +97,46 @@ c: _balance
       }
     ]
   },
-  "warnings": []
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/crowdfunding.scilla",
+        "line": 143,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/crowdfunding.scilla",
+        "line": 122,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/crowdfunding.scilla",
+        "line": 72,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/crowdfunding.scilla",
+        "line": 65,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
 }

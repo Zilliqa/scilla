@@ -161,8 +161,96 @@ a: operatorApprovals
       {
         "vname": "balanceOf",
         "params": [ { "vname": "bal", "type": "Uint256" } ]
+      },
+      {
+        "vname": "Error",
+        "params": [
+          { "vname": "raisedAt", "type": "String" },
+          { "vname": "code", "type": "Uint32" }
+        ]
       }
     ]
   },
-  "warnings": []
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 319,
+        "column": 30
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 285,
+        "column": 30
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 284,
+        "column": 27
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 241,
+        "column": 29
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 199,
+        "column": 30
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 198,
+        "column": 28
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 197,
+        "column": 27
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 155,
+        "column": 33
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
 }

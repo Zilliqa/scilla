@@ -24,7 +24,7 @@ module ScillaEventInfo
 
   (* Given a contract, return a list of events it may create,
    * and the parameter types of the event. *)
-  let event_info (contr : contract) =
+  let event_info (cmod : cmodule) =
 
     (* Given a message and a current list of event info, extract
      * info from message and append to the list. *)
@@ -74,6 +74,6 @@ module ScillaEventInfo
       ) in
 
     
-    fold_over_messages contr ~init:[] ~f:extract_from_message
+    fold_over_messages cmod ~init:[] ~f:extract_from_message
 
 end
