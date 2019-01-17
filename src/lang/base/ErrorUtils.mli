@@ -36,7 +36,6 @@ type scilla_error = {
   endl : loc;
 }
 
-(* TODO: Remove this. *)
 val sprint_scilla_error_list : scilla_error list -> string
 
 val mk_error0 : string -> scilla_error list
