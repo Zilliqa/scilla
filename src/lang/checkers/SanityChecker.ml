@@ -39,6 +39,9 @@ module ScillaSanityChecker
   open EISyntax
   open SCU
 
+  (* Warning level to use when contract loads/stores entire Maps. *)
+  let warning_level_map_load_store = 1
+
   (* Basic sanity tests on the contract. *)
   let contr_sanity (cmod : cmodule) =
 
@@ -120,6 +123,31 @@ module ScillaSanityChecker
             (ER.get_loc @@ get_rep s) 
       | None -> e
     in
+
+    (* Look for any statement that is loading/storing a full Map and warn. *)
+    List.iter (fun trans ->
+      let rec stmt_iter stmts =
+        List.iter (fun (stmt, _) ->
+          match stmt with
+          (* Recursion basis. *)
+          | Load (_, s) | Store (s, _) ->
+            let t = (ER.get_type (get_rep s)).tp in
+            let lc = ER.get_loc (get_rep s) in
+            (match t with
+            | MapType _ ->
+              warn1 "Consider using in-place Map access" warning_level_map_load_store lc;
+            | _ -> ()
+            )
+          (* Recurse through match statements. *)
+          | MatchStmt (_, pat_stmts) ->
+            List.iter (fun (_, stmts) ->
+              stmt_iter stmts
+            ) pat_stmts;
+          | _ -> ()
+        ) stmts;
+      in
+      stmt_iter trans.tbody;
+    ) cmod.contr.ctrans;
 
     if e = [] then pure () else fail e
 
