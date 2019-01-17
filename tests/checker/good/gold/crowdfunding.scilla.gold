@@ -40,5 +40,46 @@
       }
     ]
   },
-  "warnings": []
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "checker/good/crowdfunding.scilla",
+        "line": 159,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "checker/good/crowdfunding.scilla",
+        "line": 134,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "checker/good/crowdfunding.scilla",
+        "line": 73,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "checker/good/crowdfunding.scilla",
+        "line": 64,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
 }
