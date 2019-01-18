@@ -32,7 +32,7 @@ transition Invoke (trans : String)
   match is_donate with
   | True =>
     accept;
-    msg = {_tag : Donate; _recipient : cfaddr; _amount : _amount};
+    msg = {_tag : "Donate"; _recipient : cfaddr; _amount : _amount};
     msgs = one_msg msg;
     send msgs
   | False =>
@@ -40,19 +40,19 @@ transition Invoke (trans : String)
     is_claimback = builtin eq trans claimback_s;
     match is_claimback with
     | True =>
-      msg = {_tag : ClaimBack; _recipient : cfaddr; _amount : Uint128 0};
+      msg = {_tag : "ClaimBack"; _recipient : cfaddr; _amount : Uint128 0};
       msgs = one_msg msg;
       send msgs
     | False =>
-      getfunds_s = "GetFunds";
+      getfunds_s = "GetFunds"; 
       is_getfunds = builtin eq trans getfunds_s;
       match is_getfunds with
       | True =>
-        msg = {_tag : GetFunds; _recipient : cfaddr; _amount : Uint128 0};
+        msg = {_tag : "GetFunds"; _recipient : cfaddr; _amount : Uint128 0};
         msgs = one_msg msg;
         send msgs
       | False =>
-        msg = {_tag : Main; _recipient : _sender ; _amount : Uint128 0};
+        msg = {_tag : ""; _recipient : _sender ; _amount : Uint128 0};
         msgs = one_msg msg;
         send msgs
       end
