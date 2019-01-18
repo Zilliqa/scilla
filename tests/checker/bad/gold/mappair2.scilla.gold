@@ -29,7 +29,11 @@
     },
     {
       "error_message": "Identifier status used more than once\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 109,
+        "column": 7
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
@@ -53,5 +57,46 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],
-  "warnings": []
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 59,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 54,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 51,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 46,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
 }

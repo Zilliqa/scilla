@@ -35,7 +35,7 @@ let testsuit_gas_limit = 8000
  * Build tests to invoke scilla-runner with the right arguments, for
  * multiple test cases, each suffixed with _i up to _n (both inclusive)
  *)
-let rec build_contract_tests env name ecode i n =
+let rec build_contract_tests env name ecode i n add_additional_lib =
   if (i > n) 
     then [] 
   else
@@ -53,7 +53,8 @@ let rec build_contract_tests env name ecode i n =
         let tmpdir = bracket_tmpdir test_ctxt in 
         let output_file = tmpdir ^ sep ^ name ^ "_output_"
                     ^ (i_to_s  i) ^ ".json" in
-        let args' = ["-init"; dir ^ "init.json"; 
+        let args_tmp =
+              ["-init"; dir ^ "init.json"; 
               "-i"; dir ^ "contract.scilla";
               (* stdlib is in src/stdlib *)
               "-libdir"; "src" ^ sep ^ "stdlib";
@@ -63,6 +64,11 @@ let rec build_contract_tests env name ecode i n =
               "-istate" ; dir ^ "state_" ^ (i_to_s i) ^ ".json";
               "-jsonerrors";
               "-iblockchain" ; dir ^ "blockchain_" ^ (i_to_s i) ^ ".json"] in
+        let args' =
+          if add_additional_lib
+          then ["-libdir"; dir ^ "lib" ^ sep ] @ args_tmp
+          else args_tmp
+        in
         (* Should this test "-disable-validate-json"? *)
         let args =
           if disable_validate_json then "-disable-validate-json" :: args' else args'
@@ -108,9 +114,9 @@ let rec build_contract_tests env name ecode i n =
        * Both should succeed. *)
       if ecode = WEXITED 0
       then
-        (test true) :: (test false) :: (build_contract_tests env name ecode (i+1) n)
+        (test true) :: (test false) :: (build_contract_tests env name ecode (i+1) n add_additional_lib)
       else
-        (test false) :: (build_contract_tests env name ecode (i+1) n)
+        (test false) :: (build_contract_tests env name ecode (i+1) n add_additional_lib)
 
 let build_contract_init_test env name =
   name ^ "_" ^ "init" >::
@@ -204,31 +210,32 @@ let build_misc_tests env =
 let add_tests env = 
     let succ_code : Unix.process_status = WEXITED 0 in
     let fail_code : Unix.process_status = WEXITED 1 in
-    let crowdfundingtests = "crowdfunding" >:::(build_contract_tests env "crowdfunding" succ_code 1 6) in
+    let crowdfundingtests = "crowdfunding" >:::(build_contract_tests env "crowdfunding" succ_code 1 6 false) in
     let cfinit_test = "crowdfunding_init" >:(build_contract_init_test env "crowdfunding") in
-    let zilgametests = "zil-game" >:::(build_contract_tests env "zil-game" succ_code 1 9) in
+    let zilgametests = "zil-game" >:::(build_contract_tests env "zil-game" succ_code 1 9 false) in
     let zginit_test = "zil-game_init" >:(build_contract_init_test env "zil-game") in
-    let cfinvoketests = "cfinvoke" >:::(build_contract_tests env "cfinvoke" succ_code 1 4) in
-    let pingtests = "ping" >:::(build_contract_tests env "ping" succ_code 0 3) in
-    let pongtests = "pong" >:::(build_contract_tests env "pong" succ_code 0 3) in
-    let helloWorldtests = "helloWorld" >:::(build_contract_tests env "helloWorld" succ_code 1 3) in
-    let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 4 9) in
-    let auctiontests = "auction" >:::(build_contract_tests env "auction" succ_code 1 8) in
-    let mappairtests = "mappair" >:::(build_contract_tests env "mappair" succ_code 1 7) in
-    let bookstoretests = "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10) in
-    let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 8 14) in
-    let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12) in
-    let nonfungibletokentests_expected_f = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27) in
-    let schnorrtests = "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 3) in
-    let ecdsatests = "ecdsa" >:::(build_contract_tests env "ecdsa" succ_code 1 3) in
-    let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1) in
-    let fungibletokentests = "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8) in
-    let inplace_map_tests = "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14) in
-    let wallettests = "wallet" >:::(build_contract_tests env "wallet" succ_code 1 11) in
+    let cfinvoketests = "cfinvoke" >:::(build_contract_tests env "cfinvoke" succ_code 1 4 false) in
+    let pingtests = "ping" >:::(build_contract_tests env "ping" succ_code 0 3 false) in
+    let pongtests = "pong" >:::(build_contract_tests env "pong" succ_code 0 3 false) in
+    let helloWorldtests = "helloWorld" >:::(build_contract_tests env "helloWorld" succ_code 1 3 false) in
+    let helloWorldtests_f = "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 4 9 false) in
+    let auctiontests = "auction" >:::(build_contract_tests env "auction" succ_code 1 8 false) in
+    let mappairtests = "mappair" >:::(build_contract_tests env "mappair" succ_code 1 7 false) in
+    let bookstoretests = "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10 false) in
+    let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 8 14 false) in
+    let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12 false) in
+    let nonfungibletokentests_expected_f = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27 false) in
+    let schnorrtests = "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 3 false) in
+    let ecdsatests = "ecdsa" >:::(build_contract_tests env "ecdsa" succ_code 1 3 false) in
+    let emptytests = "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1 false) in
+    let fungibletokentests = "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8 false) in
+    let inplace_map_tests = "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14 false) in
+    let wallettests = "wallet" >:::(build_contract_tests env "wallet" succ_code 1 11 false) in
     let misc_tests = "misc_tests" >::: build_misc_tests env in
-
+    let simpledextests= "simple-dex" >:::(build_contract_tests env "simple-dex" succ_code 1 8 false) in
+    let shogi_tests = "shogi" >::: (build_contract_tests env "shogi" succ_code 1 3 true) in
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f;
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;
                              auctiontests;emptytests;bookstoretests;nonfungibletokentests_expected_f;nonfungibletokentests;
-                             wallettests;schnorrtests;inplace_map_tests;ecdsatests]
+                             wallettests;schnorrtests;inplace_map_tests;ecdsatests;simpledextests;shogi_tests]
 

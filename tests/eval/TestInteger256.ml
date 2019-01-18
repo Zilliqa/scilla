@@ -319,7 +319,7 @@ let non_arithmetic_tests = test_case (fun _ ->
   assert_bool err (Int256.shift_left (ofs "1") 256 = (ofs "0"));
   assert_bool err (Int256.shift_right_logical (ofs "1") 1 = (ofs "0"));
   assert_bool err (Int256.shift_right_logical (ofs "-1") 1 = (ofs int256_max_str));
-  (* TODO: Int256.shift_right is not implemented yet. *)
+
   assert_bool err (Int256.setbit (ofs "0") 0 = (ofs "1"));
   assert_bool err (Int256.setbit (ofs "0") 255 = (ofs int256_min_str));
   assert_bool err (Int256.clearbit (ofs "1") 0 = (ofs "0"));
@@ -332,6 +332,12 @@ let non_arithmetic_tests = test_case (fun _ ->
   let s2 = Bytes.to_string buf in
   assert_bool err (s1 = s2);
   assert_bool err (Int256.abs (ofs "-1") = (ofs "1"));
+  let _ = Int256.to_bytes_big_endian (Int256.max_int) buf 0 in
+  let max_int' = Int256.of_bytes_big_endian buf 0 in
+  assert_bool err ((Int256.compare Int256.max_int max_int') = 0);
+  let _ = Int256.to_bytes_little_endian (Int256.max_int) buf 0 in
+  let max_int' = Int256.of_bytes_little_endian buf 0 in
+  assert_bool err ((Int256.compare Int256.max_int max_int') = 0);
 
   let ofs = Uint256.of_string in
   assert_bool err (Uint256.logand (ofs "1") (ofs "1") = (ofs "1"));

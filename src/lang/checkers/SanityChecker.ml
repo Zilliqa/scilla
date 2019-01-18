@@ -39,8 +39,13 @@ module ScillaSanityChecker
   open EISyntax
   open SCU
 
+  (* Warning level to use when contract loads/stores entire Maps. *)
+  let warning_level_map_load_store = 1
+
   (* Basic sanity tests on the contract. *)
-  let contr_sanity (contr : contract) =
+  let contr_sanity (cmod : cmodule) =
+
+    let contr = cmod.contr in
 
     (* Check if there are duplicate entries in "ilist". *)
     let check_duplicate_ident gloc ilist =
@@ -76,8 +81,8 @@ module ScillaSanityChecker
       (* Use location of "b" to represent the location of msg. *)
       let eloc = ER.get_loc @@ get_rep b in
 
-      (* No repeating message field. TODO: use eloc below as "msg" has no location info. *)
-      let e = e @ check_duplicate_ident SR.get_loc (List.map (fun (s, _) -> SR.mk_id_string s) msg) in
+      (* No repeating message field. *)
+      let e = e @ check_duplicate_ident (fun _ -> eloc) (List.map (fun (s, _) -> SR.mk_id_string s) msg) in
 
       (* Either "_tag" or "_eventname" must be present. *)
       let e = if (List.exists (fun (s, _) -> s = tag_label) msg)
@@ -95,7 +100,7 @@ module ScillaSanityChecker
       in
         pure e (* as required by "fold_over_messages" *)
     in
-    let%bind e = fold_over_messages contr ~init:e ~f:check_message in
+    let%bind e = fold_over_messages cmod ~init:e ~f:check_message in
 
     (* Transition parameters cannot have names as that of implicit ones. *)
     let e = List.fold_left (fun e t -> 
@@ -118,6 +123,31 @@ module ScillaSanityChecker
             (ER.get_loc @@ get_rep s) 
       | None -> e
     in
+
+    (* Look for any statement that is loading/storing a full Map and warn. *)
+    List.iter (fun trans ->
+      let rec stmt_iter stmts =
+        List.iter (fun (stmt, _) ->
+          match stmt with
+          (* Recursion basis. *)
+          | Load (_, s) | Store (s, _) ->
+            let t = (ER.get_type (get_rep s)).tp in
+            let lc = ER.get_loc (get_rep s) in
+            (match t with
+            | MapType _ ->
+              warn1 "Consider using in-place Map access" warning_level_map_load_store lc;
+            | _ -> ()
+            )
+          (* Recurse through match statements. *)
+          | MatchStmt (_, pat_stmts) ->
+            List.iter (fun (_, stmts) ->
+              stmt_iter stmts
+            ) pat_stmts;
+          | _ -> ()
+        ) stmts;
+      in
+      stmt_iter trans.tbody;
+    ) cmod.contr.ctrans;
 
     if e = [] then pure () else fail e
 

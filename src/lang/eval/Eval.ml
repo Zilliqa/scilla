@@ -90,7 +90,7 @@ let sanitize_literal l =
  *)
 
 let rec exp_eval erep env  =
-  let (e, _) = erep in
+  let (e, loc) = erep in
   match e with
   | Literal l ->
       pure (l, env)
@@ -154,8 +154,7 @@ let rec exp_eval erep env  =
       (* Get the branch and the bindings *)
       let%bind ((_, e_branch), bnds) =
         tryM clauses
-          (* TODO: add location info to error message. *)
-          ~msg:(fun () -> mk_error0(sprintf "Match expression failed. No clause matched."))
+          ~msg:(fun () -> mk_error1 (sprintf "Match expression failed. No clause matched.") loc)
           ~f:(fun (p, _) -> fromR @@ match_with_pattern v p) in
       (* Update the environment for the branch *)
       let env' = List.fold_left bnds ~init:env
@@ -316,9 +315,7 @@ let rec stmt_eval conf stmts =
           let%bind (conf', scon) = Configuration.create_event conf eparams_resolved in
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
-      (* TODO: Implement Throw *)
-      | _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
-      (* | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc *)
+      | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
     )
 
 (*******************************************************)

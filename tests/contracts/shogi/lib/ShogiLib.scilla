@@ -1,0 +1,257 @@
+library ShogiLib
+
+(* Pieces in the game *)
+type Piece =
+(* 玉 *)
+| King
+(* 金 *)
+| GoldGeneral
+(* 銀 *)
+| SilverGeneral
+(* 桂 *)
+| Knight
+(* 香 *)
+| Lance
+(* 歩 *)
+| Pawn
+(* 飛 *)
+| Rook
+(* 角 *)
+| Bishop
+
+let lance  = Lance
+let knight = Knight
+let silver = SilverGeneral
+let gold   = GoldGeneral
+let king   = King
+let rook   = Rook
+let bishop = Bishop
+let pawn   = Pawn
+
+let piece_to_int =
+  fun (piece : Piece) =>
+    match piece with
+    | King          => Uint32 1
+    | GoldGeneral   => Uint32 2
+    | SilverGeneral => Uint32 3
+    | Knight        => Uint32 4
+    | Lance         => Uint32 5
+    | Pawn          => Uint32 6
+    | Rook          => Uint32 7
+    | Bishop        => Uint32 8
+    end
+    
+type PromotionStatus =
+| NotPromoted
+| Promoted
+
+let not_promoted = NotPromoted
+let promoted     = Promoted
+
+type SquareContents =
+(* Square is occupied by a possibly promoted piece owned by a player *)
+| Occupied of Piece PromotionStatus ByStr20
+(* Square is free *)
+| Free
+
+let free = Free
+
+(* Direction of movement *)
+type Direction =
+| East
+| SouthEast
+| South
+| SouthWest
+| West
+| NorthWest
+| North
+| NorthEast
+
+(* Shorthand for a set of coordinates on the board *)
+type Square =
+| Square of Uint32 Uint32
+
+(* Possible actions a player can take *)
+type Action =
+(* Move a piece *)
+(* Square : The current position of the piece *)
+(* Direction : The direction of movement *)
+(* Uint32 : The number of squares to move *)
+(* Bool : Promote the piece after movement *)
+| Move of Square Direction Uint32 Bool
+(* Place a captured piece *)
+(* Piece : The captured piece to be placed *)
+(* Square : The position on the board to place it *)
+| Place of Piece Square
+(* Resign and award win to the opponent *)
+| Resign
+
+(* Initial state of the board *)
+let initial_board =
+  fun (player1 : ByStr20) =>
+  fun (player2 : ByStr20) => 
+    (* Row and column numbers *)
+    let row1 = Uint32 1 in                                 
+    let row2 = Uint32 2 in                                 
+    let row3 = Uint32 3 in                                 
+    let row4 = Uint32 4 in                                 
+    let row5 = Uint32 5 in                                 
+    let row6 = Uint32 6 in                                 
+    let row7 = Uint32 7 in                                 
+    let row8 = Uint32 8 in                                 
+    let row9 = Uint32 9 in                                 
+    let column1 = Uint32 1 in                              
+    let column2 = Uint32 2 in                              
+    let column3 = Uint32 3 in                              
+    let column4 = Uint32 4 in                              
+    let column5 = Uint32 5 in                              
+    let column6 = Uint32 6 in                              
+    let column7 = Uint32 7 in                              
+    let column8 = Uint32 8 in                              
+    let column9 = Uint32 9 in
+    (* Square contents *)
+    let lance1   = Occupied lance  not_promoted player1 in
+    let knight1  = Occupied knight not_promoted player1 in
+    let silver1  = Occupied silver not_promoted player1 in
+    let gold1    = Occupied gold   not_promoted player1 in
+    let king1    = Occupied king   not_promoted player1 in
+    let bishop1  = Occupied bishop not_promoted player1 in
+    let rook1    = Occupied rook   not_promoted player1 in
+    let pawn1    = Occupied pawn   not_promoted player1 in
+    let lance2   = Occupied lance  not_promoted player2 in
+    let knight2  = Occupied knight not_promoted player2 in
+    let silver2  = Occupied silver not_promoted player2 in
+    let gold2    = Occupied gold   not_promoted player2 in
+    let king2    = Occupied king   not_promoted player2 in
+    let bishop2  = Occupied bishop not_promoted player2 in
+    let rook2    = Occupied rook   not_promoted player2 in
+    let pawn2    = Occupied pawn   not_promoted player2 in
+    (* Insert pieces into board map *)
+    let row1_map = Emp Uint32 SquareContents in
+    let row1_map = builtin put row1_map column1 lance1  in
+    let row1_map = builtin put row1_map column2 knight1 in
+    let row1_map = builtin put row1_map column3 silver1 in
+    let row1_map = builtin put row1_map column4 gold1   in
+    let row1_map = builtin put row1_map column5 king1   in
+    let row1_map = builtin put row1_map column6 gold1   in
+    let row1_map = builtin put row1_map column7 silver1 in
+    let row1_map = builtin put row1_map column8 knight1 in
+    let row1_map = builtin put row1_map column9 lance1  in
+    let row2_map = Emp Uint32 SquareContents in
+    let row2_map = builtin put row2_map column1 free    in
+    let row2_map = builtin put row2_map column2 bishop1 in
+    let row2_map = builtin put row2_map column3 free    in
+    let row2_map = builtin put row2_map column4 free    in
+    let row2_map = builtin put row2_map column5 free    in
+    let row2_map = builtin put row2_map column6 free    in
+    let row2_map = builtin put row2_map column7 free    in
+    let row2_map = builtin put row2_map column8 rook1   in
+    let row2_map = builtin put row2_map column9 free    in
+    let row3_map = Emp Uint32 SquareContents in
+    let row3_map = builtin put row3_map column1 pawn1   in
+    let row3_map = builtin put row3_map column2 pawn1   in
+    let row3_map = builtin put row3_map column3 pawn1   in
+    let row3_map = builtin put row3_map column4 pawn1   in
+    let row3_map = builtin put row3_map column5 pawn1   in
+    let row3_map = builtin put row3_map column6 pawn1   in
+    let row3_map = builtin put row3_map column7 pawn1   in
+    let row3_map = builtin put row3_map column8 pawn1   in
+    let row3_map = builtin put row3_map column9 pawn1   in
+    let row4_map = Emp Uint32 SquareContents in
+    let row4_map = builtin put row4_map column1 free    in
+    let row4_map = builtin put row4_map column2 free    in
+    let row4_map = builtin put row4_map column3 free    in
+    let row4_map = builtin put row4_map column4 free    in
+    let row4_map = builtin put row4_map column5 free    in
+    let row4_map = builtin put row4_map column6 free    in
+    let row4_map = builtin put row4_map column7 free    in
+    let row4_map = builtin put row4_map column8 free    in
+    let row4_map = builtin put row4_map column9 free    in
+    let row5_map = Emp Uint32 SquareContents in
+    let row5_map = builtin put row5_map column1 free    in
+    let row5_map = builtin put row5_map column2 free    in
+    let row5_map = builtin put row5_map column3 free    in
+    let row5_map = builtin put row5_map column4 free    in
+    let row5_map = builtin put row5_map column5 free    in
+    let row5_map = builtin put row5_map column6 free    in
+    let row5_map = builtin put row5_map column7 free    in
+    let row5_map = builtin put row5_map column8 free    in
+    let row5_map = builtin put row5_map column9 free    in
+    let row6_map = Emp Uint32 SquareContents in
+    let row6_map = builtin put row6_map column1 free    in
+    let row6_map = builtin put row6_map column2 free    in
+    let row6_map = builtin put row6_map column3 free    in
+    let row6_map = builtin put row6_map column4 free    in
+    let row6_map = builtin put row6_map column5 free    in
+    let row6_map = builtin put row6_map column6 free    in
+    let row6_map = builtin put row6_map column7 free    in
+    let row6_map = builtin put row6_map column8 free    in
+    let row6_map = builtin put row6_map column9 free    in
+    let row7_map = Emp Uint32 SquareContents in
+    let row7_map = builtin put row7_map column1 pawn2   in
+    let row7_map = builtin put row7_map column2 pawn2   in
+    let row7_map = builtin put row7_map column3 pawn2   in
+    let row7_map = builtin put row7_map column4 pawn2   in
+    let row7_map = builtin put row7_map column5 pawn2   in
+    let row7_map = builtin put row7_map column6 pawn2   in
+    let row7_map = builtin put row7_map column7 pawn2   in
+    let row7_map = builtin put row7_map column8 pawn2   in
+    let row7_map = builtin put row7_map column9 pawn2   in
+    let row8_map = Emp Uint32 SquareContents in
+    let row8_map = builtin put row8_map column1 free    in
+    let row8_map = builtin put row8_map column2 rook2   in
+    let row8_map = builtin put row8_map column3 free    in
+    let row8_map = builtin put row8_map column4 free    in
+    let row8_map = builtin put row8_map column5 free    in
+    let row8_map = builtin put row8_map column6 free    in
+    let row8_map = builtin put row8_map column7 free    in
+    let row8_map = builtin put row8_map column8 bishop2 in
+    let row8_map = builtin put row8_map column9 free    in
+    let row9_map = Emp Uint32 SquareContents in
+    let row9_map = builtin put row9_map column1 lance2  in
+    let row9_map = builtin put row9_map column2 knight2 in
+    let row9_map = builtin put row9_map column3 silver2 in
+    let row9_map = builtin put row9_map column4 gold2   in
+    let row9_map = builtin put row9_map column5 king2   in
+    let row9_map = builtin put row9_map column6 gold2   in
+    let row9_map = builtin put row9_map column7 silver2 in
+    let row9_map = builtin put row9_map column8 knight2 in
+    let row9_map = builtin put row9_map column9 lance2  in
+    let board = Emp Uint32 (Map Uint32 SquareContents) in
+    let board = builtin put board row1 row1_map in
+    let board = builtin put board row2 row2_map in
+    let board = builtin put board row3 row3_map in
+    let board = builtin put board row4 row4_map in
+    let board = builtin put board row5 row5_map in
+    let board = builtin put board row6 row6_map in
+    let board = builtin put board row7 row7_map in
+    let board = builtin put board row8 row8_map in
+    let board = builtin put board row9 row9_map in
+    board
+
+let init_captured_pieces =
+  fun (player1 : ByStr20) =>
+  fun (player2 : ByStr20) =>
+    let zero = Uint32 0 in
+    (* Pieces map - all empty *)
+    let pieces = Emp Uint32 Uint32 in
+    let v = piece_to_int lance in
+    let pieces = builtin put pieces v zero in
+    let v = piece_to_int knight in
+    let pieces = builtin put pieces v zero in
+    let v = piece_to_int pawn in
+    let pieces = builtin put pieces v zero in
+    let v = piece_to_int silver in
+    let pieces = builtin put pieces v zero in
+    let v = piece_to_int gold in
+    let pieces = builtin put pieces v zero in
+    let v = piece_to_int rook in
+    let pieces = builtin put pieces v zero in
+    let v = piece_to_int bishop in
+    let pieces = builtin put pieces v zero in
+    (* Kings cannot be captured without ending the game *)
+    (* Captured pieces map *)
+    let res = Emp ByStr20 (Map Uint32 Uint32) in
+    let res = builtin put res player1 pieces in
+    let res = builtin put res player2 pieces in
+    res

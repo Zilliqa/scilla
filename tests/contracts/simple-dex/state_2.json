@@ -1,0 +1,51 @@
+[
+    {
+        "vname": "_balance",
+        "type": "Uint128",
+        "value": "0"
+    },
+    {
+        "vname": "orderbook",
+        "type": "Map (ByStr32) (Order)",
+        "value": [
+            {
+                "key": "0xcb478abde2c28d1808655f39a97d68bec72e7cd29240a0c5e78cfa76590891f1",
+                "val": {
+                    "constructor": "Order",
+                    "argtypes": [],
+                    "arguments": [
+                        "0x1234567890123456789012345678901234567001",
+                        "100",
+                        "0x1234567890123456789012345678901234567002",
+                        "200"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "vname": "orderInfo",
+        "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
+        "value": [
+            {
+                "key": "0xcb478abde2c28d1808655f39a97d68bec72e7cd29240a0c5e78cfa76590891f1",
+                "val": {
+                    "constructor": "Pair",
+                    "argtypes": [
+                        "ByStr20",
+                        "BNum"
+                    ],
+                    "arguments": [
+                        "0x1234567890123456789012345678901234567890",
+                        "200"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "vname": "pendingReturns",
+        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+        "value": []
+    }
+]

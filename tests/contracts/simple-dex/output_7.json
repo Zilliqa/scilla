@@ -1,0 +1,43 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7332",
+  "_accepted": "false",
+  "message": null,
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    { "vname": "orderbook", "type": "Map (ByStr32) (Order)", "value": [] },
+    {
+      "vname": "orderInfo",
+      "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
+      "value": []
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "value": [
+        {
+          "key": "0x1234567890123456789012345678901234567890",
+          "val": [
+            {
+              "key": "0x1234567890123456789012345678901234567001",
+              "val": "100"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "_eventname": "Cancel order successful",
+      "params": [
+        {
+          "vname": "hash",
+          "type": "ByStr32",
+          "value":
+            "0xcb478abde2c28d1808655f39a97d68bec72e7cd29240a0c5e78cfa76590891f1"
+        }
+      ]
+    }
+  ]
+}
