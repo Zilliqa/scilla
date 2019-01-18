@@ -52,7 +52,7 @@ transition Invoke (trans : String)
         msgs = one_msg msg;
         send msgs
       | False =>
-        msg = {_tag : "Main"; _recipient : _sender ; _amount : Uint128 0};
+        msg = {_tag : ""; _recipient : _sender ; _amount : Uint128 0};
         msgs = one_msg msg;
         send msgs
       end

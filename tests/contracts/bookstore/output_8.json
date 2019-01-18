@@ -3,7 +3,7 @@
   "gas_remaining": "7321",
   "_accepted": "false",
   "message": {
-    "_tag": "Main",
+    "_tag": "",
     "_amount": "0",
     "_recipient": "0x1234567890123456789012345678901234567890",
     "params": [ { "vname": "code", "type": "Uint32", "value": "1" } ]

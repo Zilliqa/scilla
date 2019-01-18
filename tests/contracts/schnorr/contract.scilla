@@ -24,17 +24,17 @@ transition verify(msg : ByStr, sig : ByStr64)
     sig = builtin schnorr_verify pubk msg sig;
     match sig with
     | True =>
-      m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "verification successful" };
+      m = { _tag : ""; _recipient : _sender; _amount : Uint128 0; status : "verification successful" };
       mone = one_msg m;
       send mone
     | False =>
-      m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "verification failed" };
+      m = { _tag : ""; _recipient : _sender; _amount : Uint128 0; status : "verification failed" };
       mone = one_msg m;
       send mone
     end
   | None =>
     (* We don't have a key-pair. *)
-    m = { _tag : "Main"; _recipient : _sender; _amount : Uint128 0; status : "no key error" };
+    m = { _tag : ""; _recipient : _sender; _amount : Uint128 0; status : "no key error" };
     mone = one_msg m;
     send mone
   end
