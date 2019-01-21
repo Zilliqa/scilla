@@ -12,7 +12,7 @@ let one_msg =
     Cons {Message} msg nil_msg
 
 let flip_obool =
-  fun (ob : Option (Bool)) =>
+  fun (ob : Option (Bool)) => 
     let t = True in
     let f = False in
     match ob with
@@ -73,7 +73,7 @@ transition addNumToList(num: Int64)
   new_p = Pair {(List(Int64)) (Option(Bool))} l2 bflip;
   gpair := new_p;
   len = let my_list_length = @list_length Int64 in my_list_length l2;
-  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; listLength : len};
+  msg = {_tag : ""; _recipient : _sender; _amount : Uint128 0; listLength : len};
   msgs = one_msg msg;
   send msgs
 end
@@ -83,7 +83,7 @@ transition incNat ()
   m = Succ n;
   gnat := m;
   i = nat_to_int m;
-  msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; nat : i};
+  msg = {_tag : ""; _recipient : _sender; _amount : Uint128 0; nat : i};
   msgs = one_msg msg;
   send msgs
 end
@@ -110,7 +110,7 @@ end
 (* This transition sends out a malformed message. Will flag error. *)
 transition malMessage1()
   (* missing `_amount` field *)
-  msg = { _tag: "Main"; _recipient : _sender };
+  msg = { _tag: ""; _recipient : _sender };
   msgs = one_msg msg;
   send msgs
 end
@@ -118,14 +118,14 @@ end
 (* This transition sends out a malformed message. Will flag error. *)
 transition malMessage2()
   (* duplicate field *)
-  msg = { _tag: "Main"; _recipient : _sender; _amount : Uint128 0; status : "foo"; status : "bar" };
+  msg = { _tag: ""; _recipient : _sender; _amount : Uint128 0; status : "foo"; status: "bar"};
   msgs = one_msg msg;
-  send msgs
+  send msgs 
 end
 
 (* This transition disallowed arguments. Will flag error. *)
 transition malTransition1( _sender : ByStr20 )
-  msg = { _tag: "Main"; _recipient : _sender; _amount : Uint128 0; status : "foo" };
+  msg = { _tag: ""; _recipient : _sender; _amount : Uint128 0; status : "foo" };
   msgs = one_msg msg;
   send msgs
 end

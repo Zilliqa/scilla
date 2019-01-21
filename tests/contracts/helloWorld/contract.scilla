@@ -30,12 +30,12 @@ transition setHello (msg : String)
   is_owner = builtin eq owner _sender;
   match is_owner with
   | False =>
-    msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : not_owner_code};
+    msg = {_tag : ""; _recipient : _sender; _amount : Uint128 0; code : not_owner_code};
     msgs = one_msg msg;
     send msgs
   | True =>
     welcome_msg := msg;
-    msg = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : set_hello_code};
+    msg = {_tag : ""; _recipient : _sender; _amount : Uint128 0; code : set_hello_code};
     msgs = one_msg msg;
     send msgs
   end
@@ -49,8 +49,8 @@ transition getHello ()
 end
 
 transition multipleMsgs()
-  msg1 = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0};
-  msg2 = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0};
+  msg1 = {_tag : ""; _recipient : _sender; _amount : Uint128 0};
+  msg2 = {_tag : ""; _recipient : _sender; _amount : Uint128 0};
   msgs1 = one_msg msg1;
   msgs2 = Cons {Message} msg2 msgs1;
   send msgs2

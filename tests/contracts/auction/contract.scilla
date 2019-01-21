@@ -66,13 +66,13 @@ transition Bid ()
     early = blk_leq blk auctionStart;
     match early with
     | True =>
-      msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : too_early_to_bid_code};
+      msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0; code : too_early_to_bid_code};
       msgs = one_msg msg;
       send msgs
     | False =>
         match flag1 with
         | True => 
-          msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : late_to_bid_code};
+          msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0; code : late_to_bid_code};
           msgs = one_msg msg;
           send msgs
         | False =>
@@ -82,7 +82,7 @@ transition Bid ()
           sufficientBid = builtin lt hb _amount;
           match sufficientBid with 
           | False =>
-            msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : bid_too_low_code};
+            msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0; code : bid_too_low_code};
             msgs = one_msg msg;
             send msgs
           | True =>
@@ -129,14 +129,14 @@ transition Withdraw ()
   pr = builtin get prs _sender;
   match pr with
   | None =>
-    msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : nothing_to_withdraw_code};
+    msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0; code : nothing_to_withdraw_code};
     msgs = one_msg msg;
     send msgs
   | Some v =>
     delete pendingReturns[_sender];
     e = {_eventname: "Withdraw Successful"; addr: _sender};
     event e;
-    msg  = {_tag : "Main"; _recipient : _sender; _amount : v; code : money_sent_code};
+    msg  = {_tag : ""; _recipient : _sender; _amount : v; code : money_sent_code};
     msgs = one_msg msg;
     send msgs
   end 
@@ -153,7 +153,7 @@ transition AuctionEnd ()
   t4 = andb t2 t3;
   match t4 with
   | False =>
-    msg  = {_tag : "Main"; _recipient : _sender; _amount : Uint128 0; code : auction_is_still_on_code};
+    msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0; code : auction_is_still_on_code};
     msgs = one_msg msg;
     send msgs
   | True =>
@@ -162,7 +162,7 @@ transition AuctionEnd ()
     hb <- highestBid;
     e = {_eventname: "Auction ended"; highest_bid: hb};
     event e;
-    msg  = {_tag : "Main"; _recipient : beneficiary; _amount : hb; code : auction_end_code; highest_bid : hb};
+    msg  = {_tag : ""; _recipient : beneficiary; _amount : hb; code : auction_end_code; highest_bid : hb};
     msgs = one_msg msg;
     send msgs
   end

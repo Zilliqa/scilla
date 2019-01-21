@@ -3,7 +3,7 @@
   "gas_remaining": "7427",
   "_accepted": "false",
   "message": {
-    "_tag": "Main",
+    "_tag": "",
     "_amount": "200",
     "_recipient": "0x1234567890123456789012345678901234567890",
     "params": [
