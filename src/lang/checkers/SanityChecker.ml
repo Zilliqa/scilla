@@ -169,7 +169,7 @@ module ScillaSanityChecker
     | MArg of (num_msg -> (num_msg, scilla_error list) result)
 
   let lub_num_msg n1 n2 = match n1, n2 with
-    | Count i1, Count i2 -> Count (i1 + i2)
+    | Count i1, Count i2 -> Count (max i1 i2)
     | _ -> Many
 
   (* lattice element printer for debugging. *)
