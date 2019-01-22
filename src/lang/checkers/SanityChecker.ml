@@ -19,6 +19,7 @@ open TypeUtil
 open Syntax
 open ErrorUtils
 open MonadUtil
+open Utils
 
 open ContractUtil.MessagePayload
 open Core.Result.Let_syntax
@@ -42,8 +43,12 @@ module ScillaSanityChecker
   (* Warning level to use when contract loads/stores entire Maps. *)
   let warning_level_map_load_store = 1
 
+  (* ************************************** *)
+  (* ******** Basic Sanity Checker ******** *)
+  (* ************************************** *)
+
   (* Basic sanity tests on the contract. *)
-  let contr_sanity (cmod : cmodule) =
+  let basic_sanity (cmod : cmodule) =
 
     let contr = cmod.contr in
 
@@ -150,5 +155,151 @@ module ScillaSanityChecker
     ) cmod.contr.ctrans;
 
     if e = [] then pure () else fail e
+
+  (* ************************************** *)
+  (* ********* One Message Checker ******** *)
+  (* ************************************** *)
+
+  (* Check that all "send" arguments are List {Message} of length 0 or 1.
+   * This check must be removed once https://github.com/Zilliqa/scilla/issues/387 is complete.
+   *)
+  type num_msg =
+    | Zero
+    | One
+    | Many
+    | MArg of (num_msg -> (num_msg, scilla_error list) result)
+
+  let lub_num_msg n1 n2 = match n1, n2 with
+    | Zero, Zero -> Zero
+    | Zero, One | One, Zero -> One
+    | _ -> Many
+
+  (* lattice element printer for debugging. *)
+  let num_msg_str = function | Zero -> "Zero" | One -> "One" | Many -> "Many" | MArg _ -> "MArg"
+
+
+  (* Specialize AssocDictionary for one_msg_checker. *)
+  type one_msg_env = num_msg AssocDictionary.dict
+  let mk_env () = AssocDictionary.make_dict ()
+  let add_env env id (nm : num_msg) = AssocDictionary.insert (get_id id) nm env
+  let rem_env env id : one_msg_env = AssocDictionary.remove (get_id id) env
+  let lookup_env env id : num_msg option = AssocDictionary.lookup (get_id id) env
+  (* env printer for debugging. *)
+  let string_env env =
+    let l = AssocDictionary.to_list env in
+    List.fold_left (fun s (n, v) -> s ^ Printf.sprintf "%s : %s\n" n (num_msg_str v)) "one_msg_env:\n" l
+
+  let rec expr_checker (e, erep) env = match e with
+    | Literal _ ->
+      (* Msg literals are not built until Eval. *)
+      pure Many
+    | Var i ->
+      (match lookup_env env i with
+      | Some n -> pure n
+      | None -> pure Many)
+    | Let (i, _, lhs, rhs) ->
+      let%bind n = expr_checker lhs env in
+      let env' = add_env env i n in
+      expr_checker rhs env'
+    | Message _ ->
+      (* We don't care about single messages (i.e., not in a list). *)
+      pure Many
+    | Fun (formal, _, body) ->
+      pure @@ MArg (fun n ->
+        let env' = add_env env formal n in
+        expr_checker body env'
+      )
+    | App (f, actuals) ->
+      (match lookup_env env f with
+      | Some n ->
+        (* Apply each argument, one at a time. *)
+        foldM ~f:(fun acc actual ->
+          let n' =
+            (match lookup_env env actual with
+            | Some n'' -> n''
+            | None -> Many)
+          in
+          (match acc with
+            | MArg f' ->
+              f' n'
+            | _ -> pure Many)
+        ) ~init:n actuals
+      | None -> pure Many)
+    | Constr (cname, _, actuals) ->
+      let msg_list_t = ADT("List", [PrimTypes.msg_typ]) in
+      if (ER.get_type erep).tp = msg_list_t
+      then
+        if cname = "Nil" then pure Zero
+        else (* Cons *)
+          let c = List.nth actuals 1 in
+          (match lookup_env env c with
+          | Some Zero -> pure One
+          | _ -> pure Many)
+      else
+        pure Many
+    | MatchExpr (_, clauses) ->
+      foldM ~f:(fun acc (_, e') ->
+        let%bind n = expr_checker e' env in
+        pure @@ lub_num_msg acc n
+      ) ~init:Zero clauses
+    | Builtin _ -> pure Many
+    | Fixpoint _ -> pure Many
+    | TFun (_, e') -> expr_checker e' env
+    | TApp (tf, _) ->
+      (match lookup_env env tf with
+      | Some n -> pure n
+      | None -> pure Many)
+
+  let rec stmt_checker env stmts =
+    match stmts with
+    | [] -> pure ()
+    | (s, srep) :: sts -> (match s with
+      | Load _ | Store _ | MapUpdate _ | MapGet _ | ReadFromBC _ 
+      | AcceptPayment | CreateEvnt _ | Throw _ ->
+        (* If an identifier is not in env, it's assumed to be "Many". *)
+        stmt_checker env sts
+      | Bind (x, e) ->
+        let%bind n = expr_checker e env in
+        let env' = add_env env x n in
+        stmt_checker env' sts
+      | MatchStmt (_, clauses) ->
+        let%bind _ = foldM ~f:(fun _ (_, stmts') -> 
+            stmt_checker env stmts'
+          ) ~init:() clauses
+        in
+        stmt_checker env sts
+      | SendMsgs ms ->
+        (match lookup_env env ms with
+        | Some Zero | Some One -> stmt_checker env sts
+        | _ -> fail1 "Unable to validate that send arguments is null or single message" (SR.get_loc srep)
+        )
+    )
+
+  let one_msg_checker (cmod : cmodule) elibs =
+    let elib_entries = List.fold_left (fun acc lib -> acc @ lib.lentries) [] elibs in
+    (* First scan the library functions. *)
+    let%bind env = match cmod.libs with
+      | Some lib ->
+        foldM ~f:(fun aenv lentry ->
+          match lentry with
+          | LibTyp _ -> pure aenv
+          | LibVar (x, e) ->
+            let%bind n = expr_checker e aenv in
+            pure @@ add_env aenv x n
+        ) ~init:(mk_env()) (elib_entries @ lib.lentries)
+      | None -> pure @@ mk_env ()
+    in
+    (* Check all transitions. *)
+    foldM ~f:(fun _ tr ->
+      stmt_checker env tr.tbody
+    ) ~init:() cmod.contr.ctrans
+
+  (* ************************************** *)
+  (* ******** Interface to Checker ******** *)
+  (* ************************************** *)
+
+  let contr_sanity (cmod : cmodule) (elibs : library list) =
+    let%bind _ = basic_sanity cmod in
+    one_msg_checker cmod elibs
 
 end

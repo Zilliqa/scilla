@@ -28,9 +28,13 @@ module type Dictionary = sig
 
   val make_dict : unit -> 'a dict
   val remove : key -> 'a dict -> 'a dict
+  (* Inserts new kv pair without checking for duplicates. *)
   val insert : key -> 'a -> 'a dict -> 'a dict
   val lookup : key -> 'a dict -> 'a option
+  (* Updates existing kv pairs without inserting any new entries. *)
   val update : key -> 'a -> 'a dict -> 'a dict
+  (* Removes matching kv pairs and creates a new one. *)
+  val insert_unique : key -> 'a -> 'a dict -> 'a dict
 
   val is_empty : 'a dict -> bool
 
@@ -51,7 +55,7 @@ module AssocDictionary : Dictionary = struct
   let rec remove k d =
     match d with
     | []              -> []
-    | (kd, vd) :: rest -> if k = kd then rest else (kd, vd) :: (remove k rest)
+    | (kd, vd) :: rest -> if k = kd then (remove k rest) else (kd, vd) :: (remove k rest)
 
   let insert k v d =
     (k, v) :: d
@@ -64,7 +68,11 @@ module AssocDictionary : Dictionary = struct
   let rec update k v d =
     match d with
     | []               -> []
-    | (kd, vd) :: rest -> if k = kd then (k, v) :: rest else (kd, vd) :: (update k v rest)
+    | (kd, vd) :: rest -> if k = kd then (k, v) :: (update k v rest) else (kd, vd) :: (update k v rest)
+
+  let insert_unique k v d =
+    let d' = remove k d in
+    insert k v d'
       
   let is_empty d =
     match d with

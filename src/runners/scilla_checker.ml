@@ -48,7 +48,7 @@ module PMC = ScillaPatternchecker (TCSRep) (TCERep)
 module PMCSRep = PMC.SPR
 module PMCERep = PMC.EPR
 
-module SC = ScillaSanityChecker (PMCSRep) (PMCERep)
+module SC = ScillaSanityChecker (TCSRep) (TCERep)
 module EI = ScillaEventInfo (PMCSRep) (PMCERep)
 module CF = ScillaCashflowChecker (TCSRep) (TCERep)
 
@@ -85,8 +85,8 @@ let check_patterns e  =
   | Error msg -> pout @@ scilla_error_to_string msg ; res
   | Ok pm_checked_module -> pure @@ pm_checked_module
 
-let check_sanity m  =
-  let res = SC.contr_sanity m in
+let check_sanity m elibs =
+  let res = SC.contr_sanity m elibs in
   match res with
   | Error msg -> pout @@ scilla_error_to_string msg ; res
   | Ok _ -> pure ()
@@ -118,9 +118,9 @@ let () =
       (* Import whatever libs we want. *)
       let elibs = import_libs cmod.elibs  in
       let%bind (recursion_cmod, recursion_rec_principles, recursion_elibs) = check_recursion cmod elibs in
-      let%bind (typed_cmod, tenv) = check_typing recursion_cmod recursion_rec_principles recursion_elibs  in
+      let%bind (typed_cmod, tenv, typed_elibs) = check_typing recursion_cmod recursion_rec_principles recursion_elibs  in
       let%bind pm_checked_cmod = check_patterns typed_cmod  in
-      let%bind _ = check_sanity pm_checked_cmod  in
+      let%bind _ = check_sanity typed_cmod typed_elibs in
       let%bind event_info = check_events_info (EI.event_info pm_checked_cmod)  in
       let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
       pure @@ (cmod, tenv, event_info, cf_info_opt)
