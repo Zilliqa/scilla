@@ -591,7 +591,7 @@ module ScillaTypechecker
       (* TODO, issue #225 : rec_libs should be added to the libraries when we allow custom, inductive ADTs *)
       (rec_libs : UntypedSyntax.lib_entry list)
       (elibs : UntypedSyntax.library list)
-    : (TypedSyntax.cmodule * stmt_tenv * TypedSyntax.library list, scilla_error list) result =
+    : (TypedSyntax.cmodule * stmt_tenv * TypedSyntax.library list * TypedSyntax.lib_entry list, scilla_error list) result =
 
     let {smver = mod_smver;cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
@@ -599,7 +599,7 @@ module ScillaTypechecker
     wrap_with_info (msg, SR.get_loc (get_rep ctr_cname)) @@
     
     (* Step 0: Type check recursion principles *)
-    let%bind (_, tenv0) = type_rec_libs rec_libs in
+    let%bind (typed_rlib, tenv0) = type_rec_libs rec_libs in
     
     (* Step 1: Type check external libraries *)
     (* Step 2: Type check contract library, if defined. *)
@@ -675,7 +675,7 @@ module ScillaTypechecker
                   {TypedSyntax.cname = ctr_cname;
                    TypedSyntax.cparams = typed_params;
                    TypedSyntax.cfields = typed_fields;
-                   TypedSyntax.ctrans = typed_trans}}, env, typed_elibs)
+                   TypedSyntax.ctrans = typed_trans}}, env, typed_elibs, typed_rlib)
     (* Return error messages *)
     else fail @@ emsgs'
 
