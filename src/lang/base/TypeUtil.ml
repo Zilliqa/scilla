@@ -250,7 +250,10 @@ module TypeUtilities
     | ADT (_, ts) -> List.for_all ~f:(fun t -> is_storable_type t) ts
     | PolyFun _ -> false
     | Unit -> false
-    | _ -> true
+    | PrimType _ ->
+      (* Messages/Events when stored or passed in messages cannot be analyzed,
+       * leading to potential badly constructed Messages/Events. So we disallow. *)
+      not (t = PrimTypes.msg_typ || t = PrimTypes.event_typ)
 
   let get_msgevnt_type m =
     if (List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.tag_label) m)
