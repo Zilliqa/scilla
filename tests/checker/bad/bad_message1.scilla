@@ -1,0 +1,11 @@
+scilla_version 0
+
+contract Empty
+()
+
+
+transition dummy()
+  m1 = { _tag : "Main"; _amount : Uint128 0; _recipient : _sender };
+  (* Bad: Nested message *)
+  m2 = { _tag : "Main"; _amount : Uint128 0;  _recipient : _sender; subm : m1 }
+end
