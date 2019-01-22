@@ -164,18 +164,16 @@ module ScillaSanityChecker
    * This check must be removed once https://github.com/Zilliqa/scilla/issues/387 is complete.
    *)
   type num_msg =
-    | Zero
-    | One
+    | Count of int
     | Many
     | MArg of (num_msg -> (num_msg, scilla_error list) result)
 
   let lub_num_msg n1 n2 = match n1, n2 with
-    | Zero, Zero -> Zero
-    | Zero, One | One, Zero -> One
+    | Count i1, Count i2 -> Count (i1 + i2)
     | _ -> Many
 
   (* lattice element printer for debugging. *)
-  let num_msg_str = function | Zero -> "Zero" | One -> "One" | Many -> "Many" | MArg _ -> "MArg"
+  let num_msg_str = function | Count i -> Printf.sprintf "Count(%d)" i | Many -> "Many" | MArg _ -> "MArg"
 
 
   (* Specialize AssocDictionary for one_msg_checker. *)
@@ -188,6 +186,26 @@ module ScillaSanityChecker
   let string_env env =
     let l = AssocDictionary.to_list env in
     List.fold_left (fun s (n, v) -> s ^ Printf.sprintf "%s : %s\n" n (num_msg_str v)) "one_msg_env:\n" l
+
+  (* This doesn't do much except check for a List {Message}, tagged Count(i),
+   * matched with a Cons constructor, in which case, the bound variable will
+   * have Count(i-1) tagged to it *)
+  let rec pattern_checker m p env =
+    match p with
+    | Wildcard -> env
+    | Binder i -> add_env env i m 
+    | Constructor (cn, pl) ->
+      (match cn, m with
+      | "Cons", Count i when i > 0 ->
+        let env' = pattern_checker Many (List.nth pl 0) env in
+        let env'' = pattern_checker (Count (i-1)) (List.nth pl 1) env' in
+        env''
+      | _ ->
+        (* Just bind all identifiers to Many. *)
+        List.fold_left (fun acc_env p' ->
+          pattern_checker Many p' acc_env
+        ) env pl
+      )
 
   let rec expr_checker (e, erep) env = match e with
     | Literal _ ->
@@ -229,19 +247,23 @@ module ScillaSanityChecker
       let msg_list_t = ADT("List", [PrimTypes.msg_typ]) in
       if (ER.get_type erep).tp = msg_list_t
       then
-        if cname = "Nil" then pure Zero
+        if cname = "Nil" then pure (Count 0)
         else (* Cons *)
           let c = List.nth actuals 1 in
           (match lookup_env env c with
-          | Some Zero -> pure One
+          | Some (Count i) -> pure (Count (i+1))
           | _ -> pure Many)
       else
         pure Many
-    | MatchExpr (_, clauses) ->
-      foldM ~f:(fun acc (_, e') ->
-        let%bind n = expr_checker e' env in
-        pure @@ lub_num_msg acc n
-      ) ~init:Zero clauses
+    | MatchExpr (m, clauses) ->
+      (match lookup_env env m with
+      | Some mn ->
+        foldM ~f:(fun acc (p, e') ->
+          let env' = pattern_checker mn p env in
+          let%bind n = expr_checker e' env' in
+          pure @@ lub_num_msg acc n
+        ) ~init:(Count 0) clauses
+      | None -> pure Many)
     | Builtin _ -> pure Many
     | Fixpoint _ -> pure Many
     | TFun (_, e') -> expr_checker e' env
@@ -262,16 +284,23 @@ module ScillaSanityChecker
         let%bind n = expr_checker e env in
         let env' = add_env env x n in
         stmt_checker env' sts
-      | MatchStmt (_, clauses) ->
-        let%bind _ = foldM ~f:(fun _ (_, stmts') -> 
-            stmt_checker env stmts'
-          ) ~init:() clauses
+      | MatchStmt (m, clauses) ->
+        let%bind _ = 
+          (match lookup_env env m with
+          | Some mn ->
+            foldM ~f:(fun _ (p, stmts') ->
+              let env' = pattern_checker mn p env in
+              stmt_checker env' stmts'
+            ) ~init:() clauses
+          | None -> pure ()
+          )
         in
         stmt_checker env sts
       | SendMsgs ms ->
         (match lookup_env env ms with
-        | Some Zero | Some One -> stmt_checker env sts
-        | _ -> fail1 "Unable to validate that send arguments is null or single message" (SR.get_loc srep)
+        | Some (Count i) when i <= 1 -> stmt_checker env sts
+        | _ -> warn1 "Unable to validate that send arguments is null or single message" 1 (SR.get_loc srep);
+          stmt_checker env sts
         )
     )
 

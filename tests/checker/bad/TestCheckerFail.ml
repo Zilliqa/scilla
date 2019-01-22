@@ -47,7 +47,6 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_adt_2.scilla";
       "bad_adt_3.scilla";
       "bad_adt_4.scilla";
-      "multiple-msgs.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
