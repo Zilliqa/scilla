@@ -1,14 +1,10 @@
 {
-  "gas_remaining": "7813",
+  "gas_remaining": "7573",
   "errors": [
     {
       "error_message":
-        "Identifier \"one_msg\" is not bound in environment:\n",
-      "start_location": {
-        "file": "tests/contracts/helloWorld/contract.scilla",
-        "line": 47,
-        "column": 11
-      },
+        "Sending more than one message not currently permitted",
+      "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

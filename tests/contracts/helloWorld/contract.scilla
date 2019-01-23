@@ -9,6 +9,11 @@ import ListUtils
 (***************************************************)
 library HelloWorld
 
+let one_msg = 
+  fun (msg : Message) => 
+  let nil_msg = Nil {Message} in
+  Cons {Message} msg nil_msg
+  
 let not_owner_code = Int32 1
 let set_hello_code = Int32 2
 
