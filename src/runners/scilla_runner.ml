@@ -269,8 +269,6 @@ let () =
         let oej = `List (output_event_json elist) in
         
         let tend = Unix.gettimeofday() in
-        let _ = Printf.printf "Start I/O execution time:%f\n" (tstart) in
-        let _ = Printf.printf "End I/O execution time:%f\n" (tend) in
         let _ = Printf.printf "Non I/O execution time:%f\n" (Core.Float.sub tend tstart) in
         
           (omj, osj, oej, accepted_b), gas)
