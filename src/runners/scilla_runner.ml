@@ -53,8 +53,7 @@ let check_libs clibs elibs name gas_limit =
 (****************************************************)
 let check_extract_cstate name res gas_limit = 
   match res Eval.init_gas_kont gas_limit with
-  | Error (err, 
-  ) ->
+  | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
       exit 1
   | Ok ((_, cstate), remaining_gas) ->
