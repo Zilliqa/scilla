@@ -221,7 +221,7 @@ let () =
         let init_res = init_module cmod initargs [] Uint128.zero bstate elibs in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
-        let (_, remaining_gas') = check_extract_cstate cli.input init_res gas_remaining in
+        let (_, remaining_gas') = check_extract_cstate cli.input f gas_remaining in
         (plog (sprintf "\nContract initialized successfully\n");
           (`Null, `List [], `List [], false), remaining_gas')
       else
@@ -247,6 +247,8 @@ let () =
               (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state)));
             exit 1
         in
+        
+        let tstart = Caml.Sys.time() in
 
         (* Initializing the contract's state *)
         let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
@@ -265,6 +267,10 @@ let () =
         let osj = output_state_json cstate' in
         let omj = output_message_json gas mlist in
         let oej = `List (output_event_json elist) in
+        
+        let tend = Caml.Sys.time() in
+        let _ = Printf.printf "Non I/O execution time:%f\n" (Core.Float.sub tend tstart) in
+        
           (omj, osj, oej, accepted_b), gas)
       in
       let output_json = `Assoc [
