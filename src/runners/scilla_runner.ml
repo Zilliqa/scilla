@@ -269,8 +269,8 @@ let () =
         let oej = `List (output_event_json elist) in
         
         let tend = Caml.Sys.time() in
-        let _ = Printf.printf "Start Non I/O execution time:%f\n" (tstart) in
-        let _ = Printf.printf "End Non I/O execution time:%f\n" (tend) in
+        Printf.printf "Start Non I/O execution time:%f\n" (tstart) in
+        Printf.printf "End Non I/O execution time:%f\n" (tend) in
         
           (omj, osj, oej, accepted_b), gas)
       in
