@@ -1,0 +1,24 @@
+{
+  "cashflow_tags": [],
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "HelloWorld",
+    "params": [],
+    "fields": [],
+    "transitions": [ { "vname": "onemsg", "params": [] } ],
+    "events": []
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "Unable to validate that send arguments is null or single message",
+      "start_location": {
+        "file": "checker/good/one-msg1.scilla",
+        "line": 34,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}

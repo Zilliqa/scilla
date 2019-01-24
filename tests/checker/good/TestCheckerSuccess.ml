@@ -29,7 +29,8 @@ module Tests = TestUtil.DiffBasedTests(
     let tests = [
       "crowdfunding.scilla"; "zil-game.scilla"; "fungible-token.scilla"; "auction.scilla";
       "empty.scilla"; "schnorr.scilla"; "ecdsa.scilla"; "inplace-map.scilla";
-      "wallet.scilla"; "adt_test.scilla"
+      "wallet.scilla"; "adt_test.scilla"; "one-msg.scilla"; "one-msg1.scilla";
+      "multiple-msgs.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
