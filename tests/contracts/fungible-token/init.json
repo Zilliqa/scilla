@@ -20,6 +20,16 @@
         "value" : "10000"
     },
     {
+        "vname" : "name",
+        "type" : "String",
+        "value" : "TestToken"
+    },
+    {
+        "vname" : "symbol",
+        "type" : "String",
+        "value" : "TST"
+    },
+    {
         "vname" : "_creation_block",
         "type" : "BNum",
         "value" : "1"
