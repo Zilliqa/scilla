@@ -53,7 +53,8 @@ let check_libs clibs elibs name gas_limit =
 (****************************************************)
 let check_extract_cstate name res gas_limit = 
   match res Eval.init_gas_kont gas_limit with
-  | Error (err, remaining_gas) ->
+  | Error (err, 
+  ) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
       exit 1
   | Ok ((_, cstate), remaining_gas) ->
@@ -221,7 +222,7 @@ let () =
         let init_res = init_module cmod initargs [] Uint128.zero bstate elibs in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
-        let (_, remaining_gas') = check_extract_cstate cli.input f gas_remaining in
+        let (_, remaining_gas') = check_extract_cstate cli.input init_res gas_remaining in
         (plog (sprintf "\nContract initialized successfully\n");
           (`Null, `List [], `List [], false), remaining_gas')
       else
