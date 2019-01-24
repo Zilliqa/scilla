@@ -1,0 +1,12 @@
+{
+  "cashflow_tags": [],
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "HelloWorld",
+    "params": [],
+    "fields": [],
+    "transitions": [ { "vname": "onemsg", "params": [] } ],
+    "events": []
+  },
+  "warnings": []
+}

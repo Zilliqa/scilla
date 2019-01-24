@@ -1,0 +1,10 @@
+scilla_version 0
+
+contract Empty
+()
+
+field bad_bar : Message = { _tag : "Main"; _amount : Uint128 0 }
+
+transition dummy()
+
+end

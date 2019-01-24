@@ -29,7 +29,9 @@ module Tests = TestUtil.DiffBasedTests(
     let tests = [
       "bad_fields1.scilla";
       "bad_fields2.scilla";
-      "bad_fields2.scilla";
+      "bad_fields3.scilla";
+      "bad_fields4.scilla";
+      "bad_message1.scilla";
       "send_event1.scilla";
       "send_event2.scilla";
       "unbound.scilla";
