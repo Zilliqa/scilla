@@ -248,7 +248,7 @@ let () =
             exit 1
         in
         
-        let tstart = Caml.Sys.time() in
+        let tstart = Unix.gettimeofday() in
 
         (* Initializing the contract's state *)
         let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
@@ -268,9 +268,8 @@ let () =
         let omj = output_message_json gas mlist in
         let oej = `List (output_event_json elist) in
         
-        let tend = Caml.Sys.time() in
-        let x = Printf.printf "Start Non I/O execution time:%f\n" (tstart) in
-        let y = Printf.printf "End Non I/O execution time:%f\n" (tend) in
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "Non I/O execution time:%f\n" (Core.Float.sub tend tstart) in
         
           (omj, osj, oej, accepted_b), gas)
       in
