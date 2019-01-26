@@ -1,5 +1,5 @@
 ;; This is an Emacs major mode for the Scilla language.
-;; Include the below line (with path set properly) in ~/.emacs
+;; Include the below line (with path set properly) in `~/.emacs`
 ;;   (load-file "/path/to/scilla-mode.el")
 ;;
 ;; or via use-package, e.g.:
