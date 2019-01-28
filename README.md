@@ -131,15 +131,15 @@ that has been used to run the test.
 ## Developer Tools
 ### Emacs mode for Scilla
 
-An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode/scilla.el).
-Add the following line to your ~/.emacs file to load this mode for files ending with .scilla.
+An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode/scilla-mode.el).
+Add the following line to your `~/.emacs` file to load this mode for files ending with `.scilla`.
 For enabling flycheck mode for Scilla (see [INSTALL.md](./INSTALL.md)).
 
 ```
 ;; For enabling flycheck mode for Scilla.
 (setq scilla-root "/path/to/scilla/root")
 ;; Scilla mode
-(load-file "/path/to/scilla.el")
+(load-file "/path/to/scilla-mode.el")
 ```
 ### Vim plugin for Scilla
 

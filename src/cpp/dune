@@ -4,7 +4,7 @@
   (wrapped false)
   (libraries ctypes ctypes.foreign cryptokit)
   (c_names generate_dsa_nonce)
-  (cxx_names c_schnorr DataConversion Schnorr)
+  (cxx_names c_schnorr DataConversion Schnorr PrivKey PubKey Signature BIGNUMSerialize ECPOINTSerialize)
   (c_flags -I/usr/local/opt/openssl/include)
   (cxx_flags -std=c++11 -I/usr/local/opt/openssl/include)
   )

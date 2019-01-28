@@ -1,6 +1,12 @@
 ;; This is an Emacs major mode for the Scilla language.
 ;; Include the below line (with path set properly) in ~/.emacs
-;;   (load-file "/path/to/scilla.el")
+;;   (load-file "/path/to/scilla-mode.el")
+;;
+;; or via use-package, e.g.:
+;;
+;; (use-package scilla
+;;   :require flycheck
+;;   :load-path (lambda () (concat scilla-root "/misc/emacs-mode")))
 
 (defvar scilla-mode-map
   (let ((map (make-sparse-keymap)))
@@ -49,7 +55,7 @@
     ;; Numerical constants. Decimal or Hexadecimal integers.
     ("\\(\\b[0-9]+\\b\\|\\b0x[0-9a-fA-F]+\\b\\)" . font-lock-constant-face)
     ;; Math any other identifier
-    ("[a-zA-Z_]+[a-zA-Z0-9]*" . font-lock-variable-face)
+    ("[a-zA-Z_]+[a-zA-Z0-9]*" . font-lock-variable-name-face)
     ))
 
 ;;; Indentation
@@ -226,7 +232,7 @@
 (add-to-list 'auto-mode-alist '("\\.scilla\\'" . scilla-mode))
 
 ;; Set scilla-root in your ~/.emacs file as "setq scilla-root /path/to/scilla".
-;;  Note: make sure to set scilla-root *before* loading this file (scilla.el)
+;;  Note: make sure to set scilla-root *before* loading this file (scilla-mode.el)
 ;; If scilla-root has been set and flycheck is available, enable flycheck.
 (if (and (boundp 'scilla-root) (require 'flycheck nil t))
     (progn
@@ -255,5 +261,5 @@
       )
   (message "Scilla-FlyCheck: scilla-root not set or flycheck not available.")
   )
-     
- ;;; scilla.el ends here
+
+ ;;; scilla-mode.el ends here
