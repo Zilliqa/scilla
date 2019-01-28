@@ -235,7 +235,7 @@ module ScillaTypechecker
                    ~lopt:(Some (get_rep i)) in
                let t = rr_typ r in
                let rtp = t.tp in
-               if is_storable_type rtp
+               if is_serializable_type rtp
                then pure @@ TypedSyntax.MVar (add_type_to_ident i t)
                else fail1 (sprintf "Cannot send values of type %s." (pp_typ rtp))
                           (ER.get_loc (get_rep i)))
