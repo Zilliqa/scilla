@@ -55,7 +55,7 @@
     ;; Numerical constants. Decimal or Hexadecimal integers.
     ("\\(\\b[0-9]+\\b\\|\\b0x[0-9a-fA-F]+\\b\\)" . font-lock-constant-face)
     ;; Math any other identifier
-    ("[a-zA-Z_]+[a-zA-Z0-9]*" . font-lock-variable-face)
+    ("[a-zA-Z_]+[a-zA-Z0-9]*" . font-lock-variable-name-face)
     ))
 
 ;;; Indentation
