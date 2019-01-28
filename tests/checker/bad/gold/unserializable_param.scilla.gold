@@ -1,0 +1,50 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract UnstorableADT:\n",
+      "start_location": {
+        "file": "checker/bad/unserializable_param.scilla",
+        "line": 15,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition BadADTTrans:\n",
+      "start_location": {
+        "file": "checker/bad/unserializable_param.scilla",
+        "line": 19,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type Test cannot be used as transition parameter",
+      "start_location": {
+        "file": "checker/bad/unserializable_param.scilla",
+        "line": 19,
+        "column": 25
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition BadPrimTrans:\n",
+      "start_location": {
+        "file": "checker/bad/unserializable_param.scilla",
+        "line": 22,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type Message cannot be used as transition parameter",
+      "start_location": {
+        "file": "checker/bad/unserializable_param.scilla",
+        "line": 22,
+        "column": 26
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
