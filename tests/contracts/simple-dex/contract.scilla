@@ -64,8 +64,6 @@ let computePendingReturnsVal =
       incomingTokensAmt
     end
 
-let success = "Success"
-
 (***************************************************)
 (*             The contract definition             *)
 (***************************************************)
