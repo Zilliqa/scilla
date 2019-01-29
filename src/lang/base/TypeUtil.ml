@@ -440,6 +440,14 @@ module TypeUtilities
   (*                     Typing literals                          *)
   (****************************************************************)
 
+  let is_legal_map_key_type t =
+    let open PrimTypes in
+    match t with
+    | PrimType _ ->
+        (* Allow any primitive type except messages and events *)
+        not (t = msg_typ || t = event_typ)
+    | _ -> false
+
   let literal_type l =
     let open PrimTypes in 
     match l with
@@ -457,7 +465,10 @@ module TypeUtilities
     | ByStrX (b, _) ->pure (bystrx_typ b)
     (* Check that messages and events have storable parameters. *)
     | Msg bs -> get_msgevnt_type bs
-    | Map ((kt, vt), _) -> pure (MapType (kt, vt))
+    | Map ((kt, vt), _) ->
+        if is_legal_map_key_type kt
+        then pure (MapType (kt, vt))
+        else fail0 @@ sprintf "Illegal key type %s in map." (pp_typ kt)
     | ADTValue (cname, ts, _) ->
         let%bind (adt, _) = DataTypeDictionary.lookup_constructor cname in
         pure @@ ADT(adt.tname, ts)

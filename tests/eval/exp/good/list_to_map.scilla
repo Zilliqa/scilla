@@ -1,5 +1,7 @@
 
-let to_map = @list_to_map String Int64 in
+(* Changed, since key types are no longer allowed to be polymorphic *)
+(* let to_map = @list_to_map String Int64 in *)
+let to_map = @list_to_map Int64 in
 
 let one = Int64 1 in
 let two = Int64 2 in

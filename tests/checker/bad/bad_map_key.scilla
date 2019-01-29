@@ -1,0 +1,78 @@
+scilla_version 0
+
+library TestLib
+
+type TestType =
+| T of Uint128
+
+type TestType2 =
+| T2 of (Bool -> Uint32)
+
+contract Test ()
+
+(* Illegal *)
+transition testMapKey1 ()
+  map = Emp (Bool -> Uint32) Bool;
+  k = fun (x : Bool) => Uint32 42;
+  v = True;
+  map2 = builtin put map k v
+end
+
+(* Illegal *)
+transition testMapKey2 ()
+  map = Emp Message Bool;
+  msg = { _tag : "Name" ; _amount : Uint128 0 ; _recipient : 0x1234512345123451234512345123451234512345};
+  t = True;
+  map2 = builtin put map msg t  
+end
+
+(* Illegal *)
+transition testMapKey3 ()
+  map = Emp Event Bool;
+  e = { _eventname : "Name" };
+  t = True;
+  map2 = builtin put map e t  
+end
+
+(* Legal *)
+transition testMapKey4 ()
+  map = Emp BNum (Bool -> Uint32);
+  k = BNum 42;
+  v = fun (x : Bool) => Uint32 42;
+  map2 = builtin put map k v  
+end
+
+(* Legal *)
+transition testMapKey5 ()
+  map = Emp String TestType;
+  k = "Hello";
+  zero = Uint128 0;
+  v = T zero;
+  map2 = builtin put map k v  
+end
+
+(* Illegal *)
+transition testMapKey6 ()
+  map = Emp TestType Bool;
+  zero = Uint128 0;
+  k = T zero;
+  v = True;
+  map2 = builtin put map k v  
+end
+
+(* Illegal *)
+transition testMapKey7 ()
+  map = Emp (Map Uint32 Uint32) Bool;
+  k = Emp Uint32 Uint32;
+  v = True;
+  map2 = builtin put map k v  
+end
+
+(* Illegal *)
+transition testMapKey8 ()
+  map = Emp TestType2 Bool;
+  f = fun (x : Bool) => Uint32 42;
+  k = T2 f;
+  v = True;
+  map2 = builtin put map k v  
+end

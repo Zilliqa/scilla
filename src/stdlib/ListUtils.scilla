@@ -462,15 +462,34 @@ let list_unzip =
 
 (* List (Pair 'A 'B) -> Map 'A 'B *)
 (* Convert a list of key-val pairs into a map, overwriting duplicates. *)
+(* Commented out since map keys are not allowed to be arbitrary *)
+(* let list_to_map =                                           *)
+(*  tfun 'A =>                                                 *)
+(*  tfun 'B =>                                                 *)
+(*  fun (l : List (Pair 'A 'B)) =>                             *)
+(*    let folder = @list_foldl (Pair 'A 'B) (Map 'A 'B) in     *)
+(*    let init = Emp 'A 'B in                                  *)
+(*    let iter =                                               *)
+(*      fun (z : Map 'A 'B) =>                                 *)
+(*      fun (h : Pair 'A 'B) =>                                *)
+(*        match h with                                         *)
+(*        | Pair a b =>                                        *)
+(*          builtin put z a b                                  *)
+(*        end                                                  *)
+(*    in                                                       *)
+(*      folder iter init l                                     *)
+
+(* List (Pair String 'B) -> Map String 'B *)
+(* Convert a list of key-val pairs into a map, overwriting duplicates. *)
+(* Replaces the polymorphic version above. *)
 let list_to_map =
-  tfun 'A =>
   tfun 'B =>
-  fun (l : List (Pair 'A 'B)) =>
-    let folder = @list_foldl (Pair 'A 'B) (Map 'A 'B) in
-    let init = Emp 'A 'B in
+  fun (l : List (Pair String 'B)) =>
+    let folder = @list_foldl (Pair String 'B) (Map String 'B) in
+    let init = Emp String 'B in
     let iter =
-      fun (z : Map 'A 'B) =>
-      fun (h : Pair 'A 'B) =>
+      fun (z : Map String 'B) =>
+      fun (h : Pair String 'B) =>
         match h with
         | Pair a b =>
           builtin put z a b
