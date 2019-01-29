@@ -68,8 +68,10 @@ let rec is_pure_literal l = match l with
   | _ -> true
 
 (* Serializable literals *)
-let is_serializable_literal l = match l with
-  | Msg _ | ADTValue _ | Map _ | Clo _ | TAbs _ -> false
+let rec is_serializable_literal l = match l with
+  | Msg _ | Map _ | Clo _ | TAbs _ -> false
+  | ADTValue (_, _, llist) ->
+    List.for_all llist ~f:(fun l -> is_serializable_literal l)
   | _ -> true
 
 (* Sanitize before storing into a message *)
