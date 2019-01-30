@@ -125,33 +125,34 @@ let list_length =
 (* Returns Some Nil on successul match. None otherwise. *)
 let list_eq_helper =
   tfun 'A =>
-  fun (eq : 'A -> 'A -> Bool) =>
+  tfun 'B =>
+  fun (eq : 'A -> 'B -> Bool) =>
   fun (l1 : List 'A) =>
-  fun (l2 : List 'A) =>
-    let folder = @list_foldl 'A (Option (List 'A)) in
-    let init = Some {(List 'A)} l2 in
+  fun (l2 : List 'B) =>
+    let folder = @list_foldl 'A (Option (List 'B)) in
+    let init = Some {(List 'B)} l2 in
     let iter =
-      fun (z : Option (List 'A)) =>
+      fun (z : Option (List 'B)) =>
       fun (h1 : 'A) =>
         match z with
         | Some ll2 =>
-          let headF = @list_head 'A in
+          let headF = @list_head 'B in
           let h2o = headF ll2 in
           match h2o with
           | Some h2 =>
             let eqb = eq h1 h2 in
             match eqb with
             | True =>
-              let tailF = @list_tail 'A in
+              let tailF = @list_tail 'B in
               tailF ll2
             | False =>
-              None {(List 'A)}
+              None {(List 'B)}
             end
           | None =>
-            None {(List 'A)}
+            None {(List 'B)}
           end
         | None =>
-          None {(List 'A)}
+          None {(List 'B)}
         end
     in
       folder iter init l1
@@ -161,10 +162,11 @@ let list_eq_helper =
 (* Comparison is performed using the "f" function provided. *)
 let list_eq =
   tfun 'A =>
-  fun (f : 'A -> 'A -> Bool) =>
+  tfun 'B =>
+  fun (f : 'A -> 'B -> Bool) =>
   fun (l1 : List 'A) =>
-  fun (l2 : List 'A) =>
-    let eqh = @list_eq_helper 'A in
+  fun (l2 : List 'B) =>
+    let eqh = @list_eq_helper 'A 'B in
     let res = eqh f l1 l2 in
     match res with
     | Some l =>

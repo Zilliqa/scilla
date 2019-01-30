@@ -1,5 +1,5 @@
   
-let list_int_eq_t = @list_eq Uint64 in
+let list_int_eq_t = @list_eq Uint64 Uint64 in
 
 let list_int_eq = list_int_eq_t uint64_eq in
 

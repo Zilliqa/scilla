@@ -1,5 +1,5 @@
   
-let int_list_eq = @list_eq Int64 in
+let int_list_eq = @list_eq Int64 Int64 in
 
 let one = Int64 1 in
 let two = Int64 2 in
