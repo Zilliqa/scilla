@@ -1,5 +1,5 @@
 
-let int_mem = @list_mem Int32 in
+let int_mem = @list_mem Int32 Int32 in
 let f =
   fun (a : Int32) =>
   fun (b : Int32) =>

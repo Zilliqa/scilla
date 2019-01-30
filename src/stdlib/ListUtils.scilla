@@ -184,8 +184,9 @@ let list_eq =
 (* Return True iff "m" is in the list "l", as compared by function "f". *)
 let list_mem =
   tfun 'A =>
-  fun (f : 'A -> 'A -> Bool) =>
-  fun (m : 'A) =>
+  tfun 'B =>
+  fun (f : 'A -> 'B -> Bool) =>
+  fun (m : 'B) =>
   fun (l : List 'A) =>
     let folder = @list_foldl 'A Bool in
     let init = False in
