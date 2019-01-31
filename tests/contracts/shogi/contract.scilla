@@ -582,6 +582,24 @@ field captured_pieces : Map ByStr20 (Map Uint32 Uint32) = init_captured_pieces p
 field player_in_turn : Option ByStr20 = Some {ByStr20} player1
 field winner : Option ByStr20 = None {ByStr20}
 
+(* Execute Move action by sending message to execute PlayerAction transition *)
+transition MoveAction (
+  row : Uint32,
+  column : Uint32,
+  direction : Direction,
+  distance : Uint32,
+  promote : Bool
+  )
+  square = Square row column;
+  zero = Uint128 0;
+  move = Move square direction distance promote;
+  msg = { _tag : "PlayerAction"; _amount : zero; _recipient : _this_address; action : move};
+  nil_msg = Nil {Message};
+  msgs = Cons {Message} msg nil_msg;
+  send msgs
+end
+
+(* Execute player action *)
 transition PlayerAction (action : Action)
   false = False;
   true = True;

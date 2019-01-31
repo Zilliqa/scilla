@@ -235,7 +235,7 @@ module ScillaTypechecker
                    ~lopt:(Some (get_rep i)) in
                let t = rr_typ r in
                let rtp = t.tp in
-               if is_storable_type rtp
+               if is_serializable_type rtp
                then pure @@ TypedSyntax.MVar (add_type_to_ident i t)
                else fail1 (sprintf "Cannot send values of type %s." (pp_typ rtp))
                           (ER.get_loc (get_rep i)))
@@ -451,14 +451,16 @@ module ScillaTypechecker
   let type_transition env0 tr : (TypedSyntax.transition, scilla_error list) result  =
     let {tname; tparams; tbody} = tr in
     let tenv0 = env0.pure in
-    let lift_ident_e (id, t) = (add_type_to_id id (mk_qual_tp t), t) in
-    let typed_tparams = List.map tparams ~f:lift_ident_e in
+    let msg = sprintf "Type error(s) in transition %s:\n" (get_id tname) in
+    wrap_with_info (msg, SR.get_loc (get_rep tname)) @@
+    let%bind typed_tparams = mapM ~f:(fun (param, t) ->
+        if is_serializable_type t
+        then pure (add_type_to_id param (mk_qual_tp t), t)
+        else fail1 (sprintf "Type %s cannot be used as transition parameter" (pp_typ t)) (ER.get_loc (get_rep param))) tparams in
     let append_params = CU.append_implict_trans_params tparams in
     let tenv1 = TEnv.addTs tenv0 append_params in
     let env = {env0 with pure = tenv1} in
-    let msg = sprintf "Type error(s) in transition %s:\n" (get_id tname) in
-    let%bind (typed_stmts, _) = wrap_with_info (msg, SR.get_loc (get_rep tname)) @@
-      type_stmts env tbody ER.get_loc in
+    let%bind (typed_stmts, _) = type_stmts env tbody ER.get_loc in
     pure @@ ({ TypedSyntax.tname = tname ;
                TypedSyntax.tparams = typed_tparams;
                TypedSyntax.tbody = typed_stmts })

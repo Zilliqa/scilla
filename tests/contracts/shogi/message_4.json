@@ -1,0 +1,42 @@
+{
+    "_tag": "MoveAction",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678906784567890",
+    "params": [
+        {
+            "vname" : "row",
+            "type"  : "Uint32",
+            "value" : "1"
+        },
+        {
+            "vname" : "column",
+            "type"  : "Uint32",
+            "value" : "1"
+        },
+        {
+            "vname" : "direction",
+            "type"  : "Direction",
+            "value" :
+            {
+                "constructor" : "North",
+                "argtypes"    : [],
+                "arguments"   : []
+            }
+        },
+        {
+            "vname" : "distance",
+            "type"  : "Uint32",
+            "value" : "3"
+        },
+        {
+            "vname" : "promote",
+            "type"  : "Bool",
+            "value" :
+            {
+                "constructor" : "False",
+                "argtypes"    : [],
+                "arguments"   : []
+            }
+        }
+    ]
+}
