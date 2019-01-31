@@ -58,6 +58,7 @@ module ScillaGUA
     (* A polynomial function of other sizerefs *)
     | SPol of sizeref polynomial
     (* An abstract maximum across branches. *)
+    (* TODO: Remove this constructor, we're not using it anymore. *)
     | MaxB of sizeref list
     (* Arbitrary math function of sizerefs. *)
     | MFun of string * sizeref list
@@ -136,13 +137,13 @@ module ScillaGUA
     in
       (pols ^ legs)
 
-  let sprint_signature (params, _, pn) =
+  let sprint_signature (params, sr, pn) =
     let args = 
       if (params = []) then "" else 
       "Parameter list: " ^ 
         (List.fold_left (fun acc p -> acc ^ (get_id p) ^ " ") "( " params) ^ ")\n"
     in
-    (args ^ sprint_gup pn)
+    (args ^ "Gas use polynomial:\n" ^ sprint_gup pn ^ "\nResult size: " ^ (sprint_sizeref sr))
 
   module GUAEnv = struct
     open Utils.AssocDictionary
@@ -176,6 +177,31 @@ module ScillaGUA
       ) "" l
 
   end
+
+  let rec sizeref_to_guref sr = match sr with
+    | Base (Const c) -> GPol (const_pn c)
+    | Base _ | Length _| Element _ | MaxB _ | MFun _ | BApp _ | SApp _ -> SizeOf (sr)
+    | SPol p ->
+      let term_replacer t =
+        let (coef, vars) = t in
+        let vars' = List.map (fun (v, p) ->
+          let v' = sizeref_to_guref v in
+          (v', p)
+        ) vars in
+        (coef, vars')
+      in
+      let gpol = List.map (fun t -> term_replacer t) p in
+      GPol (gpol)
+
+  (* Expand polynomials that contain GPol. *)
+  let rec expand_parameters pol =
+    expand_parameters_pn pol ~f:(function
+    | SizeOf sr ->
+      (match sr with
+      | Base (Const c) -> Some(const_pn c)
+      | _ -> Some (single_simple_pn (sizeref_to_guref sr)))
+    | GApp _ -> None (* TODO *)
+    | GPol p -> Some (expand_parameters p))
 
   (* Given a signature, substitute actual arguments into the formal parameters.
    * This function does not resolve the actuals into their sizerefs (only name substitution).
@@ -718,14 +744,15 @@ module ScillaGUA
         let%bind (args, ressize, gup) = foldM ~f:(fun (_, asizes, apn) (pat, branch) ->
           let%bind genv' = bind_pattern genv xsize pat in
           let%bind (_, bsize, bpn) = gua_expr genv' branch in
-          let%bind rsize =
-            (match asizes with
-            | MaxB srlist -> pure (MaxB(bsize::srlist))
-            | _ -> fail1 "Internal error in calculating gas usage of match-with" (ER.get_loc (get_rep x))
+          let rsize =
+            (match bsize with
+            | SPol sp -> add_pn sp asizes
+            | Base (Const c) -> add_pn asizes (const_pn c)
+            | _ -> add_pn asizes (single_simple_pn bsize)
             ) in
           pure ([], rsize, add_pn apn bpn)
-        ) ~init:([], MaxB([]), empty_pn) clauses in
-        pure (args, ressize, add_pn gup cc)
+        ) ~init:([], empty_pn, empty_pn) clauses in
+        pure (args, SPol (ressize), add_pn gup cc)
       else
         let (pat, branch) = (List.nth clauses 0) in
         let%bind genv' = bind_pattern genv xsize pat in
@@ -779,30 +806,6 @@ module ScillaGUA
     let list_foldl_signature = ([g;b;a], ressize', gupol') in
     let gapp'' = GUAEnv.addS genv' "list_foldl" list_foldl_signature in
     gapp''
-
-  let rec sizeref_to_guref sr = match sr with
-    | Base _ | Length _| Element _ | MaxB _ | MFun _ | BApp _ | SApp _ -> SizeOf (sr)
-    | SPol p ->
-      let term_replacer t =
-        let (coef, vars) = t in
-        let vars' = List.map (fun (v, p) ->
-          let v' = sizeref_to_guref v in
-          (v', p)
-        ) vars in
-        (coef, vars')
-      in
-      let gpol = List.map (fun t -> term_replacer t) p in
-      GPol (gpol)
-
-  (* Expand polynomials that contain GPol. *)
-  let rec expand_parameters pol =
-    expand_parameters_pn pol ~f:(function
-    | SizeOf sr ->
-      (match sr with
-      | Base (Const c) -> Some(const_pn c)
-      | _ -> Some (single_simple_pn (sizeref_to_guref sr)))
-    | GApp _ -> None (* TODO *)
-    | GPol p -> Some (expand_parameters p))
 
   (* Return gas use and result sizeref polynomials of evaluating a sequence of statements. *)
   let rec gua_stmt genv gupol (stmts : stmt_annot list) =
@@ -956,7 +959,7 @@ module ScillaGUA
     let%bind (params, sr, pol) = gua_expr genv' erep in
     (* Expand all parameters (GPol) in the polynomial. *)
     let pol' = expand_parameters pol in
-    Printf.printf "Gas usage polynomial:\n%s\n\n" (sprint_signature (params, sr, pol'));
+    Printf.printf "Gas usage signature:\n%s\n\n" (sprint_signature (params, sr, pol'));
     pure (params, sr, pol')
 
   end

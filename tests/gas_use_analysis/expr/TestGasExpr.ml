@@ -28,6 +28,7 @@ let explist = [
   "list_head.scilla";
   "list_map.scilla";
   "list_sort.scilla";
+  "list_sink_down.scilla";
   "list_tail.scilla";
   "list_zip.scilla";
   "list_zip_with.scilla";

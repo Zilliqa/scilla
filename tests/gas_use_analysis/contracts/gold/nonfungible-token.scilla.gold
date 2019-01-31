@@ -1,8 +1,7 @@
 Gas use polynomial for transition balanceOf:
-28 + 1(a) + 1(b)
+60 + 2(a)
 Legend:
 
-b: Max (32,Element of: ownedTokenCount)
 a: Element of: ownedTokenCount
 
 Gas use polynomial for transition ownerOf:
@@ -24,19 +23,19 @@ c: to
 d: Result of builtin add(Element of: ownedTokenCount,32)
 
 Gas use polynomial for transition transferFrom:
-414 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 2(g) + 1(h) + 1(i) + 1(j) + 1(k) + 1(l)
+446 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 2(g) + 1(h) + 1(i) + 1(j) + 1(k) + 1(l)
 Legend:
 
 l: tokenId
 h: ownedTokenCount
 e: Element of: ownedTokenCount
 i: Result of builtin sub(Element of: ownedTokenCount,32)
+j: Result of builtin add(Element of: ownedTokenCount,32)
 a: Element of: tokenOwnerMap
 k: _sender
 d: operatorApprovals
 g: to
 c: tokenApprovals
-j: Max (32,Result of builtin add(Element of: ownedTokenCount,32))
 b: tokenOwnerMap
 f: Element of: ownedTokenCount
 
@@ -52,11 +51,10 @@ d: to
 f: tokenId
 
 Gas use polynomial for transition setApprovalForAll:
-1(a) + 120 + 1(b) + 1(c) + 1(d) + 1(e)
+1(a) + 160 + 1(b) + 1(c) + 1(d)
 Legend:
 
 d: to
-e: Max (20,20)
 b: approved
 c: _sender
 a: operatorApprovals

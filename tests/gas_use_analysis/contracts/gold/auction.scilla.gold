@@ -1,5 +1,5 @@
 Gas use polynomial for transition Bid:
-475 + 1(a) + 7(b) + 1(c) + 1(d) + 1(e) + 1(f) + 4(g)
+475 + 1(a) + 7(b) + 2(c) + 1(d) + 1(e) + 1(f) + 4(g)
 Legend:
 
 a: ended
@@ -7,7 +7,7 @@ g: _amount
 c: highestBid
 d: highestBidder
 b: _sender
-f: Max (highestBid,Result of builtin add(highestBid,Element of: pendingReturns))
+f: Result of builtin add(highestBid,Element of: pendingReturns)
 e: Element of: pendingReturns
 
 Gas use polynomial for transition Withdraw:

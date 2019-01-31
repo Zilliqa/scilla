@@ -14,16 +14,16 @@ a: _sender
 b: total_tokens
 
 Gas use polynomial for transition Transfer:
-1(a) + 157 + 1(b) + 1(c) + 1(d) + 3(e) + 3(f) + 1(g)
+1(a) + 157 + 1(b) + 1(c) + 1(d) + 2(e) + 3(f) + 3(g)
 Legend:
 
+d: Result of builtin add(Element of: balances,tokens)
 c: Result of builtin sub(tokens,tokens)
-e: _sender
+f: _sender
 a: balances
-g: tokens
+e: tokens
 b: Element of: balances
-f: to
-d: Max (tokens,Result of builtin add(Element of: balances,tokens))
+g: to
 
 Gas use polynomial for transition TransferFrom:
 1(a) + 1(b) + 237 + 1(c) + 1(d) + 2(e) + 1(f) + 1(g) + 1(h) + 1(i) + 1(j) + 4(k) + 4(l) + 1(m)

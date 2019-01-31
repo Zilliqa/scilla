@@ -1,10 +1,12 @@
 forall 'A. forall 'B. forall 'C. ('A -> 'B -> 'C) -> List ('A) -> List ('B) -> List ('C)
-Gas usage polynomial:
+Gas usage signature:
 Parameter list: ( f m1 m2 )
+Gas use polynomial:
 3(a) + 40 + 35(b) + 1(c)(b)
 Legend:
 
 b: Length of: m1
-a: Length of: Max (1((1)) + 1((m2)),1((1((SApp f( m1,Max (1,Element of: 1((1)) + 1((m2)))))) + 1((1((1)) + 1((m2)))))) + 1((Max (1,Max (1,1((1)) + 1((m2)))))))
-c: Cost of calling f(Element of: m1, Max (1,Element of: 1((1)) + 1((m2))))
+a: Length of: 1((1((SApp f( m1,1((Element of: 1((1)) + 1((m2)))) + 1))) + 1((1((1)) + 1((m2)))))) + 1((1((1((1)) + 1((m2)))) + 2)) + 1((1((1)) + 1((m2))))
+c: Cost of calling f(Element of: m1, 1((Element of: 1((1)) + 1((m2)))) + 1)
+Result size: 1((1((1((SApp f( m1,1((Element of: 1((1)) + 1((m2)))) + 1))) + 1((1((1)) + 1((m2)))))) + 1((1((1((1)) + 1((m2)))) + 2)) + 1((1((1)) + 1((m2)))))) + 1((1))
 

@@ -1,8 +1,10 @@
 forall 'A. List ('A) -> List ('A) -> List ('A)
-Gas usage polynomial:
+Gas usage signature:
 Parameter list: ( l1 l2 )
+Gas use polynomial:
 3(a) + 10
 Legend:
 
 a: Length of: l1
+Result size: 1((l1)) + 1((l2))
 
