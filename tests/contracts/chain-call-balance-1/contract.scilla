@@ -1,0 +1,23 @@
+scilla_version 0
+
+library Test
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+contract Test
+()
+
+(* Just call contrB, passing contrC to it. Also pass on _amount. *)
+transition a_accept_callBcallC (addrB : ByStr20, addrC : ByStr20)
+  accept;
+  m = { _tag : "b_accept_callC"; _amount : _amount; _recipient : addrB; addrC : addrC };
+  ml = one_msg m;
+  send ml
+end
+
+transition simply_accept ()
+  accept
+end
