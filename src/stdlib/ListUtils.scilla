@@ -485,30 +485,30 @@ let list_to_map =
 (* Returns (Some 'A) if n'th element exists in list. None otherwise *)
 let list_nth =
   tfun 'A =>
-  fun (n_h : Int32) =>
+  fun (n_h : Uint32) =>
   fun (l_h : List 'A) =>
     let list_nth_helper =
       tfun 'A =>
-      fun (n : Int32) =>
+      fun (n : Uint32) =>
       fun (l : List 'A) =>
-        let folder = @list_foldl 'A (Pair Int32 (Option 'A)) in
-        let zero = Int32 0 in
+        let folder = @list_foldl 'A (Pair Uint32 (Option 'A)) in
+        let zero = Uint32 0 in
         let none = None {'A} in
-        let init = Pair {Int32 (Option 'A)} zero none in
+        let init = Pair {Uint32 (Option 'A)} zero none in
         let iter =
-          fun (z : Pair Int32 (Option 'A)) =>
+          fun (z : Pair Uint32 (Option 'A)) =>
           fun (h : 'A) =>
             match z with
             | Pair i oe =>
-              let one = Int32 1 in
+              let one = Uint32 1 in
               let nexti = builtin add i one in
               let this = builtin eq n i in
               match this with
               | True =>
                 let someh = Some {'A} h in
-                Pair {Int32 (Option 'A)} nexti someh
+                Pair {Uint32 (Option 'A)} nexti someh
               | False =>
-                Pair {Int32 (Option 'A)} nexti oe
+                Pair {Uint32 (Option 'A)} nexti oe
               end
             end
           in
