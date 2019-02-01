@@ -2,29 +2,29 @@ Gas use polynomial for transition Bid:
 475 + 1(a) + 7(b) + 2(c) + 1(d) + 1(e) + 1(f) + 4(g)
 Legend:
 
-a: ended
-g: _amount
-c: highestBid
-d: highestBidder
-b: _sender
 f: Result of builtin add(highestBid,Element of: pendingReturns)
+b: _sender
+g: _amount
+d: highestBidder
+c: highestBid
 e: Element of: pendingReturns
+a: ended
 
 Gas use polynomial for transition Withdraw:
 1(a) + 109 + 3(b) + 1(c)
 Legend:
 
-c: Result of builtin get(pendingReturns,_sender)
-a: pendingReturns
 b: _sender
+a: pendingReturns
+c: Result of builtin get(pendingReturns,_sender)
 
 Gas use polynomial for transition AuctionEnd:
 241 + 1(a) + 1(b) + 4(c) + 1(d)
 Legend:
 
+b: _sender
 c: highestBid
 a: ended
-b: _sender
 d: beneficiary
 
 {

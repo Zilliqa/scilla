@@ -8,56 +8,56 @@ Gas use polynomial for transition ownerOf:
 76 + 2(a) + 1(b)
 Legend:
 
-b: tokenId
 a: Element of: tokenOwnerMap
+b: tokenId
 
 Gas use polynomial for transition mint:
 212 + 1(a) + 1(b) + 2(c) + 1(d) + 1(e) + 1(f)
 Legend:
 
-f: tokenId
-b: Element of: ownedTokenCount
 e: _sender
-a: tokenOwnerMap
 c: to
+f: tokenId
 d: Result of builtin add(Element of: ownedTokenCount,32)
+b: Element of: ownedTokenCount
+a: tokenOwnerMap
 
 Gas use polynomial for transition transferFrom:
 446 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 2(g) + 1(h) + 1(i) + 1(j) + 1(k) + 1(l)
 Legend:
 
-l: tokenId
-h: ownedTokenCount
-e: Element of: ownedTokenCount
-i: Result of builtin sub(Element of: ownedTokenCount,32)
-j: Result of builtin add(Element of: ownedTokenCount,32)
-a: Element of: tokenOwnerMap
 k: _sender
-d: operatorApprovals
-g: to
+h: ownedTokenCount
 c: tokenApprovals
-b: tokenOwnerMap
+i: Result of builtin sub(Element of: ownedTokenCount,32)
+g: to
+e: Element of: ownedTokenCount
+d: operatorApprovals
+a: Element of: tokenOwnerMap
+l: tokenId
+j: Result of builtin add(Element of: ownedTokenCount,32)
 f: Element of: ownedTokenCount
+b: tokenOwnerMap
 
 Gas use polynomial for transition approve:
 190 + 1(a) + 1(b) + 1(c) + 2(d) + 1(e) + 1(f)
 Legend:
 
-c: operatorApprovals
+e: _sender
 a: Element of: tokenOwnerMap
 b: tokenOwnerMap
-e: _sender
-d: to
 f: tokenId
+d: to
+c: operatorApprovals
 
 Gas use polynomial for transition setApprovalForAll:
 1(a) + 160 + 1(b) + 1(c) + 1(d)
 Legend:
 
-d: to
-b: approved
 c: _sender
+d: to
 a: operatorApprovals
+b: approved
 
 {
   "contract_info": {

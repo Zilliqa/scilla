@@ -2,18 +2,18 @@ Gas use polynomial for transition addMember:
 182 + 1(a) + 1(b) + 3(c)
 Legend:
 
-b: memberType
-a: name
 c: _sender
+a: name
+b: memberType
 
 Gas use polynomial for transition addBook:
 1(a) + 107 + 2(b) + 1(c) + 1(d) + 1(e)
 Legend:
 
 e: bookID
-c: book_title
 b: _sender
 a: bookInventory
+c: book_title
 d: author
 
 Gas use polynomial for transition removeBook:
@@ -24,9 +24,9 @@ Gas use polynomial for transition updateBook:
 Legend:
 
 b: _sender
+d: author
 c: book_title
 a: bookInventory
-d: author
 
 {
   "contract_info": {

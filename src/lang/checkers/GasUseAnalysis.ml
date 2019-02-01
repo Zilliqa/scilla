@@ -40,17 +40,9 @@ module ScillaGUA
 
   open GUASyntax
 
-  (* Every size or gas use will depend on an ident (arg or free var) or on a constant. *)
-  type baseref =
-    | Var of ER.rep ident
-    (* Numerical constant *)
-    | Const of int
-    (* An input coming from the block chain state. *)
-    | BCState of string
-
   type sizeref =
-    (* For sizes of PrimTypes, function value. *)
-    | Base of baseref
+    (* Refer to the size of a variable. *)
+    | Base of ER.rep ident
     (* For List and Map types. *)
     | Length of sizeref
     (* For Elements of Lists and Maps. *)
@@ -87,15 +79,9 @@ module ScillaGUA
    * the final signature to not have these lambdas. *)
   type signature = (ER.rep ident list) * sizeref * guref polynomial
 
-  (* Given a baseref, print a string for it. *)
-  let sprint_baseref = function
-    | Var i -> (get_id) i
-    | Const i -> Printf.sprintf "%d" i
-    | BCState s -> "BlockChain: " ^ s
-
   (* Given a size reference, print a description for it. *)
   let rec sprint_sizeref = function
-    | Base b -> sprint_baseref b
+    | Base v -> (get_id v)
     (* For List and Map types. *)
     | Length sr'-> "Length of: " ^ (sprint_sizeref sr')
     (* For Elements of Lists and Maps. *)
@@ -179,7 +165,6 @@ module ScillaGUA
   end
 
   let rec sizeref_to_guref sr = match sr with
-    | Base (Const c) -> GPol (const_pn c)
     | Base _ | Length _| Element _ | MaxB _ | MFun _ | BApp _ | SApp _ -> SizeOf (sr)
     | SPol p ->
       let term_replacer t =
@@ -196,10 +181,7 @@ module ScillaGUA
   (* Expand polynomials that contain GPol. *)
   let rec expand_parameters pol =
     expand_parameters_pn pol ~f:(function
-    | SizeOf sr ->
-      (match sr with
-      | Base (Const c) -> Some(const_pn c)
-      | _ -> Some (single_simple_pn (sizeref_to_guref sr)))
+    | SizeOf sr -> Some (single_simple_pn (sizeref_to_guref sr))
     | GApp _ -> None (* TODO *)
     | GPol p -> Some (expand_parameters p))
 
@@ -213,20 +195,14 @@ module ScillaGUA
     if List.length params != List.length actuals then
       fail1 "Number of actual arguments and formal parameters mismatch" (ER.get_loc (get_rep f))
     else
-      (* replace param with actual in baseref. *)
-      let baseref_replacer param_actual_map b =
-        match b with
-        | Var i ->
-          (match List.assoc_opt (get_id i) param_actual_map with
-          | Some act -> Var act
-          | None -> b)
-        | _ -> b
-      in
       (* replace param with actual in sizeref. *)
       let sizeref_replacer param_actual_map s' =
         let rec replacer s =
           match s with
-          | Base b -> Base (baseref_replacer param_actual_map b)
+          | Base b ->
+            (match List.assoc_opt (get_id b) param_actual_map with
+            | Some act -> Base act
+            | None -> Base b)
           | Length s' -> Length (replacer s')
           | Element s' -> Element (replacer s')
           | SPol sp -> SPol (polynomial_replacer sp)
@@ -282,18 +258,12 @@ module ScillaGUA
 
   (* replace param with actual in sizeref. *)
   let substitute_resolved_actual_sizeref param_actual_map s' =
-    (* replace param with actual in baseref. *)
-    let substitute_resolved_actual_baseref param_actual_map b =
-      match b with
-      | Var i ->
-        (match List.assoc_opt (get_id i) param_actual_map with
-        | Some act -> pure @@ act
-        | None -> pure @@ Base b)
-      | _ -> pure @@ Base b
-    in
     let rec replacer s =
       match s with
-      | Base b -> substitute_resolved_actual_baseref param_actual_map b
+      | Base b ->
+        (match List.assoc_opt (get_id b) param_actual_map with
+        | Some act -> pure @@ act
+        | None -> pure @@ Base b)
       | Length s' ->
         let%bind r = replacer s' in
         pure @@ Length (r)
@@ -318,7 +288,7 @@ module ScillaGUA
           | Some act ->
             (* We know what to do only when "actual" is Base(Var(_)). *)
             (match act with
-            | Base(Var(id'')) -> pure id''
+            | Base id'' -> pure id''
             (* See TODO in definition of sizeref where SApp should have sizeref instead of ident. *)
             | _ ->fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id))
             )
@@ -360,7 +330,7 @@ module ScillaGUA
         | Some act ->
           (* We know what to do only when "actual" is Base(Var(_)). *)
           (match act with
-          | Base(Var(id'')) -> pure id''
+          | Base id'' -> pure id''
           (* See TODO in definition of sizeref where SApp should have guref instead of ident. *)
           | _ ->fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id))
           )
@@ -405,19 +375,14 @@ module ScillaGUA
 
   (* Resolve and expand variables and lambdas (whenever possible) in sr and pol. *)
   let resolve_expand genv sr pol =
-      let baseref_resolver b =
-        match b with
-        | Var i -> 
-          let%bind (_, resr, _) =
-            GUAEnv.resolvS genv (get_id i) ~lopt:(Some(get_rep i)) in
-          pure resr
-        | Const _ | BCState _ -> pure @@ Base(b)
-      in
       (* replace param with actual in sizeref. *)
       let sizeref_resolver s' =
         let rec resolver s =
           match s with
-          | Base b -> baseref_resolver b
+          | Base v ->
+            let%bind (_, resr, _) =
+            GUAEnv.resolvS genv (get_id v) ~lopt:(Some(get_rep v)) in
+            pure resr
           | Length s' ->
             let%bind r = resolver s' in
             pure @@ Length (r)
@@ -555,11 +520,11 @@ module ScillaGUA
     (* Make a simple identifier of type 'A *)
     let si a = ER.mk_id (mk_ident a) (tvar "'A") in
      (* Make a simple polynomial from string a *)
-    let sp a = single_simple_pn (SizeOf(Base(Var(si a)))) in
+    let sp a = single_simple_pn (SizeOf(Base(si a))) in
     let arg_err s = "Incorrect arguments to builtin " ^ s in
     let ressize op actuals =
       (* These must be resolved in the caller when expanding the lambdas. *)
-      let srparams = List.map (fun i -> Base(Var(i))) actuals in
+      let srparams = List.map (fun i -> Base(i)) actuals in
       BApp (op, srparams)
     in
 
@@ -622,15 +587,15 @@ module ScillaGUA
       pure ([si "m"; si "key"], ressize ops params, const_pn 1)
     | "put" -> (* put(m, key, value) = 1 + Length (m) *)
       if List.length params <> 3 then fail1 (arg_err ops) opl else
-      let pol = single_simple_pn (SizeOf(Length(Base(Var(si "m"))))) in
+      let pol = single_simple_pn (SizeOf(Length(Base(si "m")))) in
       pure ([si "m"; si "key"; si "val"], ressize ops params, add_pn pol (const_pn 1))
     | "remove" -> (* remove(m, key) = 1 + Length (m) *)
       if List.length params <> 2 then fail1 (arg_err ops) opl else
-      let pol = single_simple_pn (SizeOf(Length(Base(Var(si "m"))))) in
+      let pol = single_simple_pn (SizeOf(Length(Base(si "m")))) in
       pure ([si "m"; si "key"], ressize ops params, add_pn pol (const_pn 1))
     | "to_list" | "size" -> (* 1 + length (m) *)
       if List.length params <> 1 then fail1 (arg_err ops) opl else
-      let pol = single_simple_pn (SizeOf(Length(Base(Var(si "m"))))) in
+      let pol = single_simple_pn (SizeOf(Length(Base(si "m")))) in
       pure ([si "m"], ressize ops params, add_pn pol (const_pn 1))
     | "add" | "sub" | "mul" | "div" | "rem" | "lt" |
       "to_int32" | "to_int64" | "to_int128" | "to_int256" |
@@ -662,13 +627,13 @@ module ScillaGUA
     match e with
     | Literal l ->
       let%bind ss = Gas.literal_cost l in
-      pure @@ ([], Base(Const(ss)), cc)
+      pure @@ ([], SPol(const_pn ss), cc)
     | Var i ->
       let%bind (args, ressize, gup) = GUAEnv.resolvS genv (get_id i) ~lopt:(Some(get_rep i)) in
       pure (args, ressize, (add_pn gup cc))
     | Fun (arg, _, body) ->
       (* Add a sizeref for arg into env for the body to reference to. *)
-      let b = Base(Var(arg)) in
+      let b = Base(arg) in
       let (p : signature) = ([], b, empty_pn) in
       let genv' = GUAEnv.addS genv (get_id arg) p in
       let%bind (sargs, rsize, rgas) = gua_expr genv' body in
@@ -676,7 +641,7 @@ module ScillaGUA
       pure (arg::sargs, rsize, (add_pn rgas cc))
     | App (f, actuals) ->
       (* Build a lambda for "f". It will be expanded next (along with inner lambdas if possible). *)
-      let srparams = List.map (fun i -> Base(Var(i))) actuals in
+      let srparams = List.map (fun i -> Base(i)) actuals in
       let u = SApp(f, srparams) in
       let v = single_simple_pn (GApp (f, srparams)) in
       (* Expand all lambdas that we can. *)
@@ -689,7 +654,7 @@ module ScillaGUA
       let genv' = GUAEnv.addS genv (get_id b) bsig in
       (* We have the function signature ready, apply and expand it. *)
       (* Build a lambda for "f". It will be expanded next (along with inner lambdas if possible). *)
-      let srparams = List.map (fun i -> Base(Var(i))) actuals in
+      let srparams = List.map (fun i -> Base(i)) actuals in
       let u = SApp(b, srparams) in
       let v = single_simple_pn (GApp (b, srparams)) in
       (* Expand all lambdas that we can. *)
@@ -709,9 +674,9 @@ module ScillaGUA
     | Constr (cname, _, actuals) ->
       let%bind ressize = 
         (match cname with
-        | "True" | "False" -> pure @@ Base(Const(1))
-        | "Nil" -> pure @@ Base(Const(1))
-        | "None" -> pure @@ Base(Const(1))
+        | "True" | "False" -> pure @@ SPol (const_pn 1)
+        | "Nil" -> pure @@ SPol(const_pn 1)
+        | "None" -> pure @@ SPol(const_pn 1)
         | "Some" ->
           (* TypeChecker will ensure that actuals has unit length. *)
           let arg = List.nth actuals 0 in
@@ -747,7 +712,6 @@ module ScillaGUA
           let rsize =
             (match bsize with
             | SPol sp -> add_pn sp asizes
-            | Base (Const c) -> add_pn asizes (const_pn c)
             | _ -> add_pn asizes (single_simple_pn bsize)
             ) in
           pure ([], rsize, add_pn apn bpn)
@@ -773,7 +737,7 @@ module ScillaGUA
         let%bind splist = foldM ~f:(fun acc (_, pl) ->
           (match pl with
           | MTag s -> 
-            let sr = Base(Const(String.length s)) in
+            let sr = SPol(const_pn (String.length s)) in
             let sr' = single_simple_pn sr in
             pure (add_pn acc sr')
           | MLit l ->
@@ -792,17 +756,17 @@ module ScillaGUA
     let a = ER.mk_id (mk_ident "a") (ADT("List", [TypeVar("'A")])) in
     let g = ER.mk_id (mk_ident "g") (FunType(TypeVar("'A"), FunType(TypeVar("'B"), TypeVar("'B")))) in
     let b = ER.mk_id (mk_ident "b") (TypeVar("'B")) in
-    let lendep = SizeOf(Length(Base(Var(a)))) in
-    let gapp = GApp(g, [Element(Base(Var(a))); Base(Var(b))]) in
+    let lendep = SizeOf(Length(Base(a))) in
+    let gapp = GApp(g, [Element(Base(a)); Base(b)]) in
     (* Gas use polynomial = Length(a) * GApp(g, [Element(a), b]) *)
     let gupol = mul_pn (single_simple_pn lendep) (single_simple_pn gapp) in
-    let ressize = SApp(g, [Base(Var(a));Base(Var(b))]) in
+    let ressize = SApp(g, [Base(a);Base(b)]) in
     let list_foldr_signature = ([g;b;a], ressize, gupol) in
     let genv' = GUAEnv.addS genv "list_foldr" list_foldr_signature in
     (* list_foldl: forall 'A . forall 'B . g:('B -> 'A -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
-    let gapp' = GApp(g, [Base(Var(b)); Element(Base(Var(a)));]) in
+    let gapp' = GApp(g, [Base(b); Element(Base(a));]) in
     let gupol' = mul_pn (single_simple_pn lendep) (single_simple_pn gapp') in
-    let ressize' = SApp(g, [Base(Var(b));Base(Var(a))]) in
+    let ressize' = SApp(g, [Base(b);Base(a)]) in
     let list_foldl_signature = ([g;b;a], ressize', gupol') in
     let gapp'' = GUAEnv.addS genv' "list_foldl" list_foldl_signature in
     gapp''
@@ -815,8 +779,8 @@ module ScillaGUA
       (match s with
         | Load (x, r) ->
           (* The cost of load depends on the size of the state variable. *)
-          let gupol' = add_pn gupol (single_simple_pn (SizeOf(Base(Var(r))))) in
-          let signx = ([], Base(Var(r)), empty_pn) in
+          let gupol' = add_pn gupol (single_simple_pn (SizeOf(Base(r)))) in
+          let signx = ([], Base(r), empty_pn) in
           let genv' = GUAEnv.addS genv (get_id x) signx in
           gua_stmt genv' gupol' sts
         | Store (_, r) ->
@@ -847,18 +811,18 @@ module ScillaGUA
           let nindices = (const_pn (List.length klist)) in
           let (sign, pol) =
             if fetchval then 
-              let ressize = List.fold_left (fun acc _ -> Element(acc)) (Base(Var(m))) klist in
+              let ressize = List.fold_left (fun acc _ -> Element(acc)) (Base(m)) klist in
               ([], ressize, empty_pn), (add_pn nindices (single_simple_pn (SizeOf(ressize))))
             else
               (* TODO: How to represent result of `exists` in map? ?*)
-              ([], Base(Var(m)), empty_pn), nindices
+              ([], Base(m), empty_pn), nindices
           in
           let genv' = GUAEnv.addS genv (get_id x) sign in
           let gupol' = add_pn pol gupol in
           gua_stmt genv' gupol' sts
-        | ReadFromBC (x, bf) ->
-          (* Bind x to blockchain variable bf *)
-          let signx = ([], Base(BCState(bf)), empty_pn) in
+        | ReadFromBC (x, _) ->
+          (* TODO: Look at the type and assign cost? *)
+          let signx = ([], SPol(const_pn 1), empty_pn) in
           (* Constant cost of 1 to load a blockchain variable. *)
           let gupol' = add_pn gupol (const_pn 1) in
           let genv' = GUAEnv.addS genv (get_id x) signx in
@@ -886,7 +850,7 @@ module ScillaGUA
   (* Bind identifiers to just sizeref wrappers of themselves. *)
   let identity_bind_ident_list genv idlist =
     List.fold_left (fun acc_genv i ->
-        let i' = Base(Var(i)) in
+        let i' = Base(i) in
         GUAEnv.addS acc_genv (get_id i) ([], i', empty_pn)
       ) genv idlist
 

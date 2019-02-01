@@ -2,8 +2,8 @@ Gas use polynomial for transition setHello:
 121 + 2(a) + 1(b)
 Legend:
 
-b: msg
 a: _sender
+b: msg
 
 Gas use polynomial for transition getHello:
 2(a) + 22

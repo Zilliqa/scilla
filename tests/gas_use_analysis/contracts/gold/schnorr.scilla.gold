@@ -3,8 +3,8 @@ Gas use polynomial for transition verify:
 Legend:
 
 c: _sender
-a: pub_key
 b: msg
+a: pub_key
 
 {
   "contract_info": {
