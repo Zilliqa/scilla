@@ -11,6 +11,10 @@
 
 ## Building and Running
 
+### Source code
+
+We suggest users to use the latest release of Scilla available [here](https://github.com/Zilliqa/scilla/releases).
+
 ### Build requirements
 
 Platform specific instructions for setting up your system for building Scilla can be
