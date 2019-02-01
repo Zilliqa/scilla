@@ -1,0 +1,19 @@
+scilla_version 0
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+
+library UnstorableADT
+
+type Test =
+  | Bad of (Uint32 -> Uint32)
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract UnstorableADT
+(
+)
+
+field last_input : Option Test = None {Test}

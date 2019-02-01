@@ -13,11 +13,10 @@ let getAddressFromPair = @fst (ByStr20) (Uint128)
 let getValueFromPair = @snd (ByStr20) (Uint128)
 
 (* Event for errors *)
-let make_event =
-  fun (label: String) =>
+let make_error_event =
   fun (location: String) =>
   fun (msg: String) =>
-    { _eventname : label ; raisedAt: location; message: msg}
+    { _eventname : "Error" ; raisedAt: location; message: msg}
 
 (* Order = { tokenA, valueA, tokenB, valueB } *)
 type Order =
@@ -64,9 +63,6 @@ let computePendingReturnsVal =
     | None =>
       incomingTokensAmt
     end
-
-let success = "Success"
-let error = "Error"
 
 (***************************************************)
 (*             The contract definition             *)
@@ -117,7 +113,7 @@ transition makeOrder(tokenA: ByStr20, valueA: Uint128, tokenB: ByStr20, valueB: 
   | False =>
     e = let func = "makeOrder" in
         let error_msg = "Expiration block must be at least 50 blocks more than current block" in 
-        make_event error func error_msg;
+        make_error_event func error_msg;
     event e
   end
 end
@@ -162,19 +158,19 @@ transition fillOrder(orderId: ByStr32)
       | False =>
         e = let func = "fillOrder" in
             let error_msg = "Current block number exceeds the expiration block set" in 
-            make_event error func error_msg;
+            make_error_event func error_msg;
         event e
       end
     | None => 
       e = let func = "fillOrder" in
           let error_msg = "OrderId not found" in 
-          make_event error func error_msg;
+          make_error_event func error_msg;
       event e
     end
   | None =>
     e = let func = "fillOrder" in
         let error_msg = "OrderId not found" in 
-        make_event error func error_msg;
+        make_error_event func error_msg;
     event e
   end
 end
@@ -195,7 +191,7 @@ transition ClaimBack(token: ByStr20)
   | None =>
       e = let func = "claimBack" in
           let error_msg = "No Pending Returns for Sender and Contract Address found" in 
-          make_event error func error_msg;
+          make_error_event func error_msg;
       event e
   end
 end
@@ -232,7 +228,7 @@ transition cancelOrder(orderId: ByStr32)
         | None =>
           e = let func = "cancelOrder" in
               let error_msg = "OrderID not found" in 
-              make_event error func error_msg;
+              make_error_event func error_msg;
           event e
         end
 
@@ -240,14 +236,14 @@ transition cancelOrder(orderId: ByStr32)
         (* Unauthorized transaction *)
         e = let func = "cancelOrder" in
             let error_msg = "Sender is not maker of the order" in 
-            make_event error func error_msg;
+            make_error_event func error_msg;
         event e
       end
   | None =>
       (* Order ID not found *)
       e = let func = "cancelOrder" in
           let error_msg = "OrderID not found" in 
-          make_event error func error_msg;
+          make_error_event func error_msg;
       event e
   end
 end

@@ -96,6 +96,7 @@ module TypeUtilities
   (****************************************************************)
 
   val is_storable_type : typ -> bool
+  val is_serializable_type : typ -> bool
   val is_ground_type : typ -> bool
   val get_msgevnt_type : (string * 'a) sexp_list -> (typ, scilla_error sexp_list) result
 

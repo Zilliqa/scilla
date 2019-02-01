@@ -243,18 +243,73 @@ module TypeUtilities
     | PolyFun _ -> false
     | _ -> true
 
-  let rec is_storable_type t = match t with 
-    | FunType _ -> false
-    | MapType (kt, vt) -> is_storable_type kt && is_storable_type vt
-    | TypeVar _ -> false
-    | ADT (_, ts) -> List.for_all ~f:(fun t -> is_storable_type t) ts
-    | PolyFun _ -> false
-    | Unit -> false
-    | PrimType _ ->
-      (* Messages/Events when stored or passed in messages cannot be analyzed,
-       * leading to potential badly constructed Messages/Events. So we disallow. *)
-      not (t = PrimTypes.msg_typ || t = PrimTypes.event_typ)
+  let is_storable_type t =
+    let rec storable_helper t seen_adts =
+      match t with 
+      | FunType _ -> false
+      | MapType (kt, vt) -> storable_helper kt seen_adts && storable_helper vt seen_adts
+      | TypeVar _ ->
+          (* If we are inside an ADT, then type variable 
+             instantiations are handled outside *)
+          (match seen_adts with
+           | [] -> false 
+           | _  -> true)
+      | ADT (tname, ts) ->
+          (match List.findi ~f:(fun _ seen -> seen = tname) seen_adts with
+           | Some _ -> true (* Inductive ADT - ignore this branch *)
+           | None ->
+               (* Check that ADT is storable *)
+               match DataTypeDictionary.lookup_name tname with
+               | Error _ -> false (* Handle errors outside *)
+               | Ok adt -> 
+                   let adt_storable =
+                     List.for_all ~f:(fun (_, carg_list) ->
+                         List.for_all ~f:(fun carg ->
+                             storable_helper carg (tname :: seen_adts))
+                           carg_list)
+                       adt.tmap in
+                   adt_storable && List.for_all ~f:(fun t -> storable_helper t seen_adts) ts)
+      | PolyFun _ -> false
+      | Unit -> false
+      | PrimType _ ->
+          (* Messages/Events when stored or passed in messages cannot be analyzed,
+           * leading to potential badly constructed Messages/Events. So we disallow. *)
+          not (t = PrimTypes.msg_typ || t = PrimTypes.event_typ) in
+    storable_helper t []
 
+  let is_serializable_type t =
+    let rec serializable_helper t seen_adts =
+      match t with
+      | FunType _ 
+      | MapType _
+      | PolyFun _
+      | Unit      -> false
+      | TypeVar _ ->
+          (* If we are inside an ADT, then type variable 
+             instantiations are handled outside *)
+          (match seen_adts with
+           | [] -> false 
+           | _  -> true)
+      | PrimType _ ->
+          (* Messages and Events are not serialisable in terms of contract parameters *)
+          not (t = PrimTypes.msg_typ || t = PrimTypes.event_typ)
+      | ADT (tname, ts) ->
+          (match List.findi ~f:(fun _ seen -> seen = tname) seen_adts with
+           | Some _ -> true (* Inductive ADT - ignore this branch *)
+           | None ->
+               (* Check that ADT is serializable *)
+               match DataTypeDictionary.lookup_name tname with
+               | Error _ -> false (* Handle errors outside *)
+               | Ok adt -> 
+                   let adt_serializable =
+                     List.for_all ~f:(fun (_, carg_list) ->
+                         List.for_all ~f:(fun carg ->
+                             serializable_helper carg (tname :: seen_adts))
+                           carg_list)
+                       adt.tmap in
+                   adt_serializable && List.for_all ~f:(fun t -> serializable_helper t seen_adts) ts) in
+    serializable_helper t []
+  
   let get_msgevnt_type m =
     if (List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.tag_label) m)
     then pure PrimTypes.msg_typ else
