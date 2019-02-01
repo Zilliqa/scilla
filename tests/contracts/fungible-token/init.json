@@ -33,15 +33,5 @@
         "vname" : "_creation_block",
         "type" : "BNum",
         "value" : "1"
-    },
-    {
-        "vname" : "name",
-        "type" : "String",
-        "value" : "Zilliqa"
-    },
-    {
-        "vname" : "symbol",
-        "type" : "String",
-        "value" : "ZIL"
     }
 ]
