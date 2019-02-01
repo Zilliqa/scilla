@@ -105,7 +105,7 @@ let check_cashflow typed_cmod =
 let check_version vernum =
   let emsg = scilla_error_to_string (mk_error0 "Scilla version mismatch\n") in
   let (mver, _, _) = scilla_version in
-  if vernum <> mver then perr emsg; exit 1
+  if vernum <> mver then (perr emsg; exit 1)
 
 let () =
     let cli = parse_cli () in
@@ -143,5 +143,5 @@ let () =
           | None -> base_output
           | Some cf_info -> ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: base_output in
         let j = `Assoc output_with_cf in
-        let _ = check_version cmod.smver in
+        check_version cmod.smver;
         pout (sprintf "%s\n" (Yojson.pretty_to_string j));
