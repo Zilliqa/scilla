@@ -59,7 +59,7 @@ let lookup_adt_name_exn name =
 
 type adt_parser_entry =
   | Incomplete (* Parser not completely constructed. *)
-  | Parser of (Basic.json -> literal)
+  | Parser of (Basic.t -> literal)
 
 let adt_parsers =
   let open Caml in
@@ -86,7 +86,7 @@ let lookup_adt_parser adt_name =
 (*************************************)
 
 (* Generate a parser. *)
-let gen_parser (t' : typ) : (Basic.json -> literal) =
+let gen_parser (t' : typ) : (Basic.t -> literal) =
   let open Basic in
     let rec recurser t =
     match t with
