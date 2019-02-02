@@ -48,9 +48,7 @@ zilliqa-docker:
 	docker build --build-arg BASE_IMAGE=$(ZILLIQA_IMAGE) .
 
 opamdep:
-	opam init -y
-	opam switch create 4.06.1
-	opam switch -y 4.06.1
+  opam init --disable-sandboxing -y --compiler=4.06.1
 	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
 
 
