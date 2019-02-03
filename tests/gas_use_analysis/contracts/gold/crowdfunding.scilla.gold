@@ -9,7 +9,7 @@ e: Result of builtin put(backers,_sender,_amount)
 a: backers
 
 Gas use polynomial for transition GetFunds:
-282 + 2(a) + 3(b) + 2(c)
+281 + 2(a) + 3(b) + 2(c)
 Legend:
 
 a: _sender
@@ -17,7 +17,7 @@ b: _balance
 c: owner
 
 Gas use polynomial for transition ClaimBack:
-265 + 5(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 2(g)
+264 + 5(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 2(g)
 Legend:
 
 a: _sender

@@ -682,15 +682,45 @@ module ScillaGUA
           let arg = List.nth actuals 0 in
           let%bind (_, compsize, _) = GUAEnv.resolvS genv (get_id arg) ~lopt:(Some(get_rep arg)) in
           pure @@ compsize
-        | "Pair" | "Cons" ->
+        | "Pair" ->
           (* TypeChecker will ensure that actuals has two elements. *)
           let arg0 = List.nth actuals 0 in
           let arg1 = List.nth actuals 1 in
           let%bind (_, compsize0, _) = GUAEnv.resolvS genv (get_id arg0) ~lopt:(Some(get_rep arg0)) in
           let%bind (_, compsize1, _) = GUAEnv.resolvS genv (get_id arg1) ~lopt:(Some(get_rep arg1)) in
-          let compsize0' = single_simple_pn compsize0 in
-          let compsize1' = single_simple_pn compsize1 in
+          let compsize0' = (match compsize0 with | SPol p0 -> p0 | _ -> single_simple_pn compsize0) in
+          let compsize1' = (match compsize1 with | SPol p1 -> p1 | _ -> single_simple_pn compsize1) in
           pure @@ SPol(add_pn compsize0' compsize1')
+        | "Cons" ->
+          (* TypeChecker will ensure that actuals has two elements. *)
+          let arg0 = List.nth actuals 0 in
+          let arg1 = List.nth actuals 1 in
+          let%bind (_, compsize0, _) = GUAEnv.resolvS genv (get_id arg0) ~lopt:(Some(get_rep arg0)) in
+          let%bind (_, compsize1, _) = GUAEnv.resolvS genv (get_id arg1) ~lopt:(Some(get_rep arg1)) in
+          (match compsize1 with
+          | Base _ ->
+            (* Cons a b : Element(b) + Element(b) * Length(b) *)
+            let el = single_simple_pn @@ Element(compsize1) in
+            let len = single_simple_pn @@ Length(compsize1) in
+            pure @@ SPol(add_pn el (mul_pn el len))
+          | SPol p ->
+            (* Search for a term Element(b)*Length(b) *)
+            let lt = List.find_opt (fun t ->
+              (* check if t has two variables, each with unit power. *)
+              match t with
+              | (_, [(Element b, 1);(Length b', 1)]) when b = b' -> true
+              | _ -> false
+            ) p in
+            (match lt with
+            | Some (_, [(Element _ as t, 1);_]) -> pure @@ SPol (add_pn (single_simple_pn t) p)
+            | _ -> pure @@ SPol (single_simple_pn compsize0)
+            )
+          | _ ->
+            (* what to do? *)
+            let compsize0' = (match compsize0 with | SPol p0 -> p0 | _ -> single_simple_pn compsize0) in
+            let compsize1' = (match compsize0 with | SPol p1 -> p1 | _ -> single_simple_pn compsize1) in
+            pure @@ SPol(add_pn compsize0' compsize1')
+          )
         | _ -> fail1 (Printf.sprintf "Unsupported constructor %s in gas analysis." cname)
                      (ER.get_loc rep)
         )

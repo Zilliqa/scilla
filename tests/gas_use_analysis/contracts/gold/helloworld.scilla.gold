@@ -1,5 +1,5 @@
 Gas use polynomial for transition setHello:
-121 + 2(a) + 1(b)
+119 + 2(a) + 1(b)
 Legend:
 
 a: _sender

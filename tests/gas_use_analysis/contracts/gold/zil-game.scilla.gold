@@ -1,5 +1,5 @@
 Gas use polynomial for transition Play:
-3(a) + 324 + 4(b) + 2(c) + 2(d) + 2(e) + 2(f)
+3(a) + 320 + 4(b) + 2(c) + 2(d) + 2(e) + 2(f)
 Legend:
 
 b: _sender
@@ -10,7 +10,7 @@ a: timer
 d: guess
 
 Gas use polynomial for transition ClaimReward:
-1(a) + 497 + 2(b) + 1(c) + 1(d) + 30(e) + 2(f) + 2(g) + 2(h) + 2(i)
+1(a) + 494 + 2(b) + 1(c) + 1(d) + 30(e) + 2(f) + 2(g) + 2(h) + 2(i)
 Legend:
 
 b: _sender
@@ -24,7 +24,7 @@ i: player_a
 h: owner
 
 Gas use polynomial for transition Withdraw:
-180 + 2(a) + 1(b) + 1(c)
+178 + 2(a) + 1(b) + 1(c)
 Legend:
 
 c: _sender

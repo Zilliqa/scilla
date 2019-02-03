@@ -1,5 +1,5 @@
 Gas use polynomial for transition verify:
-1(a) + 453 + 15(b) + 3(c)
+1(a) + 450 + 15(b) + 3(c)
 Legend:
 
 c: _sender

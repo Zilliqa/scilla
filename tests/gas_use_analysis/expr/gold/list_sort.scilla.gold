@@ -8,5 +8,5 @@ Legend:
 c: Cost of calling flt(Element of: 1, Element of: ls)
 b: Length of: 1
 a: Length of: ls
-Result size: 1((ls)) + 1((3((1)) + 2((1((1)) + 1((2((1)))))) + 1((1((1)) + 1((1((ls)) + 1((2((1)))))))))) + 3((1)) + 2((1((1)) + 1((2((1)))))) + 1((1((1)) + 1((1((ls)) + 1((2((1))))))))
+Result size: 9((Element of: 2)) + 6 + 6((Element of: 2))((Length of: 2))
 
