@@ -67,16 +67,10 @@ let rec is_pure_literal l = match l with
    *     List.for_all es ~f:(fun (k, v) -> is_pure_literal k && is_pure_literal v) *)
   | _ -> true
 
-(* Serializable literals *)
-let rec is_serializable_literal l = match l with
-  | Msg _ | Map _ | Clo _ | TAbs _ -> false
-  | ADTValue (_, _, llist) ->
-    List.for_all llist ~f:(fun l -> is_serializable_literal l)
-  | _ -> true
-
 (* Sanitize before storing into a message *)
 let sanitize_literal l =
-  if is_serializable_literal l
+  let%bind t = fromR @@ literal_type l in
+  if is_serializable_type t
   then pure l
   else fail0 @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
