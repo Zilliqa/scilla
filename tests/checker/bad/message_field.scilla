@@ -11,7 +11,7 @@ contract Msg_Field_Test ()
 
 (* The type of arguments to fields in Message is incorrect *)
 transition malMessage3(num1 : Int32)
-  (* duplicate field *)
+  (* num1 should have been Uint128 *)
   msg = { _tag: ""; _recipient : _sender; _amount : num1; status : "foo"};
   msgs = one_msg msg;
   send msgs
@@ -19,7 +19,7 @@ end
 
 (* The type of arguments to fields in Message is incorrect *)
 transition malMessage4 ()
-  (* duplicate field *)
+  (* Zero is `MTag`, not the right type. *)
   msg = { _tag: ""; _recipient : _sender; _amount : Zero; status : "foo"};
   msgs = one_msg msg;
   send msgs
@@ -27,7 +27,7 @@ end
 
 (* The type of arguments to fields in Message is incorrect *)
 transition malMessage5 ()
-  (* duplicate field *)
+  (* _recipient should have ByStr20 argument, not ByStr2 *)
   msg = { _tag: ""; _recipient : 0xabad; _amount : Uint128 0; status : "foo"};
   msgs = one_msg msg;
   send msgs
@@ -35,8 +35,8 @@ end
 
 (* The type of arguments to fields in Message is incorrect *)
 transition malMessage6 ()
-  (* duplicate field *)
-  msg = { _tag: BNum 100; _recipient : 0xabad; _amount : Uint128 0; status : "foo"};
+  (* _tag should be `MTag` or a String. *)
+  msg = { _tag: BNum 100; _recipient : _sender; _amount : Uint128 0; status : "foo"};
   msgs = one_msg msg;
   send msgs
 end

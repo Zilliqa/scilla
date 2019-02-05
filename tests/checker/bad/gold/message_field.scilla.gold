@@ -20,7 +20,7 @@
     },
     {
       "error_message":
-        "Type error in the binding to into `msg`:\nType mismatch for Message field _amount",
+        "Type error in the binding to into `msg`:\nType mismatch for Message field _amount. Expected Uint128 but got Int32",
       "start_location": {
         "file": "checker/bad/message_field.scilla",
         "line": 15,
@@ -39,7 +39,7 @@
     },
     {
       "error_message":
-        "Type error in the binding to into `msg`:\nType mismatch for Message field _amount",
+        "Type error in the binding to into `msg`:\nType mismatch for Message field _amount. Expected Uint128 but got String",
       "start_location": {
         "file": "checker/bad/message_field.scilla",
         "line": 23,
@@ -58,7 +58,7 @@
     },
     {
       "error_message":
-        "Type error in the binding to into `msg`:\nType mismatch for Message field _recipient",
+        "Type error in the binding to into `msg`:\nType mismatch for Message field _recipient. Expected ByStr20 but got ByStr2",
       "start_location": {
         "file": "checker/bad/message_field.scilla",
         "line": 31,
@@ -77,7 +77,7 @@
     },
     {
       "error_message":
-        "Type error in the binding to into `msg`:\nType mismatch for Message field _tag",
+        "Type error in the binding to into `msg`:\nType mismatch for Message field _tag. Expected String but got BNum",
       "start_location": {
         "file": "checker/bad/message_field.scilla",
         "line": 39,

@@ -225,10 +225,11 @@ module ScillaTypechecker
     | Message bs ->
         let%bind msg_typ = get_msgevnt_type bs in
         let payload_type fld pld =
-          let check_field_type expected =
+          let check_field_type seen_type =
             match Caml.List.assoc_opt fld CU.msg_mandatory_field_types with
-            | Some fld_t when fld_t <> expected ->
-              fail1 (sprintf "Type mismatch for Message field %s" fld) (ER.get_loc rep)
+            | Some fld_t when fld_t <> seen_type ->
+              fail1 (sprintf "Type mismatch for Message field %s. Expected %s but got %s"
+                    fld (pp_typ fld_t) (pp_typ seen_type)) (ER.get_loc rep) 
             | _ -> pure ()
           in
           (match pld with
