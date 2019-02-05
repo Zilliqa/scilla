@@ -51,9 +51,8 @@ Building Scilla requires OCaml 4.06.1. You can switch to this version and instal
 opam packages using the commands listed below:
 
 ```
-opam init -y
-opam switch -y 4.06.1
-opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
+opam init --disable-sandboxing -y --compiler=4.06.1
+opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
 ```
 
 The above three commands can, alternatively, be run using the make target `opamdep`
