@@ -101,7 +101,15 @@ let check_cashflow typed_cmod =
   List.map j
     ~f:(fun (i, t) -> 
         (i, CF.ECFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string))
-      
+
+let check_version vernum =
+  let (mver, _, _) = scilla_version in
+  if vernum <> mver
+  then
+    let emsg =  sprintf "Scilla version mismatch. Expected %d vs Contract %d\n" mver vernum in
+    let err = scilla_error_to_string (mk_error0 emsg) in
+    (perr err; exit 1)
+
 let () =
     let cli = parse_cli () in
     let open GlobalConfig in
@@ -138,4 +146,5 @@ let () =
           | None -> base_output
           | Some cf_info -> ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: base_output in
         let j = `Assoc output_with_cf in
+        check_version cmod.smver;
         pout (sprintf "%s\n" (Yojson.pretty_to_string j));
