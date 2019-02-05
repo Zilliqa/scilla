@@ -51,7 +51,7 @@ d: to
 c: operatorApprovals
 
 Gas use polynomial for transition setApprovalForAll:
-1(a) + 160 + 1(b) + 1(c) + 1(d)
+1(a) + 140 + 1(b) + 1(c) + 1(d)
 Legend:
 
 c: _sender

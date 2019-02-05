@@ -10,7 +10,7 @@ a: timer
 d: guess
 
 Gas use polynomial for transition ClaimReward:
-1(a) + 494 + 2(b) + 1(c) + 1(d) + 30(e) + 2(f) + 2(g) + 2(h) + 2(i)
+1(a) + 494 + 2(b) + 1(c) + 1(d) + 30(e) + 2(f) + 1(g) + 1(h) + 1(i)
 Legend:
 
 b: _sender
@@ -19,9 +19,9 @@ f: _balance
 e: solution
 c: player_a_hash
 a: timer
-g: player_b
+h: player_b
 i: player_a
-h: owner
+g: owner
 
 Gas use polynomial for transition Withdraw:
 178 + 2(a) + 1(b) + 1(c)

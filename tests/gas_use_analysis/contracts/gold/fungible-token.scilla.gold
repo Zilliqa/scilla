@@ -36,12 +36,12 @@ i: Length of: allowed
 c: Length of: balances
 j: Result of builtin put(allowed,from,Result of builtin put(Result of builtin get(allowed,from),_sender,Result of builtin sub(tokens,tokens)))
 h: Length of: Result of builtin get(allowed,from)
-e: Length of: Result of builtin put(balances,from,Result of builtin sub(1((Result of builtin get(balances,from))) + 1((Result of builtin get(Result of builtin get(allowed,from),_sender))),tokens))
-d: Result of builtin put(balances,from,Result of builtin sub(1((Result of builtin get(balances,from))) + 1((Result of builtin get(Result of builtin get(allowed,from),_sender))),tokens))
+e: Length of: Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
+d: Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
 b: allowed
 a: balances
-f: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(1((Result of builtin get(balances,from))) + 1((Result of builtin get(Result of builtin get(allowed,from),_sender))),tokens)),to,Result of builtin add(Result of builtin get(Result of builtin put(balances,from,Result of builtin sub(1((Result of builtin get(balances,from))) + 1((Result of builtin get(Result of builtin get(allowed,from),_sender))),tokens)),to),tokens))
-g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(1((Result of builtin get(balances,from))) + 1((Result of builtin get(Result of builtin get(allowed,from),_sender))),tokens)),to,tokens)
+f: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to,Result of builtin add(Result of builtin get(Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to),tokens))
+g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to,tokens)
 
 Gas use polynomial for transition Approve:
 24 + 2(a) + 1(b) + 1(c)

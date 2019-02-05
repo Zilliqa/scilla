@@ -6,7 +6,7 @@ Gas use polynomial:
 Legend:
 
 b: Length of: m1
-a: Length of: 1((Element of: 1 + 1((m2)))) + 1((Element of: 1 + 1((m2))))((Length of: 1 + 1((m2)))) + 2 + 2((1 + 1((m2))))
-c: Cost of calling f(Element of: m1, 1 + 1((Element of: 1 + 1((m2)))))
-Result size: 1((Element of: 1)) + 1((Element of: 1))((Length of: 1))
+a: Length of: 1(Element of: 1 + 1(m2)) + 1(Element of: 1 + 1(m2))(Length of: 1 + 1(m2)) + 1 + 1(1 + 1(m2))
+c: Cost of calling f(Element of: m1, 1 + 1(Element of: 1 + 1(m2)))
+Result size: 1(Element of: 1) + 1(Element of: 1)(Length of: 1)
 

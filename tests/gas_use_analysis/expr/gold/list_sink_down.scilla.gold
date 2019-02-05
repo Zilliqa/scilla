@@ -7,5 +7,5 @@ Legend:
 
 a: Length of: ls
 b: Cost of calling flt(Element of: ls, e)
-Result size: 9((Element of: 2)) + 6 + 6((Element of: 2))((Length of: 2))
+Result size: 1(Element of: 2)(Length of: 2) + 1 + 3(Element of: 2)
 

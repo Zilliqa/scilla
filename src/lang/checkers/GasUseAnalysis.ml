@@ -86,7 +86,7 @@ module ScillaGUA
     | Length sr'-> "Length of: " ^ (sprint_sizeref sr')
     (* For Elements of Lists and Maps. *)
     | Element sr' -> "Element of: " ^ (sprint_sizeref sr')
-    | SPol pn -> sprint_pn pn ~f:(fun sr -> "(" ^ sprint_sizeref sr ^ ")")
+    | SPol pn -> sprint_pn pn ~f:(fun sr -> sprint_sizeref sr)
     | MaxB srlist ->  "Max (" ^
       (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
     | MFun (s, srlist) -> s ^ " (" ^
@@ -741,8 +741,8 @@ module ScillaGUA
           let%bind (_, bsize, bpn) = gua_expr genv' branch in
           let rsize =
             (match bsize with
-            | SPol sp -> add_pn sp asizes
-            | _ -> add_pn asizes (single_simple_pn bsize)
+            | SPol sp -> max_combine_pn sp asizes
+            | _ -> max_combine_pn asizes (single_simple_pn bsize)
             ) in
           pure ([], rsize, add_pn apn bpn)
         ) ~init:([], empty_pn, empty_pn) clauses in
