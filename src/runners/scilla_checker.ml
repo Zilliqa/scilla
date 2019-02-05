@@ -103,9 +103,12 @@ let check_cashflow typed_cmod =
         (i, CF.ECFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string))
 
 let check_version vernum =
-  let emsg = scilla_error_to_string (mk_error0 "Scilla version mismatch\n") in
   let (mver, _, _) = scilla_version in
-  if vernum <> mver then (perr emsg; exit 1)
+  if vernum <> mver
+  then
+    let emsg =  sprintf "Scilla version mismatch. Expected %d vs Contract %d\n" mver vernum in
+    let err = scilla_error_to_string (mk_error0 emsg) in
+    (perr err; exit 1)
 
 let () =
     let cli = parse_cli () in
