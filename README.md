@@ -69,11 +69,11 @@ The checker can be run with the following optional flags:
 From the project root, execute
 
 ```
-./bin/scilla-runner -init tests/contracts/crowdfunding/init.json -istate tests/contracts/crowdfunding/state_4.json -iblockchain tests/contracts/crowdfunding/blockchain_4.json -imessage tests/contracts/crowdfunding/message_4.json -o tests/contracts/crowdfunding/output_4.json -i tests/contracts/crowdfunding/contract -libdir src/stdlib
+./bin/scilla-runner -init tests/contracts/crowdfunding/init.json -istate tests/contracts/crowdfunding/state_4.json -iblockchain tests/contracts/crowdfunding/blockchain_4.json -imessage tests/contracts/crowdfunding/message_4.json -o tests/contracts/crowdfunding/output_4.json -i tests/contracts/crowdfunding/contract.scilla -libdir src/stdlib -gaslimit 8000
 ```
   or
 ```
-./bin/scilla-runner -init tests/contracts/zil-game/init.json -istate tests/contracts/zil-game/state_5.json -iblockchain tests/contracts/zil-game/blockchain_5.json -imessage tests/contracts/zil-game/message_5.json -o tests/contracts/zil-game/output_5.json -i tests/contracts/zil-game/contract -libdir src/stdlib
+./bin/scilla-runner -init tests/contracts/zil-game/init.json -istate tests/contracts/zil-game/state_5.json -iblockchain tests/contracts/zil-game/blockchain_5.json -imessage tests/contracts/zil-game/message_5.json -o tests/contracts/zil-game/output_5.json -i tests/contracts/zil-game/contract.scilla -libdir src/stdlib -gaslimit 8000
 ```
 
 Alternatively, use the easyrun script as below:
