@@ -124,7 +124,7 @@ let max_combine_pn (p1' : 'a polynomial) (p2' : 'a polynomial) =
     let (heq, hneq) = List.partition_tf p2' ~f:(fun t -> eq_term ~coef:false (c1, t1) t) in
     (* TODO assert that (List.length heq <= 1) due to canonicalize_pn earlier. *)
     match heq with
-    | [(c2, t2)] when c2 < c1 -> ((c2, t2) :: res, hneq)
+    | [(c2, t2)] when c2 > c1 -> ((c2, t2) :: res, hneq)
     | _ -> ((c1, t1) :: res, hneq)
   ) in
   res @ p2'

@@ -99,15 +99,15 @@ let t7_pn = test_case (fun _ ->
 
 let t8_pn = test_case (fun _ ->
   let m1 = (2, [('A', 2);('B', 1);]) in
-  let m2 = (3, [('B', 3);('A', 1);]) in
+  let m2 = (4, [('B', 3);('A', 1);]) in
   let m3 = (11, [('B', 3);]) in
   let p1 = [m1;m2;m3] in
   let n1 = (3, [('A', 2);('B', 1);]) in
-  let n2 = (4, [('A', 1);('B', 3);]) in
+  let n2 = (3, [('A', 1);('B', 3);]) in
   let n3 = (10, [('A', 1)]) in
   let p2 = [n1;n2;n3] in
   let maxc = max_combine_pn p1 p2 in
-  let maxc' = [(2, [('A', 2);('B', 1)]);(3, [('A', 1);('B', 3)]);(10, [('A', 1)]);(11, [('B', 3)])] in
+  let maxc' = [(3, [('A', 2);('B', 1)]);(4, [('A', 1);('B', 3)]);(10, [('A', 1)]);(11, [('B', 3)])] in
   let b = eq_pn maxc maxc' in
   assert_bool "polynomial max-combine test failed" b)
 
