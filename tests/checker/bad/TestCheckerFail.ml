@@ -51,6 +51,7 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_adt_4.scilla";
       "unserializable_param.scilla";
       "unstorable_adt.scilla";
+      "bad_version.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
