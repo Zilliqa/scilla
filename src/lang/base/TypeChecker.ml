@@ -224,17 +224,29 @@ module ScillaTypechecker
         pure @@ (TypedSyntax.TApp (add_type_to_ident tf tf_rr, arg_types), (mk_qual_tp res_type, rep))
     | Message bs ->
         let%bind msg_typ = get_msgevnt_type bs in
-        let payload_type pld =
+        let payload_type fld pld =
+          let check_field_type seen_type =
+            match Caml.List.assoc_opt fld CU.msg_mandatory_field_types with
+            | Some fld_t when fld_t <> seen_type ->
+              fail1 (sprintf "Type mismatch for Message field %s. Expected %s but got %s"
+                    fld (pp_typ fld_t) (pp_typ seen_type)) (ER.get_loc rep) 
+            | _ -> pure ()
+          in
           (match pld with
-           | MTag m -> pure @@ TypedSyntax.MTag m
+           | MTag m ->
+             (* If the field has a pre-determined type, it can only be string_typ. *)
+             let%bind _ = check_field_type string_typ in
+             pure @@ TypedSyntax.MTag m
            | MLit l ->
-               let%bind _ = type_expr tenv (Literal l, rep) 
-               in pure @@ TypedSyntax.MLit l
+               let%bind (_, (lt, _)) = type_expr tenv (Literal l, rep)  in
+               let%bind _ = check_field_type lt.tp in
+               pure @@ TypedSyntax.MLit l
            | MVar i ->
                let%bind r = TEnv.resolveT tenv (get_id i)
                    ~lopt:(Some (get_rep i)) in
                let t = rr_typ r in
                let rtp = t.tp in
+               let%bind _ = check_field_type rtp in
                if is_serializable_type rtp
                then pure @@ TypedSyntax.MVar (add_type_to_ident i t)
                else fail1 (sprintf "Cannot send values of type %s." (pp_typ rtp))
@@ -242,7 +254,7 @@ module ScillaTypechecker
         in
         let%bind typed_bs =
           (* Make sure we resolve all the payload *)
-          mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ payload_type pld)
+          mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ payload_type s pld)
         in
         pure @@ (TypedSyntax.Message typed_bs, (mk_qual_tp @@ msg_typ, rep))
 
