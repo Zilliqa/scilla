@@ -20,6 +20,7 @@ sudo: required
 branches:
   only: 
     - master
+    - /^release-v.*$/
 before_install:
 - # ./scripts/build_openssl.sh
 - sudo add-apt-repository ppa:tah83/secp256k1 -y
