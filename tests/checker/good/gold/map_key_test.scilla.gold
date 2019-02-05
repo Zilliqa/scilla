@@ -1,0 +1,15 @@
+{
+  "cashflow_tags": [],
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Test",
+    "params": [],
+    "fields": [],
+    "transitions": [
+      { "vname": "testMapKey4", "params": [] },
+      { "vname": "testMapKey5", "params": [] }
+    ],
+    "events": []
+  },
+  "warnings": []
+}
