@@ -116,6 +116,19 @@ let mul_pn (p1 : 'a polynomial) (p2 : 'a polynomial) =
   in
     canonicalize_pn (List.concat prods)
 
+(* Combine two polynomials by choosing terms with higher co-efficient from one of them. *)
+let max_combine_pn (p1' : 'a polynomial) (p2' : 'a polynomial) =
+  let p1 = canonicalize_pn p1' in
+  let p2 = canonicalize_pn p2' in
+  let (res, p2') = List.fold p1 ~init:([], p2) ~f:(fun (res, p2') (c1, t1) ->
+    let (heq, hneq) = List.partition_tf p2' ~f:(fun t -> eq_term ~coef:false (c1, t1) t) in
+    (* TODO assert that (List.length heq <= 1) due to canonicalize_pn earlier. *)
+    match heq with
+    | [(c2, t2)] when c2 < c1 -> ((c2, t2) :: res, hneq)
+    | _ -> ((c1, t1) :: res, hneq)
+  ) in
+  res @ p2'
+
 (* Replace every variable in the polynomial using a replacer. *)
 let var_replace_pn (pn : 'a polynomial) ~(f:'a -> 'a) =
   let term_replacer (ter : 'a term) =
