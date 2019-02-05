@@ -85,8 +85,8 @@ type runner_cli = {
   cf_flag : bool;
 }
 
+
 let parse_cli () =
-  let usage = " -libdir /path/to/stdlib [-simple-errors] input.scilla" in
   let r_stdlib_dir = ref [] in
   let r_input_file = ref "" in
   let r_json_errors = ref false in
@@ -106,6 +106,16 @@ let parse_cli () =
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
   ] in 
+
+  let mandatory_usage = " -init init.json [-istate input_state.json]" ^
+    " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
+    " -o output.json -i input.scilla" in
+  let optional_usage = String.concat "\n\t"
+    (List.map (function (flag,_,desc) -> flag ^ "\t" ^ desc) speclist) in
+  let usage = mandatory_usage ^
+    "\nFull list of CLI flags:\n\t" ^
+    optional_usage in
+
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
   let () = Arg.parse speclist anon_handler ("Usage:\n" ^ usage) in
