@@ -707,6 +707,7 @@ module ScillaCashflowChecker
       | "sha256hash"
       | "keccak256hash"
       | "ripem160hash"
+      | "strlen"
       | "to_bystr" ->
           let c_r_sigs =
             match res_tag with

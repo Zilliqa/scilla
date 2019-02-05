@@ -142,6 +142,13 @@ module ScillaBuiltIns
           pure @@ StringLit (Core.String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
       | _ -> builtin_fail "String.substr" ls
 
+    let strlen_arity = 1
+    let strlen_type = fun_typ string_typ uint32_typ
+    let strlen ls _ = match ls with
+      | [StringLit x] ->
+        pure @@ UintLit (Uint32L (Uint32.of_int (String.length x)))
+      | _ -> builtin_fail "String.strlen" ls
+
     let to_string_arity = 1
     let to_string_type = tfun_typ "'A" (fun_typ (tvar "'A") (string_typ))
     let to_string_elab _ ts = match ts with
@@ -1088,6 +1095,7 @@ module ScillaBuiltIns
       ("eq", String.eq_arity, String.eq_type, elab_id, String.eq);
       ("concat", String.concat_arity, String.concat_type, elab_id, String.concat);
       ("substr", String.substr_arity, String.substr_type, String.substr_elab, String.substr);
+      ("strlen", String.strlen_arity, String.strlen_type, elab_id, String.strlen);
       ("to_string", String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string);
 
       (* Block numbers *)
