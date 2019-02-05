@@ -41,5 +41,7 @@ let k = Int64 -1232365654879 in
 let is = builtin to_string i in
 let js = builtin to_string j in
 let ks = builtin to_string k in
+let len1 = builtin strlen s1 in
+let len2 = builtin strlen ks in
 
 res
