@@ -206,11 +206,6 @@ lit :
 | EMP; kt = t_map_key; vt = targ
 {
   Map ((kt, vt), Hashtbl.create 4) (* 4 is arbitrary here. *)
-  (* if isPrimType kt
-   * then Map ((kt, vt), [])
-   * else
-   *   raise (SyntaxError (Core.sprintf "Non-primitive type (%s) cannot be a map key."
-   *                    (pp_typ kt))) *)
 }
 
 ctargs:
