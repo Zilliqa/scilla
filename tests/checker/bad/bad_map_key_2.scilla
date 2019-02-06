@@ -1,0 +1,11 @@
+scilla_version 0
+
+contract Test ()
+
+(* Illegal *)
+transition testMapKey2 ()
+  map = Emp Message Bool;
+  msg = { _tag : "Name" ; _amount : Uint128 0 ; _recipient : 0x1234512345123451234512345123451234512345};
+  t = True;
+  map2 = builtin put map msg t  
+end
