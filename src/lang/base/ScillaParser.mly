@@ -229,7 +229,6 @@ exp_pm_clause:
 | BAR ; p = pattern ; ARROW ; e = exp { p, e }                                  
 msg_entry :
 | i = ID; COLON;  l = lit { i, MLit l }
-| i = ID; COLON;  c = CID { i, MTag c }
 | i = ID; COLON;  v = ID  { i,  MVar (asIdL v (toLoc $startpos(v))) }
 
 builtin_args :

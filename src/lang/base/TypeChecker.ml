@@ -233,10 +233,6 @@ module ScillaTypechecker
             | _ -> pure ()
           in
           (match pld with
-           | MTag m ->
-             (* If the field has a pre-determined type, it can only be string_typ. *)
-             let%bind _ = check_field_type string_typ in
-             pure @@ TypedSyntax.MTag m
            | MLit l ->
                let%bind (_, (lt, _)) = type_expr tenv (Literal l, rep)  in
                let%bind _ = check_field_type lt.tp in
