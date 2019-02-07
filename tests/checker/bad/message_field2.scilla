@@ -11,7 +11,7 @@ contract Msg_Field_Test ()
 
 (* The type of arguments to fields in Message is incorrect *)
 transition malMessage6 ()
-  (* _tag should be `MTag` or a String. *)
+  (* _tag should be a String. *)
   msg = { _tag: BNum 100; _recipient : _sender; _amount : Uint128 0; status : "foo"};
   msgs = one_msg msg;
   send msgs

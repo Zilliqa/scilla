@@ -11,7 +11,7 @@ contract Msg_Field_Test ()
 
 (* The type of arguments to fields in Message is incorrect *)
 transition malMessage4 ()
-  (* Zero is `MTag`, not the right type. *)
+  (* Zero is a Nat, _amount should be Uint128. *)
   msg = { _tag: ""; _recipient : _sender; _amount : Zero; status : "foo"};
   msgs = one_msg msg;
   send msgs
