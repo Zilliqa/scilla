@@ -41,6 +41,17 @@ let copy_to_cptr p s =
   in
     String.iteri f s
 
+(* Copy the contents of "temporary" string s
+ * to a new string. "temporary" strings are those
+ * whose underlying memory can be freed "anytime".
+ * This arises when the string is created from `string_from_ptr`.
+ *)
+let copy_from_tstring s =
+  let f i =
+    s.[i]
+  in
+  String.init (String.length s) f
+
 let privkey_len = 32
 let pubkey_len = 33
 let signature_len = 64
@@ -77,8 +88,8 @@ let genKeyPair () =
   (* Call the C function to generate a key pair. *)
   let _ = genKeyPair_Z (addr privK) (addr pubK) in
   (* Read the keys into OCaml strings. *)
-  let privK' = string_from_ptr dataPrivKey ~length:privkey_len in
-  let pubK' = string_from_ptr dataPubKey ~length:pubkey_len in
+  let privK' = copy_from_tstring @@ string_from_ptr dataPrivKey ~length:privkey_len in
+  let pubK' = copy_from_tstring @@ string_from_ptr dataPubKey ~length:pubkey_len in
     (bin_to_hex privK', bin_to_hex pubK')
 
 
@@ -118,7 +129,7 @@ let sign privKey pubKey msg =
   (* Call the signing C function. *)
   let _ = sign_Z (addr privKS) (addr pubKS) (addr msgS) (addr signS) in
   (* Copy back the signature. *)
-  let signS' = string_from_ptr signD ~length:signature_len in
+  let signS' = copy_from_tstring @@ string_from_ptr signD ~length:signature_len in
     bin_to_hex signS'
 
 
