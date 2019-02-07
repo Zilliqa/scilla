@@ -1,0 +1,17 @@
+scilla_version 0
+
+library TestLib
+
+type TestType =
+| T of Uint128
+
+contract Test ()
+
+(* Illegal *)
+transition testMapKey6 ()
+  map = Emp TestType Bool;
+  zero = Uint128 0;
+  k = T zero;
+  v = True;
+  map2 = builtin put map k v  
+end
