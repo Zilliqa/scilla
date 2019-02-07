@@ -149,12 +149,12 @@ targ:
   
 exp:
 | f = simple_exp {f}    
+
+simple_exp :    
 | LET; x = ID;
   t = ioption(type_annot) 
   EQ; f = simple_exp; IN; e = exp
   {(Let ((Ident (x, toLoc $startpos)), t, f, e), toLoc $startpos) }
-                                             
-simple_exp :    
 (* Function *)    
 | FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
   { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) } 

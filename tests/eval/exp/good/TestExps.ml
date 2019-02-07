@@ -113,6 +113,7 @@ let explist = [
   "type_subst1.scilla";
   "type_subst2.scilla";
   "uint_conversions.scilla";
+  "let_in_let_in.scilla";
 ]
 
 module Tests = TestUtil.DiffBasedTests(
