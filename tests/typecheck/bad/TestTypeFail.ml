@@ -143,6 +143,8 @@ module Tests = TestUtil.DiffBasedTests(
     let tests = [
       "adt-error1.scilla";
       "branch-mismatch.scilla";
+      "bad-map-key.scilla";
+      "bad-map-key2.scilla";
       "fun2.scilla";
       "fun3.scilla";
       "fun4.scilla";
