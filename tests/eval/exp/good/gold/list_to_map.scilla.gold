@@ -1,4 +1,4 @@
-(Uint32 1),
+(Map [((String "three") => (Int64 3)); ((String "four") => (Int64 4)); ((String "one") => (Int64 1)); ((String "two") => (Int64 2))]),
 { [l4 -> (List (Pair (String "one") (Int64 1)), (Pair (String "two") (Int64 2)), (Pair (String "three") (Int64 3)), (Pair (String "four") (Int64 4)), (Nil))],
   [l3 -> (List (Pair (String "two") (Int64 2)), (Pair (String "three") (Int64 3)), (Pair (String "four") (Int64 4)), (Nil))],
   [l2 -> (List (Pair (String "three") (Int64 3)), (Pair (String "four") (Int64 4)), (Nil))],
