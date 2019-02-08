@@ -482,9 +482,6 @@ module TypeUtilities
           if not valid then fail0 @@ (sprintf "Malformed literal %s" (pp_literal l))
           (* We have a valid Map literal. *)
           else pure (MapType (kt, vt))
-        else if ((Caml.Hashtbl.length kv) = 0) && (match kt with | TypeVar _ -> true | _ -> false) then
-          (* we make an exception for Emp as it may be parameterized. *)
-          pure (MapType (kt, vt))
         else
           fail0 @@
           (sprintf "Not a primitive map key type: %s." (pp_typ kt))
