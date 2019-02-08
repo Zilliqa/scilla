@@ -6,9 +6,9 @@ let one_msg =
   fun (msg : Message) => 
    Cons {Message} msg nil_msg
 in
-let msg = {tag: Main; value: Int32 5} in
+let msg = {tag: "Main"; value: Int32 5} in
 let msgs = one_msg msg in
 match msgs with
 | Cons m _ => m
-| _ => {tag: Fail; value: Int32 0}
+| _ => {tag: "Fail"; value: Int32 0}
 end
