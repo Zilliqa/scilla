@@ -100,7 +100,6 @@ let rec exp_eval erep env  =
   | Message bs ->
       (* Resolve all message payload *)
       let resolve pld = match pld with
-        | MTag s -> pure @@ (StringLit s)
         | MLit l -> sanitize_literal l
         | MVar i ->
             let%bind v = Env.lookup env i in

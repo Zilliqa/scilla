@@ -6,7 +6,7 @@
       "start_location": {
         "file": "eval/exp/bad/msg_error3.scilla",
         "line": 6,
-        "column": 41
+        "column": 43
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

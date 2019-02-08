@@ -158,7 +158,7 @@ transition Play (guess: ByStr32)
   c = can_play tm_opt b;
   match c with
   | False => 
-    msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+    msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0; 
             code : time_window_missed};
     msgs = one_msg msg;
     send msgs        
@@ -173,7 +173,7 @@ transition Play (guess: ByStr32)
       player_a_hash := hopt;
       tm1 = update_timer tm_opt b;
       timer := tm1;
-      msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+      msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0; 
               code : solution_submitted};
       msgs = one_msg msg;
       send msgs        
@@ -185,12 +185,12 @@ transition Play (guess: ByStr32)
         player_b_hash := hopt;
         tm1 = update_timer tm_opt b;
         timer := tm1;
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0; 
+        msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0; 
                 code : solution_submitted};
         msgs = one_msg msg;
         send msgs        
       | False => 
-        msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0;
+        msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0;
                 code : not_a_player};
         msgs = one_msg msg;
         send msgs
@@ -206,7 +206,7 @@ transition ClaimReward(solution: Int128)
   ttc = time_to_claim tm_opt b;
   match ttc with
   | False => 
-    msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0;
+    msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0;
             code : too_early_to_claim};
     msgs = one_msg msg;
     send msgs        
@@ -216,14 +216,14 @@ transition ClaimReward(solution: Int128)
     is_valid = check_validity _sender solution player_a player_b pa pb;
     match is_valid with
     | False =>
-      msg  = {_tag : Main; _recipient : _sender; _amount : Uint128 0;
+      msg  = {_tag : ""; _recipient : _sender; _amount : Uint128 0;
               code : wrong__sender_or_solution};
       msgs = one_msg msg;
       event msgs        
     | True  =>
       winner = determine_winner puzzle pa pb player_a player_b owner; 
       bal <- _balance;
-      msg  = {_tag : Main; _recipient : winner; _amount : bal; 
+      msg  = {_tag : ""; _recipient : winner; _amount : bal; 
               code : here_is_the_reward};
       ff = False;	       
       msgs = one_msg msg;
@@ -241,13 +241,13 @@ transition Withdraw ()
   good_to_go = andb cw is_owner;
   match good_to_go with
   | True =>
-    msg = {_tag : Main; _recipient : owner; _amount : bal; code : here_is_the_reward};
+    msg = {_tag : ""; _recipient : owner; _amount : bal; code : here_is_the_reward};
     msgs = one_msg msg;
     e = { _eventname : "GameOver" };
     send e;
     send msgs
   | False =>
-    msg = {_tag : Main; _recipient : _sender; _amount : Uint128 0; code : cannot_withdraw};
+    msg = {_tag : ""; _recipient : _sender; _amount : Uint128 0; code : cannot_withdraw};
     msgs = one_msg msg;
     send msgs
   end

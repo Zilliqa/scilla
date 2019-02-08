@@ -67,7 +67,6 @@ module ScillaRecursion
   
   let recursion_payload p =
     match p with
-    | MTag s -> RecursionSyntax.MTag s
     | MLit l -> RecursionSyntax.MLit l
     | MVar x -> RecursionSyntax.MVar x
 
