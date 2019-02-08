@@ -90,6 +90,8 @@ let genKeyPair () =
   (* Read the keys into OCaml strings. *)
   let privK' = copy_from_tstring @@ string_from_ptr dataPrivKey ~length:privkey_len in
   let pubK' = copy_from_tstring @@ string_from_ptr dataPubKey ~length:pubkey_len in
+  (* Dummy use to avoid GC of memory. *)
+  let _ = dataPrivKey, dataPubKey, privK, pubK in
     (bin_to_hex privK', bin_to_hex pubK')
 
 
@@ -130,6 +132,8 @@ let sign privKey pubKey msg =
   let _ = sign_Z (addr privKS) (addr pubKS) (addr msgS) (addr signS) in
   (* Copy back the signature. *)
   let signS' = copy_from_tstring @@ string_from_ptr signD ~length:signature_len in
+  (* Dummy use to avoid GC of memory. *)
+  let _ = privKS, privKD, pubKS, pubKD, msgS, msgD, signS, signD in
     bin_to_hex signS'
 
 
@@ -163,4 +167,6 @@ let verify pubKey msg signature =
   let _ = copy_to_cptr signD signature' in
   (* Call the signing C function. *)
   let succ = verify_Z (addr pubKS) (addr msgS) (addr signS) in
+  (* Dummy use to avoid GC of memory. *)
+  let _ = pubKD, msgD, signD, pubKS, msgS, signS in
   if succ = 1 then true else false
