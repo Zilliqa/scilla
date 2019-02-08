@@ -1,6 +1,5 @@
 open TypeUtil
 open Syntax
-open PrimTypes
 open ContractUtil.MessagePayload
 open MonadUtil
 open Core.Result.Let_syntax
@@ -35,7 +34,6 @@ module ScillaEventInfo
        | Some (_, epld) ->
            let emsg = "Error determining event name\n" in
            let%bind eventname = match epld with
-             | MTag s -> pure s
              | MLit l -> (match l with | StringLit s -> pure s | _ -> fail1 emsg bloc)
              (* Variables are not allowed for eventname_label to ensure that
               * all possible events can be determined statically. *)
@@ -46,7 +44,6 @@ module ScillaEventInfo
            let%bind m_types = mapM ~f:(fun (fname, pl) ->
                let%bind t = 
                  (match pl with
-                  | MTag _ -> pure string_typ
                   | MLit l -> literal_type l
                   | MVar v -> 
                       let t' = ER.get_type (get_rep v) in
