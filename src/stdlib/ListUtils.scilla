@@ -449,24 +449,6 @@ let list_unzip =
     in
       folder iter init l
 
-(* List (Pair String 'B) -> Map String 'B *)
-(* Convert a list of key-val pairs into a map, overwriting duplicates. *)
-(* Replaces the polymorphic version above. *)
-let list_to_map =
-  tfun 'B =>
-  fun (l : List (Pair String 'B)) =>
-    let folder = @list_foldl (Pair String 'B) (Map String 'B) in
-    let init = Emp String 'B in
-    let iter =
-      fun (z : Map String 'B) =>
-      fun (h : Pair String 'B) =>
-        match h with
-        | Pair a b =>
-          builtin put z a b
-        end
-    in
-      folder iter init l
-
 (* Uint32 -> List 'A -> Option 'A *)
 (* Returns (Some 'A) if n'th element exists in list. None otherwise *)
 let list_nth =
