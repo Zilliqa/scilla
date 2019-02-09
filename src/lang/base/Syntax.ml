@@ -187,7 +187,6 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 (*******************************************************)
 
   type payload =
-    | MTag of string 
     | MLit of literal
     | MVar of ER.rep ident
   [@@deriving sexp]
@@ -517,8 +516,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       | Message margs ->
         List.exists margs ~f:(fun (_, x) ->
           (match x with
-          | MTag _ | MLit _ -> false
-          | MVar v ->  (not @@ is_mem v bound_vars) && is_mem v blist))
+           | MLit _ -> false
+           | MVar v ->  (not @@ is_mem v bound_vars) && is_mem v blist))
       | MatchExpr (v, cs) ->
         ((not @@ is_mem v bound_vars) && is_mem v blist) ||
         List.exists cs ~f: (fun (p, e) ->

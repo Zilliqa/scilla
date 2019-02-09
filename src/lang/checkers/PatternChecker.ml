@@ -109,7 +109,6 @@ module ScillaPatternchecker
     List.map sps
       ~f:(fun (s, p) ->
           let lifted_p = match p with
-            | MTag s -> CheckedPatternSyntax.MTag s
             | MLit l -> CheckedPatternSyntax.MLit l
             | MVar (Ident (vs, r)) -> CheckedPatternSyntax.MVar (Ident (vs, r)) in
           (s, lifted_p))
