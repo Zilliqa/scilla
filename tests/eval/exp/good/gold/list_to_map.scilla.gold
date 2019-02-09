@@ -16,4 +16,5 @@
   [three -> (Int64 3)],
   [two -> (Int64 2)],
   [one -> (Int64 1)],
-  [to_map -> <closure>] }
+  [to_map -> <closure>],
+  [list_to_map -> <type_closure>] }
