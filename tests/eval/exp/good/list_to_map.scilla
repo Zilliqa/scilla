@@ -1,3 +1,21 @@
+(* List (Pair String 'B) -> Map String 'B *)	
+(* Convert a list of key-val pairs into a map, overwriting duplicates. *)	
+(* Replaces the polymorphic version above. *)	
+let list_to_map =	
+  tfun 'B =>	
+  fun (l : List (Pair String 'B)) =>	
+    let folder = @list_foldl (Pair String 'B) (Map String 'B) in	
+    let init = Emp String 'B in	
+    let iter =	
+      fun (z : Map String 'B) =>	
+      fun (h : Pair String 'B) =>	
+        match h with	
+        | Pair a b =>	
+          builtin put z a b	
+        end	
+    in	
+    folder iter init l
+in
 
 (* Changed, since key types are no longer allowed to be polymorphic *)
 (* let to_map = @list_to_map String Int64 in *)
@@ -25,3 +43,4 @@ let l3 = Cons {(Pair String Int64)} pair2 l2 in
 let l4 = Cons {(Pair String Int64)} pair1 l3 in
 
 to_map l4
+
