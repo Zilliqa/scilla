@@ -107,9 +107,7 @@ let parse_cli () =
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
   ] in 
 
-  let mandatory_usage = " -init init.json [-istate input_state.json]" ^
-    " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
-    " -o output.json -i input.scilla" in
+  let mandatory_usage = " -libdir /path/to/stdlib input.scilla" in
   let optional_usage = String.concat "\n\t"
     (List.map (function (flag,_,desc) -> flag ^ "\t" ^ desc) speclist) in
   let usage = mandatory_usage ^

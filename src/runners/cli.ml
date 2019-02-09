@@ -138,7 +138,8 @@ let parse () =
 
   let mandatory_usage = " -init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
-    " -o output.json -i input.scilla" in
+    " -o output.json -i input.scilla -libdir /path/to/stdlib" ^
+    " -gaslimit limit" in
   let optional_usage = String.concat "\n\t"
     (List.map (function (flag,_,desc) -> flag ^ "\t" ^ desc) speclist) in
   let usage = mandatory_usage ^
