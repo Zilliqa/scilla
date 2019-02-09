@@ -31,9 +31,6 @@ let b_json_errors = ref false
 let b_pp_json = ref true
 let b_validate_json = ref true
 
-let print_usage usage =
-  Printf.fprintf stderr "Usage:\n%s %s\n" Sys.argv.(0) usage
-
 let process_trace () =
   match !f_trace_level with
   | "stmt" -> GlobalConfig.set_trace_level GlobalConfig.Trace_Statement;
@@ -82,7 +79,7 @@ let validate_main usage =
       else msg5 in
   if msg6 <> ""
   then
-    (print_usage usage;
+    (DebugMessage.perr usage;
      Printf.fprintf stderr "%s\n" msg6;
      exit 1)
   else 
@@ -136,18 +133,16 @@ let parse () =
     ("-disable-validate-json", Arg.Unit (fun () -> b_validate_json := false), "Disable validation of input JSONs");
   ] in 
 
-  let mandatory_usage = " -init init.json [-istate input_state.json]" ^
+  let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
     " -o output.json -i input.scilla -libdir /path/to/stdlib" ^
-    " -gaslimit limit" in
-  let optional_usage = String.concat "\n\t"
-    (List.map (function (flag,_,desc) -> flag ^ "\t" ^ desc) speclist) in
-  let usage = mandatory_usage ^
-    "\nFull list of CLI flags:\n\t" ^
-    optional_usage in
+    " -gaslimit limit" ^ "\n" in
+  let optional_usage = String.concat "\n  "
+    (List.map (fun (flag, _, desc) -> flag ^ " " ^ desc) speclist) in
+  let usage = mandatory_usage ^ "\n  " ^ optional_usage in
 
   let ignore_anon _ = () in
-  let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
+  let () = Arg.parse speclist ignore_anon mandatory_usage in
   let () = process_trace() in
   let () = process_pplit() in
   let () = process_json_errors() in

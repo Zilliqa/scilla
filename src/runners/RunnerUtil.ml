@@ -107,17 +107,15 @@ let parse_cli () =
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
   ] in 
 
-  let mandatory_usage = " -libdir /path/to/stdlib input.scilla" in
-  let optional_usage = String.concat "\n\t"
-    (List.map (function (flag,_,desc) -> flag ^ "\t" ^ desc) speclist) in
-  let usage = mandatory_usage ^
-    "\nFull list of CLI flags:\n\t" ^
-    optional_usage in
+  let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -libdir /path/to/stdlib input.scilla\n" in
+  let optional_usage = String.concat "\n  "
+    (List.map (function (flag,_,desc) -> flag ^ "  " ^ desc) speclist) in
+  let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
 
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
-  let () = Arg.parse speclist anon_handler ("Usage:\n" ^ usage) in
+  let () = Arg.parse speclist anon_handler mandatory_usage in
   if !r_input_file = "" then
-    (DebugMessage.perr @@ "Usage:\n" ^ Sys.argv.(0) ^ usage ^ "\n"; exit 1);
+    (DebugMessage.perr @@ usage; exit 1);
   GlobalConfig.set_use_json_errors !r_json_errors;
   { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; cf_flag = !r_cf }
