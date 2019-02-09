@@ -103,6 +103,13 @@ module ScillaContractUtil
     let amount = (ER.mk_id_uint128 MessagePayload.amount_label, uint128_typ) in
     amount :: sender :: tparams
 
+  let msg_mandatory_field_types =
+    [ 
+      (MessagePayload.tag_label, PrimTypes.string_typ);
+      (MessagePayload.amount_label, PrimTypes.uint128_typ);
+      (MessagePayload.recipient_label, PrimTypes.bystrx_typ address_length);
+    ]
+
   (* Iterate over all messages in the contract, accumuating result. 
    * ~f takes a message and an accumulator and updates the accumulator. *)
   let fold_over_messages cmod ~init ~f =

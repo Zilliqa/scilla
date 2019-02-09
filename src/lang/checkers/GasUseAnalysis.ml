@@ -766,10 +766,6 @@ module ScillaGUA
         * but charge based on size of message in SendStmt. *)
         let%bind splist = foldM ~f:(fun acc (_, pl) ->
           (match pl with
-          | MTag s -> 
-            let sr = SPol(const_pn (String.length s)) in
-            let sr' = single_simple_pn sr in
-            pure (add_pn acc sr')
           | MLit l ->
             let%bind lc = Gas.literal_cost l in
             pure (add_pn acc (const_pn lc))

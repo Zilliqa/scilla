@@ -26,7 +26,14 @@
   let to_type d = match d with
     | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x
     | _ -> ADT (d, [])
-  
+         
+  let to_map_key_type d = match d with
+    | x
+         when PrimTypes.is_prim_type (PrimType x) &&
+                not (PrimType x = PrimTypes.msg_typ || PrimType x = PrimTypes.event_typ)
+      -> PrimType x
+    | _ -> raise (SyntaxError ("Invalid map key type " ^ d))
+
   let build_prim_literal_exn t v =
     match PrimTypes.build_prim_literal t v with
     | Some l -> l
@@ -114,23 +121,27 @@
 (***********************************************)
 (*                  Types                      *)
 (***********************************************)
+t_map_key :
+| kt = CID { to_map_key_type kt }
+| LPAREN; kt = CID; RPAREN; { to_map_key_type kt }
+
 typ :
 | d = CID; targs=list(targ)
   { match targs with
     | [] -> to_type d                       
     | _ -> ADT (d, targs)
   }   
-| MAP; k=targ; v = targ; { MapType (k, v) }
+| MAP; k=t_map_key; v = targ; { MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
 | LPAREN; t = typ; RPAREN; { t }
 | FORALL; tv = TID; PERIOD; t = typ; {PolyFun (tv, t)}
 | t = TID; { TypeVar t }        
-                                  
+
 targ:
 | LPAREN; t = typ; RPAREN; { t }
 | d = CID; { to_type d }
 | t = TID; { TypeVar t }
-| MAP; k=targ; v = targ; { MapType (k, v) }             
+| MAP; k=t_map_key; v = targ; { MapType (k, v) }             
 
 (***********************************************)
 (*                 Expressions                 *)
@@ -138,12 +149,12 @@ targ:
   
 exp:
 | f = simple_exp {f}    
+
+simple_exp :    
 | LET; x = ID;
   t = ioption(type_annot) 
   EQ; f = simple_exp; IN; e = exp
   {(Let ((Ident (x, toLoc $startpos)), t, f, e), toLoc $startpos) }
-                                             
-simple_exp :    
 (* Function *)    
 | FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
   { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) } 
@@ -192,14 +203,9 @@ lit :
   build_prim_literal_exn (PrimTypes.bystrx_typ ((l-1)/2)) h
 }
 | s = STRING   { StringLit s }
-| EMP; kt = targ; vt = targ
+| EMP; kt = t_map_key; vt = targ
 {
   Map ((kt, vt), Hashtbl.create 4) (* 4 is arbitrary here. *)
-  (* if isPrimType kt
-   * then Map ((kt, vt), [])
-   * else
-   *   raise (SyntaxError (Core.sprintf "Non-primitive type (%s) cannot be a map key."
-   *                    (pp_typ kt))) *)
 }
 
 ctargs:
@@ -223,7 +229,6 @@ exp_pm_clause:
 | BAR ; p = pattern ; ARROW ; e = exp { p, e }                                  
 msg_entry :
 | i = ID; COLON;  l = lit { i, MLit l }
-| i = ID; COLON;  c = CID { i, MTag c }
 | i = ID; COLON;  v = ID  { i,  MVar (asIdL v (toLoc $startpos(v))) }
 
 builtin_args :

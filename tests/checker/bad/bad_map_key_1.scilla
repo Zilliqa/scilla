@@ -1,0 +1,12 @@
+scilla_version 0
+
+contract Test ()
+
+(* Illegal *)
+transition testMapKey1 ()
+  map = Emp (Bool -> Uint32) Bool;
+  k = fun (x : Bool) => Uint32 42;
+  v = True;
+  map2 = builtin put map k v
+end
+

@@ -21,7 +21,7 @@
   "Syntax table for `scilla-mode'.")
 
 (defvar scilla-constants
-  '("False" "True" "Some" "None"))
+  '("BLOCKNUMBER"))
 
 ;; We can't define a simple list of scilla-types as we want
 ;; a regexp for ByStr[0-9]*, and that won't work with regexp-opt later.
@@ -29,7 +29,7 @@
   "\\b\\(String\\|Int32\\|Int64\\|Int128\\|Uint32\\|Uint64\\|Uint128\\|Int256\\|Uint256\\|BNum\\|ByStr[0-9]*\\|Message\\|Event\\|Map\\|ADT\\)\\b")
 
 (defvar scilla-keywords
-  '("builtin" "block" "library" "let" "in" "match" "with" "end"
+  '("builtin" "library" "let" "in" "match" "with" "end" "event"
     "fun" "tfun" "contract" "transition" "send" "field" "accept"
     "Emp" "import" "type"))
 
@@ -50,12 +50,15 @@
     ;; (":\\|,\\|;\\|{\\|}\\|=>\\|@\\|$\\|=" . font-lock-keyword-face)
     ( ,(regexp-opt scilla-keywords 'words) . font-lock-keyword-face)
     ( ,scilla-types . font-lock-type-face)
-    ;; Some known constants like True/False etc.
+    ;; Some known constants like BLOCKNUMBER etc.
     ( ,(regexp-opt scilla-constants 'words) . font-lock-constant-face)
     ;; Numerical constants. Decimal or Hexadecimal integers.
     ("\\(\\b[0-9]+\\b\\|\\b0x[0-9a-fA-F]+\\b\\)" . font-lock-constant-face)
-    ;; Math any other identifier
-    ("[a-zA-Z_]+[a-zA-Z0-9]*" . font-lock-variable-name-face)
+    ;; Match variable names
+    ("\\b[a-z_]+[a-zA-Z0-9]*\\b" . font-lock-variable-name-face)
+    ;; Match constructors and type variables
+    ("\\b[A-Z]+[a-zA-Z0-9]*\\b" . font-lock-function-name-face)
+
     ))
 
 ;;; Indentation

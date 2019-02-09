@@ -1,0 +1,52 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract Msg_Field_Test:\n",
+      "start_location": {
+        "file": "checker/bad/message_field.scilla",
+        "line": 10,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition malMessage3:\n",
+      "start_location": {
+        "file": "checker/bad/message_field.scilla",
+        "line": 13,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `msg`:\nType mismatch for Message field _amount. Expected Uint128 but got Int32",
+      "start_location": {
+        "file": "checker/bad/message_field.scilla",
+        "line": 15,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition malMessage5:\n",
+      "start_location": {
+        "file": "checker/bad/message_field.scilla",
+        "line": 21,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `msg`:\nType mismatch for Message field _recipient. Expected ByStr20 but got ByStr2",
+      "start_location": {
+        "file": "checker/bad/message_field.scilla",
+        "line": 23,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

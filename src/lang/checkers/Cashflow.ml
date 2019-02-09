@@ -85,7 +85,6 @@ module ScillaCashflowChecker
 
   let cf_init_tag_payload p =
     match p with
-    | MTag s -> CFSyntax.MTag s
     | MLit l -> CFSyntax.MLit l
     | MVar v -> CFSyntax.MVar (add_noinfo_to_ident v)
   
@@ -707,6 +706,7 @@ module ScillaCashflowChecker
       | "sha256hash"
       | "keccak256hash"
       | "ripem160hash"
+      | "strlen"
       | "to_bystr" ->
           let c_r_sigs =
             match res_tag with
@@ -867,7 +867,6 @@ module ScillaCashflowChecker
 
   let update_var_tag_payload p local_env =
     match p with
-    | MTag s -> CFSyntax.MTag s
     | MLit l -> CFSyntax.MLit l
     | MVar v ->
         let tag =
@@ -1029,7 +1028,6 @@ module ScillaCashflowChecker
             List.fold_right
               (fun (s, p) (acc_bs, acc_field_env, acc_local_env, acc_changes) ->
                  match p with
-                 | MTag _
                  | MLit _ -> ((s, p) :: acc_bs, acc_field_env, acc_local_env, acc_changes)
                  | MVar x ->
                      let usage_tag =

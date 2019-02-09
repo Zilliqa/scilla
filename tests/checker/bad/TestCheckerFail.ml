@@ -31,7 +31,15 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_fields2.scilla";
       "bad_fields3.scilla";
       "bad_fields4.scilla";
+      "bad_map_key_1.scilla";
+      "bad_map_key_2.scilla";
+      "bad_map_key_3.scilla";
+      "bad_map_key_4.scilla";
+      "bad_map_key_5.scilla";
       "bad_message1.scilla";
+      "message_field.scilla";
+      "message_field2.scilla";
+      "message_field3.scilla";
       "send_event1.scilla";
       "send_event2.scilla";
       "unbound.scilla";
@@ -51,6 +59,7 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_adt_4.scilla";
       "unserializable_param.scilla";
       "unstorable_adt.scilla";
+      "bad_version.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
