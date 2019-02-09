@@ -31,14 +31,6 @@ let b_json_errors = ref false
 let b_pp_json = ref true
 let b_validate_json = ref true
 
-let usage = "-init init.json [-istate input_state.json]" ^
-    " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
-    " -o output.json -i input.scilla [-tracefile filename] [-tracelevel none|stmt|exp ]" ^
-    " -gaslimit i [-libdir dirpath] [-pplit true|false] [-disable-pp-json]"
-
-let print_usage () = 
-  Printf.fprintf stderr "Mandatory and optional flags:\n%s %s\n" Sys.argv.(0) usage
-
 let process_trace () =
   match !f_trace_level with
   | "stmt" -> GlobalConfig.set_trace_level GlobalConfig.Trace_Statement;
@@ -56,7 +48,7 @@ let process_json_errors () =
 let process_json_validation () =
   GlobalConfig.set_validate_json !b_validate_json
 
-let validate_main () =
+let validate_main usage =
   let msg = 
     (* init.json is mandatory *)
     (if not (Sys.file_exists !f_input_init) 
@@ -87,7 +79,7 @@ let validate_main () =
       else msg5 in
   if msg6 <> ""
   then
-    (print_usage ();
+    (DebugMessage.perr usage;
      Printf.fprintf stderr "%s\n" msg6;
      exit 1)
   else 
@@ -140,13 +132,22 @@ let parse () =
     ("-disable-pp-json", Arg.Unit (fun () -> b_pp_json := false), "Disable pretty printing of JSONs");
     ("-disable-validate-json", Arg.Unit (fun () -> b_validate_json := false), "Disable validation of input JSONs");
   ] in 
+
+  let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -init init.json [-istate input_state.json]" ^
+    " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
+    " -o output.json -i input.scilla -libdir /path/to/stdlib" ^
+    " -gaslimit limit" ^ "\n" in
+  let optional_usage = String.concat "\n  "
+    (List.map (fun (flag, _, desc) -> flag ^ " " ^ desc) speclist) in
+  let usage = mandatory_usage ^ "\n  " ^ optional_usage in
+
   let ignore_anon _ = () in
-  let () = Arg.parse speclist ignore_anon ("Usage:\n" ^ usage) in
+  let () = Arg.parse speclist ignore_anon mandatory_usage in
   let () = process_trace() in
   let () = process_pplit() in
   let () = process_json_errors() in
   let () = process_json_validation() in
-  let () = validate_main () in
+  let () = validate_main usage in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input;
      libdirs = !d_libs; gas_limit = !v_gas_limit; pp_json = !b_pp_json}
