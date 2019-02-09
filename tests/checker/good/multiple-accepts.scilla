@@ -1,5 +1,10 @@
 scilla_version 0
 
+import IntUtils
+
+(* Need this in order for the above import to work *)
+library MultipleAcceptLib
+
 contract MultipleAccepts
 ()
 
@@ -53,20 +58,43 @@ transition donate_once_non_obvious(switch : Bool)
   end
 end
 
-transition donate_twice_non_obvious(switch : Bool)
-  match switch with
+(* Attempt to accept payment a variable number of times, up to a max of 4 *)
+transition donate_variable(times : Uint32)
+  one = Uint32 1;
+  two = Uint32 2;
+  three = Uint32 3;
+  four = Uint32 4;
+
+  sw = uint32_ge times one;
+  match sw with
   | True => accept
   | False =>
     e = { _eventname : "Thanks" };
     event e
   end;
-  accept;
-  match switch with
-  | False => accept
-  | True =>
+
+  sw = uint32_ge times two;
+  match sw with
+  | True => accept
+  | False =>
     e = { _eventname : "Thanks" };
     event e
   end;
-  accept
+
+  sw = uint32_ge times three;
+  match sw with
+  | True => accept
+  | False =>
+    e = { _eventname : "Thanks" };
+    event e
+  end;
+
+  sw = uint32_ge times four;
+  match sw with
+  | True => accept
+  | False =>
+    e = { _eventname : "Thanks" };
+    event e
+  end
 end
 

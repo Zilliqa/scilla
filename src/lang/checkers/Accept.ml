@@ -50,33 +50,30 @@ module ScillaAcceptChecker
 
   let find_accept_groups (stmts : stmt_annot list) : loc list list =
     let rec walk (seen : loc list list) (stmts : stmt_annot list) : loc list list =
-      (* Walk the syntax tree looking for code paths containing one
-         or more accept statements.
+      (* Walk the syntax tree looking for code paths containing zero or
+         more accept statements.
 
-         seen is a List with an item for each code path which has
-         already seen at least one accept statement before reaching
-         the point in the syntax tree just before stmts.  Each item
-         in the List is List of all the accepts seen along that path
-         to this point.
+         seen is a List with an item for each code path reaching
+         the point in the syntax tree just before stmts.  Each item in
+         the List is List of all the accepts seen along that path to
+         this point.
 
          Returns an updated version of the List of Lists which
          includes any accepts seen in stmts.
 
-         Note that any given code path remains untracked until an
-         accept is discovered in it.  This keeps the seen data
-         nested List to a minimal size. *)
+         Note that we have to track any given code path even before an
+         accept is discovered in it, because it might later branch and
+         maybe some but not all of the branches will include accepts.
+         So we need an entry on the seen list for each path, because
+         we don't know what will happen on each in advance. *)
       List.fold_left
         (fun (seen2 : loc list list) (stmt : stmt_annot) ->
           let loc = (stmt_loc stmt) in
           match fst stmt with
           | AcceptPayment ->
-             (match seen2 with
-              (* If we didn't see any accept statements before reaching
-               * this point, register this as the first one. *)
-              | [] -> [[loc]]
-              (* Otherwise add this accept statement to the list of accepts
+              (* Add this accept statement to the list of accepts
                * already seen on each code path reaching this point. *)
-              | _ -> List.map (fun accepts -> loc :: accepts) seen2)
+             List.map (fun accepts -> loc :: accepts) seen2
           | MatchStmt (_ident, branches) ->
              (* For each branch in the match statement we have a
                   new code path to "multiply" with the code paths
@@ -92,7 +89,7 @@ module ScillaAcceptChecker
           | _ -> seen2
         ) seen stmts
     in
-    walk [] stmts
+    walk [[]] stmts
 
   let check_accepts (contr : contract) =
     let check_transition_accepts (transition : transition) =
@@ -137,13 +134,13 @@ module ScillaAcceptChecker
          [] contr.ctrans)
     in
 
-    (match all_accept_groups with
-     | [] ->
+    (match List.for_all BatList.is_empty all_accept_groups with
+     | true ->
         (warn0
            (Core.sprintf "Contract %s had no transitions with accept statement\n"
               (get_id contr.cname))
            warning_level_missing_accept)
-     | _ -> ())
+     | false -> ())
 
   (* ************************************** *)
   (* ******** Interface to Accept ********* *)

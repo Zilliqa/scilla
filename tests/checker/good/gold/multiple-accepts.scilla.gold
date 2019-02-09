@@ -21,8 +21,8 @@
         "params": [ { "vname": "switch", "type": "Bool" } ]
       },
       {
-        "vname": "donate_twice_non_obvious",
-        "params": [ { "vname": "switch", "type": "Bool" } ]
+        "vname": "donate_variable",
+        "params": [ { "vname": "times", "type": "Uint32" } ]
       }
     ],
     "events": [ { "vname": "Thanks", "params": [] } ]
@@ -30,82 +30,232 @@
   "warnings": [
     {
       "warning_message":
-        "transition donate_twice_non_obvious had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:58:13\n  Accept at checker/good/multiple-accepts.scilla:63:3\n  Accept at checker/good/multiple-accepts.scilla:70:3\n",
+        "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:70:13\n  Accept at checker/good/multiple-accepts.scilla:78:13\n",
       "start_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 58,
-        "column": 13
-      },
-      "end_location": {
         "file": "checker/good/multiple-accepts.scilla",
         "line": 70,
-        "column": 9
-      },
-      "warning_id": 1
-    },
-    {
-      "warning_message":
-        "transition donate_twice_non_obvious had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:58:13\n  Accept at checker/good/multiple-accepts.scilla:63:3\n  Accept at checker/good/multiple-accepts.scilla:65:14\n  Accept at checker/good/multiple-accepts.scilla:70:3\n",
-      "start_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 58,
         "column": 13
       },
       "end_location": {
         "file": "checker/good/multiple-accepts.scilla",
-        "line": 70,
-        "column": 9
-      },
-      "warning_id": 1
-    },
-    {
-      "warning_message":
-        "transition donate_once_non_obvious had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:43:13\n  Accept at checker/good/multiple-accepts.scilla:49:14\n",
-      "start_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 43,
-        "column": 13
-      },
-      "end_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 49,
-        "column": 20
-      },
-      "warning_id": 1
-    },
-    {
-      "warning_message":
-        "transition donate_once_or_twice_reversed had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:29:13\n  Accept at checker/good/multiple-accepts.scilla:34:3\n",
-      "start_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 29,
-        "column": 13
-      },
-      "end_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 34,
-        "column": 9
-      },
-      "warning_id": 1
-    },
-    {
-      "warning_message":
-        "transition donate_once_or_twice had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:18:3\n  Accept at checker/good/multiple-accepts.scilla:20:13\n",
-      "start_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 18,
-        "column": 3
-      },
-      "end_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 20,
+        "line": 78,
         "column": 19
       },
       "warning_id": 1
     },
     {
       "warning_message":
-        "transition donate_thrice had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:12:3\n  Accept at checker/good/multiple-accepts.scilla:13:3\n  Accept at checker/good/multiple-accepts.scilla:14:3\n",
+        "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:70:13\n  Accept at checker/good/multiple-accepts.scilla:86:13\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 70,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 86,
+        "column": 19
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:78:13\n  Accept at checker/good/multiple-accepts.scilla:86:13\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 78,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 86,
+        "column": 19
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:70:13\n  Accept at checker/good/multiple-accepts.scilla:78:13\n  Accept at checker/good/multiple-accepts.scilla:86:13\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 70,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 86,
+        "column": 19
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:70:13\n  Accept at checker/good/multiple-accepts.scilla:94:13\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 70,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 94,
+        "column": 19
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:78:13\n  Accept at checker/good/multiple-accepts.scilla:94:13\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 78,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 94,
+        "column": 19
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:70:13\n  Accept at checker/good/multiple-accepts.scilla:78:13\n  Accept at checker/good/multiple-accepts.scilla:94:13\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 70,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 94,
+        "column": 19
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:86:13\n  Accept at checker/good/multiple-accepts.scilla:94:13\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 86,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 94,
+        "column": 19
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:70:13\n  Accept at checker/good/multiple-accepts.scilla:86:13\n  Accept at checker/good/multiple-accepts.scilla:94:13\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 70,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 94,
+        "column": 19
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:78:13\n  Accept at checker/good/multiple-accepts.scilla:86:13\n  Accept at checker/good/multiple-accepts.scilla:94:13\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 78,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 94,
+        "column": 19
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:70:13\n  Accept at checker/good/multiple-accepts.scilla:78:13\n  Accept at checker/good/multiple-accepts.scilla:86:13\n  Accept at checker/good/multiple-accepts.scilla:94:13\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 70,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 94,
+        "column": 19
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_once_non_obvious had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:48:13\n  Accept at checker/good/multiple-accepts.scilla:54:14\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 48,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 54,
+        "column": 20
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_once_or_twice_reversed had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:34:13\n  Accept at checker/good/multiple-accepts.scilla:39:3\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 34,
+        "column": 13
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 39,
+        "column": 9
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_once_or_twice had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:23:3\n  Accept at checker/good/multiple-accepts.scilla:25:13\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 23,
+        "column": 3
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 25,
+        "column": 19
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_thrice had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:17:3\n  Accept at checker/good/multiple-accepts.scilla:18:3\n  Accept at checker/good/multiple-accepts.scilla:19:3\n",
+      "start_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 17,
+        "column": 3
+      },
+      "end_location": {
+        "file": "checker/good/multiple-accepts.scilla",
+        "line": 19,
+        "column": 9
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition donate_twice had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:12:3\n  Accept at checker/good/multiple-accepts.scilla:13:3\n",
       "start_location": {
         "file": "checker/good/multiple-accepts.scilla",
         "line": 12,
@@ -113,22 +263,7 @@
       },
       "end_location": {
         "file": "checker/good/multiple-accepts.scilla",
-        "line": 14,
-        "column": 9
-      },
-      "warning_id": 1
-    },
-    {
-      "warning_message":
-        "transition donate_twice had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:7:3\n  Accept at checker/good/multiple-accepts.scilla:8:3\n",
-      "start_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 7,
-        "column": 3
-      },
-      "end_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 8,
+        "line": 13,
         "column": 9
       },
       "warning_id": 1
