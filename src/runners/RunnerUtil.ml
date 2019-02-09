@@ -109,7 +109,7 @@ let parse_cli () =
 
   let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -libdir /path/to/stdlib input.scilla\n" in
   let optional_usage = String.concat "\n  "
-    (List.map (function (flag,_,desc) -> flag ^ "  " ^ desc) speclist) in
+    (List.map (fun (flag,_,desc) -> flag ^ " " ^ desc) speclist) in
   let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
 
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
