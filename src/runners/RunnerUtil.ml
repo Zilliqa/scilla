@@ -86,8 +86,8 @@ type runner_cli = {
   p_contract_info : bool;
 }
 
+
 let parse_cli () =
-  let usage = " -libdir /path/to/stdlib [-simple-errors] input.scilla" in
   let r_stdlib_dir = ref [] in
   let r_input_file = ref "" in
   let r_json_errors = ref false in
@@ -109,11 +109,17 @@ let parse_cli () =
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
     ("-contractinfo", Arg.Unit (fun () -> r_contract_info := true), "Print various contract information");
   ] in 
+
+  let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -libdir /path/to/stdlib input.scilla\n" in
+  let optional_usage = String.concat "\n  "
+    (List.map (fun (flag,_,desc) -> flag ^ " " ^ desc) speclist) in
+  let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
+
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
-  let () = Arg.parse speclist anon_handler ("Usage:\n" ^ usage) in
+  let () = Arg.parse speclist anon_handler mandatory_usage in
   if !r_input_file = "" then
-    (DebugMessage.perr @@ "Usage:\n" ^ Sys.argv.(0) ^ usage ^ "\n"; exit 1);
+    (DebugMessage.perr @@ usage; exit 1);
   GlobalConfig.set_use_json_errors !r_json_errors;
   { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; cf_flag = !r_cf;
     p_contract_info = !r_contract_info }
