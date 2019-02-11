@@ -25,12 +25,15 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["checker"; "good"; f]
     let runner = "scilla-checker"
     let custom_args = ["-cf"; "-contractinfo"]
-    let lib_override = None
+    let additional_libdirs = []
     let tests = [
       "crowdfunding.scilla"; "zil-game.scilla"; "fungible-token.scilla"; "auction.scilla";
       "empty.scilla"; "schnorr.scilla"; "ecdsa.scilla"; "inplace-map.scilla";
       "wallet.scilla"; "adt_test.scilla"; "one-msg.scilla"; "one-msg1.scilla";
       "multiple-msgs.scilla"; "map_key_test.scilla";
+      "one-accept.scilla"; "multiple-accepts.scilla";
+      "one-transition-accepts.scilla"; "one-transition-might-accept.scilla";
+      "missing-accepts.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)

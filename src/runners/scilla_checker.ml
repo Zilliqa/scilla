@@ -31,6 +31,7 @@ open SanityChecker
 open Recursion
 open EventInfo
 open Cashflow
+open Accept
 
 module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
@@ -51,6 +52,7 @@ module PMCERep = PMC.EPR
 module SC = ScillaSanityChecker (TCSRep) (TCERep)
 module EI = ScillaEventInfo (PMCSRep) (PMCERep)
 module CF = ScillaCashflowChecker (TCSRep) (TCERep)
+module AC = ScillaAcceptChecker (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr  = 
@@ -91,6 +93,8 @@ let check_sanity m rlibs elibs =
   | Error msg -> pout @@ scilla_error_to_string msg ; res
   | Ok _ -> pure ()
 
+let check_accepts m =AC.contr_sanity m
+
 let check_events_info einfo  =
   match einfo with
   | Error msg -> pout @@ scilla_error_to_string msg ; einfo
@@ -128,6 +132,7 @@ let () =
       let%bind (recursion_cmod, recursion_rec_principles, recursion_elibs) = check_recursion cmod elibs in
       let%bind (typed_cmod, tenv, typed_elibs, typed_rlibs) = check_typing recursion_cmod recursion_rec_principles recursion_elibs  in
       let%bind pm_checked_cmod = check_patterns typed_cmod  in
+      let _ = if cli.cf_flag then check_accepts typed_cmod else () in
       let%bind _ = check_sanity typed_cmod typed_rlibs typed_elibs in
       let%bind event_info = check_events_info (EI.event_info pm_checked_cmod)  in
       let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
