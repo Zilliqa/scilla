@@ -11,12 +11,11 @@
   (libraries core ppx_sexp_conv
               num hex stdint batteries
               ppx_deriving.show
-              ppx_deriving_yojson.runtime
               cryptokit secp256k1
               yojson scilla-cpp-deps)
   (preprocess (pps ppx_sexp_conv
                     ppx_let 
                     ppx_deriving.show
                     bisect_ppx -exclude-file=../../bisect.exclude -conditional
-                    ppx_deriving_yojson))
+                    ))
   (synopsis "Scilla workbench implementation."))

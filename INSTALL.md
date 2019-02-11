@@ -52,7 +52,7 @@ opam packages using the commands listed below:
 
 ```
 opam init --disable-sandboxing -y --compiler=4.06.1
-opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
+opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
 ```
 
 The above three commands can, alternatively, be run using the make target `opamdep`
@@ -91,7 +91,7 @@ brew tap iantanwx/crypto
 ```
 brew install ocaml opam pkg-config libffi openssl@1.1 boost secp256k1
 opam init --disable-sandboxing -y --compiler=4.06.1
-opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
+opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
 
 ```
 Then run the following command to setup environment on current shell. 
