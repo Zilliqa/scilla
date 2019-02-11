@@ -83,6 +83,7 @@ type runner_cli = {
   input_file : string;
   stdlib_dirs : string list;
   cf_flag : bool;
+  p_contract_info : bool;
 }
 
 
@@ -90,6 +91,7 @@ let parse_cli () =
   let r_stdlib_dir = ref [] in
   let r_input_file = ref "" in
   let r_json_errors = ref false in
+  let r_contract_info = ref false in
   let r_cf = ref false in
   let speclist = [
     ("-version", Arg.Unit (fun () -> 
@@ -105,6 +107,7 @@ let parse_cli () =
       "Path(s) to libraries separated with ';'");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
+    ("-contractinfo", Arg.Unit (fun () -> r_contract_info := true), "Print various contract information");
   ] in 
 
   let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -libdir /path/to/stdlib input.scilla\n" in
@@ -118,4 +121,5 @@ let parse_cli () =
   if !r_input_file = "" then
     (DebugMessage.perr @@ usage; exit 1);
   GlobalConfig.set_use_json_errors !r_json_errors;
-  { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; cf_flag = !r_cf }
+  { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; cf_flag = !r_cf;
+    p_contract_info = !r_contract_info }
