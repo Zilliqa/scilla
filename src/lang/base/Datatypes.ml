@@ -153,6 +153,7 @@ module DataTypeDictionary = struct
     | Some dt ->
       pure dt
 
+  (* Get typing map for a constructor *)
   let constr_tmap adt cn = 
     List.find adt.tmap ~f:(fun (n, _) -> n = cn) |> Option.map ~f:snd
 
@@ -161,6 +162,9 @@ module DataTypeDictionary = struct
   let option_typ t = ADT (t_option.tname, [t])
   let list_typ t = ADT (t_list.tname, [t])
   let pair_typ t s = ADT (t_product.tname, [t; s])
+
+  (* Get all known ADTs *)
+  let get_all_adts () = Caml.Hashtbl.fold (fun _ a acc -> a :: acc) adt_name_dict []
 
 end
 
