@@ -35,5 +35,13 @@
     ],
     "events": [ { "vname": "GameOver", "params": [] } ]
   },
-  "warnings": []
+  "warnings": [
+    {
+      "warning_message":
+        "Contract ZilGame had no transitions with accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
 }
