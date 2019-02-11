@@ -1,0 +1,28 @@
+{
+  "cashflow_tags": [],
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "OneAccept",
+    "params": [],
+    "fields": [],
+    "transitions": [
+      { "vname": "simple_donate1", "params": [] },
+      { "vname": "simple_donate2", "params": [] },
+      { "vname": "simple_donate3", "params": [] },
+      {
+        "vname": "branched_donate1",
+        "params": [ { "vname": "cond", "type": "Bool" } ]
+      },
+      {
+        "vname": "branched_donate2",
+        "params": [ { "vname": "cond", "type": "Bool" } ]
+      }
+    ],
+    "events": [
+      { "vname": "Donation accepted in branch 2", "params": [] },
+      { "vname": "Donation accepted in branch 1", "params": [] },
+      { "vname": "Donation accepted", "params": [] }
+    ]
+  },
+  "warnings": []
+}

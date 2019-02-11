@@ -31,6 +31,9 @@ module Tests = TestUtil.DiffBasedTests(
       "empty.scilla"; "schnorr.scilla"; "ecdsa.scilla"; "inplace-map.scilla";
       "wallet.scilla"; "adt_test.scilla"; "one-msg.scilla"; "one-msg1.scilla";
       "multiple-msgs.scilla"; "map_key_test.scilla";
+      "one-accept.scilla"; "multiple-accepts.scilla";
+      "one-transition-accepts.scilla"; "one-transition-might-accept.scilla";
+      "missing-accepts.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
