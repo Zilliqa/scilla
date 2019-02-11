@@ -1,0 +1,14 @@
+scilla_version 0
+
+contract MissingAccepts
+()
+
+transition foo(cond : Bool)
+  e = { _eventname : "foo" };
+  event e
+end
+
+transition bar(cond : Bool)
+  e = { _eventname : "bar" };
+  event e
+end

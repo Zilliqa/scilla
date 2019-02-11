@@ -1,0 +1,18 @@
+{
+  "cashflow_tags": [],
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "OneTransitionAccepts",
+    "params": [],
+    "fields": [],
+    "transitions": [
+      {
+        "vname": "donate",
+        "params": [ { "vname": "cond", "type": "Bool" } ]
+      },
+      { "vname": "foo", "params": [ { "vname": "cond", "type": "Bool" } ] }
+    ],
+    "events": [ { "vname": "foo", "params": [] } ]
+  },
+  "warnings": []
+}
