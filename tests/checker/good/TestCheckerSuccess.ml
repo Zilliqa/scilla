@@ -33,7 +33,7 @@ module Tests = TestUtil.DiffBasedTests(
       "multiple-msgs.scilla"; "map_key_test.scilla";
       "one-accept.scilla"; "multiple-accepts.scilla";
       "one-transition-accepts.scilla"; "one-transition-might-accept.scilla";
-      "missing-accepts.scilla"; "bookstore.scilla";
+      "missing-accepts.scilla"; "bookstore.scilla"; "cfinvoke.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)

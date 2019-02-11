@@ -1,0 +1,217 @@
+scilla_version 0
+
+(* Bookstore Contract *)
+(* This example contract demonstrates how a CRUD app can be built. *)
+
+(* @note: Bookstore allows members to manage a shared repository of books. *)
+(* Bookstore has an owner, who can add members in. Members will be able *)
+(* to add, remove and update books in the store. Access controls logic is *)
+(* delibrately left out for brevity. But if you need examples, you can  *)
+(* refer to `addMember` transition to see how access controls can be implemented. *)
+
+
+(* In production deployments, you will want to implement proper access *)
+(* control logic in your smart contract *)
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+library BookStore
+
+let one_msg =
+  fun (msg: Message) =>
+  let nil_msg = Nil {Message} in
+  Cons {Message} msg nil_msg
+
+(* error codes library *)
+let code_success = Uint32 0
+let code_book_not_found = Uint32 1
+let code_not_authorized = Uint32 2
+let code_invalid_params = Uint32 3
+let code_bookid_exist = Uint32 4
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract BookStore
+(owner: ByStr20,
+storeName: String)
+
+(* storeName can be immutable if it won't ever be changed             *)
+
+
+(* Membership data consists of three attributes: ByStr20, Name and typeOfMember*)
+(* Equivalent member data in C++ struct *)
+(* struct Member {                                                    *)
+(*     ByStr20 address;                                               *)
+(*     String name;                                                   *)
+(*     Uint32 membershipType; // 0: Regular, 1: Premium, 2: Corporate *)
+(* }                                                                  *)
+
+field members: Map ByStr20 (Pair (String) (Uint32))
+                = Emp ByStr20 (Pair (String) (Uint32))
+
+(* lastBookID: last book ID issued *)
+field lastBookID: Option Uint32 = None {Uint32}
+
+(* Bookinventory will store a Map of Books                          *)
+field bookInventory: Map Uint32 (Pair (String) (String))
+                    = Emp Uint32 (Pair (String) (String))
+
+
+(* Book data consists of three attributes: BookID, Title and Author*)
+(* Equivalent member data in C++ struct *)
+(* struct Book {                                                    *)
+(*     Uint32 BookID;                                               *)
+(*     String Book_title;                                           *)
+(*     String Author;                                               *)
+(* }                                                                *)
+
+(* ======== transitions ===============*)
+
+
+(* @notice: add member is an example. It is not used in other functions. *)
+(* @dev: in real contracts, a developer can use a members mapping to manage *)
+(* access controls to grant a user permission to perform certain actions *)
+(* (e.g. add/remove books) *)
+
+transition addMember(name: String, addr: ByStr20, memberType: Uint32)
+
+    (* Access control: Checking if sender is the owner of the Contract *)
+    is_authorized = builtin eq _sender owner;
+    match is_authorized with
+    | True => 
+        (* Only the owner can add member *)
+        (* Check if membership type is valid. *)
+        valid_type = let three = Uint32 3 in
+                        builtin lt memberType three;
+        match valid_type with
+        | True =>
+            (* First build the pair ADT *)
+            p = Pair {(String) (Uint32)} name memberType;
+            members[addr] := p;
+
+            msg = {_tag: ""; 
+                    _recipient: _sender; 
+                    _amount: Uint128 0; 
+                    code: code_success};
+            msgs = one_msg msg;
+            send msgs 
+        | False =>
+            (* Code for the membership type is invalid *)
+            msg = {_tag: "";
+                    _recipient: _sender;
+                    _amount: Uint128 0;
+                    code: code_invalid_params};
+            msgs = one_msg msg;
+            send msgs
+        end
+    | False =>
+        (* Unauthorized transaction *)
+        msg = {_tag: "";
+                _recipient: _sender;
+                _amount: Uint128 0;
+                code: code_not_authorized};
+        msgs = one_msg msg;
+        send msgs
+    end
+end
+
+(* @notice: Allows a `_sender` to add a book to the bookstore *)
+(* @dev   : Access controls are omitted for brevity. In production contracts, *)
+(*          you will want to implement proper access controls to allow only *)
+(*          an owner or member to add a book. *)
+(* @param: bookName : title of the book *)
+(* @param: author:     author of the book *)
+
+transition addBook(book_title: String, author: String, bookID: Uint32)
+
+    (* @dev: Preconditions can be set to allow only members to add a book *)
+    (* @dev: Access controls logic omitted for brevity *)
+
+    books <- bookInventory;
+    (* new_book_id = let one = Uint32 1 in builtin add last_book_id one;*)
+
+    bookExist = builtin contains books bookID;
+    match bookExist with
+    | True =>
+        msg = {_tag: "";
+                    _recipient: _sender;
+                    _amount: Uint128 0;
+                    code: code_bookid_exist};
+        msgs = one_msg msg;
+        send msgs
+    | False =>
+        (* Creating a new Book Model *)
+        (* A new book model is a Pair of book_title and author *)
+        new_book = Pair {(String) (String)} book_title author;
+
+        (* Add the new book to the book_inventory Map, with BookID as the key*)
+        bookInventory[bookID] := new_book;
+
+        tmp = Some {Uint32} bookID;
+        lastBookID := tmp;
+
+        msg = {_tag: ""; 
+                _recipient: _sender; 
+                _amount: Uint128 0; 
+                code: code_success};
+
+        msgs = one_msg msg;
+        send msgs 
+    end
+end
+
+(* @notice: Allows a `_sender` to remove a book from the bookstore *)
+(* @dev   : Access controls are omitted for brevity. In production contracts, *)
+(*          you will want to implement proper access controls to allow only *)
+(*          an owner or member to remove a book. *)
+
+transition removeBook(book_id: Uint32)
+    (* @dev: Preconditions can be set to allow only members to remove a book *)
+    (* @dev: Access controls logic omitted for brevity *)
+
+    delete bookInventory[book_id]
+
+end
+
+(* @notice: Allows a `_sender` to update a book from the bookstore *)
+(* @dev   : Access controls are omitted for brevity. In production contracts, *)
+(*          you will want to implement proper access controls to allow only *)
+(*          an owner or member to remove a book. *)
+
+transition updateBook(book_id: Uint32, book_title: String, author: String)
+    (* @dev: Preconditions can be set to allow only members to update a book *)
+    (* @dev: Access controls omitted for brevity *)
+   
+    (* preconditions  *)
+    books <- bookInventory;
+    exist = builtin contains books book_id;
+    match exist with
+    | False =>
+        (* Book ID is not found in the records. *)
+        msg = {_tag: ""; 
+                _recipient: _sender; 
+                _amount: Uint128 0; 
+                code: code_book_not_found};
+        msgs = one_msg msg;
+        send msgs
+    | True =>
+        (* constructs book model  *)
+        (* Creating a new Book Model *)
+        (* A new book model is a Pair of book_title and author *)
+        new_book = Pair {(String) (String)} book_title author;
+        (* Add the new book to the book_inventory Map, with BookID as the key*)
+        bookInventory[book_id] := new_book;
+
+        msg = {_tag: ""; 
+                _recipient: _sender; 
+                _amount: Uint128 0; 
+                code: code_success};
+        msgs = one_msg msg;
+        send msgs
+    end
+
+
+end
+
