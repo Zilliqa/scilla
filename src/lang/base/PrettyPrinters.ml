@@ -39,11 +39,28 @@ let lookup_constructor_exn cn =
 (****************************************************************)
 
 let rec mapvalues_to_json ms =
-  Caml.Hashtbl.fold (fun k v a ->
+  let tstart = Unix.gettimeofday() in
+  let x = Caml.Hashtbl.fold (fun k v a ->
+    let tstart = Unix.gettimeofday() in
     let kjson = "key", (literal_to_json k) in
+    let tend = Unix.gettimeofday() in
+    let _ = Printf.printf "kjson:%f\n" (Core.Float.sub tend tstart) in
+    let tstart = Unix.gettimeofday() in
     let vjson = "val", (literal_to_json v) in
+    let tend = Unix.gettimeofday() in
+    let _ = Printf.printf "vjson:%f\n" (Core.Float.sub tend tstart) in
+    let tstart = Unix.gettimeofday() in
     let kv_json = `Assoc (kjson :: vjson :: []) in
-      kv_json :: a) ms []
+    let tend = Unix.gettimeofday() in
+    let _ = Printf.printf "kvjson:%f\n" (Core.Float.sub tend tstart) in
+    let tstart = Unix.gettimeofday() in
+    let concat = kv_json :: a in
+    let tend = Unix.gettimeofday() in
+    let _ = Printf.printf "concat:%f\n" (Core.Float.sub tend tstart) in
+    concat) ms [] in
+  let tend = Unix.gettimeofday() in
+  let _ = Printf.printf "fold:%f\n" (Core.Float.sub tend tstart) in
+  x
 
 and adtargs_to_json vlist =
   match vlist with
@@ -68,7 +85,11 @@ and literal_to_json lit =
   | IntLit x  -> `String (string_of_int_lit x)
   | UintLit x -> `String (string_of_uint_lit x)
   | Map ((_, _), kvs) ->
-      `List (mapvalues_to_json kvs)
+      let tstart = Unix.gettimeofday() in
+      let ls = `List (mapvalues_to_json kvs) in
+      let tend = Unix.gettimeofday() in
+      let _ = Printf.printf "map:%f\n" (Core.Float.sub tend tstart) in
+      ls
   | ADTValue (n, t, v) as ls ->
     let open Datatypes in
     let (a, _) = lookup_constructor_exn n in
@@ -78,16 +99,20 @@ and literal_to_json lit =
       (match Datatypes.scilla_list_to_ocaml_rev ls with
       | Ok ls' -> 
         let ls'' = List.rev_map ls' ~f:(fun a -> literal_to_json a) in
-        `List ls''
+        let lsa = `List ls'' in
+        (* let tend = Unix.gettimeofday() in *)
+        (* let _ = Printf.printf "map:%f\n" (Core.Float.sub tend tstart) in *)
+        lsa
       | Error emsg -> raise (Utils.InternalError emsg))
     else
       let argtl = adttyps_to_json t in
       let argl = adtargs_to_json v in
-        `Assoc [
+        let lsa = `Assoc [
           ("constructor", `String n);
           ("argtypes", `List argtl);
           ("arguments", `List argl)
-        ]
+        ] in
+        lsa
   | _ -> `Null
 
 let literal_to_jstring ?(pp = false) lit =

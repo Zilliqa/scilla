@@ -19,4 +19,5 @@
                     ppx_deriving.show
                     bisect_ppx -exclude-file=../../bisect.exclude -conditional
                     ppx_deriving_yojson))
-  (synopsis "Scilla workbench implementation."))
+  (synopsis "Scilla workbench implementation.")
+  (ocamlopt_flags -g))

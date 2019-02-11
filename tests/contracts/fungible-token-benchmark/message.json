@@ -1,0 +1,1 @@
+{"_tag": "Transfer", "_amount": "0", "_sender": "0x1234567890123456789012345678901234567890", "params": [{"vname": "to", "type": "ByStr20", "value": "0x44345678901234567890123456789012345678cd"}, {"vname": "tokens", "type": "Uint128", "value": "1000"}]}

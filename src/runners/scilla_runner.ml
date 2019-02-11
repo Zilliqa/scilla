@@ -247,29 +247,60 @@ let () =
               (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state)));
             exit 1
         in
+
+        let allstart = Unix.gettimeofday() in
         
         let tstart = Unix.gettimeofday() in
 
         (* Initializing the contract's state *)
         let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
+
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "init_res:%f\n" (Core.Float.sub tend tstart) in
+
+        let tstart = Unix.gettimeofday() in
+
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
         let cstate, gas_remaining' = check_extract_cstate cli.input init_res gas_remaining in
+
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "cstate:%f\n" (Core.Float.sub tend tstart) in
+
         (* Contract code *)
         let ctr = cmod.contr in
 
         plog (sprintf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg));
         plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
+
+        let tstart = Unix.gettimeofday() in
         let step_result = handle_message ctr cstate bstate m in
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "step_result:%f\n" (Core.Float.sub tend tstart) in
+
+        let tstart = Unix.gettimeofday() in
         let (cstate', mlist, elist, accepted_b), gas =
           check_after_step cli.input step_result gas_remaining' in
-      
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "exec:%f\n" (Core.Float.sub tend tstart) in
+        
+        let tstart = Unix.gettimeofday() in
         let osj = output_state_json cstate' in
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "output_state_json:%f\n" (Core.Float.sub tend tstart) in
+
+        let tstart = Unix.gettimeofday() in
         let omj = output_message_json gas mlist in
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "output_message_json:%f\n" (Core.Float.sub tend tstart) in
+
+        let tstart = Unix.gettimeofday() in
         let oej = `List (output_event_json elist) in
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "output_event_json:%f\n" (Core.Float.sub tend tstart) in
         
         let tend = Unix.gettimeofday() in
-        let _ = Printf.printf "Non I/O execution time:%f\n" (Core.Float.sub tend tstart) in
+        let _ = Printf.printf "Non I/O execution time:%f\n" (Core.Float.sub tend allstart) in
         
           (omj, osj, oej, accepted_b), gas)
       in

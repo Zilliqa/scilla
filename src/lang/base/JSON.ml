@@ -224,11 +224,16 @@ let jobj_to_statevar json =
 
 let state_to_json state =
   let (vname, lit) = state in
-  `Assoc [ 
+  let tstart = Unix.gettimeofday() in
+  let litpair = (literal_to_json lit) in
+  let tend = Unix.gettimeofday() in
+  let _ = Printf.printf "assoc:%f\n" (Core.Float.sub tend tstart) in
+  let assoc = `Assoc [ 
     ("vname", `String vname) ; 
     ("type", `String (literal_type_exn lit));
-    ("value", (literal_to_json lit))
-  ]
+    ("value", litpair)
+  ] in
+  assoc
 
 let rec slist_to_json l = 
   match l with
