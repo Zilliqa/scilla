@@ -137,7 +137,7 @@ module ScillaAcceptChecker
     (match List.for_all BatList.is_empty all_accept_groups with
      | true ->
         (warn0
-           (Core.sprintf "Contract %s had no transitions with accept statement\n"
+           (Core.sprintf "No transition in contract %s contains an accept statement\n"
               (get_id contr.cname))
            warning_level_missing_accept)
      | false -> ())
