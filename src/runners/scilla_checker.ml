@@ -142,10 +142,13 @@ let () =
     | Error el -> exit 1 (* we've already printed the error(s). *)
     | Ok (cmod, _, event_info, cf_info_opt) ->
         let base_output =
-          [
-            ("contract_info", (JSON.ContractInfo.get_json cmod.smver cmod.contr event_info));
-            ("warnings", scilla_warning_to_json (get_warnings()))
-          ] in
+          let warnings_output =
+            [ ("warnings", scilla_warning_to_json (get_warnings())) ]
+          in
+          if cli.p_contract_info then
+            ("contract_info", (JSON.ContractInfo.get_json cmod.smver cmod.contr event_info)) :: warnings_output
+          else warnings_output
+        in
         let output_with_cf =
           match cf_info_opt with
           | None -> base_output
