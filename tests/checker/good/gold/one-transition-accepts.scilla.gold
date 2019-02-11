@@ -1,27 +1,18 @@
-Gas use polynomial for transition verify:
-1(a) + 450 + 15(b) + 3(c)
-Legend:
-
-c: _sender
-b: msg
-a: pub_key
-
 {
+  "cashflow_tags": [],
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "Schnorr",
+    "vname": "OneTransitionAccepts",
     "params": [],
-    "fields": [ { "vname": "pub_key", "type": "Option (ByStr33)" } ],
+    "fields": [],
     "transitions": [
       {
-        "vname": "verify",
-        "params": [
-          { "vname": "msg", "type": "ByStr" },
-          { "vname": "sig", "type": "ByStr64" }
-        ]
-      }
+        "vname": "donate",
+        "params": [ { "vname": "cond", "type": "Bool" } ]
+      },
+      { "vname": "foo", "params": [ { "vname": "cond", "type": "Bool" } ] }
     ],
-    "events": [],
+    "events": [ { "vname": "foo", "params": [] } ],
     "ADTs": [
       {
         "tname": "Option",

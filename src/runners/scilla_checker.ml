@@ -32,6 +32,7 @@ open GasUseAnalysis
 open Recursion
 open EventInfo
 open Cashflow
+open Accept
 
 module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
@@ -54,6 +55,7 @@ module EI = ScillaEventInfo (PMCSRep) (PMCERep)
 
 module GUA = ScillaGUA (TCSRep) (TCERep)
 module CF = ScillaCashflowChecker (TCSRep) (TCERep)
+module AC = ScillaAcceptChecker (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr  = 
@@ -93,6 +95,8 @@ let check_sanity m rlibs elibs =
   match res with
   | Error msg -> pout @@ scilla_error_to_string msg ; res
   | Ok _ -> pure ()
+
+let check_accepts m =AC.contr_sanity m
 
 let check_events_info einfo  =
   match einfo with
@@ -142,6 +146,7 @@ let () =
       let%bind (recursion_cmod, recursion_rec_principles, recursion_elibs) = check_recursion cmod elibs in
       let%bind (typed_cmod, tenv, typed_elibs, typed_rlibs) = check_typing recursion_cmod recursion_rec_principles recursion_elibs  in
       let%bind pm_checked_cmod = check_patterns typed_cmod  in
+      let _ = if cli.cf_flag then check_accepts typed_cmod else () in
       let%bind _ = check_sanity typed_cmod typed_rlibs typed_elibs in
       let%bind event_info = check_events_info (EI.event_info pm_checked_cmod)  in
       let%bind _ = if cli.gua_flag then analyze_print_gas typed_cmod typed_elibs else pure [] in
@@ -152,10 +157,13 @@ let () =
     | Error el -> exit 1 (* we've already printed the error(s). *)
     | Ok (cmod, _, event_info, cf_info_opt) ->
         let base_output =
-          [
-            ("contract_info", (JSON.ContractInfo.get_json cmod.smver cmod.contr event_info));
-            ("warnings", scilla_warning_to_json (get_warnings()))
-          ] in
+          let warnings_output =
+            [ ("warnings", scilla_warning_to_json (get_warnings())) ]
+          in
+          if cli.p_contract_info then
+            ("contract_info", (JSON.ContractInfo.get_json cmod.smver cmod.contr event_info)) :: warnings_output
+          else warnings_output
+        in
         let output_with_cf =
           match cf_info_opt with
           | None -> base_output

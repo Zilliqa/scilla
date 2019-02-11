@@ -89,6 +89,71 @@
         "vname": "Transaction created",
         "params": [ { "vname": "transactionId", "type": "Uint32" } ]
       }
+    ],
+    "ADTs": [
+      {
+        "tname": "Error",
+        "tparams": [],
+        "tmap": [
+          { "cname": "NonOwnerCannotSign", "argtypes": [] },
+          { "cname": "UnknownTransactionId", "argtypes": [] },
+          { "cname": "InsufficientFunds", "argtypes": [] },
+          { "cname": "NoSignatureListFound", "argtypes": [] },
+          { "cname": "AlreadySigned", "argtypes": [] },
+          { "cname": "NotAlreadySigned", "argtypes": [] },
+          { "cname": "InvalidContract", "argtypes": [] },
+          { "cname": "InvalidAmount", "argtypes": [] },
+          { "cname": "NotEnoughSignatures", "argtypes": [] },
+          { "cname": "SenderIsNotRecipient", "argtypes": [] },
+          { "cname": "CandidateAlreadyAdded", "argtypes": [] },
+          { "cname": "UnknownCandidate", "argtypes": [] },
+          { "cname": "CandidateAlreadyOwner", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Transaction",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Trans", "argtypes": [ "ByStr20", "Uint128" ] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
     ]
   },
   "warnings": [

@@ -49,7 +49,7 @@ zilliqa-docker:
 
 opamdep:
 	opam init --disable-sandboxing -y --compiler=4.06.1
-	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
+	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
 
 
 .PHONY : coverage

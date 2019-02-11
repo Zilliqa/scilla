@@ -399,7 +399,28 @@ module ContractInfo = struct
       ) in
     let eventsj = ("events", `List eventslj) in
 
-    let finalj = `Assoc (verj :: namej :: paramj :: fieldsj :: transj :: eventsj :: []) in
+    (* 6. ADTs information. *)
+    let adts_to_json (alist : adt list) =
+      let jlist = List.map alist ~f:(fun a ->
+        let tname = `String a.tname in
+        let tparams  = `List (List.map a.tparams ~f:(fun t -> `String t)) in
+        let tmap = `List (List.map a.tconstr ~f:(fun ctr ->
+          let tsj =
+            match DataTypeDictionary.constr_tmap a ctr.cname with
+            | Some ts ->
+              `List (List.map ts ~f:(fun t -> `String(pp_typ t)))
+            | None ->
+              `List []
+          in
+          `Assoc [("cname", `String ctr.cname); ("argtypes", tsj)]
+        )) in
+        `Assoc [("tname", tname); ("tparams", tparams); ("tmap", tmap)]
+      ) in
+      `List jlist
+    in
+    let adtsj = ("ADTs", adts_to_json (DataTypeDictionary.get_all_adts ())) in
+
+    let finalj = `Assoc (verj :: namej :: paramj :: fieldsj :: transj :: eventsj :: adtsj :: []) in
       finalj
     
     let get_string cver (contr : contract) (event_info : (string * (string * typ) list) list) =

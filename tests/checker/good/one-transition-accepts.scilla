@@ -1,0 +1,13 @@
+scilla_version 0
+
+contract OneTransitionAccepts
+()
+
+transition donate(cond : Bool)
+  accept
+end
+
+transition foo(cond : Bool)
+  e = { _eventname : "foo" };
+  event e
+end

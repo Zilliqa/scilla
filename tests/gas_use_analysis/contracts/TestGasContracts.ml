@@ -32,10 +32,10 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "gas_use_analysis"; "contracts"; "gold"; f ^ ".gold" ]
     let test_path f = ["gas_use_analysis"; "contracts"; f]
     let runner = "scilla-checker"
-    let custom_args = ["-gua"]
+    let custom_args = ["-gua"; "-contractinfo"]
+    let additional_libdirs = []
     let tests = explist
     let exit_code : Unix.process_status = WEXITED 0
-    let lib_override = None
 
   end)
 

@@ -1,39 +1,18 @@
 {
-  "cashflow_tags": [
-    { "field": "owner", "tag": "NotMoney" },
-    { "field": "player_a", "tag": "NotMoney" },
-    { "field": "player_b", "tag": "NotMoney" },
-    { "field": "puzzle", "tag": "NoInfo" },
-    { "field": "player_a_hash", "tag": "(Option NoInfo)" },
-    { "field": "player_b_hash", "tag": "(Option NoInfo)" },
-    { "field": "timer", "tag": "(Option NoInfo)" }
-  ],
+  "cashflow_tags": [],
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "ZilGame",
-    "params": [
-      { "vname": "owner", "type": "ByStr20" },
-      { "vname": "player_a", "type": "ByStr20" },
-      { "vname": "player_b", "type": "ByStr20" },
-      { "vname": "puzzle", "type": "ByStr32" }
-    ],
-    "fields": [
-      { "vname": "player_a_hash", "type": "Option (ByStr32)" },
-      { "vname": "player_b_hash", "type": "Option (ByStr32)" },
-      { "vname": "timer", "type": "Option (BNum)" }
-    ],
+    "vname": "MissingAccepts",
+    "params": [],
+    "fields": [],
     "transitions": [
-      {
-        "vname": "Play",
-        "params": [ { "vname": "guess", "type": "ByStr32" } ]
-      },
-      {
-        "vname": "ClaimReward",
-        "params": [ { "vname": "solution", "type": "Int128" } ]
-      },
-      { "vname": "Withdraw", "params": [] }
+      { "vname": "foo", "params": [ { "vname": "cond", "type": "Bool" } ] },
+      { "vname": "bar", "params": [ { "vname": "cond", "type": "Bool" } ] }
     ],
-    "events": [ { "vname": "GameOver", "params": [] } ],
+    "events": [
+      { "vname": "bar", "params": [] },
+      { "vname": "foo", "params": [] }
+    ],
     "ADTs": [
       {
         "tname": "Option",
@@ -77,7 +56,7 @@
   "warnings": [
     {
       "warning_message":
-        "Contract ZilGame had no transitions with accept statement\n",
+        "Contract MissingAccepts had no transitions with accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

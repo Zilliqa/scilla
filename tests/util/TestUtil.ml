@@ -56,8 +56,8 @@ module type TestSuiteInput = sig
   val test_path : string -> string list
   val runner : string
   val exit_code : Unix.process_status
+  val additional_libdirs : string list list
   val custom_args : string list
-  val lib_override : string list option
 end
 
 module DiffBasedTests(Input : TestSuiteInput) = struct
@@ -85,23 +85,28 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         (save_to_file output goldoutput_file;
         Printf.printf "Updated gold for test %s\n" input_file);
       in
-      let use_stdlib =
-        match lib_override with
-        (* Override stdlib env setting if needed *)
-        | Some _ -> true
-        | None -> 
-            (* don't pass on stdlib option if it's already in env. *)
-            match Sys.getenv_opt GlobalConfig.StdlibTracker.scilla_stdlib_env with
-            | Some _ -> false
-            | None -> true
+
+
+
+      let default_std_lib =
+        match Sys.getenv_opt GlobalConfig.StdlibTracker.scilla_stdlib_env with
+        | Some _ -> None
+        | None -> Some (env.stdlib_dir test_ctxt)
       in
-      let libdir =
-        let path = 
-          match lib_override with
-          | None -> env.stdlib_dir test_ctxt
-          | Some p -> String.concat Filename.dir_sep p in
-        FilePath.make_relative dir path in
-      let common_args = if use_stdlib then ["-libdir";libdir;"-jsonerrors";input_file] else ["-jsonerrors";input_file] in
+      let std_lib_dirs =
+        match additional_libdirs with
+        | [] -> default_std_lib
+        | _ ->
+            let additional_paths = List.map (fun path -> String.concat Filename.dir_sep path) additional_libdirs  in
+            let additional_paths_str = String.concat ";" additional_paths in
+            match default_std_lib with
+            | None -> Some additional_paths_str
+            | Some path -> Some (path ^ ";" ^ additional_paths_str) in
+
+      let common_args =
+        match std_lib_dirs with
+        | None -> ["-jsonerrors";input_file]
+        | Some libdirs -> ["-libdir";libdirs;"-jsonerrors";input_file] in
       let args = custom_args @ common_args in
       (if (env.print_cli test_ctxt) then
          (Printf.printf "\nUsing CLI: "; List.iter (fun arg -> Printf.printf "%s " arg) args);
