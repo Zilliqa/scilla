@@ -217,7 +217,7 @@ lit :
   build_prim_literal_exn (PrimTypes.bystrx_typ ((l-1)/2)) h
 }
 | s = STRING   { StringLit s }
-| EMP; kt = t_map_key; vt = targ
+| EMP; kt = t_map_key; vt = t_map_value
 {
   Map ((kt, vt), Hashtbl.create 4) (* 4 is arbitrary here. *)
 }
