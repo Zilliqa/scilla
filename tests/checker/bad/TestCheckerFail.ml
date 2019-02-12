@@ -36,6 +36,7 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_map_key_3.scilla";
       "bad_map_key_4.scilla";
       "bad_map_key_5.scilla";
+      "map_value_function.scilla";
       "bad_message1.scilla";
       "message_field.scilla";
       "message_field2.scilla";
