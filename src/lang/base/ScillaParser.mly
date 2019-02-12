@@ -121,9 +121,17 @@
 (***********************************************)
 (*                  Types                      *)
 (***********************************************)
+(* TODO: This is a temporary fix of issue #166 *)
 t_map_key :
 | kt = CID { to_map_key_type kt }
 | LPAREN; kt = CID; RPAREN; { to_map_key_type kt }
+
+(* TODO: This is a temporary fix of issue #261 *)
+t_map_value :
+| LPAREN; d = CID; RPAREN; { to_type d }
+| LPAREN; MAP; k=t_map_key; v = t_map_value; RPAREN; { MapType (k, v) }
+| d = CID; { to_type d }
+| MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }             
 
 typ :
 | d = CID; targs=list(targ)
@@ -131,7 +139,7 @@ typ :
     | [] -> to_type d                       
     | _ -> ADT (d, targs)
   }   
-| MAP; k=t_map_key; v = targ; { MapType (k, v) }
+| MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
 | LPAREN; t = typ; RPAREN; { t }
 | FORALL; tv = TID; PERIOD; t = typ; {PolyFun (tv, t)}
