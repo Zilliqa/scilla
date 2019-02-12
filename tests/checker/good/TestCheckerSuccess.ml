@@ -35,7 +35,7 @@ module Tests = TestUtil.DiffBasedTests(
       "one-transition-accepts.scilla"; "one-transition-might-accept.scilla";
       "missing-accepts.scilla"; "bookstore.scilla"; "cfinvoke.scilla";
       "chain-call-balance-1.scilla"; "chain-call-balance-2.scilla";
-      "chain-call-balance-3.scilla";
+      "chain-call-balance-3.scilla"; "helloWorld.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
