@@ -5,3 +5,6 @@ import BoolUtils  IntUtils  ListUtils  NatUtils  PairUtils
 
 contract Empty
 ()
+
+transition dummy()
+end

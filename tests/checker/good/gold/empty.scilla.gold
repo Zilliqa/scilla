@@ -5,7 +5,7 @@
     "vname": "Empty",
     "params": [],
     "fields": [],
-    "transitions": [],
+    "transitions": [ { "vname": "dummy", "params": [] } ],
     "events": [],
     "ADTs": [
       {
