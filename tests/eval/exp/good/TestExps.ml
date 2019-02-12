@@ -82,7 +82,6 @@ let explist = [
   "list_tail1.scilla";
   "list_tail2.scilla";  
   "list_tail.scilla";
-  "list_to_map.scilla";
   "list_unzip.scilla";
   "list_zip.scilla";
   "list_zip_with.scilla";  
