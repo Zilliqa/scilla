@@ -7,8 +7,6 @@ scilla_version 0
 (***************************************************)
 library FungibleToken
 
-let decimals = Uint32 12
-
 let min_int =
   fun (a : Uint128) => fun (b : Uint128) =>
   let alt = builtin lt a b in
@@ -40,6 +38,7 @@ let le_int =
 contract FungibleToken
 (owner : ByStr20,
  total_tokens : Uint128,
+ decimals : Uint32,
  name : String,
  symbol : String)
 
