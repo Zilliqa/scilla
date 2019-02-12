@@ -128,9 +128,15 @@ t_map_key :
 
 (* TODO: This is a temporary fix of issue #261 *)
 t_map_value :
-| LPAREN; d = CID; RPAREN; { to_type d }
+| LPAREN; d = CID; targs=list(t_map_value); RPAREN;
+    { match targs with
+      | [] -> to_type d                       
+      | _ -> ADT (d, targs) }
 | LPAREN; MAP; k=t_map_key; v = t_map_value; RPAREN; { MapType (k, v) }
-| d = CID; { to_type d }
+| d = CID; targs=list(t_map_value)
+    { match targs with
+      | [] -> to_type d                       
+      | _ -> ADT (d, targs) }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }             
 
 typ :
@@ -149,7 +155,7 @@ targ:
 | LPAREN; t = typ; RPAREN; { t }
 | d = CID; { to_type d }
 | t = TID; { TypeVar t }
-| MAP; k=t_map_key; v = targ; { MapType (k, v) }             
+| MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }             
 
 (***********************************************)
 (*                 Expressions                 *)
