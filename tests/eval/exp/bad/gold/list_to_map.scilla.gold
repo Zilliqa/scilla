@@ -3,7 +3,7 @@
     {
       "error_message": "Syntax error.",
       "start_location": {
-        "file": "tests/eval/exp/bad/list_to_map.scilla",
+        "file": "eval/exp/bad/list_to_map.scilla",
         "line": 7,
         "column": 61
       },
