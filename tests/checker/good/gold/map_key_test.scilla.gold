@@ -5,10 +5,7 @@
     "vname": "Test",
     "params": [],
     "fields": [],
-    "transitions": [
-      { "vname": "testMapKey4", "params": [] },
-      { "vname": "testMapKey5", "params": [] }
-    ],
+    "transitions": [ { "vname": "testMapKey5", "params": [] } ],
     "events": [],
     "ADTs": [
       {
