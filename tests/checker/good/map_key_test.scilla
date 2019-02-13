@@ -8,14 +8,6 @@ type TestType =
 contract Test ()
 
 (* Legal *)
-transition testMapKey4 ()
-  map = Emp BNum (Bool -> Uint32);
-  k = BNum 42;
-  v = fun (x : Bool) => Uint32 42;
-  map2 = builtin put map k v  
-end
-
-(* Legal *)
 transition testMapKey5 ()
   map = Emp String TestType;
   k = "Hello";

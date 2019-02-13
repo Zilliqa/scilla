@@ -3,9 +3,9 @@
     {
       "error_message": "Syntax error.",
       "start_location": {
-        "file": "checker/bad/bad_fields2.scilla",
-        "line": 6,
-        "column": 37
+        "file": "eval/exp/bad/list_to_map.scilla",
+        "line": 7,
+        "column": 61
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

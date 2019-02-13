@@ -121,9 +121,23 @@
 (***********************************************)
 (*                  Types                      *)
 (***********************************************)
+(* TODO: This is a temporary fix of issue #166 *)
 t_map_key :
 | kt = CID { to_map_key_type kt }
 | LPAREN; kt = CID; RPAREN; { to_map_key_type kt }
+
+(* TODO: This is a temporary fix of issue #261 *)
+t_map_value :
+| LPAREN; d = CID; targs=list(t_map_value); RPAREN;
+    { match targs with
+      | [] -> to_type d                       
+      | _ -> ADT (d, targs) }
+| LPAREN; MAP; k=t_map_key; v = t_map_value; RPAREN; { MapType (k, v) }
+| d = CID; targs=list(t_map_value)
+    { match targs with
+      | [] -> to_type d                       
+      | _ -> ADT (d, targs) }
+| MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }             
 
 typ :
 | d = CID; targs=list(targ)
@@ -131,7 +145,7 @@ typ :
     | [] -> to_type d                       
     | _ -> ADT (d, targs)
   }   
-| MAP; k=t_map_key; v = targ; { MapType (k, v) }
+| MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
 | LPAREN; t = typ; RPAREN; { t }
 | FORALL; tv = TID; PERIOD; t = typ; {PolyFun (tv, t)}
@@ -141,7 +155,7 @@ targ:
 | LPAREN; t = typ; RPAREN; { t }
 | d = CID; { to_type d }
 | t = TID; { TypeVar t }
-| MAP; k=t_map_key; v = targ; { MapType (k, v) }             
+| MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }             
 
 (***********************************************)
 (*                 Expressions                 *)
@@ -203,7 +217,7 @@ lit :
   build_prim_literal_exn (PrimTypes.bystrx_typ ((l-1)/2)) h
 }
 | s = STRING   { StringLit s }
-| EMP; kt = t_map_key; vt = targ
+| EMP; kt = t_map_key; vt = t_map_value
 {
   Map ((kt, vt), Hashtbl.create 4) (* 4 is arbitrary here. *)
 }
