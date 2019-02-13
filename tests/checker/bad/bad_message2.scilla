@@ -1,0 +1,35 @@
+scilla_version 0
+
+library BadMessage
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+
+contract Empty
+()
+
+(* This transition sends out a malformed message. Will flag error. *)
+transition malMessage1()
+  (* missing `_amount` field *)
+  msg = { _tag: ""; _recipient : _sender };
+  msgs = one_msg msg;
+  send msgs
+end
+
+(* This transition sends out a malformed message. Will flag error. *)
+transition malMessage2()
+  (* duplicate field *)
+  msg = { _tag: ""; _recipient : _sender; _amount : Uint128 0; status : "foo"; status: "bar"};
+  msgs = one_msg msg;
+  send msgs 
+end
+
+(* This transition disallowed arguments. Will flag error. *)
+transition malTransition1( _sender : ByStr20 )
+  msg = { _tag: ""; _recipient : _sender; _amount : Uint128 0; status : "foo" };
+  msgs = one_msg msg;
+  send msgs
+end
