@@ -38,7 +38,10 @@ module Tests = TestUtil.DiffBasedTests(
       "inplace-map.scilla";
       "map_key_test.scilla";
       "mappair.scilla";
+      "multiple-msgs.scilla";
       "nonfungible-token.scilla";
+      "one-msg1.scilla";
+      "one-msg.scilla";
       "ping.scilla";
       "pong.scilla";
       "schnorr.scilla"; 
@@ -60,10 +63,7 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "adt_test.scilla";
       "missing-accepts.scilla";
       "multiple-accepts.scilla";
-      "multiple-msgs.scilla";
       "one-accept.scilla"; 
-      "one-msg1.scilla";
-      "one-msg.scilla";
       "one-transition-accepts.scilla";
       "one-transition-might-accept.scilla";
     ]

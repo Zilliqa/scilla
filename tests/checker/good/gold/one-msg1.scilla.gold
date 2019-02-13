@@ -52,7 +52,7 @@
       "warning_message":
         "Unable to validate that send arguments is null or single message",
       "start_location": {
-        "file": "checker/good/one-msg1.scilla",
+        "file": "contracts/one-msg1.scilla",
         "line": 34,
         "column": 5
       },
