@@ -48,6 +48,7 @@ let rec build_contract_tests env name ecode i n add_additional_lib =
       (fun test_ctxt ->
         (* Files for the contract are in examples/contract/(crowdfunding|zil-game|etc). *)
         let tests_dir = FilePath.make_relative (Sys.getcwd()) (env.tests_dir test_ctxt) in
+        let contract_dir = tests_dir ^ sep ^ "contracts" ^ sep in
         let dir = tests_dir ^ sep ^ "runner" ^ sep ^
           name ^ sep in
         let tmpdir = bracket_tmpdir test_ctxt in 
@@ -55,7 +56,7 @@ let rec build_contract_tests env name ecode i n add_additional_lib =
                     ^ (i_to_s  i) ^ ".json" in
         let args_tmp =
               ["-init"; dir ^ "init.json"; 
-              "-i"; dir ^ "contract.scilla";
+              "-i"; contract_dir ^ name ^ ".scilla";
               (* stdlib is in src/stdlib *)
               "-libdir"; "src" ^ sep ^ "stdlib";
               "-o"; output_file;
@@ -66,7 +67,7 @@ let rec build_contract_tests env name ecode i n add_additional_lib =
               "-iblockchain" ; dir ^ "blockchain_" ^ (i_to_s i) ^ ".json"] in
         let args' =
           if add_additional_lib
-          then ["-libdir"; dir ^ "lib" ^ sep ] @ args_tmp
+          then ["-libdir"; contract_dir ^ name ^ "_lib" ^ sep ] @ args_tmp
           else args_tmp
         in
         (* Should this test "-disable-validate-json"? *)
@@ -122,6 +123,7 @@ let build_contract_init_test env name =
   name ^ "_" ^ "init" >::
   (fun test_ctxt ->
     (* Files for the contract are in examples/contract/(crowdfunding|zil-game|etc). *)
+    let contract_dir = env.tests_dir test_ctxt ^ sep ^ "contracts" ^ sep in
     let dir = env.tests_dir test_ctxt ^ sep ^ "runner" ^ sep ^
       name ^ sep in
       let tmpdir = bracket_tmpdir test_ctxt in 
@@ -129,7 +131,7 @@ let build_contract_init_test env name =
       let args = ["-init"; dir ^ "init.json";
                   (* stdlib is in src/stdlib *)
                   "-libdir"; "src" ^ sep ^ "stdlib";
-                  "-i"; dir ^ "contract.scilla";
+                  "-i"; contract_dir ^ name ^ ".scilla";
                   "-o"; output_file;
                   "-jsonerrors";
                   "-gaslimit"; Core.Int.to_string testsuit_gas_limit;
@@ -158,6 +160,8 @@ let build_misc_tests env =
     bracket_tmpdir test_ctxt ^ sep ^ name in
   let tests_dir_file testsdir test_ctxt name =
     testsdir test_ctxt ^ sep ^ "runner" ^ sep ^ "crowdfunding" ^ sep ^ name in
+  let contracts_dir_file testsdir test_ctxt =
+    testsdir test_ctxt ^ sep ^ "contracts" ^ sep ^ "crowdfunding.scilla" in
 
   (* Test for exit 1 on bad json *)
   let test1 = 
@@ -166,7 +170,7 @@ let build_misc_tests env =
         let args = ["-init"; tests_dir_file env.tests_dir test_ctxt "init_bad1.json";
                     "-libdir"; "src" ^ sep ^ "stdlib";
                     "-jsonerrors";
-                    "-i"; tests_dir_file env.tests_dir test_ctxt "contract.scilla";
+                    "-i"; contracts_dir_file env.tests_dir test_ctxt;
                     "-o"; output_file test_ctxt "init_bad1_output.json";
                     "-iblockchain"; tests_dir_file env.tests_dir test_ctxt "blockchain_1.json"]
         in
@@ -181,7 +185,7 @@ let build_misc_tests env =
         let args = ["-init"; tests_dir_file env.tests_dir test_ctxt "init_bad1.json";
                     "-libdir"; "src" ^ sep ^ "stdlib";
                     "-jsonerrors";
-                    "-i"; tests_dir_file env.tests_dir test_ctxt "contract.scilla";
+                    "-i"; contracts_dir_file env.tests_dir test_ctxt;
                     "-o"; output_file test_ctxt "init_bad2_output.json";
                     "-iblockchain"; tests_dir_file env.tests_dir test_ctxt "blockchain_1.json"]
         in
@@ -196,7 +200,7 @@ let build_misc_tests env =
         let args = ["-init"; tests_dir_file env.tests_dir test_ctxt "init_bad3.json";
                     "-libdir"; "src" ^ sep ^ "stdlib";
                     "-jsonerrors";
-                    "-i"; tests_dir_file env.tests_dir test_ctxt "contract.scilla";
+                    "-i"; contracts_dir_file env.tests_dir test_ctxt;
                     "-o"; output_file test_ctxt "init_bad2_output.json";
                     "-iblockchain"; tests_dir_file env.tests_dir test_ctxt "blockchain_1.json"]
         in
