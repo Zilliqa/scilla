@@ -137,7 +137,7 @@ let cannot_withdraw = Int32 7
 (***************************************************)
 (*             The contract definition             *)
 (***************************************************)
-contract ZilGame 
+contract ZilGame  
 (
 owner    : ByStr20,
 player_a : ByStr20,
