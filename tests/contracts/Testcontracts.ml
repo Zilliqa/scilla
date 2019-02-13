@@ -222,7 +222,8 @@ let add_tests env =
     let auctiontests = "auction" >:::(build_contract_tests env "auction" succ_code 1 8 false) in
     let mappairtests = "mappair" >:::(build_contract_tests env "mappair" succ_code 1 7 false) in
     let bookstoretests = "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10 false) in
-    let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 8 14 false) in
+    let mappairtests_f = "mappair" >:::(build_contract_tests env "mappair" fail_code 8 8 false) in
+    let mappairtests_f2 = "mappair" >:::(build_contract_tests env "mappair" fail_code 12 14 false) in
     let nonfungibletokentests = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12 false) in
     let nonfungibletokentests_expected_f = "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27 false) in
     let schnorrtests = "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 3 false) in
@@ -235,7 +236,7 @@ let add_tests env =
     let simpledextests= "simple-dex" >:::(build_contract_tests env "simple-dex" succ_code 1 8 false) in
     let shogi_tests = "shogi" >::: (build_contract_tests env "shogi" succ_code 1 4 true) in
     let map_key_tests = "map_key_test" >::: (build_contract_tests env "map_key_test" succ_code 1 1 true) in
-      "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f;
+      "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f; mappairtests_f2;
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;
                              auctiontests;emptytests;bookstoretests;nonfungibletokentests_expected_f;nonfungibletokentests;
                              wallettests;schnorrtests;inplace_map_tests;ecdsatests;simpledextests;shogi_tests;map_key_tests]
