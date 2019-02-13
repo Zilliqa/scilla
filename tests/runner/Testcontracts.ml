@@ -239,9 +239,13 @@ let add_tests env =
     let misc_tests = "misc_tests" >::: build_misc_tests env in
     let simpledextests= "simple-dex" >:::(build_contract_tests env "simple-dex" succ_code 1 8 false) in
     let shogi_tests = "shogi" >::: (build_contract_tests env "shogi" succ_code 1 4 true) in
-    let map_key_tests = "map_key_test" >::: (build_contract_tests env "map_key_test" succ_code 1 1 true) in
+    let map_key_tests = "map_key_test" >::: (build_contract_tests env "map_key_test" succ_code 1 1 false) in
+    let multiple_msgs_tests = "multiple_msgs_test" >::: (build_contract_tests env "multiple-msgs" fail_code 1 1 true) in
+    let one_msg_tests = "one_msg_test" >::: (build_contract_tests env "one-msg" succ_code 1 1 false) in
+    let one_msg1_tests = "one_msg1_test" >::: (build_contract_tests env "one-msg1" succ_code 1 1 false) in
       "contract_tests" >::: [crowdfundingtests;cfinit_test;zilgametests;zginit_test;cfinvoketests;mappairtests; mappairtests_f; mappairtests_f2;
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;
                              auctiontests;emptytests;bookstoretests;nonfungibletokentests_expected_f;nonfungibletokentests;
-                             wallettests;schnorrtests;inplace_map_tests;ecdsatests;simpledextests;shogi_tests;map_key_tests]
+                             wallettests;schnorrtests;inplace_map_tests;ecdsatests;simpledextests;shogi_tests;map_key_tests;
+                            multiple_msgs_tests;one_msg_tests;one_msg1_tests]
 
