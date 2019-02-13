@@ -1,0 +1,51 @@
+scilla_version 0
+
+library PingPong
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+      Cons {Message} msg nil_msg
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract Pong
+
+(* No immutable parameters *)
+()
+
+(* Mutable fields *)
+field count : Int32 = Int32 2
+field ping_addr : Option ByStr20 = None {ByStr20}
+
+transition Pong ()
+  one = Int32 1;
+  paOpt <- ping_addr;
+  match paOpt with
+  | Some pingAddr =>
+    cnt <- count;
+    is_game_over = builtin lt cnt one;
+    match is_game_over with
+    | True =>
+      msg = {_eventname : "GameOver"};
+      event msg
+    | False =>
+      deccount = builtin sub cnt one;
+      count := deccount;
+      msg = {_tag : "Ping"; _recipient : pingAddr; _amount : Uint128 0};
+      msgs = one_msg msg;
+      send msgs;
+      e = {_eventname : "CallingPing"};
+      event e
+    end
+  | None =>
+    msg = {_eventname : "AddressNotSet"};
+    event msg
+  end 
+end
+
+transition SetPingAddr (pingAddr : ByStr20)
+  paOpt = Some {ByStr20} pingAddr;
+  ping_addr := paOpt
+end
