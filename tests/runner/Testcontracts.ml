@@ -48,7 +48,7 @@ let rec build_contract_tests env name ecode i n add_additional_lib =
       (fun test_ctxt ->
         (* Files for the contract are in examples/contract/(crowdfunding|zil-game|etc). *)
         let tests_dir = FilePath.make_relative (Sys.getcwd()) (env.tests_dir test_ctxt) in
-        let dir = tests_dir ^ sep ^ "contracts" ^ sep ^
+        let dir = tests_dir ^ sep ^ "runner" ^ sep ^
           name ^ sep in
         let tmpdir = bracket_tmpdir test_ctxt in 
         let output_file = tmpdir ^ sep ^ name ^ "_output_"
@@ -122,7 +122,7 @@ let build_contract_init_test env name =
   name ^ "_" ^ "init" >::
   (fun test_ctxt ->
     (* Files for the contract are in examples/contract/(crowdfunding|zil-game|etc). *)
-    let dir = env.tests_dir test_ctxt ^ sep ^ "contracts" ^ sep ^
+    let dir = env.tests_dir test_ctxt ^ sep ^ "runner" ^ sep ^
       name ^ sep in
       let tmpdir = bracket_tmpdir test_ctxt in 
       let output_file = tmpdir ^ sep ^ name ^ "_init_output.json" in
@@ -157,7 +157,7 @@ let build_misc_tests env =
   let output_file test_ctxt name =
     bracket_tmpdir test_ctxt ^ sep ^ name in
   let tests_dir_file testsdir test_ctxt name =
-    testsdir test_ctxt ^ sep ^ "contracts" ^ sep ^ "crowdfunding" ^ sep ^ name in
+    testsdir test_ctxt ^ sep ^ "runner" ^ sep ^ "crowdfunding" ^ sep ^ name in
 
   (* Test for exit 1 on bad json *)
   let test1 = 
