@@ -170,7 +170,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/shogi.scilla",
+        "file": "contracts/shogi.scilla",
         "line": 692,
         "column": 30
       },

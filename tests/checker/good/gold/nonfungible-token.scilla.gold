@@ -160,7 +160,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/nonfungible-token.scilla",
+        "file": "contracts/nonfungible-token.scilla",
         "line": 319,
         "column": 30
       },
@@ -170,7 +170,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/nonfungible-token.scilla",
+        "file": "contracts/nonfungible-token.scilla",
         "line": 285,
         "column": 30
       },
@@ -180,7 +180,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/nonfungible-token.scilla",
+        "file": "contracts/nonfungible-token.scilla",
         "line": 284,
         "column": 27
       },
@@ -190,7 +190,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/nonfungible-token.scilla",
+        "file": "contracts/nonfungible-token.scilla",
         "line": 241,
         "column": 29
       },
@@ -200,7 +200,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/nonfungible-token.scilla",
+        "file": "contracts/nonfungible-token.scilla",
         "line": 199,
         "column": 30
       },
@@ -210,7 +210,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/nonfungible-token.scilla",
+        "file": "contracts/nonfungible-token.scilla",
         "line": 198,
         "column": 28
       },
@@ -220,7 +220,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/nonfungible-token.scilla",
+        "file": "contracts/nonfungible-token.scilla",
         "line": 197,
         "column": 27
       },
@@ -230,7 +230,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/nonfungible-token.scilla",
+        "file": "contracts/nonfungible-token.scilla",
         "line": 155,
         "column": 33
       },

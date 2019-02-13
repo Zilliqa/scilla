@@ -89,7 +89,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/auction.scilla",
+        "file": "contracts/auction.scilla",
         "line": 128,
         "column": 10
       },

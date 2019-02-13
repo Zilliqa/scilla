@@ -99,7 +99,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/bookstore.scilla",
+        "file": "contracts/bookstore.scilla",
         "line": 188,
         "column": 14
       },
@@ -109,7 +109,7 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/bookstore.scilla",
+        "file": "contracts/bookstore.scilla",
         "line": 132,
         "column": 14
       },
