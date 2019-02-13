@@ -40,3 +40,16 @@ module Tests = TestUtil.DiffBasedTests(
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
+
+module ShogiTests = TestUtil.DiffBasedTests(
+  struct
+    let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
+    let test_path f = ["checker"; "good"; f]
+    let runner = "scilla-checker"
+    let custom_args = ["-cf"; "-contractinfo"]
+    let additional_libdirs = [[ "checker"; "good"; "shogi_lib"]]
+    let tests = [
+      "shogi.scilla";
+    ]
+    let exit_code : Unix.process_status = WEXITED 0
+  end)
