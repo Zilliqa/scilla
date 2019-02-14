@@ -32,7 +32,7 @@ let main =
   let env = {
     bin_dir = bin_dir;
     tests_dir = tests_dir; stdlib_dir = stdlib_dir; 
-    print_cli = print_cli; update_gold = update_gold
+    print_cli = print_cli; update_gold = update_gold;
   } in
   (* Add calls to new tests from here *)
   let contract_tests = Testcontracts.add_tests env in

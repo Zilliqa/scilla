@@ -5,10 +5,7 @@
     "vname": "Test",
     "params": [],
     "fields": [],
-    "transitions": [
-      { "vname": "testMapKey4", "params": [] },
-      { "vname": "testMapKey5", "params": [] }
-    ],
+    "transitions": [ { "vname": "testMapKey5", "params": [] } ],
     "events": [],
     "ADTs": [
       {
@@ -58,7 +55,7 @@
   "warnings": [
     {
       "warning_message":
-        "Contract Test had no transitions with accept statement\n",
+        "No transition in contract Test contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

@@ -5,7 +5,7 @@
     "vname": "Empty",
     "params": [],
     "fields": [],
-    "transitions": [],
+    "transitions": [ { "vname": "dummy", "params": [] } ],
     "events": [],
     "ADTs": [
       {
@@ -50,7 +50,7 @@
   "warnings": [
     {
       "warning_message":
-        "Contract Empty had no transitions with accept statement\n",
+        "No transition in contract Empty contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

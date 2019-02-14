@@ -55,7 +55,70 @@
         ]
       }
     ],
-    "events": [],
+    "events": [
+      {
+        "vname": "Allowance",
+        "params": [
+          { "vname": "owner", "type": "ByStr20" },
+          { "vname": "spender", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "ApproveSuccess",
+        "params": [
+          { "vname": "approver", "type": "ByStr20" },
+          { "vname": "spender", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "TransferFromFailure",
+        "params": [
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "TransferFromSuccess",
+        "params": [
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "TransferFailure",
+        "params": [
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "TransferSuccess",
+        "params": [
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "TotalSupply",
+        "params": [
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "balance", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "BalanceOf",
+        "params": [
+          { "vname": "address", "type": "ByStr20" },
+          { "vname": "balance", "type": "Uint128" }
+        ]
+      }
+    ],
     "ADTs": [
       {
         "tname": "Option",
@@ -98,148 +161,8 @@
   },
   "warnings": [
     {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 193,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 187,
-        "column": 13
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 182,
-        "column": 13
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 176,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 157,
-        "column": 17
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 150,
-        "column": 20
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 145,
-        "column": 20
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 139,
-        "column": 18
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 119,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 118,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 98,
-        "column": 18
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 95,
-        "column": 18
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 80,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/fungible-token.scilla",
-        "line": 59,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
       "warning_message":
-        "Contract FungibleToken had no transitions with accept statement\n",
+        "No transition in contract FungibleToken contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

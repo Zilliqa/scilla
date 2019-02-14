@@ -111,7 +111,7 @@ module ScillaSanityChecker
     let e = List.fold_left (fun e t -> 
       match List.find_opt (fun (s, _) -> get_id s = amount_label || get_id s = sender_label) t.tparams with
       | Some (s, _) ->
-        e @ mk_error1 (Core.sprintf "Paramter %s in transition %s cannot be explicit.\n" 
+        e @ mk_error1 (Core.sprintf "Parameter %s in transition %s cannot be explicit.\n" 
                           (get_id s) (get_id t.tname)) 
                       (SR.get_loc @@ get_rep t.tname)
       | None -> e

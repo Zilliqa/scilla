@@ -1,0 +1,18 @@
+{
+  "gas_remaining": "7831",
+  "errors": [
+    {
+      "error_message":
+        "Type mismatch in parsing ADT List. Expected: [Int64] vs Observed: [Int32]",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Failed to parse json tests/runner/mappair/state_8.json:\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

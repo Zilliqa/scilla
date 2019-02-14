@@ -46,6 +46,7 @@ let explist = [
   "msg_error3.scilla";
   "msg_error.scilla";
   "let-error.scilla";
+  "list_to_map.scilla";
   "string_error1.scilla";
 ]
 
