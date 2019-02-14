@@ -52,7 +52,7 @@
       "warning_message":
         "Unable to validate that send arguments is null or single message",
       "start_location": {
-        "file": "checker/good/multiple-msgs.scilla",
+        "file": "contracts/multiple-msgs.scilla",
         "line": 30,
         "column": 3
       },
@@ -61,7 +61,7 @@
     },
     {
       "warning_message":
-        "Contract HelloWorld had no transitions with accept statement\n",
+        "No transition in contract HelloWorld contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

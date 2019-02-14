@@ -56,7 +56,7 @@
   "warnings": [
     {
       "warning_message":
-        "Contract MissingAccepts had no transitions with accept statement\n",
+        "No transition in contract MissingAccepts contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

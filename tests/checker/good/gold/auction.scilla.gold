@@ -27,7 +27,24 @@
       { "vname": "Withdraw", "params": [] },
       { "vname": "AuctionEnd", "params": [] }
     ],
-    "events": [],
+    "events": [
+      {
+        "vname": "Auction ended",
+        "params": [ { "vname": "highest_bid", "type": "Uint128" } ]
+      },
+      {
+        "vname": "Withdraw Successful",
+        "params": [ { "vname": "addr", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "Bid",
+        "params": [
+          { "vname": "code", "type": "Int32" },
+          { "vname": "addr", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      }
+    ],
     "ADTs": [
       {
         "tname": "Option",
@@ -72,49 +89,9 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/auction.scilla",
-        "line": 144,
-        "column": 20
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/auction.scilla",
-        "line": 135,
+        "file": "contracts/auction.scilla",
+        "line": 128,
         "column": 10
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/auction.scilla",
-        "line": 111,
-        "column": 28
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/auction.scilla",
-        "line": 100,
-        "column": 30
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/auction.scilla",
-        "line": 89,
-        "column": 16
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

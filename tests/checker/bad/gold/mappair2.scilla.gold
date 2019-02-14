@@ -38,7 +38,7 @@
     },
     {
       "error_message":
-        "Paramter _sender in transition malTransition1 cannot be explicit.\n",
+        "Parameter _sender in transition malTransition1 cannot be explicit.\n",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
         "line": 115,
@@ -100,7 +100,7 @@
     },
     {
       "warning_message":
-        "Contract Test had no transitions with accept statement\n",
+        "No transition in contract Test contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

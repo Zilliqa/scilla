@@ -1,0 +1,12 @@
+{
+  "gas_remaining": "7580",
+  "errors": [
+    {
+      "error_message":
+        "Sending more than one message not currently permitted",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

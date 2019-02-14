@@ -25,17 +25,51 @@
     ],
     "events": [
       {
-        "vname": "ClaimedBack",
+        "vname": "ClaimBackSuccess",
         "params": [
-          { "vname": "claimed_by", "type": "ByStr20" },
-          { "vname": "amount", "type": "Uint128" }
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
         ]
       },
       {
-        "vname": "DonationAccepted",
+        "vname": "ClaimBackFailure",
+        "params": [
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "vname": "GetFundsSuccess",
+        "params": [
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "vname": "GetFundsFailure",
+        "params": [
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "vname": "DonationSuccess",
         "params": [
           { "vname": "donor", "type": "ByStr20" },
-          { "vname": "amount", "type": "Uint128" }
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "vname": "DonationFailure",
+        "params": [
+          { "vname": "donor", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
         ]
       }
     ],
@@ -83,8 +117,8 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/crowdfunding.scilla",
-        "line": 159,
+        "file": "contracts/crowdfunding.scilla",
+        "line": 143,
         "column": 17
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -93,8 +127,8 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/crowdfunding.scilla",
-        "line": 134,
+        "file": "contracts/crowdfunding.scilla",
+        "line": 122,
         "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -103,8 +137,8 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/crowdfunding.scilla",
-        "line": 73,
+        "file": "contracts/crowdfunding.scilla",
+        "line": 72,
         "column": 15
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -113,8 +147,8 @@
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
-        "file": "checker/good/crowdfunding.scilla",
-        "line": 64,
+        "file": "contracts/crowdfunding.scilla",
+        "line": 65,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 },

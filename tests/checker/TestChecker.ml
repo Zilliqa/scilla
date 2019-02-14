@@ -19,5 +19,7 @@
 open OUnit2
 
 let checker_tests env = "checker_tests" >::: [TestCheckerSuccess.Tests.add_tests env;
+                                              TestCheckerSuccess.CheckerTests.add_tests env;
+                                              TestCheckerSuccess.ShogiTests.add_tests env;
                                               TestCheckerFail.Tests.add_tests env;
                                               TestCheckerFail.LibTests.add_tests env]
