@@ -59,6 +59,7 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_adt_2.scilla";
       "bad_adt_3.scilla";
       "bad_adt_4.scilla";
+      "bad_adt_7.scilla";
       "unserializable_param.scilla";
       "unstorable_adt.scilla";
       "bad_version.scilla";
