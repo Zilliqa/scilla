@@ -106,8 +106,6 @@ let check_cashflow typed_cmod =
     ~f:(fun (i, t) ->
         (i, CF.ECFR.money_tag_to_string t))
 
-         (* CF.ECFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string)) *)
-
 let check_version vernum =
   let (mver, _, _) = scilla_version in
   if vernum <> mver
