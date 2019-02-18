@@ -77,6 +77,7 @@ module Tests = TestUtil.DiffBasedTests(
       "pm2.scilla";
       "pm3.scilla";
       "pm4.scilla";
+      "pair.scilla";
       "subst.scilla";
       "nat_to_int.scilla";
       "to_int.scilla";
