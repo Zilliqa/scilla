@@ -104,7 +104,7 @@ let check_cashflow typed_cmod =
   let j = CF.main typed_cmod in
   List.map j
     ~f:(fun (i, t) ->
-        (i, CF.ECFR.to_string t))
+        (i, CF.ECFR.money_tag_to_string t))
 
          (* CF.ECFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string)) *)
 

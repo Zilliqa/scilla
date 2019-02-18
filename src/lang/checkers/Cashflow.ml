@@ -30,10 +30,10 @@ module CashflowRep (R : Rep) = struct
     | Inconsistent
   [@@deriving sexp]
 
-  let rec to_string tag =
+  let rec money_tag_to_string tag =
     match tag with
-    | Adt (n, ts) -> "(" ^ n ^ " " ^ (String.concat " " (List.map to_string ts)) ^ ")"
-    | Map t -> "(Map " ^ (to_string t) ^ ")"
+    | Adt (n, ts) -> "(" ^ n ^ " " ^ (String.concat " " (List.map money_tag_to_string ts)) ^ ")"
+    | Map t -> "(Map " ^ (money_tag_to_string t) ^ ")"
     | _ -> sexp_of_money_tag tag |> Sexplib.Sexp.to_string
 
 
