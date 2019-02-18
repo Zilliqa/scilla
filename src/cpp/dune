@@ -7,4 +7,5 @@
   (cxx_names c_schnorr DataConversion Schnorr PrivKey PubKey Signature BIGNUMSerialize ECPOINTSerialize)
   (c_flags -I/usr/local/opt/openssl/include)
   (cxx_flags -std=c++11 -I/usr/local/opt/openssl/include)
+  (flags (-cclib -lstdc++ -cclib -lcrypto))
   )
