@@ -127,13 +127,18 @@ t_map_key :
 | LPAREN; kt = CID; RPAREN; { to_map_key_type kt }
 
 (* TODO: This is a temporary fix of issue #261 *)
+t_map_value_args:
+| LPAREN; t = t_map_value_args; RPAREN; { t }
+| d = CID; { to_type d }
+| MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
+
 t_map_value :
-| LPAREN; d = CID; targs=list(t_map_value); RPAREN;
+| LPAREN; d = CID; targs=list(t_map_value_args); RPAREN;
     { match targs with
       | [] -> to_type d                       
       | _ -> ADT (d, targs) }
-| LPAREN; MAP; k=t_map_key; v = t_map_value; RPAREN; { MapType (k, v) }
-| d = CID; targs=list(t_map_value)
+| LPAREN; MAP; k=t_map_key; v = t_map_value_args; RPAREN; { MapType (k, v) }
+| d = CID; targs=list(t_map_value_args)
     { match targs with
       | [] -> to_type d                       
       | _ -> ADT (d, targs) }
