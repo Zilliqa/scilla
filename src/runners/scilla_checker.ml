@@ -139,7 +139,7 @@ let () =
       pure @@ (cmod, tenv, event_info, cf_info_opt)
     ) in
     match r with
-    | Error el -> exit 1 (* we've already printed the error(s). *)
+    | Error _ -> exit 1 (* we've already printed the error(s). *)
     | Ok (cmod, _, event_info, cf_info_opt) ->
         let base_output =
           let warnings_output =

@@ -17,9 +17,7 @@
 *)
 
 
-open Printf
 open Syntax
-open ErrorUtils
 open ParserUtil
 open RunnerUtil
 open GlobalConfig

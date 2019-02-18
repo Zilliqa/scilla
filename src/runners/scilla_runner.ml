@@ -20,7 +20,6 @@
 open Syntax
 open Core
 open ErrorUtils
-open EvalUtil
 open Eval
 open DebugMessage
 open ContractUtil
@@ -65,7 +64,7 @@ let check_extract_cstate name res gas_limit =
 (*   Running the simularion and printing results     *)
 (*****************************************************)
 
-let check_after_step name res gas_limit  =
+let check_after_step _name res gas_limit  =
   match res Eval.init_gas_kont gas_limit with
   | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
