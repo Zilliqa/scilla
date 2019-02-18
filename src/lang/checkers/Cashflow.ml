@@ -15,6 +15,7 @@
   You should have received a copy of the GNU General Public License along with
 *)
 
+open Sexplib.Std
 open Syntax
 open TypeUtil
 open Utils
@@ -25,11 +26,17 @@ module CashflowRep (R : Rep) = struct
     | NotMoney
     | Money
     | Map of money_tag
-    | Option of money_tag
-    | Pair of money_tag * money_tag
+    | Adt of string * money_tag list (* name of adt paired with tags of type params *)
     | Inconsistent
   [@@deriving sexp]
-      
+
+  let rec to_string tag =
+    match tag with
+    | Adt (n, ts) -> "(" ^ n ^ " " ^ (String.concat " " (List.map to_string ts)) ^ ")"
+    | Map t -> "(Map " ^ (to_string t) ^ ")"
+    | _ -> sexp_of_money_tag tag |> Sexplib.Sexp.to_string
+
+
   type rep = money_tag * R.rep
   [@@deriving sexp]
 
@@ -260,8 +267,8 @@ module ScillaCashflowChecker
     | NoInfo       , x
     | x            , NoInfo        -> x
     | Map x        , Map y         -> Map (lub_tags x y)
-    | Option x     , Option y      -> Option (lub_tags x y)
-    | Pair (x1, x2), Pair (y1, y2) -> Pair (lub_tags x1 y1, lub_tags x2 y2)
+    | Adt (n1, ts1), Adt (n2, ts2)
+      when n1 = n2                 -> Adt (n1, List.map2 lub_tags ts1 ts2)
     | Money        , Money         -> Money
     | NotMoney     , NotMoney      -> NotMoney
     | _            , _             -> Inconsistent
@@ -274,8 +281,8 @@ module ScillaCashflowChecker
     | NoInfo       , _
     | _            , NoInfo        -> NoInfo
     | Map x        , Map y         -> Map (glb_tags x y)
-    | Option x     , Option y      -> Option (glb_tags x y)
-    | Pair (x1, x2), Pair (y1, y2) -> Pair (glb_tags x1 y1, glb_tags x2 y2)
+    | Adt (n1, ts1), Adt (n2, ts2)
+      when n1 = n2                 -> Adt (n1, List.map2 glb_tags ts1 ts2)
     | Money        , Money         -> Money
     | NotMoney     , NotMoney      -> NotMoney
     | _            , _             -> NoInfo
@@ -416,22 +423,22 @@ module ScillaCashflowChecker
       | "get" ->
           let c_r_sigs =
             match res_tag with
-            | Option t -> [ ( Option t      , [ Map t      ; NotMoney ] ) ]
-            | NoInfo   -> [ ( Option NoInfo , [ Map NoInfo ; NotMoney ] ) ]
-            | _        -> [ ( Inconsistent  , [ Map NoInfo ; NotMoney ] ) ] in
+            | Adt ("Option", [t]) -> [ ( Adt ("Option", [t]      ) , [ Map t      ; NotMoney ] ) ]
+            | NoInfo              -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; NotMoney ] ) ]
+            | _                   -> [ ( Inconsistent  , [ Map NoInfo ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ m ; k ] ->
                 let m_sig =
                   match m with
-                  | Map t  -> [ ( Option t      , [ Map t        ; NotMoney ] ) ] 
-                  | NoInfo -> [ ( Option NoInfo , [ Map NoInfo   ; NotMoney ] ) ] 
-                  | _      -> [ ( Option NoInfo , [ Inconsistent ; NotMoney ] ) ] in
+                  | Map t  -> [ ( Adt ("Option", [t     ] ) , [ Map t        ; NotMoney ] ) ] 
+                  | NoInfo -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo   ; NotMoney ] ) ] 
+                  | _      -> [ ( Adt ("Option", [NoInfo] ) , [ Inconsistent ; NotMoney ] ) ] in
                 let k_sig =
                   match k with
                   | NotMoney
-                  | NoInfo   -> [ ( Option NoInfo , [ Map NoInfo ; NotMoney     ] ) ]
-                  | _        -> [ ( Option NoInfo , [ Map NoInfo ; Inconsistent ] ) ] in
+                  | NoInfo   -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; NotMoney     ] ) ]
+                  | _        -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; Inconsistent ] ) ] in
                 [ m_sig ; k_sig ]
             | _             ->
                 (* Error *)
@@ -693,11 +700,11 @@ module ScillaCashflowChecker
           (c_r_sigs, c_as_sigs)
       | "schnorr_gen_key_pair" ->
           let c_r_sigs =
-            [ ( Pair (NotMoney, NotMoney) , [ ] ) ] in
+            [ ( Adt ( "Pair", [NotMoney ; NotMoney] ) , [ ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [] ->
-                let arg_sig = [ ( Pair (NotMoney, NotMoney) , [ ] ) ] in
+                let arg_sig = [ ( Adt ( "Pair", [NotMoney ; NotMoney] ) , [ ] ) ] in
                 [ arg_sig ]
             | _  ->
                 (* Error *)
@@ -839,12 +846,13 @@ module ScillaCashflowChecker
       | Wildcard -> acc_tag
       | Binder x -> lub_tags (get_id_tag x) acc_tag
       | Constructor (s, ps) ->
+          (* TODO : This needs to be factored out and generalised *)
           match s with
-          | "None" -> lub_tags (Option NoInfo) acc_tag
+          | "None" -> lub_tags (Adt ("Option", [NoInfo])) acc_tag
           | "Some" ->
               (match acc_tag with
-               | NoInfo   -> Option (List.fold_left walk NoInfo ps)
-               | Option t -> Option (List.fold_left walk t ps)
+               | NoInfo              -> Adt ("Option", List.map2 walk [NoInfo] ps)
+               | Adt ("Option", [t]) -> Adt ("Option", List.map2 walk [t] ps)
                | _ -> Inconsistent)
           | "True"
           | "False" -> lub_tags acc_tag NotMoney
@@ -852,10 +860,10 @@ module ScillaCashflowChecker
               (match ps with
                | [ ps1 ; ps2 ] ->
                      (match acc_tag with
-                    | Pair (t1, t2) -> 
-                        Pair (walk t1 ps1, walk t2 ps2)
+                    | Adt ("Pair", [t1; t2]) -> 
+                        Adt ("Pair", [walk t1 ps1; walk t2 ps2])
                     | NoInfo ->
-                        Pair (walk NoInfo ps1, walk NoInfo ps2)
+                        Adt ("Pair", [walk NoInfo ps1; walk NoInfo ps2])
                     | _ -> Inconsistent)
                | _ -> Inconsistent)
           | _ -> Inconsistent in
@@ -968,15 +976,16 @@ module ScillaCashflowChecker
           let args_changes =
             List.exists2 (fun arg new_arg -> (get_id_tag arg) <> (get_id_tag new_arg)) args new_args in
           let tag =
+            (* TODO: Factor this out, and generalise *)
             match cname with
-            | "None" -> Option NoInfo
-            | "Some" -> Option (List.fold_left (fun _ arg -> (get_id_tag arg)) NoInfo new_args)
+            | "None" -> Adt ("Option", [NoInfo])
+            | "Some" -> Adt ("Option", List.map2 (fun ni arg -> lub_tags ni (get_id_tag arg)) [NoInfo] new_args)
             | "True"
             | "False" -> NotMoney
             | "Pair" ->
                 (match new_args with
                  | [ new_arg1; new_arg2 ] ->
-                     Pair (get_id_tag new_arg1, get_id_tag new_arg2)
+                     Adt ("Pair", [get_id_tag new_arg1 ; get_id_tag new_arg2])
                  | _ -> Inconsistent)
             | _ -> Inconsistent in
           (Constr (cname, ts, new_args),
@@ -1128,7 +1137,7 @@ module ScillaCashflowChecker
             if fetch
             then
               match x_tag with
-              | Option t -> t
+              | Adt ("Option", [t]) -> t
               | NoInfo -> NoInfo
               | _ -> Inconsistent
             else
@@ -1143,7 +1152,7 @@ module ScillaCashflowChecker
           let new_x_tag =
             if fetch
             then
-              lub_tags x_tag (Option val_tag)
+              lub_tags x_tag (Adt ("Option", [val_tag]))
             else
               NotMoney (* Bool *) in
           let new_x = update_id_tag x new_x_tag in
