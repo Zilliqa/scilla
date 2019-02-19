@@ -2,9 +2,9 @@
   "cashflow_tags": [
     { "field": "owner", "tag": "NotMoney" },
     { "field": "storeName", "tag": "NoInfo" },
-    { "field": "members", "tag": "(Map(Pair NoInfo NoInfo))" },
+    { "field": "members", "tag": "(Map (Pair NoInfo NoInfo))" },
     { "field": "lastBookID", "tag": "(Option NotMoney)" },
-    { "field": "bookInventory", "tag": "(Map(Pair NoInfo NoInfo))" }
+    { "field": "bookInventory", "tag": "(Map (Pair NoInfo NoInfo))" }
   ],
   "contract_info": {
     "scilla_major_version": "0",
