@@ -6,7 +6,7 @@
     { "field": "tokenOwnerMap", "tag": "(Map NoInfo)" },
     { "field": "ownedTokenCount", "tag": "(Map NoInfo)" },
     { "field": "tokenApprovals", "tag": "(Map NoInfo)" },
-    { "field": "operatorApprovals", "tag": "(Map(Map NoInfo))" }
+    { "field": "operatorApprovals", "tag": "(Map (Map NoInfo))" }
   ],
   "contract_info": {
     "scilla_major_version": "0",
