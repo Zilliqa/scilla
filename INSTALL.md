@@ -76,20 +76,18 @@ eval `opam config env`
 ```
 
 Scilla requires OpenSSL 1.0.2 and if your platform does not have packages for this, you may need to build OpenSSL
-yourself and set $CPLUS_INCLUDE_PATH, $C_INCLUDE_PATH, $LIBRARY_PATH and $LD_LIBRARY_PATH accordingly
-(if you install OpenSSL in a non-default path).
+yourself and set `PKG_CONFIG_PATH` environment variable accordingly
+(if you install OpenSSL in a non-default path):
+```shell
+export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
+```
 
 ### macOS
 
 The dependencies can be installed via [Homebrew](https://brew.sh/):
 
-Note: pending PR at https://github.com/DomT4/homebrew-crypto/pull/95/commits/9c62017362aa973afad75616046d14006f31be6a
 ```shell
-brew tap iantanwx/crypto
-```
-
-```shell
-brew install ocaml opam pkg-config libffi openssl@1.1 boost secp256k1
+brew install ocaml opam pkg-config libffi openssl boost secp256k1
 opam init --disable-sandboxing -y --compiler=4.06.1
 opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
 ```
@@ -99,14 +97,14 @@ Then run the following command to setup environment on current shell.
 eval `opam config env`
 ```
 
-Homebrew's `openssl` package is keg-only, which means it doesn't get symlinked into `/usr/local` directory,
-so (as mentioned above) you need to setup `LIBRARY_PATH` environment variable as follows
+Normally, by this moment everything should be set up as the [Dune](https://dune.build) build system
+takes care of environment variables for `pkg-config` utility.
+However Homebrew's `openssl` package is keg-only, which means it doesn't get symlinked
+into `/usr/local` directory, so in case of a non-default version of the package,
+you will need to set up `PKG_CONFIG_PATH` environment variable as Homebrew suggests.
+It should look like
 ```shell
-export LIBRARY_PATH=/usr/local/opt/openssl@1.1/lib:$LIBRARY_PATH
-```
-or invoke `make` command like so:
-```shell
-LIBRARY_PATH=/usr/local/opt/openssl@1.1/lib make
+export PKG_CONFIG_PATH="/usr/local/opt/openssl@_Version_/lib/pkgconfig:$PKG_CONFIG_PATH""
 ```
 
 ## Using Ocaml with Emacs

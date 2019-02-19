@@ -24,7 +24,6 @@ open TypeUtil
 open Recursion
 open RunnerUtil
 open DebugMessage
-open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
 open PatternChecker
@@ -58,7 +57,7 @@ let check_typing e elibs =
   let open TC.TypeEnv in
   let rec_lib = { ParsedSyntax.lname = asId "rec_lib" ;
                   ParsedSyntax.lentries = recursion_principles } in
-  let%bind (typed_rec_libs, tenv0) = type_library TEnv.mk rec_lib in
+  let%bind (_typed_rec_libs, tenv0) = type_library TEnv.mk rec_lib in
   (* Step 1: Type check external libraries *)
   let%bind (_, tenv1) = MonadUtil.foldM elibs ~init:([], tenv0)
       ~f:(fun (lib_acc, env_acc) elib ->
