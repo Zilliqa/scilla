@@ -18,7 +18,7 @@
 
 ########## Build system, CI, opam ##########
 
-*dune*             @vaivaswatha @Gnnng @iantanwx
+*dune*             @vaivaswatha @Gnnng @iantanwx @anton-trunov
 /.dockerignore     @vaivaswatha @Gnnng @iantanwx
 /.travis.yml       @vaivaswatha @Gnnng @iantanwx
 /Dockerfile*       @vaivaswatha @Gnnng @iantanwx
@@ -35,7 +35,7 @@
 
 ########## Documentation ##########
 
-/README.md        @AmritKumar @jjcnn
+/README.md        @AmritKumar @jjcnn @ilyasergey
 /INSTALL.md       @vaivaswatha @iantanwx
 /docs/            @ilyasergey @jjcnn
 
