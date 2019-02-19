@@ -1,0 +1,11 @@
+scilla_version 0
+
+library Test
+
+let bn = BNum 100
+let i32 = Int32 10
+
+contract Test ()
+
+field badpair : Pair (BNum Int32) = bn i32
+
