@@ -11,9 +11,9 @@
 *.mli              @ilyasergey @vaivaswatha @jjcnn @anton-trunov @AmritKumar
 
 ## default C and C++ reviewers
-*.cpp              @vaivaswatha
-*.c                @vaivaswatha
-*.h                @vaivaswatha
+*.cpp              @vaivaswatha @AmritKumar
+*.c                @vaivaswatha @AmritKumar
+*.h                @vaivaswatha @AmritKumar
 
 
 ########## Build system, CI, opam ##########
@@ -35,15 +35,15 @@
 
 ########## Documentation ##########
 
-/README.md        @AmritKumar
+/README.md        @AmritKumar @jjcnn
 /INSTALL.md       @vaivaswatha @iantanwx
-/docs/            @ilyasergey
+/docs/            @ilyasergey @jjcnn
 
 
 ########## Tools ##########
 
-#/misc/emacs-mode  TODO
-#/misc/vim-plugin  TODO
+#/misc/emacs-mode  @vaivaswatha
+#/misc/vim-plugin  @edisonljh
 
 
 ########## GitHub metadata, including this file ##########
