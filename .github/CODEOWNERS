@@ -1,0 +1,51 @@
+########## Global owners ##########
+
+# TODO:
+#*       @AmritKumar @jjcnn @vaivaswatha @ilyasergey
+
+
+########## Source code ##########
+
+## default OCaml reviewers
+*.ml               @ilyasergey @vaivaswatha @jjcnn @anton-trunov @AmritKumar
+*.mli              @ilyasergey @vaivaswatha @jjcnn @anton-trunov @AmritKumar
+
+## default C and C++ reviewers
+*.cpp              @vaivaswatha
+*.c                @vaivaswatha
+*.h                @vaivaswatha
+
+
+########## Build system, CI, opam ##########
+
+*dune*             @vaivaswatha @Gnnng @iantanwx
+/.dockerignore     @vaivaswatha @Gnnng @iantanwx
+/.travis.yml       @vaivaswatha @Gnnng @iantanwx
+/Dockerfile*       @vaivaswatha @Gnnng @iantanwx
+/Makefile          @vaivaswatha @Gnnng @iantanwx
+/scripts/build_openssl.sh @vaivaswatha @Gnnng @iantanwx
+*.opam             @ilyasergey
+
+
+########## Test suite ##########
+
+## Scilla contracts in the testsuite
+/tests/*.scilla    @edisonljh @evesnow91 @AmritKumar @vaivaswatha @jjcnn
+
+
+########## Documentation ##########
+
+/README.md        @AmritKumar
+/INSTALL.md       @vaivaswatha @iantanwx
+/docs/            @ilyasergey
+
+
+########## Tools ##########
+
+#/misc/emacs-mode  TODO
+#/misc/vim-plugin  TODO
+
+
+########## GitHub metadata, including this file ##########
+
+/.github/         @AmritKumar @vaivaswatha @anton-trunov
