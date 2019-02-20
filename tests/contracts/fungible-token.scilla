@@ -37,7 +37,10 @@ let le_int =
 
 contract FungibleToken
 (owner : ByStr20,
- total_tokens : Uint128)
+ total_tokens : Uint128,
+ decimals : Uint32,
+ name : String,
+ symbol : String)
 
 (* Initial balance is not stated explicitly: it's initialized when creating the contract. *)
 
