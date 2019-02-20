@@ -18,6 +18,7 @@
 open Core
 open Sexplib.Std
 open Syntax
+open Datatypes
 open TypeUtil
 open Utils
 
@@ -293,6 +294,19 @@ module ScillaCashflowChecker
     | Money        , Money         -> Money
     | NotMoney     , NotMoney      -> NotMoney
     | _            , _             -> NoInfo
+
+  (*******************************************************)
+  (*           Helper functions for ADTs                 *)
+  (*******************************************************)
+
+  let ctr_to_adt_tag ctr_name arg_tags =
+    let open DataTypeDictionary in
+    match lookup_constructor ctr_name with
+    | Error _       ->
+        (* We don't allow failures at this stage of the checker *)
+        Inconsistent
+    | Ok (adt, ctr) ->
+        match adt.tparams with
 
   (*******************************************************)
   (*      Helper functions for local variables           *)
