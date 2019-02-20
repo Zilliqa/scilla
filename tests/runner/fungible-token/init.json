@@ -20,8 +20,23 @@
         "value" : "10000"
     },
     {
+        "vname" : "decimals",
+        "type" : "Uint32",
+        "value" : "12"
+    },
+    {
         "vname" : "_creation_block",
         "type" : "BNum",
         "value" : "1"
+    },
+    {
+        "vname" : "name",
+        "type" : "String",
+        "value" : "Zilliqa"
+    },
+    {
+        "vname" : "symbol",
+        "type" : "String",
+        "value" : "ZIL"
     }
 ]
