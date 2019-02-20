@@ -305,8 +305,87 @@ module ScillaCashflowChecker
     | Error _       ->
         (* We don't allow failures at this stage of the checker *)
         Inconsistent
-    | Ok (adt, ctr) ->
+    | Ok (adt, _) ->
         match adt.tparams with
+        | [] ->
+            (* No type parameters - check for special cases *)
+            (* Case 1 (Bool case): No constructor takes arguments : NotMoney *)
+            if List.for_all adt.tmap
+                ~f:(fun (_, arg_typs) ->
+                    match arg_typs with
+                    | [] -> true
+                    | _ -> false)
+            then NotMoney
+            (* Case 2 (Nat case): 2 constructors. One constructor takes 
+               1 argument of same type, other constructor
+               takes no argument : NoInfo *)
+            else if List.length adt.tconstr = 2 &&
+                    List.exists adt.tmap
+                      ~f:(fun (_, arg_typs) ->
+                          match arg_typs with
+                          | [] -> true
+                          | _ -> false) &&
+                    List.exists adt.tmap
+                      ~f:(fun (_, arg_typs) ->
+                          match arg_typs with
+                          | [ADT (arg_typ_name, _)] ->
+                              arg_typ_name = adt.tname
+                          | _ -> false)
+            then NoInfo
+            else Adt (adt.tname, [])
+        | _ ->
+            (* Deduce mapping from type arguments to tags based on
+               constructor argument tags *)
+            match constr_tmap adt ctr_name with
+            | None -> Inconsistent
+            | Some arg_typs ->
+                (* Default mapping : 'A -> NoInfo *)
+                let init_targ_to_tag_map =
+                  List.map adt.tparams ~f:(fun tparam -> (tparam, NoInfo)) in
+                let update_targ_tag targ new_tag map =
+                  let current_tag =
+                    match List.Assoc.find map ~equal:(=) targ with
+                    | None -> Inconsistent
+                    | Some t -> t in
+                  List.Assoc.add map ~equal:(=) targ (lub_tags current_tag new_tag) in
+                let rec match_arg_tag_with_typ arg_typ arg_tag targ_tag_map =
+                  match arg_typ with
+                  | TypeVar v           -> update_targ_tag v arg_tag targ_tag_map
+                  | MapType (_, vt)
+                  | FunType (_, vt)     ->
+                      (match arg_tag with
+                       | Map vtag -> match_arg_tag_with_typ vt vtag targ_tag_map
+                       | NoInfo   -> match_arg_tag_with_typ vt NoInfo targ_tag_map
+                       | _        -> targ_tag_map)
+                  | ADT (_, adt_params) ->
+                      (match arg_tag with
+                       | Adt (_, adt_param_tags) ->
+                           let (new_map, _) = 
+                             List.fold_left adt_params ~init:(targ_tag_map, adt_param_tags)
+                               ~f:(fun (map, adt_param_tags) adt_param ->
+                                   match adt_param_tags with
+                                   | []      -> (map, [])
+                                                
+                                   | t :: ts -> (match_arg_tag_with_typ adt_param t map, ts)) in
+                           new_map
+                       | _                       -> targ_tag_map)
+                  | PrimType _
+                  | PolyFun (_, _)
+                  | Unit                -> targ_tag_map in
+                let (tvar_tag_map, _) =
+                  List.fold_left arg_typs ~init:(init_targ_to_tag_map, arg_tags)
+                    ~f:(fun (map, arg_tags) arg_typ ->
+                        match arg_tags with
+                        | []      -> (map, [])
+                        | t :: ts -> (match_arg_tag_with_typ arg_typ t map, ts)) in
+                let final_adt_arg_tags = 
+                  List.map adt.tparams
+                    ~f:(fun tparam ->
+                        match List.Assoc.find tvar_tag_map ~equal:(=) tparam with
+                        | None   -> Inconsistent
+                        | Some t -> t) in
+                Adt (adt.tname, final_adt_arg_tags)
+                
 
   (*******************************************************)
   (*      Helper functions for local variables           *)
