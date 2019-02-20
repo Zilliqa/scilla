@@ -5,8 +5,8 @@ Gas use polynomial:
 14(a) + 19(b)(a) + 1(c)(b)(a) + 16
 Legend:
 
-c: Cost of calling flt(Element of: 1, Element of: ls)
-b: Length of: 1
+b: Length of: 3 + 1(Length of: 1) + 2(Element of: 2)(Length of: 1) + 1(Element of: ls)
+c: Cost of calling flt(Element of: 3 + 1(Length of: 1) + 2(Element of: 2)(Length of: 1) + 1(Element of: ls), Element of: ls)
 a: Length of: ls
-Result size: 1(Element of: 2)(Length of: 2) + 1 + 3(Element of: 2)
+Result size: 3 + 1(Length of: 1) + 2(Element of: 2)(Length of: 1) + 1(Element of: ls)
 

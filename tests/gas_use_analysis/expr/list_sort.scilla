@@ -42,8 +42,8 @@ let list_sort =
     in
     let iter2 =
       fun (h : 'A) =>
-      fun (res : List 'A) =>
-        sink_down h res
+      fun (res2 : List 'A) =>
+        sink_down h res2
     in 
       rec_A_A iter2 nil_A ls
 in

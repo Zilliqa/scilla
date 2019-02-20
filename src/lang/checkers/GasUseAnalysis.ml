@@ -56,10 +56,21 @@ module ScillaGUA
     | MFun of string * sizeref list
     (* Result of a builtin. *)
     | BApp of string * sizeref list
+    (* The growth of accummulator (a recurrence) in list_foldr.
+     * The semantics is similar to SApp, except that, the ressize of
+     * applying "ident" is taken as a recurence and solved for the
+     * length of the second sizeref (accumulator) actual. The first
+     * sizeref actual is Element(list being folded). *)
+    | RFoldAcc of ER.rep ident * sizeref * sizeref
+    (* Same as RFoldAcc, but for list_foldl:
+     * order of the two sizeref actuals are reversed. *)
+    | LFoldAcc of ER.rep ident * sizeref * sizeref
     (* Lambda for unknown sizeref (from applying higher order functions). 
      * TODO: Use "sizeref" instead of "ident" to handle applying wrapped functions,
              where for example `x = fst arg` and we're applying `x`. *)
     | SApp of ER.rep ident * sizeref list
+    (* When we cannot determine the size *)
+    | Intractable
 
   (* A variable / quantity on which gas use depends. *)
   type guref =
@@ -95,6 +106,9 @@ module ScillaGUA
       (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
     | SApp (id, srlist) -> "SApp " ^ (get_id id) ^ "( " ^
       (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
+    | RFoldAcc (id, lel, acc) -> "RFoldAcc " ^ (get_id id) ^ " (" ^ (sprint_sizeref lel) ^ ", " ^ (sprint_sizeref acc) ^ ")"
+    | LFoldAcc (id, lel, acc) -> "LFoldAcc " ^ (get_id id) ^ " (" ^ (sprint_sizeref lel) ^ ", " ^ (sprint_sizeref acc) ^ ")"
+    | Intractable -> "Intractable"
 
   (* Given a gas use reference, print a description for it. *)
   let rec sprint_guref = function
@@ -164,8 +178,18 @@ module ScillaGUA
 
   end
 
+  (* Expand polynomials that contain GPol. *)
+  let rec expand_sizeref_pol pol =
+    expand_parameters_pn pol ~f:(function
+    | SPol p -> Some (expand_sizeref_pol p)
+    | _ -> None)
+
+  let sizeref_to_pol sr =
+    match sr with | SPol p -> expand_sizeref_pol p | _ -> single_simple_pn sr
+
   let rec sizeref_to_guref sr = match sr with
-    | Base _ | Length _| Element _ | MaxB _ | MFun _ | BApp _ | SApp _ -> SizeOf (sr)
+    | Base _ | Length _| Element _ | MaxB _ | MFun _ | BApp _ 
+    | RFoldAcc _ | LFoldAcc _ | SApp _ | Intractable -> SizeOf (sr)
     | SPol p ->
       let term_replacer t =
         let (coef, vars) = t in
@@ -179,11 +203,40 @@ module ScillaGUA
       GPol (gpol)
 
   (* Expand polynomials that contain GPol. *)
-  let rec expand_parameters pol =
+  let rec expand_guref_pol pol =
     expand_parameters_pn pol ~f:(function
     | SizeOf sr -> Some (single_simple_pn (sizeref_to_guref sr))
     | GApp _ -> None (* TODO *)
-    | GPol p -> Some (expand_parameters p))
+    | GPol p -> Some (expand_guref_pol p))
+
+  (* Considering sr as a recurrence polynomial with 
+   * accarg as the accumulator, growing Length(ls) times,
+   * return the final sizeref. *)
+   (* TODO: Make this robust and all correct. *)
+  let solve_sizeref_rec sr accarg accbase ls =
+    match sr with
+    | SPol p ->
+      let accbase' = sizeref_to_pol accbase in
+      (* Find Element(accarg)*Length(accarg) term in the polynomial. *)
+      let at = List.find_opt (fun (_, vplist) ->
+        match vplist with
+        | [(Element(Base accarg1), _); (Length(Base accarg2), _)]
+        | [(Length(Base accarg1), _); (Element(Base accarg2), _)]
+          when (get_id accarg1) = (get_id accarg2) && (get_id accarg1) = (get_id accarg) ->
+          true
+        | _ -> false
+      ) p in
+      (match at with
+      | Some ((coef, [(_, vp1);(_, vp2)]) as at') ->
+        if coef <> 1 || vp1 <> 1 || vp2 <> 1 then Intractable else
+        (* Multiply other terms by the length and add base. *)
+        let oterms = List.filter (fun t -> t <> at') p in
+        SPol (add_pn (mul_pn oterms (single_simple_pn (Length ls))) accbase')
+      (* If we don't have the recurrence term, just add the recurrence base. *)
+      | _ -> SPol (add_pn p accbase')
+      )
+    | _ -> sr
+
 
   (* Given a signature, substitute actual arguments into the formal parameters.
    * This function does not resolve the actuals into their sizerefs (only name substitution).
@@ -197,12 +250,15 @@ module ScillaGUA
     else
       (* replace param with actual in sizeref. *)
       let sizeref_replacer param_actual_map s' =
+        (* If id is to be replaced, give the replacement, else just return back id. *)
+        let lookup_actual id =  
+          (match List.assoc_opt (get_id id) param_actual_map with
+          | Some act -> act
+          | None -> id)
+        in
         let rec replacer s =
           match s with
-          | Base b ->
-            (match List.assoc_opt (get_id b) param_actual_map with
-            | Some act -> Base act
-            | None -> Base b)
+          | Base b -> Base (lookup_actual b)
           | Length s' -> Length (replacer s')
           | Element s' -> Element (replacer s')
           | SPol sp -> SPol (polynomial_replacer sp)
@@ -216,13 +272,16 @@ module ScillaGUA
             let srlist' = List.map (fun v -> replacer v) srlist in
             MFun (s, srlist')
           | SApp (id, srlist) ->
-            let id' =
-              (match List.assoc_opt (get_id id) param_actual_map with
-              | Some id'' -> id''
-              | None -> id)
-            in
+            let id' = lookup_actual id in
             let srlist' = List.map (fun v -> replacer v) srlist in
             SApp (id', srlist')
+          | RFoldAcc (id, ls, accbase) ->
+            let id' = lookup_actual id in
+            RFoldAcc(id', replacer ls, replacer accbase)
+          | LFoldAcc (id, accbase, ls) ->
+            let id' = lookup_actual id in
+            LFoldAcc(id', replacer accbase, replacer ls)
+          | Intractable -> Intractable
         and polynomial_replacer pol =
           var_replace_pn pol ~f:(fun sr -> replacer sr)
         in
@@ -258,6 +317,18 @@ module ScillaGUA
 
   (* replace param with actual in sizeref. *)
   let substitute_resolved_actual_sizeref param_actual_map s' =
+    (* If id has an actual that is a Base(_), return it, else fail. *)
+    let lookup_base_replacement id =
+      (match List.assoc_opt (get_id id) param_actual_map with
+      | Some act ->
+        (* We know what to do only when "actual" is Base(_). *)
+        (match act with
+        | Base id'' -> pure id''
+        (* See TODO in definition of sizeref where SApp should have sizeref instead of ident. *)
+        | _ ->fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id))
+        )
+      | None -> pure id)
+    in
     let rec replacer s =
       match s with
       | Base b ->
@@ -272,7 +343,7 @@ module ScillaGUA
         pure @@ Element r
       | SPol sp ->
         let%bind p' = polynomial_replacer sp in
-        pure @@ SPol (p')
+        pure @@ SPol (expand_sizeref_pol p')
       | BApp (b, srlist) ->
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ BApp (b, srlist')
@@ -283,20 +354,20 @@ module ScillaGUA
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ MFun (s, srlist')
       | SApp (id, srlist) ->
-        let%bind id' =
-          (match List.assoc_opt (get_id id) param_actual_map with
-          | Some act ->
-            (* We know what to do only when "actual" is Base(Var(_)). *)
-            (match act with
-            | Base id'' -> pure id''
-            (* See TODO in definition of sizeref where SApp should have sizeref instead of ident. *)
-            | _ ->fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id))
-            )
-          | None -> pure id)
-        in
-        (* We don't do anything with id as that will be expanded (not just resolved). *)
+        let%bind id' = lookup_base_replacement id in
         let%bind srlist' = mapM ~f:(fun v -> replacer v) srlist in
         pure @@ SApp (id', srlist')
+      | RFoldAcc (id, ls, acc) ->
+        let%bind id' = lookup_base_replacement id in
+        let%bind ls' = replacer ls in
+        let%bind accbase' = replacer acc in
+        pure @@ RFoldAcc(id', ls', accbase')
+      | LFoldAcc (id, accbase, ls) ->
+        let%bind id' = lookup_base_replacement id in
+        let%bind ls' = replacer ls in
+        let%bind accbase' = replacer accbase in
+        pure @@ LFoldAcc(id', accbase', ls')
+      | Intractable -> pure Intractable
     and
     (* replace param with actual in a sizeref polynomial. *)
     polynomial_replacer pol =
@@ -328,7 +399,7 @@ module ScillaGUA
       let%bind id' =
         (match List.assoc_opt (get_id id) param_actual_map with
         | Some act ->
-          (* We know what to do only when "actual" is Base(Var(_)). *)
+          (* We know what to do only when "actual" is Base(_). *)
           (match act with
           | Base id'' -> pure id''
           (* See TODO in definition of sizeref where SApp should have guref instead of ident. *)
@@ -391,7 +462,7 @@ module ScillaGUA
             pure @@ Element r
           | SPol sp ->
             let%bind p' = polynomial_resolver sp in
-            pure @@ SPol p'
+            pure @@ SPol (expand_sizeref_pol p')
           | BApp (b, srlist) ->
             let%bind srlist' = mapM ~f:(fun v -> resolver v) srlist in
             pure @@ BApp (b, srlist')
@@ -412,6 +483,28 @@ module ScillaGUA
               let args' = List.map (fun i -> get_id i) args in
               let%bind sr' = substitute_resolved_actuals_sizeref_list sr args' srlist in
               resolver sr'
+          | RFoldAcc (id, ls, accbase) | LFoldAcc (id, accbase, ls) ->
+            let rfold = (match s with RFoldAcc _ -> true | _ -> false) in
+            let%bind (args, sr, _) = GUAEnv.resolvS genv (get_id id) ~lopt:(Some(get_rep id)) in
+            if args = []
+            then
+              (* No known expansion  *)
+              let%bind ls' = resolver ls in
+              let%bind acc' = resolver accbase in
+              pure (if rfold then RFoldAcc (id, ls', acc') else LFoldAcc (id, acc', ls'))
+            else
+              let args' = List.map (fun i -> get_id i) args in
+              let srlist = if rfold then [Element(ls);accbase] else [accbase;Element(ls)] in
+              (* Solve for "Length()" applications of the fold iterator. *)
+              let%bind sr' =
+                if List.length args' <> 2 then fail0 "Incorrect number of arguments to fold iterator" else
+                (* We want the accumulator argument to the fold iterator. *)
+                let accarg = if rfold then List.nth args 1 else List.nth args 0 in
+                pure @@ solve_sizeref_rec sr accarg accbase ls
+              in
+              let%bind sr'' = substitute_resolved_actuals_sizeref_list sr' args' srlist in
+              resolver sr''
+          | Intractable -> pure Intractable
         (* replace param with actual in a signature. *)
         and polynomial_resolver pol =
           let exception Resolv_error of scilla_error list in
@@ -688,8 +781,8 @@ module ScillaGUA
           let arg1 = List.nth actuals 1 in
           let%bind (_, compsize0, _) = GUAEnv.resolvS genv (get_id arg0) ~lopt:(Some(get_rep arg0)) in
           let%bind (_, compsize1, _) = GUAEnv.resolvS genv (get_id arg1) ~lopt:(Some(get_rep arg1)) in
-          let compsize0' = (match compsize0 with | SPol p0 -> p0 | _ -> single_simple_pn compsize0) in
-          let compsize1' = (match compsize1 with | SPol p1 -> p1 | _ -> single_simple_pn compsize1) in
+          let compsize0' = sizeref_to_pol compsize0 in
+          let compsize1' = sizeref_to_pol compsize1 in
           pure @@ SPol(add_pn compsize0' compsize1')
         | "Cons" ->
           (* TypeChecker will ensure that actuals has two elements. *)
@@ -697,6 +790,7 @@ module ScillaGUA
           let arg1 = List.nth actuals 1 in
           let%bind (_, compsize0, _) = GUAEnv.resolvS genv (get_id arg0) ~lopt:(Some(get_rep arg0)) in
           let%bind (_, compsize1, _) = GUAEnv.resolvS genv (get_id arg1) ~lopt:(Some(get_rep arg1)) in
+          let compsize0_p = sizeref_to_pol compsize0 in
           (match compsize1 with
           | Base _ ->
             (* Cons a b : Element(b) + Element(b) * Length(b) *)
@@ -713,12 +807,12 @@ module ScillaGUA
             ) p in
             (match lt with
             | Some (_, [(Element _ as t, 1);_]) -> pure @@ SPol (add_pn (single_simple_pn t) p)
-            | _ -> pure @@ SPol (single_simple_pn compsize0)
+            | _ -> pure @@ SPol compsize0_p
             )
           | _ ->
             (* what to do? *)
-            let compsize0' = (match compsize0 with | SPol p0 -> p0 | _ -> single_simple_pn compsize0) in
-            let compsize1' = (match compsize0 with | SPol p1 -> p1 | _ -> single_simple_pn compsize1) in
+            let compsize0' = compsize0_p in
+            let compsize1' = single_simple_pn compsize1 in
             pure @@ SPol(add_pn compsize0' compsize1')
           )
         | _ -> fail1 (Printf.sprintf "Unsupported constructor %s in gas analysis." cname)
@@ -739,11 +833,7 @@ module ScillaGUA
         let%bind (args, ressize, gup) = foldM ~f:(fun (_, asizes, apn) (pat, branch) ->
           let%bind genv' = bind_pattern genv xsize pat in
           let%bind (_, bsize, bpn) = gua_expr genv' branch in
-          let rsize =
-            (match bsize with
-            | SPol sp -> max_combine_pn sp asizes
-            | _ -> max_combine_pn asizes (single_simple_pn bsize)
-            ) in
+          let rsize = max_combine_pn asizes (sizeref_to_pol bsize) in
           pure ([], rsize, add_pn apn bpn)
         ) ~init:([], empty_pn, empty_pn) clauses in
         pure (args, SPol (ressize), add_pn gup cc)
@@ -771,7 +861,7 @@ module ScillaGUA
             pure (add_pn acc (const_pn lc))
           | MVar i ->
             let%bind (_, irs, _) = GUAEnv.resolvS genv (get_id i) ~lopt:(Some(get_rep i)) in
-            pure (add_pn acc (single_simple_pn  irs))
+            pure (add_pn acc (sizeref_to_pol irs))
           )
         ) ~init:empty_pn plist in
         pure ([], SPol(splist), cc)
@@ -783,16 +873,20 @@ module ScillaGUA
     let g = ER.mk_id (mk_ident "g") (FunType(TypeVar("'A"), FunType(TypeVar("'B"), TypeVar("'B")))) in
     let b = ER.mk_id (mk_ident "b") (TypeVar("'B")) in
     let lendep = SizeOf(Length(Base(a))) in
-    let gapp = GApp(g, [Element(Base(a)); Base(b)]) in
+    (* The final result size is after applying the fold "Length(a)" times. *)
+    let ressize = RFoldAcc (g, Base(a), Base(b)) in
+    (* Worst case gas consumed depends on result size after apply "Length(a)" times. *)
+    let gapp = GApp(g, [Element(Base(a)); ressize]) in
     (* Gas use polynomial = Length(a) * GApp(g, [Element(a), b]) *)
     let gupol = mul_pn (single_simple_pn lendep) (single_simple_pn gapp) in
-    let ressize = SApp(g, [Base(a);Base(b)]) in
     let list_foldr_signature = ([g;b;a], ressize, gupol) in
     let genv' = GUAEnv.addS genv "list_foldr" list_foldr_signature in
     (* list_foldl: forall 'A . forall 'B . g:('B -> 'A -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
-    let gapp' = GApp(g, [Base(b); Element(Base(a));]) in
+    (* The final result size is after applying the fold "Length(a)" times. *)
+    let ressize' = LFoldAcc(g, Base(b), Base(a)) in
+    (* Worst case gas consumed depends on result size after apply "Length(a)" times. *)
+    let gapp' = GApp(g, [ressize'; Element(Base(a));]) in
     let gupol' = mul_pn (single_simple_pn lendep) (single_simple_pn gapp') in
-    let ressize' = SApp(g, [Base(b);Base(a)]) in
     let list_foldl_signature = ([g;b;a], ressize', gupol') in
     let gapp'' = GUAEnv.addS genv' "list_foldl" list_foldl_signature in
     gapp''
@@ -938,7 +1032,7 @@ module ScillaGUA
     (* Analyse each transition and report it's gas use polynomial. *)
     let%bind pols = mapM ~f:(fun tr ->
       let%bind pol = gua_transition genv_cfields tr in
-      pure @@ (tr.tname, expand_parameters pol)
+      pure @@ (tr.tname, expand_guref_pol pol)
     ) cmod.contr.ctrans in
     pure pols
 
@@ -948,7 +1042,7 @@ module ScillaGUA
     let genv' = analyze_folds genv in
     let%bind (params, sr, pol) = gua_expr genv' erep in
     (* Expand all parameters (GPol) in the polynomial. *)
-    let pol' = expand_parameters pol in
+    let pol' = expand_guref_pol pol in
     Printf.printf "Gas usage signature:\n%s\n\n" (sprint_signature (params, sr, pol'));
     pure (params, sr, pol')
 
