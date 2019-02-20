@@ -1,0 +1,81 @@
+{
+  "cashflow_tags": [
+    { "field": "owner", "tag": "NotMoney" },
+    { "field": "gmap", "tag": "(Map (Pair NoInfo NoInfo))" },
+    { "field": "gpair", "tag": "(Pair Inconsistent (Option NoInfo))" },
+    { "field": "llist", "tag": "Inconsistent" },
+    { "field": "plist", "tag": "Inconsistent" },
+    { "field": "gnat", "tag": "Inconsistent" }
+  ],
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Test",
+    "params": [ { "vname": "owner", "type": "ByStr20" } ],
+    "fields": [
+      { "vname": "gmap", "type": "Map (ByStr20) (Pair (Int32) (Int32))" },
+      { "vname": "gpair", "type": "Pair (List (Int64)) (Option (Bool))" },
+      { "vname": "llist", "type": "List (List (Int64))" },
+      { "vname": "plist", "type": "List (Option (Int32))" },
+      { "vname": "gnat", "type": "Nat" }
+    ],
+    "transitions": [
+      { "vname": "testMapPair", "params": [] },
+      {
+        "vname": "addNumToList",
+        "params": [ { "vname": "num", "type": "Int64" } ]
+      },
+      { "vname": "incNat", "params": [] },
+      { "vname": "lflatten", "params": [] },
+      { "vname": "optlist", "params": [] }
+    ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract Test contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}

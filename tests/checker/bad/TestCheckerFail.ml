@@ -24,14 +24,24 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["checker"; "bad"; f]
     let runner = "scilla-checker"
-    let custom_args = ["-cf"]
-    let lib_override = None
+    let custom_args = ["-cf"; "-contractinfo"]
+    let additional_libdirs = []
     let tests = [
       "bad_fields1.scilla";
       "bad_fields2.scilla";
       "bad_fields3.scilla";
       "bad_fields4.scilla";
+      "bad_map_key_1.scilla";
+      "bad_map_key_2.scilla";
+      "bad_map_key_3.scilla";
+      "bad_map_key_4.scilla";
+      "bad_map_key_5.scilla";
+      "map_value_function.scilla";
       "bad_message1.scilla";
+      "bad_message2.scilla";
+      "message_field.scilla";
+      "message_field2.scilla";
+      "message_field3.scilla";
       "send_event1.scilla";
       "send_event2.scilla";
       "unbound.scilla";
@@ -49,6 +59,7 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_adt_2.scilla";
       "bad_adt_3.scilla";
       "bad_adt_4.scilla";
+      "bad_adt_7.scilla";
       "unserializable_param.scilla";
       "unstorable_adt.scilla";
       "bad_version.scilla";
@@ -62,7 +73,7 @@ module LibTests = TestUtil.DiffBasedTests(
     let test_path f = ["checker"; "bad"; f]
     let runner = "scilla-checker"
     let custom_args = ["-cf"]
-    let lib_override = Some ["checker"; "bad"; "lib"]
+    let additional_libdirs = [["checker"; "bad"; "lib"]]
     let tests = [
       "bad_adt_lib_1.scilla";
       "bad_adt_lib_2.scilla";

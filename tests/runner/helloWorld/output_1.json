@@ -1,0 +1,16 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7593",
+  "_accepted": "false",
+  "message": null,
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    { "vname": "welcome_msg", "type": "String", "value": "Hello World" }
+  ],
+  "events": [
+    {
+      "_eventname": "setHello()",
+      "params": [ { "vname": "code", "type": "Int32", "value": "2" } ]
+    }
+  ]
+}

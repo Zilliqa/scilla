@@ -82,7 +82,6 @@ let explist = [
   "list_tail1.scilla";
   "list_tail2.scilla";  
   "list_tail.scilla";
-  "list_to_map.scilla"; 
   "list_unzip.scilla";
   "list_zip.scilla";
   "list_zip_with.scilla";  
@@ -113,6 +112,7 @@ let explist = [
   "type_subst1.scilla";
   "type_subst2.scilla";
   "uint_conversions.scilla";
+  "let_in_let_in.scilla";
 ]
 
 module Tests = TestUtil.DiffBasedTests(
@@ -121,7 +121,7 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["eval"; "exp"; "good"; f]
     let runner = "eval-runner"
     let custom_args = []
-    let lib_override = None
+    let additional_libdirs = []
     let tests = explist
     let exit_code : Unix.process_status = WEXITED 0
 

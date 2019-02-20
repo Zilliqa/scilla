@@ -1,0 +1,12 @@
+{
+  "gas_remaining": "7773",
+  "errors": [
+    {
+      "error_message":
+        "Field gmap : Map (ByStr20) (Pair (Int32) (Int64)) not defined in the contract\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

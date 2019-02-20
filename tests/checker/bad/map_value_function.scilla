@@ -1,0 +1,12 @@
+scilla_version 0
+
+contract Test ()
+
+(* Function types are not allowed as map value types *)
+transition testMapKey4 ()
+  map = Emp BNum (Bool -> Uint32);
+  k = BNum 42;
+  v = fun (x : Bool) => Uint32 42;
+  map2 = builtin put map k v
+end
+

@@ -32,14 +32,14 @@ than the one specified below.
 
 On machines with Ubuntu strictly older than 18.04, run these additional commands first:
 
-```
+```shell
 # Add Ubuntu PPA for libsecp256k1-dev
 sudo add-apt-repository ppa:tah83/secp256k1 -y
 ```
 
 Required ubuntu packages can be installed as below:
 
-```
+```shell
 sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
 sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev
@@ -50,20 +50,20 @@ sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev
 Building Scilla requires OCaml 4.06.1. You can switch to this version and install required
 opam packages using the commands listed below:
 
-```
+```shell
 opam init --disable-sandboxing -y --compiler=4.06.1
-opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
+opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
 ```
 
 The above three commands can, alternatively, be run using the make target `opamdep`
 
-```
+```shell
 make opamdep
 ```
 
 Finally, opam environment needs to be set in your shell. This can be done as:
 
-```
+```shell
 echo ". ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true " >> ~/.bashrc
 ```
 
@@ -71,32 +71,40 @@ Note that the command above does not setup the environment for the current shell
 quit and start a new shell (so that ~/.bashrc is invoked) OR, run the following command 
 to setup the environment for your current shell.
 
-```
+```shell
 eval `opam config env`
 ```
 
 Scilla requires OpenSSL 1.0.2 and if your platform does not have packages for this, you may need to build OpenSSL
-yourself and set $CPLUS_INCLUDE_PATH, $C_INCLUDE_PATH, $LIBRARY_PATH and $LD_LIBRARY_PATH accordingly
-(if you install OpenSSL in a non-default path).
+yourself and set `PKG_CONFIG_PATH` environment variable accordingly
+(if you install OpenSSL in a non-default path):
+```shell
+export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
+```
 
-### Mac OS X
+### macOS
 
 The dependencies can be installed via [Homebrew](https://brew.sh/):
 
-Note: pending PR at https://github.com/DomT4/homebrew-crypto/pull/95/commits/9c62017362aa973afad75616046d14006f31be6a
-```
-brew tap iantanwx/crypto
-```
-
-```
-brew install ocaml opam pkg-config libffi openssl@1.1 boost secp256k1
+```shell
+brew install ocaml opam pkg-config libffi openssl boost secp256k1
 opam init --disable-sandboxing -y --compiler=4.06.1
-opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving ppx_deriving_yojson menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
+opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
+```
 
-```
 Then run the following command to setup environment on current shell. 
-```
+```shell
 eval `opam config env`
+```
+
+Normally, by this moment everything should be set up as the [Dune](https://dune.build) build system
+takes care of environment variables for `pkg-config` utility.
+However Homebrew's `openssl` package is keg-only, which means it doesn't get symlinked
+into `/usr/local` directory, so in case of a non-default version of the package,
+you will need to set up `PKG_CONFIG_PATH` environment variable as Homebrew suggests.
+It should look like
+```shell
+export PKG_CONFIG_PATH="/usr/local/opt/openssl@_Version_/lib/pkgconfig:$PKG_CONFIG_PATH""
 ```
 
 ## Using Ocaml with Emacs
@@ -110,7 +118,7 @@ useful for working on this codebase:
 
 All those libraries can be installed via [opem-user-setup](https://github.com/OCamlPro/opam-user-setup):
 
-```
+```shell
 opam install user-setup
 ```
 

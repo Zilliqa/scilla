@@ -8,5 +8,4 @@
              testtypes testtypefail
              testpmfail
              testchecker testinteger256)
-  (flags (-cclib -lstdc++ -cclib -lcrypto))
 )

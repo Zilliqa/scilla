@@ -1,0 +1,12 @@
+scilla_version 0
+
+contract Test ()
+
+(* Illegal *)
+transition testMapKey3 ()
+  map = Emp Event Bool;
+  e = { _eventname : "Name" };
+  t = True;
+  map2 = builtin put map e t  
+end
+

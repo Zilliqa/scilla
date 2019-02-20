@@ -1,0 +1,11 @@
+{
+  "gas_remaining": "7702",
+  "errors": [
+    {
+      "error_message": "Field welcome_msg occurs more than once in input.\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

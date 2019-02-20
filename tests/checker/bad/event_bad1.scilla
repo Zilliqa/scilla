@@ -112,7 +112,7 @@ transition GetFunds ()
     | True => 
       tt = True;
       funded := tt;
-      msg  = {_tag : Main; _recipient : owner; _amount : bal; 
+      msg  = {_tag : ""; _recipient : owner; _amount : bal; 
               code : got_funds_code};
       msgs = one_msg msg;
       send msgs
@@ -159,7 +159,7 @@ transition ClaimBack ()
       | Some v =>
         bs1 = builtin remove bs _sender;
         backers := bs1;
-        msg  = {_tag : Main; _recipient : _sender; _amount : v; 
+        msg  = {_tag : ""; _recipient : _sender; _amount : v; 
                 code : reclaimed_code};
         msgs = one_msg msg;
         e = { _eventname : "ClaimedBack"; claimed_by : _sender; amount : v };

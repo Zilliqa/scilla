@@ -2,6 +2,6 @@ let x = Int32 42 in
 let ff = fun (z : Int32) => x in
 let y = x in
 let a = y in
-let m1 = {_tag : Main; amount : x; code: a} in
-let m2 = {_tag : Main; amount : x; mmm: m1} in
+let m1 = {_tag : "Main"; amount : x; code: a} in
+let m2 = {_tag : "Main"; amount : x; mmm: m1} in
 m2

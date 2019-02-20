@@ -5,6 +5,13 @@
   (libraries ctypes ctypes.foreign cryptokit)
   (c_names generate_dsa_nonce)
   (cxx_names c_schnorr DataConversion Schnorr PrivKey PubKey Signature BIGNUMSerialize ECPOINTSerialize)
-  (c_flags -I/usr/local/opt/openssl/include)
-  (cxx_flags -std=c++11 -I/usr/local/opt/openssl/include)
+  (c_flags (:include c_flags.sexp))
+  (cxx_flags -std=c++11 (:include c_flags.sexp))
+  ;;; -lstdc++ is not portable, it can be e.g. -lc++
+  (c_library_flags -lstdc++ (:include c_library_flags.sexp))
   )
+
+(rule
+ (targets c_flags.sexp c_library_flags.sexp)
+ (deps    (:discover config/discover.exe))
+ (action  (run %{discover})))

@@ -46,6 +46,7 @@ let explist = [
   "msg_error3.scilla";
   "msg_error.scilla";
   "let-error.scilla";
+  "list_to_map.scilla";
   "string_error1.scilla";
 ]
 
@@ -55,7 +56,7 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["eval"; "exp"; "bad"; f]
     let runner = "eval-runner"
     let custom_args = []
-    let lib_override = None
+    let additional_libdirs = []
     let tests = explist
     let exit_code : Unix.process_status = WEXITED 1
 

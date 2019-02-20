@@ -1,0 +1,128 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract Test:\n",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 11,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition testMapKey1:\n",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 14,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `map`:\nIllegal key type Bool -> Uint32 in map.",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 15,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition testMapKey2:\n",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 22,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `map`:\nIllegal key type Message in map.",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 23,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition testMapKey3:\n",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 30,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `map`:\nIllegal key type Event in map.",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 31,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition testMapKey6:\n",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 55,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `map`:\nIllegal key type TestType in map.",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 56,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition testMapKey7:\n",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 64,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `map`:\nIllegal key type Map (Uint32) (Uint32) in map.",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 65,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition testMapKey8:\n",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 72,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `map`:\nIllegal key type TestType2 in map.",
+      "start_location": {
+        "file": "checker/bad/bad_map_key.scilla",
+        "line": 73,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

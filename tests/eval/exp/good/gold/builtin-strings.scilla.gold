@@ -1,5 +1,7 @@
 (String "scilla is awesome"),
-{ [ks -> (String "-1232365654879")],
+{ [len2 -> (Uint32 14)],
+  [len1 -> (Uint32 17)],
+  [ks -> (String "-1232365654879")],
   [js -> (String "98985656562323")],
   [is -> (String "1223")],
   [k -> (Int64 -1232365654879)],

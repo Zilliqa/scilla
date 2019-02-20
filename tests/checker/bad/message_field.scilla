@@ -1,0 +1,26 @@
+scilla_version 0
+
+library Msg_Field_Test
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+contract Msg_Field_Test ()
+
+(* The type of arguments to fields in Message is incorrect *)
+transition malMessage3(num1 : Int32)
+  (* num1 should have been Uint128 *)
+  msg = { _tag: ""; _recipient : _sender; _amount : num1; status : "foo"};
+  msgs = one_msg msg;
+  send msgs
+end
+
+(* The type of arguments to fields in Message is incorrect *)
+transition malMessage5 ()
+  (* _recipient should have ByStr20 argument, not ByStr2 *)
+  msg = { _tag: ""; _recipient : 0xabad; _amount : Uint128 0; status : "foo"};
+  msgs = one_msg msg;
+  send msgs
+end

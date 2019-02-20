@@ -178,28 +178,6 @@ let list_eq =
       False
     end
 
-(* ('A -> 'A -> Bool) -> 'A -> List 'A -> Bool *)
-(* Return True iff "m" is in the list "l", as compared by function "f". *)
-let list_mem =
-  tfun 'A =>
-  fun (f : 'A -> 'A -> Bool) =>
-  fun (m : 'A) =>
-  fun (l : List 'A) =>
-    let folder = @list_foldl 'A Bool in
-    let init = False in
-    let iter =
-      fun (z : Bool) =>
-      fun (h : 'A) =>
-        let res = f h m in
-        match res with
-        | True =>
-          True
-        | False =>
-          z
-        end
-    in
-      folder iter init l
-
 (* ('A -> Bool) -> List 'A -> Bool *)
 (* Return True iff all elements of list "l" satisfy predicate "f". *)
 let list_forall =
@@ -220,27 +198,6 @@ let list_forall =
         end
     in
     folder iter init l
-
-(* ('A -> Bool) -> List 'A -> Bool *)
-(* Return True iff at least one element of list "l" satisfy predicate "f". *)
-let list_exists =
-  tfun 'A =>
-  fun (f : 'A -> Bool) =>
-  fun (l : List 'A) =>
-    let folder = @list_foldl 'A Bool in
-    let init = False in
-    let iter =
-      fun (z : Bool) =>
-      fun (h : 'A) =>
-        let res = f h in
-        match res with
-        | True =>
-          True
-        | False =>
-          z
-        end
-    in
-      folder iter init l
 
 (* ('A -> 'A -> Bool) -> List 'A -> List 'A *)
 (* Stable sort the input list "l". *)
@@ -319,6 +276,38 @@ let list_find =
         end
      in
        folder iter init l
+
+(* ('A -> Bool) -> List 'A -> Bool *)
+(* Return True iff at least one element of list "l" satisfy predicate "f". *)
+let list_exists =
+  tfun 'A =>
+  fun (f : 'A -> Bool) =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A Bool in
+    let init = False in
+    let iter =
+      fun (z : Bool) =>
+      fun (h : 'A) =>
+        let res = f h in
+        match res with
+        | True =>
+          True
+        | False =>
+          z
+        end
+    in
+      folder iter init l
+
+(* ('A -> 'A -> Bool) -> 'A -> List 'A -> Bool *)
+(* Return True iff "m" is in the list "l", as compared by function "f". *)
+let list_mem =
+  tfun 'A =>
+  fun (f : 'A -> 'A -> Bool) =>
+  fun (m : 'A) =>
+  fun (l : List 'A) =>
+    let ex_pred = f m in
+    let ex = @list_exists 'A in
+    ex ex_pred l
 
 (* List 'A -> List 'B -> List (Pair 'A 'B) *)
 (* Combine corresponding elements of m1 and m2 into a pair *)
@@ -460,52 +449,34 @@ let list_unzip =
     in
       folder iter init l
 
-(* List (Pair 'A 'B) -> Map 'A 'B *)
-(* Convert a list of key-val pairs into a map, overwriting duplicates. *)
-let list_to_map =
-  tfun 'A =>
-  tfun 'B =>
-  fun (l : List (Pair 'A 'B)) =>
-    let folder = @list_foldl (Pair 'A 'B) (Map 'A 'B) in
-    let init = Emp 'A 'B in
-    let iter =
-      fun (z : Map 'A 'B) =>
-      fun (h : Pair 'A 'B) =>
-        match h with
-        | Pair a b =>
-          builtin put z a b
-        end
-    in
-      folder iter init l
-
-(* Int32 -> List 'A -> Option 'A *)
+(* Uint32 -> List 'A -> Option 'A *)
 (* Returns (Some 'A) if n'th element exists in list. None otherwise *)
 let list_nth =
   tfun 'A =>
-  fun (n_h : Int32) =>
+  fun (n_h : Uint32) =>
   fun (l_h : List 'A) =>
     let list_nth_helper =
       tfun 'A =>
-      fun (n : Int32) =>
+      fun (n : Uint32) =>
       fun (l : List 'A) =>
-        let folder = @list_foldl 'A (Pair Int32 (Option 'A)) in
-        let zero = Int32 0 in
+        let folder = @list_foldl 'A (Pair Uint32 (Option 'A)) in
+        let zero = Uint32 0 in
         let none = None {'A} in
-        let init = Pair {Int32 (Option 'A)} zero none in
+        let init = Pair {Uint32 (Option 'A)} zero none in
         let iter =
-          fun (z : Pair Int32 (Option 'A)) =>
+          fun (z : Pair Uint32 (Option 'A)) =>
           fun (h : 'A) =>
             match z with
             | Pair i oe =>
-              let one = Int32 1 in
+              let one = Uint32 1 in
               let nexti = builtin add i one in
               let this = builtin eq n i in
               match this with
               | True =>
                 let someh = Some {'A} h in
-                Pair {Int32 (Option 'A)} nexti someh
+                Pair {Uint32 (Option 'A)} nexti someh
               | False =>
-                Pair {Int32 (Option 'A)} nexti oe
+                Pair {Uint32 (Option 'A)} nexti oe
               end
             end
           in

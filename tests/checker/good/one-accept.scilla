@@ -1,0 +1,41 @@
+scilla_version 0
+
+contract OneAccept
+()
+
+transition simple_donate1()
+  accept
+end
+
+transition simple_donate2()
+  e = { _eventname : "Donation accepted" };
+  event e;
+  accept
+end
+
+transition simple_donate3()
+  accept;
+  e = { _eventname : "Donation accepted" };
+  event e
+end
+
+transition branched_donate1 (cond : Bool)
+  match cond with
+  | True => accept
+  | False => accept
+  end
+end
+
+transition branched_donate2 (cond : Bool)
+  match cond with
+  | True =>
+    e = { _eventname : "Donation accepted in branch 1" };
+    event e;
+    accept
+  | False =>
+    e = { _eventname : "Donation accepted in branch 2" };
+    event e;
+    accept
+  end
+end
+
