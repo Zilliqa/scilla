@@ -117,8 +117,8 @@ let analyze_print_gas cmod typed_elibs =
 let check_cashflow typed_cmod =
   let j = CF.main typed_cmod in
   List.map j
-    ~f:(fun (i, t) -> 
-        (i, CF.ECFR.sexp_of_money_tag t |> Sexplib.Sexp.to_string))
+    ~f:(fun (i, t) ->
+        (i, CF.ECFR.money_tag_to_string t))
       
 let check_version vernum =
   let (mver, _, _) = scilla_version in
@@ -154,7 +154,7 @@ let () =
       pure @@ (cmod, tenv, event_info, cf_info_opt)
     ) in
     match r with
-    | Error el -> exit 1 (* we've already printed the error(s). *)
+    | Error _ -> exit 1 (* we've already printed the error(s). *)
     | Ok (cmod, _, event_info, cf_info_opt) ->
         let base_output =
           let warnings_output =

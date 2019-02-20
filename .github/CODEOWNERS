@@ -1,0 +1,55 @@
+########## Global owners ##########
+
+*                  @AmritKumar @jjcnn @vaivaswatha @ilyasergey
+
+
+########## Source code ##########
+
+## default OCaml reviewers
+*.ml               @ilyasergey @vaivaswatha @jjcnn @anton-trunov @AmritKumar
+*.mli              @ilyasergey @vaivaswatha @jjcnn @anton-trunov @AmritKumar
+
+## default C and C++ reviewers
+*.cpp              @vaivaswatha @AmritKumar
+*.c                @vaivaswatha @AmritKumar
+*.h                @vaivaswatha @AmritKumar
+
+## more fine-grained to avoid email noise
+/src/runners/*.ml*     @vaivaswatha @jjcnn @anton-trunov
+/src/lang/base/GlobalConfig.ml*   @vaivaswatha @jjcnn @anton-trunov
+/src/lang/base/Utils.ml*          @vaivaswatha @jjcnn @anton-trunov
+
+
+########## Build system, CI, opam ##########
+
+*dune*             @vaivaswatha @Gnnng @iantanwx @anton-trunov
+/.dockerignore     @vaivaswatha @Gnnng @iantanwx
+/.travis.yml       @vaivaswatha @Gnnng @iantanwx
+/Dockerfile*       @vaivaswatha @Gnnng @iantanwx
+/Makefile          @vaivaswatha @Gnnng @iantanwx
+/scripts/build_openssl.sh @vaivaswatha @Gnnng @iantanwx
+*.opam             @ilyasergey
+
+
+########## Test suite ##########
+
+## Scilla contracts in the testsuite
+/tests/*.scilla    @edisonljh @evesnow91 @AmritKumar @vaivaswatha @jjcnn
+
+
+########## Documentation ##########
+
+/README.md        @AmritKumar @jjcnn @ilyasergey @vaivaswatha
+/INSTALL.md       @vaivaswatha @iantanwx
+/docs/            @ilyasergey @jjcnn
+
+
+########## Tools ##########
+
+#/misc/emacs-mode  @vaivaswatha
+#/misc/vim-plugin  @edisonljh
+
+
+########## GitHub metadata, including this file ##########
+
+/.github/         @AmritKumar @vaivaswatha @anton-trunov

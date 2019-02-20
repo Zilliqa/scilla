@@ -2,8 +2,8 @@
   "cashflow_tags": [
     { "field": "contractOwner", "tag": "NoInfo" },
     { "field": "orderbook", "tag": "(Map Inconsistent)" },
-    { "field": "orderInfo", "tag": "(Map(Pair NotMoney NotMoney))" },
-    { "field": "pendingReturns", "tag": "(Map(Map NoInfo))" }
+    { "field": "orderInfo", "tag": "(Map (Pair NotMoney NotMoney))" },
+    { "field": "pendingReturns", "tag": "(Map (Map NoInfo))" }
   ],
   "contract_info": {
     "scilla_major_version": "0",

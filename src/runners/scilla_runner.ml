@@ -20,7 +20,6 @@
 open Syntax
 open Core
 open ErrorUtils
-open EvalUtil
 open Eval
 open DebugMessage
 open ContractUtil
@@ -65,7 +64,7 @@ let check_extract_cstate name res gas_limit =
 (*   Running the simularion and printing results     *)
 (*****************************************************)
 
-let check_after_step name res gas_limit  =
+let check_after_step res gas_limit  =
   match res Eval.init_gas_kont gas_limit with
   | Error (err, remaining_gas) ->
       perr @@ scilla_error_gas_string remaining_gas err ;
@@ -260,7 +259,7 @@ let () =
         plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
         let step_result = handle_message ctr cstate bstate m in
         let (cstate', mlist, elist, accepted_b), gas =
-          check_after_step cli.input step_result gas_remaining' in
+          check_after_step step_result gas_remaining' in
       
         let osj = output_state_json cstate' in
         let omj = output_message_json gas mlist in

@@ -2,15 +2,21 @@
   "cashflow_tags": [
     { "field": "owner", "tag": "NoInfo" },
     { "field": "total_tokens", "tag": "NoInfo" },
+    { "field": "decimals", "tag": "NoInfo" },
+    { "field": "name", "tag": "NoInfo" },
+    { "field": "symbol", "tag": "NoInfo" },
     { "field": "balances", "tag": "(Map NoInfo)" },
-    { "field": "allowed", "tag": "(Map(Map NoInfo))" }
+    { "field": "allowed", "tag": "(Map (Map NoInfo))" }
   ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "FungibleToken",
     "params": [
       { "vname": "owner", "type": "ByStr20" },
-      { "vname": "total_tokens", "type": "Uint128" }
+      { "vname": "total_tokens", "type": "Uint128" },
+      { "vname": "decimals", "type": "Uint32" },
+      { "vname": "name", "type": "String" },
+      { "vname": "symbol", "type": "String" }
     ],
     "fields": [
       { "vname": "balances", "type": "Map (ByStr20) (Uint128)" },

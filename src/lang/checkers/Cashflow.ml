@@ -15,6 +15,8 @@
   You should have received a copy of the GNU General Public License along with
 *)
 
+open Core
+open Sexplib.Std
 open Syntax
 open TypeUtil
 open Utils
@@ -25,11 +27,17 @@ module CashflowRep (R : Rep) = struct
     | NotMoney
     | Money
     | Map of money_tag
-    | Option of money_tag
-    | Pair of money_tag * money_tag
+    | Adt of string * money_tag list (* name of adt paired with tags of type params *)
     | Inconsistent
   [@@deriving sexp]
-      
+
+  let rec money_tag_to_string tag =
+    match tag with
+    | Adt (n, ts) -> "(" ^ n ^ " " ^ (String.concat ~sep:" " (List.map ~f:money_tag_to_string ts)) ^ ")"
+    | Map t -> "(Map " ^ (money_tag_to_string t) ^ ")"
+    | _ -> sexp_of_money_tag tag |> Sexplib.Sexp.to_string
+
+
   type rep = money_tag * R.rep
   [@@deriving sexp]
 
@@ -81,7 +89,7 @@ module ScillaCashflowChecker
     | Constructor (cn, ps) ->
         CFSyntax.Constructor (
           cn,
-          List.map cf_init_tag_pattern ps)
+          List.map ~f:cf_init_tag_pattern ps)
 
   let cf_init_tag_payload p =
     match p with
@@ -104,11 +112,11 @@ module ScillaCashflowChecker
       | App (f, actuals) ->
           CFSyntax.App (
               add_noinfo_to_ident f, 
-              List.map add_noinfo_to_ident actuals)
+              List.map ~f:add_noinfo_to_ident actuals)
       | Builtin (i, actuals) ->
           CFSyntax.Builtin (
               add_noinfo_to_ident i,
-              List.map add_noinfo_to_ident actuals)
+              List.map ~f:add_noinfo_to_ident actuals)
       | Let (i, topt, lhs, rhs) ->
           CFSyntax.Let (
               add_noinfo_to_ident i,
@@ -119,11 +127,11 @@ module ScillaCashflowChecker
           CFSyntax.Constr (
               cname,
               ts,
-              List.map add_noinfo_to_ident actuals)
+              List.map ~f:add_noinfo_to_ident actuals)
       | MatchExpr (x, clauses) ->
           CFSyntax.MatchExpr (
               add_noinfo_to_ident x,
-              List.map (fun (p, e) ->
+              List.map ~f:(fun (p, e) ->
                   (cf_init_tag_pattern p, cf_init_tag_expr e)) clauses)
       | Fixpoint (f, t, body) ->
           CFSyntax.Fixpoint (
@@ -140,7 +148,7 @@ module ScillaCashflowChecker
               arg_types)
       | Message bs ->
           CFSyntax.Message (
-              List.map (fun (s, p) -> (s, cf_init_tag_payload p)) bs) in
+              List.map ~f:(fun (s, p) -> (s, cf_init_tag_payload p)) bs) in
     (res_e, (ECFR.NoInfo, rep))
 
   let rec cf_init_tag_stmt srep =
@@ -162,22 +170,22 @@ module ScillaCashflowChecker
       | MapUpdate (m, ks, v) ->
           CFSyntax.MapUpdate (
             add_noinfo_to_ident m,
-            List.map add_noinfo_to_ident ks,
+            List.map ~f:add_noinfo_to_ident ks,
             match v with | None -> None | Some v' -> Some (add_noinfo_to_ident v')
           )
       | MapGet (x, m, ks, retrieve) ->
           CFSyntax.MapGet (
             add_noinfo_to_ident x,
             add_noinfo_to_ident m,
-            List.map add_noinfo_to_ident ks,
+            List.map ~f:add_noinfo_to_ident ks,
             retrieve
           )
       | MatchStmt (x, pss) ->
           CFSyntax.MatchStmt (
             add_noinfo_to_ident x,
-            List.map (fun (p, ss) ->
+            List.map ~f:(fun (p, ss) ->
                 (cf_init_tag_pattern p,
-                 List.map cf_init_tag_stmt ss)) pss)
+                 List.map ~f:cf_init_tag_stmt ss)) pss)
       | ReadFromBC (x, s) ->
           CFSyntax.ReadFromBC (
             add_noinfo_to_ident x, s)
@@ -195,22 +203,22 @@ module ScillaCashflowChecker
     let { tname ; tparams ; tbody } = transition in
     { CFSyntax.tname = tname;
       CFSyntax.tparams =
-        List.map (fun (x, t) -> (add_noinfo_to_ident x, t)) tparams;
+        List.map ~f:(fun (x, t) -> (add_noinfo_to_ident x, t)) tparams;
       CFSyntax.tbody =
-        List.map cf_init_tag_stmt tbody }
+        List.map ~f:cf_init_tag_stmt tbody }
   
   let cf_init_tag_contract contract =
     let { cname ; cparams ; cfields ; ctrans } = contract in
     { CFSyntax.cname = cname;
       CFSyntax.cparams =
-        List.map (fun (x, t) -> (add_noinfo_to_ident x, t)) cparams;
+        List.map ~f:(fun (x, t) -> (add_noinfo_to_ident x, t)) cparams;
       CFSyntax.cfields =
-        List.map (fun (x, t, e) ->
+        List.map ~f:(fun (x, t, e) ->
             (add_noinfo_to_ident x,
              t,
              cf_init_tag_expr e)) cfields;
       CFSyntax.ctrans =
-        List.map cf_init_tag_transition ctrans }
+        List.map ~f:cf_init_tag_transition ctrans }
     
   let cf_init_tag_type_def tdef =
     let { cname ; c_arg_types } = tdef in
@@ -224,9 +232,9 @@ module ScillaCashflowChecker
           CFSyntax.LibVar (add_noinfo_to_ident lname, cf_init_tag_expr lexp)
       | LibTyp (lname, type_defs) ->
           CFSyntax.LibTyp (add_noinfo_to_ident lname,
-                           List.map cf_init_tag_type_def type_defs) in
+                           List.map ~f:cf_init_tag_type_def type_defs) in
     { CFSyntax.lname = lname;
-      CFSyntax.lentries = List.map init_tag_entry lentries }
+      CFSyntax.lentries = List.map ~f:init_tag_entry lentries }
   
   let cf_init_tag_module cmod =
     let { smver; cname; libs; elibs; contr } = cmod in
@@ -260,8 +268,11 @@ module ScillaCashflowChecker
     | NoInfo       , x
     | x            , NoInfo        -> x
     | Map x        , Map y         -> Map (lub_tags x y)
-    | Option x     , Option y      -> Option (lub_tags x y)
-    | Pair (x1, x2), Pair (y1, y2) -> Pair (lub_tags x1 y1, lub_tags x2 y2)
+    | Adt (n1, ts1), Adt (n2, ts2)
+      when n1 = n2                 ->
+        (match List.map2 ts1 ts2 ~f:lub_tags with
+         | Ok res -> Adt (n1, res)
+         | Unequal_lengths -> Inconsistent)
     | Money        , Money         -> Money
     | NotMoney     , NotMoney      -> NotMoney
     | _            , _             -> Inconsistent
@@ -274,8 +285,11 @@ module ScillaCashflowChecker
     | NoInfo       , _
     | _            , NoInfo        -> NoInfo
     | Map x        , Map y         -> Map (glb_tags x y)
-    | Option x     , Option y      -> Option (glb_tags x y)
-    | Pair (x1, x2), Pair (y1, y2) -> Pair (glb_tags x1 y1, glb_tags x2 y2)
+    | Adt (n1, ts1), Adt (n2, ts2)
+      when n1 = n2                 ->
+        (match List.map2 ts1 ts2 ~f:glb_tags with
+         | Ok res -> Adt (n1, res)
+         | Unequal_lengths -> Inconsistent)
     | Money        , Money         -> Money
     | NotMoney     , NotMoney      -> NotMoney
     | _            , _             -> NoInfo
@@ -299,7 +313,7 @@ module ScillaCashflowChecker
   
   let update_ids_tags ids env =
     List.map
-      (fun i ->
+      ~f:(fun i ->
          let i_tag = lookup_var_tag i env in
          update_id_tag i i_tag) ids
 
@@ -344,22 +358,25 @@ module ScillaCashflowChecker
   let builtin_signature f res_tag args_tags =
     let lub_sigs c_rs c_ass =
       let c =
-        List.fold_left
-          (fun partial_c c_t ->
-             List.fold_left
-               (fun acc_partial_c (partial_c_res_tag, partial_c_args_tags) ->
-                  List.fold_left
-                    (fun acc_lub_sigs (c_t_res_tag, c_t_args_tags) ->
-                       (lub_tags partial_c_res_tag c_t_res_tag,
-                        List.map2 lub_tags partial_c_args_tags c_t_args_tags) :: acc_lub_sigs)
-                        acc_partial_c c_t)
-                   [] partial_c)
-          c_rs c_ass in
-      List.fold_left
-        (fun (glb_res_tag, glb_args_tags) (c_res_tag, c_args_tags) ->
-           ( glb_tags glb_res_tag c_res_tag,
-             List.map2 glb_tags glb_args_tags c_args_tags ))
-        ( Inconsistent , List.map (fun _ -> Inconsistent ) args_tags ) c in
+        List.fold_left c_ass ~init:c_rs 
+          ~f:(fun partial_c c_t ->
+             List.fold_left partial_c ~init:[]
+               ~f:(fun acc_partial_c (partial_c_res_tag, partial_c_args_tags) ->
+                  List.fold_left c_t ~init:acc_partial_c
+                    ~f:(fun acc_lub_sigs (c_t_res_tag, c_t_args_tags) ->
+                        let res_sigs =
+                          match List.map2 ~f:lub_tags partial_c_args_tags c_t_args_tags with
+                          | Ok res          -> (lub_tags partial_c_res_tag c_t_res_tag, res)
+                          | Unequal_lengths -> (Inconsistent, [NoInfo]) in
+                        
+                        res_sigs :: acc_lub_sigs))) in
+      List.fold_left c ~init:( Inconsistent , List.map ~f:(fun _ -> Inconsistent ) args_tags )
+        ~f:(fun (glb_res_tag, glb_args_tags) (c_res_tag, c_args_tags) ->
+            ( glb_tags glb_res_tag c_res_tag,
+              match List.map2 ~f:glb_tags glb_args_tags c_args_tags with
+              | Ok res -> res
+              | Unequal_lengths -> [Inconsistent]))
+        in
     let (c_r, c_as) =
       match get_id f with
       | "put" ->
@@ -387,7 +404,7 @@ module ScillaCashflowChecker
                 [ m_sig ; k_sig ; v_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "remove" ->
           let c_r_sigs =
@@ -411,31 +428,31 @@ module ScillaCashflowChecker
                 [ m_sig ; k_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "get" ->
           let c_r_sigs =
             match res_tag with
-            | Option t -> [ ( Option t      , [ Map t      ; NotMoney ] ) ]
-            | NoInfo   -> [ ( Option NoInfo , [ Map NoInfo ; NotMoney ] ) ]
-            | _        -> [ ( Inconsistent  , [ Map NoInfo ; NotMoney ] ) ] in
+            | Adt ("Option", [t]) -> [ ( Adt ("Option", [t]      ) , [ Map t      ; NotMoney ] ) ]
+            | NoInfo              -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; NotMoney ] ) ]
+            | _                   -> [ ( Inconsistent  , [ Map NoInfo ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ m ; k ] ->
                 let m_sig =
                   match m with
-                  | Map t  -> [ ( Option t      , [ Map t        ; NotMoney ] ) ] 
-                  | NoInfo -> [ ( Option NoInfo , [ Map NoInfo   ; NotMoney ] ) ] 
-                  | _      -> [ ( Option NoInfo , [ Inconsistent ; NotMoney ] ) ] in
+                  | Map t  -> [ ( Adt ("Option", [t     ] ) , [ Map t        ; NotMoney ] ) ] 
+                  | NoInfo -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo   ; NotMoney ] ) ] 
+                  | _      -> [ ( Adt ("Option", [NoInfo] ) , [ Inconsistent ; NotMoney ] ) ] in
                 let k_sig =
                   match k with
                   | NotMoney
-                  | NoInfo   -> [ ( Option NoInfo , [ Map NoInfo ; NotMoney     ] ) ]
-                  | _        -> [ ( Option NoInfo , [ Map NoInfo ; Inconsistent ] ) ] in
+                  | NoInfo   -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; NotMoney     ] ) ]
+                  | _        -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; Inconsistent ] ) ] in
                 [ m_sig ; k_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "contains" ->
           let c_r_sigs =
@@ -459,7 +476,7 @@ module ScillaCashflowChecker
                 [ m_sig ; k_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "to_list" ->
           (* Lists not supported, so use Inconsistent *)
@@ -476,7 +493,7 @@ module ScillaCashflowChecker
                 [ m_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "size" ->
           let c_r_sigs =
@@ -495,7 +512,7 @@ module ScillaCashflowChecker
                 [ m_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "eq"
       | "lt" ->
@@ -526,7 +543,7 @@ module ScillaCashflowChecker
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "add"
       | "sub" ->
@@ -560,7 +577,7 @@ module ScillaCashflowChecker
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "mul" ->
           let c_r_sigs =
@@ -602,7 +619,7 @@ module ScillaCashflowChecker
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "pow" ->
           let c_r_sigs =
@@ -626,7 +643,7 @@ module ScillaCashflowChecker
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)          
       | "div"
       | "rem" ->
@@ -659,7 +676,7 @@ module ScillaCashflowChecker
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "to_int32"
       | "to_int64"
@@ -689,19 +706,19 @@ module ScillaCashflowChecker
                 [ v1_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "schnorr_gen_key_pair" ->
           let c_r_sigs =
-            [ ( Pair (NotMoney, NotMoney) , [ ] ) ] in
+            [ ( Adt ( "Pair", [NotMoney ; NotMoney] ) , [ ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [] ->
-                let arg_sig = [ ( Pair (NotMoney, NotMoney) , [ ] ) ] in
+                let arg_sig = [ ( Adt ( "Pair", [NotMoney ; NotMoney] ) , [ ] ) ] in
                 [ arg_sig ]
             | _  ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "sha256hash"
       | "keccak256hash"
@@ -724,7 +741,7 @@ module ScillaCashflowChecker
                 [ v1_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "concat"
       | "blt"
@@ -752,7 +769,7 @@ module ScillaCashflowChecker
                 [ v1_sig ; v2_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | "substr"
       | "schnorr_sign"
@@ -783,14 +800,14 @@ module ScillaCashflowChecker
                 [ v1_sig ; v2_sig ; v3_sig ]
             | _             ->
                 (* Error *)
-                [[ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ]] in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | _ -> 
           (* Error *)
           let c_r_sigs =
-            [ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ] in
+            [ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ] in
           let c_as_sigs =
-            [ [ ( Inconsistent , List.map (fun _ -> Inconsistent) args_tags ) ] ] in
+            [ [ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ] ] in
           (c_r_sigs, c_as_sigs) in
     lub_sigs c_r c_as
 
@@ -803,7 +820,7 @@ module ScillaCashflowChecker
     | Wildcard -> acc
     | Binder x -> x :: acc
     | Constructor (_, ps) ->
-        List.fold_left get_pattern_vars acc ps
+        List.fold_left ps ~init:acc ~f:get_pattern_vars
 
   let update_pattern_vars_tags p local_env =
     let rec walk p =
@@ -814,23 +831,23 @@ module ScillaCashflowChecker
           (Binder new_x, get_id_tag x <> get_id_tag new_x)
       | Constructor (s, ps) ->
           let (new_ps, ps_changes) =
-            List.fold_right
-              (fun p (acc_ps, acc_changes) ->
+            List.fold_right ps ~init:([], false)
+              ~f:(fun p (acc_ps, acc_changes) ->
                  let (new_p, p_changes) = walk p in
-                 (new_p :: acc_ps, acc_changes || p_changes)) ps ([], false) in
+                 (new_p :: acc_ps, acc_changes || p_changes))in
           (Constructor (s, new_ps), ps_changes) in
     walk p
 
   let insert_pattern_vars_into_env p local_env =
     let pattern_vars = get_pattern_vars [] p in
-    List.fold_left
-      (fun l_env x ->
-         AssocDictionary.insert (get_id x) (get_id_tag x) l_env) local_env pattern_vars
+    List.fold_left pattern_vars ~init:local_env
+      ~f:(fun l_env x ->
+         AssocDictionary.insert (get_id x) (get_id_tag x) l_env)
       
   let remove_pattern_vars_from_env p local_env =
     let pattern_vars = get_pattern_vars [] p in
-    List.fold_left
-      (fun l_env x -> AssocDictionary.remove (get_id x) l_env) local_env pattern_vars    
+    List.fold_left pattern_vars ~init:local_env
+      ~f:(fun l_env x -> AssocDictionary.remove (get_id x) l_env)
 
   (* Find least upper bound of scrutinee based on patterns and pattern tags *)
   let lub_pattern_tags ps =
@@ -839,12 +856,19 @@ module ScillaCashflowChecker
       | Wildcard -> acc_tag
       | Binder x -> lub_tags (get_id_tag x) acc_tag
       | Constructor (s, ps) ->
+          (* TODO : This needs to be factored out and generalised *)
           match s with
-          | "None" -> lub_tags (Option NoInfo) acc_tag
+          | "None" -> lub_tags (Adt ("Option", [NoInfo])) acc_tag
           | "Some" ->
               (match acc_tag with
-               | NoInfo   -> Option (List.fold_left walk NoInfo ps)
-               | Option t -> Option (List.fold_left walk t ps)
+               | NoInfo              ->
+                   (match List.map2 ~f:walk [NoInfo] ps with
+                    | Ok res          -> Adt ("Option", res)
+                    | Unequal_lengths -> Inconsistent)
+               | Adt ("Option", [t]) ->
+                   (match List.map2 ~f:walk [t] ps with
+                    | Ok res          -> Adt ("Option", res)
+                    | Unequal_lengths -> Inconsistent)
                | _ -> Inconsistent)
           | "True"
           | "False" -> lub_tags acc_tag NotMoney
@@ -852,14 +876,14 @@ module ScillaCashflowChecker
               (match ps with
                | [ ps1 ; ps2 ] ->
                      (match acc_tag with
-                    | Pair (t1, t2) -> 
-                        Pair (walk t1 ps1, walk t2 ps2)
+                    | Adt ("Pair", [t1; t2]) -> 
+                        Adt ("Pair", [walk t1 ps1; walk t2 ps2])
                     | NoInfo ->
-                        Pair (walk NoInfo ps1, walk NoInfo ps2)
+                        Adt ("Pair", [walk NoInfo ps1; walk NoInfo ps2])
                     | _ -> Inconsistent)
                | _ -> Inconsistent)
           | _ -> Inconsistent in
-    List.fold_left walk NoInfo ps
+    List.fold_left ps ~init:NoInfo ~f:walk
   
   (*******************************************************)
   (*            Main cashflow analyzer                   *)
@@ -911,9 +935,12 @@ module ScillaCashflowChecker
            new_local_env,
            body_changes || (get_id_tag arg <> res_arg_tag))
       | App (f, args) ->
-          let new_args = List.map (fun arg -> update_id_tag arg (lookup_var_tag2 arg local_env field_env)) args in
+          let new_args = List.map ~f:(fun arg -> update_id_tag arg (lookup_var_tag2 arg local_env field_env)) args in
           let args_changes =
-            List.exists2 (fun arg new_arg -> (get_id_tag arg) <> (get_id_tag new_arg)) args new_args in
+            match List.exists2 ~f:(fun arg new_arg -> (get_id_tag arg) <> (get_id_tag new_arg)) args new_args with
+            | Ok res          -> res
+            | Unequal_lengths -> false
+          in
           let f_tag = lub_tags (lookup_var_tag2 f local_env field_env) (Map expected_tag) in
           let new_f = update_id_tag f f_tag in
           let (new_local_env, new_field_env) = update_var_tag2 f f_tag local_env field_env in
@@ -928,20 +955,22 @@ module ScillaCashflowChecker
            new_local_env,
            args_changes || f_tag <> get_id_tag f)
       | Builtin (f, args) ->
-          let args_tags = List.map (fun arg -> lookup_var_tag2 arg local_env field_env) args in
+          let args_tags = List.map ~f:(fun arg -> lookup_var_tag2 arg local_env field_env) args in
           let (res_tag, args_tags_usage) = builtin_signature f expected_tag args_tags in
           let (final_args, final_field_env, final_local_env, changes) =
-            List.fold_right2
-              (fun arg arg_tag (acc_args, acc_field_env, acc_local_env, acc_changes) ->
+            let tags_list =
+              match List.zip args args_tags_usage with
+              | None -> []
+              | Some res -> res in
+            List.fold_right tags_list ~init:([], field_env, local_env, false) 
+              ~f:(fun (arg, arg_tag) (acc_args, acc_field_env, acc_local_env, acc_changes) ->
                  let (new_local_env, new_field_env) =
                    update_var_tag2 arg arg_tag acc_local_env acc_field_env in
                  ((update_id_tag arg arg_tag) :: acc_args,
                   new_field_env,
                   new_local_env,
                   acc_changes || (get_id_tag arg) <> arg_tag))
-              args
-              args_tags_usage
-              ([], field_env, local_env, false) in
+              in
           let f_tag = lub_tags (Map res_tag) (Map expected_tag) in
           let new_f = update_id_tag f f_tag in
           (Builtin (new_f, final_args),
@@ -964,19 +993,26 @@ module ScillaCashflowChecker
            res_local_env,
            lhs_changes || rhs_changes || new_i_tag <> get_id_tag i)
       | Constr (cname, ts, args) ->
-          let new_args = List.map (fun arg -> update_id_tag arg (lookup_var_tag2 arg local_env field_env)) args in
+          let new_args = List.map ~f:(fun arg -> update_id_tag arg (lookup_var_tag2 arg local_env field_env)) args in
           let args_changes =
-            List.exists2 (fun arg new_arg -> (get_id_tag arg) <> (get_id_tag new_arg)) args new_args in
+            match List.exists2 ~f:(fun arg new_arg -> (get_id_tag arg) <> (get_id_tag new_arg)) args new_args with
+            | Ok res -> res
+            | Unequal_lengths -> false
+          in
           let tag =
+            (* TODO: Factor this out, and generalise *)
             match cname with
-            | "None" -> Option NoInfo
-            | "Some" -> Option (List.fold_left (fun _ arg -> (get_id_tag arg)) NoInfo new_args)
+            | "None" -> Adt ("Option", [NoInfo])
+            | "Some" ->
+                (match List.map2 ~f:(fun ni arg -> lub_tags ni (get_id_tag arg)) [NoInfo] new_args with
+                 | Ok res          -> Adt ("Option", res)
+                 | Unequal_lengths -> Inconsistent)
             | "True"
             | "False" -> NotMoney
             | "Pair" ->
                 (match new_args with
                  | [ new_arg1; new_arg2 ] ->
-                     Pair (get_id_tag new_arg1, get_id_tag new_arg2)
+                     Adt ("Pair", [get_id_tag new_arg1 ; get_id_tag new_arg2])
                  | _ -> Inconsistent)
             | _ -> Inconsistent in
           (Constr (cname, ts, new_args),
@@ -986,8 +1022,9 @@ module ScillaCashflowChecker
            args_changes)
       | MatchExpr (x, clauses) ->
           let (res_clauses, res_tag, new_field_env, new_local_env, clause_changes) =
-            List.fold_right
-              (fun (p, ep) (acc_clauses, acc_res_tag, acc_field_env, acc_local_env, acc_changes) ->
+            List.fold_right clauses
+              ~init:([], expected_tag, field_env, local_env, false) 
+              ~f:(fun (p, ep) (acc_clauses, acc_res_tag, acc_field_env, acc_local_env, acc_changes) ->
                  let sub_local_env =
                    insert_pattern_vars_into_env p acc_local_env in
                  let ((_, (new_e_tag, _)) as new_e, new_field_env, new_local_env, new_changes) =
@@ -999,9 +1036,8 @@ module ScillaCashflowChecker
                   new_field_env,
                   res_local_env,
                   acc_changes || new_changes || p_changes))
-              clauses
-              ([], expected_tag, field_env, local_env, false) in
-          let x_tag_usage = lub_pattern_tags (List.map (fun (p, _) -> p) res_clauses) in
+              in
+          let x_tag_usage = lub_pattern_tags (List.map ~f:(fun (p, _) -> p) res_clauses) in
           let new_x_tag = lub_tags (lookup_var_tag x local_env) x_tag_usage in
           let new_x = update_id_tag x new_x_tag in
           let res_local_env = AssocDictionary.update (get_id x) new_x_tag new_local_env in
@@ -1025,8 +1061,9 @@ module ScillaCashflowChecker
       | Message bs ->
           (* Find initializers and update env as appropriate *)
           let (new_bs, new_field_env, new_local_env, changes) =
-            List.fold_right
-              (fun (s, p) (acc_bs, acc_field_env, acc_local_env, acc_changes) ->
+            List.fold_right bs
+              ~init:([], field_env, local_env, false) 
+              ~f:(fun (s, p) (acc_bs, acc_field_env, acc_local_env, acc_changes) ->
                  match p with
                  | MLit _ -> ((s, p) :: acc_bs, acc_field_env, acc_local_env, acc_changes)
                  | MVar x ->
@@ -1041,8 +1078,7 @@ module ScillaCashflowChecker
                      let new_x = update_id_tag x new_x_tag in
                      let (new_local_env, new_field_env) = update_var_tag2 x new_x_tag acc_local_env acc_field_env in
                      ((s, MVar new_x) :: acc_bs, new_field_env, new_local_env, acc_changes || get_id_tag x <> new_x_tag))
-              bs
-              ([], field_env, local_env, false) in
+              in
           (Message new_bs,
            NotMoney,
            new_field_env,
@@ -1098,7 +1134,7 @@ module ScillaCashflowChecker
             match v_opt with
             | None -> NoInfo
             | Some v -> lookup_var_tag v local_env in
-          let m_tag_usage = List.fold_left (fun acc _ -> Map acc) v_tag ks in
+          let m_tag_usage = List.fold_left ks ~init:v_tag ~f:(fun acc _ -> Map acc) in
           let m_tag = lub_tags m_tag_usage (lookup_var_tag m field_env) in
           let new_m = update_id_tag m m_tag in
           let new_field_env = AssocDictionary.update (get_id m) m_tag field_env in
@@ -1108,11 +1144,11 @@ module ScillaCashflowChecker
             | None -> (None, local_env)
             | Some v -> 
                 let v_tag_usage =
-                  List.fold_left
-                    (fun acc_tag _ ->
+                  List.fold_left ks ~init:m_tag
+                    ~f:(fun acc_tag _ ->
                        match acc_tag with
                        | Map t -> t
-                       | _ -> Inconsistent) m_tag ks in
+                       | _ -> Inconsistent) in
                 let new_v_tag = lub_tags v_tag_usage v_tag in
                 let new_v = update_id_tag v new_v_tag in
                 let new_local_env =
@@ -1128,13 +1164,13 @@ module ScillaCashflowChecker
             if fetch
             then
               match x_tag with
-              | Option t -> t
+              | Adt ("Option", [t]) -> t
               | NoInfo -> NoInfo
               | _ -> Inconsistent
             else
               NoInfo in
           let m_tag_usage =
-            List.fold_left (fun acc _ -> Map acc) val_tag ks in
+            List.fold_left ks ~init:val_tag ~f:(fun acc _ -> Map acc) in
           let m_tag = lub_tags m_tag_usage (lookup_var_tag m field_env) in
           let new_m = update_id_tag m m_tag in
           let new_field_env = AssocDictionary.update (get_id m) m_tag field_env in
@@ -1143,7 +1179,7 @@ module ScillaCashflowChecker
           let new_x_tag =
             if fetch
             then
-              lub_tags x_tag (Option val_tag)
+              lub_tags x_tag (Adt ("Option", [val_tag]))
             else
               NotMoney (* Bool *) in
           let new_x = update_id_tag x new_x_tag in
@@ -1153,8 +1189,9 @@ module ScillaCashflowChecker
            (get_id_tag x) <> new_x_tag || (get_id_tag m) <> m_tag || new_ks <> ks)
       | MatchStmt (x, clauses) -> 
           let (res_clauses, new_field_env, new_local_env, clause_changes) =
-            List.fold_right
-              (fun (p, sp) (acc_clauses, acc_field_env, acc_local_env, acc_changes) ->
+            List.fold_right clauses
+              ~init:([], field_env, local_env, false) 
+              ~f:(fun (p, sp) (acc_clauses, acc_field_env, acc_local_env, acc_changes) ->
                  let sub_local_env =
                    insert_pattern_vars_into_env p acc_local_env in
                  let (new_stmts, new_field_env, s_local_env, s_changes) =
@@ -1165,9 +1202,8 @@ module ScillaCashflowChecker
                   new_field_env,
                   new_local_env,
                   acc_changes || s_changes || p_changes))
-              clauses
-              ([], field_env, local_env, false) in
-          let x_tag_usage = lub_pattern_tags (List.map (fun (p, _) -> p) res_clauses) in
+              in
+          let x_tag_usage = lub_pattern_tags (List.map ~f:(fun (p, _) -> p) res_clauses) in
           let new_x_tag = lub_tags (lookup_var_tag x local_env) x_tag_usage in
           let new_x = update_id_tag x new_x_tag in
           let res_local_env = AssocDictionary.update (get_id x) new_x_tag new_local_env in
@@ -1212,8 +1248,8 @@ module ScillaCashflowChecker
 
     and cf_tag_stmts ss field_env local_env =
       let init_local_env =
-        List.fold_left
-          (fun acc_env srep ->
+        List.fold_left ss ~init:local_env
+          ~f:(fun acc_env srep ->
              let (s, _) = srep in
              match s with
              | Load (x, _)
@@ -1221,17 +1257,17 @@ module ScillaCashflowChecker
              | MapGet (x, _, _, _)
              | ReadFromBC (x, _) ->
                  AssocDictionary.insert (get_id x) (get_id_tag x) acc_env
-             | _ -> acc_env) local_env ss in
-      List.fold_right
-        (fun s (acc_ss, acc_field_env, acc_local_env, acc_changes) ->
+             | _ -> acc_env) in
+      List.fold_right ss
+        ~init:([], field_env, init_local_env, false)
+        ~f:(fun s (acc_ss, acc_field_env, acc_local_env, acc_changes) ->
            let (new_s, new_field_env, new_local_env, new_changes) =
              cf_tag_stmt s acc_field_env acc_local_env in
            (new_s :: acc_ss,
             new_field_env,
             new_local_env,
             new_changes || acc_changes))
-        ss
-        ([], field_env, init_local_env, false)
+        
 
     let cf_tag_transition t field_env =
       let { tname ; tparams ; tbody } = t in
@@ -1242,20 +1278,19 @@ module ScillaCashflowChecker
           (AssocDictionary.insert "_sender" NotMoney
              (AssocDictionary.insert "_tag" NotMoney empty_local_env)) in
       let param_local_env =
-        List.fold_left
-          (fun acc_env (p, _) ->
+        List.fold_left tparams ~init:implicit_local_env
+          ~f:(fun acc_env (p, _) ->
              AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
-          implicit_local_env
-          tparams in
+          in
       let (new_tbody, new_field_env, new_local_env, body_changes) =
         cf_tag_stmts tbody field_env param_local_env in
       let (new_params, new_changes) =
-        List.fold_right
-          (fun (p, typ) (acc_ps, acc_changes) ->
+        List.fold_right tparams ~init:([], body_changes)
+          ~f:(fun (p, typ) (acc_ps, acc_changes) ->
              let new_tag = lookup_var_tag p new_local_env in
              ((update_id_tag p new_tag, typ) :: acc_ps,
               acc_changes || (get_id_tag p) <> new_tag))
-               tparams ([], body_changes) in
+               in
       ({ tname = tname ; tparams = new_params ; tbody = new_tbody },
        new_field_env,
        new_changes)
@@ -1265,44 +1300,42 @@ module ScillaCashflowChecker
       let empty_field_env = AssocDictionary.make_dict () in
       let implicit_field_env = AssocDictionary.insert "_balance" Money empty_field_env in
       let param_field_env =
-        List.fold_left
-          (fun acc_env (p, _) ->
+        List.fold_left cparams ~init:implicit_field_env
+          ~f:(fun acc_env (p, _) ->
              AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
-          implicit_field_env
-          cparams in
+          in
       let init_field_env =
-        List.fold_left
-          (fun acc_env (f, _, e) ->
+        List.fold_left cfields ~init:param_field_env
+          ~f:(fun acc_env (f, _, e) ->
              let ((_, (e_tag, _)), _, _, _) =
                   cf_tag_expr e NoInfo (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) in
              AssocDictionary.insert (get_id f) e_tag acc_env)
-          param_field_env
-          cfields in
+          in
       let rec tagger transitions field_env =
         let (new_ts, new_field_env, ctrans_changes) =
-          List.fold_right
-            (fun t (acc_ts, acc_field_env, acc_changes) ->
+          List.fold_right transitions ~init:([], field_env, false) 
+            ~f:(fun t (acc_ts, acc_field_env, acc_changes) ->
                let (new_t, new_field_env, t_changes) =
                  cf_tag_transition t acc_field_env in
                (new_t :: acc_ts, new_field_env, acc_changes || t_changes))
-            transitions ([], field_env, false) in
+            in
         if ctrans_changes
         then
           tagger new_ts new_field_env
         else (new_ts, new_field_env) in
       let (new_ctrans, new_field_env) = tagger ctrans init_field_env in
       let new_fields =
-        List.fold_right
-          (fun (f, t, e) acc_fields ->
+        List.fold_right cfields ~init:[] 
+          ~f:(fun (f, t, e) acc_fields ->
              let new_tag = lookup_var_tag f new_field_env in
              (update_id_tag f new_tag, t, e) :: acc_fields)
-          cfields [] in
+          in
       let new_params =
-        List.fold_right
-          (fun (p, t) acc_params ->
+        List.fold_right cparams ~init:[] 
+          ~f:(fun (p, t) acc_params ->
              let new_tag = lookup_var_tag p new_field_env in
              (update_id_tag p new_tag, t) :: acc_params)
-          cparams [] in
+          in
       { cname = cname ;
         cparams = new_params ;
         cfields = new_fields ;
@@ -1324,8 +1357,8 @@ module ScillaCashflowChecker
   let main cmod =
     let init_mod = cf_init_tag_module cmod in
     let new_mod = cf_tag_module init_mod in
-    (List.map (fun (p, _) -> (get_id p, get_id_tag p)) new_mod.contr.cparams)
+    (List.map ~f:(fun (p, _) -> (get_id p, get_id_tag p)) new_mod.contr.cparams)
     @
-    (List.map (fun (f, _, _) -> (get_id f, get_id_tag f)) new_mod.contr.cfields)
+    (List.map ~f:(fun (f, _, _) -> (get_id f, get_id_tag f)) new_mod.contr.cfields)
 
 end

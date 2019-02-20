@@ -8,5 +8,4 @@
              testtypes testtypefail
              testpmfail testgasexpr testgascontracts
              testchecker testinteger256)
-  (flags (-cclib -lstdc++ -cclib -lcrypto))
 )
