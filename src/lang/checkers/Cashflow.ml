@@ -1095,21 +1095,6 @@ module ScillaCashflowChecker
             | Unequal_lengths -> false
           in
           let tag = ctr_to_adt_tag cname (List.map new_args ~f:get_id_tag) in
-            (* TODO: Factor this out, and generalise *)
-(*            match cname with
-            | "None" -> Adt ("Option", [NoInfo])
-            | "Some" ->
-                (match List.map2 ~f:(fun ni arg -> lub_tags ni (get_id_tag arg)) [NoInfo] new_args with
-                 | Ok res          -> Adt ("Option", res)
-                 | Unequal_lengths -> Inconsistent)
-            | "True"
-            | "False" -> NotMoney
-            | "Pair" ->
-                (match new_args with
-                 | [ new_arg1; new_arg2 ] ->
-                     Adt ("Pair", [get_id_tag new_arg1 ; get_id_tag new_arg2])
-                 | _ -> Inconsistent)
-              | _ -> Inconsistent in *)
           (Constr (cname, ts, new_args),
            tag,
            field_env,
