@@ -12,4 +12,9 @@ type TestType1 =
 type TestType2 =
 | Item3 of TestType1
 
+(* Tests of empty types *)
+type TestType3
+
+type TestType4 =
+
 contract BadLib ()
