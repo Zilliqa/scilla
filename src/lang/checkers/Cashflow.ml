@@ -337,7 +337,9 @@ module ScillaCashflowChecker
             (* Deduce mapping from type arguments to tags based on
                constructor argument tags *)
             match constr_tmap adt ctr_name with
-            | None -> Inconsistent
+            | None ->
+                (* No tmap for constructor = doesn't take arguments *)
+                Adt (adt.tname, List.map adt.tparams ~f:(fun _ -> NoInfo))
             | Some arg_typs ->
                 (* Default mapping : 'A -> NoInfo *)
                 let init_targ_to_tag_map =
@@ -1092,9 +1094,9 @@ module ScillaCashflowChecker
             | Ok res -> res
             | Unequal_lengths -> false
           in
-          let tag =
+          let tag = ctr_to_adt_tag cname (List.map new_args ~f:get_id_tag) in
             (* TODO: Factor this out, and generalise *)
-            match cname with
+(*            match cname with
             | "None" -> Adt ("Option", [NoInfo])
             | "Some" ->
                 (match List.map2 ~f:(fun ni arg -> lub_tags ni (get_id_tag arg)) [NoInfo] new_args with
@@ -1107,7 +1109,7 @@ module ScillaCashflowChecker
                  | [ new_arg1; new_arg2 ] ->
                      Adt ("Pair", [get_id_tag new_arg1 ; get_id_tag new_arg2])
                  | _ -> Inconsistent)
-            | _ -> Inconsistent in
+              | _ -> Inconsistent in *)
           (Constr (cname, ts, new_args),
            tag,
            field_env,
