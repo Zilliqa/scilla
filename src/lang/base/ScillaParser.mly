@@ -348,7 +348,7 @@ libentry :
 | LET; ns = ID; EQ; e= exp { LibVar (asIdL ns (toLoc $startpos(ns)), e) }
 | TYPE; tname = CID
   { LibTyp (asIdL tname (toLoc $startpos), []) }
-| TYPE; tname = CID; EQ; constrs = list(tconstr)
+| TYPE; tname = CID; EQ; constrs = nonempty_list(tconstr)
   { LibTyp (asIdL tname (toLoc $startpos), constrs) }
 
 library :

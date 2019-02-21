@@ -54,7 +54,6 @@
         "tparams": [ "'A", "'B" ],
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
-      { "tname": "TestType4", "tparams": [], "tmap": [] },
       {
         "tname": "TestType2",
         "tparams": [],
