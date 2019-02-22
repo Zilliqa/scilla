@@ -49,12 +49,12 @@
     with | _ -> ADT (d, [])
 
   let to_map_key_type_exn d =
-    let exn = SyntaxError ("Invalid map key type " ^ d) in
+    let exn () = SyntaxError ("Invalid map key type " ^ d) in
     try
       match to_prim_type_exn d with
-      | Msg_typ | Event_typ -> raise exn
+      | Msg_typ | Event_typ -> raise (exn ())
       | t -> PrimType t
-    with | _ -> raise exn
+    with | _ -> raise (exn ())
 
   let build_prim_literal_exn t v =
     match PrimTypes.build_prim_literal t v with
