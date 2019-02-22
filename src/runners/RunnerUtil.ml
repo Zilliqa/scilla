@@ -101,10 +101,10 @@ let parse_cli () =
           ()
       ), "Print Scilla version and exit");
     ("-libdir", Arg.String (fun x ->
-           let xl = if x = "" then [] else String.split_on_char ';' x in
+           let xl = if x = "" then [] else Str.split (Str.regexp "[;:]") x in
            r_stdlib_dir := !r_stdlib_dir @ xl
         ),
-      "Path(s) to libraries separated with ';'");
+      "Path(s) to libraries separated with ':' (';' on windows)");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
     ("-contractinfo", Arg.Unit (fun () -> r_contract_info := true), "Print various contract information");
