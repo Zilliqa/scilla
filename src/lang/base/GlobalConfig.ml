@@ -115,7 +115,7 @@ let validate_json () = !validate_json_b
 module StdlibTracker = struct
 
 (* Environment variable: where to look for stdlib.
- * Multiple entries can be specified, separated by ';'.
+ * Multiple entries can be specified, separated by ':' or ';'.
  *)
 let scilla_stdlib_env = "SCILLA_STDLIB_PATH"
 
@@ -127,7 +127,7 @@ let stdlib_dirs = ref []
 let get_stdlib_dirs () =
   let env_dirs = 
     match (Sys.getenv_opt scilla_stdlib_env) with 
-    | Some s when s != "" -> String.split_on_char ';' s
+    | Some s when s != "" -> Str.split (Str.regexp "([;:])") s
     | _ -> []
   in
     List.append env_dirs !stdlib_dirs
