@@ -16,6 +16,7 @@
           { "cname": "Item2", "argtypes": [] }
         ]
       },
+      { "tname": "TestType3", "tparams": [], "tmap": [] },
       {
         "tname": "Option",
         "tparams": [ "'A" ],
