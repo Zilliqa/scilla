@@ -107,6 +107,11 @@ It should look like
 export PKG_CONFIG_PATH="/usr/local/opt/openssl@_Version_/lib/pkgconfig:$PKG_CONFIG_PATH""
 ```
 
+To run tests with `make test` you might need to increase the maximum number of open file descriptors:
+```shell
+ulimit -n 1024
+```
+
 ## Using Ocaml with Emacs
 
 As Scilla is written in [OCaml](https://ocaml.org/), the following extensions would be
