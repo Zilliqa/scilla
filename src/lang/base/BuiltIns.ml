@@ -811,8 +811,7 @@ module ScillaBuiltIns
     let to_uint256_type = tfun_typ "'A" @@ fun_typ (tvar "'A") uint256_typ
     let to_uint256_arity = 1
     let to_uint256_elab sc ts = match ts with
-      | [t] when (match bystrx_width t with | Some w when w <= 32 -> true | _ -> false) ->
-        elab_tfun_with_args sc ts
+      | [PrimType (Bystrx_typ w)] when w <= 32 -> elab_tfun_with_args sc ts
       | _ -> fail0 "Failed to elaborate"
     let to_uint256 ls _ = match ls with
       | [ByStrX(w, s)] when w <= 32 ->
