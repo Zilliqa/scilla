@@ -774,8 +774,8 @@ module ScillaBuiltIns
     let eq_elab sc ts =
       match ts with
       | [bstyp1; bstyp2] when
-          (* We want both the types to be ByStr with equal width. *)
-          is_bystrx_type bstyp1 && is_bystrx_type bstyp2 && bstyp1 = bstyp2
+          (* We want both types to be ByStr with equal width. *)
+          is_bystrx_type bstyp1 && bstyp1 = bstyp2
         -> elab_tfun_with_args sc [bstyp1]
       | _ -> fail0 "Failed to elaborate"
     let eq ls _ = match ls with
