@@ -657,7 +657,7 @@ module ScillaBuiltIns
           if i = Uint32.zero then zero
           else
             let prev = nat_builder (Uint32.sub i Uint32.one) in
-            ADTValue ("Succ", [], (prev::[]))
+            ADTValue ("Succ", [], [prev])
         in
         pure (nat_builder n)
       (* Other integer widths can be in the library, using integer conversions. *)
@@ -1008,11 +1008,11 @@ module ScillaBuiltIns
       | [Map ((kt, vt), entries)] ->
           (* The type of the output list will be "Pair (kt) (vt)" *)
           let otyp = pair_typ kt vt in
-          let nil = ADTValue ("Nil", (otyp::[]), []) in
+          let nil = ADTValue ("Nil", [otyp], []) in
           let ol = Caml.Hashtbl.fold
               (fun k v accum ->
-               let kv = ADTValue ("Pair", (kt::vt::[]), k::v::[]) in
-               let kvl = ADTValue ("Cons", (otyp::[]), (kv::accum::[])) in
+               let kv = ADTValue ("Pair", [kt; vt], [k; v]) in
+               let kvl = ADTValue ("Cons", [otyp], [kv; accum]) in
                kvl) entries nil
           in pure (ol)
       | _ -> builtin_fail "Map.to_list" ls
@@ -1140,7 +1140,7 @@ module ScillaBuiltIns
           let (opname, _, _, _, _) = row in
           match Hashtbl.find_opt ht opname with
           | Some p ->  Hashtbl.add ht opname (row::p)
-          | None -> Hashtbl.add ht opname (row::[])
+          | None -> Hashtbl.add ht opname [row]
         ) built_in_dict;
       ht
       
