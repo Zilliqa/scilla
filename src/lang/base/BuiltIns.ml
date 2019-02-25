@@ -827,10 +827,8 @@ module ScillaBuiltIns
                       fun_typ (tvar "'A") (fun_typ (tvar "'B") (tvar "'C"))
     let concat_arity = 2
     let concat_elab sc ts = match ts with
-      | [t1;t2] when is_bystrx_type t1 && is_bystrx_type t2 ->
-        let t1w = BatOption.get (bystrx_width t1) in
-        let t2w = BatOption.get (bystrx_width t2) in
-        elab_tfun_with_args sc (ts @ [(bystrx_typ (t1w+t2w))])
+      | [PrimType (Bystrx_typ w1); PrimType (Bystrx_typ w2)] ->
+          elab_tfun_with_args sc (ts @ [(bystrx_typ (w1+w2))])
       | _ -> fail0 "Failed to elaborate"
     let concat ls _ = match ls with
       | [ByStrX(w1, s1);ByStrX(w2, s2)] -> 
