@@ -841,9 +841,10 @@ module ScillaBuiltIns
       | _ -> builtin_fail "Crypto.bystr" ls
 
 
-    let ec_gen_key_pair_type = fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
-    let ec_gen_key_pair_arity = 0  
-    let ec_gen_key_pair ls _ =
+    let [@warning "-32"] ec_gen_key_pair_type =
+      fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
+    let [@warning "-32"] ec_gen_key_pair_arity = 0
+    let [@warning "-32"] ec_gen_key_pair ls _ =
       match ls with
       | [] ->
         let privK, pubK = genKeyPair () in
@@ -854,12 +855,13 @@ module ScillaBuiltIns
         | _ -> builtin_fail "ec_gen_key_pair: internal error, invalid private/public key(s)." ls)
       | _ -> builtin_fail "ec_gen_key_pair" ls
 
-    let schnorr_sign_type = fun_typ (bystrx_typ privkey_len) @@ (* private key *)
-                            fun_typ (bystrx_typ pubkey_len) @@ (* public key *)
-                            fun_typ (bystr_typ) @@ (* message to be signed *)
-                            (bystrx_typ signature_len) (* signature *)
-    let schnorr_sign_arity = 3
-    let schnorr_sign ls _ =
+    let [@warning "-32"] schnorr_sign_type =
+      fun_typ (bystrx_typ privkey_len) @@ (* private key *)
+      fun_typ (bystrx_typ pubkey_len) @@ (* public key *)
+      fun_typ (bystr_typ) @@ (* message to be signed *)
+      (bystrx_typ signature_len) (* signature *)
+    let [@warning "-32"] schnorr_sign_arity = 3
+    let [@warning "-32"] schnorr_sign ls _ =
       match ls with
       | [ByStrX(privklen, privkey); ByStrX(pubklen, pubkey); ByStr(msg)]
           when privklen = privkey_len && pubklen = pubkey_len ->
@@ -883,11 +885,12 @@ module ScillaBuiltIns
         pure @@ to_Bool v
       | _ -> builtin_fail "schnorr_verify" ls
 
-    let ecdsa_sign_type = fun_typ (bystrx_typ Secp256k1Wrapper.privkey_len) @@ (* private key *)
-                            fun_typ (bystr_typ) @@ (* message to be signed *)
-                            (bystrx_typ Secp256k1Wrapper.signature_len) (* signature *)
-    let ecdsa_sign_arity = 2
-    let ecdsa_sign ls _ =
+    let [@warning "-32"] ecdsa_sign_type =
+      fun_typ (bystrx_typ Secp256k1Wrapper.privkey_len) @@ (* private key *)
+      fun_typ (bystr_typ) @@ (* message to be signed *)
+      (bystrx_typ Secp256k1Wrapper.signature_len) (* signature *)
+    let [@warning "-32"] ecdsa_sign_arity = 2
+    let [@warning "-32"] ecdsa_sign ls _ =
       let open Secp256k1Wrapper in
       match ls with
       | [ByStrX(privklen, privkey); ByStr(msg)]
@@ -1034,12 +1037,6 @@ module ScillaBuiltIns
 
   (* Identity elaborator *)
   let elab_id = fun t _ -> pure t
-
-  (* Create dummy uses for these so that their functions don't create a warning. *)
-  let _ = 
-    [("ec_gen_key_pair", Crypto.ec_gen_key_pair_arity, Crypto.ec_gen_key_pair_type, elab_id, Crypto.ec_gen_key_pair);
-    ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign);
-    ("ecdsa_sign", Crypto.ecdsa_sign_arity, Crypto.ecdsa_sign_type, elab_id, Crypto.ecdsa_sign);]
 
 
   (**********************************************************)
