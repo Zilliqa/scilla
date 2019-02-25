@@ -65,12 +65,13 @@ let literal_type_exn l =
     pp_typ s
 
 let build_prim_lit_exn t v =
-  let exn_wrapper t v r = 
-    match v with
-    | None -> raise (mk_invalid_json ("Invalid " ^ (pp_typ t) ^ " value " ^ r ^ " in JSON"))
-    | Some v' -> v'
-  in
-    exn_wrapper t (build_prim_literal t v) v
+  let exn () = mk_invalid_json ("Invalid " ^ (pp_typ t) ^ " value " ^ v ^ " in JSON") in
+  match t with
+  | PrimType pt ->
+      (match build_prim_literal pt v with
+      | Some v' -> v'
+      | None -> raise (exn ()))
+  | _ -> raise (exn ())
 
 let constr_pattern_arg_types_exn dt cname =
   match constr_pattern_arg_types dt cname with
