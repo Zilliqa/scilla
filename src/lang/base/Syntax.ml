@@ -377,9 +377,10 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (*                  Type substitutions                          *)
   (****************************************************************)
 
-  (* Return free tvars in tp *)
+  (* Return free tvars in tp
+     The return list doesn't contain duplicates *)
   let free_tvars tp =
-    let add vs tv = tv :: List.filter ~f:(fun v -> v = tv) vs in
+    let add vs tv = tv :: List.filter ~f:(fun v -> v <> tv) vs in
     let rem vs tv = List.filter ~f:(fun v -> v <> tv) vs in
     let rec go t acc = (match t with
         | PrimType _ | Unit -> acc
@@ -387,7 +388,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         | FunType (at, rt) -> go at acc |> go rt
         | TypeVar n -> add acc n
         | ADT (_, ts) ->
-            List.fold_left ts ~init:acc ~f:(fun z tt -> go tt z)
+            List.fold_left ts ~init:acc ~f:(Fn.flip go)
         | PolyFun (arg, bt) ->
             let acc' = go bt acc in
             rem acc' arg) in
