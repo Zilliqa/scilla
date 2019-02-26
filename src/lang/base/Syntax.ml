@@ -269,9 +269,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       
   let expr_loc erep =
     let l = ER.get_loc (expr_rep erep) in
-    if l.cnum <> -1
-    then Some l
-    else None
+    Option.some_if (l.cnum <> -1) l
 
   (* SExp printing for Expr for structural printing. *)
   let spp_expr e =
