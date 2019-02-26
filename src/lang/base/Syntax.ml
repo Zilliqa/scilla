@@ -45,8 +45,44 @@ let mk_ident s = Ident (s, dummy_loc)
 (*******************************************************)
 (*                         Types                       *)
 (*******************************************************)
-type typ  =
-  | PrimType of string
+
+type int_bit_width =
+  | Bits32
+  | Bits64
+  | Bits128
+  | Bits256
+[@@deriving sexp]
+
+type prim_typ =
+  | Int_typ of int_bit_width
+  | Uint_typ of int_bit_width
+  | String_typ
+  | Bnum_typ
+  | Msg_typ
+  | Event_typ
+  | Bystr_typ
+  | Bystrx_typ of int
+
+let sexp_of_prim_typ = function
+  | Int_typ Bits32 -> Sexp.Atom "Int32"
+  | Int_typ Bits64 -> Sexp.Atom "Int64"
+  | Int_typ Bits128 -> Sexp.Atom "Int128"
+  | Int_typ Bits256 -> Sexp.Atom "Int256"
+  | Uint_typ Bits32 -> Sexp.Atom "Uint32"
+  | Uint_typ Bits64 -> Sexp.Atom "Uint64"
+  | Uint_typ Bits128 -> Sexp.Atom "Uint128"
+  | Uint_typ Bits256 -> Sexp.Atom "Uint256"
+  | String_typ -> Sexp.Atom "String"
+  | Bnum_typ -> Sexp.Atom "BNum"
+  | Msg_typ -> Sexp.Atom "Message"
+  | Event_typ -> Sexp.Atom "Event"
+  | Bystr_typ -> Sexp.Atom "ByStr"
+  | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
+
+let prim_typ_of_sexp _ = raise (SyntaxError "prim_typ_of_sexp not implemented")
+
+type typ =
+  | PrimType of prim_typ
   | MapType of typ * typ
   | FunType of typ * typ
   | ADT of string * typ list
@@ -55,8 +91,24 @@ type typ  =
   | Unit
 [@@deriving sexp]
 
-let rec pp_typ t = match t with
-  | PrimType t -> t
+let int_bit_width_to_string = function
+  | Bits32 -> "32"
+  | Bits64 -> "64"
+  | Bits128 -> "128"
+  | Bits256 -> "256"
+
+let pp_prim_typ = function
+  | Int_typ bw -> "Int" ^ int_bit_width_to_string bw
+  | Uint_typ bw -> "Uint" ^ int_bit_width_to_string bw
+  | String_typ -> "String"
+  | Bnum_typ -> "BNum"
+  | Msg_typ -> "Message"
+  | Event_typ -> "Event"
+  | Bystr_typ -> "ByStr"
+  | Bystrx_typ b -> "ByStr" ^ Int.to_string b
+
+let rec pp_typ = function
+  | PrimType t -> pp_prim_typ t
   | MapType (kt, vt) ->
       sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt )
   | ADT (name, targs) ->
@@ -87,8 +139,7 @@ let hash_length = 32
 type int_lit =
   | Int32L of int32 | Int64L of int64 | Int128L of int128 | Int256L of Integer256.int256
 
-let sexp_of_int_lit i = 
-  match i with 
+let sexp_of_int_lit = function
   | Int32L i' -> Sexp.Atom ("Int32 " ^ Int32.to_string i')
   | Int64L i' -> Sexp.Atom ("Int64 " ^ Int64.to_string i')
   | Int128L i' -> Sexp.Atom ("Int128 " ^ Int128.to_string i')
@@ -99,8 +150,7 @@ let int_lit_of_sexp _ = raise (SyntaxError "int_lit_of_sexp not implemented")
 type uint_lit =
   | Uint32L of uint32 | Uint64L of uint64 | Uint128L of uint128 | Uint256L of Integer256.uint256
 
-let sexp_of_uint_lit i = 
-  match i with 
+let sexp_of_uint_lit = function
   | Uint32L i' -> Sexp.Atom ("Uint32 " ^ Uint32.to_string i')
   | Uint64L i' -> Sexp.Atom ("Uint64 " ^ Uint64.to_string i')
   | Uint128L i' -> Sexp.Atom ("Uint128 " ^ Uint128.to_string i')

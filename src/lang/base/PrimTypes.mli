@@ -20,7 +20,7 @@
 open Syntax
 
 (****************************************************************)
-(*                     PrimType utilities                        *)
+(*                     PrimType utilities                       *)
 (****************************************************************)
 
 val is_prim_type : typ -> bool
@@ -49,9 +49,9 @@ val bystrx_width : typ -> int option
 (*            PrimType Literal utilities                        *)
 (****************************************************************)
 
-val build_prim_literal : typ -> string -> literal option
+val build_prim_literal : prim_typ -> string -> literal option
 (* Is string representation of integer valid for integer typ. *)
-val validate_int_string : typ -> string -> bool
+val validate_int_string : prim_typ -> string -> bool
 (* Get bit-width if int_lit. *)
 val int_lit_width : int_lit -> int
 (* Get bit-width if uint_lit. *)

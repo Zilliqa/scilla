@@ -23,21 +23,43 @@
 
   open ParsedSyntax
 
-  let to_type d = match d with
-    | x when PrimTypes.is_prim_type (PrimType x) -> PrimType x
-    | _ -> ADT (d, [])
-         
-  let to_map_key_type d = match d with
-    | x
-         when PrimTypes.is_prim_type (PrimType x) &&
-                not (PrimType x = PrimTypes.msg_typ || PrimType x = PrimTypes.event_typ)
-      -> PrimType x
-    | _ -> raise (SyntaxError ("Invalid map key type " ^ d))
+  let to_prim_type_exn d = match d with
+    | "Int32" -> Int_typ Bits32
+    | "Int64" -> Int_typ Bits64
+    | "Int128" -> Int_typ Bits128
+    | "Int256" -> Int_typ Bits256
+    | "Uint32" -> Uint_typ Bits32
+    | "Uint64" -> Uint_typ Bits64
+    | "Uint128" -> Uint_typ Bits128
+    | "Uint256" -> Uint_typ Bits256
+    | "String" -> String_typ
+    | "BNum" -> Bnum_typ
+    | "Message" -> Msg_typ
+    | "Event" -> Event_typ
+    | "ByStr" -> Bystr_typ
+    | _ -> let re = Str.regexp "ByStr\\([0-9]+\\)$" in
+           if Str.string_match re d 0 then
+             let open Core in
+             let b = Int.of_string (Str.matched_group 1 d) in
+             Bystrx_typ b
+           else raise (SyntaxError "Invalid primitive type")
+
+  let to_type d =
+    try PrimType (to_prim_type_exn d)
+    with | _ -> ADT (d, [])
+
+  let to_map_key_type_exn d =
+    let exn () = SyntaxError ("Invalid map key type " ^ d) in
+    try
+      match to_prim_type_exn d with
+      | Msg_typ | Event_typ -> raise (exn ())
+      | t -> PrimType t
+    with | _ -> raise (exn ())
 
   let build_prim_literal_exn t v =
     match PrimTypes.build_prim_literal t v with
     | Some l -> l
-    | None -> raise (SyntaxError ("Invalid " ^ (pp_typ t) ^ " literal " ^ v))
+    | None -> raise (SyntaxError ("Invalid " ^ (pp_prim_typ t) ^ " literal " ^ v))
 %}
 
 (* Identifiers *)    
@@ -123,8 +145,8 @@
 (***********************************************)
 (* TODO: This is a temporary fix of issue #166 *)
 t_map_key :
-| kt = CID { to_map_key_type kt }
-| LPAREN; kt = CID; RPAREN; { to_map_key_type kt }
+| kt = CID { to_map_key_type_exn kt }
+| LPAREN; kt = CID; RPAREN; { to_map_key_type_exn kt }
 
 (* TODO: This is a temporary fix of issue #261 *)
 t_map_value_args:
@@ -215,11 +237,11 @@ lit :
 | i = CID;
   n = NUMLIT   {
     let string_of_n = Big_int.string_of_big_int n in
-    build_prim_literal_exn (to_type i) string_of_n
+    build_prim_literal_exn (to_prim_type_exn i) string_of_n
   }
 | h = HEXLIT   { 
   let l = String.length h in
-  build_prim_literal_exn (PrimTypes.bystrx_typ ((l-1)/2)) h
+  build_prim_literal_exn (Bystrx_typ ((l-1)/2)) h
 }
 | s = STRING   { StringLit s }
 | EMP; kt = t_map_key; vt = t_map_value
