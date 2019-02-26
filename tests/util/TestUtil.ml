@@ -98,10 +98,10 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         | [] -> default_std_lib
         | _ ->
             let additional_paths = List.map (fun path -> String.concat Filename.dir_sep path) additional_libdirs  in
-            let additional_paths_str = String.concat ";" additional_paths in
+            let additional_paths_str = String.concat ":" additional_paths in
             match default_std_lib with
             | None -> Some additional_paths_str
-            | Some path -> Some (path ^ ";" ^ additional_paths_str) in
+            | Some path -> Some (path ^ ":" ^ additional_paths_str) in
 
       let common_args =
         match std_lib_dirs with

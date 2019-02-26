@@ -2,9 +2,9 @@ Gas use polynomial for transition verify:
 1(a) + 450 + 15(b) + 3(c)
 Legend:
 
-c: _sender
-b: msg
 a: pub_key
+b: msg
+c: _sender
 
 {
   "contract_info": {

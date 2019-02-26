@@ -5,7 +5,7 @@ Gas use polynomial:
 1(a) + 1(b) + 4
 Legend:
 
-b: a
 a: b
+b: a
 Result size: Result of builtin concat(a,b)
 

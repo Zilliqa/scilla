@@ -104,10 +104,10 @@ let parse_cli () =
           ()
       ), "Print Scilla version and exit");
     ("-libdir", Arg.String (fun x ->
-           let xl = if x = "" then [] else String.split_on_char ';' x in
+           let xl = if x = "" then [] else Str.split (Str.regexp "[;:]") x in
            r_stdlib_dir := !r_stdlib_dir @ xl
         ),
-      "Path(s) to libraries separated with ';'");
+      "Path(s) to libraries separated with ':' (';' on windows)");
     ("-gua", Arg.Unit (fun () -> r_gua := true), "Run gas use analysis and print use polynomial.");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
