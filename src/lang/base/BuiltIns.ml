@@ -657,7 +657,7 @@ module ScillaBuiltIns
           if i = Uint32.zero then zero
           else
             let prev = nat_builder (Uint32.sub i Uint32.one) in
-            ADTValue ("Succ", [], (prev::[]))
+            ADTValue ("Succ", [], [prev])
         in
         pure (nat_builder n)
       (* Other integer widths can be in the library, using integer conversions. *)
@@ -774,8 +774,8 @@ module ScillaBuiltIns
     let eq_elab sc ts =
       match ts with
       | [bstyp1; bstyp2] when
-          (* We want both the types to be ByStr with equal width. *)
-          is_bystrx_type bstyp1 && is_bystrx_type bstyp2 && bstyp1 = bstyp2
+          (* We want both types to be ByStr with equal width. *)
+          is_bystrx_type bstyp1 && bstyp1 = bstyp2
         -> elab_tfun_with_args sc [bstyp1]
       | _ -> fail0 "Failed to elaborate"
     let eq ls _ = match ls with
@@ -811,8 +811,7 @@ module ScillaBuiltIns
     let to_uint256_type = tfun_typ "'A" @@ fun_typ (tvar "'A") uint256_typ
     let to_uint256_arity = 1
     let to_uint256_elab sc ts = match ts with
-      | [t] when (match bystrx_width t with | Some w when w <= 32 -> true | _ -> false) ->
-        elab_tfun_with_args sc ts
+      | [PrimType (Bystrx_typ w)] when w <= 32 -> elab_tfun_with_args sc ts
       | _ -> fail0 "Failed to elaborate"
     let to_uint256 ls _ = match ls with
       | [ByStrX(w, s)] when w <= 32 ->
@@ -828,10 +827,8 @@ module ScillaBuiltIns
                       fun_typ (tvar "'A") (fun_typ (tvar "'B") (tvar "'C"))
     let concat_arity = 2
     let concat_elab sc ts = match ts with
-      | [t1;t2] when is_bystrx_type t1 && is_bystrx_type t2 ->
-        let t1w = BatOption.get (bystrx_width t1) in
-        let t2w = BatOption.get (bystrx_width t2) in
-        elab_tfun_with_args sc (ts @ [(bystrx_typ (t1w+t2w))])
+      | [PrimType (Bystrx_typ w1); PrimType (Bystrx_typ w2)] ->
+          elab_tfun_with_args sc (ts @ [(bystrx_typ (w1+w2))])
       | _ -> fail0 "Failed to elaborate"
     let concat ls _ = match ls with
       | [ByStrX(w1, s1);ByStrX(w2, s2)] -> 
@@ -844,9 +841,10 @@ module ScillaBuiltIns
       | _ -> builtin_fail "Crypto.bystr" ls
 
 
-    let ec_gen_key_pair_type = fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
-    let ec_gen_key_pair_arity = 0  
-    let ec_gen_key_pair ls _ =
+    let [@warning "-32"] ec_gen_key_pair_type =
+      fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
+    let [@warning "-32"] ec_gen_key_pair_arity = 0
+    let [@warning "-32"] ec_gen_key_pair ls _ =
       match ls with
       | [] ->
         let privK, pubK = genKeyPair () in
@@ -857,12 +855,13 @@ module ScillaBuiltIns
         | _ -> builtin_fail "ec_gen_key_pair: internal error, invalid private/public key(s)." ls)
       | _ -> builtin_fail "ec_gen_key_pair" ls
 
-    let schnorr_sign_type = fun_typ (bystrx_typ privkey_len) @@ (* private key *)
-                            fun_typ (bystrx_typ pubkey_len) @@ (* public key *)
-                            fun_typ (bystr_typ) @@ (* message to be signed *)
-                            (bystrx_typ signature_len) (* signature *)
-    let schnorr_sign_arity = 3
-    let schnorr_sign ls _ =
+    let [@warning "-32"] schnorr_sign_type =
+      fun_typ (bystrx_typ privkey_len) @@ (* private key *)
+      fun_typ (bystrx_typ pubkey_len) @@ (* public key *)
+      fun_typ (bystr_typ) @@ (* message to be signed *)
+      (bystrx_typ signature_len) (* signature *)
+    let [@warning "-32"] schnorr_sign_arity = 3
+    let [@warning "-32"] schnorr_sign ls _ =
       match ls with
       | [ByStrX(privklen, privkey); ByStrX(pubklen, pubkey); ByStr(msg)]
           when privklen = privkey_len && pubklen = pubkey_len ->
@@ -886,11 +885,12 @@ module ScillaBuiltIns
         pure @@ to_Bool v
       | _ -> builtin_fail "schnorr_verify" ls
 
-    let ecdsa_sign_type = fun_typ (bystrx_typ Secp256k1Wrapper.privkey_len) @@ (* private key *)
-                            fun_typ (bystr_typ) @@ (* message to be signed *)
-                            (bystrx_typ Secp256k1Wrapper.signature_len) (* signature *)
-    let ecdsa_sign_arity = 2
-    let ecdsa_sign ls _ =
+    let [@warning "-32"] ecdsa_sign_type =
+      fun_typ (bystrx_typ Secp256k1Wrapper.privkey_len) @@ (* private key *)
+      fun_typ (bystr_typ) @@ (* message to be signed *)
+      (bystrx_typ Secp256k1Wrapper.signature_len) (* signature *)
+    let [@warning "-32"] ecdsa_sign_arity = 2
+    let [@warning "-32"] ecdsa_sign ls _ =
       let open Secp256k1Wrapper in
       match ls with
       | [ByStrX(privklen, privkey); ByStr(msg)]
@@ -1009,11 +1009,11 @@ module ScillaBuiltIns
       | [Map ((kt, vt), entries)] ->
           (* The type of the output list will be "Pair (kt) (vt)" *)
           let otyp = pair_typ kt vt in
-          let nil = ADTValue ("Nil", (otyp::[]), []) in
+          let nil = ADTValue ("Nil", [otyp], []) in
           let ol = Caml.Hashtbl.fold
               (fun k v accum ->
-               let kv = ADTValue ("Pair", (kt::vt::[]), k::v::[]) in
-               let kvl = ADTValue ("Cons", (otyp::[]), (kv::accum::[])) in
+               let kv = ADTValue ("Pair", [kt; vt], [k; v]) in
+               let kvl = ADTValue ("Cons", [otyp], [kv; accum]) in
                kvl) entries nil
           in pure (ol)
       | _ -> builtin_fail "Map.to_list" ls
@@ -1037,12 +1037,6 @@ module ScillaBuiltIns
 
   (* Identity elaborator *)
   let elab_id = fun t _ -> pure t
-
-  (* Create dummy uses for these so that their functions don't create a warning. *)
-  let _ = 
-    [("ec_gen_key_pair", Crypto.ec_gen_key_pair_arity, Crypto.ec_gen_key_pair_type, elab_id, Crypto.ec_gen_key_pair);
-    ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign);
-    ("ecdsa_sign", Crypto.ecdsa_sign_arity, Crypto.ecdsa_sign_type, elab_id, Crypto.ecdsa_sign);]
 
 
   (**********************************************************)
@@ -1141,7 +1135,7 @@ module ScillaBuiltIns
           let (opname, _, _, _, _) = row in
           match Hashtbl.find_opt ht opname with
           | Some p ->  Hashtbl.add ht opname (row::p)
-          | None -> Hashtbl.add ht opname (row::[])
+          | None -> Hashtbl.add ht opname [row]
         ) built_in_dict;
       ht
       
