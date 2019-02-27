@@ -1,0 +1,5 @@
+(* fails type check as substr only accepts Uint32 as the 2nd and 3rd arguments. *)
+let s = "Foo42" in
+let start = Uint128 0 in
+let len = Uint256 3 in
+builtin substr s start len

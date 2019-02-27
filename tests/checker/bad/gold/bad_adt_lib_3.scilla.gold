@@ -12,7 +12,7 @@
     {
       "error_message": "Multiple declarations of type TestType1",
       "start_location": {
-        "file": "checker/bad/lib/BadADTLib3b.scilla",
+        "file": "checker/bad/lib/BadADTLib3b.scillib",
         "line": 3,
         "column": 1
       },

@@ -125,18 +125,7 @@ module ScillaBuiltIns
       | _ -> builtin_fail "String.concat" ls
 
     let substr_arity = 3    
-    let substr_type =
-      tfun_typ "'A" @@ tfun_typ "'B" @@ tfun_typ "'C" @@
-      (fun_typ (tvar "'A") @@ fun_typ (tvar "'B") @@ fun_typ (tvar "'C") string_typ)
-    (* Elaborator to run with arbitrary uints *)
-    let substr_elab _ ts = match ts with
-      | [s; u1; u2]
-        when s = string_typ &&
-             is_uint_type u1 &&
-             is_uint_type u2 ->
-          elab_tfun_with_args substr_type ts
-      | _ -> fail0 "Failed to elaborate"
-
+    let substr_type = fun_typ string_typ @@ fun_typ uint32_typ @@ fun_typ uint32_typ string_typ
     let substr ls _ = match ls with
       | [StringLit x; UintLit (Uint32L s); UintLit (Uint32L e)] ->
           pure @@ StringLit (Core.String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
@@ -1083,7 +1072,7 @@ module ScillaBuiltIns
       (* Strings *)
       ("eq", String.eq_arity, String.eq_type, elab_id, String.eq);
       ("concat", String.concat_arity, String.concat_type, elab_id, String.concat);
-      ("substr", String.substr_arity, String.substr_type, String.substr_elab, String.substr);
+      ("substr", String.substr_arity, String.substr_type, elab_id, String.substr);
       ("strlen", String.strlen_arity, String.strlen_type, elab_id, String.strlen);
       ("to_string", String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string);
 
