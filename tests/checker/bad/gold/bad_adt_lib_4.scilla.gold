@@ -12,7 +12,7 @@
     {
       "error_message": "Multiple declarations of type constructor Item1",
       "start_location": {
-        "file": "checker/bad/lib/BadADTLib3c.scilla",
+        "file": "checker/bad/lib/BadADTLib3c.scillib",
         "line": 3,
         "column": 1
       },
