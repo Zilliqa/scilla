@@ -207,9 +207,6 @@ module TypeUtilities
 
   module MakeTEnv = MakeTEnv
 
-  module TSSyntax = ScillaSyntax (SR) (ER)
-  open TSSyntax
-     
   (* Some useful data type constructors *)
   let fun_typ t s = FunType (t, s)
   let tvar i = TypeVar i
