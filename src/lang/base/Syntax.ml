@@ -269,9 +269,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       
   let expr_loc erep =
     let l = ER.get_loc (expr_rep erep) in
-    if l.cnum <> -1
-    then Some l
-    else None
+    Option.some_if (l.cnum <> -1) l
 
   (* SExp printing for Expr for structural printing. *)
   let spp_expr e =
@@ -377,17 +375,18 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (*                  Type substitutions                          *)
   (****************************************************************)
 
-  (* Return free tvars in tp *)
+  (* Return free tvars in tp
+     The return list doesn't contain duplicates *)
   let free_tvars tp =
-    let add vs tv = tv :: List.filter ~f:(fun v -> v = tv) vs in
-    let rem vs tv = List.filter ~f:(fun v -> v <> tv) vs in
+    let add vs tv = tv :: List.filter ~f:((<>) tv) vs in
+    let rem vs tv = List.filter ~f:((<>) tv) vs in
     let rec go t acc = (match t with
         | PrimType _ | Unit -> acc
         | MapType (kt, vt) -> go kt acc |> go vt
         | FunType (at, rt) -> go at acc |> go rt
         | TypeVar n -> add acc n
         | ADT (_, ts) ->
-            List.fold_left ts ~init:acc ~f:(fun z tt -> go tt z)
+            List.fold_left ts ~init:acc ~f:(Fn.flip go)
         | PolyFun (arg, bt) ->
             let acc' = go bt acc in
             rem acc' arg) in
@@ -396,34 +395,36 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   let mk_fresh_var taken init =
     let tmp = ref init in
     let counter = ref 1 in
-    while List.mem taken !tmp ~equal:(fun a b -> a = b) do
-      let cnt = !counter in
-      tmp := init ^ (Int.to_string cnt);
-      counter := cnt + 1;
+    while List.mem taken !tmp ~equal:(=) do
+      tmp := init ^ (Int.to_string !counter);
+      Int.incr counter
     done;
     !tmp
 
 
+  (* tm[tvar := tp] *)
   let rec subst_type_in_type tvar tp tm = match tm with
-    | PrimType _ | Unit as p -> p
+    | PrimType _ | Unit -> tm
     (* Make sure the map's type is still primitive! *)
-    | MapType (kt, vt) -> 
+    | MapType (kt, vt) ->
         let kts = subst_type_in_type tvar tp kt in
         let vts = subst_type_in_type tvar tp vt in
         MapType (kts, vts)
-    | FunType (at, rt) -> 
+    | FunType (at, rt) ->
         let ats = subst_type_in_type tvar tp at in
         let rts = subst_type_in_type tvar tp rt in
         FunType (ats, rts)
-    | TypeVar n as tv ->
-        if tvar = n then tp else tv
+    | TypeVar n ->
+        if tvar = n then tp else tm
     | ADT (s, ts) ->
-        let ts' = List.map ts ~f:(fun t -> subst_type_in_type tvar tp t) in
+        let ts' = List.map ts ~f:(subst_type_in_type tvar tp) in
         ADT (s, ts')
-    | PolyFun (arg, t) as pf -> 
-        if tvar = arg then pf
+    | PolyFun (arg, t) ->
+        if tvar = arg then tm
         else PolyFun (arg, subst_type_in_type tvar tp t)
 
+  (* note: this is sequential substitution of multiple variables,
+           _not_ simultaneous substitution *)
   let subst_types_in_type sbst tm =
     List.fold_left sbst ~init:tm
       ~f:(fun acc (tvar, tp) -> subst_type_in_type tvar tp acc)
