@@ -35,7 +35,7 @@ let import_lib id =
   let f = match dir with
     | None -> perr @@ scilla_error_to_string
         (mk_error1 (errmsg ^ "Not found.\n") sloc); exit 1
-    | Some d -> d ^ Filename.dir_sep ^ name ^ ".scillib" in
+    | Some d -> d ^ Filename.dir_sep ^ name ^ StdlibTracker.file_extn_library in
   try
     let parse_lib = FrontEndParser.parse_file ScillaParser.lmodule f  in
     match parse_lib with
@@ -84,7 +84,7 @@ let import_all_libs ldirs  =
        exit 1);
     let files = Array.to_list (Sys.readdir dir) in
     List.fold_right (fun file names ->
-      if Filename.extension file = ".scillib"
+      if Filename.extension file = StdlibTracker.file_extn_library
       then 
         let name = Filename.remove_extension (Filename.basename file) in
           asId name :: names
