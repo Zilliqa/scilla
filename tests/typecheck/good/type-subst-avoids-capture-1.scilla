@@ -1,0 +1,4 @@
+let id_with_dummy = tfun 'A => tfun 'B => fun (x : 'A) => x in
+let try_to_capture_type_var = tfun 'A => tfun 'B =>
+  @id_with_dummy ('B -> 'A) Int32 in   (* Int32 must disappear *)
+try_to_capture_type_var
