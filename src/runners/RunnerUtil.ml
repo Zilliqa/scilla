@@ -25,29 +25,48 @@ open ErrorUtils
 open PrettyPrinters
 open DebugMessage
 
-(* Parse external libraries "names" (by looking for in StdlibTracker). *)
+(* Find (by looking for in StdlibTracker) and parse library named "id". *)
+let import_lib id =
+  let name = get_id id in
+  let sloc = get_rep id in
+  let errmsg = (sprintf "%s. " ("Failed to import library " ^ name)) in
+  let dir = StdlibTracker.find_lib_dir name in
+  let open Core in 
+  let f = match dir with
+    | None -> perr @@ scilla_error_to_string
+        (mk_error1 (errmsg ^ "Not found.\n") sloc); exit 1
+    | Some d -> d ^ Filename.dir_sep ^ name ^ ".scillib" in
+  try
+    let parse_lib = FrontEndParser.parse_file ScillaParser.lmodule f  in
+    match parse_lib with
+    | None -> perr @@ scilla_error_to_string
+        (mk_error1 (errmsg ^ "Failed to parse.\n") sloc); exit 1
+    | Some lib ->
+      plog (sprintf "Successfully imported external library %s\n" name);
+      lib
+  with | _ -> perr @@ scilla_error_to_string 
+        (mk_error1 (errmsg ^ "Failed to parse.\n") sloc); exit 1
+
+(* Import all libraries in "names" (and their dependences).
+ * The order of the returned libraries is an inorder traversal
+ * over the dependence tree generated out of "names".
+ *)
 let import_libs names =
-  List.map (fun id -> 
-    let name = get_id id in
-    let sloc = get_rep id in
-    let errmsg = (sprintf "%s. " ("Failed to import library " ^ name)) in
-    let dir = StdlibTracker.find_lib_dir name in
-    let open Core in 
-    let f = match dir with
-      | None -> perr @@ scilla_error_to_string
-         (mk_error1 (errmsg ^ "Not found.\n") sloc); exit 1
-      | Some d -> d ^ Filename.dir_sep ^ name ^ ".scillib" in
-    try
-      let parse_lib = FrontEndParser.parse_file ScillaParser.lmodule f  in
-      match parse_lib with
-      | None -> perr @@ scilla_error_to_string
-          (mk_error1 (errmsg ^ "Failed to parse.\n") sloc); exit 1
-      | Some lib ->
-        plog (sprintf "%s\n" "Successfully imported external library " ^ name);
-        lib
-    with | _ -> perr @@ scilla_error_to_string 
-          (mk_error1 (errmsg ^ "Failed to parse.\n") sloc); exit 1
-    ) names 
+  let rec importer names importedl =
+    List.fold_left (fun (ilibs, importedl) l ->
+      let name = get_id l in
+      if List.mem name importedl then (ilibs, importedl) else
+      let ilib = import_lib l in
+      let importedl' = name :: importedl in
+      let id' = ilib.elibs in
+      let (ilibs'', importedl'') = importer id' importedl' in
+      (* Order in which we return the list of imported libraries is important. *)
+      (ilibs @ ilibs'' @ [ilib], importedl'')
+    ) ([], importedl) names
+  in
+  let (libs, _) = importer names [] in
+  (* Return library list rather than lmodule list. *)
+  List.map (fun (l : ParserUtil.ParsedSyntax.lmodule) -> l.libs) libs
 
 let stdlib_not_found_err () =
   (perr @@ scilla_error_to_string (mk_error0 
@@ -72,12 +91,14 @@ let import_all_libs ldirs  =
       else
         names) files []
   in
-  (* Make a list of all libraries and parse them through import_libs above. *)
+  (* Make a list of all libraries and parse them through import_lib above. *)
   let names = List.fold_right (fun dir names ->
     let names' = get_lib_list dir in
       List.append names names') ldirs []
   in
-    import_libs names 
+    (* We don't need to look for dependences of imported libraries
+     * because we are importing _all_ libraries that we can find. *)
+    List.map (fun l -> (import_lib l).libs) names 
 
 type runner_cli = {
   input_file : string;

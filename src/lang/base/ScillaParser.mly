@@ -136,7 +136,7 @@
 %start <Syntax.typ list> types
 %start <ParserUtil.ParsedSyntax.stmt_annot list> stmts_term
 %start <ParserUtil.ParsedSyntax.cmodule> cmodule
-%start <ParserUtil.ParsedSyntax.library> lmodule
+%start <ParserUtil.ParsedSyntax.lmodule> lmodule
 
 %%
 
@@ -379,7 +379,7 @@ library :
      lentries = ls } }
 
 lmodule :
-| l = library; EOF { l }
+| els = imports; l = library; EOF { { elibs = els; libs = l } }
 
 imports :
 | IMPORT; els = list(cident) { els }

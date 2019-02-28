@@ -112,7 +112,7 @@ module ScillaContractUtil
 
   (* Iterate over all messages in the contract, accumuating result. 
    * ~f takes a message and an accumulator and updates the accumulator. *)
-  let fold_over_messages cmod ~init ~f =
+  let fold_over_messages (cmod : cmodule) ~init ~f =
 
     let rec expr_folder b ex acc =
       match ex with
