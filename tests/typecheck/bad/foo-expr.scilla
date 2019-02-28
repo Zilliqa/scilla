@@ -1,0 +1,9 @@
+let id =
+  tfun 'A =>
+  fun (x : 'A) =>
+    x
+in
+id
+
+Int32
+

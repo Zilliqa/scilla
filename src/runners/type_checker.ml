@@ -75,7 +75,7 @@ let () =
     set_debug_level Debug_None;
     let filename = cli.input_file in
     match FrontEndParser.parse_file ScillaParser.exps filename  with
-    | Some [e] ->
+    | Some e ->
         (* Get list of stdlib dirs. *)
         let lib_dirs = StdlibTracker.get_stdlib_dirs() in
         if lib_dirs = [] then stdlib_not_found_err ();
@@ -88,5 +88,5 @@ let () =
               | Error el -> (pout @@ scilla_error_to_string el ; exit 1)
              )
          | Error el -> (pout @@ scilla_error_to_string el ); exit 1)
-    | Some _ | None -> (* Error is printed by the parser. *)
+    | None -> (* Error is printed by the parser. *)
         exit 1
