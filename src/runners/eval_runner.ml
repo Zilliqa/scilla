@@ -39,7 +39,7 @@ let gas_limit = Stdint.Uint64.of_int 2000
 let () =
   let cli = parse_cli() in
   let filename = cli.input_file in
-  match FrontEndParser.parse_file ScillaParser.exps filename with
+  match FrontEndParser.parse_file ScillaParser.exp_s filename with
   | Some e ->
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib = { TC.UntypedSyntax.lname = asId "dummy";

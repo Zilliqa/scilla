@@ -132,8 +132,8 @@
 (* %nonassoc NEG *)
 %right TARROW
 
-%start <ParserUtil.ParsedSyntax.expr_annot> exps
-%start <Syntax.typ> types
+%start <ParserUtil.ParsedSyntax.expr_annot> exp_s
+%start <Syntax.typ> type_s
 %start <ParserUtil.ParsedSyntax.stmt_annot list> stmts_term
 %start <ParserUtil.ParsedSyntax.cmodule> cmodule
 %start <ParserUtil.ParsedSyntax.library> lmodule
@@ -285,10 +285,10 @@ cident :
 type_annot:
 | COLON; t = typ { t }
 
-exps : 
+exp_s : 
 | e = exp; EOF { e }
 
-types : 
+type_s : 
 | t = typ; EOF { t }
 
 (***********************************************)
