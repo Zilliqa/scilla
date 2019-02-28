@@ -145,6 +145,7 @@ module Tests = TestUtil.DiffBasedTests(
       "fun2.scilla";
       "fun3.scilla";
       "fun4.scilla";
+      "foo-expr.scilla";
       "list-error.scilla";
       "list-error2.scilla";
       "list-lit.scilla";

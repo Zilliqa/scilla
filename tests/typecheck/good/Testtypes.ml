@@ -81,6 +81,8 @@ module Tests = TestUtil.DiffBasedTests(
       "subst.scilla";
       "nat_to_int.scilla";
       "to_int.scilla";
+      "type-subst-avoids-capture-1.scilla";
+      "type-subst-avoids-capture-2.scilla";
       "zip.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
