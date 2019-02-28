@@ -61,7 +61,7 @@ let parse_string parser s  =
 
 let parse_type s =
   match parse_string ScillaParser.types s with
-  | Some [t] -> t
+  | Some t -> t
   | _ -> raise ScillaParser.Error
 
 let parse_expr s =

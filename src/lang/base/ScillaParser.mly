@@ -133,7 +133,7 @@
 %right TARROW
 
 %start <ParserUtil.ParsedSyntax.expr_annot> exps
-%start <Syntax.typ list> types
+%start <Syntax.typ> types
 %start <ParserUtil.ParsedSyntax.stmt_annot list> stmts_term
 %start <ParserUtil.ParsedSyntax.cmodule> cmodule
 %start <ParserUtil.ParsedSyntax.library> lmodule
@@ -289,8 +289,7 @@ exps :
 | e = exp; EOF { e }
 
 types : 
-| EOF { [] }
-| t = typ; ts = types {t :: ts}
+| t = typ; EOF { t }
 
 (***********************************************)
 (*                 Statements                  *)
