@@ -126,9 +126,58 @@ let rec output_event_json elist =
     | _ -> `Null :: j)
   | [] -> []
 
+let deploy_library (cli : Cli.ioFiles) gas_remaining =
+  let parse_lmodule =
+    FrontEndParser.parse_file ScillaParser.lmodule cli.input in
+  match parse_lmodule with
+  | None ->
+    (* Error is printed by the parser. *)
+    plog (sprintf "%s\n" "Failed to parse input library file.");
+    exit 1
+  | Some lmod ->
+      plog (sprintf "\n[Parsing]:\nLibrary module [%s] is successfully parsed.\n" cli.input);
+      (* Parse external libraries. *)
+      let lib_dirs = (Filename.dirname cli.input::cli.libdirs) in
+      StdlibTracker.add_stdlib_dirs lib_dirs;
+      let elibs = import_libs lmod.elibs in
+      (* Contract library. *)
+      let clibs = Some (lmod.libs) in
+
+      (* Checking initialized libraries! *)
+      let gas_remaining' = check_libs clibs elibs cli.input gas_remaining in
+
+      (* Retrieve initial parameters *)
+      let initargs =
+        try
+          JSON.ContractState.get_json_data cli.input_init
+        with
+        | Invalid_json s ->
+            perr @@ scilla_error_gas_string gas_remaining'
+              (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init)));
+            exit 1
+      in
+      (* init.json for libraries can only have _extlibs field. *)
+      (match initargs with
+      | [(label, _)] when label = extlibs_label -> ()
+      | _ -> perr @@ scilla_error_gas_string gas_remaining'
+            (mk_error0 (sprintf "Invalid initialization file %s for library\n" cli.input_init))
+      );
+      let output_json = `Assoc [
+        "gas_remaining", `String (Uint64.to_string gas_remaining');
+        (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
+      ] in
+        Out_channel.with_file cli.output ~f:(fun channel ->
+          if cli.pp_json then
+            Yojson.pretty_to_string output_json |> Out_channel.output_string channel
+          else
+            Yojson.to_string output_json |> Out_channel.output_string channel
+          )
+
 let () =
   let cli = Cli.parse () in
   let is_deployment = (cli.input_message = "") in
+  let is_library =
+    (Caml.Filename.extension cli.input = GlobalConfig.StdlibTracker.file_extn_library) in
   let gas_remaining =
     let open Unix in
     (* Subtract gas based on (contract+init) size / message size. *)
@@ -143,13 +192,21 @@ let () =
         Uint64.sub cli.gas_limit cost
     else
       let cost = Uint64.of_int64 (stat cli.input_message).st_size in
-      if (Uint64.compare cli.gas_limit cost) < 0 then
+      (* libraries can only be deployed, not "run". *)
+      if is_deployment then
+        (perr @@ scilla_error_gas_jstring Uint64.zero @@
+          mk_error0 (sprintf "Cannot run a library contract. They can only be deployed\n");
+          exit 1)
+      else if (Uint64.compare cli.gas_limit cost) < 0 then
         (perr @@ scilla_error_gas_jstring Uint64.zero @@ 
               mk_error0 (sprintf "Ran out of gas when parsing message.\n");
         exit 1)
       else
         Uint64.sub cli.gas_limit cost
   in
+
+  if is_library then deploy_library cli gas_remaining  else
+
   let parse_module =
     FrontEndParser.parse_file ScillaParser.cmodule cli.input in
   match parse_module with

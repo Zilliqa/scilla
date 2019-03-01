@@ -74,6 +74,7 @@ let creation_block_label = "_creation_block"
 let this_address_label = "_this_address"
 let scilla_version_label = "_scilla_version"
 let accepted_label = "_accepted"
+let extlibs_label = "_extlibs"
 
 let no_store_fields =
   [balance_label]
@@ -96,6 +97,11 @@ module ScillaContractUtil
     let this_address = (ER.mk_id_address this_address_label, bystrx_typ address_length) in
     let scilla_version_init = (ER.mk_id_uint32 scilla_version_label, uint32_typ) in
     creation_block :: scilla_version_init :: this_address :: tparams
+
+  (* Remove init arguments that the evaluator doesn't (need to) understand. *)
+  let remove_noneval_args args =
+    let nonevalargs = [extlibs_label] in
+    List.filter args ~f:(fun a -> not (List.mem nonevalargs (fst a) ~equal:(=)))
 
   let append_implict_trans_params tparams =
     let open PrimTypes in

@@ -119,19 +119,21 @@ let rec build_contract_tests env name ecode i n add_additional_lib =
       else
         (test false) :: (build_contract_tests env name ecode (i+1) n add_additional_lib)
 
-let build_contract_init_test env name =
+let build_contract_init_test env name is_library =
   name ^ "_" ^ "init" >::
   (fun test_ctxt ->
     (* Files for the contract are in examples/contract/(crowdfunding|zil-game|etc). *)
     let contract_dir = env.tests_dir test_ctxt ^ sep ^ "contracts" ^ sep in
     let dir = env.tests_dir test_ctxt ^ sep ^ "runner" ^ sep ^
       name ^ sep in
+      let extn = 
+        (if is_library then GlobalConfig.StdlibTracker.file_extn_library else GlobalConfig.StdlibTracker.file_extn_contract) in
       let tmpdir = bracket_tmpdir test_ctxt in 
       let output_file = tmpdir ^ sep ^ name ^ "_init_output.json" in
       let args = ["-init"; dir ^ "init.json";
                   (* stdlib is in src/stdlib *)
                   "-libdir"; "src" ^ sep ^ "stdlib";
-                  "-i"; contract_dir ^ name ^ ".scilla";
+                  "-i"; contract_dir ^ name ^ extn;
                   "-o"; output_file;
                   "-jsonerrors";
                   "-gaslimit"; Core.Int.to_string testsuit_gas_limit;
@@ -215,9 +217,10 @@ let add_tests env =
     let succ_code : Unix.process_status = WEXITED 0 in
     let fail_code : Unix.process_status = WEXITED 1 in
     let crowdfundingtests = "crowdfunding" >:::(build_contract_tests env "crowdfunding" succ_code 1 6 false) in
-    let cfinit_test = "crowdfunding_init" >:(build_contract_init_test env "crowdfunding") in
+    let cfinit_test = "crowdfunding_init" >:(build_contract_init_test env "crowdfunding" false) in
     let zilgametests = "zil-game" >:::(build_contract_tests env "zil-game" succ_code 1 9 false) in
-    let zginit_test = "zil-game_init" >:(build_contract_init_test env "zil-game") in
+    let zginit_test = "zil-game_init" >:(build_contract_init_test env "zil-game" false) in
+    let testlib2_test = "testlib2_init" >:(build_contract_init_test env "TestLib2" true) in
     let cfinvoketests = "cfinvoke" >:::(build_contract_tests env "cfinvoke" succ_code 1 4 false) in
     let pingtests = "ping" >:::(build_contract_tests env "ping" succ_code 0 3 false) in
     let pongtests = "pong" >:::(build_contract_tests env "pong" succ_code 0 3 false) in
@@ -247,5 +250,5 @@ let add_tests env =
                              misc_tests;pingtests;pongtests;fungibletokentests;helloWorldtests;helloWorldtests_f;
                              auctiontests;emptytests;bookstoretests;nonfungibletokentests_expected_f;nonfungibletokentests;
                              wallettests;schnorrtests;inplace_map_tests;ecdsatests;simpledextests;shogi_tests;map_key_tests;
-                            multiple_msgs_tests;one_msg_tests;one_msg1_tests]
+                            multiple_msgs_tests;one_msg_tests;one_msg1_tests;testlib2_test]
 
