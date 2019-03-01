@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "error_message": "Syntax error: String is not terminated",
+      "error_message": "Lexical error: String is not terminated",
       "start_location": {
         "file": "eval/exp/bad/string_error1.scilla",
         "line": 2,
