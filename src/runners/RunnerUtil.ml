@@ -36,7 +36,7 @@ let import_libs names =
     let f = match dir with
       | None -> perr @@ scilla_error_to_string
          (mk_error1 (errmsg ^ "Not found.\n") sloc); exit 1
-      | Some d -> d ^ Filename.dir_sep ^ name ^ ".scilla" in
+      | Some d -> d ^ Filename.dir_sep ^ name ^ ".scillib" in
     try
       let parse_lib = FrontEndParser.parse_file ScillaParser.lmodule f  in
       match parse_lib with
@@ -61,11 +61,11 @@ let import_all_libs ldirs  =
   (* Get list of scilla libraries in dir *)
   let get_lib_list dir =
     if not (Sys.file_exists dir) then
-      (perr @@ scilla_error_to_string (mk_error0 "Invalid stdlib director provided");
+      (perr @@ scilla_error_to_string (mk_error0 "Invalid stdlib directory provided");
        exit 1);
     let files = Array.to_list (Sys.readdir dir) in
     List.fold_right (fun file names ->
-      if Filename.extension file = ".scilla"
+      if Filename.extension file = ".scillib"
       then 
         let name = Filename.remove_extension (Filename.basename file) in
           asId name :: names
@@ -101,10 +101,10 @@ let parse_cli () =
           ()
       ), "Print Scilla version and exit");
     ("-libdir", Arg.String (fun x ->
-           let xl = if x = "" then [] else String.split_on_char ';' x in
+           let xl = if x = "" then [] else Str.split (Str.regexp "[;:]") x in
            r_stdlib_dir := !r_stdlib_dir @ xl
         ),
-      "Path(s) to libraries separated with ';'");
+      "Path(s) to libraries separated with ':' (';' on windows)");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
     ("-contractinfo", Arg.Unit (fun () -> r_contract_info := true), "Print various contract information");

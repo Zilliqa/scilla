@@ -52,7 +52,7 @@ val validate_json : unit -> bool
 module StdlibTracker : sig
 
   (* Environment variable: where to look for stdlib.
-   * Multiple entries can be specified, separated by ';'.
+   * Multiple entries can be specified, separated by ':' or ';'.
   *)
   val scilla_stdlib_env : string
   (* List of directories to look for stdlib.

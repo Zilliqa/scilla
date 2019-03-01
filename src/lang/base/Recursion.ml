@@ -32,7 +32,7 @@ module NatRec = struct
   let g = mk_ident "g"
   let tvar = mk_ident "'T"
 
-    (* Adopted one, as flod_left and fold_right are equivalent for
+    (* Adopted one, as fold_left and fold_right are equivalent for
      * natural numbers *)
     module Foldl = struct
       (* The type of the fixpoint argument *)

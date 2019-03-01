@@ -45,8 +45,44 @@ let mk_ident s = Ident (s, dummy_loc)
 (*******************************************************)
 (*                         Types                       *)
 (*******************************************************)
-type typ  =
-  | PrimType of string
+
+type int_bit_width =
+  | Bits32
+  | Bits64
+  | Bits128
+  | Bits256
+[@@deriving sexp]
+
+type prim_typ =
+  | Int_typ of int_bit_width
+  | Uint_typ of int_bit_width
+  | String_typ
+  | Bnum_typ
+  | Msg_typ
+  | Event_typ
+  | Bystr_typ
+  | Bystrx_typ of int
+
+let sexp_of_prim_typ = function
+  | Int_typ Bits32 -> Sexp.Atom "Int32"
+  | Int_typ Bits64 -> Sexp.Atom "Int64"
+  | Int_typ Bits128 -> Sexp.Atom "Int128"
+  | Int_typ Bits256 -> Sexp.Atom "Int256"
+  | Uint_typ Bits32 -> Sexp.Atom "Uint32"
+  | Uint_typ Bits64 -> Sexp.Atom "Uint64"
+  | Uint_typ Bits128 -> Sexp.Atom "Uint128"
+  | Uint_typ Bits256 -> Sexp.Atom "Uint256"
+  | String_typ -> Sexp.Atom "String"
+  | Bnum_typ -> Sexp.Atom "BNum"
+  | Msg_typ -> Sexp.Atom "Message"
+  | Event_typ -> Sexp.Atom "Event"
+  | Bystr_typ -> Sexp.Atom "ByStr"
+  | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
+
+let prim_typ_of_sexp _ = raise (SyntaxError "prim_typ_of_sexp not implemented")
+
+type typ =
+  | PrimType of prim_typ
   | MapType of typ * typ
   | FunType of typ * typ
   | ADT of string * typ list
@@ -55,8 +91,24 @@ type typ  =
   | Unit
 [@@deriving sexp]
 
-let rec pp_typ t = match t with
-  | PrimType t -> t
+let int_bit_width_to_string = function
+  | Bits32 -> "32"
+  | Bits64 -> "64"
+  | Bits128 -> "128"
+  | Bits256 -> "256"
+
+let pp_prim_typ = function
+  | Int_typ bw -> "Int" ^ int_bit_width_to_string bw
+  | Uint_typ bw -> "Uint" ^ int_bit_width_to_string bw
+  | String_typ -> "String"
+  | Bnum_typ -> "BNum"
+  | Msg_typ -> "Message"
+  | Event_typ -> "Event"
+  | Bystr_typ -> "ByStr"
+  | Bystrx_typ b -> "ByStr" ^ Int.to_string b
+
+let rec pp_typ = function
+  | PrimType t -> pp_prim_typ t
   | MapType (kt, vt) ->
       sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt )
   | ADT (name, targs) ->
@@ -87,8 +139,7 @@ let hash_length = 32
 type int_lit =
   | Int32L of int32 | Int64L of int64 | Int128L of int128 | Int256L of Integer256.int256
 
-let sexp_of_int_lit i = 
-  match i with 
+let sexp_of_int_lit = function
   | Int32L i' -> Sexp.Atom ("Int32 " ^ Int32.to_string i')
   | Int64L i' -> Sexp.Atom ("Int64 " ^ Int64.to_string i')
   | Int128L i' -> Sexp.Atom ("Int128 " ^ Int128.to_string i')
@@ -99,8 +150,7 @@ let int_lit_of_sexp _ = raise (SyntaxError "int_lit_of_sexp not implemented")
 type uint_lit =
   | Uint32L of uint32 | Uint64L of uint64 | Uint128L of uint128 | Uint256L of Integer256.uint256
 
-let sexp_of_uint_lit i = 
-  match i with 
+let sexp_of_uint_lit = function
   | Uint32L i' -> Sexp.Atom ("Uint32 " ^ Uint32.to_string i')
   | Uint64L i' -> Sexp.Atom ("Uint64 " ^ Uint64.to_string i')
   | Uint128L i' -> Sexp.Atom ("Uint128 " ^ Uint128.to_string i')
@@ -219,9 +269,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       
   let expr_loc erep =
     let l = ER.get_loc (expr_rep erep) in
-    if l.cnum <> -1
-    then Some l
-    else None
+    Option.some_if (l.cnum <> -1) l
 
   (* SExp printing for Expr for structural printing. *)
   let spp_expr e =
@@ -327,17 +375,18 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (*                  Type substitutions                          *)
   (****************************************************************)
 
-  (* Return free tvars in tp *)
+  (* Return free tvars in tp
+     The return list doesn't contain duplicates *)
   let free_tvars tp =
-    let add vs tv = tv :: List.filter ~f:(fun v -> v = tv) vs in
-    let rem vs tv = List.filter ~f:(fun v -> v <> tv) vs in
+    let add vs tv = tv :: List.filter ~f:((<>) tv) vs in
+    let rem vs tv = List.filter ~f:((<>) tv) vs in
     let rec go t acc = (match t with
         | PrimType _ | Unit -> acc
         | MapType (kt, vt) -> go kt acc |> go vt
         | FunType (at, rt) -> go at acc |> go rt
         | TypeVar n -> add acc n
         | ADT (_, ts) ->
-            List.fold_left ts ~init:acc ~f:(fun z tt -> go tt z)
+            List.fold_left ts ~init:acc ~f:(Fn.flip go)
         | PolyFun (arg, bt) ->
             let acc' = go bt acc in
             rem acc' arg) in
@@ -346,34 +395,36 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   let mk_fresh_var taken init =
     let tmp = ref init in
     let counter = ref 1 in
-    while List.mem taken !tmp ~equal:(fun a b -> a = b) do
-      let cnt = !counter in
-      tmp := init ^ (Int.to_string cnt);
-      counter := cnt + 1;
+    while List.mem taken !tmp ~equal:(=) do
+      tmp := init ^ (Int.to_string !counter);
+      Int.incr counter
     done;
     !tmp
 
 
+  (* tm[tvar := tp] *)
   let rec subst_type_in_type tvar tp tm = match tm with
-    | PrimType _ | Unit as p -> p
+    | PrimType _ | Unit -> tm
     (* Make sure the map's type is still primitive! *)
-    | MapType (kt, vt) -> 
+    | MapType (kt, vt) ->
         let kts = subst_type_in_type tvar tp kt in
         let vts = subst_type_in_type tvar tp vt in
         MapType (kts, vts)
-    | FunType (at, rt) -> 
+    | FunType (at, rt) ->
         let ats = subst_type_in_type tvar tp at in
         let rts = subst_type_in_type tvar tp rt in
         FunType (ats, rts)
-    | TypeVar n as tv ->
-        if tvar = n then tp else tv
+    | TypeVar n ->
+        if tvar = n then tp else tm
     | ADT (s, ts) ->
-        let ts' = List.map ts ~f:(fun t -> subst_type_in_type tvar tp t) in
+        let ts' = List.map ts ~f:(subst_type_in_type tvar tp) in
         ADT (s, ts')
-    | PolyFun (arg, t) as pf -> 
-        if tvar = arg then pf
+    | PolyFun (arg, t) ->
+        if tvar = arg then tm
         else PolyFun (arg, subst_type_in_type tvar tp t)
 
+  (* note: this is sequential substitution of multiple variables,
+           _not_ simultaneous substitution *)
   let subst_types_in_type sbst tm =
     List.fold_left sbst ~init:tm
       ~f:(fun acc (tvar, tp) -> subst_type_in_type tvar tp acc)

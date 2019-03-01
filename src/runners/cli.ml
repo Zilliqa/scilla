@@ -114,9 +114,9 @@ let parse () =
     ("-tracefile", Arg.String (fun x -> f_trace_file := x), "Path to trace file. (prints to stdout if no file specified)");
     ("-tracelevel", Arg.String (fun x -> f_trace_level := x), "Trace level: none|stmt|exp. (default none)");
     ("-libdir", Arg.String (fun x ->
-        let xl = if x = "" then [] else String.split_on_char ';' x in
+        let xl = if x = "" then [] else Str.split (Str.regexp "[;:]") x in
         d_libs := !d_libs @ xl
-      ), "Path(s) to directory containing libraries seperated by ';'");
+      ), "Path(s) to directory containing libraries separated by ':' (';' on windows)");
     ("-gaslimit", Arg.String
       (fun i ->
         let g = 
