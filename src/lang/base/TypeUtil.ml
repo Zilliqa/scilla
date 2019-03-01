@@ -346,7 +346,7 @@ module TypeUtilities
       List.zip_exn tparams @@
       List.map tparams' ~f:(fun s -> TypeVar s) in 
     let tmap' = List.map tmap ~f:(fun (cn, tls) ->
-        let tls' = List.map tls ~f:(fun t -> subst_types_in_type subst t)
+        let tls' = List.map tls ~f:(subst_types_in_type subst)
         in (cn, tls'))
     in {adt with tparams = tparams'; tmap = tmap'}
 

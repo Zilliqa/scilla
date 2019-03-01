@@ -43,7 +43,7 @@ module PM_Checker = ScillaPatternchecker (TCSRep) (TCERep)
 (* Check that the expression parses *)
 let check_parsing filename = 
     let parse_module =
-      FrontEndParser.parse_file ScillaParser.exps filename in
+      FrontEndParser.parse_file ScillaParser.exp_term filename in
     match parse_module with
     | None -> fail0 (sprintf "Failed to parse input file %s\n." filename)
     | Some e ->
@@ -74,8 +74,8 @@ let () =
     StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
     set_debug_level Debug_None;
     let filename = cli.input_file in
-    match FrontEndParser.parse_file ScillaParser.exps filename  with
-    | Some [e] ->
+    match FrontEndParser.parse_file ScillaParser.exp_term filename  with
+    | Some e ->
         (* Get list of stdlib dirs. *)
         let lib_dirs = StdlibTracker.get_stdlib_dirs() in
         if lib_dirs = [] then stdlib_not_found_err ();
@@ -88,5 +88,5 @@ let () =
               | Error el -> (pout @@ scilla_error_to_string el ; exit 1)
              )
          | Error el -> (pout @@ scilla_error_to_string el ); exit 1)
-    | Some _ | None -> (* Error is printed by the parser. *)
+    | None -> (* Error is printed by the parser. *)
         exit 1

@@ -39,8 +39,8 @@ let gas_limit = Stdint.Uint64.of_int 2000
 let () =
   let cli = parse_cli() in
   let filename = cli.input_file in
-  match FrontEndParser.parse_file ScillaParser.exps filename with
-  | Some [e] ->
+  match FrontEndParser.parse_file ScillaParser.exp_term filename with
+  | Some e ->
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib = { TC.UntypedSyntax.lname = asId "dummy";
                    TC.UntypedSyntax.lentries = [] } in
@@ -63,5 +63,5 @@ let () =
       | Ok _ ->
           printf "%s\n" (Eval.pp_result res lib_fnames)
       | Error (el, gas_remaining) -> (pout @@ scilla_error_gas_string gas_remaining el ); exit 1)
-  | Some _ | None -> (* Error is printed by the parser. *)
+  | None -> (* Error is printed by the parser. *)
       exit 1
