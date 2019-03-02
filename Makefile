@@ -29,6 +29,9 @@ utop: all
 test: dev
 	./bin/testsuite
 
+testd: dev
+	./bin/testsuite -print-diff true
+
 # Clean up
 clean:
 # Remove files produced by dune.
