@@ -17,32 +17,11 @@
 *)
 
 
+open Core_kernel
 open OUnit2
+open ScillaUtil.FilePathInfix
 
-let i_to_s i =
-  Printf.sprintf "%d" i
-
-(* load an entire file to memory *)
-let load_file f =
-    Core.In_channel.read_all f
-
-(* save string to file *)
-let save_to_file s f =
-  let open Core.Out_channel in
-  with_file f ~f:(fun channel -> s |> output_string channel)
-
-let string_of_chars chars = 
-  let buf = Buffer.create 16 in
-  List.iter (Buffer.add_char buf) chars;
-  Buffer.contents buf
-
-let stream_to_string (s : char Stream.t) =
-  let result = ref [] in
-    Stream.iter (fun value -> result := value :: !result) s;
-  let l = List.rev !result in
-    string_of_chars l
-
-type tsuite_env = 
+type tsuite_env =
   { bin_dir : test_ctxt -> string;
     tests_dir : test_ctxt -> string;
     stdlib_dir : test_ctxt -> string;
@@ -64,20 +43,18 @@ end
 module DiffBasedTests(Input : TestSuiteInput) = struct
   open Input
 
-  let rec build_exp_tests env el =
-  match el with
-  | [] -> []
-  | f :: r ->
-    let test = f  >:: (fun test_ctxt ->
-      let evalbin = env.bin_dir test_ctxt ^ Filename.dir_sep ^ runner in
+  let build_exp_tests env = List.map ~f:(fun f ->
+    f  >:: (fun test_ctxt ->
+      let evalbin = env.bin_dir test_ctxt ^/ runner in
       let dir = env.tests_dir test_ctxt in
-      let input_file = String.concat Filename.dir_sep (test_path f) in
+      let input_file = FilePath.make_filename (test_path f) in
       (* Verify standard output of execution with gold file *)
       let goldoutput_file =
-        String.concat Filename.dir_sep (gold_path dir f)  in
+        FilePath.make_filename (gold_path dir f) in
       let output_verifier s =
-        let output = stream_to_string s in
-        let gold_output = load_file goldoutput_file in
+        let output = BatStream.to_string s in
+        (* load all data from file *)
+        let gold_output = In_channel.read_all goldoutput_file in
         let pp_diff fmt =
           let config =
             let open Patdiff_lib.Configuration in
@@ -94,16 +71,16 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         in
         let print_diff = env.print_diff test_ctxt in
         if print_diff then
-          assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o))
+          assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o))
             ~pp_diff:(fun fmt _ -> pp_diff fmt) gold_output output
         else
-          assert_equal ~cmp:(fun e o -> (String.trim e) = (String.trim o))
+          assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o))
             ~printer:(fun s -> s) gold_output output
       in
       let output_updater s =
-        let output = stream_to_string s in
-        (save_to_file output goldoutput_file;
-        Printf.printf "Updated gold for test %s\n" input_file);
+        let output = BatStream.to_string s in
+        Out_channel.write_all goldoutput_file ~data:output;
+        Printf.printf "Updated gold for test %s\n" input_file
       in
       let default_std_lib =
         match Sys.getenv_opt GlobalConfig.StdlibTracker.scilla_stdlib_env with
@@ -114,8 +91,9 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         match additional_libdirs with
         | [] -> default_std_lib
         | _ ->
-            let additional_paths = List.map (fun path -> String.concat Filename.dir_sep path) additional_libdirs  in
-            let additional_paths_str = String.concat ":" additional_paths in
+            let open FilePath in
+            let additional_paths = List.map ~f:make_filename additional_libdirs in
+            let additional_paths_str = string_of_path additional_paths in
             match default_std_lib with
             | None -> Some additional_paths_str
             | Some path -> Some (path ^ ":" ^ additional_paths_str) in
@@ -125,18 +103,14 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         | None -> ["-jsonerrors";input_file]
         | Some libdirs -> ["-libdir";libdirs;"-jsonerrors";input_file] in
       let args = custom_args @ common_args in
-      (if (env.print_cli test_ctxt) then
-         (Printf.printf "\nUsing CLI: "; List.iter (fun arg -> Printf.printf "%s " arg) args);
-      );
+      if env.print_cli test_ctxt then
+         (Printf.printf "\nUsing CLI: "; List.iter ~f:(Printf.printf "%s ") args);
       let update_gold = env.update_gold test_ctxt in
       if update_gold then
-        assert_command ~exit_code:exit_code ~use_stderr:true ~foutput:output_updater ~chdir:dir ~ctxt:test_ctxt evalbin (args)
+        assert_command ~exit_code:exit_code ~use_stderr:true ~foutput:output_updater ~chdir:dir ~ctxt:test_ctxt evalbin args
       else
-        assert_command ~exit_code:exit_code ~use_stderr:true ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin (args)) in
-    test :: build_exp_tests env r
+        assert_command ~exit_code:exit_code ~use_stderr:true ~foutput:output_verifier ~chdir:dir ~ctxt:test_ctxt evalbin args))
 
   let add_tests env =
-    let exptests = build_exp_tests env tests in
-    "exptests" >::: exptests
-    
+    "exptests" >::: build_exp_tests env tests
 end
