@@ -99,6 +99,10 @@ module AssocDictionary : Dictionary = struct
   let size d = List.length d
 end
 
+(* Add item a to list if it isn't already present. Use ~equal to check presence. *)
+let list_add_unique ~equal ls a =
+  if Core.List.mem ls a ~equal then ls else (a :: ls)
+
 open ErrorUtils
 exception InternalError of scilla_error list
 let mk_internal_error msg = InternalError (mk_error0 msg)
