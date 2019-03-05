@@ -55,7 +55,35 @@ let type_equiv_tests = [
   ("forall 'A. 'A -> (forall 'A. List ('A)) -> 'B", "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B", true);
 ]
 
+let make_ground_type_test ts exp_bool =
+  let open FrontEndParser in
+  let open TestTypeUtils in
+  let t = 
+    try
+      parse_type ts
+    with 
+    | _ -> raise (SyntaxError ("Error parsing type " ^ ts ^ " in type_equiv tests"))
+  in
+  test_case (fun _ ->
+    let b = is_ground_type t in
+    assert_bool "TypeUtil: is_ground_type test failed on type" (b = exp_bool)
+  )
+
+let ground_type_tests = [
+  ("'A", false);
+  ("Uint32", true);
+  ("Uint32 -> 'A", false);
+  ("forall 'A. List ('A) -> List ('A)", false);
+  ("List ('A)", false);
+  ("forall 'A. Map Int32 Uint32", false);
+  ("forall 'A. Pair Int32 'A", false);
+]
+
+let make_ground_type_tests tlist =
+  List.map (fun (st, eq) -> make_ground_type_test st eq) tlist
+
 let type_equiv_tests = "type_equiv_tests" >::: (make_type_equiv_tests type_equiv_tests)
+let ground_type_tests = "ground_type_tests" >::: (make_ground_type_tests ground_type_tests)
 
 module Tests = TestUtil.DiffBasedTests(
   struct
@@ -88,4 +116,4 @@ module Tests = TestUtil.DiffBasedTests(
     let exit_code : Unix.process_status = WEXITED 0
   end)
 
-let all_tests env = "type_check_success_tests" >::: [type_equiv_tests;Tests.add_tests env]
+let all_tests env = "type_check_success_tests" >::: [type_equiv_tests;Tests.add_tests env;ground_type_tests]
