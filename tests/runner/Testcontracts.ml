@@ -22,10 +22,6 @@ open OUnit2
 open ScillaUtil.FilePathInfix
 open TestUtil
 
-
-let print_args args =
-  List.iter ~f:(Printf.printf "%s ") args; Printf.printf "\n"
-
 let testsuit_gas_limit = "8000"
 
 let succ_code : Caml.Unix.process_status = WEXITED 0
