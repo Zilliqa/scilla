@@ -76,6 +76,9 @@ From the project root, execute
 ./bin/scilla-runner -init tests/runner/zil-game/init.json -istate tests/runner/zil-game/state_5.json -iblockchain tests/runner/zil-game/blockchain_5.json -imessage tests/runner/zil-game/message_5.json -o tests/runner/zil-game/output_5.json -i tests/contracts/zil-game.scilla -libdir src/stdlib -gaslimit 8000
 ```
 
+If you'd like to see the output produced by the aforementioned commands,
+check the file specified by `-o path/to/file.json` argument.
+
 Alternatively, use the easyrun script as below:
 
 ```
@@ -91,7 +94,7 @@ many steps in the simulation).
 * The runnables are put into the folder
 
 ```
-$PROJECT_DIR/_build/install/default/bin
+$PROJECT_DIR/bin
 ```
 
 ### Running the testsuite
