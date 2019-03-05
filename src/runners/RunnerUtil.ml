@@ -79,9 +79,11 @@ let stdlib_not_found_err () =
 let import_all_libs ldirs  =
   (* Get list of scilla libraries in dir *)
   let get_lib_list dir =
-    if not (Sys.file_exists dir) then
-      (perr @@ scilla_error_to_string (mk_error0 "Invalid stdlib directory provided");
-       exit 1);
+    (* We don't throw an error if dir is invalid, 
+     * to be consistent with the behaviour of StdlibTracker.find_lib_dir.
+     *)
+    if not (Sys.file_exists dir) then [] else 
+
     let files = Array.to_list (Sys.readdir dir) in
     List.fold_right (fun file names ->
       if Filename.extension file = StdlibTracker.file_extn_library
