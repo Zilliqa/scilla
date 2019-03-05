@@ -43,21 +43,25 @@ let import_lib id =
         lmod
 
 (* Import all libraries in "names" (and their dependences).
- * The order of the returned libraries is an inorder traversal
- * over the dependence tree generated out of "names".
+ * The order of the returned libraries is an RPO traversal
+ * over the dependence graph generated out of "names".
  *)
 let import_libs names =
-  let rec importer names importedl =
+  let rec importer names stack importedl =
     List.fold_left ~f:(fun (ilibs, importedl) l ->
       let name = get_id l in
+      if List.mem stack name ~equal:(=) then
+        (perr @@ scilla_error_to_string 
+          (mk_error1 (sprintf "Cyclic dependence found when importing %s." name) (get_rep l));
+        exit 1) else
       if List.mem importedl name ~equal:(=) then (ilibs, importedl) else
       let ilib = import_lib l in
-      let (ilibs'', importedl'') = importer ilib.elibs (name :: importedl) in
+      let (ilibs'', importedl'') = importer ilib.elibs (name :: stack) (name :: importedl) in
       (* Order in which we return the list of imported libraries is important. *)
       (ilibs @ ilibs'' @ [ilib], importedl'')
     ) ~init:([], importedl) names
   in
-  let (libs, _) = importer names [] in
+  let (libs, _) = importer names [] [] in
   (* Return library list rather than lmodule list. *)
   List.map ~f:(fun (l : ParserUtil.ParsedSyntax.lmodule) -> l.libs) libs
 
