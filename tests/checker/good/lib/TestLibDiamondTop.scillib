@@ -1,0 +1,3 @@
+import TestLibDiamondLeft TestLibDiamondRight
+
+library TestLibDiamondTop
