@@ -113,9 +113,9 @@ module ScillaCashflowChecker
           CFSyntax.App (
               add_noinfo_to_ident f, 
               List.map ~f:add_noinfo_to_ident actuals)
-      | Builtin (i, actuals) ->
+      | Builtin (op, actuals) ->
           CFSyntax.Builtin (
-              add_noinfo_to_ident i,
+              op,
               List.map ~f:add_noinfo_to_ident actuals)
       | Let (i, topt, lhs, rhs) ->
           CFSyntax.Let (
@@ -378,8 +378,8 @@ module ScillaCashflowChecker
               | Unequal_lengths -> [Inconsistent]))
         in
     let (c_r, c_as) =
-      match get_id f with
-      | "put" ->
+      match f with
+      | Builtin_put ->
           let c_r_sigs =
             match res_tag with
             | Map t  -> [ ( Map t        , [ Map t      ; NotMoney ; t      ] ) ]
@@ -406,7 +406,7 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "remove" ->
+      | Builtin_remove ->
           let c_r_sigs =
             match res_tag with
             | Map t  -> [ ( Map t        , [ Map t      ; NotMoney ] ) ]
@@ -430,7 +430,7 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "get" ->
+      | Builtin_get ->
           let c_r_sigs =
             match res_tag with
             | Adt ("Option", [t]) -> [ ( Adt ("Option", [t]      ) , [ Map t      ; NotMoney ] ) ]
@@ -454,7 +454,7 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "contains" ->
+      | Builtin_contains ->
           let c_r_sigs =
             match res_tag with
             | NotMoney
@@ -478,7 +478,7 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "to_list" ->
+      | Builtin_to_list ->
           (* Lists not supported, so use Inconsistent *)
           let c_r_sigs =
             [ ( Inconsistent , [ Map NoInfo ] ) ] in
@@ -495,7 +495,7 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "size" ->
+      | Builtin_size ->
           let c_r_sigs =
             match res_tag with
             | NotMoney
@@ -514,8 +514,8 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "eq"
-      | "lt" ->
+      | Builtin_eq
+      | Builtin_lt ->
           let c_r_sigs =
             match res_tag with
             | NotMoney
@@ -545,8 +545,8 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "add"
-      | "sub" ->
+      | Builtin_add
+      | Builtin_sub ->
           let c_r_sigs =
             match res_tag with
             | NotMoney -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
@@ -579,7 +579,7 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "mul" ->
+      | Builtin_mul ->
           let c_r_sigs =
             match res_tag with
             | NotMoney -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
@@ -621,7 +621,7 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "pow" ->
+      | Builtin_pow ->
           let c_r_sigs =
             match res_tag with
             | NotMoney
@@ -645,8 +645,8 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)          
-      | "div"
-      | "rem" ->
+      | Builtin_div
+      | Builtin_rem ->
           let c_r_sigs =
             match res_tag with
             | NotMoney -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
@@ -678,12 +678,12 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "to_int32"
-      | "to_int64"
-      | "to_int128"
-      | "to_int256"
-      | "to_string"
-      | "to_nat"    ->
+      | Builtin_to_int32
+      | Builtin_to_int64
+      | Builtin_to_int128
+      | Builtin_to_int256
+      | Builtin_to_string
+      | Builtin_to_nat    ->
           let c_r_sigs =
             match res_tag with
             | NotMoney -> [ ( NotMoney     , [ NotMoney ] ) ]
@@ -708,7 +708,7 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "schnorr_gen_key_pair" ->
+      | Builtin_schnorr_gen_key_pair ->
           let c_r_sigs =
             [ ( Adt ( "Pair", [NotMoney ; NotMoney] ) , [ ] ) ] in
           let c_as_sigs =
@@ -720,11 +720,11 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "sha256hash"
-      | "keccak256hash"
-      | "ripem160hash"
-      | "strlen"
-      | "to_bystr" ->
+      | Builtin_sha256hash
+      | Builtin_keccak256hash
+      | Builtin_ripemd160hash
+      | Builtin_strlen
+      | Builtin_to_bystr ->
           let c_r_sigs =
             match res_tag with
             | NotMoney
@@ -743,11 +743,11 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "concat"
-      | "blt"
-      | "badd"
-      | "bsub"
-      | "dist" ->
+      | Builtin_concat
+      | Builtin_blt
+      | Builtin_badd
+      | Builtin_bsub
+      | Builtin_dist ->
           let c_r_sigs =
             match res_tag with
             | NotMoney
@@ -771,9 +771,9 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | "substr"
-      | "schnorr_sign"
-      | "schnorr_verify" ->
+      | Builtin_substr
+      | Builtin_schnorr_sign
+      | Builtin_schnorr_verify ->
           let c_r_sigs =
             match res_tag with
             | NotMoney
@@ -972,12 +972,12 @@ module ScillaCashflowChecker
                   acc_changes || (get_id_tag arg) <> arg_tag))
               in
           let f_tag = lub_tags (Map res_tag) (Map expected_tag) in
-          let new_f = update_id_tag f f_tag in
-          (Builtin (new_f, final_args),
+          (Builtin (f, final_args),
            res_tag,
            final_field_env,
            final_local_env,
-           changes || f_tag <> get_id_tag f)
+           (*changes || f_tag <> get_id_tag f) -- double check me! *)
+           changes || f_tag <> res_tag)
       | Let (i, topt, lhs, rhs) ->
           let ((_, (new_lhs_tag, _)) as new_lhs, lhs_field_env, lhs_local_env, lhs_changes) =
             cf_tag_expr lhs (get_id_tag i) field_env local_env in

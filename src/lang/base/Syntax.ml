@@ -203,6 +203,110 @@ type literal =
 [@@deriving sexp]
 
 
+(* Builtins *)
+type builtin =
+  | Builtin_eq
+  | Builtin_concat
+  | Builtin_substr
+  | Builtin_strlen
+  | Builtin_to_string
+  | Builtin_blt
+  | Builtin_badd
+  | Builtin_bsub
+  | Builtin_dist (* in cashflow checker only *)
+  | Builtin_to_uint256
+  | Builtin_sha256hash
+  | Builtin_keccak256hash
+  | Builtin_ripemd160hash
+  | Builtin_to_bystr
+  | Builtin_schnorr_verify
+  | Builtin_ec_gen_key_pair (* in gas coster only *)
+  | Builtin_schnorr_gen_key_pair (* in cashflow checker only *)
+  | Builtin_schnorr_sign (* in cashflow checker only *)
+  | Builtin_ecdsa_verify
+  | Builtin_ecdsa_sign (* in gas coster only *)
+  | Builtin_contains
+  | Builtin_put
+  | Builtin_get
+  | Builtin_remove
+  | Builtin_to_list
+  | Builtin_size
+  | Builtin_lt
+  | Builtin_add
+  | Builtin_sub
+  | Builtin_mul
+  | Builtin_div
+  | Builtin_rem
+  | Builtin_pow
+  | Builtin_to_int32
+  | Builtin_to_int64
+  | Builtin_to_int128
+  | Builtin_to_int256
+  | Builtin_to_uint32
+  | Builtin_to_uint64
+  | Builtin_to_uint128
+  | Builtin_to_nat
+[@@deriving sexp]
+
+
+let builtin_pairs = [
+  ("eq", Builtin_eq);
+  ("concat", Builtin_concat);
+  ("substr", Builtin_substr);
+  ("strlen", Builtin_strlen);
+  ("to_string", Builtin_to_string);
+  ("blt", Builtin_blt);
+  ("badd", Builtin_badd);
+  ("bsub", Builtin_bsub);
+  ("dist", Builtin_dist);
+  ("to_uint256", Builtin_to_uint256);
+  ("sha256hash", Builtin_sha256hash);
+  ("keccak256hash", Builtin_keccak256hash);
+  ("ripemd160hash", Builtin_ripemd160hash);
+  ("to_bystr", Builtin_to_bystr);
+  ("schnorr_verify", Builtin_schnorr_verify);
+  ("ec_gen_key_pair", Builtin_ec_gen_key_pair);
+  ("schnorr_gen_key_pair", Builtin_schnorr_gen_key_pair);
+  ("schnorr_sign", Builtin_schnorr_sign);
+  ("ecdsa_verify", Builtin_ecdsa_verify);
+  ("ecdsa_sign", Builtin_ecdsa_sign);
+  ("concat", Builtin_concat);
+  ("contains", Builtin_contains);
+  ("put", Builtin_put);
+  ("get", Builtin_get);
+  ("remove", Builtin_remove);
+  ("to_list", Builtin_to_list);
+  ("size", Builtin_size);
+  ("lt", Builtin_lt);
+  ("add", Builtin_add);
+  ("sub", Builtin_sub);
+  ("mul", Builtin_mul);
+  ("div", Builtin_div);
+  ("rem", Builtin_rem);
+  ("pow", Builtin_pow);
+  ("to_int32", Builtin_to_int32);
+  ("to_int64", Builtin_to_int64);
+  ("to_int128", Builtin_to_int128);
+  ("to_int256", Builtin_to_int256);
+  ("to_uint32", Builtin_to_uint32);
+  ("to_uint64", Builtin_to_uint64);
+  ("to_uint128", Builtin_to_uint128);
+  ("to_nat", Builtin_to_nat)]
+
+let pp_builtin b =
+  let xs = List.filter builtin_pairs ~f:(fun (_, x) -> x = b) in
+  match xs with
+    | [] -> raise (Utils.InternalError (mk_error0 ("No rule to pp " ^ (sexp_of_builtin b |> Sexplib.Sexp.to_string))))
+    | [(pp, _)] -> pp
+    | _ -> raise (Utils.InternalError (mk_error0 ("Multiple rules to pp " ^ (sexp_of_builtin b |> Sexplib.Sexp.to_string))))
+
+let parse_builtin s =
+  let xs = List.filter builtin_pairs ~f:(fun (x, _) -> x = s) in
+  match xs with
+    | [] -> raise (SyntaxError ("No rule to parse " ^ s))
+    | [(_, b)] -> b
+    | _ -> raise (Utils.InternalError (mk_error0 (("Multiple rules to parse " ^ s))))
+
 (*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
@@ -257,7 +361,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | App of ER.rep ident * ER.rep ident list
     | Constr of string * typ list * ER.rep ident list
     | MatchExpr of ER.rep ident * (pattern * expr_annot) list
-    | Builtin of ER.rep ident * ER.rep ident list 
+    | Builtin of builtin * ER.rep ident list
     (* Advanced features: to be added in Scilla 0.2 *)                 
     | TFun of ER.rep ident * expr_annot
     | TApp of ER.rep ident * typ list
@@ -558,9 +662,12 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       | Fun (f, _, body) -> recurser body (f :: bound_vars)
       | TFun (_, body) -> recurser body bound_vars
       | Constr (_, _, es) -> any_is_mem (get_free es bound_vars) blist
-      | App (f, args)
-      | Builtin (f, args) ->
+      | App (f, args) ->
         let args' = f :: args in
+        any_is_mem (get_free args' bound_vars) blist
+      | Builtin (_f, args) ->
+        (*let args' = f :: args in -- double check me! *)
+        let args' = args in
         any_is_mem (get_free args' bound_vars) blist
       | Let (i, _, lhs, rhs) ->
         (recurser lhs bound_vars) || (recurser rhs (i::bound_vars))
@@ -616,7 +723,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
            (get_id x) opt 
     | Builtin (i, _) ->
         sprintf "Type error in built-in application of `%s`:\n"
-           (get_id i)
+           (pp_builtin i)
     | TApp (tf, _) ->
         sprintf "Type error in type application of `%s`:\n"
            (get_id tf)
