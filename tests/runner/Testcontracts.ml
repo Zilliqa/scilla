@@ -67,8 +67,8 @@ let rec build_contract_tests env name exit_code i n add_additional_lib =
         let args =
           if disable_validate_json then "-disable-validate-json" :: args' else args'
         in
-        if env.print_cli test_ctxt then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args);
         let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
+        print_cli_usage (env.print_cli test_ctxt) scillabin args;
         let goldoutput_file = dir ^/ "output_" ^ istr ^. "json" in
         let update_gold = env.update_gold test_ctxt in
         (* Expected success tests *)
@@ -117,7 +117,7 @@ let build_contract_init_test env name =
                 "-iblockchain"; dir ^/ "blockchain_1.json";]
     in
     let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
-    if env.print_cli test_ctxt then (Printf.printf "\nUsing CLI: %s " scillabin; print_args args);
+    print_cli_usage (env.print_cli test_ctxt) scillabin args;
     (* Ensure that the executable exists with 0 *)
     assert_command ~ctxt:test_ctxt scillabin args;
     if env.update_gold test_ctxt then begin
@@ -152,8 +152,9 @@ let build_misc_tests env =
                     "-o"; output_file test_ctxt "init_bad" ^ snum ^ "_output" ^. "json";
                     "-iblockchain"; tests_dir_file env.tests_dir test_ctxt ("blockchain_" ^ snum ^. "json")]
         in
-        if env.print_cli test_ctxt then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args);
-        assert_command ~exit_code:fail_code ~ctxt:test_ctxt (scillabin env.bin_dir test_ctxt) args
+        let scillabin = scillabin env.bin_dir test_ctxt in
+        print_cli_usage (env.print_cli test_ctxt) scillabin args;
+        assert_command ~exit_code:fail_code ~ctxt:test_ctxt scillabin args
       ) in
   [test 1;test 2;test 3]
 

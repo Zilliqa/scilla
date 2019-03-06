@@ -21,9 +21,6 @@ open Core_kernel
 open OUnit2
 open ScillaUtil.FilePathInfix
 
-let print_args args =
-  List.iter ~f:(Printf.printf "%s ") args; Printf.printf "\n"
-
 type tsuite_env =
   { bin_dir : test_ctxt -> string;
     tests_dir : test_ctxt -> string;
@@ -62,6 +59,15 @@ let output_updater goldoutput_file test_name s =
   Out_channel.write_all goldoutput_file ~data:(BatStream.to_string s);
   Printf.printf "Updated gold output for test %s\n" test_name
 
+let print_args args =
+  List.iter ~f:(Printf.printf "%s ") args; Printf.printf "\n"
+
+let print_cli_usage flag bin args =
+  if flag then begin
+    Printf.printf "\nUsing CLI: %s " bin;
+    print_args args
+  end
+
 module type TestSuiteInput = sig
   val tests : string list
   val gold_path : string -> string -> string list
@@ -87,7 +93,7 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
       let stdlib = env.stdlib_dir test_ctxt in
       let path = string_of_path @@ stdlib :: additional_dirs in
       let args = custom_args @ ["-libdir";path;"-jsonerrors";input_file] in
-      if env.print_cli test_ctxt then (Printf.printf "\nUsing CLI: "; print_args args);
+      print_cli_usage (env.print_cli test_ctxt) evalbin args;
       assert_command
         ~foutput:(if env.update_gold test_ctxt
                   then output_updater goldoutput_file input_file
