@@ -31,7 +31,7 @@ let fail_code : Caml.Unix.process_status = WEXITED 1
  * Build tests to invoke scilla-runner with the right arguments, for
  * multiple test cases, each suffixed with _i up to _n (both inclusive)
  *)
-let rec build_contract_tests env name ecode i n add_additional_lib =
+let rec build_contract_tests env name exit_code i n add_additional_lib =
   if i > n
     then []
   else
@@ -51,8 +51,8 @@ let rec build_contract_tests env name ecode i n add_additional_lib =
         let args_tmp =
               ["-init"; dir ^/ "init.json";
                "-i"; contract_dir ^/ name ^. "scilla";
-              (* stdlib is in src/stdlib *)
-              "-libdir"; "src" ^/ "stdlib";
+               (* stdlib is in src/stdlib *)
+               "-libdir"; env.stdlib_dir test_ctxt;
               "-o"; output_file;
               "-gaslimit"; testsuit_gas_limit;
               "-imessage"; dir ^/ "message_" ^ istr ^. "json";
@@ -64,52 +64,40 @@ let rec build_contract_tests env name ecode i n add_additional_lib =
           then ["-libdir"; contract_dir ^/ name ^ "_lib"] @ args_tmp
           else args_tmp
         in
-        (* Should this test "-disable-validate-json"? *)
         let args =
           if disable_validate_json then "-disable-validate-json" :: args' else args'
         in
-        (if (env.print_cli test_ctxt) then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args));
+        if env.print_cli test_ctxt then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args);
         let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
-           (* Ensure that the executable exists with ecode *)
-           let goldoutput_file = dir ^/ "output_" ^ istr ^. "json" in
-           let update_gold = env.update_gold test_ctxt in
-           (* Expected success tests *)
-           if ecode = succ_code then
-             (assert_command ~exit_code:ecode ~ctxt:test_ctxt ~use_stderr:true scillabin args;
-             let o = In_channel.read_all output_file in
-             let g = In_channel.read_all goldoutput_file in
-             if update_gold then
-               (Printf.printf "Updating gold output for test %s\n" (name ^ "_" ^ istr);
-                Out_channel.write_all goldoutput_file ~data:o);
-             (* Compare output.json with a gold output in the contract directory *)
-             assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o)) ~ctxt:test_ctxt
-               ~msg:(Core.sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g) g o)
-           else (* Expected failure tests *)
-             let output_verifier s =
-                let output = BatStream.to_string s in
-                let gold_output = In_channel.read_all goldoutput_file in
-                  assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o))
-                   ~printer:(fun s -> s) gold_output output;
-              in
-              let output_updater s =
-                let output = BatStream.to_string s in
-                (Out_channel.write_all goldoutput_file ~data:output;
-                 Printf.printf "Updated gold output for test %s\n" (name^"_"^(Int.to_string i)))
-              in
-              if update_gold then
-                assert_command ~exit_code:ecode ~foutput:output_updater ~ctxt:test_ctxt ~use_stderr:true scillabin args
-              else
-                assert_command ~exit_code:ecode ~foutput:output_verifier ~ctxt:test_ctxt ~use_stderr:true scillabin args
+        let goldoutput_file = dir ^/ "output_" ^ istr ^. "json" in
+        let update_gold = env.update_gold test_ctxt in
+        (* Expected success tests *)
+        if exit_code = succ_code then
+          (assert_command ~exit_code ~ctxt:test_ctxt ~use_stderr:true scillabin args;
+           let o = In_channel.read_all output_file in
+           let g = In_channel.read_all goldoutput_file in
+           if update_gold then
+             (Printf.printf "Updating gold output for test %s\n" (name ^ "_" ^ istr);
+              Out_channel.write_all goldoutput_file ~data:o);
+           (* Compare output.json with a gold output in the contract directory *)
+           assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o)) ~ctxt:test_ctxt
+             ~msg:(sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g) g o)
+        else (* Expected failure tests *)
+          assert_command
+            ~foutput:(if env.update_gold test_ctxt
+                      then output_updater goldoutput_file (name^"_"^(Int.to_string i))
+                      else output_verifier goldoutput_file (env.print_diff test_ctxt))
+            ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
           )
       in
       (* If this test is expected to succeed, we know that the JSONs are all "good".
-       * So test both the JSON parsers, one that does validation, one that doesn't. 
+       * So test both the JSON parsers, one that does validation, one that doesn't.
        * Both should succeed. *)
-      if ecode = succ_code
+      if exit_code = succ_code
       then
-        (test true) :: (test false) :: (build_contract_tests env name ecode (i+1) n add_additional_lib)
+        (test true) :: (test false) :: (build_contract_tests env name exit_code (i+1) n add_additional_lib)
       else
-        (test false) :: (build_contract_tests env name ecode (i+1) n add_additional_lib)
+        (test false) :: (build_contract_tests env name exit_code (i+1) n add_additional_lib)
 
 let build_contract_init_test env name =
   name ^ "_init" >::
@@ -128,19 +116,18 @@ let build_contract_init_test env name =
                 "-gaslimit"; testsuit_gas_limit;
                 "-iblockchain"; dir ^/ "blockchain_1.json";]
     in
-    if env.print_cli test_ctxt then (Printf.printf "\nUsing CLI: %s " "scilla-runner"; print_args args);
     let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
+    if env.print_cli test_ctxt then (Printf.printf "\nUsing CLI: %s " scillabin; print_args args);
     (* Ensure that the executable exists with 0 *)
     assert_command ~ctxt:test_ctxt scillabin args;
-    let goldoutput_file = dir ^/ "init_output.json" in
-    let g = In_channel.read_all goldoutput_file in
-    let o = In_channel.read_all output_file in
-    let update_gold = env.update_gold test_ctxt in
-    if update_gold then begin
+    if env.update_gold test_ctxt then begin
       Printf.printf "Updating gold output for test %s\n" (name ^ "_init");
+      let goldoutput_file = dir ^/ "init_output.json" in
+      let g = In_channel.read_all goldoutput_file in
+      let o = In_channel.read_all output_file in
       Out_channel.write_all goldoutput_file ~data:o;
       (* Compare output.json with a gold output in the contract directory *)
-      assert_equal ~ctxt:test_ctxt ~msg:(Core.sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g)
+      assert_equal ~ctxt:test_ctxt ~msg:(sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g)
             ~cmp:(fun e o -> (String.strip e) = (String.strip o)) g o
     end)
 

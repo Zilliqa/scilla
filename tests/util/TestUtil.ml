@@ -33,6 +33,35 @@ type tsuite_env =
     print_diff : test_ctxt -> bool;
   }
 
+let output_verifier goldoutput_file print_diff out_stream =
+  (* load all data from file *)
+  let gold_output = In_channel.read_all goldoutput_file in
+  let output = BatStream.to_string out_stream in
+  let pp_diff fmt =
+    let config =
+      let open Patdiff_lib.Configuration in
+      parse (Config.t_of_sexp (Sexp.of_string default)) in
+    let open Patdiff_lib in
+    let gold = {Patdiff_core.name = goldoutput_file; text = gold_output} in
+    let out = {Patdiff_core.name = "test output"; text = output} in
+    let open Patdiff_lib.Compare_core in
+    match diff_strings config ~old:gold ~new_:out with
+    | `Same -> ()
+    | `Different s ->  (* s contains ANSI color codes *)
+        Format.pp_force_newline fmt ();
+        Format.pp_print_string fmt s
+  in
+  if print_diff then
+    assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o))
+      ~pp_diff:(fun fmt _ -> pp_diff fmt) gold_output output
+  else
+    assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o))
+      ~printer:(fun s -> s) gold_output output
+
+let output_updater goldoutput_file test_name s =
+  Out_channel.write_all goldoutput_file ~data:(BatStream.to_string s);
+  Printf.printf "Updated gold output for test %s\n" test_name
+
 module type TestSuiteInput = sig
   val tests : string list
   val gold_path : string -> string -> string list
@@ -46,42 +75,13 @@ end
 module DiffBasedTests(Input : TestSuiteInput) = struct
   open Input
 
-  let build_exp_tests env = List.map ~f:(fun f ->
-    f  >:: (fun test_ctxt ->
+  let build_exp_tests env = List.map ~f:(fun fname ->
+    fname  >:: (fun test_ctxt ->
       let evalbin = env.bin_dir test_ctxt ^/ runner in
       let dir = env.tests_dir test_ctxt in
-      let input_file = FilePath.make_filename (test_path f) in
+      let input_file = FilePath.make_filename (test_path fname) in
       (* Verify standard output of execution with gold file *)
-      let goldoutput_file = FilePath.make_filename (gold_path dir f) in
-      let output_verifier out =
-        (* load all data from file *)
-        let gold_output = In_channel.read_all goldoutput_file in
-        let output = BatStream.to_string out in
-        let pp_diff fmt =
-          let config =
-            let open Patdiff_lib.Configuration in
-            parse (Config.t_of_sexp (Sexp.of_string default)) in
-          let open Patdiff_lib in
-          let gold = {Patdiff_core.name = goldoutput_file; text = gold_output} in
-          let out = {Patdiff_core.name = "test output"; text = output} in
-          let open Patdiff_lib.Compare_core in
-          match diff_strings config ~old:gold ~new_:out with
-           | `Same -> ()
-           | `Different s ->  (* s contains ANSI color codes *)
-               Format.pp_force_newline fmt ();
-               Format.pp_print_string fmt s
-        in
-        if env.print_diff test_ctxt then
-          assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o))
-            ~pp_diff:(fun fmt _ -> pp_diff fmt) gold_output output
-        else
-          assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o))
-            ~printer:(fun s -> s) gold_output output
-      in
-      let output_updater s =
-        Out_channel.write_all goldoutput_file ~data:(BatStream.to_string s);
-        Printf.printf "Updated gold for test %s\n" input_file
-      in
+      let goldoutput_file = FilePath.make_filename (gold_path dir fname) in
       let open FilePath in
       let additional_dirs = List.map ~f:make_filename additional_libdirs in
       let stdlib = env.stdlib_dir test_ctxt in
@@ -90,8 +90,8 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
       if env.print_cli test_ctxt then (Printf.printf "\nUsing CLI: "; print_args args);
       assert_command
         ~foutput:(if env.update_gold test_ctxt
-                  then output_updater
-                  else output_verifier)
+                  then output_updater goldoutput_file input_file
+                  else output_verifier goldoutput_file (env.print_diff test_ctxt))
         ~exit_code:exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt evalbin args))
 
   let add_tests env =
