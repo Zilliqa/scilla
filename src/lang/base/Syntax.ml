@@ -387,63 +387,48 @@ let subst_types_in_type sbst tm =
   List.fold_left sbst ~init:tm
     ~f:(fun acc (tvar, tp) -> subst_type_in_type tvar tp acc)
 
-let rec refresh_tfun t taken = match t with
-  | MapType (kt, vt) -> MapType (kt, refresh_tfun vt taken)
-  | FunType (at, rt) ->
-      FunType (refresh_tfun at taken, refresh_tfun rt taken)
-  | ADT (n, ts) ->
-      let ts' = List.map ts ~f:(fun w -> refresh_tfun w taken) in
-      ADT (n, ts')
-  | PrimType _ | TypeVar _ | Unit -> t
-  | PolyFun (arg, bt) ->
-      let arg' = mk_fresh_var taken arg in
-      let tv_new = TypeVar arg' in
-      let bt1 = subst_type_in_type arg tv_new bt in
-      let taken' = arg' :: taken in
-      let bt2 = refresh_tfun bt1 taken' in
-      PolyFun (arg', bt2)
+let rename_bound_vars mk_new_name update_taken =
+  let rec recursor t taken = match t with
+    | MapType (kt, vt) -> MapType (kt, recursor vt taken)
+    | FunType (at, rt) ->
+        FunType (recursor at taken, recursor rt taken)
+    | ADT (n, ts) ->
+        let ts' = List.map ts ~f:(fun w -> recursor w taken) in
+        ADT (n, ts')
+    | PrimType _ | TypeVar _ | Unit -> t
+    | PolyFun (arg, bt) ->
+        let arg' = mk_new_name taken arg in
+        let tv_new = TypeVar arg' in
+        let bt1 = subst_type_in_type arg tv_new bt in
+        let bt2 = recursor bt1 (update_taken arg' taken) in
+        PolyFun (arg', bt2)
+  in recursor
 
-  (* Alpha renaming to canonical (pre-determined) names. *)
-  let canonicalize_tfun t =
-    let taken = free_tvars t in
-    (* The parser doesn't allow type names to begin with '_'. *)
-    let get_new_name counter = "'_A" ^ Int.to_string counter in
-    let rec refresh t taken counter = match t with
-      | MapType (kt, vt) -> MapType (kt, refresh vt taken counter)
-      | FunType (at, rt) ->
-          FunType (refresh at taken counter, refresh rt taken counter)
-      | ADT (n, ts) ->
-          let ts' = List.map ts ~f:(fun w -> refresh w taken counter) in
-          ADT (n, ts')
-      | PrimType _ | TypeVar _ | Unit -> t
-      | PolyFun (arg, bt) ->
-          let arg' = get_new_name counter in
-          let tv_new = TypeVar arg' in
-          let bt1 = subst_type_in_type arg tv_new bt in
-          let taken' = arg' :: taken in
-          let bt2 = refresh bt1 taken' (counter+1) in
-          PolyFun (arg', bt2)
-    in
-    refresh t taken 1
+let refresh_tfun = rename_bound_vars mk_fresh_var List.cons
 
-  (* The same as above, but for a variable with locations *)
-  let subst_type_in_type' tv = subst_type_in_type (get_id tv)
+let canonicalize_tfun t =
+  (* The parser doesn't allow type names to begin with '_'. *)
+  let mk_new_name counter _ = "'_A" ^ Int.to_string counter in
+  rename_bound_vars mk_new_name (const @@ Int.succ) t 1
 
-  let rec subst_type_in_literal tvar tp l = match l with
-    | Map ((kt, vt), ls) -> 
-        let kts = subst_type_in_type' tvar tp kt in
-        let vts = subst_type_in_type' tvar tp vt in
-        let ls' = Hashtbl.create (Hashtbl.length ls) in
-        let _ = Hashtbl.iter (fun k v  ->
-            let k' = subst_type_in_literal tvar tp k in
-            let v' = subst_type_in_literal tvar tp v in 
-            Hashtbl.add ls' k' v') ls in
-        Map ((kts, vts), ls')
-    | ADTValue (n, ts, ls) ->
-        let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
-        let ls' = List.map ls ~f:(fun l -> subst_type_in_literal tvar tp l) in
-        ADTValue (n, ts', ls')
-    | _ -> l
+(* The same as above, but for a variable with locations *)
+let subst_type_in_type' tv = subst_type_in_type (get_id tv)
+
+let rec subst_type_in_literal tvar tp l = match l with
+  | Map ((kt, vt), ls) ->
+      let kts = subst_type_in_type' tvar tp kt in
+      let vts = subst_type_in_type' tvar tp vt in
+      let ls' = Hashtbl.create (Hashtbl.length ls) in
+      let _ = Hashtbl.iter (fun k v  ->
+          let k' = subst_type_in_literal tvar tp k in
+          let v' = subst_type_in_literal tvar tp v in
+          Hashtbl.add ls' k' v') ls in
+      Map ((kts, vts), ls')
+  | ADTValue (n, ts, ls) ->
+      let ts' = List.map ts ~f:(subst_type_in_type' tvar tp) in
+      let ls' = List.map ls ~f:(subst_type_in_literal tvar tp) in
+      ADTValue (n, ts', ls')
+  | _ -> l
 
 
 
