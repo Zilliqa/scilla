@@ -98,7 +98,7 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
         ~foutput:(if env.update_gold test_ctxt
                   then output_updater goldoutput_file input_file
                   else output_verifier goldoutput_file (env.print_diff test_ctxt))
-        ~exit_code:exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt evalbin args))
+        ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt evalbin args))
 
   let add_tests env =
     "exptests" >::: build_exp_tests env tests
