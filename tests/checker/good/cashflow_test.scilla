@@ -1,0 +1,30 @@
+scilla_version 0
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+library CashflowTestLib
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+contract CashflowTest ()
+
+field transaction_pairs : (List (Pair ByStr20 Uint128)) = Nil {(Pair ByStr20 Uint128)}
+
+transition Test1()
+  tp <- transaction_pairs;
+  match tp with
+  | Cons x (Cons y rest) =>
+    match y with
+    | Pair recipient amount =>
+      msg = { _tag : "" ; _recipient : recipient ; _amount : amount };
+      msgs = one_msg msg;
+      send msgs
+    end
+  | _ =>
+    msg = { _tag : "" ; _recipient : _sender ; _amount : Uint128 0 }
+  end
+end

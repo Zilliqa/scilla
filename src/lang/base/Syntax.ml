@@ -365,6 +365,13 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       elibs : SR.rep ident list;  (* list of imports / external libs *)
       contr : contract }
 
+  (* Library module *)
+  type lmodule =
+    { 
+      elibs : SR.rep ident list; (* List of imports / external libs *)
+      libs : library; (* lib functions defined in the module *)
+    }
+
   let pp_cparams ps =
     let cs = List.map ps ~f:(fun (i, t) ->
         get_id i ^ " : " ^

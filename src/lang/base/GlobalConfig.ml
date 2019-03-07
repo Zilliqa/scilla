@@ -142,4 +142,9 @@ let find_lib_dir name =
   BatList.find_opt 
     (fun d -> Caml.Sys.file_exists (d ^ Filename.dir_sep ^ name ^ ".scillib")) dirs
 
+(* File extension for Scilla contracts. *)
+let file_extn_contract = ".scilla"
+(* File extension for Scilla libraries. *)
+let file_extn_library = ".scillib"
+
 end
