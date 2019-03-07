@@ -120,16 +120,16 @@ let build_contract_init_test env name =
     print_cli_usage (env.print_cli test_ctxt) scillabin args;
     (* Ensure that the executable exists with 0 *)
     assert_command ~ctxt:test_ctxt scillabin args;
+    let goldoutput_file = dir ^/ "init_output.json" in
+    let g = In_channel.read_all goldoutput_file in
+    let o = In_channel.read_all output_file in
     if env.update_gold test_ctxt then begin
       Printf.printf "Updating gold output for test %s\n" (name ^ "_init");
-      let goldoutput_file = dir ^/ "init_output.json" in
-      let g = In_channel.read_all goldoutput_file in
-      let o = In_channel.read_all output_file in
-      Out_channel.write_all goldoutput_file ~data:o;
-      (* Compare output.json with a gold output in the contract directory *)
-      assert_equal ~ctxt:test_ctxt ~msg:(sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g)
-            ~cmp:(fun e o -> (String.strip e) = (String.strip o)) g o
-    end)
+      Out_channel.write_all goldoutput_file ~data:o
+    end;
+    (* Compare output.json with a gold output in the contract directory *)
+    assert_equal ~ctxt:test_ctxt ~msg:(sprintf "Output json mismatch\nActual:\n%s\nExpected:\n%s" o g)
+      ~cmp:(fun e o -> (String.strip e) = (String.strip o)) g o)
 
 let build_misc_tests env =
   let scillabin bin_dir test_ctxt =
