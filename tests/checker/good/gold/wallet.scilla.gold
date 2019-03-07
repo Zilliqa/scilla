@@ -7,7 +7,7 @@
     { "field": "owners", "tag": "(Map NotMoney)" },
     { "field": "transactionCount", "tag": "NotMoney" },
     { "field": "signatures", "tag": "(Map (Map NotMoney))" },
-    { "field": "transactions", "tag": "(Map Inconsistent)" },
+    { "field": "transactions", "tag": "(Map (Transaction ))" },
     { "field": "owner_signatures", "tag": "(Map (Map NotMoney))" }
   ],
   "contract_info": {

@@ -1,33 +1,18 @@
 {
   "cashflow_tags": [
-    { "field": "owner", "tag": "NotMoney" },
-    { "field": "gmap", "tag": "(Map (Pair NoInfo NoInfo))" },
-    { "field": "gpair", "tag": "(Pair (List NoInfo) (Option NoInfo))" },
-    { "field": "llist", "tag": "(List NoInfo)" },
-    { "field": "plist", "tag": "(List NoInfo)" },
-    { "field": "gnat", "tag": "(Nat )" }
+    { "field": "transaction_pairs", "tag": "(List (Pair NotMoney Money))" }
   ],
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "Test",
-    "params": [ { "vname": "owner", "type": "ByStr20" } ],
+    "vname": "CashflowTest",
+    "params": [],
     "fields": [
-      { "vname": "gmap", "type": "Map (ByStr20) (Pair (Int32) (Int32))" },
-      { "vname": "gpair", "type": "Pair (List (Int64)) (Option (Bool))" },
-      { "vname": "llist", "type": "List (List (Int64))" },
-      { "vname": "plist", "type": "List (Option (Int32))" },
-      { "vname": "gnat", "type": "Nat" }
-    ],
-    "transitions": [
-      { "vname": "testMapPair", "params": [] },
       {
-        "vname": "addNumToList",
-        "params": [ { "vname": "num", "type": "Int64" } ]
-      },
-      { "vname": "incNat", "params": [] },
-      { "vname": "lflatten", "params": [] },
-      { "vname": "optlist", "params": [] }
+        "vname": "transaction_pairs",
+        "type": "List (Pair (ByStr20) (Uint128))"
+      }
     ],
+    "transitions": [ { "vname": "Test1", "params": [] } ],
     "events": [],
     "ADTs": [
       {
@@ -72,7 +57,7 @@
   "warnings": [
     {
       "warning_message":
-        "No transition in contract Test contains an accept statement\n",
+        "No transition in contract CashflowTest contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
