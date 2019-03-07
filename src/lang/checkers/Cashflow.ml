@@ -18,6 +18,7 @@
 open Core
 open Sexplib.Std
 open Syntax
+open Datatypes
 open TypeUtil
 open Utils
 
@@ -294,6 +295,146 @@ module ScillaCashflowChecker
     | NotMoney     , NotMoney      -> NotMoney
     | _            , _             -> NoInfo
 
+  (*******************************************************)
+  (*           Helper functions for ADTs                 *)
+  (*******************************************************)
+
+  let ctr_to_adt_tag ctr_name arg_tags =
+    let open DataTypeDictionary in
+    match lookup_constructor ctr_name with
+    | Error _       ->
+        (* We don't allow failures at this stage of the checker *)
+        Inconsistent
+    | Ok (adt, _) ->
+        match adt.tparams with
+        | [] ->
+            (* No type parameters - check for special cases *)
+            (* Case 1 (Bool case): No constructor takes arguments : NotMoney *)
+            if List.for_all adt.tmap
+                ~f:(fun (_, arg_typs) ->
+                    match arg_typs with
+                    | [] -> true
+                    | _ -> false)
+            then NotMoney
+            (* Case 2 (Nat case): 2 constructors. One constructor takes 
+               1 argument of same type, other constructor
+               takes no argument : NoInfo *)
+            else if List.length adt.tconstr = 2 &&
+                    List.exists adt.tmap
+                      ~f:(fun (_, arg_typs) ->
+                          match arg_typs with
+                          | [] -> true
+                          | _ -> false) &&
+                    List.exists adt.tmap
+                      ~f:(fun (_, arg_typs) ->
+                          match arg_typs with
+                          | [ADT (arg_typ_name, _)] ->
+                              arg_typ_name = adt.tname
+                          | _ -> false)
+            then NoInfo
+            else Adt (adt.tname, [])
+        | _ ->
+            (* Deduce mapping from type arguments to tags based on
+               constructor argument tags *)
+            match constr_tmap adt ctr_name with
+            | None ->
+                (* No tmap for constructor = doesn't take arguments *)
+                Adt (adt.tname, List.map adt.tparams ~f:(fun _ -> NoInfo))
+            | Some arg_typs ->
+                (* Default mapping : 'A -> NoInfo *)
+                let init_targ_to_tag_map =
+                  List.map adt.tparams ~f:(fun tparam -> (tparam, NoInfo)) in
+                let update_targ_tag targ new_tag map =
+                  let current_tag =
+                    match List.Assoc.find map ~equal:(=) targ with
+                    | None -> Inconsistent
+                    | Some t -> t in
+                  List.Assoc.add map ~equal:(=) targ (lub_tags current_tag new_tag) in
+                let rec match_arg_tag_with_typ arg_typ arg_tag targ_tag_map =
+                  match arg_typ with
+                  | TypeVar v           -> update_targ_tag v arg_tag targ_tag_map
+                  | MapType (_, vt)
+                  | FunType (_, vt)     ->
+                      (match arg_tag with
+                       | Map vtag -> match_arg_tag_with_typ vt vtag targ_tag_map
+                       | NoInfo   -> match_arg_tag_with_typ vt NoInfo targ_tag_map
+                       | _        -> targ_tag_map)
+                  | ADT (_, adt_params) ->
+                      (match arg_tag with
+                       | Adt (_, adt_param_tags) ->
+                           let (new_map, _) = 
+                             List.fold_left adt_params ~init:(targ_tag_map, adt_param_tags)
+                               ~f:(fun (map, adt_param_tags) adt_param ->
+                                   match adt_param_tags with
+                                   | []      -> (map, [])
+                                   | t :: ts -> (match_arg_tag_with_typ adt_param t map, ts)) in
+                           new_map
+                       | _                       -> targ_tag_map)
+                  | PrimType _
+                  | PolyFun (_, _)
+                  | Unit                -> targ_tag_map in
+                let (tvar_tag_map, _) =
+                  List.fold_left arg_typs ~init:(init_targ_to_tag_map, arg_tags)
+                    ~f:(fun (map, arg_tags) arg_typ ->
+                        match arg_tags with
+                        | []      -> (map, [])
+                        | t :: ts -> (match_arg_tag_with_typ arg_typ t map, ts)) in
+                let final_adt_arg_tags = 
+                  List.map adt.tparams
+                    ~f:(fun tparam ->
+                        match List.Assoc.find tvar_tag_map ~equal:(=) tparam with
+                        | None   -> Inconsistent
+                        | Some t -> t) in
+                Adt (adt.tname, final_adt_arg_tags)
+
+  let ctr_pattern_to_subtags ctr_name expected_tag =
+    let open DataTypeDictionary in
+    match lookup_constructor ctr_name with
+    | Error _ ->
+        (* Catch errors as We don't allow failures at this stage of the checker *)
+        None
+    | Ok (adt, _) ->
+        match constr_tmap adt ctr_name with
+        | None ->
+            (* No tmap = No constructor arguments *)
+            Some []
+        | Some tmap ->
+            let tvar_tag_map =
+              let zipped_tvar_tags =
+                match expected_tag with
+                | Adt (exp_ctr_name, arg_tags)
+                  when exp_ctr_name = ctr_name ->
+                    List.zip adt.tparams arg_tags
+                | NoInfo (* Nothing known *)
+                | Money (* Nat case *)
+                | NotMoney (* Nat case *)
+                  -> Some (List.map adt.tparams ~f:(fun tparam -> (tparam, expected_tag)))
+                | _ ->
+                    (* Don't let inconsistent tags infect subpatterns *)
+                    Some (List.map adt.tparams ~f:(fun tparam -> (tparam, NoInfo))) in
+              match zipped_tvar_tags with
+              | None ->
+                  (* Can only happen if arg_tags in Adt case has wrong length *)
+                  List.map adt.tparams ~f:(fun tparam -> (tparam, Inconsistent))
+              | Some map -> map in
+            let rec tag_tmap t =
+              match t with
+              | PrimType _ ->
+                  (* TODO: Fixed constructor argument types
+                           should be analysed *)
+                  NoInfo
+              | MapType (_, vt)
+              | FunType (_, vt) ->
+                  Map (tag_tmap vt)
+              | ADT (adt_name, arg_typs) ->
+                  Adt (adt_name, List.map arg_typs ~f:tag_tmap)
+              | TypeVar tvar ->
+                  (match List.Assoc.find tvar_tag_map ~equal:(=) tvar with
+                   | Some tag -> tag
+                   | None -> Inconsistent)
+              | _ -> Inconsistent in
+            Some (List.map tmap ~f:tag_tmap)
+    
   (*******************************************************)
   (*      Helper functions for local variables           *)
   (*******************************************************)
@@ -856,35 +997,18 @@ module ScillaCashflowChecker
       | Wildcard -> acc_tag
       | Binder x -> lub_tags (get_id_tag x) acc_tag
       | Constructor (s, ps) ->
-          (* TODO : This needs to be factored out and generalised *)
-          match s with
-          | "None" -> lub_tags (Adt ("Option", [NoInfo])) acc_tag
-          | "Some" ->
-              (match acc_tag with
-               | NoInfo              ->
-                   (match List.map2 ~f:walk [NoInfo] ps with
-                    | Ok res          -> Adt ("Option", res)
-                    | Unequal_lengths -> Inconsistent)
-               | Adt ("Option", [t]) ->
-                   (match List.map2 ~f:walk [t] ps with
-                    | Ok res          -> Adt ("Option", res)
-                    | Unequal_lengths -> Inconsistent)
-               | _ -> Inconsistent)
-          | "True"
-          | "False" -> lub_tags acc_tag NotMoney
-          | "Pair" ->
-              (match ps with
-               | [ ps1 ; ps2 ] ->
-                     (match acc_tag with
-                    | Adt ("Pair", [t1; t2]) -> 
-                        Adt ("Pair", [walk t1 ps1; walk t2 ps2])
-                    | NoInfo ->
-                        Adt ("Pair", [walk NoInfo ps1; walk NoInfo ps2])
-                    | _ -> Inconsistent)
-               | _ -> Inconsistent)
-          | _ -> Inconsistent in
+          let expected_subtags =
+            match ctr_pattern_to_subtags s acc_tag with
+            | Some ts -> ts
+            | None -> List.map ps ~f:(fun _ -> NoInfo) in
+          let subpattern_tags =
+            match List.map2 expected_subtags ps ~f:walk with
+            | Ok tps -> tps
+            | Unequal_lengths -> [] in
+          let new_tag = ctr_to_adt_tag s subpattern_tags in
+          lub_tags new_tag acc_tag in
     List.fold_left ps ~init:NoInfo ~f:walk
-  
+            
   (*******************************************************)
   (*            Main cashflow analyzer                   *)
   (*******************************************************)
@@ -999,22 +1123,7 @@ module ScillaCashflowChecker
             | Ok res -> res
             | Unequal_lengths -> false
           in
-          let tag =
-            (* TODO: Factor this out, and generalise *)
-            match cname with
-            | "None" -> Adt ("Option", [NoInfo])
-            | "Some" ->
-                (match List.map2 ~f:(fun ni arg -> lub_tags ni (get_id_tag arg)) [NoInfo] new_args with
-                 | Ok res          -> Adt ("Option", res)
-                 | Unequal_lengths -> Inconsistent)
-            | "True"
-            | "False" -> NotMoney
-            | "Pair" ->
-                (match new_args with
-                 | [ new_arg1; new_arg2 ] ->
-                     Adt ("Pair", [get_id_tag new_arg1 ; get_id_tag new_arg2])
-                 | _ -> Inconsistent)
-            | _ -> Inconsistent in
+          let tag = ctr_to_adt_tag cname (List.map new_args ~f:get_id_tag) in
           (Constr (cname, ts, new_args),
            tag,
            field_env,

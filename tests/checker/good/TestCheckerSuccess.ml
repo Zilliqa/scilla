@@ -61,6 +61,7 @@ module CheckerTests = TestUtil.DiffBasedTests(
     let additional_libdirs = [["checker"; "good"; "lib"]]
     let tests = [
       "adt_test.scilla";
+      "cashflow_test.scilla";
       "missing-accepts.scilla";
       "multiple-accepts.scilla";
       "one-accept.scilla"; 
