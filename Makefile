@@ -1,6 +1,6 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
-.PHONY: default all utop test clean docker zilliqa-docker
+.PHONY: default all utop dev clean docker zilliqa-docker
 
 default: all
 
@@ -27,9 +27,6 @@ utop: all
 
 # Build and run tests
 test: dev
-	./bin/testsuite
-
-testd: dev
 	./bin/testsuite -print-diff true
 
 # Clean up
