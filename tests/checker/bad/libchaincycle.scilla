@@ -1,0 +1,10 @@
+scilla_version 0
+
+import TestLibCycle1
+
+library LibChainCycle
+
+let foo = sort_uint32
+
+contract TestContrCycle
+()

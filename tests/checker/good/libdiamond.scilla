@@ -1,0 +1,8 @@
+scilla_version 0
+
+import TestLibDiamondTop
+
+library LibDiamond
+
+contract TestContr1
+()

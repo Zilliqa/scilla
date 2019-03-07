@@ -233,6 +233,7 @@
 
 (provide 'scilla-mode)
 (add-to-list 'auto-mode-alist '("\\.scilla\\'" . scilla-mode))
+(add-to-list 'auto-mode-alist '("\\.scillib\\'" . scilla-mode))
 
 ;; Set scilla-root in your ~/.emacs file as "setq scilla-root /path/to/scilla".
 ;;  Note: make sure to set scilla-root *before* loading this file (scilla-mode.el)
