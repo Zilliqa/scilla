@@ -17,7 +17,7 @@
 *)
 
 
-
+open Core
 open Printf
 open Syntax
 open GlobalConfig
@@ -25,33 +25,49 @@ open ErrorUtils
 open PrettyPrinters
 open DebugMessage
 
-(* Parse external libraries "names" (by looking for in StdlibTracker). *)
+(* Find (by looking for in StdlibTracker) and parse library named "id". *)
+let import_lib id =
+  let name = get_id id in
+  let errmsg = sprintf "Failed to import library %s. " name in
+  let sloc = get_rep id in
+  let fname = match StdlibTracker.find_lib_dir name with
+    | None -> perr @@ scilla_error_to_string
+        (mk_error1 (errmsg ^ "Not found.\n") sloc); exit 1
+    | Some d -> d ^ Filename.dir_sep ^ name ^ StdlibTracker.file_extn_library
+  in
+    match FrontEndParser.parse_file ScillaParser.lmodule fname with
+    | None -> perr @@ scilla_error_to_string
+        (mk_error1 (errmsg ^ "Failed to parse.\n") sloc); exit 1
+    | Some lmod ->
+        plog (sprintf "Successfully imported external library %s\n" name);
+        lmod
+
+(* Import all libraries in "names" (and their dependences).
+ * The order of the returned libraries is an RPO traversal
+ * over the dependence graph generated out of "names".
+ *)
 let import_libs names =
-  List.map (fun id -> 
-    let name = get_id id in
-    let sloc = get_rep id in
-    let errmsg = (sprintf "%s. " ("Failed to import library " ^ name)) in
-    let dir = StdlibTracker.find_lib_dir name in
-    let open Core in 
-    let f = match dir with
-      | None -> perr @@ scilla_error_to_string
-         (mk_error1 (errmsg ^ "Not found.\n") sloc); exit 1
-      | Some d -> d ^ Filename.dir_sep ^ name ^ ".scillib" in
-    try
-      let parse_lib = FrontEndParser.parse_file ScillaParser.lmodule f  in
-      match parse_lib with
-      | None -> perr @@ scilla_error_to_string
-          (mk_error1 (errmsg ^ "Failed to parse.\n") sloc); exit 1
-      | Some lib ->
-        plog (sprintf "%s\n" "Successfully imported external library " ^ name);
-        lib
-    with | _ -> perr @@ scilla_error_to_string 
-          (mk_error1 (errmsg ^ "Failed to parse.\n") sloc); exit 1
-    ) names 
+  let rec importer names stack importedl =
+    List.fold_left ~f:(fun (ilibs, importedl) l ->
+      let name = get_id l in
+      if List.mem stack name ~equal:(=) then
+        (perr @@ scilla_error_to_string 
+          (mk_error1 (sprintf "Cyclic dependence found when importing %s." name) (get_rep l));
+        exit 1) else
+      if List.mem importedl name ~equal:(=) then (ilibs, importedl) else
+      let ilib = import_lib l in
+      let (ilibs'', importedl'') = importer ilib.elibs (name :: stack) (name :: importedl) in
+      (* Order in which we return the list of imported libraries is important. *)
+      (ilibs @ ilibs'' @ [ilib], importedl'')
+    ) ~init:([], importedl) names
+  in
+  let (libs, _) = importer names [] [] in
+  (* Return library list rather than lmodule list. *)
+  List.map ~f:(fun (l : ParserUtil.ParsedSyntax.lmodule) -> l.libs) libs
 
 let stdlib_not_found_err () =
-  (perr @@ scilla_error_to_string (mk_error0 
-    ("A path to Scilla stdlib not found. Please set " ^ StdlibTracker.scilla_stdlib_env ^ 
+  (perr @@ scilla_error_to_string (mk_error0
+    ("A path to Scilla stdlib not found. Please set " ^ StdlibTracker.scilla_stdlib_env ^
      " environment variable, or pass through command-line argument for this script.\n" ^
      "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla -libdir ./src/stdlib/\n"));
    exit 1)
@@ -60,24 +76,28 @@ let stdlib_not_found_err () =
 let import_all_libs ldirs  =
   (* Get list of scilla libraries in dir *)
   let get_lib_list dir =
-    if not (Sys.file_exists dir) then
-      (perr @@ scilla_error_to_string (mk_error0 "Invalid stdlib directory provided");
-       exit 1);
+    (* We don't throw an error if dir is invalid,
+     * to be consistent with the behaviour of StdlibTracker.find_lib_dir.
+     *)
+    if not (Caml.Sys.file_exists dir) then [] else
+
     let files = Array.to_list (Sys.readdir dir) in
-    List.fold_right (fun file names ->
-      if Filename.extension file = ".scillib"
-      then 
-        let name = Filename.remove_extension (Filename.basename file) in
+    List.fold_right files ~f:(fun file names ->
+      if Caml.Filename.extension file = StdlibTracker.file_extn_library
+      then
+        let name = Caml.Filename.remove_extension (Filename.basename file) in
           asId name :: names
       else
-        names) files []
+        names) ~init:[]
   in
-  (* Make a list of all libraries and parse them through import_libs above. *)
-  let names = List.fold_right (fun dir names ->
+  (* Make a list of all libraries and parse them through import_lib above. *)
+  let names = List.fold_right ldirs ~f:(fun dir names ->
     let names' = get_lib_list dir in
-      List.append names names') ldirs []
+      List.append names names') ~init:[]
   in
-    import_libs names 
+    (* We don't need to look for dependences of imported libraries
+     * because we are importing _all_ libraries that we can find. *)
+  List.map names ~f:(fun l -> (import_lib l).libs)
 
 type runner_cli = {
   input_file : string;
@@ -111,8 +131,8 @@ let parse_cli () =
   ] in 
 
   let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -libdir /path/to/stdlib input.scilla\n" in
-  let optional_usage = String.concat "\n  "
-    (List.map (fun (flag,_,desc) -> flag ^ " " ^ desc) speclist) in
+  let optional_usage = String.concat ~sep:"\n  "
+    (List.map ~f:(fun (flag,_,desc) -> flag ^ " " ^ desc) speclist) in
   let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
 
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)

@@ -62,5 +62,9 @@ module StdlibTracker : sig
   val add_stdlib_dirs : string list -> unit
   (* Try find library "name" in known locations *)
   val find_lib_dir : string -> string option
+  (* File extension for Scilla contracts. *)
+  val file_extn_contract : string
+  (* File extension for Scilla libraries. *)
+  val file_extn_library : string
 
 end

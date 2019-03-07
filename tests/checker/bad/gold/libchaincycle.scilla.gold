@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Cyclic dependence found when importing TestLibCycle1.",
+      "start_location": {
+        "file": "checker/bad/lib/TestLibCycle2.scillib",
+        "line": 1,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
