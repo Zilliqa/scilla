@@ -86,18 +86,21 @@ let rec build_contract_tests env name exit_code i n add_additional_lib =
       else
         (test false) :: (build_contract_tests env name exit_code (i+1) n add_additional_lib)
 
-let build_contract_init_test env name =
+let build_contract_init_test env name is_library =
   name ^ "_init" >::
   (fun test_ctxt ->
     (* Files for the contract are in contract/(crowdfunding|zil-game|etc). *)
     let contract_dir = env.tests_dir test_ctxt ^/ "contracts" in
     let dir = env.tests_dir test_ctxt ^/ "runner" ^/ name in
+    let extn =
+      if is_library then GlobalConfig.StdlibTracker.file_extn_library
+      else GlobalConfig.StdlibTracker.file_extn_contract in
     let tmpdir = bracket_tmpdir test_ctxt in
     let output_file = tmpdir ^/ name ^ "_init_output" ^. "json" in
     let args = ["-init"; dir ^/ "init.json";
                 (* stdlib is in src/stdlib *)
                 "-libdir"; "src" ^/ "stdlib";
-                "-i"; contract_dir ^/ name ^. "scilla";
+                "-i"; contract_dir ^/ name ^. extn;
                 "-o"; output_file;
                 "-jsonerrors";
                 "-gaslimit"; testsuit_gas_limit;
@@ -143,9 +146,10 @@ let add_tests env =
   "contract_tests" >:::[
     "these_tests_must_SUCCEED" >:::[
       "crowdfunding" >:::(build_contract_tests env "crowdfunding" succ_code 1 6 false);
-      "crowdfunding_init" >:(build_contract_init_test env "crowdfunding");
+      "crowdfunding_init" >:(build_contract_init_test env "crowdfunding" false);
       "zil-game" >:::(build_contract_tests env "zil-game" succ_code 1 9 false);
-      "zil-game_init" >:(build_contract_init_test env "zil-game");
+      "zil-game_init" >:(build_contract_init_test env "zil-game" false);
+      "testlib2_init" >:(build_contract_init_test env "TestLib2" true);
       "cfinvoke" >:::(build_contract_tests env "cfinvoke" succ_code 1 4 false);
       "ping" >:::(build_contract_tests env "ping" succ_code 0 3 false);
       "pong" >:::(build_contract_tests env "pong" succ_code 0 3 false);

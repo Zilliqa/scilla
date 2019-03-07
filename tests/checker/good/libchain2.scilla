@@ -1,0 +1,10 @@
+scilla_version 0
+
+import TestLib2
+
+library LibChain2
+
+let foo = sort_uint32
+
+contract TestContr2
+()

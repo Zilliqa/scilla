@@ -18,11 +18,12 @@
 
 open OUnit2
 open TestUtil
+open ScillaUtil.FilePathInfix
 
 let main =
-  let bin_dir_default = (Sys.getcwd () ^ Filename.dir_sep ^ "bin") in
-  let tests_dir_default = (Sys.getcwd () ^ Filename.dir_sep ^ "tests") in
-  let stdlib_dir_default = (Sys.getcwd() ^ Filename.dir_sep ^ "src" ^ Filename.dir_sep ^ "stdlib") in
+  let bin_dir_default = (Sys.getcwd () ^/ "bin") in
+  let tests_dir_default = (Sys.getcwd () ^/ "tests") in
+  let stdlib_dir_default = (Sys.getcwd() ^/ "src" ^/ "stdlib") in
   let bin_dir = Conf.make_string "bin_dir" bin_dir_default "Directory containing binaries" in
   let tests_dir = Conf.make_string "tests_dir" tests_dir_default "Directory containing tests" in
   let stdlib_dir = Conf.make_string "stdlib_dir" stdlib_dir_default "Directory containing stdlib" in

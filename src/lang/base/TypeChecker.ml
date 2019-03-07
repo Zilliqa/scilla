@@ -595,7 +595,54 @@ module ScillaTypechecker
         Ok((lib_res, ""), es)
         )
   *)
-            
+
+  let type_lmodule
+    (md : UntypedSyntax.lmodule)
+    (rec_libs : UntypedSyntax.lib_entry list)
+    (elibs : UntypedSyntax.library list)
+    : (TypedSyntax.lmodule * TypedSyntax.lib_entry list * TypedSyntax.library list, scilla_error list) result =
+
+    let msg = sprintf "Type error(s) in contract %s:\n" (get_id md.libs.lname) in
+    wrap_with_info (msg, SR.get_loc (get_rep md.libs.lname)) @@
+
+    (* Step 0: Type check recursion principles *)
+    let%bind (typed_rlib, tenv0) = type_rec_libs rec_libs in
+
+    (* Step 1: Type check external and internal libraries. *)
+    let all_libs = elibs @ [md.libs] in
+    let%bind ((libs, _), emsgs) = foldM all_libs ~init:(([], tenv0), [])
+        ~f:(fun ((lib_acc, tenv_acc), emsgs_acc) elib ->
+            (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
+            let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
+            let%bind ((typed_libraries, tenv'), emsg) =
+              match type_library tenv_acc elib with
+              | Ok (t_lib, t_env) -> Ok((t_lib::lib_acc, t_env), emsgs_acc)
+              | Error el ->
+                  Ok((lib_acc, tenv_acc), emsgs_acc @ el)
+            in
+            (* Updated env and error messages are what we accummulate in the fold. *)
+            pure ((typed_libraries, tenv'), emsg)
+          )
+    in
+
+    (* Split external and contract libraries.
+     * Note that the typed libs are in reverse order
+     * (libs in Step1 reverses the libraries). *)
+    let%bind typed_mlib =
+      (match List.hd libs with
+      | Some l -> pure l
+      | None -> fail1 "Internal error in typing library module." (SR.get_loc (get_rep md.libs.lname))
+      ) in
+    let typed_elibs =
+      (match List.tl libs with
+      | Some elibs_rev -> List.rev elibs_rev
+      | None -> []
+      ) in
+
+    if emsgs <> [] then fail @@ emsgs else 
+    let typed_lmodule = { TypedSyntax.elibs = md.elibs; TypedSyntax.libs = typed_mlib } in
+    pure (typed_lmodule, typed_rlib, typed_elibs)
+
   let type_module
       (md : UntypedSyntax.cmodule)
       (* TODO, issue #225 : rec_libs should be added to the libraries when we allow custom, inductive ADTs *)

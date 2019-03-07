@@ -20,6 +20,7 @@ open Core
 open Syntax
 open ErrorUtils
 open TypeUtil
+open ScillaUtil.FilePathInfix
 
 (*****************************************************************)
 (*                    Library type caching                       *)
@@ -125,7 +126,7 @@ module StdlibTypeCacher
     match dir_o with
     | Some dir ->
       (* See if file lib_name.json exists and load from it. *)
-      let file_name = (dir ^ Filename.dir_sep ^ lib_name ^ ".json") in
+      let file_name = (dir ^/ lib_name ^. "json") in
       if Caml.Sys.file_exists file_name then
         let j = Yojson.Basic.from_file file_name in
         let entries_opt = parse_json j in
@@ -167,7 +168,7 @@ module StdlibTypeCacher
     | Some dir ->
       let j = to_json_string lib lib_entries in
       let js = Yojson.pretty_to_string j in
-      Out_channel.with_file (dir ^ Filename.dir_sep ^ lib_name ^ ".json")
+      Out_channel.with_file (dir ^/ lib_name ^. "json")
        ~f:(fun channel -> js |> Out_channel.output_string channel)
     | None ->
       (* TODO: add log to DebugMessage.plog. *)
