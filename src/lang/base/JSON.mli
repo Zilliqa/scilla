@@ -161,5 +161,5 @@ module CashflowInfo : sig
 
   *)
 
-  val get_json : (string * string) list -> Yojson.t
+  val get_json : ((string * string) list * (string * ((string * string list) list)) list) -> Yojson.t
 end

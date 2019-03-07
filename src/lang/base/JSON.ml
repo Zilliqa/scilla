@@ -457,12 +457,22 @@ end
 
 module CashflowInfo = struct
 
-  let get_json tags =
-    `List
-      (List.map
-         tags
-         ~f:(fun (i, t) ->
-             `Assoc [("field", `String i);
-                     ("tag", `String t)]))
+  let get_json (param_field_tags, ctr_tags) =
+    `Assoc [("State variables",
+             `List
+                (List.map
+                   param_field_tags
+                   ~f:(fun (i, t) ->
+                       `Assoc [("field", `String i);
+                               ("tag", `String t)]))) ;
+            ("ADT constructors",
+             `List
+               (List.map ctr_tags
+                  ~f:(fun (adt, ctrs) ->
+                      `Assoc [(adt,
+                               `List (List.map ctrs ~f:(fun (i, ts) ->
+                                   `Assoc [("constructor", `String i);
+                                           ("tag",
+                                            `List (List.map ts ~f:(fun t -> `String t)))])))])))]
   
 end

@@ -116,10 +116,16 @@ let check_events_info einfo  =
   | Ok _ -> einfo
 
 let check_cashflow typed_cmod =
-  let j = CF.main typed_cmod in
-  List.map j
-    ~f:(fun (i, t) ->
-        (i, CF.ECFR.money_tag_to_string t))
+  let (param_field_tags, ctr_tags) = CF.main typed_cmod in
+  let param_field_tags_to_string = List.map param_field_tags
+      ~f:(fun (i, t) ->
+          (i, CF.ECFR.money_tag_to_string t)) in
+  let ctr_tags_to_string = List.map ctr_tags
+      ~f:(fun (adt, ctrs) ->
+          (adt, List.map ctrs
+             ~f:(fun (i, ts) ->
+                 (i, List.map ts ~f:CF.ECFR.money_tag_to_string)))) in
+  (param_field_tags_to_string, ctr_tags_to_string)
 
 let check_version vernum =
   let (mver, _, _) = scilla_version in
@@ -161,7 +167,7 @@ let check_cmodule cli =
     let _ = if cli.cf_flag then check_accepts typed_cmod else () in
     let%bind _ = check_sanity typed_cmod typed_rlibs typed_elibs in
     let%bind event_info = check_events_info (EI.event_info pm_checked_cmod)  in
-    let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
+    let%bind cf_info_opt = if cli.cf_flag then pure @@ Some (check_cashflow typed_cmod) else pure @@ None in
     pure @@ (cmod, tenv, event_info, cf_info_opt)
   ) in
   (match r with
