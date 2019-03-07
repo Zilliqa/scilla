@@ -30,10 +30,9 @@ type tsuite_env =
     print_diff : test_ctxt -> bool;
   }
 
-let output_verifier goldoutput_file print_diff out_stream =
+let output_verifier goldoutput_file print_diff output =
   (* load all data from file *)
   let gold_output = In_channel.read_all goldoutput_file in
-  let output = BatStream.to_string out_stream in
   let pp_diff fmt =
     let config =
       let open Patdiff_lib.Configuration in
@@ -55,8 +54,8 @@ let output_verifier goldoutput_file print_diff out_stream =
     assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o))
       ~printer:(fun s -> s) gold_output output
 
-let output_updater goldoutput_file test_name s =
-  Out_channel.write_all goldoutput_file ~data:(BatStream.to_string s);
+let output_updater goldoutput_file test_name data =
+  Out_channel.write_all goldoutput_file ~data;
   Printf.printf "Updated gold output for test %s\n" test_name
 
 let print_args args =
@@ -95,9 +94,12 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
       let args = custom_args @ ["-libdir";path;"-jsonerrors";input_file] in
       print_cli_usage (env.print_cli test_ctxt) evalbin args;
       assert_command
-        ~foutput:(if env.update_gold test_ctxt
-                  then output_updater goldoutput_file input_file
-                  else output_verifier goldoutput_file (env.print_diff test_ctxt))
+        ~foutput:(fun s ->
+            let out = BatStream.to_string s in
+            if env.update_gold test_ctxt
+            then output_updater goldoutput_file input_file out
+            else output_verifier goldoutput_file (env.print_diff test_ctxt) out
+          )
         ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt evalbin args))
 
   let add_tests env =
