@@ -147,16 +147,31 @@ module Event : sig
 end
 
 module CashflowInfo : sig
-  (* Given a list of pairs with of fields and cashflow tags for a contract, 
-     give a string JSON with these details:
+  (* Given: A pair of lists.
+            The first element is an association list from fields to their tags.
+            The second element is an association list from adts to their contstructor tags.
+            Constructor tags are an association list from constructors to their argument tags.
+            An argument tag is either a normal tag, or "_" if the argument was ignored during the cashflow analysis.
+
+     Output: A string JSON with these details:
 
      {
-       "cashflow_tags" : [
-         { "field" : "owners",
-           "tag" : "NotMoney" },
-         { "field" : "donations",
-           "tag" : "MapMoney" }
-       ]
+       "cashflow_tags" : {
+           "State variables": [
+               { "field" : "owners",
+                 "tag" : "NotMoney" },
+               { "field" : "donations",
+                 "tag" : "MapMoney" }
+           ],
+           "ADT constructors" : [
+               {
+                   "Type1" : [
+                       { "constructor" : "Test1", "tags" : [ "NoInfo", "_", "NotMoney" ] },
+                       { "constructor" : "Test2", "tags" : [ ] }
+                   ]
+               }               
+           ]
+        }
      }
 
   *)

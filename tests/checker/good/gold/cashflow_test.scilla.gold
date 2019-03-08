@@ -1,7 +1,15 @@
 {
-  "cashflow_tags": [
-    { "field": "transaction_pairs", "tag": "(List (Pair NotMoney Money))" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "transaction_pairs", "tag": "(List (Pair NotMoney Money))" }
+    ],
+    "ADT constructors": [
+      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
+      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
+      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
+      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] }
+    ]
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "CashflowTest",

@@ -124,7 +124,7 @@ let check_cashflow typed_cmod =
       ~f:(fun (adt, ctrs) ->
           (adt, List.map ctrs
              ~f:(fun (i, ts) ->
-                 (i, List.map ts ~f:CF.ECFR.money_tag_to_string)))) in
+                 (i, List.map ts ~f:(fun t_opt -> Option.value_map t_opt ~default:"_" ~f:CF.ECFR.money_tag_to_string))))) in
   (param_field_tags_to_string, ctr_tags_to_string)
 
 let check_version vernum =

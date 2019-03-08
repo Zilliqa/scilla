@@ -1,13 +1,21 @@
 {
-  "cashflow_tags": [
-    { "field": "auctionStart", "tag": "NotMoney" },
-    { "field": "biddingTime", "tag": "NotMoney" },
-    { "field": "beneficiary", "tag": "NotMoney" },
-    { "field": "ended", "tag": "NotMoney" },
-    { "field": "highestBidder", "tag": "(Option NotMoney)" },
-    { "field": "highestBid", "tag": "Money" },
-    { "field": "pendingReturns", "tag": "(Map Money)" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "auctionStart", "tag": "NotMoney" },
+      { "field": "biddingTime", "tag": "NotMoney" },
+      { "field": "beneficiary", "tag": "NotMoney" },
+      { "field": "ended", "tag": "NotMoney" },
+      { "field": "highestBidder", "tag": "(Option NotMoney)" },
+      { "field": "highestBid", "tag": "Money" },
+      { "field": "pendingReturns", "tag": "(Map Money)" }
+    ],
+    "ADT constructors": [
+      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
+      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
+      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
+      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] }
+    ]
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "OpenAuction",

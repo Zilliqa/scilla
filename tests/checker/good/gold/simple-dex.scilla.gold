@@ -1,10 +1,26 @@
 {
-  "cashflow_tags": [
-    { "field": "contractOwner", "tag": "NoInfo" },
-    { "field": "orderbook", "tag": "(Map (Order ))" },
-    { "field": "orderInfo", "tag": "(Map (Pair NotMoney NotMoney))" },
-    { "field": "pendingReturns", "tag": "(Map (Map NoInfo))" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "contractOwner", "tag": "NoInfo" },
+      { "field": "orderbook", "tag": "(Map (Order ))" },
+      { "field": "orderInfo", "tag": "(Map (Pair NotMoney NotMoney))" },
+      { "field": "pendingReturns", "tag": "(Map (Map NoInfo))" }
+    ],
+    "ADT constructors": [
+      {
+        "Order": [
+          {
+            "constructor": "Order",
+            "tag": [ "NoInfo", "NoInfo", "NoInfo", "NoInfo" ]
+          }
+        ]
+      },
+      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
+      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
+      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
+      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] }
+    ]
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "SimpleDex",

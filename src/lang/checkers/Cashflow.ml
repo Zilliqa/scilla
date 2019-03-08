@@ -456,45 +456,24 @@ module ScillaCashflowChecker
               (* No constructor arguments - ignore *)
               acc
           | Some targs ->
-              match List.filter targs ~f:ctr_arg_filter with
-              | [] -> (* No interesting arguments - ignore *)
-                  acc
-              | filtered_args ->
-                  let tag_list = List.map filtered_args ~f:(fun _ -> NoInfo) in
-                  (ctr.cname, tag_list) :: acc)
+              let tag_list = List.map targs
+                  ~f:(fun t -> if ctr_arg_filter t then Some NoInfo else None) in
+              (ctr.cname, tag_list) :: acc)
 
   let update_ctr_tag_map ctr_tag_map ctr_name arg_tags =
     match List.Assoc.find ctr_tag_map ~equal:(=) ctr_name with
     | None ->
         (* Ignored constructor *)
         None
-    | Some filtered_arg_map_tags ->
-        let open DataTypeDictionary in
-        match lookup_constructor ctr_name with
-        | Error _ ->
-            (* Don't allow failures at this point *)
+    | Some arg_map_tags ->
+        match List.map2 arg_map_tags arg_tags
+                ~f:(fun arg_map_tag arg_tag ->
+                    Option.map arg_map_tag ~f:(lub_tags arg_tag)) with
+        | Ok new_tags
+          when new_tags <> arg_map_tags ->
+            Some (List.Assoc.add ctr_tag_map ~equal:(=) ctr_name new_tags)
+        | _ ->
             None
-        | Ok (adt, _) ->
-            match constr_tmap adt ctr_name with
-            | None ->
-                None
-            | Some targs ->
-                match List.zip targs arg_tags with
-                | None ->
-                    (* Arity mismatch - ignore *)
-                    None
-                | Some zipped_args ->
-                    let filtered_tags = List.filter_map zipped_args
-                        ~f:(fun (targ, arg_tag) -> if ctr_arg_filter targ then Some arg_tag else None) in
-                    match List.map2 filtered_arg_map_tags filtered_tags ~f:lub_tags with
-                    | Unequal_lengths ->
-                        (* Filter mismatch - ignore *)
-                        None
-                    | Ok new_tags ->
-                        if filtered_arg_map_tags = new_tags
-                        then None (* No changes *)
-                        else
-                          Some (List.Assoc.add ctr_tag_map ~equal:(=) ctr_name new_tags)
               
   (*******************************************************)
   (*      Helper functions for local variables           *)
@@ -1569,8 +1548,10 @@ module ScillaCashflowChecker
         ~f:(fun adt ->
             match List.filter_map adt.tconstr
                     ~f:(fun ctr ->
-                        List.Assoc.find ctr_tag_map ~equal:(=) ctr.cname |>
-                        Option.map ~f:(fun arg_tags -> (ctr.cname, arg_tags))) with
+                        match List.Assoc.find ctr_tag_map ~equal:(=) ctr.cname with
+                        | Some arg_tag_opts ->
+                            Some (ctr.cname, arg_tag_opts)
+                        | None -> None) with
             | [] ->
                 (* No interesting constructors found *)
                 None

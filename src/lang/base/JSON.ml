@@ -472,7 +472,7 @@ module CashflowInfo = struct
                       `Assoc [(adt,
                                `List (List.map ctrs ~f:(fun (i, ts) ->
                                    `Assoc [("constructor", `String i);
-                                           ("tag",
+                                           ("tags",
                                             `List (List.map ts ~f:(fun t -> `String t)))])))])))]
   
 end

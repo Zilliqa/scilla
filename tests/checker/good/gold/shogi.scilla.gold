@@ -1,12 +1,76 @@
 {
-  "cashflow_tags": [
-    { "field": "player1", "tag": "NotMoney" },
-    { "field": "player2", "tag": "NoInfo" },
-    { "field": "board", "tag": "(Map (Map (SquareContents )))" },
-    { "field": "captured_pieces", "tag": "(Map (Map NoInfo))" },
-    { "field": "player_in_turn", "tag": "(Option NotMoney)" },
-    { "field": "winner", "tag": "(Option NotMoney)" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "player1", "tag": "NotMoney" },
+      { "field": "player2", "tag": "NoInfo" },
+      { "field": "board", "tag": "(Map (Map (SquareContents )))" },
+      { "field": "captured_pieces", "tag": "(Map (Map NoInfo))" },
+      { "field": "player_in_turn", "tag": "(Option NotMoney)" },
+      { "field": "winner", "tag": "(Option NotMoney)" }
+    ],
+    "ADT constructors": [
+      {
+        "Piece": [
+          { "constructor": "King", "tag": [] },
+          { "constructor": "GoldGeneral", "tag": [] },
+          { "constructor": "SilverGeneral", "tag": [] },
+          { "constructor": "Knight", "tag": [] },
+          { "constructor": "Lance", "tag": [] },
+          { "constructor": "Pawn", "tag": [] },
+          { "constructor": "Rook", "tag": [] },
+          { "constructor": "Bishop", "tag": [] }
+        ]
+      },
+      {
+        "Error": [
+          { "constructor": "GameOver", "tag": [] },
+          { "constructor": "PlayingOutOfTurn", "tag": [] },
+          { "constructor": "IllegalAction", "tag": [] },
+          { "constructor": "InternalError", "tag": [] }
+        ]
+      },
+      {
+        "SquareContents": [
+          { "constructor": "Occupied", "tag": [ "_", "_", "NotMoney" ] },
+          { "constructor": "Free", "tag": [] }
+        ]
+      },
+      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
+      {
+        "Action": [
+          { "constructor": "Move", "tag": [ "_", "_", "NoInfo", "_" ] },
+          { "constructor": "Place", "tag": [ "_", "_" ] },
+          { "constructor": "Resign", "tag": [] }
+        ]
+      },
+      {
+        "Direction": [
+          { "constructor": "East", "tag": [] },
+          { "constructor": "SouthEast", "tag": [] },
+          { "constructor": "South", "tag": [] },
+          { "constructor": "SouthWest", "tag": [] },
+          { "constructor": "West", "tag": [] },
+          { "constructor": "NorthWest", "tag": [] },
+          { "constructor": "North", "tag": [] },
+          { "constructor": "NorthEast", "tag": [] }
+        ]
+      },
+      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
+      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
+      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] },
+      {
+        "PromotionStatus": [
+          { "constructor": "NotPromoted", "tag": [] },
+          { "constructor": "Promoted", "tag": [] }
+        ]
+      },
+      {
+        "Square": [
+          { "constructor": "Square", "tag": [ "NotMoney", "NotMoney" ] }
+        ]
+      }
+    ]
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Shogi",

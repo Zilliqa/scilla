@@ -1,5 +1,15 @@
 {
-  "cashflow_tags": [ { "field": "pub_key", "tag": "(Option Inconsistent)" } ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "pub_key", "tag": "(Option Inconsistent)" }
+    ],
+    "ADT constructors": [
+      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
+      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
+      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
+      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] }
+    ]
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Ecdsa",

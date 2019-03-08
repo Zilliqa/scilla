@@ -1,15 +1,45 @@
 {
-  "cashflow_tags": [
-    { "field": "initial_owners", "tag": "NoInfo" },
-    { "field": "required_signatures", "tag": "NotMoney" },
-    { "field": "validity_checked", "tag": "NotMoney" },
-    { "field": "contract_valid", "tag": "NotMoney" },
-    { "field": "owners", "tag": "(Map NotMoney)" },
-    { "field": "transactionCount", "tag": "NotMoney" },
-    { "field": "signatures", "tag": "(Map (Map NotMoney))" },
-    { "field": "transactions", "tag": "(Map (Transaction ))" },
-    { "field": "owner_signatures", "tag": "(Map (Map NotMoney))" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "initial_owners", "tag": "NoInfo" },
+      { "field": "required_signatures", "tag": "NotMoney" },
+      { "field": "validity_checked", "tag": "NotMoney" },
+      { "field": "contract_valid", "tag": "NotMoney" },
+      { "field": "owners", "tag": "(Map NotMoney)" },
+      { "field": "transactionCount", "tag": "NotMoney" },
+      { "field": "signatures", "tag": "(Map (Map NotMoney))" },
+      { "field": "transactions", "tag": "(Map (Transaction ))" },
+      { "field": "owner_signatures", "tag": "(Map (Map NotMoney))" }
+    ],
+    "ADT constructors": [
+      {
+        "Error": [
+          { "constructor": "NonOwnerCannotSign", "tag": [] },
+          { "constructor": "UnknownTransactionId", "tag": [] },
+          { "constructor": "InsufficientFunds", "tag": [] },
+          { "constructor": "NoSignatureListFound", "tag": [] },
+          { "constructor": "AlreadySigned", "tag": [] },
+          { "constructor": "NotAlreadySigned", "tag": [] },
+          { "constructor": "InvalidContract", "tag": [] },
+          { "constructor": "InvalidAmount", "tag": [] },
+          { "constructor": "NotEnoughSignatures", "tag": [] },
+          { "constructor": "SenderIsNotRecipient", "tag": [] },
+          { "constructor": "CandidateAlreadyAdded", "tag": [] },
+          { "constructor": "UnknownCandidate", "tag": [] },
+          { "constructor": "CandidateAlreadyOwner", "tag": [] }
+        ]
+      },
+      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
+      {
+        "Transaction": [
+          { "constructor": "Trans", "tag": [ "NotMoney", "Money" ] }
+        ]
+      },
+      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
+      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
+      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] }
+    ]
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Wallet",

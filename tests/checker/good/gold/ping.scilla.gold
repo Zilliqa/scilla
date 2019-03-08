@@ -1,8 +1,16 @@
 {
-  "cashflow_tags": [
-    { "field": "count", "tag": "NoInfo" },
-    { "field": "pong_addr", "tag": "(Option NotMoney)" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "count", "tag": "NoInfo" },
+      { "field": "pong_addr", "tag": "(Option NotMoney)" }
+    ],
+    "ADT constructors": [
+      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
+      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
+      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
+      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] }
+    ]
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Ping",
