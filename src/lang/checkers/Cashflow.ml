@@ -491,9 +491,10 @@ module ScillaCashflowChecker
                         (* Filter mismatch - ignore *)
                         None
                     | Ok new_tags ->
-                        if arg_tags = new_tags
+                        if filtered_arg_map_tags = new_tags
                         then None (* No changes *)
-                        else Some (List.Assoc.add ctr_tag_map ~equal:(=) ctr_name new_tags)
+                        else
+                          Some (List.Assoc.add ctr_tag_map ~equal:(=) ctr_name new_tags)
               
   (*******************************************************)
   (*      Helper functions for local variables           *)
@@ -1039,7 +1040,7 @@ module ScillaCashflowChecker
                  (new_p :: acc_ps, new_p_tag :: acc_ps_tags, p_ctr_tag_map, acc_changes || p_changes)) in
           let (new_ctr_tag_map, ctr_tag_map_changes) =
             update_ctr_tag_map ps_ctr_tag_map s new_ps_tags |>
-            Option.value_map ~default:(ctr_tag_map, false) ~f:(fun map -> (map, true)) in
+            Option.value_map ~default:(ps_ctr_tag_map, false) ~f:(fun map -> (map, true)) in
           let ctr_tag = ctr_to_adt_tag s new_ps_tags in
           (Constructor (s, new_ps), ctr_tag, new_ctr_tag_map, ctr_tag_map_changes || ps_changes) in
     let (new_p, _, new_ctr_tag_map, changes) = walk p ctr_tag_map in
@@ -1487,7 +1488,7 @@ module ScillaCashflowChecker
              let new_tag = lookup_var_tag p new_local_env in
              ((update_id_tag p new_tag, typ) :: acc_ps,
               acc_changes || (get_id_tag p) <> new_tag))
-               in
+          in
       ({ tname = tname ; tparams = new_params ; tbody = new_tbody },
        new_field_env,
        new_ctr_tag_map,
@@ -1511,7 +1512,7 @@ module ScillaCashflowChecker
              AssocDictionary.insert (get_id f) e_tag acc_env)
           in
       let rec tagger transitions field_env ctr_tag_map =
-        let (new_ts, new_field_env, new_ctr_tag_map, ctrans_changes) =
+        let (new_ts, new_field_env, tmp_ctr_tag_map, ctrans_changes) =
           List.fold_right transitions ~init:([], field_env, ctr_tag_map, false) 
             ~f:(fun t (acc_ts, acc_field_env, acc_ctr_tag_map, acc_changes) ->
                let (new_t, new_field_env, new_ctr_tag_map, t_changes) =
@@ -1520,9 +1521,9 @@ module ScillaCashflowChecker
             in
         if ctrans_changes
         then
-          tagger new_ts new_field_env new_ctr_tag_map
-        else (new_ts, new_field_env, new_ctr_tag_map) in
-      let (new_ctrans, new_field_env, new_ctr_tag_map) = tagger ctrans init_field_env ctr_tag_map in
+          tagger new_ts new_field_env tmp_ctr_tag_map
+        else (new_ts, new_field_env, tmp_ctr_tag_map) in
+      let (new_ctrans, new_field_env, final_ctr_tag_map) = tagger ctrans init_field_env ctr_tag_map in
       let new_fields =
         List.fold_right cfields ~init:[] 
           ~f:(fun (f, t, e) acc_fields ->
@@ -1539,7 +1540,7 @@ module ScillaCashflowChecker
          cparams = new_params ;
          cfields = new_fields ;
          ctrans = new_ctrans },
-       new_ctr_tag_map)
+       final_ctr_tag_map)
 
     let cf_tag_module m =
       let { smver; cname ; libs ; elibs ; contr } = m in

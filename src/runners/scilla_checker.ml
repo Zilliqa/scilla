@@ -167,7 +167,7 @@ let check_cmodule cli =
     let _ = if cli.cf_flag then check_accepts typed_cmod else () in
     let%bind _ = check_sanity typed_cmod typed_rlibs typed_elibs in
     let%bind event_info = check_events_info (EI.event_info pm_checked_cmod)  in
-    let%bind cf_info_opt = if cli.cf_flag then pure @@ Some (check_cashflow typed_cmod) else pure @@ None in
+    let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
     pure @@ (cmod, tenv, event_info, cf_info_opt)
   ) in
   (match r with
