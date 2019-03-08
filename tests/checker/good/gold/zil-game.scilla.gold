@@ -9,12 +9,7 @@
       { "field": "player_b_hash", "tag": "(Option NoInfo)" },
       { "field": "timer", "tag": "(Option NoInfo)" }
     ],
-    "ADT constructors": [
-      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
-      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
-      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
-      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] }
-    ]
+    "ADT constructors": []
   },
   "contract_info": {
     "scilla_major_version": "0",

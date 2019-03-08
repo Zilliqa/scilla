@@ -458,7 +458,9 @@ module ScillaCashflowChecker
           | Some targs ->
               let tag_list = List.map targs
                   ~f:(fun t -> if ctr_arg_filter t then Some NoInfo else None) in
-              (ctr.cname, tag_list) :: acc)
+              if List.exists tag_list ~f:Option.is_some
+              then (ctr.cname, tag_list) :: acc
+              else acc)
 
   let update_ctr_tag_map ctr_tag_map ctr_name arg_tags =
     match List.Assoc.find ctr_tag_map ~equal:(=) ctr_name with

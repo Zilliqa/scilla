@@ -4,12 +4,7 @@
       { "field": "owner", "tag": "NotMoney" },
       { "field": "welcome_msg", "tag": "NoInfo" }
     ],
-    "ADT constructors": [
-      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
-      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
-      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
-      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] }
-    ]
+    "ADT constructors": []
   },
   "contract_info": {
     "scilla_major_version": "0",

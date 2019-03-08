@@ -11,14 +11,10 @@
         "Order": [
           {
             "constructor": "Order",
-            "tag": [ "NoInfo", "NoInfo", "NoInfo", "NoInfo" ]
+            "tags": [ "NoInfo", "NoInfo", "NoInfo", "NoInfo" ]
           }
         ]
-      },
-      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
-      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
-      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
-      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] }
+      }
     ]
   },
   "contract_info": {

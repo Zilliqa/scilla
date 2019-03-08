@@ -2,17 +2,7 @@
   "cashflow_tags": {
     "State variables": [],
     "ADT constructors": [
-      {
-        "TestType1": [
-          { "constructor": "Item1", "tag": [ "NoInfo" ] },
-          { "constructor": "Item2", "tag": [] }
-        ]
-      },
-      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
-      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
-      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
-      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] },
-      { "TestType2": [ { "constructor": "Item3", "tag": [ "_" ] } ] }
+      { "TestType1": [ { "constructor": "Item1", "tags": [ "NoInfo" ] } ] }
     ]
   },
   "contract_info": {

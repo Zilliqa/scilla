@@ -13,31 +13,10 @@
     ],
     "ADT constructors": [
       {
-        "Error": [
-          { "constructor": "NonOwnerCannotSign", "tag": [] },
-          { "constructor": "UnknownTransactionId", "tag": [] },
-          { "constructor": "InsufficientFunds", "tag": [] },
-          { "constructor": "NoSignatureListFound", "tag": [] },
-          { "constructor": "AlreadySigned", "tag": [] },
-          { "constructor": "NotAlreadySigned", "tag": [] },
-          { "constructor": "InvalidContract", "tag": [] },
-          { "constructor": "InvalidAmount", "tag": [] },
-          { "constructor": "NotEnoughSignatures", "tag": [] },
-          { "constructor": "SenderIsNotRecipient", "tag": [] },
-          { "constructor": "CandidateAlreadyAdded", "tag": [] },
-          { "constructor": "UnknownCandidate", "tag": [] },
-          { "constructor": "CandidateAlreadyOwner", "tag": [] }
-        ]
-      },
-      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
-      {
         "Transaction": [
-          { "constructor": "Trans", "tag": [ "NotMoney", "Money" ] }
+          { "constructor": "Trans", "tags": [ "NotMoney", "Money" ] }
         ]
-      },
-      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
-      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
-      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] }
+      }
     ]
   },
   "contract_info": {

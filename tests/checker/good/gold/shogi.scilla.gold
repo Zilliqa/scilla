@@ -10,63 +10,18 @@
     ],
     "ADT constructors": [
       {
-        "Piece": [
-          { "constructor": "King", "tag": [] },
-          { "constructor": "GoldGeneral", "tag": [] },
-          { "constructor": "SilverGeneral", "tag": [] },
-          { "constructor": "Knight", "tag": [] },
-          { "constructor": "Lance", "tag": [] },
-          { "constructor": "Pawn", "tag": [] },
-          { "constructor": "Rook", "tag": [] },
-          { "constructor": "Bishop", "tag": [] }
-        ]
-      },
-      {
-        "Error": [
-          { "constructor": "GameOver", "tag": [] },
-          { "constructor": "PlayingOutOfTurn", "tag": [] },
-          { "constructor": "IllegalAction", "tag": [] },
-          { "constructor": "InternalError", "tag": [] }
-        ]
-      },
-      {
         "SquareContents": [
-          { "constructor": "Occupied", "tag": [ "_", "_", "NotMoney" ] },
-          { "constructor": "Free", "tag": [] }
+          { "constructor": "Occupied", "tags": [ "_", "_", "NotMoney" ] }
         ]
       },
-      { "Option": [ { "constructor": "Some", "tag": [ "_" ] } ] },
       {
         "Action": [
-          { "constructor": "Move", "tag": [ "_", "_", "NoInfo", "_" ] },
-          { "constructor": "Place", "tag": [ "_", "_" ] },
-          { "constructor": "Resign", "tag": [] }
-        ]
-      },
-      {
-        "Direction": [
-          { "constructor": "East", "tag": [] },
-          { "constructor": "SouthEast", "tag": [] },
-          { "constructor": "South", "tag": [] },
-          { "constructor": "SouthWest", "tag": [] },
-          { "constructor": "West", "tag": [] },
-          { "constructor": "NorthWest", "tag": [] },
-          { "constructor": "North", "tag": [] },
-          { "constructor": "NorthEast", "tag": [] }
-        ]
-      },
-      { "Nat": [ { "constructor": "Succ", "tag": [ "_" ] } ] },
-      { "List": [ { "constructor": "Cons", "tag": [ "_", "_" ] } ] },
-      { "Pair": [ { "constructor": "Pair", "tag": [ "_", "_" ] } ] },
-      {
-        "PromotionStatus": [
-          { "constructor": "NotPromoted", "tag": [] },
-          { "constructor": "Promoted", "tag": [] }
+          { "constructor": "Move", "tags": [ "_", "_", "NoInfo", "_" ] }
         ]
       },
       {
         "Square": [
-          { "constructor": "Square", "tag": [ "NotMoney", "NotMoney" ] }
+          { "constructor": "Square", "tags": [ "NotMoney", "NotMoney" ] }
         ]
       }
     ]
