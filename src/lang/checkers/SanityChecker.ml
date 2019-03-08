@@ -345,4 +345,29 @@ module ScillaSanityChecker
     let%bind _ = basic_sanity cmod in
     one_msg_checker cmod rlibs elibs
 
+  (* ************************************** *)
+  (* ******* Library name conflicts ******* *)
+  (* ************************************** *)
+
+  (* If a name defined in a library is again defined later in another one, error. *)
+  let check_library_nameclashes elibs =
+    (* Iterate through each library, noting down names seen. *)
+    let%bind _ = foldM ~f:(fun acc elib ->
+      foldM ~f:(fun acc lentry ->
+        match lentry with
+        | LibVar (name, _) ->
+          (match List.find_opt (fun (i, _) -> (get_id i) = (get_id name)) acc with
+          | Some (name', elib') ->
+            (* We've seen this name in another library, report error. *)
+            fail1 (Printf.sprintf "Identifier %s in library %s was defined earlier in library %s" 
+                    (get_id name') (get_id elib.lname) (get_id elib'))
+                  (ER.get_loc (get_rep name))
+            (* Name not seen before, add it to our list of tracked names. *)
+          | None -> pure @@ (name, elib.lname) :: acc
+          )
+        | LibTyp _ -> pure acc
+      ) ~init:acc elib.lentries
+    ) ~init:[] elibs
+    in pure ()
+
 end

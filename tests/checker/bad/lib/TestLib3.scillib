@@ -1,0 +1,6 @@
+import TestLib1
+
+library TestLib3
+
+(* This definition hides the one in TestLib1, triggering an error. *)
+let sort_uint32 = @list_sort Uint32

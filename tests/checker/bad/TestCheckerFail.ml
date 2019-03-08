@@ -83,6 +83,8 @@ module LibTests = TestUtil.DiffBasedTests(
       "bad_adt_lib_6.scilla";
       "libchaincycle.scilla";
       "libdiamondcycle.scilla";
+      "libredef.scilla";
+      "libredef2.scillib";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

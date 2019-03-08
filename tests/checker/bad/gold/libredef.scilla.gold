@@ -1,0 +1,23 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Identifier sort_uint32 in library TestLib3 was defined earlier in library TestLib1",
+      "start_location": {
+        "file": "checker/bad/lib/TestLib3.scillib",
+        "line": 6,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract TestContrRedef contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}

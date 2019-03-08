@@ -108,6 +108,12 @@ let check_sanity m rlibs elibs =
   | Error msg -> pout @@ scilla_error_to_string msg ; res
   | Ok _ -> pure ()
 
+let check_lib_nameclashes elibs =
+  let res = SC.check_library_nameclashes elibs in
+  match res with
+  | Error msg -> pout @@ scilla_error_to_string msg ; res
+  | Ok _ -> pure ()
+
 let check_accepts m =AC.contr_sanity m
 
 let check_events_info einfo  =
@@ -136,9 +142,11 @@ let check_lmodule file =
     let elibs = import_libs lmod.elibs in
     let%bind (recursion_lmod, recursion_rec_principles, recursion_elibs) = 
       check_recursion_lmod lmod elibs in
-    let%bind (typed_lmod, typed_elibs, typed_rlibs) = 
+    let%bind (typed_lmod, typed_rlibs, typed_elibs) = 
       check_typing_lmod recursion_lmod recursion_rec_principles recursion_elibs in
-    pure (typed_lmod, typed_elibs, typed_rlibs)
+    (* For checking name clashes of libraries, we also include _this_library. *)
+    let%bind _ = check_lib_nameclashes (typed_elibs @ [typed_lmod.libs]) in
+    pure (typed_lmod, typed_rlibs, typed_elibs)
   ) in
   (match r with
   | Error _ -> exit 1; (* we've already printed the error(s). *)
@@ -160,6 +168,9 @@ let check_cmodule cli =
     let%bind pm_checked_cmod = check_patterns typed_cmod  in
     let _ = if cli.cf_flag then check_accepts typed_cmod else () in
     let%bind _ = check_sanity typed_cmod typed_rlibs typed_elibs in
+    (* We do not include typed_cmod.libs in checking for nameclashes because we allow
+     * a local name to shadow a library name. *)
+    let%bind _ = check_lib_nameclashes typed_elibs in
     let%bind event_info = check_events_info (EI.event_info pm_checked_cmod)  in
     let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
     pure @@ (cmod, tenv, event_info, cf_info_opt)

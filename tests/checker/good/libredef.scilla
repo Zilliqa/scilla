@@ -1,0 +1,12 @@
+scilla_version 0
+
+import TestLib1
+
+library LibRedef
+
+(* This is a redefinition of a name in TestLib1. *)
+(* No error must be flagged as this is a contract local definition. *)
+let sort_uint32 = @list_sort Uint32
+
+contract LibRedefContr
+()

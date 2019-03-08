@@ -1,0 +1,6 @@
+import TestLib1
+
+library LibRedef2
+
+(* This is already defined in TestLib1, should trigger an error. *)
+let sort_uint32 = @list_sort Uint32

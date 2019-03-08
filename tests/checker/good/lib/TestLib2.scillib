@@ -2,4 +2,4 @@ import TestLib1
 
 library TestLib2
 
-let sort_uint32 = @list_sort Uint32
+let sort_uint32_2 = @list_sort Uint32

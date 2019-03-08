@@ -1,0 +1,7 @@
+scilla_version 0
+
+(* TestLib1 has a name that is redefined in TestLib3. Should trigger error. *)
+import TestLib1 TestLib3
+
+contract TestContrRedef
+()

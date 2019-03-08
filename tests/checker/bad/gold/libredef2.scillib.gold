@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Identifier sort_uint32 in library LibRedef2 was defined earlier in library TestLib1",
+      "start_location": {
+        "file": "checker/bad/libredef2.scillib",
+        "line": 6,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

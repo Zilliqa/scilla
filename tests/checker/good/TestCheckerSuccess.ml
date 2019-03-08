@@ -71,6 +71,7 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "libchain2.scilla";
       "libdiamond.scilla";
       "InstantiatedListUtils.scillib";
+      "libredef.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
