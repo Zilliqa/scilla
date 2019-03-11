@@ -1,8 +1,25 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7370",
+  "gas_remaining": "7283",
   "_accepted": "false",
-  "message": null,
+  "message": {
+    "_tag": "AllowanceResponse",
+    "_amount": "0",
+    "_recipient": "0x64345678901234567890123456789012345678cd",
+    "params": [
+      {
+        "vname": "owner",
+        "type": "ByStr20",
+        "value": "0x1234567890123456789012345678901234567890"
+      },
+      {
+        "vname": "spender",
+        "type": "ByStr20",
+        "value": "0x54345678901234567890123456789012345678cd"
+      },
+      { "vname": "amount", "type": "Uint128", "value": "500" }
+    ]
+  },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -37,22 +54,5 @@
       ]
     }
   ],
-  "events": [
-    {
-      "_eventname": "Allowance",
-      "params": [
-        {
-          "vname": "owner",
-          "type": "ByStr20",
-          "value": "0x1234567890123456789012345678901234567890"
-        },
-        {
-          "vname": "spender",
-          "type": "ByStr20",
-          "value": "0x54345678901234567890123456789012345678cd"
-        },
-        { "vname": "amount", "type": "Uint128", "value": "500" }
-      ]
-    }
-  ]
+  "events": []
 }

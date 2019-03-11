@@ -16,14 +16,14 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core
+open ScillaUtil.FilePathInfix
 
 (* Available debug levels for functions in DbgMsg *)
 type debug_kind =
   | Debug_None
   | Debug_Normal
   | Debug_Verbose
-
-open Filename
 
 let debug_level = ref Debug_None
 let log_file = ref ""
@@ -38,22 +38,22 @@ let rec get_highest_numbered_log files =
     if found
     then
       let numstr = Str.matched_group 1 substr in
-      let num = Core.int_of_string numstr in
+      let num = Int.of_string numstr in
       let num' = get_highest_numbered_log files' in
-        Core.Int.max num num'
+        Int.max num num'
     else
       0
 
 (* Given a directory, look for consecutively named files
  * scilla-runner-[0-9]+.log and return the next in sequence *)
 let create_log_filename dir =
-  if not (Sys.file_exists dir) || 
-     not (Sys.is_directory dir)
+  if not (Caml.Sys.file_exists dir) ||
+     not (Caml.Sys.is_directory dir)
   then
-    Unix.mkdir dir 0o766; (* Arbitrary *)
+    Caml.Unix.mkdir dir 0o766; (* Arbitrary *)
   let files = Sys.readdir dir in
   let num = get_highest_numbered_log (Array.to_list files) in
-  dir ^ dir_sep ^ "scilla-runner-" ^ Core.Int.to_string (num+1) ^ ".log"
+  dir ^/ "scilla-runner-" ^ Int.to_string (num+1) ^. "log"
 
 let get_debug_level () =
   !debug_level
@@ -64,7 +64,7 @@ let set_debug_level l =
 let get_log_file () =
   if !log_file = ""
   then
-    log_file := create_log_filename ("_build" ^ dir_sep ^ "logs");
+    log_file := create_log_filename ("_build" ^/ "logs");
   !log_file
 
 let set_log_file s =
@@ -125,10 +125,11 @@ let stdlib_dirs = ref []
 (* List of directories to look for stdlib.
  * Entries from scilla_stdlib_env will be first. *)
 let get_stdlib_dirs () =
-  let env_dirs = 
-    match (Sys.getenv_opt scilla_stdlib_env) with 
-    | Some s when s != "" -> Str.split (Str.regexp "([;:])") s
-    | _ -> []
+  let env_dirs =
+    Option.value_map
+      (Caml.Sys.getenv_opt scilla_stdlib_env)
+      ~f:FilePath.path_of_string
+      ~default:[]
   in
     List.append env_dirs !stdlib_dirs
 
@@ -136,10 +137,15 @@ let get_stdlib_dirs () =
 let add_stdlib_dirs dirs =
   stdlib_dirs := List.append !stdlib_dirs dirs
 
+(* File extension for Scilla contracts. *)
+let file_extn_contract = "scilla"
+(* File extension for Scilla libraries. *)
+let file_extn_library = "scillib"
+
 (* Try find library "name" in known locations *)
 let find_lib_dir name =
   let dirs = get_stdlib_dirs () in
-  BatList.find_opt 
-    (fun d -> Caml.Sys.file_exists (d ^ Filename.dir_sep ^ name ^ ".scillib")) dirs
+  BatList.find_opt
+    (fun d -> Caml.Sys.file_exists (d ^/ name ^. file_extn_library)) dirs
 
 end

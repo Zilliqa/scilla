@@ -58,14 +58,19 @@ module CheckerTests = TestUtil.DiffBasedTests(
     let test_path f = ["checker"; "good"; f]
     let runner = "scilla-checker"
     let custom_args = ["-cf"; "-contractinfo"]
-    let additional_libdirs = []
+    let additional_libdirs = [["checker"; "good"; "lib"]]
     let tests = [
       "adt_test.scilla";
+      "cashflow_test.scilla";
       "missing-accepts.scilla";
       "multiple-accepts.scilla";
       "one-accept.scilla"; 
       "one-transition-accepts.scilla";
       "one-transition-might-accept.scilla";
+      "libchain1.scilla";
+      "libchain2.scilla";
+      "libdiamond.scilla";
+      "InstantiatedListUtils.scillib";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)

@@ -113,6 +113,8 @@ To run the testsuite:
 make test
 ```
 
+(this invokes `testsuite` executable with `-print-diff true` option to print colored diffs between error messages).
+
 To run the testsuite executable manually from bin/testsuite, you have to provide
 the parameters "-bin-dir" and "-tests-dir", which must be absolute paths to
 the directory containing scilla-runner, eval-runner and the tests/directory
@@ -139,7 +141,7 @@ that has been used to run the test.
 ### Emacs mode for Scilla
 
 An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode/scilla-mode.el).
-Add the following line to your `.emacs` file to load this mode for files ending with `.scilla`.
+Add the following line to your `.emacs` file to load this mode for files ending with `.scilla` and `.scillib`.
 For enabling flycheck mode for Scilla (see [INSTALL.md](./INSTALL.md)).
 
 ```

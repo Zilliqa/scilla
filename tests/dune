@@ -3,7 +3,7 @@
   (package testsuite)
   (public_name testsuite)
   (preprocess (pps ppx_sexp_conv ppx_let ppx_deriving.show))
-  (libraries core oUnit testcontracts
+  (libraries core oUnit scilla-util testcontracts
              testexps testexpsfail
              testtypes testtypefail
              testpmfail
