@@ -1143,7 +1143,7 @@ module ScillaBuiltIns
     let find_builtin_op b argtypes =
       let TaggedBuiltin (op, rep) = b in
       let finder = (function (builtin, arity, optype, elab, exec) ->
-          if builtin = op && arity = List.length argtypes
+          if arity = List.length argtypes
           then
             (* First: elaborate based on argument types *)
             let%bind type_elab = elab optype argtypes in
