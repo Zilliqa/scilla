@@ -356,7 +356,9 @@ module ScillaSanityChecker
       foldM ~f:(fun acc lentry ->
         match lentry with
         | LibVar (name, _) ->
-          (match List.find_opt (fun (i, _) -> (get_id i) = (get_id name)) acc with
+          (match List.find_opt 
+            (* Is this a name clash with an identifier from another library? *)
+            (fun (i, libi) -> (get_id i) = (get_id name) && (get_id libi) <> (get_id elib.lname)) acc with
           | Some (name', elib') ->
             (* We've seen this name in another library, report error. *)
             fail1 (Printf.sprintf "Identifier %s in library %s was defined earlier in library %s" 
