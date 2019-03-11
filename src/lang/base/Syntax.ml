@@ -248,64 +248,96 @@ type builtin =
   | Builtin_to_nat
 [@@deriving sexp]
 
+type 'rep tagged_builtin =
+  | TaggedBuiltin of builtin * 'rep
+[@@deriving sexp]
 
-let builtin_pairs = [
-  ("eq", Builtin_eq);
-  ("concat", Builtin_concat);
-  ("substr", Builtin_substr);
-  ("strlen", Builtin_strlen);
-  ("to_string", Builtin_to_string);
-  ("blt", Builtin_blt);
-  ("badd", Builtin_badd);
-  ("bsub", Builtin_bsub);
-  ("dist", Builtin_dist);
-  ("to_uint256", Builtin_to_uint256);
-  ("sha256hash", Builtin_sha256hash);
-  ("keccak256hash", Builtin_keccak256hash);
-  ("ripemd160hash", Builtin_ripemd160hash);
-  ("to_bystr", Builtin_to_bystr);
-  ("schnorr_verify", Builtin_schnorr_verify);
-  ("ec_gen_key_pair", Builtin_ec_gen_key_pair);
-  ("schnorr_gen_key_pair", Builtin_schnorr_gen_key_pair);
-  ("schnorr_sign", Builtin_schnorr_sign);
-  ("ecdsa_verify", Builtin_ecdsa_verify);
-  ("ecdsa_sign", Builtin_ecdsa_sign);
-  ("concat", Builtin_concat);
-  ("contains", Builtin_contains);
-  ("put", Builtin_put);
-  ("get", Builtin_get);
-  ("remove", Builtin_remove);
-  ("to_list", Builtin_to_list);
-  ("size", Builtin_size);
-  ("lt", Builtin_lt);
-  ("add", Builtin_add);
-  ("sub", Builtin_sub);
-  ("mul", Builtin_mul);
-  ("div", Builtin_div);
-  ("rem", Builtin_rem);
-  ("pow", Builtin_pow);
-  ("to_int32", Builtin_to_int32);
-  ("to_int64", Builtin_to_int64);
-  ("to_int128", Builtin_to_int128);
-  ("to_int256", Builtin_to_int256);
-  ("to_uint32", Builtin_to_uint32);
-  ("to_uint64", Builtin_to_uint64);
-  ("to_uint128", Builtin_to_uint128);
-  ("to_nat", Builtin_to_nat)]
+let pp_builtin b = match b with
+  | Builtin_eq -> "eq"
+  | Builtin_concat -> "concat"
+  | Builtin_substr -> "substr"
+  | Builtin_strlen -> "strlen"
+  | Builtin_to_string -> "to_string"
+  | Builtin_blt -> "blt"
+  | Builtin_badd -> "badd"
+  | Builtin_bsub -> "bsub"
+  | Builtin_dist -> "dist"
+  | Builtin_to_uint256 -> "to_uint256"
+  | Builtin_sha256hash -> "sha256hash"
+  | Builtin_keccak256hash -> "keccak256hash"
+  | Builtin_ripemd160hash -> "ripemd160hash"
+  | Builtin_to_bystr -> "to_bystr"
+  | Builtin_schnorr_verify -> "schnorr_verify"
+  | Builtin_ec_gen_key_pair -> "ec_gen_key_pair"
+  | Builtin_schnorr_gen_key_pair -> "schnorr_gen_key_pair"
+  | Builtin_schnorr_sign -> "schnorr_sign"
+  | Builtin_ecdsa_verify -> "ecdsa_verify"
+  | Builtin_ecdsa_sign -> "ecdsa_sign"
+  | Builtin_contains -> "contains"
+  | Builtin_put -> "put"
+  | Builtin_get -> "get"
+  | Builtin_remove -> "remove"
+  | Builtin_to_list -> "to_list"
+  | Builtin_size -> "size"
+  | Builtin_lt -> "lt"
+  | Builtin_add -> "add"
+  | Builtin_sub -> "sub"
+  | Builtin_mul -> "mul"
+  | Builtin_div -> "div"
+  | Builtin_rem -> "rem"
+  | Builtin_pow -> "pow"
+  | Builtin_to_int32 -> "to_int32"
+  | Builtin_to_int64 -> "to_int64"
+  | Builtin_to_int128 -> "to_int128"
+  | Builtin_to_int256 -> "to_int256"
+  | Builtin_to_uint32 -> "to_uint32"
+  | Builtin_to_uint64 -> "to_uint64"
+  | Builtin_to_uint128 -> "to_uint128"
+  | Builtin_to_nat -> "to_nat"
 
-let pp_builtin b =
-  let xs = List.filter builtin_pairs ~f:(fun (_, x) -> x = b) in
-  match xs with
-    | [] -> raise (Utils.InternalError (mk_error0 ("No rule to pp " ^ (sexp_of_builtin b |> Sexplib.Sexp.to_string))))
-    | [(pp, _)] -> pp
-    | _ -> raise (Utils.InternalError (mk_error0 ("Multiple rules to pp " ^ (sexp_of_builtin b |> Sexplib.Sexp.to_string))))
-
-let parse_builtin s =
-  let xs = List.filter builtin_pairs ~f:(fun (x, _) -> x = s) in
-  match xs with
-    | [] -> raise (SyntaxError ("No rule to parse " ^ s))
-    | [(_, b)] -> b
-    | _ -> raise (Utils.InternalError (mk_error0 (("Multiple rules to parse " ^ s))))
+let parse_builtin s = match s with
+  | "eq" -> Builtin_eq
+  | "concat" -> Builtin_concat
+  | "substr" -> Builtin_substr
+  | "strlen" -> Builtin_strlen
+  | "to_string" -> Builtin_to_string
+  | "blt" -> Builtin_blt
+  | "badd" -> Builtin_badd
+  | "bsub" -> Builtin_bsub
+  | "dist" -> Builtin_dist
+  | "to_uint256" -> Builtin_to_uint256
+  | "sha256hash" -> Builtin_sha256hash
+  | "keccak256hash" -> Builtin_keccak256hash
+  | "ripemd160hash" -> Builtin_ripemd160hash
+  | "to_bystr" -> Builtin_to_bystr
+  | "schnorr_verify" -> Builtin_schnorr_verify
+  | "ec_gen_key_pair" -> Builtin_ec_gen_key_pair
+  | "schnorr_gen_key_pair" -> Builtin_schnorr_gen_key_pair
+  | "schnorr_sign" -> Builtin_schnorr_sign
+  | "ecdsa_verify" -> Builtin_ecdsa_verify
+  | "ecdsa_sign" -> Builtin_ecdsa_sign
+  | "contains" -> Builtin_contains
+  | "put" -> Builtin_put
+  | "get" -> Builtin_get
+  | "remove" -> Builtin_remove
+  | "to_list" -> Builtin_to_list
+  | "size" -> Builtin_size
+  | "lt" -> Builtin_lt
+  | "add" -> Builtin_add
+  | "sub" -> Builtin_sub
+  | "mul" -> Builtin_mul
+  | "div" -> Builtin_div
+  | "rem" -> Builtin_rem
+  | "pow" -> Builtin_pow
+  | "to_int32" -> Builtin_to_int32
+  | "to_int64" -> Builtin_to_int64
+  | "to_int128" -> Builtin_to_int128
+  | "to_int256" -> Builtin_to_int256
+  | "to_uint32" -> Builtin_to_uint32
+  | "to_uint64" -> Builtin_to_uint64
+  | "to_uint128" -> Builtin_to_uint128
+  | "to_nat" -> Builtin_to_nat
+  | _ -> raise (SyntaxError ("No rule to parse " ^ s))
 
 (*******************************************************)
 (*                   Annotations                       *)
