@@ -212,7 +212,6 @@ type builtin =
   | Builtin_blt
   | Builtin_badd
   | Builtin_bsub
-  | Builtin_dist (* in cashflow checker only *)
   | Builtin_to_uint256
   | Builtin_sha256hash
   | Builtin_keccak256hash
@@ -260,7 +259,6 @@ let pp_builtin b = match b with
   | Builtin_blt -> "blt"
   | Builtin_badd -> "badd"
   | Builtin_bsub -> "bsub"
-  | Builtin_dist -> "dist"
   | Builtin_to_uint256 -> "to_uint256"
   | Builtin_sha256hash -> "sha256hash"
   | Builtin_keccak256hash -> "keccak256hash"
@@ -303,7 +301,6 @@ let parse_builtin s = match s with
   | "blt" -> Builtin_blt
   | "badd" -> Builtin_badd
   | "bsub" -> Builtin_bsub
-  | "dist" -> Builtin_dist
   | "to_uint256" -> Builtin_to_uint256
   | "sha256hash" -> Builtin_sha256hash
   | "keccak256hash" -> Builtin_keccak256hash
