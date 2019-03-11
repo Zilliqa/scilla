@@ -162,7 +162,7 @@ module ScillaGas
       when is_bystrx_type a1 && is_bystrx_type a2 &&
            get (bystrx_width a1) = get (bystrx_width a2)
       -> pure @@ get (bystrx_width a1) * base
-    | Builtin_to_uint256, [a], _ 
+    | Builtin_to_uint256, [a], _
       when (is_bystrx_type a) && get (bystrx_width a) <= 32 ->
       pure (32 * base)
     | Builtin_sha256hash, _, [a] ->
@@ -272,7 +272,7 @@ module ScillaGas
     (Builtin_get, [tvar "'A"; tvar "'A"], map_coster, 1);
     (Builtin_remove, [tvar "'A"; tvar "'A"], map_coster, 1);
     (Builtin_to_list, [tvar "'A"], map_coster, 1);
-    (Builtin_size, [tvar "'A"], map_coster, 1); 
+    (Builtin_size, [tvar "'A"], map_coster, 1);
 
     (* Integers *)
     (Builtin_eq, [tvar "'A"; tvar "'A"], int_coster, 4);
@@ -305,7 +305,8 @@ module ScillaGas
     ) builtin_records;
       ht
 
-  let builtin_cost op arg_literals =
+  let builtin_cost b arg_literals =
+    let TaggedBuiltin (op, _) = b in
     let%bind arg_types = mapM arg_literals ~f:literal_type in
     let matcher (name, types, fcoster, base) =
       (* The names and type list lengths must match and *)

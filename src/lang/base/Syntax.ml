@@ -202,7 +202,6 @@ type literal =
                CPSMonad.t)
 [@@deriving sexp]
 
-
 (* Builtins *)
 type builtin =
   | Builtin_eq
@@ -393,7 +392,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | App of ER.rep ident * ER.rep ident list
     | Constr of string * typ list * ER.rep ident list
     | MatchExpr of ER.rep ident * (pattern * expr_annot) list
-    | Builtin of builtin * ER.rep ident list
+    | Builtin of ER.rep tagged_builtin * ER.rep ident list
     (* Advanced features: to be added in Scilla 0.2 *)                 
     | TFun of ER.rep ident * expr_annot
     | TApp of ER.rep ident * typ list
@@ -753,7 +752,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         sprintf
           "Type error in pattern matching on `%s`%s (or one of its branches):\n"
            (get_id x) opt 
-    | Builtin (i, _) ->
+    | Builtin (TaggedBuiltin (i, _), _) ->
         sprintf "Type error in built-in application of `%s`:\n"
            (pp_builtin i)
     | TApp (tf, _) ->

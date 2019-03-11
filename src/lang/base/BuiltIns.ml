@@ -1140,7 +1140,8 @@ module ScillaBuiltIns
       ht
 
     (* Dictionary lookup based on the operation name and type *)
-    let find_builtin_op op argtypes loc =
+    let find_builtin_op b argtypes =
+      let TaggedBuiltin (op, rep) = b in
       let finder = (function (builtin, arity, optype, elab, exec) ->
           if builtin = op && arity = List.length argtypes
           then
@@ -1155,7 +1156,8 @@ module ScillaBuiltIns
       let%bind (_, (type_elab, res_type, exec)) = tryM dict ~f:finder
           ~msg:(fun () ->
               mk_error1
-                (sprintf "Cannot find built-in with name \"%s\" and argument types %s." (pp_builtin op) (pp_typ_list argtypes)) loc)
+                (sprintf "Cannot find built-in with name \"%s\" and argument types %s." (pp_builtin op) (pp_typ_list argtypes))
+                (ER.get_loc rep))
       in pure (type_elab, res_type, exec)
 
   end

@@ -158,7 +158,7 @@ let rec exp_eval erep env  =
   | Builtin (i, actuals) ->
       let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
       let%bind tps = fromR @@ MonadUtil.mapM args ~f:literal_type in
-      let%bind res = builtin_executor i tps args loc in
+      let%bind res = builtin_executor i tps args in
       pure (res, env)
   | Fixpoint (g, _, body) ->
       let rec fix arg =

@@ -40,9 +40,9 @@ module EvalGas = ScillaGas (SR) (ER)
 open EvalSyntax
     
 (* Return a builtin_op wrapped in EvalMonad *)
-let builtin_executor f arg_tps arg_lits loc =
+let builtin_executor f arg_tps arg_lits =
   let%bind (_, ret_typ, op) =
-    fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op f arg_tps loc in
+    fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op f arg_tps in
   let%bind cost = fromR @@ EvalGas.builtin_cost f arg_lits in
   let res () = op arg_lits ret_typ in
   checkwrap_opR res (Uint64.of_int cost)

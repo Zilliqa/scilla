@@ -81,6 +81,9 @@ module ScillaCashflowChecker
   let add_noinfo_to_ident i =
     match i with
     | Ident (name, rep) -> Ident (name, (ECFR.NoInfo, rep))
+  let add_noinfo_to_builtin b =
+    match b with
+    | TaggedBuiltin (op, rep) -> TaggedBuiltin (op, (ECFR.NoInfo, rep))
   
   let rec cf_init_tag_pattern p =
     match p with
@@ -115,7 +118,7 @@ module ScillaCashflowChecker
               List.map ~f:add_noinfo_to_ident actuals)
       | Builtin (op, actuals) ->
           CFSyntax.Builtin (
-              op,
+              add_noinfo_to_builtin op,
               List.map ~f:add_noinfo_to_ident actuals)
       | Let (i, topt, lhs, rhs) ->
           CFSyntax.Let (
@@ -356,6 +359,7 @@ module ScillaCashflowChecker
 
      Step 3: Calculate the greatest lower bound of C. *)
   let builtin_signature f res_tag args_tags =
+    let TaggedBuiltin (op, _) = f in
     let lub_sigs c_rs c_ass =
       let c =
         List.fold_left c_ass ~init:c_rs 
@@ -378,7 +382,7 @@ module ScillaCashflowChecker
               | Unequal_lengths -> [Inconsistent]))
         in
     let (c_r, c_as) =
-      match f with
+      match op with
       | Builtin_put ->
           let c_r_sigs =
             match res_tag with
@@ -972,12 +976,15 @@ module ScillaCashflowChecker
                   acc_changes || (get_id_tag arg) <> arg_tag))
               in
           let f_tag = lub_tags (Map res_tag) (Map expected_tag) in
-          (Builtin (f, final_args),
+
+          let TaggedBuiltin (op, (tag, r)) = f in
+          let new_f = TaggedBuiltin (op, (f_tag, r)) in
+
+          (Builtin (new_f, final_args),
            res_tag,
            final_field_env,
            final_local_env,
-           (*changes || f_tag <> get_id_tag f) -- double check me! *)
-           changes || f_tag <> res_tag)
+           changes || f_tag <> tag)
       | Let (i, topt, lhs, rhs) ->
           let ((_, (new_lhs_tag, _)) as new_lhs, lhs_field_env, lhs_local_env, lhs_changes) =
             cf_tag_expr lhs (get_id_tag i) field_env local_env in

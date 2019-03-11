@@ -105,6 +105,9 @@ module ScillaTypechecker
   let add_type_to_ident i typ =
     match i with
     | Ident (name, rep) -> Ident (name, ETR.mk_rep rep typ)
+  let add_type_to_builtin b typ =
+    match b with
+    | TaggedBuiltin (op, rep) -> TaggedBuiltin (op, ETR.mk_rep rep typ)
 
   (* Given a scrutinee type and a pattern,
      produce a list of ident -> type mappings for 
@@ -156,10 +159,10 @@ module ScillaTypechecker
     | Builtin (op, actuals) ->
         wrap_type_err erep @@ 
         let%bind (targs, typed_actuals) = type_actuals tenv actuals in
-        let%bind (_, ret_typ, _) = BuiltInDictionary.find_builtin_op op targs (ER.get_loc rep) in
+        let%bind (_, ret_typ, _) = BuiltInDictionary.find_builtin_op op targs in
         let%bind _ = TEnv.is_wf_type tenv ret_typ in
         let q_ret_typ = mk_qual_tp ret_typ in
-        pure @@ (TypedSyntax.Builtin (op, typed_actuals), (q_ret_typ, rep))
+        pure @@ (TypedSyntax.Builtin (add_type_to_builtin op q_ret_typ, typed_actuals), (q_ret_typ, rep))
     | Let (i, topt, lhs, rhs) ->
         (* Poor man's error reporting *)
         let%bind (_, (ityp, _)) as checked_lhs = wrap_type_err erep @@ type_expr tenv lhs in
