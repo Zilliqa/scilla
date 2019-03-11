@@ -694,9 +694,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         let args' = f :: args in
         any_is_mem (get_free args' bound_vars) blist
       | Builtin (_f, args) ->
-        (*let args' = f :: args in -- double check me! *)
-        let args' = args in
-        any_is_mem (get_free args' bound_vars) blist
+        any_is_mem (get_free args bound_vars) blist
       | Let (i, _, lhs, rhs) ->
         (recurser lhs bound_vars) || (recurser rhs (i::bound_vars))
       | Message margs ->
