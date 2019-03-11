@@ -24,6 +24,7 @@ open GlobalConfig
 open ErrorUtils
 open PrettyPrinters
 open DebugMessage
+open ScillaUtil.FilePathInfix
 
 (* Find (by looking for in StdlibTracker) and parse library named "id". *)
 let import_lib id =
@@ -33,7 +34,7 @@ let import_lib id =
   let fname = match StdlibTracker.find_lib_dir name with
     | None -> perr @@ scilla_error_to_string
         (mk_error1 (errmsg ^ "Not found.\n") sloc); exit 1
-    | Some d -> d ^ Filename.dir_sep ^ name ^ StdlibTracker.file_extn_library
+    | Some d -> d ^/ name ^. StdlibTracker.file_extn_library
   in
     match FrontEndParser.parse_file ScillaParser.lmodule fname with
     | None -> perr @@ scilla_error_to_string
@@ -83,9 +84,9 @@ let import_all_libs ldirs  =
 
     let files = Array.to_list (Sys.readdir dir) in
     List.fold_right files ~f:(fun file names ->
-      if Caml.Filename.extension file = StdlibTracker.file_extn_library
+      if FilePath.get_extension file = StdlibTracker.file_extn_library
       then
-        let name = Caml.Filename.remove_extension (Filename.basename file) in
+        let name = FilePath.chop_extension (FilePath.basename file) in
           asId name :: names
       else
         names) ~init:[]
@@ -120,9 +121,8 @@ let parse_cli () =
           if true then exit 0; (* if "true" to avoid warning on exit 0 *)
           ()
       ), "Print Scilla version and exit");
-    ("-libdir", Arg.String (fun x ->
-           let xl = if x = "" then [] else Str.split (Str.regexp "[;:]") x in
-           r_stdlib_dir := !r_stdlib_dir @ xl
+    ("-libdir", Arg.String (fun s ->
+           r_stdlib_dir := !r_stdlib_dir @ FilePath.path_of_string s
         ),
       "Path(s) to libraries separated with ':' (';' on windows)");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");

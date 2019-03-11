@@ -113,6 +113,8 @@ To run the testsuite:
 make test
 ```
 
+(this invokes `testsuite` executable with `-print-diff true` option to print colored diffs between error messages).
+
 To run the testsuite executable manually from bin/testsuite, you have to provide
 the parameters "-bin-dir" and "-tests-dir", which must be absolute paths to
 the directory containing scilla-runner, eval-runner and the tests/directory

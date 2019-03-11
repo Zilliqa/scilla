@@ -10,6 +10,7 @@
               angstrom
               ppx_sexp_conv ppx_deriving
               ppx_let yojson cryptokit
+              fileutils
               scilla-base scilla-eval scilla-checkers scilla-cpp-deps)
   (preprocess (pps ppx_sexp_conv ppx_let ppx_deriving.show bisect_ppx -conditional))
   (package scilla-runner))
