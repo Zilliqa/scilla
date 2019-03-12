@@ -7,6 +7,9 @@ scilla_version 0
 (***************************************************)
 library FungibleToken
 
+let one = Uint128 1
+let zero = Uint128 0
+
 let min_int =
   fun (a : Uint128) => fun (b : Uint128) =>
   let alt = builtin lt a b in
@@ -29,7 +32,13 @@ let le_int =
       | False => False
       end
     end
-    
+
+(* returns singleton List Message *)
+let one_msg =
+    fun (msg : Message) =>
+        let nil_msg = Nil {Message} in
+        Cons {Message} msg nil_msg
+
 
 (***************************************************)
 (*             The contract definition             *)
@@ -53,17 +62,23 @@ transition BalanceOf (tokenOwner : ByStr20)
   bal <- balances[tokenOwner];
   match bal with
   | Some v =>
-	e = {_eventname : "BalanceOf"; address : tokenOwner; balance : v};
-	event e
+    msg = { _tag : "BalanceOfResponse"; _recipient : _sender; _amount : zero;
+            address : tokenOwner; balance : v};
+    msgs = one_msg msg;
+    send msgs
   | None =>
-	e = {_eventname : "BalanceOf"; address : tokenOwner; balance : Uint128 0};
-    event e
+    msg = { _tag : "BalanceOfResponse"; _recipient : _sender; _amount : zero;
+            address : tokenOwner; balance : zero};
+    msgs = one_msg msg;
+    send msgs
   end
 end
 
 transition TotalSupply ()
-  e = {_eventname : "TotalSupply"; caller : _sender; balance : total_tokens};
-  event e
+  msg = { _tag : "TotalSupplyResponse"; _recipient : _sender; _amount : zero;
+          caller : _sender; totalSupply : total_tokens};
+  msgs = one_msg msg;
+  send msgs
 end
 
 transition Transfer (to : ByStr20, tokens : Uint128)
@@ -85,17 +100,23 @@ transition Transfer (to : ByStr20, tokens : Uint128)
       end;
 
   	  balances[to] := new_to_bal;
-      e = {_eventname : "TransferSuccess"; sender : _sender; recipient : to; amount : tokens};
-      event e
+      msg = { _tag : "TransferSuccess"; _recipient : _sender; _amount : zero;
+              sender : _sender; recipient : to; amount : tokens};
+      msgs = one_msg msg;
+      send msgs
     | False =>
       (* balance not sufficient. *)
-      e = {_eventname : "TransferFailure"; sender : _sender; recipient : to; amount : Uint128 0};
-      event e
+      msg = { _tag : "TransferFailure"; _recipient : _sender; _amount : zero;
+              sender : _sender; recipient : to; amount : zero};
+      msgs = one_msg msg;
+      send msgs
     end
   | None =>
     (* no balance record, can't transfer *)
-  	e = {_eventname : "TransferFailure"; sender : _sender; recipient : to; amount : Uint128 0};
-    event e
+    msg = { _tag : "TransferFailure"; _recipient : _sender; _amount : zero;
+            sender : _sender; recipient : to; amount : zero};
+    msgs = one_msg msg;
+    send msgs
   end
 end
 
@@ -127,36 +148,50 @@ transition TransferFrom (from : ByStr20, to : ByStr20, tokens : Uint128)
             (* reduce "allowed" by "tokens" *)
             new_allowed = builtin sub b tokens;
             allowed[from][_sender] := new_allowed;
-            e = {_eventname : "TransferFromSuccess"; sender : from; recipient : to; amount : tokens};
-            event e
+            msg = { _tag : "TransferFromSuccess"; _recipient : _sender; _amount : zero;
+                    sender : from; recipient : to; amount : tokens };
+            msgs = one_msg msg;
+            send msgs
         | False =>
-            e = {_eventname : "TransferFromFailure"; sender : from; recipient : to; amount : Uint128 0};
-            event e
+            msg = { _tag : "TransferFromFailure"; _recipient : _sender; _amount : zero;
+                    sender : from; recipient : to; amount : zero };
+            msgs = one_msg msg;
+            send msgs
         end
     | None =>
-        e = {_eventname : "TransferFromFailure"; sender : from; recipient : to; amount : Uint128 0};
-        event e
+        msg = { _tag : "TransferFromFailure"; _recipient : _sender; _amount : zero;
+                sender : from; recipient : to; amount : zero };
+        msgs = one_msg msg;
+        send msgs
     end
   | None =>
-	e = {_eventname : "TransferFromFailure"; sender : from; recipient : to; amount : Uint128 0};
-	event e
+	msg = { _tag : "TransferFromFailure"; _recipient : _sender; _amount : zero;
+            sender : from; recipient : to; amount : zero };
+    msgs = one_msg msg;
+    send msgs
   end
 end
 
 transition Approve (spender : ByStr20, tokens : Uint128)
   allowed[_sender][spender] := tokens;
-  e = {_eventname : "ApproveSuccess"; approver : _sender; spender : spender; amount : tokens};
-  event e
+  msg = { _tag : "ApproveSuccess"; _recipient : _sender; _amount : zero;
+          approver : _sender; spender : spender; amount : tokens };
+  msgs = one_msg msg;
+  send msgs
 end
 
 transition Allowance (tokenOwner : ByStr20, spender : ByStr20)
   spender_allowance <- allowed[tokenOwner][spender];
   match spender_allowance with
   | Some n =>
-      e = {_eventname : "Allowance"; owner : tokenOwner; spender : spender; amount : n};
-      event e
+      msg = { _tag : "AllowanceResponse"; _recipient : _sender; _amount : zero;
+              owner : tokenOwner; spender : spender; amount : n };
+      msgs = one_msg msg;
+      send msgs
   | None =>
-      e = {_eventname : "Allowance"; owner : tokenOwner; spender : spender; amount : Uint128 0};
-      event e
+      msg = { _tag : "AllowanceResponse"; _recipient : _sender; _amount : zero;
+              owner : tokenOwner; spender : spender; amount : zero };
+      msgs = one_msg msg;
+      send msgs
   end
 end

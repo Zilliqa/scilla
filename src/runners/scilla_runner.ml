@@ -137,7 +137,7 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
   | Some lmod ->
       plog (sprintf "\n[Parsing]:\nLibrary module [%s] is successfully parsed.\n" cli.input);
       (* Parse external libraries. *)
-      let lib_dirs = (Filename.dirname cli.input::cli.libdirs) in
+      let lib_dirs = (FilePath.dirname cli.input :: cli.libdirs) in
       StdlibTracker.add_stdlib_dirs lib_dirs;
       let elibs = import_libs lmod.elibs in
       (* Contract library. *)
@@ -177,7 +177,7 @@ let () =
   let cli = Cli.parse () in
   let is_deployment = (cli.input_message = "") in
   let is_library =
-    (Caml.Filename.extension cli.input = GlobalConfig.StdlibTracker.file_extn_library) in
+    (FilePath.get_extension cli.input = GlobalConfig.StdlibTracker.file_extn_library) in
   let gas_remaining =
     let open Unix in
     (* Subtract gas based on (contract+init) size / message size. *)
@@ -218,7 +218,7 @@ let () =
       plog (sprintf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n" cli.input);
 
       (* Parse external libraries. *)
-      let lib_dirs = (Filename.dirname cli.input::cli.libdirs) in
+      let lib_dirs = (FilePath.dirname cli.input :: cli.libdirs) in
       StdlibTracker.add_stdlib_dirs lib_dirs;
       let elibs = import_libs cmod.elibs in
       (* Contract library. *)

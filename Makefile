@@ -1,6 +1,6 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
-.PHONY: default all utop test clean docker zilliqa-docker
+.PHONY: default all utop dev clean docker zilliqa-docker
 
 default: all
 
@@ -27,7 +27,7 @@ utop: all
 
 # Build and run tests
 test: dev
-	./bin/testsuite
+	./bin/testsuite -print-diff true
 
 # Clean up
 clean:
@@ -53,7 +53,7 @@ zilliqa-docker:
 
 opamdep:
 	opam init --disable-sandboxing -y --compiler=4.06.1
-	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
+	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1 patdiff
 
 
 .PHONY : coverage
