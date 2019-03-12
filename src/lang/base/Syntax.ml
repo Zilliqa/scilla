@@ -246,10 +246,6 @@ type builtin =
   | Builtin_to_nat
 [@@deriving sexp]
 
-type 'rep tagged_builtin =
-  | TaggedBuiltin of builtin * 'rep
-[@@deriving sexp]
-
 let pp_builtin b = match b with
   | Builtin_eq -> "eq"
   | Builtin_concat -> "concat"
@@ -379,6 +375,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Constructor of string * (pattern list)
   [@@deriving sexp]
 
+  type builtin_annot = builtin * ER.rep
+  [@@deriving sexp]
+
   type expr_annot = expr * ER.rep
   and expr =
     | Literal of literal
@@ -389,7 +388,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | App of ER.rep ident * ER.rep ident list
     | Constr of string * typ list * ER.rep ident list
     | MatchExpr of ER.rep ident * (pattern * expr_annot) list
-    | Builtin of ER.rep tagged_builtin * ER.rep ident list
+    | Builtin of builtin_annot * ER.rep ident list
     (* Advanced features: to be added in Scilla 0.2 *)                 
     | TFun of ER.rep ident * expr_annot
     | TApp of ER.rep ident * typ list
@@ -754,7 +753,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         sprintf
           "Type error in pattern matching on `%s`%s (or one of its branches):\n"
            (get_id x) opt 
-    | Builtin (TaggedBuiltin (i, _), _) ->
+    | Builtin ((i, _), _) ->
         sprintf "Type error in built-in application of `%s`:\n"
            (pp_builtin i)
     | TApp (tf, _) ->

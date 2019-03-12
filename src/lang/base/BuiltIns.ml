@@ -1140,9 +1140,8 @@ module ScillaBuiltIns
       ht
 
     (* Dictionary lookup based on the operation name and type *)
-    let find_builtin_op b argtypes =
-      let TaggedBuiltin (op, rep) = b in
-      let finder = (function (builtin, arity, optype, elab, exec) ->
+    let find_builtin_op (op, rep) argtypes =
+      let finder = (function (_builtin, arity, optype, elab, exec) ->
           if arity = List.length argtypes
           then
             (* First: elaborate based on argument types *)

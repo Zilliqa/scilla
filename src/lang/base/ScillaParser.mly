@@ -207,7 +207,7 @@ simple_exp :
 | a = atomic_exp {a} 
 (* Built-in call *)
 | BUILTIN; b = ID; xs = builtin_args
-  { (Builtin (TaggedBuiltin (parse_builtin b, toLoc $startpos(b)), xs), toLoc $startpos) }
+  { (Builtin ((parse_builtin b, toLoc $startpos(b)), xs), toLoc $startpos) }
 (* Message construction *)
 | LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE
   { (Message es, toLoc $startpos) } 

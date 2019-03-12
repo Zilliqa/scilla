@@ -305,8 +305,7 @@ module ScillaGas
     ) builtin_records;
       ht
 
-  let builtin_cost b arg_literals =
-    let TaggedBuiltin (op, _) = b in
+  let builtin_cost (op, _) arg_literals =
     let%bind arg_types = mapM arg_literals ~f:literal_type in
     let matcher (name, types, fcoster, base) =
       (* The names and type list lengths must match and *)
