@@ -389,9 +389,12 @@ let init_fields env fs =
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
-let init_contract clibs elibs cparams' cfields args init_bal  =
+let init_contract clibs elibs cparams' cfields args' init_bal  =
   (* All contracts take a few implicit parameters. *)
   let cparams = CU.append_implict_contract_params cparams' in
+  (* Remove arguments that the evaluator doesn't (need to) deal with.
+   * Validation of these init parameters is left to the blockchain. *)
+  let args = CU.remove_noneval_args args' in
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
   (* Is there an argument that is not a parameter? *)

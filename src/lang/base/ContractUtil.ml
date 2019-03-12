@@ -74,6 +74,7 @@ let creation_block_label = "_creation_block"
 let this_address_label = "_this_address"
 let scilla_version_label = "_scilla_version"
 let accepted_label = "_accepted"
+let extlibs_label = "_extlibs"
 
 let no_store_fields =
   [balance_label]
@@ -97,6 +98,11 @@ module ScillaContractUtil
     let scilla_version_init = (ER.mk_id_uint32 scilla_version_label, uint32_typ) in
     creation_block :: scilla_version_init :: this_address :: tparams
 
+  (* Remove init arguments that the evaluator doesn't (need to) understand. *)
+  let remove_noneval_args args =
+    let nonevalargs = [extlibs_label] in
+    List.filter args ~f:(fun a -> not (List.mem nonevalargs (fst a) ~equal:(=)))
+
   let append_implict_trans_params tparams =
     let open PrimTypes in
     let sender = (ER.mk_id_address MessagePayload.sender_label, bystrx_typ address_length) in
@@ -112,7 +118,7 @@ module ScillaContractUtil
 
   (* Iterate over all messages in the contract, accumuating result. 
    * ~f takes a message and an accumulator and updates the accumulator. *)
-  let fold_over_messages cmod ~init ~f =
+  let fold_over_messages (cmod : cmodule) ~init ~f =
 
     let rec expr_folder b ex acc =
       match ex with

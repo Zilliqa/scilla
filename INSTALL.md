@@ -42,7 +42,7 @@ Required ubuntu packages can be installed as below:
 ```shell
 sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
-sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev
+sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev
 ```
 
 ### OCaml toolchain
@@ -52,7 +52,7 @@ opam packages using the commands listed below:
 
 ```shell
 opam init --disable-sandboxing -y --compiler=4.06.1
-opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
+opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1 patdiff
 ```
 
 The above three commands can, alternatively, be run using the make target `opamdep`
@@ -89,7 +89,7 @@ The dependencies can be installed via [Homebrew](https://brew.sh/):
 ```shell
 brew install ocaml opam pkg-config libffi openssl boost secp256k1
 opam init --disable-sandboxing -y --compiler=4.06.1
-opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1
+opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1 patdiff
 ```
 
 Then run the following command to setup environment on current shell. 

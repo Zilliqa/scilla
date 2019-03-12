@@ -1,8 +1,20 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7735",
+  "gas_remaining": "7648",
   "_accepted": "false",
-  "message": null,
+  "message": {
+    "_tag": "TotalSupplyResponse",
+    "_amount": "0",
+    "_recipient": "0x12345678901234567890123456789012345678cd",
+    "params": [
+      {
+        "vname": "caller",
+        "type": "ByStr20",
+        "value": "0x12345678901234567890123456789012345678cd"
+      },
+      { "vname": "totalSupply", "type": "Uint128", "value": "10000" }
+    ]
+  },
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -21,17 +33,5 @@
       ]
     }
   ],
-  "events": [
-    {
-      "_eventname": "TotalSupply",
-      "params": [
-        {
-          "vname": "caller",
-          "type": "ByStr20",
-          "value": "0x12345678901234567890123456789012345678cd"
-        },
-        { "vname": "balance", "type": "Uint128", "value": "10000" }
-      ]
-    }
-  ]
+  "events": []
 }

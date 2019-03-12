@@ -28,44 +28,38 @@ let print_err msg lexbuf  =
   let msg' = scilla_error_to_string e in
   printf "%s\n" msg'
 
-let parse_file parser filename  =
-  In_channel.with_file filename ~f:(fun inx ->
-      let lexbuf = Lexing.from_channel inx in
-      lexbuf.lex_curr_p  <- { lexbuf.lex_curr_p with pos_fname = filename };
-      try
-        let exprs = parser ScillaLexer.read lexbuf in
-        Some exprs
-      with
-      | ScillaLexer.Error msg 
-      | Syntax.SyntaxError msg ->
-          print_err ("Syntax error: " ^ msg) lexbuf;
-          None
-      | ScillaParser.Error ->
-          print_err "Syntax error." lexbuf;
-          None)
-    
-let parse_string parser s  =
-  let lexbuf = Lexing.from_string s in
-  lexbuf.lex_curr_p  <- { lexbuf.lex_curr_p with pos_fname = "Prelude" };
+let parse_lexbuf parser lexbuf filename =
+  lexbuf.lex_curr_p  <- { lexbuf.lex_curr_p with pos_fname = filename };
   try
-    let exprs = parser ScillaLexer.read lexbuf in
-    Some exprs
+    let expr = parser ScillaLexer.read lexbuf in
+    Some expr
   with
-  | ScillaLexer.Error msg
-  | Syntax.SyntaxError msg ->
+  | ScillaLexer.Error msg ->
       print_err ("Lexical error: " ^ msg) lexbuf;
+      None
+  | Syntax.SyntaxError msg ->
+      print_err ("Syntax error: " ^ msg) lexbuf;
       None
   | ScillaParser.Error ->
       print_err "Syntax error." lexbuf;
       None
 
+let parse_file parser filename  =
+  In_channel.with_file filename ~f:(fun inx ->
+    let lexbuf = Lexing.from_channel inx in
+    parse_lexbuf parser lexbuf filename)
+
+let parse_string parser s =
+  let lexbuf = Lexing.from_string s in
+  parse_lexbuf parser lexbuf "Prelude"
+
 let parse_type s =
-  match parse_string ScillaParser.types s with
-  | Some [t] -> t
+  match parse_string ScillaParser.type_term s with
+  | Some t -> t
   | _ -> raise ScillaParser.Error
 
 let parse_expr s =
-  match parse_string ScillaParser.exps s with
-  | Some [e] -> e
+  match parse_string ScillaParser.exp_term s with
+  | Some e -> e
   | _ -> raise ScillaParser.Error
 

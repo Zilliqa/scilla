@@ -2,7 +2,7 @@
   "cashflow_tags": [
     { "field": "player1", "tag": "NotMoney" },
     { "field": "player2", "tag": "NoInfo" },
-    { "field": "board", "tag": "(Map (Map Inconsistent))" },
+    { "field": "board", "tag": "(Map (Map (SquareContents )))" },
     { "field": "captured_pieces", "tag": "(Map (Map NoInfo))" },
     { "field": "player_in_turn", "tag": "(Option NotMoney)" },
     { "field": "winner", "tag": "(Option NotMoney)" }

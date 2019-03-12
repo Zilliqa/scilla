@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in built-in application of `substr`:\nCannot find built-in with name \"substr\" and argument types [String; Uint128; Uint256].",
+      "start_location": {
+        "file": "typecheck/bad/substr.scilla",
+        "line": 5,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

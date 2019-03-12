@@ -240,7 +240,7 @@ module TypeUtilities
     | FunType (a, r) -> is_ground_type a && is_ground_type r
     | MapType (k, v) -> is_ground_type k && is_ground_type v
     | ADT (_, ts) -> List.for_all ~f:(fun t -> is_ground_type t) ts
-    | PolyFun _ -> false
+    | PolyFun _ | TypeVar _ -> false
     | _ -> true
 
   let rec is_serializable_storable_helper accept_maps t seen_adts =
@@ -346,7 +346,7 @@ module TypeUtilities
       List.zip_exn tparams @@
       List.map tparams' ~f:(fun s -> TypeVar s) in 
     let tmap' = List.map tmap ~f:(fun (cn, tls) ->
-        let tls' = List.map tls ~f:(fun t -> subst_types_in_type subst t)
+        let tls' = List.map tls ~f:(subst_types_in_type subst)
         in (cn, tls'))
     in {adt with tparams = tparams'; tmap = tmap'}
 

@@ -38,18 +38,18 @@ Instead of `let.scilla` you might want to try any dfferent file in
 `tests/eval/exp`. The second argument, which is a path to the Scilla
 standard library can alternatively be specified in the environment
 variable `SCILLA_STDLIB_PATH`. This must be an absolute path (or a
-list of `;` separated paths.
+list of paths separated with `:` (or `;` on Windows).
 
 #### Type-checking a contract
 
 From the project root, execute
 
 ```
-./bin/scilla-checker -libdir src/stdlib tests/checker/good/auction.scilla
+./bin/scilla-checker -libdir src/stdlib tests/contracts/auction.scilla
 ```
 
 Instead of `auction.scilla` you might want to try any dfferent file in
-`tests/checker` with a complete implementation of a contract, or your
+`tests/contracts` with a complete implementation of a contract, or your
 own contract code. The second argument, which is a path to the Scilla
 standard library can alternatively be specified in the environment
 variable `SCILLA_STDLIB_PATH`. As above, this must be an absolute
@@ -76,6 +76,9 @@ From the project root, execute
 ./bin/scilla-runner -init tests/runner/zil-game/init.json -istate tests/runner/zil-game/state_5.json -iblockchain tests/runner/zil-game/blockchain_5.json -imessage tests/runner/zil-game/message_5.json -o tests/runner/zil-game/output_5.json -i tests/contracts/zil-game.scilla -libdir src/stdlib -gaslimit 8000
 ```
 
+If you'd like to see the output produced by the aforementioned commands,
+check the file specified by `-o path/to/file.json` argument.
+
 Alternatively, use the easyrun script as below:
 
 ```
@@ -91,7 +94,7 @@ many steps in the simulation).
 * The runnables are put into the folder
 
 ```
-$PROJECT_DIR/_build/install/default/bin
+$PROJECT_DIR/bin
 ```
 
 ### Running the testsuite
@@ -109,6 +112,8 @@ To run the testsuite:
 ```
 make test
 ```
+
+(this invokes `testsuite` executable with `-print-diff true` option to print colored diffs between error messages).
 
 To run the testsuite executable manually from bin/testsuite, you have to provide
 the parameters "-bin-dir" and "-tests-dir", which must be absolute paths to
@@ -136,7 +141,7 @@ that has been used to run the test.
 ### Emacs mode for Scilla
 
 An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode/scilla-mode.el).
-Add the following line to your `~/.emacs` file to load this mode for files ending with `.scilla`.
+Add the following line to your `.emacs` file to load this mode for files ending with `.scilla` and `.scillib`.
 For enabling flycheck mode for Scilla (see [INSTALL.md](./INSTALL.md)).
 
 ```
