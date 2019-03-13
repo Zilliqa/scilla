@@ -10,6 +10,7 @@ addons:
     - libgmp-dev
     - libssl-dev
     - libboost-system-dev
+    - libpcre3-dev
     - aspcud
 
 cache:
