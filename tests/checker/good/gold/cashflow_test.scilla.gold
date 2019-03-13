@@ -1,7 +1,10 @@
 {
-  "cashflow_tags": [
-    { "field": "transaction_pairs", "tag": "(List (Pair NotMoney Money))" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "transaction_pairs", "tag": "(List (Pair NotMoney Money))" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "CashflowTest",

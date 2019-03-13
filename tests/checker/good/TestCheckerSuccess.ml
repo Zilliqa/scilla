@@ -36,7 +36,7 @@ module Tests = TestUtil.DiffBasedTests(
       "fungible-token.scilla";
       "helloWorld.scilla";
       "inplace-map.scilla";
-      "map_key_test.scilla";
+        "map_key_test.scilla";
       "mappair.scilla";
       "multiple-msgs.scilla";
       "nonfungible-token.scilla";

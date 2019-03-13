@@ -166,6 +166,9 @@ module DataTypeDictionary = struct
   (* Get all known ADTs *)
   let get_all_adts () = Caml.Hashtbl.fold (fun _ a acc -> a :: acc) adt_name_dict []
 
+  (* Get all known ADT constructors *)
+  let get_all_ctrs () = Caml.Hashtbl.fold (fun _ c acc -> c :: acc) adt_cons_dict []
+
 end
 
 

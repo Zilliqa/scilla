@@ -116,10 +116,16 @@ let check_events_info einfo  =
   | Ok _ -> einfo
 
 let check_cashflow typed_cmod =
-  let j = CF.main typed_cmod in
-  List.map j
-    ~f:(fun (i, t) ->
-        (i, CF.ECFR.money_tag_to_string t))
+  let (param_field_tags, ctr_tags) = CF.main typed_cmod in
+  let param_field_tags_to_string = List.map param_field_tags
+      ~f:(fun (i, t) ->
+          (i, CF.ECFR.money_tag_to_string t)) in
+  let ctr_tags_to_string = List.map ctr_tags
+      ~f:(fun (adt, ctrs) ->
+          (adt, List.map ctrs
+             ~f:(fun (i, ts) ->
+                 (i, List.map ts ~f:(fun t_opt -> Option.value_map t_opt ~default:"_" ~f:CF.ECFR.money_tag_to_string))))) in
+  (param_field_tags_to_string, ctr_tags_to_string)
 
 let check_version vernum =
   let (mver, _, _) = scilla_version in
@@ -208,4 +214,3 @@ let () =
     else
       (* Check contract modules. *)
       check_cmodule cli
-

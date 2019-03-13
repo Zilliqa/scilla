@@ -1,13 +1,16 @@
 {
-  "cashflow_tags": [
-    { "field": "owner", "tag": "NoInfo" },
-    { "field": "total_tokens", "tag": "NoInfo" },
-    { "field": "decimals", "tag": "NoInfo" },
-    { "field": "name", "tag": "NoInfo" },
-    { "field": "symbol", "tag": "NoInfo" },
-    { "field": "balances", "tag": "(Map NoInfo)" },
-    { "field": "allowed", "tag": "(Map (Map NoInfo))" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "owner", "tag": "NoInfo" },
+      { "field": "total_tokens", "tag": "NoInfo" },
+      { "field": "decimals", "tag": "NoInfo" },
+      { "field": "name", "tag": "NoInfo" },
+      { "field": "symbol", "tag": "NoInfo" },
+      { "field": "balances", "tag": "(Map NoInfo)" },
+      { "field": "allowed", "tag": "(Map (Map NoInfo))" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "FungibleToken",
