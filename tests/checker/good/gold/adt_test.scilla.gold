@@ -1,5 +1,10 @@
 {
-  "cashflow_tags": [],
+  "cashflow_tags": {
+    "State variables": [],
+    "ADT constructors": [
+      { "TestType1": [ { "constructor": "Item1", "tags": [ "NoInfo" ] } ] }
+    ]
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "BadLib",

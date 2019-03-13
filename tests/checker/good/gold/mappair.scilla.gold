@@ -1,12 +1,15 @@
 {
-  "cashflow_tags": [
-    { "field": "owner", "tag": "NotMoney" },
-    { "field": "gmap", "tag": "(Map (Pair NoInfo NoInfo))" },
-    { "field": "gpair", "tag": "(Pair (List NoInfo) (Option NoInfo))" },
-    { "field": "llist", "tag": "(List NoInfo)" },
-    { "field": "plist", "tag": "(List NoInfo)" },
-    { "field": "gnat", "tag": "(Nat )" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "owner", "tag": "NotMoney" },
+      { "field": "gmap", "tag": "(Map (Pair NoInfo NoInfo))" },
+      { "field": "gpair", "tag": "(Pair (List NoInfo) (Option NoInfo))" },
+      { "field": "llist", "tag": "(List NoInfo)" },
+      { "field": "plist", "tag": "(List NoInfo)" },
+      { "field": "gnat", "tag": "(Nat )" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Test",

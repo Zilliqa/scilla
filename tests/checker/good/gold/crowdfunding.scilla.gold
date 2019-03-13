@@ -1,11 +1,14 @@
 {
-  "cashflow_tags": [
-    { "field": "owner", "tag": "NotMoney" },
-    { "field": "max_block", "tag": "NotMoney" },
-    { "field": "goal", "tag": "Money" },
-    { "field": "backers", "tag": "(Map Money)" },
-    { "field": "funded", "tag": "NotMoney" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "owner", "tag": "NotMoney" },
+      { "field": "max_block", "tag": "NotMoney" },
+      { "field": "goal", "tag": "Money" },
+      { "field": "backers", "tag": "(Map Money)" },
+      { "field": "funded", "tag": "NotMoney" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Crowdfunding",

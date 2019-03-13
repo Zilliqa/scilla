@@ -1,8 +1,11 @@
 {
-  "cashflow_tags": [
-    { "field": "cfaddr", "tag": "NotMoney" },
-    { "field": "owner", "tag": "NotMoney" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "cfaddr", "tag": "NotMoney" },
+      { "field": "owner", "tag": "NotMoney" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "CrowdFundingInvoke",

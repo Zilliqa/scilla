@@ -1,9 +1,12 @@
 {
-  "cashflow_tags": [
-    { "field": "owner", "tag": "NotMoney" },
-    { "field": "gmap", "tag": "(Map NoInfo)" },
-    { "field": "gmap3", "tag": "(Map (Map (Map NoInfo)))" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "owner", "tag": "NotMoney" },
+      { "field": "gmap", "tag": "(Map NoInfo)" },
+      { "field": "gmap3", "tag": "(Map (Map (Map NoInfo)))" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Test",
