@@ -70,14 +70,14 @@ let check_recursion cmod elibs  =
   let open Rec in
   let res = recursion_module cmod recursion_principles elibs in
   match res with
-  | Error msgs -> pout @@ scilla_error_to_string msgs ; res
+  | Error msgs -> perr @@ scilla_error_to_string msgs ; res
   | Ok recursion_module -> pure @@ recursion_module
 
 let check_recursion_lmod lmod elibs  =
   let open Rec in
   let res = recursion_lmodule lmod recursion_principles elibs in
   match res with
-  | Error msgs -> pout @@ scilla_error_to_string msgs ; res
+  | Error msgs -> perr @@ scilla_error_to_string msgs ; res
   | Ok recursion_module -> pure @@ recursion_module
 
 (* Type check the contract with external libraries *)
@@ -85,7 +85,7 @@ let check_typing cmod rprin elibs  =
   let open TC in
   let res = type_module cmod rprin elibs in
   match res with
-  | Error msgs -> pout @@ scilla_error_to_string msgs ; res
+  | Error msgs -> perr @@ scilla_error_to_string msgs ; res
   | Ok typed_module -> pure @@ typed_module
 
 (* Type check the contract with external libraries *)
@@ -93,26 +93,26 @@ let check_typing_lmod lmod rprin elibs  =
   let open TC in
   let res = type_lmodule lmod rprin elibs in
   match res with
-  | Error msgs -> pout @@ scilla_error_to_string msgs ; res
+  | Error msgs -> perr @@ scilla_error_to_string msgs ; res
   | Ok typed_module -> pure @@ typed_module
 
 let check_patterns e  =
   let res = PMC.pm_check_module e in
   match res with
-  | Error msg -> pout @@ scilla_error_to_string msg ; res
+  | Error msg -> perr @@ scilla_error_to_string msg ; res
   | Ok pm_checked_module -> pure @@ pm_checked_module
 
 let check_sanity m rlibs elibs =
   let res = SC.contr_sanity m rlibs elibs in
   match res with
-  | Error msg -> pout @@ scilla_error_to_string msg ; res
+  | Error msg -> perr @@ scilla_error_to_string msg ; res
   | Ok _ -> pure ()
 
 let check_accepts m =AC.contr_sanity m
 
 let check_events_info einfo  =
   match einfo with
-  | Error msg -> pout @@ scilla_error_to_string msg ; einfo
+  | Error msg -> perr @@ scilla_error_to_string msg ; einfo
   | Ok _ -> einfo
 
 let check_cashflow typed_cmod =
