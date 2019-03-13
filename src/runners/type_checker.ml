@@ -92,9 +92,9 @@ let () =
                 if cli.gua_flag then
                 (match analyze_gas typed_erep with
                  | Ok _ -> ()
-                 | Error el -> (pout @@ scilla_error_to_string el ; exit 1))
-              | Error el -> (pout @@ scilla_error_to_string el ; exit 1)
+                 | Error el -> (perr @@ scilla_error_to_string el ; exit 1))
+              | Error el -> (perr @@ scilla_error_to_string el ; exit 1)
              )
-         | Error el -> (pout @@ scilla_error_to_string el ); exit 1)
+         | Error el -> (perr @@ scilla_error_to_string el ); exit 1)
     | None -> (* Error is printed by the parser. *)
         exit 1
