@@ -26,6 +26,7 @@ RUN apt-get update \
     libssl-dev \
     libsecp256k1-dev \
     libboost-system-dev \
+    libpcre3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN cd /scilla/${MAJOR_VERSION} && make opamdep \
