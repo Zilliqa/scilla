@@ -54,7 +54,7 @@ let () =
         (match envres Eval.init_gas_kont gas_limit with
         | Ok (env', gas_remaining) -> env', gas_remaining
         | Error (err, gas_remaining) ->
-          pout @@ scilla_error_gas_string gas_remaining err;
+          perr @@ scilla_error_gas_string gas_remaining err;
           exit 1;) in
       let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
       let res' = Eval.exp_eval_wrapper e env in
@@ -62,6 +62,6 @@ let () =
       (match res with
       | Ok _ ->
           printf "%s\n" (Eval.pp_result res lib_fnames)
-      | Error (el, gas_remaining) -> (pout @@ scilla_error_gas_string gas_remaining el ); exit 1)
+      | Error (el, gas_remaining) -> (perr @@ scilla_error_gas_string gas_remaining el ); exit 1)
   | None -> (* Error is printed by the parser. *)
       exit 1

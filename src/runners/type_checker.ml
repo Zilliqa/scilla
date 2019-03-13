@@ -85,8 +85,8 @@ let () =
          | Ok ((_, (e_typ, _)) as typed_erep) ->
              (match check_patterns typed_erep with
               | Ok _ -> printf "%s\n" (pp_typ e_typ.tp)
-              | Error el -> (pout @@ scilla_error_to_string el ; exit 1)
+              | Error el -> (perr @@ scilla_error_to_string el ; exit 1)
              )
-         | Error el -> (pout @@ scilla_error_to_string el ); exit 1)
+         | Error el -> (perr @@ scilla_error_to_string el ); exit 1)
     | None -> (* Error is printed by the parser. *)
         exit 1
