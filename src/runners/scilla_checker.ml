@@ -56,64 +56,55 @@ module AC = ScillaAcceptChecker (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr syn = 
-    let parse_module =
-      FrontEndParser.parse_file syn ctr in
-    match parse_module with
-    | None -> exit 1 (* Error is printed by the parser. *)
-    | Some cmod -> 
-        plog @@ sprintf
-          "\n[Parsing]:\n module [%s] is successfully parsed.\n" ctr;
-        pure cmod
+  let cmod = FrontEndParser.parse_file syn ctr in
+  if Result.is_ok cmod then
+    plog @@ sprintf "\n[Parsing]:\n module [%s] is successfully parsed.\n" ctr;
+  cmod
 
 (* Type check the contract with external libraries *)
 let check_recursion cmod elibs  =
   let open Rec in
   let res = recursion_module cmod recursion_principles elibs in
-  match res with
-  | Error msgs -> perr @@ scilla_error_to_string msgs ; res
-  | Ok recursion_module -> pure @@ recursion_module
+  if Result.is_ok res then
+    plog @@ sprintf "\n[Recursion Check]:\n module [%s] is successfully checked.\n" (get_id cmod.contr.cname);
+  res
 
 let check_recursion_lmod lmod elibs  =
   let open Rec in
   let res = recursion_lmodule lmod recursion_principles elibs in
-  match res with
-  | Error msgs -> perr @@ scilla_error_to_string msgs ; res
-  | Ok recursion_module -> pure @@ recursion_module
+  if Result.is_ok res then
+    plog @@ sprintf "\n[Recursion Check]:\n lmodule [%s] is successfully checked.\n" (get_id lmod.libs.lname);
+  res
 
 (* Type check the contract with external libraries *)
 let check_typing cmod rprin elibs  =
   let open TC in
   let res = type_module cmod rprin elibs in
-  match res with
-  | Error msgs -> perr @@ scilla_error_to_string msgs ; res
-  | Ok typed_module -> pure @@ typed_module
+  if Result.is_ok res then
+    plog @@ sprintf "\n[Type Check]:\n module [%s] is successfully checked.\n" (get_id cmod.contr.cname);
+  res
 
 (* Type check the contract with external libraries *)
 let check_typing_lmod lmod rprin elibs  =
   let open TC in
   let res = type_lmodule lmod rprin elibs in
-  match res with
-  | Error msgs -> perr @@ scilla_error_to_string msgs ; res
-  | Ok typed_module -> pure @@ typed_module
+  if Result.is_ok res then
+    plog @@ sprintf "\n[Type Check]:\n lmodule [%s] is successfully checked.\n" (get_id lmod.libs.lname);
+  res
 
 let check_patterns e  =
   let res = PMC.pm_check_module e in
-  match res with
-  | Error msg -> perr @@ scilla_error_to_string msg ; res
-  | Ok pm_checked_module -> pure @@ pm_checked_module
+  if Result.is_ok res then
+    plog @@ sprintf "\n[Pattern Check]:\n module [%s] is successfully checked.\n" (get_id e.contr.cname);
+  res
 
 let check_sanity m rlibs elibs =
   let res = SC.contr_sanity m rlibs elibs in
-  match res with
-  | Error msg -> perr @@ scilla_error_to_string msg ; res
-  | Ok _ -> pure ()
+  if Result.is_ok res then
+    plog @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n" (get_id m.contr.cname);
+  res
 
 let check_accepts m =AC.contr_sanity m
-
-let check_events_info einfo  =
-  match einfo with
-  | Error msg -> perr @@ scilla_error_to_string msg ; einfo
-  | Ok _ -> einfo
 
 let check_cashflow typed_cmod =
   let (param_field_tags, ctr_tags) = CF.main typed_cmod in
@@ -132,8 +123,7 @@ let check_version vernum =
   if vernum <> mver
   then
     let emsg =  sprintf "Scilla version mismatch. Expected %d vs Contract %d\n" mver vernum in
-    let err = scilla_error_to_string (mk_error0 emsg) in
-    (perr err; exit 1)
+    fatal_error (mk_error0 emsg)
 
 (* Check a library module. *)
 let check_lmodule file =
@@ -147,7 +137,7 @@ let check_lmodule file =
     pure (typed_lmod, typed_elibs, typed_rlibs)
   ) in
   (match r with
-  | Error _ -> exit 1; (* we've already printed the error(s). *)
+  | Error s -> fatal_error s
   | Ok _ ->
       let warnings_output =
         [ ("warnings", scilla_warning_to_json (get_warnings())) ]
@@ -166,12 +156,12 @@ let check_cmodule cli =
     let%bind pm_checked_cmod = check_patterns typed_cmod  in
     let _ = if cli.cf_flag then check_accepts typed_cmod else () in
     let%bind _ = check_sanity typed_cmod typed_rlibs typed_elibs in
-    let%bind event_info = check_events_info (EI.event_info pm_checked_cmod)  in
+    let%bind event_info = EI.event_info pm_checked_cmod in
     let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
     pure @@ (cmod, tenv, event_info, cf_info_opt)
   ) in
   (match r with
-  | Error _ -> exit 1; (* we've already printed the error(s). *)
+  | Error s -> fatal_error s
   | Ok (cmod, _, event_info, cf_info_opt) ->
       let base_output =
         let warnings_output =
@@ -210,7 +200,7 @@ let () =
       check_lmodule cli.input_file
     else if file_extn <> StdlibTracker.file_extn_contract
     then
-      (perr (sprintf "Unknown file extension %s\n" file_extn); exit 1)
+      fatal_error (mk_error0(sprintf "Unknown file extension %s\n" file_extn))
     else
       (* Check contract modules. *)
       check_cmodule cli
