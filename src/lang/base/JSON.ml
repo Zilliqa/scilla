@@ -44,9 +44,9 @@ let from_file f =
     | Yojson.Json_error s -> raise (mk_invalid_json s)
 
 let parse_typ_exn t = 
-  (try FrontEndParser.parse_type t
-    with _ ->
-      raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t)))
+  match FrontEndParser.parse_type t with
+  | Error _ -> raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t))
+  | Ok s -> s
 
 let member_exn m j =
   let open Basic.Util in

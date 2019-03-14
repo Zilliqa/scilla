@@ -97,13 +97,12 @@ module StdlibTypeCacher
           (match name_j, type_j, loc_j with
           | `String name_s, `String type_s, `String loc_s ->
               (* Printf.printf "Parsing type: %s\n" type_s; *)
-              (try
-                let typ = FrontEndParser.parse_type type_s in
-                let loc = ER.parse_rep loc_s in (* TODO: parse loc_s *)
-                let id = asIdL name_s loc in
-                Some (id, typ)
-               with
-               | _ -> None
+                (match FrontEndParser.parse_type type_s with
+                | Ok typ ->
+                  let loc = ER.parse_rep loc_s in (* TODO: parse loc_s *)
+                  let id = asIdL name_s loc in
+                  Some (id, typ)
+                | Error _ -> None
               )
           | _ -> (* TODO: report useful error messages. *)
             None

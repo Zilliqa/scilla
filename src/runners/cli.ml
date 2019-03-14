@@ -79,9 +79,7 @@ let validate_main usage =
       else msg5 in
   if msg6 <> ""
   then
-    (DebugMessage.perr usage;
-     Printf.fprintf stderr "%s\n" msg6;
-     exit 1)
+    PrettyPrinters.fatal_error (ErrorUtils.mk_error0 (usage ^ (Printf.sprintf "%s\n" msg6)))
   else 
     ()
 
@@ -123,7 +121,7 @@ let parse () =
           try
             Stdint.Uint64.of_string i
           with
-          | _ -> DebugMessage.perr @@ (Printf.sprintf "Invalid gaslimit %s\n" i); exit 1;
+          | _ -> PrettyPrinters.fatal_error (ErrorUtils.mk_error0 (Printf.sprintf "Invalid gaslimit %s\n" i))
         in
         v_gas_limit := g)
       , "Gas limit");

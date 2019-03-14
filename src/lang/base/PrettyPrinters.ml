@@ -174,6 +174,12 @@ let scilla_error_gas_string gas_remaining elist  =
   (scilla_warning_to_sstring (get_warnings())) ^
   (sprintf "Gas remaining: %s\n" (Uint64.to_string gas_remaining))
 
+let fatal_error err =
+  DebugMessage.perr @@ scilla_error_to_string err; exit 1
+
+let fatal_error_gas err gas_remaining =
+  DebugMessage.perr @@ scilla_error_gas_string gas_remaining err; exit 1
+
 (*****************************************************)
 (*                Pretty Printers                    *)
 (*****************************************************)
