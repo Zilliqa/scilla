@@ -930,7 +930,30 @@ module ScillaCashflowChecker
       | Builtin_concat
       | Builtin_blt
       | Builtin_badd
-      | Builtin_bsub
+      | Builtin_bsub ->
+          let c_r_sigs =
+            match res_tag with
+            | NotMoney
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ] in
+          let c_as_sigs =
+            match args_tags with
+            | [ v1 ; v2 ] ->
+                let v1_sig =
+                  match v1 with
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
+                let v2_sig =
+                  match v2 with
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ]
+                  | _        -> [ ( NotMoney , [ NotMoney ; Inconsistent ] ) ] in
+                [ v1_sig ; v2_sig ]
+            | _             ->
+                (* Error *)
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
+          (c_r_sigs, c_as_sigs)
       | Builtin_substr
       | Builtin_schnorr_sign
       | Builtin_schnorr_verify ->
