@@ -1,8 +1,11 @@
 {
-  "cashflow_tags": [
-    { "field": "count", "tag": "NoInfo" },
-    { "field": "ping_addr", "tag": "(Option NotMoney)" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "count", "tag": "NoInfo" },
+      { "field": "ping_addr", "tag": "(Option NotMoney)" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Pong",

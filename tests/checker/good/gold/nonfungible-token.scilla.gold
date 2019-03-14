@@ -1,13 +1,16 @@
 {
-  "cashflow_tags": [
-    { "field": "contractOwner", "tag": "NoInfo" },
-    { "field": "name", "tag": "NoInfo" },
-    { "field": "symbol", "tag": "NoInfo" },
-    { "field": "tokenOwnerMap", "tag": "(Map NoInfo)" },
-    { "field": "ownedTokenCount", "tag": "(Map NoInfo)" },
-    { "field": "tokenApprovals", "tag": "(Map NoInfo)" },
-    { "field": "operatorApprovals", "tag": "(Map (Map NoInfo))" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "contractOwner", "tag": "NoInfo" },
+      { "field": "name", "tag": "NoInfo" },
+      { "field": "symbol", "tag": "NoInfo" },
+      { "field": "tokenOwnerMap", "tag": "(Map NoInfo)" },
+      { "field": "ownedTokenCount", "tag": "(Map NoInfo)" },
+      { "field": "tokenApprovals", "tag": "(Map NoInfo)" },
+      { "field": "operatorApprovals", "tag": "(Map (Map NoInfo))" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "NonfungibleToken",

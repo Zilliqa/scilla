@@ -1,12 +1,31 @@
 {
-  "cashflow_tags": [
-    { "field": "player1", "tag": "NotMoney" },
-    { "field": "player2", "tag": "NoInfo" },
-    { "field": "board", "tag": "(Map (Map (SquareContents )))" },
-    { "field": "captured_pieces", "tag": "(Map (Map NoInfo))" },
-    { "field": "player_in_turn", "tag": "(Option NotMoney)" },
-    { "field": "winner", "tag": "(Option NotMoney)" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "player1", "tag": "NotMoney" },
+      { "field": "player2", "tag": "NoInfo" },
+      { "field": "board", "tag": "(Map (Map (SquareContents )))" },
+      { "field": "captured_pieces", "tag": "(Map (Map NoInfo))" },
+      { "field": "player_in_turn", "tag": "(Option NotMoney)" },
+      { "field": "winner", "tag": "(Option NotMoney)" }
+    ],
+    "ADT constructors": [
+      {
+        "SquareContents": [
+          { "constructor": "Occupied", "tags": [ "_", "_", "NotMoney" ] }
+        ]
+      },
+      {
+        "Action": [
+          { "constructor": "Move", "tags": [ "_", "_", "NoInfo", "_" ] }
+        ]
+      },
+      {
+        "Square": [
+          { "constructor": "Square", "tags": [ "NotMoney", "NotMoney" ] }
+        ]
+      }
+    ]
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Shogi",

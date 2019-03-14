@@ -1,13 +1,16 @@
 {
-  "cashflow_tags": [
-    { "field": "owner", "tag": "NotMoney" },
-    { "field": "player_a", "tag": "NotMoney" },
-    { "field": "player_b", "tag": "NotMoney" },
-    { "field": "puzzle", "tag": "NoInfo" },
-    { "field": "player_a_hash", "tag": "(Option NoInfo)" },
-    { "field": "player_b_hash", "tag": "(Option NoInfo)" },
-    { "field": "timer", "tag": "(Option NoInfo)" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "owner", "tag": "NotMoney" },
+      { "field": "player_a", "tag": "NotMoney" },
+      { "field": "player_b", "tag": "NotMoney" },
+      { "field": "puzzle", "tag": "NoInfo" },
+      { "field": "player_a_hash", "tag": "(Option NoInfo)" },
+      { "field": "player_b_hash", "tag": "(Option NoInfo)" },
+      { "field": "timer", "tag": "(Option NoInfo)" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "ZilGame",

@@ -47,6 +47,8 @@ module DataTypeDictionary : sig
   val constr_tmap : adt -> string -> (typ list) option
   (* Get all known ADTs *)
   val get_all_adts : unit -> adt list
+  (* Get all known ADT constructors *)
+  val get_all_ctrs : unit -> (adt * constructor) list
 
   val add_adt : adt -> loc -> (unit, scilla_error list) result
     

@@ -1,5 +1,10 @@
 {
-  "cashflow_tags": [ { "field": "pub_key", "tag": "(Option Inconsistent)" } ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "pub_key", "tag": "(Option Inconsistent)" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Ecdsa",
