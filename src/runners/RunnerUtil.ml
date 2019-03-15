@@ -33,7 +33,7 @@ let get_init_extlibs filename =
   else
     try JSON.ContractState.get_init_extlibs filename with
     | Invalid_json s ->
-      (* Inability to fetch extlibs info from init json shouldn't be fatal error (I think). *)
+      (* Inability to fetch extlibs info from init json shouldn't be fatal error. *)
       plog (scilla_error_to_string s);
       []
 
