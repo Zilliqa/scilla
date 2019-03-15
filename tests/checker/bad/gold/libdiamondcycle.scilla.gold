@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Cyclic dependence found when importing TestLibDiamondTopCycle.",
+        "Cyclic dependence found when importing TestLibDiamondTopCycle (mapped to TestLibDiamondTopCycle).",
       "start_location": {
         "file": "checker/bad/lib/TestLibDiamondBottomCycle.scillib",
         "line": 1,
