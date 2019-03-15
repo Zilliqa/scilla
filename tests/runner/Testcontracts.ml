@@ -24,18 +24,6 @@ open TestUtil
 
 let testsuit_gas_limit = "8000"
 
-let stream_to_string (s : char Stream.t) =
-  let string_of_chars chars =
-    let buf = Buffer.create 16 in
-    List.iter ~f:(Buffer.add_char buf) chars;
-    Buffer.contents buf
-  in
-  let result = ref [] in
-    Stream.iter (fun value -> result := value :: !result) s;
-  let l = List.rev !result in
-    string_of_chars l
-
-
 let succ_code : Caml.Unix.process_status = WEXITED 0
 let fail_code : Caml.Unix.process_status = WEXITED 1
 
