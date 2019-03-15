@@ -22,7 +22,6 @@ open ParserUtil
 open RunnerUtil
 open GlobalConfig
 open PrettyPrinters
-open DebugMessage
 open Core
 
 module ParsedSyntax = ParserUtil.ParsedSyntax
@@ -40,7 +39,7 @@ let () =
   let cli = parse_cli() in
   let filename = cli.input_file in
   match FrontEndParser.parse_file ScillaParser.exp_term filename with
-  | Some e ->
+  | Ok e ->
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib = { TC.UntypedSyntax.lname = asId "dummy";
                    TC.UntypedSyntax.lentries = [] } in
@@ -53,15 +52,13 @@ let () =
       let env, gas_remaining = 
         (match envres Eval.init_gas_kont gas_limit with
         | Ok (env', gas_remaining) -> env', gas_remaining
-        | Error (err, gas_remaining) ->
-          pout @@ scilla_error_gas_string gas_remaining err;
-          exit 1;) in
+        | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining)
+      in
       let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
       let res' = Eval.exp_eval_wrapper e env in
       let res = res' Eval.init_gas_kont gas_remaining in
       (match res with
       | Ok _ ->
           printf "%s\n" (Eval.pp_result res lib_fnames)
-      | Error (el, gas_remaining) -> (pout @@ scilla_error_gas_string gas_remaining el ); exit 1)
-  | None -> (* Error is printed by the parser. *)
-      exit 1
+      | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining)
+  | Error e -> fatal_error e

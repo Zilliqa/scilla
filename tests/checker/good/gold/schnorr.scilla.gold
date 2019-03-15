@@ -1,5 +1,8 @@
 {
-  "cashflow_tags": [ { "field": "pub_key", "tag": "(Option NotMoney)" } ],
+  "cashflow_tags": {
+    "State variables": [ { "field": "pub_key", "tag": "(Option NotMoney)" } ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Schnorr",

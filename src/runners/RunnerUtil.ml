@@ -32,14 +32,12 @@ let import_lib id =
   let errmsg = sprintf "Failed to import library %s. " name in
   let sloc = get_rep id in
   let fname = match StdlibTracker.find_lib_dir name with
-    | None -> perr @@ scilla_error_to_string
-        (mk_error1 (errmsg ^ "Not found.\n") sloc); exit 1
+    | None -> fatal_error @@ mk_error1(errmsg ^ "Not found.\n") sloc
     | Some d -> d ^/ name ^. StdlibTracker.file_extn_library
   in
     match FrontEndParser.parse_file ScillaParser.lmodule fname with
-    | None -> perr @@ scilla_error_to_string
-        (mk_error1 (errmsg ^ "Failed to parse.\n") sloc); exit 1
-    | Some lmod ->
+    | Error s -> fatal_error (s @ (mk_error1 "Failed to parse.\n") sloc)
+    | Ok lmod ->
         plog (sprintf "Successfully imported external library %s\n" name);
         lmod
 
@@ -52,9 +50,7 @@ let import_libs names =
     List.fold_left ~f:(fun (ilibs, importedl) l ->
       let name = get_id l in
       if List.mem stack name ~equal:(=) then
-        (perr @@ scilla_error_to_string 
-          (mk_error1 (sprintf "Cyclic dependence found when importing %s." name) (get_rep l));
-        exit 1) else
+        fatal_error @@ mk_error1 (sprintf "Cyclic dependence found when importing %s." name) (get_rep l) else
       if List.mem importedl name ~equal:(=) then (ilibs, importedl) else
       let ilib = import_lib l in
       let (ilibs'', importedl'') = importer ilib.elibs (name :: stack) (name :: importedl) in
@@ -67,11 +63,10 @@ let import_libs names =
   List.map ~f:(fun (l : ParserUtil.ParsedSyntax.lmodule) -> l.libs) libs
 
 let stdlib_not_found_err () =
-  (perr @@ scilla_error_to_string (mk_error0
+  fatal_error (mk_error0
     ("A path to Scilla stdlib not found. Please set " ^ StdlibTracker.scilla_stdlib_env ^
      " environment variable, or pass through command-line argument for this script.\n" ^
-     "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla -libdir ./src/stdlib/\n"));
-   exit 1)
+     "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla -libdir ./src/stdlib/\n"))
 
 (* Parse all libraries that can be found in ldirs. *)
 let import_all_libs ldirs  =
@@ -103,6 +98,7 @@ let import_all_libs ldirs  =
 type runner_cli = {
   input_file : string;
   stdlib_dirs : string list;
+  init_file : string;
   cf_flag : bool;
   p_contract_info : bool;
 }
@@ -111,6 +107,7 @@ type runner_cli = {
 let parse_cli () =
   let r_stdlib_dir = ref [] in
   let r_input_file = ref "" in
+  let r_init_file = ref "" in
   let r_json_errors = ref false in
   let r_contract_info = ref false in
   let r_cf = ref false in
@@ -125,6 +122,7 @@ let parse_cli () =
            r_stdlib_dir := !r_stdlib_dir @ FilePath.path_of_string s
         ),
       "Path(s) to libraries separated with ':' (';' on windows)");
+    ("-init", Arg.String (fun x -> r_init_file := x), "Path to initialization json");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
     ("-contractinfo", Arg.Unit (fun () -> r_contract_info := true), "Print various contract information");
@@ -138,8 +136,7 @@ let parse_cli () =
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
   let () = Arg.parse speclist anon_handler mandatory_usage in
-  if !r_input_file = "" then
-    (DebugMessage.perr @@ usage; exit 1);
+  if !r_input_file = "" then fatal_error (mk_error0 usage);
   GlobalConfig.set_use_json_errors !r_json_errors;
   { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; cf_flag = !r_cf;
-    p_contract_info = !r_contract_info }
+    p_contract_info = !r_contract_info; init_file = !r_init_file }

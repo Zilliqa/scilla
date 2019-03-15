@@ -1,8 +1,11 @@
 {
-  "cashflow_tags": [
-    { "field": "owner", "tag": "NotMoney" },
-    { "field": "welcome_msg", "tag": "NoInfo" }
-  ],
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "owner", "tag": "NotMoney" },
+      { "field": "welcome_msg", "tag": "NoInfo" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "HelloWorld",

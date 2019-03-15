@@ -1,5 +1,5 @@
 {
-  "cashflow_tags": [],
+  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "MissingAccepts",

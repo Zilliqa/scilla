@@ -44,9 +44,9 @@ let from_file f =
     | Yojson.Json_error s -> raise (mk_invalid_json s)
 
 let parse_typ_exn t = 
-  (try FrontEndParser.parse_type t
-    with _ ->
-      raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t)))
+  match FrontEndParser.parse_type t with
+  | Error _ -> raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t))
+  | Ok s -> s
 
 let member_exn m j =
   let open Basic.Util in
@@ -457,12 +457,22 @@ end
 
 module CashflowInfo = struct
 
-  let get_json tags =
-    `List
-      (List.map
-         tags
-         ~f:(fun (i, t) ->
-             `Assoc [("field", `String i);
-                     ("tag", `String t)]))
+  let get_json (param_field_tags, ctr_tags) =
+    `Assoc [("State variables",
+             `List
+                (List.map
+                   param_field_tags
+                   ~f:(fun (i, t) ->
+                       `Assoc [("field", `String i);
+                               ("tag", `String t)]))) ;
+            ("ADT constructors",
+             `List
+               (List.map ctr_tags
+                  ~f:(fun (adt, ctrs) ->
+                      `Assoc [(adt,
+                               `List (List.map ctrs ~f:(fun (i, ts) ->
+                                   `Assoc [("constructor", `String i);
+                                           ("tags",
+                                            `List (List.map ts ~f:(fun t -> `String t)))])))])))]
   
 end

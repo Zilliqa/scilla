@@ -27,6 +27,16 @@ open FrontEndParser
 
 open ParsedSyntax
 
+let parse_expr_wrapper expr =
+  match parse_expr expr with
+  | Error s -> PrettyPrinters.fatal_error s
+  | Ok e -> e
+
+let parse_type_wrapper expr =
+  match parse_type expr with
+  | Error s -> PrettyPrinters.fatal_error s
+  | Ok e -> e
+
 (* Folding over natural numbers *)
 module NatRec = struct
   let g = mk_ident "g"
@@ -36,8 +46,8 @@ module NatRec = struct
      * natural numbers *)
     module Foldl = struct
       (* The type of the fixpoint argument *)
-      let fix_type = parse_type "('T -> Nat -> 'T) -> 'T -> Nat -> 'T"
-      let (_, loc) as fix_arg = parse_expr ( 
+      let fix_type = parse_type_wrapper "('T -> Nat -> 'T) -> 'T -> Nat -> 'T"
+      let (_, loc) as fix_arg = parse_expr_wrapper ( 
           "fun (fn : 'T -> Nat -> 'T) => fun (f0 : 'T) => fun (n: Nat) => " ^
           "match n with " ^
           " | Zero => f0 " ^
@@ -53,8 +63,8 @@ module NatRec = struct
 
     module Foldr = struct
 
-      let fix_type = parse_type "(Nat -> 'T -> 'T) -> 'T -> Nat -> 'T"
-      let fix_arg = parse_expr ( 
+      let fix_type = parse_type_wrapper "(Nat -> 'T -> 'T) -> 'T -> Nat -> 'T"
+      let fix_arg = parse_expr_wrapper ( 
           "fun (fn : Nat -> 'T -> 'T) => fun (f0 : 'T) => fun (n: Nat) => " ^
           "match n with " ^
           " | Zero => f0 " ^
@@ -74,8 +84,8 @@ module NatRec = struct
 
     module Foldl = struct
       (* The type of the fixpoint argument *)
-      let fix_type = parse_type "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
-      let (_, loc) as fix_arg = parse_expr ( 
+      let fix_type = parse_type_wrapper "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
+      let (_, loc) as fix_arg = parse_expr_wrapper ( 
           "fun (f : 'B -> 'A -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
           "match l with " ^
           " | Cons h t => let res = f z h in " ^
@@ -91,8 +101,8 @@ module NatRec = struct
 
     module Foldr = struct
       (* The type of the fixpoint argument *)
-      let fix_type = parse_type "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
-      let (_, loc) as fix_arg = parse_expr ( 
+      let fix_type = parse_type_wrapper "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
+      let (_, loc) as fix_arg = parse_expr_wrapper ( 
           "fun (f : 'A -> 'B -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
           "match l with " ^
           " | Cons h t => let res = g f z t in " ^
