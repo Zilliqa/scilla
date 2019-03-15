@@ -62,25 +62,27 @@ let import_lib id =
  *)
 let import_libs names init_file =
   let rec importer names name_map stack importedl =
-    let names' =
+    let mapped_names =
       List.map names ~f:(fun n ->
         (match List.Assoc.find name_map ~equal:(=) (get_id n) with
         | Some n' ->
          (* Use a known source location for the mapped id. *)
-          asIdL n' (get_rep n)
-        | None -> n)
+          (asIdL n' (get_rep n), n)
+        | None -> (n, n))
       )
     in
     List.fold_left ~f:(fun (ilibs, importedl) l ->
-      let name = get_id l in
+      let name = get_id (fst l) in
       if List.mem stack name ~equal:(=) then
-        fatal_error @@ mk_error1 (sprintf "Cyclic dependence found when importing %s." name) (get_rep l) else
+        fatal_error @@ mk_error1
+        (sprintf "Cyclic dependence found when importing %s (mapped to %s)."
+        (get_id (snd l)) name) (get_rep (fst l)) else
       if List.mem importedl name ~equal:(=) then (ilibs, importedl) else
-      let (ilib, ilib_import_map) = import_lib l in
+      let (ilib, ilib_import_map) = import_lib (fst l) in
       let (ilibs'', importedl'') = importer ilib.elibs ilib_import_map (name :: stack) (name :: importedl) in
       (* Order in which we return the list of imported libraries is important. *)
       (ilibs @ ilibs'' @ [ilib], importedl'')
-    ) ~init:([], importedl) names'
+    ) ~init:([], importedl) mapped_names
   in
   let name_map =
     match init_file with

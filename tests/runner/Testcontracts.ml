@@ -165,7 +165,6 @@ let add_tests env =
       "crowdfunding_init" >:(build_contract_init_test env succ_code "crowdfunding" false);
       "zil-game" >:::(build_contract_tests env "zil-game" succ_code 1 9 false);
       "zil-game_init" >:(build_contract_init_test env succ_code "zil-game" false);
-      "testlib1_init" >:(build_contract_init_test env fail_code"0x565556789012345678901234567890123456abcd" true);
       "testlib2_init" >:(build_contract_init_test env succ_code "TestLib2" true);
       "cfinvoke" >:::(build_contract_tests env "cfinvoke" succ_code 1 4 false);
       "ping" >:::(build_contract_tests env "ping" succ_code 0 3 false);
@@ -193,6 +192,7 @@ let add_tests env =
       "mappair" >:::(build_contract_tests env "mappair" fail_code 8 8 false);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 12 14 false);
       "multiple_msgs_test" >::: (build_contract_tests env "multiple-msgs" fail_code 1 1 true);
+      "testlib1_init" >:(build_contract_init_test env fail_code "0x565556789012345678901234567890123456abcd" true);
     ];
     "misc_tests" >::: build_misc_tests env;
   ]
