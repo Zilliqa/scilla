@@ -287,6 +287,29 @@ let state_to_string ?(pp = false) states =
   else
     to_string json
 
+(* Given an init.json, return extlib fields *)
+let get_init_extlibs filename =
+  let allf = get_json_data filename in
+  let extlibs = List.filter allf ~f:(fun (name, _) -> name = ContractUtil.extlibs_label) in
+  match extlibs with
+  | [] -> []
+  | [(_, lit)] ->
+    (match Datatypes.scilla_list_to_ocaml lit with
+    | Error _ -> raise (mk_invalid_json ("Invalid " ^ ContractUtil.extlibs_label ^ " entry in init json" ^ filename))
+    | Ok lit' ->
+      (* lit' is a list of `Pair` literals. convert them to OCaml pairs. *)
+      List.map lit' ~f:(fun sp ->
+        match sp with
+        | ADTValue ("Pair", [t1; t2], [StringLit name; ByStrX (addrlen, addr)]) when
+          t1 = PrimTypes.string_typ && 
+          t2 = (PrimTypes.bystrx_typ address_length) &&
+          addrlen = address_length ->
+          (name, addr)
+        | _ -> raise (mk_invalid_json ("Invalid " ^ ContractUtil.extlibs_label ^ " entry in init json" ^ filename))
+      )
+    )
+  | _ -> raise (mk_invalid_json ("Multiple " ^ ContractUtil.extlibs_label ^ " entries in init json "^ filename))
+
 end
 
 module Message = struct
