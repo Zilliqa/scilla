@@ -126,10 +126,10 @@ let check_version vernum =
     fatal_error (mk_error0 emsg)
 
 (* Check a library module. *)
-let check_lmodule file =
+let check_lmodule cli =
   let r = (
-    let%bind (lmod : ParsedSyntax.lmodule) = check_parsing file ScillaParser.lmodule in
-    let elibs = import_libs lmod.elibs in
+    let%bind (lmod : ParsedSyntax.lmodule) = check_parsing cli.input_file ScillaParser.lmodule in
+    let elibs = import_libs lmod.elibs cli.init_file  in
     let%bind (recursion_lmod, recursion_rec_principles, recursion_elibs) = 
       check_recursion_lmod lmod elibs in
     let%bind (typed_lmod, typed_elibs, typed_rlibs) = 
@@ -150,7 +150,7 @@ let check_cmodule cli =
   let r = (
     let%bind (cmod : ParsedSyntax.cmodule) = check_parsing cli.input_file ScillaParser.cmodule  in
     (* Import whatever libs we want. *)
-    let elibs = import_libs cmod.elibs  in
+    let elibs = import_libs cmod.elibs cli.init_file in
     let%bind (recursion_cmod, recursion_rec_principles, recursion_elibs) = check_recursion cmod elibs in
     let%bind (typed_cmod, tenv, typed_elibs, typed_rlibs) = check_typing recursion_cmod recursion_rec_principles recursion_elibs  in
     let%bind pm_checked_cmod = check_patterns typed_cmod  in
@@ -197,7 +197,7 @@ let () =
     (* Check library modules. *)
     if file_extn = StdlibTracker.file_extn_library
     then
-      check_lmodule cli.input_file
+      check_lmodule cli
     else if file_extn <> StdlibTracker.file_extn_contract
     then
       fatal_error (mk_error0(sprintf "Unknown file extension %s\n" file_extn))

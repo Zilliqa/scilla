@@ -133,7 +133,7 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
       (* Parse external libraries. *)
       let lib_dirs = (FilePath.dirname cli.input :: cli.libdirs) in
       StdlibTracker.add_stdlib_dirs lib_dirs;
-      let elibs = import_libs lmod.elibs in
+      let elibs = import_libs lmod.elibs (Some cli.input_init) in
       (* Contract library. *)
       let clibs = Some (lmod.libs) in
 
@@ -206,7 +206,7 @@ let () =
       (* Parse external libraries. *)
       let lib_dirs = (FilePath.dirname cli.input :: cli.libdirs) in
       StdlibTracker.add_stdlib_dirs lib_dirs;
-      let elibs = import_libs cmod.elibs in
+      let elibs = import_libs cmod.elibs (Some cli.input_init) in
       (* Contract library. *)
       let clibs = cmod.libs in
   
