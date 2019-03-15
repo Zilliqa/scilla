@@ -81,22 +81,21 @@ let rec build_contract_tests env name exit_code i n add_additional_lib =
         in
         let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
         print_cli_usage (env.print_cli test_ctxt) scillabin args;
+        let test_name = name ^ "_" ^ istr in
         let goldoutput_file = dir ^/ "output_" ^ istr ^. "json" in
-        let out = 
-          if exit_code = succ_code
-          then
-            let _ = assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args in
-            In_channel.read_all output_file
-          else
-            let outref = ref "" in
-            let f = (fun outstream -> outref := stream_to_string outstream) in
-            let _ = assert_command ~foutput:f ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args in
-            !outref
-        in
-        if env.update_gold test_ctxt
-        then output_updater goldoutput_file (name ^ "_" ^ istr) out
-        else output_verifier goldoutput_file (env.print_diff test_ctxt) out
-      ) in
+        assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
+          ~foutput:(fun s ->
+              (* if the test is supposed to succeed we read the output from a file,
+                 otherwise we read from the output stream *)
+              let out =
+                if exit_code = succ_code
+                then In_channel.read_all output_file
+                else BatStream.to_string s
+              in
+              if env.update_gold test_ctxt
+              then output_updater goldoutput_file test_name out
+              else output_verifier goldoutput_file (env.print_diff test_ctxt) out))
+      in
       (* If this test is expected to succeed, we know that the JSONs are all "good".
        * So test both the JSON parsers, one that does validation, one that doesn't.
        * Both should succeed. *)
@@ -129,21 +128,20 @@ let build_contract_init_test env exit_code name is_library =
     in
     let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
     print_cli_usage (env.print_cli test_ctxt) scillabin args;
-    let out =
-      if exit_code = succ_code
-      then
-        let _ = assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args in
-        In_channel.read_all output_file
-      else
-        let outref = ref "" in
-        let f = (fun outstream -> outref := stream_to_string outstream) in
-        let _ = assert_command ~foutput:f ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args in
-        !outref
-    in
+    let test_name = name ^ "_init" in
     let goldoutput_file = dir ^/ "init_output.json" in
-    if env.update_gold test_ctxt
-    then output_updater goldoutput_file (name ^ "_init") out
-    else output_verifier goldoutput_file (env.print_diff test_ctxt) out)
+    assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
+    ~foutput:(fun s ->
+        (* if the test is supposed to succeed we read the output from a file,
+           otherwise we read from the output stream *)
+        let out =
+          if exit_code = succ_code
+          then In_channel.read_all output_file
+          else BatStream.to_string s
+        in
+        if env.update_gold test_ctxt
+        then output_updater goldoutput_file test_name out
+        else output_verifier goldoutput_file (env.print_diff test_ctxt) out))
 
 let build_misc_tests env =
   let scillabin bin_dir test_ctxt =
