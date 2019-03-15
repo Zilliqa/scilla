@@ -39,6 +39,9 @@ module ContractState : sig
   (* Get a json object from given states *)
   val state_to_json : ((string * Syntax.literal) list) -> Yojson.t
 
+  (* Given an init.json filename, return extlib fields *)
+  val get_init_extlibs : string -> (string * string) list
+
 end
 
 (** Message json parsing and printing. A message json has three mandatory
