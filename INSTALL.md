@@ -87,7 +87,8 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 The dependencies can be installed via [Homebrew](https://brew.sh/):
 
 ```shell
-brew install ocaml opam pkg-config libffi openssl boost secp256k1
+brew tap iantanwx/crypto
+brew install ocaml opam pkg-config libffi openssl boost secp256k1 pcre
 opam init --disable-sandboxing -y --compiler=4.06.1
 opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1 patdiff
 ```
