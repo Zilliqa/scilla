@@ -218,11 +218,14 @@ type builtin =
   | Builtin_ripemd160hash
   | Builtin_to_bystr
   | Builtin_schnorr_verify
+  | Builtin_ecdsa_verify
+  (* https://github.com/Zilliqa/scilla/pull/486#discussion_r266069221 *)
+  (*
   | Builtin_ec_gen_key_pair (* in gas coster only *)
   | Builtin_schnorr_gen_key_pair (* in cashflow checker only *)
   | Builtin_schnorr_sign (* in cashflow checker only *)
-  | Builtin_ecdsa_verify
   | Builtin_ecdsa_sign (* in gas coster only *)
+  *)
   | Builtin_contains
   | Builtin_put
   | Builtin_get
@@ -264,11 +267,7 @@ let pp_builtin b = match b with
   | Builtin_ripemd160hash -> "ripemd160hash"
   | Builtin_to_bystr -> "to_bystr"
   | Builtin_schnorr_verify -> "schnorr_verify"
-  | Builtin_ec_gen_key_pair -> "ec_gen_key_pair"
-  | Builtin_schnorr_gen_key_pair -> "schnorr_gen_key_pair"
-  | Builtin_schnorr_sign -> "schnorr_sign"
   | Builtin_ecdsa_verify -> "ecdsa_verify"
-  | Builtin_ecdsa_sign -> "ecdsa_sign"
   | Builtin_contains -> "contains"
   | Builtin_put -> "put"
   | Builtin_get -> "get"
@@ -306,11 +305,7 @@ let parse_builtin s = match s with
   | "ripemd160hash" -> Builtin_ripemd160hash
   | "to_bystr" -> Builtin_to_bystr
   | "schnorr_verify" -> Builtin_schnorr_verify
-  | "ec_gen_key_pair" -> Builtin_ec_gen_key_pair
-  | "schnorr_gen_key_pair" -> Builtin_schnorr_gen_key_pair
-  | "schnorr_sign" -> Builtin_schnorr_sign
   | "ecdsa_verify" -> Builtin_ecdsa_verify
-  | "ecdsa_sign" -> Builtin_ecdsa_sign
   | "contains" -> Builtin_contains
   | "put" -> Builtin_put
   | "get" -> Builtin_get

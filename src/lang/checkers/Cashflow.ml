@@ -892,18 +892,6 @@ module ScillaCashflowChecker
                 (* Error *)
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | Builtin_schnorr_gen_key_pair ->
-          let c_r_sigs =
-            [ ( Adt ( "Pair", [NotMoney ; NotMoney] ) , [ ] ) ] in
-          let c_as_sigs =
-            match args_tags with
-            | [] ->
-                let arg_sig = [ ( Adt ( "Pair", [NotMoney ; NotMoney] ) , [ ] ) ] in
-                [ arg_sig ]
-            | _  ->
-                (* Error *)
-                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
-          (c_r_sigs, c_as_sigs)
       | Builtin_sha256hash
       | Builtin_keccak256hash
       | Builtin_ripemd160hash
@@ -955,7 +943,6 @@ module ScillaCashflowChecker
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | Builtin_substr
-      | Builtin_schnorr_sign
       | Builtin_schnorr_verify ->
           let c_r_sigs =
             match res_tag with
