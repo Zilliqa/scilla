@@ -5,7 +5,7 @@
         "Cyclic dependence found when importing 0x565556789012345678901234567890123456abcd.",
       "start_location": {
         "file":
-          "/media/data/scilla/tests/contracts/0x565556789012345678901234567890123456abcd.scillib",
+          "tests/contracts/0x565556789012345678901234567890123456abcd.scillib",
         "line": 2,
         "column": 8
       },

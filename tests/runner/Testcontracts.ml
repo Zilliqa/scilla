@@ -109,9 +109,10 @@ let rec build_contract_tests env name exit_code i n add_additional_lib =
 let build_contract_init_test env exit_code name is_library =
   name ^ "_init" >::
   (fun test_ctxt ->
+    let tests_dir = FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt) in
     (* Files for the contract are in contract/(crowdfunding|zil-game|etc). *)
-    let contract_dir = env.tests_dir test_ctxt ^/ "contracts" in
-    let dir = env.tests_dir test_ctxt ^/ "runner" ^/ name in
+    let contract_dir = tests_dir ^/ "contracts" in
+    let dir = tests_dir ^/ "runner" ^/ name in
     let extn =
       if is_library then GlobalConfig.StdlibTracker.file_extn_library
       else GlobalConfig.StdlibTracker.file_extn_contract in
