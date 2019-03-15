@@ -332,7 +332,7 @@ let parse_builtin s = match s with
   | "to_uint64" -> Builtin_to_uint64
   | "to_uint128" -> Builtin_to_uint128
   | "to_nat" -> Builtin_to_nat
-  | _ -> raise (SyntaxError ("No rule to parse " ^ s))
+  | _ -> raise (SyntaxError (sprintf "\"%s\" is not a builtin" s))
 
 (*******************************************************)
 (*                   Annotations                       *)

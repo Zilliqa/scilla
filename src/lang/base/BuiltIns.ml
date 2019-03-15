@@ -1155,7 +1155,7 @@ module ScillaBuiltIns
       let%bind (_, (type_elab, res_type, exec)) = tryM dict ~f:finder
           ~msg:(fun () ->
               mk_error1
-                (sprintf "Cannot find built-in with name \"%s\" and argument types %s." (pp_builtin op) (pp_typ_list argtypes))
+                (sprintf "Type error: cannot apply \"%s\" built-in to argument(s) of type(s) %s." (pp_builtin op) (pp_typ_list argtypes))
                 (ER.get_loc rep))
       in pure (type_elab, res_type, exec)
 
