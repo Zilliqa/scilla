@@ -7,5 +7,4 @@
   (cxx_names c_schnorr DataConversion Schnorr)
   (c_flags -I/usr/local/opt/openssl/include)
   (cxx_flags -std=c++11 -I/usr/local/opt/openssl/include)
-  (ocamlopt_flags -g)
   )

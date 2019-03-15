@@ -11,4 +11,4 @@
                     bisect_ppx -conditional
                     ppx_deriving.show))
   (synopsis "Custom Scilla checkers")
-  (ocamlopt_flags -g))
+  )

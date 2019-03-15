@@ -15,4 +15,4 @@
 
   (preprocess (pps ppx_sexp_conv ppx_let ppx_deriving.show bisect_ppx -conditional))
   (package scilla-runner)
-  (ocamlopt_flags -g))
+  )

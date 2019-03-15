@@ -11,4 +11,4 @@
                     bisect_ppx -conditional
                     ppx_deriving.show))
   (synopsis "Scilla workbench implementation.")
-  (ocamlopt_flags -g))
+  )
