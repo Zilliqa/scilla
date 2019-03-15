@@ -74,9 +74,14 @@ let import_libs names init_file =
     List.fold_left ~f:(fun (ilibs, importedl) l ->
       let name = get_id (fst l) in
       if List.mem stack name ~equal:(=) then
-        fatal_error @@ mk_error1
-        (sprintf "Cyclic dependence found when importing %s (mapped to %s)."
-        (get_id (snd l)) name) (get_rep (fst l)) else
+        let errmsg = 
+          if get_id (snd l) = name then
+            sprintf "Cyclic dependence found when importing %s." name
+          else 
+            sprintf "Cyclic dependence found when importing %s (mapped to %s)." (get_id (snd l)) name
+        in
+        fatal_error @@ mk_error1 errmsg (get_rep (fst l))
+      else
       if List.mem importedl name ~equal:(=) then (ilibs, importedl) else
       let (ilib, ilib_import_map) = import_lib (fst l) in
       let (ilibs'', importedl'') = importer ilib.elibs ilib_import_map (name :: stack) (name :: importedl) in
