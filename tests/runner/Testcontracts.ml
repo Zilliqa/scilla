@@ -69,13 +69,20 @@ let rec build_contract_tests env name exit_code i n add_additional_lib =
         in
         let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
         print_cli_usage (env.print_cli test_ctxt) scillabin args;
+        let test_name = name ^ "_" ^ istr in
         let goldoutput_file = dir ^/ "output_" ^ istr ^. "json" in
-        assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args;
-        if exit_code = succ_code then
-          let out = In_channel.read_all output_file in
-          if env.update_gold test_ctxt
-          then output_updater goldoutput_file (name ^ "_" ^ istr) out
-          else output_verifier goldoutput_file (env.print_diff test_ctxt) out)
+        assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
+          ~foutput:(fun s ->
+              (* if the test is supposed to succeed we read the output from a file,
+                 otherwise we read from the output stream *)
+              let out =
+                if exit_code = succ_code
+                then In_channel.read_all output_file
+                else BatStream.to_string s
+              in
+              if env.update_gold test_ctxt
+              then output_updater goldoutput_file test_name out
+              else output_verifier goldoutput_file (env.print_diff test_ctxt) out))
       in
       (* If this test is expected to succeed, we know that the JSONs are all "good".
        * So test both the JSON parsers, one that does validation, one that doesn't.
@@ -86,12 +93,13 @@ let rec build_contract_tests env name exit_code i n add_additional_lib =
       else
         (test false) :: (build_contract_tests env name exit_code (i+1) n add_additional_lib)
 
-let build_contract_init_test env name is_library =
+let build_contract_init_test env exit_code name is_library =
   name ^ "_init" >::
   (fun test_ctxt ->
+    let tests_dir = FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt) in
     (* Files for the contract are in contract/(crowdfunding|zil-game|etc). *)
-    let contract_dir = env.tests_dir test_ctxt ^/ "contracts" in
-    let dir = env.tests_dir test_ctxt ^/ "runner" ^/ name in
+    let contract_dir = tests_dir ^/ "contracts" in
+    let dir = tests_dir ^/ "runner" ^/ name in
     let extn =
       if is_library then GlobalConfig.StdlibTracker.file_extn_library
       else GlobalConfig.StdlibTracker.file_extn_contract in
@@ -108,12 +116,20 @@ let build_contract_init_test env name is_library =
     in
     let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
     print_cli_usage (env.print_cli test_ctxt) scillabin args;
-    assert_command ~exit_code:succ_code ~use_stderr:true ~ctxt:test_ctxt scillabin args;
-    let out = In_channel.read_all output_file in
+    let test_name = name ^ "_init" in
     let goldoutput_file = dir ^/ "init_output.json" in
-    if env.update_gold test_ctxt
-    then output_updater goldoutput_file (name ^ "_init") out
-    else output_verifier goldoutput_file (env.print_diff test_ctxt) out)
+    assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
+    ~foutput:(fun s ->
+        (* if the test is supposed to succeed we read the output from a file,
+           otherwise we read from the output stream *)
+        let out =
+          if exit_code = succ_code
+          then In_channel.read_all output_file
+          else BatStream.to_string s
+        in
+        if env.update_gold test_ctxt
+        then output_updater goldoutput_file test_name out
+        else output_verifier goldoutput_file (env.print_diff test_ctxt) out))
 
 let build_misc_tests env =
   let scillabin bin_dir test_ctxt =
@@ -146,10 +162,10 @@ let add_tests env =
   "contract_tests" >:::[
     "these_tests_must_SUCCEED" >:::[
       "crowdfunding" >:::(build_contract_tests env "crowdfunding" succ_code 1 6 false);
-      "crowdfunding_init" >:(build_contract_init_test env "crowdfunding" false);
+      "crowdfunding_init" >:(build_contract_init_test env succ_code "crowdfunding" false);
       "zil-game" >:::(build_contract_tests env "zil-game" succ_code 1 9 false);
-      "zil-game_init" >:(build_contract_init_test env "zil-game" false);
-      "testlib2_init" >:(build_contract_init_test env "TestLib2" true);
+      "zil-game_init" >:(build_contract_init_test env succ_code "zil-game" false);
+      "testlib2_init" >:(build_contract_init_test env succ_code "TestLib2" true);
       "cfinvoke" >:::(build_contract_tests env "cfinvoke" succ_code 1 4 false);
       "ping" >:::(build_contract_tests env "ping" succ_code 0 3 false);
       "pong" >:::(build_contract_tests env "pong" succ_code 0 3 false);
@@ -176,6 +192,7 @@ let add_tests env =
       "mappair" >:::(build_contract_tests env "mappair" fail_code 8 8 false);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 12 14 false);
       "multiple_msgs_test" >::: (build_contract_tests env "multiple-msgs" fail_code 1 1 true);
+      "testlib1_init" >:(build_contract_init_test env fail_code "0x565556789012345678901234567890123456abcd" true);
     ];
     "misc_tests" >::: build_misc_tests env;
   ]

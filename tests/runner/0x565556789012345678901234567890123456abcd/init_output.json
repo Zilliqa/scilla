@@ -1,0 +1,16 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Cyclic dependence found when importing TestLib1 (mapped to 0x565556789012345678901234567890123456abcd).",
+      "start_location": {
+        "file":
+          "tests/contracts/0x565556789012345678901234567890123456abcd.scillib",
+        "line": 2,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
