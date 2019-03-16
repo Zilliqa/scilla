@@ -628,23 +628,20 @@ module ScillaGUA
       let%bind pn =
         let t = List.nth tparams 0 in
         (match t with
-          | PrimType _ when is_int_type t || is_uint_type t ->
-            (match (int_width t) with
-             | Some 32 | Some 64 -> pure @@ const_pn 4
-             | Some 128 -> pure @@ const_pn 8
-             | Some 256 -> pure @@ const_pn 16
-             | _ -> fail1 (arg_err ops) opl
+          | PrimType (Int_typ width)
+          | PrimType (Uint_typ width) ->
+            (match width with
+             | Bits32 | Bits64 -> pure @@ const_pn 4
+             | Bits128 -> pure @@ const_pn 8
+             | Bits256 -> pure @@ const_pn 16
              )
           (*  eq (a, b) = a. *)
-          | PrimType _ when t = string_typ -> pure @@ sp "a"
-          | PrimType _ when t = bnum_typ -> pure @@ const_pn 32
+          | PrimType String_typ -> pure @@ sp "a"
+          | PrimType Bnum_typ -> pure @@ const_pn 32
           (*  eq (a, b) = a. *)
-          | PrimType _ when t = bystr_typ -> pure @@ sp "a"
-          | _ ->
-            (match bystrx_width t with
-            | Some w -> pure @@ const_pn w
-            | None -> fail1 (arg_err ops) opl
-            )
+          | PrimType Bystr_typ -> pure @@ sp "a"
+          | PrimType (Bystrx_typ w) -> pure @@ const_pn w
+          | _ -> fail1 (arg_err ops) opl
         )
       in
       pure ([si "a"; si "b"], ressize ops params, pn)
