@@ -44,7 +44,7 @@ let unannotated_syntax_tests =
     assert_equal ~printer:pp_typ
       (PolyFun ("'_A1", PolyFun ("'_A2", TypeVar "'_A2")))
       (canonicalize_tfun (PolyFun ("'X", PolyFun ("'X", TypeVar "'X"))));
-    "canonicalize_tfun-1",
+    "canonicalize_tfun-2",
     assert_equal ~printer:pp_typ
       (FunType (PolyFun ("'_A1", TypeVar "'_A1"), (PolyFun ("'_A1", TypeVar "'_A1"))))
       (canonicalize_tfun (FunType (PolyFun ("'X", TypeVar "'X"), (PolyFun ("'X", TypeVar "'X")))));
