@@ -239,6 +239,9 @@ lit :
   n = NUMLIT   {
     let string_of_n = Big_int.string_of_big_int n in
     let iloc = toLoc $startpos(i) in
+    (* XXX: for Int32 -11111111111111111111 we will report error pointing to Int32,
+            not the numeral, because the user might have forgotten to switch e.g. Int32 to Int64
+     *)
     build_prim_literal_exn (to_prim_type_exn i iloc) string_of_n (toLoc $startpos)
   }
 | h = HEXLIT   {
