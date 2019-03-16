@@ -23,7 +23,7 @@ open MonadUtil
 open ErrorUtils
 open Stdint
 
-exception SyntaxError of string
+exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
 let scilla_version = (0, 2, 0)
@@ -40,7 +40,7 @@ let get_rep i = match i with Ident (_, l) -> l
 
 type bigint = Big_int.big_int
 
-let mk_ident s = Ident (s, dummy_loc)      
+let mk_ident s = Ident (s, dummy_loc)
 
 (*******************************************************)
 (*                         Types                       *)
@@ -79,7 +79,7 @@ let sexp_of_prim_typ = function
   | Bystr_typ -> Sexp.Atom "ByStr"
   | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
 
-let prim_typ_of_sexp _ = raise (SyntaxError "prim_typ_of_sexp not implemented")
+let prim_typ_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
 
 type typ =
   | PrimType of prim_typ
@@ -145,7 +145,7 @@ let sexp_of_int_lit = function
   | Int128L i' -> Sexp.Atom ("Int128 " ^ Int128.to_string i')
   | Int256L i' -> Sexp.Atom ("Int256 " ^ Integer256.Int256.to_string i')
 
-let int_lit_of_sexp _ = raise (SyntaxError "int_lit_of_sexp not implemented")
+let int_lit_of_sexp _ = failwith "int_lit_of_sexp is not implemented"
 
 type uint_lit =
   | Uint32L of uint32 | Uint64L of uint64 | Uint128L of uint128 | Uint256L of Integer256.uint256
@@ -156,7 +156,7 @@ let sexp_of_uint_lit = function
   | Uint128L i' -> Sexp.Atom ("Uint128 " ^ Uint128.to_string i')
   | Uint256L i' -> Sexp.Atom ("Uint256 " ^ Integer256.Uint256.to_string i')
 
-let uint_lit_of_sexp _ = raise (SyntaxError "uint_lit_of_sexp not implemented")
+let uint_lit_of_sexp _ = failwith "uint_lit_of_sexp is not implemented"
 
 (* [Specialising the Return Type of Closures]
 
@@ -290,7 +290,7 @@ let pp_builtin b = match b with
   | Builtin_to_uint128 -> "to_uint128"
   | Builtin_to_nat -> "to_nat"
 
-let parse_builtin s = match s with
+let parse_builtin s loc = match s with
   | "eq" -> Builtin_eq
   | "concat" -> Builtin_concat
   | "substr" -> Builtin_substr
@@ -327,7 +327,7 @@ let parse_builtin s = match s with
   | "to_uint64" -> Builtin_to_uint64
   | "to_uint128" -> Builtin_to_uint128
   | "to_nat" -> Builtin_to_nat
-  | _ -> raise (SyntaxError (sprintf "\"%s\" is not a builtin" s))
+  | _ -> raise (SyntaxError ((sprintf "\"%s\" is not a builtin" s), loc))
 
 (*******************************************************)
 (*                   Annotations                       *)

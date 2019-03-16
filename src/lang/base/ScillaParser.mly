@@ -23,7 +23,7 @@
 
   open ParsedSyntax
 
-  let to_prim_type_exn d = match d with
+  let to_prim_type_exn d loc = match d with
     | "Int32" -> Int_typ Bits32
     | "Int64" -> Int_typ Bits64
     | "Int128" -> Int_typ Bits128
@@ -42,39 +42,39 @@
              let open Core in
              let b = Int.of_string (Str.matched_group 1 d) in
              Bystrx_typ b
-           else raise (SyntaxError "Invalid primitive type")
+           else raise (SyntaxError ("Invalid primitive type", loc))
 
   let to_type d =
-    try PrimType (to_prim_type_exn d)
+    try PrimType (to_prim_type_exn d dummy_loc)
     with | _ -> ADT (d, [])
 
-  let to_map_key_type_exn d =
-    let exn () = SyntaxError ("Invalid map key type " ^ d) in
+  let to_map_key_type_exn d loc =
+    let exn () = SyntaxError (("Invalid map key type " ^ d), loc) in
     try
-      match to_prim_type_exn d with
+      match to_prim_type_exn d loc with
       | Msg_typ | Event_typ -> raise (exn ())
       | t -> PrimType t
     with | _ -> raise (exn ())
 
-  let build_prim_literal_exn t v =
+  let build_prim_literal_exn t v loc =
     match PrimTypes.build_prim_literal t v with
     | Some l -> l
-    | None -> raise (SyntaxError ("Invalid " ^ (pp_prim_typ t) ^ " literal " ^ v))
+    | None -> raise (SyntaxError (("Invalid " ^ (pp_prim_typ t) ^ " literal " ^ v), loc))
 %}
 
-(* Identifiers *)    
+(* Identifiers *)
 %token <string> ID
 %token <string> CID
 %token <string> TID
 
-(* Strings *)    
+(* Strings *)
 %token <string> STRING
 
 (* Numbers and hashes *)
 %token <Big_int.big_int> NUMLIT
 %token <string> HEXLIT
-                  
-(* Separators *)    
+
+(* Separators *)
 %token SEMICOLON
 %token COLON
 %token BAR
@@ -86,7 +86,7 @@
 %token TARROW
 %token AT
 %token UNDERSCORE
-%token LBRACE       
+%token LBRACE
 %token RBRACE
 %token COMMA
 %token PERIOD
@@ -95,9 +95,9 @@
 %token BIND
 %token ASSIGN
 (* %token LANGLE
- * %token RANGLE *)       
-       
-(* Keywords *)    
+ * %token RANGLE *)
+
+(* Keywords *)
 %token BUILTIN
 %token FORALL
 %token EMP
@@ -108,10 +108,10 @@
 %token IN
 %token MATCH
 %token WITH
-%token END       
+%token END
 %token FUN
 %token TFUN
-%token CONTRACT       
+%token CONTRACT
 %token TRANSITION
 %token SEND
 %token EVENT
@@ -122,7 +122,7 @@
 %token SCILLA_VERSION
 %token TYPE
 %token OF
-       
+
 (*  Other tokens *)
 %token EOF
 
@@ -145,8 +145,8 @@
 (***********************************************)
 (* TODO: This is a temporary fix of issue #166 *)
 t_map_key :
-| kt = CID { to_map_key_type_exn kt }
-| LPAREN; kt = CID; RPAREN; { to_map_key_type_exn kt }
+| kt = CID { to_map_key_type_exn kt (toLoc $startpos) }
+| LPAREN; kt = CID; RPAREN; { to_map_key_type_exn kt (toLoc $startpos(kt)) }
 
 (* TODO: This is a temporary fix of issue #261 *)
 t_map_value_args:
@@ -157,60 +157,61 @@ t_map_value_args:
 t_map_value :
 | LPAREN; d = CID; targs=list(t_map_value_args); RPAREN;
     { match targs with
-      | [] -> to_type d                       
+      | [] -> to_type d
       | _ -> ADT (d, targs) }
 | LPAREN; MAP; k=t_map_key; v = t_map_value_args; RPAREN; { MapType (k, v) }
 | d = CID; targs=list(t_map_value_args)
     { match targs with
-      | [] -> to_type d                       
+      | [] -> to_type d
       | _ -> ADT (d, targs) }
-| MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }             
+| MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 typ :
 | d = CID; targs=list(targ)
   { match targs with
-    | [] -> to_type d                       
+    | [] -> to_type d
     | _ -> ADT (d, targs)
-  }   
+  }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
 | LPAREN; t = typ; RPAREN; { t }
 | FORALL; tv = TID; PERIOD; t = typ; {PolyFun (tv, t)}
-| t = TID; { TypeVar t }        
+| t = TID; { TypeVar t }
 
 targ:
 | LPAREN; t = typ; RPAREN; { t }
 | d = CID; { to_type d }
 | t = TID; { TypeVar t }
-| MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }             
+| MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 (***********************************************)
 (*                 Expressions                 *)
 (***********************************************)
-  
-exp:
-| f = simple_exp {f}    
 
-simple_exp :    
+exp:
+| f = simple_exp {f}
+
+simple_exp :
 | LET; x = ID;
-  t = ioption(type_annot) 
+  t = ioption(type_annot)
   EQ; f = simple_exp; IN; e = exp
   {(Let ((Ident (x, toLoc $startpos)), t, f, e), toLoc $startpos) }
-(* Function *)    
+(* Function *)
 | FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
-  { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) } 
-(* Application *)  
+  { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) }
+(* Application *)
 | f = ID;
   args = nonempty_list(ident)
   { (App ((Ident (f, toLoc $startpos)), args), toLoc $startpos ) }
 (* Atomic expression *)
-| a = atomic_exp {a} 
+| a = atomic_exp {a}
 (* Built-in call *)
 | BUILTIN; b = ID; xs = builtin_args
-  { (Builtin ((parse_builtin b, toLoc $startpos(b)), xs), toLoc $startpos) }
+  { let bloc = toLoc $startpos(b) in
+    (Builtin ((parse_builtin b bloc, bloc), xs)), toLoc $startpos }
 (* Message construction *)
 | LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE
-  { (Message es, toLoc $startpos) } 
+  { (Message es, toLoc $startpos) }
 (* Data constructor application *)
 | c = CID ts=option(ctargs) args=list(ident)
   { let targs =
@@ -224,24 +225,25 @@ simple_exp :
   { (MatchExpr (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos) }
 (* Type function *)
 | TFUN; i = TID ARROW; e = exp
-  { (TFun (Ident (i, toLoc $startpos), e), toLoc $startpos) } 
+  { (TFun (Ident (i, toLoc $startpos), e), toLoc $startpos) }
 (* Type application *)
 | AT; f = ID; targs = nonempty_list(targ)
   { (TApp ((Ident (f, toLoc $startpos)), targs), toLoc $startpos) }
 
   atomic_exp :
 | i = ID       { (Var (Ident (i, toLoc $startpos)), toLoc $startpos) }
-| l = lit      { (Literal l, toLoc $startpos) } 
-               
-lit :        
+| l = lit      { (Literal l, toLoc $startpos) }
+
+lit :
 | i = CID;
   n = NUMLIT   {
     let string_of_n = Big_int.string_of_big_int n in
-    build_prim_literal_exn (to_prim_type_exn i) string_of_n
+    let iloc = toLoc $startpos(i) in
+    build_prim_literal_exn (to_prim_type_exn i iloc) string_of_n (toLoc $startpos)
   }
-| h = HEXLIT   { 
+| h = HEXLIT   {
   let l = String.length h in
-  build_prim_literal_exn (Bystrx_typ ((l-1)/2)) h
+  build_prim_literal_exn (Bystrx_typ ((l-1)/2)) h (toLoc $startpos)
 }
 | s = STRING   { StringLit s }
 | EMP; kt = t_map_key; vt = t_map_value
@@ -264,10 +266,10 @@ arg_pattern:
 | UNDERSCORE { Wildcard }
 | x = ID {Binder (Ident (x, toLoc $startpos))}
 | c = CID;  { Constructor (c, []) }
-| LPAREN; p = pattern RPAREN; { p }         
+| LPAREN; p = pattern RPAREN; { p }
 
 exp_pm_clause:
-| BAR ; p = pattern ; ARROW ; e = exp { p, e }                                  
+| BAR ; p = pattern ; ARROW ; e = exp { p, e }
 msg_entry :
 | i = ID; COLON;  l = lit { i, MLit l }
 | i = ID; COLON;  v = ID  { i,  MVar (asIdL v (toLoc $startpos(v))) }
@@ -285,10 +287,10 @@ cident :
 type_annot:
 | COLON; t = typ { t }
 
-exp_term : 
+exp_term :
 | e = exp; EOF { e }
 
-type_term : 
+type_term :
 | t = typ; EOF { t }
 
 (***********************************************)
@@ -316,11 +318,11 @@ stmt:
 
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;
-  ss = separated_list(SEMICOLON, stmt) { p, ss }                           
-stmts : 
+  ss = separated_list(SEMICOLON, stmt) { p, ss }
+stmts :
 | ss = separated_list(SEMICOLON, stmt) { ss }
 
-stmts_term: 
+stmts_term:
 | ss = stmts; EOF { ss }
 
 (***********************************************)
