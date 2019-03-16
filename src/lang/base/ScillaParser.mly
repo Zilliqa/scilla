@@ -239,7 +239,7 @@ lit :
   n = NUMLIT   {
     let string_of_n = Big_int.string_of_big_int n in
     let iloc = toLoc $startpos(i) in
-    build_prim_literal_exn (to_prim_type_exn i iloc) string_of_n (toLoc $startpos(n))
+    build_prim_literal_exn (to_prim_type_exn i iloc) string_of_n (toLoc $startpos)
   }
 | h = HEXLIT   {
   let l = String.length h in
