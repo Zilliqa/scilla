@@ -27,7 +27,7 @@ Gas use polynomial for transition transferFrom:
 Legend:
 
 l: tokenId
-i: Result of builtin sub(Element of: ownedTokenCount,32)
+j: Result of builtin add(Element of: ownedTokenCount,32)
 c: tokenApprovals
 b: tokenOwnerMap
 g: to
@@ -36,7 +36,7 @@ a: Element of: tokenOwnerMap
 e: Element of: ownedTokenCount
 h: ownedTokenCount
 k: _sender
-j: Result of builtin add(Element of: ownedTokenCount,32)
+i: Result of builtin sub(Element of: ownedTokenCount,32)
 d: operatorApprovals
 
 Gas use polynomial for transition approve:

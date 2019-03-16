@@ -18,13 +18,14 @@
 
 open Syntax
 open ParserUtil
+open ErrorUtils
 
 val parse_file : ((Lexing.lexbuf -> ScillaParser.token) ->
-                  Lexing.lexbuf -> 'a) -> string -> 'a option
+                  Lexing.lexbuf -> 'a) -> string -> ('a, scilla_error list) result
 
 val parse_string : ((Lexing.lexbuf -> ScillaParser.token) ->
-                  Lexing.lexbuf -> 'a) -> string -> 'a option
+                  Lexing.lexbuf -> 'a) -> string -> ('a, scilla_error list) result
 
-val parse_type : string -> typ
+val parse_type : string -> (typ, scilla_error list) result
 
-val parse_expr : string -> ParsedSyntax.expr_annot
+val parse_expr : string -> (ParsedSyntax.expr_annot, scilla_error list) result

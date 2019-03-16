@@ -18,29 +18,29 @@ Gas use polynomial for transition Transfer:
 Legend:
 
 a: balances
-e: tokens
 d: Result of builtin add(Element of: balances,tokens)
+e: tokens
 b: Element of: balances
 g: to
-f: _sender
 c: Result of builtin sub(tokens,tokens)
+f: _sender
 
 Gas use polynomial for transition TransferFrom:
 1(a) + 1(b) + 237 + 1(c) + 1(d) + 2(e) + 1(f) + 1(g) + 1(h) + 1(i) + 1(j) + 4(k) + 4(l) + 1(m)
 Legend:
 
+j: Result of builtin put(allowed,from,Result of builtin put(Result of builtin get(allowed,from),_sender,Result of builtin sub(tokens,tokens)))
+d: Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
+g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to,tokens)
 m: tokens
 k: from
-j: Result of builtin put(allowed,from,Result of builtin put(Result of builtin get(allowed,from),_sender,Result of builtin sub(tokens,tokens)))
 l: to
 i: Length of: allowed
-h: Length of: Result of builtin get(allowed,from)
-e: Length of: Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
-b: allowed
-d: Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
 f: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to,Result of builtin add(Result of builtin get(Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to),tokens))
+e: Length of: Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
+h: Length of: Result of builtin get(allowed,from)
+b: allowed
 c: Length of: balances
-g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to,tokens)
 a: balances
 
 Gas use polynomial for transition Approve:

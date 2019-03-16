@@ -202,6 +202,132 @@ type literal =
                CPSMonad.t)
 [@@deriving sexp]
 
+(* Builtins *)
+type builtin =
+  | Builtin_eq
+  | Builtin_concat
+  | Builtin_substr
+  | Builtin_strlen
+  | Builtin_to_string
+  | Builtin_blt
+  | Builtin_badd
+  | Builtin_bsub
+  | Builtin_to_uint256
+  | Builtin_sha256hash
+  | Builtin_keccak256hash
+  | Builtin_ripemd160hash
+  | Builtin_to_bystr
+  | Builtin_schnorr_verify
+  | Builtin_ecdsa_verify
+  (* https://github.com/Zilliqa/scilla/pull/486#discussion_r266069221 *)
+  (*
+  | Builtin_ec_gen_key_pair (* in gas coster only *)
+  | Builtin_schnorr_gen_key_pair (* in cashflow checker only *)
+  | Builtin_schnorr_sign (* in cashflow checker only *)
+  | Builtin_ecdsa_sign (* in gas coster only *)
+  *)
+  | Builtin_contains
+  | Builtin_put
+  | Builtin_get
+  | Builtin_remove
+  | Builtin_to_list
+  | Builtin_size
+  | Builtin_lt
+  | Builtin_add
+  | Builtin_sub
+  | Builtin_mul
+  | Builtin_div
+  | Builtin_rem
+  | Builtin_pow
+  | Builtin_to_int32
+  | Builtin_to_int64
+  | Builtin_to_int128
+  | Builtin_to_int256
+  | Builtin_to_uint32
+  | Builtin_to_uint64
+  | Builtin_to_uint128
+  | Builtin_to_nat
+[@@deriving sexp]
+
+type 'rep builtin_annot = builtin * 'rep
+[@@deriving sexp]
+
+let pp_builtin b = match b with
+  | Builtin_eq -> "eq"
+  | Builtin_concat -> "concat"
+  | Builtin_substr -> "substr"
+  | Builtin_strlen -> "strlen"
+  | Builtin_to_string -> "to_string"
+  | Builtin_blt -> "blt"
+  | Builtin_badd -> "badd"
+  | Builtin_bsub -> "bsub"
+  | Builtin_to_uint256 -> "to_uint256"
+  | Builtin_sha256hash -> "sha256hash"
+  | Builtin_keccak256hash -> "keccak256hash"
+  | Builtin_ripemd160hash -> "ripemd160hash"
+  | Builtin_to_bystr -> "to_bystr"
+  | Builtin_schnorr_verify -> "schnorr_verify"
+  | Builtin_ecdsa_verify -> "ecdsa_verify"
+  | Builtin_contains -> "contains"
+  | Builtin_put -> "put"
+  | Builtin_get -> "get"
+  | Builtin_remove -> "remove"
+  | Builtin_to_list -> "to_list"
+  | Builtin_size -> "size"
+  | Builtin_lt -> "lt"
+  | Builtin_add -> "add"
+  | Builtin_sub -> "sub"
+  | Builtin_mul -> "mul"
+  | Builtin_div -> "div"
+  | Builtin_rem -> "rem"
+  | Builtin_pow -> "pow"
+  | Builtin_to_int32 -> "to_int32"
+  | Builtin_to_int64 -> "to_int64"
+  | Builtin_to_int128 -> "to_int128"
+  | Builtin_to_int256 -> "to_int256"
+  | Builtin_to_uint32 -> "to_uint32"
+  | Builtin_to_uint64 -> "to_uint64"
+  | Builtin_to_uint128 -> "to_uint128"
+  | Builtin_to_nat -> "to_nat"
+
+let parse_builtin s = match s with
+  | "eq" -> Builtin_eq
+  | "concat" -> Builtin_concat
+  | "substr" -> Builtin_substr
+  | "strlen" -> Builtin_strlen
+  | "to_string" -> Builtin_to_string
+  | "blt" -> Builtin_blt
+  | "badd" -> Builtin_badd
+  | "bsub" -> Builtin_bsub
+  | "to_uint256" -> Builtin_to_uint256
+  | "sha256hash" -> Builtin_sha256hash
+  | "keccak256hash" -> Builtin_keccak256hash
+  | "ripemd160hash" -> Builtin_ripemd160hash
+  | "to_bystr" -> Builtin_to_bystr
+  | "schnorr_verify" -> Builtin_schnorr_verify
+  | "ecdsa_verify" -> Builtin_ecdsa_verify
+  | "contains" -> Builtin_contains
+  | "put" -> Builtin_put
+  | "get" -> Builtin_get
+  | "remove" -> Builtin_remove
+  | "to_list" -> Builtin_to_list
+  | "size" -> Builtin_size
+  | "lt" -> Builtin_lt
+  | "add" -> Builtin_add
+  | "sub" -> Builtin_sub
+  | "mul" -> Builtin_mul
+  | "div" -> Builtin_div
+  | "rem" -> Builtin_rem
+  | "pow" -> Builtin_pow
+  | "to_int32" -> Builtin_to_int32
+  | "to_int64" -> Builtin_to_int64
+  | "to_int128" -> Builtin_to_int128
+  | "to_int256" -> Builtin_to_int256
+  | "to_uint32" -> Builtin_to_uint32
+  | "to_uint64" -> Builtin_to_uint64
+  | "to_uint128" -> Builtin_to_uint128
+  | "to_nat" -> Builtin_to_nat
+  | _ -> raise (SyntaxError (sprintf "\"%s\" is not a builtin" s))
 
 (*******************************************************)
 (*                   Annotations                       *)
@@ -257,7 +383,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | App of ER.rep ident * ER.rep ident list
     | Constr of string * typ list * ER.rep ident list
     | MatchExpr of ER.rep ident * (pattern * expr_annot) list
-    | Builtin of ER.rep ident * ER.rep ident list 
+    | Builtin of ER.rep builtin_annot * ER.rep ident list
     (* Advanced features: to be added in Scilla 0.2 *)                 
     | TFun of ER.rep ident * expr_annot
     | TApp of ER.rep ident * typ list
@@ -565,10 +691,11 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       | Fun (f, _, body) -> recurser body (f :: bound_vars)
       | TFun (_, body) -> recurser body bound_vars
       | Constr (_, _, es) -> any_is_mem (get_free es bound_vars) blist
-      | App (f, args)
-      | Builtin (f, args) ->
+      | App (f, args) ->
         let args' = f :: args in
         any_is_mem (get_free args' bound_vars) blist
+      | Builtin (_f, args) ->
+        any_is_mem (get_free args bound_vars) blist
       | Let (i, _, lhs, rhs) ->
         (recurser lhs bound_vars) || (recurser rhs (i::bound_vars))
       | Message margs ->
@@ -621,9 +748,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         sprintf
           "Type error in pattern matching on `%s`%s (or one of its branches):\n"
            (get_id x) opt 
-    | Builtin (i, _) ->
+    | Builtin ((i, _), _) ->
         sprintf "Type error in built-in application of `%s`:\n"
-           (get_id i)
+           (pp_builtin i)
     | TApp (tf, _) ->
         sprintf "Type error in type application of `%s`:\n"
            (get_id tf)

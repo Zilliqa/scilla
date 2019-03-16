@@ -1,0 +1,6 @@
+(* The filename of this file is the address specified in runner/TestLib2/init.json for TestLib1 *)
+import TestLib1
+
+library TestLib1
+
+let sort_uint32 = @list_sort Uint32

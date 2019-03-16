@@ -26,52 +26,83 @@ open PrettyPrinters
 open DebugMessage
 open ScillaUtil.FilePathInfix
 
-(* Find (by looking for in StdlibTracker) and parse library named "id". *)
+let get_init_extlibs filename =
+  if not (Caml.Sys.file_exists filename)
+  then
+    (plog (sprintf "Invalid init json %s file" filename); [])
+  else
+    try JSON.ContractState.get_init_extlibs filename with
+    | Invalid_json s ->
+      (* Inability to fetch extlibs info from init json shouldn't be fatal error. *)
+      plog (scilla_error_to_string s);
+      []
+
+(* Find (by looking for in StdlibTracker) and parse library named "id.scillib".
+ * If "id.json" exists, parse it's extlibs info and provide that also. *)
 let import_lib id =
   let name = get_id id in
   let errmsg = sprintf "Failed to import library %s. " name in
   let sloc = get_rep id in
-  let fname = match StdlibTracker.find_lib_dir name with
-    | None -> perr @@ scilla_error_to_string
-        (mk_error1 (errmsg ^ "Not found.\n") sloc); exit 1
-    | Some d -> d ^/ name ^. StdlibTracker.file_extn_library
+  let (fname, initf) = match StdlibTracker.find_lib_dir name with
+    | None -> fatal_error @@ mk_error1(errmsg ^ "Not found.\n") sloc
+    | Some d -> 
+      let libf = d ^/ name ^. StdlibTracker.file_extn_library in
+      let initf = d ^/ name ^. "json" in
+        (libf, get_init_extlibs initf)
   in
     match FrontEndParser.parse_file ScillaParser.lmodule fname with
-    | None -> perr @@ scilla_error_to_string
-        (mk_error1 (errmsg ^ "Failed to parse.\n") sloc); exit 1
-    | Some lmod ->
+    | Error s -> fatal_error (s @ (mk_error1 "Failed to parse.\n") sloc)
+    | Ok lmod ->
         plog (sprintf "Successfully imported external library %s\n" name);
-        lmod
+        (lmod, initf)
 
 (* Import all libraries in "names" (and their dependences).
  * The order of the returned libraries is an RPO traversal
  * over the dependence graph generated out of "names".
  *)
-let import_libs names =
-  let rec importer names stack importedl =
+let import_libs names init_file =
+  let rec importer names name_map stack importedl =
+    let mapped_names =
+      List.map names ~f:(fun n ->
+        (match List.Assoc.find name_map ~equal:(=) (get_id n) with
+        | Some n' ->
+         (* Use a known source location for the mapped id. *)
+          (asIdL n' (get_rep n), n)
+        | None -> (n, n))
+      )
+    in
     List.fold_left ~f:(fun (ilibs, importedl) l ->
-      let name = get_id l in
+      let name = get_id (fst l) in
       if List.mem stack name ~equal:(=) then
-        (perr @@ scilla_error_to_string 
-          (mk_error1 (sprintf "Cyclic dependence found when importing %s." name) (get_rep l));
-        exit 1) else
+        let errmsg = 
+          if get_id (snd l) = name then
+            sprintf "Cyclic dependence found when importing %s." name
+          else 
+            sprintf "Cyclic dependence found when importing %s (mapped to %s)." (get_id (snd l)) name
+        in
+        fatal_error @@ mk_error1 errmsg (get_rep (fst l))
+      else
       if List.mem importedl name ~equal:(=) then (ilibs, importedl) else
-      let ilib = import_lib l in
-      let (ilibs'', importedl'') = importer ilib.elibs (name :: stack) (name :: importedl) in
+      let (ilib, ilib_import_map) = import_lib (fst l) in
+      let (ilibs'', importedl'') = importer ilib.elibs ilib_import_map (name :: stack) (name :: importedl) in
       (* Order in which we return the list of imported libraries is important. *)
       (ilibs @ ilibs'' @ [ilib], importedl'')
-    ) ~init:([], importedl) names
+    ) ~init:([], importedl) mapped_names
   in
-  let (libs, _) = importer names [] [] in
+  let name_map =
+    match init_file with
+    | Some f -> get_init_extlibs f
+    | None -> []
+  in
+  let (libs, _) = importer names name_map [] [] in
   (* Return library list rather than lmodule list. *)
   List.map ~f:(fun (l : ParserUtil.ParsedSyntax.lmodule) -> l.libs) libs
 
 let stdlib_not_found_err () =
-  (perr @@ scilla_error_to_string (mk_error0
+  fatal_error (mk_error0
     ("A path to Scilla stdlib not found. Please set " ^ StdlibTracker.scilla_stdlib_env ^
      " environment variable, or pass through command-line argument for this script.\n" ^
-     "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla -libdir ./src/stdlib/\n"));
-   exit 1)
+     "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla -libdir ./src/stdlib/\n"))
 
 (* Parse all libraries that can be found in ldirs. *)
 let import_all_libs ldirs  =
@@ -98,13 +129,14 @@ let import_all_libs ldirs  =
   in
     (* We don't need to look for dependences of imported libraries
      * because we are importing _all_ libraries that we can find. *)
-  List.map names ~f:(fun l -> (import_lib l).libs)
+  List.map names ~f:(fun l -> (fst @@ import_lib l).libs)
 
 type runner_cli = {
   input_file : string;
   stdlib_dirs : string list;
   (* Run gas use analysis? *)
   gua_flag : bool;
+  init_file : string option;
   cf_flag : bool;
   p_contract_info : bool;
 }
@@ -113,6 +145,7 @@ type runner_cli = {
 let parse_cli () =
   let r_stdlib_dir = ref [] in
   let r_input_file = ref "" in
+  let r_init_file = ref None in
   let r_json_errors = ref false in
   let r_gua = ref false in
   let r_contract_info = ref false in
@@ -129,6 +162,7 @@ let parse_cli () =
         ),
       "Path(s) to libraries separated with ':' (';' on windows)");
     ("-gua", Arg.Unit (fun () -> r_gua := true), "Run gas use analysis and print use polynomial.");
+    ("-init", Arg.String (fun x -> r_init_file := Some x), "Path to initialization json");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
     ("-contractinfo", Arg.Unit (fun () -> r_contract_info := true), "Print various contract information");
@@ -142,8 +176,7 @@ let parse_cli () =
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
   let () = Arg.parse speclist anon_handler mandatory_usage in
-  if !r_input_file = "" then
-    (DebugMessage.perr @@ usage; exit 1);
+  if !r_input_file = "" then fatal_error (mk_error0 usage);
   GlobalConfig.set_use_json_errors !r_json_errors;
   { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; cf_flag = !r_cf;
-    gua_flag = !r_gua; p_contract_info = !r_contract_info }
+    gua_flag = !r_gua; p_contract_info = !r_contract_info; init_file = !r_init_file }

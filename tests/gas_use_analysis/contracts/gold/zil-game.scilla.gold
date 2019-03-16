@@ -3,9 +3,9 @@ Gas use polynomial for transition Play:
 Legend:
 
 f: player_b_hash
-e: Result of builtin badd(4,4)
 d: guess
 c: player_a_hash
+e: Result of builtin badd(4,4)
 a: timer
 b: _sender
 
