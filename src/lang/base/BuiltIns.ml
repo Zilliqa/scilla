@@ -1052,96 +1052,82 @@ module ScillaBuiltIns
     type built_in_executor = literal list -> typ -> (literal, scilla_error list) result
 
     (* A built-in record type:
-       * built-in name
        * arity
        * full, unelaborated type
        * elaborator, refining the type based on argument 
          to support polymorphism -- e.g., for ints and maps
        * executor - operational semantics of the built-in
     *)
-    type built_in_record = builtin * int * typ * elaborator * built_in_executor
+    type built_in_record = int * typ * elaborator * built_in_executor
 
     (* All built-in functions *)
-    let built_in_dict : built_in_record list = [
+    let built_in_multidict : builtin -> built_in_record list = function
+      | Builtin_eq -> [String.eq_arity, String.eq_type, elab_id, String.eq;
+                       BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq;
+                       Crypto.eq_arity, Crypto.eq_type, Crypto.eq_elab, Crypto.eq;
+                       Int.eq_arity, Int.eq_type, Int.eq_elab, Int.eq;
+                       Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.eq]
+      | Builtin_concat -> [String.concat_arity, String.concat_type, elab_id, String.concat;
+                           Crypto.concat_arity, Crypto.concat_type, Crypto.concat_elab, Crypto.concat]
+      | Builtin_to_uint256 -> [Crypto.to_uint256_arity, Crypto.to_uint256_type, Crypto.to_uint256_elab, Crypto.to_uint256;
+                               Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits256, Uint.to_uint256]
       (* Strings *)
-      (Builtin_eq, String.eq_arity, String.eq_type, elab_id, String.eq);
-      (Builtin_concat, String.concat_arity, String.concat_type, elab_id, String.concat);
-      (Builtin_substr, String.substr_arity, String.substr_type, elab_id, String.substr);
-      (Builtin_strlen, String.strlen_arity, String.strlen_type, elab_id, String.strlen);
-      (Builtin_to_string, String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string);
+      | Builtin_substr -> [String.substr_arity, String.substr_type, elab_id, String.substr]
+      | Builtin_strlen -> [String.strlen_arity, String.strlen_type, elab_id, String.strlen]
+      | Builtin_to_string -> [String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string]
 
       (* Block numbers *)
-      (Builtin_eq, BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq);
-      (Builtin_blt, BNum.blt_arity, BNum.blt_type, elab_id , BNum.blt);
-      (Builtin_badd, BNum.badd_arity, BNum.badd_type, BNum.badd_elab , BNum.badd);
-      (Builtin_bsub, BNum.bsub_arity, BNum.bsub_type, BNum.bsub_elab , BNum.bsub);
+      | Builtin_blt -> [BNum.blt_arity, BNum.blt_type, elab_id, BNum.blt]
+      | Builtin_badd -> [BNum.badd_arity, BNum.badd_type, BNum.badd_elab, BNum.badd]
+      | Builtin_bsub -> [BNum.bsub_arity, BNum.bsub_type, BNum.bsub_elab, BNum.bsub]
 
       (* Crypto *)
-      (Builtin_eq, Crypto.eq_arity, Crypto.eq_type, Crypto.eq_elab, Crypto.eq);
-      (Builtin_to_uint256, Crypto.to_uint256_arity, Crypto.to_uint256_type, Crypto.to_uint256_elab, Crypto.to_uint256);
-      (Builtin_sha256hash, Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.sha256hash);
-      (Builtin_keccak256hash, Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash);
-      (Builtin_ripemd160hash, Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash);
-      (Builtin_to_bystr, Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr);
-      (* ("ec_gen_key_pair", Crypto.ec_gen_key_pair_arity, Crypto.ec_gen_key_pair_type, elab_id, Crypto.ec_gen_key_pair); *)
-      (* ("schnorr_sign", Crypto.schnorr_sign_arity, Crypto.schnorr_sign_type, elab_id, Crypto.schnorr_sign); *)
-      (Builtin_schnorr_verify, Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify);
-      (* ("ecdsa_sign", Crypto.ecdsa_sign_arity, Crypto.ecdsa_sign_type, elab_id, Crypto.ecdsa_sign); *)
-      (Builtin_ecdsa_verify, Crypto.ecdsa_verify_arity, Crypto.ecdsa_verify_type, elab_id, Crypto.ecdsa_verify);
-      (Builtin_concat, Crypto.concat_arity, Crypto.concat_type, Crypto.concat_elab, Crypto.concat);
+      | Builtin_sha256hash -> [Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.sha256hash]
+      | Builtin_keccak256hash -> [Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash]
+      | Builtin_ripemd160hash -> [Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash]
+      | Builtin_to_bystr -> [Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr]
+      | Builtin_schnorr_verify -> [Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify]
+      | Builtin_ecdsa_verify -> [Crypto.ecdsa_verify_arity, Crypto.ecdsa_verify_type, elab_id, Crypto.ecdsa_verify]
 
       (* Maps *)
-      (Builtin_contains, Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains);
-      (Builtin_put, Maps.put_arity, Maps.put_type, Maps.put_elab, Maps.put);
-      (Builtin_get, Maps.get_arity, Maps.get_type, Maps.get_elab, Maps.get);
-      (Builtin_remove, Maps.remove_arity, Maps.remove_type, Maps.remove_elab, Maps.remove);
-      (Builtin_to_list, Maps.to_list_arity, Maps.to_list_type, Maps.to_list_elab, Maps.to_list);
-      (Builtin_size, Maps.size_arity, Maps.size_type, Maps.size_elab, Maps.size);
+      | Builtin_contains -> [Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains]
+      | Builtin_put -> [Maps.put_arity, Maps.put_type, Maps.put_elab, Maps.put]
+      | Builtin_get -> [Maps.get_arity, Maps.get_type, Maps.get_elab, Maps.get]
+      | Builtin_remove -> [Maps.remove_arity, Maps.remove_type, Maps.remove_elab, Maps.remove]
+      | Builtin_to_list -> [Maps.to_list_arity, Maps.to_list_type, Maps.to_list_elab, Maps.to_list]
+      | Builtin_size -> [Maps.size_arity, Maps.size_type, Maps.size_elab, Maps.size]
 
       (* Integers *)
-      (Builtin_eq, Int.eq_arity, Int.eq_type, Int.eq_elab, Int.eq);
-      (Builtin_lt, Int.eq_arity, Int.eq_type, Int.eq_elab, Int.lt);
-      (Builtin_add, Int.binop_arity, Int.binop_type, Int.binop_elab, Int.add);
-      (Builtin_sub, Int.binop_arity, Int.binop_type, Int.binop_elab, Int.sub);
-      (Builtin_mul, Int.binop_arity, Int.binop_type, Int.binop_elab, Int.mul);
-      (Builtin_div, Int.binop_arity, Int.binop_type, Int.binop_elab, Int.div);
-      (Builtin_rem, Int.binop_arity, Int.binop_type, Int.binop_elab, Int.rem);
-      (Builtin_pow, Int.pow_arity, Int.pow_type, Int.pow_elab, Int.pow);
-      (Builtin_to_int32, Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits32, Int.to_int32);
-      (Builtin_to_int64, Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits64, Int.to_int64);
-      (Builtin_to_int128, Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits128, Int.to_int128);
-      (Builtin_to_int256, Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits256, Int.to_int256);
+      | Builtin_lt -> [Int.eq_arity, Int.eq_type, Int.eq_elab, Int.lt;
+                       Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.lt]
+      | Builtin_add -> [Int.binop_arity, Int.binop_type, Int.binop_elab, Int.add;
+                        Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.add]
+      | Builtin_sub -> [Int.binop_arity, Int.binop_type, Int.binop_elab, Int.sub;
+                        Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.sub]
+      | Builtin_mul -> [Int.binop_arity, Int.binop_type, Int.binop_elab, Int.mul;
+                        Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.mul]
+      | Builtin_div -> [Int.binop_arity, Int.binop_type, Int.binop_elab, Int.div;
+                        Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.div]
+      | Builtin_rem -> [Int.binop_arity, Int.binop_type, Int.binop_elab, Int.rem;
+                        Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.rem]
+      | Builtin_pow -> [Int.pow_arity, Int.pow_type, Int.pow_elab, Int.pow;
+                        Uint.pow_arity, Uint.pow_type, Uint.pow_elab, Uint.pow]
 
-      (* Unsigned integers *)
-      (Builtin_eq, Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.eq);
-      (Builtin_lt, Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.lt);
-      (Builtin_add, Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.add);
-      (Builtin_sub, Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.sub);
-      (Builtin_mul, Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.mul);
-      (Builtin_div, Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.div);
-      (Builtin_rem, Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.rem);
-      (Builtin_pow, Uint.pow_arity, Uint.pow_type, Uint.pow_elab, Uint.pow);
-      (Builtin_to_uint32, Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits32, Uint.to_uint32);
-      (Builtin_to_uint64, Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits64, Uint.to_uint64);
-      (Builtin_to_uint128, Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits128, Uint.to_uint128);
-      (Builtin_to_uint256, Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits256, Uint.to_uint256);
-      (Builtin_to_nat, Uint.to_nat_arity, Uint.to_nat_type, Uint.to_nat_elab, Uint.to_nat);
-    ]
+      (* Signed integers specific builtins *)
+      | Builtin_to_int32 -> [Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits32, Int.to_int32]
+      | Builtin_to_int64 -> [Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits64, Int.to_int64]
+      | Builtin_to_int128 -> [Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits128, Int.to_int128]
+      | Builtin_to_int256 -> [Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits256, Int.to_int256]
 
-    let built_in_hashtbl =
-      let open Caml in
-      let ht : ((builtin, built_in_record list) Hashtbl.t) = Hashtbl.create 64 in
-      List.iter (fun row ->
-          let (opname, _, _, _, _) = row in
-          match Hashtbl.find_opt ht opname with
-          | Some p ->  Hashtbl.add ht opname (row::p)
-          | None -> Hashtbl.add ht opname [row]
-        ) built_in_dict;
-      ht
+      (* Unsigned integers specific builtins *)
+      | Builtin_to_uint32 -> [Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits32, Uint.to_uint32]
+      | Builtin_to_uint64 -> [Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits64, Uint.to_uint64]
+      | Builtin_to_uint128 -> [Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits128, Uint.to_uint128]
+      | Builtin_to_nat -> [Uint.to_nat_arity, Uint.to_nat_type, Uint.to_nat_elab, Uint.to_nat]
 
     (* Dictionary lookup based on the operation name and type *)
     let find_builtin_op (op, rep) argtypes =
-      let finder = (function (_builtin, arity, optype, elab, exec) ->
+      let finder = (function (arity, optype, elab, exec) ->
           if arity = List.length argtypes
           then
             (* First: elaborate based on argument types *)
@@ -1151,7 +1137,7 @@ module ScillaBuiltIns
             pure (type_elab, res_type, exec)
           else fail0 @@ "Name or arity don't match") in
       let open Caml in
-      let dict = Option.value ~default:[] @@ Hashtbl.find_opt built_in_hashtbl op in
+      let dict = built_in_multidict op in
       let%bind (_, (type_elab, res_type, exec)) = tryM dict ~f:finder
           ~msg:(fun () ->
               mk_error1
