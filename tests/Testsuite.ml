@@ -47,11 +47,12 @@ let main =
   let checker_tests = TestChecker.checker_tests env in
   let integer256_tests = TestInteger256.integer256_tests in
   let signature_tests = TestSignatures.signature_tests env in
+  let syntax_tests = TestSyntax.syntax_tests in
 
   let all_tests = "all_tests" >:::
                   [type_tests_bad; type_tests_good; exp_tests_good; exp_tests_bad;
                    pm_tests_bad; signature_tests;
-                   contract_tests; checker_tests; integer256_tests] in
+                   contract_tests; checker_tests; integer256_tests; syntax_tests] in
 
   (* Run all tests *)
   run_test_tt_main all_tests

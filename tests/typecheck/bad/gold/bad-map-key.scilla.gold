@@ -5,7 +5,7 @@
       "start_location": {
         "file": "typecheck/bad/bad-map-key.scilla",
         "line": 2,
-        "column": 25
+        "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

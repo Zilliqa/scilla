@@ -5,7 +5,7 @@
       "start_location": {
         "file": "checker/bad/bad_map_key_2.scilla",
         "line": 7,
-        "column": 25
+        "column": 13
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

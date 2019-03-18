@@ -129,24 +129,24 @@ module ScillaGas
 
   (* A signature for functions that determine dynamic cost of built-in ops. *)
   (* op -> arguments -> base cost -> total cost *)
-  type coster = string -> literal list -> int -> (int, scilla_error list) result
+  type coster = builtin -> literal list -> int -> (int, scilla_error list) result
   (* op, arg types, coster, base cost. *)
-  type builtin_record = string * (typ list) * coster * int
+  type builtin_record = builtin * (typ list) * coster * int
   (* a static coster that only looks at base cost. *)
-  let base_coster (_ : string) (_ : literal list) base = pure base
+  let base_coster (_ : builtin) (_ : literal list) base = pure base
 
   let string_coster op args base =
     match op, args with
-    | "eq", [StringLit s1; StringLit s2] ->
+    | Builtin_eq, [StringLit s1; StringLit s2] ->
       pure @@ (Int.min (String.length s1) (String.length s2)) * base
-    | "concat", [StringLit s1; StringLit s2] ->
+    | Builtin_concat, [StringLit s1; StringLit s2] ->
         pure @@ (String.length s1 + String.length s2) * base
-    | "substr", [StringLit s; UintLit (Uint32L i1); UintLit (Uint32L i2)] ->
+    | Builtin_substr, [StringLit s; UintLit (Uint32L i1); UintLit (Uint32L i2)] ->
         pure @@ (Int.min (String.length s)
                          (Stdint.Uint32.to_int i1+ Stdint.Uint32.to_int i2))
                  * base
-    | "strlen", [StringLit s] -> pure @@ (String.length s) * base
-    | "to_string", [l] ->
+    | Builtin_strlen, [StringLit s] -> pure @@ (String.length s) * base
+    | Builtin_to_string, [l] ->
       let%bind c = literal_cost l in
       pure @@ (c * base)
     | _ -> fail0 @@ "Gas cost error for string built-in"
@@ -158,34 +158,29 @@ module ScillaGas
       if (x % y = 0) then x / y else (x / y) + 1
     in
     match op, types, args with
-    | "eq", [a1;a2], _
+    | Builtin_eq, [a1;a2], _
       when is_bystrx_type a1 && is_bystrx_type a2 &&
            get (bystrx_width a1) = get (bystrx_width a2)
       -> pure @@ get (bystrx_width a1) * base
-    | "to_uint256", [a], _ 
+    | Builtin_to_uint256, [a], _
       when (is_bystrx_type a) && get (bystrx_width a) <= 32 ->
       pure (32 * base)
-    | "sha256hash", _, [a] ->
+    | Builtin_sha256hash, _, [a] ->
         (* Block size of sha256hash is 512 *)
         pure @@ (div_ceil (String.length (pp_literal a)) 64) * 15 * base
-    | "keccak256hash", _, [a] ->
+    | Builtin_keccak256hash, _, [a] ->
         (* Block size of keccak256hash is 1088 *)
         pure @@ (div_ceil (String.length (pp_literal a)) 136) * 15 * base
-    | "ripemd160hash", _, [a] ->
+    | Builtin_ripemd160hash, _, [a] ->
         (* Block size of ripemd160hash is 512 *)
         pure @@ (div_ceil (String.length (pp_literal a)) 64) * 10 * base
-    | "ec_gen_key_pair", _, _ -> pure 20
-    | "schnorr_sign", _, [_;_;ByStr(s)]
-    | "ecdsa_sign", _, [_;ByStr(s)] ->
-        let x = div_ceil ((String.length s) + 66) 64 in
-        pure @@ (350 + (15 * x)) * base
-    | "schnorr_verify", _, [_;ByStr(s);_]
-    | "ecdsa_verify", _, [_;ByStr(s);_] ->
+    | Builtin_schnorr_verify, _, [_;ByStr(s);_]
+    | Builtin_ecdsa_verify, _, [_;ByStr(s);_] ->
         let x = div_ceil ((String.length s) + 66) 64 in
         pure @@ (250 + (15 * x)) * base
-    | "to_bystr", [a], _
+    | Builtin_to_bystr, [a], _
       when is_bystrx_type a -> pure @@ get (bystrx_width a) * base
-    | "concat", [a1;a2], _
+    | Builtin_concat, [a1;a2], _
       when is_bystrx_type a1 && is_bystrx_type a2 ->
       pure @@ (get(bystrx_width a1) + get(bystrx_width a2)) * base
     | _ -> fail0 @@ "Gas cost error for hash built-in"
@@ -195,7 +190,7 @@ module ScillaGas
     | Map (_, m) :: _ -> 
       (* get and contains do not make a copy of the Map, hence constant. *)
       (match op with
-      | "get" | "contains" -> pure base 
+      | Builtin_get | Builtin_contains -> pure base 
       | _ -> pure (base + (base * Caml.Hashtbl.length m)))
     | _ -> fail0 @@ "Gas cost error for map built-in"
 
@@ -216,8 +211,8 @@ module ScillaGas
   let int_coster op args base =
     let%bind base' =
        match op with
-        | "mul" | "div" | "rem" -> pure (base * 5)
-        | "pow" ->
+        | Builtin_mul | Builtin_div | Builtin_rem -> pure (base * 5)
+        | Builtin_pow ->
           (match args with 
           | [_; UintLit(Uint32L p)] -> pure (base * 5 * (Stdint.Uint32.to_int p))
           | _ -> fail0 @@ "Gas cost error for built-in pow")
@@ -240,63 +235,60 @@ module ScillaGas
   (* built-in op costs are propotional to size of data they operate on. *)
   let builtin_records : builtin_record list = [
     (* Strings *)
-    ("eq", [string_typ;string_typ], string_coster, 1);
-    ("concat", [string_typ;string_typ], string_coster, 1);
-    ("substr", [string_typ; tvar "'A"; tvar "'A"], string_coster, 1);
-    ("strlen", [string_typ], string_coster, 1);
-    ("to_string", [tvar "'A"], string_coster, 1);
+    (Builtin_eq, [string_typ;string_typ], string_coster, 1);
+    (Builtin_concat, [string_typ;string_typ], string_coster, 1);
+    (Builtin_substr, [string_typ; tvar "'A"; tvar "'A"], string_coster, 1);
+    (Builtin_strlen, [string_typ], string_coster, 1);
+    (Builtin_to_string, [tvar "'A"], string_coster, 1);
 
     (* Block numbers *)
-    ("eq", [bnum_typ;bnum_typ], base_coster, 32);
-    ("blt", [bnum_typ;bnum_typ], base_coster, 32);
-    ("badd", [bnum_typ;tvar "'A"], base_coster, 32);
-    ("bsub", [bnum_typ;bnum_typ], base_coster, 32);
+    (Builtin_eq, [bnum_typ;bnum_typ], base_coster, 32);
+    (Builtin_blt, [bnum_typ;bnum_typ], base_coster, 32);
+    (Builtin_badd, [bnum_typ;tvar "'A"], base_coster, 32);
+    (Builtin_bsub, [bnum_typ;bnum_typ], base_coster, 32);
 
     (* Crypto *)
-    ("eq", [tvar "'A"; tvar "'A"], crypto_coster, 1);
-    ("to_bystr", [tvar "'A"], crypto_coster, 1);
-    ("to_uint256", [tvar "'A"], crypto_coster, 1);
-    ("sha256hash", [tvar "'A"], crypto_coster, 1);
-    ("keccak256hash", [tvar "'A"], crypto_coster, 1);
-    ("ripemd160hash", [tvar "'A"], crypto_coster, 1);
-    ("ec_gen_key_pair", [], crypto_coster, 1);
-    ("schnorr_sign", [bystrx_typ privkey_len; bystrx_typ pubkey_len; bystr_typ], crypto_coster, 1);
-    ("schnorr_verify", [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster, 1);
-    ("ecdsa_sign", [bystrx_typ Secp256k1Wrapper.privkey_len; bystr_typ], crypto_coster, 1);
-    ("ecdsa_verify", [bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster, 1);
-    ("concat", [tvar "'A"; tvar "'A"], crypto_coster, 1);
+    (Builtin_eq, [tvar "'A"; tvar "'A"], crypto_coster, 1);
+    (Builtin_to_bystr, [tvar "'A"], crypto_coster, 1);
+    (Builtin_to_uint256, [tvar "'A"], crypto_coster, 1);
+    (Builtin_sha256hash, [tvar "'A"], crypto_coster, 1);
+    (Builtin_keccak256hash, [tvar "'A"], crypto_coster, 1);
+    (Builtin_ripemd160hash, [tvar "'A"], crypto_coster, 1);
+    (Builtin_schnorr_verify, [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster, 1);
+    (Builtin_ecdsa_verify, [bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster, 1);
+    (Builtin_concat, [tvar "'A"; tvar "'A"], crypto_coster, 1);
 
     (* Maps *)
-    ("contains", [tvar "'A"; tvar "'A"], map_coster, 1);
-    ("put", [tvar "'A"; tvar "'A"; tvar "'A"], map_coster, 1);
-    ("get", [tvar "'A"; tvar "'A"], map_coster, 1);
-    ("remove", [tvar "'A"; tvar "'A"], map_coster, 1);
-    ("to_list", [tvar "'A"], map_coster, 1);
-    ("size", [tvar "'A"], map_coster, 1); 
+    (Builtin_contains, [tvar "'A"; tvar "'A"], map_coster, 1);
+    (Builtin_put, [tvar "'A"; tvar "'A"; tvar "'A"], map_coster, 1);
+    (Builtin_get, [tvar "'A"; tvar "'A"], map_coster, 1);
+    (Builtin_remove, [tvar "'A"; tvar "'A"], map_coster, 1);
+    (Builtin_to_list, [tvar "'A"], map_coster, 1);
+    (Builtin_size, [tvar "'A"], map_coster, 1);
 
     (* Integers *)
-    ("eq", [tvar "'A"; tvar "'A"], int_coster, 4);
-    ("lt", [tvar "'A"; tvar "'A"], int_coster, 4);
-    ("add", [tvar "'A"; tvar "'A"], int_coster, 4);
-    ("sub", [tvar "'A"; tvar "'A"], int_coster, 4);
-    ("mul", [tvar "'A"; tvar "'A"], int_coster, 4);
-    ("div", [tvar "'A"; tvar "'A"], int_coster, 4);
-    ("rem", [tvar "'A"; tvar "'A"], int_coster, 4);
-    ("pow", [tvar "'A"; uint32_typ], int_coster, 4);
-    ("to_int32", [tvar "'A"], int_conversion_coster 32, 4);
-    ("to_int64", [tvar "'A"], int_conversion_coster 64, 4);
-    ("to_int128", [tvar "'A"], int_conversion_coster 128, 4);
-    ("to_int256", [tvar "'A"], int_conversion_coster 256, 4);
-    ("to_uint32", [tvar "'A"], int_conversion_coster 32, 4);
-    ("to_uint64", [tvar "'A"], int_conversion_coster 64, 4);
-    ("to_uint128", [tvar "'A"], int_conversion_coster 128, 4);
-    ("to_uint256", [tvar "'A"], int_conversion_coster 256, 4);
-    ("to_nat", [tvar "'A"], to_nat_coster, 1);
+    (Builtin_eq, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_lt, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_add, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_sub, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_mul, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_div, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_rem, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_pow, [tvar "'A"; uint32_typ], int_coster, 4);
+    (Builtin_to_int32, [tvar "'A"], int_conversion_coster 32, 4);
+    (Builtin_to_int64, [tvar "'A"], int_conversion_coster 64, 4);
+    (Builtin_to_int128, [tvar "'A"], int_conversion_coster 128, 4);
+    (Builtin_to_int256, [tvar "'A"], int_conversion_coster 256, 4);
+    (Builtin_to_uint32, [tvar "'A"], int_conversion_coster 32, 4);
+    (Builtin_to_uint64, [tvar "'A"], int_conversion_coster 64, 4);
+    (Builtin_to_uint128, [tvar "'A"], int_conversion_coster 128, 4);
+    (Builtin_to_uint256, [tvar "'A"], int_conversion_coster 256, 4);
+    (Builtin_to_nat, [tvar "'A"], to_nat_coster, 1);
   ]
 
   let builtin_hashtbl =
     let open Caml in
-    let ht : ((string, builtin_record list) Hashtbl.t) = Hashtbl.create 64 in
+    let ht : ((builtin, builtin_record list) Hashtbl.t) = Hashtbl.create 64 in
     List.iter (fun row ->
       let (opname, _, _, _) = row in
       match Hashtbl.find_opt ht opname with
@@ -305,8 +297,7 @@ module ScillaGas
     ) builtin_records;
       ht
 
-  let builtin_cost op_i arg_literals =
-    let op = get_id op_i in
+  let builtin_cost (op, _) arg_literals =
     let%bind arg_types = mapM arg_literals ~f:literal_type in
     let matcher (name, types, fcoster, base) =
       (* The names and type list lengths must match and *)
@@ -320,7 +311,7 @@ module ScillaGas
       then fcoster op arg_literals base (* this can fail too *)
       else fail0 @@ "Name or arity doesn't match"
     in
-    let msg = sprintf "Unable to determine gas cost for \"%s\"" op in
+    let msg = sprintf "Unable to determine gas cost for \"%s\"" (pp_builtin op) in
     let open Caml in
     let dict = match Hashtbl.find_opt builtin_hashtbl op with | Some rows -> rows | None -> [] in
     let %bind (_, cost) = tryM dict ~f:matcher ~msg:(fun () -> mk_error0 msg) in

@@ -23,7 +23,7 @@ open MonadUtil
 open ErrorUtils
 open Stdint
 
-exception SyntaxError of string
+exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
 let scilla_version = (0, 2, 0)
@@ -40,7 +40,7 @@ let get_rep i = match i with Ident (_, l) -> l
 
 type bigint = Big_int.big_int
 
-let mk_ident s = Ident (s, dummy_loc)      
+let mk_ident s = Ident (s, dummy_loc)
 
 (*******************************************************)
 (*                         Types                       *)
@@ -79,7 +79,7 @@ let sexp_of_prim_typ = function
   | Bystr_typ -> Sexp.Atom "ByStr"
   | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
 
-let prim_typ_of_sexp _ = raise (SyntaxError "prim_typ_of_sexp not implemented")
+let prim_typ_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
 
 type typ =
   | PrimType of prim_typ
@@ -145,7 +145,7 @@ let sexp_of_int_lit = function
   | Int128L i' -> Sexp.Atom ("Int128 " ^ Int128.to_string i')
   | Int256L i' -> Sexp.Atom ("Int256 " ^ Integer256.Int256.to_string i')
 
-let int_lit_of_sexp _ = raise (SyntaxError "int_lit_of_sexp not implemented")
+let int_lit_of_sexp _ = failwith "int_lit_of_sexp is not implemented"
 
 type uint_lit =
   | Uint32L of uint32 | Uint64L of uint64 | Uint128L of uint128 | Uint256L of Integer256.uint256
@@ -156,7 +156,7 @@ let sexp_of_uint_lit = function
   | Uint128L i' -> Sexp.Atom ("Uint128 " ^ Uint128.to_string i')
   | Uint256L i' -> Sexp.Atom ("Uint256 " ^ Integer256.Uint256.to_string i')
 
-let uint_lit_of_sexp _ = raise (SyntaxError "uint_lit_of_sexp not implemented")
+let uint_lit_of_sexp _ = failwith "uint_lit_of_sexp is not implemented"
 
 (* [Specialising the Return Type of Closures]
 
@@ -201,6 +201,235 @@ type literal =
               uint64 -> ((literal * (string * literal) list) * uint64, scilla_error list * uint64) result) 
                CPSMonad.t)
 [@@deriving sexp]
+
+(* Builtins *)
+type builtin =
+  | Builtin_eq
+  | Builtin_concat
+  | Builtin_substr
+  | Builtin_strlen
+  | Builtin_to_string
+  | Builtin_blt
+  | Builtin_badd
+  | Builtin_bsub
+  | Builtin_to_uint256
+  | Builtin_sha256hash
+  | Builtin_keccak256hash
+  | Builtin_ripemd160hash
+  | Builtin_to_bystr
+  | Builtin_schnorr_verify
+  | Builtin_ecdsa_verify
+  (* https://github.com/Zilliqa/scilla/pull/486#discussion_r266069221 *)
+  (*
+  | Builtin_ec_gen_key_pair (* in gas coster only *)
+  | Builtin_schnorr_gen_key_pair (* in cashflow checker only *)
+  | Builtin_schnorr_sign (* in cashflow checker only *)
+  | Builtin_ecdsa_sign (* in gas coster only *)
+  *)
+  | Builtin_contains
+  | Builtin_put
+  | Builtin_get
+  | Builtin_remove
+  | Builtin_to_list
+  | Builtin_size
+  | Builtin_lt
+  | Builtin_add
+  | Builtin_sub
+  | Builtin_mul
+  | Builtin_div
+  | Builtin_rem
+  | Builtin_pow
+  | Builtin_to_int32
+  | Builtin_to_int64
+  | Builtin_to_int128
+  | Builtin_to_int256
+  | Builtin_to_uint32
+  | Builtin_to_uint64
+  | Builtin_to_uint128
+  | Builtin_to_nat
+[@@deriving sexp]
+
+type 'rep builtin_annot = builtin * 'rep
+[@@deriving sexp]
+
+let pp_builtin b = match b with
+  | Builtin_eq -> "eq"
+  | Builtin_concat -> "concat"
+  | Builtin_substr -> "substr"
+  | Builtin_strlen -> "strlen"
+  | Builtin_to_string -> "to_string"
+  | Builtin_blt -> "blt"
+  | Builtin_badd -> "badd"
+  | Builtin_bsub -> "bsub"
+  | Builtin_to_uint256 -> "to_uint256"
+  | Builtin_sha256hash -> "sha256hash"
+  | Builtin_keccak256hash -> "keccak256hash"
+  | Builtin_ripemd160hash -> "ripemd160hash"
+  | Builtin_to_bystr -> "to_bystr"
+  | Builtin_schnorr_verify -> "schnorr_verify"
+  | Builtin_ecdsa_verify -> "ecdsa_verify"
+  | Builtin_contains -> "contains"
+  | Builtin_put -> "put"
+  | Builtin_get -> "get"
+  | Builtin_remove -> "remove"
+  | Builtin_to_list -> "to_list"
+  | Builtin_size -> "size"
+  | Builtin_lt -> "lt"
+  | Builtin_add -> "add"
+  | Builtin_sub -> "sub"
+  | Builtin_mul -> "mul"
+  | Builtin_div -> "div"
+  | Builtin_rem -> "rem"
+  | Builtin_pow -> "pow"
+  | Builtin_to_int32 -> "to_int32"
+  | Builtin_to_int64 -> "to_int64"
+  | Builtin_to_int128 -> "to_int128"
+  | Builtin_to_int256 -> "to_int256"
+  | Builtin_to_uint32 -> "to_uint32"
+  | Builtin_to_uint64 -> "to_uint64"
+  | Builtin_to_uint128 -> "to_uint128"
+  | Builtin_to_nat -> "to_nat"
+
+let parse_builtin s loc = match s with
+  | "eq" -> Builtin_eq
+  | "concat" -> Builtin_concat
+  | "substr" -> Builtin_substr
+  | "strlen" -> Builtin_strlen
+  | "to_string" -> Builtin_to_string
+  | "blt" -> Builtin_blt
+  | "badd" -> Builtin_badd
+  | "bsub" -> Builtin_bsub
+  | "to_uint256" -> Builtin_to_uint256
+  | "sha256hash" -> Builtin_sha256hash
+  | "keccak256hash" -> Builtin_keccak256hash
+  | "ripemd160hash" -> Builtin_ripemd160hash
+  | "to_bystr" -> Builtin_to_bystr
+  | "schnorr_verify" -> Builtin_schnorr_verify
+  | "ecdsa_verify" -> Builtin_ecdsa_verify
+  | "contains" -> Builtin_contains
+  | "put" -> Builtin_put
+  | "get" -> Builtin_get
+  | "remove" -> Builtin_remove
+  | "to_list" -> Builtin_to_list
+  | "size" -> Builtin_size
+  | "lt" -> Builtin_lt
+  | "add" -> Builtin_add
+  | "sub" -> Builtin_sub
+  | "mul" -> Builtin_mul
+  | "div" -> Builtin_div
+  | "rem" -> Builtin_rem
+  | "pow" -> Builtin_pow
+  | "to_int32" -> Builtin_to_int32
+  | "to_int64" -> Builtin_to_int64
+  | "to_int128" -> Builtin_to_int128
+  | "to_int256" -> Builtin_to_int256
+  | "to_uint32" -> Builtin_to_uint32
+  | "to_uint64" -> Builtin_to_uint64
+  | "to_uint128" -> Builtin_to_uint128
+  | "to_nat" -> Builtin_to_nat
+  | _ -> raise (SyntaxError ((sprintf "\"%s\" is not a builtin" s), loc))
+
+(****************************************************************)
+(*         Type substitutions on unannotated syntax             *)
+(****************************************************************)
+
+(* Return free tvars in tp
+    The return list doesn't contain duplicates *)
+let free_tvars tp =
+  let add vs tv = tv :: List.filter ~f:((<>) tv) vs in
+  let rem vs tv = List.filter ~f:((<>) tv) vs in
+  let rec go t acc = (match t with
+      | PrimType _ | Unit -> acc
+      | MapType (kt, vt) -> go kt acc |> go vt
+      | FunType (at, rt) -> go at acc |> go rt
+      | TypeVar n -> add acc n
+      | ADT (_, ts) ->
+          List.fold_left ts ~init:acc ~f:(Fn.flip go)
+      | PolyFun (arg, bt) ->
+          let acc' = go bt acc in
+          rem acc' arg) in
+  go tp []
+
+let mk_fresh_var taken init =
+  let tmp = ref init in
+  let counter = ref 1 in
+  while List.mem taken !tmp ~equal:(=) do
+    tmp := init ^ (Int.to_string !counter);
+    Int.incr counter
+  done;
+  !tmp
+
+
+(* tm[tvar := tp] *)
+let rec subst_type_in_type tvar tp tm = match tm with
+  | PrimType _ | Unit -> tm
+  (* Make sure the map's type is still primitive! *)
+  | MapType (kt, vt) ->
+      let kts = subst_type_in_type tvar tp kt in
+      let vts = subst_type_in_type tvar tp vt in
+      MapType (kts, vts)
+  | FunType (at, rt) ->
+      let ats = subst_type_in_type tvar tp at in
+      let rts = subst_type_in_type tvar tp rt in
+      FunType (ats, rts)
+  | TypeVar n ->
+      if tvar = n then tp else tm
+  | ADT (s, ts) ->
+      let ts' = List.map ts ~f:(subst_type_in_type tvar tp) in
+      ADT (s, ts')
+  | PolyFun (arg, t) ->
+      if tvar = arg then tm
+      else PolyFun (arg, subst_type_in_type tvar tp t)
+
+(* note: this is sequential substitution of multiple variables,
+          _not_ simultaneous substitution *)
+let subst_types_in_type sbst tm =
+  List.fold_left sbst ~init:tm
+    ~f:(fun acc (tvar, tp) -> subst_type_in_type tvar tp acc)
+
+let rename_bound_vars mk_new_name update_taken =
+  let rec recursor t taken = match t with
+    | MapType (kt, vt) -> MapType (kt, recursor vt taken)
+    | FunType (at, rt) ->
+        FunType (recursor at taken, recursor rt taken)
+    | ADT (n, ts) ->
+        let ts' = List.map ts ~f:(fun w -> recursor w taken) in
+        ADT (n, ts')
+    | PrimType _ | TypeVar _ | Unit -> t
+    | PolyFun (arg, bt) ->
+        let arg' = mk_new_name taken arg in
+        let tv_new = TypeVar arg' in
+        let bt1 = subst_type_in_type arg tv_new bt in
+        let bt2 = recursor bt1 (update_taken arg' taken) in
+        PolyFun (arg', bt2)
+  in recursor
+
+let refresh_tfun = rename_bound_vars mk_fresh_var List.cons
+
+let canonicalize_tfun t =
+  (* The parser doesn't allow type names to begin with '_'. *)
+  let mk_new_name counter _ = "'_A" ^ Int.to_string counter in
+  rename_bound_vars mk_new_name (const @@ Int.succ) t 1
+
+(* The same as above, but for a variable with locations *)
+let subst_type_in_type' tv = subst_type_in_type (get_id tv)
+
+let rec subst_type_in_literal tvar tp l = match l with
+  | Map ((kt, vt), ls) ->
+      let kts = subst_type_in_type' tvar tp kt in
+      let vts = subst_type_in_type' tvar tp vt in
+      let ls' = Hashtbl.create (Hashtbl.length ls) in
+      let _ = Hashtbl.iter (fun k v  ->
+          let k' = subst_type_in_literal tvar tp k in
+          let v' = subst_type_in_literal tvar tp v in
+          Hashtbl.add ls' k' v') ls in
+      Map ((kts, vts), ls')
+  | ADTValue (n, ts, ls) ->
+      let ts' = List.map ts ~f:(subst_type_in_type' tvar tp) in
+      let ls' = List.map ls ~f:(subst_type_in_literal tvar tp) in
+      ADTValue (n, ts', ls')
+  | _ -> l
+
 
 
 (*******************************************************)
@@ -257,7 +486,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | App of ER.rep ident * ER.rep ident list
     | Constr of string * typ list * ER.rep ident list
     | MatchExpr of ER.rep ident * (pattern * expr_annot) list
-    | Builtin of ER.rep ident * ER.rep ident list 
+    | Builtin of ER.rep builtin_annot * ER.rep ident list
     (* Advanced features: to be added in Scilla 0.2 *)                 
     | TFun of ER.rep ident * expr_annot
     | TApp of ER.rep ident * typ list
@@ -378,123 +607,6 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         (sexp_of_typ t |> Sexplib.Sexp.to_string)) in
     "[" ^ (String.concat ~sep:", " cs) ^ "]"
 
-  (****************************************************************)
-  (*                  Type substitutions                          *)
-  (****************************************************************)
-
-  (* Return free tvars in tp
-     The return list doesn't contain duplicates *)
-  let free_tvars tp =
-    let add vs tv = tv :: List.filter ~f:((<>) tv) vs in
-    let rem vs tv = List.filter ~f:((<>) tv) vs in
-    let rec go t acc = (match t with
-        | PrimType _ | Unit -> acc
-        | MapType (kt, vt) -> go kt acc |> go vt
-        | FunType (at, rt) -> go at acc |> go rt
-        | TypeVar n -> add acc n
-        | ADT (_, ts) ->
-            List.fold_left ts ~init:acc ~f:(Fn.flip go)
-        | PolyFun (arg, bt) ->
-            let acc' = go bt acc in
-            rem acc' arg) in
-    go tp []
-
-  let mk_fresh_var taken init =
-    let tmp = ref init in
-    let counter = ref 1 in
-    while List.mem taken !tmp ~equal:(=) do
-      tmp := init ^ (Int.to_string !counter);
-      Int.incr counter
-    done;
-    !tmp
-
-
-  (* tm[tvar := tp] *)
-  let rec subst_type_in_type tvar tp tm = match tm with
-    | PrimType _ | Unit -> tm
-    (* Make sure the map's type is still primitive! *)
-    | MapType (kt, vt) ->
-        let kts = subst_type_in_type tvar tp kt in
-        let vts = subst_type_in_type tvar tp vt in
-        MapType (kts, vts)
-    | FunType (at, rt) ->
-        let ats = subst_type_in_type tvar tp at in
-        let rts = subst_type_in_type tvar tp rt in
-        FunType (ats, rts)
-    | TypeVar n ->
-        if tvar = n then tp else tm
-    | ADT (s, ts) ->
-        let ts' = List.map ts ~f:(subst_type_in_type tvar tp) in
-        ADT (s, ts')
-    | PolyFun (arg, t) ->
-        if tvar = arg then tm
-        else PolyFun (arg, subst_type_in_type tvar tp t)
-
-  (* note: this is sequential substitution of multiple variables,
-           _not_ simultaneous substitution *)
-  let subst_types_in_type sbst tm =
-    List.fold_left sbst ~init:tm
-      ~f:(fun acc (tvar, tp) -> subst_type_in_type tvar tp acc)
-
-  let rec refresh_tfun t taken = match t with
-    | MapType (kt, vt) -> MapType (kt, refresh_tfun vt taken)
-    | FunType (at, rt) ->
-        FunType (refresh_tfun at taken, refresh_tfun rt taken)
-    | ADT (n, ts) ->
-        let ts' = List.map ts ~f:(fun w -> refresh_tfun w taken) in
-        ADT (n, ts')
-    | PrimType _ | TypeVar _ | Unit -> t
-    | PolyFun (arg, bt) ->
-        let arg' = mk_fresh_var taken arg in
-        let tv_new = TypeVar arg' in
-        let bt1 = subst_type_in_type arg tv_new bt in
-        let taken' = arg' :: taken in
-        let bt2 = refresh_tfun bt1 taken' in
-        PolyFun (arg', bt2)
-
-  (* Alpha renaming to canonical (pre-determined) names. *)
-  let canonicalize_tfun t =
-    let taken = free_tvars t in
-    (* The parser doesn't allow type names to begin with '_'. *)
-    let get_new_name counter = "'_A" ^ Int.to_string counter in
-    let rec refresh t taken counter = match t with
-      | MapType (kt, vt) -> MapType (kt, refresh vt taken counter)
-      | FunType (at, rt) ->
-          FunType (refresh at taken counter, refresh rt taken counter)
-      | ADT (n, ts) ->
-          let ts' = List.map ts ~f:(fun w -> refresh w taken counter) in
-          ADT (n, ts')
-      | PrimType _ | TypeVar _ | Unit -> t
-      | PolyFun (arg, bt) ->
-          let arg' = get_new_name counter in
-          let tv_new = TypeVar arg' in
-          let bt1 = subst_type_in_type arg tv_new bt in
-          let taken' = arg' :: taken in
-          let bt2 = refresh bt1 taken' (counter+1) in
-          PolyFun (arg', bt2)
-    in
-    refresh t taken 1
-
-  (* The same as above, but for a variable with locations *)
-  let subst_type_in_type' tv = subst_type_in_type (get_id tv)
-
-  let rec subst_type_in_literal tvar tp l = match l with
-    | Map ((kt, vt), ls) -> 
-        let kts = subst_type_in_type' tvar tp kt in
-        let vts = subst_type_in_type' tvar tp vt in
-        let ls' = Hashtbl.create (Hashtbl.length ls) in
-        let _ = Hashtbl.iter (fun k v  ->
-            let k' = subst_type_in_literal tvar tp k in
-            let v' = subst_type_in_literal tvar tp v in 
-            Hashtbl.add ls' k' v') ls in
-        Map ((kts, vts), ls')
-    | ADTValue (n, ts, ls) ->
-        let ts' = List.map ts ~f:(fun t -> subst_type_in_type' tvar tp t) in
-        let ls' = List.map ls ~f:(fun l -> subst_type_in_literal tvar tp l) in
-        ADTValue (n, ts', ls')
-    | _ -> l
-
-
   (* Substitute type for a type variable *)
   let rec subst_type_in_expr tvar tp erep =
     let (e, rep) = erep in
@@ -565,10 +677,11 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       | Fun (f, _, body) -> recurser body (f :: bound_vars)
       | TFun (_, body) -> recurser body bound_vars
       | Constr (_, _, es) -> any_is_mem (get_free es bound_vars) blist
-      | App (f, args)
-      | Builtin (f, args) ->
+      | App (f, args) ->
         let args' = f :: args in
         any_is_mem (get_free args' bound_vars) blist
+      | Builtin (_f, args) ->
+        any_is_mem (get_free args bound_vars) blist
       | Let (i, _, lhs, rhs) ->
         (recurser lhs bound_vars) || (recurser rhs (i::bound_vars))
       | Message margs ->
@@ -621,9 +734,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         sprintf
           "Type error in pattern matching on `%s`%s (or one of its branches):\n"
            (get_id x) opt 
-    | Builtin (i, _) ->
+    | Builtin ((i, _), _) ->
         sprintf "Type error in built-in application of `%s`:\n"
-           (get_id i)
+           (pp_builtin i)
     | TApp (tf, _) ->
         sprintf "Type error in type application of `%s`:\n"
            (get_id tf)
