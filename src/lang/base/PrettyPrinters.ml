@@ -212,7 +212,7 @@ let rec pp_literal_simplified l =
           let t = "(" ^ (pp_literal_simplified k) ^ " => " ^ (pp_literal_simplified v) ^ ")" in
             if String.is_empty a then t else a ^ "; " ^ t
           ) kv "")  ^ "]" in
-      ("(Map {" ^ pp_typ kt ^ " -> " ^ pp_typ vt ^ "} "  ^ items ^ ")")
+      ("(Map " ^ pp_typ kt ^ " " ^ pp_typ vt ^ " "  ^ items ^ ")")
     | ADTValue (cn, _, al) ->
         (match cn with
         | "Cons" ->
