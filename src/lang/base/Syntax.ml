@@ -372,6 +372,13 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       libs : library; (* lib functions defined in the module *)
     }
 
+  (* A tree of libraries linked to their dependents *)
+  type libtree =
+    { 
+      libn : library;      (* The library this node represents *)
+      deps : libtree list  (* List of dependent libraries *)
+    }
+
   let pp_cparams ps =
     let cs = List.map ps ~f:(fun (i, t) ->
         get_id i ^ " : " ^

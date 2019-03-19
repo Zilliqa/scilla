@@ -81,7 +81,11 @@ module Env = struct
 
   let bind_all e kvs = 
     List.fold_left ~init:e ~f:(fun z (k, v) -> bind z k v) kvs
-                                                                
+
+  (* Unbind those identifiers "id" from "e" which have "fb id" false. *)
+  let filter e ~fb =
+    List.filter e ~f:(fun (id, _) -> fb id)
+
   let lookup e k =
     let i = get_id k in
     match List.find ~f:(fun z -> fst z = i) e with 
