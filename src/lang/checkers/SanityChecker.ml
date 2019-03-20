@@ -331,11 +331,7 @@ module ScillaSanityChecker
           let%bind lib_env = library_checker elib.libn dep_env in
           (* Retain only env entries from elib. *)
           let lib_env' = filter_env lib_env ~f:(fun name ->
-            List.exists (fun lentry ->
-              match lentry with
-              | LibTyp _ -> false
-              | LibVar (i, _) -> get_id i = name
-            ) elib.libn.lentries
+            List.exists (function | LibTyp _ -> false | LibVar (i, _) -> get_id i = name) elib.libn.lentries
           ) in
           let acc_env' = append_env acc_env lib_env' in
           pure acc_env'

@@ -1,0 +1,5 @@
+scilla_version 0
+
+import TestLib1 TestLib1
+
+contract LibDup1 ()

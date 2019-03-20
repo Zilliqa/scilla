@@ -599,8 +599,43 @@ module ScillaTypechecker
   (* Type a list of libtrees, with tenv0 as the base environment. *)
   let type_libraries elibs tenv0 =
     let ((typed_elibs, elibs_env), emsgs) = 
+
       let rec recurser libl =
-        List.fold libl ~init:(([], tenv0), [])
+
+        (* Do a preliminary check to ensure no name conflicts b/w
+         * libraries in elibs at just the root levels. *)
+        let err_dups =
+          (* check if any entry in "lib" is in "rest". *)
+          let check_dup lib rest (err_acc : scilla_error list) =
+            List.fold lib.lentries ~init:err_acc ~f:(fun err_acc entry ->
+              (* Check if entry is in rest. *)
+              let ename = match entry with | LibTyp (i, _) | LibVar (i, _) -> i in
+              List.fold rest ~init:err_acc ~f:(fun err_acc lib' ->
+                List.fold lib'.lentries ~init:err_acc ~f:(fun err_acc entry' ->
+                  let ename' = match entry' with | LibTyp (i, _) | LibVar (i, _) -> i in
+                  if get_id ename = get_id ename'
+                  then
+                    err_acc @ (mk_error1 (sprintf "Entry %s in library %s conflicts with entry in library %s" 
+                      (get_id ename) (get_id lib'.lname) (get_id lib.lname)) (ER.get_loc (get_rep ename')))
+                  else
+                    err_acc
+                )
+              )
+            )
+          in
+          let rec checker libs err_acc =
+            match libs with
+            | [] | [_] -> err_acc
+            | lib :: rest ->
+              let err_acc' = check_dup lib rest err_acc in
+              checker rest err_acc'
+          in
+          let libl' = List.map libl ~f:(fun l -> l.libn) in
+          checker libl' []
+        in
+
+        (* Do the actual typing. *)
+        List.fold libl ~init:(([], tenv0), err_dups)
         ~f:(fun ((lib_acc, tenv_acc), emsgs_acc) elib ->
             (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
             let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
@@ -611,11 +646,8 @@ module ScillaTypechecker
                 let (elib' : TypedSyntax.libtree) = { libn = t_lib; deps = dep_libs } in
                 (* from t_env, retain only entries from t_lib and tenv0 *)
                 let env' = TEnv.filterTs (TEnv.copy t_env) ~f:(fun name ->
-                  List.exists t_lib.lentries ~f:(fun entry -> 
-                    match entry with
-                    | LibTyp _ -> false
-                    | LibVar (i, _) -> get_id i = name
-                  ) || TEnv.existsT tenv0 name
+                  List.exists t_lib.lentries ~f:(function | LibTyp _ -> false | LibVar (i, _) -> get_id i = name)
+                  || TEnv.existsT tenv0 name
                 ) in
                 ((lib_acc @ [elib'], TEnv.append (TEnv.copy tenv_acc) env'), emsgs_acc @ dep_emsgs)
               | Error el ->
