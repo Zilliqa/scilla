@@ -377,7 +377,7 @@ let init_libraries clibs elibs =
       let%bind env' = init_lib_entries dep_env entries in
       (* Remove dep_env from env'. We don't want transitive imports.
        * TODO: Add a utility function in Env for this. *)
-      let env = Env.filter env' ~fb:(fun name ->
+      let env = Env.filter env' ~f:(fun name ->
         (* If "name" exists in "entries" or rec_env, retain it. *)
         List.exists entries ~f:(fun entry ->
           match entry with

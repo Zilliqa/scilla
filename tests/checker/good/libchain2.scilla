@@ -4,7 +4,7 @@ import TestLib2
 
 library LibChain2
 
-let foo = sort_uint32
+let foo = sort_uint32_new
 
 contract TestContr2
 ()
