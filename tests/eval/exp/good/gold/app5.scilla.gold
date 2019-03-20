@@ -1,9 +1,9 @@
 (Some (Int32 55)),
 { [w -> (Int32 55)],
   [v -> (Some (Int32 55))],
-  [m -> (Map [((ByStr20 0x1234567890123456789012345678901234abcdef) => (Int32 55))])],
-  [res -> (Some (Map [((ByStr20 0x1234567890123456789012345678901234abcdef) => (Int32 55))]))],
+  [m -> (Map ByStr20 Int32 [((ByStr20 0x1234567890123456789012345678901234abcdef) => (Int32 55))])],
+  [res -> (Some (Map ByStr20 Int32 [((ByStr20 0x1234567890123456789012345678901234abcdef) => (Int32 55))]))],
   [amt -> (Int32 55)],
   [a -> (ByStr20 0x1234567890123456789012345678901234abcdef)],
-  [bs -> (Map [])],
+  [bs -> (Map ByStr20 Int32 [])],
   [check_update -> <closure>] }

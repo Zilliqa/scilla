@@ -1,9 +1,7 @@
 {
-  "gas_remaining": "1747",
   "errors": [
     {
-      "error_message":
-        "Cannot find built-in with name \"hack\" and argument types [Int32; Int32].",
+      "error_message": "Syntax error: \"hack\" is not a builtin",
       "start_location": {
         "file": "eval/exp/bad/builtin_error1.scilla",
         "line": 10,

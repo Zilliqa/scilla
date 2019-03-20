@@ -153,13 +153,14 @@ module ScillaTypechecker
         let%bind (typed_actuals, apptyp) = app_type tenv (rr_typ fres).tp actuals in
         let typed_f = add_type_to_ident f (rr_typ fres) in
         pure @@ (TypedSyntax.App (typed_f, typed_actuals), (apptyp, rep))
-    | Builtin (i, actuals) ->
+    | Builtin (b, actuals) ->
         wrap_type_err erep @@ 
         let%bind (targs, typed_actuals) = type_actuals tenv actuals in
-        let%bind (_, ret_typ, _) = BuiltInDictionary.find_builtin_op i targs in
+        let%bind (_, ret_typ, _) = BuiltInDictionary.find_builtin_op b targs in
         let%bind _ = TEnv.is_wf_type tenv ret_typ in
         let q_ret_typ = mk_qual_tp ret_typ in
-        pure @@ (TypedSyntax.Builtin (add_type_to_ident i q_ret_typ, typed_actuals), (q_ret_typ, rep))
+        let q_ret_tag = ETR.mk_rep rep q_ret_typ in
+        pure @@ (TypedSyntax.Builtin ((fst b, q_ret_tag), typed_actuals), (q_ret_typ, rep))
     | Let (i, topt, lhs, rhs) ->
         (* Poor man's error reporting *)
         let%bind (_, (ityp, _)) as checked_lhs = wrap_type_err erep @@ type_expr tenv lhs in

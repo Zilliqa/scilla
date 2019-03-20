@@ -5,7 +5,7 @@
       "start_location": {
         "file": "eval/exp/bad/builtin-overflow4.scilla",
         "line": 8,
-        "column": 29
+        "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Cannot find built-in with name \"pow\" and argument types [Uint32; Int32].",
+        "Type error: cannot apply \"pow\" built-in to argument(s) of type(s) [Uint32; Int32].",
       "start_location": {
         "file": "eval/exp/bad/builtin-pow.scilla",
         "line": 4,

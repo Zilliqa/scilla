@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type error in the initialiser of `m2`:\nType error in built-in application of `put`:\nCannot find built-in with name \"put\" and argument types [Map (Uint32) (Uint32); Uint32; Uint64].",
+        "Type error in the initialiser of `m2`:\nType error in built-in application of `put`:\nType error: cannot apply \"put\" built-in to argument(s) of type(s) [Map (Uint32) (Uint32); Uint32; Uint64].",
       "start_location": {
         "file": "typecheck/bad/map-lit.scilla",
         "line": 8,

@@ -20,24 +20,20 @@
 open Core
 open Lexing
 open ErrorUtils
+open MonadUtil
 
 (* TODO: Use DebugMessage perr/pout instead of fprintf. *)
-let fail_err msg lexbuf  =
-  let e = mk_error1 msg (toLoc lexbuf.lex_curr_p) in
-  MonadUtil.fail e
+let fail_err msg lexbuf =
+  fail1 msg (toLoc lexbuf.lex_curr_p)
 
 let parse_lexbuf parser lexbuf filename =
   lexbuf.lex_curr_p  <- { lexbuf.lex_curr_p with pos_fname = filename };
   try
-    let expr = parser ScillaLexer.read lexbuf in
-    MonadUtil.pure @@ expr
+    pure @@ parser ScillaLexer.read lexbuf
   with
-  | ScillaLexer.Error msg ->
-    fail_err ("Lexical error: " ^ msg) lexbuf
-  | Syntax.SyntaxError msg ->
-    fail_err ("Syntax error: " ^ msg) lexbuf
-  | ScillaParser.Error ->
-    fail_err "Syntax error." lexbuf
+  | ScillaLexer.Error msg -> fail_err ("Lexical error: " ^ msg) lexbuf
+  | Syntax.SyntaxError (msg, loc) -> fail1 ("Syntax error: " ^ msg) loc
+  | ScillaParser.Error -> fail_err "Syntax error." lexbuf
 
 let parse_file parser filename  =
   In_channel.with_file filename ~f:(fun inx ->
