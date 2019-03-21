@@ -40,6 +40,8 @@ module type Dictionary = sig
   val update_all : key -> 'a -> 'a dict -> 'a dict
   (* Removes all matching kv pairs and creates a new one. *)
   val insert_unique : key -> 'a -> 'a dict -> 'a dict
+  (* Only retain keys for which "fb k" is true. *)
+  val filter : f:(key -> bool) -> 'a dict -> 'a dict
 
   val is_empty : 'a dict -> bool
 
@@ -88,7 +90,10 @@ module AssocDictionary : Dictionary = struct
   let insert_unique k v d =
     let d' = remove_all k d in
     insert k v d'
-      
+
+  let filter ~f d =
+    List.filter (fun (k, _) -> f k) d
+
   let is_empty d =
     match d with
     | [] -> true

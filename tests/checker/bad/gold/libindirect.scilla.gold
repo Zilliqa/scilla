@@ -1,0 +1,41 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract LibIndirect:\n",
+      "start_location": {
+        "file": "checker/bad/libindirect.scilla",
+        "line": 7,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in library TestLib2:\n\n",
+      "start_location": {
+        "file": "checker/bad/lib/TestLib2.scillib",
+        "line": 3,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in library variable sort_uint32:\n\n",
+      "start_location": {
+        "file": "checker/bad/lib/TestLib2.scillib",
+        "line": 3,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Couldn't resolve the identifier \"list_sort\".\n",
+      "start_location": {
+        "file": "checker/bad/lib/TestLib2.scillib",
+        "line": 5,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

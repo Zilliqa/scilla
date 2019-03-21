@@ -1,5 +1,6 @@
-import TestLib1
+import TestLib1 ListUtils
 
 library TestLib2
 
-let sort_uint32 = @list_sort Uint32
+let sort_uint64 = @list_sort Uint64
+let sort_uint32_new = sort_uint32

@@ -1,0 +1,6 @@
+scilla_version 0
+
+(* TestLib1 and TestLib3 have conflicting entries *)
+import TestLib1 TestLib3
+
+contract LibDup2 ()

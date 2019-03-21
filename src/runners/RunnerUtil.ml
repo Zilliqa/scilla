@@ -24,6 +24,7 @@ open GlobalConfig
 open ErrorUtils
 open PrettyPrinters
 open DebugMessage
+open ParserUtil.ParsedSyntax
 open ScillaUtil.FilePathInfix
 
 let get_init_extlibs filename =
@@ -61,7 +62,7 @@ let import_lib id =
  * over the dependence graph generated out of "names".
  *)
 let import_libs names init_file =
-  let rec importer names name_map stack importedl =
+  let rec importer names name_map stack =
     let mapped_names =
       List.map names ~f:(fun n ->
         (match List.Assoc.find name_map ~equal:(=) (get_id n) with
@@ -71,7 +72,7 @@ let import_libs names init_file =
         | None -> (n, n))
       )
     in
-    List.fold_left ~f:(fun (ilibs, importedl) l ->
+    List.fold_left ~f:(fun libacc l ->
       let name = get_id (fst l) in
       if List.mem stack name ~equal:(=) then
         let errmsg = 
@@ -82,21 +83,19 @@ let import_libs names init_file =
         in
         fatal_error @@ mk_error1 errmsg (get_rep (fst l))
       else
-      if List.mem importedl name ~equal:(=) then (ilibs, importedl) else
       let (ilib, ilib_import_map) = import_lib (fst l) in
-      let (ilibs'', importedl'') = importer ilib.elibs ilib_import_map (name :: stack) (name :: importedl) in
+      let ilibs'' = importer ilib.elibs ilib_import_map (name :: stack) in
+      let libnode = { libn = ilib.libs; deps = ilibs'' } in
       (* Order in which we return the list of imported libraries is important. *)
-      (ilibs @ ilibs'' @ [ilib], importedl'')
-    ) ~init:([], importedl) mapped_names
+      (libacc @ [libnode])
+    ) ~init:[] mapped_names
   in
   let name_map =
     match init_file with
     | Some f -> get_init_extlibs f
     | None -> []
   in
-  let (libs, _) = importer names name_map [] [] in
-  (* Return library list rather than lmodule list. *)
-  List.map ~f:(fun (l : ParserUtil.ParsedSyntax.lmodule) -> l.libs) libs
+  importer names name_map []
 
 let stdlib_not_found_err () =
   fatal_error (mk_error0
@@ -127,9 +126,7 @@ let import_all_libs ldirs  =
     let names' = get_lib_list dir in
       List.append names names') ~init:[]
   in
-    (* We don't need to look for dependences of imported libraries
-     * because we are importing _all_ libraries that we can find. *)
-  List.map names ~f:(fun l -> (fst @@ import_lib l).libs)
+  import_libs names None
 
 type runner_cli = {
   input_file : string;
