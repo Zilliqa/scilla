@@ -337,27 +337,13 @@ let check_blockchain_entries entries =
 (*              Contract initialization                *)
 (*******************************************************)
 
-(* Combine external and contract lib functions. *)
-let combine_libs clibs elibs =
-  (* combine both the libs, with contract libs defined later 
-     (to hide same name external libs *)
-  let clib = match clibs with | Some clib -> (clib::[]) | None -> [] in
-  let j = List.append elibs clib in
-  let libs = 
-    List.fold_right ~f:(fun l a -> List.append l.lentries a) ~init:[] j in
-  libs
-
-(* Initializing libraries of a contract *)
-let init_libraries clibs elibs =
+let init_lib_entries env libs =
   let init_lib_entry env id e = (
     let%bind (v, _) = exp_eval_wrapper_no_cps e env in
     let env' = Env.bind env (get_id id) v in
     pure env') in
 
-  let libs = Recursion.recursion_principles @ (combine_libs clibs elibs) in
-
-  DebugMessage.plog ("Loading library types and functions.");
-  List.fold_left libs ~init:(pure Env.empty)
+  List.fold_left libs ~init:env
     ~f:(fun eres lentry ->
         match lentry with
         | LibTyp (tname, ctr_defs) ->
@@ -377,6 +363,38 @@ let init_libraries clibs elibs =
         | LibVar (lname, lexp) ->
             let%bind env = eres in
             init_lib_entry env lname lexp)
+
+(* Initializing libraries of a contract *)
+let init_libraries clibs elibs =
+  DebugMessage.plog ("Loading library types and functions.");
+  let%bind rec_env = init_lib_entries (pure Env.empty) Recursion.recursion_principles in
+  let rec recurser libnl =
+    if libnl = [] then pure rec_env else
+    (* Walk through library dependence tree. *)
+    foldM libnl ~init:[] ~f:(fun acc_env libnode ->
+      let dep_env = recurser libnode.deps in
+      let entries = libnode.libn.lentries in
+      let%bind env' = init_lib_entries dep_env entries in
+      (* Remove dep_env from env'. We don't want transitive imports.
+       * TODO: Add a utility function in Env for this. *)
+      let env = Env.filter env' ~f:(fun name ->
+        (* If "name" exists in "entries" or rec_env, retain it. *)
+        List.exists entries ~f:(fun entry ->
+          match entry with
+          | LibTyp _ -> false (* Types are not part of Env. *)
+          | LibVar (i, _) -> get_id i = name
+        ) ||
+        List.exists rec_env ~f:(fun (name', _) -> name' = name)
+      ) in
+      pure @@ Env.bind_all acc_env env
+    )
+  in
+  let extlibs_env = recurser elibs in
+  (* Finally walk the local library. *)
+  match clibs with
+  | Some l -> init_lib_entries extlibs_env l.lentries
+  | None -> extlibs_env
+
 
 (* Initialize fields in a constant environment *)
 let init_fields env fs =

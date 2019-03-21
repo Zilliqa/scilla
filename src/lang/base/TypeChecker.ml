@@ -597,11 +597,76 @@ module ScillaTypechecker
         )
   *)
 
+  (* Type a list of libtrees, with tenv0 as the base environment. *)
+  let type_libraries elibs tenv0 =
+    let ((typed_elibs, elibs_env), emsgs) = 
+
+      let rec recurser libl =
+
+        (* Do a preliminary check to ensure no name conflicts b/w
+         * libraries in elibs at just the root levels. *)
+        let err_dups =
+          (* check if any entry in "lib" is in "rest". *)
+          let check_dup lib rest (err_acc : scilla_error list) =
+            List.fold lib.lentries ~init:err_acc ~f:(fun err_acc entry ->
+              (* Check if entry is in rest. *)
+              let ename = match entry with | LibTyp (i, _) | LibVar (i, _) -> i in
+              List.fold rest ~init:err_acc ~f:(fun err_acc lib' ->
+                List.fold lib'.lentries ~init:err_acc ~f:(fun err_acc entry' ->
+                  let ename' = match entry' with | LibTyp (i, _) | LibVar (i, _) -> i in
+                  if get_id ename = get_id ename'
+                  then
+                    err_acc @ (mk_error1 (sprintf "Entry %s in library %s conflicts with entry in library %s" 
+                      (get_id ename) (get_id lib'.lname) (get_id lib.lname)) (ER.get_loc (get_rep ename')))
+                  else
+                    err_acc
+                )
+              )
+            )
+          in
+          let rec checker libs err_acc =
+            match libs with
+            | [] | [_] -> err_acc
+            | lib :: rest ->
+              let err_acc' = check_dup lib rest err_acc in
+              checker rest err_acc'
+          in
+          let libl' = List.map libl ~f:(fun l -> l.libn) in
+          checker libl' []
+        in
+
+        (* Do the actual typing. *)
+        List.fold libl ~init:(([], tenv0), err_dups)
+        ~f:(fun ((lib_acc, tenv_acc), emsgs_acc) elib ->
+            (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
+            let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
+            let ((dep_libs, dep_env), dep_emsgs) = recurser elib.deps in
+            let ((typed_libraries, tenv'), emsg) =
+              match type_library dep_env elib.libn with
+              | Ok (t_lib, t_env) ->
+                let (elib' : TypedSyntax.libtree) = { libn = t_lib; deps = dep_libs } in
+                (* from t_env, retain only entries from t_lib and tenv0 *)
+                let env' = TEnv.filterTs (TEnv.copy t_env) ~f:(fun name ->
+                  List.exists t_lib.lentries ~f:(function | LibTyp _ -> false | LibVar (i, _) -> get_id i = name)
+                  || TEnv.existsT tenv0 name
+                ) in
+                ((lib_acc @ [elib'], TEnv.append (TEnv.copy tenv_acc) env'), emsgs_acc @ dep_emsgs)
+              | Error el ->
+                ((lib_acc, tenv_acc), emsgs_acc @ dep_emsgs @ el)
+            in
+            (* Updated env and error messages are what we accummulate in the fold. *)
+            ((typed_libraries, tenv'), emsg)
+          )
+      in
+      recurser elibs
+    in
+    if emsgs <> [] then fail emsgs else pure (typed_elibs, elibs_env)
+
   let type_lmodule
     (md : UntypedSyntax.lmodule)
     (rec_libs : UntypedSyntax.lib_entry list)
-    (elibs : UntypedSyntax.library list)
-    : (TypedSyntax.lmodule * TypedSyntax.lib_entry list * TypedSyntax.library list, scilla_error list) result =
+    (elibs : UntypedSyntax.libtree list)
+    : (TypedSyntax.lmodule * TypedSyntax.lib_entry list * TypedSyntax.libtree list, scilla_error list) result =
 
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id md.libs.lname) in
     wrap_with_info (msg, SR.get_loc (get_rep md.libs.lname)) @@
@@ -609,38 +674,12 @@ module ScillaTypechecker
     (* Step 0: Type check recursion principles *)
     let%bind (typed_rlib, tenv0) = type_rec_libs rec_libs in
 
-    (* Step 1: Type check external and internal libraries. *)
-    let all_libs = elibs @ [md.libs] in
-    let%bind ((libs, _), emsgs) = foldM all_libs ~init:(([], tenv0), [])
-        ~f:(fun ((lib_acc, tenv_acc), emsgs_acc) elib ->
-            (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
-            let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
-            let%bind ((typed_libraries, tenv'), emsg) =
-              match type_library tenv_acc elib with
-              | Ok (t_lib, t_env) -> Ok((t_lib::lib_acc, t_env), emsgs_acc)
-              | Error el ->
-                  Ok((lib_acc, tenv_acc), emsgs_acc @ el)
-            in
-            (* Updated env and error messages are what we accummulate in the fold. *)
-            pure ((typed_libraries, tenv'), emsg)
-          )
-    in
+    (* Step 1: Type check external libraries. *)
+    let%bind (typed_elibs, elibs_env) = type_libraries elibs tenv0 in
 
-    (* Split external and contract libraries.
-     * Note that the typed libs are in reverse order
-     * (libs in Step1 reverses the libraries). *)
-    let%bind typed_mlib =
-      (match List.hd libs with
-      | Some l -> pure l
-      | None -> fail1 "Internal error in typing library module." (SR.get_loc (get_rep md.libs.lname))
-      ) in
-    let typed_elibs =
-      (match List.tl libs with
-      | Some elibs_rev -> List.rev elibs_rev
-      | None -> []
-      ) in
+    (* Type the library of this module. *)
+    let%bind (typed_mlib, _) = type_library elibs_env md.libs in
 
-    if emsgs <> [] then fail @@ emsgs else 
     let typed_lmodule = { TypedSyntax.elibs = md.elibs; TypedSyntax.libs = typed_mlib } in
     pure (typed_lmodule, typed_rlib, typed_elibs)
 
@@ -648,42 +687,37 @@ module ScillaTypechecker
       (md : UntypedSyntax.cmodule)
       (* TODO, issue #225 : rec_libs should be added to the libraries when we allow custom, inductive ADTs *)
       (rec_libs : UntypedSyntax.lib_entry list)
-      (elibs : UntypedSyntax.library list)
-    : (TypedSyntax.cmodule * stmt_tenv * TypedSyntax.library list * TypedSyntax.lib_entry list, scilla_error list) result =
+      (elibs : UntypedSyntax.libtree list)
+    : (TypedSyntax.cmodule * stmt_tenv * TypedSyntax.libtree list * TypedSyntax.lib_entry list, scilla_error list) result =
 
     let {smver = mod_smver;cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ctrans} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
     wrap_with_info (msg, SR.get_loc (get_rep ctr_cname)) @@
-    
+
     (* Step 0: Type check recursion principles *)
     let%bind (typed_rlib, tenv0) = type_rec_libs rec_libs in
     
     (* Step 1: Type check external libraries *)
+    let ((typed_elibs, elibs_env), emsgs) = 
+      match type_libraries elibs tenv0 with
+      | Ok (_ as te) -> (te, [])
+      | Error e -> (([], tenv0), e)
+    in
     (* Step 2: Type check contract library, if defined. *)
-    let all_libs = match libs with
-      | Some lib -> List.append elibs (lib::[])
-      | None -> elibs
+    let ((typed_clibs, tenv), emsgs) = 
+      match libs with
+      | Some lib ->
+        (match type_library elibs_env lib with
+        | Ok (lib', env') -> ((Some lib', env'), emsgs)
+        | Error e -> ((None, elibs_env), emsgs @ e))
+      | None ->  ((None, elibs_env), emsgs)
     in
-    let%bind ((libs, tenv), emsgs) = foldM all_libs ~init:(([], tenv0), [])
-        ~f:(fun ((lib_acc, tenv_acc), emsgs_acc) elib ->
-            (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
-            let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
-            let%bind ((typed_libraries, tenv'), emsg) =
-              match type_library tenv_acc elib with
-              | Ok (t_lib, t_env) -> Ok((t_lib::lib_acc, t_env), emsgs_acc)
-              | Error el ->
-                  Ok((lib_acc, tenv_acc), emsgs_acc @ el)
-            in
-            (* Updated env and error messages are what we accummulate in the fold. *)
-            pure ((typed_libraries, tenv'), emsg)
-          )
-    in
-    
+
     (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
     let params = CU.append_implict_contract_params cparams in
     let tenv3 = TEnv.addTs tenv params in
-    
+
     (* Step 4: Type-check fields and add balance *)
     let%bind (typed_fields, fenv0), femsgs0 = 
       match type_fields tenv3 cfields with
@@ -692,10 +726,10 @@ module ScillaTypechecker
     in
     let (bn, bt) = CU.balance_field in
     let fenv = TEnv.addT fenv0 bn bt in
-    
+
     (* Step 5: Form a general environment for checking transitions *)
     let env = {pure= tenv3; fields= fenv} in
-    
+
     (* Step 6: Type-checking all transitions in batch *)
     let%bind (t_trans, emsgs') = foldM ~init:([], femsgs0) ctrans 
         ~f:(fun (trans_acc, emsgs) tr -> 
@@ -709,19 +743,6 @@ module ScillaTypechecker
     (* Step 7: Lift contract parameters to ETR.rep ident *)
     let typed_params = List.map cparams
         ~f:(fun (id, t) -> (add_type_to_id id (mk_qual_tp t), t)) in
-
-    (* Split external and contract libraries.
-     * Note that the typed libs are in reverse order
-     * (libs in Step1 and Step2 reverses the libraries). *)
-     let typed_clibs, typed_elibs =
-        match md.libs with
-        | Some _ -> (* There is a contract library. *)
-          (List.hd libs), 
-          (match List.tl libs with
-          | Some elibs_rev -> List.rev elibs_rev
-          | None -> [])
-        | None -> None, List.rev libs
-    in
 
     if emsgs' = []
     (* Return pure environment *)  

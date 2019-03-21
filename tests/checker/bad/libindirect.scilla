@@ -1,0 +1,7 @@
+scilla_version 0
+
+(* TestLit2.scillib uses an indirect import value. *)
+(* This test is just to trigger that as an error. *)
+import TestLib2
+
+contract LibIndirect()
