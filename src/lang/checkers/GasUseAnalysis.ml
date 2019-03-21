@@ -169,6 +169,17 @@ module ScillaGUA
             "Couldn't resolve the identifier in gas use analysis: \"%s\".\n" id)
             sloc
 
+    (* retain only those entries "k" for which "f k" is true. *)
+    let filterS env ~f = filter ~f env
+
+    (* is "id" in the environment. *)
+    let existsS env id = match lookup id env with | Some _ -> true | None -> false
+
+    (* add entries from env' into env. *)
+    let appendS env env' =
+      let kv = to_list env' in
+      List.fold_left (fun acc (k, v) -> addS acc k v) env kv
+
     let pp env =
       let l = to_list env in
       List.fold_left (fun acc (k, sign) ->
@@ -989,21 +1000,32 @@ module ScillaGUA
       | LibTyp _ -> pure genv
     ) ~init:(genv) lel
 
-  let gua_module (cmod : cmodule) (elibs : library list) =
+  let gua_module (cmod : cmodule) (elibs : libtree list) =
     (* Get bindings for folds *)
     let genv_folds = analyze_folds (GUAEnv.mk ()) in
 
     (* Analyze external libraries first *)
     let%bind genv_elibs =
-      foldM ~f:(fun genv lib -> gua_libentries genv lib) ~init:genv_folds 
-        (List.map (fun l -> l.lentries) elibs)
+      let rec recurser libl =
+        foldM ~f:(fun genv lib -> 
+          let%bind genv_deps = recurser lib.deps in
+          let%bind genv_lib = gua_libentries genv_deps lib.libn.lentries in
+          (* retain only _this_ library's (and fold's) entries in env. *)
+          let genv_lib' = GUAEnv.filterS genv_lib ~f:(fun name ->
+            List.exists (function | LibTyp _ -> false | LibVar (i, _) -> get_id i = name) lib.libn.lentries
+            || GUAEnv.existsS genv_folds name
+          ) in
+          pure @@ GUAEnv.appendS genv genv_lib'
+        ) ~init:genv_folds libl
+      in
+      recurser elibs
     in
 
     (* Analyze contract libraries *)
     let%bind genv_lib =
       match cmod.libs with
       | Some l -> gua_libentries genv_elibs l.lentries
-      | None -> pure @@ GUAEnv.mk()
+      | None -> pure genv_elibs
     in
 
     (* Bind contract parameters. *)
