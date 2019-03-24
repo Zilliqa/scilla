@@ -84,10 +84,21 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 ### macOS
 
-The dependencies can be installed via [Homebrew](https://brew.sh/):
+The dependencies can be installed via [Homebrew](https://brew.sh/).
 
+To install the compatible version of `secp256k1` package, one needs to add the following tap:
 ```shell
-brew install ocaml opam pkg-config libffi openssl boost secp256k1
+brew tap iantanwx/crypto
+```
+(side note: pending PR at https://github.com/DomT4/homebrew-crypto/pull/95/commits/9c62017362aa973afad75616046d14006f31be6a)
+
+and proceed with OS-level package installation:
+```shell
+brew install ocaml opam pkg-config libffi openssl boost iantanwx/crypto/secp256k1
+```
+
+Now we can set up opam dependencies:
+```shell
 opam init --disable-sandboxing -y --compiler=4.06.1
 opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1 patdiff
 ```
