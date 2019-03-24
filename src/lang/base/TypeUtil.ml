@@ -64,11 +64,17 @@ module type MakeTEnvFunctor = functor
       val addTs : t -> (R.rep ident * typ) list -> t      
       (* Add type variable to the environment *)
       val addV : t -> R.rep ident -> t
+      (* Append env' to env in place. *)
+      val append : t -> t -> t
+      (* Retain only those keys for which (fb k) is true. *)
+      val filterTs : t -> f:(string -> bool) -> t
       (* Check type for well-formedness in the type environment *)
       val is_wf_type : t -> typ -> (unit, scilla_error list) result
       (* Resolve the identifier *)
       val resolveT : 
         ?lopt:(R.rep option) -> t -> string -> (resolve_result, scilla_error list) result
+      (* Is bound in environment? *)
+      val existsT : t -> string -> bool
       (* Copy the environment *)
       val copy : t -> t
       (* Convert to list *)
@@ -117,6 +123,18 @@ module MakeTEnv: MakeTEnvFunctor = functor
 
       let addV env id = 
         let _ = Hashtbl.add env.tvars (get_id id) (get_rep id) in env
+
+      (* Append env' to env in place. *)
+      let append env env' =
+        let _ = Hashtbl.iter (fun k v -> Hashtbl.add env.tenv k v) env'.tenv in
+        env
+
+      (* Retain only those keys for which (fb k) is true. *)
+      let filterTs env ~f =
+        let _ = Hashtbl.filter_map_inplace (fun k v ->
+          if f k then Some v else None
+        ) env.tenv in
+        env
 
       let tvars env =
         Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []
@@ -171,6 +189,8 @@ module MakeTEnv: MakeTEnvFunctor = functor
             fail1 (sprintf
               "Couldn't resolve the identifier \"%s\".\n" id)
               sloc
+
+      let existsT env id = Hashtbl.mem env.tenv id
 
       let copy e = {
         tenv = Hashtbl.copy e.tenv;

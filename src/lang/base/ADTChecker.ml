@@ -284,16 +284,20 @@ module ScillaRecursion
 
 
   let recursion_rprins_elibs recursion_principles ext_libs libs =
-    let ((rec_elibs, adts), emsgs) =
-      List.fold_left ext_libs ~init:(([], []), [])
+
+    let rec recurser libl =
+      List.fold_left libl ~init:(([], []), [])
         ~f:(fun ((rec_elibs_acc, adts_acc), emsgs_acc) ext_lib ->
             let ((rec_elib, elib_adt), emsg) =
-              match recursion_library ext_lib with
-              | Ok (lib, adt) -> ((lib :: rec_elibs_acc, adt :: adts_acc), emsgs_acc)
-              | Error el -> ((rec_elibs_acc, adts_acc), emsgs_acc @ el) in
+              let ((rec_dep_libs, dep_adt), dep_emsgs) = recurser ext_lib.deps in
+              match recursion_library ext_lib.libn with
+              | Ok (lib, adt) ->
+                let (libn' : RecursionSyntax.libtree) = { libn = lib; deps = rec_dep_libs } in
+                ((rec_elibs_acc @ [libn'], adts_acc @ dep_adt @ adt), emsgs_acc @ dep_emsgs)
+              | Error el -> ((rec_elibs_acc, adts_acc), emsgs_acc @ dep_emsgs @ el) in
             ((rec_elib, elib_adt), emsg)) in
-    let recursion_elibs = List.rev rec_elibs in
-    let elibs_adts = List.concat (List.rev adts) in
+
+    let ((recursion_elibs, elibs_adts), emsgs) = recurser ext_libs in
     let emsgs =
       List.fold_left elibs_adts ~init:emsgs
         ~f:(fun emsgs_acc (adt, loc) ->
@@ -332,8 +336,8 @@ module ScillaRecursion
   let recursion_lmodule
       (md : lmodule)
       (recursion_principles : lib_entry list)
-      (ext_libs : library list)
-    : (RecursionSyntax.lmodule * (RecursionSyntax.lib_entry list) * (RecursionSyntax.library list), scilla_error list) result =
+      (ext_libs : libtree list)
+    : (RecursionSyntax.lmodule * (RecursionSyntax.lib_entry list) * (RecursionSyntax.libtree list), scilla_error list) result =
     wrap_with_info (
       sprintf "Type error(s) in library %s:\n" (get_id md.libs.lname), SR.get_loc (get_rep md.libs.lname)) @@
 
@@ -358,8 +362,8 @@ module ScillaRecursion
   let recursion_module
       (md : cmodule)
       (recursion_principles : lib_entry list)
-      (ext_libs : library list)
-    : (RecursionSyntax.cmodule * (RecursionSyntax.lib_entry list) * (RecursionSyntax.library list), scilla_error list) result =
+      (ext_libs : libtree list)
+    : (RecursionSyntax.cmodule * (RecursionSyntax.lib_entry list) * (RecursionSyntax.libtree list), scilla_error list) result =
     let { smver ; cname ; libs ; elibs ; contr } = md in
     wrap_with_info (
       sprintf "Type error(s) in contract %s:\n" (get_id contr.cname), SR.get_loc (get_rep contr.cname)) @@

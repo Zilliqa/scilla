@@ -181,6 +181,11 @@ module ScillaSanityChecker
   let mk_env () = AssocDictionary.make_dict ()
   let add_env env id (nm : num_msg) = AssocDictionary.insert (get_id id) nm env
   let rem_env env id : one_msg_env = AssocDictionary.remove (get_id id) env
+  let filter_env env ~f : one_msg_env = AssocDictionary.filter ~f env
+  let append_env env env' : one_msg_env =
+    let lenv' = AssocDictionary.to_list env' in
+    List.fold_left (fun acc (k, v) -> AssocDictionary.insert k v acc) env lenv'
+
   let lookup_env env id : (num_msg, scilla_error list) result =
     (* Lookup "id" and raise an error if not found. *)
     match AssocDictionary.lookup (get_id id) env with
@@ -301,8 +306,16 @@ module ScillaSanityChecker
         )
     )
 
+  let library_checker elib env =
+    foldM ~f:(fun aenv lentry ->
+      match lentry with
+      | LibTyp _ -> pure aenv
+      | LibVar (x, e) ->
+        let%bind n = expr_checker e aenv in
+        pure @@ add_env aenv x n
+    ) ~init:env elib.lentries
+
   let one_msg_checker (cmod : cmodule) rlibs elibs =
-    let elib_entries = List.fold_left (fun acc lib -> acc @ lib.lentries) [] elibs in
     (* Bind folds to Many as they aren't much useful. *)
     let env_rec = List.fold_left (fun acc le ->
         match le with
@@ -310,18 +323,31 @@ module ScillaSanityChecker
         | LibTyp _ -> acc
       ) (mk_env()) rlibs
     in
-    (* First scan the library functions. *)
-    let%bind env_libs = match cmod.libs with
-      | Some lib ->
-        foldM ~f:(fun aenv lentry ->
-          match lentry with
-          | LibTyp _ -> pure aenv
-          | LibVar (x, e) ->
-            let%bind n = expr_checker e aenv in
-            pure @@ add_env aenv x n
-        ) ~init:env_rec (elib_entries @ lib.lentries)
-      | None -> pure @@ mk_env ()
+    (* First scan the external library functions. *)
+    let%bind env_elibs =
+      let rec recurser elibl =
+        foldM ~f:(fun acc_env elib ->
+          let%bind dep_env = recurser elib.deps in
+          let%bind lib_env = library_checker elib.libn dep_env in
+          (* Retain only env entries from elib. *)
+          let lib_env' = filter_env lib_env ~f:(fun name ->
+            List.exists (function | LibTyp _ -> false | LibVar (i, _) -> get_id i = name) elib.libn.lentries
+          ) in
+          let acc_env' = append_env acc_env lib_env' in
+          pure acc_env'
+        ) ~init:env_rec elibl
+      in
+      recurser elibs
     in
+    (* Scan contract library if it exists. *)
+    let%bind env_libs =
+      match cmod.libs with
+      | Some lib ->
+        let%bind lib_env = library_checker lib env_elibs in
+        pure lib_env
+      | None -> pure env_elibs
+    in
+
     (* Bind contract parameters to Many. *)
     let env = List.fold_left (fun acc (p, _) ->
         add_env acc p Many
@@ -341,7 +367,7 @@ module ScillaSanityChecker
   (* ******** Interface to Checker ******** *)
   (* ************************************** *)
 
-  let contr_sanity (cmod : cmodule) (rlibs : lib_entry list) (elibs : library list) =
+  let contr_sanity (cmod : cmodule) (rlibs : lib_entry list) (elibs : libtree list) =
     let%bind _ = basic_sanity cmod in
     one_msg_checker cmod rlibs elibs
 
