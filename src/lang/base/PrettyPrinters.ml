@@ -94,7 +94,7 @@ and literal_to_json lit =
   | ByStrX(_, x) -> `String (x)
   | IntLit x  -> `String (string_of_int_lit x)
   | UintLit x ->
-    `String (string_of_int_lit x)
+    `String (string_of_uint_lit x)
   | Map ((_, _), kvs) ->
     let tstart = Unix.gettimeofday() in
     let ls = `List (mapvalues_to_json kvs) in
