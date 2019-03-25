@@ -94,13 +94,7 @@ and literal_to_json lit =
   | ByStrX(_, x) -> `String (x)
   | IntLit x  -> `String (string_of_int_lit x)
   | UintLit x ->
-    let tstart = Unix.gettimeofday() in
-    let str = (string_of_uint_lit x) in
-    let tend = Unix.gettimeofday() in
-    vjson_counter := !vjson_counter +. (tend -. tstart);
     `String str
-  (* | UintLit _ ->
-     `String "100" *)
   | Map ((_, _), kvs) ->
     let tstart = Unix.gettimeofday() in
     let ls = `List (mapvalues_to_json kvs) in
