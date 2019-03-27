@@ -223,13 +223,13 @@ module ScillaGUA
   (* Considering sr as a recurrence polynomial with 
    * accarg as the accumulator, growing Length(ls) times,
    * return the final sizeref. *)
-   (* TODO: Make this robust and all correct. *)
+   (* TODO: Make this generic. *)
   let solve_sizeref_rec sr accarg accbase ls =
     match sr with
     | SPol p ->
       let accbase' = sizeref_to_pol accbase in
       (* Find Element(accarg)*Length(accarg) term in the polynomial. *)
-      let at = List.find_opt (fun (_, vplist) ->
+      let (at, oterms) = List.partition (fun (_, vplist) ->
         match vplist with
         | [(Element(Base accarg1), _); (Length(Base accarg2), _)]
         | [(Length(Base accarg1), _); (Element(Base accarg2), _)]
@@ -240,15 +240,13 @@ module ScillaGUA
         | _ -> false
       ) p in
       (match at with
-      | Some ((coef, [(_, vp1);(_, vp2)]) as at') ->
+      | [(coef, [(_, vp1);(_, vp2)])] ->
         if coef <> 1 || vp1 <> 1 || vp2 <> 1 then Intractable "Super-linear growth" else
         (* Multiply other terms by the length and add base. *)
-        let oterms = List.filter (fun t -> t <> at') p in
         SPol (add_pn (mul_pn oterms (single_simple_pn (Length ls))) accbase')
-      | Some ((coef, [(_, vp)]) as at') ->
+      | [(coef, [(_, vp)])] ->
         if coef <> 1 || vp <> 1 then Intractable "Super-linear growth" else
         (* Multiply other terms by the length and add base. *)
-        let oterms = List.filter (fun t -> t <> at') p in
         SPol (add_pn (mul_pn oterms (single_simple_pn (Length ls))) accbase')
       (* If we don't have the recurrence term, be conservative and say don't know. *)
       | _ -> Intractable "Unable to determine recurrence term"

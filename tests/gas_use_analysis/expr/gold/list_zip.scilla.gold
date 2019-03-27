@@ -5,7 +5,7 @@ Gas use polynomial:
 3(a) + 34 + 37(b)
 Legend:
 
+a: Length of: Cannot determine size: Unable to determine recurrence term
 b: Length of: m1
-a: Length of: 1(Length of: m1) + 1(Element of: 1 + 1(m2))(Length of: 1 + 1(m2))(Length of: m1) + 1(Element of: 1 + 1(m2))(Length of: m1) + 1 + 1(m2)
-Result size: 1(Element of: 1)(Length of: 1(Length of: m1) + 1(Element of: 1 + 1(m2))(Length of: 1 + 1(m2))(Length of: m1) + 1(Element of: 1 + 1(m2))(Length of: m1) + 1 + 1(m2)) + 1
+Result size: 1(Element of: 1)(Length of: Cannot determine size: Unable to determine recurrence term) + 1
 
