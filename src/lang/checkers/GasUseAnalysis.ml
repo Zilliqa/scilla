@@ -70,7 +70,7 @@ module ScillaGUA
              where for example `x = fst arg` and we're applying `x`. *)
     | SApp of ER.rep ident * sizeref list
     (* When we cannot determine the size *)
-    | Intractable
+    | Intractable of string
 
   (* A variable / quantity on which gas use depends. *)
   type guref =
@@ -108,7 +108,7 @@ module ScillaGUA
       (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
     | RFoldAcc (id, lel, acc) -> "RFoldAcc " ^ (get_id id) ^ " (" ^ (sprint_sizeref lel) ^ ", " ^ (sprint_sizeref acc) ^ ")"
     | LFoldAcc (id, lel, acc) -> "LFoldAcc " ^ (get_id id) ^ " (" ^ (sprint_sizeref lel) ^ ", " ^ (sprint_sizeref acc) ^ ")"
-    | Intractable -> "Intractable"
+    | Intractable s -> "Cannot determine size: " ^ s
 
   (* Given a gas use reference, print a description for it. *)
   let rec sprint_guref = function
@@ -200,7 +200,7 @@ module ScillaGUA
 
   let rec sizeref_to_guref sr = match sr with
     | Base _ | Length _| Element _ | MaxB _ | MFun _ | BApp _ 
-    | RFoldAcc _ | LFoldAcc _ | SApp _ | Intractable -> SizeOf (sr)
+    | RFoldAcc _ | LFoldAcc _ | SApp _ | Intractable _ -> SizeOf (sr)
     | SPol p ->
       let term_replacer t =
         let (coef, vars) = t in
@@ -235,16 +235,23 @@ module ScillaGUA
         | [(Length(Base accarg1), _); (Element(Base accarg2), _)]
           when (get_id accarg1) = (get_id accarg2) && (get_id accarg1) = (get_id accarg) ->
           true
+        (* Simple list term, not explicit Element*Length *)
+        | [Base (accarg1), _] when accarg1 = accarg -> true
         | _ -> false
       ) p in
       (match at with
       | Some ((coef, [(_, vp1);(_, vp2)]) as at') ->
-        if coef <> 1 || vp1 <> 1 || vp2 <> 1 then Intractable else
+        if coef <> 1 || vp1 <> 1 || vp2 <> 1 then Intractable "Super-linear growth" else
         (* Multiply other terms by the length and add base. *)
         let oterms = List.filter (fun t -> t <> at') p in
         SPol (add_pn (mul_pn oterms (single_simple_pn (Length ls))) accbase')
-      (* If we don't have the recurrence term, just add the recurrence base. *)
-      | _ -> SPol (add_pn p accbase')
+      | Some ((coef, [(_, vp)]) as at') ->
+        if coef <> 1 || vp <> 1 then Intractable "Super-linear growth" else
+        (* Multiply other terms by the length and add base. *)
+        let oterms = List.filter (fun t -> t <> at') p in
+        SPol (add_pn (mul_pn oterms (single_simple_pn (Length ls))) accbase')
+      (* If we don't have the recurrence term, be conservative and say don't know. *)
+      | _ -> Intractable "Unable to determine recurrence term"
       )
     | _ -> sr
 
@@ -292,7 +299,7 @@ module ScillaGUA
           | LFoldAcc (id, accbase, ls) ->
             let id' = lookup_actual id in
             LFoldAcc(id', replacer accbase, replacer ls)
-          | Intractable -> Intractable
+          | Intractable s -> Intractable s
         and polynomial_replacer pol =
           var_replace_pn pol ~f:(fun sr -> replacer sr)
         in
@@ -378,7 +385,7 @@ module ScillaGUA
         let%bind ls' = replacer ls in
         let%bind accbase' = replacer accbase in
         pure @@ LFoldAcc(id', accbase', ls')
-      | Intractable -> pure Intractable
+      | Intractable s -> pure @@ Intractable s
     and
     (* replace param with actual in a sizeref polynomial. *)
     polynomial_replacer pol =
@@ -515,7 +522,7 @@ module ScillaGUA
               in
               let%bind sr'' = substitute_resolved_actuals_sizeref_list sr' args' srlist in
               resolver sr''
-          | Intractable -> pure Intractable
+          | Intractable s -> pure @@ Intractable s
         (* replace param with actual in a signature. *)
         and polynomial_resolver pol =
           let exception Resolv_error of scilla_error list in
@@ -771,7 +778,7 @@ module ScillaGUA
         (match cname with
         | "True" | "False" -> pure @@ SPol (const_pn 1)
         | "Nil" -> pure @@ SPol(const_pn 1)
-        | "None" -> pure @@ SPol(const_pn 1)
+        | "None" -> pure @@ SPol(const_pn 0)
         | "Some" ->
           (* TypeChecker will ensure that actuals has unit length. *)
           let arg = List.nth actuals 0 in
