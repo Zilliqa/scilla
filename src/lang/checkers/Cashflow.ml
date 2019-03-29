@@ -1354,10 +1354,15 @@ module ScillaCashflowChecker
           let new_field_env = AssocDictionary.update (get_id m) m_tag field_env in
           let new_local_env = AssocDictionary.remove (get_id x) local_env in
           let new_ks = update_ids_tags ks new_local_env in
+          let rec get_m_val_tag tag =
+            match tag with
+            | Map vtag -> get_m_val_tag vtag
+            | _ -> tag in
+          let new_val_tag = lub_tags val_tag (get_m_val_tag m_tag) in
           let new_x_tag =
             if fetch
             then
-              lub_tags x_tag (Adt ("Option", [val_tag]))
+              lub_tags x_tag (Adt ("Option", [new_val_tag]))
             else
               NotMoney (* Bool *) in
           let new_x = update_id_tag x new_x_tag in
