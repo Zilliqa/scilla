@@ -145,11 +145,10 @@ let parse_cli () =
   let r_contract_info = ref false in
   let r_cf = ref false in
   let speclist = [
-    ("-version", Arg.Unit (fun () -> 
+    ("-version", Arg.Unit (fun () ->
         DebugMessage.pout
           (sprintf "Scilla version: %s\n" PrettyPrinters.scilla_version_string);
-          if true then exit 0; (* if "true" to avoid warning on exit 0 *)
-          ()
+          ignore @@ exit 0
       ), "Print Scilla version and exit");
     ("-libdir", Arg.String (fun s ->
            r_stdlib_dir := !r_stdlib_dir @ FilePath.path_of_string s
@@ -159,7 +158,7 @@ let parse_cli () =
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
     ("-contractinfo", Arg.Unit (fun () -> r_contract_info := true), "Print various contract information");
-  ] in 
+  ] in
 
   let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -libdir /path/to/stdlib input.scilla\n" in
   let optional_usage = String.concat ~sep:"\n  "
