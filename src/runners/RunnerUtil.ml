@@ -164,11 +164,14 @@ let parse_cli () =
   let optional_usage = String.concat ~sep:"\n  "
     (List.map ~f:(fun (flag,_,desc) -> flag ^ " " ^ desc) speclist) in
   let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
-
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
-  let () = Arg.parse speclist anon_handler mandatory_usage in
-  if !r_input_file = "" then fatal_error (mk_error0 usage);
-  GlobalConfig.set_use_json_errors !r_json_errors;
-  { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; cf_flag = !r_cf;
-    p_contract_info = !r_contract_info; init_file = !r_init_file }
+  Arg.parse speclist anon_handler mandatory_usage;
+  if !r_input_file = "" then begin
+    Arg.usage speclist ("Input file expected\n" ^ usage);
+    exit 1
+  end else begin
+    GlobalConfig.set_use_json_errors !r_json_errors;
+    { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; cf_flag = !r_cf;
+      p_contract_info = !r_contract_info; init_file = !r_init_file }
+  end
