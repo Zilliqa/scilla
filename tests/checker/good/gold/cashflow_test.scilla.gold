@@ -1,7 +1,9 @@
 {
   "cashflow_tags": {
     "State variables": [
-      { "field": "transaction_pairs", "tag": "(List (Pair NotMoney Money))" }
+      { "field": "transaction_pairs", "tag": "(List (Pair NotMoney Money))" },
+      { "field": "map_money", "tag": "(Map (Map Money))" },
+      { "field": "map_also_money", "tag": "(Map Money)" }
     ],
     "ADT constructors": []
   },
@@ -13,9 +15,17 @@
       {
         "vname": "transaction_pairs",
         "type": "List (Pair (ByStr20) (Uint128))"
-      }
+      },
+      {
+        "vname": "map_money",
+        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))"
+      },
+      { "vname": "map_also_money", "type": "Map (ByStr20) (Uint128)" }
     ],
-    "transitions": [ { "vname": "Test1", "params": [] } ],
+    "transitions": [
+      { "vname": "Test1", "params": [] },
+      { "vname": "Test2", "params": [] }
+    ],
     "events": [],
     "ADTs": [
       {
