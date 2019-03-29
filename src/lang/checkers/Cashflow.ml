@@ -78,10 +78,20 @@ module ScillaCashflowChecker
   (*     Initial traversal: Set every tag to NoInfo      *)
   (*******************************************************)
   
-  (* Lift Ident (n, rep) to Ident (n, (NoInfo, rep)) *)
-  let add_noinfo_to_ident i =
+  let add_tag_to_ident i tag =
     match i with
-    | Ident (name, rep) -> Ident (name, (ECFR.NoInfo, rep))
+    | Ident (name, rep) -> Ident (name, (tag, rep))
+                             
+  (* Lift Ident (n, rep) to Ident (n, (NoInfo, rep)) *)
+  let add_noinfo_to_ident i = add_tag_to_ident i ECFR.NoInfo
+
+  let add_money_or_mapmoney_to_ident i typ =
+    let rec create_money_tag typ =
+      match typ with
+      | MapType (_, vtyp) ->
+          ECFR.Map (create_money_tag vtyp)
+      | _ -> ECFR.Money in
+    add_tag_to_ident i (create_money_tag typ)
   let add_noinfo_to_builtin (op, rep) = (op, (ECFR.NoInfo, rep))
   
   let rec cf_init_tag_pattern p =
@@ -209,14 +219,20 @@ module ScillaCashflowChecker
       CFSyntax.tbody =
         List.map ~f:cf_init_tag_stmt tbody }
   
-  let cf_init_tag_contract contract =
+  let cf_init_tag_contract contract token_fields =
     let { cname ; cparams ; cfields ; ctrans } = contract in
     { CFSyntax.cname = cname;
       CFSyntax.cparams =
-        List.map ~f:(fun (x, t) -> (add_noinfo_to_ident x, t)) cparams;
+        List.map ~f:(fun (x, t) ->
+            (if List.exists ~f:(fun token_field -> get_id x = token_field) token_fields
+             then add_money_or_mapmoney_to_ident x t
+             else add_noinfo_to_ident x),
+            t) cparams;
       CFSyntax.cfields =
         List.map ~f:(fun (x, t, e) ->
-            (add_noinfo_to_ident x,
+            ((if List.exists ~f:(fun token_field -> get_id x = token_field) token_fields
+             then add_money_or_mapmoney_to_ident x t
+             else add_noinfo_to_ident x),
              t,
              cf_init_tag_expr e)) cfields;
       CFSyntax.ctrans =
@@ -238,7 +254,7 @@ module ScillaCashflowChecker
     { CFSyntax.lname = lname;
       CFSyntax.lentries = List.map ~f:init_tag_entry lentries }
   
-  let cf_init_tag_module cmod =
+  let cf_init_tag_module cmod token_fields =
     let { smver; cname; libs; elibs; contr } = cmod in
     let res_libs =
       match libs with
@@ -248,7 +264,7 @@ module ScillaCashflowChecker
       CFSyntax.cname = cname;
       CFSyntax.libs = res_libs;
       CFSyntax.elibs = elibs;
-      CFSyntax.contr = cf_init_tag_contract contr }
+      CFSyntax.contr = cf_init_tag_contract contr token_fields }
   
   (*******************************************************)
   (*                  Find fixpoint                      *)
@@ -1479,7 +1495,7 @@ module ScillaCashflowChecker
         List.fold_left cfields ~init:param_field_env
           ~f:(fun acc_env (f, _, e) ->
              let ((_, (e_tag, _)), _, _, _, _) =
-                  cf_tag_expr e NoInfo (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) ctr_tag_map in
+                  cf_tag_expr e (lub_tags (get_id_tag f) NoInfo) (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) ctr_tag_map in
              AssocDictionary.insert (get_id f) e_tag acc_env)
           in
       let rec tagger transitions field_env ctr_tag_map =
@@ -1527,8 +1543,8 @@ module ScillaCashflowChecker
   (*                Main entry function                  *)
   (*******************************************************)
 
-  let main cmod =
-    let init_mod = cf_init_tag_module cmod in
+  let main cmod token_fields =
+    let init_mod = cf_init_tag_module cmod token_fields in
     let (new_mod, ctr_tag_map) = cf_tag_module init_mod in
     let param_field_tags = 
       (List.map ~f:(fun (p, _) -> (get_id p, get_id_tag p)) new_mod.contr.cparams)
