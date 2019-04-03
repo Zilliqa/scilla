@@ -27,7 +27,6 @@ open Datatypes
 open TypeUtil
 open PrimTypes
 open BuiltIns
-open PrettyPrinters
 
 module JSONTypeUtilities = TypeUtilities (ParserRep) (ParserRep)
 module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
@@ -222,12 +221,28 @@ let jobj_to_statevar json =
 (*                    JSON printing                             *)
 (****************************************************************)
 
+(* let state_to_json state =
+   let (vname, lit) = state in
+   (* let tstart = Unix.gettimeofday() in *)
+   let litpair = (literal_to_json lit) in
+   (* let tend = Unix.gettimeofday() in *)
+   (* let _ = Printf.printf "assoc:%f\n" (Core.Float.sub tend tstart) in *)
+
+   let assoc = `Assoc [ 
+      ("vname", `String vname) ; 
+      ("type", `String (literal_type_exn lit));
+      (* ("value", litpair) *)
+      ("value", `String "100")
+    ] in
+   assoc *)
+
+open PrettyPrinters
 let state_to_json state =
   let (vname, lit) = state in
-  let tstart = Unix.gettimeofday() in
+  (* let tstart = Unix.gettimeofday() in *)
   let litpair = (literal_to_json lit) in
-  let tend = Unix.gettimeofday() in
-  let _ = Printf.printf "assoc:%f\n" (Core.Float.sub tend tstart) in
+  (* let tend = Unix.gettimeofday() in *)
+  (* let _ = Printf.printf "assoc:%f\n" (Core.Float.sub tend tstart) in *)
 
   let assoc = `Assoc [ 
       ("vname", `String vname) ; 

@@ -45,30 +45,32 @@ let kvjson_counter = ref 0.0
 let concat_counter = ref 0.0
 let fold_counter = ref 0.0
 
-
 let rec mapvalues_to_json ms =
   let x = Caml.Hashtbl.fold (fun k v a ->
-      let foldstart = Unix.gettimeofday() in
-      let tstart = Unix.gettimeofday() in
+      (* let foldstart = Unix.gettimeofday() in *)
+      (* let tstart = Unix.gettimeofday() in *)
       let kjson = "key", (literal_to_json k) in
-      let tend = Unix.gettimeofday() in
-      kjson_counter := !kjson_counter +. (tend -. tstart);
-      let tstart = Unix.gettimeofday() in
+      (* let kjson = "key", (`String "0x44345678901234567890123456789012345678cd") in *)
+      (* let tend = Unix.gettimeofday() in *)
+      (* kjson_counter := !kjson_counter +. (tend -. tstart); *)
+      (* let tstart = Unix.gettimeofday() in *)
+      (* let vjson = "val", (`String "100") in *)
       let vjson = "val", (literal_to_json v) in
-      let tend = Unix.gettimeofday() in
-      vjson_counter := !vjson_counter +. (tend -. tstart);
-      let tstart = Unix.gettimeofday() in
+      (* let tend = Unix.gettimeofday() in *)
+      (* vjson_counter := !vjson_counter +. (tend -. tstart); *)
+      (* let tstart = Unix.gettimeofday() in *)
       let kv_json = `Assoc (kjson :: vjson :: []) in
-      let tend = Unix.gettimeofday() in
-      kvjson_counter := !kvjson_counter +. (tend -. tstart);
+      (* let tend = Unix.gettimeofday() in *)
+      (* kvjson_counter := !kvjson_counter +. (tend -. tstart); *)
       (* let _ = Printf.printf "kvjson:%f\n" (Core.Float.sub tend tstart) in *)
-      let tstart = Unix.gettimeofday() in
+      (* let tstart = Unix.gettimeofday() in *)
       let concat = kv_json :: a in
-      let tend = Unix.gettimeofday() in
-      concat_counter := !concat_counter +. (tend -. tstart);
+      (* let tend = Unix.gettimeofday() in *)
+      (* concat_counter := !concat_counter +. (tend -. tstart); *)
       (* let _ = Printf.printf "concat:%f\n" (Core.Float.sub tend tstart) in *)
-      let foldend = Unix.gettimeofday() in
-      fold_counter := !fold_counter +. (foldend -. foldstart);
+      (* let foldend = Unix.gettimeofday() in *)
+      (* fold_counter := !fold_counter +. (foldend -. foldstart); *)
+      (* fold_counter := !fold_counter +. 1.0; *)
       concat) ms [] in
   x
 
@@ -95,11 +97,12 @@ and literal_to_json lit =
   | IntLit x  -> `String (string_of_int_lit x)
   | UintLit x ->
     `String (string_of_uint_lit x)
+    (* `String "100" *)
   | Map ((_, _), kvs) ->
-    let tstart = Unix.gettimeofday() in
+    (* let tstart = Unix.gettimeofday() in *)
     let ls = `List (mapvalues_to_json kvs) in
-    let tend = Unix.gettimeofday() in
-    let _ = Printf.printf "map:%f\n" (Core.Float.sub tend tstart) in
+    (* let tend = Unix.gettimeofday() in
+       let _ = Printf.printf "map:%f\n" (Core.Float.sub tend tstart) in *)
     ls
   | ADTValue (n, t, v) as ls ->
     let open Datatypes in
