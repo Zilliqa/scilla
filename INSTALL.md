@@ -94,7 +94,7 @@ brew tap iantanwx/crypto
 
 and proceed with OS-level package installation:
 ```shell
-brew install ocaml opam pkg-config libffi openssl boost iantanwx/crypto/secp256k1
+brew install gcc ocaml opam pkg-config libffi openssl boost pcre iantanwx/crypto/secp256k1
 ```
 
 Now we can set up opam dependencies:
