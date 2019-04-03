@@ -31,7 +31,7 @@
 (defvar scilla-keywords
   '("builtin" "library" "let" "in" "match" "with" "end" "event"
     "fun" "tfun" "contract" "transition" "send" "field" "accept"
-    "Emp" "import" "type"))
+    "Emp" "import" "type" "exists" "delete"))
 
 (defvar scilla-mode-syntax-table
   (let ((st (make-syntax-table)))
