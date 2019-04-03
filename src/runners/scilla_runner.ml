@@ -299,9 +299,14 @@ let () =
         ("events", output_events_json);
         (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
       ] in
-        Out_channel.with_file cli.output ~f:(fun channel -> 
-          if cli.pp_json then
-            Yojson.pretty_to_string output_json |> Out_channel.output_string channel
-          else
-            Yojson.to_string output_json |> Out_channel.output_string channel
-          )
+      Out_channel.with_file cli.output ~f:(fun channel -> 
+      if cli.pp_json then
+        Yojson.pretty_to_string output_json |> Out_channel.output_string channel
+      else
+        let tstart = Unix.gettimeofday() in
+        let x = Yojson.to_string output_json in
+        let y = Out_channel.output_string channel x in
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "write_to_file:%f\n" (Core.Float.sub tend tstart) in
+        y
+    )
