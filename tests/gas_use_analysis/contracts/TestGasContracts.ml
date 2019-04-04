@@ -25,6 +25,7 @@ let explist = [
   "nonfungible-token.scilla";
   "schnorr.scilla";
   "helloworld.scilla";
+  "wallet.scilla";
 ]
 
 module Tests = TestUtil.DiffBasedTests(

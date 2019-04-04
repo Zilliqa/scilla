@@ -91,7 +91,7 @@ transition addMember(name: String, addr: ByStr20, memberType: Uint32)
             p = Pair {(String) (Uint32)} name memberType;
             members[addr] := p;
 
-            msg = {_tag: "Main"; 
+            msg = {_tag: ""; 
                     _recipient: _sender; 
                     _amount: Uint128 0; 
                     code: code_success};
@@ -99,7 +99,7 @@ transition addMember(name: String, addr: ByStr20, memberType: Uint32)
             send msgs 
         | False =>
             (* Code for the membership type is invalid *)
-            msg = {_tag: "Main";
+            msg = {_tag: "";
                     _recipient: _sender;
                     _amount: Uint128 0;
                     code: code_invalid_params};
@@ -108,7 +108,7 @@ transition addMember(name: String, addr: ByStr20, memberType: Uint32)
         end
     | False =>
         (* Unauthorized transaction *)
-        msg = {_tag: "Main";
+        msg = {_tag: "";
                 _recipient: _sender;
                 _amount: Uint128 0;
                 code: code_not_authorized};
@@ -135,7 +135,7 @@ transition addBook(book_title: String, author: String, bookID: Uint32)
     bookExist = builtin contains books bookID;
     match bookExist with
     | True =>
-        msg = {_tag: "Main";
+        msg = {_tag: "";
                     _recipient: _sender;
                     _amount: Uint128 0;
                     code: code_bookid_exist};
@@ -152,7 +152,7 @@ transition addBook(book_title: String, author: String, bookID: Uint32)
         tmp = Some {Uint32} bookID;
         lastBookID := tmp;
 
-        msg = {_tag: "Main"; 
+        msg = {_tag: ""; 
                 _recipient: _sender; 
                 _amount: Uint128 0; 
                 code: code_success};
@@ -190,7 +190,7 @@ transition updateBook(book_id: Uint32, book_title: String, author: String)
     match exist with
     | False =>
         (* Book ID is not found in the records. *)
-        msg = {_tag: "Main"; 
+        msg = {_tag: ""; 
                 _recipient: _sender; 
                 _amount: Uint128 0; 
                 code: code_book_not_found};
@@ -204,7 +204,7 @@ transition updateBook(book_id: Uint32, book_title: String, author: String)
         (* Add the new book to the book_inventory Map, with BookID as the key*)
         bookInventory[book_id] := new_book;
 
-        msg = {_tag: "Main"; 
+        msg = {_tag: ""; 
                 _recipient: _sender; 
                 _amount: Uint128 0; 
                 code: code_success};

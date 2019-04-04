@@ -1,64 +1,61 @@
 Gas use polynomial for transition BalanceOf:
-1(a) + 64 + 2(b) + 1(c)
+107 + 2(a) + 2(b) + 2(c)
 Legend:
 
-b: tokenOwner
-c: Result of builtin get(balances,tokenOwner)
-a: balances
+a: Element of: balances
+c: tokenOwner
+b: _sender
 
 Gas use polynomial for transition TotalSupply:
-22 + 1(a) + 1(b)
+44 + 2(a) + 1(b)
 Legend:
 
-a: _sender
 b: total_tokens
+a: _sender
 
 Gas use polynomial for transition Transfer:
-1(a) + 157 + 1(b) + 1(c) + 1(d) + 2(e) + 3(f) + 3(g)
+222 + 1(a) + 1(b) + 1(c) + 1(d) + 2(e) + 6(f) + 3(g)
 Legend:
 
-a: balances
-d: Result of builtin add(Element of: balances,tokens)
 e: tokens
-b: Element of: balances
-g: to
+a: Element of: balances
+d: Result of builtin add(Element of: balances,tokens)
 c: Result of builtin sub(tokens,tokens)
+g: to
+b: Element of: balances
 f: _sender
 
 Gas use polynomial for transition TransferFrom:
-1(a) + 1(b) + 237 + 1(c) + 1(d) + 2(e) + 1(f) + 1(g) + 1(h) + 1(i) + 1(j) + 4(k) + 4(l) + 1(m)
+314 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 2(f) + 1(g) + 4(h) + 4(i) + 4(j)
 Legend:
 
-j: Result of builtin put(allowed,from,Result of builtin put(Result of builtin get(allowed,from),_sender,Result of builtin sub(tokens,tokens)))
-d: Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
-g: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to,tokens)
-m: tokens
-k: from
-l: to
-i: Length of: allowed
-f: Result of builtin put(Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to,Result of builtin add(Result of builtin get(Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens)),to),tokens))
-e: Length of: Result of builtin put(balances,from,Result of builtin sub(1(Result of builtin get(balances,from)) + 1(Result of builtin get(Result of builtin get(allowed,from),_sender)),tokens))
-h: Length of: Result of builtin get(allowed,from)
-b: allowed
-c: Length of: balances
-a: balances
+a: Element of: Element of: allowed
+c: Element of: balances
+f: tokens
+e: Result of builtin add(Element of: balances,tokens)
+g: Result of builtin sub(tokens,tokens)
+i: from
+j: to
+d: Result of builtin sub(Element of: balances,tokens)
+h: _sender
+b: Element of: balances
 
 Gas use polynomial for transition Approve:
-24 + 2(a) + 1(b) + 1(c)
+46 + 2(a) + 2(b) + 1(c)
 Legend:
 
-b: _sender
-c: spender
 a: tokens
+c: spender
+b: _sender
 
 Gas use polynomial for transition Allowance:
-1(a) + 106 + 3(b) + 3(c) + 1(d)
+108 + 2(a) + 2(b) + 2(c) + 2(d)
 Legend:
 
-c: spender
-d: Result of builtin get(Result of builtin get(allowed,tokenOwner),spender)
-b: tokenOwner
-a: allowed
+d: spender
+b: _sender
+a: Element of: Element of: allowed
+c: tokenOwner
 
 {
   "contract_info": {
@@ -66,7 +63,10 @@ a: allowed
     "vname": "FungibleToken",
     "params": [
       { "vname": "owner", "type": "ByStr20" },
-      { "vname": "total_tokens", "type": "Uint128" }
+      { "vname": "total_tokens", "type": "Uint128" },
+      { "vname": "decimals", "type": "Uint32" },
+      { "vname": "name", "type": "String" },
+      { "vname": "symbol", "type": "String" }
     ],
     "fields": [
       { "vname": "balances", "type": "Map (ByStr20) (Uint128)" },
@@ -111,70 +111,7 @@ a: allowed
         ]
       }
     ],
-    "events": [
-      {
-        "vname": "Allowance",
-        "params": [
-          { "vname": "owner", "type": "ByStr20" },
-          { "vname": "spender", "type": "ByStr20" },
-          { "vname": "amount", "type": "Uint128" }
-        ]
-      },
-      {
-        "vname": "ApproveSuccess",
-        "params": [
-          { "vname": "approver", "type": "ByStr20" },
-          { "vname": "spender", "type": "ByStr20" },
-          { "vname": "amount", "type": "Uint128" }
-        ]
-      },
-      {
-        "vname": "TransferFromFailure",
-        "params": [
-          { "vname": "sender", "type": "ByStr20" },
-          { "vname": "recipient", "type": "ByStr20" },
-          { "vname": "amount", "type": "Uint128" }
-        ]
-      },
-      {
-        "vname": "TransferFromSuccess",
-        "params": [
-          { "vname": "sender", "type": "ByStr20" },
-          { "vname": "recipient", "type": "ByStr20" },
-          { "vname": "amount", "type": "Uint128" }
-        ]
-      },
-      {
-        "vname": "TransferFailure",
-        "params": [
-          { "vname": "sender", "type": "ByStr20" },
-          { "vname": "recipient", "type": "ByStr20" },
-          { "vname": "amount", "type": "Uint128" }
-        ]
-      },
-      {
-        "vname": "TransferSuccess",
-        "params": [
-          { "vname": "sender", "type": "ByStr20" },
-          { "vname": "recipient", "type": "ByStr20" },
-          { "vname": "amount", "type": "Uint128" }
-        ]
-      },
-      {
-        "vname": "TotalSupply",
-        "params": [
-          { "vname": "caller", "type": "ByStr20" },
-          { "vname": "balance", "type": "Uint128" }
-        ]
-      },
-      {
-        "vname": "BalanceOf",
-        "params": [
-          { "vname": "address", "type": "ByStr20" },
-          { "vname": "balance", "type": "Uint128" }
-        ]
-      }
-    ],
+    "events": [],
     "ADTs": [
       {
         "tname": "Option",
@@ -215,96 +152,5 @@ a: allowed
       }
     ]
   },
-  "warnings": [
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "gas_use_analysis/contracts/fungible-token.scilla",
-        "line": 163,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "gas_use_analysis/contracts/fungible-token.scilla",
-        "line": 139,
-        "column": 17
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "gas_use_analysis/contracts/fungible-token.scilla",
-        "line": 133,
-        "column": 20
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "gas_use_analysis/contracts/fungible-token.scilla",
-        "line": 129,
-        "column": 20
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "gas_use_analysis/contracts/fungible-token.scilla",
-        "line": 123,
-        "column": 18
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "gas_use_analysis/contracts/fungible-token.scilla",
-        "line": 104,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "gas_use_analysis/contracts/fungible-token.scilla",
-        "line": 103,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "gas_use_analysis/contracts/fungible-token.scilla",
-        "line": 69,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "gas_use_analysis/contracts/fungible-token.scilla",
-        "line": 51,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    }
-  ]
+  "warnings": []
 }
