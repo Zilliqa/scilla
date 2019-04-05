@@ -130,18 +130,28 @@ module ScillaSanityChecker
     in
 
     (* Look for any statement that is loading/storing a full Map and warn. *)
+    let check_typ_warn s =
+      let t = (ER.get_type (get_rep s)).tp in
+      let lc = ER.get_loc (get_rep s) in
+      (match t with
+      | MapType _
+      (* The result of a <- a[][], i.e., "a" is an Option type. *)
+      | ADT("Option", [MapType _]) ->
+        warn1 "Consider using in-place Map access" warning_level_map_load_store lc;
+      | _ -> ()
+      )
+    in
     List.iter (fun trans ->
       let rec stmt_iter stmts =
         List.iter (fun (stmt, _) ->
           match stmt with
           (* Recursion basis. *)
-          | Load (_, s) | Store (s, _) ->
-            let t = (ER.get_type (get_rep s)).tp in
-            let lc = ER.get_loc (get_rep s) in
-            (match t with
-            | MapType _ ->
-              warn1 "Consider using in-place Map access" warning_level_map_load_store lc;
-            | _ -> ()
+          | Load (_, s) | Store (s, _) | MapGet (s, _, _, _)->
+            check_typ_warn s
+          | MapUpdate (_, _, vopt) ->
+            (match vopt with
+            | Some s -> check_typ_warn s
+            | None -> ()
             )
           (* Recurse through match statements. *)
           | MatchStmt (_, pat_stmts) ->
