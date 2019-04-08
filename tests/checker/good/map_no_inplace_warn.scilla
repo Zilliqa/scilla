@@ -1,0 +1,25 @@
+scilla_version 0
+
+contract TestNonInplaceMapWarn ()
+
+field map1 : Map Uint128 (Map Uint128 Uint128) = Emp Uint128 (Map Uint128 Uint128)
+
+(* All four transitions below should raise warnings about non-inplace accesses. *)
+
+transition slowLoad (k : Uint128)
+  a <- map1[k]
+end
+
+transition slowSlowLoad (k : Uint128)
+  a <- map1
+end
+
+transition slowStore (k : Uint128)
+  b = Emp Uint128 Uint128;
+  map1[k] := b
+end
+
+transition slowSlowStore (k : Uint128)
+  a = Emp Uint128 (Map Uint128 Uint128);
+  map1 := a
+end
