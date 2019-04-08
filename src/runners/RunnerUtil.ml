@@ -64,7 +64,7 @@ let import_lib id =
 let import_libs names init_file =
   let rec importer names name_map stack =
     let mapped_names =
-      List.map names ~f:(fun n ->
+      List.map names ~f:(fun (n, _importAs) ->
         (match List.Assoc.find name_map ~equal:(=) (get_id n) with
         | Some n' ->
          (* Use a known source location for the mapped id. *)
@@ -117,7 +117,7 @@ let import_all_libs ldirs  =
       if FilePath.get_extension file = StdlibTracker.file_extn_library
       then
         let name = FilePath.chop_extension (FilePath.basename file) in
-          asId name :: names
+          (asId name, None (* no import-as *)) :: names
       else
         names) ~init:[]
   in

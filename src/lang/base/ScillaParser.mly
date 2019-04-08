@@ -82,6 +82,7 @@
 %token RSQB
 %token LPAREN
 %token RPAREN
+%token IMPORTAS
 %token ARROW
 %token TARROW
 %token AT
@@ -94,6 +95,7 @@
 %token AND
 %token BIND
 %token ASSIGN
+%token DOT
 (* %token LANGLE
  * %token RANGLE *)
 
@@ -140,34 +142,48 @@
 
 %%
 
+ident : name = ID { Ident (name, toLoc $startpos) }
+
+sid :
+| name = ID { name }
+| ns = CID; DOT; name = ID { ns ^ "." ^ name }
+
+sident :
+| name = ID { Ident (name, toLoc $startpos) }
+| ns = CID; DOT; name = ID { Ident (ns ^ "." ^ name, toLoc $startpos) }
+
+scid :
+| name = CID { name }
+| ns = CID; DOT; name = CID { ns ^ "." ^ name }
+
 (***********************************************)
 (*                  Types                      *)
 (***********************************************)
 (* TODO: This is a temporary fix of issue #166 *)
 t_map_key :
-| kt = CID { to_map_key_type_exn kt (toLoc $startpos) }
-| LPAREN; kt = CID; RPAREN; { to_map_key_type_exn kt (toLoc $startpos(kt)) }
+| kt = scid { to_map_key_type_exn kt (toLoc $startpos) }
+| LPAREN; kt = scid; RPAREN; { to_map_key_type_exn kt (toLoc $startpos(kt)) }
 
 (* TODO: This is a temporary fix of issue #261 *)
 t_map_value_args:
 | LPAREN; t = t_map_value_args; RPAREN; { t }
-| d = CID; { to_type d }
+| d = scid; { to_type d }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 t_map_value :
-| LPAREN; d = CID; targs=list(t_map_value_args); RPAREN;
+| LPAREN; d = scid; targs=list(t_map_value_args); RPAREN;
     { match targs with
       | [] -> to_type d
       | _ -> ADT (d, targs) }
 | LPAREN; MAP; k=t_map_key; v = t_map_value_args; RPAREN; { MapType (k, v) }
-| d = CID; targs=list(t_map_value_args)
+| d = scid; targs=list(t_map_value_args)
     { match targs with
       | [] -> to_type d
       | _ -> ADT (d, targs) }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 typ :
-| d = CID; targs=list(targ)
+| d = scid; targs=list(targ)
   { match targs with
     | [] -> to_type d
     | _ -> ADT (d, targs)
@@ -180,7 +196,7 @@ typ :
 
 targ:
 | LPAREN; t = typ; RPAREN; { t }
-| d = CID; { to_type d }
+| d = scid; { to_type d }
 | t = TID; { TypeVar t }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
@@ -200,8 +216,8 @@ simple_exp :
 | FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
   { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) }
 (* Application *)
-| f = ID;
-  args = nonempty_list(ident)
+| f = sid;
+  args = nonempty_list(sident)
   { (App ((Ident (f, toLoc $startpos)), args), toLoc $startpos ) }
 (* Atomic expression *)
 | a = atomic_exp {a}
@@ -213,7 +229,7 @@ simple_exp :
 | LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE
   { (Message es, toLoc $startpos) }
 (* Data constructor application *)
-| c = CID ts=option(ctargs) args=list(ident)
+| c = scid ts=option(ctargs) args=list(sident)
   { let targs =
       (match ts with
        | None -> []
@@ -221,17 +237,17 @@ simple_exp :
     (Constr (c, targs, args), toLoc $startpos)
   }
 (* Match expression *)
-| MATCH; x = ID; WITH; cs=list(exp_pm_clause); END
+| MATCH; x = sid; WITH; cs=list(exp_pm_clause); END
   { (MatchExpr (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos) }
 (* Type function *)
 | TFUN; i = TID ARROW; e = exp
   { (TFun (Ident (i, toLoc $startpos), e), toLoc $startpos) }
 (* Type application *)
-| AT; f = ID; targs = nonempty_list(targ)
+| AT; f = sid; targs = nonempty_list(targ)
   { (TApp ((Ident (f, toLoc $startpos)), targs), toLoc $startpos) }
 
-  atomic_exp :
-| i = ID       { (Var (Ident (i, toLoc $startpos)), toLoc $startpos) }
+atomic_exp :
+| i = sid       { (Var (Ident (i, toLoc $startpos)), toLoc $startpos) }
 | l = lit      { (Literal l, toLoc $startpos) }
 
 lit :
@@ -262,30 +278,24 @@ map_access:
 
 pattern:
 | UNDERSCORE { Wildcard }
-| x = ID {Binder (Ident (x, toLoc $startpos))}
-| c = CID; ps = list(arg_pattern) { Constructor (c, ps) }
+| x = sid {Binder (Ident (x, toLoc $startpos))}
+| c = scid; ps = list(arg_pattern) { Constructor (c, ps) }
 
 arg_pattern:
 | UNDERSCORE { Wildcard }
 | x = ID {Binder (Ident (x, toLoc $startpos))}
-| c = CID;  { Constructor (c, []) }
+| c = scid;  { Constructor (c, []) }
 | LPAREN; p = pattern RPAREN; { p }
 
 exp_pm_clause:
 | BAR ; p = pattern ; ARROW ; e = exp { p, e }
 msg_entry :
-| i = ID; COLON;  l = lit { i, MLit l }
-| i = ID; COLON;  v = ID  { i,  MVar (asIdL v (toLoc $startpos(v))) }
+| i = sid; COLON;  l = lit { i, MLit l }
+| i = sid; COLON;  v = sid  { i,  MVar (asIdL v (toLoc $startpos(v))) }
 
 builtin_args :
-| args = nonempty_list(ident) { args }
+| args = nonempty_list(sident) { args }
 | LPAREN; RPAREN { [] }
-
-ident :
-| i = ID { Ident(i, toLoc $startpos) }
-
-cident :
-| c = CID { Ident(c, toLoc $startpos) }
 
 type_annot:
 | COLON; t = typ { t }
@@ -302,7 +312,7 @@ type_term :
 
 stmt:
 | l = ID; BIND; r = ID   { (Load (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
-| l = ID; ASSIGN; r = ID { (Store (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; ASSIGN; r = sid { (Store (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos($2)), r), toLoc $startpos) }
 | l=ID; BIND; AND; c=CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
 | l = ID; BIND; r = ID; keys = nonempty_list(map_access)
@@ -314,9 +324,9 @@ stmt:
 | DELETE; l = ID; keys = nonempty_list(map_access)
   { MapUpdate(asIdL l (toLoc $startpos(l)), keys, None), toLoc $startpos }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
-| SEND; m = ID;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
-| EVENT; m = ID; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }
-| MATCH; x = ID; WITH; cs=list(stmt_pm_clause); END
+| SEND; m = sid;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
+| EVENT; m = sid; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }
+| MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
 
 stmt_pm_clause:
@@ -384,8 +394,12 @@ library :
 lmodule :
 | els = imports; l = library; EOF { { elibs = els; libs = l } }
 
+importname :
+| c = CID { Ident(c, toLoc $startpos), None }
+| c1 = CID IMPORTAS c2 = CID { Ident(c1, toLoc $startpos(c1)), Some (Ident(c2, toLoc $startpos(c2)))}
+
 imports :
-| IMPORT; els = list(cident) { els }
+| IMPORT; els = list(importname) { els }
 | { [] }
 
 cmodule:
