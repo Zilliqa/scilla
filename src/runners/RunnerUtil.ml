@@ -57,6 +57,130 @@ let import_lib id =
         plog (sprintf "Successfully imported external library %s\n" name);
         (lmod, initf)
 
+(* light-weight namespaces. prefix all entries in lib with their namespace. *)
+let namespace_prefix lib ns =
+  match ns with
+  | None -> lib
+  | Some name' ->
+    let name = get_id name' in
+    let env = [] in
+    let (rev_entries, _) = List.fold lib.lentries ~init:([], env)
+    ~f:(fun (accentries, accenv) entry ->
+      (* check if id is in env and prefix it with a namespace. *)
+      let check_and_prefix_id env id =
+        if List.mem env (get_id id) ~equal:(=)
+        then
+          let nname = name ^ "." ^ (get_id id) in
+          asIdL nname (get_rep id)
+        else
+          id
+      in
+      let check_and_prefix_string env cname =
+        if List.mem env cname ~equal:(=) then name ^ "." ^ cname else cname
+      in
+      let rename_in_type t env =
+        let rec recurser t =
+          match t with
+          | PrimType _ | TypeVar _ | Unit -> t
+          | MapType (kt, vt) -> MapType (recurser kt, recurser vt)
+          | FunType (t1, t2) -> FunType (recurser t1, recurser t2)
+          | PolyFun (tvar, t) -> PolyFun (tvar, recurser t)
+          | ADT (tname, tlist) ->
+            let tname' = check_and_prefix_string env tname in
+            let tlist' = List.map tlist ~f:(fun t -> recurser t) in
+            ADT(tname', tlist')
+        in
+        recurser t
+      in
+      let rec rename_in_expr (e, eloc) env =
+        (match e with
+        | Literal _ -> (e, eloc)
+        | Var v  ->
+           (Var (check_and_prefix_id env v), eloc)
+        | Let (i, t, elhs, erhs) ->
+          let elhs' = rename_in_expr elhs env in
+          (* "i" get's a local binding now, don't rename it in rhs. *)
+          let env' = List.filter env ~f:((<>) (get_id i)) in
+          let erhs' = rename_in_expr erhs env' in
+          (Let (i, t, elhs', erhs'), eloc)
+        | Message spl ->
+          let rename_in_payload pl = (match pl with | MLit _ -> pl | MVar v -> MVar (check_and_prefix_id env v)) in
+          let spl' = List.map spl ~f:(fun (s, pl) -> (s, rename_in_payload pl)) in
+          (Message spl', eloc)
+        | Fun (i, t, exp) ->
+          let env' = List.filter env ~f:((<>) (get_id i)) in
+          let t' = rename_in_type t env' in
+          let exp' = rename_in_expr exp env' in
+          (Fun (i, t', exp'), eloc)
+        | App (i, ils) ->
+          let i' = check_and_prefix_id env i in
+          let ils' = List.map ils ~f:(check_and_prefix_id env) in
+          (App (i', ils'), eloc)
+        | Constr (cname, tl, idl) ->
+          let cname' = check_and_prefix_string env cname in
+          let tl' = List.map tl ~f:(fun t -> rename_in_type t env) in
+          let idl' = List.map idl ~f:(check_and_prefix_id env) in
+          (Constr(cname', tl', idl'), eloc)
+        | MatchExpr (pv, pelist) ->
+          (* Update pattern and returns a list of newly bounds. *)
+          let rec rename_in_pattern env pat =
+            (match pat with
+            | Wildcard -> (pat, [])
+            | Binder i -> (pat, [(get_id i)])
+            | Constructor (c, plist) ->
+              let c' = if List.mem env c ~equal:(=) then name ^ "." ^ c else c in
+              let (plist', blist) = List.unzip @@ List.map plist ~f:(rename_in_pattern env) in
+              let blist' = List.concat blist in
+              (Constructor(c', plist'), blist')
+            )
+          in
+          (* Update id being matched *)
+          let pv' = check_and_prefix_id env pv in
+          (* Get updated pattern and their branches *)
+          let pelist' = List.map pelist ~f:(fun (pat, expr) ->
+            let pat', binds = rename_in_pattern env pat in
+            (* remove all binds from env *)
+            let env' = List.filter env ~f:(fun a -> not (List.mem binds a ~equal:(=))) in
+            (pat', rename_in_expr expr env')
+          ) in
+          MatchExpr(pv', pelist'), eloc
+        | Builtin (b, idl) ->
+          let idl' = List.map idl ~f:(check_and_prefix_id env) in
+          (Builtin (b, idl'), eloc)
+        | TFun (ti, exp) -> (TFun (ti, rename_in_expr exp env), eloc)
+        | TApp (i, tl) ->
+          let tl' = List.map tl ~f:(fun t -> rename_in_type t env) in
+          (TApp(check_and_prefix_id env i, tl'), eloc)
+        | Fixpoint (i, t, e) ->
+          let env' = List.filter env ~f:((<>) (get_id i)) in
+          let exp' = rename_in_expr e env' in
+          (Fixpoint (i, t, exp'), eloc)
+        )
+      in
+      match entry with
+      | LibTyp (i, ctrs) ->
+        (* from this point, env has "i" and all constructors, to be renamed. *)
+        let env' = (get_id i) :: env in
+        let env'' = List.fold ctrs ~init:env' ~f:(fun envacc ctr ->
+          (get_id ctr.cname) :: envacc
+        ) in
+        let ctrs' = List.map ctrs ~f:(fun ctr ->
+            let cname' = check_and_prefix_id env'' ctr.cname in
+            let c_arg_types' = List.map ctr.c_arg_types ~f:(fun t -> rename_in_type t env'') in
+            {cname = cname'; c_arg_types = c_arg_types'}
+        ) in
+        let entry' = LibTyp(check_and_prefix_id env'' i, ctrs') in
+        (entry' :: accentries, env'')
+      | LibVar (i, exp) ->
+        (* from this point, env has "i", to be renamed. *)
+        let env' = (get_id i) :: env in
+        let entry' = LibVar (check_and_prefix_id env' i, rename_in_expr exp accenv) in
+        (* we're appending entries in the reverse order. *)
+        (entry' :: accentries, env')
+    ) in
+    { lib with lentries = List.rev rev_entries }
+
+
 (* Import all libraries in "names" (and their dependences).
  * The order of the returned libraries is an RPO traversal
  * over the dependence graph generated out of "names".
@@ -64,28 +188,29 @@ let import_lib id =
 let import_libs names init_file =
   let rec importer names name_map stack =
     let mapped_names =
-      List.map names ~f:(fun (n, _importAs) ->
+      List.map names ~f:(fun (n, namespace) ->
         (match List.Assoc.find name_map ~equal:(=) (get_id n) with
         | Some n' ->
          (* Use a known source location for the mapped id. *)
-          (asIdL n' (get_rep n), n)
-        | None -> (n, n))
+          (asIdL n' (get_rep n), n, namespace)
+        | None -> (n, n, namespace))
       )
     in
-    List.fold_left ~f:(fun libacc l ->
-      let name = get_id (fst l) in
-      if List.mem stack name ~equal:(=) then
+    List.fold_left ~f:(fun libacc (name, mapped_name, namespace) ->
+      if List.mem stack (get_id name) ~equal:(=) then
         let errmsg = 
-          if get_id (snd l) = name then
-            sprintf "Cyclic dependence found when importing %s." name
+          if get_id (mapped_name) = (get_id name) then
+            sprintf "Cyclic dependence found when importing %s." (get_id name)
           else 
-            sprintf "Cyclic dependence found when importing %s (mapped to %s)." (get_id (snd l)) name
+            sprintf "Cyclic dependence found when importing %s (mapped to %s)."
+              (get_id (mapped_name)) (get_id name)
         in
-        fatal_error @@ mk_error1 errmsg (get_rep (fst l))
+        fatal_error @@ mk_error1 errmsg (get_rep name)
       else
-      let (ilib, ilib_import_map) = import_lib (fst l) in
-      let ilibs'' = importer ilib.elibs ilib_import_map (name :: stack) in
-      let libnode = { libn = ilib.libs; deps = ilibs'' } in
+      let (ilib, ilib_import_map) = import_lib name in
+      let ilib' = { ilib with libs = namespace_prefix ilib.libs namespace } in
+      let ilibs'' = importer ilib'.elibs ilib_import_map ((get_id name) :: stack) in
+      let libnode = { libn = ilib'.libs; deps = ilibs'' } in
       (* Order in which we return the list of imported libraries is important. *)
       (libacc @ [libnode])
     ) ~init:[] mapped_names
