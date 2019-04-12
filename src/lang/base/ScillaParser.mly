@@ -95,7 +95,6 @@
 %token AND
 %token BIND
 %token ASSIGN
-%token DOT
 (* %token LANGLE
  * %token RANGLE *)
 
@@ -146,15 +145,15 @@ ident : name = ID { Ident (name, toLoc $startpos) }
 
 sid :
 | name = ID { name }
-| ns = CID; DOT; name = ID { ns ^ "." ^ name }
+| ns = CID; PERIOD; name = ID { ns ^ "." ^ name }
 
 sident :
 | name = ID { Ident (name, toLoc $startpos) }
-| ns = CID; DOT; name = ID { Ident (ns ^ "." ^ name, toLoc $startpos) }
+| ns = CID; PERIOD; name = ID { Ident (ns ^ "." ^ name, toLoc $startpos) }
 
 scid :
 | name = CID { name }
-| ns = CID; DOT; name = CID { ns ^ "." ^ name }
+| ns = CID; PERIOD; name = CID { ns ^ "." ^ name }
 
 (***********************************************)
 (*                  Types                      *)

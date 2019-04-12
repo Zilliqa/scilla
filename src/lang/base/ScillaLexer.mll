@@ -106,7 +106,6 @@ rule read =
   | "@"           { AT }                  
   | "_"           { UNDERSCORE } 
   | '"'           { read_string (Buffer.create 17) lexbuf }
-  | "."           { DOT}
 
   (* Identifiers *)    
   | id as i       { ID i }
