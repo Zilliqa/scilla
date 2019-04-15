@@ -47,7 +47,7 @@ module Tests = TestUtil.DiffBasedTests(
       "schnorr.scilla"; 
       "simple-dex.scilla";
       "wallet.scilla";
-      "zil-game.scilla";  
+      "zil-game.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
@@ -71,6 +71,7 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "libchain2.scilla";
       "libdiamond.scilla";
       "InstantiatedListUtils.scillib";
+      "map_no_inplace_warn.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
