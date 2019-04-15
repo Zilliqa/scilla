@@ -127,9 +127,10 @@ module ScillaBuiltIns
     let substr_arity = 3    
     let substr_type = fun_typ string_typ @@ fun_typ uint32_typ @@ fun_typ uint32_typ string_typ
     let substr ls _ = match ls with
-      | [StringLit x; UintLit (Uint32L s); UintLit (Uint32L e)]
-        when Uint32.compare (Uint32.add s e) (Uint32.of_int (String.length x)) <= 0 ->
+      | [StringLit x; UintLit (Uint32L s); UintLit (Uint32L e)] ->
+        (try
           pure @@ StringLit (Core.String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
+        with Invalid_argument msg -> builtin_fail ("String.substr: " ^ msg) ls)
       | _ -> builtin_fail "String.substr" ls
 
     let strlen_arity = 1
