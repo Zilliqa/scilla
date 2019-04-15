@@ -181,7 +181,7 @@ module ScillaBuiltIns
       if (compare a zero > 0) && (compare b zero > 0) && (compare r zero < 0)
       then raise IntOverflow
       (* if a < 0 && b < 0 && r >= 0 then we have an underflow *)
-      (* r = 0 is possible if the case of a = b = min_int *)
+      (* r = 0 is possible in the case of a = b = min_int *)
       else if (compare a zero < 0) && (compare b zero < 0) && (compare r zero >= 0)
       then raise IntUnderflow
       else r
