@@ -48,6 +48,7 @@ let explist = [
   "let-error.scilla";
   "list_to_map.scilla";
   "string_error1.scilla";
+  "substr_err1.scilla";
 ]
 
 module Tests = TestUtil.DiffBasedTests(
