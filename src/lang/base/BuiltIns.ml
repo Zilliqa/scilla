@@ -178,58 +178,57 @@ module ScillaBuiltIns
     let safe_add a b =
       let r = add a b in
       (* if a > 0 && b > 0 && r < 0 then we have an overflow*)
-      if ((compare a zero) > 0 && (compare b zero) > 0 && (compare r zero) < 0) 
+      if (compare a zero > 0) && (compare b zero > 0) && (compare r zero < 0)
       then raise IntOverflow
-      (* if a < 0 && b < 0 && r > 0 then we have an underflow*)
-      else if ((compare a zero) < 0 && (compare b zero) < 0 && (compare r zero) > 0) 
+      (* if a < 0 && b < 0 && r >= 0 then we have an underflow *)
+      (* r = 0 is possible if the case of a = b = min_int *)
+      else if (compare a zero < 0) && (compare b zero < 0) && (compare r zero >= 0)
       then raise IntUnderflow
       else r
 
     let safe_sub a b =
-      let r = R.sub a b in
-      (* if a > 0 && b < 0 && r < 0 then we have an overflow *)
-      if ((compare a zero) > 0 && (compare b zero) < 0 && (compare r zero) < 0) 
+      let r = sub a b in
+      (* if a >= 0 && b < 0 && r < 0 then we have an overflow *)
+      (* the corner case here is a = 0, b = min_int *)
+      if (compare a zero >= 0) && (compare b zero < 0) && (compare r zero < 0)
       then raise IntOverflow
-      (* if a < 0 && b > 0 && r > 0 then we have an underflow*)
-      else if ((compare a zero) < 0 && (compare b zero) > 0 && (compare r zero) > 0) 
+      (* if a < 0 && b > 0 && r > 0 then we have an underflow *)
+      else if (compare a zero < 0) && (compare b zero > 0) && (compare r zero > 0)
       then raise IntUnderflow
       else r
 
-    let safe_mul a b  =
+    let safe_mul a b =
       let r = mul a b in
       (* http://www.informit.com/articles/article.aspx?p=1959565&seqNum=13 *)
       (* if b < 0 && a = int_min OR if b != 0 && r / b != a *)
-      if (compare b zero) < 0 && a = min_int then raise IntOverflow else
-      if compare b zero <> 0
-      then
-        let d = div r b in
-        if (compare d a <> 0)
-        then raise IntOverflow
-        else r
+      if (compare b zero < 0) && (compare a min_int = 0)
+      then raise IntOverflow
+      else if (compare b zero <> 0) && (compare (div r b) a <> 0)
+      then raise IntOverflow
       else r
 
     let safe_div a b =
       (* Integer overflow during division occurs in a very specific case. *)
       (* https://stackoverflow.com/a/30400252/2128804 *)
-      if a = min_int && b = (sub zero one) then raise IntOverflow else
+      if (compare a min_int = 0) && (compare b (sub zero one) = 0)
+      then raise IntOverflow
+      else
         (* Division_by_zero is taken care of by underlying implementation. *)
         div a b
 
-    let safe_rem a b =
-      (* Division_by_zero is taken care of by underlying implementation. *)
-      rem a b
+    (* Division_by_zero is taken care of by underlying implementation. *)
+    let safe_rem = rem
 
     let safe_pow a b =
       let rec pow acc b' =
-        if b' = Uint32.zero then
+        if Uint32.compare b' Uint32.zero = 0 then
           acc
         else
-          pow (safe_mul a acc) (Uint32.sub b' Uint32.one)
+          pow (safe_mul a acc) (Uint32.pred b')
       in
       pow one b
 
-    let safe_lt a b =
-      if (compare a b) < 0 then true else false
+    let safe_lt a b = compare a b < 0
 
   end
 
@@ -239,47 +238,40 @@ module ScillaBuiltIns
     let safe_add a b =
       let r = add a b in
       (* if r < a || r < b then we have an overflow *)
-      if ((compare r a) < 0 || (compare r b) < 0)
+      if (compare r a < 0) || (compare r b < 0)
       then raise IntOverflow
       else r
 
     let safe_sub a b =
       let r = sub a b in
       (* if a < b then we have an underflow *)
-      if (compare a b) < 0
+      if compare a b < 0
       then raise IntUnderflow
       else r
 
     let safe_mul a b  =
       let r = mul a b in
       (* if b != 0 && r / b != a *)
-      if compare b zero <> 0
-      then
-        let d = div r b in
-        if (compare d a <> 0)
-        then raise IntOverflow
-        else r
+      if (compare b zero <> 0) && (compare (div r b) a <> 0)
+      then raise IntOverflow
       else r
 
-    let safe_div a b =
-      (* Division_by_zero is taken care of by underlying implementation. *)
-      div a b
-        
-    let safe_rem a b =
-      (* Division_by_zero is taken care of by underlying implementation. *)
-      rem a b
+    (* Division_by_zero is taken care of by underlying implementation. *)
+    let safe_div = div
+
+    (* Division_by_zero is taken care of by underlying implementation. *)
+    let safe_rem = rem
 
     let safe_pow a b =
       let rec pow acc b' =
-        if b' = Uint32.zero then
+        if Uint32.compare b' Uint32.zero = 0 then
           acc
         else
-          pow (safe_mul a acc) (Uint32.sub b' Uint32.one)
+          pow (safe_mul a acc) (Uint32.pred b')
       in
       pow one b
 
-    let safe_lt a b =
-      if (compare a b) < 0 then true else false
+    let safe_lt a b = compare a b < 0
 
   end
 
