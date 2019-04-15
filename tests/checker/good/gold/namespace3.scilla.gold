@@ -3,18 +3,27 @@
     "State variables": [],
     "ADT constructors": [
       {
-        "TestType2": [
-          { "constructor": "Constructor4", "tags": [ "NoInfo" ] }
+        "TL.TestType2": [
+          { "constructor": "TL.Constructor4", "tags": [ "NoInfo" ] }
         ]
       }
     ]
   },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "TestContr2",
+    "vname": "TestContr1",
     "params": [],
     "fields": [],
-    "transitions": [],
+    "transitions": [
+      {
+        "vname": "TestTrans",
+        "params": [ { "vname": "bar", "type": "TL.TestType" } ]
+      },
+      {
+        "vname": "TestTrans2",
+        "params": [ { "vname": "bar", "type": "TL.TestType2" } ]
+      }
+    ],
     "events": [],
     "ADTs": [
       {
@@ -26,11 +35,11 @@
         ]
       },
       {
-        "tname": "TestType",
+        "tname": "TL.TestType2",
         "tparams": [],
         "tmap": [
-          { "cname": "Constructor1", "argtypes": [] },
-          { "cname": "Constructor2", "argtypes": [] }
+          { "cname": "TL.Constructor3", "argtypes": [ "TL.TestType" ] },
+          { "cname": "TL.Constructor4", "argtypes": [ "Uint32" ] }
         ]
       },
       {
@@ -63,11 +72,11 @@
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
       {
-        "tname": "TestType2",
+        "tname": "TL.TestType",
         "tparams": [],
         "tmap": [
-          { "cname": "Constructor3", "argtypes": [ "TestType" ] },
-          { "cname": "Constructor4", "argtypes": [ "Uint32" ] }
+          { "cname": "TL.Constructor1", "argtypes": [] },
+          { "cname": "TL.Constructor2", "argtypes": [] }
         ]
       }
     ]
@@ -75,7 +84,7 @@
   "warnings": [
     {
       "warning_message":
-        "No transition in contract TestContr2 contains an accept statement\n",
+        "No transition in contract TestContr1 contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

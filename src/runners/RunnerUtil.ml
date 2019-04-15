@@ -63,8 +63,8 @@ let namespace_prefix lib ns =
   | None -> lib
   | Some name' ->
     let name = get_id name' in
-    let env = [] in
-    let (rev_entries, _) = List.fold lib.lentries ~init:([], env)
+    let initenv = [] in
+    let (rev_entries, _) = List.fold lib.lentries ~init:([], initenv)
     ~f:(fun (accentries, accenv) entry ->
       (* check if id is in env and prefix it with a namespace. *)
       let check_and_prefix_id env id =
@@ -160,7 +160,7 @@ let namespace_prefix lib ns =
       match entry with
       | LibTyp (i, ctrs) ->
         (* from this point, env has "i" and all constructors, to be renamed. *)
-        let env' = (get_id i) :: env in
+        let env' = (get_id i) :: accenv in
         let env'' = List.fold ctrs ~init:env' ~f:(fun envacc ctr ->
           (get_id ctr.cname) :: envacc
         ) in
@@ -173,8 +173,8 @@ let namespace_prefix lib ns =
         (entry' :: accentries, env'')
       | LibVar (i, exp) ->
         (* from this point, env has "i", to be renamed. *)
-        let env' = (get_id i) :: env in
-        let entry' = LibVar (check_and_prefix_id env' i, rename_in_expr exp accenv) in
+        let env' = (get_id i) :: accenv in
+        let entry' = LibVar (check_and_prefix_id env' i, rename_in_expr exp env') in
         (* we're appending entries in the reverse order. *)
         (entry' :: accentries, env')
     ) in
