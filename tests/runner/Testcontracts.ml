@@ -176,7 +176,7 @@ let add_tests env =
       "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12 false);
       "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27 false);
       "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 3 false);
-      "ecdsa" >:::(build_contract_tests env "ecdsa" succ_code 1 3 false);
+      "ecdsa" >:::(build_contract_tests env "ecdsa" succ_code 1 4 false);
       "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1 false);
       "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8 false);
       "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14 false);
