@@ -26,9 +26,6 @@ open Stdint
 open TypeUtil
 open Integer256
 
-exception IntOverflow
-exception IntUnderflow
-
 module ScillaBuiltIns
     (SR : Rep)
     (ER : Rep) = struct
@@ -158,142 +155,18 @@ module ScillaBuiltIns
 
   end
 
-  (*******************************************************)
-  (* Manipulating with arbitrary integer representations *)
-  (*******************************************************)
-  module type IntRep = sig
-    type t
-    val compare : t -> t -> int
-    val add: t -> t -> t
-    val sub: t -> t -> t
-    val mul: t -> t -> t
-    val div: t -> t -> t
-    val rem : t -> t -> t
-    val zero: t
-    val one : t
-    val min_int: t
-  end
-
-  module StdIntWrapper(R: IntRep) = struct
-    open R
-
-    let safe_add a b =
-      let r = add a b in
-      (* if a > 0 && b > 0 && r < 0 then we have an overflow*)
-      if ((compare a zero) > 0 && (compare b zero) > 0 && (compare r zero) < 0) 
-      then raise IntOverflow
-      (* if a < 0 && b < 0 && r > 0 then we have an underflow*)
-      else if ((compare a zero) < 0 && (compare b zero) < 0 && (compare r zero) > 0) 
-      then raise IntUnderflow
-      else r
-
-    let safe_sub a b =
-      let r = R.sub a b in
-      (* if a > 0 && b < 0 && r < 0 then we have an overflow *)
-      if ((compare a zero) > 0 && (compare b zero) < 0 && (compare r zero) < 0) 
-      then raise IntOverflow
-      (* if a < 0 && b > 0 && r > 0 then we have an underflow*)
-      else if ((compare a zero) < 0 && (compare b zero) > 0 && (compare r zero) > 0) 
-      then raise IntUnderflow
-      else r
-
-    let safe_mul a b  =
-      let r = mul a b in
-      (* http://www.informit.com/articles/article.aspx?p=1959565&seqNum=13 *)
-      (* if b < 0 && a = int_min OR if b != 0 && r / b != a *)
-      if (compare b zero) < 0 && a = min_int then raise IntOverflow else
-      if compare b zero <> 0
-      then
-        let d = div r b in
-        if (compare d a <> 0)
-        then raise IntOverflow
-        else r
-      else r
-
-    let safe_div a b =
-      (* Integer overflow during division occurs in a very specific case. *)
-      (* https://stackoverflow.com/a/30400252/2128804 *)
-      if a = min_int && b = (sub zero one) then raise IntOverflow else
-        (* Division_by_zero is taken care of by underlying implementation. *)
-        div a b
-
-    let safe_rem a b =
-      (* Division_by_zero is taken care of by underlying implementation. *)
-      rem a b
-
-    let safe_pow a b =
-      let rec pow acc b' =
-        if b' = Uint32.zero then
-          acc
-        else
-          pow (safe_mul a acc) (Uint32.sub b' Uint32.one)
-      in
-      pow one b
-
-    let safe_lt a b =
-      if (compare a b) < 0 then true else false
-
-  end
-
-  module StdUintWrapper(R: IntRep) = struct
-    open R
-
-    let safe_add a b =
-      let r = add a b in
-      (* if r < a || r < b then we have an overflow *)
-      if ((compare r a) < 0 || (compare r b) < 0)
-      then raise IntOverflow
-      else r
-
-    let safe_sub a b =
-      let r = sub a b in
-      (* if a < b then we have an underflow *)
-      if (compare a b) < 0
-      then raise IntUnderflow
-      else r
-
-    let safe_mul a b  =
-      let r = mul a b in
-      (* if b != 0 && r / b != a *)
-      if compare b zero <> 0
-      then
-        let d = div r b in
-        if (compare d a <> 0)
-        then raise IntOverflow
-        else r
-      else r
-
-    let safe_div a b =
-      (* Division_by_zero is taken care of by underlying implementation. *)
-      div a b
-        
-    let safe_rem a b =
-      (* Division_by_zero is taken care of by underlying implementation. *)
-      rem a b
-
-    let safe_pow a b =
-      let rec pow acc b' =
-        if b' = Uint32.zero then
-          acc
-        else
-          pow (safe_mul a acc) (Uint32.sub b' Uint32.one)
-      in
-      pow one b
-
-    let safe_lt a b =
-      if (compare a b) < 0 then true else false
-
-  end
-
   (* Instantiating the functors *)
-  module Int32Wrapper = StdIntWrapper(Int32)
-  module Int64Wrapper = StdIntWrapper(Int64)
-  module Int128Wrapper = StdIntWrapper(Int128)
-  module Int256Wrapper = StdIntWrapper(Int256)
-  module Uint32Wrapper = StdUintWrapper(Uint32)
-  module Uint64Wrapper = StdUintWrapper(Uint64)
-  module Uint128Wrapper = StdUintWrapper(Uint128)
-  module Uint256Wrapper = StdUintWrapper(Uint256)
+  open SafeArith
+
+  module Int32_safe = SafeInt(Int32)
+  module Int64_safe = SafeInt(Int64)
+  module Int128_safe = SafeInt(Int128)
+  module Int256_safe = SafeInt(Int256)
+
+  module Uint32_safe = SafeUint(Uint32)
+  module Uint64_safe = SafeUint(Uint64)
+  module Uint128_safe = SafeUint(Uint128)
+  module Uint256_safe = SafeUint(Uint256)
 
   (*******************************************************)
   (*******************************************************)
@@ -328,13 +201,13 @@ module ScillaBuiltIns
       try 
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
-              pure @@ Int32L(Int32Wrapper.safe_add x y)
+              pure @@ Int32L(Int32_safe.add x y)
           | [IntLit (Int64L x); IntLit (Int64L y)] ->
-              pure @@ Int64L(Int64Wrapper.safe_add x y)
+              pure @@ Int64L(Int64_safe.add x y)
           | [IntLit (Int128L x); IntLit (Int128L y)] ->
-              pure @@ Int128L(Int128Wrapper.safe_add x y)
+              pure @@ Int128L(Int128_safe.add x y)
           | [IntLit (Int256L x); IntLit (Int256L y)] ->
-              pure @@ Int256L(Int256Wrapper.safe_add x y)
+              pure @@ Int256L(Int256_safe.add x y)
           | _ -> builtin_fail "Int.add: unsupported types" ls)
         in pure @@ IntLit l
       with | IntOverflow | IntUnderflow ->
@@ -344,13 +217,13 @@ module ScillaBuiltIns
       try 
         let%bind l =(match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
-              pure @@ Int32L(Int32Wrapper.safe_sub x y)
+              pure @@ Int32L(Int32_safe.sub x y)
           | [IntLit (Int64L x); IntLit (Int64L y)] ->
-              pure @@ Int64L(Int64Wrapper.safe_sub x y)
+              pure @@ Int64L(Int64_safe.sub x y)
           | [IntLit (Int128L x); IntLit (Int128L y)] ->
-              pure @@ Int128L (Int128Wrapper.safe_sub x y)
+              pure @@ Int128L (Int128_safe.sub x y)
           | [IntLit (Int256L x); IntLit (Int256L y)] ->
-              pure @@ Int256L (Int256Wrapper.safe_sub x y)
+              pure @@ Int256L (Int256_safe.sub x y)
           | _ -> builtin_fail "Int.sub: unsupported types" ls)
         in pure @@ IntLit l
       with | IntOverflow | IntUnderflow ->
@@ -360,13 +233,13 @@ module ScillaBuiltIns
       try 
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
-              pure @@ Int32L(Int32Wrapper.safe_mul x y)
+              pure @@ Int32L(Int32_safe.mul x y)
           | [IntLit (Int64L x); IntLit (Int64L y)] ->
-              pure @@ Int64L(Int64Wrapper.safe_mul x y)
+              pure @@ Int64L(Int64_safe.mul x y)
           | [IntLit (Int128L x); IntLit (Int128L y)] ->
-              pure @@ Int128L(Int128Wrapper.safe_mul x y)
+              pure @@ Int128L(Int128_safe.mul x y)
           | [IntLit (Int256L x); IntLit (Int256L y)] ->
-              pure @@ Int256L(Int256Wrapper.safe_mul x y)
+              pure @@ Int256L(Int256_safe.mul x y)
           | _ -> builtin_fail "Int.mul: unsupported types" ls)
         in pure @@ IntLit l
       with | IntOverflow | IntUnderflow ->
@@ -376,13 +249,13 @@ module ScillaBuiltIns
       try 
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
-              pure @@ Int32L(Int32Wrapper.safe_div x y)
+              pure @@ Int32L(Int32_safe.div x y)
           | [IntLit (Int64L x); IntLit (Int64L y)] ->
-              pure @@ Int64L(Int64Wrapper.safe_div x y)
+              pure @@ Int64L(Int64_safe.div x y)
           | [IntLit (Int128L x); IntLit (Int128L y)] ->
-              pure @@ Int128L(Int128Wrapper.safe_div x y)
+              pure @@ Int128L(Int128_safe.div x y)
           | [IntLit (Int256L x); IntLit (Int256L y)] ->
-              pure @@ Int256L(Int256Wrapper.safe_div x y)
+              pure @@ Int256L(Int256_safe.div x y)
           | _ -> builtin_fail "Int.div: unsupported types" ls)
         in pure @@ IntLit l
         with | Division_by_zero | IntOverflow ->
@@ -392,13 +265,13 @@ module ScillaBuiltIns
       try 
         let%bind l = (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
-              pure @@ Int32L(Int32Wrapper.safe_rem x y)
+              pure @@ Int32L(Int32_safe.rem x y)
           | [IntLit (Int64L x); IntLit (Int64L y)] ->
-              pure @@ Int64L(Int64Wrapper.safe_rem x y)
+              pure @@ Int64L(Int64_safe.rem x y)
           | [IntLit (Int128L x); IntLit (Int128L y)] ->
-              pure @@ Int128L(Int128Wrapper.safe_rem x y)
+              pure @@ Int128L(Int128_safe.rem x y)
           | [IntLit (Int256L x); IntLit (Int256L y)] ->
-              pure @@ Int256L(Int256Wrapper.safe_rem x y)
+              pure @@ Int256L(Int256_safe.rem x y)
           | _ -> builtin_fail "Int.rem: unsupported types" ls)
         in pure @@ IntLit l
       with | Division_by_zero ->
@@ -414,13 +287,13 @@ module ScillaBuiltIns
     try 
       let%bind l = (match ls with
         | [IntLit (Int32L x); UintLit (Uint32L y)] ->
-            pure @@ Int32L(Int32Wrapper.safe_pow x y)
+            pure @@ Int32L(Int32_safe.pow x y)
         | [IntLit (Int64L x); UintLit (Uint32L y)] ->
-            pure @@ Int64L(Int64Wrapper.safe_pow x y)
+            pure @@ Int64L(Int64_safe.pow x y)
         | [IntLit (Int128L x); UintLit (Uint32L y)] ->
-            pure @@ Int128L(Int128Wrapper.safe_pow x y)
+            pure @@ Int128L(Int128_safe.pow x y)
         | [IntLit (Int256L x); UintLit (Uint32L y)] ->
-            pure @@ Int256L(Int256Wrapper.safe_pow x y)
+            pure @@ Int256L(Int256_safe.pow x y)
         | _ -> builtin_fail "Int.pow: unsupported types" ls)
       in pure @@ IntLit l
     with | IntOverflow | IntUnderflow ->
@@ -430,13 +303,13 @@ module ScillaBuiltIns
       try 
         (match ls with
           | [IntLit (Int32L x); IntLit (Int32L y)] ->
-              pure @@ to_Bool (Int32Wrapper.safe_lt x y)
+              pure @@ to_Bool (Int32_safe.lt x y)
           | [IntLit (Int64L x); IntLit (Int64L y)] ->
-              pure @@ to_Bool (Int64Wrapper.safe_lt x y)
+              pure @@ to_Bool (Int64_safe.lt x y)
           | [IntLit (Int128L x); IntLit (Int128L y)] ->
-              pure @@ to_Bool (Int128Wrapper.safe_lt x y)
+              pure @@ to_Bool (Int128_safe.lt x y)
           | [IntLit (Int256L x); IntLit (Int256L y)] ->
-              pure @@ to_Bool (Int256Wrapper.safe_lt x y)
+              pure @@ to_Bool (Int256_safe.lt x y)
           | _ -> builtin_fail "Int.lt: unsupported types" ls)
         with | IntOverflow | IntUnderflow ->
           builtin_fail "Int.lt: an overflow/underflow occurred" ls
@@ -501,13 +374,13 @@ module ScillaBuiltIns
       try 
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
-              pure @@ Uint32L(Uint32Wrapper.safe_add x y)
+              pure @@ Uint32L(Uint32_safe.add x y)
           | [UintLit (Uint64L x); UintLit (Uint64L y)] ->
-              pure @@ Uint64L(Uint64Wrapper.safe_add x y)
+              pure @@ Uint64L(Uint64_safe.add x y)
           | [UintLit (Uint128L x); UintLit (Uint128L y)] ->
-              pure @@ Uint128L(Uint128Wrapper.safe_add x y)
+              pure @@ Uint128L(Uint128_safe.add x y)
           | [UintLit (Uint256L x); UintLit (Uint256L y)] ->
-              pure @@ Uint256L(Uint256Wrapper.safe_add x y)
+              pure @@ Uint256L(Uint256_safe.add x y)
           | _ -> builtin_fail "Uint.add: unsupported types" ls)
         in pure @@ UintLit l
       with | IntOverflow | IntUnderflow ->
@@ -517,13 +390,13 @@ module ScillaBuiltIns
       try 
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
-              pure @@ Uint32L(Uint32Wrapper.safe_sub x y)
+              pure @@ Uint32L(Uint32_safe.sub x y)
           | [UintLit (Uint64L x); UintLit (Uint64L y)] ->
-              pure @@ Uint64L(Uint64Wrapper.safe_sub x y)
+              pure @@ Uint64L(Uint64_safe.sub x y)
           | [UintLit (Uint128L x); UintLit (Uint128L y)] ->
-              pure @@ Uint128L(Uint128Wrapper.safe_sub x y)
+              pure @@ Uint128L(Uint128_safe.sub x y)
           | [UintLit (Uint256L x); UintLit (Uint256L y)] ->
-              pure @@ Uint256L(Uint256Wrapper.safe_sub x y)
+              pure @@ Uint256L(Uint256_safe.sub x y)
           | _ -> builtin_fail "Uint.sub: unsupported types" ls)
         in pure @@ UintLit l
       with | IntOverflow | IntUnderflow ->
@@ -533,13 +406,13 @@ module ScillaBuiltIns
       try 
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
-              pure @@ Uint32L(Uint32Wrapper.safe_mul x y)
+              pure @@ Uint32L(Uint32_safe.mul x y)
           | [UintLit (Uint64L x); UintLit (Uint64L y)] ->
-              pure @@ Uint64L(Uint64Wrapper.safe_mul x y)
+              pure @@ Uint64L(Uint64_safe.mul x y)
           | [UintLit (Uint128L x); UintLit (Uint128L y)] ->
-              pure @@ Uint128L(Uint128Wrapper.safe_mul x y)
+              pure @@ Uint128L(Uint128_safe.mul x y)
           | [UintLit (Uint256L x); UintLit (Uint256L y)] ->
-              pure @@ Uint256L(Uint256Wrapper.safe_mul x y)
+              pure @@ Uint256L(Uint256_safe.mul x y)
           | _ -> builtin_fail "Uint.mul: unsupported types" ls)
         in pure @@ UintLit l
       with | IntOverflow | IntUnderflow ->
@@ -549,13 +422,13 @@ module ScillaBuiltIns
       try 
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
-              pure @@ Uint32L(Uint32Wrapper.safe_div x y)
+              pure @@ Uint32L(Uint32_safe.div x y)
           | [UintLit (Uint64L x); UintLit (Uint64L y)] ->
-              pure @@ Uint64L(Uint64Wrapper.safe_div x y)
+              pure @@ Uint64L(Uint64_safe.div x y)
           | [UintLit (Uint128L x); UintLit (Uint128L y)] ->
-              pure @@ Uint128L(Uint128Wrapper.safe_div x y)
+              pure @@ Uint128L(Uint128_safe.div x y)
           | [UintLit (Uint256L x); UintLit (Uint256L y)] ->
-              pure @@ Uint256L(Uint256Wrapper.safe_div x y)
+              pure @@ Uint256L(Uint256_safe.div x y)
           | _ -> builtin_fail "Uint.div: unsupported types" ls)
         in pure @@ UintLit l
       with | Division_by_zero ->
@@ -565,13 +438,13 @@ module ScillaBuiltIns
       try 
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
-              pure @@ Uint32L(Uint32Wrapper.safe_rem x y)
+              pure @@ Uint32L(Uint32_safe.rem x y)
           | [UintLit (Uint64L x); UintLit (Uint64L y)] ->
-              pure @@ Uint64L(Uint64Wrapper.safe_rem x y)
+              pure @@ Uint64L(Uint64_safe.rem x y)
           | [UintLit (Uint128L x); UintLit (Uint128L y)] ->
-              pure @@ Uint128L(Uint128Wrapper.safe_rem x y)
+              pure @@ Uint128L(Uint128_safe.rem x y)
           | [UintLit (Uint256L x); UintLit (Uint256L y)] ->
-              pure @@ Uint256L(Uint256Wrapper.safe_rem x y)
+              pure @@ Uint256L(Uint256_safe.rem x y)
           | _ -> builtin_fail "Uint.rem: unsupported types" ls)
         in pure @@ UintLit l
       with | Division_by_zero ->
@@ -587,13 +460,13 @@ module ScillaBuiltIns
       try 
         let%bind l = (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
-              pure @@ Uint32L(Uint32Wrapper.safe_pow x y)
+              pure @@ Uint32L(Uint32_safe.pow x y)
           | [UintLit (Uint64L x); UintLit (Uint32L y)] ->
-              pure @@ Uint64L(Uint64Wrapper.safe_pow x y)
+              pure @@ Uint64L(Uint64_safe.pow x y)
           | [UintLit (Uint128L x); UintLit (Uint32L y)] ->
-              pure @@ Uint128L(Uint128Wrapper.safe_pow x y)
+              pure @@ Uint128L(Uint128_safe.pow x y)
           | [UintLit (Uint256L x); UintLit (Uint32L y)] ->
-              pure @@ Uint256L(Uint256Wrapper.safe_pow x y)
+              pure @@ Uint256L(Uint256_safe.pow x y)
           | _ -> builtin_fail "Int.pow: unsupported types" ls)
         in pure @@ UintLit l
       with | IntOverflow | IntUnderflow ->
@@ -603,13 +476,13 @@ module ScillaBuiltIns
       try 
         (match ls with
           | [UintLit (Uint32L x); UintLit (Uint32L y)] ->
-              pure @@ to_Bool (Uint32Wrapper.safe_lt x y)
+              pure @@ to_Bool (Uint32_safe.lt x y)
           | [UintLit (Uint64L x); UintLit (Uint64L y)] ->
-              pure @@ to_Bool (Uint64Wrapper.safe_lt x y)
+              pure @@ to_Bool (Uint64_safe.lt x y)
           | [UintLit (Uint128L x); UintLit (Uint128L y)] ->
-              pure @@ to_Bool (Uint128Wrapper.safe_lt x y)
+              pure @@ to_Bool (Uint128_safe.lt x y)
           | [UintLit (Uint256L x); UintLit (Uint256L y)] ->
-              pure @@ to_Bool (Uint256Wrapper.safe_lt x y)
+              pure @@ to_Bool (Uint256_safe.lt x y)
           | _ -> builtin_fail "Uint.lt: unsupported types" ls)
       with | IntOverflow | IntUnderflow ->
         builtin_fail "Uint.lt: an overflow/underflow occurred" ls
