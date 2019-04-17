@@ -1,13 +1,17 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "6857",
+  "gas_remaining": "6996",
   "_accepted": "false",
   "message": {
     "_tag": "",
     "_amount": "0",
     "_recipient": "0x12345678901234567890123456789012345678ab",
     "params": [
-      { "vname": "status", "type": "String", "value": "verification failed" }
+      {
+        "vname": "status",
+        "type": "String",
+        "value": "verification successful"
+      }
     ]
   },
   "states": [
@@ -19,18 +23,7 @@
         "constructor": "Some",
         "argtypes": [ "ByStr33" ],
         "arguments": [
-          "0x0331cca11ff9bc747e20fd0aef3425e3fe0a6be27c9cb60348fac0a9077403a029"
-        ]
-      }
-    },
-    {
-      "vname": "priv_key",
-      "type": "Option (ByStr32)",
-      "value": {
-        "constructor": "Some",
-        "argtypes": [ "ByStr32" ],
-        "arguments": [
-          "0x383f7c2af7edcd955bee9b78122d14cbebc7fd12b4efeedc6063cee78de74baf"
+          "0x03cd4bced7e13ce05fa3a11086f9e5d7fe7c0bea6bc4ee851dda2b97f7b6c80397"
         ]
       }
     }

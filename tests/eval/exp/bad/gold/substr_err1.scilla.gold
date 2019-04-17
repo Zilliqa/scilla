@@ -1,0 +1,12 @@
+{
+  "gas_remaining": "1754",
+  "errors": [
+    {
+      "error_message":
+        "Cannot apply built-in String.substr: pos + len past end: 0 + 6 > 5 to a list of arguments:[  (String \"hello\"),\n  (Uint32 0),\n  (Uint32 6)].",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
