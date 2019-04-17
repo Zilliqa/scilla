@@ -56,6 +56,7 @@ module SafeInt(Unsafe: IntRep) = struct
     then raise IntOverflow
     else if (compare b zero <> 0) && (compare (div r b) a <> 0)
     then
+      (* sign a = sign b ? *)
       if compare a zero = compare b zero
       then raise IntOverflow
       else raise IntUnderflow

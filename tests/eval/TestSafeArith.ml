@@ -3,6 +3,13 @@ open Stdint
 open OUnit2
 open SafeArith
 
+(* We test by comparing the result of the safe arithmetic operations
+ * on small integer types with the result of non-wrapping (precise)
+ * int operations.
+ * An implicit assumption here is that native int type can fit
+ * any result of SmallInt operations, including multiplication.
+ *)
+
 module TestArith (SmallInt : Int) = struct
 
   type arith_error =
