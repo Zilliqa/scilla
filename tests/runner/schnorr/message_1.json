@@ -6,12 +6,12 @@
         {
             "vname" : "msg",
             "type" : "ByStr",
-            "value" : "0x0ffe45aa23"
+            "value" : "0xb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf6"
         },
         {
             "vname" : "sig",
             "type" : "ByStr64",
-            "value" : "0x125ddeb7d68c36f381d24fd23e871f1a270533e8efc49b66922ab8603c7e79d3aeb79374b0fbb8b571f8eebd84b51dbda844b7d0fdbadf3011393343b5b040ff"
+            "value" : "0x919dbde710bfa1a227d1d51220022a6f5a92509b2072fc0ac50ee97a3a55987a4254276de534b018a0bb7c99a7fbdb468430956935b3ebb668df8b4fa3e25aaf"
         }
     ]
 }

@@ -51,12 +51,14 @@ let main =
   let gas_expr_tests = TestGasExpr.Tests.add_tests env in
   let gas_contract_tests = TestGasContracts.Tests.add_tests env in
   let syntax_tests = TestSyntax.syntax_tests in
+  let arith_builtin_tests = TestSafeArith.arith_builtin_tests in
 
   let all_tests = "all_tests" >:::
                   [type_tests_bad; type_tests_good; exp_tests_good; exp_tests_bad;
                    pm_tests_bad; signature_tests; polynomial_tests; gas_expr_tests;
                    gas_contract_tests;
-                   contract_tests; checker_tests; integer256_tests; syntax_tests] in
+                   contract_tests; checker_tests; integer256_tests; syntax_tests;
+                   arith_builtin_tests] in
 
   (* Run all tests *)
   run_test_tt_main all_tests

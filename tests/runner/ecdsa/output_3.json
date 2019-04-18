@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7009",
+  "gas_remaining": "6942",
   "_accepted": "false",
   "message": {
     "_tag": "",
@@ -19,7 +19,7 @@
         "constructor": "Some",
         "argtypes": [ "ByStr33" ],
         "arguments": [
-          "0x0331cca11ff9bc747e20fd0aef3425e3fe0a6be27c9cb60348fac0a9077403a029"
+          "0x0301082cfed78124a15892da1887daff084669e7a2ed27119e71c20bda3a2e00dd"
         ]
       }
     }
