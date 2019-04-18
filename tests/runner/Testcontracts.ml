@@ -165,6 +165,7 @@ let add_tests env =
       "crowdfunding_init" >:(build_contract_init_test env succ_code "crowdfunding" false);
       "zil-game" >:::(build_contract_tests env "zil-game" succ_code 1 9 false);
       "zil-game_init" >:(build_contract_init_test env succ_code "zil-game" false);
+      "creationtest_init" >:(build_contract_init_test env succ_code "creationtest" false);
       "testlib2_init" >:(build_contract_init_test env succ_code "TestLib2" true);
       "cfinvoke" >:::(build_contract_tests env "cfinvoke" succ_code 1 4 false);
       "ping" >:::(build_contract_tests env "ping" succ_code 0 3 false);
