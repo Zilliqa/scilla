@@ -75,6 +75,9 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "namespace1.scilla";
       "namespace2.scilla";
       "namespace3.scilla";
+      "namespace3.scilla";
+      "TestLibNS1.scillib";
+      "TestLibNS2.scillib";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
