@@ -261,9 +261,10 @@ let () =
         let init_res = init_module cmod initargs [] Uint128.zero bstate elibs in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
-        let (_, remaining_gas') = check_extract_cstate cli.input init_res gas_remaining in
+        let (cstate', remaining_gas') = check_extract_cstate cli.input init_res gas_remaining in
+         
         (plog (sprintf "\nContract initialized successfully\n");
-          (`Null, `List [], `List [], false), remaining_gas')
+          (`Null, output_state_json cstate', `List [], false), remaining_gas')
       else
         (* Not initialization, execute transition specified in the message *)
         (let mmsg = 

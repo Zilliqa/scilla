@@ -94,7 +94,7 @@ let genKeyPair () =
   let _ = dataPrivKey, dataPubKey, privK, pubK in
     (bin_to_hex privK', bin_to_hex pubK')
 
-
+(* privKey and pubKey are hexadecimal strings while "msg" is raw bytes. *)
 let sign privKey pubKey msg =
 
   (* void sign_Z(const RawBytes_Z* privKey, const RawBytes_Z* pubKey,
@@ -136,7 +136,7 @@ let sign privKey pubKey msg =
   let _ = privKS, privKD, pubKS, pubKD, msgS, msgD, signS, signD in
     bin_to_hex signS'
 
-
+(* signature and pubKey are hexadecimal strings while "msg" is raw bytes. *)
 let verify pubKey msg signature =
 
   (* int verify_Z(const RawBytes_Z* pubKey, const RawBytes_Z* message,
