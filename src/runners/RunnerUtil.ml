@@ -57,26 +57,37 @@ let import_lib id =
         plog (sprintf "Successfully imported external library %s\n" name);
         (lmod, initf)
 
+(* An auxiliary data structure that is homomorphic to libtree, but for namespaces.
+   Think of this as a field "namespace" in the "Syntax.libtree". It isn't added
+   to the type itself because we want to eliminate the idea of namespaces right here. *)
+type 'a nspace_tree = 
+  {
+    nspace : 'a ident option;
+    dep_ns : 'a nspace_tree list;
+  }
+
 (* light-weight namespaces. prefix all entries in lib with their namespace. *)
-let namespace_prefix lib ns =
-  match ns with
-  | None -> lib
-  | Some name' ->
-    let name = get_id name' in
-    let initenv = [] in
-    let (rev_entries, _) = List.fold lib.lentries ~init:([], initenv)
-    ~f:(fun (accentries, accenv) entry ->
+let eliminate_namespaces lib_tree ns_tree =
+
+  (* Prefix definitions in lib with namespace (and rewrite their uses). 
+     Also, rewrite uses in lib that are in env. This is for names imported by lib. 
+     Returns renamed library and a list of names that are defined in this library. *)
+  let rename_in_library env lib namespace =
+    let (rev_entries, _, def_names) = List.fold lib.lentries ~init:([], env, [])
+    ~f:(fun (accentries, accenv, accnames) entry ->
       (* check if id is in env and prefix it with a namespace. *)
       let check_and_prefix_id env id =
-        if List.mem env (get_id id) ~equal:(=)
-        then
-          let nname = name ^ "." ^ (get_id id) in
+        match List.Assoc.find env ~equal:(=) (get_id id) with
+        | Some ns when ns <> "" ->
+          let nname = ns ^ "." ^ (get_id id) in
+          (* Printf.printf "Adding namespace %s to name %s = %s\n" ns (get_id id) nname; *)
           asIdL nname (get_rep id)
-        else
-          id
+        | _ -> id
       in
       let check_and_prefix_string env cname =
-        if List.mem env cname ~equal:(=) then name ^ "." ^ cname else cname
+        match List.Assoc.find env ~equal:(=) cname with
+        | Some ns when ns <> "" -> ns ^ "." ^ cname
+        | _ -> cname
       in
       let rename_in_type t env =
         let rec recurser t =
@@ -100,7 +111,7 @@ let namespace_prefix lib ns =
         | Let (i, t, elhs, erhs) ->
           let elhs' = rename_in_expr elhs env in
           (* "i" get's a local binding now, don't rename it in rhs. *)
-          let env' = List.filter env ~f:((<>) (get_id i)) in
+          let env' = List.Assoc.remove env ~equal:((=)) (get_id i) in
           let erhs' = rename_in_expr erhs env' in
           (Let (i, t, elhs', erhs'), eloc)
         | Message spl ->
@@ -108,7 +119,7 @@ let namespace_prefix lib ns =
           let spl' = List.map spl ~f:(fun (s, pl) -> (s, rename_in_payload pl)) in
           (Message spl', eloc)
         | Fun (i, t, exp) ->
-          let env' = List.filter env ~f:((<>) (get_id i)) in
+          let env' = List.Assoc.remove env ~equal:((=)) (get_id i) in
           let t' = rename_in_type t env' in
           let exp' = rename_in_expr exp env' in
           (Fun (i, t', exp'), eloc)
@@ -128,7 +139,7 @@ let namespace_prefix lib ns =
             | Wildcard -> (pat, [])
             | Binder i -> (pat, [(get_id i)])
             | Constructor (c, plist) ->
-              let c' = if List.mem env c ~equal:(=) then name ^ "." ^ c else c in
+              let c' = check_and_prefix_string env c in
               let (plist', blist) = List.unzip @@ List.map plist ~f:(rename_in_pattern env) in
               let blist' = List.concat blist in
               (Constructor(c', plist'), blist')
@@ -140,7 +151,8 @@ let namespace_prefix lib ns =
           let pelist' = List.map pelist ~f:(fun (pat, expr) ->
             let pat', binds = rename_in_pattern env pat in
             (* remove all binds from env *)
-            let env' = List.filter env ~f:(fun a -> not (List.mem binds a ~equal:(=))) in
+            let env' = List.fold_left binds ~init:env 
+              ~f:(fun accenv b -> List.Assoc.remove accenv ~equal:((=)) b) in
             (pat', rename_in_expr expr env')
           ) in
           MatchExpr(pv', pelist'), eloc
@@ -152,7 +164,7 @@ let namespace_prefix lib ns =
           let tl' = List.map tl ~f:(fun t -> rename_in_type t env) in
           (TApp(check_and_prefix_id env i, tl'), eloc)
         | Fixpoint (i, t, e) ->
-          let env' = List.filter env ~f:((<>) (get_id i)) in
+          let env' = List.Assoc.remove env ~equal:((=)) (get_id i) in
           let exp' = rename_in_expr e env' in
           (Fixpoint (i, t, exp'), eloc)
         )
@@ -160,9 +172,9 @@ let namespace_prefix lib ns =
       match entry with
       | LibTyp (i, ctrs) ->
         (* from this point, env has "i" and all constructors, to be renamed. *)
-        let env' = (get_id i) :: accenv in
+        let env' = ((get_id i), namespace) :: accenv in
         let env'' = List.fold ctrs ~init:env' ~f:(fun envacc ctr ->
-          (get_id ctr.cname) :: envacc
+          ((get_id ctr.cname), namespace) :: envacc
         ) in
         let ctrs' = List.map ctrs ~f:(fun ctr ->
             let cname' = check_and_prefix_id env'' ctr.cname in
@@ -170,16 +182,43 @@ let namespace_prefix lib ns =
             {cname = cname'; c_arg_types = c_arg_types'}
         ) in
         let entry' = LibTyp(check_and_prefix_id env'' i, ctrs') in
-        (entry' :: accentries, env'')
+        let names = (get_id i) :: List.map ctrs' ~f:(fun ctr -> get_id ctr.cname) in
+        (entry' :: accentries, env'', accnames @ names)
       | LibVar (i, exp) ->
         (* from this point, env has "i", to be renamed. *)
-        let env' = (get_id i) :: accenv in
+        let env' = ((get_id i), namespace) :: accenv in
         let entry' = LibVar (check_and_prefix_id env' i, rename_in_expr exp env') in
         (* we're appending entries in the reverse order. *)
-        (entry' :: accentries, env')
+        (entry' :: accentries, env', accnames @ [get_id i])
     ) in
-    { lib with lentries = List.rev rev_entries }
+    { lib with lentries = List.rev rev_entries }, def_names
+  in (* end of rename_in_library *)
 
+  let rec rename_in_libtree ltnode nsnode outerns =
+    let this_lib = ltnode.libn in
+    let this_namespace = nsnode.nspace in
+    let fullns =
+      match this_namespace with 
+      | Some i -> if outerns <> "" then outerns ^ "." ^ (get_id i) else (get_id i) 
+      | None -> outerns
+      in
+    (* rename deps first *)
+    let (deps', env') = List.fold2_exn ltnode.deps nsnode.dep_ns ~init:([], [])
+      ~f:(fun (depacc, envacc) ln nsn ->
+        let (dep, env) = rename_in_libtree ln nsn fullns in
+        (depacc @ [dep], envacc @ env)
+      ) in
+    let (ltnode', entries) = rename_in_library env' this_lib fullns in
+    (* An entry "n" in ltnode will be used as "this_namespace.n" in the libraries
+       that import ltnode. Hence rename these uses "this_namespace.n" to "fullns.n" *)
+    let env =
+      let this_namespace_s = match this_namespace with | Some i -> (get_id i) ^ "." | None -> "" in
+      List.map entries ~f:(fun n -> (this_namespace_s ^ n, outerns))
+    in
+    ({libn = ltnode'; deps = deps'}, env)
+  in
+  List.map2_exn lib_tree ns_tree 
+    ~f:(fun ltnode nsnode -> fst @@ rename_in_libtree ltnode nsnode "")
 
 (* Import all libraries in "names" (and their dependences).
  * The order of the returned libraries is an RPO traversal
@@ -196,7 +235,7 @@ let import_libs names init_file =
         | None -> (n, n, namespace))
       )
     in
-    List.fold_left ~f:(fun libacc (name, mapped_name, namespace) ->
+    List.fold_left ~f:(fun (libacc, nacc) (name, mapped_name, namespace) ->
       if List.mem stack (get_id name) ~equal:(=) then
         let errmsg = 
           if get_id (mapped_name) = (get_id name) then
@@ -208,19 +247,20 @@ let import_libs names init_file =
         fatal_error @@ mk_error1 errmsg (get_rep name)
       else
       let (ilib, ilib_import_map) = import_lib name in
-      let ilib' = { ilib with libs = namespace_prefix ilib.libs namespace } in
-      let ilibs'' = importer ilib'.elibs ilib_import_map ((get_id name) :: stack) in
-      let libnode = { libn = ilib'.libs; deps = ilibs'' } in
+      let (ilibs', nst) = importer ilib.elibs ilib_import_map ((get_id name) :: stack) in
+      let nsnode = { nspace = namespace; dep_ns = nst } in
+      let libnode = { libn = ilib.libs; deps = ilibs' } in
       (* Order in which we return the list of imported libraries is important. *)
-      (libacc @ [libnode])
-    ) ~init:[] mapped_names
+      (libacc @ [libnode]), (nacc @ [nsnode])
+    ) ~init:([], []) mapped_names
   in
   let name_map =
     match init_file with
     | Some f -> get_init_extlibs f
     | None -> []
   in
-  importer names name_map []
+  let (ltree, nstree) = importer names name_map [] in
+  eliminate_namespaces ltree nstree
 
 let stdlib_not_found_err () =
   fatal_error (mk_error0
