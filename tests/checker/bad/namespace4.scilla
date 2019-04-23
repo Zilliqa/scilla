@@ -1,9 +1,0 @@
-scilla_version 0
-
-library NS
-
-(* dots are not allowed in identifiers without going through namespace mechanism *)
-let Foo.bar = Uint32 42
-
-contract TestContr1
-()
