@@ -40,6 +40,19 @@
           ]
         },
         {
+          "key": "2",
+          "val": [
+            {
+              "key": "1",
+              "val": {
+                "constructor": "Free",
+                "argtypes": [],
+                "arguments": []
+              }
+            }
+          ]
+        },
+        {
           "key": "3",
           "val": [
             {
@@ -62,19 +75,6 @@
         },
         {
           "key": "4",
-          "val": [
-            {
-              "key": "1",
-              "val": {
-                "constructor": "Free",
-                "argtypes": [],
-                "arguments": []
-              }
-            }
-          ]
-        },
-        {
-          "key": "2",
           "val": [
             {
               "key": "1",

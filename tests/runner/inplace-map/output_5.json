@@ -14,8 +14,8 @@
       "vname": "gmap",
       "type": "Map (String) (Int32)",
       "value": [
-        { "key": "NotFound", "val": "1" },
-        { "key": "Hello", "val": "1" }
+        { "key": "Hello", "val": "1" },
+        { "key": "NotFound", "val": "1" }
       ]
     }
   ],

@@ -55,6 +55,19 @@
           ]
         },
         {
+          "key": "2",
+          "val": [
+            {
+              "key": "1",
+              "val": {
+                "constructor": "Free",
+                "argtypes": [],
+                "arguments": []
+              }
+            }
+          ]
+        },
+        {
           "key": "3",
           "val": [
             {
@@ -84,19 +97,6 @@
                   },
                   "0xabcdeabcde123456786782345678901234567890"
                 ]
-              }
-            }
-          ]
-        },
-        {
-          "key": "2",
-          "val": [
-            {
-              "key": "1",
-              "val": {
-                "constructor": "Free",
-                "argtypes": [],
-                "arguments": []
               }
             }
           ]

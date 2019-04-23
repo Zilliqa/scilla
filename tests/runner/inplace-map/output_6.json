@@ -18,7 +18,7 @@
     {
       "vname": "gmap",
       "type": "Map (String) (Int32)",
-      "value": [ { "key": "Hello", "val": "1" }, { "key": "H", "val": "1" } ]
+      "value": [ { "key": "H", "val": "1" }, { "key": "Hello", "val": "1" } ]
     }
   ],
   "events": []

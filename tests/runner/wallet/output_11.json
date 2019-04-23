@@ -14,7 +14,7 @@
           "val": { "constructor": "True", "argtypes": [], "arguments": [] }
         },
         {
-          "key": "0xffcdeabcde126786789012345678901234567890",
+          "key": "0x1234567890123456789012345678906784567891",
           "val": { "constructor": "True", "argtypes": [], "arguments": [] }
         },
         {
@@ -22,7 +22,7 @@
           "val": { "constructor": "True", "argtypes": [], "arguments": [] }
         },
         {
-          "key": "0x1234567890123456789012345678906784567891",
+          "key": "0xffcdeabcde126786789012345678901234567890",
           "val": { "constructor": "True", "argtypes": [], "arguments": [] }
         }
       ]

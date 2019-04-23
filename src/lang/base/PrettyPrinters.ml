@@ -23,6 +23,7 @@ open Yojson
 open PrimTypes
 open ErrorUtils
 open Stdint
+open ScillaUtil
 
 (****************************************************************)
 (*                    Exception wrappers                        *)
@@ -39,11 +40,11 @@ let lookup_constructor_exn cn =
 (****************************************************************)
 
 let rec mapvalues_to_json ms =
-  Caml.Hashtbl.fold (fun k v a ->
-    let kjson = "key", (literal_to_json k) in
-    let vjson = "val", (literal_to_json v) in
-    let kv_json = `Assoc (kjson :: vjson :: []) in
-      kv_json :: a) ms []
+  let sorted_alist = List.sort ~compare (HashTable.to_alist ms) in
+  List.map sorted_alist ~f:(fun (k, v) ->
+    let kjson = ("key", literal_to_json k) in
+    let vjson = ("val", literal_to_json v) in
+    `Assoc [kjson; vjson])
 
 and adtargs_to_json vlist =
   match vlist with

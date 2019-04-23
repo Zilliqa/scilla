@@ -21,3 +21,7 @@ module FilePathInfix = struct
   let ( ^. ) = FilePath.add_extension
 end
 
+module HashTable = struct
+  let to_alist h =
+    Caml.Hashtbl.fold (fun k v acc -> (k, v) :: acc) h []
+end
