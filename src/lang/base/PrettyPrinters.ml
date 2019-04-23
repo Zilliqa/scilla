@@ -190,7 +190,6 @@ let scilla_version_string =
   sprintf "%d.%d.%d" major minor patch
 
 let rec pp_literal_simplified l =
-    let open Int in
     match l with
     | StringLit s -> "(String " ^ "\"" ^ s ^ "\"" ^ ")"
     (* (bit-width, value) *)
@@ -199,7 +198,7 @@ let rec pp_literal_simplified l =
     | UintLit i -> "(Uint" ^ (Int.to_string (uint_lit_width i))^ " " ^ (string_of_uint_lit i) ^ ")"
     | BNum b -> "(BNum " ^ b ^ ")"
     | ByStr s -> "(ByStr " ^ s ^ ")"
-    | ByStrX (i, s) -> "(ByStr" ^ (to_string i) ^ " " ^ s ^ ")"
+    | ByStrX (i, s) -> "(ByStr" ^ (Int.to_string i) ^ " " ^ s ^ ")"
     | Msg m ->
       let items = "[" ^
         List.fold_left m ~init:"" ~f:(fun a (s, l') ->
@@ -208,12 +207,13 @@ let rec pp_literal_simplified l =
           ) ^ "]" in
       ("(Message " ^ items ^ ")")
     | Map ((kt, vt), kv) ->
+      let sorted_alist = List.sort ~compare (HashTable.to_alist kv) in
       let items = "[" ^
-        (Caml.Hashtbl.fold (fun k v a ->
+        List.fold_left sorted_alist ~init:"" ~f:(fun a (k, v) ->
           let t = "(" ^ (pp_literal_simplified k) ^ " => " ^ (pp_literal_simplified v) ^ ")" in
-            if String.is_empty a then t else a ^ "; " ^ t
-          ) kv "")  ^ "]" in
-      ("(Map " ^ pp_typ kt ^ " " ^ pp_typ vt ^ " "  ^ items ^ ")")
+            if String.is_empty a then t else a ^ "; " ^ t) ^ "]"
+      in
+      "(Map " ^ pp_typ kt ^ " " ^ pp_typ vt ^ " "  ^ items ^ ")"
     | ADTValue (cn, _, al) ->
         (match cn with
         | "Cons" ->

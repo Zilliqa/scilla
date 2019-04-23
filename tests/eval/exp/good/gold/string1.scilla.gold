@@ -1,5 +1,5 @@
-(Map Int32 String [((Int32 2) => (String "def")); ((Int32 1) => (String "abc"))]),
-{ [m2 -> (Map Int32 String [((Int32 2) => (String "def")); ((Int32 1) => (String "abc"))])],
+(Map Int32 String [((Int32 1) => (String "abc")); ((Int32 2) => (String "def"))]),
+{ [m2 -> (Map Int32 String [((Int32 1) => (String "abc")); ((Int32 2) => (String "def"))])],
   [m1 -> (Map Int32 String [((Int32 1) => (String "abc"))])],
   [m0 -> (Map Int32 String [])],
   [t -> (String "def")],
