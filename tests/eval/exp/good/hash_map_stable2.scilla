@@ -8,7 +8,7 @@ let emp = Emp Int64 Int64 in
 let m1 = builtin put emp k1 v1 in
 let m2 = builtin put m1 k2 v2 in
 (* add the same key twice shadowing the previous m2 *)
-let m2 = builtin put m1 k2 v2 in
+let m2 = builtin put m2 k2 v2 in
 
 let n1 = builtin put emp k2 v2 in
 let n2 = builtin put n1 k1 v1 in
