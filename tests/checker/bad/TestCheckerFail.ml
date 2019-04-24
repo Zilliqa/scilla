@@ -87,6 +87,7 @@ module LibTests = TestUtil.DiffBasedTests(
       "libdup1.scilla";
       "libdup2.scilla";
       "namespace1.scilla";
+      "TestLibNS1.scillib";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
