@@ -1,0 +1,10 @@
+scilla_version 0
+
+contract ShadowWarn2 (p1 : Uint32)
+
+field p1 : ByStr1 = 0xff
+field p2 : ByStr1 = 0xfe
+
+transition Foo (p2 : String)
+
+end

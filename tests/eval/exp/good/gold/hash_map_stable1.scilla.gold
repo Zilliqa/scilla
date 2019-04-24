@@ -1,0 +1,12 @@
+(True),
+{ [hn -> (ByStr32 0xcac2e735ddab598cefbc4e470b0d2528b073fef4109e0bba9cbedf5617e3ff06)],
+  [hm -> (ByStr32 0xcac2e735ddab598cefbc4e470b0d2528b073fef4109e0bba9cbedf5617e3ff06)],
+  [n2 -> (Map Int64 Int64 [((Int64 1) => (Int64 48)); ((Int64 2) => (Int64 57))])],
+  [n1 -> (Map Int64 Int64 [((Int64 2) => (Int64 57))])],
+  [m2 -> (Map Int64 Int64 [((Int64 1) => (Int64 48)); ((Int64 2) => (Int64 57))])],
+  [m1 -> (Map Int64 Int64 [((Int64 1) => (Int64 48))])],
+  [emp -> (Map Int64 Int64 [])],
+  [v2 -> (Int64 57)],
+  [k2 -> (Int64 2)],
+  [v1 -> (Int64 48)],
+  [k1 -> (Int64 1)] }

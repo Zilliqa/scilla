@@ -72,6 +72,9 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "libdiamond.scilla";
       "InstantiatedListUtils.scillib";
       "map_no_inplace_warn.scilla";
+      "shadowwarn1.scilla";
+      "shadowwarn2.scilla";
+      "simple-dex-shadowwarn.scilla";
       "namespace1.scilla";
       "namespace2.scilla";
       "namespace3.scilla";

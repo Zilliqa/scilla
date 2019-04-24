@@ -60,6 +60,16 @@
   },
   "warnings": [
     {
+      "warning_message": "Name sig shadows a transition parameter.",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 24,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
       "warning_message":
         "No transition in contract Schnorr contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

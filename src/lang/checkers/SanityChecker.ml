@@ -42,6 +42,8 @@ module ScillaSanityChecker
 
   (* Warning level to use when contract loads/stores entire Maps. *)
   let warning_level_map_load_store = 1
+  (* Warning level to use when warning about shadowing of contract parameters and fields. *)
+  let warning_level_name_shadowing = 2
 
   (* ************************************** *)
   (* ******** Basic Sanity Checker ******** *)
@@ -374,11 +376,105 @@ module ScillaSanityChecker
     ) ~init:() cmod.contr.ctrans
 
   (* ************************************** *)
+  (* ********* Warn name shadowing ******** *)
+  (* ************************************** *)
+
+  let warn_shadowing cmod =
+
+    (* A utility function that checks if "id" is shadowing cparams, cfields or pnames. *)
+    let check_warn_redef cparams cfields pnames id =
+      if List.mem (get_id id) cparams
+      then (
+        warn1 (Printf.sprintf "Name %s shadows a contract parameter." (get_id id))
+        warning_level_name_shadowing
+        (ER.get_loc (get_rep id));
+      ) else if List.mem (get_id id) cfields
+      then (
+        warn1 (Printf.sprintf "Name %s shadows a field declaration." (get_id id))
+        warning_level_name_shadowing
+        (ER.get_loc (get_rep id));
+      ) else if List.mem (get_id id) pnames
+      then (
+        warn1 (Printf.sprintf "Name %s shadows a transition parameter." (get_id id))
+        warning_level_name_shadowing
+        (ER.get_loc (get_rep id));
+      )
+    in
+
+    let cparams = List.map (fun (p, _) -> get_id p) cmod.contr.cparams in
+    (* Check if a field shadows any contract parameter. *)
+    List.iter (fun (f, _, _) -> check_warn_redef cparams [] [] f) cmod.contr.cfields;
+  
+    let cfields = List.map (fun (f, _, _) -> get_id f) cmod.contr.cfields in
+
+    (* Go through each transition. *)
+    List.iter (fun t ->
+
+    (* 1. If a parameter name shadows one of cparams or cfields, warn. *)
+      List.iter (fun (p, _) -> check_warn_redef cparams cfields [] p) t.tparams;
+      let pnames = List.map (fun (p, _) -> get_id p) t.tparams in
+
+      (* Check for shadowing in patterns. *)
+      let rec pattern_iter = function
+        | Wildcard -> ()
+        | Binder i -> check_warn_redef cparams cfields pnames i
+        | Constructor (_, plist) ->
+          List.iter (fun pat -> pattern_iter pat) plist
+      in
+
+      (* Check for shadowing in expressions. *)
+      let rec expr_iter (e, _) =
+        match e with
+        | Literal _ | Builtin _ | Constr _ | App _ | Message _ 
+        | Var _ | TApp _ -> ()
+        | Let (i, _, e_lhs, e_rhs) ->
+          check_warn_redef cparams cfields pnames i;
+          expr_iter e_lhs;
+          expr_iter e_rhs
+        | Fun (i, _, e_body)
+        | Fixpoint (i, _, e_body)
+        | TFun (i, e_body) ->
+          (* "i" being a type variable shouldn't be shadowing contract parameters,
+            fields or transition parameters. This is just a conservative check. *)
+          check_warn_redef cparams cfields pnames i;
+          expr_iter e_body
+        | MatchExpr (_, clauses) ->
+          List.iter (fun (pat, mbody) ->
+            pattern_iter pat;
+            expr_iter mbody
+          ) clauses
+      in
+
+      (* Check for shadowing in statements. *)
+      let rec stmt_iter stmts =
+        List.iter (fun (s, _) ->
+          match s with
+          | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
+            check_warn_redef cparams cfields pnames x;
+          | Store _ | MapUpdate _ | SendMsgs _
+          | AcceptPayment | CreateEvnt _ | Throw _ ->
+            ()
+          | Bind (x, e) ->
+            check_warn_redef cparams cfields pnames x;
+            expr_iter e
+          | MatchStmt (_, clauses) ->
+            List.iter (fun (pat, mbody) ->
+              pattern_iter pat;
+              stmt_iter mbody
+            ) clauses
+        ) stmts
+      in
+      (* Go through all statements and see if any of cparams, cfields or pnames are redefined. *)
+      stmt_iter t.tbody
+    ) cmod.contr.ctrans
+
+  (* ************************************** *)
   (* ******** Interface to Checker ******** *)
   (* ************************************** *)
 
   let contr_sanity (cmod : cmodule) (rlibs : lib_entry list) (elibs : libtree list) =
     let%bind _ = basic_sanity cmod in
+    warn_shadowing cmod;
     one_msg_checker cmod rlibs elibs
 
 end

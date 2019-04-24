@@ -1,6 +1,3 @@
-(* Expected answer *)
-(* (ADTValue True()()) *)
-
 let hash_dist =
   fun (h0 : ByStr32) =>
   fun (h1 : ByStr32) =>
