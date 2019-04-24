@@ -27,6 +27,7 @@ val is_prim_type : typ -> bool
 val is_int_type : typ -> bool
 val is_uint_type : typ -> bool
 val is_bystrx_type : typ -> bool
+val int_width : typ -> int option
 
 val int32_typ : typ
 val int64_typ : typ

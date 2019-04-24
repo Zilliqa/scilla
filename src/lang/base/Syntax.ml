@@ -647,13 +647,15 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     { smver : int;                (* Scilla major version of the contract. *)
       cname : SR.rep ident;
       libs  : library option;     (* lib functions defined in the module *)
-      elibs : SR.rep ident list;  (* list of imports / external libs *)
+      (* List of imports / external libs with an optional namespace. *)
+      elibs : (SR.rep ident * SR.rep ident option) list;
       contr : contract }
 
   (* Library module *)
   type lmodule =
     { 
-      elibs : SR.rep ident list; (* List of imports / external libs *)
+      (* List of imports / external libs with an optional namespace. *)
+      elibs : (SR.rep ident * SR.rep ident option) list;
       libs : library; (* lib functions defined in the module *)
     }
 

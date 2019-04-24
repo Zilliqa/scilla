@@ -1,0 +1,13 @@
+(* ('A -> 'B) -> List 'A -> List 'B *)
+(* Apply (f : 'A -> 'B) to every element of List 'A *)
+(* to generate List 'B. *)
+let list_map = tfun 'A => tfun 'B =>
+  fun (f : 'A -> 'B) => fun (l : List 'A) =>
+  let folder = @list_foldr 'A (List 'B) in
+  let init = Nil {'B} in
+  let iter = fun (h : 'A) => fun (z : List 'B) =>
+    let h1 = f h in
+    Cons {'B} h1 z
+  in folder iter init l
+in
+list_map

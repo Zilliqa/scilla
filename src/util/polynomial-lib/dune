@@ -1,0 +1,6 @@
+(library
+ (name polynomial_lib)
+ (public_name polynomial-lib)
+ (wrapped false)
+ (synopsis "Utility to deal with multivariate polynomials")
+ (libraries core batteries ))

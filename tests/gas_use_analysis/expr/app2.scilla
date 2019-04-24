@@ -1,0 +1,6 @@
+let cat =
+  fun (a : String) =>
+  fun (b : String) =>
+    builtin concat b a
+in
+cat

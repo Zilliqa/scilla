@@ -1,5 +1,14 @@
 {
-  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
+  "cashflow_tags": {
+    "State variables": [],
+    "ADT constructors": [
+      {
+        "TestType2": [
+          { "constructor": "Constructor4", "tags": [ "NoInfo" ] }
+        ]
+      }
+    ]
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "TestContr1",
@@ -14,6 +23,14 @@
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "TestType",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Constructor1", "argtypes": [] },
+          { "cname": "Constructor2", "argtypes": [] }
         ]
       },
       {
@@ -44,6 +61,14 @@
         "tname": "Pair",
         "tparams": [ "'A", "'B" ],
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "TestType2",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Constructor3", "argtypes": [ "TestType" ] },
+          { "cname": "Constructor4", "argtypes": [ "Uint32" ] }
+        ]
       }
     ]
   },
