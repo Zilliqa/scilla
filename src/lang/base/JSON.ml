@@ -251,7 +251,7 @@ let get_uint_literal l =
 
 let get_address_literal l =
   match l with
-  | ByStrX(len, al) when len = address_length -> Some al
+  | ByStrX bs when Bystrx.width bs = address_length -> Some (Bystrx.hex_encoding bs)
   | _ -> None
 
 
@@ -300,11 +300,11 @@ let get_init_extlibs filename =
       (* lit' is a list of `Pair` literals. convert them to OCaml pairs. *)
       List.map lit' ~f:(fun sp ->
         match sp with
-        | ADTValue ("Pair", [t1; t2], [StringLit name; ByStrX (addrlen, addr)]) when
-          t1 = PrimTypes.string_typ && 
+        | ADTValue ("Pair", [t1; t2], [StringLit name; ByStrX bs]) when
+          t1 = PrimTypes.string_typ &&
           t2 = (PrimTypes.bystrx_typ address_length) &&
-          addrlen = address_length ->
-          (name, addr)
+          Bystrx.width bs = address_length ->
+          (name, Bystrx.hex_encoding bs)
         | _ -> raise (mk_invalid_json ("Invalid " ^ ContractUtil.extlibs_label ^ " entry in init json" ^ filename))
       )
     )

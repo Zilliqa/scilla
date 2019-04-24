@@ -61,9 +61,3 @@ val uint_lit_width : uint_lit -> int
 val string_of_int_lit : int_lit -> string
 (* String conversion from uint_typ *)
 val string_of_uint_lit : uint_lit -> string
-(* Is input literal a valid BNum? *)
-val validate_bnum_literal : literal -> bool
-(* Is input a valid ByStrX literal? *)
-val validate_bystrx_literal : literal -> bool
-(* Is input a valid ByStr literal? *)
-val validate_bystr_literal : literal -> bool

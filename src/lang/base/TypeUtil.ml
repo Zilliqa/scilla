@@ -441,7 +441,7 @@ module TypeUtilities
     | StringLit _ -> pure string_typ
     | BNum _ -> pure bnum_typ
     | ByStr _ -> pure bystr_typ
-    | ByStrX (b, _) ->pure (bystrx_typ b)
+    | ByStrX bs -> pure (bystrx_typ (Bystrx.width bs))
     (* Check that messages and events have storable parameters. *)
     | Msg bs -> get_msgevnt_type bs
     | Map ((kt, vt), _) -> pure (MapType (kt, vt))
@@ -465,14 +465,8 @@ module TypeUtilities
     | UintLit (Uint256L _) -> pure uint256_typ
     | StringLit _ -> pure string_typ
     | BNum _ -> pure bnum_typ
-    | ByStr _ -> 
-      if validate_bystr_literal l
-      then pure bystr_typ
-      else fail0 @@ (sprintf "Malformed byte string " ^ (pp_literal l))
-    | ByStrX (b, _) ->
-        if validate_bystrx_literal l
-        then pure (bystrx_typ b)
-        else fail0 @@ (sprintf "Malformed byte string " ^ (pp_literal l))
+    | ByStr _ -> pure bystr_typ
+    | ByStrX bsx -> pure (bystrx_typ (Bystrx.width bsx))
     (* Check that messages and events have storable parameters. *)
     | Msg m ->
         let%bind msg_typ = get_msgevnt_type m in

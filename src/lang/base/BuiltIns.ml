@@ -149,9 +149,10 @@ module ScillaBuiltIns
       let%bind s = match ls with
         | [IntLit x] -> pure @@ string_of_int_lit x
         | [UintLit x] -> pure @@ string_of_uint_lit x
-        | [ByStr x] | [ByStrX (_, x)] -> pure x
+        | [ByStr x] -> pure @@ Bystr.hex_encoding x
+        | [ByStrX x] -> pure @@ Bystrx.hex_encoding x
         | _ -> builtin_fail (sprintf "String.to_string") ls
-      in pure (BatOption.get (build_prim_literal String_typ s))
+      in pure @@ StringLit s
 
   end
 
@@ -615,10 +616,6 @@ module ScillaBuiltIns
     open Datatypes.DataTypeDictionary
     open Schnorr
 
-    (* Create binary / bytes from ASCII hexadecimal string 0x... *)
-    let fromhex s = transform_string (Hexa.decode()) (Core.String.sub s ~pos:2 ~len:((Core.String.length s)-2))
-    (* Create ASCII hexadecimal string from raw binary / bytes. *)
-    let tohex s = "0x" ^ (transform_string (Hexa.encode()) s)
     (* Hash raw bytes / binary string. *)
     let sha256_hasher s = hash_string (Hash.sha2 256) s
     (* Keccak256 hash raw bytes / binary string. *)
@@ -634,7 +631,8 @@ module ScillaBuiltIns
             | IntLit il -> bstring_from_int_lit il
             | UintLit uil -> bstring_from_uint_lit uil
             | BNum s -> s
-            | ByStr s | ByStrX (_, s) -> fromhex s
+            | ByStr bs -> Bystr.to_raw_bytes bs
+            | ByStrX bs -> Bystrx.to_raw_bytes bs
             | Msg entries ->
                 let raw_entries = List.map entries ~f:(fun (s, v) -> s ^ raw_bytes v) in
                 Core.String.concat ~sep:"" raw_entries
@@ -648,15 +646,13 @@ module ScillaBuiltIns
             | TAbs _fun -> "(Tabs <fun>)"
           in
           let lhash = hasher (raw_bytes l) in
-          let lhash_hex = tohex lhash in
-          let lo = build_prim_literal (Bystrx_typ len) lhash_hex in
-          (match lo with
-          | Some l' -> pure @@ l'
+          (match Bystrx.of_raw_bytes len lhash with
+          | Some bs -> pure @@ ByStrX bs
           | None -> builtin_fail ("Crypto." ^ name ^ ": internal error, invalid hash") ls)
       | _ -> builtin_fail ("Crypto." ^ name) ls
 
     let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
-    let eq_arity = 2    
+    let eq_arity = 2
     let eq_elab sc ts =
       match ts with
       | [bstyp1; bstyp2] when
@@ -665,8 +661,8 @@ module ScillaBuiltIns
         -> elab_tfun_with_args sc [bstyp1]
       | _ -> fail0 "Failed to elaborate"
     let eq ls _ = match ls with
-      | [ByStrX (w1, x1); ByStrX(w2, x2)] ->
-          pure @@ to_Bool (w1 = w2 && x1 = x2)
+      | [ByStrX bs1; ByStrX bs2] ->
+          pure @@ to_Bool (Bystrx.equal bs1 bs2)
       | _ -> builtin_fail "Crypto.eq" ls
 
     let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ hash_length)
@@ -687,11 +683,7 @@ module ScillaBuiltIns
       | [t] when is_bystrx_type t -> elab_tfun_with_args sc ts
       | _ -> fail0 "Failed to elaborate"
     let to_bystr ls _ = match ls with
-      | [ByStrX(_, s)] -> 
-        let res = build_prim_literal Bystr_typ s in
-        (match res with
-         | Some l' -> pure l'
-         | None -> builtin_fail "Crypto.to_bystr: internal error" ls)
+      | [ByStrX bs] -> pure @@ ByStr (Bystrx.to_bystr bs)
       | _ -> builtin_fail "Crypto.to_bystr" ls
 
     let to_uint256_type = tfun_typ "'A" @@ fun_typ (tvar "'A") uint256_typ
@@ -700,11 +692,12 @@ module ScillaBuiltIns
       | [PrimType (Bystrx_typ w)] when w <= 32 -> elab_tfun_with_args sc ts
       | _ -> fail0 "Failed to elaborate"
     let to_uint256 ls _ = match ls with
-      | [ByStrX(w, s)] when w <= 32 ->
-        let rem = (32 - w) * 2 in
-        let pad = "0x" ^ Caml.String.make rem '0' in
-        let s' = pad ^ (Core.String.sub s ~pos:2 ~len:((Core.String.length s)-2)) in
-        let u = Integer256.Uint256.of_bytes_big_endian (Bytes.of_string (fromhex s')) 0 in
+      | [ByStrX bs] when Bystrx.width bs <= 32 ->
+        (* of_bytes_big_endian functions expect 2^n number of bytes exactly *)
+        let rem = 32 - Bystrx.width bs in
+        let pad = Core.String.make rem '\000' in
+        let bs_padded = pad ^ (Bystrx.to_raw_bytes bs) in
+        let u = Uint256.of_bytes_big_endian (Bytes.of_string bs_padded) 0 in
         pure (UintLit (Uint256L u))
       | _ -> builtin_fail "Crypto.to_uint256" ls
 
@@ -714,17 +707,11 @@ module ScillaBuiltIns
     let concat_arity = 2
     let concat_elab sc ts = match ts with
       | [PrimType (Bystrx_typ w1); PrimType (Bystrx_typ w2)] ->
-          elab_tfun_with_args sc (ts @ [(bystrx_typ (w1+w2))])
+          elab_tfun_with_args sc (ts @ [bystrx_typ (w1 + w2)])
       | _ -> fail0 "Failed to elaborate"
     let concat ls _ = match ls with
-      | [ByStrX(w1, s1);ByStrX(w2, s2)] -> 
-        let res = build_prim_literal 
-          (Bystrx_typ (w1+w2))
-          (s1 ^ (Core.String.sub s2 ~pos:2 ~len:((Core.String.length s2) - 2))) in
-        (match res with
-         | Some l' -> pure l'
-         | None -> builtin_fail "Crypto.concat: internal error" ls)
-      | _ -> builtin_fail "Crypto.bystr" ls
+      | [ByStrX bs1; ByStrX bs2] -> pure @@ ByStrX (Bystrx.concat bs1 bs2)
+      | _ -> builtin_fail "Crypto.concat" ls
 
 
     let [@warning "-32"] ec_gen_key_pair_type =
@@ -734,10 +721,10 @@ module ScillaBuiltIns
       match ls with
       | [] ->
         let privK, pubK = genKeyPair () in
-        let privK_lit_o = build_prim_literal (Bystrx_typ privkey_len) privK in
-        let pubK_lit_o = build_prim_literal (Bystrx_typ pubkey_len) pubK in
+        let privK_lit_o = Bystrx.of_raw_bytes privkey_len privK in
+        let pubK_lit_o = Bystrx.of_raw_bytes pubkey_len pubK in
         (match privK_lit_o, pubK_lit_o with
-        | Some privK', Some pubK' -> pair_lit privK' pubK'
+        | Some privK', Some pubK' -> pair_lit (ByStrX privK') (ByStrX pubK')
         | _ -> builtin_fail "ec_gen_key_pair: internal error, invalid private/public key(s)." ls)
       | _ -> builtin_fail "ec_gen_key_pair" ls
 
@@ -749,12 +736,12 @@ module ScillaBuiltIns
     let [@warning "-32"] schnorr_sign_arity = 3
     let [@warning "-32"] schnorr_sign ls _ =
       match ls with
-      | [ByStrX(privklen, privkey); ByStrX(pubklen, pubkey); ByStr(msg)]
-          when privklen = privkey_len && pubklen = pubkey_len ->
-        let s = sign privkey pubkey (fromhex msg) in
-        let s' = build_prim_literal (Bystrx_typ signature_len) s in
-        (match s' with
-        | Some s'' -> pure s''
+      | [ByStrX privkey; ByStrX pubkey; ByStr msg]
+          when Bystrx.width privkey = privkey_len &&
+               Bystrx.width pubkey = pubkey_len ->
+        let s = sign (Bystrx.to_raw_bytes privkey) (Bystrx.to_raw_bytes pubkey) (Bystr.to_raw_bytes msg) in
+        (match Bystrx.of_raw_bytes signature_len s with
+        | Some bs -> pure @@ ByStrX bs
         | None -> builtin_fail "schnorr_sign: internal error, invalid signature." ls)
       | _ -> builtin_fail "schnorr_sign" ls
 
@@ -765,9 +752,10 @@ module ScillaBuiltIns
     let schnorr_verify_arity = 3
     let schnorr_verify ls _ =
       match ls with
-      | [ByStrX(pubklen, pubkey); ByStr(msg); ByStrX(siglen, signature)]
-          when siglen = signature_len && pubklen = pubkey_len ->
-        let v = verify pubkey (fromhex msg) signature in
+      | [ByStrX pubkey; ByStr msg; ByStrX signature]
+          when Bystrx.width pubkey = pubkey_len &&
+               Bystrx.width signature = signature_len ->
+        let v = verify (Bystrx.to_raw_bytes pubkey) (Bystr.to_raw_bytes msg) (Bystrx.to_raw_bytes signature) in
         pure @@ to_Bool v
       | _ -> builtin_fail "schnorr_verify" ls
 
@@ -779,12 +767,11 @@ module ScillaBuiltIns
     let [@warning "-32"] ecdsa_sign ls _ =
       let open Secp256k1Wrapper in
       match ls with
-      | [ByStrX(privklen, privkey); ByStr(msg)]
-          when privklen = privkey_len ->
-        let%bind s = sign privkey (fromhex msg) in
-        let s' = build_prim_literal (Bystrx_typ signature_len) s in
-        (match s' with
-        | Some s'' -> pure s''
+      | [ByStrX privkey; ByStr msg]
+          when Bystrx.width privkey = privkey_len ->
+        let%bind s = sign (Bystrx.to_raw_bytes privkey) (Bystr.to_raw_bytes msg) in
+        (match Bystrx.of_raw_bytes signature_len s with
+        | Some bs -> pure @@ ByStrX bs
         | None -> builtin_fail "ecdsa_sign: internal error, invalid signature." ls)
       | _ -> builtin_fail "ecdsa_sign" ls
 
@@ -796,9 +783,10 @@ module ScillaBuiltIns
     let ecdsa_verify ls _ =
       let open Secp256k1Wrapper in
       match ls with
-      | [ByStrX(pubklen, pubkey); ByStr(msg); ByStrX(siglen, signature)]
-          when siglen = signature_len && pubklen = pubkey_len ->
-        let%bind v = verify pubkey (fromhex msg) signature in
+      | [ByStrX pubkey; ByStr msg; ByStrX signature]
+          when Bystrx.width signature = signature_len &&
+               Bystrx.width pubkey = pubkey_len ->
+        let%bind v = verify (Bystrx.to_raw_bytes pubkey) (Bystr.to_raw_bytes msg) (Bystrx.to_raw_bytes signature) in
         pure @@ to_Bool v
       | _ -> builtin_fail "ecdsa_verify" ls
 

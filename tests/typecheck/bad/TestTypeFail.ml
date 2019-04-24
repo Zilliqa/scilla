@@ -159,6 +159,7 @@ module Tests = TestUtil.DiffBasedTests(
       "folder-error.scilla";
       "some.scilla";
       "substr.scilla";
+      "parsing_hex_literals.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

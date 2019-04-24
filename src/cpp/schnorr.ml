@@ -22,16 +22,6 @@ external _force_link_ : unit -> unit = "genKeyPair_Z"
 open Ctypes
 open Foreign
 
-let bin_to_hex b =
-  let open Cryptokit in
-  "0x" ^ (transform_string (Hexa.encode()) b)
-
-let hex_to_bin h =
-  let open Cryptokit in
-  let open String in
-  let h' = if (sub h 0 2) = "0x" then (sub h 2 ((length h) - 2)) else h in
-  transform_string (Hexa.decode()) h'
-
 (* Copy the contents of string s to pointer p.
  * This does the opposite of `string_from_ptr`.
  *)
@@ -92,9 +82,9 @@ let genKeyPair () =
   let pubK' = copy_from_tstring @@ string_from_ptr dataPubKey ~length:pubkey_len in
   (* Dummy use to avoid GC of memory. *)
   let _ = dataPrivKey, dataPubKey, privK, pubK in
-    (bin_to_hex privK', bin_to_hex pubK')
+  (privK', pubK')
 
-(* privKey and pubKey are hexadecimal strings while "msg" is raw bytes. *)
+(* privKey, pubKey and msg are raw bytes. *)
 let sign privKey pubKey msg =
 
   (* void sign_Z(const RawBytes_Z* privKey, const RawBytes_Z* pubKey,
@@ -103,8 +93,6 @@ let sign privKey pubKey msg =
   let sign_Z = foreign "sign_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning void) in
 
 
-  let privKey' = hex_to_bin privKey in
-  let pubKey' = hex_to_bin pubKey in
   (* Create container for Schnorr inputs *)
   let privKS = make rawBytes_Z in
   let pubKS = make rawBytes_Z in
@@ -125,8 +113,8 @@ let sign privKey pubKey msg =
   let _ = setf signS rawBytes_data signD in
   let _ = setf signS rawBytes_len signature_len in
   (* Copy input data to input structs. *)
-  let _ = copy_to_cptr privKD privKey' in
-  let _ = copy_to_cptr pubKD pubKey' in
+  let _ = copy_to_cptr privKD privKey in
+  let _ = copy_to_cptr pubKD pubKey in
   let _ = copy_to_cptr msgD msg in
   (* Call the signing C function. *)
   let _ = sign_Z (addr privKS) (addr pubKS) (addr msgS) (addr signS) in
@@ -134,9 +122,9 @@ let sign privKey pubKey msg =
   let signS' = copy_from_tstring @@ string_from_ptr signD ~length:signature_len in
   (* Dummy use to avoid GC of memory. *)
   let _ = privKS, privKD, pubKS, pubKD, msgS, msgD, signS, signD in
-    bin_to_hex signS'
+  signS'
 
-(* signature and pubKey are hexadecimal strings while "msg" is raw bytes. *)
+(* pubKey, signature and msg are raw bytes. *)
 let verify pubKey msg signature =
 
   (* int verify_Z(const RawBytes_Z* pubKey, const RawBytes_Z* message,
@@ -144,8 +132,6 @@ let verify pubKey msg signature =
    *)
   let verify_Z = foreign "verify_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning int) in
 
-  let pubKey' = hex_to_bin pubKey in
-  let signature' = hex_to_bin signature in
   (* Create container for Schnorr inputs *)
   let pubKS = make rawBytes_Z in
   let msgS = make rawBytes_Z in
@@ -162,11 +148,11 @@ let verify pubKey msg signature =
   let _ = setf signS rawBytes_data signD in
   let _ = setf signS rawBytes_len signature_len in
   (* Copy input data to input structs. *)
-  let _ = copy_to_cptr pubKD pubKey' in
+  let _ = copy_to_cptr pubKD pubKey in
   let _ = copy_to_cptr msgD msg in
-  let _ = copy_to_cptr signD signature' in
+  let _ = copy_to_cptr signD signature in
   (* Call the signing C function. *)
   let succ = verify_Z (addr pubKS) (addr msgS) (addr signS) in
   (* Dummy use to avoid GC of memory. *)
   let _ = pubKD, msgD, signD, pubKS, msgS, signS in
-  if succ = 1 then true else false
+  succ = 1
