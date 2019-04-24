@@ -3,7 +3,7 @@
   (public_name scilla-checkers)
   (wrapped false)
   (libraries core
-              angstrom stdint 
+              angstrom stdint polynomial-lib
               ppx_sexp_conv ppx_deriving batteries
               ppx_let yojson cryptokit scilla-base)
   (preprocess (pps ppx_sexp_conv
