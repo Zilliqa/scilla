@@ -50,10 +50,8 @@ module ScillaGas
       (* (bit-width, value) *)
       | IntLit x -> pure @@ (int_lit_width x) / 8
       | UintLit x -> pure @@ (uint_lit_width x) / 8
-      (* (bit-width, value) *)
-      | ByStrX (w, _) -> pure @@ w
-      | ByStr s ->
-          pure @@ (String.length s) - 2
+      | ByStr bs -> pure @@ Bystr.width bs
+      | ByStrX bs -> pure @@ Bystrx.width bs
       (* Message: an associative array *)    
       | Msg m ->
           foldM ~f:(fun acc (s, lit') ->
@@ -176,7 +174,7 @@ module ScillaGas
         pure @@ (div_ceil (String.length (pp_literal a)) 64) * 10 * base
     | Builtin_schnorr_verify, _, [_;ByStr(s);_]
     | Builtin_ecdsa_verify, _, [_;ByStr(s);_] ->
-        let x = div_ceil ((String.length s) + 66) 64 in
+        let x = div_ceil (Bystr.width s + 66) 64 in
         pure @@ (250 + (15 * x)) * base
     | Builtin_to_bystr, [a], _
       when is_bystrx_type a -> pure @@ get (bystrx_width a) * base

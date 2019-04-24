@@ -158,6 +158,61 @@ let sexp_of_uint_lit = function
 
 let uint_lit_of_sexp _ = failwith "uint_lit_of_sexp is not implemented"
 
+module type BYSTR = sig
+  type t [@@deriving sexp]
+  val width : t -> int
+  val parse_hex : string -> t
+  val hex_encoding : t -> string
+  val to_raw_bytes : t -> string
+  val of_raw_bytes : int -> string -> t option
+  val equal : t -> t -> bool
+  val concat : t -> t -> t
+end
+
+module Bystr : BYSTR = struct
+  type t = string [@@deriving sexp]
+
+  let width = String.length
+
+  let parse_hex s =
+    if not (String.equal (String.prefix s 2) "0x") then
+      raise @@ Invalid_argument "hex conversion: 0x prefix is missing"
+    else
+      let s_nopref = String.drop_prefix s 2 in
+      if String.length s_nopref = 0 then
+        raise @@ Invalid_argument "hex conversion: empty byte sequence"
+      else
+        Hex.to_string (`Hex s_nopref)
+
+  let hex_encoding bs = "0x" ^ Hex.show @@ Hex.of_string bs
+
+  let to_raw_bytes = Fn.id
+
+  let of_raw_bytes expected_width raw =
+    Option.some_if (String.length raw = expected_width) raw
+
+  let equal = String.equal
+
+  let concat = (^)
+end
+
+module type BYSTRX = sig
+  type t [@@deriving sexp]
+  val width : t -> int
+  val parse_hex : string -> t
+  val hex_encoding : t -> string
+  val to_raw_bytes : t -> string
+  val of_raw_bytes : int -> string -> t option
+  val equal : t -> t -> bool
+  val concat : t -> t -> t
+  val to_bystr : t -> Bystr.t
+end
+
+module Bystrx : BYSTRX = struct
+  include Bystr
+  let to_bystr = Fn.id
+end
+
 (* [Specialising the Return Type of Closures]
 
    The syntax for literals implements a _shallow embedding_ of
@@ -180,15 +235,15 @@ type literal =
   | IntLit of int_lit
   | UintLit of uint_lit
   | BNum of string
-  (* (bit-width, value) *)
-  | ByStrX of int * string
-  (* Hexadecimal byte string without a statically known length. *)
-  | ByStr of string
-  (* Message: an associative array *)    
+  (* Byte string with a statically known length. *)
+  | ByStrX of Bystrx.t
+  (* Byte string without a statically known length. *)
+  | ByStr of Bystr.t
+  (* Message: an associative array *)
   | Msg of (string * literal) list
   (* A dynamic map of literals *)
   | Map of mtype * (literal, literal) Hashtbl.t
-  (* A constructor in HNF *)      
+  (* A constructor in HNF *)
   | ADTValue of string * typ list * literal list
   (* An embedded closure *)
   | Clo of (literal -> 
@@ -201,6 +256,7 @@ type literal =
               uint64 -> ((literal * (string * literal) list) * uint64, scilla_error list * uint64) result) 
                CPSMonad.t)
 [@@deriving sexp]
+
 
 (* Builtins *)
 type builtin =

@@ -244,10 +244,7 @@ lit :
      *)
     build_prim_literal_exn (to_prim_type_exn i iloc) string_of_n (toLoc $startpos)
   }
-| h = HEXLIT   {
-  let l = String.length h in
-  build_prim_literal_exn (Bystrx_typ ((l-1)/2)) h (toLoc $startpos)
-}
+| h = HEXLIT   { ByStrX (Bystrx.parse_hex h) }
 | s = STRING   { StringLit s }
 | EMP; kt = t_map_key; vt = t_map_value
 {
