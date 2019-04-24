@@ -1,6 +1,3 @@
-(* Expected answer *)
-(* ByStr32 0x5de797a7250adee90dea7eb69fa04b49e8cad470030d04df4766d8adcb0ba828 *)
-
 let k1 = Int32 1 in
 let k2 = Int32 2 in
 let v1 = Int32 42 in

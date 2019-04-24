@@ -1,23 +1,18 @@
 ########## Global owners ##########
 
-*                  @AmritKumar @jjcnn @vaivaswatha @ilyasergey
+*                  @jjcnn @vaivaswatha @anton-trunov
 
 
 ########## Source code ##########
 
 ## default OCaml reviewers
-*.ml               @ilyasergey @vaivaswatha @jjcnn @anton-trunov @AmritKumar
-*.mli              @ilyasergey @vaivaswatha @jjcnn @anton-trunov @AmritKumar
+*.ml                @vaivaswatha @jjcnn @anton-trunov
+*.mli               @vaivaswatha @jjcnn @anton-trunov
 
 ## default C and C++ reviewers
 *.cpp              @vaivaswatha @AmritKumar
 *.c                @vaivaswatha @AmritKumar
 *.h                @vaivaswatha @AmritKumar
-
-## more fine-grained to avoid email noise
-/src/runners/*.ml*     @vaivaswatha @jjcnn @anton-trunov
-/src/lang/base/GlobalConfig.ml*   @vaivaswatha @jjcnn @anton-trunov
-/src/lang/base/Utils.ml*          @vaivaswatha @jjcnn @anton-trunov
 
 
 ########## Build system, CI, opam ##########
@@ -28,7 +23,7 @@
 /Dockerfile*       @vaivaswatha @Gnnng @iantanwx
 /Makefile          @vaivaswatha @Gnnng @iantanwx
 /scripts/build_openssl.sh @vaivaswatha @Gnnng @iantanwx
-*.opam             @ilyasergey
+*.opam             @anton-trunov
 
 
 ########## Test suite ##########
@@ -39,9 +34,9 @@
 
 ########## Documentation ##########
 
-/README.md        @AmritKumar @jjcnn @ilyasergey @vaivaswatha
-/INSTALL.md       @vaivaswatha @iantanwx
-/docs/            @ilyasergey @jjcnn
+/README.md        @AmritKumar @jjcnn @vaivaswatha
+/INSTALL.md       @vaivaswatha @iantanwx @anton-trunov
+/docs/            @jjcnn
 
 
 ########## Tools ##########
