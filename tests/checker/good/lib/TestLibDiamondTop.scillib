@@ -1,3 +1,4 @@
-import TestLibDiamondLeft TestLibDiamondRight
+import TestLibDiamondLeft >> LeftFoo
+       TestLibDiamondRight >> RightFoo
 
 library TestLibDiamondTop

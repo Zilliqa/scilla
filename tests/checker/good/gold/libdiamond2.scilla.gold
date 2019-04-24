@@ -1,17 +1,8 @@
 {
-  "cashflow_tags": {
-    "State variables": [],
-    "ADT constructors": [
-      {
-        "TestType2": [
-          { "constructor": "Constructor4", "tags": [ "NoInfo" ] }
-        ]
-      }
-    ]
-  },
+  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "TestContr2",
+    "vname": "TestContr1",
     "params": [],
     "fields": [],
     "transitions": [],
@@ -23,14 +14,6 @@
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
-        ]
-      },
-      {
-        "tname": "TestType",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Constructor1", "argtypes": [] },
-          { "cname": "Constructor2", "argtypes": [] }
         ]
       },
       {
@@ -61,21 +44,13 @@
         "tname": "Pair",
         "tparams": [ "'A", "'B" ],
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
-      },
-      {
-        "tname": "TestType2",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Constructor3", "argtypes": [ "TestType" ] },
-          { "cname": "Constructor4", "argtypes": [ "Uint32" ] }
-        ]
       }
     ]
   },
   "warnings": [
     {
       "warning_message":
-        "No transition in contract TestContr2 contains an accept statement\n",
+        "No transition in contract TestContr1 contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

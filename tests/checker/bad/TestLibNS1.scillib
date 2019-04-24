@@ -1,0 +1,8 @@
+(* importing the a (non-empty) library into same namespace is a name conflict *)
+import TestLibNS1 >> Foo
+       TestLibNS1 >> Foo
+
+library TestLibNS1
+
+let foo = Foo.foo
+

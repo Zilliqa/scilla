@@ -96,6 +96,7 @@ rule read =
   | "{"           { LBRACE }
   | "}"           { RBRACE }
   | ","           { COMMA }
+  | ">>"          { IMPORTAS }
   | "=>"          { ARROW }                  
   | "->"          { TARROW }                  
   | "="           { EQ }                  
@@ -104,7 +105,7 @@ rule read =
   | ":="          { ASSIGN }                  
   | "@"           { AT }                  
   | "_"           { UNDERSCORE } 
-  | '"'           { read_string (Buffer.create 17) lexbuf }                 
+  | '"'           { read_string (Buffer.create 17) lexbuf }
 
   (* Identifiers *)    
   | id as i       { ID i }

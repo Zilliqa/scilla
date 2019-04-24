@@ -75,6 +75,14 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "shadowwarn1.scilla";
       "shadowwarn2.scilla";
       "simple-dex-shadowwarn.scilla";
+      "namespace1.scilla";
+      "namespace2.scilla";
+      "namespace3.scilla";
+      "TestLibNS1.scillib";
+      "TestLibNS2.scillib";
+      "TestLibNS3.scillib";
+      "TestLibNS4.scillib";
+      "libdiamond2.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
