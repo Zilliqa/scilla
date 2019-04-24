@@ -628,15 +628,26 @@ module ScillaBuiltIns
 
     let hash_helper hasher name len ls = match ls with
       | [l] ->
-          let lstr =
-            (match l with
+          let rec raw_bytes l = match l with
+          (* we don't keep type information here *)
             | StringLit s -> s
             | IntLit il -> bstring_from_int_lit il
             | UintLit uil -> bstring_from_uint_lit uil
+            | BNum s -> s
             | ByStr s | ByStrX (_, s) -> fromhex s
-            (* Anything else, just serialize with SExp. *)
-            | _ -> sexp_of_literal l |> Sexplib.Sexp.to_string) in
-          let lhash = hasher lstr in
+            | Msg entries ->
+                let raw_entries = List.map entries ~f:(fun (s, v) -> s ^ raw_bytes v) in
+                Core.String.concat ~sep:"" raw_entries
+            | Map (_, tbl) ->
+                let raw_strings = Caml.Hashtbl.fold (fun k v acc -> raw_bytes k :: raw_bytes v :: acc) tbl [] in
+                Core.String.concat ~sep:"" raw_strings
+            | ADTValue (cons_name, _, params) ->
+                let raw_params = List.map params ~f:raw_bytes in
+                Core.String.concat ~sep:"" (cons_name :: raw_params)
+            | Clo _fun -> "(Clo <fun>)"
+            | TAbs _fun -> "(Tabs <fun>)"
+          in
+          let lhash = hasher (raw_bytes l) in
           let lhash_hex = tohex lhash in
           let lo = build_prim_literal (Bystrx_typ len) lhash_hex in
           (match lo with
