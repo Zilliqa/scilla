@@ -80,7 +80,7 @@ let eliminate_namespaces lib_tree ns_tree =
         match List.Assoc.find env ~equal:(=) (get_id id) with
         | Some ns when ns <> "" ->
           let nname = ns ^ "." ^ (get_id id) in
-          (* Printf.printf "Adding namespace %s to name %s = %s\n" ns (get_id id) nname; *)
+          plog @@ Printf.sprintf "Prefixing namespace %s to name %s = %s\n" ns (get_id id) nname;
           asIdL nname (get_rep id)
         | _ -> id
       in
@@ -220,10 +220,7 @@ let eliminate_namespaces lib_tree ns_tree =
   List.map2_exn lib_tree ns_tree 
     ~f:(fun ltnode nsnode -> fst @@ rename_in_libtree ltnode nsnode "")
 
-(* Import all libraries in "names" (and their dependences).
- * The order of the returned libraries is an RPO traversal
- * over the dependence graph generated out of "names".
- *)
+(* Import all libraries in "names" (and their dependences). *)
 let import_libs names init_file =
   let rec importer names name_map stack =
     let mapped_names =
@@ -250,7 +247,6 @@ let import_libs names init_file =
       let (ilibs', nst) = importer ilib.elibs ilib_import_map ((get_id name) :: stack) in
       let nsnode = { nspace = namespace; dep_ns = nst } in
       let libnode = { libn = ilib.libs; deps = ilibs' } in
-      (* Order in which we return the list of imported libraries is important. *)
       (libacc @ [libnode]), (nacc @ [nsnode])
     ) ~init:([], []) mapped_names
   in
