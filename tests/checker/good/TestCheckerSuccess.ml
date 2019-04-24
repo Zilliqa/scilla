@@ -78,6 +78,7 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "TestLibNS1.scillib";
       "TestLibNS2.scillib";
       "TestLibNS3.scillib";
+      "TestLibNS4.scillib";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)

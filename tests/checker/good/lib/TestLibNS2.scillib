@@ -1,0 +1,3 @@
+library TestLibNS2
+
+let foo = Uint32 57
