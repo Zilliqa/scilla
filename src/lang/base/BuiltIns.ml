@@ -638,11 +638,9 @@ module ScillaBuiltIns
             | Msg entries ->
                 let raw_entries = List.map entries ~f:(fun (s, v) -> s ^ raw_bytes v) in
                 Core.String.concat ~sep:"" raw_entries
-            (* XXX: in case of unbearable performance overhead, improve the following *)
             | Map (_, tbl) ->
                 let alist = Caml.Hashtbl.fold (fun k v acc -> (k, v) :: acc) tbl [] in
-                let sorted_alist = List.sort ~compare alist in
-                let kv_raw_bytes = List.map sorted_alist ~f:(fun (k,v) -> raw_bytes k ^ raw_bytes v) in
+                let kv_raw_bytes = List.map alist ~f:(fun (k,v) -> raw_bytes k ^ raw_bytes v) in
                 Core.String.concat ~sep:"" kv_raw_bytes
             | ADTValue (cons_name, _, params) ->
                 let raw_params = List.map params ~f:raw_bytes in
