@@ -47,7 +47,8 @@ let explist = [
   "hash3.scilla";
   "hash4.scilla";
   "hash5.scilla";
-  "hash_map_stable.scilla";
+  "hash_map_stable1.scilla";
+  "hash_map_stable2.scilla";
   "hof2.scilla";
   "hof3.scilla";
   "hof.scilla";
