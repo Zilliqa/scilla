@@ -1,0 +1,102 @@
+Gas use polynomial for transition Play:
+3(a) + 384 + 4(b) + 2(c) + 2(d) + 2(e) + 2(f)
+Legend:
+
+f: player_b_hash
+d: guess
+c: player_a_hash
+e: Result of builtin badd(4,4)
+a: timer
+b: _sender
+
+Gas use polynomial for transition ClaimReward:
+1(a) + 542 + 2(b) + 1(c) + 1(d) + 30(e) + 2(f) + 1(g) + 1(h) + 1(i)
+Legend:
+
+g: owner
+e: solution
+d: player_b_hash
+h: player_b
+i: player_a
+f: _balance
+c: player_a_hash
+b: _sender
+a: timer
+
+Gas use polynomial for transition Withdraw:
+210 + 2(a) + 1(b) + 1(c)
+Legend:
+
+b: owner
+a: _balance
+c: _sender
+
+{
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "ZilGame",
+    "params": [
+      { "vname": "owner", "type": "ByStr20" },
+      { "vname": "player_a", "type": "ByStr20" },
+      { "vname": "player_b", "type": "ByStr20" },
+      { "vname": "puzzle", "type": "ByStr32" }
+    ],
+    "fields": [
+      { "vname": "player_a_hash", "type": "Option (ByStr32)" },
+      { "vname": "player_b_hash", "type": "Option (ByStr32)" },
+      { "vname": "timer", "type": "Option (BNum)" }
+    ],
+    "transitions": [
+      {
+        "vname": "Play",
+        "params": [ { "vname": "guess", "type": "ByStr32" } ]
+      },
+      {
+        "vname": "ClaimReward",
+        "params": [ { "vname": "solution", "type": "Int128" } ]
+      },
+      { "vname": "Withdraw", "params": [] }
+    ],
+    "events": [ { "vname": "GameOver", "params": [] } ],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": []
+}

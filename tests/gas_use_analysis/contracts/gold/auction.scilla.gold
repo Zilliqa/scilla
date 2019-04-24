@@ -1,0 +1,120 @@
+Gas use polynomial for transition Bid:
+472 + 1(a) + 7(b) + 2(c) + 1(d) + 1(e) + 1(f) + 4(g)
+Legend:
+
+d: highestBidder
+g: _amount
+f: Result of builtin add(highestBid,Element of: pendingReturns)
+e: Element of: pendingReturns
+c: highestBid
+a: ended
+b: _sender
+
+Gas use polynomial for transition Withdraw:
+1(a) + 107 + 3(b) + 1(c)
+Legend:
+
+c: Result of builtin get(pendingReturns,_sender)
+a: pendingReturns
+b: _sender
+
+Gas use polynomial for transition AuctionEnd:
+239 + 1(a) + 1(b) + 4(c) + 1(d)
+Legend:
+
+c: highestBid
+a: ended
+d: beneficiary
+b: _sender
+
+{
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "OpenAuction",
+    "params": [
+      { "vname": "auctionStart", "type": "BNum" },
+      { "vname": "biddingTime", "type": "Uint128" },
+      { "vname": "beneficiary", "type": "ByStr20" }
+    ],
+    "fields": [
+      { "vname": "ended", "type": "Bool" },
+      { "vname": "highestBidder", "type": "Option (ByStr20)" },
+      { "vname": "highestBid", "type": "Uint128" },
+      { "vname": "pendingReturns", "type": "Map (ByStr20) (Uint128)" }
+    ],
+    "transitions": [
+      { "vname": "Bid", "params": [] },
+      { "vname": "Withdraw", "params": [] },
+      { "vname": "AuctionEnd", "params": [] }
+    ],
+    "events": [
+      {
+        "vname": "Auction ended",
+        "params": [ { "vname": "highest_bid", "type": "Uint128" } ]
+      },
+      {
+        "vname": "Withdraw Successful",
+        "params": [ { "vname": "addr", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "Bid",
+        "params": [
+          { "vname": "code", "type": "Int32" },
+          { "vname": "addr", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/auction.scilla",
+        "line": 128,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}

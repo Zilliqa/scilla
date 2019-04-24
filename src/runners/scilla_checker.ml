@@ -28,6 +28,7 @@ open Result.Let_syntax
 open RunnerUtil
 open PatternChecker
 open SanityChecker
+open GasUseAnalysis
 open Recursion
 open EventInfo
 open Cashflow
@@ -51,6 +52,8 @@ module PMCERep = PMC.EPR
 
 module SC = ScillaSanityChecker (TCSRep) (TCERep)
 module EI = ScillaEventInfo (PMCSRep) (PMCERep)
+
+module GUA = ScillaGUA (TCSRep) (TCERep)
 module CF = ScillaCashflowChecker (TCSRep) (TCERep)
 module AC = ScillaAcceptChecker (TCSRep) (TCERep)
 
@@ -106,6 +109,18 @@ let check_sanity m rlibs elibs =
 
 let check_accepts m =AC.contr_sanity m
 
+let analyze_print_gas cmod typed_elibs =
+  let res = GUA.gua_module cmod typed_elibs in
+  match res with
+  | Error msg -> pout @@ scilla_error_to_string msg ; res
+  | Ok cpol ->
+    plog @@ sprintf "\n[Gas Use Analysis]:\n module [%s] is successfully analyzed.\n" (get_id cmod.contr.cname);
+    let _ = List.iter ~f:(fun (i, pol) ->
+        pout @@ sprintf "Gas use polynomial for transition %s:\n%s\n\n" (get_id i)
+          (GUA.sprint_gup pol)
+      ) cpol;
+    in res
+
 let check_cashflow typed_cmod =
   let (param_field_tags, ctr_tags) = CF.main typed_cmod in
   let param_field_tags_to_string = List.map param_field_tags
@@ -117,7 +132,7 @@ let check_cashflow typed_cmod =
              ~f:(fun (i, ts) ->
                  (i, List.map ts ~f:(fun t_opt -> Option.value_map t_opt ~default:"_" ~f:CF.ECFR.money_tag_to_string))))) in
   (param_field_tags_to_string, ctr_tags_to_string)
-
+      
 let check_version vernum =
   let (mver, _, _) = scilla_version in
   if vernum <> mver
@@ -157,6 +172,7 @@ let check_cmodule cli =
     let _ = if cli.cf_flag then check_accepts typed_cmod else () in
     let%bind _ = check_sanity typed_cmod typed_rlibs typed_elibs in
     let%bind event_info = EI.event_info pm_checked_cmod in
+    let%bind _ = if cli.gua_flag then analyze_print_gas typed_cmod typed_elibs else pure [] in
     let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
     pure @@ (cmod, tenv, event_info, cf_info_opt)
   ) in

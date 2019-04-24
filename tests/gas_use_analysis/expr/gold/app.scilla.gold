@@ -1,0 +1,7 @@
+Int32 -> Int32 -> Bool
+Gas usage signature:
+Parameter list: ( a b )
+Gas use polynomial:
+8
+Result size: Result of builtin lt(a,b)
+

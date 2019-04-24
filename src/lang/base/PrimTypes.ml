@@ -37,6 +37,17 @@ let event_typ = PrimType Event_typ
 let bystr_typ = PrimType Bystr_typ
 let bystrx_typ b = PrimType (Bystrx_typ b)
 
+let int_width t =
+  if t = int32_typ then Some 32 else
+  if t = int64_typ then Some 64 else
+  if t = int128_typ then Some 128 else
+  if t = int256_typ then Some 256 else
+  if t = uint32_typ then Some 32 else
+  if t = uint64_typ then Some 64 else 
+  if t = uint128_typ then Some 128 else 
+  if t = uint256_typ then Some 256 else
+  None
+
 (* Given a ByStrX string, return integer X *)
 let bystrx_width = function
   | PrimType (Bystrx_typ w) -> Some w

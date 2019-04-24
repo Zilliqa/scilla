@@ -1,0 +1,181 @@
+Gas use polynomial for transition Donate:
+177 + 1(a) + 1(b) + 3(c) + 3(d) + 1(e)
+Legend:
+
+d: _amount
+e: Result of builtin put(backers,_sender,_amount)
+a: backers
+b: Length of: backers
+c: _sender
+
+Gas use polynomial for transition GetFunds:
+281 + 2(a) + 3(b) + 2(c)
+Legend:
+
+c: owner
+b: _balance
+a: _sender
+
+Gas use polynomial for transition ClaimBack:
+264 + 5(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 2(g)
+Legend:
+
+b: backers
+g: Result of builtin get(backers,_sender)
+f: Result of builtin remove(backers,_sender)
+c: _balance
+d: funded
+e: Length of: backers
+a: _sender
+
+{
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Crowdfunding",
+    "params": [
+      { "vname": "owner", "type": "ByStr20" },
+      { "vname": "max_block", "type": "BNum" },
+      { "vname": "goal", "type": "Uint128" }
+    ],
+    "fields": [
+      { "vname": "backers", "type": "Map (ByStr20) (Uint128)" },
+      { "vname": "funded", "type": "Bool" }
+    ],
+    "transitions": [
+      { "vname": "Donate", "params": [] },
+      { "vname": "GetFunds", "params": [] },
+      { "vname": "ClaimBack", "params": [] }
+    ],
+    "events": [
+      {
+        "vname": "ClaimBackSuccess",
+        "params": [
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "vname": "ClaimBackFailure",
+        "params": [
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "vname": "GetFundsSuccess",
+        "params": [
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "vname": "GetFundsFailure",
+        "params": [
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "vname": "DonationSuccess",
+        "params": [
+          { "vname": "donor", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
+        ]
+      },
+      {
+        "vname": "DonationFailure",
+        "params": [
+          { "vname": "donor", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "code", "type": "Int32" }
+        ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/crowdfunding.scilla",
+        "line": 143,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/crowdfunding.scilla",
+        "line": 122,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/crowdfunding.scilla",
+        "line": 72,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/crowdfunding.scilla",
+        "line": 65,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}

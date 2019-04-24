@@ -1,0 +1,10 @@
+Int32 -> Int32 -> (Int32 -> Int32 -> Int32) -> Int32
+Gas usage signature:
+Parameter list: ( a b flt )
+Gas use polynomial:
+1(a) + 6
+Legend:
+
+a: Cost of calling flt(b, a)
+Result size: SApp flt( b,a)
+

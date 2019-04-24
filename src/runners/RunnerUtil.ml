@@ -292,6 +292,8 @@ let import_all_libs ldirs  =
 type runner_cli = {
   input_file : string;
   stdlib_dirs : string list;
+  (* Run gas use analysis? *)
+  gua_flag : bool;
   init_file : string option;
   cf_flag : bool;
   p_contract_info : bool;
@@ -303,6 +305,7 @@ let parse_cli () =
   let r_input_file = ref "" in
   let r_init_file = ref None in
   let r_json_errors = ref false in
+  let r_gua = ref false in
   let r_contract_info = ref false in
   let r_cf = ref false in
   let speclist = [
@@ -316,6 +319,7 @@ let parse_cli () =
            r_stdlib_dir := !r_stdlib_dir @ FilePath.path_of_string s
         ),
       "Path(s) to libraries separated with ':' (';' on windows)");
+    ("-gua", Arg.Unit (fun () -> r_gua := true), "Run gas use analysis and print use polynomial.");
     ("-init", Arg.String (fun x -> r_init_file := Some x), "Path to initialization json");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results.");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
@@ -333,4 +337,4 @@ let parse_cli () =
   if !r_input_file = "" then fatal_error (mk_error0 usage);
   GlobalConfig.set_use_json_errors !r_json_errors;
   { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; cf_flag = !r_cf;
-    p_contract_info = !r_contract_info; init_file = !r_init_file }
+    gua_flag = !r_gua; p_contract_info = !r_contract_info; init_file = !r_init_file }

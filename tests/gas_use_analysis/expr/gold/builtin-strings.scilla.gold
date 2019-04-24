@@ -1,0 +1,10 @@
+String
+Gas usage signature:
+Gas use polynomial:
+2(a) + 145 + 1(b)
+Legend:
+
+a: Result of builtin concat(Result of builtin concat(20,20),20)
+b: Result of builtin concat(20,20)
+Result size: Result of builtin substr(Result of builtin concat(Result of builtin concat(20,20),20),4,4)
+

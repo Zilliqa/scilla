@@ -1,0 +1,31 @@
+
+let feq =
+  fun (a : String) =>
+  fun (b : String) =>
+    builtin eq a b in
+
+let fconcat =
+  fun (a : String) =>
+  fun (b : String) =>
+    builtin concat a b in
+
+let fsubstr =
+  fun (a : String) =>
+  fun (s : Uint32) =>
+  fun (e : Uint32) =>
+    builtin substr a s e in
+
+let a = "hello" in
+let b = "world" in
+let sep = " ; " in
+let res1 = feq a b in
+let c = "test1" in
+let d = "test1" in
+let res2 = feq c d in
+let s1 = "scilla is awesome" in
+let s2 = fconcat s1 sep in
+let s3 = fconcat s2 b in
+let startp = Uint32 0 in
+let endp = Uint32 17 in
+let res = fsubstr s3 startp endp in
+res

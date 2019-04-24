@@ -1,0 +1,11 @@
+String -> String -> String
+Gas usage signature:
+Parameter list: ( a b )
+Gas use polynomial:
+1(a) + 1(b) + 4
+Legend:
+
+a: b
+b: a
+Result size: Result of builtin concat(a,b)
+
