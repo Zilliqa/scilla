@@ -1,23 +1,15 @@
 {
   "cashflow_tags": {
-    "State variables": [
-      { "field": "pub_key", "tag": "(Option Inconsistent)" }
-    ],
+    "State variables": [ { "field": "p1", "tag": "NoInfo" } ],
     "ADT constructors": []
   },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "Ecdsa",
-    "params": [],
-    "fields": [ { "vname": "pub_key", "type": "Option (ByStr33)" } ],
+    "vname": "ShadowWarn1",
+    "params": [ { "vname": "p1", "type": "Uint32" } ],
+    "fields": [],
     "transitions": [
-      {
-        "vname": "verify",
-        "params": [
-          { "vname": "msg", "type": "ByStr" },
-          { "vname": "sig", "type": "ByStr64" }
-        ]
-      }
+      { "vname": "Foo", "params": [ { "vname": "p1", "type": "String" } ] }
     ],
     "events": [],
     "ADTs": [
@@ -62,18 +54,18 @@
   },
   "warnings": [
     {
-      "warning_message": "Name sig shadows a transition parameter.",
+      "warning_message": "Name p1 shadows a contract parameter.",
       "start_location": {
-        "file": "contracts/ecdsa.scilla",
-        "line": 24,
-        "column": 9
+        "file": "checker/good/shadowwarn1.scilla",
+        "line": 5,
+        "column": 17
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 2
     },
     {
       "warning_message":
-        "No transition in contract Ecdsa contains an accept statement\n",
+        "No transition in contract ShadowWarn1 contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

@@ -1,0 +1,157 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "contractOwner", "tag": "NoInfo" },
+      { "field": "orderbook", "tag": "(Map (Order ))" },
+      { "field": "orderInfo", "tag": "(Map (Pair NotMoney NotMoney))" },
+      { "field": "pendingReturns", "tag": "(Map (Map NoInfo))" }
+    ],
+    "ADT constructors": [
+      {
+        "Order": [
+          {
+            "constructor": "Order",
+            "tags": [ "NoInfo", "NoInfo", "NoInfo", "NoInfo" ]
+          }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "SimpleDex",
+    "params": [ { "vname": "contractOwner", "type": "ByStr20" } ],
+    "fields": [
+      { "vname": "orderbook", "type": "Map (ByStr32) (Order)" },
+      {
+        "vname": "orderInfo",
+        "type": "Map (ByStr32) (Pair (ByStr20) (BNum))"
+      },
+      {
+        "vname": "pendingReturns",
+        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))"
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "makeOrder",
+        "params": [
+          { "vname": "tokenA", "type": "ByStr20" },
+          { "vname": "valueA", "type": "Uint128" },
+          { "vname": "tokenB", "type": "ByStr20" },
+          { "vname": "valueB", "type": "Uint128" },
+          { "vname": "expirationBlock", "type": "BNum" }
+        ]
+      },
+      {
+        "vname": "fillOrder",
+        "params": [ { "vname": "orderId", "type": "ByStr32" } ]
+      },
+      {
+        "vname": "ClaimBack",
+        "params": [ { "vname": "token", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "cancelOrder",
+        "params": [ { "vname": "orderId", "type": "ByStr32" } ]
+      }
+    ],
+    "events": [
+      {
+        "vname": "Cancel order successful",
+        "params": [ { "vname": "hash", "type": "ByStr32" } ]
+      },
+      {
+        "vname": "Claimback Successful",
+        "params": [
+          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "tokenAddr", "type": "ByStr20" },
+          { "vname": "amt", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "Order Filled",
+        "params": [ { "vname": "hash", "type": "ByStr32" } ]
+      },
+      {
+        "vname": "Order Created",
+        "params": [ { "vname": "hash", "type": "ByStr32" } ]
+      },
+      {
+        "vname": "Error",
+        "params": [
+          { "vname": "raisedAt", "type": "String" },
+          { "vname": "message", "type": "String" }
+        ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "Order",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "Order",
+            "argtypes": [ "ByStr20", "Uint128", "ByStr20", "Uint128" ]
+          }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Name orderInfo shadows a field declaration.",
+      "start_location": {
+        "file": "checker/good/simple-dex-shadowwarn.scilla",
+        "line": 204,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "No transition in contract SimpleDex contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}
