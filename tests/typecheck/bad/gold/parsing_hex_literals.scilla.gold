@@ -3,9 +3,9 @@
     {
       "error_message": "Syntax error.",
       "start_location": {
-        "file": "checker/bad/parsing_hex_literals.scilla",
+        "file": "typecheck/bad/parsing_hex_literals.scilla",
         "line": 1,
-        "column": 4
+        "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
