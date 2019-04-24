@@ -73,7 +73,8 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "InstantiatedListUtils.scillib";
       "map_no_inplace_warn.scilla";
       "shadowwarn1.scilla";
-      "shadowwarn2.scilla"
+      "shadowwarn2.scilla";
+      "simple-dex-shadowwarn.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)

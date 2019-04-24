@@ -434,6 +434,8 @@ module ScillaSanityChecker
         | Fun (i, _, e_body)
         | Fixpoint (i, _, e_body)
         | TFun (i, e_body) ->
+          (* "i" being a type variable shouldn't be shadowing contract parameters,
+            fields or transition parameters. This is just a conservative check. *)
           check_warn_redef cparams cfields pnames i;
           expr_iter e_body
         | MatchExpr (_, clauses) ->
