@@ -70,5 +70,26 @@ a: welcome_msg
       }
     ]
   },
-  "warnings": []
+  "warnings": [
+    {
+      "warning_message": "Name msg shadows a transition parameter.",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/helloworld.scilla",
+        "line": 37,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message": "Name msg shadows a transition parameter.",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/helloworld.scilla",
+        "line": 32,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    }
+  ]
 }

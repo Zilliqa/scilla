@@ -62,5 +62,16 @@ c: _sender
       }
     ]
   },
-  "warnings": []
+  "warnings": [
+    {
+      "warning_message": "Name sig shadows a transition parameter.",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/schnorr.scilla",
+        "line": 24,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    }
+  ]
 }
