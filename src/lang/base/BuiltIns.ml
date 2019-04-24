@@ -639,9 +639,8 @@ module ScillaBuiltIns
                 let raw_entries = List.map entries ~f:(fun (s, v) -> s ^ raw_bytes v) in
                 Core.String.concat ~sep:"" raw_entries
             | Map (_, tbl) ->
-                let alist = Caml.Hashtbl.fold (fun k v acc -> (k, v) :: acc) tbl [] in
-                let kv_raw_bytes = List.map alist ~f:(fun (k,v) -> raw_bytes k ^ raw_bytes v) in
-                Core.String.concat ~sep:"" kv_raw_bytes
+                let raw_strings = Caml.Hashtbl.fold (fun k v acc -> raw_bytes k :: raw_bytes v :: acc) tbl [] in
+                Core.String.concat ~sep:"" raw_strings
             | ADTValue (cons_name, _, params) ->
                 let raw_params = List.map params ~f:raw_bytes in
                 Core.String.concat ~sep:"" (cons_name :: raw_params)
