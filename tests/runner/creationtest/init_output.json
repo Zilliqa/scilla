@@ -1,0 +1,16 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7506",
+  "_accepted": "false",
+  "message": null,
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "is_owner",
+      "type": "ByStr20",
+      "value": "0xabababababababababababababababababababab"
+    },
+    { "vname": "a", "type": "BNum", "value": "200" }
+  ],
+  "events": []
+}

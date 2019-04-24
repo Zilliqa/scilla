@@ -201,9 +201,9 @@ end
 transition cancelOrder(orderId: ByStr32)
   getOrderInfo <- orderInfo[orderId];
   match getOrderInfo with
-  | Some orderInfoForId => 
+  | Some orderInfo => 
       makerAddr = let getMakerAddr = @fst (ByStr20)(BNum) in
-                  getMakerAddr orderInfoForId;
+                  getMakerAddr orderInfo;
       checkSender = builtin eq makerAddr _sender;
       match checkSender with
       | True =>
