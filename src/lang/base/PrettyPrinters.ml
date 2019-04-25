@@ -181,6 +181,9 @@ let fatal_error err =
 let fatal_error_gas err gas_remaining =
   DebugMessage.perr @@ scilla_error_gas_string gas_remaining err; exit 1
 
+let fatal_error_noformat err =
+  DebugMessage.perr err; exit 1
+
 (*****************************************************)
 (*                Pretty Printers                    *)
 (*****************************************************)

@@ -79,7 +79,7 @@ let validate_main usage =
       else msg5 in
   if msg6 <> ""
   then
-    PrettyPrinters.fatal_error (ErrorUtils.mk_error0 (usage ^ (Printf.sprintf "%s\n" msg6)))
+    PrettyPrinters.fatal_error_noformat (usage ^ (Printf.sprintf "%s\n" msg6))
   else 
     ()
 
