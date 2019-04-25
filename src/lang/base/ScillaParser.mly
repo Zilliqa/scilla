@@ -83,7 +83,6 @@
 %token RSQB
 %token LPAREN
 %token RPAREN
-%token IMPORTAS
 %token ARROW
 %token TARROW
 %token AT
@@ -105,6 +104,9 @@
 %token EMP
 %token LIBRARY
 %token IMPORT
+%token AS
+%token PROCEDURE
+%token THROW
 %token FIELD
 %token LET
 %token IN
@@ -393,7 +395,7 @@ lmodule :
 
 importname :
 | c = CID { Ident(c, toLoc $startpos), None }
-| c1 = CID IMPORTAS c2 = CID { Ident(c1, toLoc $startpos(c1)), Some (Ident(c2, toLoc $startpos(c2)))}
+| c1 = CID AS c2 = CID { Ident(c1, toLoc $startpos(c1)), Some (Ident(c2, toLoc $startpos(c2)))}
 
 imports :
 | IMPORT; els = list(importname) { els }

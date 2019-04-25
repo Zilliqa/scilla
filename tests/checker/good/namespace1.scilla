@@ -1,6 +1,6 @@
 scilla_version 0
 
-import TestLib1 >> Bar
+import TestLib1 as Bar
 
 library NS
 
