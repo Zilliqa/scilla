@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "Syntax error.",
+      "start_location": {
+        "file": "checker/bad/bad_param.scilla",
+        "line": 3,
+        "column": 35
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

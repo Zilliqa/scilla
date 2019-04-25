@@ -160,6 +160,8 @@ module Tests = TestUtil.DiffBasedTests(
       "some.scilla";
       "substr.scilla";
       "parsing_hex_literals.scilla";
+      "bad_assign.scilla";
+      "bad_assign2.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

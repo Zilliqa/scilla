@@ -66,6 +66,7 @@
 %token <string> ID
 %token <string> CID
 %token <string> TID
+%token <string> SPID
 
 (* Strings *)
 %token <string> STRING
@@ -145,10 +146,12 @@ ident : name = ID { Ident (name, toLoc $startpos) }
 
 sid :
 | name = ID { name }
+| name = SPID { name }
 | ns = CID; PERIOD; name = ID { ns ^ "." ^ name }
 
 sident :
 | name = ID { Ident (name, toLoc $startpos) }
+| name = SPID { Ident (name, toLoc $startpos) }
 | ns = CID; PERIOD; name = ID { Ident (ns ^ "." ^ name, toLoc $startpos) }
 
 scid :
@@ -270,7 +273,7 @@ ctargs:
 | LBRACE; ts = list(targ); RBRACE { ts }
 
 map_access:
-| LSQB; i = ident; RSQB { i }
+| LSQB; i = sident; RSQB { i }
 
 pattern:
 | UNDERSCORE { Wildcard }
@@ -307,7 +310,7 @@ type_term :
 (***********************************************)
 
 stmt:
-| l = ID; BIND; r = ID   { (Load (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; BIND; r = sid   { (Load (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; ASSIGN; r = sid { (Store (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos($2)), r), toLoc $startpos) }
 | l=ID; BIND; AND; c=CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }

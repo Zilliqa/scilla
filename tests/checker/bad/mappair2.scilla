@@ -28,8 +28,7 @@ let fst_f = @fst (List(Int64)) (Option (Bool))
 let snd_f = @snd (List(Int64)) (Option (Bool))
 
 contract Test
-(owner: ByStr20,
- _creation_block : BNum)
+(owner: ByStr20)
 
 field gmap : Map ByStr20 (Pair (Int32) (Int32))  = Emp ByStr20 (Pair (Int32) (Int32))
 field gpair : Pair (List(Int64)) (Option (Bool)) =
@@ -107,13 +106,6 @@ end
 transition malMessage2(num1 : BNum, num1 : BNum)
   (* duplicate field *)
   msg = { _tag: "Main"; _recipient : _sender; _amount : Uint128 0; status : "foo"; status : "bar" };
-  msgs = one_msg msg;
-  send msgs
-end
-
-(* This transition has disallowed arguments. Will flag error. *)
-transition malTransition1( _sender : ByStr20 )
-  msg = { _tag: "Main"; _recipient : _sender; _amount : Uint128 0; status : "foo" };
   msgs = one_msg msg;
   send msgs
 end
