@@ -1,0 +1,5 @@
+scilla_version 0
+
+contract BalContr ()
+
+field _balance : Uint128 = Uint128 1000000

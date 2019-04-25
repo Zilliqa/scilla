@@ -15,12 +15,12 @@ let one_msg =
     
 let check_update = 
   fun (bs : Map ByStr20 Uint128) =>
-  fun (_sender : ByStr20) =>
-  fun (_amount : Uint128) =>
-    let c = builtin contains bs _sender in
+  fun (sender : ByStr20) =>
+  fun (amount : Uint128) =>
+    let c = builtin contains bs sender in
     match c with 
     | False => 
-      let bs1 = builtin put bs _sender _amount in
+      let bs1 = builtin put bs sender amount in
       Some {Map ByStr20 Uint128} bs1 
     | True  => None {Map ByStr20 Uint128}
     end

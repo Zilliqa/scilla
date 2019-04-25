@@ -66,6 +66,7 @@
 %token <string> ID
 %token <string> CID
 %token <string> TID
+%token <string> SPID
 
 (* Strings *)
 %token <string> STRING
@@ -141,14 +142,14 @@
 
 %%
 
-ident : name = ID { Ident (name, toLoc $startpos) }
-
 sid :
 | name = ID { name }
+| name = SPID { name }
 | ns = CID; PERIOD; name = ID { ns ^ "." ^ name }
 
 sident :
 | name = ID { Ident (name, toLoc $startpos) }
+| name = SPID { Ident (name, toLoc $startpos) }
 | ns = CID; PERIOD; name = ID { Ident (ns ^ "." ^ name, toLoc $startpos) }
 
 scid :
@@ -270,16 +271,16 @@ ctargs:
 | LBRACE; ts = list(targ); RBRACE { ts }
 
 map_access:
-| LSQB; i = ident; RSQB { i }
+| LSQB; i = sident; RSQB { i }
 
 pattern:
 | UNDERSCORE { Wildcard }
-| x = sid {Binder (Ident (x, toLoc $startpos))}
+| x = ID { Binder (Ident (x, toLoc $startpos)) }
 | c = scid; ps = list(arg_pattern) { Constructor (c, ps) }
 
 arg_pattern:
 | UNDERSCORE { Wildcard }
-| x = ID {Binder (Ident (x, toLoc $startpos))}
+| x = ID { Binder (Ident (x, toLoc $startpos)) }
 | c = scid;  { Constructor (c, []) }
 | LPAREN; p = pattern RPAREN; { p }
 
@@ -307,15 +308,15 @@ type_term :
 (***********************************************)
 
 stmt:
-| l = ID; BIND; r = ID   { (Load (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; BIND; r = sid   { (Load (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; ASSIGN; r = sid { (Store (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos($2)), r), toLoc $startpos) }
-| l=ID; BIND; AND; c=CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
+| l = ID; BIND; AND; c = CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
 | l = ID; BIND; r = ID; keys = nonempty_list(map_access)
   { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, true), toLoc $startpos }
 | l = ID; BIND; EXISTS; r = ID; keys = nonempty_list(map_access)
   { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, false), toLoc $startpos }
-| l = ID; keys = nonempty_list(map_access); ASSIGN; r = ID
+| l = ID; keys = nonempty_list(map_access); ASSIGN; r = sid
   { MapUpdate(asIdL l (toLoc $startpos(l)), keys, Some (asIdL r (toLoc $startpos(r)))), toLoc $startpos }
 | DELETE; l = ID; keys = nonempty_list(map_access)
   { MapUpdate(asIdL l (toLoc $startpos(l)), keys, None), toLoc $startpos }

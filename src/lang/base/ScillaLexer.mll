@@ -35,7 +35,8 @@ let float = digit* frac? exp?
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 let alphanum = ['a'-'z' 'A'-'Z' '0'-'9' '_']
-let id = ['a'-'z' '_'] alphanum*
+let id = ['a'-'z'] alphanum*
+let spid = ['_'] alphanum*
 let cid =   ['A'-'Z'] alphanum*
 let tid =   '\'' ['A'-'Z'] alphanum*
 let lcomment = "(*" (_ # ['\r' '\n'])* "*)" white* newline
@@ -113,6 +114,7 @@ rule read =
   | id as i       { ID i }
   | cid as i      { CID i }
   | tid as i      { TID i }
+  | spid as i   { SPID i }
 
   (* Other tokens *)     
   | _             { raise (Error ("Unexpected character: " ^ Lexing.lexeme lexbuf)) }
