@@ -37,7 +37,6 @@ module Tests = TestUtil.DiffBasedTests(
       "helloWorld.scilla";
       "inplace-map.scilla";
       "map_key_test.scilla";
-      "map-inplace-update-with-_balance.scilla";
       "mappair.scilla";
       "multiple-msgs.scilla";
       "nonfungible-token.scilla";
@@ -84,6 +83,7 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "TestLibNS3.scillib";
       "TestLibNS4.scillib";
       "libdiamond2.scilla";
+      "map-inplace-update-with-_sender.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
