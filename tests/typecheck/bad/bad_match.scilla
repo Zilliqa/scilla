@@ -1,0 +1,4 @@
+fun (b : Bool) =>
+  match b with
+  | _invalid_name_because_of_leading_underscore => True
+  end

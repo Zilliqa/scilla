@@ -142,8 +142,6 @@
 
 %%
 
-ident : name = ID { Ident (name, toLoc $startpos) }
-
 sid :
 | name = ID { name }
 | name = SPID { name }
@@ -277,12 +275,12 @@ map_access:
 
 pattern:
 | UNDERSCORE { Wildcard }
-| x = sid {Binder (Ident (x, toLoc $startpos))}
+| x = ID { Binder (Ident (x, toLoc $startpos)) }
 | c = scid; ps = list(arg_pattern) { Constructor (c, ps) }
 
 arg_pattern:
 | UNDERSCORE { Wildcard }
-| x = ID {Binder (Ident (x, toLoc $startpos))}
+| x = ID { Binder (Ident (x, toLoc $startpos)) }
 | c = scid;  { Constructor (c, []) }
 | LPAREN; p = pattern RPAREN; { p }
 
