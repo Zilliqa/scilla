@@ -1,6 +1,6 @@
 (* importing the a (non-empty) library into same namespace is a name conflict *)
-import TestLibNS1 >> Foo
-       TestLibNS1 >> Foo
+import TestLibNS1 as Foo
+       TestLibNS1 as Foo
 
 library TestLibNS1
 

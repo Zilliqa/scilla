@@ -1,6 +1,6 @@
 (* importing the same library into two different namespaces should be fine *)
-import BoolUtils >> Foo
-       BoolUtils >> Bar
+import BoolUtils as Foo
+       BoolUtils as Bar
 
 library TestLibNS3
 

@@ -1,7 +1,7 @@
 scilla_version 0
 
 (* Importing as "Barr" but using as "Bar" *)
-import TestLib1 >> Barr
+import TestLib1 as Barr
 
 library NS
 

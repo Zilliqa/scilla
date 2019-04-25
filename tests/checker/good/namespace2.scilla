@@ -1,6 +1,6 @@
 scilla_version 0
 
-import ListUtils >> LU
+import ListUtils as LU
 
 library NS
 

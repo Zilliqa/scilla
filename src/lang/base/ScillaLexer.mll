@@ -85,6 +85,9 @@ rule read =
   | "scilla_version" { SCILLA_VERSION }
   | "type"        { TYPE }
   | "of"          { OF }
+  | "as"          { AS }
+  | "procedure"   { PROCEDURE }
+  | "throw"       { THROW }
 
 
   (* Separators *)    
@@ -99,7 +102,6 @@ rule read =
   | "{"           { LBRACE }
   | "}"           { RBRACE }
   | ","           { COMMA }
-  | ">>"          { IMPORTAS }
   | "=>"          { ARROW }                  
   | "->"          { TARROW }                  
   | "="           { EQ }                  
