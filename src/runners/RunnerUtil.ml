@@ -334,7 +334,7 @@ let parse_cli () =
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
   let () = Arg.parse speclist anon_handler mandatory_usage in
-  if !r_input_file = "" then fatal_error (mk_error0 usage);
+  if !r_input_file = "" then fatal_error_noformat usage;
   GlobalConfig.set_use_json_errors !r_json_errors;
   { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; cf_flag = !r_cf;
     gua_flag = !r_gua; p_contract_info = !r_contract_info; init_file = !r_init_file }
