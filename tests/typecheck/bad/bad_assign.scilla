@@ -1,0 +1,2 @@
+let _balance = Uint128 0 in
+_balance

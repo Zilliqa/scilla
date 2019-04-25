@@ -31,6 +31,8 @@ let explist = [
   "builtin-overflow10.scilla";
   "builtin-overflow11.scilla";
   "builtin-overflow12.scilla";
+  "builtin-overflow13.scilla";
+  "builtin-overflow14.scilla";
   "builtin-overflow1.scilla";
   "builtin-overflow2.scilla";
   "builtin-overflow3.scilla";
@@ -48,6 +50,7 @@ let explist = [
   "let-error.scilla";
   "list_to_map.scilla";
   "string_error1.scilla";
+  "substr_err1.scilla";
 ]
 
 module Tests = TestUtil.DiffBasedTests(

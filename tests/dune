@@ -6,6 +6,6 @@
   (libraries core oUnit scilla-util testcontracts
              testexps testexpsfail
              testtypes testtypefail
-             testpmfail
+             testpmfail testgasexpr testgascontracts
              testchecker testinteger256)
 )

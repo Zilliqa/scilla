@@ -63,6 +63,9 @@ module Tests = TestUtil.DiffBasedTests(
       "unserializable_param.scilla";
       "unstorable_adt.scilla";
       "bad_version.scilla";
+      "balance_field.scilla";
+      "bad_param.scilla";
+      "bad_transition_param.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
@@ -86,6 +89,8 @@ module LibTests = TestUtil.DiffBasedTests(
       "libdiamondcycle.scilla";
       "libdup1.scilla";
       "libdup2.scilla";
+      "namespace1.scilla";
+      "TestLibNS1.scillib";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

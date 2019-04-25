@@ -1,0 +1,18 @@
+let glt =
+  fun (x : Int32) =>
+  fun (y : Int32) =>
+    builtin add x y
+in
+
+let lt =
+  fun (a : Int32) =>
+  fun (b : Int32) =>
+  fun (flt : Int32 -> Int32 -> Int32) =>
+    flt b a
+in
+
+let aa = Int32 2 in
+let bb = Int32 3 in
+
+lt aa bb glt
+

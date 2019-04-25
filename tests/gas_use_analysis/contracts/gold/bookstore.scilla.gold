@@ -1,0 +1,143 @@
+Gas use polynomial for transition addMember:
+179 + 1(a) + 1(b) + 3(c)
+Legend:
+
+a: name
+b: memberType
+c: _sender
+
+Gas use polynomial for transition addBook:
+1(a) + 105 + 2(b) + 1(c) + 1(d) + 1(e)
+Legend:
+
+d: author
+a: bookInventory
+e: bookID
+b: _sender
+c: book_title
+
+Gas use polynomial for transition removeBook:
+1
+
+Gas use polynomial for transition updateBook:
+1(a) + 103 + 2(b) + 1(c) + 1(d)
+Legend:
+
+c: book_title
+d: author
+b: _sender
+a: bookInventory
+
+{
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "BookStore",
+    "params": [
+      { "vname": "owner", "type": "ByStr20" },
+      { "vname": "storeName", "type": "String" }
+    ],
+    "fields": [
+      {
+        "vname": "members",
+        "type": "Map (ByStr20) (Pair (String) (Uint32))"
+      },
+      { "vname": "lastBookID", "type": "Option (Uint32)" },
+      {
+        "vname": "bookInventory",
+        "type": "Map (Uint32) (Pair (String) (String))"
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "addMember",
+        "params": [
+          { "vname": "name", "type": "String" },
+          { "vname": "addr", "type": "ByStr20" },
+          { "vname": "memberType", "type": "Uint32" }
+        ]
+      },
+      {
+        "vname": "addBook",
+        "params": [
+          { "vname": "book_title", "type": "String" },
+          { "vname": "author", "type": "String" },
+          { "vname": "bookID", "type": "Uint32" }
+        ]
+      },
+      {
+        "vname": "removeBook",
+        "params": [ { "vname": "book_id", "type": "Uint32" } ]
+      },
+      {
+        "vname": "updateBook",
+        "params": [
+          { "vname": "book_id", "type": "Uint32" },
+          { "vname": "book_title", "type": "String" },
+          { "vname": "author", "type": "String" }
+        ]
+      }
+    ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/bookstore.scilla",
+        "line": 188,
+        "column": 14
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/bookstore.scilla",
+        "line": 132,
+        "column": 14
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}

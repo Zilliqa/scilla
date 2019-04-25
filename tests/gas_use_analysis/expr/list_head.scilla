@@ -1,0 +1,13 @@
+(* (List 'A) -> (Option 'A) *)
+(* Return the head element of a list as Some 'A, None otherwise *)
+let list_head =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some {'A} h
+    | Nil =>
+      None {'A}
+    end
+in
+list_head

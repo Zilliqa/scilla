@@ -20,11 +20,11 @@ val privkey_len : int
 val pubkey_len : int
 val signature_len : int
 
-(* Generate a private key / public key pair. 
- * The output is a hex string pair representing 
+(* Generate a private key / public key pair.
+ * The output is a raw string pair representing
  * privkey_len / pubkey_len bytes of the keys
  *)
-val genKeyPair : unit -> (string * string)
+val genKeyPair : unit -> string * string
 
 (* Given private key, public key and message,
  * sign the message and return the signature.
@@ -35,3 +35,4 @@ val sign : string -> string -> string -> string
  * that the message was indeed signed by the public key.
  *)
 val verify : string -> string -> string -> bool
+

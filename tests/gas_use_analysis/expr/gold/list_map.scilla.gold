@@ -1,0 +1,11 @@
+forall 'A. forall 'B. ('A -> 'B) -> List ('A) -> List ('B)
+Gas usage signature:
+Parameter list: ( f l )
+Gas use polynomial:
+5(a) + 1(b)(a) + 11
+Legend:
+
+a: Length of: l
+b: Cost of calling f(Element of: l)
+Result size: 1(Element of: 1)(Length of: l) + 1
+

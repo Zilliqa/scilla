@@ -1,0 +1,41 @@
+(* ('A -> 'A -> Bool) -> List 'A -> List 'A *)
+(* Stable sort the input list "l". *)
+(* "flt" returns True if the first argument is lesser-than the second *)
+let list_sink_down =
+  (* Insertion sort *)
+  tfun 'A =>
+  fun (flt : 'A -> 'A -> Bool) =>
+  fun (ls : List 'A) =>
+  fun (e : 'A) =>
+    let true = True in 
+    let false = False in
+    let rec_A_Pair = @list_foldr 'A (Pair Bool (List 'A))  in
+    let nil_A = Nil {'A} in 
+    let init = Pair {Bool (List 'A)} false nil_A in
+    let iter1 =
+      fun (h : 'A) =>
+      fun (res : Pair Bool (List 'A)) =>
+        match res with
+        | Pair True rest =>
+          let z = Cons {'A} h rest in
+          Pair {Bool (List 'A)} true z
+        | Pair False rest =>
+          let bl = flt h e in
+          match bl with
+          | True =>
+            let z = Cons {'A} e rest in
+            let z2 = Cons {'A} h z in
+            Pair {Bool (List 'A)} true z2
+          | False =>
+            let z = Cons {'A} h rest in
+            Pair {Bool (List 'A)} false z
+          end
+        end   
+      in
+      let res1 = rec_A_Pair iter1 init ls in
+      match res1 with
+      | Pair True ls1 => ls1
+      | Pair False ls1 => Cons {'A} e ls1
+      end
+    in
+list_sink_down

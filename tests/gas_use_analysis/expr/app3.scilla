@@ -1,0 +1,7 @@
+let lt =
+  fun (a : Int32) =>
+  fun (b : Int32) =>
+  fun (flt : Int32 -> Int32 -> Int32) =>
+    flt b a
+in
+lt

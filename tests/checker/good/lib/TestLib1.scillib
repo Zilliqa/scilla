@@ -3,3 +3,11 @@ import ListUtils
 library TestLib1
 
 let sort_uint32 = @list_sort Uint32
+
+type TestType =
+| Constructor1
+| Constructor2
+
+type TestType2 =
+| Constructor3 of TestType
+| Constructor4 of Uint32

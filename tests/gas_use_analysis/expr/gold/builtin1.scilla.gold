@@ -1,0 +1,6 @@
+Int32
+Gas usage signature:
+Gas use polynomial:
+19
+Result size: Result of builtin add(4,Result of builtin add(4,4))
+

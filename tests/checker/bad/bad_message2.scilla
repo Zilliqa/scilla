@@ -26,10 +26,3 @@ transition malMessage2()
   msgs = one_msg msg;
   send msgs 
 end
-
-(* This transition disallowed arguments. Will flag error. *)
-transition malTransition1( _sender : ByStr20 )
-  msg = { _tag: ""; _recipient : _sender; _amount : Uint128 0; status : "foo" };
-  msgs = one_msg msg;
-  send msgs
-end
