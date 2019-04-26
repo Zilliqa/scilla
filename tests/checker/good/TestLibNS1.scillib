@@ -1,4 +1,4 @@
-import BoolUtils >> Foo
+import BoolUtils as Foo
 
 library TestLibNS1
 

@@ -1,7 +1,7 @@
 scilla_version 0
 
 import TestLibDiamondTop
-       TestLibDiamondBottom >> FooBot
+       TestLibDiamondBottom as FooBot
 
 library LibDiamond
 

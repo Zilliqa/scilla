@@ -87,6 +87,9 @@ rule read =
   | "of"          { OF }
   | "try"         { TRY }
   | "catch"       { CATCH }
+  | "as"          { AS }
+  | "procedure"   { PROCEDURE }
+  | "throw"       { THROW }
 
 
   (* Separators *)    
@@ -101,7 +104,6 @@ rule read =
   | "{"           { LBRACE }
   | "}"           { RBRACE }
   | ","           { COMMA }
-  | ">>"          { IMPORTAS }
   | "=>"          { ARROW }                  
   | "->"          { TARROW }                  
   | "="           { EQ }                  

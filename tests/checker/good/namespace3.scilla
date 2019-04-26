@@ -1,6 +1,6 @@
 scilla_version 0
 
-import TestLib1 >> TL
+import TestLib1 as TL
 
 library NS
 

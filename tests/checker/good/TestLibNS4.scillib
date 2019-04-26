@@ -1,6 +1,6 @@
 (* importing two disjoint libraries into the same namespace is fine *)
-import TestLibNS2 >> Foo
-       BoolUtils  >> Foo
+import TestLibNS2 as Foo
+       BoolUtils  as Foo
 
 library TestLibNS4
 

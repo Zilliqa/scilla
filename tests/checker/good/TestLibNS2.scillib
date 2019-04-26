@@ -1,4 +1,4 @@
-import TestLibNS1 >> Foo
+import TestLibNS1 as Foo
 
 library TestLibNS2
 
