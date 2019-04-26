@@ -170,7 +170,7 @@ let add_tests env =
       "cfinvoke" >:::(build_contract_tests env "cfinvoke" succ_code 1 4 false);
       "ping" >:::(build_contract_tests env "ping" succ_code 0 3 false);
       "pong" >:::(build_contract_tests env "pong" succ_code 0 3 false);
-      "helloWorld" >:::(build_contract_tests env "helloWorld" succ_code 1 3 false);
+      "helloWorld" >:::(build_contract_tests env "helloWorld" succ_code 1 4 false);
       "auction" >:::(build_contract_tests env "auction" succ_code 1 8 false);
       "mappair" >:::(build_contract_tests env "mappair" succ_code 1 7 false);
       "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10 false);
@@ -189,7 +189,7 @@ let add_tests env =
       "map_key_test" >::: (build_contract_tests env "map_key_test" succ_code 1 1 false);
     ];
     "these_tests_must_FAIL" >:::[
-      "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 4 9 false);
+      "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 5 11 false);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 8 8 false);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 12 14 false);
       "multiple_msgs_test" >::: (build_contract_tests env "multiple-msgs" fail_code 1 1 true);
