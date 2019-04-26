@@ -1,17 +1,22 @@
 {
-  "gas_remaining": "7848",
-  "errors": [
-    {
-      "error_message": "_balance field missing",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Failed to parse json tests/runner/helloWorld/state_4.json:\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    }
+  "scilla_major_version": "0",
+  "gas_remaining": "7739",
+  "_accepted": "false",
+  "message": null,
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    { "vname": "welcome_msg", "type": "String", "value": "Hello World" }
   ],
-  "warnings": []
+  "events": [
+    {
+      "_eventname": "ContractAddress",
+      "params": [
+        {
+          "vname": "addr",
+          "type": "ByStr20",
+          "value": "0xabfeccdc9012345678901234567890f777567890"
+        }
+      ]
+    }
+  ]
 }
