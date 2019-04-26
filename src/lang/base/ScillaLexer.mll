@@ -85,6 +85,8 @@ rule read =
   | "scilla_version" { SCILLA_VERSION }
   | "type"        { TYPE }
   | "of"          { OF }
+  | "try"         { TRY }
+  | "catch"       { CATCH }
   | "as"          { AS }
   | "procedure"   { PROCEDURE }
   | "throw"       { THROW }

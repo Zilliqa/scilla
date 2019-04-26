@@ -104,6 +104,8 @@
 %token EMP
 %token LIBRARY
 %token IMPORT
+%token TRY
+%token CATCH
 %token AS
 %token PROCEDURE
 %token THROW
