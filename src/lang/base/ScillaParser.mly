@@ -105,6 +105,8 @@
 %token EMP
 %token LIBRARY
 %token IMPORT
+%token TRY
+%token CATCH
 %token FIELD
 %token LET
 %token IN
