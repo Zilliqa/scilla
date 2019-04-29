@@ -25,6 +25,8 @@ addons:
     - libsecp256k1-dev
   homebrew:
     brewfile: true
+    # need this to install the latest version of opam
+    update: true
 cache:
   directories:
   - $HOME/.opam
