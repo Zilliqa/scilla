@@ -1,13 +1,18 @@
 # Building and Developing Scilla
 
 Please, read the instructions below if you intend to hack on Scilla implementation.
+Setup OCaml using the instructions [here](https://github.com/realworldocaml/book/wiki/Installation-Instructions).
+Please make sure you install opam v2.0 or greater (this can be done by running `opam --version`)
 
-## Platform-specific setup for building Scilla
+Scilla requires OpenSSL 1.0.2 and if your platform does not have packages for this, you may need to build OpenSSL
+yourself and set `PKG_CONFIG_PATH` environment variable accordingly
+(if you install OpenSSL in a non-default path):
+```shell
+export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
+```
 
-Setup OCaml using the instructions
-[here](https://github.com/realworldocaml/book/wiki/Installation-Instructions). Make
-sure you have switched (using `opam switch`) to a version not older
-than the one specified below.
+
+## OS-specific setup for building Scilla
 
 ### openSUSE
 
@@ -25,8 +30,9 @@ than the one specified below.
   performing the 1-click install of the officially released package.
 
 - Run:
-
-    sudo zypper install -y curl m4 opam2 pkg-config zlib-devel gmp-devel libffi-devel libopenssl-devel boost-devel
+```shell
+sudo zypper install -y curl m4 opam2 pkg-config zlib-devel gmp-devel libffi-devel libopenssl-devel boost-devel
+```
 
 ### Ubuntu
 
@@ -37,49 +43,12 @@ On machines with Ubuntu strictly older than 18.04, run these additional commands
 sudo add-apt-repository ppa:tah83/secp256k1 -y
 ```
 
-Required ubuntu packages can be installed as below:
+Required Ubuntu packages can be installed as below:
 
 ```shell
 sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
 sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev
-```
-
-### OCaml toolchain
-
-Building Scilla requires OCaml 4.06.1. You can switch to this version and install required
-opam packages using the commands listed below:
-
-```shell
-opam init --disable-sandboxing -y --compiler=4.06.1
-opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1 patdiff
-```
-
-The above three commands can, alternatively, be run using the make target `opamdep`
-
-```shell
-make opamdep
-```
-
-Finally, opam environment needs to be set in your shell. This can be done as:
-
-```shell
-echo ". ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true " >> ~/.bashrc
-```
-
-Note that the command above does not setup the environment for the current shell. Either
-quit and start a new shell (so that ~/.bashrc is invoked) OR, run the following command 
-to setup the environment for your current shell.
-
-```shell
-eval `opam config env`
-```
-
-Scilla requires OpenSSL 1.0.2 and if your platform does not have packages for this, you may need to build OpenSSL
-yourself and set `PKG_CONFIG_PATH` environment variable accordingly
-(if you install OpenSSL in a non-default path):
-```shell
-export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 ```
 
 ### macOS
@@ -97,17 +66,6 @@ and proceed with OS-level package installation:
 brew install gcc ocaml opam pkg-config libffi openssl boost pcre iantanwx/crypto/secp256k1
 ```
 
-Now we can set up opam dependencies:
-```shell
-opam init --disable-sandboxing -y --compiler=4.06.1
-opam install ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1 patdiff
-```
-
-Then run the following command to setup environment on current shell. 
-```shell
-eval `opam config env`
-```
-
 Normally, by this moment everything should be set up as the [Dune](https://dune.build) build system
 takes care of environment variables for `pkg-config` utility.
 However Homebrew's `openssl` package is keg-only, which means it doesn't get symlinked
@@ -122,6 +80,34 @@ To run tests with `make test` you might need to increase the maximum number of o
 ```shell
 ulimit -n 1024
 ```
+
+
+## Installing opam packages
+
+### If you just installed opam package manager
+
+#### Initialize opam
+```shell
+opam init --disable-sandboxing --compiler=4.06.1 --yes
+```
+Note: the initializer will change your shell configuration to setup the environment opam needs to work.
+You can remove `--yes` from the above command to manually control that process.
+
+#### Setup your current shell to work with opam
+```shell
+eval $(opam env)
+```
+
+#### Install Scilla dependencies using opam
+```shell
+cd PROJECT_DIR    # go inside your Scilla project directory
+opam install ./scilla.opam --deps-only --with-test
+```
+The above commands can, alternatively, be run using the make target `opamdep`:
+```shell
+make opamdep
+```
+
 
 ## Using Ocaml with Emacs
 

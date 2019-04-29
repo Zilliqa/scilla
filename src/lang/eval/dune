@@ -1,11 +1,10 @@
 (library
  (name scilla_eval)
-  (public_name scilla-eval)
   (wrapped false)
   (libraries core
               angstrom stdint
               ppx_sexp_conv ppx_deriving batteries
-              ppx_let yojson cryptokit scilla-base)
+              ppx_let yojson cryptokit scilla_base)
   (preprocess (pps ppx_sexp_conv
                     ppx_let
                     bisect_ppx -conditional
