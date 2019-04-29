@@ -25,18 +25,23 @@ addons:
     - libsecp256k1-dev
   homebrew:
     brewfile: true
-    # need this to install the latest version of opam
-    update: true
+    update: false
 cache:
   directories:
   - $HOME/.opam
   - $HOME/openssl
+  # see this awesome answer for caching with Homebrew: https://stackoverflow.com/a/53331571/2747511
+  # TODO: we might want to implement everything useful from the answer
+  - $HOME/Library/Caches/Homebrew
+before_cache:
+  - if [ $TRAVIS_OS_NAME = osx ]; then brew cleanup; fi
 branches:
   only: 
     - master
     - /^release-v.*$/
 before_install:
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
+- if [ $TRAVIS_OS_NAME = osx ]; then brew upgrade opam; fi
 - opam init --disable-sandboxing --compiler=$OCAML_VERSION -y
 - eval $(opam env)
 - opam install ./scilla.opam --deps-only --with-test -y
