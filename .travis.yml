@@ -37,7 +37,7 @@ before_install:
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
 - opam init --disable-sandboxing --compiler=$OCAML_VERSION -y
 - eval $(opam env)
-- opam install ./scilla.opam --deps-only --with-test
+- opam install ./scilla.opam --deps-only --with-test -y
 - rm $HOME/.opam/log/*
 script:
 - make test
