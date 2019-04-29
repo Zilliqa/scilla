@@ -6,13 +6,12 @@
 
 (library
  (name scilla_base)
- (public_name scilla-base)
   (wrapped false)
   (libraries core ppx_sexp_conv
               num hex stdint batteries
               ppx_deriving.show
               cryptokit secp256k1
-              yojson scilla-cpp-deps scilla-util)
+              yojson scilla_cpp_deps scilla_util)
   (preprocess (pps ppx_sexp_conv
                     ppx_let 
                     ppx_deriving.show

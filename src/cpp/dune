@@ -1,6 +1,5 @@
 (library
  (name scilla_cpp_deps)
- (public_name scilla-cpp-deps)
   (wrapped false)
   (libraries ctypes ctypes.foreign cryptokit)
   (c_names generate_dsa_nonce)

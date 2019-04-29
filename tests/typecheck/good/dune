@@ -1,5 +1,5 @@
 (library
   (name testtypes)
   (wrapped false)
-  (libraries core oUnit testutil scilla-base)
+  (libraries core oUnit testutil scilla_base)
 )

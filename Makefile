@@ -27,14 +27,18 @@ utop: all
 
 # Build and run tests
 test: dev
-	./bin/testsuite -print-diff true
+	dune exec tests/testsuite.exe -- -print-diff true
+
+gold: dev
+	dune exec tests/testsuite.exe -- -update-gold true
 
 # Clean up
 clean:
 # Remove files produced by dune.
 	dune clean
-# Remove remaining files/folders ignored by git as defined in .gitignore (-X).
-	git clean -dfXq
+# Remove remaining files/folders ignored by git as defined in .gitignore (-X)
+# but keeping a local opam switch
+	git clean -dfX --exclude=\!_opam/**
 
 # Build a standalone scilla docker
 docker:
@@ -53,7 +57,7 @@ zilliqa-docker:
 
 opamdep:
 	opam init --disable-sandboxing -y --compiler=4.06.1
-	opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1 patdiff
+	opam install ./scilla.opam --deps-only --with-test --yes
 
 
 .PHONY : coverage
@@ -71,7 +75,7 @@ coveralls:
 	make clean
 	mkdir -p _build/coverage
 	BISECT_ENABLE=YES make
-	./bin/testsuite
+	dune exec tests/testsuite.exe
 	bisect-ppx-report -ignore-missing-files -I _build/ -coveralls coverage.json -service-name travis-ci -service-job-id ${TRAVIS_JOB_ID} `find . -name 'bisect*.out'`
 	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs
 	make clean

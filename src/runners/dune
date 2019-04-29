@@ -1,6 +1,7 @@
 (executables
  (names scilla_runner eval_runner type_checker scilla_checker)
   (public_names scilla-runner eval-runner type-checker scilla-checker)
+  (package scilla)
   (modules scilla_runner
             eval_runner
             type_checker
@@ -11,6 +12,5 @@
               ppx_sexp_conv ppx_deriving
               ppx_let yojson cryptokit
               fileutils
-              scilla-base scilla-eval scilla-checkers scilla-cpp-deps)
-  (preprocess (pps ppx_sexp_conv ppx_let ppx_deriving.show bisect_ppx -conditional))
-  (package scilla-runner))
+              scilla_base scilla_eval scilla_checkers scilla_cpp_deps)
+  (preprocess (pps ppx_sexp_conv ppx_let ppx_deriving.show bisect_ppx -conditional)))

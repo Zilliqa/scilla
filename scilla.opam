@@ -1,0 +1,47 @@
+opam-version: "2.0"
+maintainer: "ilya@zilliqa.com"
+authors: ["Zilliqa Research Pvt. Ltd."]
+homepage: "https://scilla-lang.org"
+bug-reports: "https://github.com/Zilliqa/scilla/issues"
+dev-repo: "git+https://github.com/Zilliqa/scilla.git"
+license: "GPL-3.0"
+depends: [
+  "ocaml" {>= "4.06.1" & < "4.07~"}
+  "dune" {build & >= "1.5"}
+  "menhir"
+  "core" {>= "v0.11" & < "v0.12~"}
+  "batteries" {>= "2.9.0" & < "2.10~"}
+  "angstrom" {>= "0.11.0" & < "0.12~"}
+  "bisect_ppx" {>= "1.4.0" & < "1.5~"}
+  "cryptokit" {>= "1.13" & < "1.14~"}
+  "ctypes" {>= "0.14.0" & < "0.15~"}
+  "ctypes-foreign" {>= "0.4.0" & < "0.5~"}
+  "fileutils" {>= "0.5.3" & < "0.6~"}
+  "hex" {>= "1.3.0" & < "1.4~"}
+  "ocaml-migrate-parsetree" {>= "1.2.0" & < "1.3~"}
+  "yojson" {>= "1.7.0" & < "1.8~"}
+  "ppx_deriving" {>= "4.2.1" & < "4.3~"}
+  "ppx_sexp_conv" {>= "v0.11.2" & < "v0.12~"}
+  "secp256k1" {>= "0.4.0" & < "0.5~"}
+  "stdint" {>= "0.5.1" & < "0.6~"}
+  "ounit" {with-test & (>= "2.0.8" & < "2.1~")}
+  "patdiff" {with-test & (>= "v0.11" & < "v0.12~")}
+]
+build: [
+  [ "dune" "build" "-j" jobs "@install" ]
+  [ "dune" "runtest" "-p" name "-j" jobs ] {with-test}
+]
+synopsis: "Scilla: Safe-By-Design Smart Contract Language"
+description: """
+Scilla, short for Smart Contract Intermediate-Level Language,
+is an intermediate-level smart contract language being developed for Zilliqa.
+Scilla has been designed as a principled language with smart contract safety in mind.
+Scilla imposes a structure on smart contracts that will make applications less
+vulnerable to attacks by eliminating certain known vulnerabilities directly at
+the language-level. Furthermore, the principled structure of Scilla will make
+applications inherently more secure and amenable to formal verification.
+The language is being developed hand-in-hand with formalization of its semantics and
+its embedding into the Coq proof assistant — a state-of-the art tool for
+mechanized proofs about properties of programs.
+"""
+
