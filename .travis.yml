@@ -31,8 +31,8 @@ before_install:
 - sudo mv opam-2.0.0-x86_64-linux /usr/local/bin/opam
 - sudo chmod a+x /usr/local/bin/opam
 - opam init --disable-sandboxing -y --compiler=4.06.1
-- opam install -y ocaml-migrate-parsetree core cryptokit ppx_sexp_conv yojson batteries angstrom hex ppx_deriving menhir oUnit dune stdint fileutils ctypes ctypes-foreign bisect_ppx secp256k1 patdiff
-- eval `opam config env`
+- eval $(opam env)
+- opam install ./scilla.opam --deps-only --with-test
 - rm $HOME/.opam/log/*
 script:
 - make test
