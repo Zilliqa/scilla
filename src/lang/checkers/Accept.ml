@@ -33,7 +33,7 @@ module ScillaAcceptChecker
          (SR : Rep)
          (ER : sig
             include Rep
-            val get_type : rep -> PlainTypes.t inferred_type
+            val [@warning "-32"] get_type : rep -> PlainTypes.t inferred_type
           end) = struct
 
   module EISyntax = ScillaSyntax (SR) (ER)
