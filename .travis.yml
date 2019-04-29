@@ -25,7 +25,7 @@ addons:
     - libsecp256k1-dev
   homebrew:
     brewfile: true
-    update: false
+    update: true
 cache:
   directories:
   - $HOME/.opam
@@ -41,7 +41,6 @@ branches:
     - /^release-v.*$/
 before_install:
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
-- if [ $TRAVIS_OS_NAME = osx ]; then brew upgrade opam; fi
 - opam init --disable-sandboxing --compiler=$OCAML_VERSION -y
 - eval $(opam env)
 - opam install ./scilla.opam --deps-only --with-test -y
