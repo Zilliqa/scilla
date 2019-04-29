@@ -42,5 +42,6 @@ before_install:
 - opam install ./scilla.opam --deps-only --with-test -y
 - rm $HOME/.opam/log/*
 script:
+- if [ $TRAVIS_OS_NAME = osx ]; then ulimit -n 1024; fi
 - make test
 - make coveralls
