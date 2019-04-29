@@ -27,7 +27,10 @@ utop: all
 
 # Build and run tests
 test: dev
-	./bin/testsuite -print-diff true
+	dune exec tests/testsuite.exe -- -print-diff true
+
+gold: dev
+	dune exec tests/testsuite.exe -- -update-gold true
 
 # Clean up
 clean:
