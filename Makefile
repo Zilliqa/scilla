@@ -36,8 +36,9 @@ gold: dev
 clean:
 # Remove files produced by dune.
 	dune clean
-# Remove remaining files/folders ignored by git as defined in .gitignore (-X).
-	git clean -dfXq
+# Remove remaining files/folders ignored by git as defined in .gitignore (-X)
+# but keeping a local opam switch
+	git clean -dfX --exclude=\!_opam/**
 
 # Build a standalone scilla docker
 docker:

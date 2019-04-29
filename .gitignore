@@ -16,7 +16,7 @@
 _build/
 
 # opam local switch
-_opam/
+_opam/*
 
 # ocamlbuild targets
 *.byte

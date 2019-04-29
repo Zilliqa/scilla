@@ -122,6 +122,12 @@ opam switch create . --deps-only --with-test --yes
 Now, whenever you are inside the project directory, opam will prefer the local switch to any globally installed switches,
 unless being told explicitly which one to use.
 
+Note: using `git clean`, extra care should be paid so that it won't delete `_opam` directory.
+We suggest using `make clean` command or keeping `_opam` directory like so:
+```shell
+git clean -dfX --exclude=\!_opam/**
+```
+
 
 ## Using Ocaml with Emacs
 
