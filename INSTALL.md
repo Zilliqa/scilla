@@ -53,17 +53,10 @@ sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev
 
 ### macOS
 
-The dependencies can be installed via [Homebrew](https://brew.sh/).
+The dependencies (listed in `Brewfile`) can be installed via [Homebrew](https://brew.sh/) as follows.
 
-To install the compatible version of `secp256k1` package, one needs to add the following tap:
 ```shell
-brew tap iantanwx/crypto
-```
-(side note: pending PR at https://github.com/DomT4/homebrew-crypto/pull/95/commits/9c62017362aa973afad75616046d14006f31be6a)
-
-and proceed with OS-level package installation:
-```shell
-brew install gcc ocaml opam pkg-config libffi openssl boost pcre iantanwx/crypto/secp256k1
+brew bundle
 ```
 
 Normally, by this moment everything should be set up as the [Dune](https://dune.build) build system

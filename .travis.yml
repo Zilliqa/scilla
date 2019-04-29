@@ -1,3 +1,10 @@
+sudo: required
+env:
+  - OCAML_VERSION=4.06.1
+  - OCAML_VERSION=4.07.1
+os:
+  - linux
+  - osx
 addons:
   apt:
     packages:
@@ -12,25 +19,21 @@ addons:
     - libboost-system-dev
     - libpcre3-dev
     - aspcud
-
+    sources:
+    - sourceline: 'ppa:tah83/secp256k1/libsecp256k1-dev'
+  homebrew:
+    brewfile: true
 cache:
   directories:
   - $HOME/.opam
   - $HOME/openssl
-sudo: required
 branches:
   only: 
     - master
     - /^release-v.*$/
 before_install:
-- # ./scripts/build_openssl.sh
-- sudo add-apt-repository ppa:tah83/secp256k1 -y
-- sudo apt-get update
-- sudo apt-get install libsecp256k1-dev --allow-unauthenticated
-- wget https://github.com/ocaml/opam/releases/download/2.0.0/opam-2.0.0-x86_64-linux
-- sudo mv opam-2.0.0-x86_64-linux /usr/local/bin/opam
-- sudo chmod a+x /usr/local/bin/opam
-- opam init --disable-sandboxing -y --compiler=4.06.1
+- if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
+- opam init --disable-sandboxing --compiler=$OCAML_VERSION -y
 - eval $(opam env)
 - opam install ./scilla.opam --deps-only --with-test
 - rm $HOME/.opam/log/*
