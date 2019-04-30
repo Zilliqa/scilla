@@ -221,8 +221,8 @@ module Configuration = struct
   let bind_all st ks vs =
     let e = st.env in
     match List.zip ks vs with
-    | None -> fail0 "Attempting to bind different number of keys and values in environment"
-    | Some kvs ->
+    | Unequal_lengths -> fail0 "Attempting to bind different number of keys and values in environment"
+    | Ok kvs ->
         let filtered_env =
           List.filter e ~f:(fun z ->
               not (

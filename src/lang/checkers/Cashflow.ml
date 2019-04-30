@@ -433,15 +433,15 @@ module ScillaCashflowChecker
                 | NoInfo (* Nothing known *)
                 | Money (* Nat case *)
                 | NotMoney (* Nat case *)
-                  -> Some (List.map adt.tparams ~f:(fun tparam -> (tparam, expected_tag)))
+                  -> Ok (List.map adt.tparams ~f:(fun tparam -> (tparam, expected_tag)))
                 | _ ->
                     (* Don't let inconsistent tags infect subpatterns *)
-                    Some (List.map adt.tparams ~f:(fun tparam -> (tparam, NoInfo))) in
+                    Ok (List.map adt.tparams ~f:(fun tparam -> (tparam, NoInfo))) in
               match zipped_tvar_tags with
-              | None ->
+              | Unequal_lengths ->
                   (* Can only happen if arg_tags in Adt case has wrong length *)
                   List.map adt.tparams ~f:(fun tparam -> (tparam, Inconsistent))
-              | Some map -> map in
+              | Ok map -> map in
             let rec tag_tmap t =
               match t with
               | PrimType _ ->
@@ -1054,8 +1054,8 @@ module ScillaCashflowChecker
             match ctr_pattern_to_subtags s expected_tag with
             | Some ts -> ts
             | None -> List.map ps ~f:(fun _ -> NoInfo) in
-          let new_subpatterns_with_tags =
-            List.zip ps expected_subtags |> Option.value ~default:[] in
+          let (new_subpatterns_with_tags,_) =
+            List.zip_with_remainder ps expected_subtags in
           let (new_ps, changes) =
             List.fold_right new_subpatterns_with_tags
               ~init:([], false)
@@ -1172,8 +1172,8 @@ module ScillaCashflowChecker
           let (final_args, final_field_env, final_local_env, changes) =
             let tags_list =
               match List.zip args args_tags_usage with
-              | None -> []
-              | Some res -> res in
+              | Unequal_lengths -> []
+              | Ok res -> res in
             List.fold_right tags_list ~init:([], field_env, local_env, false) 
               ~f:(fun (arg, arg_tag) (acc_args, acc_field_env, acc_local_env, acc_changes) ->
                  let (new_local_env, new_field_env) =

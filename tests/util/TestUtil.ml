@@ -42,7 +42,7 @@ let output_verifier goldoutput_file msg print_diff output =
     let gold = {Patdiff_core.name = goldoutput_file; text = gold_output} in
     let out = {Patdiff_core.name = "test output"; text = output} in
     let open Patdiff_lib.Compare_core in
-    match diff_strings config ~old:gold ~new_:out with
+    match diff_strings config ~prev:gold ~next:out with
     | `Same -> ()
     | `Different s ->  (* s contains ANSI color codes *)
         Format.pp_force_newline fmt ();
