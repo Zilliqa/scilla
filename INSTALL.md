@@ -54,10 +54,11 @@ sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev
 ### macOS
 
 The dependencies (listed in [Brewfile](Brewfile)) can be installed via [Homebrew](https://brew.sh/) as follows.
-
+Run 
 ```shell
 brew bundle
 ```
+from the project root.
 
 Normally, by this moment everything should be set up as the [Dune](https://dune.build) build system
 takes care of environment variables for `pkg-config` utility.
