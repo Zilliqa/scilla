@@ -27,11 +27,13 @@ open ErrorUtils
 
 module ER = ParserRep
 
-module IPCClient = IPCIdl(Idl.GenClient ())
+module M = Idl.IdM
+module IDL = Idl.Make(M)
+module IPCClient = IPCIdl(IDL.GenClient ())
 
 (* Translate JRPC result to our result. *)
 let translate_res res =
-  match res with
+  match res |> IDL.T.get |> M.run with
   | Error (e : RPCError.err_t) ->
     fail0 (Printf.sprintf "StateIPCClient: Error in IPC access: (code:%d, message:%s)." e.code e.message)
   | Ok res' -> pure res'
@@ -50,7 +52,7 @@ let send_delimited oc msg =
   Out_channel.output_string oc msg';
   Out_channel.flush oc
 
-let binary_rpc ~socket_addr (call: Rpc.call) : Rpc.response =
+let binary_rpc ~socket_addr (call: Rpc.call) : Rpc.response M.t =
   let socket = Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol:0 in
   Unix.connect socket ~addr:(Unix.ADDR_UNIX socket_addr);
   let (ic, oc) = Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket in
@@ -62,7 +64,7 @@ let binary_rpc ~socket_addr (call: Rpc.call) : Rpc.response =
   let response = Caml.input_line ic in
   Unix.close socket;
   DebugMessage.plog (Printf.sprintf "Response: %s\n" response);
-  Jsonrpc.response_of_string response
+  M.return @@ Jsonrpc.response_of_string response
 
 (* Encode a literal into bytes, opaque to the backend storage. *)
 let serialize_literal l = Bytes.of_string (PrettyPrinters.literal_to_jstring l)

@@ -42,8 +42,8 @@ let rec match_with_pattern v p = match p with
                  (List.length ls') = ctr.arity  ->
               (* The value structure matches the pattern *)
               (match List.zip ls' ps with
-               | None -> fail0 "Pattern and value lists have different length"
-               | Some sub_matches ->
+               | Unequal_lengths -> fail0 "Pattern and value lists have different length"
+               | Ok sub_matches ->
                    let%bind res_list =
                      mapM sub_matches
                        ~f:(fun (w, q) -> match_with_pattern w q) in
