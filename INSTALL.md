@@ -53,7 +53,7 @@ sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev
 
 ### macOS
 
-The dependencies (listed in `Brewfile`) can be installed via [Homebrew](https://brew.sh/) as follows.
+The dependencies (listed in [Brewfile](Brewfile)) can be installed via [Homebrew](https://brew.sh/) as follows.
 
 ```shell
 brew bundle
