@@ -140,6 +140,7 @@ module Tests = TestUtil.DiffBasedTests(
     let tests = [
       "adt-error1.scilla";
       "branch-mismatch.scilla";
+      "builtin-tvar.scilla";
       "bad-map-key.scilla";
       "bad-map-key2.scilla";
       "fun2.scilla";
@@ -158,6 +159,10 @@ module Tests = TestUtil.DiffBasedTests(
       "folder-error.scilla";
       "some.scilla";
       "substr.scilla";
+      "parsing_hex_literals.scilla";
+      "bad_assign.scilla";
+      "bad_assign2.scilla";
+      "bad_match.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

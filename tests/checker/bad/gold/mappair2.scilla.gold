@@ -4,7 +4,7 @@
       "error_message": "Identifier malMessage1 used more than once\n",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
-        "line": 94,
+        "line": 93,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -13,7 +13,7 @@
       "error_message": "Identifier num1 used more than once\n",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
-        "line": 107,
+        "line": 106,
         "column": 24
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -22,7 +22,7 @@
       "error_message": "Missing _amount or _recipient in Message\n",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
-        "line": 96,
+        "line": 95,
         "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -31,28 +31,8 @@
       "error_message": "Identifier status used more than once\n",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
-        "line": 109,
+        "line": 108,
         "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Parameter _sender in transition malTransition1 cannot be explicit.\n",
-      "start_location": {
-        "file": "checker/bad/mappair2.scilla",
-        "line": 115,
-        "column": 12
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Contract parameter _creation_block cannot be explicit.\n",
-      "start_location": {
-        "file": "checker/bad/mappair2.scilla",
-        "line": 32,
-        "column": 2
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
@@ -62,7 +42,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
-        "line": 59,
+        "line": 58,
         "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -72,7 +52,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
-        "line": 54,
+        "line": 53,
         "column": 17
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -82,7 +62,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
-        "line": 51,
+        "line": 50,
         "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -92,7 +72,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
-        "line": 46,
+        "line": 45,
         "column": 17
       },
       "end_location": { "file": "", "line": 0, "column": 0 },

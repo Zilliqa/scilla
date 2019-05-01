@@ -27,21 +27,24 @@ exception Error of string
 
 let digit = ['0'-'9']
 let posint = digit+
-let int = '-'? ['0'-'9'] ['0'-'9']*
+let int = '-'? posint
 let frac = '.' digit*
 let exp = ['e' 'E'] ['-' '+']? digit+
 let float = digit* frac? exp?
-                     
+
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
-let id = ['a'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
-let cid =   ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
-let tid =   '\'' ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*                     
+let alphanum = ['a'-'z' 'A'-'Z' '0'-'9' '_']
+let id = ['a'-'z'] alphanum*
+let spid = ['_'] alphanum*
+let cid =   ['A'-'Z'] alphanum*
+let tid =   '\'' ['A'-'Z'] alphanum*
 let lcomment = "(*" (_ # ['\r' '\n'])* "*)" white* newline
-let hex = '0' 'x' ['a'-'f' 'A'-'F' '0'-'9']+
+let hexdigit = ['a'-'f' 'A'-'F' '0'-'9']
+let hex = '0' 'x' (hexdigit hexdigit)+
 let intty = "Int32" | "Int64" | "Int128" | "Int256" | "Uint32" |
             "Uint64" | "Uint128" | "Uint256"
-                                         
+
 rule read =
   parse
 
@@ -82,6 +85,11 @@ rule read =
   | "scilla_version" { SCILLA_VERSION }
   | "type"        { TYPE }
   | "of"          { OF }
+  | "try"         { TRY }
+  | "catch"       { CATCH }
+  | "as"          { AS }
+  | "procedure"   { PROCEDURE }
+  | "throw"       { THROW }
 
 
   (* Separators *)    
@@ -104,12 +112,13 @@ rule read =
   | ":="          { ASSIGN }                  
   | "@"           { AT }                  
   | "_"           { UNDERSCORE } 
-  | '"'           { read_string (Buffer.create 17) lexbuf }                 
+  | '"'           { read_string (Buffer.create 17) lexbuf }
 
   (* Identifiers *)    
   | id as i       { ID i }
   | cid as i      { CID i }
   | tid as i      { TID i }
+  | spid as i   { SPID i }
 
   (* Other tokens *)     
   | _             { raise (Error ("Unexpected character: " ^ Lexing.lexeme lexbuf)) }

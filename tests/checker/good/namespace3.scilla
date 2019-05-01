@@ -1,0 +1,19 @@
+scilla_version 0
+
+import TestLib1 as TL
+
+library NS
+
+let foo = TL.Constructor1
+let foo2 = TL.Constructor3 foo
+
+contract TestContr1
+()
+
+transition TestTrans(bar : TL.TestType)
+
+end
+
+transition TestTrans2(bar : TL.TestType2)
+
+end

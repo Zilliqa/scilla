@@ -1,11 +1,9 @@
 (executable
   (name testsuite)
-  (package testsuite)
-  (public_name testsuite)
   (preprocess (pps ppx_sexp_conv ppx_let ppx_deriving.show))
-  (libraries core oUnit scilla-util testcontracts
+  (libraries core oUnit scilla_util testcontracts
              testexps testexpsfail
              testtypes testtypefail
-             testpmfail
+             testpmfail testgasexpr testgascontracts
              testchecker testinteger256)
 )

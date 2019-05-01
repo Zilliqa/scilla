@@ -1,0 +1,5 @@
+(library
+ (name polynomials)
+ (wrapped false)
+ (synopsis "Utility to deal with multivariate polynomials")
+ (libraries core batteries))

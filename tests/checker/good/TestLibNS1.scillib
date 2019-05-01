@@ -1,0 +1,9 @@
+import BoolUtils as Foo
+
+library TestLibNS1
+
+let negb = Uint32 57
+
+let bar =
+  let t = True in
+  Foo.negb t

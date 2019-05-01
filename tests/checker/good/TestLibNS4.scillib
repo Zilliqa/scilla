@@ -1,0 +1,9 @@
+(* importing two disjoint libraries into the same namespace is fine *)
+import TestLibNS2 as Foo
+       BoolUtils  as Foo
+
+library TestLibNS4
+
+let negb = Foo.negb
+
+let foo = Foo.foo

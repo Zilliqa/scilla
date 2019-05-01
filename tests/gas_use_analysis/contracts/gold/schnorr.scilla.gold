@@ -1,0 +1,77 @@
+Gas use polynomial for transition verify:
+1(a) + 450 + 15(b) + 3(c)
+Legend:
+
+a: pub_key
+b: msg
+c: _sender
+
+{
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Schnorr",
+    "params": [],
+    "fields": [ { "vname": "pub_key", "type": "Option (ByStr33)" } ],
+    "transitions": [
+      {
+        "vname": "verify",
+        "params": [
+          { "vname": "msg", "type": "ByStr" },
+          { "vname": "sig", "type": "ByStr64" }
+        ]
+      }
+    ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Name sig shadows a transition parameter.",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/schnorr.scilla",
+        "line": 24,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    }
+  ]
+}

@@ -37,6 +37,17 @@ let event_typ = PrimType Event_typ
 let bystr_typ = PrimType Bystr_typ
 let bystrx_typ b = PrimType (Bystrx_typ b)
 
+let int_width t =
+  if t = int32_typ then Some 32 else
+  if t = int64_typ then Some 64 else
+  if t = int128_typ then Some 128 else
+  if t = int256_typ then Some 256 else
+  if t = uint32_typ then Some 32 else
+  if t = uint64_typ then Some 64 else 
+  if t = uint128_typ then Some 128 else 
+  if t = uint256_typ then Some 256 else
+  None
+
 (* Given a ByStrX string, return integer X *)
 let bystrx_width = function
   | PrimType (Bystrx_typ w) -> Some w
@@ -114,52 +125,14 @@ let string_of_uint_lit = function
   | Uint128L i' -> Uint128.to_string i'
   | Uint256L i' -> Uint256.to_string i'
 
-let validate_bnum_literal = function
-  | BNum s ->
-    let re = Str.regexp "[0-9]+$" in
-    Str.string_match re s 0
-  | _ -> false
-
-(* Given an integer string, build a BNum literal,
-   or return None on invalid input. *)
-let build_bnum v =
-  let b = BNum v in
-  Option.some_if (validate_bnum_literal b) b
-
-let validate_bystrx_literal = function
-  | ByStrX (l, s) ->
-    let re = Str.regexp "0x[0-9a-f]+$" in
-    Str.string_match re s 0 && (String.length s)-2 = (l * 2)
-  | _ -> false
-
-(* Given a hexadecimal byte string, build a ByStrX
-   literal or return None on invalid input. *)
-let build_bystrx t v =
-  match bystrx_width t with
-  | Some b ->
-    let v' = String.lowercase v in
-    let bs = ByStrX (b, v') in
-    Option.some_if (validate_bystrx_literal bs) bs
-  | None -> None
-
-let validate_bystr_literal = function
-  | ByStr s ->
-    let re = Str.regexp "0x[0-9a-f]+$" in
-    Str.string_match re s 0 && ((String.length s)-2) % 2 = 0
-  | _ -> false
-
-(* Given a hexadecimal byte string, build a ByStr
-   literal or return None on invalid input. *)
-let build_bystr v =
-  let v' = String.lowercase v in
-  let bs = ByStr v' in
-  Option.some_if (validate_bystr_literal bs) bs
-
 let build_prim_literal pt v =
   match pt with
   | Int_typ _ | Uint_typ _ -> build_int pt v
   | String_typ -> Some (StringLit v)
-  | Bnum_typ -> build_bnum v
-  | Bystr_typ -> build_bystr v
-  | Bystrx_typ _ -> build_bystrx (PrimType pt) v
+  | Bnum_typ ->
+      Option.some_if (let re = Str.regexp "[0-9]+$" in
+                      Str.string_match re v 0)
+                     (BNum v)
+  | Bystr_typ -> Some (ByStr (Bystr.parse_hex v))
+  | Bystrx_typ _ -> Some (ByStrX (Bystrx.parse_hex v))
   | _ -> None

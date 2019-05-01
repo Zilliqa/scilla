@@ -63,8 +63,9 @@ and adttyps_to_json tlist =
 
 and literal_to_json lit =
   match lit with
-  | StringLit (x) | BNum (x) | ByStr(x)
-  | ByStrX(_, x) -> `String (x)
+  | StringLit x | BNum x -> `String x
+  | ByStr bs -> `String (Bystr.hex_encoding bs)
+  | ByStrX bs -> `String (Bystrx.hex_encoding bs)
   | IntLit x  -> `String (string_of_int_lit x)
   | UintLit x -> `String (string_of_uint_lit x)
   | Map ((_, _), kvs) ->
@@ -180,6 +181,9 @@ let fatal_error err =
 let fatal_error_gas err gas_remaining =
   DebugMessage.perr @@ scilla_error_gas_string gas_remaining err; exit 1
 
+let fatal_error_noformat err =
+  DebugMessage.perr err; exit 1
+
 (*****************************************************)
 (*                Pretty Printers                    *)
 (*****************************************************)
@@ -189,7 +193,6 @@ let scilla_version_string =
   sprintf "%d.%d.%d" major minor patch
 
 let rec pp_literal_simplified l =
-    let open Int in
     match l with
     | StringLit s -> "(String " ^ "\"" ^ s ^ "\"" ^ ")"
     (* (bit-width, value) *)
@@ -197,8 +200,8 @@ let rec pp_literal_simplified l =
     (* (bit-width, value) *)
     | UintLit i -> "(Uint" ^ (Int.to_string (uint_lit_width i))^ " " ^ (string_of_uint_lit i) ^ ")"
     | BNum b -> "(BNum " ^ b ^ ")"
-    | ByStr s -> "(ByStr " ^ s ^ ")"
-    | ByStrX (i, s) -> "(ByStr" ^ (to_string i) ^ " " ^ s ^ ")"
+    | ByStr bs -> "(ByStr " ^ Bystr.hex_encoding bs ^ ")"
+    | ByStrX bsx -> "(ByStr" ^ (Int.to_string (Bystrx.width bsx)) ^ " " ^ Bystrx.hex_encoding bsx ^ ")"
     | Msg m ->
       let items = "[" ^
         List.fold_left m ~init:"" ~f:(fun a (s, l') ->

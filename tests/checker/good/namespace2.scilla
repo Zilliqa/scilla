@@ -1,0 +1,10 @@
+scilla_version 0
+
+import ListUtils as LU
+
+library NS
+
+let foo = LU.list_sort
+
+contract TestContr1
+()

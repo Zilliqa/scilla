@@ -1,0 +1,8 @@
+scilla_version 0
+
+contract BadParam ()
+
+(* This transition disallowed arguments. Will flag error. *)
+transition malTransition1( _sender : ByStr20 )
+
+end

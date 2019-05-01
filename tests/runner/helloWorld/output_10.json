@@ -1,22 +1,17 @@
 {
-  "scilla_major_version": "0",
-  "gas_remaining": "7609",
-  "_accepted": "false",
-  "message": null,
-  "states": [
-    { "vname": "_balance", "type": "Uint128", "value": "0" },
-    { "vname": "welcome_msg", "type": "String", "value": "Hello World" }
-  ],
-  "events": [
+  "gas_remaining": "7847",
+  "errors": [
     {
-      "_eventname": "ContractAddress",
-      "params": [
-        {
-          "vname": "addr",
-          "type": "ByStr20",
-          "value": "0xabfeccdc9012345678901234567890f777567890"
-        }
-      ]
+      "error_message": "Expected string, got int",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Failed to parse json tests/runner/helloWorld/state_10.json:\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
     }
-  ]
+  ],
+  "warnings": []
 }

@@ -1,0 +1,10 @@
+scilla_version 0
+
+import TestLib1 as Bar
+
+library NS
+
+let foo = Bar.sort_uint32
+
+contract TestContr1
+()

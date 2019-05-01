@@ -1,0 +1,13 @@
+(* (List 'A) -> (Option List 'A) *)
+(* Return the list except for the head *)
+let list_tail =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some {(List 'A)} t
+    | Nil =>
+      None {(List 'A)}
+    end
+in
+list_tail

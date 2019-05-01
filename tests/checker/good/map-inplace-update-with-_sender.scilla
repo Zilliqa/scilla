@@ -1,0 +1,11 @@
+scilla_version 0
+
+contract Test ()
+
+field map : Map Uint32 ByStr20 = Emp Uint32 ByStr20
+
+transition test1 ()
+  k = Uint32 0;
+  map[k] := _sender
+end
+

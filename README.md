@@ -109,29 +109,34 @@ accordingly.
 
 To run the testsuite:
 
-```
+```shell
 make test
 ```
 
-(this invokes `testsuite` executable with `-print-diff true` option to print colored diffs between error messages).
+(this makes the Dune build system invoke `testsuite` executable with `-print-diff true` option to print colored diffs between error messages).
 
-To run the testsuite executable manually from bin/testsuite, you have to provide
-the parameters "-bin-dir" and "-tests-dir", which must be absolute paths to
-the directory containing scilla-runner, eval-runner and the tests/directory
-containng the tests. Relative paths may  not work.
+To run the `testsuite` executable manually using `dune exec tests/testsuite.exe`,
+you have to provide the parameters `-bin-dir` and `-tests-dir`, which must be absolute paths to
+the directory containing `eval-runner`, `type-checker`, `scilla-runner`, `scilla-checker` and
+the `tests/` directory containing the tests.
+Relative paths may not work.
+Parameters to `testsuite` executable can be passed like so:
+```shell
+dune exec tests/testsuite.exe -- <space-separate-parameters>
+```
 
 To obtain a list of tests available:
 
-```
-./bin/testsuite -list-test
+```shell
+dune exec tests/testsuite.exe -- -list-test
 ```
 
 To run an individual test(s), for example
 `all_tests:1:exptests:14:let.scilla`
 (one of the tests from the list obtained via `./bin/testsuite -list-test`):
 
-```
-./bin/testsuite -only-test all_tests:1:exptests:14:let.scilla -print-cli true 
+```shell
+dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -print-cli true 
 ```
 
 The optional `-print-cli true` argument is to produce the command line

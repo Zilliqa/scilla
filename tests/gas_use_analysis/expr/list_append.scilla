@@ -1,0 +1,18 @@
+(* (List 'A -> List 'A ->  List 'A) *)
+(* Append the second list to the first one and return a new List *)
+let list_append =
+  tfun 'A =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    (* Fold right over l1 and keep prepending elements to l2 *)
+    (* l2 is the initial accumulator *)
+    let folder = @list_foldr 'A (List 'A) in
+    let init = l2 in
+    let iter =
+      fun (h : 'A) =>
+      fun (z : List 'A) =>
+        Cons {'A} h z
+    in
+      folder iter init l1
+in
+list_append

@@ -1,0 +1,10 @@
+(* importing the same library into two different namespaces should be fine *)
+import BoolUtils as Foo
+       BoolUtils as Bar
+
+library TestLibNS3
+
+let negb1 = Foo.negb
+
+let negb2 = Bar.negb
+

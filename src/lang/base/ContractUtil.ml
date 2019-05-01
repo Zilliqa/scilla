@@ -49,7 +49,7 @@ module MessagePayload = struct
       (function StringLit s -> Some (pure s) | _ -> None)
 
   let get_sender = get_value_for_entry sender_label
-      (function ByStrX(len, _) as a when len = address_length -> Some (pure a) | _ -> None)
+      (function ByStrX bs as a when Bystrx.width bs = address_length -> Some (pure a) | _ -> None)
 
   let get_amount = get_value_for_entry amount_label
       (function 

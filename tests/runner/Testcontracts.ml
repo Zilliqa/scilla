@@ -165,18 +165,19 @@ let add_tests env =
       "crowdfunding_init" >:(build_contract_init_test env succ_code "crowdfunding" false);
       "zil-game" >:::(build_contract_tests env "zil-game" succ_code 1 9 false);
       "zil-game_init" >:(build_contract_init_test env succ_code "zil-game" false);
+      "creationtest_init" >:(build_contract_init_test env succ_code "creationtest" false);
       "testlib2_init" >:(build_contract_init_test env succ_code "TestLib2" true);
       "cfinvoke" >:::(build_contract_tests env "cfinvoke" succ_code 1 4 false);
       "ping" >:::(build_contract_tests env "ping" succ_code 0 3 false);
       "pong" >:::(build_contract_tests env "pong" succ_code 0 3 false);
-      "helloWorld" >:::(build_contract_tests env "helloWorld" succ_code 1 3 false);
+      "helloWorld" >:::(build_contract_tests env "helloWorld" succ_code 1 4 false);
       "auction" >:::(build_contract_tests env "auction" succ_code 1 8 false);
       "mappair" >:::(build_contract_tests env "mappair" succ_code 1 7 false);
       "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10 false);
       "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12 false);
       "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27 false);
       "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 3 false);
-      "ecdsa" >:::(build_contract_tests env "ecdsa" succ_code 1 3 false);
+      "ecdsa" >:::(build_contract_tests env "ecdsa" succ_code 1 4 false);
       "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1 false);
       "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8 false);
       "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14 false);
@@ -188,7 +189,7 @@ let add_tests env =
       "map_key_test" >::: (build_contract_tests env "map_key_test" succ_code 1 1 false);
     ];
     "these_tests_must_FAIL" >:::[
-      "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 4 9 false);
+      "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 5 11 false);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 8 8 false);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 12 14 false);
       "multiple_msgs_test" >::: (build_contract_tests env "multiple-msgs" fail_code 1 1 true);

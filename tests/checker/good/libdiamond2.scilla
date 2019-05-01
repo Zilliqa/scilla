@@ -1,0 +1,11 @@
+scilla_version 0
+
+import TestLibDiamondTop
+       TestLibDiamondBottom as FooBot
+
+library LibDiamond
+
+let test_bot = FooBot.bot_int
+
+contract TestContr1
+()

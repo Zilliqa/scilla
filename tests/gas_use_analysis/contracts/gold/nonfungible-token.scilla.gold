@@ -1,0 +1,293 @@
+Gas use polynomial for transition balanceOf:
+60 + 2(a)
+Legend:
+
+a: Element of: ownedTokenCount
+
+Gas use polynomial for transition ownerOf:
+76 + 2(a) + 1(b)
+Legend:
+
+a: Element of: tokenOwnerMap
+b: tokenId
+
+Gas use polynomial for transition mint:
+212 + 1(a) + 1(b) + 2(c) + 1(d) + 1(e) + 1(f)
+Legend:
+
+c: to
+a: tokenOwnerMap
+b: Element of: ownedTokenCount
+f: tokenId
+d: Result of builtin add(Element of: ownedTokenCount,32)
+e: _sender
+
+Gas use polynomial for transition transferFrom:
+446 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 2(g) + 1(h) + 1(i) + 1(j) + 1(k) + 1(l)
+Legend:
+
+l: tokenId
+j: Result of builtin add(Element of: ownedTokenCount,32)
+c: tokenApprovals
+b: tokenOwnerMap
+g: to
+f: Element of: ownedTokenCount
+a: Element of: tokenOwnerMap
+e: Element of: ownedTokenCount
+h: ownedTokenCount
+k: _sender
+i: Result of builtin sub(Element of: ownedTokenCount,32)
+d: operatorApprovals
+
+Gas use polynomial for transition approve:
+190 + 1(a) + 1(b) + 1(c) + 2(d) + 1(e) + 1(f)
+Legend:
+
+a: Element of: tokenOwnerMap
+b: tokenOwnerMap
+c: operatorApprovals
+e: _sender
+d: to
+f: tokenId
+
+Gas use polynomial for transition setApprovalForAll:
+1(a) + 140 + 1(b) + 1(c) + 1(d)
+Legend:
+
+a: operatorApprovals
+c: _sender
+d: to
+b: approved
+
+{
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "NonfungibleToken",
+    "params": [
+      { "vname": "contractOwner", "type": "ByStr20" },
+      { "vname": "name", "type": "String" },
+      { "vname": "symbol", "type": "String" }
+    ],
+    "fields": [
+      { "vname": "tokenOwnerMap", "type": "Map (Uint256) (ByStr20)" },
+      { "vname": "ownedTokenCount", "type": "Map (ByStr20) (Uint256)" },
+      { "vname": "tokenApprovals", "type": "Map (Uint256) (ByStr20)" },
+      {
+        "vname": "operatorApprovals",
+        "type": "Map (ByStr20) (Map (ByStr20) (Bool))"
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "balanceOf",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "ownerOf",
+        "params": [ { "vname": "tokenId", "type": "Uint256" } ]
+      },
+      {
+        "vname": "mint",
+        "params": [
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokenId", "type": "Uint256" }
+        ]
+      },
+      {
+        "vname": "transferFrom",
+        "params": [
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokenId", "type": "Uint256" }
+        ]
+      },
+      {
+        "vname": "approve",
+        "params": [
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokenId", "type": "Uint256" }
+        ]
+      },
+      {
+        "vname": "setApprovalForAll",
+        "params": [
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "approved", "type": "Bool" }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "vname": "setApprovalForAll successful",
+        "params": [
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "status", "type": "String" }
+        ]
+      },
+      {
+        "vname": "Approve successful",
+        "params": [
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "approvedTo", "type": "ByStr20" },
+          { "vname": "token", "type": "Uint256" }
+        ]
+      },
+      {
+        "vname": "transferFrom successful",
+        "params": [
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "token", "type": "Uint256" }
+        ]
+      },
+      {
+        "vname": "Mint successful",
+        "params": [
+          { "vname": "by", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "token", "type": "Uint256" }
+        ]
+      },
+      {
+        "vname": "ownerOf",
+        "params": [
+          { "vname": "id", "type": "Uint256" },
+          { "vname": "owner", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "balanceOf",
+        "params": [ { "vname": "bal", "type": "Uint256" } ]
+      },
+      {
+        "vname": "Error",
+        "params": [
+          { "vname": "raisedAt", "type": "String" },
+          { "vname": "code", "type": "Uint32" }
+        ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 319,
+        "column": 30
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 285,
+        "column": 30
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 284,
+        "column": 27
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 241,
+        "column": 29
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 199,
+        "column": 30
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 198,
+        "column": 28
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 197,
+        "column": 27
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "gas_use_analysis/contracts/nonfungible-token.scilla",
+        "line": 155,
+        "column": 33
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}

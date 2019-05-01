@@ -1,0 +1,84 @@
+(* (List 'A) -> (Option 'A) *)
+(* Return the head element of a list as Some 'A, None otherwise *)
+let list_head =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some {'A} h
+    | Nil =>
+      None {'A}
+    end
+in
+
+(* (List 'A) -> (Option List 'A) *)
+(* Return the list except for the head *)
+let list_tail =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some {(List 'A)} t
+    | Nil =>
+      None {(List 'A)}
+    end
+in
+  
+(* Helper function for list_eq. Not for public use. *)
+(* Returns Some Nil on successul match. None otherwise. *)
+let list_eq_helper =
+  tfun 'A =>
+  fun (eq : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    let folder = @list_foldl 'A (Option (List 'A)) in
+    let init = Some {(List 'A)} l2 in
+    let iter =
+      fun (z : Option (List 'A)) =>
+      fun (h1 : 'A) =>
+        match z with
+        | Some ll2 =>
+          let headF = @list_head 'A in
+          let h2o = headF ll2 in
+          match h2o with
+          | Some h2 =>
+            let eqb = eq h1 h2 in
+            match eqb with
+            | True =>
+              let tailF = @list_tail 'A in
+              tailF ll2
+            | False =>
+              None {(List 'A)}
+            end
+          | None =>
+            None {(List 'A)}
+          end
+        | None =>
+          None {(List 'A)}
+        end
+    in
+      folder iter init l1
+in
+(* ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool *)
+(* Return true iff two lists compare equal. *)
+(* Comparison is performed using the "f" function provided. *)
+let list_eq =
+  tfun 'A =>
+  fun (f : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    let eqh = @list_eq_helper 'A in
+    let res = eqh f l1 l2 in
+    match res with
+    | Some l =>
+      match l with
+      | Nil =>
+        True
+      | _ =>
+        False
+      end
+    | _ =>
+      False
+    end
+in
+list_eq

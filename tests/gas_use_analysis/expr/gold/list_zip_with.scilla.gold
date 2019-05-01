@@ -1,0 +1,12 @@
+forall 'A. forall 'B. forall 'C. ('A -> 'B -> 'C) -> List ('A) -> List ('B) -> List ('C)
+Gas usage signature:
+Parameter list: ( f m1 m2 )
+Gas use polynomial:
+3(a) + 40 + 35(b) + 1(c)(b)
+Legend:
+
+b: Length of: m1
+a: Length of: Cannot determine size: Unable to determine recurrence term
+c: Cost of calling f(Element of: m1, 1(Element of: Cannot determine size: Unable to determine recurrence term))
+Result size: 1(Element of: 1)(Length of: Cannot determine size: Unable to determine recurrence term) + 1
+

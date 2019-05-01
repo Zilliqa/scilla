@@ -1,0 +1,6 @@
+let lt =
+  fun (a : Int32) =>
+  fun (b : Int32) =>
+    builtin lt b a
+in
+lt

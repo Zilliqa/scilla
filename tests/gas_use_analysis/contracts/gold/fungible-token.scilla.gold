@@ -1,0 +1,156 @@
+Gas use polynomial for transition BalanceOf:
+107 + 2(a) + 2(b) + 2(c)
+Legend:
+
+a: Element of: balances
+c: tokenOwner
+b: _sender
+
+Gas use polynomial for transition TotalSupply:
+44 + 2(a) + 1(b)
+Legend:
+
+b: total_tokens
+a: _sender
+
+Gas use polynomial for transition Transfer:
+222 + 1(a) + 1(b) + 1(c) + 1(d) + 2(e) + 6(f) + 3(g)
+Legend:
+
+e: tokens
+a: Element of: balances
+d: Result of builtin add(Element of: balances,tokens)
+c: Result of builtin sub(tokens,tokens)
+g: to
+b: Element of: balances
+f: _sender
+
+Gas use polynomial for transition TransferFrom:
+314 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 2(f) + 1(g) + 4(h) + 4(i) + 4(j)
+Legend:
+
+a: Element of: Element of: allowed
+c: Element of: balances
+f: tokens
+e: Result of builtin add(Element of: balances,tokens)
+g: Result of builtin sub(tokens,tokens)
+i: from
+j: to
+d: Result of builtin sub(Element of: balances,tokens)
+h: _sender
+b: Element of: balances
+
+Gas use polynomial for transition Approve:
+46 + 2(a) + 2(b) + 1(c)
+Legend:
+
+a: tokens
+c: spender
+b: _sender
+
+Gas use polynomial for transition Allowance:
+108 + 2(a) + 2(b) + 2(c) + 2(d)
+Legend:
+
+d: spender
+b: _sender
+a: Element of: Element of: allowed
+c: tokenOwner
+
+{
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "FungibleToken",
+    "params": [
+      { "vname": "owner", "type": "ByStr20" },
+      { "vname": "total_tokens", "type": "Uint128" },
+      { "vname": "decimals", "type": "Uint32" },
+      { "vname": "name", "type": "String" },
+      { "vname": "symbol", "type": "String" }
+    ],
+    "fields": [
+      { "vname": "balances", "type": "Map (ByStr20) (Uint128)" },
+      {
+        "vname": "allowed",
+        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))"
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "BalanceOf",
+        "params": [ { "vname": "tokenOwner", "type": "ByStr20" } ]
+      },
+      { "vname": "TotalSupply", "params": [] },
+      {
+        "vname": "Transfer",
+        "params": [
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "TransferFrom",
+        "params": [
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "Approve",
+        "params": [
+          { "vname": "spender", "type": "ByStr20" },
+          { "vname": "tokens", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "Allowance",
+        "params": [
+          { "vname": "tokenOwner", "type": "ByStr20" },
+          { "vname": "spender", "type": "ByStr20" }
+        ]
+      }
+    ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": []
+}

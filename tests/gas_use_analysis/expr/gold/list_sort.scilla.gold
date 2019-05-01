@@ -1,0 +1,12 @@
+forall 'A. ('A -> 'A -> Bool) -> List ('A) -> List ('A)
+Gas usage signature:
+Parameter list: ( flt ls )
+Gas use polynomial:
+14(a) + 19(b)(a) + 1(c)(b)(a) + 16
+Legend:
+
+c: Cost of calling flt(Element of: Cannot determine size: Unable to determine recurrence term, Element of: ls)
+b: Length of: Cannot determine size: Unable to determine recurrence term
+a: Length of: ls
+Result size: Cannot determine size: Unable to determine recurrence term
+

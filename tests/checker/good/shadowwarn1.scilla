@@ -1,0 +1,7 @@
+scilla_version 0
+
+contract ShadowWarn1 (p1 : Uint32)
+
+transition Foo (p1 : String)
+
+end

@@ -94,13 +94,8 @@ let gen_parser (t' : typ) : (Basic.t -> literal) =
       (match t with
       | x when x = string_typ -> (fun j -> StringLit (Util.to_string j))
       | x when x = bnum_typ -> (fun j -> BNum (Util.to_string j))
-      | x when x = bystr_typ -> (fun j -> ByStr (String.lowercase (Util.to_string j)))
-      | x when is_bystrx_type x ->
-        let w = bystrx_width x in
-        (match w with
-        | None -> raise (mk_invalid_json "Invalid ByStrX type")
-        | Some w' -> (fun j -> ByStrX (w', String.lowercase (Util.to_string j)))
-        )
+      | x when x = bystr_typ -> (fun j -> ByStr (Bystr.parse_hex (Util.to_string j)))
+      | x when is_bystrx_type x -> (fun j -> ByStrX (Bystrx.parse_hex (Util.to_string j)))
       | x when x = int32_typ -> (fun j -> IntLit(Int32L (Int32.of_string (Util.to_string j))))
       | x when x = int64_typ -> (fun j -> IntLit(Int64L (Int64.of_string (Util.to_string j))))
       | x when x = int128_typ -> (fun j -> IntLit(Int128L (Stdint.Int128.of_string (Util.to_string j))))
