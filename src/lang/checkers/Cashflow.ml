@@ -44,9 +44,12 @@ module CashflowRep (R : Rep) = struct
 
   let get_loc r = match r with | (_, rr) -> R.get_loc rr
 
-  let mk_id s =
+  let add_tag_to_id s tag =
     match s with
-    | Ident (n, r) -> Ident (n, (NoInfo, r))
+    | Ident (n, r) -> Ident (n, (tag, r))
+
+  let mk_id s =
+    add_tag_to_id s NoInfo
 
   let mk_id_address s = mk_id (R.mk_id_address s)
   let mk_id_uint128 s = mk_id (R.mk_id_uint128 s)
@@ -78,12 +81,8 @@ module ScillaCashflowChecker
   (*     Initial traversal: Set every tag to NoInfo      *)
   (*******************************************************)
   
-  let add_tag_to_ident i tag =
-    match i with
-    | Ident (name, rep) -> Ident (name, (tag, rep))
-                             
   (* Lift Ident (n, rep) to Ident (n, (NoInfo, rep)) *)
-  let add_noinfo_to_ident i = add_tag_to_ident i ECFR.NoInfo
+  let add_noinfo_to_ident i = ECFR.mk_id i
 
   let add_money_or_mapmoney_to_ident i typ =
     let rec create_money_tag typ =
@@ -91,7 +90,7 @@ module ScillaCashflowChecker
       | MapType (_, vtyp) ->
           ECFR.Map (create_money_tag vtyp)
       | _ -> ECFR.Money in
-    add_tag_to_ident i (create_money_tag typ)
+    ECFR.add_tag_to_id i (create_money_tag typ)
   let add_noinfo_to_builtin (op, rep) = (op, (ECFR.NoInfo, rep))
   
   let rec cf_init_tag_pattern p =
