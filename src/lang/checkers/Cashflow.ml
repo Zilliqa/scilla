@@ -220,16 +220,18 @@ module ScillaCashflowChecker
   
   let cf_init_tag_contract contract token_fields =
     let { cname ; cparams ; cfields ; ctrans } = contract in
+    let token_fields_contains x =
+      List.exists ~f:(fun token_field -> get_id x = token_field) token_fields in
     { CFSyntax.cname = cname;
       CFSyntax.cparams =
         List.map ~f:(fun (x, t) ->
-            (if List.exists ~f:(fun token_field -> get_id x = token_field) token_fields
+            (if token_fields_contains x
              then add_money_or_mapmoney_to_ident x t
              else add_noinfo_to_ident x),
             t) cparams;
       CFSyntax.cfields =
         List.map ~f:(fun (x, t, e) ->
-            ((if List.exists ~f:(fun token_field -> get_id x = token_field) token_fields
+            ((if token_fields_contains x
              then add_money_or_mapmoney_to_ident x t
              else add_noinfo_to_ident x),
              t,
