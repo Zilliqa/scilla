@@ -324,7 +324,7 @@ let parse_cli () =
     ("-gua", Arg.Unit (fun () -> r_gua := true), "Run gas use analysis and print use polynomial.");
     ("-init", Arg.String (fun x -> r_init_file := Some x), "Path to initialization json");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results");
-    ("-cf-token-field", Arg.String (fun s -> r_cf_token_fields := s :: !r_cf_token_fields), "Make the cashflow checker consider a field to be money (only allowed if -cf is set)");
+    ("-cf-token-field", Arg.String (fun s -> r_cf_token_fields := s :: !r_cf_token_fields), "Make the cashflow checker consider a field to be money (implicitly sets -cf)");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
     ("-contractinfo", Arg.Unit (fun () -> r_contract_info := true), "Print various contract information");
   ] in 
@@ -338,7 +338,7 @@ let parse_cli () =
   let anon_handler s = r_input_file := s in
   let () = Arg.parse speclist anon_handler mandatory_usage in
   if !r_input_file = "" then fatal_error_noformat usage;
-  if !r_cf_token_fields <> [] && not !r_cf then fatal_error (mk_error0 usage);
+  if !r_cf_token_fields <> [] then r_cf := true;
   GlobalConfig.set_use_json_errors !r_json_errors;
   { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir;
     gua_flag = !r_gua; p_contract_info = !r_contract_info;
