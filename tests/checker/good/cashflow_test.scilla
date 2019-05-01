@@ -14,6 +14,9 @@ contract CashflowTest ()
 
 field transaction_pairs : (List (Pair ByStr20 Uint128)) = Nil {(Pair ByStr20 Uint128)}
 
+field map_money : Map ByStr20 (Map ByStr20 Uint128) = Emp ByStr20 (Map ByStr20 Uint128)
+field map_also_money : Map ByStr20 Uint128 = Emp ByStr20 Uint128
+
 transition Test1()
   tp <- transaction_pairs;
   match tp with
@@ -26,5 +29,20 @@ transition Test1()
     end
   | _ =>
     msg = { _tag : "" ; _recipient : _sender ; _amount : Uint128 0 }
+  end
+end
+
+(* Tests a bug in the handling of MapGet *)
+transition Test2()
+  bal <- _balance;
+  (* Set map_money tag to Map Map Money *)
+  map_money[_sender][_this_address] := bal;
+  (* Should set x tag to Option Money, but set to Option NoInfo due to bug *)
+  w <- map_money[_sender][_this_address];
+  match w with
+  | Some m =>
+    (* Set map_also_money tag to Map Money, unless buggy *)
+    map_also_money[_sender] := m
+  | None =>
   end
 end
