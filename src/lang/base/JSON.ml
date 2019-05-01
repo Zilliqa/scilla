@@ -416,12 +416,12 @@ module ContractInfo = struct
         `Assoc [("vname", `String (get_id i)); ("type", `String (pp_typ t))]) in
     let fieldsj = ("fields", `List fieldslj) in
     (* 4. transitions *)
-    let transl = contr.ctrans in
+    let transl = contr.ccomps in
     let translj = List.map transl ~f: (fun t ->
         (* 4a. transition name *)
-        let namej = ("vname", `String (get_id t.tname)) in
+        let namej = ("vname", `String (get_id t.comp_name)) in
         (* 4b. transition parameters *)
-        let paraml = t.tparams in
+        let paraml = t.comp_params in
         let paramlj = List.map paraml ~f: (fun (i, t) ->
             `Assoc[("vname", `String (get_id i)); ("type", `String (pp_typ t))]) in
         let paramj = ("params", `List paramlj) in

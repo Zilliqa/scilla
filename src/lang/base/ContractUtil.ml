@@ -169,8 +169,8 @@ module ScillaContractUtil
                 ) in  stmt_iter stmt_list' acc'
           | [] -> pure acc
         in
-        stmt_iter trans.tbody acc
-      ) ~init:acc cmod.contr.ctrans
+        stmt_iter trans.comp_body acc
+      ) ~init:acc cmod.contr.ccomps
 
 end
 

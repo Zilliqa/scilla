@@ -76,11 +76,11 @@ module ScillaSanityChecker
     (* No repeating field names. *)
     let e = e @ check_duplicate_ident ER.get_loc (List.map (fun (i, _, _) -> i) contr.cfields) in
     (* No repeating transition names. *)
-    let e = e @ check_duplicate_ident SR.get_loc (List.map (fun t -> t.tname) contr.ctrans) in
+    let e = e @ check_duplicate_ident SR.get_loc (List.map (fun t -> t.comp_name) contr.ccomps) in
     (* No repeating transition parameter names. *)
     let e = List.fold_left
-      (fun e t -> e @ check_duplicate_ident ER.get_loc (List.map (fun (i, _) -> i) t.tparams))
-       e contr.ctrans 
+      (fun e t -> e @ check_duplicate_ident ER.get_loc (List.map (fun (i, _) -> i) t.comp_params))
+       e contr.ccomps 
     in
 
     (* Message literals must either be for "send" or "event" and well formed. *)
@@ -111,13 +111,13 @@ module ScillaSanityChecker
 
     (* Transition parameters cannot have names as that of implicit ones. *)
     let e = List.fold_left (fun e t -> 
-      match List.find_opt (fun (s, _) -> get_id s = amount_label || get_id s = sender_label) t.tparams with
+      match List.find_opt (fun (s, _) -> get_id s = amount_label || get_id s = sender_label) t.comp_params with
       | Some (s, _) ->
         e @ mk_error1 (Core.sprintf "Parameter %s in transition %s cannot be explicit.\n" 
-                          (get_id s) (get_id t.tname)) 
-                      (SR.get_loc @@ get_rep t.tname)
+                          (get_id s) (get_id t.comp_name)) 
+                      (SR.get_loc @@ get_rep t.comp_name)
       | None -> e
-      ) e contr.ctrans in
+      ) e contr.ccomps in
 
     (* Contract parameters cannot have names of implicit ones. *)
     let e = 
@@ -163,8 +163,8 @@ module ScillaSanityChecker
           | _ -> ()
         ) stmts;
       in
-      stmt_iter trans.tbody;
-    ) cmod.contr.ctrans;
+      stmt_iter trans.comp_body;
+    ) cmod.contr.ccomps;
 
     if e = [] then pure () else fail e
 
@@ -370,10 +370,10 @@ module ScillaSanityChecker
         (* Bind transition parameters. *)
       let env' = List.fold_left (fun acc (p, _) ->
           add_env acc p Many
-        ) env (SCU.append_implict_trans_params tr.tparams)
+        ) env (SCU.append_implict_trans_params tr.comp_params)
       in
-      stmt_checker env' tr.tbody
-    ) ~init:() cmod.contr.ctrans
+      stmt_checker env' tr.comp_body
+    ) ~init:() cmod.contr.ccomps
 
   (* ************************************** *)
   (* ********* Warn name shadowing ******** *)
@@ -411,8 +411,8 @@ module ScillaSanityChecker
     List.iter (fun t ->
 
     (* 1. If a parameter name shadows one of cparams or cfields, warn. *)
-      List.iter (fun (p, _) -> check_warn_redef cparams cfields [] p) t.tparams;
-      let pnames = List.map (fun (p, _) -> get_id p) t.tparams in
+      List.iter (fun (p, _) -> check_warn_redef cparams cfields [] p) t.comp_params;
+      let pnames = List.map (fun (p, _) -> get_id p) t.comp_params in
 
       (* Check for shadowing in patterns. *)
       let rec pattern_iter = function
@@ -465,8 +465,8 @@ module ScillaSanityChecker
         ) stmts
       in
       (* Go through all statements and see if any of cparams, cfields or pnames are redefined. *)
-      stmt_iter t.tbody
-    ) cmod.contr.ctrans
+      stmt_iter t.comp_body
+    ) cmod.contr.ccomps
 
   (* ************************************** *)
   (* ******** Interface to Checker ******** *)

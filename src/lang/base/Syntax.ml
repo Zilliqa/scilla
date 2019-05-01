@@ -487,7 +487,14 @@ let rec subst_type_in_literal tvar tp l = match l with
   | _ -> l
 
 
+(*******************************************************)
+(*               Types of components                   *)
+(*******************************************************)
 
+type component_type =
+  | CompTrans
+  (* | CompProc *)
+  
 (*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
@@ -620,11 +627,12 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (*                    Contracts                        *)
   (*******************************************************)
 
-  type transition = 
-    { tname   : SR.rep ident;
-      tparams : (ER.rep ident  * typ) list;
-      tbody   : stmt_annot list }
-
+  type component =
+    { comp_type   : component_type;
+      comp_name   : SR.rep ident;
+      comp_params : (ER.rep ident * typ) list;
+      comp_body   : stmt_annot list }
+  
   type ctr_def =
     { cname : ER.rep ident; c_arg_types : typ list }
   
@@ -640,7 +648,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     { cname   : SR.rep ident;
       cparams : (ER.rep ident  * typ) list;
       cfields : (ER.rep ident * typ * expr_annot) list;
-      ctrans  : transition list; }
+      ccomps  : component list; }
 
   (* Contract module: libary + contract definiton *)
   type cmodule =
