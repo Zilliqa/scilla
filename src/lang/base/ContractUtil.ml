@@ -150,8 +150,8 @@ module ScillaContractUtil
       ) ~init:init lentries
     in
 
-    (* Loop through each transition. *)
-    foldM ~f:(fun acc trans ->
+    (* Loop through each component. *)
+    foldM ~f:(fun acc comp ->
         (* Loop through each statement, looking for messages. *)
         let rec stmt_iter stmt_list acc = 
           match stmt_list with
@@ -169,8 +169,8 @@ module ScillaContractUtil
                 ) in  stmt_iter stmt_list' acc'
           | [] -> pure acc
         in
-        stmt_iter trans.tbody acc
-      ) ~init:acc cmod.contr.ctrans
+        stmt_iter comp.comp_body acc
+      ) ~init:acc cmod.contr.ccomps
 
 end
 

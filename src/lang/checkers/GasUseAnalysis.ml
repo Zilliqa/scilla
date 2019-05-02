@@ -981,19 +981,19 @@ module ScillaGUA
         GUAEnv.addS acc_genv (get_id i) ([], i', empty_pn)
       ) genv idlist
 
-  let gua_transition genv (trans : transition) =
+  let gua_component genv (comp : component) =
     let open PrimTypes in
     let si a t = ER.mk_id (mk_ident a) t in
     let all_params =[
         ((si ContractUtil.MessagePayload.sender_label (bystrx_typ 20)), (bystrx_typ 20));
         ((si ContractUtil.MessagePayload.amount_label uint128_typ), uint128_typ)
       ] 
-      @ trans.tparams in
+      @ comp.comp_params in
     (* Add params to the environment. *)
     let genv' = identity_bind_ident_list genv 
       (List.map (fun (i, _) -> i) all_params) in
     (* TODO: Add bytesize of message.json. *)
-    gua_stmt genv' empty_pn trans.tbody
+    gua_stmt genv' empty_pn comp.comp_body
 
   (* Bind lib entries to signatures. *)
   let gua_libentries genv (lel : lib_entry list) =
@@ -1047,11 +1047,11 @@ module ScillaGUA
     (* TODO: account for the cost of evaluating state initializers. *)
     let genv_cfields = identity_bind_ident_list genv_cparams
       (List.map (fun (i, _, _) -> i) cmod.contr.cfields) in
-    (* Analyse each transition and report it's gas use polynomial. *)
-    let%bind pols = mapM ~f:(fun tr ->
-      let%bind pol = gua_transition genv_cfields tr in
-      pure @@ (tr.tname, expand_guref_pol pol)
-    ) cmod.contr.ctrans in
+    (* Analyse each component and report it's gas use polynomial. *)
+    let%bind pols = mapM ~f:(fun cp ->
+      let%bind pol = gua_component genv_cfields cp in
+      pure @@ (cp.comp_name, expand_guref_pol pol)
+    ) cmod.contr.ccomps in
     pure pols
 
   (* A simple wrapper to analyze an isolated expression. *)
