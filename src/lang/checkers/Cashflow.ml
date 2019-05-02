@@ -1046,9 +1046,7 @@ module ScillaCashflowChecker
             | Some ts -> ts
             | None -> List.map ps ~f:(fun _ -> NoInfo) in
           let new_subpatterns_with_tags =
-            match List.zip ps expected_subtags with
-            | Some tps -> tps
-            | None -> [] in
+            List.zip ps expected_subtags |> Option.value ~default:[] in
           let (new_ps, changes) =
             List.fold_right new_subpatterns_with_tags
               ~init:([], false)
