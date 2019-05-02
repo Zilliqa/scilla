@@ -497,13 +497,13 @@ let preprocess_message es =
 
 (* Retrieve transition based on the tag *)
 let get_transition ctr tag =
-  let ts = ctr.ctrans in
-  match List.find ts ~f:(fun t -> (get_id t.tname) = tag) with
+  let cs = ctr.ccomps in
+  match List.find cs ~f:(fun c -> c.comp_type = CompTrans && (get_id c.comp_name) = tag) with
   | None -> fail0 @@ sprintf
         "No contract transition for tag %s found." tag
   | Some t ->
-      let params = t.tparams in
-      let body = t.tbody in
+      let params = t.comp_params in
+      let body = t.comp_body in
       pure (params, body)
 
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
@@ -555,7 +555,7 @@ let post_process_msgs cstate outs =
 
 (* 
 Handle message:
-* contr : Syntax.contract - code of the contract (containing transitions)
+* contr : Syntax.contract - code of the contract (containing transitions and procedures)
 * cstate : ContractState.t - current contract state
 * bstate : (string * literal) list - blockchain state
 * m : Syntax.literal - incoming message 
