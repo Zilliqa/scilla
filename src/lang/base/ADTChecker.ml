@@ -159,7 +159,7 @@ module ScillaRecursion
       pure @@ (new_s, rep) in
     walk srep
 
-  let recursion_transition is_adt_in_scope is_adt_ctr_in_scope comp =
+  let recursion_component is_adt_in_scope is_adt_ctr_in_scope comp =
     let { comp_type; comp_name ; comp_params ; comp_body } = comp in
     let%bind _ = forallM ~f:(fun (_, t) -> recursion_typ is_adt_in_scope t) comp_params in
     let%bind recursion_comp_body =
@@ -179,7 +179,7 @@ module ScillaRecursion
           let%bind _ = recursion_typ is_adt_in_scope t in
           let%bind new_e = recursion_exp is_adt_in_scope is_adt_ctr_in_scope e in
           pure @@ (x, t, new_e)) cfields in
-    let%bind recursion_ccomps = mapM ~f:(fun t -> recursion_transition is_adt_in_scope is_adt_ctr_in_scope t) ccomps in
+    let%bind recursion_ccomps = mapM ~f:(fun t -> recursion_component is_adt_in_scope is_adt_ctr_in_scope t) ccomps in
     pure @@
     { RecursionSyntax.cname = cname ;
       RecursionSyntax.cparams = cparams ;

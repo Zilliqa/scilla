@@ -494,6 +494,10 @@ let rec subst_type_in_literal tvar tp l = match l with
 type component_type =
   | CompTrans
   (* | CompProc *)
+
+let component_type_to_string ctp =
+  match ctp with
+  | CompTrans -> "transition"
   
 (*******************************************************)
 (*                   Annotations                       *)

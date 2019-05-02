@@ -457,16 +457,19 @@ module ScillaTypechecker
     match id with
     | Ident (s, r) -> Ident (s, ETR.mk_rep r t)
   
-  let type_transition env0 tr : (TypedSyntax.component, scilla_error list) result  =
+  let type_component env0 tr : (TypedSyntax.component, scilla_error list) result  =
     let {comp_type; comp_name; comp_params; comp_body} = tr in
     let tenv0 = env0.pure in
-    let msg = sprintf "Type error(s) in transition %s:\n" (get_id comp_name) in
+    let component_type_string = component_type_to_string comp_type in
+    let msg = sprintf "Type error(s) in %s %s:\n" component_type_string (get_id comp_name) in
     wrap_with_info (msg, SR.get_loc (get_rep comp_name)) @@
     let%bind typed_tparams = mapM ~f:(fun (param, t) ->
         if is_serializable_type t
         then pure (add_type_to_id param (mk_qual_tp t), t)
-        else fail1 (sprintf "Type %s cannot be used as transition parameter" (pp_typ t)) (ER.get_loc (get_rep param))) comp_params in
-    let append_params = CU.append_implict_trans_params comp_params in
+        else fail1 (sprintf "Type %s cannot be used as %s parameter" (pp_typ t) component_type_string) (ER.get_loc (get_rep param))) comp_params in
+    let append_params =
+      match comp_type with
+      | CompTrans -> CU.append_implict_trans_params comp_params in
     let tenv1 = TEnv.addTs tenv0 append_params in
     let env = {env0 with pure = tenv1} in
     let%bind (typed_stmts, _) = type_stmts env comp_body ER.get_loc in
@@ -728,16 +731,16 @@ module ScillaTypechecker
     let (bn, bt) = CU.balance_field in
     let fenv = TEnv.addT fenv0 bn bt in
 
-    (* Step 5: Form a general environment for checking transitions *)
+    (* Step 5: Form a general environment for checking components *)
     let env = {pure= tenv3; fields= fenv} in
 
-    (* Step 6: Type-checking all transitions in batch *)
+    (* Step 6: Type-checking all components in batch *)
     let%bind (t_comps, emsgs') = foldM ~init:([], femsgs0) ccomps
-        ~f:(fun (trans_acc, emsgs) tr -> 
+        ~f:(fun (comp_acc, emsgs) tr -> 
             let toplevel_env = {pure = TEnv.copy env.pure; fields = TEnv.copy fenv} in
-            match type_transition toplevel_env tr with
-            | Error el -> Ok (trans_acc, emsgs @ el)
-            | Ok typed_trans -> Ok(typed_trans :: trans_acc, emsgs)
+            match type_component toplevel_env tr with
+            | Error el -> Ok (comp_acc, emsgs @ el)
+            | Ok typed_comp -> Ok(typed_comp :: comp_acc, emsgs)
           ) in
     let typed_comps = List.rev t_comps in
 

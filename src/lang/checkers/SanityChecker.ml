@@ -75,9 +75,9 @@ module ScillaSanityChecker
     let e = check_duplicate_ident ER.get_loc (List.map (fun (i, _) -> i) contr.cparams) in
     (* No repeating field names. *)
     let e = e @ check_duplicate_ident ER.get_loc (List.map (fun (i, _, _) -> i) contr.cfields) in
-    (* No repeating transition names. *)
+    (* No repeating component names. *)
     let e = e @ check_duplicate_ident SR.get_loc (List.map (fun t -> t.comp_name) contr.ccomps) in
-    (* No repeating transition parameter names. *)
+    (* No repeating component parameter names. *)
     let e = List.fold_left
       (fun e t -> e @ check_duplicate_ident ER.get_loc (List.map (fun (i, _) -> i) t.comp_params))
        e contr.ccomps 
@@ -109,13 +109,15 @@ module ScillaSanityChecker
     in
     let%bind e = fold_over_messages cmod ~init:e ~f:check_message in
 
-    (* Transition parameters cannot have names as that of implicit ones. *)
-    let e = List.fold_left (fun e t -> 
-      match List.find_opt (fun (s, _) -> get_id s = amount_label || get_id s = sender_label) t.comp_params with
+    (* Component parameters cannot have names as that of implicit ones. *)
+    let e = List.fold_left (fun e c -> 
+      match List.find_opt (fun (s, _) -> get_id s = amount_label || get_id s = sender_label) c.comp_params with
       | Some (s, _) ->
-        e @ mk_error1 (Core.sprintf "Parameter %s in transition %s cannot be explicit.\n" 
-                          (get_id s) (get_id t.comp_name)) 
-                      (SR.get_loc @@ get_rep t.comp_name)
+        e @ mk_error1 (Core.sprintf "Parameter %s in %s %s cannot be explicit.\n" 
+                         (get_id s)
+                         (component_type_to_string c.comp_type)
+                         (get_id c.comp_name)) 
+                      (SR.get_loc @@ get_rep c.comp_name)
       | None -> e
       ) e contr.ccomps in
 
@@ -143,7 +145,7 @@ module ScillaSanityChecker
       | _ -> ()
       )
     in
-    List.iter (fun trans ->
+    List.iter (fun comp ->
       let rec stmt_iter stmts =
         List.iter (fun (stmt, _) ->
           match stmt with
@@ -163,7 +165,7 @@ module ScillaSanityChecker
           | _ -> ()
         ) stmts;
       in
-      stmt_iter trans.comp_body;
+      stmt_iter comp.comp_body;
     ) cmod.contr.ccomps;
 
     if e = [] then pure () else fail e
@@ -365,15 +367,18 @@ module ScillaSanityChecker
         add_env acc p Many
       ) env_libs (SCU.append_implict_contract_params cmod.contr.cparams)
     in
-    (* Check all transitions. *)
-    foldM ~f:(fun _ tr ->
-        (* Bind transition parameters. *)
-      let env' = List.fold_left (fun acc (p, _) ->
-          add_env acc p Many
-        ) env (SCU.append_implict_trans_params tr.comp_params)
-      in
-      stmt_checker env' tr.comp_body
-    ) ~init:() cmod.contr.ccomps
+    (* Check all components. *)
+    foldM ~f:(fun _ cp ->
+        (* Bind component parameters. *)
+        let params =
+          match cp.comp_type with
+          | CompTrans -> SCU.append_implict_trans_params cp.comp_params in
+        let env' = List.fold_left (fun acc (p, _) ->
+            add_env acc p Many
+          ) env params
+        in
+        stmt_checker env' cp.comp_body
+      ) ~init:() cmod.contr.ccomps
 
   (* ************************************** *)
   (* ********* Warn name shadowing ******** *)
@@ -407,12 +412,12 @@ module ScillaSanityChecker
   
     let cfields = List.map (fun (f, _, _) -> get_id f) cmod.contr.cfields in
 
-    (* Go through each transition. *)
-    List.iter (fun t ->
+    (* Go through each component. *)
+    List.iter (fun c ->
 
     (* 1. If a parameter name shadows one of cparams or cfields, warn. *)
-      List.iter (fun (p, _) -> check_warn_redef cparams cfields [] p) t.comp_params;
-      let pnames = List.map (fun (p, _) -> get_id p) t.comp_params in
+      List.iter (fun (p, _) -> check_warn_redef cparams cfields [] p) c.comp_params;
+      let pnames = List.map (fun (p, _) -> get_id p) c.comp_params in
 
       (* Check for shadowing in patterns. *)
       let rec pattern_iter = function
@@ -435,7 +440,7 @@ module ScillaSanityChecker
         | Fixpoint (i, _, e_body)
         | TFun (i, e_body) ->
           (* "i" being a type variable shouldn't be shadowing contract parameters,
-            fields or transition parameters. This is just a conservative check. *)
+            fields or component parameters. This is just a conservative check. *)
           check_warn_redef cparams cfields pnames i;
           expr_iter e_body
         | MatchExpr (_, clauses) ->
@@ -465,7 +470,7 @@ module ScillaSanityChecker
         ) stmts
       in
       (* Go through all statements and see if any of cparams, cfields or pnames are redefined. *)
-      stmt_iter t.comp_body
+      stmt_iter c.comp_body
     ) cmod.contr.ccomps
 
   (* ************************************** *)

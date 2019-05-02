@@ -210,8 +210,8 @@ module ScillaCashflowChecker
           CFSyntax.Throw (add_noinfo_to_ident x) in
     (res_s, rep)
 
-  let cf_init_tag_transition transition =
-    let { comp_type; comp_name ; comp_params ; comp_body } = transition in
+  let cf_init_tag_component component =
+    let { comp_type; comp_name ; comp_params ; comp_body } = component in
     { CFSyntax.comp_type = comp_type;
       CFSyntax.comp_name = comp_name;
       CFSyntax.comp_params =
@@ -238,7 +238,7 @@ module ScillaCashflowChecker
              t,
              cf_init_tag_expr e)) cfields;
       CFSyntax.ccomps =
-        List.map ~f:cf_init_tag_transition ccomps }
+        List.map ~f:cf_init_tag_component ccomps }
     
   let cf_init_tag_type_def tdef =
     let { cname ; c_arg_types } = tdef in
@@ -1500,7 +1500,7 @@ module ScillaCashflowChecker
             new_ctr_tag_map,
             new_changes || acc_changes))
         
-    let cf_tag_transition t field_env ctr_tag_map =
+    let cf_tag_component t field_env ctr_tag_map =
       let { comp_type; comp_name ; comp_params ; comp_body } = t in
       let empty_local_env = AssocDictionary.make_dict() in
       let implicit_local_env =
@@ -1543,12 +1543,12 @@ module ScillaCashflowChecker
                   cf_tag_expr e (lub_tags (get_id_tag f) NoInfo) (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) ctr_tag_map in
              AssocDictionary.insert (get_id f) e_tag acc_env)
           in
-      let rec tagger transitions field_env ctr_tag_map =
+      let rec tagger components field_env ctr_tag_map =
         let (new_ts, new_field_env, tmp_ctr_tag_map, ccomps_changes) =
-          List.fold_right transitions ~init:([], field_env, ctr_tag_map, false) 
+          List.fold_right components ~init:([], field_env, ctr_tag_map, false) 
             ~f:(fun t (acc_ts, acc_field_env, acc_ctr_tag_map, acc_changes) ->
                let (new_t, new_field_env, new_ctr_tag_map, t_changes) =
-                 cf_tag_transition t acc_field_env acc_ctr_tag_map in
+                 cf_tag_component t acc_field_env acc_ctr_tag_map in
                (new_t :: acc_ts, new_field_env, new_ctr_tag_map, acc_changes || t_changes))
             in
         if ccomps_changes

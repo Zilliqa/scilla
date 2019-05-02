@@ -194,9 +194,9 @@ module ScillaPatternchecker
         let%bind checked_stmts = pm_check_stmts sts in
         pure @@ (checked_s :: checked_stmts)
     
-  let pm_check_transition t =
+  let pm_check_component t =
     let { comp_type; comp_name; comp_params; comp_body } = t in
-    let msg = sprintf "Error during pattern-match checking of transition %s:\n" (get_id comp_name) in
+    let msg = sprintf "Error during pattern-match checking of %s %s:\n" (component_type_to_string comp_type) (get_id comp_name) in
     let%bind checked_body = wrap_with_info (msg, SR.get_loc (get_rep comp_name)) @@ pm_check_stmts comp_body in
     pure @@ { CheckedPatternSyntax.comp_type = comp_type;
               CheckedPatternSyntax.comp_name = comp_name;
@@ -230,12 +230,12 @@ module ScillaPatternchecker
   let pm_check_contract c =
     let { cname; cparams; cfields; ccomps } = c in
     let%bind checked_flds = pm_check_fields cfields in
-    let%bind checked_trans = mapM
-        ~f:(fun t -> pm_check_transition t) ccomps in
+    let%bind checked_comp = mapM
+        ~f:(fun t -> pm_check_component t) ccomps in
     pure @@ { CheckedPatternSyntax.cname = cname;
               CheckedPatternSyntax.cparams = cparams;
               CheckedPatternSyntax.cfields = checked_flds;
-              CheckedPatternSyntax.ccomps = checked_trans }
+              CheckedPatternSyntax.ccomps = checked_comp }
 
   let pm_check_module md =
     let { smver = mod_smver; cname = mod_cname; libs; elibs = mod_elibs; contr } = md in
@@ -259,7 +259,7 @@ module ScillaPatternchecker
     
     let%bind (c_comps, emsgs'') = foldM ~init:([], emsgs') ccomps 
         ~f:(fun (comps_acc, msg_acc) tr -> 
-            match pm_check_transition tr with
+            match pm_check_component tr with
             | Error msg -> Ok (comps_acc, msg_acc @ msg)
             | Ok ckd_comp -> Ok (ckd_comp :: comps_acc, msg_acc)
           ) in
