@@ -1010,7 +1010,6 @@ module ScillaBuiltIns
             let%bind res_type = fun_type_applies type_elab argtypes in
             pure (type_elab, res_type, exec)
           else fail0 @@ "Name or arity don't match") in
-      let open Caml in
       let dict = built_in_multidict op in
       let%bind (_, (type_elab, res_type, exec)) = tryM dict ~f:finder
           ~msg:(fun () ->
