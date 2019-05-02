@@ -1048,9 +1048,9 @@ module ScillaGUA
     let genv_cfields = identity_bind_ident_list genv_cparams
       (List.map (fun (i, _, _) -> i) cmod.contr.cfields) in
     (* Analyse each component and report it's gas use polynomial. *)
-    let%bind pols = mapM ~f:(fun tr ->
-      let%bind pol = gua_component genv_cfields tr in
-      pure @@ (tr.comp_name, expand_guref_pol pol)
+    let%bind pols = mapM ~f:(fun cp ->
+      let%bind pol = gua_component genv_cfields cp in
+      pure @@ (cp.comp_name, expand_guref_pol pol)
     ) cmod.contr.ccomps in
     pure pols
 

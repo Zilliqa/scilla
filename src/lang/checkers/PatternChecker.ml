@@ -231,7 +231,7 @@ module ScillaPatternchecker
     let { cname; cparams; cfields; ccomps } = c in
     let%bind checked_flds = pm_check_fields cfields in
     let%bind checked_comp = mapM
-        ~f:(fun t -> pm_check_component t) ccomps in
+        ~f:(fun c -> pm_check_component c) ccomps in
     pure @@ { CheckedPatternSyntax.cname = cname;
               CheckedPatternSyntax.cparams = cparams;
               CheckedPatternSyntax.cfields = checked_flds;
@@ -258,8 +258,8 @@ module ScillaPatternchecker
       | Ok ckd_fields -> Ok (ckd_fields, emsgs) in
     
     let%bind (c_comps, emsgs'') = foldM ~init:([], emsgs') ccomps 
-        ~f:(fun (comps_acc, msg_acc) tr -> 
-            match pm_check_component tr with
+        ~f:(fun (comps_acc, msg_acc) cp -> 
+            match pm_check_component cp with
             | Error msg -> Ok (comps_acc, msg_acc @ msg)
             | Ok ckd_comp -> Ok (ckd_comp :: comps_acc, msg_acc)
           ) in

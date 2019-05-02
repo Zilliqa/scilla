@@ -76,7 +76,7 @@ module ScillaSanityChecker
     (* No repeating field names. *)
     let e = e @ check_duplicate_ident ER.get_loc (List.map (fun (i, _, _) -> i) contr.cfields) in
     (* No repeating component names. *)
-    let e = e @ check_duplicate_ident SR.get_loc (List.map (fun t -> t.comp_name) contr.ccomps) in
+    let e = e @ check_duplicate_ident SR.get_loc (List.map (fun c -> c.comp_name) contr.ccomps) in
     (* No repeating component parameter names. *)
     let e = List.fold_left
       (fun e t -> e @ check_duplicate_ident ER.get_loc (List.map (fun (i, _) -> i) t.comp_params))
