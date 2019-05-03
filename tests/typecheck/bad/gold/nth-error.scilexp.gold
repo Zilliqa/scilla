@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in the initialiser of `list_nth`:\nType error in the initialiser of `list_nth_helper`:\nType error in the initialiser of `iter`:\nADT type Pair expects 2 arguments but got 1.\n",
+      "start_location": {
+        "file": "typecheck/bad/nth-error.scilexp",
+        "line": 13,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

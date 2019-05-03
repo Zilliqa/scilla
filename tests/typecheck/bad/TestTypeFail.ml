@@ -138,31 +138,31 @@ module Tests = TestUtil.DiffBasedTests(
     let custom_args = []
     let additional_libdirs = []
     let tests = [
-      "adt-error1.scilla";
-      "branch-mismatch.scilla";
-      "builtin-tvar.scilla";
-      "bad-map-key.scilla";
-      "bad-map-key2.scilla";
-      "fun2.scilla";
-      "fun3.scilla";
-      "fun4.scilla";
-      "foo-expr.scilla";
-      "list-error.scilla";
-      "list-error2.scilla";
-      "list-lit.scilla";
-      "list-lit2.scilla";
-      "pm-error1.scilla";
-      "pm-error2.scilla";
-      "map-error.scilla";
-      "map-lit.scilla";
-      "nth-error.scilla";
-      "folder-error.scilla";
-      "some.scilla";
-      "substr.scilla";
-      "parsing_hex_literals.scilla";
-      "bad_assign.scilla";
-      "bad_assign2.scilla";
-      "bad_match.scilla";
+      "adt-error1.scilexp";
+      "branch-mismatch.scilexp";
+      "builtin-tvar.scilexp";
+      "bad-map-key.scilexp";
+      "bad-map-key2.scilexp";
+      "fun2.scilexp";
+      "fun3.scilexp";
+      "fun4.scilexp";
+      "foo-expr.scilexp";
+      "list-error.scilexp";
+      "list-error2.scilexp";
+      "list-lit.scilexp";
+      "list-lit2.scilexp";
+      "pm-error1.scilexp";
+      "pm-error2.scilexp";
+      "map-error.scilexp";
+      "map-lit.scilexp";
+      "nth-error.scilexp";
+      "folder-error.scilexp";
+      "some.scilexp";
+      "substr.scilexp";
+      "parsing_hex_literals.scilexp";
+      "bad_assign.scilexp";
+      "bad_assign2.scilexp";
+      "bad_match.scilexp";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

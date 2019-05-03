@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in the initialiser of `p`:\nType mismatch: Option (Bool) expected, but Bool provided.",
+      "start_location": {
+        "file": "typecheck/bad/some.scilexp",
+        "line": 4,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

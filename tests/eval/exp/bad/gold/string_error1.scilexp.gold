@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "Lexical error: String is not terminated",
+      "start_location": {
+        "file": "eval/exp/bad/string_error1.scilexp",
+        "line": 2,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
