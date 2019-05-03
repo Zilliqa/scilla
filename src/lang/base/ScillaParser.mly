@@ -349,10 +349,9 @@ param_pair:
 component:
 | t = transition
   { t }
-(* | p = procedure 
-     { p }  *)
+| p = procedure 
+  { p }
 
-(*
 procedure:
 | PROCEDURE; t = component_id;
   params = component_params;
@@ -361,7 +360,6 @@ procedure:
       comp_name = t;
       comp_params = params;
       comp_body = ss } }
-*)
 
 transition:
 | TRANSITION; t = component_id;
