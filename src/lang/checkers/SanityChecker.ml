@@ -370,9 +370,7 @@ module ScillaSanityChecker
     (* Check all components. *)
     foldM ~f:(fun _ cp ->
         (* Bind component parameters. *)
-        let params =
-          match cp.comp_type with
-          | CompTrans -> SCU.append_implict_trans_params cp.comp_params in
+        let params = SCU.append_implict_comp_params cp.comp_params in
         let env' = List.fold_left (fun acc (p, _) ->
             add_env acc p Many
           ) env params
