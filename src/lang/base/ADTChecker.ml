@@ -155,7 +155,7 @@ module ScillaRecursion
         | AcceptPayment -> pure @@ RecursionSyntax.AcceptPayment
         | SendMsgs msg -> pure @@ RecursionSyntax.SendMsgs msg
         | CreateEvnt evnt -> pure @@ RecursionSyntax.CreateEvnt evnt
-        | CallProc (p, args) ->
+        | CallProc (_p, _) ->
             (* TODO: Check that the procedure call is not recursive *)
              fail0 @@ sprintf
                "Procedure calls is not supported yet."

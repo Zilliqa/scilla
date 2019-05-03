@@ -441,7 +441,7 @@ module ScillaTypechecker
              let typed_i = add_type_to_ident i i_type in
              let%bind checked_stmts = type_stmts env sts get_loc in
              pure @@ add_stmt_to_stmts_env (TypedSyntax.CreateEvnt typed_i, rep) checked_stmts
-         | CallProc (p, args) ->
+         | CallProc (_p, _args) ->
              fail0 @@ sprintf
                "Type-checking of procedure calls is not supported yet."
          | Throw _ ->
