@@ -594,6 +594,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | AcceptPayment
     | SendMsgs of ER.rep ident
     | CreateEvnt of ER.rep ident
+    | CallProc of SR.rep ident * ER.rep ident list
     | Throw of ER.rep ident
   [@@deriving sexp]
   
@@ -860,6 +861,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | CreateEvnt i ->
         sprintf "Error in create event `%s`:\n"
            (get_id i)
+    | CallProc (p, _) ->
+        sprintf "Error in call of procedure '%s':\n"
+           (get_id p)
     | Throw i ->
         sprintf "Error in throw of '%s':\n"
            (get_id i)
