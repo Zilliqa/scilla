@@ -71,6 +71,7 @@ let rec build_contract_tests env name exit_code i n add_additional_lib =
         print_cli_usage (env.print_cli test_ctxt) scillabin args;
         let test_name = name ^ "_" ^ istr in
         let goldoutput_file = dir ^/ "output_" ^ istr ^. "json" in
+        let msg = cli_usage_on_err scillabin args in
         assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
           ~foutput:(fun s ->
               (* if the test is supposed to succeed we read the output from a file,
@@ -82,7 +83,7 @@ let rec build_contract_tests env name exit_code i n add_additional_lib =
               in
               if env.update_gold test_ctxt
               then output_updater goldoutput_file test_name out
-              else output_verifier goldoutput_file (env.print_diff test_ctxt) out))
+              else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out))
       in
       (* If this test is expected to succeed, we know that the JSONs are all "good".
        * So test both the JSON parsers, one that does validation, one that doesn't.
@@ -118,6 +119,7 @@ let build_contract_init_test env exit_code name is_library =
     print_cli_usage (env.print_cli test_ctxt) scillabin args;
     let test_name = name ^ "_init" in
     let goldoutput_file = dir ^/ "init_output.json" in
+    let msg = cli_usage_on_err scillabin args in
     assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
     ~foutput:(fun s ->
         (* if the test is supposed to succeed we read the output from a file,
@@ -129,7 +131,7 @@ let build_contract_init_test env exit_code name is_library =
         in
         if env.update_gold test_ctxt
         then output_updater goldoutput_file test_name out
-        else output_verifier goldoutput_file (env.print_diff test_ctxt) out))
+        else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out))
 
 let build_misc_tests env =
   let scillabin bin_dir test_ctxt =

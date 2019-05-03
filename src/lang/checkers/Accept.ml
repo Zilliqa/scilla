@@ -33,7 +33,7 @@ module ScillaAcceptChecker
          (SR : Rep)
          (ER : sig
             include Rep
-            val get_type : rep -> PlainTypes.t inferred_type
+            val [@warning "-32"] get_type : rep -> PlainTypes.t inferred_type
           end) = struct
 
   module EISyntax = ScillaSyntax (SR) (ER)
@@ -92,9 +92,9 @@ module ScillaAcceptChecker
     walk [[]] stmts
 
   let check_accepts (contr : contract) =
-    let check_transition_accepts (transition : transition) =
+    let check_transition_accepts (transition : component) =
       let transition_accept_groups =
-        List.map List.rev (find_accept_groups transition.tbody)
+        List.map List.rev (find_accept_groups transition.comp_body)
       in
 
       let accept_loc_end (l : loc) =
@@ -108,7 +108,7 @@ module ScillaAcceptChecker
         (warn2
            (Core.sprintf
               "transition %s had a potential code path with duplicate accept statements:\n"
-              (get_id transition.tname) ^
+              (get_id transition.comp_name) ^
               String.concat ""
                 (List.map
                    (fun loc -> Core.sprintf "  Accept at %s\n" (get_loc_str loc))
@@ -131,7 +131,7 @@ module ScillaAcceptChecker
     let all_accept_groups =
       (List.fold_left
          (fun acc t -> acc @ check_transition_accepts t)
-         [] contr.ctrans)
+         [] contr.ccomps)
     in
 
     (match List.for_all BatList.is_empty all_accept_groups with

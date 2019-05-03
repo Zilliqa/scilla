@@ -159,31 +159,32 @@ module ScillaRecursion
       pure @@ (new_s, rep) in
     walk srep
 
-  let recursion_transition is_adt_in_scope is_adt_ctr_in_scope trns =
-    let { tname ; tparams ; tbody } = trns in
-    let%bind _ = forallM ~f:(fun (_, t) -> recursion_typ is_adt_in_scope t) tparams in
-    let%bind recursion_tbody =
+  let recursion_component is_adt_in_scope is_adt_ctr_in_scope comp =
+    let { comp_type; comp_name ; comp_params ; comp_body } = comp in
+    let%bind _ = forallM ~f:(fun (_, t) -> recursion_typ is_adt_in_scope t) comp_params in
+    let%bind recursion_comp_body =
       mapM ~f:(fun s ->
-          recursion_stmt is_adt_in_scope is_adt_ctr_in_scope s) tbody in
+          recursion_stmt is_adt_in_scope is_adt_ctr_in_scope s) comp_body in
     pure @@
-    { RecursionSyntax.tname = tname ;
-      RecursionSyntax.tparams = tparams ;
-      RecursionSyntax.tbody = recursion_tbody }
+    { RecursionSyntax.comp_type = comp_type ;
+      RecursionSyntax.comp_name = comp_name ;
+      RecursionSyntax.comp_params = comp_params ;
+      RecursionSyntax.comp_body = recursion_comp_body }
   
   let recursion_contract is_adt_in_scope is_adt_ctr_in_scope c =
-    let { cname ; cparams ; cfields ; ctrans } = c in
+    let { cname ; cparams ; cfields ; ccomps } = c in
     let%bind _ = forallM ~f:(fun (_, t) -> recursion_typ is_adt_in_scope t) cparams in
     let%bind recursion_cfields =
       mapM ~f:(fun (x, t, e) ->
           let%bind _ = recursion_typ is_adt_in_scope t in
           let%bind new_e = recursion_exp is_adt_in_scope is_adt_ctr_in_scope e in
           pure @@ (x, t, new_e)) cfields in
-    let%bind recursion_ctrans = mapM ~f:(fun t -> recursion_transition is_adt_in_scope is_adt_ctr_in_scope t) ctrans in
+    let%bind recursion_ccomps = mapM ~f:(fun c -> recursion_component is_adt_in_scope is_adt_ctr_in_scope c) ccomps in
     pure @@
     { RecursionSyntax.cname = cname ;
       RecursionSyntax.cparams = cparams ;
       RecursionSyntax.cfields = recursion_cfields ;
-      RecursionSyntax.ctrans = recursion_ctrans }
+      RecursionSyntax.ccomps = recursion_ccomps }
   
   let recursion_adt_constructor_arg is_adt_in_scope t error_loc =
     let rec walk t =
@@ -377,7 +378,7 @@ module ScillaRecursion
               (fun n -> let%bind _ = DataTypeDictionary.lookup_constructor n in pure @@ ())
               contr with
       | Ok rec_contr -> Ok (rec_contr, emsgs)
-      | Error el -> Ok ({cname = cname; cparams = [] ; cfields = [] ; ctrans = []}, emsgs @ el) in
+      | Error el -> Ok ({cname = cname; cparams = [] ; cfields = [] ; ccomps = []}, emsgs @ el) in
 
     if emsgs = [] then
       pure @@ (

@@ -346,18 +346,43 @@ stmts_term:
 param_pair:
 | n = ID; COLON; t = typ { asIdL n (toLoc $startpos(n)), t }
 
-transition:
-| TRANSITION; t = trans_id;
-  LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
-  ss = stmts;
-  END;
-  { { tname = t;
-      tparams = params;
-      tbody = ss } }
+component:
+| t = transition
+  { t }
+(* | p = procedure 
+     { p }  *)
 
-trans_id:
+(*
+procedure:
+| PROCEDURE; t = component_id;
+  params = component_params;
+  ss = component_body;
+  { { comp_type = CompProc;
+      comp_name = t;
+      comp_params = params;
+      comp_body = ss } }
+*)
+
+transition:
+| TRANSITION; t = component_id;
+  params = component_params;
+  ss = component_body;
+  { { comp_type = CompTrans;
+      comp_name = t;
+      comp_params = params;
+      comp_body = ss } }
+
+component_id:
 | c = CID { asIdL c (toLoc $startpos(c)) }
 | i = ID { asIdL i (toLoc $startpos(i)) }
+
+component_params:
+| LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
+  { params }
+
+component_body:
+| ss = stmts; END;
+  { ss }
 
 field:
 | FIELD; f = ID; COLON; t=typ;
@@ -368,11 +393,11 @@ contract:
 | CONTRACT; c = CID;
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
   fs = list(field);
-  ts = list(transition)
+  comps = list(component)
   { { cname   = asIdL c (toLoc $startpos(c));
       cparams = params;
       cfields = fs;
-      ctrans  = ts } }
+      ccomps = comps } }
 
 tconstr :
 | BAR; tn = CID;

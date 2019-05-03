@@ -121,8 +121,8 @@ let analyze_print_gas cmod typed_elibs =
       ) cpol;
     in res
 
-let check_cashflow typed_cmod =
-  let (param_field_tags, ctr_tags) = CF.main typed_cmod in
+let check_cashflow typed_cmod token_fields =
+  let (param_field_tags, ctr_tags) = CF.main typed_cmod token_fields in
   let param_field_tags_to_string = List.map param_field_tags
       ~f:(fun (i, t) ->
           (i, CF.ECFR.money_tag_to_string t)) in
@@ -173,7 +173,7 @@ let check_cmodule cli =
     let%bind _ = check_sanity typed_cmod typed_rlibs typed_elibs in
     let%bind event_info = EI.event_info pm_checked_cmod in
     let%bind _ = if cli.gua_flag then analyze_print_gas typed_cmod typed_elibs else pure [] in
-    let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod) else None in
+    let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields) else None in
     pure @@ (cmod, tenv, event_info, cf_info_opt)
   ) in
   (match r with

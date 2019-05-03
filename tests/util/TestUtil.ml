@@ -30,7 +30,7 @@ type tsuite_env =
     print_diff : test_ctxt -> bool;
   }
 
-let output_verifier goldoutput_file print_diff output =
+let output_verifier goldoutput_file msg print_diff output =
   (* load all data from file *)
   let gold_output = In_channel.read_all goldoutput_file in
   let pp_diff fmt =
@@ -49,22 +49,24 @@ let output_verifier goldoutput_file print_diff output =
   in
   if print_diff then
     assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o))
-      ~pp_diff:(fun fmt _ -> pp_diff fmt) gold_output output
+      ~pp_diff:(fun fmt _ -> pp_diff fmt) gold_output output ~msg
   else
     assert_equal ~cmp:(fun e o -> (String.strip e) = (String.strip o))
-      ~printer:(fun s -> s) gold_output output
+      ~printer:(fun s -> s) gold_output output ~msg
 
 let output_updater goldoutput_file test_name data =
   Out_channel.write_all goldoutput_file ~data;
   Printf.printf "Updated gold output for test %s\n" test_name
 
-let print_args args =
-  List.iter ~f:(Printf.printf "%s ") args; Printf.printf "\n"
+let prepare_cli_usage bin args =
+  bin ^ " " ^ (String.concat ~sep:" " args)
+
+let cli_usage_on_err bin args =
+  "Command " ^ prepare_cli_usage bin args ^ " failed.\n"
 
 let print_cli_usage flag bin args =
   if flag then begin
-    Printf.printf "\nUsing CLI: %s " bin;
-    print_args args
+    Printf.printf "\nUsing CLI: %s\n" (prepare_cli_usage bin args);
   end
 
 module type TestSuiteInput = sig
@@ -92,13 +94,14 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
       let stdlib = env.stdlib_dir test_ctxt in
       let path = string_of_path @@ stdlib :: additional_dirs in
       let args = custom_args @ ["-libdir";path;"-jsonerrors";input_file] in
+      let msg = cli_usage_on_err evalbin args in
       print_cli_usage (env.print_cli test_ctxt) evalbin args;
       assert_command
         ~foutput:(fun s ->
             let out = BatStream.to_string s in
             if env.update_gold test_ctxt
             then output_updater goldoutput_file input_file out
-            else output_verifier goldoutput_file (env.print_diff test_ctxt) out
+            else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out
           )
         ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt evalbin args))
 
