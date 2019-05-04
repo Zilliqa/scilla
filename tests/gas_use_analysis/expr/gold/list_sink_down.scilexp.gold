@@ -1,0 +1,11 @@
+forall 'A. ('A -> 'A -> Bool) -> List ('A) -> 'A -> List ('A)
+Gas usage signature:
+Parameter list: ( flt ls e )
+Gas use polynomial:
+22 + 19(a) + 1(b)(a)
+Legend:
+
+b: Cost of calling flt(Element of: ls, e)
+a: Length of: ls
+Result size: 2 + 1(Length of: ls) + 2(Element of: 2)(Length of: ls) + 1(e)
+

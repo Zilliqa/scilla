@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in the initialiser of `list_map`:\nType error in the initialiser of `folder`:\nCannot elaborate expression of type\n('A -> 'B -> 'B) -> 'B -> List ('A) -> 'B\napplied, as a type function, to type arguments\n['A].",
+      "start_location": {
+        "file": "typecheck/bad/folder-error.scilexp",
+        "line": 3,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in the initialiser of `l3`:\nType mismatch: List (Int32) expected, but List (Int64) provided.",
+      "start_location": {
+        "file": "typecheck/bad/list-lit.scilexp",
+        "line": 6,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

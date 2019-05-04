@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "Syntax error: \"hack\" is not a builtin",
+      "start_location": {
+        "file": "eval/exp/bad/builtin_error1.scilexp",
+        "line": 10,
+        "column": 20
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
