@@ -119,7 +119,7 @@
                     (forward-line -1)
                     (setq lines-seen (+ lines-seen 1))
                     (if (looking-at "[ \t]*end") (setq ends-seen (+ ends-seen 1)))
-                    (if (looking-at "[ \t]*\\(match\\|transition\\|procedure\\)")(setq matches-seen (+ matches-seen 1)))
+                    (if (looking-at "[ \t]*\\(match\\|transition|procedure\\)")(setq matches-seen (+ matches-seen 1)))
                     ;; (message "Line %d: %d matches and %d ends seen" cur-line matches-seen ends-seen)
                     (if (> matches-seen ends-seen)
                         (progn
