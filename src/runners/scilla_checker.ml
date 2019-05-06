@@ -29,7 +29,7 @@ open RunnerUtil
 open PatternChecker
 open SanityChecker
 open GasUseAnalysis
-open Recursion
+open RecursionPrinciples
 open EventInfo
 open Cashflow
 open Accept
