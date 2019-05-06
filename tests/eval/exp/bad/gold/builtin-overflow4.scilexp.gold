@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "Syntax error: Invalid Int32 literal -2147483649",
+      "start_location": {
+        "file": "eval/exp/bad/builtin-overflow4.scilexp",
+        "line": 8,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -17,21 +17,21 @@
 *)
 
 let explist = [
-  "app.scilla";
-  "app2.scilla";
-  "app3.scilla";
-  "app4.scilla";
-  "builtin-strings.scilla";
-  "builtin1.scilla";
-  "list_append.scilla";
-  "list_eq.scilla";
-  "list_head.scilla";
-  "list_map.scilla";
-  "list_sort.scilla";
-  "list_sink_down.scilla";
-  "list_tail.scilla";
-  "list_zip.scilla";
-  "list_zip_with.scilla";
+  "app.scilexp";
+  "app2.scilexp";
+  "app3.scilexp";
+  "app4.scilexp";
+  "builtin-strings.scilexp";
+  "builtin1.scilexp";
+  "list_append.scilexp";
+  "list_eq.scilexp";
+  "list_head.scilexp";
+  "list_map.scilexp";
+  "list_sort.scilexp";
+  "list_sink_down.scilexp";
+  "list_tail.scilexp";
+  "list_zip.scilexp";
+  "list_zip_with.scilexp";
 ]
 
 module Tests = TestUtil.DiffBasedTests(

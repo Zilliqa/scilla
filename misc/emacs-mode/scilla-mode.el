@@ -230,10 +230,21 @@
   (setq-local font-lock-defaults '(scilla-font-lock-keywords))
   (setq-local indent-line-function 'scilla-indent-line)
   )
-
 (provide 'scilla-mode)
 (add-to-list 'auto-mode-alist '("\\.scilla\\'" . scilla-mode))
 (add-to-list 'auto-mode-alist '("\\.scillib\\'" . scilla-mode))
+
+;; autoload scilexp files, treat it same as Scilla files.
+(define-derived-mode scilexp-mode fundamental-mode "Scilla Expressions"
+  "A major mode for editing scilla files."
+  :syntax-table scilla-mode-syntax-table
+  (setq-local comment-start "(*")
+  (setq-local comment-end "*)")
+  (setq-local font-lock-defaults '(scilla-font-lock-keywords))
+  (setq-local indent-line-function 'scilla-indent-line)
+  )
+(provide 'scilexp-mode)
+(add-to-list 'auto-mode-alist '("\\.scilexp\\'" . scilexp-mode))
 
 ;; Set scilla-root in your ~/.emacs file as "setq scilla-root /path/to/scilla".
 ;;  Note: make sure to set scilla-root *before* loading this file (scilla-mode.el)
@@ -242,8 +253,11 @@
     (progn
       ;; derive stdlib and scilla-checker paths from scilla-root.
       (setq lib-dir (concat scilla-root "/src/stdlib"))
-      (setq checker-bin (concat scilla-root "/bin/scilla-checker"))
-      (if (and  (file-directory-p scilla-root) (file-directory-p lib-dir) (file-exists-p checker-bin))
+      (setq scilla-checker-bin (concat scilla-root "/bin/scilla-checker"))
+      ;; See comment later on why we have two flycheck modes.
+      (setq type-checker-bin (concat scilla-root "/bin/type-checker"))
+      (if (and  (file-directory-p scilla-root) (file-directory-p lib-dir)
+                (file-exists-p scilla-checker-bin) (file-exists-p type-checker-bin))
           (progn
             (flycheck-define-checker scilla
               "A Scilla syntax checker using scilla-checker. See URL `https://www.scilla-lang.org/'."
@@ -255,12 +269,28 @@
                )
               :modes scilla-mode
               )
-            (setq flycheck-scilla-executable checker-bin)
+            (setq flycheck-scilla-executable scilla-checker-bin)
             (add-to-list 'flycheck-checkers 'scilla)
             (add-hook 'scilla-mode-hook 'flycheck-mode)
+            ;; This flycheck mode is created and finalized before we load a source file (static).
+            ;; So *-checker-bin cannot be defined conditionally. We need to define two flycheck modes.
+            ;; Querying buffer-file-name anywhere here returns nil.
+            (flycheck-define-checker scilexp
+              "A Scilla expression syntax checker using type-checker. See URL `https://www.scilla-lang.org/'."
+              :command ("type-checker" "-libdir" (eval lib-dir) source)
+              :error-patterns
+              (
+               (error line-start (file-name) ":" line ":" column ": error: " (message) line-end)
+               (warning line-start (file-name) ":" line ":" column ": warning: [" (id (one-or-more alnum)) "] " (message) line-end)
+               )
+              :modes scilexp-mode
+              )
+            (setq flycheck-scilexp-executable type-checker-bin)
+            (add-to-list 'flycheck-checkers 'scilexp)
+            (add-hook 'scilexp-mode-hook 'flycheck-mode)
             ;;(flycheck-mode 1)
             )
-        (message "Scilla-Flycheck: scilla-root set incorrectly or one of src/stdlib bin/scilla-checker missing.")
+        (message "Scilla-Flycheck: scilla-root set incorrectly or one of src/stdlib bin/(scilla/type)-checker missing.")
         )
       )
   (message "Scilla-FlyCheck: scilla-root not set or flycheck not available.")

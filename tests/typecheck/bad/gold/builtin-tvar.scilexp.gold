@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in the initialiser of `int_eq`:\nType error in built-in application of `eq`:\nType error: cannot apply \"eq\" built-in to argument(s) of type(s) ['A; 'A].",
+      "start_location": {
+        "file": "typecheck/bad/builtin-tvar.scilexp",
+        "line": 5,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
