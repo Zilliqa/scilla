@@ -507,8 +507,8 @@ let get_transition ctr tag =
       pure (params, body)
 
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
-let check_message_entries tparams_o entries =
-  let tparams = CU.append_implict_trans_params tparams_o in
+let check_message_entries cparams_o entries =
+  let tparams = CU.append_implict_comp_params cparams_o in
   (* There as an entry for each parameter *)
   let valid_entries = List.for_all tparams
       ~f:(fun p -> List.exists entries ~f:(fun e -> fst e = (get_id (fst p)))) in
