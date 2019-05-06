@@ -206,6 +206,8 @@ module ScillaCashflowChecker
           CFSyntax.SendMsgs (add_noinfo_to_ident x)
       | CreateEvnt x ->
           CFSyntax.CreateEvnt (add_noinfo_to_ident x)
+      | CallProc (p, args) ->
+          CFSyntax.CallProc (p, List.map args ~f:add_noinfo_to_ident)
       | Throw x ->
           CFSyntax.Throw (add_noinfo_to_ident x) in
     (res_s, rep)
@@ -1466,6 +1468,18 @@ module ScillaCashflowChecker
            new_local_env,
            ctr_tag_map,
            (get_id_tag e) <> e_tag)
+      | CallProc (p, args) ->
+          let new_args = List.map args ~f:(fun arg -> update_id_tag arg (lookup_var_tag2 arg local_env field_env)) in
+          let args_changes =
+            match List.exists2 ~f:(fun arg new_arg -> (get_id_tag arg) <> (get_id_tag new_arg)) args new_args with
+            | Ok res          -> res
+            | Unequal_lengths -> false
+          in
+          (CallProc (p, new_args),
+           field_env,
+           local_env,
+           ctr_tag_map,
+           args_changes)
       | Throw x ->
           let x_tag = lub_tags NotMoney (lookup_var_tag x local_env) in
           let new_x = update_id_tag x x_tag in

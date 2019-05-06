@@ -310,6 +310,7 @@ let rec stmt_eval conf stmts =
           let%bind (conf', scon) = Configuration.create_event conf eparams_resolved in
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
+      | CallProc _ -> fail1 (sprintf "Procedure calls are not supported yet.") sloc
       | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
     )
 
