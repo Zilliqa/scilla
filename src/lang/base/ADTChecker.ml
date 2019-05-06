@@ -158,7 +158,7 @@ module ScillaRecursion
         | CallProc (_p, _) ->
             (* TODO: Check that the procedure call is not recursive *)
              fail0 @@ sprintf
-               "Procedure calls is not supported yet."
+               "Procedure calls are not supported yet."
         | Throw ex -> pure @@ RecursionSyntax.Throw ex in
       pure @@ (new_s, rep) in
     walk srep
