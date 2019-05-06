@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "Couldn't resolve the identifier \"y\".\n",
+      "start_location": {
+        "file": "typecheck/bad/fun2.scilexp",
+        "line": 1,
+        "column": 20
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in the initialiser of `l4`:\nADT type Pair expects 2 arguments but got 1.\n",
+      "start_location": {
+        "file": "typecheck/bad/adt-error1.scilexp",
+        "line": 5,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

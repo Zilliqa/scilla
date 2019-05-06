@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "Syntax error: Invalid map key type Bool",
+      "start_location": {
+        "file": "typecheck/bad/bad-map-key2.scilexp",
+        "line": 2,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

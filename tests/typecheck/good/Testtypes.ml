@@ -92,25 +92,25 @@ module Tests = TestUtil.DiffBasedTests(
     let custom_args = []
     let additional_libdirs = []
     let tests = [
-      "branch-match.scilla";
-      "builtin-strings.scilla";
-      "fun.scilla";
-      "fun1.scilla";
-      "addr.scilla";
-      "app.scilla";
-      "hash1.scilla";
-      "list1.scilla";
-      "pm1.scilla";
-      "pm2.scilla";
-      "pm3.scilla";
-      "pm4.scilla";
-      "pair.scilla";
-      "subst.scilla";
-      "nat_to_int.scilla";
-      "to_int.scilla";
-      "type-subst-avoids-capture-1.scilla";
-      "type-subst-avoids-capture-2.scilla";
-      "zip.scilla";
+      "branch-match.scilexp";
+      "builtin-strings.scilexp";
+      "fun.scilexp";
+      "fun1.scilexp";
+      "addr.scilexp";
+      "app.scilexp";
+      "hash1.scilexp";
+      "list1.scilexp";
+      "pm1.scilexp";
+      "pm2.scilexp";
+      "pm3.scilexp";
+      "pm4.scilexp";
+      "pair.scilexp";
+      "subst.scilexp";
+      "nat_to_int.scilexp";
+      "to_int.scilexp";
+      "type-subst-avoids-capture-1.scilexp";
+      "type-subst-avoids-capture-2.scilexp";
+      "zip.scilexp";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
