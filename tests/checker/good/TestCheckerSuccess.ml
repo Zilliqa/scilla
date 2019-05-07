@@ -84,6 +84,8 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "TestLibNS4.scillib";
       "libdiamond2.scilla";
       "map-inplace-update-with-_sender.scilla";
+(*      "backward_definition_procedure.scilla";
+        "global_scope_procedures.scilla"; *)
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
