@@ -1,9 +1,10 @@
 {
   "errors": [
     {
-      "error_message": "Type error(s) in contract RecursiveProcedure:\n",
+      "error_message":
+        "Type error(s) in contract ForwardDefinitionProcedure:\n",
       "start_location": {
-        "file": "checker/bad/recursive_procedure.scilla",
+        "file": "checker/bad/forward_definition_procedure.scilla",
         "line": 5,
         "column": 10
       },
