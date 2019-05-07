@@ -493,11 +493,12 @@ let rec subst_type_in_literal tvar tp l = match l with
 
 type component_type =
   | CompTrans
-  (* | CompProc *)
+  | CompProc
 
 let component_type_to_string ctp =
   match ctp with
   | CompTrans -> "transition"
+  | CompProc -> "procedure"
   
 (*******************************************************)
 (*                   Annotations                       *)
@@ -593,6 +594,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | AcceptPayment
     | SendMsgs of ER.rep ident
     | CreateEvnt of ER.rep ident
+    | CallProc of SR.rep ident * ER.rep ident list
     | Throw of ER.rep ident
   [@@deriving sexp]
   
@@ -870,6 +872,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | CreateEvnt i ->
         sprintf "Error in create event `%s`:\n"
            (get_id i)
+    | CallProc (p, _) ->
+        sprintf "Error in call of procedure '%s':\n"
+           (get_id p)
     | Throw i ->
         sprintf "Error in throw of '%s':\n"
            (get_id i)

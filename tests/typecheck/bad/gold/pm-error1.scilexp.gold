@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in the initialiser of `f`:\nType error in pattern matching on `c` of type Bool (or one of its branches):\nNot all types of the branches [Int32; Int64] are equivalent.",
+      "start_location": {
+        "file": "typecheck/bad/pm-error1.scilexp",
+        "line": 4,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

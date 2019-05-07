@@ -103,11 +103,11 @@ module ScillaContractUtil
     let nonevalargs = [extlibs_label] in
     List.filter args ~f:(fun a -> not (List.mem nonevalargs (fst a) ~equal:(=)))
 
-  let append_implict_trans_params tparams =
+  let append_implict_comp_params cparams =
     let open PrimTypes in
     let sender = (ER.mk_id_address MessagePayload.sender_label, bystrx_typ address_length) in
     let amount = (ER.mk_id_uint128 MessagePayload.amount_label, uint128_typ) in
-    amount :: sender :: tparams
+    amount :: sender :: cparams
 
   let msg_mandatory_field_types =
     [ 

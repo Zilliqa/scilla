@@ -329,6 +329,10 @@ stmt:
 | EVENT; m = sid; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
+| (* procedure call *)
+  p = component_id;
+  args = nonempty_list(sident)
+  { (CallProc (p, args), toLoc $startpos)  }
 
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;
@@ -349,10 +353,9 @@ param_pair:
 component:
 | t = transition
   { t }
-(* | p = procedure 
-     { p }  *)
+| p = procedure 
+  { p }
 
-(*
 procedure:
 | PROCEDURE; t = component_id;
   params = component_params;
@@ -361,7 +364,6 @@ procedure:
       comp_name = t;
       comp_params = params;
       comp_body = ss } }
-*)
 
 transition:
 | TRANSITION; t = component_id;

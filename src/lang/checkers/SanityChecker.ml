@@ -293,7 +293,8 @@ module ScillaSanityChecker
         let env' = add_env env x Many in
         stmt_checker env' sts
       | Store _ | MapUpdate _
-      | AcceptPayment | CreateEvnt _ | Throw _ ->
+      | AcceptPayment | CreateEvnt _ | Throw _
+      | CallProc _ ->
         stmt_checker env sts
       | Bind (x, e) ->
         let%bind n = expr_checker e env in
@@ -370,9 +371,7 @@ module ScillaSanityChecker
     (* Check all components. *)
     foldM ~f:(fun _ cp ->
         (* Bind component parameters. *)
-        let params =
-          match cp.comp_type with
-          | CompTrans -> SCU.append_implict_trans_params cp.comp_params in
+        let params = SCU.append_implict_comp_params cp.comp_params in
         let env' = List.fold_left (fun acc (p, _) ->
             add_env acc p Many
           ) env params
@@ -457,7 +456,8 @@ module ScillaSanityChecker
           | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
             check_warn_redef cparams cfields pnames x;
           | Store _ | MapUpdate _ | SendMsgs _
-          | AcceptPayment | CreateEvnt _ | Throw _ ->
+          | AcceptPayment | CreateEvnt _ | Throw _
+          | CallProc _ ->
             ()
           | Bind (x, e) ->
             check_warn_redef cparams cfields pnames x;

@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in pattern matching on `c` of type Bool (or one of its branches):\nNot all types of the branches ['X; 'Y] are equivalent.",
+      "start_location": {
+        "file": "typecheck/bad/branch-mismatch.scilexp",
+        "line": 8,
+        "column": 2
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

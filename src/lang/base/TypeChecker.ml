@@ -441,6 +441,9 @@ module ScillaTypechecker
              let typed_i = add_type_to_ident i i_type in
              let%bind checked_stmts = type_stmts env sts get_loc in
              pure @@ add_stmt_to_stmts_env (TypedSyntax.CreateEvnt typed_i, rep) checked_stmts
+         | CallProc (_p, _args) ->
+             fail0 @@ sprintf
+               "Type-checking of procedure calls is not supported yet."
          | Throw _ ->
              fail0 @@ sprintf
                "Type-checking of Throw statements is not supported yet."
@@ -463,19 +466,17 @@ module ScillaTypechecker
     let component_type_string = component_type_to_string comp_type in
     let msg = sprintf "Type error(s) in %s %s:\n" component_type_string (get_id comp_name) in
     wrap_with_info (msg, SR.get_loc (get_rep comp_name)) @@
-    let%bind typed_tparams = mapM ~f:(fun (param, t) ->
+    let%bind typed_cparams = mapM ~f:(fun (param, t) ->
         if is_serializable_type t
         then pure (add_type_to_id param (mk_qual_tp t), t)
         else fail1 (sprintf "Type %s cannot be used as %s parameter" (pp_typ t) component_type_string) (ER.get_loc (get_rep param))) comp_params in
-    let append_params =
-      match comp_type with
-      | CompTrans -> CU.append_implict_trans_params comp_params in
+    let append_params = CU.append_implict_comp_params comp_params in
     let tenv1 = TEnv.addTs tenv0 append_params in
     let env = {env0 with pure = tenv1} in
     let%bind (typed_stmts, _) = type_stmts env comp_body ER.get_loc in
     pure @@ ({ TypedSyntax.comp_type = comp_type ;
                TypedSyntax.comp_name = comp_name ;
-               TypedSyntax.comp_params = typed_tparams;
+               TypedSyntax.comp_params = typed_cparams;
                TypedSyntax.comp_body = typed_stmts })
 
 
