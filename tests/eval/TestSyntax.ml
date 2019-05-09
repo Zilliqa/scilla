@@ -118,6 +118,14 @@ let unannotated_syntax_tests =
         in
       (free_vars_in_expr (parse_expr_wrapper expr)));
 
+    "free_tvars-7",
+    assert_equal ~printer:ident_list_printer ~cmp:ident_list_cmp
+      ([asId "a"])
+      (let expr = "let b = a in
+                   Int32 0"
+        in
+      (free_vars_in_expr (parse_expr_wrapper expr)));
+
   ]
 
 let syntax_tests = "syntax_tests" >::: [unannotated_syntax_tests]
