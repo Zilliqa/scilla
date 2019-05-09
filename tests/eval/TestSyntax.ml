@@ -4,6 +4,18 @@ open OUnit2
 open Syntax
 open PrimTypes
 open PrettyPrinters
+open ParserUtil.ParsedSyntax
+
+let parse_expr_wrapper exprstr =
+  match FrontEndParser.parse_expr exprstr with
+  | Ok expr -> expr
+  | Error _ -> assert_failure ("Error parsing test expression:\n" ^ exprstr ^ "\n")
+
+let ident_list_cmp lsa lsb =
+  List.equal ~equal:(fun a b -> (get_id a) = (get_id b)) lsa lsb
+
+let ident_list_printer =
+  (fun ls -> String.concat ~sep:";" (List.map ~f:get_id ls))
 
 let unannotated_syntax_tests =
   "test suite for unannotated syntax" >:::
@@ -56,7 +68,64 @@ let unannotated_syntax_tests =
     "subst_type_in_literal-2",
     assert_equal ~printer:pp_literal
       (Map ((int32_typ, int32_typ), Caml.Hashtbl.create 4))
-      (subst_type_in_literal (asId "'X") int32_typ (Map ((TypeVar "'X", TypeVar "'X"), Caml.Hashtbl.create 4)))
+      (subst_type_in_literal (asId "'X") int32_typ (Map ((TypeVar "'X", TypeVar "'X"), Caml.Hashtbl.create 4)));
+
+    "free_tvars-1",
+    assert_equal ~printer:ident_list_printer ~cmp:ident_list_cmp
+      ([asId "a"])
+      (free_vars_in_expr (parse_expr_wrapper "a"));
+
+    "free_tvars-2",
+    assert_equal ~printer:ident_list_printer ~cmp:ident_list_cmp
+      ([asId "a"])
+      (let expr =  "fun (b : Uint32) => a" in
+      (free_vars_in_expr (parse_expr_wrapper expr)));
+
+    "free_tvars-3",
+    assert_equal ~printer:ident_list_printer ~cmp:ident_list_cmp
+      ([asId "b"])
+      (let expr = "fun (a : Uint32) => b a" in
+      (free_vars_in_expr (parse_expr_wrapper expr)));
+
+    "free_tvars-4",
+    assert_equal ~printer:ident_list_printer ~cmp:ident_list_cmp
+      ([asId "a"])
+      (let expr = "match a with 
+                   | Pair a b => a 
+                   end" 
+        in
+      (free_vars_in_expr (parse_expr_wrapper expr)));
+
+    "free_tvars-5",
+    assert_equal ~printer:ident_list_printer ~cmp:ident_list_cmp
+      ([asId "a"])
+      (let expr = "match a with 
+                   | Pair a b => 
+                    let c = builtin add a b in
+                    c
+                   end" 
+        in
+      (free_vars_in_expr (parse_expr_wrapper expr)));
+
+    "free_tvars-6",
+    assert_equal ~printer:ident_list_printer ~cmp:ident_list_cmp
+      ([asId "a"; asId "d"])
+      (let expr = "match a with 
+                   | Pair a b => 
+                    let c = builtin add a b in
+                    d
+                   end" 
+        in
+      (free_vars_in_expr (parse_expr_wrapper expr)));
+
+    "free_tvars-7",
+    assert_equal ~printer:ident_list_printer ~cmp:ident_list_cmp
+      ([asId "a"])
+      (let expr = "let b = a in
+                   Int32 0"
+        in
+      (free_vars_in_expr (parse_expr_wrapper expr)));
+
   ]
 
 let syntax_tests = "syntax_tests" >::: [unannotated_syntax_tests]

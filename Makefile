@@ -19,6 +19,7 @@ slim:
 
 dev:
 	dune build --profile dev @install
+	dune build tests/testsuite.exe
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Launch utop such that it finds the libraroes.

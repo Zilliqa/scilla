@@ -724,20 +724,17 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         let body' = subst_type_in_expr tvar tp body in
         (Fixpoint (f, t', body'), rep)
 
-(* Is expr dependent on any ident in blist.
- * This is the same as checking if a free var
- * in expr is present in blist. *)
-  let free_vars_dep_check erep blist =
-
+  (* Returns a list of free variables in expr. *)
+  let free_vars_in_expr erep =
+    (* A few utilities to begin with. *)
+    
     (* is m in l. *)
     let is_mem m l =
       List.exists l ~f:(fun x -> get_id m = get_id x) in
-    (* is any m in ml, in l. *)
-    let any_is_mem ml l =
-      List.exists ml ~f:(fun i -> is_mem i l) in
     (* get elements in "l" that are not in bound_vars. *)
     let get_free l bound_vars =
       List.filter l ~f:(fun i -> not (is_mem i bound_vars)) in
+    (* get variables that get bound in pattern. *)
     let get_pattern_bounds p =
       let rec accfunc p acc =
         match p with
@@ -747,39 +744,52 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
           List.fold plist ~init:acc ~f:(fun acc p' -> accfunc p' acc)
       in accfunc p []
     in
-
-    let rec recurser erep bound_vars =
+  
+    (* The main function that does the job. *)
+    let rec recurser erep bound_vars acc =
       let (e, _) = erep in
       match e with
-      | Literal _ -> false
-      | Var v -> (not @@ is_mem v bound_vars) && is_mem v blist
-      | Fun (f, _, body) -> recurser body (f :: bound_vars)
-      | TFun (_, body) -> recurser body bound_vars
-      | Constr (_, _, es) -> any_is_mem (get_free es bound_vars) blist
-      | App (f, args) ->
-        let args' = f :: args in
-        any_is_mem (get_free args' bound_vars) blist
-      | Builtin (_f, args) ->
-        any_is_mem (get_free args bound_vars) blist
+      | Literal _ -> acc
+      | Var v | TApp (v, _) -> if is_mem v bound_vars then acc else v :: acc
+      | Fun (f, _, body) | Fixpoint (f, _, body) -> recurser body (f :: bound_vars) acc
+      | TFun (_, body) -> recurser body bound_vars acc
+      | Constr (_, _, es) -> (get_free es bound_vars) @ acc
+      | App (f, args) -> (get_free (f :: args) bound_vars) @ acc
+      | Builtin (_f, args) -> (get_free args bound_vars) @ acc
       | Let (i, _, lhs, rhs) ->
-        (recurser lhs bound_vars) || (recurser rhs (i::bound_vars))
+        let acc_lhs = recurser lhs bound_vars acc in
+        recurser rhs (i::bound_vars) acc_lhs
       | Message margs ->
-        List.exists margs ~f:(fun (_, x) ->
+        List.fold margs ~init:acc ~f:(fun acc (_, x) ->
           (match x with
-           | MLit _ -> false
-           | MVar v ->  (not @@ is_mem v bound_vars) && is_mem v blist))
+           | MLit _ -> acc
+           | MVar v ->  if is_mem v bound_vars then acc else v :: acc)
+        )
       | MatchExpr (v, cs) ->
-        ((not @@ is_mem v bound_vars) && is_mem v blist) ||
-        List.exists cs ~f: (fun (p, e) ->
+        let fv = if is_mem v bound_vars then acc else v::acc in
+        List.fold cs ~init:fv ~f: (fun acc (p, e) ->
           (* bind variables in pattern and recurse for expression. *)
           let bound_vars' = (get_pattern_bounds p) @ bound_vars in
-          recurser e bound_vars')
-      | TApp (v, _) -> 
-        (not @@ is_mem v bound_vars) && is_mem v blist
-      | Fixpoint (f, _, body) ->
-        recurser body (f :: bound_vars)
+          recurser e bound_vars' acc
+        )
     in
-    recurser erep []
+    let fvs = recurser erep [] [] in
+    Core.List.dedup_and_sort ~compare:(fun a b -> String.compare (get_id a) (get_id b)) fvs
+
+(* Is expr dependent on any ident in blist.
+ * This is the same as checking if a free var
+ * in expr is present in blist. *)
+  let free_vars_dep_check erep blist =
+    (* Utility: is m in l. *)
+    let is_mem m l =
+      List.exists l ~f:(fun x -> get_id m = get_id x) in
+    (* Utility: is any m in ml, in l. *)
+    let any_is_mem ml l =
+      List.exists ml ~f:(fun i -> is_mem i l) in
+    (* Get list of free variables in expression *)
+    let fvs = free_vars_in_expr erep in
+    (* and check if any of them are in blist. *)
+    any_is_mem fvs blist
 
   (****************************************************************)
   (*                  Better error reporting                      *)
