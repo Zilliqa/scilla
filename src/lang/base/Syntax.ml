@@ -749,7 +749,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     let rec recurser erep bound_vars acc =
       let (e, _) = erep in
       match e with
-      | Literal _ -> []
+      | Literal _ -> acc
       | Var v | TApp (v, _) -> if is_mem v bound_vars then acc else v :: acc
       | Fun (f, _, body) | Fixpoint (f, _, body) -> recurser body (f :: bound_vars) acc
       | TFun (_, body) -> recurser body bound_vars acc
