@@ -1,0 +1,49 @@
+{
+  "errors": [
+    {
+      "error_message": "Identifier Proc1 used more than once\n",
+      "start_location": {
+        "file": "checker/bad/name_clashes.scilla",
+        "line": 7,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Identifier Proc2 used more than once\n",
+      "start_location": {
+        "file": "checker/bad/name_clashes.scilla",
+        "line": 17,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Identifier Trans1 used more than once\n",
+      "start_location": {
+        "file": "checker/bad/name_clashes.scilla",
+        "line": 28,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Identifier Trans2 used more than once\n",
+      "start_location": {
+        "file": "checker/bad/name_clashes.scilla",
+        "line": 38,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract TransitionAndProcedureNameClashes contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}
