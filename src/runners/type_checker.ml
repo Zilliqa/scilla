@@ -21,7 +21,7 @@ open Printf
 open Syntax
 open ParserUtil
 open TypeUtil
-open Recursion
+open RecursionPrinciples
 open RunnerUtil
 open DebugMessage
 open MonadUtil

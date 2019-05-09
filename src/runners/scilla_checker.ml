@@ -29,7 +29,7 @@ open RunnerUtil
 open PatternChecker
 open SanityChecker
 open GasUseAnalysis
-open Recursion
+open RecursionPrinciples
 open EventInfo
 open Cashflow
 open Accept
@@ -38,7 +38,7 @@ module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
 module PERep = ParserRep
 
-module Rec = ADTChecker.ScillaRecursion (PSRep) (PERep)
+module Rec = Recursion.ScillaRecursion (PSRep) (PERep)
 module RecSRep = Rec.OutputSRep
 module RecERep = Rec.OutputERep
 

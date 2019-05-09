@@ -42,7 +42,7 @@ let reserved_names =
       match entry with
       | LibVar (lname, _) -> get_id lname
       | LibTyp (tname, _) -> get_id tname)
-    Recursion.recursion_principles
+    RecursionPrinciples.recursion_principles
 
 (* Printing result *)
 let pp_result r exclude_names = 
@@ -368,7 +368,7 @@ let init_lib_entries env libs =
 (* Initializing libraries of a contract *)
 let init_libraries clibs elibs =
   DebugMessage.plog ("Loading library types and functions.");
-  let%bind rec_env = init_lib_entries (pure Env.empty) Recursion.recursion_principles in
+  let%bind rec_env = init_lib_entries (pure Env.empty) RecursionPrinciples.recursion_principles in
   let rec recurser libnl =
     if libnl = [] then pure rec_env else
     (* Walk through library dependence tree. *)
