@@ -746,35 +746,34 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     in
   
     (* The main function that does the job. *)
-    let rec recurser erep bound_vars =
+    let rec recurser erep bound_vars acc =
       let (e, _) = erep in
       match e with
       | Literal _ -> []
-      | Var v | TApp (v, _) -> if is_mem v bound_vars then [] else [v]
-      | Fun (f, _, body) | Fixpoint (f, _, body) -> recurser body (f :: bound_vars)
-      | TFun (_, body) -> recurser body bound_vars
-      | Constr (_, _, es) -> get_free es bound_vars
-      | App (f, args) -> get_free (f :: args) bound_vars
-      | Builtin (_f, args) -> get_free args bound_vars
+      | Var v | TApp (v, _) -> if is_mem v bound_vars then acc else v :: acc
+      | Fun (f, _, body) | Fixpoint (f, _, body) -> recurser body (f :: bound_vars) acc
+      | TFun (_, body) -> recurser body bound_vars acc
+      | Constr (_, _, es) -> (get_free es bound_vars) @ acc
+      | App (f, args) -> (get_free (f :: args) bound_vars) @ acc
+      | Builtin (_f, args) -> (get_free args bound_vars) @ acc
       | Let (i, _, lhs, rhs) ->
-        let fv_lhs = recurser lhs bound_vars in
-        let fv_rhs = recurser rhs (i::bound_vars) in
-       (fv_lhs @ fv_rhs)
+        let acc_lhs = recurser lhs bound_vars acc in
+        recurser rhs (i::bound_vars) acc_lhs
       | Message margs ->
-        List.fold margs ~init:[] ~f:(fun acc (_, x) ->
+        List.fold margs ~init:acc ~f:(fun acc (_, x) ->
           (match x with
            | MLit _ -> acc
            | MVar v ->  if is_mem v bound_vars then acc else v :: acc)
         )
       | MatchExpr (v, cs) ->
-        let fv = if is_mem v bound_vars then [] else [v] in
+        let fv = if is_mem v bound_vars then acc else v::acc in
         List.fold cs ~init:fv ~f: (fun acc (p, e) ->
           (* bind variables in pattern and recurse for expression. *)
           let bound_vars' = (get_pattern_bounds p) @ bound_vars in
-          acc @ (recurser e bound_vars')
+          recurser e bound_vars' acc
         )
     in
-    let fvs = recurser erep [] in
+    let fvs = recurser erep [] [] in
     Core.List.dedup_and_sort ~compare:(fun a b -> String.compare (get_id a) (get_id b)) fvs
 
 (* Is expr dependent on any ident in blist.
