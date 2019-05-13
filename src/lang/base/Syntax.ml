@@ -724,6 +724,16 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         let body' = subst_type_in_expr tvar tp body in
         (Fixpoint (f, t', body'), rep)
 
+  (* get variables that get bound in pattern. *)
+  let get_pattern_bounds p =
+    let rec accfunc p acc =
+      match p with
+      | Wildcard -> acc
+      | Binder i -> i::acc
+      | Constructor (_, plist) ->
+          List.fold plist ~init:acc ~f:(fun acc p' -> accfunc p' acc)
+    in accfunc p []
+
   (* Returns a list of free variables in expr. *)
   let free_vars_in_expr erep =
     (* A few utilities to begin with. *)
@@ -734,16 +744,6 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     (* get elements in "l" that are not in bound_vars. *)
     let get_free l bound_vars =
       List.filter l ~f:(fun i -> not (is_mem i bound_vars)) in
-    (* get variables that get bound in pattern. *)
-    let get_pattern_bounds p =
-      let rec accfunc p acc =
-        match p with
-        | Wildcard -> acc
-        | Binder i -> i::acc
-        | Constructor (_, plist) ->
-          List.fold plist ~init:acc ~f:(fun acc p' -> accfunc p' acc)
-      in accfunc p []
-    in
   
     (* The main function that does the job. *)
     let rec recurser erep bound_vars acc =
