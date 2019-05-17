@@ -67,7 +67,7 @@ into `/usr/local` directory, so in case of a non-default version of the package,
 you will need to set up `PKG_CONFIG_PATH` environment variable as Homebrew suggests.
 It should look like
 ```shell
-export PKG_CONFIG_PATH="/usr/local/opt/openssl@_Version_/lib/pkgconfig:$PKG_CONFIG_PATH""
+export PKG_CONFIG_PATH="/usr/local/opt/openssl@_Version_/lib/pkgconfig:$PKG_CONFIG_PATH"
 ```
 
 To run tests with `make test` you might need to increase the maximum number of open file descriptors:
