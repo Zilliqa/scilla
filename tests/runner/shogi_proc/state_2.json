@@ -1,0 +1,118 @@
+[
+    { "vname": "_balance",
+      "type": "Uint128",
+      "value": "0" },
+    {
+      "vname": "board",
+      "type": "Map Uint32 (Map Uint32 SquareContents)",
+      "value": [
+          {
+              "key": "1",
+              "val": [
+                  {
+                      "key" : "1",
+                      "val" : 
+                      {
+                          "constructor" : "Occupied",
+                          "argtypes" : [],
+                          "arguments" : [
+                              {
+                                  "constructor" : "Rook",
+                                  "argtypes" : [],
+                                  "arguments" : []
+                              },
+                              {
+                                  "constructor" : "NotPromoted",
+                                  "argtypes" : [],
+                                  "arguments" : []
+                              },
+                              "0x1234567890123456789012345678906784567890"
+                          ]
+                      }
+                  }
+              ]
+          },
+          {
+              "key" : "2",
+              "val" : [
+                  {
+                      "key" : "1",
+                      "val" : 
+                      {
+                          "constructor" : "Free",
+                          "argtypes" : [],
+                          "arguments" : []
+                      }
+                  }
+              ]
+          },
+          {   
+              "key" : "3",
+              "val" : [
+                  {
+                      "key" : "1",
+                      "val" : 
+                      {
+                          "constructor" : "Occupied",
+                          "argtypes" : [],
+                          "arguments" : [
+                              {
+                                  "constructor" : "Pawn",
+                                  "argtypes" : [],
+                                  "arguments" : []
+                              },
+                              {
+                                  "constructor" : "NotPromoted",
+                                  "argtypes" : [],
+                                  "arguments" : []
+                              },
+                              "0x1234567890123456789012345678906784567890"
+                          ]
+                      }
+                  }
+              ]
+          },
+          {
+              "key" : "4",
+              "val" : [
+                  {
+                      "key" : "1",
+                      "val" : 
+                      {
+                          "constructor" : "Free",
+                          "argtypes" : [],
+                          "arguments" : []
+                      }
+                  }
+              ]
+          }
+      ]
+    },
+    {
+      "vname": "captured_pieces",
+      "type": "Map (ByStr20) (Map (Uint32) (Uint32))",
+      "value": []
+    },
+    { 
+      "vname": "player_in_turn",
+      "type": "Option ByStr20",
+      "value":
+        {
+            "constructor": "Some",
+            "argtypes"   : [ "ByStr20" ],
+            "arguments"  : [
+                "0x1234567890123456789012345678906784567890"
+            ]
+        }
+    },
+    { 
+      "vname": "winner",
+      "type": "Option ByStr20",
+      "value":
+        {
+            "constructor": "None",
+            "argtypes"   : [ "ByStr20" ],
+            "arguments"  : []
+        }
+    }
+]
