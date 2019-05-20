@@ -1,0 +1,27 @@
+scilla_version 0
+
+library MyLib
+
+contract ProcedureBadEnv ()
+
+field f : Int32 = Int32 0
+
+procedure Proc1(a : Int32)
+  (* Legal *)
+  s = _sender;
+  (* Legal *)
+  am = _amount;
+  (* Illegal *)
+  t = _tag;
+  (* Legal *)
+  fs <- f;
+  (* Legal *)
+  b = a;
+  (* Illegal *)
+  c = d
+end
+
+transition Trans1()
+  d = Int32 42;
+  Proc1 d
+end
