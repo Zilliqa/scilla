@@ -99,6 +99,7 @@ module ShogiTests = TestUtil.DiffBasedTests(
     let additional_libdirs = [[ "contracts"; "shogi_lib"]]
     let tests = [
       "shogi.scilla";
+(*    "shogi_proc.scilla"; *)
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
