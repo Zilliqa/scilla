@@ -331,7 +331,7 @@ stmt:
   { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
 | (* procedure call *)
   p = component_id;
-  args = nonempty_list(sident)
+  args = list(sident)
   { (CallProc (p, args), toLoc $startpos)  }
 
 stmt_pm_clause:

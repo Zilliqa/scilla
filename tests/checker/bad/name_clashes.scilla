@@ -1,0 +1,47 @@
+scilla_version 0
+
+library MyLib
+
+contract TransitionAndProcedureNameClashes ()
+
+procedure Proc1()
+  new_arg = Int32 0
+end
+
+(* Same name as other procedure *)
+procedure Proc1(arg : Int32)
+  new_arg = Int32 0
+end
+
+
+procedure Proc2()
+  new_arg = Int32 0
+end
+
+(* Same name as procedure *)
+transition Proc2()
+  arg1 = Int32 0;
+  arg2 = Nil {Bool}
+end
+
+
+transition Trans1(arg : Int32)
+  arg1 = Int32 0;
+  arg2 = Nil {Bool}
+end
+
+(* Same name as transition *)
+procedure Trans1()
+  new_arg = Int32 0
+end
+
+transition Trans2()
+  arg1 = Int32 0;
+  arg2 = Nil {Bool}
+end
+
+(* Same name as other transition *)
+transition Trans2(arg : Int32)
+  arg1 = Int32 0;
+  arg2 = Nil {Bool}
+end

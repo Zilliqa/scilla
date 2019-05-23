@@ -66,6 +66,14 @@ module Tests = TestUtil.DiffBasedTests(
       "balance_field.scilla";
       "bad_param.scilla";
       "bad_transition_param.scilla";
+      "recursive_procedure.scilla";
+      "mutually_recursive_procedure.scilla";
+      "forward_definition_procedure.scilla";
+      "procedure_bad_type.scilla";
+      "procedure_bad_args.scilla";
+      "procedure_map_arg.scilla";
+      "name_clashes.scilla";
+      "procedure_env.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

@@ -30,7 +30,7 @@
 
 (defvar scilla-keywords
   '("builtin" "library" "let" "in" "match" "with" "end" "event"
-    "fun" "tfun" "contract" "transition" "send" "field" "accept"
+    "fun" "tfun" "contract" "transition" "procedure" "send" "field" "accept"
     "Emp" "import" "type" "exists" "delete"))
 
 (defvar scilla-mode-syntax-table
@@ -67,7 +67,7 @@
 (setq default-tab-width 2)
 
 ;; Rule 1: Beginning of buffer: column 0
-;; Rule 2: Previous line contains "(let.*=|transition)"
+;; Rule 2: Previous line contains "(let.*=|transition|procedure)"
 ;;             indent forward
 ;; Rule 3: If previous line has "end|send": indent back
 ;; Rule 4: If line begins with "|", find matching "match" and indent to that.
@@ -77,7 +77,7 @@
 ;; Rule 6: If previous line contains "*=>[ \t]*$"
 ;;         but current line is not fun:
 ;;            indent forward.
-;; Rule 7: If line begins with "end", find matching "match/transition"
+;; Rule 7: If line begins with "end", find matching "match/transition/procedure"
 ;; Else: Same as previous line.
 
 (defun scilla-indent-line ()
@@ -119,7 +119,7 @@
                     (forward-line -1)
                     (setq lines-seen (+ lines-seen 1))
                     (if (looking-at "[ \t]*end") (setq ends-seen (+ ends-seen 1)))
-                    (if (looking-at "[ \t]*\\(match\\|transition\\)")(setq matches-seen (+ matches-seen 1)))
+                    (if (looking-at "[ \t]*\\(match\\|transition|procedure\\)")(setq matches-seen (+ matches-seen 1)))
                     ;; (message "Line %d: %d matches and %d ends seen" cur-line matches-seen ends-seen)
                     (if (> matches-seen ends-seen)
                         (progn
@@ -137,7 +137,7 @@
             )
           (forward-line -1)
           ;; Match Rule 2
-          (if (and (not indented) (looking-at "[ \t]*\\(transition\\|let.*=[ \t]*$\\)"))
+          (if (and (not indented) (looking-at "[ \t]*\\(transition\\|procedure\\|let.*=[ \t]*$\\)"))
               (progn
                 ;; (message "Line %d: rule 2 matched" cur-line)
                 (setq cur-indent (+ (current-indentation) default-tab-width))

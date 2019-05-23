@@ -1,0 +1,12 @@
+scilla_version 0
+
+library MyLib
+
+contract RecursiveProcedure ()
+
+procedure RecursiveProc(arg : Int32)
+  new_arg = Int32 0;
+  (* Recursive procedures not allowed *)
+  RecursiveProc new_arg
+end
+  

@@ -1,0 +1,17 @@
+scilla_version 0
+
+library MyLib
+
+contract MutuallyRecursiveProcedure ()
+
+procedure Proc1(arg : Int32)
+  new_arg = Int32 0;
+  (* Proc2 not in scope - mutually recursive procedures not allowed *)
+  Proc2 new_arg
+end
+
+procedure Proc2 (arg : Int32)
+  new_arg = Int32 0;
+  (* Allowed *)
+  Proc1 new_arg
+end

@@ -1,0 +1,24 @@
+scilla_version 0
+
+library MyLib
+
+contract BackwardDefinitionProcedure ()
+
+field tmp : Int32 = Int32 0
+
+procedure Proc1(arg : Bool)
+  match arg with
+  | True =>
+    a = Int32 1;
+    tmp := a
+  | False =>
+    a = Int32 42;
+    tmp := a
+  end
+end
+
+procedure Proc2 (arg : Int32)
+  new_arg = True;
+  (* Allowed *)
+  Proc1 new_arg
+end

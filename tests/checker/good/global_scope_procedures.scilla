@@ -1,0 +1,23 @@
+scilla_version 0
+
+library MyLib
+
+contract GlobalScopeProcedure ()
+
+field tmp : Int32 = Int32 0
+
+transition MyTrans()
+  new_arg = True;
+  Proc1 new_arg
+end
+
+procedure Proc1(arg : Bool)
+  match arg with
+  | True =>
+    a = Int32 1;
+    tmp := a
+  | False =>
+    a = Int32 42;
+    tmp := a
+  end
+end
