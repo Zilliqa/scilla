@@ -10,8 +10,12 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Procedure calls are not supported yet.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "error_message": "Procedure RecursiveProc is not in scope.",
+      "start_location": {
+        "file": "checker/bad/recursive_procedure.scilla",
+        "line": 10,
+        "column": 3
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

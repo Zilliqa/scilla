@@ -131,7 +131,7 @@ module ScillaRecursion
       pure @@ (new_e, rep) in
     walk erep
 
-  let recursion_stmt is_adt_in_scope is_adt_ctr_in_scope srep =
+  let recursion_stmt is_adt_in_scope is_adt_ctr_in_scope is_proc_in_scope srep =
     let rec_exp e = recursion_exp is_adt_in_scope is_adt_ctr_in_scope e in
     let rec walk srep =
       let (s, rep) = srep in
@@ -155,20 +155,20 @@ module ScillaRecursion
         | AcceptPayment -> pure @@ RecursionSyntax.AcceptPayment
         | SendMsgs msg -> pure @@ RecursionSyntax.SendMsgs msg
         | CreateEvnt evnt -> pure @@ RecursionSyntax.CreateEvnt evnt
-        | CallProc (_p, _) ->
-            (* TODO: Check that the procedure call is not recursive *)
-             fail0 @@ sprintf
-               "Procedure calls are not supported yet."
+        | CallProc (p, args) ->
+            if is_proc_in_scope (get_id p)
+            then pure @@ RecursionSyntax.CallProc(p, args)
+            else fail1 (sprintf "Procedure %s is not in scope." (get_id p)) (SR.get_loc rep)
         | Throw ex -> pure @@ RecursionSyntax.Throw ex in
       pure @@ (new_s, rep) in
     walk srep
 
-  let recursion_component is_adt_in_scope is_adt_ctr_in_scope comp =
+  let recursion_component is_adt_in_scope is_adt_ctr_in_scope is_proc_in_scope comp =
     let { comp_type; comp_name ; comp_params ; comp_body } = comp in
     let%bind _ = forallM ~f:(fun (_, t) -> recursion_typ is_adt_in_scope t) comp_params in
     let%bind recursion_comp_body =
       mapM ~f:(fun s ->
-          recursion_stmt is_adt_in_scope is_adt_ctr_in_scope s) comp_body in
+          recursion_stmt is_adt_in_scope is_adt_ctr_in_scope is_proc_in_scope s) comp_body in
     pure @@
     { RecursionSyntax.comp_type = comp_type ;
       RecursionSyntax.comp_name = comp_name ;
@@ -183,12 +183,29 @@ module ScillaRecursion
           let%bind _ = recursion_typ is_adt_in_scope t in
           let%bind new_e = recursion_exp is_adt_in_scope is_adt_ctr_in_scope e in
           pure @@ (x, t, new_e)) cfields in
-    let%bind recursion_ccomps = mapM ~f:(fun c -> recursion_component is_adt_in_scope is_adt_ctr_in_scope c) ccomps in
+    let%bind (recursion_ccomps_rev, _) =
+      foldM ccomps ~init:([], []) ~f:(fun (acc_comps, acc_procs) comp ->
+          let is_proc_in_scope p =
+            match comp.comp_type with
+            | CompTrans ->
+                (* All procedures are in scope. 
+                   The typechecker ensures that the procedure name exists *)
+                true
+            | CompProc ->
+                List.exists acc_procs ~f:(fun x -> p = x) in
+          let%bind checked_component =
+            recursion_component is_adt_in_scope is_adt_ctr_in_scope is_proc_in_scope comp in
+          let new_acc_procs =
+            match comp.comp_type with
+            | CompTrans -> acc_procs
+            | CompProc -> (get_id comp.comp_name) :: acc_procs in
+          pure @@ (checked_component :: acc_comps, new_acc_procs)
+        ) in
     pure @@
     { RecursionSyntax.cname = cname ;
       RecursionSyntax.cparams = cparams ;
       RecursionSyntax.cfields = recursion_cfields ;
-      RecursionSyntax.ccomps = recursion_ccomps }
+      RecursionSyntax.ccomps = List.rev recursion_ccomps_rev }
   
   let recursion_adt_constructor_arg is_adt_in_scope t error_loc =
     let rec walk t =
