@@ -10,7 +10,36 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Procedure calls are not supported yet.",
+      "error_message": "Type error(s) in procedure Proc1:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_env.scilla",
+        "line": 9,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `t`:\nCouldn't resolve the identifier \"_tag\".\n",
+      "start_location": {
+        "file": "checker/bad/procedure_env.scilla",
+        "line": 15,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition Trans1:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_env.scilla",
+        "line": 24,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type-checking of procedure calls is not supported yet.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

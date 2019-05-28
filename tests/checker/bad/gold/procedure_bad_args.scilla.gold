@@ -10,7 +10,47 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Procedure calls are not supported yet.",
+      "error_message": "Type error(s) in transition Trans1:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 13,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type-checking of procedure calls is not supported yet.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition Trans2:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 20,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type-checking of procedure calls is not supported yet.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition Trans3:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 27,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type-checking of procedure calls is not supported yet.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
