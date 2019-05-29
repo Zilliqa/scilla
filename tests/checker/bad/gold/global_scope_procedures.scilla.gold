@@ -3,15 +3,19 @@
     {
       "error_message": "Type error(s) in contract GlobalScopeProcedure:\n",
       "start_location": {
-        "file": "checker/good/global_scope_procedures.scilla",
+        "file": "checker/bad/global_scope_procedures.scilla",
         "line": 5,
         "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Procedure calls are not supported yet.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "error_message": "Procedure Proc1 is not in scope.",
+      "start_location": {
+        "file": "checker/bad/global_scope_procedures.scilla",
+        "line": 11,
+        "column": 3
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],
