@@ -704,10 +704,10 @@ module ScillaBuiltIns
     let bech32_to_bystr20_type = fun_typ string_typ (fun_typ string_typ (option_typ (bystrx_typ address_length)))
     let bech32_to_bystr20_arity = 2
     let bech32_to_bystr20 ls _ = match ls with
-      | [StringLit prefix; StringLit bys] ->
+      | [StringLit prefix; StringLit addr] ->
         if prefix <> "zil" && prefix <> "tzil"
         then fail0 "Only zil and tzil bech32 addresses are supported" else
-        (match Bech32.decode_bech32_addr prefix bys with
+        (match Bech32.decode_bech32_addr ~prefix ~addr with
         | Some bys20 ->
           (match Bystrx.of_raw_bytes 20 bys20 with
           | Some b -> some_lit @@ ByStrX b
@@ -720,10 +720,10 @@ module ScillaBuiltIns
     let bystr20_to_bech32_type = fun_typ string_typ (fun_typ (bystrx_typ address_length) (option_typ (string_typ)))
     let bystr20_to_bech32_arity = 2
     let bystr20_to_bech32 ls _ = match ls with
-      | [StringLit prefix; ByStrX bys] ->
+      | [StringLit prefix; ByStrX addr] ->
         if prefix <> "zil" && prefix <> "tzil"
         then fail0 "Only zil and tzil bech32 addresses are supported" else
-        (match Bech32.encode_bech32_addr prefix (Bystrx.to_raw_bytes bys) with
+        (match Bech32.encode_bech32_addr ~prefix ~addr:(Bystrx.to_raw_bytes addr) with
         | Some bech32 -> some_lit @@ (StringLit bech32)
         | None -> fail0 "bech32 encoding failed"
         )

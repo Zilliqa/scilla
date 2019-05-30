@@ -21,7 +21,7 @@ open Bitstring
 open Utils
 
 (* https://github.com/Zilliqa/Zilliqa/wiki/Address-Standard#specification *)
-let bech32_addr_len prefix = (String.length prefix) + 1 + 32 + 6
+let bech32_addr_len ~prefix = (String.length prefix) + 1 + 32 + 6
 
 (* The set of core characters in a bech32 address. *)
 let charset = Array.of_list 
@@ -56,9 +56,9 @@ let bytes_of_bitstring bs = Bytes.of_string @@ string_of_bitstring bs
 
 (* Decodes a bech32 address string to a string of 20 bytes.
  * Signature: prefix -> bech32_addr -> bystr20 address option. *)
-let decode_bech32_addr prefix str =
+let decode_bech32_addr ~prefix ~addr:str =
   (* 1. Must be of the right length. *)
-  if String.length str <> (bech32_addr_len prefix) then None else
+  if String.length str <> (bech32_addr_len ~prefix) then None else
   (* 2. Must begin with prefix. *)
   if (String.sub str ~pos:0 ~len:(String.length prefix)) <> prefix then None else
   (* 3. Must have separator "1" after prefix. *)
@@ -124,12 +124,12 @@ let decode_bech32_addr prefix str =
 
 (* Check if a bech32 address string is valid, based on the specification in
  * https://github.com/Zilliqa/Zilliqa/wiki/Address-Standard#specification *)
-let is_valid_bech32 prefix str =
-  Option.is_some (decode_bech32_addr prefix str)
+let is_valid_bech32 ~prefix ~addr =
+  Option.is_some (decode_bech32_addr ~prefix ~addr)
 
 (* Encodes a 20-byte string into the bech32 address format.
  * Signature: prefix -> bystr20 address -> bech32_addr. *)
-let encode_bech32_addr prefix bys =
+let encode_bech32_addr ~prefix ~addr:bys =
   (* 1. Must be of the right length. *)
   if String.length bys <> 20 then None else
   (* 2. Scan the prefix for errors. *)
