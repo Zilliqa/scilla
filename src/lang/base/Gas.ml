@@ -178,6 +178,9 @@ module ScillaGas
         pure @@ (250 + (15 * x)) * base
     | Builtin_to_bystr, [a], _
       when is_bystrx_type a -> pure @@ get (bystrx_width a) * base
+    | Builtin_bech32_to_bystr20, _, [prefix;addr]
+    | Builtin_bystr20_to_bech32, _, [prefix;addr] ->
+      pure @@ (String.length (pp_literal prefix) + String.length (pp_literal addr)) * base
     | Builtin_concat, [a1;a2], _
       when is_bystrx_type a1 && is_bystrx_type a2 ->
       pure @@ (get(bystrx_width a1) + get(bystrx_width a2)) * base
@@ -248,6 +251,8 @@ module ScillaGas
     (* Crypto *)
     (Builtin_eq, [tvar "'A"; tvar "'A"], crypto_coster, 1);
     (Builtin_to_bystr, [tvar "'A"], crypto_coster, 1);
+    (Builtin_bech32_to_bystr20, [string_typ;string_typ], crypto_coster, 4);
+    (Builtin_bystr20_to_bech32, [string_typ;bystrx_typ address_length], crypto_coster, 4);
     (Builtin_to_uint256, [tvar "'A"], crypto_coster, 1);
     (Builtin_sha256hash, [tvar "'A"], crypto_coster, 1);
     (Builtin_keccak256hash, [tvar "'A"], crypto_coster, 1);

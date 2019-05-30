@@ -4,10 +4,10 @@ Legend:
 
 d: highestBidder
 g: _amount
-f: Result of builtin add(highestBid,Element of: pendingReturns)
 e: Element of: pendingReturns
 c: highestBid
 a: ended
+f: Result of builtin add(highestBid,Element of: pendingReturns)
 b: _sender
 
 Gas use polynomial for transition Withdraw:

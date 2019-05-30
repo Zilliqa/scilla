@@ -701,6 +701,34 @@ module ScillaBuiltIns
         pure (UintLit (Uint256L u))
       | _ -> builtin_fail "Crypto.to_uint256" ls
 
+    let bech32_to_bystr20_type = fun_typ string_typ (fun_typ string_typ (option_typ (bystrx_typ address_length)))
+    let bech32_to_bystr20_arity = 2
+    let bech32_to_bystr20 ls _ = match ls with
+      | [StringLit prefix; StringLit bys] ->
+        if prefix <> "zil" && prefix <> "tzil"
+        then fail0 "Only zil and tzil bech32 addresses are supported" else
+        (match Bech32.decode_bech32_addr prefix bys with
+        | Some bys20 ->
+          (match Bystrx.of_raw_bytes 20 bys20 with
+          | Some b -> some_lit @@ ByStrX b
+          | None -> fail0 "Invalid bech32 decode"
+          )
+        | None -> fail0 "bech32 decoding failed"
+        )
+      | _ -> builtin_fail "Crypto.bech32_to_bystr20" ls
+
+    let bystr20_to_bech32_type = fun_typ string_typ (fun_typ (bystrx_typ address_length) (option_typ (string_typ)))
+    let bystr20_to_bech32_arity = 2
+    let bystr20_to_bech32 ls _ = match ls with
+      | [StringLit prefix; ByStrX bys] ->
+        if prefix <> "zil" && prefix <> "tzil"
+        then fail0 "Only zil and tzil bech32 addresses are supported" else
+        (match Bech32.encode_bech32_addr prefix (Bystrx.to_raw_bytes bys) with
+        | Some bech32 -> some_lit @@ (StringLit bech32)
+        | None -> fail0 "bech32 encoding failed"
+        )
+      | _ -> builtin_fail "Crypto.bystr20_to_bech32" ls
+
     (* ByStrX + ByStrY -> ByStr(X+Y)*)
     let concat_type = tfun_typ "'A" @@ tfun_typ "'B" @@ tfun_typ "'C" @@
                       fun_typ (tvar "'A") (fun_typ (tvar "'B") (tvar "'C"))
@@ -960,6 +988,8 @@ module ScillaBuiltIns
       | Builtin_keccak256hash -> [Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash]
       | Builtin_ripemd160hash -> [Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash]
       | Builtin_to_bystr -> [Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr]
+      | Builtin_bech32_to_bystr20 -> [Crypto.bech32_to_bystr20_arity, Crypto.bech32_to_bystr20_type, elab_id, Crypto.bech32_to_bystr20]
+      | Builtin_bystr20_to_bech32 -> [Crypto.bystr20_to_bech32_arity, Crypto.bystr20_to_bech32_type, elab_id, Crypto.bystr20_to_bech32]
       | Builtin_schnorr_verify -> [Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify]
       | Builtin_ecdsa_verify -> [Crypto.ecdsa_verify_arity, Crypto.ecdsa_verify_type, elab_id, Crypto.ecdsa_verify]
 

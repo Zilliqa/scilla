@@ -1,0 +1,6 @@
+Option (ByStr20)
+Gas usage signature:
+Gas use polynomial:
+66
+Result size: Result of builtin bech32_to_bystr20(20,42)
+

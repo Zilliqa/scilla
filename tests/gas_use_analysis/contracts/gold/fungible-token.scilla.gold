@@ -18,8 +18,8 @@ Gas use polynomial for transition Transfer:
 Legend:
 
 e: tokens
-a: Element of: balances
 d: Result of builtin add(Element of: balances,tokens)
+a: Element of: balances
 c: Result of builtin sub(tokens,tokens)
 g: to
 b: Element of: balances
@@ -32,11 +32,11 @@ Legend:
 a: Element of: Element of: allowed
 c: Element of: balances
 f: tokens
-e: Result of builtin add(Element of: balances,tokens)
-g: Result of builtin sub(tokens,tokens)
 i: from
 j: to
 d: Result of builtin sub(Element of: balances,tokens)
+g: Result of builtin sub(tokens,tokens)
+e: Result of builtin add(Element of: balances,tokens)
 h: _sender
 b: Element of: balances
 
