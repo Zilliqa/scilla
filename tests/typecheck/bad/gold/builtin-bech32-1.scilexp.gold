@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Type error in built-in application of `bystr20_to_bech32`:\nType error: cannot apply \"bystr20_to_bech32\" built-in to argument(s) of type(s) [String; ByStr21].",
+      "start_location": {
+        "file": "typecheck/bad/builtin-bech32-1.scilexp",
+        "line": 4,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
