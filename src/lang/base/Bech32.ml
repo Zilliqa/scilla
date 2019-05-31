@@ -49,7 +49,6 @@ let bech32_polymod_step pre  =
         (-((b lsr 3) land 1) land 0x3d4233dd) lxor
         (-((b lsr 4) land 1) land 0x2a1462b3)
 
-let explode s = List.init (String.length s) ~f:(String.get s)
 let ascii_of_char c = Caml.Char.code c
 let char_of_ascii i = Caml.Char.chr i
 let bytes_of_bitstring bs = Bytes.of_string @@ string_of_bitstring bs
@@ -66,7 +65,7 @@ let decode_bech32_addr ~prefix ~addr:str =
 
   (* 4. Scan the prefix for errors. *)
   let (chk, err, (have_lower, have_upper)) = 
-    List.fold (explode prefix)  ~init:(1, false, (false, false)) ~f:(fun (chk, err, (have_lower, have_upper)) ch ->
+    List.fold (String.to_list prefix)  ~init:(1, false, (false, false)) ~f:(fun (chk, err, (have_lower, have_upper)) ch ->
       if err || (ascii_of_char ch) < 33 || (ascii_of_char ch) > 126 then (chk, true, (have_lower, have_upper)) else
  
       let (ch', have_lower', have_upper') =
@@ -85,7 +84,7 @@ let decode_bech32_addr ~prefix ~addr:str =
 
   (* 5. Checksum the prefix *)
   let chk = bech32_polymod_step chk in
-  let chk = List.fold (explode prefix) ~init:chk ~f:(fun acc_chk c ->
+  let chk = List.fold (String.to_list prefix) ~init:chk ~f:(fun acc_chk c ->
     (bech32_polymod_step acc_chk) lxor ((ascii_of_char c) land 0x1f)
   ) in
 
@@ -93,7 +92,7 @@ let decode_bech32_addr ~prefix ~addr:str =
   let addr_chk_str = String.sub str ~pos:((String.length prefix)+1) ~len:(32+6) in
   (* Create a buffer of bits for the result (20-byte raw address). *)
   let bitacc = Buffer.create () in
-  let (chk, err, (have_lower, have_upper), _) = List.fold (explode addr_chk_str) ~init:(chk, false, (false, false), 0)
+  let (chk, err, (have_lower, have_upper), _) = List.fold (String.to_list addr_chk_str) ~init:(chk, false, (false, false), 0)
    ~f:(fun (chk, err, (have_lower, have_upper), index) c ->
     (* do nothing if we've already seen an error. *)
     if err then (chk, err, (have_lower, have_upper), index+1) else
@@ -134,7 +133,7 @@ let encode_bech32_addr ~prefix ~addr:bys =
   if String.length bys <> 20 then None else
   (* 2. Scan the prefix for errors. *)
   let (chk, err) = 
-    List.fold (explode prefix)  ~init:(1, false) ~f:(fun (chk, err) ch ->
+    List.fold (String.to_list prefix)  ~init:(1, false) ~f:(fun (chk, err) ch ->
       if err || (ascii_of_char ch) < 33 || (ascii_of_char ch) > 126 ||
         (* Only lower case letters are acceptable as "prefix". *)
         ((ascii_of_char ch) >= ascii_of_char 'A' && (ascii_of_char ch) <= (ascii_of_char 'Z'))
@@ -148,7 +147,7 @@ let encode_bech32_addr ~prefix ~addr:bys =
 
   (* 3. Checksum the prefix. *)
   let chk = bech32_polymod_step chk in
-  let chk = List.fold (explode prefix) ~init:chk ~f:(fun acc_chk c ->
+  let chk = List.fold (String.to_list prefix) ~init:chk ~f:(fun acc_chk c ->
     (bech32_polymod_step acc_chk) lxor ((ascii_of_char c) land 0x1f)
   ) in
 
@@ -167,7 +166,7 @@ let encode_bech32_addr ~prefix ~addr:bys =
 
   (* 6. Scan through the padded input and build the checksum and outputs. *)
   let (chk, err, bech32_str) = 
-    List.fold (explode input_padded)  ~init:(chk, false, "") ~f:(fun (chk, err, bech32_acc) ch ->
+    List.fold (String.to_list input_padded)  ~init:(chk, false, "") ~f:(fun (chk, err, bech32_acc) ch ->
       (* We should able to use "ch" to index into charset. *)
       if err || ((ascii_of_char ch) lsr 5) <> 0 then (chk, true, bech32_acc) else
       (* Checksum *)
