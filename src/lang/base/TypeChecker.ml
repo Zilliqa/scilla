@@ -286,10 +286,11 @@ module ScillaTypechecker
   (*                   Typing statements                        *)
   (**************************************************************)
 
-  (* Auxiliaty structure for types of fields and BC components *)
+  (* Auxiliary structure for types of fields and BC components *)
   type stmt_tenv = {
     pure   : TEnv.t;
     fields : TEnv.t;
+    procedures : (string * typ list) list;
   }
 
   (* Return typed map accesses and the accessed value's type. *)
@@ -441,9 +442,20 @@ module ScillaTypechecker
              let typed_i = add_type_to_ident i i_type in
              let%bind checked_stmts = type_stmts env sts get_loc in
              pure @@ add_stmt_to_stmts_env (TypedSyntax.CreateEvnt typed_i, rep) checked_stmts
-         | CallProc (_p, _args) ->
-             fail0 @@ sprintf
-               "Type-checking of procedure calls is not supported yet."
+         | CallProc (p, args) ->
+             let msg = sprintf "Type error(s) in procedure call %s:\n" (get_id p) in
+             let%bind typed_args =
+               wrap_with_info (msg, SR.get_loc (get_rep p)) @@
+               let%bind (targs, typed_actuals) = type_actuals env.pure args in
+               match List.Assoc.find env.procedures ~equal:(=) (get_id p) with
+               | Some arg_typs ->
+                   let%bind _ = proc_type_applies arg_typs targs in
+                   pure @@ typed_actuals
+               | None -> 
+                   fail0 @@ sprintf
+                     "Procedure %s not found." (get_id p) in
+             let%bind checked_stmts = type_stmts env sts get_loc in
+             pure @@ add_stmt_to_stmts_env (TypedSyntax.CallProc (p, typed_args), rep) checked_stmts
          | Throw _ ->
              fail0 @@ sprintf
                "Type-checking of Throw statements is not supported yet."
@@ -456,28 +468,38 @@ module ScillaTypechecker
     let%bind (new_stmts, _) = type_stmts env' sts get_loc in
     pure @@ (new_p, new_stmts)
 
-  let add_type_to_id id t : ETR.rep ident =
-    match id with
-    | Ident (s, r) -> Ident (s, ETR.mk_rep r t)
-  
-  let type_component env0 tr : (TypedSyntax.component, scilla_error list) result  =
+  let type_component env0 tr : ((TypedSyntax.component * (string * typ list) list), scilla_error list) result  =
     let {comp_type; comp_name; comp_params; comp_body} = tr in
     let tenv0 = env0.pure in
+    let procedures = env0.procedures in
     let component_type_string = component_type_to_string comp_type in
     let msg = sprintf "Type error(s) in %s %s:\n" component_type_string (get_id comp_name) in
     wrap_with_info (msg, SR.get_loc (get_rep comp_name)) @@
-    let%bind typed_cparams = mapM ~f:(fun (param, t) ->
-        if is_serializable_type t
-        then pure (add_type_to_id param (mk_qual_tp t), t)
-        else fail1 (sprintf "Type %s cannot be used as %s parameter" (pp_typ t) component_type_string) (ER.get_loc (get_rep param))) comp_params in
+    let param_checker =
+      match comp_type with
+      | CompTrans -> is_serializable_type
+      | CompProc -> is_non_map_ground_type in
+    let%bind typed_cparams =
+      mapM ~f:(fun (param, t) ->
+          if param_checker t
+          then pure (add_type_to_ident param (mk_qual_tp t), t)
+          else fail1 (sprintf "Type %s cannot be used as %s parameter" (pp_typ t) component_type_string) (ER.get_loc (get_rep param))) comp_params in
+
     let append_params = CU.append_implict_comp_params comp_params in
     let tenv1 = TEnv.addTs tenv0 append_params in
     let env = {env0 with pure = tenv1} in
     let%bind (typed_stmts, _) = type_stmts env comp_body ER.get_loc in
+    let new_proc_signatures =
+      match comp_type with
+      | CompTrans -> procedures
+      | CompProc ->
+          let proc_sig = List.map comp_params ~f:snd in
+          List.Assoc.add procedures ~equal:(=) (get_id comp_name) proc_sig in
     pure @@ ({ TypedSyntax.comp_type = comp_type ;
                TypedSyntax.comp_name = comp_name ;
                TypedSyntax.comp_params = typed_cparams;
-               TypedSyntax.comp_body = typed_stmts })
+               TypedSyntax.comp_body = typed_stmts },
+             new_proc_signatures)
 
 
   (*****************************************************************)
@@ -492,7 +514,7 @@ module ScillaTypechecker
             let%bind (_, (ar, _)) as typed_expr = type_expr tenv fe in
             let actual = ar.tp in
             let%bind _ = assert_type_equiv ft actual in
-            let typed_fs = add_type_to_id fn ar in
+            let typed_fs = add_type_to_ident fn ar in
             if is_storable_type ft then
               pure @@ ((typed_fs, ft, typed_expr) :: acc,
                        TEnv.addT (TEnv.copy fenv) fn actual)
@@ -521,7 +543,7 @@ module ScillaTypechecker
             (sprintf "Type error when checking recursion primitive %s:\n"
                (get_id rn), dummy_loc) @@
           let%bind ((_, (ar, _)) as typed_body) = type_expr env0 body in
-          let typed_rn = add_type_to_id rn ar in
+          let typed_rn = add_type_to_ident rn ar in
           let new_entries = (TypedSyntax.LibVar (typed_rn, typed_body)) :: entry_acc in
           let new_env = TEnv.addT (TEnv.copy env_acc) rn ar.tp in
           pure @@ (new_entries, new_env))
@@ -568,7 +590,7 @@ module ScillaTypechecker
                   | Ok res' ->
                       (* This went good. *)
                       let (_, (tr, _)) as typed_e = res' in
-                      let typed_ln = add_type_to_id ln tr in
+                      let typed_ln = add_type_to_ident ln tr in
                       pure @@ (TypedSyntax.LibVar (typed_ln, typed_e) :: acc,
                                TEnv.addT (TEnv.copy env) ln tr.tp, errs, blist))
     in
@@ -733,21 +755,21 @@ module ScillaTypechecker
     let fenv = TEnv.addT fenv0 bn bt in
 
     (* Step 5: Form a general environment for checking components *)
-    let env = {pure= tenv3; fields= fenv} in
+    let env = {pure= tenv3; fields= fenv; procedures = []} in
 
     (* Step 6: Type-checking all components in batch *)
-    let%bind (t_comps, emsgs') = foldM ~init:([], femsgs0) ccomps
-        ~f:(fun (comp_acc, emsgs) tr -> 
-            let toplevel_env = {pure = TEnv.copy env.pure; fields = TEnv.copy fenv} in
+    let%bind ((t_comps, _), emsgs') = foldM ~init:(([], []), femsgs0) ccomps
+        ~f:(fun ((comp_acc, proc_acc), emsgs) tr -> 
+            let toplevel_env = {pure = TEnv.copy env.pure; fields = TEnv.copy fenv; procedures = proc_acc} in
             match type_component toplevel_env tr with
-            | Error el -> Ok (comp_acc, emsgs @ el)
-            | Ok typed_comp -> Ok(typed_comp :: comp_acc, emsgs)
+            | Error el -> Ok ((comp_acc, proc_acc), emsgs @ el)
+            | Ok (typed_comp, proc_sigs) -> Ok ((typed_comp :: comp_acc, proc_sigs), emsgs)
           ) in
     let typed_comps = List.rev t_comps in
 
     (* Step 7: Lift contract parameters to ETR.rep ident *)
     let typed_params = List.map cparams
-        ~f:(fun (id, t) -> (add_type_to_id id (mk_qual_tp t), t)) in
+        ~f:(fun (id, t) -> (add_type_to_ident id (mk_qual_tp t), t)) in
 
     if emsgs' = []
     (* Return pure environment *)  

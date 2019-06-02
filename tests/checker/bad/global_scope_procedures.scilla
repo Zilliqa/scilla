@@ -8,6 +8,7 @@ field tmp : Int32 = Int32 0
 
 transition MyTrans()
   new_arg = True;
+  (* Proc1 not in scope *)
   Proc1 new_arg
 end
 

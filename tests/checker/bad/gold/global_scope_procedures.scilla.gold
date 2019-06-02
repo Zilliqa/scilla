@@ -13,7 +13,7 @@
       "error_message": "Procedure Proc1 is not in scope.",
       "start_location": {
         "file": "checker/bad/global_scope_procedures.scilla",
-        "line": 11,
+        "line": 12,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

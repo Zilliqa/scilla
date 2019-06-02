@@ -38,24 +38,78 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Type-checking of procedure calls is not supported yet.",
+      "error_message": "Type error(s) in procedure call Proc1:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_map_arg.scilla",
+        "line": 16,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Procedure Proc1 not found.",
       "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in procedure Proc2:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_map_arg.scilla",
+        "line": 20,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type Pair (Bool) (Map (Int32) (ByStr20)) cannot be used as procedure parameter",
+      "start_location": {
+        "file": "checker/bad/procedure_map_arg.scilla",
+        "line": 20,
+        "column": 17
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message": "Type error(s) in transition Trans2:\n",
       "start_location": {
         "file": "checker/bad/procedure_map_arg.scilla",
-        "line": 18,
+        "line": 24,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Type-checking of procedure calls is not supported yet.",
+      "error_message": "Type error(s) in procedure call Proc2:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_map_arg.scilla",
+        "line": 28,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Procedure Proc2 not found.",
       "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in procedure Proc3:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_map_arg.scilla",
+        "line": 32,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type forall 'A. 'A -> Bool cannot be used as procedure parameter",
+      "start_location": {
+        "file": "checker/bad/procedure_map_arg.scilla",
+        "line": 32,
+        "column": 17
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

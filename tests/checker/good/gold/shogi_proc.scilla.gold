@@ -1,0 +1,258 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "player1", "tag": "NoInfo" },
+      { "field": "player2", "tag": "NoInfo" },
+      { "field": "board", "tag": "(Map (Map (SquareContents )))" },
+      { "field": "captured_pieces", "tag": "(Map (Map NoInfo))" },
+      { "field": "player_in_turn", "tag": "(Option NotMoney)" },
+      { "field": "winner", "tag": "(Option NoInfo)" }
+    ],
+    "ADT constructors": [
+      {
+        "SquareContents": [
+          { "constructor": "Occupied", "tags": [ "_", "_", "NotMoney" ] }
+        ]
+      },
+      {
+        "Action": [
+          { "constructor": "Move", "tags": [ "_", "_", "NoInfo", "_" ] }
+        ]
+      },
+      {
+        "Square": [
+          { "constructor": "Square", "tags": [ "NotMoney", "NotMoney" ] }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "ShogiProc",
+    "params": [
+      { "vname": "player1", "type": "ByStr20" },
+      { "vname": "player2", "type": "ByStr20" }
+    ],
+    "fields": [
+      {
+        "vname": "board",
+        "type": "Map (Uint32) (Map (Uint32) (SquareContents))"
+      },
+      {
+        "vname": "captured_pieces",
+        "type": "Map (ByStr20) (Map (Uint32) (Uint32))"
+      },
+      { "vname": "player_in_turn", "type": "Option (ByStr20)" },
+      { "vname": "winner", "type": "Option (ByStr20)" }
+    ],
+    "transitions": [
+      { "vname": "InternalErrorEvent", "params": [] },
+      { "vname": "IllegalActionEvent", "params": [] },
+      {
+        "vname": "Winner",
+        "params": [ { "vname": "winning_player", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "Resign",
+        "params": [ { "vname": "current_player", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "PlacePiece",
+        "params": [
+          { "vname": "piece", "type": "Piece" },
+          { "vname": "square", "type": "Square" }
+        ]
+      },
+      {
+        "vname": "PerformMoveAndPromote",
+        "params": [
+          { "vname": "current_player", "type": "ByStr20" },
+          { "vname": "piece", "type": "Piece" },
+          { "vname": "promote", "type": "Bool" },
+          { "vname": "promotion_status", "type": "PromotionStatus" },
+          { "vname": "row", "type": "Uint32" },
+          { "vname": "column", "type": "Uint32" },
+          { "vname": "target_row", "type": "Uint32" },
+          { "vname": "target_column", "type": "Uint32" },
+          { "vname": "player_1_moves", "type": "Bool" }
+        ]
+      },
+      {
+        "vname": "MovePiece",
+        "params": [
+          { "vname": "current_player", "type": "ByStr20" },
+          { "vname": "square", "type": "Square" },
+          { "vname": "direction", "type": "Direction" },
+          { "vname": "distance", "type": "Uint32" },
+          { "vname": "promote", "type": "Bool" }
+        ]
+      },
+      {
+        "vname": "MoveAction",
+        "params": [
+          { "vname": "row", "type": "Uint32" },
+          { "vname": "column", "type": "Uint32" },
+          { "vname": "direction", "type": "Direction" },
+          { "vname": "distance", "type": "Uint32" },
+          { "vname": "promote", "type": "Bool" }
+        ]
+      },
+      {
+        "vname": "PlayerAction",
+        "params": [ { "vname": "action", "type": "Action" } ]
+      }
+    ],
+    "events": [
+      {
+        "vname": "ShogiWinner",
+        "params": [ { "vname": "winner", "type": "Uint32" } ]
+      },
+      {
+        "vname": "ShogiError",
+        "params": [ { "vname": "err_code", "type": "Int32" } ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "Piece",
+        "tparams": [],
+        "tmap": [
+          { "cname": "King", "argtypes": [] },
+          { "cname": "GoldGeneral", "argtypes": [] },
+          { "cname": "SilverGeneral", "argtypes": [] },
+          { "cname": "Knight", "argtypes": [] },
+          { "cname": "Lance", "argtypes": [] },
+          { "cname": "Pawn", "argtypes": [] },
+          { "cname": "Rook", "argtypes": [] },
+          { "cname": "Bishop", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Error",
+        "tparams": [],
+        "tmap": [
+          { "cname": "GameOver", "argtypes": [] },
+          { "cname": "PlayingOutOfTurn", "argtypes": [] },
+          { "cname": "IllegalAction", "argtypes": [] },
+          { "cname": "InternalError", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "SquareContents",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "Occupied",
+            "argtypes": [ "Piece", "PromotionStatus", "ByStr20" ]
+          },
+          { "cname": "Free", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Action",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "Move",
+            "argtypes": [ "Square", "Direction", "Uint32", "Bool" ]
+          },
+          { "cname": "Place", "argtypes": [ "Piece", "Square" ] },
+          { "cname": "Resign", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Direction",
+        "tparams": [],
+        "tmap": [
+          { "cname": "East", "argtypes": [] },
+          { "cname": "SouthEast", "argtypes": [] },
+          { "cname": "South", "argtypes": [] },
+          { "cname": "SouthWest", "argtypes": [] },
+          { "cname": "West", "argtypes": [] },
+          { "cname": "NorthWest", "argtypes": [] },
+          { "cname": "North", "argtypes": [] },
+          { "cname": "NorthEast", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "PromotionStatus",
+        "tparams": [],
+        "tmap": [
+          { "cname": "NotPromoted", "argtypes": [] },
+          { "cname": "Promoted", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Square",
+        "tparams": [],
+        "tmap": [ { "cname": "Square", "argtypes": [ "Uint32", "Uint32" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Name square shadows a transition parameter.",
+      "start_location": {
+        "file": "contracts/shogi_proc.scilla",
+        "line": 697,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/shogi_proc.scilla",
+        "line": 693,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "No transition in contract ShogiProc contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}
