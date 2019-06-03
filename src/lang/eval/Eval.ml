@@ -317,6 +317,7 @@ let rec stmt_eval conf stmts =
           let%bind (proc, p_rest) = Configuration.lookup_procedure conf (get_id p) in
           (* Apply procedure. No gas charged for the application *)
           let%bind conf' = try_apply_as_procedure conf proc p_rest args in
+          let%bind _ = stmt_gas_wrap G_CallProc sloc in
           stmt_eval conf' sts
       | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
     )
