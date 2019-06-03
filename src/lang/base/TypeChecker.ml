@@ -164,6 +164,7 @@ module ScillaTypechecker
     | Let (i, topt, lhs, rhs) ->
         (* Poor man's error reporting *)
         let%bind (_, (ityp, _)) as checked_lhs = wrap_type_err erep @@ type_expr tenv lhs in
+        let%bind _ = match topt with Some tannot -> assert_type_equiv tannot ityp.tp | None -> pure () in
         let tenv' = TEnv.addT (TEnv.copy tenv) i ityp.tp in
         let typed_i = add_type_to_ident i ityp in
         let%bind (_, (rhstyp, _)) as checked_rhs = type_expr tenv' rhs in
