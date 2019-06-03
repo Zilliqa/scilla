@@ -163,6 +163,7 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_assign.scilexp";
       "bad_assign2.scilexp";
       "bad_match.scilexp";
+      "let-error.scilexp";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

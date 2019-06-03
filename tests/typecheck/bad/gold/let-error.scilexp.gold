@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "error_message": "Type mismatch: Int32 expected, but Uint32 provided.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
