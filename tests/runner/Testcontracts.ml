@@ -188,7 +188,7 @@ let add_tests env =
       "one_msg1_test" >::: (build_contract_tests env "one-msg1" succ_code 1 1 []);
       "simple-dex" >:::(build_contract_tests env "simple-dex" succ_code 1 8 []);
       "shogi" >::: (build_contract_tests env "shogi" succ_code 1 4 ["shogi_lib"]);
-(*    "shogi_proc" >::: (build_contract_tests env "shogi_proc" succ_code 1 4 ["shogi_lib"]); *)
+      "shogi_proc" >::: (build_contract_tests env "shogi_proc" succ_code 1 4 ["shogi_lib"]);
       "map_key_test" >::: (build_contract_tests env "map_key_test" succ_code 1 1 []);
     ];
     "these_tests_must_FAIL" >:::[
