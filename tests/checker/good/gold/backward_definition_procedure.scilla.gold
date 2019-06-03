@@ -1,20 +1,65 @@
 {
-  "errors": [
-    {
-      "error_message":
-        "Type error(s) in contract BackwardDefinitionProcedure:\n",
-      "start_location": {
-        "file": "checker/good/backward_definition_procedure.scilla",
-        "line": 5,
-        "column": 10
+  "cashflow_tags": {
+    "State variables": [ { "field": "tmp", "tag": "NoInfo" } ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "BackwardDefinitionProcedure",
+    "params": [],
+    "fields": [ { "vname": "tmp", "type": "Int32" } ],
+    "transitions": [
+      { "vname": "Proc1", "params": [ { "vname": "arg", "type": "Bool" } ] },
+      { "vname": "Proc2", "params": [ { "vname": "arg", "type": "Int32" } ] }
+    ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
       },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
     {
-      "error_message": "Procedure calls are not supported yet.",
+      "warning_message":
+        "No transition in contract BackwardDefinitionProcedure contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
     }
-  ],
-  "warnings": []
+  ]
 }

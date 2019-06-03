@@ -16,3 +16,10 @@ transition Trans1()
   (* Wrong type of arguments *)
   Proc1 arg2 arg1
 end
+
+transition Trans2()
+  arg1 = Int32 0;
+  arg2 = Nil {Bool};
+  (* Correct *)
+  Proc1 arg1 arg2 
+end

@@ -94,7 +94,6 @@ module Env = struct
         "Identifier \"%s\" is not bound in environment:\n" i) (get_rep k)
 end
 
-
 (**************************************************)
 (*                 Blockchain State               *)
 (**************************************************)
@@ -116,7 +115,9 @@ module Configuration = struct
 
   (* Runtime contract configuration and operations with it *)
   type t = {
-    (* Immutable variables *)
+    (* Initial environment of parameters *)
+    init_env : Env.t;
+    (* Current environment parameters and local variables *)
     env : Env.t;
     (* Contract fields *)
     fields : (string * literal) list;
@@ -128,6 +129,11 @@ module Configuration = struct
     blockchain_state : BlockchainState.t;
     (* Available incoming funds *)
     incoming_funds : uint128;
+    (* Procedures available to the current component. The list is in
+       reverse order, so that for any procedure p in the list such
+       that p :: p_rest is a suffix of the list, p_rest contains the
+       procedures available to p. *)
+    procedures : EvalSyntax.component list;
     (* Emitted messages *)
     emitted : literal list;
     (* Emitted events *)
@@ -141,6 +147,7 @@ module Configuration = struct
     let pp_accepted = Bool.to_string conf.accepted in
     let pp_bc_conf = pp_literal_map conf.blockchain_state in
     let pp_in_funds = Uint128.to_string conf.incoming_funds in
+    (*  let pp_procs = TODO... *)
     let pp_emitted = pp_literal_list conf.emitted in
     let pp_events = pp_literal_list conf.events in
     sprintf "Confuration\nEnv =\n%s\nFields =\n%s\nBalance =%s\nAccepted=%s\n\\
@@ -293,6 +300,17 @@ module Configuration = struct
     let e = st.env in
     {st with env = (k, v) :: List.filter ~f:(fun z -> fst z <> k) e}
 
+  let bind_all st ks vs =
+    let e = st.env in
+    match List.zip ks vs with
+    | None -> fail0 "Attempting to bind different number of keys and values in environment"
+    | Some kvs ->
+        let filtered_env =
+          List.filter e ~f:(fun z ->
+              not (
+                List.exists ks ~f:(fun x -> fst z = x))) in
+        pure {st with env = kvs @ filtered_env}
+
   let lookup st k = Env.lookup st.env k
 
   let bc_lookup st k = BlockchainState.lookup st.blockchain_state k
@@ -312,6 +330,20 @@ module Configuration = struct
       fail0 @@ sprintf "Incoming balance is negaitve (somehow):%s."
         (Uint128.to_string incoming')
 
+  (* Finds a procedure proc_name, and returns the procedure and the
+     list of procedures in scope for that procedure *)
+  let lookup_procedure st proc_name =
+    let rec finder procs =
+      match procs with
+      | p :: p_rest
+        when (get_id p.comp_name) = proc_name ->
+          pure (p, p_rest)
+      | _ :: p_rest ->
+          finder p_rest
+      | [] ->
+          fail0 @@ sprintf "Procedure %s not found." proc_name in
+    finder st.procedures
+  
   (* Check that message is well-formed before adding to the sending pool *)
   let rec validate_messages ls =
     (* Note: We don't need a whole lot of checks as the checker does it. *)

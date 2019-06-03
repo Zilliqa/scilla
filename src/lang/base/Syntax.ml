@@ -634,6 +634,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | G_AcceptPayment
     | G_SendMsgs of literal list
     | G_CreateEvnt of literal
+    | G_CallProc
 
   (*******************************************************)
   (*                    Contracts                        *)
