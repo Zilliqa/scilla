@@ -330,7 +330,6 @@ and try_apply_as_procedure conf proc proc_rest actuals =
       {conf with env = conf.init_env; procedures = proc_rest}
       ("_sender" :: "_amount" :: List.map proc.comp_params ~f:(fun id_typ -> (get_id (fst id_typ))))
       (sender_value :: amount_value :: actuals) in
-  (* TODO : Typecheck actuals against type of formals *)
   let%bind conf' = stmt_eval proc_conf proc.comp_body in
   (* Reset configuration *)
   pure {conf' with env = conf.env; procedures = conf.procedures}
