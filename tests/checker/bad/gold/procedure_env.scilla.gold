@@ -38,8 +38,16 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Type-checking of procedure calls is not supported yet.",
+      "error_message": "Type error(s) in procedure call Proc1:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_env.scilla",
+        "line": 26,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Procedure Proc1 not found.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

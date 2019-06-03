@@ -13,14 +13,22 @@
       "error_message": "Type error(s) in transition Trans1:\n",
       "start_location": {
         "file": "checker/bad/procedure_bad_args.scilla",
-        "line": 13,
+        "line": 17,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Type-checking of procedure calls is not supported yet.",
+      "error_message": "Type error(s) in procedure call Proc1:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 21,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Incorrect number of arguments to procedure",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
@@ -28,14 +36,22 @@
       "error_message": "Type error(s) in transition Trans2:\n",
       "start_location": {
         "file": "checker/bad/procedure_bad_args.scilla",
-        "line": 20,
+        "line": 24,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Type-checking of procedure calls is not supported yet.",
+      "error_message": "Type error(s) in procedure call Proc1:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 28,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Incorrect number of arguments to procedure",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
@@ -43,14 +59,45 @@
       "error_message": "Type error(s) in transition Trans3:\n",
       "start_location": {
         "file": "checker/bad/procedure_bad_args.scilla",
-        "line": 27,
+        "line": 31,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Type-checking of procedure calls is not supported yet.",
+      "error_message": "Type error(s) in procedure call Proc1:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 35,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Incorrect number of arguments to procedure",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition Trans4:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 38,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in procedure call Proc2:\n",
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 42,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Incorrect number of arguments to procedure",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

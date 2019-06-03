@@ -186,13 +186,7 @@ module ScillaRecursion
     let%bind (recursion_ccomps_rev, _) =
       foldM ccomps ~init:([], []) ~f:(fun (acc_comps, acc_procs) comp ->
           let is_proc_in_scope p =
-            match comp.comp_type with
-            | CompTrans ->
-                (* All procedures are in scope. 
-                   The typechecker ensures that the procedure name exists *)
-                true
-            | CompProc ->
-                List.exists acc_procs ~f:(fun x -> p = x) in
+            List.exists acc_procs ~f:(fun x -> p = x) in
           let%bind checked_component =
             recursion_component is_adt_in_scope is_adt_ctr_in_scope is_proc_in_scope comp in
           let new_acc_procs =

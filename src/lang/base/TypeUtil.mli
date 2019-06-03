@@ -104,6 +104,7 @@ module TypeUtilities
   val is_storable_type : typ -> bool
   val is_serializable_type : typ -> bool
   val is_ground_type : typ -> bool
+  val is_non_map_ground_type : typ -> bool
   val get_msgevnt_type : (string * 'a) sexp_list -> (typ, scilla_error sexp_list) result
 
   (****************************************************************)
@@ -117,6 +118,8 @@ module TypeUtilities
 
   (* Applying a function type *)
   val fun_type_applies : typ -> typ list -> (typ, scilla_error list) result
+  (* Applying a procedure "type" *)
+  val proc_type_applies : typ list -> typ list -> (unit list, scilla_error list) result
 
   (* Applying a type function *)
   val elab_tfun_with_args : typ -> typ list -> (typ, scilla_error list) result

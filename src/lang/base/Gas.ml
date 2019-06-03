@@ -124,6 +124,7 @@ module ScillaGas
         let%bind c = literal_cost m in
         pure (acc + c)) ~init:0 mlist
     | G_CreateEvnt e -> literal_cost e
+    | G_CallProc -> pure 1
 
   (* A signature for functions that determine dynamic cost of built-in ops. *)
   (* op -> arguments -> base cost -> total cost *)
