@@ -115,9 +115,9 @@ module Configuration = struct
 
   (* Runtime contract configuration and operations with it *)
   type t = {
-    (* Initial environment of immutable variables *)
+    (* Initial environment of parameters *)
     init_env : Env.t;
-    (* Current environment of immutable variables *)
+    (* Current environment parameters and local variables *)
     env : Env.t;
     (* Contract fields *)
     fields : (string * literal) list;
