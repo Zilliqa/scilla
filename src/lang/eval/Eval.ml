@@ -310,10 +310,32 @@ let rec stmt_eval conf stmts =
           let%bind (conf', scon) = Configuration.create_event conf eparams_resolved in
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
-      | CallProc _ -> fail1 (sprintf "Procedure calls are not supported yet.") sloc
+      | CallProc (p, actuals) ->
+          (* Resolve the actuals *)
+          let%bind args =
+            mapM actuals ~f:(fun arg -> Env.lookup conf.env arg) in
+          let%bind (proc, p_rest) = Configuration.lookup_procedure conf (get_id p) in
+          (* Apply procedure. No gas charged for the application *)
+          let%bind conf' = try_apply_as_procedure conf proc p_rest args in
+          let%bind _ = stmt_gas_wrap G_CallProc sloc in
+          stmt_eval conf' sts
       | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
     )
 
+and try_apply_as_procedure conf proc proc_rest actuals =
+  (* Create configuration for procedure call *)
+  let%bind sender_value = Configuration.lookup conf (mk_ident "_sender") in
+  let%bind amount_value = Configuration.lookup conf (mk_ident "_amount") in
+  let%bind proc_conf =
+    Configuration.bind_all
+      {conf with env = conf.init_env; procedures = proc_rest}
+      ("_sender" :: "_amount" :: List.map proc.comp_params ~f:(fun id_typ -> (get_id (fst id_typ))))
+      (sender_value :: amount_value :: actuals) in
+  let%bind conf' = stmt_eval proc_conf proc.comp_body in
+  (* Reset configuration *)
+  pure {conf' with env = conf.env; procedures = conf.procedures}
+      
+  
 (*******************************************************)
 (*          BlockchainState initialization             *)
 (*******************************************************)
@@ -497,15 +519,32 @@ let preprocess_message es =
   pure (tag, amount, other)
 
 (* Retrieve transition based on the tag *)
-let get_transition ctr tag =
-  let cs = ctr.ccomps in
-  match List.find cs ~f:(fun c -> c.comp_type = CompTrans && (get_id c.comp_name) = tag) with
+let get_transition_and_procedures ctr tag =
+  let rec procedure_and_transition_finder procs_acc cs =
+    match cs with
+    | [] ->
+        (* Transition not found *)
+        (procs_acc, None)
+    | c :: c_rest ->
+        match c.comp_type with
+        | CompProc ->
+            (* Procedure is in scope - continue searching *)
+            procedure_and_transition_finder (c :: procs_acc) c_rest
+        | CompTrans
+          when tag = (get_id c.comp_name) ->
+            (* Transition found - return *)
+            (procs_acc, Some c)
+        | CompTrans ->
+            (* Not the correct transition - ignore *)
+            procedure_and_transition_finder procs_acc c_rest in
+  let (procs, trans_opt) = procedure_and_transition_finder [] ctr.ccomps in
+  match trans_opt with
   | None -> fail0 @@ sprintf
         "No contract transition for tag %s found." tag
   | Some t ->
       let params = t.comp_params in
       let body = t.comp_body in
-      pure (params, body)
+      pure (procs, params, body)
 
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
 let check_message_entries cparams_o entries =
@@ -526,14 +565,14 @@ let check_message_entries cparams_o entries =
   else
     pure entries
       
-(* Get the environment, incoming amount and body to execute*)
+(* Get the environment, incoming amount, procedures in scope, and body to execute*)
 let prepare_for_message contr m =
   match m with
   | Msg entries ->
       let%bind (tag, incoming_amount, other) = preprocess_message entries in
-      let%bind (tparams, tbody) = get_transition contr tag in
+      let%bind (tprocedures, tparams, tbody) = get_transition_and_procedures contr tag in
       let%bind tenv = check_message_entries tparams other in
-      pure (tenv, incoming_amount, tbody)
+      pure (tenv, incoming_amount, tprocedures, tbody)
   | _ -> fail0 @@ sprintf "Not a message literal: %s." (pp_literal m)
 
 (* Subtract the amounts to be transferred *)
@@ -562,7 +601,7 @@ Handle message:
 * m : Syntax.literal - incoming message 
 *)        
 let handle_message contr cstate bstate m =
-  let%bind (tenv, incoming_funds, stmts) = prepare_for_message contr m in
+  let%bind (tenv, incoming_funds, procedures, stmts) = prepare_for_message contr m in
   let open ContractState in
   let {env; fields; balance} = cstate in
   (* Add all values to the contract environment *)
@@ -572,12 +611,14 @@ let handle_message contr cstate bstate m =
 
   (* Create configuration *)  
   let conf = {
+    init_env = actual_env;
     env = actual_env;
     fields = fields;
     balance = balance;
     accepted = false;
     blockchain_state = bstate;
     incoming_funds = incoming_funds;
+    procedures = procedures;
     emitted = [];
     events = [];
   } in

@@ -260,6 +260,13 @@ module TypeUtilities
     | PolyFun _ | TypeVar _ -> false
     | _ -> true
 
+  let rec is_non_map_ground_type t = match t with
+    | FunType (a, r) -> is_non_map_ground_type a && is_non_map_ground_type r
+    | MapType (_, _) -> false
+    | ADT (_, ts) -> List.for_all ~f:(fun t -> is_non_map_ground_type t) ts
+    | PolyFun _ | TypeVar _ -> false
+    | _ -> true
+
   let rec is_serializable_storable_helper accept_maps t seen_adts =
     match t with
     | FunType _
@@ -323,6 +330,13 @@ module TypeUtilities
           "The type\n%s\ndoesn't apply, as a function, to the arguments of types\n%s." (pp_typ ft)
           (pp_typ_list argtypes)
 
+  let proc_type_applies formals actuals =
+    match List.zip formals actuals with
+    | Some arg_pairs ->
+       mapM arg_pairs ~f:(fun (formal, actual) ->
+            assert_type_equiv formal actual)
+    | None -> fail0 "Incorrect number of arguments to procedure"
+  
   let rec elab_tfun_with_args tf args = match tf, args with
     | PolyFun _ as pf, a :: args' ->
         let afv = free_tvars a in

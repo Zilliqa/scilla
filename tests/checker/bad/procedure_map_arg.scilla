@@ -12,10 +12,33 @@ procedure Proc1(map : Map Int32 ByStr20)
 end
 
 transition Trans1()
-  Proc1 m
+  map <- m;
+  Proc1 map
+end
+
+(* Map arguments to procedures not allowed *)
+procedure Proc2(nested_map : (Pair Bool (Map Int32 ByStr20)))
+  new_arg = Int32 0
 end
 
 transition Trans2()
   map <- m;
-  Proc1 map
+  t = True;
+  arg = Pair {Bool (Map Int32 ByStr20)} t map;
+  Proc2
+end
+
+(* Polymorphic arguments to procedures not allowed *)
+procedure Proc3(f : forall 'A . 'A -> Bool )
+  new_arg = Int32 0
+end
+
+(* Function arguments to procedures are allowed *)
+procedure Proc4(f : Bool -> Bool )
+  new_arg = Int32 0
+end
+
+transition Trans4()
+  arg = fun (a : Bool) => a;
+  Proc4 arg
 end

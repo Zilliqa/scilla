@@ -10,6 +10,10 @@ procedure Proc1(arg1 : Int32, arg2 : (List Bool))
   new_arg = Int32 0
 end
 
+procedure Proc2()
+  new_arg = Int32 42
+end
+
 transition Trans1()
   arg1 = Int32 0;
   arg2 = Nil {Bool};
@@ -29,4 +33,11 @@ transition Trans3()
   arg2 = Nil {Bool};
   (* Wrong number of arguments *)
   Proc1
+end
+
+transition Trans4()
+  arg1 = Int32 0;
+  arg2 = Nil {Bool};
+  (* Wrong number of arguments *)
+  Proc2 arg1 arg2
 end

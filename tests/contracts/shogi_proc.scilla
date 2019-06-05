@@ -616,7 +616,7 @@ procedure PlacePiece (piece : Piece, square : Square)
   match capture_count with
   | None => 
     (* This should not happen *)
-    ErrorEvent
+    InternalErrorEvent
   | Some count =>
     zero = Uint32 0;
     has_pieces = builtin lt zero count;
@@ -646,6 +646,8 @@ procedure PlacePiece (piece : Piece, square : Square)
 end
 
 procedure PerformMoveAndPromote (
+  current_player : ByStr20,
+  piece : Piece,
   promote : Bool,
   promotion_status : PromotionStatus,
   row : Uint32,
@@ -721,7 +723,7 @@ procedure MovePiece (current_player : ByStr20, square : Square, direction : Dire
             | Some  Free  => 
               (* No piece captured *)
               (* Check promotion, and move *)
-              PerformMoveAndPromote promote promotion_status row column target_row target_column player_1_moves
+              PerformMoveAndPromote current_player piece promote promotion_status row column target_row target_column player_1_moves
             | Some (Occupied captured_piece _ captured_owner) =>
               (* Target square is occupied. Check ownership *)
               captured_owner_is_current_player = builtin eq captured_owner current_player;
@@ -732,7 +734,7 @@ procedure MovePiece (current_player : ByStr20, square : Square, direction : Dire
               | False =>
                 (* Opponent piece captured. *)
                 (* Check promotion part of move *)
-                PerformMoveAndPromote promote promotion_status row column target_row target_column player_1_moves;
+                PerformMoveAndPromote current_player piece promote promotion_status row column target_row target_column player_1_moves;
                 (* Check if captured piece is the king *)
                 match captured_piece with
                 | King =>
@@ -806,7 +808,7 @@ transition PlayerAction (action : Action)
       | Place piece square =>
         PlacePiece piece square
       | Move square direction distance promote =>
-        MovePiece current_player square direction distance
+        MovePiece current_player square direction distance promote
       end
     end;
     (* Check if a winner has been found *)
