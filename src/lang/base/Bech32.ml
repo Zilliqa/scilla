@@ -22,6 +22,8 @@ open Utils
 
 (* https://github.com/Zilliqa/Zilliqa/wiki/Address-Standard#specification *)
 let bech32_addr_len ~prefix = (String.length prefix) + 1 + 32 + 6
+let bech32_payload_len = 32 (* Ignoring prefix, separator and checksum characters. *)
+let bech32_chk_len = 6
 
 (* The set of core characters in a bech32 address. *)
 let charset = Array.of_list 
@@ -89,7 +91,7 @@ let decode_bech32_addr ~prefix ~addr:str =
   ) in
 
   (* 6. Scan the addr and checksum for errors. *)
-  let addr_chk_str = String.sub str ~pos:((String.length prefix)+1) ~len:(32+6) in
+  let addr_chk_str = String.sub str ~pos:((String.length prefix)+1) ~len:(bech32_payload_len+bech32_chk_len) in
   (* Create a buffer of bits for the result (20-byte raw address). *)
   let bitacc = Buffer.create () in
   let (chk, err, (have_lower, have_upper), _) = List.fold (String.to_list addr_chk_str) ~init:(chk, false, (false, false), 0)
@@ -110,7 +112,7 @@ let decode_bech32_addr ~prefix ~addr:str =
     let chk' = (bech32_polymod_step chk) lxor c' in
 
     (* Accumulate the lower 5 bits of c' into our bit buffer *)
-    if index < 32 then
+    if index < bech32_payload_len then
       (let shifted_5_bits = (Bytes.make 1 (char_of_ascii (c' lsl (8 - 5)))) in
        Buffer.add_bits bitacc shifted_5_bits 5);
 
