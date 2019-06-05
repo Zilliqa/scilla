@@ -936,6 +936,8 @@ module ScillaCashflowChecker
                 [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | Builtin_concat
+      | Builtin_bech32_to_bystr20
+      | Builtin_bystr20_to_bech32
       | Builtin_blt
       | Builtin_badd
       | Builtin_bsub ->

@@ -1,0 +1,3 @@
+let bystr20_addr = 0x7aa7ea9f4534d8d70224b9c2fb165242f321f12b in
+let prefix = "zil" in
+builtin bystr20_to_bech32 prefix bystr20_addr

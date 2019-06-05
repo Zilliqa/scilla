@@ -6,9 +6,9 @@ e: Length of: signatures
 a: transactionCount
 b: transactions
 c: Length of: transactions
-f: Result of builtin add(transactionCount,4)
-g: Result of builtin put(transactions,transactionCount,1(recipient) + 1(amount))
 h: Result of builtin put(signatures,transactionCount,0)
+g: Result of builtin put(transactions,transactionCount,1(recipient) + 1(amount))
+f: Result of builtin add(transactionCount,4)
 d: signatures
 
 Gas use polynomial for transition SignTransaction:
@@ -16,57 +16,57 @@ Gas use polynomial for transition SignTransaction:
 Legend:
 
 b: transactions
-c: signatures
 d: Length of: Result of builtin get(signatures,transactionId)
+c: signatures
 a: owners
-e: Length of: signatures
 f: Result of builtin put(signatures,transactionId,Result of builtin put(Result of builtin get(signatures,transactionId),_sender,1))
+e: Length of: signatures
 
 Gas use polynomial for transition ExecuteTransaction:
 1(a) + 216 + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 1(g) + 1(h) + 1(i) + 2(j)
 Legend:
 
 g: Length of: signatures
+d: Length of: Result of builtin get(signatures,transactionId)
+j: Result of builtin get(transactions,transactionId)
 c: signatures
 a: transactions
-f: Result of builtin remove(transactions,transactionId)
 e: Length of: transactions
-d: Length of: Result of builtin get(signatures,transactionId)
+f: Result of builtin remove(transactions,transactionId)
 i: tag
 h: Result of builtin remove(signatures,transactionId)
 b: _balance
-j: Result of builtin get(transactions,transactionId)
 
 Gas use polynomial for transition RevokeSignature:
 1(a) + 78 + 1(b) + 1(c) + 1(d)
 Legend:
 
+b: Length of: Result of builtin get(signatures,transactionId)
 d: Result of builtin put(signatures,transactionId,Result of builtin remove(Result of builtin get(signatures,transactionId),_sender))
 a: signatures
-b: Length of: Result of builtin get(signatures,transactionId)
 c: Length of: signatures
 
 Gas use polynomial for transition RevokeOwnerSignature:
 1(a) + 78 + 1(b) + 1(c) + 1(d)
 Legend:
 
+d: Result of builtin put(owner_signatures,new_owner,Result of builtin remove(Result of builtin get(owner_signatures,new_owner),_sender))
 a: owner_signatures
 b: Length of: Result of builtin get(owner_signatures,new_owner)
 c: Length of: owner_signatures
-d: Result of builtin put(owner_signatures,new_owner,Result of builtin remove(Result of builtin get(owner_signatures,new_owner),_sender))
 
 Gas use polynomial for transition AddCandidateOwner:
 1(a) + 122 + 10(b) + 1(c)(b) + 1(d)(b) + 1(c) + 1(e) + 1(f) + 1(g) + 1(h) + 1(i) + 1(j)
 Legend:
 
 g: owner_signatures
-j: Result of builtin put(owner_signatures,candidate,0)
+d: Result of builtin put(0,Element of: initial_owners,1)
 b: Length of: initial_owners
 i: Length of: owner_signatures
-d: Result of builtin put(0,Element of: initial_owners,1)
-e: Result of builtin lt(4,Result of builtin size(1(Result of builtin put(0,Element of: initial_owners,1))(Length of: initial_owners)))
+j: Result of builtin put(owner_signatures,candidate,0)
 a: validity_checked
 f: contract_valid
+e: Result of builtin lt(4,Result of builtin size(1(Result of builtin put(0,Element of: initial_owners,1))(Length of: initial_owners)))
 c: Length of: 1(Result of builtin put(0,Element of: initial_owners,1))(Length of: initial_owners)
 h: owners
 
@@ -74,24 +74,24 @@ Gas use polynomial for transition SignOffNewOwner:
 148 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 1(g)
 Legend:
 
-f: Length of: Result of builtin put(Result of builtin get(owner_signatures,candidate),_sender,1)
-a: owners
 g: Result of builtin size(Result of builtin put(Result of builtin get(owner_signatures,candidate),_sender,1))
-e: Result of builtin put(owner_signatures,candidate,Result of builtin put(Result of builtin get(owner_signatures,candidate),_sender,1))
-b: owner_signatures
+a: owners
 c: Length of: Result of builtin get(owner_signatures,candidate)
+b: owner_signatures
+f: Length of: Result of builtin put(Result of builtin get(owner_signatures,candidate),_sender,1)
+e: Result of builtin put(owner_signatures,candidate,Result of builtin put(Result of builtin get(owner_signatures,candidate),_sender,1))
 d: Length of: owner_signatures
 
 Gas use polynomial for transition ClaimOwnership:
 1(a) + 100 + 1(b) + 2(c) + 1(d) + 1(e) + 1(f) + 1(g)
 Legend:
 
-f: Result of builtin remove(owner_signatures,_sender)
-g: Result of builtin put(owners,_sender,1)
-d: Length of: Result of builtin get(owner_signatures,_sender)
 e: Length of: owner_signatures
 b: owners
+g: Result of builtin put(owners,_sender,1)
+f: Result of builtin remove(owner_signatures,_sender)
 c: Length of: owners
+d: Length of: Result of builtin get(owner_signatures,_sender)
 a: owner_signatures
 
 Gas use polynomial for transition AddFunds:
@@ -99,11 +99,11 @@ Gas use polynomial for transition AddFunds:
 Legend:
 
 f: contract_valid
-b: Length of: initial_owners
 d: Result of builtin put(0,Element of: initial_owners,1)
+b: Length of: initial_owners
 e: Result of builtin lt(4,Result of builtin size(1(Result of builtin put(0,Element of: initial_owners,1))(Length of: initial_owners)))
-c: Length of: 1(Result of builtin put(0,Element of: initial_owners,1))(Length of: initial_owners)
 a: validity_checked
+c: Length of: 1(Result of builtin put(0,Element of: initial_owners,1))(Length of: initial_owners)
 
 {
   "contract_info": {

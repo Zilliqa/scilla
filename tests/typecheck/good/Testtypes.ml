@@ -94,6 +94,8 @@ module Tests = TestUtil.DiffBasedTests(
     let tests = [
       "branch-match.scilexp";
       "builtin-strings.scilexp";
+      "builtin-bech32-1.scilexp";
+      "builtin-bech32-2.scilexp";
       "fun.scilexp";
       "fun1.scilexp";
       "addr.scilexp";

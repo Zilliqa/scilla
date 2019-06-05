@@ -108,6 +108,15 @@ end
 let list_add_unique ~equal ls a =
   if Core.List.mem ls a ~equal then ls else (a :: ls)
 
+(* Fold n times, each time applying 0-(n-1) and accummulator to f. *)
+let int_fold ~init ~(f : 'a -> int -> 'a) n =
+  let rec recurser acc i =
+    if i = n then acc else
+    let acc' = f acc i in
+    recurser acc' (i+1)
+  in
+  recurser init 0
+
 open ErrorUtils
 exception InternalError of scilla_error list
 let mk_internal_error msg = InternalError (mk_error0 msg)
