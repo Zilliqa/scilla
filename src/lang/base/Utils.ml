@@ -108,15 +108,14 @@ end
 let list_add_unique ~equal ls a =
   if Core.List.mem ls a ~equal then ls else (a :: ls)
 
-(* Replace an item (in place) in ls if it satisfies pred *)
-let list_replace ~pred ls b =
-  let rec recurser = function
-    | a :: rest ->
-      if pred a then b :: rest else a :: (recurser rest)
-    | [] -> []
+(* Fold n times, each time applying 0-(n-1) and accummulator to f. *)
+let int_fold ~init ~(f : 'a -> int -> 'a) n =
+  let rec recurser acc i =
+    if i = n then acc else
+    let acc' = f acc i in
+    recurser acc' (i+1)
   in
-  recurser ls
-
+  recurser init 0
 
 open ErrorUtils
 exception InternalError of scilla_error list

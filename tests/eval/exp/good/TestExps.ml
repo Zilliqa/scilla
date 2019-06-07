@@ -39,6 +39,8 @@ let explist = [
   "builtin-rem3.scilexp";
   "builtin-badd.scilexp";
   "builtin-bsub.scilexp";
+  "builtin-bech32-1.scilexp";
+  "builtin-bech32-2.scilexp";
   "cons.scilexp";
   "fib.scilexp";
   "func_pair.scilexp";

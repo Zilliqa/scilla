@@ -10,7 +10,7 @@
   (libraries core ppx_sexp_conv
               num hex stdint batteries
               ppx_deriving.show
-              cryptokit secp256k1
+              cryptokit secp256k1 bitstring
               yojson scilla_cpp_deps scilla_util)
   (preprocess (pps ppx_sexp_conv
                     ppx_let 

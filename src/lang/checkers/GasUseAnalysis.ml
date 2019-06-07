@@ -673,6 +673,9 @@ module ScillaGUA
     | Builtin_to_bystr -> (* to_bystr(a) = a *)
       if List.length params <> 1 then fail1 (arg_err ops) opl else
       pure ([si "a"], ressize ops params, sp "a")
+    | Builtin_bech32_to_bystr20 | Builtin_bystr20_to_bech32 ->
+      if List.length params <> 2 then fail1 (arg_err ops) opl else
+      pure ([si "prefix"; si "addr"], ressize ops params, add_pn (sp "prefix") (sp "addr"))
     | Builtin_sha256hash | Builtin_ripemd160hash | Builtin_keccak256hash ->
       (* hash(a) = a * 15. TODO: Support functions in polynomial. *)
       if List.length params <> 1 then fail1 (arg_err ops) opl else

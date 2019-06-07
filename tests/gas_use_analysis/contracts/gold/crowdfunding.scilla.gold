@@ -21,12 +21,12 @@ Gas use polynomial for transition ClaimBack:
 Legend:
 
 b: backers
-g: Result of builtin get(backers,_sender)
-f: Result of builtin remove(backers,_sender)
 c: _balance
 d: funded
+g: Result of builtin get(backers,_sender)
 e: Length of: backers
 a: _sender
+f: Result of builtin remove(backers,_sender)
 
 {
   "contract_info": {

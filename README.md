@@ -31,7 +31,7 @@ Once the project is built you can try the following things:
 From the project root, execute
 
 ```
-./bin/eval-runner -libdir src/stdlib tests/eval/exp/good/let.scilla
+./bin/eval-runner -libdir src/stdlib tests/eval/exp/good/let.scilexp
 ```
 
 Instead of `let.scilla` you might want to try any dfferent file in

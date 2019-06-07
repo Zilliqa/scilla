@@ -44,6 +44,9 @@ let explist = [
   "builtin-overflow9.scilexp";
   "builtin-pow.scilexp";
   "builtin-pow2.scilexp";
+  "builtin-bech32-1.scilexp";
+  "builtin-bech32-2.scilexp";
+  "builtin-bech32-3.scilexp";
   "msg_error2.scilexp";
   "msg_error3.scilexp";
   "msg_error.scilexp";

@@ -23,6 +23,8 @@ let explist = [
   "app4.scilexp";
   "builtin-strings.scilexp";
   "builtin1.scilexp";
+  "builtin-bech32-1.scilexp";
+  "builtin-bech32-2.scilexp";
   "list_append.scilexp";
   "list_eq.scilexp";
   "list_head.scilexp";
