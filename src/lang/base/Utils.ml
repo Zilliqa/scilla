@@ -108,6 +108,16 @@ end
 let list_add_unique ~equal ls a =
   if Core.List.mem ls a ~equal then ls else (a :: ls)
 
+(* Replace an item (in place) in ls if it satisfies pred *)
+let list_replace ~pred ls b =
+  let rec recurser = function
+    | a :: rest ->
+      if pred a then b :: rest else a :: (recurser rest)
+    | [] -> []
+  in
+  recurser ls
+
+
 open ErrorUtils
 exception InternalError of scilla_error list
 let mk_internal_error msg = InternalError (mk_error0 msg)

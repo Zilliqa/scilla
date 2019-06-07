@@ -30,6 +30,7 @@ let b_pp_lit = ref true
 let b_json_errors = ref false
 let b_pp_json = ref true
 let b_validate_json = ref true
+let i_ipc_port = ref 0
 
 let process_trace () =
   match !f_trace_level with
@@ -73,9 +74,10 @@ let validate_main usage =
     (* output file is mandatory *)
     (if !f_output = "" then msg4 ^ "Output file not specified\n" else msg4) in
   let msg6 =
-    (* input_message.json and input_state.json can either both be there or both absent *)
-    if (!f_input_message = "") <> (!f_input_state = "") 
-      then msg5 ^ "Input message and input state can both be present or both absent\n"
+    (* input_message.json and input_state.json / i_ipc_port can either both be there or both absent *)
+    if (!f_input_message <> "") &&
+       ((!f_input_state <> "") && (!i_ipc_port <> 0) || (!f_input_state = "" && !i_ipc_port = 0))
+      then msg5 ^ "Input message provided, but either none or both of input state / IPC port provided"
       else msg5 in
   if msg6 <> ""
   then
@@ -93,6 +95,7 @@ type ioFiles = {
     libdirs : string list;
     gas_limit : Stdint.uint64;
     pp_json : bool;
+    ipc_port : int;
 }
 
 let parse () =
@@ -106,6 +109,7 @@ let parse () =
     ("-init", Arg.String (fun x -> f_input_init := x), "Path to initialization json");
     ("-istate", Arg.String (fun x -> f_input_state := x), "Path to state input json");
     ("-imessage", Arg.String (fun x -> f_input_message := x), "Path to message input json");
+    ("-ipcport", Arg.Int (fun x -> i_ipc_port := x), "Port number for IPC communication with blockchain for state access");
     ("-iblockchain", Arg.String (fun x -> f_input_blockchain := x), "Path to blockchain input json");
     ("-o", Arg.String (fun x -> f_output := x), "Path to output json");
     ("-i", Arg.String (fun x -> f_input := x), "Path to scilla contract");
@@ -148,4 +152,4 @@ let parse () =
   let () = validate_main usage in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input;
-     libdirs = !d_libs; gas_limit = !v_gas_limit; pp_json = !b_pp_json}
+     libdirs = !d_libs; gas_limit = !v_gas_limit; pp_json = !b_pp_json; ipc_port = !i_ipc_port}

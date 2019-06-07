@@ -106,6 +106,7 @@ module TypeUtilities
   val is_ground_type : typ -> bool
   val is_non_map_ground_type : typ -> bool
   val get_msgevnt_type : (string * 'a) sexp_list -> (typ, scilla_error sexp_list) result
+  val map_access_type : typ -> int -> (typ, scilla_error list) result
 
   (****************************************************************)
   (*             Utility function for matching types              *)

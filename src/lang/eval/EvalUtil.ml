@@ -120,7 +120,7 @@ module Configuration = struct
     (* Current environment parameters and local variables *)
     env : Env.t;
     (* Contract fields *)
-    fields : (string * literal) list;
+    fields : (string * typ) list;
     (* Contract balance *)
     balance : uint128;
     (* Was incoming money accepted? *)
@@ -142,7 +142,7 @@ module Configuration = struct
 
   let pp conf =
     let pp_env = Env.pp conf.env in
-    let pp_fields = pp_literal_map conf.fields in
+    let pp_fields = pp_typ_map conf.fields in
     let pp_balance = Uint128.to_string conf.balance in
     let pp_accepted = Bool.to_string conf.accepted in
     let pp_bc_conf = pp_literal_map conf.blockchain_state in
@@ -156,16 +156,8 @@ module Configuration = struct
 
   (*  Manipulations with configuartion *)
   
-  let store st i l =
-    let k = get_id i in
-    let s = st.fields in
-    match List.find s ~f:(fun (z, _) -> z = k) with
-    | Some (_, l') -> pure @@
-        ({st with
-          fields = (k, l) :: List.filter ~f:(fun z -> fst z <> k) s}
-        , G_Store(l', l))
-    | None -> fail1 (sprintf "No field \"%s\" in contract.\n" k)
-          (ER.get_loc (get_rep i))
+  let store i l =
+    fromR @@ StateService.update ~fname:i ~keys:[] ~value:l
 
   let load st k =
     let i = get_id k in
@@ -175,126 +167,49 @@ module Configuration = struct
       let l = UintLit (Uint128L st.balance) in
       pure (l, G_Load(l))
     else
-      (* Evenrything else is from fields *)
-      let s = st.fields in
-      match List.find ~f:(fun z -> fst z = i) s with 
-      | Some x -> pure @@ (snd x, G_Load(snd x))
-      | None -> fail1 (sprintf "No field \"%s\" in contract.\n" i)
-            (ER.get_loc (get_rep k))
+      let%bind fval = fromR @@ StateService.fetch ~fname:k ~keys:[] in
+      match fval with
+      | (Some v, g) -> pure (v, g)
+      | _ -> fail1 (Printf.sprintf "Error loading field %s" i) (ER.get_loc (get_rep k))
 
-  let map_update st m klist vopt =
-    let s = st.fields in
-    match List.find s ~f:(fun (z, _) -> z = (get_id m)) with
-    | Some (_, Map((_,vt), mlit)) ->
-      let rec recurser mlit' klist' vt' =
-        (match klist' with
-         (* we're at the last key, update literal. *)
-         | [k] -> 
-            (match vopt with
-            | Some v ->
-              Caml.Hashtbl.replace mlit' k v;
-              pure @@ (st, G_MapUpdate ((List.length klist), (Some v)))
-            | None ->
-              Caml.Hashtbl.remove mlit' k;
-              pure @@ (st, G_MapUpdate ((List.length klist), None)))
-         | k :: krest ->
-            (* we have more nested maps *)
-            (match Caml.Hashtbl.find_opt mlit' k with
-             | Some (Map((_, vt''), mlit'')) -> recurser mlit'' krest vt''
-             | None ->
-                if (is_some vopt) then (* not a delete operation. *)
-                  (* We have more keys remaining, but no entry for "k".
-                    So create an empty map for "k" and then proceed. *)
-                  let mlit'' = Caml.Hashtbl.create 4 in
-                  let%bind (kt'', vt'') = 
-                    (match vt' with
-                    | MapType (keytype, valtype) -> pure (keytype, valtype)
-                    | _ -> fail1 (sprintf "Cannot index into map %s due to non-map type" (get_id m))
-                            (ER.get_loc (get_rep m))
-                    )
-                    in
-                      Caml.Hashtbl.replace mlit' k (Map((kt'', vt''), mlit''));
-                      recurser mlit'' krest vt''
-                else
-                  (* No point removing a key that doesn't exist. *)
-                  pure @@ (st, G_MapUpdate ((List.length klist), None))
-              (* The remaining keys cannot be used for indexing as
-                 we ran out of nested maps. *)
-             | _ -> fail1 (sprintf "Cannot index into map %s. Too many index keys." (get_id m))
-                      (ER.get_loc (get_rep m))
-            )
-          (* this cannot occur. *)
-          | [] -> fail1 (sprintf "Internal error in updating map %s." (get_id m))
-                    (ER.get_loc (get_rep m))
-        )
-      in
-        recurser mlit klist vt
-    | _ -> fail1 (sprintf "No map field \"%s\" in contract.\n" (get_id m))
-            (ER.get_loc (get_rep m))
+  let map_update m klist vopt =
+    match vopt with
+    | Some v -> fromR @@ StateService.update ~fname:m ~keys:klist ~value:v
+    | None -> fromR @@  StateService.remove ~fname:m ~keys:klist
 
   let map_get st m klist fetchval =
-    let s = st.fields in
-    match List.find s ~f:(fun (z, _) -> z = (get_id m)) with
-    | Some (_, Map((kt, vt), mlit)) ->
-
-      (* The return type of this `MapGet` is Option (ret_val_type) *)
-      let%bind ret_val_type =
-        let rec recurser t nkeys =
-          (match t, nkeys with
-          | MapType (_, _), 0 -> pure vt
-          | MapType (_, vt'), 1 -> pure vt'
-          | MapType (_, vt'), nkeys' when nkeys' > 1 -> recurser vt' (nkeys-1)
-          | _, _ -> fail1 (sprintf "Cannot index into map %s: Too many index keys or non-map type" (get_id m))
-                    (ER.get_loc (get_rep m))
-          )
-        in
-          recurser (MapType(kt, vt)) (List.length klist)
-      in
-      (* Recursively, index with each key and provide the indexed value. *)
-      let rec recurser mlit' klist' vt' =
-        (match klist' with
-         | [k] -> 
-          let%bind res = (match Caml.Hashtbl.find_opt mlit' k with
-            | Some l ->
-              if fetchval
-              then pure @@ ADTValue ("Some", [vt'], [l])
-              else pure @@ ADTValue ("True", [], [])
-            | None -> 
-              (* Just an assert. *)
-              if vt' <> ret_val_type 
-              then fail1 (sprintf "Failuing indexing into map %s. Internal error." (get_id m))
+    if fetchval
+    then 
+      let%bind vopt = fromR @@ StateService.fetch ~fname:m ~keys:klist in
+      match List.find st.fields ~f:(fun (z, _) -> z = (get_id m)) with
+      | Some (_, mt) ->
+        let%bind vt = fromR @@ EvalTypeUtilities.map_access_type mt (List.length klist) in
+        (* Need to wrap the result in a Scilla Option. *)
+        (match vopt with
+        | (Some v, G_MapGet(i, Some lo)) ->
+          let g' = G_MapGet(i, Some (ADTValue("Some", [vt], [lo]))) in
+          pure (ADTValue ("Some", [vt], [v]), g')
+        | (None, G_MapGet(i, None)) ->
+          let g' = G_MapGet(i, Some (ADTValue("None", [vt], []))) in
+          pure (ADTValue ("None", [vt], []), g')
+        | _ -> fail1 (sprintf "Inconsistency in fetching map value form StateService for field %s" (get_id m))
                   (ER.get_loc (get_rep m))
-              else 
-                if fetchval
-                then pure @@ ADTValue ("None", [vt'], [])
-                else pure @@ ADTValue ("False", [], []))
-          in
-            pure @@ (res, G_MapGet(List.length klist, Some res))
-         | k :: krest ->
-            (* we have more nested maps *)
-            (match Caml.Hashtbl.find_opt mlit' k with
-             | Some (Map((_, vt''), mlit'')) -> recurser mlit'' krest vt''
-             | None ->
-                (* No element found. Return none. *)
-                let ret = 
-                  if fetchval
-                  then ADTValue ("None", [ret_val_type], [])
-                  else ADTValue ("False", [], [])
-                in
-                pure @@ (ret, G_MapGet(List.length klist, Some ret))
-              (* The remaining keys cannot be used for indexing as
-                 we ran out of nested maps. *)
-             | _ -> fail1 (sprintf "Cannot index into map %s. Too many index keys." (get_id m))
-                      (ER.get_loc (get_rep m))
-            )
-         (* this cannot occur. *)
-          | [] -> fail1 (sprintf "Internal error in retriving from map %s." (get_id m))
-                    (ER.get_loc (get_rep m))
         )
-      in
-        recurser mlit klist vt
-    | _ -> fail1 (sprintf "No map field \"%s\" in contract.\n" (get_id m))
-            (ER.get_loc (get_rep m))
+      | None -> fail1 (sprintf "Unable to fetch from map field %s" (get_id m))
+                  (ER.get_loc (get_rep m))
+    else 
+      let%bind (is_member, g) = fromR @@ StateService.is_member ~fname:m ~keys:klist in
+      match (is_member, g) with
+      | true, G_MapGet(i, Some _) ->
+        let scillit = ADTValue ("True", [], []) in
+        let g' = G_MapGet(i, Some scillit) in
+        pure (scillit, g')
+      | false, G_MapGet(i, None) ->
+        let scillit = ADTValue ("False", [], []) in
+        let g' = G_MapGet(i, Some scillit) in
+         pure (scillit, g')
+      | _ -> fail1 (sprintf "Unable to check exists for map field %s" (get_id m))
+                  (ER.get_loc (get_rep m))
 
   let bind st k v =
     let e = st.env in
@@ -422,7 +337,7 @@ module ContractState = struct
     (* Immutable parameters *)
     env : Env.t;
     (* Contract fields *)
-    fields : (string * literal) list;
+    fields : (string * typ) list;
     (* Contract balance *)
     balance : uint128;
   }
@@ -430,7 +345,7 @@ module ContractState = struct
   (* Pretty-printing *)
   let pp cstate =
     let pp_params = Env.pp cstate.env in
-    let pp_fields = pp_literal_map cstate.fields in
+    let pp_fields = pp_typ_map cstate.fields in
     let pp_balance = Uint128.to_string cstate.balance in
     sprintf "Contract State:\nImmutable parameters and libraries =\n%s\nMutable fields = \n%s\nBalance = %s\n"
       pp_params pp_fields pp_balance

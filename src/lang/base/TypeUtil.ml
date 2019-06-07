@@ -311,6 +311,20 @@ module TypeUtilities
     then pure PrimTypes.event_typ else
     fail0 ("Invalid message construct. Neither for send nor for event.")
 
+  (* Given a map type and a list of key types, what is the type of the accessed value? *)
+  let map_access_type mt nindices = match mt with
+  | MapType (_, vt) ->
+    let rec recurser t nkeys =
+      (match t, nkeys with
+      | MapType (_, _), 0 -> pure vt
+      | MapType (_, vt'), 1 -> pure vt'
+      | MapType (_, vt'), nkeys' when nkeys' > 1 -> recurser vt' (nkeys-1)
+      | _, _ -> fail0 "Cannot index into map %s: Too many index keys or non-map type"
+      )
+    in
+      recurser mt nindices
+  | _ -> fail0 "map_access_type: not a map type"
+
   let pp_typ_list ts =
     let tss = List.map ~f:(fun t -> pp_typ t) ts in
     sprintf "[%s]" (String.concat ~sep:"; " tss)

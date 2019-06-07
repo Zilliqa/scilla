@@ -250,9 +250,9 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       | Store (x, r) ->
           let%bind v = Configuration.lookup conf r in
-          let%bind (conf', scon) = Configuration.store conf x v in
+          let%bind scon = Configuration.store x v in
           let%bind _ = stmt_gas_wrap scon sloc in
-          stmt_eval conf' sts
+          stmt_eval conf sts
       | Bind (x, e) ->
           let%bind (lval, _) = exp_eval_wrapper_no_cps e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
@@ -266,9 +266,9 @@ let rec stmt_eval conf stmts =
                 pure (Some v)
             | None -> pure None)
           in
-          let%bind (conf', scon) = Configuration.map_update conf m klist' v in
+          let%bind scon = Configuration.map_update m klist' v in
           let%bind _ = stmt_gas_wrap scon sloc in
-          stmt_eval conf' sts
+          stmt_eval conf sts
       | MapGet(x, m, klist, fetchval) ->
           let%bind klist' = mapM ~f:(fun k -> Configuration.lookup conf k) klist in
           let%bind (l, scon) = Configuration.map_get conf m klist' fetchval in
@@ -460,11 +460,12 @@ let init_contract clibs elibs cparams' cfields args' init_bal  =
   (* Fold params into already initialized libraries, possibly shadowing *)
   let env = List.fold_left ~init:libenv args
       ~f:(fun e (p, v) -> Env.bind e p v) in
-  let%bind fields = init_fields env cfields in
+  let%bind field_values = init_fields env cfields in
+  let fields = List.map cfields ~f:(fun (f, t, _) -> (get_id f, t)) in
   let balance = init_bal in
   let open ContractState in
   let cstate = {env; fields; balance} in
-  pure cstate
+  pure (cstate, field_values)
 
 (* Combine initialized state with info from current state *)
 let create_cur_state_fields initcstate curcstate =
@@ -499,13 +500,13 @@ let create_cur_state_fields initcstate curcstate =
 let init_module md initargs curargs init_bal bstate elibs =
   let {libs; contr; _} = md in
   let {cparams; cfields; _} = contr in
-  let%bind initcstate =
+  let%bind (initcstate, field_vals) =
     init_contract libs elibs cparams cfields initargs init_bal in
-  let%bind curfields = create_cur_state_fields initcstate.fields curargs in
+  let%bind curfield_vals = create_cur_state_fields field_vals curargs in
   (* blockchain input provided is only validated and not used here. *)
   let%bind _ = check_blockchain_entries bstate in
-  let cstate = { initcstate with fields = curfields } in
-    pure (contr, cstate)
+  let cstate = { initcstate with fields = initcstate.fields } in
+    pure (contr, cstate, curfield_vals)
 
 (*******************************************************)
 (*               Message processing                    *)
