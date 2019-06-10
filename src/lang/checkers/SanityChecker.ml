@@ -34,7 +34,7 @@ module ScillaSanityChecker
   module SER = SR
   module EER = ER
   module EISyntax = ScillaSyntax (SR) (ER)
-  module TU = TypeUtilities (SR) (ER)
+  module TU = TypeUtilities
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
 
   open EISyntax
