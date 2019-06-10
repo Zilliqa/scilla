@@ -1,25 +1,8 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7302",
+  "gas_remaining": "7383",
   "_accepted": "false",
-  "message": {
-    "_tag": "TransferFailure",
-    "_amount": "0",
-    "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [
-      {
-        "vname": "sender",
-        "type": "ByStr20",
-        "value": "0x1234567890123456789012345678901234567890"
-      },
-      {
-        "vname": "recipient",
-        "type": "ByStr20",
-        "value": "0x44345678901234567890123456789012345678cd"
-      },
-      { "vname": "amount", "type": "Uint128", "value": "0" }
-    ]
-  },
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -38,5 +21,22 @@
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "TransferFailure",
+      "params": [
+        {
+          "vname": "sender",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567890"
+        },
+        {
+          "vname": "recipient",
+          "type": "ByStr20",
+          "value": "0x44345678901234567890123456789012345678cd"
+        },
+        { "vname": "amount", "type": "Uint128", "value": "0" }
+      ]
+    }
+  ]
 }
