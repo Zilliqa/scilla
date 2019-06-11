@@ -33,6 +33,24 @@ type service_mode =
   | IPC of int (* port number for IPC *)
   | Local
 
+(* [ Initialization of StateService ]
+
+  We have two service modes currently, one via an inter-process-communication
+  with the blockchain and the other via the full state provided as an input
+  to the interpreter. The IPC mode is on-demand, which means that only parts
+  of the state that are necessary are fetched / updated, not all of it.
+
+  While the below API provides a uniform interface for fetching and updating
+  states for either modes, setting up a new contract (deployment) requires
+  more care. At the time of deployment, a remote database (i.e., IPC  mode)
+  needs to be updated with the initial state values. This requires a call
+  to the `update` function below for each state variable. On the other hand,
+  for the `Local` mode, the StateService module is directly initialized with
+  the field values (`fval` of `ss_field` will not be `None`) on every run,
+  not just deployment.
+
+*)
+
 (* Sets up the state service object. Should be called before any queries. *)
 val initialize : sm:service_mode -> fields:ss_field list-> unit
 (* Expensive operation, use with care. *)

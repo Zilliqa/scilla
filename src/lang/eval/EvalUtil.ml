@@ -172,11 +172,13 @@ module Configuration = struct
       | (Some v, g) -> pure (v, g)
       | _ -> fail1 (Printf.sprintf "Error loading field %s" i) (ER.get_loc (get_rep k))
 
+  (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
   let map_update m klist vopt =
     match vopt with
     | Some v -> fromR @@ StateService.update ~fname:m ~keys:klist ~value:v
     | None -> fromR @@  StateService.remove ~fname:m ~keys:klist
 
+  (* Fetch from a map. If "fetchval" is true, fetch the value, else just query if the key exists. *)
   let map_get st m klist fetchval =
     if fetchval
     then 
