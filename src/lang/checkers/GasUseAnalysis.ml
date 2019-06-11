@@ -35,7 +35,7 @@ module ScillaGUA
   module SER = SR
   module EER = ER
   module GUASyntax = ScillaSyntax (SR) (ER)
-  module TU = TypeUtilities (SR) (ER)
+  module TU = TypeUtilities
   module Gas = Gas.ScillaGas (SR) (ER)
 
   open GUASyntax

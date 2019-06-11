@@ -30,7 +30,7 @@ module ScillaBuiltIns
     (SR : Rep)
     (ER : Rep) = struct
 
-  module BuiltinTypeUtilities = TypeUtilities (SR) (ER)
+  module BuiltinTypeUtilities = TypeUtilities
   open BuiltinTypeUtilities
 
   let print_literal_list ls =

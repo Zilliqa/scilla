@@ -33,9 +33,8 @@ module ScillaGas
     (SR : Rep)
     (ER : Rep) = struct
 
-  module GasTypeUtilities = TypeUtilities (SR) (ER)
   module GasSyntax = ScillaSyntax (SR) (ER)
-  open GasTypeUtilities
+  open TypeUtilities
   open GasSyntax
 
   (* The storage cost of a literal, based on it's size. *)
