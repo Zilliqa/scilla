@@ -25,7 +25,7 @@ open Syntax
 
 module ER = ParserRep
 module SR = ParserRep
-module SSTypeUtil = TypeUtilities (SR) (ER)
+module SSTypeUtil = TypeUtilities
 module EvalSyntax = ScillaSyntax (SR) (ER)
 
 open EvalSyntax
