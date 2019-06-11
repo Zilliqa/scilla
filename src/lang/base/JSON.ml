@@ -29,7 +29,7 @@ open PrimTypes
 open BuiltIns
 open PrettyPrinters
 
-module JSONTypeUtilities = TypeUtilities (ParserRep) (ParserRep)
+module JSONTypeUtilities = TypeUtilities
 module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
 
 open JSONTypeUtilities

@@ -221,9 +221,7 @@ end
 (*             Utility function for matching types              *)
 (****************************************************************)
 
-module TypeUtilities
-    (SR : Rep)
-    (ER : Rep) = struct
+module TypeUtilities = struct
 
   module MakeTEnv = MakeTEnv
 

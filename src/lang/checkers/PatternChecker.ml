@@ -34,7 +34,7 @@ module ScillaPatternchecker
   module UncheckedPatternSyntax = ScillaSyntax (SR) (ER)
   module CheckedPatternSyntax = ScillaSyntax (SPR) (EPR)
 
-  module TU = TypeUtilities (SR) (ER)
+  module TU = TypeUtilities
   open UncheckedPatternSyntax
   open TU
   

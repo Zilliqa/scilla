@@ -33,7 +33,7 @@ open ParserUtil
 module SR = ParserRep
 module ER = ParserRep
 module EvalSyntax = ScillaSyntax (SR) (ER)
-module EvalTypeUtilities = TypeUtilities (SR) (ER)
+module EvalTypeUtilities = TypeUtilities
 module EvalBuiltIns = ScillaBuiltIns (SR) (ER) 
 module EvalGas = ScillaGas (SR) (ER)
 
