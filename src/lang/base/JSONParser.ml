@@ -22,14 +22,13 @@
 open Yojson
 open Syntax
 open ErrorUtils
-open ParserUtil
 open Core
 open PrimTypes
 open TypeUtil
 open Datatypes
 open Utils
 
-module JSONTypeUtilities = TypeUtilities (ParserRep) (ParserRep)
+module JSONTypeUtilities = TypeUtilities
 open JSONTypeUtilities
 
 (*************************************)

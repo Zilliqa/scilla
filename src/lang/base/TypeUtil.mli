@@ -81,9 +81,7 @@ module type MakeTEnvFunctor = functor
 
 module PlainTypes : QualifiedTypes
 
-module TypeUtilities
-    (SR : Rep)
-    (ER : Rep) : sig
+module TypeUtilities : sig
 
   module MakeTEnv : MakeTEnvFunctor
     
