@@ -71,7 +71,7 @@ module ScillaTypechecker
   include TypedSyntax
   include ETR
   
-  module TU = TypeUtilities (SR) (ER)
+  module TU = TypeUtilities
   module TBuiltins = ScillaBuiltIns (SR) (ER)
   module TypeEnv = TU.MakeTEnv(PlainTypes)(ER)
   module CU = ScillaContractUtil (SR) (ER)
