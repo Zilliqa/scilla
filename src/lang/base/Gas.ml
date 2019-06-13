@@ -163,7 +163,8 @@ module ScillaGas
     | Builtin_to_uint256, [a], _
       when (is_bystrx_type a) && get (bystrx_width a) <= 32 ->
       pure (32 * base)
-    | Builtin_sha256hash, _, [a] ->
+    | Builtin_sha256hash, _, [a]
+    | Builtin_schnorr_get_address, _, [a] ->
         (* Block size of sha256hash is 512 *)
         pure @@ (div_ceil (String.length (pp_literal a)) 64) * 15 * base
     | Builtin_keccak256hash, _, [a] ->
@@ -260,6 +261,7 @@ module ScillaGas
     (Builtin_schnorr_verify, [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster, 1);
     (Builtin_ecdsa_verify, [bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster, 1);
     (Builtin_concat, [tvar "'A"; tvar "'A"], crypto_coster, 1);
+    (Builtin_schnorr_get_address, [bystrx_typ pubkey_len], crypto_coster, 1);
 
     (* Maps *)
     (Builtin_contains, [tvar "'A"; tvar "'A"], map_coster, 1);

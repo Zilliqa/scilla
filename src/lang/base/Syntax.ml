@@ -305,6 +305,7 @@ type builtin =
   | Builtin_to_uint64
   | Builtin_to_uint128
   | Builtin_to_nat
+  | Builtin_schnorr_get_address
 [@@deriving sexp]
 
 type 'rep builtin_annot = builtin * 'rep
@@ -328,6 +329,7 @@ let pp_builtin b = match b with
   | Builtin_bystr20_to_bech32 -> "bystr20_to_bech32"
   | Builtin_schnorr_verify -> "schnorr_verify"
   | Builtin_ecdsa_verify -> "ecdsa_verify"
+  | Builtin_schnorr_get_address -> "schnorr_get_address"
   | Builtin_contains -> "contains"
   | Builtin_put -> "put"
   | Builtin_get -> "get"
@@ -368,6 +370,7 @@ let parse_builtin s loc = match s with
   | "bystr20_to_bech32" -> Builtin_bystr20_to_bech32
   | "schnorr_verify" -> Builtin_schnorr_verify
   | "ecdsa_verify" -> Builtin_ecdsa_verify
+  | "schnorr_get_address" -> Builtin_schnorr_get_address
   | "contains" -> Builtin_contains
   | "put" -> Builtin_put
   | "get" -> Builtin_get

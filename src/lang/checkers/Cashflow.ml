@@ -915,6 +915,7 @@ module ScillaCashflowChecker
       | Builtin_sha256hash
       | Builtin_keccak256hash
       | Builtin_ripemd160hash
+      | Builtin_schnorr_get_address
       | Builtin_strlen
       | Builtin_to_bystr ->
           let c_r_sigs =
