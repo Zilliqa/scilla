@@ -827,7 +827,7 @@ module ScillaBuiltIns
         (* Hash the public key *)
         let pkh = sha256_hasher pks in
         (* and extract the least significant 20 bytes. *)
-        let addr = Core.String.sub pkh ~pos:12 ~len:20 in
+        let addr = Core.String.suffix pkh 20 in
         (match Bystrx.of_raw_bytes address_length addr with
         | Some bs -> pure @@ ByStrX bs
         | None -> builtin_fail "schnorr_get_address: Internal error." ls)
