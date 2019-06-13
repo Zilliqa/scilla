@@ -53,10 +53,10 @@ let check_extract_cstate name res gas_limit =
   match res Eval.init_gas_kont gas_limit with
   | Error (err, remaining_gas) ->
       fatal_error_gas err remaining_gas
-  | Ok ((_, cstate), remaining_gas) ->
+  | Ok ((_, cstate, field_vals), remaining_gas) ->
       plog (sprintf "[Initializing %s's fields]\nSuccess!\n"
          name );
-      cstate, remaining_gas
+      cstate, remaining_gas, field_vals
 
 (*****************************************************)
 (*   Running the simularion and printing results     *)
@@ -90,10 +90,9 @@ let input_state_json filename =
      no_bal_states, bal_int
 
 (* Add balance to output json and print it out *)
-
-let output_state_json (cstate : EvalUtil.ContractState.t) =
-  let ballit = (balance_label, UintLit(Uint128L cstate.balance)) in
-  let concatlist = List.cons ballit cstate.fields in
+let output_state_json balance field_vals =
+  let ballit = (balance_label, UintLit (Uint128L balance)) in
+  let concatlist = List.cons ballit field_vals in
     JSON.ContractState.state_to_json concatlist;;
 
 let output_message_json gas_remaining mlist =
@@ -168,6 +167,7 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
 let () =
   let cli = Cli.parse () in
   let is_deployment = (cli.input_message = "") in
+  let is_ipc = cli.ipc_port <> 0 in
   let is_library =
     (FilePath.get_extension cli.input = GlobalConfig.StdlibTracker.file_extn_library) in
   let gas_remaining =
@@ -261,10 +261,30 @@ let () =
         let init_res = init_module cmod initargs [] Uint128.zero bstate elibs in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
-        let (cstate', remaining_gas') = check_extract_cstate cli.input init_res gas_remaining in
+        let (cstate', remaining_gas', field_vals) = check_extract_cstate cli.input init_res gas_remaining in
+
+        (* If the data store is not local, we must update the store with the initial field values.
+         * Refer to the details comments at [Initialization of StateService]. *)
+        if is_ipc then (
+          let open StateService in
+          let open MonadUtil in
+          let open Result.Let_syntax in
+          let fields = List.map cstate'.fields ~f:(fun (s, t) -> { fname = s; ftyp = t; fval = None }) in
+          let sm = IPC (cli.ipc_port) in
+          let () = initialize ~sm ~fields in
+          match
+             (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
+             let%bind _ = mapM field_vals ~f:(fun (s, v) ->
+              update ~fname:(asId s) ~keys:[] ~value:v
+             ) in
+             finalize ()
+          with
+          | Error s -> fatal_error_gas s remaining_gas'
+          | Ok _ -> ()
+        );
          
         (plog (sprintf "\nContract initialized successfully\n");
-          (`Null, output_state_json cstate', `List [], false), remaining_gas')
+          (`Null, output_state_json cstate'.balance field_vals, `List [], false), remaining_gas')
       else
         (* Not initialization, execute transition specified in the message *)
         (let mmsg = 
@@ -278,22 +298,48 @@ let () =
         in
         let m = Msg mmsg in
 
-        (* Retrieve state variables *)
-        let (curargs, cur_bal) = 
-        try
-          input_state_json cli.input_state
-        with
-        | Invalid_json s ->
-            fatal_error_gas
-              (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state)))
-            gas_remaining
+        let cstate, gas_remaining' = 
+        if is_ipc then
+          (* TODO: Get balance as command line argument. *)
+          let cur_bal = Stdint.Uint128.zero in
+          let init_res = init_module cmod initargs [] cur_bal bstate elibs in
+          let cstate, gas_remaining', _ = check_extract_cstate cli.input init_res gas_remaining in
+          (* Initialize the state server. *)
+          let fields = List.map cstate.fields ~f:(fun (s, t) ->
+            let open StateService in
+            { fname = s; ftyp = t; fval = None }
+          ) in
+          let () = StateService.initialize ~sm:(IPC cli.ipc_port) ~fields in
+          (cstate, gas_remaining')
+        else
+
+          (* Retrieve state variables *)
+          let (curargs, cur_bal) = 
+          try
+            input_state_json cli.input_state
+          with
+          | Invalid_json s ->
+              fatal_error_gas
+                (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state)))
+              gas_remaining
+          in
+
+          (* Initializing the contract's state *)
+          let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
+          (* Prints stats after the initialization and returns the initial state *)
+          (* Will throw an exception if unsuccessful. *)
+          let cstate, gas_remaining', field_vals = check_extract_cstate cli.input init_res gas_remaining in
+
+          (* Initialize the state server. *)
+          let fields = List.map field_vals ~f:(fun (s, l) ->
+            let open StateService in
+            let t = List.Assoc.find_exn cstate.fields ~equal:(=) s in
+            { fname = s; ftyp = t; fval = Some l }
+          ) in
+          let () = StateService.initialize ~sm:Local ~fields in
+          (cstate, gas_remaining')
         in
 
-        (* Initializing the contract's state *)
-        let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
-        (* Prints stats after the initialization and returns the initial state *)
-        (* Will throw an exception if unsuccessful. *)
-        let cstate, gas_remaining' = check_extract_cstate cli.input init_res gas_remaining in
         (* Contract code *)
         let ctr = cmod.contr in
 
@@ -302,8 +348,16 @@ let () =
         let step_result = handle_message ctr cstate bstate m in
         let (cstate', mlist, elist, accepted_b), gas =
           check_after_step step_result gas_remaining' in
-      
-        let osj = output_state_json cstate' in
+
+        (* If we're using a local state (JSON file) then need to fetch and dump it. *)
+        let field_vals =
+          if is_ipc then [] else
+            match StateService.get_full_state () with
+            | Error s -> fatal_error_gas s gas
+            | Ok fv -> fv
+        in
+
+        let osj = output_state_json cstate'.balance field_vals in
         let omj = output_message_json gas mlist in
         let oej = `List (output_event_json elist) in
           (omj, osj, oej, accepted_b), gas)
