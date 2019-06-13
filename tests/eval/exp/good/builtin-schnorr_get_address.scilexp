@@ -1,0 +1,48 @@
+(* https://github.com/Zilliqa/Zilliqa-JavaScript-Library/blob/dev/packages/zilliqa-js-crypto/test/address.fixtures.ts *)
+
+let p1 =0x0314738163B9BB67AD11AA464FE69A1147DF263E8970D7DCFD8F993DDD39E81BD9 in
+let a1 = 0x4BAF5FADA8E5DB92C3D3242618C5B47133AE003C in
+let a1_gen = builtin schnorr_get_address p1 in
+let r1 = builtin eq a1 a1_gen in
+
+let p2 =0x034CE268AC5A340038D8ACEBBDD7363611A5B1197916775E32481F5D6B104FAF65 in
+let a2 = 0x448261915A80CDE9BDE7C7A791685200D3A0BF4E in
+let a2_gen = builtin schnorr_get_address p2 in
+let r2 = builtin eq a2 a2_gen in
+
+let p3 =0x02FA7A501F323CC53E070C0A945370368679E7572960EC24D8A0387EF3B50A2285 in
+let a3 = 0xDED02FD979FC2E55C0243BD2F52DF022C40ADA1E in
+let a3_gen = builtin schnorr_get_address p3 in
+let r3 = builtin eq a3 a3_gen in
+
+let p4 =0x036F8676E473AF20B4CCE7D327103DE4504A9C00EAE7EA03D0A365FB48817AC97F in
+let a4 = 0x13F06E60297BEA6A3C402F6F64C416A6B31E586E in
+let a4_gen = builtin schnorr_get_address p4 in
+let r4 = builtin eq a4 a4_gen in
+
+let p5 =0x034C39363529C2D4078F72B8C498C4CBC5BA5E10D8666FE06F104A27E0E44242A0 in
+let a5 = 0x1A90C25307C3CC71958A83FA213A2362D859CF33 in
+let a5_gen = builtin schnorr_get_address p5 in
+let r5 = builtin eq a5 a5_gen in
+
+let p6 =0x026DA5BF6C3A3C91C08A3DD7FBCE0BEAF5D436039C97B07A0F61AA4B9493E46787 in
+let a6 = 0x625ABAEBD87DAE9AB128F3B3AE99688813D9C5DF in
+let a6_gen = builtin schnorr_get_address p6 in
+let r6 = builtin eq a6 a6_gen in
+
+let p7 =0x032A661F9D4AB8DD9818CED2F62F3DA14FDD23E68E58D01A4AE186231D7FB609BB in
+let a7 = 0x36BA34097F861191C48C839C9B1A8B5912F583CF in
+let a7_gen = builtin schnorr_get_address p7 in
+let r7 = builtin eq a7 a7_gen in
+
+let p8 =0x036A94E925BB200DCE41A46C9026E023B226DD5B4CB227CE766D60CC8FAB218148 in
+let a8 = 0xD2453AE76C9A86AAE544FCA699DBDC5C576AEF3A in
+let a8_gen = builtin schnorr_get_address p8 in
+let r8 = builtin eq a8 a8_gen in
+
+let p9 =0x0247F13639C7597C8AE2467DD29D219C2749260F690D4069930FDEB7866B2BC1FA in
+let a9 = 0x72220E84947C36118CDBC580454DFAA3B918CD97 in
+let a9_gen = builtin schnorr_get_address p9 in
+let r9 = builtin eq a9 a9_gen in
+
+True

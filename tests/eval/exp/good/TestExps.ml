@@ -118,6 +118,7 @@ let explist = [
   "type_subst2.scilexp";
   "uint_conversions.scilexp";
   "let_in_let_in.scilexp";
+  "builtin-schnorr_get_address.scilexp";
 ]
 
 module Tests = TestUtil.DiffBasedTests(

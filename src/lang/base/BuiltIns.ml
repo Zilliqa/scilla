@@ -818,6 +818,21 @@ module ScillaBuiltIns
         pure @@ to_Bool v
       | _ -> builtin_fail "ecdsa_verify" ls
 
+    let schnorr_get_address_type = fun_typ (bystrx_typ pubkey_len) (bystrx_typ address_length)
+    let schnorr_get_address_arity = 1
+    let schnorr_get_address ls _ =
+      match ls with
+      | [ByStrX pubkey] when Bystrx.width pubkey = pubkey_len ->
+        let pks = Bystrx.to_raw_bytes pubkey in
+        (* Hash the public key *)
+        let pkh = sha256_hasher pks in
+        (* and extract the least significant 20 bytes. *)
+        let addr = Core.String.suffix pkh 20 in
+        (match Bystrx.of_raw_bytes address_length addr with
+        | Some bs -> pure @@ ByStrX bs
+        | None -> builtin_fail "schnorr_get_address: Internal error." ls)
+      | _ -> builtin_fail "schnorr_get_address" ls
+
   end
 
   (***********************************************************)
@@ -992,6 +1007,7 @@ module ScillaBuiltIns
       | Builtin_bystr20_to_bech32 -> [Crypto.bystr20_to_bech32_arity, Crypto.bystr20_to_bech32_type, elab_id, Crypto.bystr20_to_bech32]
       | Builtin_schnorr_verify -> [Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify]
       | Builtin_ecdsa_verify -> [Crypto.ecdsa_verify_arity, Crypto.ecdsa_verify_type, elab_id, Crypto.ecdsa_verify]
+      | Builtin_schnorr_get_address -> [Crypto.schnorr_get_address_arity, Crypto.schnorr_get_address_type, elab_id, Crypto.schnorr_get_address]
 
       (* Maps *)
       | Builtin_contains -> [Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains]
