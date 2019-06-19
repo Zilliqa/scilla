@@ -32,8 +32,9 @@ module MessagePayload = struct
   let tag_label = "_tag"
   let amount_label = "_amount"
   let sender_label = "_sender"
-  let recipient_label = "_recipient"  
+  let recipient_label = "_recipient"
   let eventname_label = "_eventname"
+  let exception_label = "_exception"
 
   let get_value_for_entry lab f es = 
     match List.find es ~f:(fun (l, _) -> l = lab) with

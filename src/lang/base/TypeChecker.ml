@@ -247,7 +247,7 @@ module ScillaTypechecker
                let%bind _ = check_field_type rtp in
                if is_serializable_type rtp
                then pure @@ TypedSyntax.MVar (add_type_to_ident i t)
-               else fail1 (sprintf "Cannot send values of type %s." (pp_typ rtp))
+               else fail1 (sprintf "Cannot serialize values of type %s." (pp_typ rtp))
                           (ER.get_loc (get_rep i)))
         in
         let%bind typed_bs =
@@ -457,9 +457,21 @@ module ScillaTypechecker
                      "Procedure %s not found." (get_id p) in
              let%bind checked_stmts = type_stmts env sts get_loc in
              pure @@ add_stmt_to_stmts_env (TypedSyntax.CallProc (p, typed_args), rep) checked_stmts
-         | Throw _ ->
-             fail0 @@ sprintf
-               "Type-checking of Throw statements is not supported yet."
+         | Throw iopt ->
+             let%bind checked_stmts = type_stmts env sts get_loc in
+            (match iopt with
+            | Some i ->
+              (* Same as CreateEvent. *)
+              let%bind r = TEnv.resolveT env.pure (get_id i)
+                  ~lopt:(Some (get_rep i)) in
+              let i_type = rr_typ r in
+              let%bind _ = wrap_type_serr stmt @@
+                assert_type_equiv exception_typ i_type.tp in
+              let typed_i = add_type_to_ident i i_type in
+              pure @@ add_stmt_to_stmts_env (TypedSyntax.Throw (Some typed_i), rep) checked_stmts
+            | None ->
+              pure @@ add_stmt_to_stmts_env (TypedSyntax.Throw None, rep) checked_stmts
+            )
         )
         
   and type_match_stmt_branch env styp ptrn sts get_loc =

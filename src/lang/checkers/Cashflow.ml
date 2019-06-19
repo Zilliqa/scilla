@@ -208,8 +208,12 @@ module ScillaCashflowChecker
           CFSyntax.CreateEvnt (add_noinfo_to_ident x)
       | CallProc (p, args) ->
           CFSyntax.CallProc (p, List.map args ~f:add_noinfo_to_ident)
-      | Throw x ->
-          CFSyntax.Throw (add_noinfo_to_ident x) in
+      | Throw xopt ->
+          (match xopt with
+          | Some x -> CFSyntax.Throw (Some (add_noinfo_to_ident x))
+          | None -> CFSyntax.Throw (None)
+          )
+      in
     (res_s, rep)
 
   let cf_init_tag_component component =
@@ -1483,15 +1487,21 @@ module ScillaCashflowChecker
            local_env,
            ctr_tag_map,
            args_changes)
-      | Throw x ->
+      | Throw xopt ->
+        (match xopt with
+        | Some x->
           let x_tag = lub_tags NotMoney (lookup_var_tag x local_env) in
           let new_x = update_id_tag x x_tag in
           let new_local_env = AssocDictionary.update (get_id x) x_tag local_env in
-          (Throw new_x,
+          (Throw (Some new_x),
            field_env,
            new_local_env,
            ctr_tag_map,
-           (get_id_tag x) <> x_tag) in
+           (get_id_tag x) <> x_tag)
+        | None ->
+          (Throw None, field_env, local_env, ctr_tag_map, false)
+        )
+      in
     ((new_s, rep), new_field_env, new_local_env, new_ctr_tag_map, changes)
 
     and cf_tag_stmts ss field_env local_env ctr_tag_map =

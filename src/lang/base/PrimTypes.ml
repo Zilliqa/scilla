@@ -34,6 +34,7 @@ let string_typ = PrimType String_typ
 let bnum_typ = PrimType Bnum_typ
 let msg_typ = PrimType Msg_typ
 let event_typ = PrimType Event_typ
+let exception_typ = PrimType Exception_typ
 let bystr_typ = PrimType Bystr_typ
 let bystrx_typ b = PrimType (Bystrx_typ b)
 

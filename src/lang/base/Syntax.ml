@@ -60,6 +60,7 @@ type prim_typ =
   | Bnum_typ
   | Msg_typ
   | Event_typ
+  | Exception_typ
   | Bystr_typ
   | Bystrx_typ of int
 
@@ -76,6 +77,7 @@ let sexp_of_prim_typ = function
   | Bnum_typ -> Sexp.Atom "BNum"
   | Msg_typ -> Sexp.Atom "Message"
   | Event_typ -> Sexp.Atom "Event"
+  | Exception_typ -> Sexp.Atom "Exception"
   | Bystr_typ -> Sexp.Atom "ByStr"
   | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
 
@@ -104,6 +106,7 @@ let pp_prim_typ = function
   | Bnum_typ -> "BNum"
   | Msg_typ -> "Message"
   | Event_typ -> "Event"
+  | Exception_typ -> "Exception"
   | Bystr_typ -> "ByStr"
   | Bystrx_typ b -> "ByStr" ^ Int.to_string b
 
@@ -604,7 +607,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | SendMsgs of ER.rep ident
     | CreateEvnt of ER.rep ident
     | CallProc of SR.rep ident * ER.rep ident list
-    | Throw of ER.rep ident
+    | Throw of (ER.rep ident) option
   [@@deriving sexp]
   
   let stmt_rep srep = snd srep
@@ -885,8 +888,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         sprintf "Error in call of procedure '%s':\n"
            (get_id p)
     | Throw i ->
-        sprintf "Error in throw of '%s':\n"
-           (get_id i)
+        let is = match i with | Some id -> "of '" ^ (get_id id) ^ "'" | None -> "" in
+        sprintf "Error in throw %s:\n" is
     ), sloc
 
   let wrap_with_info (msg, sloc) res = match res with

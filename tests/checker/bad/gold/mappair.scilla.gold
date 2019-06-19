@@ -67,7 +67,7 @@
     },
     {
       "error_message":
-        "Type error in the binding to into `e`:\nCannot send values of type Nat -> Uint32.",
+        "Type error in the binding to into `e`:\nCannot serialize values of type Nat -> Uint32.",
       "start_location": {
         "file": "checker/bad/mappair.scilla",
         "line": 95,

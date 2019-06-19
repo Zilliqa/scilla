@@ -1,0 +1,16 @@
+scilla_version 0
+
+(* HelloWorld contract *)
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+
+contract HelloWorld
+()
+
+transition setHello (msg : String)
+  f = fun (a : Uint32) => Uint32 0;
+  e = { _exception : "SetHelloError"; fundef : f };
+  throw e
+end

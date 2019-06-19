@@ -319,7 +319,21 @@ let rec stmt_eval conf stmts =
           let%bind conf' = try_apply_as_procedure conf proc p_rest args in
           let%bind _ = stmt_gas_wrap G_CallProc sloc in
           stmt_eval conf' sts
-      | Throw _ -> fail1 (sprintf "Throw statements are not supported yet.") sloc
+      | Throw eopt ->
+        let%bind estr =
+          (match eopt with
+          | Some e ->
+            let%bind e_resolved = Configuration.lookup conf e in
+            pure @@ ": " ^ (pp_literal e_resolved)
+          | None -> pure ""
+          ) in
+        let err = mk_error1 ("Exception thrown" ^ estr) sloc in
+        let elist = List.map conf.component_stack ~f:(fun cname ->
+          { emsg = "Raised from " ^ (get_id cname);
+            startl = ER.get_loc (get_rep cname);
+            endl = dummy_loc }
+        ) in
+        fail (err @ elist)
     )
 
 and try_apply_as_procedure conf proc proc_rest actuals =
@@ -333,7 +347,8 @@ and try_apply_as_procedure conf proc proc_rest actuals =
       (sender_value :: amount_value :: actuals) in
   let%bind conf' = stmt_eval proc_conf proc.comp_body in
   (* Reset configuration *)
-  pure {conf' with env = conf.env; procedures = conf.procedures}
+  pure {conf' with env = conf.env; procedures = conf.procedures;
+        component_stack = proc.comp_name :: conf.component_stack}
       
   
 (*******************************************************)
@@ -545,7 +560,8 @@ let get_transition_and_procedures ctr tag =
   | Some t ->
       let params = t.comp_params in
       let body = t.comp_body in
-      pure (procs, params, body)
+      let name =t.comp_name in
+      pure (procs, params, body, name)
 
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
 let check_message_entries cparams_o entries =
@@ -571,9 +587,9 @@ let prepare_for_message contr m =
   match m with
   | Msg entries ->
       let%bind (tag, incoming_amount, other) = preprocess_message entries in
-      let%bind (tprocedures, tparams, tbody) = get_transition_and_procedures contr tag in
+      let%bind (tprocedures, tparams, tbody, tname) = get_transition_and_procedures contr tag in
       let%bind tenv = check_message_entries tparams other in
-      pure (tenv, incoming_amount, tprocedures, tbody)
+      pure (tenv, incoming_amount, tprocedures, tbody, tname)
   | _ -> fail0 @@ sprintf "Not a message literal: %s." (pp_literal m)
 
 (* Subtract the amounts to be transferred *)
@@ -602,7 +618,7 @@ Handle message:
 * m : Syntax.literal - incoming message 
 *)        
 let handle_message contr cstate bstate m =
-  let%bind (tenv, incoming_funds, procedures, stmts) = prepare_for_message contr m in
+  let%bind (tenv, incoming_funds, procedures, stmts, tname) = prepare_for_message contr m in
   let open ContractState in
   let {env; fields; balance} = cstate in
   (* Add all values to the contract environment *)
@@ -620,6 +636,7 @@ let handle_message contr cstate bstate m =
     blockchain_state = bstate;
     incoming_funds = incoming_funds;
     procedures = procedures;
+    component_stack = [tname];
     emitted = [];
     events = [];
   } in
