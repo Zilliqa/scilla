@@ -653,7 +653,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     { cname : ER.rep ident; c_arg_types : typ list }
   
   type lib_entry =
-    | LibVar of ER.rep ident * expr_annot
+    | LibVar of ER.rep ident * typ option * expr_annot
     | LibTyp of ER.rep ident * ctr_def list
 
   type library =

@@ -408,7 +408,9 @@ tconstr :
   { { cname = asIdL tn (toLoc $startpos); c_arg_types = t }}
 
 libentry :
-| LET; ns = ID; EQ; e= exp { LibVar (asIdL ns (toLoc $startpos(ns)), e) }
+| LET; ns = ID;
+  t = ioption(type_annot)
+  EQ; e= exp { LibVar (asIdL ns (toLoc $startpos(ns)), t, e) }
 | TYPE; tname = CID
   { LibTyp (asIdL tname (toLoc $startpos), []) }
 | TYPE; tname = CID; EQ; constrs = nonempty_list(tconstr)
