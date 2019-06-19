@@ -196,7 +196,7 @@ let add_tests env =
       "mappair" >:::(build_contract_tests env "mappair" fail_code 8 8 []);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 12 14 []);
       "multiple_msgs_test" >::: (build_contract_tests env "multiple-msgs" fail_code 1 1 []);
-      "exception-example" >::: (build_contract_tests env "exception-example" fail_code 1 1 []);
+      "exception-example" >::: (build_contract_tests env "exception-example" fail_code 1 2 []);
       "testlib1_init" >:(build_contract_init_test env fail_code "0x565556789012345678901234567890123456abcd" true);
     ];
     "misc_tests" >::: build_misc_tests env;
