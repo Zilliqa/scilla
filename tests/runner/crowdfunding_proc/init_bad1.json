@@ -1,0 +1,17 @@
+[
+    {
+        "vname" : "owner",
+        "type" : "ByStr20", 
+        "value" : "0x12345678kl90123456789012345678901234567890"
+    },
+    {
+        "vname" : "max_block",
+        "type" : "BNum" ,
+        "value" : "199"
+    },
+    { 
+        "vname" : "goal",
+        "type" : "Int",
+        "value" : "500"
+    }
+]

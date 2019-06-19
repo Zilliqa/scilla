@@ -1,0 +1,20 @@
+[
+  {
+    "vname": "backers",
+    "type": "Map (ByStr20) (Uint128)",
+    "value": [
+      { "key": "0x12345678901234567890123456789012345678cd", "val": "200" },
+      { "key": "0x12345678901234567890123456789012345678ab", "val": "100" }
+    ]
+  },
+  {
+    "vname": "funded",
+    "type": "Bool",
+    "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+  },
+  {
+    "vname": "_balance",
+    "type": "Uint128",
+    "value": "300"
+  }
+]
