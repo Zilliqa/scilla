@@ -327,6 +327,11 @@ stmt:
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
 | SEND; m = sid;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
 | EVENT; m = sid; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }
+| THROW; mopt = option(sid); {
+    match mopt with
+    | Some m -> (Throw (Some (asIdL m (toLoc $startpos))), toLoc $startpos)
+    | None -> (Throw None, toLoc $startpos)
+  }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
 | (* procedure call *)

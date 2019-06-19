@@ -307,7 +307,9 @@ module TypeUtilities = struct
     then pure PrimTypes.msg_typ else
     if (List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.eventname_label) m)
     then pure PrimTypes.event_typ else
-    fail0 ("Invalid message construct. Neither for send nor for event.")
+    if (List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.exception_label) m)
+    then pure PrimTypes.exception_typ else
+    fail0 ("Invalid message construct. Not any of send, event or exception.")
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
   let map_access_type mt nindices = match mt with

@@ -1,0 +1,19 @@
+scilla_version 0
+
+(* HelloWorld contract *)
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+
+contract HelloWorld
+()
+
+transition setHello (msg : String)
+  e = { _exception : "SetHelloError"; msg : msg };
+  throw e
+end
+
+transition emptyThrow (msg : String)
+  throw
+end
