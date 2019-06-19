@@ -13,7 +13,6 @@ let one_msg =
     let nil_msg = Nil {Message} in
     Cons {Message} msg nil_msg
 
-
 let check_update = 
   fun (bs : Map ByStr20 Uint128) =>
   fun (sender : ByStr20) =>
@@ -96,7 +95,7 @@ transition GetFunds ()
     c4 = andb c1 c3;
     match c4 with 
     | False =>  
-	  e = {_eventname : "GetFundsFailure"; caller : _sender; amount : Uint128 0; code : cannot_get_funds};
+	    e = {_eventname : "GetFundsFailure"; caller : _sender; amount : Uint128 0; code : cannot_get_funds};
       event e
     | True => 
       tt = True;
@@ -130,22 +129,22 @@ transition ClaimBack ()
     c5 = andb c3 c4;
     match c5 with
     | False =>
-	  e = { _eventname : "ClaimBackFailure"; caller : _sender; amount : Uint128 0; code : cannot_reclaim_code};
+	    e = { _eventname : "ClaimBackFailure"; caller : _sender; amount : Uint128 0; code : cannot_reclaim_code};
       event e
     | True =>
       res = builtin get bs _sender;
       match res with
       | None =>
-	    e = { _eventname : "ClaimBackFailure"; caller : _sender; amount : Uint128 0; code : cannot_reclaim_code};
+	      e = { _eventname : "ClaimBackFailure"; caller : _sender; amount : Uint128 0; code : cannot_reclaim_code};
         event e
       | Some v =>
         bs1 = builtin remove bs _sender;
         backers := bs1;
-	    msg  = {_tag : ""; _recipient : _sender; _amount : v};
-	    msgs = one_msg msg;
-	    e = { _eventname : "ClaimBackSuccess"; caller : _sender; amount : v; code : reclaimed_code};
+	      msg  = {_tag : ""; _recipient : _sender; _amount : v};
+	      msgs = one_msg msg;
+	      e = { _eventname : "ClaimBackSuccess"; caller : _sender; amount : v; code : reclaimed_code};
         event e;
-	    send msgs
+	      send msgs
       end
     end
   end  
