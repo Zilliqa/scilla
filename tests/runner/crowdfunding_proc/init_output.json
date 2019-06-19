@@ -1,0 +1,16 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "3137",
+  "_accepted": "false",
+  "message": null,
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    { "vname": "backers", "type": "Map (ByStr20) (Uint128)", "value": [] },
+    {
+      "vname": "funded",
+      "type": "Bool",
+      "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+    }
+  ],
+  "events": []
+}

@@ -165,6 +165,7 @@ let add_tests env =
     "these_tests_must_SUCCEED" >:::[
       "crowdfunding" >:::(build_contract_tests env "crowdfunding" succ_code 1 6 []);
       "crowdfunding_init" >:(build_contract_init_test env succ_code "crowdfunding" false);
+      "crowdfunding_proc" >:::(build_contract_tests env "crowdfunding_proc" succ_code 1 6 []);
       "zil-game" >:::(build_contract_tests env "zil-game" succ_code 1 9 []);
       "zil-game_init" >:(build_contract_init_test env succ_code "zil-game" false);
       "creationtest_init" >:(build_contract_init_test env succ_code "creationtest" false);
