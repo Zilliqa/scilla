@@ -13,15 +13,15 @@ library Crowdfunding
 
 let one_msg = 
   fun (msg : Message) => 
-  	let nil_msg = Nil {Message} in
-  	Cons {Message} msg nil_msg
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
 
 let blk_leq =
   fun (blk1 : BNum) =>
   fun (blk2 : BNum) =>
-  	let bc1 = builtin blt blk1 blk2 in 
-  	let bc2 = builtin eq blk1 blk2 in 
-  	orb bc1 bc2
+    let bc1 = builtin blt blk1 blk2 in 
+    let bc2 = builtin eq blk1 blk2 in 
+    orb bc1 bc2
 
 let get_funds_allowed =
   fun (cur_block : BNum) =>
