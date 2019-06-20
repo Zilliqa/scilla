@@ -1,0 +1,25 @@
+{
+  "gas_remaining": "7745",
+  "errors": [
+    {
+      "error_message":
+        "Exception thrown: (Message [(_exception : (String \"SetHelloError\")) ; (msg : (String \"Hello World\"))])",
+      "start_location": {
+        "file": "tests/contracts/exception-example.scilla",
+        "line": 14,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from setHello",
+      "start_location": {
+        "file": "tests/contracts/exception-example.scilla",
+        "line": 12,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -20,7 +20,7 @@
     },
     {
       "error_message":
-        "Type error in the binding to into `m2`:\nCannot send values of type Message.",
+        "Type error in the binding to into `m2`:\nCannot serialize values of type Message.",
       "start_location": {
         "file": "checker/bad/bad_message1.scilla",
         "line": 10,

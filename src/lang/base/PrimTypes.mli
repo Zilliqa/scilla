@@ -41,6 +41,7 @@ val string_typ : typ
 val bnum_typ : typ
 val msg_typ : typ
 val event_typ : typ
+val exception_typ : typ
 val bystr_typ : typ
 val bystrx_typ : int -> typ
 (* Given a ByStrX, return integer X *)

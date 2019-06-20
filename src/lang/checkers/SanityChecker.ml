@@ -100,10 +100,10 @@ module ScillaSanityChecker
         then e 
         else e @ mk_error1 ("Missing " ^ amount_label ^ " or " ^ recipient_label ^ " in Message\n") eloc
       else
-        (* This is an "event" message, and must have "_eventname" field. *)
-        if List.exists (fun (s, _) -> s = eventname_label) msg
+        (* It must be an event or an exception. *)
+        if List.exists (fun (s, _) -> s = eventname_label || s = exception_label) msg
         then e
-        else e @ mk_error1 ("Missing " ^ eventname_label ^ " field in message\n") eloc
+        else e @ mk_error1 ("Invalid message construct.") eloc
       in
         pure e (* as required by "fold_over_messages" *)
     in

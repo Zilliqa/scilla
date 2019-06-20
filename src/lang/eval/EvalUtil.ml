@@ -134,6 +134,8 @@ module Configuration = struct
        that p :: p_rest is a suffix of the list, p_rest contains the
        procedures available to p. *)
     procedures : EvalSyntax.component list;
+    (* The stack of procedure call, starting from the externally invoked transition. *)
+    component_stack : ER.rep ident list;
     (* Emitted messages *)
     emitted : literal list;
     (* Emitted events *)

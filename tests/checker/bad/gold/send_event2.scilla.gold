@@ -75,7 +75,7 @@
     },
     {
       "error_message":
-        "Type error in the binding to into `msg`:\nInvalid message construct. Neither for send nor for event.",
+        "Type error in the binding to into `msg`:\nInvalid message construct. Not any of send, event or exception.",
       "start_location": {
         "file": "checker/bad/send_event2.scilla",
         "line": 219,

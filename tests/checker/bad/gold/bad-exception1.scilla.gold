@@ -1,0 +1,71 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract HelloWorld:\n",
+      "start_location": {
+        "file": "checker/bad/bad-exception1.scilla",
+        "line": 9,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition setHello:\n",
+      "start_location": {
+        "file": "checker/bad/bad-exception1.scilla",
+        "line": 12,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `e`:\nCannot serialize values of type Uint32 -> Uint32.",
+      "start_location": {
+        "file": "checker/bad/bad-exception1.scilla",
+        "line": 14,
+        "column": 48
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition setHello2:\n",
+      "start_location": {
+        "file": "checker/bad/bad-exception1.scilla",
+        "line": 18,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `e`:\nInvalid message construct. Not any of send, event or exception.",
+      "start_location": {
+        "file": "checker/bad/bad-exception1.scilla",
+        "line": 19,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition setHello3:\n",
+      "start_location": {
+        "file": "checker/bad/bad-exception1.scilla",
+        "line": 23,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Error in throw of 'e':\nType mismatch: Exception expected, but Event provided.",
+      "start_location": {
+        "file": "checker/bad/bad-exception1.scilla",
+        "line": 25,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

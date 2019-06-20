@@ -75,6 +75,7 @@ module Tests = TestUtil.DiffBasedTests(
       "name_clashes.scilla";
       "procedure_env.scilla";
       "global_scope_procedures.scilla";
+      "bad-exception1.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
