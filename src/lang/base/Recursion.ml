@@ -229,11 +229,15 @@ module ScillaRecursion
       
   let recursion_lib_entry is_adt_in_scope is_adt_ctr_in_scope lib_entry =
     match lib_entry with
-    | LibVar (n, e) ->
+    | LibVar (n, t, e) ->
         wrap_with_info (
           sprintf "Type error in library variable %s:\n" (get_id n), ER.get_loc (get_rep n)) @@
         let%bind new_e = recursion_exp is_adt_in_scope is_adt_ctr_in_scope e in
-        pure @@ (RecursionSyntax.LibVar (n, new_e), None)
+        let%bind _ =
+          match t with
+          | Some t' -> recursion_typ is_adt_in_scope t'
+          | None -> pure @@ true in
+        pure @@ (RecursionSyntax.LibVar (n, t, new_e), None)
     | LibTyp (tname, ctr_defs) ->
         wrap_with_info (
           sprintf "Type error in library type %s:\n" (get_id tname), ER.get_loc (get_rep tname)) @@

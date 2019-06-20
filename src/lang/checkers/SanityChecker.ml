@@ -325,7 +325,7 @@ module ScillaSanityChecker
     foldM ~f:(fun aenv lentry ->
       match lentry with
       | LibTyp _ -> pure aenv
-      | LibVar (x, e) ->
+      | LibVar (x, _, e) ->
         let%bind n = expr_checker e aenv in
         pure @@ add_env aenv x n
     ) ~init:env elib.lentries
@@ -334,7 +334,7 @@ module ScillaSanityChecker
     (* Bind folds to Many as they aren't much useful. *)
     let env_rec = List.fold_left (fun acc le ->
         match le with
-        | LibVar (i, _) -> add_env acc i Many
+        | LibVar (i, _, _) -> add_env acc i Many
         | LibTyp _ -> acc
       ) (mk_env()) rlibs
     in
@@ -346,7 +346,7 @@ module ScillaSanityChecker
           let%bind lib_env = library_checker elib.libn dep_env in
           (* Retain only env entries from elib. *)
           let lib_env' = filter_env lib_env ~f:(fun name ->
-            List.exists (function | LibTyp _ -> false | LibVar (i, _) -> get_id i = name) elib.libn.lentries
+            List.exists (function | LibTyp _ -> false | LibVar (i, _, _) -> get_id i = name) elib.libn.lentries
           ) in
           let acc_env' = append_env acc_env lib_env' in
           pure acc_env'
