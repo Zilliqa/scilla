@@ -112,8 +112,9 @@ let eliminate_namespaces lib_tree ns_tree =
           let elhs' = rename_in_expr elhs env in
           (* "i" get's a local binding now, don't rename it in rhs. *)
           let env' = List.Assoc.remove env ~equal:((=)) (get_id i) in
+          let t' = Option.map t ~f:(fun t -> rename_in_type t env) in
           let erhs' = rename_in_expr erhs env' in
-          (Let (i, t, elhs', erhs'), eloc)
+          (Let (i, t', elhs', erhs'), eloc)
         | Message spl ->
           let rename_in_payload pl = (match pl with | MLit _ -> pl | MVar v -> MVar (check_and_prefix_id env v)) in
           let spl' = List.map spl ~f:(fun (s, pl) -> (s, rename_in_payload pl)) in
