@@ -61,31 +61,32 @@ module CheckerTests = TestUtil.DiffBasedTests(
     let additional_libdirs = [["checker"; "good"; "lib"]]
     let tests = [
       "adt_test.scilla";
-      "backward_definition_procedure.scilla";
       "cashflow_test.scilla";
-      "InstantiatedListUtils.scillib";
-      "libchain1.scilla";
-      "libchain2.scilla";
-      "libdiamond.scilla";      
-      "libdiamond2.scilla";
-      "lib_typing.scilla";
-      "map-inplace-update-with-_sender.scilla";
-      "map_no_inplace_warn.scilla";
       "missing-accepts.scilla";
       "multiple-accepts.scilla";
-      "namespace1.scilla";
-      "namespace2.scilla";
-      "namespace3.scilla";
       "one-accept.scilla"; 
       "one-transition-accepts.scilla";
       "one-transition-might-accept.scilla";
+      "libchain1.scilla";
+      "libchain2.scilla";
+      "libdiamond.scilla";
+      "InstantiatedListUtils.scillib";
+      "map_no_inplace_warn.scilla";
       "shadowwarn1.scilla";
       "shadowwarn2.scilla";
       "simple-dex-shadowwarn.scilla";
+      "namespace1.scilla";
+      "namespace2.scilla";
+      "namespace3.scilla";
       "TestLibNS1.scillib";
       "TestLibNS2.scillib";
       "TestLibNS3.scillib";
       "TestLibNS4.scillib";
+      "libdiamond2.scilla";
+      "map-inplace-update-with-_sender.scilla";
+      "backward_definition_procedure.scilla";
+      "lib_typing.scilla";
+
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)

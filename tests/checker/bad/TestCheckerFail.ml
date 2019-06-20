@@ -27,55 +27,54 @@ module Tests = TestUtil.DiffBasedTests(
     let custom_args = ["-cf"; "-contractinfo"]
     let additional_libdirs = []
     let tests = [
-      "bad_adt_1.scilla";
-      "bad_adt_2.scilla";
-      "bad_adt_3.scilla";
-      "bad_adt_4.scilla";
-      "bad_adt_7.scilla";
       "bad_fields1.scilla";
       "bad_fields2.scilla";
       "bad_fields3.scilla";
       "bad_fields4.scilla";
-      "bad_lib_type.scilla";
       "bad_map_key_1.scilla";
       "bad_map_key_2.scilla";
       "bad_map_key_3.scilla";
       "bad_map_key_4.scilla";
       "bad_map_key_5.scilla";
+      "map_value_function.scilla";
       "bad_message1.scilla";
       "bad_message2.scilla";
-      "bad_param.scilla";
-      "bad_transition_param.scilla";
-      "bad_version.scilla";
-      "balance_field.scilla";
-      "event_bad1.scilla";
-      "event_bad2.scilla";
-      "forward_definition_procedure.scilla";
-      "global_scope_procedures.scilla";
-      "homonymous_vars.scilla";
-      "homonymous_vars2.scilla";
-      "homonymous_vars3.scilla";
-      "inplace-map.scilla";
-      "lib_bad1.scilla";
-      "mappair2.scilla";
-      "mappair.scilla";
-      "map_value_function.scilla";
       "message_field.scilla";
       "message_field2.scilla";
       "message_field3.scilla";
-      "mutually_recursive_procedure.scilla";
-      "name_clashes.scilla";
-      "procedure_bad_args.scilla";
-      "procedure_bad_type.scilla";
-      "procedure_env.scilla";
-      "procedure_map_arg.scilla";
-      "recursive_procedure.scilla";
       "send_event1.scilla";
       "send_event2.scilla";
       "unbound.scilla";
+      "event_bad1.scilla";
+      "event_bad2.scilla";
+      "lib_bad1.scilla";
+      "zil_mod.scilla";
+      "mappair2.scilla";
+      "mappair.scilla";
+      "inplace-map.scilla";
+      "homonymous_vars.scilla";
+      "homonymous_vars2.scilla";
+      "homonymous_vars3.scilla";
+      "bad_adt_1.scilla";
+      "bad_adt_2.scilla";
+      "bad_adt_3.scilla";
+      "bad_adt_4.scilla";
+      "bad_adt_7.scilla";
       "unserializable_param.scilla";
       "unstorable_adt.scilla";
-      "zil_mod.scilla";
+      "bad_version.scilla";
+      "balance_field.scilla";
+      "bad_param.scilla";
+      "bad_transition_param.scilla";
+      "recursive_procedure.scilla";
+      "mutually_recursive_procedure.scilla";
+      "forward_definition_procedure.scilla";
+      "procedure_bad_type.scilla";
+      "procedure_bad_args.scilla";
+      "procedure_map_arg.scilla";
+      "name_clashes.scilla";
+      "procedure_env.scilla";
+      "global_scope_procedures.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
@@ -101,6 +100,7 @@ module LibTests = TestUtil.DiffBasedTests(
       "libdup2.scilla";
       "namespace1.scilla";
       "TestLibNS1.scillib";
+      "bad_lib_type.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
