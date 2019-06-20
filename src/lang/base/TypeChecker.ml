@@ -530,7 +530,7 @@ module ScillaTypechecker
     let (lib_vars, lib_types) =
       List.partition_map rec_libs
         ~f:(fun le -> match le with
-            | LibVar (n, e) -> `Fst (n, e)
+            | LibVar (n, t, e) -> `Fst (n, t, e)
             | LibTyp (n, ts) ->`Snd (n, ts)) in
     (* recursion primitives must not contain type declarations *)
     let%bind _ =
@@ -539,13 +539,14 @@ module ScillaTypechecker
       | [] -> pure () in
     let env0 = TEnv.copy TEnv.mk in
     foldM lib_vars ~init:([], env0)
-      ~f:(fun (entry_acc, env_acc) (rn, body) ->
+      ~f:(fun (entry_acc, env_acc) (rn, topt, body) ->
           wrap_with_info
             (sprintf "Type error when checking recursion primitive %s:\n"
                (get_id rn), dummy_loc) @@
           let%bind ((_, (ar, _)) as typed_body) = type_expr env0 body in
+          let%bind _ = match topt with Some tannot -> assert_type_equiv tannot ar.tp | None -> pure () in
           let typed_rn = add_type_to_ident rn ar in
-          let new_entries = (TypedSyntax.LibVar (typed_rn, typed_body)) :: entry_acc in
+          let new_entries = (TypedSyntax.LibVar (typed_rn, topt, typed_body)) :: entry_acc in
           let new_env = TEnv.addT (TEnv.copy env_acc) rn ar.tp in
           pure @@ (new_entries, new_env))
 
@@ -577,7 +578,7 @@ module ScillaTypechecker
                 wrap_with_info (msg, ER.get_loc (get_rep tname)) @@
                 let%bind _ = type_lib_typ_ctrs env ctr_defs in
                 pure @@ (acc, env, errs, blist)
-            | LibVar (ln, le) -> 
+            | LibVar (ln, ltopt, le) ->
                 let msg = sprintf
                     "Type error in library variable %s:\n\n" (get_id ln) in
                 let dep_on_blist = free_vars_dep_check le blist in
@@ -591,8 +592,9 @@ module ScillaTypechecker
                   | Ok res' ->
                       (* This went good. *)
                       let (_, (tr, _)) as typed_e = res' in
+                      let%bind _ = match ltopt with Some tannot -> assert_type_equiv tannot tr.tp | None -> pure () in
                       let typed_ln = add_type_to_ident ln tr in
-                      pure @@ (TypedSyntax.LibVar (typed_ln, typed_e) :: acc,
+                      pure @@ (TypedSyntax.LibVar (typed_ln, ltopt, typed_e) :: acc,
                                TEnv.addT (TEnv.copy env) ln tr.tp, errs, blist))
     in
     (* If there has been no errors at all, we're good to go. *)
@@ -638,10 +640,10 @@ module ScillaTypechecker
           let check_dup lib rest (err_acc : scilla_error list) =
             List.fold lib.lentries ~init:err_acc ~f:(fun err_acc entry ->
               (* Check if entry is in rest. *)
-              let ename = match entry with | LibTyp (i, _) | LibVar (i, _) -> i in
+              let ename = match entry with | LibTyp (i, _) | LibVar (i, _, _) -> i in
               List.fold rest ~init:err_acc ~f:(fun err_acc lib' ->
                 List.fold lib'.lentries ~init:err_acc ~f:(fun err_acc entry' ->
-                  let ename' = match entry' with | LibTyp (i, _) | LibVar (i, _) -> i in
+                  let ename' = match entry' with | LibTyp (i, _) | LibVar (i, _, _) -> i in
                   if get_id ename = get_id ename'
                   then
                     err_acc @ (mk_error1 (sprintf "Entry %s in library %s conflicts with entry in library %s" 
@@ -675,7 +677,7 @@ module ScillaTypechecker
                 let (elib' : TypedSyntax.libtree) = { libn = t_lib; deps = dep_libs } in
                 (* from t_env, retain only entries from t_lib and tenv0 *)
                 let env' = TEnv.filterTs (TEnv.copy t_env) ~f:(fun name ->
-                  List.exists t_lib.lentries ~f:(function | LibTyp _ -> false | LibVar (i, _) -> get_id i = name)
+                  List.exists t_lib.lentries ~f:(function | LibTyp _ -> false | LibVar (i, _, _) -> get_id i = name)
                   || TEnv.existsT tenv0 name
                 ) in
                 ((lib_acc @ [elib'], TEnv.append (TEnv.copy tenv_acc) env'), emsgs_acc @ dep_emsgs)
