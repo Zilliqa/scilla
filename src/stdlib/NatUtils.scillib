@@ -1,35 +1,35 @@
 library NatUtils
 
-(* Nat -> Option Nat *)
-let nat_prev : Nat -> Option Nat = fun (n: Nat) =>
-  match n with
-	| Succ n1 => Some {Nat} n1
-	| Zero => None {Nat}
-	end
+let nat_prev : Nat -> Option Nat = 
+  fun (n: Nat) =>
+    match n with
+    | Succ n1 => Some {Nat} n1
+    | Zero => None {Nat}
+    end
 
-(* Nat -> Bool *)
-let is_some_zero : Nat -> Bool = fun (n: Nat) =>
-	match n with
-  | Zero => True
-  | _ => False
-	end
+let is_some_zero : Nat -> Bool = 
+  fun (n: Nat) =>
+    match n with
+    | Zero => True
+    | _ => False
+    end
 
-(* Nat -> Nat -> Bool *)
-let nat_eq : Nat -> Nat -> Bool = fun (n : Nat) => fun (m : Nat) =>
-  let z = Some {Nat} m in
-		let f = fun (res : Option Nat) => fun (n : Nat) =>
-      match res with
-      | None => None {Nat}
-      | Some m1 => nat_prev m1
-			end in
-	let folder = @nat_fold (Option Nat) in
-  let e = folder f z n in
-  match e with
-  | Some Zero => True
-  | _ => False
-	end
+let nat_eq : Nat -> Nat -> Bool = 
+  fun (n : Nat) => 
+  fun (m : Nat) =>
+    let z = Some {Nat} m in
+      let f = fun (res : Option Nat) => fun (n : Nat) =>
+        match res with
+        | None => None {Nat}
+        | Some m1 => nat_prev m1
+        end in
+    let folder = @nat_fold (Option Nat) in
+    let e = folder f z n in
+    match e with
+    | Some Zero => True
+    | _ => False
+    end
 
-(* Nat -> Uint32 *)
 let nat_to_int : Nat -> Uint32 =
   fun (n : Nat) =>
     let f =
@@ -54,7 +54,6 @@ let uint32_to_nat_helper : Option Uint32 -> Option Nat =
     | None => None {Nat}
     end
 
-(* UintX/IntX -> Option Nat *)
 let uint32_to_nat : Uint32 -> Option Nat =
   fun (n : Uint32) =>
     let m = builtin to_uint32 n in
