@@ -146,7 +146,7 @@ module ScillaContractUtil
       let lentries = (match cmod.libs with |  None -> [] | Some lib -> lib.lentries) in
       foldM ~f:(fun acc le ->
         match le with
-        | LibVar (b, (ex, _)) -> expr_folder b ex acc
+        | LibVar (b, _, (ex, _)) -> expr_folder b ex acc
         | LibTyp _ -> pure acc
       ) ~init:init lentries
     in

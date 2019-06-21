@@ -112,8 +112,9 @@ let eliminate_namespaces lib_tree ns_tree =
           let elhs' = rename_in_expr elhs env in
           (* "i" get's a local binding now, don't rename it in rhs. *)
           let env' = List.Assoc.remove env ~equal:((=)) (get_id i) in
+          let t' = Option.map t ~f:(fun t -> rename_in_type t env) in
           let erhs' = rename_in_expr erhs env' in
-          (Let (i, t, elhs', erhs'), eloc)
+          (Let (i, t', elhs', erhs'), eloc)
         | Message spl ->
           let rename_in_payload pl = (match pl with | MLit _ -> pl | MVar v -> MVar (check_and_prefix_id env v)) in
           let spl' = List.map spl ~f:(fun (s, pl) -> (s, rename_in_payload pl)) in
@@ -184,10 +185,11 @@ let eliminate_namespaces lib_tree ns_tree =
         let entry' = LibTyp(check_and_prefix_id env'' i, ctrs') in
         let names = (get_id i) :: List.map ctrs' ~f:(fun ctr -> get_id ctr.cname) in
         (entry' :: accentries, env'', accnames @ names)
-      | LibVar (i, exp) ->
+      | LibVar (i, t, exp) ->
         (* from this point, env has "i", to be renamed. *)
         let env' = ((get_id i), namespace) :: accenv in
-        let entry' = LibVar (check_and_prefix_id env' i, rename_in_expr exp env') in
+        let t' = Option.map t ~f:(fun t -> rename_in_type t accenv) in
+        let entry' = LibVar (check_and_prefix_id env' i, t', rename_in_expr exp env') in
         (* we're appending entries in the reverse order. *)
         (entry' :: accentries, env', accnames @ [get_id i])
     ) in

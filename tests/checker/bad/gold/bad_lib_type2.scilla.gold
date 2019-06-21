@@ -1,0 +1,29 @@
+{
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract BadLibType:\n",
+      "start_location": {
+        "file": "checker/bad/bad_lib_type2.scilla",
+        "line": 25,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in library BadLibType:\n\n",
+      "start_location": {
+        "file": "checker/bad/bad_lib_type2.scilla",
+        "line": 7,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type mismatch: forall 'A. forall 'B. ('A -> Uint128) -> List ('A) -> List (Uint128) expected, but forall 'A. forall 'B. ('A -> 'B) -> List ('A) -> List ('B) provided.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

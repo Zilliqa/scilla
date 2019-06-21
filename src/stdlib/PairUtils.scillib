@@ -1,6 +1,6 @@
 library PairUtils
 
-let fst =
+let fst : forall 'A. forall 'B. Pair 'A 'B -> 'A =
   tfun 'A =>
   tfun 'B =>
   fun (p : Pair ('A) ('B)) =>
@@ -8,7 +8,7 @@ let fst =
     | Pair a b => a
     end
 
-let snd =
+let snd : forall 'A. forall 'B. Pair 'A 'B -> 'B =
   tfun 'A =>
   tfun 'B =>
   fun (p : Pair ('A) ('B)) =>

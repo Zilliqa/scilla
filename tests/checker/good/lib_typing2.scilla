@@ -1,0 +1,28 @@
+scilla_version 0
+
+(* The purpose of this test contract is to demonstrate that *)
+(* type errors in variable declarations in libraries are *)
+(* handled by the type checker. *)
+
+library LibTyping2
+
+(* Apply (f : 'A -> 'B) to every element of List 'A *)
+(* to generate List 'B. *)
+let list_map : forall 'A. forall 'B. ('A -> 'B) -> List 'A -> List 'B =
+  tfun 'A => tfun 'B =>
+  fun (f : 'A -> 'B) => fun (l : List 'A) =>
+  let folder = @list_foldr 'A (List 'B) in
+  let init = Nil {'B} in
+  let iter = fun (h : 'A) => fun (z : List 'B) =>
+    let h1 = f h in
+    Cons {'B} h1 z  		
+	in folder iter init l
+
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract LibTyping2
+
+(*  Parameters *)
+()

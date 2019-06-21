@@ -46,7 +46,7 @@ module StdlibTypeCacher
         ~f:(fun acc lib_entry ->
             match lib_entry with
             | LibTyp _ -> acc (* TODO: cache types as well *)
-            | LibVar (lname, _) -> 
+            | LibVar (lname, _, _) -> 
             (acc ^ (get_id lname))  (* TODO, Issue #179: cache lexp, possibly using (spp_expr lexp)*)
       ) ~init:"" lib.lentries in
     hash s
@@ -151,7 +151,7 @@ module StdlibTypeCacher
       List.partition_map lib.lentries
         ~f:(fun entry ->
             match entry with
-            | LibVar (lname, _) -> `Fst (get_id lname)
+            | LibVar (lname, _, _) -> `Fst (get_id lname)
             | LibTyp (tname, _) -> `Snd (get_id tname))
     in
     (* OCaml's List.mem is not according to online docs. Why? *)

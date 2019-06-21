@@ -1,21 +1,21 @@
 library NatUtils
 
 (* Nat -> Option Nat *)
-let nat_prev = fun (n: Nat) =>
+let nat_prev : Nat -> Option Nat = fun (n: Nat) =>
   match n with
 	| Succ n1 => Some {Nat} n1
 	| Zero => None {Nat}
 	end
 
 (* Nat -> Bool *)
-let is_some_zero = fun (n: Nat) =>
+let is_some_zero : Nat -> Bool = fun (n: Nat) =>
 	match n with
   | Zero => True
   | _ => False
 	end
 
 (* Nat -> Nat -> Bool *)
-let nat_eq = fun (n : Nat) => fun (m : Nat) =>
+let nat_eq : Nat -> Nat -> Bool = fun (n : Nat) => fun (m : Nat) =>
   let z = Some {Nat} m in
 		let f = fun (res : Option Nat) => fun (n : Nat) =>
       match res with
@@ -30,7 +30,7 @@ let nat_eq = fun (n : Nat) => fun (m : Nat) =>
 	end
 
 (* Nat -> Uint32 *)
-let nat_to_int =
+let nat_to_int : Nat -> Uint32 =
   fun (n : Nat) =>
     let f =
       fun (z : Uint32) =>
@@ -45,7 +45,7 @@ let nat_to_int =
     let zero_int = Uint32 0 in
       folder f zero_int n
 
-let uint32_to_nat_helper =
+let uint32_to_nat_helper : Option Uint32 -> Option Nat =
   fun (m : Option Uint32) =>
     match m with
     | Some x =>
@@ -55,32 +55,32 @@ let uint32_to_nat_helper =
     end
 
 (* UintX/IntX -> Option Nat *)
-let uint32_to_nat =
+let uint32_to_nat : Uint32 -> Option Nat =
   fun (n : Uint32) =>
     let m = builtin to_uint32 n in
     uint32_to_nat_helper m
 
-let uint64_to_nat =
+let uint64_to_nat : Uint64 -> Option Nat =
   fun (n : Uint64) =>
     let m = builtin to_uint32 n in
     uint32_to_nat_helper m
 
-let uint128_to_nat =
+let uint128_to_nat : Uint128 -> Option Nat =
   fun (n : Uint128) =>
     let m = builtin to_uint32 n in
     uint32_to_nat_helper m
 
-let int32_to_nat =
+let int32_to_nat : Int32 -> Option Nat =
   fun (n : Int32) =>
     let m = builtin to_uint32 n in
     uint32_to_nat_helper m
 
-let int64_to_nat =
+let int64_to_nat : Int64 -> Option Nat  =
   fun (n : Int64) =>
     let m = builtin to_uint32 n in
     uint32_to_nat_helper m
 
-let int128_to_nat =
+let int128_to_nat : Int128 -> Option Nat  =
   fun (n : Int128) =>
     let m = builtin to_uint32 n in
     uint32_to_nat_helper m

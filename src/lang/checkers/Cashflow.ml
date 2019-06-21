@@ -254,8 +254,8 @@ module ScillaCashflowChecker
     let { lname ; lentries } = lib in
     let init_tag_entry entry =
       match entry with
-      | LibVar (lname, lexp) ->
-          CFSyntax.LibVar (add_noinfo_to_ident lname, cf_init_tag_expr lexp)
+      | LibVar (lname, ltype, lexp) ->
+          CFSyntax.LibVar (add_noinfo_to_ident lname, ltype, cf_init_tag_expr lexp)
       | LibTyp (lname, type_defs) ->
           CFSyntax.LibTyp (add_noinfo_to_ident lname,
                            List.map ~f:cf_init_tag_type_def type_defs) in

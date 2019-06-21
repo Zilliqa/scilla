@@ -215,10 +215,10 @@ module ScillaPatternchecker
                         { CheckedPatternSyntax.cname = cname;
                           CheckedPatternSyntax.c_arg_types = c_arg_types }) in
                 pure @@ CheckedPatternSyntax.LibTyp (tname, lifted_typs)
-            | LibVar (entryname, lexp) -> 
+            | LibVar (entryname, t, lexp) -> 
                 let msg = sprintf "Error during pattern-match checking of library %s:\n" (get_id entryname) in
                 let%bind checked_lexp = wrap_with_info (msg, ER.get_loc (get_rep entryname)) @@ pm_check_expr lexp in
-                pure @@ CheckedPatternSyntax.LibVar (entryname, checked_lexp)) lentries in
+                pure @@ CheckedPatternSyntax.LibVar (entryname, t, checked_lexp)) lentries in
     pure @@ { CheckedPatternSyntax.lname = libname;
               CheckedPatternSyntax.lentries = checked_lentries }
 

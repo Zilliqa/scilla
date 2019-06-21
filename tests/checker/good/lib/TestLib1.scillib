@@ -11,3 +11,11 @@ type TestType =
 type TestType2 =
 | Constructor3 of TestType
 | Constructor4 of Uint32
+
+let tval : TestType = Constructor1
+
+let tval2 =
+  let n = Uint32 0 in
+  let tt2 = Constructor4 n in
+  let tval3 : TestType2 = tt2 in
+  tval3

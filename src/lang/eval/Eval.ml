@@ -40,7 +40,7 @@ module CU = ScillaContractUtil (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 let reserved_names =
   List.map ~f:(fun entry ->
       match entry with
-      | LibVar (lname, _) -> get_id lname
+      | LibVar (lname, _, _) -> get_id lname
       | LibTyp (tname, _) -> get_id tname)
     RecursionPrinciples.recursion_principles
 
@@ -398,7 +398,7 @@ let init_lib_entries env libs =
                         Datatypes.tmap = tmaps } in
             let _ = add_adt adt (get_rep tname) in
             eres
-        | LibVar (lname, lexp) ->
+        | LibVar (lname, _, lexp) ->
             let%bind env = eres in
             init_lib_entry env lname lexp)
 
@@ -420,7 +420,7 @@ let init_libraries clibs elibs =
         List.exists entries ~f:(fun entry ->
           match entry with
           | LibTyp _ -> false (* Types are not part of Env. *)
-          | LibVar (i, _) -> get_id i = name
+          | LibVar (i, _, _) -> get_id i = name
         ) ||
         List.exists rec_env ~f:(fun (name', _) -> name' = name)
       ) in

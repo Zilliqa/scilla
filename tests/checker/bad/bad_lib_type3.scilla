@@ -1,0 +1,28 @@
+scilla_version 0
+
+(* The purpose of this test contract is to demonstrate that *)
+(* type errors in variable declarations in libraries are *)
+(* handled by the type checker. *)
+
+library BadLibType
+
+(* Apply (f : 'A -> Uint128) to every element of List 'A *)
+(* But type declaration is (f: 'A -> 'B) *)
+let list_map : forall 'A. forall 'B. ('A -> 'B) -> List 'A -> List 'B =
+  tfun 'A => tfun 'B =>
+  fun (f : 'A -> Uint128) => fun (l : List 'A) =>
+  let folder = @list_foldr 'A (List Uint128) in
+  let init = Nil {Uint128} in
+  let iter = fun (h : 'A) => fun (z : List Uint128) =>
+    let h1 = f h in
+    Cons {Uint128} h1 z  		
+	in folder iter init l
+
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract BadLibType
+
+(*  Parameters *)
+()

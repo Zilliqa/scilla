@@ -1,0 +1,10 @@
+scilla_version 0
+
+library LibTyping
+
+let x : Uint32 = Uint32 0
+let y = "Test String"
+let z = Uint128 5
+
+contract LibTyping
+()

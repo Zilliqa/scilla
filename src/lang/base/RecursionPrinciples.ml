@@ -47,6 +47,7 @@ module NatRec = struct
     module Foldl = struct
       (* The type of the fixpoint argument *)
       let fix_type = parse_type_wrapper "('T -> Nat -> 'T) -> 'T -> Nat -> 'T"
+      let fold_type_opt = Some (PolyFun(get_id tvar, fix_type))
       let (_, loc) as fix_arg = parse_expr_wrapper ( 
           "fun (fn : 'T -> Nat -> 'T) => fun (f0 : 'T) => fun (n: Nat) => " ^
           "match n with " ^
@@ -58,7 +59,7 @@ module NatRec = struct
       let id = mk_ident "nat_fold"
       let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
       let fold = (TFun(tvar, fold_fix), loc)
-      let entry = LibVar (id, fold)
+      let entry = LibVar (id, fold_type_opt, fold)
     end
 
     module Foldr = struct
@@ -85,6 +86,7 @@ module NatRec = struct
     module Foldl = struct
       (* The type of the fixpoint argument *)
       let fix_type = parse_type_wrapper "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
+      let fold_type_opt = Some (PolyFun(get_id avar, (PolyFun(get_id bvar, fix_type))))
       let (_, loc) as fix_arg = parse_expr_wrapper ( 
           "fun (f : 'B -> 'A -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
           "match l with " ^
@@ -96,12 +98,13 @@ module NatRec = struct
       let id = mk_ident "list_foldl"      
       let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
       let fold = (TFun(avar, (TFun (bvar, fold_fix), loc)), loc)
-      let entry = LibVar (id, fold)
+      let entry = LibVar (id, fold_type_opt, fold)
     end
 
     module Foldr = struct
       (* The type of the fixpoint argument *)
       let fix_type = parse_type_wrapper "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
+      let fold_type_opt = Some (PolyFun(get_id avar, (PolyFun(get_id bvar, fix_type))))
       let (_, loc) as fix_arg = parse_expr_wrapper ( 
           "fun (f : 'A -> 'B -> 'B) => fun (z : 'B) => fun (l: List 'A) => " ^
           "match l with " ^
@@ -113,7 +116,7 @@ module NatRec = struct
       let id = mk_ident "list_foldr"
       let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
       let fold = (TFun(avar, (TFun (bvar, fold_fix), loc)), loc)
-      let entry = LibVar (id, fold)
+      let entry = LibVar (id, fold_type_opt, fold)
     end
 
   end

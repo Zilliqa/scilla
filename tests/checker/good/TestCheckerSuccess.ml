@@ -86,6 +86,8 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "libdiamond2.scilla";
       "map-inplace-update-with-_sender.scilla";
       "backward_definition_procedure.scilla";
+      "lib_typing.scilla";
+      "lib_typing2.scilla";
 
     ]
     let exit_code : Unix.process_status = WEXITED 0
