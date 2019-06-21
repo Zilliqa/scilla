@@ -1,6 +1,6 @@
 library IntUtils
 
-let int_neq =
+let int_neq : forall 'A. ('A -> 'A -> Bool) -> 'A -> 'A -> Bool =
   tfun 'A =>
   fun (eq : 'A -> 'A -> Bool) =>
   fun (a : 'A) =>
@@ -11,7 +11,8 @@ let int_neq =
     | False => True
     end
 
-let int_le =
+let int_le : forall 'A. ('A -> 'A -> Bool) -> ('A -> 'A -> Bool) -> 
+  'A -> 'A -> Bool =
   tfun 'A =>
   fun (eq : 'A -> 'A -> Bool) =>
   fun (lt : 'A -> 'A -> Bool) =>
@@ -23,14 +24,14 @@ let int_le =
     | False => eq a b
     end
 
-let int_gt =
+let int_gt : forall 'A. ('A -> 'A -> Bool) -> 'A -> 'A -> Bool =
   tfun 'A =>
   fun (lt : 'A -> 'A -> Bool) =>
   fun (a : 'A) =>
   fun (b : 'A) =>
     lt b a
 
-let int_ge =
+let int_ge : forall 'A. ('A -> 'A -> Bool) -> ('A -> 'A -> Bool) -> 'A -> 'A -> Bool =
   tfun 'A =>
   fun (eq : 'A -> 'A -> Bool) =>
   fun (lt : 'A -> 'A -> Bool) =>
@@ -40,69 +41,69 @@ let int_ge =
     le eq lt b a
 
 (* int_eq instantiations *)
-let int32_eq =
+let int32_eq : Int32 -> Int32 -> Bool =
   fun (a : Int32) =>
   fun (b : Int32) =>
     builtin eq a b
-let int64_eq =
+let int64_eq : Int64 -> Int64 -> Bool =
   fun (a : Int64) =>
   fun (b : Int64) =>
     builtin eq a b
-let int128_eq =
+let int128_eq : Int128 -> Int128 -> Bool =
   fun (a : Int128) =>
   fun (b : Int128) =>
     builtin eq a b
-let int256_eq =
+let int256_eq : Int256 -> Int256 -> Bool =
   fun (a : Int256) =>
   fun (b : Int256) =>
     builtin eq a b
-let uint32_eq =
+let uint32_eq : Uint32 -> Uint32 -> Bool =
   fun (a : Uint32) =>
   fun (b : Uint32) =>
     builtin eq a b
-let uint64_eq =
+let uint64_eq : Uint64 -> Uint64 -> Bool =
   fun (a : Uint64) =>
   fun (b : Uint64) =>
     builtin eq a b
-let uint128_eq =
+let uint128_eq : Uint128 -> Uint128 -> Bool =
   fun (a : Uint128) =>
   fun (b : Uint128) =>
     builtin eq a b
-let uint256_eq =
+let uint256_eq : Uint256 -> Uint256 -> Bool =
   fun (a : Uint256) =>
   fun (b : Uint256) =>
     builtin eq a b
 
 (* int_lt instantiations *)
-let int32_lt =
+let int32_lt : Int32 -> Int32 -> Bool =
   fun (a : Int32) =>
   fun (b : Int32) =>
     builtin lt a b
-let int64_lt =
+let int64_lt : Int64 -> Int64 -> Bool =
   fun (a : Int64) =>
   fun (b : Int64) =>
     builtin lt a b
-let int128_lt =
+let int128_lt : Int128 -> Int128 -> Bool =
   fun (a : Int128) =>
   fun (b : Int128) =>
     builtin lt a b
-let int256_lt =
+let int256_lt : Int256 -> Int256 -> Bool =
   fun (a : Int256) =>
   fun (b : Int256) =>
     builtin lt a b
-let uint32_lt =
+let uint32_lt : Uint32 -> Uint32 -> Bool =
   fun (a : Uint32) =>
   fun (b : Uint32) =>
     builtin lt a b
-let uint64_lt =
+let uint64_lt : Uint64 -> Uint64 -> Bool =
   fun (a : Uint64) =>
   fun (b : Uint64) =>
     builtin lt a b
-let uint128_lt =
+let uint128_lt : Uint128 -> Uint128 -> Bool =
   fun (a : Uint128) =>
   fun (b : Uint128) =>
     builtin lt a b
-let uint256_lt =
+let uint256_lt : Uint256 -> Uint256 -> Bool =
   fun (a : Uint256) =>
   fun (b : Uint256) =>
     builtin lt a b
