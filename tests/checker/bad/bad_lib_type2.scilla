@@ -6,8 +6,8 @@ scilla_version 0
 
 library BadLibType
 
-(* Apply (f : 'A -> Uint128) to every element of List 'A *)
-(* But type declaration is (f: 'A -> 'B) *)
+(* Apply (f : 'A -> 'B) to every element of List 'A *)
+(* But type declaration is (f: 'A -> Uint128) *)
 let list_map : forall 'A. forall 'B. ('A -> Uint128) -> List 'A -> List Uint128 =
   tfun 'A => tfun 'B =>
   fun (f : 'A -> 'B) => fun (l : List 'A) =>
