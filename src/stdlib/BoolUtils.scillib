@@ -23,13 +23,15 @@ let orb : Bool -> Bool -> Bool =
       end
     end
 
-let negb : Bool -> Bool = fun (b : Bool) => 
-  match b with
-  | True => False
-  | False => True
-  end
+let negb : Bool -> Bool = 
+  fun (b : Bool) => 
+    match b with
+    | True => False
+    | False => True
+    end
 
-let bool_to_string : Bool -> String = fun (flag: Bool) =>
+let bool_to_string : Bool -> String = 
+  fun (flag: Bool) =>
     match flag with
     | True => "True"
     | False => "False"

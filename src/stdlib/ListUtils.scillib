@@ -1,6 +1,5 @@
 library ListUtils
 
-(* ('A -> 'B) -> List 'A -> List 'B *)
 (* Apply (f : 'A -> 'B) to every element of List 'A *)
 (* to generate List 'B. *)
 let list_map : forall 'A. forall 'B. ('A -> 'B) -> List 'A -> List 'B = 
@@ -13,7 +12,6 @@ let list_map : forall 'A. forall 'B. ('A -> 'B) -> List 'A -> List 'B =
     Cons {'B} h1 z  		
 	in folder iter init l
 
-(* ('A -> Bool) -> List 'A -> List 'A *)
 (* Preserving the order of elements in (l : List 'A),  *)
 (* return new list containing only those elements *)
 (* that satisfy the function f. *)
@@ -36,7 +34,6 @@ let list_filter : forall 'A. ('A -> Bool) -> List 'A -> List 'A =
      in
        folder iter init l
 
-(* (List 'A) -> (Option 'A) *)
 (* Return the head element of a list as Some 'A, None otherwise *)
 let list_head : forall 'A. List 'A -> Option 'A =
   tfun 'A =>
@@ -48,7 +45,6 @@ let list_head : forall 'A. List 'A -> Option 'A =
       None {'A}
     end
 
-(* (List 'A) -> (Option List 'A) *)
 (* Return the list except for the head *)
 let list_tail : forall 'A. List 'A -> Option (List 'A) =
   tfun 'A =>
@@ -60,7 +56,6 @@ let list_tail : forall 'A. List 'A -> Option (List 'A) =
       None {(List 'A)}
     end
 
-(* (List 'A -> List 'A ->  List 'A) *)
 (* Append the second list to the first one and return a new List *)
 let list_append : forall 'A. List 'A -> List 'A -> List 'A =
   tfun 'A =>
@@ -77,7 +72,6 @@ let list_append : forall 'A. List 'A -> List 'A -> List 'A =
     in
       folder iter init l1
 
-(* (List 'A -> List 'A) *)
 (* Return the reverse of the argument list *)
 let list_reverse : forall 'A. List 'A -> List 'A =
   tfun 'A =>
@@ -91,7 +85,6 @@ let list_reverse : forall 'A. List 'A -> List 'A =
     in
       folder iter init l
 
-(* (List List 'A) -> List 'A *)
 (* Concatenate a list of lists. The elements of the argument are all *)
 (* concatenated together (in the same order) to give the result. *)
 let list_flatten : forall 'A. List (List 'A) -> List 'A =
@@ -107,7 +100,6 @@ let list_flatten : forall 'A. List (List 'A) -> List 'A =
     in
       folder iter init l
 
-(* List 'A -> Uint32 *)
 (* Number of elements in list *)
 let list_length : forall 'A. List 'A -> Uint32 =
   tfun 'A =>
@@ -124,7 +116,8 @@ let list_length : forall 'A. List 'A -> Uint32 =
 
 (* Helper function for list_eq. Not for public use. *)
 (* Returns Some Nil on successul match. None otherwise. *)
-let list_eq_helper : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Option (List 'A) =
+let list_eq_helper : forall 'A. ('A -> 'A -> Bool) -> 
+  List 'A -> List 'A -> Option (List 'A) =
   tfun 'A =>
   fun (eq : 'A -> 'A -> Bool) =>
   fun (l1 : List 'A) =>
@@ -157,7 +150,6 @@ let list_eq_helper : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Opti
     in
       folder iter init l1
 
-(* ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool *)
 (* Return true iff two lists compare equal. *)
 (* Comparison is performed using the "f" function provided. *)
 let list_eq : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool =
@@ -179,7 +171,6 @@ let list_eq : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool =
       False
     end
 
-(* ('A -> Bool) -> List 'A -> Bool *)
 (* Return True iff all elements of list "l" satisfy predicate "f". *)
 let list_forall : forall 'A. ('A -> Bool) -> List 'A -> Bool =
   tfun 'A =>
@@ -200,7 +191,6 @@ let list_forall : forall 'A. ('A -> Bool) -> List 'A -> Bool =
     in
     folder iter init l
 
-(* ('A -> 'A -> Bool) -> List 'A -> List 'A *)
 (* Stable sort the input list "l". *)
 (* "flt" returns True if the first argument is lesser-than the second *)
 let list_sort : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A =
@@ -250,7 +240,6 @@ let list_sort : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A =
       rec_A_A iter2 nil_A ls
 
 
-(* ('A -> Bool) -> List 'A -> Option 'A *)
 (* Return Some a, where "a" is the first element of *)
 (* "l" that satisfies the predicate "f". *)
 (* Return None iff none of the elements in "l" satisfy "f". *)
@@ -278,7 +267,6 @@ let list_find : forall 'A. ('A -> Bool) -> List 'A -> Option 'A =
      in
        folder iter init l
 
-(* ('A -> Bool) -> List 'A -> Bool *)
 (* Return True iff at least one element of list "l" satisfy predicate "f". *)
 let list_exists : forall 'A. ('A -> Bool) -> List 'A -> Bool =
   tfun 'A =>
@@ -299,7 +287,6 @@ let list_exists : forall 'A. ('A -> Bool) -> List 'A -> Bool =
     in
       folder iter init l
 
-(* ('A -> 'A -> Bool) -> 'A -> List 'A -> Bool *)
 (* Return True iff "m" is in the list "l", as compared by function "f". *)
 let list_mem : forall 'A. ('A -> 'A -> Bool) -> 'A -> List 'A -> Bool =
   tfun 'A =>
@@ -310,7 +297,6 @@ let list_mem : forall 'A. ('A -> 'A -> Bool) -> 'A -> List 'A -> Bool =
     let ex = @list_exists 'A in
     ex ex_pred l
 
-(* List 'A -> List 'B -> List (Pair 'A 'B) *)
 (* Combine corresponding elements of m1 and m2 into a pair *)
 (* and return the resulting list. In case of different number *)
 (* of elements in the lists, the extra elements are ignored. *)
@@ -366,7 +352,6 @@ let list_zip : forall 'A. forall 'B. List 'A -> List 'B -> List (Pair 'A 'B) =
           reverser x
       end
 
-(* ('A -> 'B -> 'C) -> List 'A -> List 'B -> List 'C *)
 (* Combine corresponding elements of m1 and m2 using "f" *)
 (* and return the resulting list of 'C. In case of different number *)
 (* of elements in the lists, the extra elements are ignored. *)
@@ -427,7 +412,6 @@ let list_zip_with : forall 'A. forall 'B. forall 'C. ('A -> 'B -> 'C) ->
           reverser x
       end
 
-(* List (Pair 'A 'B) -> Pair (List 'A) (List 'B) *)
 let list_unzip : forall 'A. forall 'B. List (Pair 'A 'B) -> Pair (List 'A) (List 'B) =
   tfun 'A =>
   tfun 'B =>
@@ -451,7 +435,6 @@ let list_unzip : forall 'A. forall 'B. List (Pair 'A 'B) -> Pair (List 'A) (List
     in
       folder iter init l
 
-(* Uint32 -> List 'A -> Option 'A *)
 (* Returns (Some 'A) if n'th element exists in list. None otherwise *)
 let list_nth : forall 'A. Uint32 -> List 'A -> Option 'A =
   tfun 'A =>

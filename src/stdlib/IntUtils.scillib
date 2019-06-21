@@ -31,7 +31,8 @@ let int_gt : forall 'A. ('A -> 'A -> Bool) -> 'A -> 'A -> Bool =
   fun (b : 'A) =>
     lt b a
 
-let int_ge : forall 'A. ('A -> 'A -> Bool) -> ('A -> 'A -> Bool) -> 'A -> 'A -> Bool =
+let int_ge : forall 'A. ('A -> 'A -> Bool) -> ('A -> 'A -> Bool) -> 
+  'A -> 'A -> Bool =
   tfun 'A =>
   fun (eq : 'A -> 'A -> Bool) =>
   fun (lt : 'A -> 'A -> Bool) =>
