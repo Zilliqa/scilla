@@ -1,6 +1,6 @@
 library BoolUtils
 
-let andb = 
+let andb : Bool -> Bool -> Bool = 
   fun (b : Bool) =>
   fun (c : Bool) =>
     match b with 
@@ -12,7 +12,7 @@ let andb =
       end
     end
 
-let orb = 
+let orb : Bool -> Bool -> Bool = 
   fun (b : Bool) => fun (c : Bool) =>
     match b with 
     | True  => True
@@ -23,13 +23,13 @@ let orb =
       end
     end
 
-let negb = fun (b : Bool) => 
+let negb : Bool -> Bool = fun (b : Bool) => 
   match b with
   | True => False
   | False => True
   end
 
-let bool_to_string = fun (flag: Bool) =>
+let bool_to_string : Bool -> String = fun (flag: Bool) =>
     match flag with
     | True => "True"
     | False => "False"
