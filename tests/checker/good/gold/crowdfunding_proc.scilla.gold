@@ -3,7 +3,7 @@
     "State variables": [
       { "field": "owner", "tag": "NotMoney" },
       { "field": "max_block", "tag": "NotMoney" },
-      { "field": "goal", "tag": "Money" },
+      { "field": "goal", "tag": "NoInfo" },
       { "field": "backers", "tag": "(Map Money)" },
       { "field": "funded", "tag": "NotMoney" }
     ],
