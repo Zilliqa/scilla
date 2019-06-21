@@ -4,7 +4,7 @@ scilla_version 0
 (* type errors in variable declarations in libraries are *)
 (* handled by the type checker. *)
 
-library BadLibType
+library LibTyping2
 
 (* Apply (f : 'A -> 'B) to every element of List 'A *)
 (* to generate List 'B. *)
@@ -22,7 +22,7 @@ let list_map : forall 'A. forall 'B. ('A -> 'B) -> List 'A -> List 'B =
 (***************************************************)
 (*             The contract definition             *)
 (***************************************************)
-contract BadLibType
+contract LibTyping2
 
 (*  Parameters *)
 ()

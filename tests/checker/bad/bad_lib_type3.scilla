@@ -9,7 +9,7 @@ library BadLibType
 (* Apply (f : 'A -> 'B) to every element of List 'A *)
 (* to generate List 'B. *)
 let list_map : forall 'A. forall 'B. ('A -> 'B) -> List 'A -> List 'B =
-  tfun 'A =>
+  tfun 'A => tfun 'B =>
   fun (f : 'A -> Uint128) => fun (l : List 'A) =>
   let folder = @list_foldr 'A (List Uint128) in
   let init = Nil {Uint128} in
