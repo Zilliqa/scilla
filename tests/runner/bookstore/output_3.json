@@ -1,19 +1,23 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7304",
+  "gas_remaining": "7348",
   "_accepted": "false",
-  "message": {
-    "_tag": "",
-    "_amount": "0",
-    "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [ { "vname": "code", "type": "Uint32", "value": "3" } ]
-  },
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "members",
-      "type": "Map (ByStr20) (Pair (String) (Uint32))",
-      "value": []
+      "type": "Map (ByStr20) (Member)",
+      "value": [
+        {
+          "key": "0x1234567890123456789012345678901234567892",
+          "val": {
+            "constructor": "Member",
+            "argtypes": [],
+            "arguments": [ "Bob", "2" ]
+          }
+        }
+      ]
     },
     {
       "vname": "lastBookID",
@@ -30,5 +34,16 @@
       "value": []
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "AddMemberFailure",
+      "params": [
+        {
+          "vname": "message",
+          "type": "String",
+          "value": "Invalid membership type"
+        }
+      ]
+    }
+  ]
 }
