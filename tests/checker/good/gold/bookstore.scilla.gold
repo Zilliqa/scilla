@@ -2,25 +2,28 @@
   "cashflow_tags": {
     "State variables": [
       { "field": "owner", "tag": "NotMoney" },
-      { "field": "storeName", "tag": "NoInfo" },
-      { "field": "members", "tag": "(Map (Pair NoInfo NoInfo))" },
+      { "field": "store_name", "tag": "NoInfo" },
+      { "field": "members", "tag": "(Map (Member ))" },
       { "field": "lastBookID", "tag": "(Option NotMoney)" },
       { "field": "bookInventory", "tag": "(Map (Pair NoInfo NoInfo))" }
     ],
-    "ADT constructors": []
+    "ADT constructors": [
+      {
+        "Member": [
+          { "constructor": "Member", "tags": [ "NoInfo", "NoInfo" ] }
+        ]
+      }
+    ]
   },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "BookStore",
     "params": [
       { "vname": "owner", "type": "ByStr20" },
-      { "vname": "storeName", "type": "String" }
+      { "vname": "store_name", "type": "String" }
     ],
     "fields": [
-      {
-        "vname": "members",
-        "type": "Map (ByStr20) (Pair (String) (Uint32))"
-      },
+      { "vname": "members", "type": "Map (ByStr20) (Member)" },
       { "vname": "lastBookID", "type": "Option (Uint32)" },
       {
         "vname": "bookInventory",
@@ -29,11 +32,18 @@
     ],
     "transitions": [
       {
-        "vname": "addMember",
+        "vname": "MemberEvent",
+        "params": [
+          { "vname": "status", "type": "Bool" },
+          { "vname": "msg", "type": "String" }
+        ]
+      },
+      {
+        "vname": "AddMember",
         "params": [
           { "vname": "name", "type": "String" },
-          { "vname": "addr", "type": "ByStr20" },
-          { "vname": "memberType", "type": "Uint32" }
+          { "vname": "member_address", "type": "ByStr20" },
+          { "vname": "member_type", "type": "Uint32" }
         ]
       },
       {
@@ -57,8 +67,22 @@
         ]
       }
     ],
-    "events": [],
+    "events": [
+      {
+        "vname": "AddMemberFailure",
+        "params": [ { "vname": "message", "type": "String" } ]
+      },
+      {
+        "vname": "AddMemberSuccess",
+        "params": [ { "vname": "message", "type": "String" } ]
+      }
+    ],
     "ADTs": [
+      {
+        "tname": "Member",
+        "tparams": [],
+        "tmap": [ { "cname": "Member", "argtypes": [ "String", "Uint32" ] } ]
+      },
       {
         "tname": "Option",
         "tparams": [ "'A" ],
@@ -103,7 +127,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/bookstore.scilla",
-        "line": 188,
+        "line": 194,
         "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -113,7 +137,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/bookstore.scilla",
-        "line": 132,
+        "line": 138,
         "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 },

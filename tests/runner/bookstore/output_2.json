@@ -28,11 +28,7 @@
         "arguments": []
       }
     },
-    {
-      "vname": "bookInventory",
-      "type": "Map (Uint32) (Pair (String) (String))",
-      "value": []
-    }
+    { "vname": "bookInventory", "type": "Map (Uint32) (Book)", "value": [] }
   ],
   "events": [
     {
