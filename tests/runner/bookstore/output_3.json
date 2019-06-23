@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7348",
+  "gas_remaining": "7324",
   "_accepted": "false",
   "message": null,
   "states": [
@@ -34,6 +34,7 @@
     {
       "_eventname": "AddMemberFailure",
       "params": [
+        { "vname": "code", "type": "Uint32", "value": "3" },
         {
           "vname": "message",
           "type": "String",

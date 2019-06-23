@@ -4,14 +4,17 @@
       { "field": "owner", "tag": "NotMoney" },
       { "field": "store_name", "tag": "NoInfo" },
       { "field": "members", "tag": "(Map (Member ))" },
-      { "field": "lastBookID", "tag": "(Option NotMoney)" },
-      { "field": "bookInventory", "tag": "(Map (Pair NoInfo NoInfo))" }
+      { "field": "lastBookID", "tag": "(Option NoInfo)" },
+      { "field": "bookInventory", "tag": "(Map (Book ))" }
     ],
     "ADT constructors": [
       {
         "Member": [
           { "constructor": "Member", "tags": [ "NoInfo", "NoInfo" ] }
         ]
+      },
+      {
+        "Book": [ { "constructor": "Book", "tags": [ "NoInfo", "NoInfo" ] } ]
       }
     ]
   },
@@ -25,17 +28,25 @@
     "fields": [
       { "vname": "members", "type": "Map (ByStr20) (Member)" },
       { "vname": "lastBookID", "type": "Option (Uint32)" },
-      {
-        "vname": "bookInventory",
-        "type": "Map (Uint32) (Pair (String) (String))"
-      }
+      { "vname": "bookInventory", "type": "Map (Uint32) (Book)" }
     ],
     "transitions": [
       {
-        "vname": "MemberEvent",
+        "vname": "EmitMemberEvent",
         "params": [
           { "vname": "status", "type": "Bool" },
+          { "vname": "status_code", "type": "Uint32" },
           { "vname": "msg", "type": "String" }
+        ]
+      },
+      {
+        "vname": "EmitBookEvent",
+        "params": [
+          { "vname": "status", "type": "Bool" },
+          { "vname": "status_code", "type": "Uint32" },
+          { "vname": "event_action", "type": "String" },
+          { "vname": "book_id", "type": "Uint32" },
+          { "vname": "book_title", "type": "String" }
         ]
       },
       {
@@ -47,15 +58,15 @@
         ]
       },
       {
-        "vname": "addBook",
+        "vname": "AddBook",
         "params": [
           { "vname": "book_title", "type": "String" },
           { "vname": "author", "type": "String" },
-          { "vname": "bookID", "type": "Uint32" }
+          { "vname": "book_id", "type": "Uint32" }
         ]
       },
       {
-        "vname": "removeBook",
+        "vname": "RemoveBook",
         "params": [ { "vname": "book_id", "type": "Uint32" } ]
       },
       {
@@ -69,12 +80,36 @@
     ],
     "events": [
       {
+        "vname": "BookEventFailure",
+        "params": [
+          { "vname": "code", "type": "Uint32" },
+          { "vname": "action", "type": "String" },
+          { "vname": "id", "type": "Uint32" },
+          { "vname": "title", "type": "String" }
+        ]
+      },
+      {
+        "vname": "BookEventSuccess",
+        "params": [
+          { "vname": "code", "type": "Uint32" },
+          { "vname": "action", "type": "String" },
+          { "vname": "id", "type": "Uint32" },
+          { "vname": "title", "type": "String" }
+        ]
+      },
+      {
         "vname": "AddMemberFailure",
-        "params": [ { "vname": "message", "type": "String" } ]
+        "params": [
+          { "vname": "code", "type": "Uint32" },
+          { "vname": "message", "type": "String" }
+        ]
       },
       {
         "vname": "AddMemberSuccess",
-        "params": [ { "vname": "message", "type": "String" } ]
+        "params": [
+          { "vname": "code", "type": "Uint32" },
+          { "vname": "message", "type": "String" }
+        ]
       }
     ],
     "ADTs": [
@@ -82,6 +117,11 @@
         "tname": "Member",
         "tparams": [],
         "tmap": [ { "cname": "Member", "argtypes": [ "String", "Uint32" ] } ]
+      },
+      {
+        "tname": "Book",
+        "tparams": [],
+        "tmap": [ { "cname": "Book", "argtypes": [ "String", "String" ] } ]
       },
       {
         "tname": "Option",
@@ -123,26 +163,6 @@
     ]
   },
   "warnings": [
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/bookstore.scilla",
-        "line": 194,
-        "column": 14
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/bookstore.scilla",
-        "line": 138,
-        "column": 14
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
     {
       "warning_message":
         "No transition in contract BookStore contains an accept statement\n",

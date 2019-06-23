@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7357",
+  "gas_remaining": "7332",
   "_accepted": "false",
   "message": null,
   "states": [
@@ -34,10 +34,11 @@
     {
       "_eventname": "AddMemberFailure",
       "params": [
+        { "vname": "code", "type": "Uint32", "value": "2" },
         {
           "vname": "message",
           "type": "String",
-          "value": "Invalid membership type"
+          "value": "Unauthorised Transaction"
         }
       ]
     }

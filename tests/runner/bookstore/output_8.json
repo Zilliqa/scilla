@@ -1,13 +1,8 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7321",
+  "gas_remaining": "7335",
   "_accepted": "false",
-  "message": {
-    "_tag": "",
-    "_amount": "0",
-    "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [ { "vname": "code", "type": "Uint32", "value": "1" } ]
-  },
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -20,33 +15,43 @@
       }
     },
     {
-      "vname": "bookInventory",
-      "type": "Map (Uint32) (Pair (String) (String))",
+      "vname": "members",
+      "type": "Map (ByStr20) (Member)",
       "value": [
         {
-          "key": "101",
+          "key": "0x1234567890123456789012345678901234567892",
           "val": {
-            "constructor": "Pair",
-            "argtypes": [ "String", "String" ],
-            "arguments": [ "1984", "George Orwell" ]
+            "constructor": "Member",
+            "argtypes": [],
+            "arguments": [ "Bob", "2" ]
           }
         }
       ]
     },
     {
-      "vname": "members",
-      "type": "Map (ByStr20) (Pair (String) (Uint32))",
+      "vname": "bookInventory",
+      "type": "Map (Uint32) (Book)",
       "value": [
         {
-          "key": "0x1234567890123456789012345678901234567892",
+          "key": "1",
           "val": {
-            "constructor": "Pair",
-            "argtypes": [ "String", "Uint32" ],
-            "arguments": [ "Bob", "2" ]
+            "constructor": "Book",
+            "argtypes": [],
+            "arguments": [ "1984", "George Orwell" ]
           }
         }
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "BookEventFailure",
+      "params": [
+        { "vname": "code", "type": "Uint32", "value": "1" },
+        { "vname": "action", "type": "String", "value": "Update" },
+        { "vname": "id", "type": "Uint32", "value": "999" },
+        { "vname": "title", "type": "String", "value": "Foo" }
+      ]
+    }
+  ]
 }

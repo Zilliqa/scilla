@@ -76,13 +76,13 @@ field bookInventory: Map Uint32 Book
 (* ======== transitions ===============*)
 
 
-procedure EmitMemberEvent (status: Bool, msg: String)
+procedure EmitMemberEvent (status: Bool, status_code: Uint32,  msg: String)
   match status with
   | True =>
-    e = {_eventname: "AddMemberSuccess"; message: msg};
+    e = {_eventname: "AddMemberSuccess"; code: status_code;  message: msg};
     event e
   | False =>
-    e = {_eventname: "AddMemberFailure"; message: msg};
+    e = {_eventname: "AddMemberFailure"; code: status_code; message: msg};
     event e
   end
 end
@@ -136,18 +136,18 @@ transition AddMember(name: String, member_address: ByStr20, member_type: Uint32)
             new_member = Member name member_type;
             members[member_address] := new_member;
             status = True;
-            EmitMemberEvent status name
+            EmitMemberEvent status code_success name
         | False =>
             (* Code for the membership type is invalid *)
             status = False;
             msg = "Invalid membership type";
-            EmitMemberEvent status msg
+            EmitMemberEvent status code_invalid_params msg
         end
     | False =>
         (* Unauthorized transaction *)
           status = False;
-          msg = "Invalid membership type";
-          EmitMemberEvent status msg
+          msg = "Unauthorised Transaction";
+          EmitMemberEvent status code_not_authorized msg
     end
 end
 

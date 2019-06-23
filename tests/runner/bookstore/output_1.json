@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7326",
+  "gas_remaining": "7302",
   "_accepted": "false",
   "message": null,
   "states": [
@@ -33,7 +33,10 @@
   "events": [
     {
       "_eventname": "AddMemberSuccess",
-      "params": [ { "vname": "message", "type": "String", "value": "Bob" } ]
+      "params": [
+        { "vname": "code", "type": "Uint32", "value": "0" },
+        { "vname": "message", "type": "String", "value": "Bob" }
+      ]
     }
   ]
 }

@@ -1,13 +1,8 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7306",
+  "gas_remaining": "7276",
   "_accepted": "false",
-  "message": {
-    "_tag": "",
-    "_amount": "0",
-    "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [ { "vname": "code", "type": "Uint32", "value": "0" } ]
-  },
+  "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -48,5 +43,15 @@
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "BookEventSuccess",
+      "params": [
+        { "vname": "code", "type": "Uint32", "value": "0" },
+        { "vname": "action", "type": "String", "value": "Add" },
+        { "vname": "id", "type": "Uint32", "value": "1" },
+        { "vname": "title", "type": "String", "value": "1984" }
+      ]
+    }
+  ]
 }
