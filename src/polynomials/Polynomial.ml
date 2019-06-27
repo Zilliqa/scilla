@@ -116,6 +116,24 @@ let mul_pn (p1 : 'a polynomial) (p2 : 'a polynomial) =
   in
     canonicalize_pn (List.concat prods)
 
+(* Combine two polynomials (pairing each term in the first with those in the second)
+ * using a custom function f, which returns (Some term) if two terms are to be combined *)
+let combine_pn ~(cf : 'a term -> 'a term -> 'a term option) (p1' : 'a polynomial) (p2' : 'a polynomial) =
+  let p1 = canonicalize_pn p1' in
+  let p2 = canonicalize_pn p2' in
+  (* Fold over p1 terms, building them up, while removing terms from p2. *)
+  let (p1', p2') = List.fold p1 ~init:([], p2) ~f:(fun (p1_acc, p2_acc) t1 ->
+    (* Fold over p2_acc, combining with t1 as possible. *)
+    let (t1', p2_acc') = List.fold p2_acc ~init:(t1, []) ~f:(fun (t1_acc, p2_acc') t2 ->
+      match cf t1_acc t2 with
+      | Some t1' -> (t1', p2_acc')
+      | None -> (t1_acc, t2 :: p2_acc')
+    ) in
+    (t1' :: p1_acc, List.rev p2_acc')
+  ) in
+  (* Just add up what's left of p2. *)
+  canonicalize_pn (List.rev p1' @ p2')
+
 (* Combine two polynomials by choosing terms with higher co-efficient from one of them. *)
 let max_combine_pn (p1' : 'a polynomial) (p2' : 'a polynomial) =
   let p1 = canonicalize_pn p1' in
@@ -200,3 +218,13 @@ let empty_pn : 'a polynomial = []
  * p = v *)
 let single_simple_pn v : 'a polynomial =
   [(1, [(v, 1)])]
+
+(* Is this is a simple constant? *)
+let is_const_term t = match t with | (_, []) -> true | _ -> false
+(* Is this is a simple constant? *)
+let is_const_pn p =
+  let p' = canonicalize_pn p in
+  match p' with
+  | [] -> true
+  | [t] -> is_const_term t
+  | _ -> false

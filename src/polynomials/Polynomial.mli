@@ -36,6 +36,10 @@ val add_pn : 'a polynomial -> 'a polynomial -> 'a polynomial
 (* Multiply two polynomials. *)
 val mul_pn : 'a polynomial -> 'a polynomial -> 'a polynomial
 
+(* Combine two polynomials (pairing each term in the first with those in the second)
+ * using a custom function f, which returns (Some term) if two terms are to be combined *)
+val combine_pn : cf:('a term -> 'a term -> 'a term option) -> 'a polynomial -> 'a polynomial -> 'a polynomial
+
 (* Combine two polynomials by choosing terms with higher co-efficient from one of them. *)
 val max_combine_pn : 'a polynomial -> 'a polynomial -> 'a polynomial
 
@@ -60,3 +64,8 @@ val empty_pn : 'a polynomial
 (* Build a polynomial with a single variable v.
  * p = v *)
 val single_simple_pn : 'a -> 'a polynomial
+
+(* Is this is a simple constant? *)
+val is_const_term : 'a term -> bool
+(* Is this is a simple constant? *)
+val is_const_pn : 'a polynomial -> bool
