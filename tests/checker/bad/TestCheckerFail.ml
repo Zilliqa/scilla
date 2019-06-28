@@ -31,6 +31,8 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_fields2.scilla";
       "bad_fields3.scilla";
       "bad_fields4.scilla";
+      "bad_comment_1.scilla";
+      "bad_comment_2.scilla";
       "bad_map_key_1.scilla";
       "bad_map_key_2.scilla";
       "bad_map_key_3.scilla";

@@ -3,7 +3,7 @@
     {
       "error_message": "Lexical error: Comment unfinished",
       "start_location": {
-        "file": "bad_comment_2.scilla",
+        "file": "checker/bad/bad_comment_2.scilla",
         "line": 8,
         "column": 1
       },
