@@ -20,6 +20,7 @@
 open Lexing
 open ScillaParser
 open Big_int
+open List
 
 exception Error of string
 
@@ -49,7 +50,7 @@ rule read =
 
   (* Whitespaces *)    
   | newline       { new_line lexbuf; read lexbuf }
-  | "(*"          { comment 0 lexbuf }
+  | "(*"          { comment 0 [lexbuf.lex_curr_p] lexbuf }
   | white         { read lexbuf }
 
   (* Numbers and hashes *)
@@ -140,10 +141,11 @@ and read_string buf =
   | _ { raise (Error ("Illegal string character: " ^ Lexing.lexeme lexbuf)) }
   | eof { raise (Error ("String is not terminated")) }
 
-and comment depth =
+(* Nested comments, keeping a list of where comments open *)
+and comment depth braces =
   parse
-  | "(*"      { comment (depth+1) lexbuf}
-  | "*)"      { if depth = 0 then read lexbuf else comment (depth-1) lexbuf}
-  | newline   { new_line lexbuf; comment depth lexbuf}
-  | _         { comment depth lexbuf}
-  | eof       { raise (Error ("Comment unfinished"))}
+  | "(*"      { comment (depth+1) (lexbuf.lex_curr_p::braces) lexbuf}
+  | "*)"      { if depth = 0 then read lexbuf else comment (depth-1) (tl braces) lexbuf}
+  | newline   { new_line lexbuf; comment depth braces lexbuf}
+  | _         { comment depth braces lexbuf}
+  | eof       { lexbuf.lex_curr_p <- hd braces; raise (Error ("Comment unfinished"))}
