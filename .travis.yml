@@ -16,8 +16,6 @@ matrix:
 # and that sometimes causes build breaks because of time-outs.
 # Without this command we get an old opam version (1.x) which is not satisfactory.
 
-#  - osx
-
 addons:
   apt:
     sources:
