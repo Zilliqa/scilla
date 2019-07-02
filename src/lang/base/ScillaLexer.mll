@@ -39,7 +39,6 @@ let id = ['a'-'z'] alphanum*
 let spid = ['_'] alphanum*
 let cid =   ['A'-'Z'] alphanum*
 let tid =   '\'' ['A'-'Z'] alphanum*
-let lcomment = "(*" (_ # ['\r' '\n'])* "*)" white* newline
 let hexdigit = ['a'-'f' 'A'-'F' '0'-'9']
 let hex = '0' 'x' (hexdigit hexdigit)+
 let intty = "Int32" | "Int64" | "Int128" | "Int256" | "Uint32" |
@@ -50,7 +49,7 @@ rule read =
 
   (* Whitespaces *)    
   | newline       { new_line lexbuf; read lexbuf }
-  | lcomment      { new_line lexbuf; read lexbuf }
+  | "(*"          { comment 0 lexbuf }
   | white         { read lexbuf }
 
   (* Numbers and hashes *)
@@ -140,3 +139,11 @@ and read_string buf =
     }
   | _ { raise (Error ("Illegal string character: " ^ Lexing.lexeme lexbuf)) }
   | eof { raise (Error ("String is not terminated")) }
+
+and comment depth =
+  parse
+  | "(*"      { comment (depth+1) lexbuf}
+  | "*)"      { if depth = 0 then read lexbuf else comment (depth-1) lexbuf}
+  | newline   { new_line lexbuf; comment depth lexbuf}
+  | _         { comment depth lexbuf}
+  | eof       { raise (Error ("Comment unfinished"))}

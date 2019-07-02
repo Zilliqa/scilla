@@ -1,0 +1,20 @@
+scilla_version 0
+
+(* This
+is a (* nested
+comment
+* that looks very
+    strange. *) *)
+
+library NestedComments
+
+(* Line comment *)
+
+contract NestedComments ()
+
+(* Block
+ * comment
+ *)
+
+transition dummy( (* inner comment *) )
+end
