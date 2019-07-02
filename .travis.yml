@@ -3,9 +3,14 @@ sudo: required
 env:
   - OCAML_VERSION=4.06.1
   - OCAML_VERSION=4.07.1
-os:
-  - linux
-    dist: xenial
+
+matrix:
+  include:
+    - os: linux
+      dist: xenial
+    # - os: osx
+    #  osx_image: xcode10.1
+
 # TODO: enable macOS builds
 # `brew update` downloads too many packages for the provided macOS image
 # and that sometimes causes build breaks because of time-outs.
