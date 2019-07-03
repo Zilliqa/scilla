@@ -289,15 +289,14 @@ let () =
               (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state)))
             gas_remaining
         in
-          (* Initializing the contract's state *)
-          let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
+        (* Initializing the contract's state *)
+        let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
+        (* Prints stats after the initialization and returns the initial state *)
+        (* Will throw an exception if unsuccessful. *)
+        let cstate, gas_remaining' = check_extract_cstate cli.input init_res gas_remaining in
 
-          (* Prints stats after the initialization and returns the initial state *)
-          (* Will throw an exception if unsuccessful. *)
-          let cstate, gas_remaining' = check_extract_cstate cli.input init_res gas_remaining in
-
-          let tend = Unix.gettimeofday() in
-          let _ = Printf.printf "init:%f\n" (Core.Float.sub tend tstart) in
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "init:%f\n" (Core.Float.sub tend tstart) in
 
         (* Contract code *)
         let ctr = cmod.contr in
@@ -339,14 +338,14 @@ let () =
         ("events", output_events_json);
         (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
       ] in
-      Out_channel.with_file cli.output ~f:(fun channel -> 
-      if cli.pp_json then
-        Yojson.pretty_to_string output_json |> Out_channel.output_string channel
-      else
-        let tstart = Unix.gettimeofday() in
-        let x = Yojson.to_string output_json in
-        let y = Out_channel.output_string channel x in
-        let tend = Unix.gettimeofday() in
-        let _ = Printf.printf "write_to_file:%f\n" (Core.Float.sub tend tstart) in
-        y
+        Out_channel.with_file cli.output ~f:(fun channel ->
+          if cli.pp_json then
+            Yojson.pretty_to_string output_json |> Out_channel.output_string channel
+          else
+            let tstart = Unix.gettimeofday() in
+            let x = Yojson.to_string output_json in
+            let y = Out_channel.output_string channel x in
+            let tend = Unix.gettimeofday() in
+            let _ = Printf.printf "write_to_file:%f\n" (Core.Float.sub tend tstart) in
+            y
     )
