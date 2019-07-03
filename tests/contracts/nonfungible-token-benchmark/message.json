@@ -1,0 +1,1 @@
+{"_tag": "setApprovalForAll", "_amount": "0", "_sender": "0x1234567890123456789012345678901234567890", "params": [{"vname": "to", "type": "ByStr20", "value": "0x55fc7d763a3f6562d36abd5628bfcadbc208447e"}, {"vname": "approved", "type": "Bool", "value": {"constructor": "True", "argtypes": [], "arguments": []}}]}

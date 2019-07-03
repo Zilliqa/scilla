@@ -167,6 +167,8 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
 
 let () =
   let cli = Cli.parse () in
+  let tstart = Unix.gettimeofday() in
+
   let is_deployment = (cli.input_message = "") in
   let is_library =
     (FilePath.get_extension cli.input = GlobalConfig.StdlibTracker.file_extn_library) in
@@ -287,24 +289,45 @@ let () =
               (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state)))
             gas_remaining
         in
+          (* Initializing the contract's state *)
+          let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
 
-        (* Initializing the contract's state *)
-        let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
-        (* Prints stats after the initialization and returns the initial state *)
-        (* Will throw an exception if unsuccessful. *)
-        let cstate, gas_remaining' = check_extract_cstate cli.input init_res gas_remaining in
+          (* Prints stats after the initialization and returns the initial state *)
+          (* Will throw an exception if unsuccessful. *)
+          let cstate, gas_remaining' = check_extract_cstate cli.input init_res gas_remaining in
+
+          let tend = Unix.gettimeofday() in
+          let _ = Printf.printf "init:%f\n" (Core.Float.sub tend tstart) in
+
         (* Contract code *)
         let ctr = cmod.contr in
 
         plog (sprintf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg));
         plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
+
+        let tstart = Unix.gettimeofday() in
         let step_result = handle_message ctr cstate bstate m in
+
         let (cstate', mlist, elist, accepted_b), gas =
           check_after_step step_result gas_remaining' in
-      
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "exec:%f\n" (Core.Float.sub tend tstart) in
+        
+        let tstart = Unix.gettimeofday() in
         let osj = output_state_json cstate' in
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "output_state_json:%f\n" (Core.Float.sub tend tstart) in
+
+        let tstart = Unix.gettimeofday() in
         let omj = output_message_json gas mlist in
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "output_message_json:%f\n" (Core.Float.sub tend tstart) in
+
+        let tstart = Unix.gettimeofday() in
         let oej = `List (output_event_json elist) in
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "output_event_json:%f\n" (Core.Float.sub tend tstart) in
+        
           (omj, osj, oej, accepted_b), gas)
       in
       let output_json = `Assoc [
@@ -316,9 +339,14 @@ let () =
         ("events", output_events_json);
         (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
       ] in
-        Out_channel.with_file cli.output ~f:(fun channel -> 
-          if cli.pp_json then
-            Yojson.pretty_to_string output_json |> Out_channel.output_string channel
-          else
-            Yojson.to_string output_json |> Out_channel.output_string channel
-          )
+      Out_channel.with_file cli.output ~f:(fun channel -> 
+      if cli.pp_json then
+        Yojson.pretty_to_string output_json |> Out_channel.output_string channel
+      else
+        let tstart = Unix.gettimeofday() in
+        let x = Yojson.to_string output_json in
+        let y = Out_channel.output_string channel x in
+        let tend = Unix.gettimeofday() in
+        let _ = Printf.printf "write_to_file:%f\n" (Core.Float.sub tend tstart) in
+        y
+    )

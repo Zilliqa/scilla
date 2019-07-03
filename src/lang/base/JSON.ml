@@ -27,7 +27,6 @@ open Datatypes
 open TypeUtil
 open PrimTypes
 open BuiltIns
-open PrettyPrinters
 
 module JSONTypeUtilities = TypeUtilities (ParserRep) (ParserRep)
 module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
@@ -223,13 +222,35 @@ let jobj_to_statevar json =
 (*                    JSON printing                             *)
 (****************************************************************)
 
+(* let state_to_json state =
+   let (vname, lit) = state in
+   (* let tstart = Unix.gettimeofday() in *)
+   let litpair = (literal_to_json lit) in
+   (* let tend = Unix.gettimeofday() in *)
+   (* let _ = Printf.printf "assoc:%f\n" (Core.Float.sub tend tstart) in *)
+
+   let assoc = `Assoc [ 
+      ("vname", `String vname) ; 
+      ("type", `String (literal_type_exn lit));
+      (* ("value", litpair) *)
+      ("value", `String "100")
+    ] in
+   assoc *)
+
+open PrettyPrinters
 let state_to_json state =
   let (vname, lit) = state in
-  `Assoc [ 
+  (* let tstart = Unix.gettimeofday() in *)
+  let litpair = (literal_to_json lit) in
+  (* let tend = Unix.gettimeofday() in *)
+  (* let _ = Printf.printf "assoc:%f\n" (Core.Float.sub tend tstart) in *)
+
+  let assoc = `Assoc [ 
     ("vname", `String vname) ; 
     ("type", `String (literal_type_exn lit));
-    ("value", (literal_to_json lit))
-  ]
+      ("value", litpair)
+    ] in
+  assoc
 
 let rec slist_to_json l = 
   match l with
@@ -261,25 +282,30 @@ let get_address_literal l =
 
 module ContractState = struct
 
-(** Returns a list of (vname:string,value:literal) items
+  (** Returns a list of (vname:string,value:literal) items
     Invalid inputs in the json are ignored **)
-let get_json_data filename  =
+  let get_json_data filename  =
   let json = from_file filename in
   (* input json is a list of key/value pairs *)
   let jlist = json |> Basic.Util.to_list in
     List.map jlist ~f:jobj_to_statevar
 
-(* Get a json object from given states *)
-let state_to_json states = 
+  (* Get a json object from given states *)
+  let state_to_json states = 
   let jsonl = slist_to_json states in
+    Printf.printf "kjson:%f\n" (!PrettyPrinters.kjson_counter);
+    Printf.printf "vjson:%f\n" (!PrettyPrinters.vjson_counter);
+    Printf.printf "kvjson:%f\n" (!PrettyPrinters.kvjson_counter);
+    Printf.printf "concat:%f\n" (!PrettyPrinters.concat_counter);
+    Printf.printf "fold:%f\n" (!PrettyPrinters.fold_counter);
     `List jsonl
 
-(** 
+  (** 
   ** Prints a list of state variables (string, literal)
   ** as a json and returns it as a string.
   ** pp enables pretty printing.
   **)
-let state_to_string ?(pp = false) states =
+  let state_to_string ?(pp = false) states =
   let json = state_to_json states in
   if pp
   then
@@ -314,10 +340,10 @@ end
 
 module Message = struct
 
-(** Parses and returns a list of (pname,pval), with
+  (** Parses and returns a list of (pname,pval), with
   "_tag" and "_amount" at the beginning of this list.
   Invalid inputs in the json are ignored **)
-let get_json_data filename =
+  let get_json_data filename =
   let open Basic.Util in
   let json = from_file filename in
   let tags = member_exn tag_label json |> to_string in
@@ -331,8 +357,8 @@ let get_json_data filename =
   let params = List.map pjlist ~f:jobj_to_statevar in
     tag :: amount :: sender :: params
 
-(* Same as message_to_jstring, but instead gives out raw json, not it's string *)
-let message_to_json message =
+  (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
+  let message_to_json message =
   (* extract out "_tag", "_amount", "_accepted" and "_recipient" parts of the message *)
   let (_, taglit) = List.find_exn message ~f:(fun (x, _) -> x = tag_label) in
   let (_, amountlit) = List.find_exn message ~f:(fun (x, _) -> x = amount_label) in
@@ -358,7 +384,7 @@ let message_to_json message =
   ** with the actual params themselves in an array json with
   ** name "params" (as described in comment in .mli file).
   **)
-let message_to_jstring ?(pp = false) message =
+  let message_to_jstring ?(pp = false) message =
   let j = message_to_json message in
   if pp
   then
@@ -372,7 +398,7 @@ module BlockChainState = struct
 
   (**  Returns a list of (vname:string,value:literal) items
    **  from the json in the input filename. **)
-let get_json_data filename  =
+  let get_json_data filename  =
   let json = from_file filename in
   (* input json is a list of key/value pairs *)
   let jlist = json |> Basic.Util.to_list in
