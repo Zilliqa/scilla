@@ -1,16 +1,21 @@
 language: generic
 sudo: required
-env:
-  - OCAML_VERSION=4.06.1
-  - OCAML_VERSION=4.07.1
-os:
-  - linux
+
+matrix:
+  include:
+    - os: linux
+      dist: xenial
+      env: OCAML_VERSION=4.07.1
+    - os: linux
+      dist: xenial
+      env: OCAML_VERSION=4.06.1
+    # - os: osx
+    #  osx_image: xcode10.1
+
 # TODO: enable macOS builds
 # `brew update` downloads too many packages for the provided macOS image
 # and that sometimes causes build breaks because of time-outs.
 # Without this command we get an old opam version (1.x) which is not satisfactory.
-
-#  - osx
 
 addons:
   apt:
