@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "Lexical error: Comment unfinished",
+      "start_location": {
+        "file": "checker/bad/bad_comment_1.scilla",
+        "line": 3,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
