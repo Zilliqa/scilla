@@ -1,9 +1,5 @@
 [
-    {
-        "vname": "_balance",
-        "type": "Uint128",
-        "value": "0"
-    },
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
         "vname": "members",
         "type": "Map (ByStr20) (Member)",
@@ -13,28 +9,15 @@
                 "val": {
                     "constructor": "Member",
                     "argtypes": [],
-                    "arguments": [
-                        "Bob",
-                        "2"
-                    ]
+                    "arguments": ["Bob", "2"]
                 }
             }
         ]
     },
     {
-        "vname": "lastBookID",
-        "type": "Option (Uint32)",
-        "value": {
-            "constructor": "None",
-            "argtypes": [
-                "Uint32"
-            ],
-            "arguments": []
-        }
+        "vname": "is_store_open",
+        "type": "Bool",
+        "value": { "constructor": "True", "argtypes": [], "arguments": [] }
     },
-    {
-        "vname": "bookInventory",
-        "type": "Map (Uint32) (Book)",
-        "value": []
-    }
+    { "vname": "bookInventory", "type": "Map (Uint32) (Book)", "value": [] }
 ]

@@ -22,13 +22,11 @@
         ]
     },
     {
-        "vname": "lastBookID",
-        "type": "Option (Uint32)",
+        "vname": "is_store_open",
+        "type": "Bool",
         "value": {
-            "constructor": "None",
-            "argtypes": [
-                "Uint32"
-            ],
+            "constructor": "True",
+            "argtypes": [],
             "arguments": []
         }
     },

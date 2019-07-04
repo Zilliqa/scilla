@@ -1,19 +1,10 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7276",
+  "gas_remaining": "7285",
   "_accepted": "false",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    {
-      "vname": "lastBookID",
-      "type": "Option (Uint32)",
-      "value": {
-        "constructor": "Some",
-        "argtypes": [ "Uint32" ],
-        "arguments": [ "1" ]
-      }
-    },
     {
       "vname": "members",
       "type": "Map (ByStr20) (Member)",
@@ -27,6 +18,11 @@
           }
         }
       ]
+    },
+    {
+      "vname": "is_store_open",
+      "type": "Bool",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
     },
     {
       "vname": "bookInventory",

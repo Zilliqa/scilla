@@ -4,7 +4,7 @@
       { "field": "owner", "tag": "NotMoney" },
       { "field": "store_name", "tag": "NoInfo" },
       { "field": "members", "tag": "(Map (Member ))" },
-      { "field": "lastBookID", "tag": "(Option NoInfo)" },
+      { "field": "is_store_open", "tag": "NotMoney" },
       { "field": "bookInventory", "tag": "(Map (Book ))" }
     ],
     "ADT constructors": [
@@ -27,7 +27,7 @@
     ],
     "fields": [
       { "vname": "members", "type": "Map (ByStr20) (Member)" },
-      { "vname": "lastBookID", "type": "Option (Uint32)" },
+      { "vname": "is_store_open", "type": "Bool" },
       { "vname": "bookInventory", "type": "Map (Uint32) (Book)" }
     ],
     "transitions": [
@@ -48,6 +48,10 @@
           { "vname": "book_id", "type": "Uint32" },
           { "vname": "book_title", "type": "String" }
         ]
+      },
+      {
+        "vname": "OpenStore",
+        "params": [ { "vname": "is_open", "type": "Bool" } ]
       },
       {
         "vname": "AddMember",
@@ -79,6 +83,10 @@
       }
     ],
     "events": [
+      {
+        "vname": "OpenStore",
+        "params": [ { "vname": "status", "type": "Bool" } ]
+      },
       {
         "vname": "BookEventFailure",
         "params": [
