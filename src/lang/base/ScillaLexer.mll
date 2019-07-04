@@ -145,8 +145,10 @@ and read_string buf =
 and comment braces =
   parse
   | "(*"      { comment (lexbuf.lex_curr_p::braces) lexbuf}
-  | "*)"      { if (List.length braces = 1) then read lexbuf
-                else comment (List.tl_exn braces) lexbuf}
+  | "*)"      { match braces with
+                  _::[] -> read lexbuf
+                | _ -> comment (List.tl_exn braces) lexbuf }
+
   | newline   { new_line lexbuf; comment braces lexbuf}
   | _         { comment braces lexbuf}
   | eof       { lexbuf.lex_curr_p <- List.hd_exn braces; raise (Error ("Comment unfinished"))}
