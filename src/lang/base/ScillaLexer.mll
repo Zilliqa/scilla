@@ -20,7 +20,7 @@
 open Lexing
 open ScillaParser
 open Big_int
-open List
+open Base
 
 exception Error of string
 
@@ -50,7 +50,7 @@ rule read =
 
   (* Whitespaces *)    
   | newline       { new_line lexbuf; read lexbuf }
-  | "(*"          { comment 0 [lexbuf.lex_curr_p] lexbuf }
+  | "(*"          { comment [lexbuf.lex_curr_p] lexbuf }
   | white         { read lexbuf }
 
   (* Numbers and hashes *)
@@ -142,10 +142,11 @@ and read_string buf =
   | eof { raise (Error ("String is not terminated")) }
 
 (* Nested comments, keeping a list of where comments open *)
-and comment depth braces =
+and comment braces =
   parse
-  | "(*"      { comment (depth+1) (lexbuf.lex_curr_p::braces) lexbuf}
-  | "*)"      { if depth = 0 then read lexbuf else comment (depth-1) (tl braces) lexbuf}
-  | newline   { new_line lexbuf; comment depth braces lexbuf}
-  | _         { comment depth braces lexbuf}
-  | eof       { lexbuf.lex_curr_p <- hd braces; raise (Error ("Comment unfinished"))}
+  | "(*"      { comment (lexbuf.lex_curr_p::braces) lexbuf}
+  | "*)"      { if (List.length braces = 1) then read lexbuf
+                else comment (List.tl_exn braces) lexbuf}
+  | newline   { new_line lexbuf; comment braces lexbuf}
+  | _         { comment braces lexbuf}
+  | eof       { lexbuf.lex_curr_p <- List.hd_exn braces; raise (Error ("Comment unfinished"))}
