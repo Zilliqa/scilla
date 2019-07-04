@@ -148,7 +148,6 @@ and comment braces =
   | "*)"      { match braces with
                   _::[] -> read lexbuf
                 | _ -> comment (List.tl_exn braces) lexbuf }
-
   | newline   { new_line lexbuf; comment braces lexbuf}
   | _         { comment braces lexbuf}
   | eof       { lexbuf.lex_curr_p <- List.hd_exn braces; raise (Error ("Comment unfinished"))}
