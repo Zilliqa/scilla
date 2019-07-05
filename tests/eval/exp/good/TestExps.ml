@@ -96,6 +96,8 @@ let explist = [
   "map4.scilexp";
   "map5.scilexp";
   "map6.scilexp";
+  "map_remove_no_exception.scilexp";
+  "map_no_keeping_old_bindings.scilexp";
   "map_to_list.scilexp";
   "msg.scilexp";
   "nat_eq_false.scilexp";

@@ -1,0 +1,9 @@
+(True),
+{ [inverse_result -> (False)],
+  [m3 -> (Map Int32 Int32 [])],
+  [m2 -> (Map Int32 Int32 [((Int32 1) => (Int32 239))])],
+  [m1 -> (Map Int32 Int32 [((Int32 1) => (Int32 57))])],
+  [m0 -> (Map Int32 Int32 [])],
+  [v2 -> (Int32 239)],
+  [v1 -> (Int32 57)],
+  [k -> (Int32 1)] }
