@@ -60,7 +60,7 @@ module ScillaSanityChecker
         match ilist' with
         | i :: rem ->
           let e' =
-            if (List.exists (fun x -> get_id x = get_id i) rem)
+            if is_mem_id i rem
             then
               e @ mk_error1 (Core.sprintf "Identifier %s used more than once\n" (get_id i)) (gloc @@ get_rep i)
             else e
