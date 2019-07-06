@@ -42,6 +42,12 @@ type bigint = Big_int.big_int
 
 let mk_ident s = Ident (s, dummy_loc)
 
+(* A few utilities on id. *)
+let equal_id a b = get_id a = get_id b
+let compare_id a b = compare (get_id a) (get_id b)
+let dedup_id_list l = List.dedup_and_sort ~compare:compare_id l
+let mem_id i l = List.exists l ~f:(fun b -> get_id b = get_id i)
+
 (*******************************************************)
 (*                         Types                       *)
 (*******************************************************)
