@@ -29,6 +29,7 @@ let code_book_not_found = Uint32 1
 let code_not_authorized = Uint32 2
 let code_invalid_params = Uint32 3
 let code_bookid_exist = Uint32 4
+let code_store_not_open = Uint32 5
 
 type Book =
 | Book of String String
@@ -58,6 +59,7 @@ store_name: String)
 field members: Map ByStr20 Member
                 = Emp ByStr20 Member
 
+(* bookstore is opened by default during initialisation *)
 field is_store_open: Bool = True
 
 (* Bookinventory will store a Map of Books                          *)
@@ -89,8 +91,7 @@ procedure EmitBookEvent (
   status: Bool, 
   status_code: Uint32,
   event_action: String, 
-  book_id: Uint32,
-  book_title: String
+  book_id: Uint32
 )
   match status with
   | True =>
@@ -98,16 +99,14 @@ procedure EmitBookEvent (
       _eventname: "BookEventSuccess";
       code: status_code;
       action: event_action; 
-      id: book_id; 
-      title: book_title};
+      id: book_id};
     event e
   | False =>
     e = {
       _eventname: "BookEventFailure";
       code: status_code;
       action: event_action;  
-      id: book_id; 
-      title: book_title};
+      id: book_id};
     event e
   end
 end
@@ -181,24 +180,23 @@ end
 (* @dev   : Access controls are omitted for brevity. In production contracts, *)
 (*          you will want to implement proper access controls to allow only *)
 (*          an owner or member to add a book. *)
-(* @param: bookName : title of the book *)
-(* @param: author:     author of the book *)
 
 transition AddBook(book_title: String, author: String, book_id: Uint32)
 
     (* @dev: Preconditions can be set to allow only members to add a book *)
     (* @dev: Access controls logic omitted for brevity *)
 
-    (* new_book_id = let one = Uint32 1 in builtin add last_book_id one;*)
-
-    does_book_exist <- exists bookInventory[book_id];
-    match does_book_exist with
+    is_open <- is_store_open;
+    match is_open with
     | True =>
+      does_book_exist <- exists bookInventory[book_id];
+      match does_book_exist with
+      | True =>
         action = "Add";
         status = False;
-        EmitBookEvent status code_bookid_exist action book_id book_title
-    
-    | False =>
+        EmitBookEvent status code_bookid_exist action book_id
+      
+      | False =>
         (* Creating a new Book Model *)
         (* A new book model is a Pair of book_title and author *)
         new_book = Book book_title author;
@@ -208,8 +206,13 @@ transition AddBook(book_title: String, author: String, book_id: Uint32)
 
         action = "Add";
         status = True;
-        EmitBookEvent status code_success action book_id book_title
-
+        EmitBookEvent status code_success action book_id
+      end
+    | False =>
+      (* Store is not open *)
+      action = "Add";
+      status = False;
+      EmitBookEvent status code_store_not_open action book_id
     end
 end
 
@@ -221,18 +224,28 @@ end
 transition RemoveBook(book_id: Uint32)
     (* @dev: Preconditions can be set to allow only members to remove a book *)
     (* @dev: Access controls logic omitted for brevity *)
-    get_book <- bookInventory[book_id];
-    match get_book with
-    | Some (Book book_title _) =>
-      action = "Remove";
-      status = True;
-      EmitBookEvent status code_success action book_id book_title;
-      delete bookInventory[book_id]
-    | None =>
-      book_title = "Error: Not Found";
-      action = "Remove";
+
+    is_open <- is_store_open;
+    match is_open with
+    | True =>
+      get_book <- bookInventory[book_id];
+      match get_book with
+      | Some (Book book_title _) =>
+        action = "Remove";
+        status = True;
+        EmitBookEvent status code_success action book_id;
+        delete bookInventory[book_id]
+      | None =>
+        book_title = "Error: Not Found";
+        action = "Remove";
+        status = False;
+        EmitBookEvent status code_book_not_found action book_id
+      end
+    | False =>
+      (* Store is not open *)
+      action = "Add";
       status = False;
-      EmitBookEvent status code_book_not_found action book_id book_title
+      EmitBookEvent status code_store_not_open action book_id
     end
 end
 
@@ -241,7 +254,7 @@ end
 (*          you will want to implement proper access controls to allow only *)
 (*          an owner or member to remove a book. *)
 
-transition updateBook(book_id: Uint32, book_title: String, author: String)
+transition UpdateBook(book_id: Uint32, book_title: String, author: String)
     (* @dev: Preconditions can be set to allow only members to update a book *)
     (* @dev: Access controls omitted for brevity *)
    
@@ -252,7 +265,7 @@ transition updateBook(book_id: Uint32, book_title: String, author: String)
         (* Book ID is not found in the records. *)
         action = "Update";
         status = False;
-        EmitBookEvent status code_book_not_found action book_id book_title
+        EmitBookEvent status code_book_not_found action book_id
     | True =>
         (* constructs book model  *)
         (* Creating a new Book Model *)
@@ -263,7 +276,7 @@ transition updateBook(book_id: Uint32, book_title: String, author: String)
 
         action = "Update";
         status = True;
-        EmitBookEvent status code_success action book_id book_title
+        EmitBookEvent status code_success action book_id
     end
 
 end

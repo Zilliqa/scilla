@@ -45,8 +45,7 @@
           { "vname": "status", "type": "Bool" },
           { "vname": "status_code", "type": "Uint32" },
           { "vname": "event_action", "type": "String" },
-          { "vname": "book_id", "type": "Uint32" },
-          { "vname": "book_title", "type": "String" }
+          { "vname": "book_id", "type": "Uint32" }
         ]
       },
       {
@@ -74,7 +73,7 @@
         "params": [ { "vname": "book_id", "type": "Uint32" } ]
       },
       {
-        "vname": "updateBook",
+        "vname": "UpdateBook",
         "params": [
           { "vname": "book_id", "type": "Uint32" },
           { "vname": "book_title", "type": "String" },
@@ -92,8 +91,7 @@
         "params": [
           { "vname": "code", "type": "Uint32" },
           { "vname": "action", "type": "String" },
-          { "vname": "id", "type": "Uint32" },
-          { "vname": "title", "type": "String" }
+          { "vname": "id", "type": "Uint32" }
         ]
       },
       {
@@ -101,8 +99,7 @@
         "params": [
           { "vname": "code", "type": "Uint32" },
           { "vname": "action", "type": "String" },
-          { "vname": "id", "type": "Uint32" },
-          { "vname": "title", "type": "String" }
+          { "vname": "id", "type": "Uint32" }
         ]
       },
       {

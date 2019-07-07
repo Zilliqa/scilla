@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7554",
+  "gas_remaining": "7589",
   "_accepted": "false",
   "message": null,
   "states": [
@@ -45,8 +45,7 @@
       "params": [
         { "vname": "code", "type": "Uint32", "value": "1" },
         { "vname": "action", "type": "String", "value": "Remove" },
-        { "vname": "id", "type": "Uint32", "value": "101" },
-        { "vname": "title", "type": "String", "value": "Error: Not Found" }
+        { "vname": "id", "type": "Uint32", "value": "101" }
       ]
     }
   ]

@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7335",
+  "gas_remaining": "7372",
   "_accepted": "false",
   "message": null,
   "states": [
@@ -45,8 +45,7 @@
       "params": [
         { "vname": "code", "type": "Uint32", "value": "1" },
         { "vname": "action", "type": "String", "value": "Update" },
-        { "vname": "id", "type": "Uint32", "value": "999" },
-        { "vname": "title", "type": "String", "value": "Foo" }
+        { "vname": "id", "type": "Uint32", "value": "999" }
       ]
     }
   ]

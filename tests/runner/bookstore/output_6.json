@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7316",
+  "gas_remaining": "7354",
   "_accepted": "false",
   "message": null,
   "states": [
@@ -45,8 +45,7 @@
       "params": [
         { "vname": "code", "type": "Uint32", "value": "1" },
         { "vname": "action", "type": "String", "value": "Update" },
-        { "vname": "id", "type": "Uint32", "value": "101" },
-        { "vname": "title", "type": "String", "value": "Animal Farm" }
+        { "vname": "id", "type": "Uint32", "value": "101" }
       ]
     }
   ]
