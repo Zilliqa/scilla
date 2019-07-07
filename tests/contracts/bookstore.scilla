@@ -1,17 +1,19 @@
 scilla_version 0
 
-(* Bookstore Contract *)
-(* This example contract demonstrates how a CRUD app can be built. *)
 
-(* @note: Bookstore allows members to manage a shared repository of books. *)
-(* Bookstore has an owner, who can add members in. Members will be able *)
-(* to add, remove and update books in the store. Access controls logic is *)
-(* delibrately left out for brevity. But if you need examples, you can  *)
-(* refer to `addMember` transition to see how access controls can be implemented. *)
+(*
+ * Bookstore Contract
+ * 
+ * This contract demonstrates how a developer can build a CRUD-like smart contract easily.
+ * Concepts covered:
+ * - Procedures
+ * - Custom ADTs
+ * - Simple Access Controls
+ * 
+ * Access control logic is delibrately left out for brevity. You can reference AddMember
+ * for how you can implement access control to prevent unauthorised access to transitions.
+ *)
 
-
-(* In production deployments, you will want to implement proper access *)
-(* control logic in your smart contract *)
 
 (***************************************************)
 (*               Associated library                *)
@@ -31,9 +33,18 @@ let code_invalid_params = Uint32 3
 let code_bookid_exist = Uint32 4
 let code_store_not_open = Uint32 5
 
+(*
+ * Book is an ADT with two fields:
+ * Book = { book_title, author }
+ *)
 type Book =
 | Book of String String
 
+
+(*
+ * Member is an ADT with two fields:
+ * Book = { name , membership_type }
+ *)
 type Member =
 | Member of String Uint32
 
@@ -47,14 +58,14 @@ store_name: String)
 (* storeName can be immutable if it won't ever be changed             *)
 
 
-(* Membership data consists of three attributes: ByStr20, Name and typeOfMember*)
-(* Equivalent member data in C++ struct *)
+(* Membership data consists of three attributes                       *)
+(* Equivalent member data in C++ struct                               *)
 (* struct Member {                                                    *)
 (*     ByStr20 address;                                               *)
 (*     String name;                                                   *)
 (*     Uint32 membershipType; // 0: Regular, 1: Premium, 2: Corporate *)
 (* }                                                                  *)
-
+(* Where address is the "key"                                         *)
 
 field members: Map ByStr20 Member
                 = Emp ByStr20 Member
