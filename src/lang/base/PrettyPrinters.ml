@@ -175,6 +175,11 @@ let scilla_error_gas_string gas_remaining elist  =
   (scilla_warning_to_sstring (get_warnings())) ^
   (sprintf "Gas remaining: %s\n" (Uint64.to_string gas_remaining))
 
+(* Print a message with location info. *)
+let located_msg msg loc =
+  let open ErrorUtils in
+  (sprintf "%s:%d:%d: %s" loc.fname loc.lnum loc.cnum msg)
+
 let fatal_error err =
   DebugMessage.perr @@ scilla_error_to_string err; exit 1
 

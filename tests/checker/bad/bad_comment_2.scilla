@@ -1,0 +1,7 @@
+scilla_version 0
+
+(* This comment (* does not escape the nest. *)
+
+library BadComment_2
+
+contract BadComment_2 ()

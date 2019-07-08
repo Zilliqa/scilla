@@ -1,0 +1,5 @@
+(* no run-time exceptions because we attempt to remove a missing key, it's just a no-op *)
+
+let k = Int32 1 in
+let m = Emp Int32 Int32 in
+builtin remove m k

@@ -42,6 +42,12 @@ type bigint = Big_int.big_int
 
 let mk_ident s = Ident (s, dummy_loc)
 
+(* A few utilities on id. *)
+let equal_id a b = get_id a = get_id b
+let compare_id a b = compare (get_id a) (get_id b)
+let dedup_id_list l = List.dedup_and_sort ~compare:compare_id l
+let is_mem_id i l = List.exists l ~f:(equal_id i)
+
 (*******************************************************)
 (*                         Types                       *)
 (*******************************************************)
@@ -749,21 +755,16 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
   (* Returns a list of free variables in expr. *)
   let free_vars_in_expr erep =
-    (* A few utilities to begin with. *)
-    
-    (* is m in l. *)
-    let is_mem m l =
-      List.exists l ~f:(fun x -> get_id m = get_id x) in
     (* get elements in "l" that are not in bound_vars. *)
     let get_free l bound_vars =
-      List.filter l ~f:(fun i -> not (is_mem i bound_vars)) in
+      List.filter l ~f:(fun i -> not (is_mem_id i bound_vars)) in
   
     (* The main function that does the job. *)
     let rec recurser erep bound_vars acc =
       let (e, _) = erep in
       match e with
       | Literal _ -> acc
-      | Var v | TApp (v, _) -> if is_mem v bound_vars then acc else v :: acc
+      | Var v | TApp (v, _) -> if is_mem_id v bound_vars then acc else v :: acc
       | Fun (f, _, body) | Fixpoint (f, _, body) -> recurser body (f :: bound_vars) acc
       | TFun (_, body) -> recurser body bound_vars acc
       | Constr (_, _, es) -> (get_free es bound_vars) @ acc
@@ -776,10 +777,10 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         List.fold margs ~init:acc ~f:(fun acc (_, x) ->
           (match x with
            | MLit _ -> acc
-           | MVar v ->  if is_mem v bound_vars then acc else v :: acc)
+           | MVar v ->  if is_mem_id v bound_vars then acc else v :: acc)
         )
       | MatchExpr (v, cs) ->
-        let fv = if is_mem v bound_vars then acc else v::acc in
+        let fv = if is_mem_id v bound_vars then acc else v::acc in
         List.fold cs ~init:fv ~f: (fun acc (p, e) ->
           (* bind variables in pattern and recurse for expression. *)
           let bound_vars' = (get_pattern_bounds p) @ bound_vars in
@@ -787,18 +788,15 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         )
     in
     let fvs = recurser erep [] [] in
-    Core.List.dedup_and_sort ~compare:(fun a b -> String.compare (get_id a) (get_id b)) fvs
+    dedup_id_list fvs
 
 (* Is expr dependent on any ident in blist.
  * This is the same as checking if a free var
  * in expr is present in blist. *)
   let free_vars_dep_check erep blist =
-    (* Utility: is m in l. *)
-    let is_mem m l =
-      List.exists l ~f:(fun x -> get_id m = get_id x) in
     (* Utility: is any m in ml, in l. *)
     let any_is_mem ml l =
-      List.exists ml ~f:(fun i -> is_mem i l) in
+      List.exists ml ~f:(fun i -> is_mem_id i l) in
     (* Get list of free variables in expression *)
     let fvs = free_vars_in_expr erep in
     (* and check if any of them are in blist. *)
