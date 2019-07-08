@@ -43,7 +43,7 @@ type Book =
 
 (*
  * Member is an ADT with two fields:
- * Book = { name , membership_type }
+ * Member = { name , membership_type }
  *)
 type Member =
 | Member of String Uint32
