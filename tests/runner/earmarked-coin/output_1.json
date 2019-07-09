@@ -1,0 +1,43 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7555",
+  "_accepted": "true",
+  "message": null,
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "100" },
+    {
+      "vname": "earmarked_coins",
+      "type": "Map (ByStr20) (EarmarkedCoin)",
+      "value": [
+        {
+          "key": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "val": {
+            "constructor": "EarmarkedCoin",
+            "argtypes": [],
+            "arguments": [
+              "100", "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "_eventname": "SuccessfulTransferOfFunds",
+      "params": [
+        {
+          "vname": "from",
+          "type": "ByStr20",
+          "value": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "vname": "to",
+          "type": "ByStr20",
+          "value": "0xcccccccccccccccccccccccccccccccccccccccc"
+        },
+        { "vname": "code", "type": "Int32", "value": "1" }
+      ]
+    }
+  ]
+}

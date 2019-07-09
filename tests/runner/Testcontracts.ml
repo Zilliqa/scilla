@@ -191,6 +191,7 @@ let add_tests env =
       "shogi" >::: (build_contract_tests env "shogi" succ_code 1 4 ["shogi_lib"]);
       "shogi_proc" >::: (build_contract_tests env "shogi_proc" succ_code 1 4 ["shogi_lib"]);
       "map_key_test" >::: (build_contract_tests env "map_key_test" succ_code 1 1 []);
+      "earmarked-coin" >:::(build_contract_tests env "earmarked-coin" succ_code 1 6 []);
     ];
     "these_tests_must_FAIL" >:::[
       "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 5 11 []);
