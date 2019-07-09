@@ -1,10 +1,15 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7318",
+  "gas_remaining": "7603",
   "_accepted": "false",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "is_store_open",
+      "type": "Bool",
+      "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+    },
     {
       "vname": "members",
       "type": "Map (ByStr20) (Member)",
@@ -18,11 +23,6 @@
           }
         }
       ]
-    },
-    {
-      "vname": "is_store_open",
-      "type": "Bool",
-      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
     },
     {
       "vname": "bookInventory",
@@ -49,11 +49,17 @@
   ],
   "events": [
     {
-      "_eventname": "BookEventSuccess",
+      "_eventname": "OpenStore",
       "params": [
-        { "vname": "code", "type": "Uint32", "value": "0" },
-        { "vname": "action", "type": "String", "value": "Add" },
-        { "vname": "id", "type": "Uint32", "value": "2" }
+        {
+          "vname": "status",
+          "type": "Bool",
+          "value": {
+            "constructor": "False",
+            "argtypes": [],
+            "arguments": []
+          }
+        }
       ]
     }
   ]

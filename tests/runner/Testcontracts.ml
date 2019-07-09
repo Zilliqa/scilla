@@ -176,7 +176,7 @@ let add_tests env =
       "helloWorld" >:::(build_contract_tests env "helloWorld" succ_code 1 4 []);
       "auction" >:::(build_contract_tests env "auction" succ_code 1 8 []);
       "mappair" >:::(build_contract_tests env "mappair" succ_code 1 7 []);
-      "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10 []);
+      "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 12 []);
       "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12 []);
       "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27 []);
       "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 3 []);

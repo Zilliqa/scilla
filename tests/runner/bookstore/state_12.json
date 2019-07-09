@@ -5,6 +5,15 @@
         "value": "0"
     },
     {
+        "vname": "is_store_open",
+        "type": "Bool",
+        "value": {
+            "constructor": "False",
+            "argtypes": [],
+            "arguments": []
+        }
+    },
+    {
         "vname": "members",
         "type": "Map (ByStr20) (Member)",
         "value": [
@@ -22,15 +31,6 @@
         ]
     },
     {
-        "vname": "is_store_open",
-        "type": "Bool",
-        "value": {
-            "constructor": "True",
-            "argtypes": [],
-            "arguments": []
-        }
-    },
-    {
         "vname": "bookInventory",
         "type": "Map (Uint32) (Book)",
         "value": [
@@ -42,6 +42,17 @@
                     "arguments": [
                         "1984",
                         "George Orwell"
+                    ]
+                }
+            },
+            {
+                "key": "2",
+                "val": {
+                    "constructor": "Book",
+                    "argtypes": [],
+                    "arguments": [
+                        "IQ84",
+                        "Haruki Murakami"
                     ]
                 }
             }
