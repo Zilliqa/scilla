@@ -33,6 +33,29 @@
     {
         "vname": "bookInventory",
         "type": "Map (Uint32) (Book)",
-        "value": []
+        "value": [
+            {
+                "key": "1",
+                "val": {
+                    "constructor": "Book",
+                    "argtypes": [],
+                    "arguments": [
+                        "1984",
+                        "George Orwell"
+                    ]
+                }
+            },
+            {
+                "key": "2",
+                "val": {
+                    "constructor": "Book",
+                    "argtypes": [],
+                    "arguments": [
+                        "IQ84",
+                        "Haruki Murakami"
+                    ]
+                }
+            }
+        ]
     }
 ]

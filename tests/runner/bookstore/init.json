@@ -15,7 +15,7 @@
         "value" : "0x1234567890123456789012345678901234567890"
     },
     {
-        "vname" : "storeName",
+        "vname" : "store_name",
         "type" : "String",
         "value" : "Bob's bookstore"
     },
