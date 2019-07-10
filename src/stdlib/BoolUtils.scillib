@@ -5,22 +5,14 @@ let andb : Bool -> Bool -> Bool =
   fun (c : Bool) =>
     match b with 
     | False => False
-    | True  =>
-      match c with 
-      | False => False
-      | True  => True
-      end
+    | True  => c
     end
 
 let orb : Bool -> Bool -> Bool = 
   fun (b : Bool) => fun (c : Bool) =>
     match b with 
     | True  => True
-    | False =>
-      match c with 
-      | False => False
-      | True  => True
-      end
+    | False => c
     end
 
 let negb : Bool -> Bool = 

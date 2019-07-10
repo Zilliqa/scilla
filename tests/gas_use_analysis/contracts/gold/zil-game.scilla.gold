@@ -24,7 +24,7 @@ b: _sender
 a: timer
 
 Gas use polynomial for transition Withdraw:
-210 + 2(a) + 1(b) + 1(c)
+207 + 2(a) + 1(b) + 1(c)
 Legend:
 
 b: owner
