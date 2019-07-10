@@ -32,6 +32,7 @@ module Tests = TestUtil.DiffBasedTests(
       "chain-call-balance-3.scilla";
       "crowdfunding.scilla";
       "crowdfunding_proc.scilla";
+      "earmarked-coin.scilla";
       "ecdsa.scilla";
       "empty.scilla";
       "fungible-token.scilla";
