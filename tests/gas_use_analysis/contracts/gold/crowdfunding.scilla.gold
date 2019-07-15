@@ -1,5 +1,5 @@
 Gas use polynomial for transition Donate:
-178 + 1(a) + 1(b) + 3(c) + 3(d) + 1(e)
+175 + 1(a) + 1(b) + 3(c) + 3(d) + 1(e)
 Legend:
 
 e: Result of builtin put(backers,_sender,_amount)
@@ -9,7 +9,7 @@ b: Length of: backers
 c: _sender
 
 Gas use polynomial for transition GetFunds:
-261 + 2(a) + 2(b) + 1(c) + 1(d)
+255 + 2(a) + 2(b) + 1(c) + 1(d)
 Legend:
 
 d: Container (1, 1)
@@ -18,7 +18,7 @@ b: _balance
 a: _sender
 
 Gas use polynomial for transition ClaimBack:
-244 + 4(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 1(g) + 1(h)
+238 + 4(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 1(g) + 1(h)
 Legend:
 
 b: backers

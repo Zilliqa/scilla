@@ -20,6 +20,7 @@
 open Lexing
 open ScillaParser
 open Big_int
+open Base
 
 exception Error of string
 
@@ -39,7 +40,6 @@ let id = ['a'-'z'] alphanum*
 let spid = ['_'] alphanum*
 let cid =   ['A'-'Z'] alphanum*
 let tid =   '\'' ['A'-'Z'] alphanum*
-let lcomment = "(*" (_ # ['\r' '\n'])* "*)" white* newline
 let hexdigit = ['a'-'f' 'A'-'F' '0'-'9']
 let hex = '0' 'x' (hexdigit hexdigit)+
 let intty = "Int32" | "Int64" | "Int128" | "Int256" | "Uint32" |
@@ -50,7 +50,7 @@ rule read =
 
   (* Whitespaces *)    
   | newline       { new_line lexbuf; read lexbuf }
-  | lcomment      { new_line lexbuf; read lexbuf }
+  | "(*"          { comment [lexbuf.lex_curr_p] lexbuf }
   | white         { read lexbuf }
 
   (* Numbers and hashes *)
@@ -140,3 +140,14 @@ and read_string buf =
     }
   | _ { raise (Error ("Illegal string character: " ^ Lexing.lexeme lexbuf)) }
   | eof { raise (Error ("String is not terminated")) }
+
+(* Nested comments, keeping a list of where comments open *)
+and comment braces =
+  parse
+  | "(*"      { comment (lexbuf.lex_curr_p::braces) lexbuf}
+  | "*)"      { match braces with
+                  _::[] -> read lexbuf
+                | _ -> comment (List.tl_exn braces) lexbuf }
+  | newline   { new_line lexbuf; comment braces lexbuf}
+  | _         { comment braces lexbuf}
+  | eof       { lexbuf.lex_curr_p <- List.hd_exn braces; raise (Error ("Comment unfinished"))}

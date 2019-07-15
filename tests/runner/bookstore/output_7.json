@@ -1,47 +1,52 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7736",
+  "gas_remaining": "7589",
   "_accepted": "false",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
-      "vname": "lastBookID",
-      "type": "Option (Uint32)",
-      "value": {
-        "constructor": "Some",
-        "argtypes": [ "Uint32" ],
-        "arguments": [ "101" ]
-      }
-    },
-    {
-      "vname": "bookInventory",
-      "type": "Map (Uint32) (Pair (String) (String))",
+      "vname": "members",
+      "type": "Map (ByStr20) (Member)",
       "value": [
         {
-          "key": "101",
+          "key": "0x1234567890123456789012345678901234567892",
           "val": {
-            "constructor": "Pair",
-            "argtypes": [ "String", "String" ],
-            "arguments": [ "1984", "George Orwell" ]
+            "constructor": "Member",
+            "argtypes": [],
+            "arguments": [ "Bob", "2" ]
           }
         }
       ]
     },
     {
-      "vname": "members",
-      "type": "Map (ByStr20) (Pair (String) (Uint32))",
+      "vname": "is_store_open",
+      "type": "Bool",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "bookInventory",
+      "type": "Map (Uint32) (Book)",
       "value": [
         {
-          "key": "0x1234567890123456789012345678901234567892",
+          "key": "1",
           "val": {
-            "constructor": "Pair",
-            "argtypes": [ "String", "Uint32" ],
-            "arguments": [ "Bob", "2" ]
+            "constructor": "Book",
+            "argtypes": [],
+            "arguments": [ "1984", "George Orwell" ]
           }
         }
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "BookEventFailure",
+      "params": [
+        { "vname": "code", "type": "Uint32", "value": "1" },
+        { "vname": "action", "type": "String", "value": "Remove" },
+        { "vname": "id", "type": "Uint32", "value": "999" }
+      ]
+    }
+  ]
 }

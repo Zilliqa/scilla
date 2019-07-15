@@ -1,0 +1,6 @@
+{
+    "_tag": "Earmark",
+    "_amount": "100",
+    "_sender" : "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "params": [ { "vname": "recip", "type": "ByStr20", "value": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" } ]
+}

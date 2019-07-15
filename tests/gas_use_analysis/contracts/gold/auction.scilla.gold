@@ -1,5 +1,5 @@
 Gas use polynomial for transition Bid:
-352 + 1(a) + 3(b) + 2(c) + 1(d) + 1(e) + 1(f) + 4(g) + 4(h)
+343 + 1(a) + 3(b) + 2(c) + 1(d) + 1(e) + 1(f) + 4(g) + 4(h)
 Legend:
 
 d: highestBidder
@@ -20,7 +20,7 @@ a: pendingReturns
 c: _sender
 
 Gas use polynomial for transition AuctionEnd:
-175 + 1(a) + 2(b) + 2(c)
+169 + 1(a) + 2(b) + 2(c)
 Legend:
 
 c: highestBid

@@ -21,7 +21,7 @@ c: player_a_hash
 a: timer
 
 Gas use polynomial for transition Withdraw:
-146 + 1(a) + 2(b)
+143 + 1(a) + 2(b)
 Legend:
 
 b: Container (1, 1)

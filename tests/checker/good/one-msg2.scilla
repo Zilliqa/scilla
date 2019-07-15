@@ -1,0 +1,36 @@
+scilla_version 0
+
+(* HelloWorld contract *)
+
+import ListUtils
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+library HelloWorld
+
+let one_msg = 
+  fun (msg : Message) => 
+  let nil_msg = Nil {Message} in
+  Cons {Message} msg nil_msg
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+
+(* This contract is sending two messages, the second one added in procedure "twomsg". *)
+contract HelloWorld
+()
+
+procedure twomsg(mlist : List Message)
+  msg2 = {_tag : ""; _recipient : _sender; _amount : Uint128 0};
+  msgs2 = Cons {Message} msg2 mlist;
+  send msgs2
+
+end
+
+transition onemsg()
+  msg1 = {_tag : ""; _recipient : _sender; _amount : Uint128 0};
+  msgs1 = one_msg msg1;
+  twomsg msgs1
+end

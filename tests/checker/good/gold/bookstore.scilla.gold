@@ -2,54 +2,78 @@
   "cashflow_tags": {
     "State variables": [
       { "field": "owner", "tag": "NotMoney" },
-      { "field": "storeName", "tag": "NoInfo" },
-      { "field": "members", "tag": "(Map (Pair NoInfo NoInfo))" },
-      { "field": "lastBookID", "tag": "(Option NotMoney)" },
-      { "field": "bookInventory", "tag": "(Map (Pair NoInfo NoInfo))" }
+      { "field": "store_name", "tag": "NoInfo" },
+      { "field": "members", "tag": "(Map (Member ))" },
+      { "field": "is_store_open", "tag": "NotMoney" },
+      { "field": "bookInventory", "tag": "(Map (Book ))" }
     ],
-    "ADT constructors": []
+    "ADT constructors": [
+      {
+        "Member": [
+          { "constructor": "Member", "tags": [ "NoInfo", "NoInfo" ] }
+        ]
+      },
+      {
+        "Book": [ { "constructor": "Book", "tags": [ "NoInfo", "NoInfo" ] } ]
+      }
+    ]
   },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "BookStore",
     "params": [
       { "vname": "owner", "type": "ByStr20" },
-      { "vname": "storeName", "type": "String" }
+      { "vname": "store_name", "type": "String" }
     ],
     "fields": [
-      {
-        "vname": "members",
-        "type": "Map (ByStr20) (Pair (String) (Uint32))"
-      },
-      { "vname": "lastBookID", "type": "Option (Uint32)" },
-      {
-        "vname": "bookInventory",
-        "type": "Map (Uint32) (Pair (String) (String))"
-      }
+      { "vname": "members", "type": "Map (ByStr20) (Member)" },
+      { "vname": "is_store_open", "type": "Bool" },
+      { "vname": "bookInventory", "type": "Map (Uint32) (Book)" }
     ],
     "transitions": [
       {
-        "vname": "addMember",
+        "vname": "EmitMemberEvent",
         "params": [
-          { "vname": "name", "type": "String" },
-          { "vname": "addr", "type": "ByStr20" },
-          { "vname": "memberType", "type": "Uint32" }
+          { "vname": "status", "type": "Bool" },
+          { "vname": "status_code", "type": "Uint32" },
+          { "vname": "msg", "type": "String" }
         ]
       },
       {
-        "vname": "addBook",
+        "vname": "EmitBookEvent",
+        "params": [
+          { "vname": "status", "type": "Bool" },
+          { "vname": "status_code", "type": "Uint32" },
+          { "vname": "event_action", "type": "String" },
+          { "vname": "book_id", "type": "Uint32" }
+        ]
+      },
+      {
+        "vname": "OpenStore",
+        "params": [ { "vname": "is_open", "type": "Bool" } ]
+      },
+      {
+        "vname": "AddMember",
+        "params": [
+          { "vname": "name", "type": "String" },
+          { "vname": "member_address", "type": "ByStr20" },
+          { "vname": "member_type", "type": "Uint32" }
+        ]
+      },
+      {
+        "vname": "AddBook",
         "params": [
           { "vname": "book_title", "type": "String" },
           { "vname": "author", "type": "String" },
-          { "vname": "bookID", "type": "Uint32" }
+          { "vname": "book_id", "type": "Uint32" }
         ]
       },
       {
-        "vname": "removeBook",
+        "vname": "RemoveBook",
         "params": [ { "vname": "book_id", "type": "Uint32" } ]
       },
       {
-        "vname": "updateBook",
+        "vname": "UpdateBook",
         "params": [
           { "vname": "book_id", "type": "Uint32" },
           { "vname": "book_title", "type": "String" },
@@ -57,8 +81,53 @@
         ]
       }
     ],
-    "events": [],
+    "events": [
+      {
+        "vname": "OpenStore",
+        "params": [ { "vname": "status", "type": "Bool" } ]
+      },
+      {
+        "vname": "BookEventFailure",
+        "params": [
+          { "vname": "code", "type": "Uint32" },
+          { "vname": "action", "type": "String" },
+          { "vname": "id", "type": "Uint32" }
+        ]
+      },
+      {
+        "vname": "BookEventSuccess",
+        "params": [
+          { "vname": "code", "type": "Uint32" },
+          { "vname": "action", "type": "String" },
+          { "vname": "id", "type": "Uint32" }
+        ]
+      },
+      {
+        "vname": "AddMemberFailure",
+        "params": [
+          { "vname": "code", "type": "Uint32" },
+          { "vname": "message", "type": "String" }
+        ]
+      },
+      {
+        "vname": "AddMemberSuccess",
+        "params": [
+          { "vname": "code", "type": "Uint32" },
+          { "vname": "message", "type": "String" }
+        ]
+      }
+    ],
     "ADTs": [
+      {
+        "tname": "Member",
+        "tparams": [],
+        "tmap": [ { "cname": "Member", "argtypes": [ "String", "Uint32" ] } ]
+      },
+      {
+        "tname": "Book",
+        "tparams": [],
+        "tmap": [ { "cname": "Book", "argtypes": [ "String", "String" ] } ]
+      },
       {
         "tname": "Option",
         "tparams": [ "'A" ],
@@ -99,26 +168,6 @@
     ]
   },
   "warnings": [
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/bookstore.scilla",
-        "line": 188,
-        "column": 14
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/bookstore.scilla",
-        "line": 132,
-        "column": 14
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
     {
       "warning_message":
         "No transition in contract BookStore contains an accept statement\n",

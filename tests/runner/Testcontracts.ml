@@ -176,7 +176,7 @@ let add_tests env =
       "helloWorld" >:::(build_contract_tests env "helloWorld" succ_code 1 4 []);
       "auction" >:::(build_contract_tests env "auction" succ_code 1 8 []);
       "mappair" >:::(build_contract_tests env "mappair" succ_code 1 7 []);
-      "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 10 []);
+      "bookstore" >:::(build_contract_tests env "bookstore" succ_code 1 12 []);
       "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12 []);
       "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27 []);
       "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 3 []);
@@ -191,6 +191,7 @@ let add_tests env =
       "shogi" >::: (build_contract_tests env "shogi" succ_code 1 4 ["shogi_lib"]);
       "shogi_proc" >::: (build_contract_tests env "shogi_proc" succ_code 1 4 ["shogi_lib"]);
       "map_key_test" >::: (build_contract_tests env "map_key_test" succ_code 1 1 []);
+      "earmarked-coin" >:::(build_contract_tests env "earmarked-coin" succ_code 1 6 []);
     ];
     "these_tests_must_FAIL" >:::[
       "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 5 11 []);

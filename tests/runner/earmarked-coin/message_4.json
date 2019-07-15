@@ -1,0 +1,6 @@
+{
+    "_tag": "ClaimForRecipient",
+    "_amount": "0",
+    "_sender" : "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "params": [ { "vname": "earmarked_coin_address", "type": "ByStr20", "value": "0xffffffffffffffffffffffffffffffffffffffff" } ]
+}

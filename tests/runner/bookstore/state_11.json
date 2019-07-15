@@ -1,0 +1,61 @@
+[
+    {
+        "vname": "_balance",
+        "type": "Uint128",
+        "value": "0"
+    },
+    {
+        "vname": "members",
+        "type": "Map (ByStr20) (Member)",
+        "value": [
+            {
+                "key": "0x1234567890123456789012345678901234567892",
+                "val": {
+                    "constructor": "Member",
+                    "argtypes": [],
+                    "arguments": [
+                        "Bob",
+                        "2"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "vname": "is_store_open",
+        "type": "Bool",
+        "value": {
+            "constructor": "True",
+            "argtypes": [],
+            "arguments": []
+        }
+    },
+    {
+        "vname": "bookInventory",
+        "type": "Map (Uint32) (Book)",
+        "value": [
+            {
+                "key": "1",
+                "val": {
+                    "constructor": "Book",
+                    "argtypes": [],
+                    "arguments": [
+                        "1984",
+                        "George Orwell"
+                    ]
+                }
+            },
+            {
+                "key": "2",
+                "val": {
+                    "constructor": "Book",
+                    "argtypes": [],
+                    "arguments": [
+                        "IQ84",
+                        "Haruki Murakami"
+                    ]
+                }
+            }
+        ]
+    }
+]

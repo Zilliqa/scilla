@@ -60,7 +60,7 @@ module ScillaSanityChecker
         match ilist' with
         | i :: rem ->
           let e' =
-            if (List.exists (fun x -> get_id x = get_id i) rem)
+            if is_mem_id i rem
             then
               e @ mk_error1 (Core.sprintf "Identifier %s used more than once\n" (get_id i)) (gloc @@ get_rep i)
             else e
@@ -180,7 +180,7 @@ module ScillaSanityChecker
   type num_msg =
     | Count of int
     | Many
-    | MArg of (num_msg -> (num_msg, scilla_error list) result)
+    | MArg of (num_msg list -> (num_msg, scilla_error list) result)
 
   let lub_num_msg n1 n2 = match n1, n2 with
     | Count i1, Count i2 -> Count (max i1 i2)
@@ -194,17 +194,19 @@ module ScillaSanityChecker
   type one_msg_env = num_msg AssocDictionary.dict
   let mk_env () = AssocDictionary.make_dict ()
   let add_env env id (nm : num_msg) = AssocDictionary.insert (get_id id) nm env
+  let add_env_list env idl (nml : num_msg list) =
+    List.fold_left2 (fun accenv id nm -> add_env accenv id nm) env idl nml
   let rem_env env id : one_msg_env = AssocDictionary.remove (get_id id) env
   let filter_env env ~f : one_msg_env = AssocDictionary.filter ~f env
   let append_env env env' : one_msg_env =
     let lenv' = AssocDictionary.to_list env' in
     List.fold_left (fun acc (k, v) -> AssocDictionary.insert k v acc) env lenv'
 
-  let lookup_env env id : (num_msg, scilla_error list) result =
+  let lookup_env env id loc : (num_msg, scilla_error list) result =
     (* Lookup "id" and raise an error if not found. *)
     match AssocDictionary.lookup (get_id id) env with
     | Some nm -> pure nm
-    | None -> fail1 (Printf.sprintf "Analysis one_msg: %s not in environment" (get_id id)) (ER.get_loc (get_rep id))
+    | None -> fail1 (Printf.sprintf "Analysis one_msg: %s not in environment" (get_id id)) loc
 
   (* env printer for debugging. *)
   let string_env env =
@@ -236,7 +238,7 @@ module ScillaSanityChecker
       (* Msg literals are not built until Eval. *)
       pure Many
     | Var i ->
-      lookup_env env i
+      lookup_env env i (ER.get_loc (get_rep i))
     | Let (i, _, lhs, rhs) ->
       let%bind n = expr_checker lhs env in
       let env' = add_env env i n in
@@ -246,17 +248,17 @@ module ScillaSanityChecker
       pure Many
     | Fun (formal, _, body) ->
       pure @@ MArg (fun n ->
-        let env' = add_env env formal n in
+        let env' = add_env_list env [formal] n in
         expr_checker body env'
       )
     | App (f, actuals) ->
-      let%bind n = lookup_env env f in
+      let%bind n = lookup_env env f (ER.get_loc (get_rep f)) in
         (* Apply each argument, one at a time. *)
         foldM ~f:(fun acc actual ->
-          let%bind n' = lookup_env env actual in
+          let%bind n' = lookup_env env actual (ER.get_loc (get_rep actual)) in
           (match acc with
             | MArg f' ->
-              f' n'
+              f' [n']
             | _ -> pure Many)
         ) ~init:n actuals
     | Constr (cname, _, actuals) ->
@@ -266,14 +268,14 @@ module ScillaSanityChecker
         if cname = "Nil" then pure (Count 0)
         else (* Cons *)
           let c = List.nth actuals 1 in
-          let%bind n = lookup_env env c in
+          let%bind n = lookup_env env c (ER.get_loc (get_rep c))in
           (match n with
           | Count i -> pure (Count (i+1))
           | _ -> pure Many)
       else
         pure Many
     | MatchExpr (m, clauses) ->
-      let%bind mn = lookup_env env m in
+      let%bind mn = lookup_env env m (ER.get_loc (get_rep m)) in
         foldM ~f:(fun acc (p, e') ->
           let env' = pattern_checker mn p env in
           let%bind n = expr_checker e' env' in
@@ -283,7 +285,7 @@ module ScillaSanityChecker
     | Fixpoint _ -> pure Many
     | TFun (_, e') -> expr_checker e' env
     | TApp (tf, _) ->
-      lookup_env env tf
+      lookup_env env tf (ER.get_loc (get_rep tf))
 
   let rec stmt_checker env stmts =
     match stmts with
@@ -293,16 +295,24 @@ module ScillaSanityChecker
         let env' = add_env env x Many in
         stmt_checker env' sts
       | Store _ | MapUpdate _
-      | AcceptPayment | CreateEvnt _ | Throw _
-      | CallProc _ ->
-        stmt_checker env sts
+      | AcceptPayment | CreateEvnt _ | Throw _ -> stmt_checker env sts
+      | CallProc (p, actuals) ->
+        let%bind actuals' = mapM ~f:(fun actual ->
+          lookup_env env actual (ER.get_loc (get_rep actual))
+        ) actuals in
+        let%bind p' = lookup_env env p (SR.get_loc (get_rep p)) in
+        (match p' with
+        | MArg f' ->
+          let%bind _ = f' actuals' in
+          pure ()
+        | _ -> pure ())
       | Bind (x, e) ->
         let%bind n = expr_checker e env in
         let env' = add_env env x n in
         stmt_checker env' sts
       | MatchStmt (m, clauses) ->
         let%bind _ = 
-          let%bind mn = lookup_env env m in
+          let%bind mn = lookup_env env m (ER.get_loc (get_rep m)) in
             foldM ~f:(fun _ (p, stmts') ->
               let env' = pattern_checker mn p env in
               stmt_checker env' stmts'
@@ -310,7 +320,7 @@ module ScillaSanityChecker
         in
         stmt_checker env sts
       | SendMsgs ms ->
-        let%bind ns = lookup_env env ms in
+        let%bind ns = lookup_env env ms (ER.get_loc (get_rep ms)) in
         (match ns with
         | Count i when i <= 1 -> stmt_checker env sts
         (* We do not raise an error because we do not track List{Message} through other ADTs,
@@ -369,15 +379,31 @@ module ScillaSanityChecker
       ) env_libs (SCU.append_implict_contract_params cmod.contr.cparams)
     in
     (* Check all components. *)
-    foldM ~f:(fun _ cp ->
-        (* Bind component parameters. *)
-        let params = SCU.append_implict_comp_params cp.comp_params in
-        let env' = List.fold_left (fun acc (p, _) ->
-            add_env acc p Many
-          ) env params
-        in
-        stmt_checker env' cp.comp_body
-      ) ~init:() cmod.contr.ccomps
+    let%bind _ = foldM ~f:(fun accenv cp ->
+        match cp.comp_type with
+        | CompTrans ->
+          (* Bind transition parameters to Many. *)
+          let params = SCU.append_implict_comp_params cp.comp_params in
+          let env' = List.fold_left (fun acc (p, _) ->
+              add_env acc p Many
+            ) accenv params
+          in
+          let%bind () = stmt_checker env' cp.comp_body in
+          pure accenv
+        | CompProc ->
+          let check_proc_clos = MArg (fun nmlist ->
+            let params' = fst @@ Core.List.unzip @@ SCU.append_implict_comp_params cp.comp_params in
+            let nmlist' = [Many; Many] @ nmlist in (* For the two appeneded implicit comp params above. *)
+            (* Analyze the body *)
+            let env' = add_env_list accenv params' nmlist' in
+            let%bind _ = stmt_checker env' cp.comp_body in
+            pure Many (* This doesn't matter because the procedure doesn't return a value. *)
+          ) in
+          (* bind check_proc_clos to this procedure. *)
+          pure @@ add_env accenv cp.comp_name check_proc_clos
+      ) ~init:env cmod.contr.ccomps
+    in
+    pure ()
 
   (* ************************************** *)
   (* ********* Warn name shadowing ******** *)

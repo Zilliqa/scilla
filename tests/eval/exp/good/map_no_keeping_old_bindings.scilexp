@@ -1,0 +1,15 @@
+(* expected True, because Scilla maps don't store previous key bindings *)
+
+let k = Int32 1 in
+let v1 = Int32 57 in
+let v2 = Int32 239 in
+
+let m0 = Emp Int32 Int32 in
+let m1 = builtin put m0 k v1 in
+let m2 = builtin put m1 k v2 in
+let m3 = builtin remove m2 k in
+let inverse_result = builtin contains m3 k in
+match inverse_result with
+| True => False
+| False => True
+end
