@@ -1,35 +1,31 @@
 Gas use polynomial for transition Play:
-3(a) + 384 + 4(b) + 2(c) + 2(d) + 2(e) + 2(f)
+3(a) + 224 + 4(b) + 2(c) + 2(d) + 2(e) + 2(f)
 Legend:
 
 f: player_b_hash
 d: guess
+b: Container (1, 1)
 c: player_a_hash
 e: Result of builtin badd(4,4)
 a: timer
-b: _sender
 
 Gas use polynomial for transition ClaimReward:
-1(a) + 542 + 2(b) + 1(c) + 1(d) + 30(e) + 2(f) + 1(g) + 1(h) + 1(i)
+1(a) + 438 + 3(b) + 1(c) + 1(d) + 30(e) + 1(f)
 Legend:
 
-g: owner
 e: solution
 d: player_b_hash
-h: player_b
-i: player_a
+b: Container (1, 1)
 f: _balance
 c: player_a_hash
-b: _sender
 a: timer
 
 Gas use polynomial for transition Withdraw:
-210 + 2(a) + 1(b) + 1(c)
+146 + 1(a) + 2(b)
 Legend:
 
-b: owner
+b: Container (1, 1)
 a: _balance
-c: _sender
 
 {
   "contract_info": {

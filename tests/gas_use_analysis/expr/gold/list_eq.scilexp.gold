@@ -5,7 +5,7 @@ Gas use polynomial:
 28 + 30(a) + 1(b)(a)
 Legend:
 
-b: Cost of calling f(Element of: l1, 1(Element of: 1(l2)))
+b: Cost of calling f(Element of: l1, 1(Element of: 1(l2) + 1) + 1)
 a: Length of: l1
 Result size: 1
 

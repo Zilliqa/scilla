@@ -5,8 +5,8 @@ Gas use polynomial:
 14(a) + 19(b)(a) + 1(c)(b)(a) + 16
 Legend:
 
-b: Length of: Cannot determine size: Unable to determine recurrence term
 a: Length of: ls
-c: Cost of calling flt(Element of: Cannot determine size: Unable to determine recurrence term, Element of: ls)
-Result size: Cannot determine size: Unable to determine recurrence term
+c: Cost of calling flt(Element of: 1(Container (2(Length of: Container (0, 1)), Element of: 1 + 1(Container (0, 1)))) + 1 + 1(Element of: ls), Element of: ls)
+b: Length of: 1(Container (2(Length of: Container (0, 1)), Element of: 1 + 1(Container (0, 1)))) + 1 + 1(Element of: ls)
+Result size: 1(Container (2(Length of: Container (0, 1)), Element of: 1 + 1(Container (0, 1)))) + 1 + 1(Element of: ls)
 

@@ -6,5 +6,5 @@ Gas use polynomial:
 Legend:
 
 a: Length of: l1
-Result size: 1(Element of: l2)(Length of: l1) + 1(l2)
+Result size: Container (1(Length of: l1), Element of: l2)
 

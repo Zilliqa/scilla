@@ -229,7 +229,25 @@ module ScillaGUA
    * return the final sizeref. *)
   (* TODO: Make this robust and all correct. *)
   let solve_sizeref_rec sr accarg ls =
-    Printf.printf "solve sizeref: %s\n" (sprint_sizeref sr);
+    (* If sr doesn't depend on accarg, then there's no growth at all. *)
+    let rec deps_on_accarg = function
+      | Base a -> get_id accarg = get_id a
+      | Length sr | Element sr -> deps_on_accarg sr
+      | Container (sr1, sr2) | RFoldAcc (_, sr1, sr2) | LFoldAcc (_, sr1, sr2) ->
+        deps_on_accarg sr1 || deps_on_accarg sr2
+      | SPol pol ->
+        let in_pol p =
+          List.exists (fun (_, vplist) ->
+            List.exists (fun (v, _) -> deps_on_accarg v) vplist
+          ) p
+        in
+        in_pol pol
+      | MaxB srl | MFun (_, srl) | BApp (_, srl) | SApp (_, srl) ->
+        List.exists (fun sr -> deps_on_accarg sr) srl
+      | Intractable _ -> false
+    in
+    if not (deps_on_accarg sr) then sr else
+
     match sr with
     | SPol p ->
       (* Find a "analyzable" Container term in the polynomial. *)
@@ -242,8 +260,9 @@ module ScillaGUA
         | _ -> false
       ) in
       (match cterms with
+      | [] -> sr (* No Container terms, and hence doesn't grow. *)
       | [(_, [(Container (SPol ([cpol;(1, [(Length _, 1)])]), elmsize), _)])]
-      | [(_, [(Container (SPol ([(1, [(Length _, 1)])]), elmsize), _)]); cpol] ->
+      | [(_, [(Container (SPol ([(1, [(Length _, 1)]);cpol]), elmsize), _)])] ->
         (* We can analyze only when there's just one Container term in the polynomial. *)
         (* The result size is "Length(accarg) + Length(ls) * C" *)
         let pol = mul_pn ([cpol]) (single_simple_pn @@ Length (ls)) in
@@ -251,6 +270,14 @@ module ScillaGUA
         SPol (cterm' :: oterms)
       | _ -> Intractable "Unable to solve recurrence."
       )
+    | Container (SPol ([cpol; (1, [(Length (Base lenvar), 1)])]), elmsize)
+    | Container (SPol ([(1, [(Length (Base lenvar), 1)]); cpol]), elmsize) ->
+      if is_const_term cpol && (get_id lenvar = get_id accarg)
+      then
+        let pol = mul_pn ([cpol]) (single_simple_pn @@ Length (ls)) in
+        Container (SPol pol, elmsize)
+      else
+        Intractable "Unable to solve recurrence."
     | _ -> Intractable "Unable to solve recurrence."
 
   (* Combine polynomials from two match branches. *)
@@ -796,13 +823,9 @@ module ScillaGUA
       let%bind rhs_sig = gua_expr genv' rhs in
       (* gas consumption is sum of both. *)
       let (args, ressize, gup) = rhs_sig in
-      let (lhs_args, lhs_ressize, gup') = lhs_sig in
+      let (lhs_args, _, gup') = lhs_sig in
       (* Gas cost for this let expression is sum of LHS cost (if not a function) and RHS cost. *)
       let p = if lhs_args <> [] then gup else add_pn gup gup' in
-
-      if (get_id i) = "iter1" || (get_id i) = "iter2"
-        then (Printf.printf "result sizeref for %s = %s\n" (get_id i) (sprint_sizeref lhs_ressize));
-
       pure (args, ressize, (add_pn p cc))
     | Constr (cname, _, actuals) ->
       let%bind ressize = 
