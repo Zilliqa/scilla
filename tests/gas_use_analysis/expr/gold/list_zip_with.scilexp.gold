@@ -5,8 +5,8 @@ Gas use polynomial:
 3(a) + 40 + 35(b) + 1(c)(b)
 Legend:
 
-a: Length of: Cannot determine size: Unable to determine recurrence term
-c: Cost of calling f(Element of: m1, 1(Element of: Cannot determine size: Unable to determine recurrence term))
+a: Length of: 1(Container (1(Length of: 1(Container (0, 1)) + 1(m2)) + 1, Element of: 1(Container (0, 1)) + 1(m2))) + 2(Container (0, 1)) + 1(m2) + 1
 b: Length of: m1
-Result size: 1(Element of: 1)(Length of: Cannot determine size: Unable to determine recurrence term) + 1
+c: Cost of calling f(Element of: m1, 1(Element of: 1(Container (1(Length of: 1(Container (0, 1)) + 1(m2)) + 1, Element of: 1(Container (0, 1)) + 1(m2))) + 2(Container (0, 1)) + 1(m2) + 1) + 1)
+Result size: Container (1(Length of: 1(Container (1(Length of: 1(Container (0, 1)) + 1(m2)) + 1, Element of: 1(Container (0, 1)) + 1(m2))) + 2(Container (0, 1)) + 1(m2) + 1), Element of: Container (0, 1))
 

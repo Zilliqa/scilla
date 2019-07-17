@@ -7,5 +7,5 @@ Legend:
 
 a: Length of: l
 b: Cost of calling f(Element of: l)
-Result size: 1(Element of: 1)(Length of: l) + 1
+Result size: Container (1(Length of: l), Element of: Container (0, 1))
 

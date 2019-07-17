@@ -1,8 +1,8 @@
 Gas use polynomial for transition setHello:
-119 + 2(a) + 1(b)
+39 + 2(a) + 1(b)
 Legend:
 
-a: _sender
+a: Container (1, 1)
 b: msg
 
 Gas use polynomial for transition getHello:

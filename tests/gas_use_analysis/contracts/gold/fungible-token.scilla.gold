@@ -1,61 +1,53 @@
 Gas use polynomial for transition BalanceOf:
-107 + 2(a) + 2(b) + 2(c)
+19 + 1(a) + 2(b)
 Legend:
 
+b: Container (1, 1)
 a: Element of: balances
-c: tokenOwner
-b: _sender
 
 Gas use polynomial for transition TotalSupply:
-44 + 2(a) + 1(b)
+8 + 1(a)
 Legend:
 
-b: total_tokens
-a: _sender
+a: Container (1, 1)
 
 Gas use polynomial for transition Transfer:
-222 + 1(a) + 1(b) + 1(c) + 1(d) + 2(e) + 6(f) + 3(g)
+82 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 3(f)
 Legend:
 
 e: tokens
-d: Result of builtin add(Element of: balances,tokens)
-a: Element of: balances
 c: Result of builtin sub(tokens,tokens)
-g: to
+f: Container (1, 1)
+a: Element of: balances
 b: Element of: balances
-f: _sender
+d: Result of builtin add(Element of: balances,tokens)
 
 Gas use polynomial for transition TransferFrom:
-314 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 2(f) + 1(g) + 4(h) + 4(i) + 4(j)
+122 + 1(a) + 1(b) + 1(c) + 1(d) + 1(e) + 1(f) + 1(g) + 4(h)
 Legend:
 
 a: Element of: Element of: allowed
+d: Result of builtin sub(Element of: balances,tokens)
 c: Element of: balances
 f: tokens
-i: from
-j: to
-d: Result of builtin sub(Element of: balances,tokens)
+h: Container (1, 1)
 g: Result of builtin sub(tokens,tokens)
-e: Result of builtin add(Element of: balances,tokens)
-h: _sender
 b: Element of: balances
+e: Result of builtin add(Element of: balances,tokens)
 
 Gas use polynomial for transition Approve:
-46 + 2(a) + 2(b) + 1(c)
+10 + 1(a) + 1(b)
 Legend:
 
+b: Container (1, 1)
 a: tokens
-c: spender
-b: _sender
 
 Gas use polynomial for transition Allowance:
-108 + 2(a) + 2(b) + 2(c) + 2(d)
+20 + 1(a) + 2(b)
 Legend:
 
-d: spender
-b: _sender
+b: Container (1, 1)
 a: Element of: Element of: allowed
-c: tokenOwner
 
 {
   "contract_info": {

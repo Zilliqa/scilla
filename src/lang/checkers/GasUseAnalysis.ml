@@ -43,10 +43,12 @@ module ScillaGUA
   type sizeref =
     (* Refer to the size of a variable. *)
     | Base of ER.rep ident
-    (* For List and Map types. *)
+    (* For Lengths of Lists and Maps. *)
     | Length of sizeref
     (* For Elements of Lists and Maps. *)
     | Element of sizeref
+    (* For Lists and Maps. *)
+    | Container of sizeref * sizeref
     (* A polynomial function of other sizerefs *)
     | SPol of sizeref polynomial
     (* An abstract maximum across branches. *)
@@ -93,10 +95,12 @@ module ScillaGUA
   (* Given a size reference, print a description for it. *)
   let rec sprint_sizeref = function
     | Base v -> (get_id v)
-    (* For List and Map types. *)
+    (* For Lengths of Lists and Maps. *)
     | Length sr'-> "Length of: " ^ (sprint_sizeref sr')
     (* For Elements of Lists and Maps. *)
     | Element sr' -> "Element of: " ^ (sprint_sizeref sr')
+    (* For Lists and Maps. *)
+    | Container (len, elm) -> "Container (" ^ (sprint_sizeref len) ^ ", " ^ (sprint_sizeref elm) ^ ")"
     | SPol pn -> sprint_pn pn ~f:(fun sr -> sprint_sizeref sr)
     | MaxB srlist ->  "Max (" ^
       (List.fold_left (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ (sprint_sizeref sr)) "" srlist) ^ ")"
@@ -199,7 +203,7 @@ module ScillaGUA
     match sr with | SPol p -> expand_sizeref_pol p | _ -> single_simple_pn sr
 
   let rec sizeref_to_guref sr = match sr with
-    | Base _ | Length _| Element _ | MaxB _ | MFun _ | BApp _ 
+    | Base _ | Length _| Element _ | Container _ | MaxB _ | MFun _ | BApp _ 
     | RFoldAcc _ | LFoldAcc _ | SApp _ | Intractable _ -> SizeOf (sr)
     | SPol p ->
       let term_replacer t =
@@ -223,36 +227,74 @@ module ScillaGUA
   (* Considering sr as a recurrence polynomial with 
    * accarg as the accumulator, growing Length(ls) times,
    * return the final sizeref. *)
-   (* TODO: Make this generic. *)
-  let solve_sizeref_rec sr accarg accbase ls =
+  (* TODO: Make this robust and all correct. *)
+  let solve_sizeref_rec sr accarg ls =
+    (* If sr doesn't depend on accarg, then there's no growth at all. *)
+    let rec deps_on_accarg = function
+      | Base a -> get_id accarg = get_id a
+      | Length sr | Element sr -> deps_on_accarg sr
+      | Container (sr1, sr2) | RFoldAcc (_, sr1, sr2) | LFoldAcc (_, sr1, sr2) ->
+        deps_on_accarg sr1 || deps_on_accarg sr2
+      | SPol pol ->
+        let in_pol p =
+          List.exists (fun (_, vplist) ->
+            List.exists (fun (v, _) -> deps_on_accarg v) vplist
+          ) p
+        in
+        in_pol pol
+      | MaxB srl | MFun (_, srl) | BApp (_, srl) | SApp (_, srl) ->
+        List.exists (fun sr -> deps_on_accarg sr) srl
+      | Intractable _ -> false
+    in
+    if not (deps_on_accarg sr) then sr else
+
     match sr with
     | SPol p ->
-      let accbase' = sizeref_to_pol accbase in
-      (* Find Element(accarg)*Length(accarg) term in the polynomial. *)
-      let (at, oterms) = List.partition (fun (_, vplist) ->
+      (* Find a "analyzable" Container term in the polynomial. *)
+      let (cterms, oterms) = Core.List.partition_tf p ~f:(fun (coef, vplist) ->
         match vplist with
-        | [(Element(Base accarg1), _); (Length(Base accarg2), _)]
-        | [(Length(Base accarg1), _); (Element(Base accarg2), _)]
-          when (get_id accarg1) = (get_id accarg2) && (get_id accarg1) = (get_id accarg) ->
+          (* We can only analyze "Length(accarg) + C" *)
+        | [(Container (SPol ([cpol;(1, [(Length (Base lenvar), 1)])]), _), _)]
+          when is_const_term cpol && (get_id lenvar = get_id accarg) && coef = 1->
           true
-        (* Simple list term, not explicit Element*Length *)
-        | [Base (accarg1), _] when accarg1 = accarg -> true
         | _ -> false
-      ) p in
-      (match at with
-      | [(coef, [(_, vp1);(_, vp2)])] ->
-        if coef <> 1 || vp1 <> 1 || vp2 <> 1 then Intractable "Super-linear growth" else
-        (* Multiply other terms by the length and add base. *)
-        SPol (add_pn (mul_pn oterms (single_simple_pn (Length ls))) accbase')
-      | [(coef, [(_, vp)])] ->
-        if coef <> 1 || vp <> 1 then Intractable "Super-linear growth" else
-        (* Multiply other terms by the length and add base. *)
-        SPol (add_pn (mul_pn oterms (single_simple_pn (Length ls))) accbase')
-      (* If we don't have the recurrence term, be conservative and say don't know. *)
-      | _ -> Intractable "Unable to determine recurrence term"
+      ) in
+      (match cterms with
+      | [] -> sr (* No Container terms, and hence doesn't grow. *)
+      | [(_, [(Container (SPol ([cpol;(1, [(Length _, 1)])]), elmsize), _)])]
+      | [(_, [(Container (SPol ([(1, [(Length _, 1)]);cpol]), elmsize), _)])] ->
+        (* We can analyze only when there's just one Container term in the polynomial. *)
+        (* The result size is "Length(accarg) + Length(ls) * C" *)
+        let pol = mul_pn ([cpol]) (single_simple_pn @@ Length (ls)) in
+        let cterm' = (1, [(Container (SPol pol, elmsize), 1)]) in
+        SPol (cterm' :: oterms)
+      | _ -> Intractable "Unable to solve recurrence."
       )
-    | _ -> sr
+    | Container (SPol ([cpol; (1, [(Length (Base lenvar), 1)])]), elmsize)
+    | Container (SPol ([(1, [(Length (Base lenvar), 1)]); cpol]), elmsize) ->
+      if is_const_term cpol && (get_id lenvar = get_id accarg)
+      then
+        let pol = mul_pn ([cpol]) (single_simple_pn @@ Length (ls)) in
+        Container (SPol pol, elmsize)
+      else
+        Intractable "Unable to solve recurrence."
+    | _ -> Intractable "Unable to solve recurrence."
 
+  (* Combine polynomials from two match branches. *)
+  let match_combine_pn p1 p2 =
+    let cf t1 t2 =
+      match t1, t2 with
+      | (coef1, [(Container ((SPol l1), elm1), pow1)]), (coef2, [(Container ((SPol l2), elm2), pow2)]) 
+        when elm1 = elm2 && pow1 = pow2->
+        (* If we have two identical containers, pick the max possible container size. *)
+        (* TODO: For nested containers, should we have a recursive call? *)
+        Some (max coef1 coef2, [(Container (SPol (max_combine_pn l1 l2), elm1), pow1)])
+      | (coef1, _), (coef2, _) when eq_term ~coef:false t1 t2 ->
+        (* We have two identical terms with only different co-efficients. *)
+        Some (if coef1 > coef2 then t1 else t2)
+      | _ -> None
+    in
+    combine_pn ~cf p1 p2
 
   (* Given a signature, substitute actual arguments into the formal parameters.
    * This function does not resolve the actuals into their sizerefs (only name substitution).
@@ -277,6 +319,8 @@ module ScillaGUA
           | Base b -> Base (lookup_actual b)
           | Length s' -> Length (replacer s')
           | Element s' -> Element (replacer s')
+          | Container (len, elm) ->
+            Container(replacer len, replacer elm)
           | SPol sp -> SPol (polynomial_replacer sp)
           | BApp (b, srlist) ->
             let srlist' = List.map (fun v -> replacer v) srlist in
@@ -357,6 +401,10 @@ module ScillaGUA
       | Element s' ->
         let%bind r = replacer s' in
         pure @@ Element r
+      | Container (len, elm) ->
+        let%bind len' = replacer len in
+        let%bind elm' = replacer elm in
+        pure @@ Container (len', elm')
       | SPol sp ->
         let%bind p' = polynomial_replacer sp in
         pure @@ SPol (expand_sizeref_pol p')
@@ -476,6 +524,10 @@ module ScillaGUA
           | Element s' ->
             let%bind r = resolver s' in
             pure @@ Element r
+          | Container (len, elm) ->
+            let%bind len' = resolver len in
+            let%bind elm' = resolver elm in
+            pure @@ Container (len', elm')
           | SPol sp ->
             let%bind p' = polynomial_resolver sp in
             pure @@ SPol (expand_sizeref_pol p')
@@ -516,7 +568,7 @@ module ScillaGUA
                 if List.length args' <> 2 then fail0 "Incorrect number of arguments to fold iterator" else
                 (* We want the accumulator argument to the fold iterator. *)
                 let accarg = if rfold then List.nth args 1 else List.nth args 0 in
-                pure @@ solve_sizeref_rec sr accarg accbase ls
+                pure @@ solve_sizeref_rec sr accarg ls
               in
               let%bind sr'' = substitute_resolved_actuals_sizeref_list sr' args' srlist in
               resolver sr''
@@ -779,8 +831,8 @@ module ScillaGUA
       let%bind ressize = 
         (match cname with
         | "True" | "False" -> pure @@ SPol (const_pn 1)
-        | "Nil" -> pure @@ SPol(const_pn 1)
-        | "None" -> pure @@ SPol(const_pn 0)
+        | "Nil" -> pure @@ Container (SPol (const_pn 0), SPol(const_pn 1))
+        | "None" -> pure @@ SPol(const_pn 1)
         | "Some" ->
           (* TypeChecker will ensure that actuals has unit length. *)
           let arg = List.nth actuals 0 in
@@ -801,30 +853,18 @@ module ScillaGUA
           let arg1 = List.nth actuals 1 in
           let%bind (_, compsize0, _) = GUAEnv.resolvS genv (get_id arg0) ~lopt:(Some(get_rep arg0)) in
           let%bind (_, compsize1, _) = GUAEnv.resolvS genv (get_id arg1) ~lopt:(Some(get_rep arg1)) in
-          let compsize0_p = sizeref_to_pol compsize0 in
           (match compsize1 with
           | Base _ ->
-            (* Cons a b : Element(b) + Element(b) * Length(b) *)
-            let el = single_simple_pn @@ Element(compsize1) in
-            let len = single_simple_pn @@ Length(compsize1) in
-            pure @@ SPol(add_pn el (mul_pn el len))
-          | SPol p ->
-            (* Search for a term Element(b)*Length(b) *)
-            let lt = List.find_opt (fun t ->
-              (* check if t has two variables, each with unit power. *)
-              match t with
-              | (_, [(Element b, 1);(Length b', 1)]) when b = b' -> true
-              | _ -> false
-            ) p in
-            (match lt with
-            | Some (_, [(Element _ as t, 1);_]) -> pure @@ SPol (add_pn (single_simple_pn t) p)
-            | _ -> pure @@ SPol compsize0_p
-            )
+            (* Cons a b : Container((Length(b)+1), Element(b)) *)
+            let el = Element(compsize1) in
+            let len = SPol (add_pn (single_simple_pn @@ Length(compsize1)) (const_pn 1)) in
+            pure @@ Container (len, el)
+          | Container (SPol len, elm) ->
+            (* Just add 1 to the length. *)
+            pure @@ Container (SPol (add_pn len (const_pn 1)), elm)
           | _ ->
             (* what to do? *)
-            let compsize0' = compsize0_p in
-            let compsize1' = single_simple_pn compsize1 in
-            pure @@ SPol(add_pn compsize0' compsize1')
+            pure @@ SPol(add_pn (sizeref_to_pol compsize0) (sizeref_to_pol compsize1))
           )
         | _ -> fail1 (Printf.sprintf "Unsupported constructor %s in gas analysis." cname)
                      (ER.get_loc rep)
@@ -844,7 +884,7 @@ module ScillaGUA
         let%bind (args, ressize, gup) = foldM ~f:(fun (_, asizes, apn) (pat, branch) ->
           let%bind genv' = bind_pattern genv xsize pat in
           let%bind (_, bsize, bpn) = gua_expr genv' branch in
-          let rsize = max_combine_pn asizes (sizeref_to_pol bsize) in
+          let rsize = match_combine_pn asizes (sizeref_to_pol bsize) in
           pure ([], rsize, add_pn apn bpn)
         ) ~init:([], empty_pn, empty_pn) clauses in
         pure (args, SPol (ressize), add_pn gup cc)

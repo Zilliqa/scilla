@@ -3,5 +3,5 @@ Gas usage signature:
 Parameter list: ( l )
 Gas use polynomial:
 8
-Result size: 1(Element of: l)
+Result size: 1(Element of: l) + 1
 
