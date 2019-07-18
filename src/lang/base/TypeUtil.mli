@@ -136,7 +136,7 @@ module TypeUtilities : sig
   val elab_constr_type : string -> typ list -> (typ, scilla_error list) result  
 
   (* For a given instantiated ADT and a construtor name, get type *
-     assignemnts. This is the main working horse of type-checking
+     assignments. This is the main working horse of type-checking
      pattern-matching. *)    
   val constr_pattern_arg_types : typ -> string -> (typ list, scilla_error list) result  
 
