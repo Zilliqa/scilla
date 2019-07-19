@@ -21,7 +21,7 @@ open ParserUtil.ParsedSyntax
 
 (* Fetch a field value. keys is empty iff the value being fetched is not a whole map itself.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
-val fetch : address:string -> fname:loc ident -> keys:(literal list) -> ((literal option * stmt_eval_context), scilla_error list) result
+val fetch : socket_address:string -> fname:loc ident -> keys:(literal list) -> ((literal option * stmt_eval_context), scilla_error list) result
 
 (* Update a field. keys is empty iff the value being updated is not a whole map itself. Value can be None, which implies a remove operation *)
-val update : address:string -> fname:loc ident -> keys:(literal list) -> value:literal option -> (stmt_eval_context, scilla_error list) result
+val update : socket_address:string -> fname:loc ident -> keys:(literal list) -> value:literal option -> (stmt_eval_context, scilla_error list) result
