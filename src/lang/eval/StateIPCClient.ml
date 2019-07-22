@@ -32,6 +32,8 @@ module IPCClientIdl(R: RPC) = struct
   let error = Idl.DefaultError.err
   let fetch_state_value = declare "fetchStateValue" ["Fetch state value from blockchain"] (query @-> returning return_string error)
   let update_state_value = declare "updateStateValue" ["Update state value in blockchain"] (query @-> value @-> returning void error)
+  
+  let test_server_rpc = declare "testServerRPC" ["Check if client server interaction is working"] (query @-> returning return_string error)
 end
 
 module IPCClient = IPCClientIdl(Idl.GenClient ())
@@ -79,6 +81,9 @@ let fetch ~socket_address ~fname ~keys ~is_map =
   let gas_and_value = add_gas ~value ~fname ~keys ~is_map in
   pure @@ gas_and_value *)
   fail0 "StateService: fetch not implemented yet for IPC mode"
+
+let test_server_rpc ~socket_address ~query = 
+  IPCClient.test_server_rpc (binary_rpc ~socket_address) query
 
 (* let construct_and_serialize_query ~fname ~keys ~is_delete ~is_map =
   let map_depth = 
