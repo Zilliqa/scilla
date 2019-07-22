@@ -26,7 +26,7 @@ type ioFiles = {
     libdirs : string list;
     gas_limit : Stdint.uint64;
     pp_json : bool;
-    ipc_port : int;
+    ipc_address : string;
 }
 
 val parse : unit -> ioFiles

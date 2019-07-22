@@ -187,15 +187,16 @@ let update_ipc ~socket_address ~fname ~keys vopt fields =
     | Some {fname =  _; ftyp = MapType _; fval = _ } -> true
     | _ -> false 
   in
-  let g = StateIPCClient.update ~socket_address ~fname ~keys vopt ~is_map in
+  let g = StateIPCClient.update ~socket_address ~fname ~keys ~value:vopt ~is_map in
   pure @@ (fields, g)
 
 let update ~fname ~keys ~value =
   let%bind (sm, fields) = assert_init() in
   match sm with
   | IPC socket_address -> 
-    let%bind (fields', g) = update_ipc ~socket_address ~fname ~keys (Some value) fields in
-    pure g
+    (* let%bind (fields', g) = update_ipc ~socket_address ~fname ~keys (Some value) fields in
+    pure g *)
+    fail0 "StateService: update not implemented yet for IPC mode" 
   | Local ->
     let%bind (fields', g) = update_local ~fname ~keys (Some value) fields in
     let _ = (ss_cur_state := SS(sm, fields')) in
@@ -217,8 +218,9 @@ let remove ~fname ~keys =
   let%bind (sm, fields) = assert_init() in
   match sm with
   | IPC socket_address ->
-    let%bind (_, g) = update_ipc ~socket_address ~fname ~keys None fields in
-    pure @@ g
+    (* let%bind (_, g) = update_ipc ~socket_address ~fname ~keys None fields in
+    pure @@ g *)
+    fail0 "StateService: update not implemented yet for IPC mode" 
   | Local -> 
     let%bind (_, g) = update_local ~fname ~keys None fields in
     (* We don't need to update ss_cur_state because only map keys can be removed, and that's stateful. *)

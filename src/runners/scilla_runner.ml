@@ -167,7 +167,7 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
 let () =
   let cli = Cli.parse () in
   let is_deployment = (cli.input_message = "") in
-  let is_ipc = cli.ipc_port <> 0 in
+  let is_ipc = cli.ipc_address <> "" in
   let is_library =
     (FilePath.get_extension cli.input = GlobalConfig.StdlibTracker.file_extn_library) in
   let gas_remaining =
@@ -270,7 +270,7 @@ let () =
           let open MonadUtil in
           let open Result.Let_syntax in
           let fields = List.map cstate'.fields ~f:(fun (s, t) -> { fname = s; ftyp = t; fval = None }) in
-          let sm = IPC (cli.ipc_port) in
+          let sm = IPC (cli.ipc_address) in
           let () = initialize ~sm ~fields in
           match
              (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
@@ -309,7 +309,7 @@ let () =
             let open StateService in
             { fname = s; ftyp = t; fval = None }
           ) in
-          let () = StateService.initialize ~sm:(IPC cli.ipc_port) ~fields in
+          let () = StateService.initialize ~sm:(IPC cli.ipc_address) ~fields in
           (cstate, gas_remaining')
         else
 

@@ -20,6 +20,7 @@ open Idl
 open Stdlib
 open Core
 open Result.Let_syntax
+open MonadUtil
 
 module IPCClientIdl(R: RPC) = struct
   open R
@@ -58,24 +59,43 @@ let binary_rpc ~socket_address (call: Rpc.call) : Rpc.response =
   response
 
 let update ~socket_address ~fname ~keys ~value ~is_map =
-  let is_delete = 
+  (* let is_delete = 
     match value with
     | Some _ -> true
     | None -> false
   in
-  let%bind query = construct_and_serialize_query ~fname ~keys ~is_delete in
+  let%bind query = construct_and_serialize_query ~fname ~keys ~is_delete ~is_map in
   let%bind serialized_value = serialize_value ~keys ~value ~is_delete in
   let _ = IPCClient.update_state_value binary_rpc ~socket_address query serialized_value in
   let gas_and_value = add_gas ~value:serialized_value ~fname ~keys ~is_map in
-  pure @@ gas_and_value
+  pure @@ gas_and_value *)
+  fail0 "StateService: update not implemented yet for IPC mode" 
 
 
 let fetch ~socket_address ~fname ~keys ~is_map =
-  let%bind query = construct_and_serialize_query ~fname ~keys ~is_delete: false in
+  (* let%bind query = construct_and_serialize_query ~fname ~keys ~is_delete: false ~is_map in
   let%bind return_string = IPCClient.fetch_state_value binary_rpc ~socket_address query in
   let%bind value = deserialize return_string in
   let gas_and_value = add_gas ~value ~fname ~keys ~is_map in
-  pure @@ gas_and_value
+  pure @@ gas_and_value *)
+  fail0 "StateService: fetch not implemented yet for IPC mode"
+
+(* let construct_and_serialize_query ~fname ~keys ~is_delete ~is_map =
+  let map_depth = 
+    match is_map with
+    | true -> List.length keys
+    | false -> 0
+  in
+  let query = ScillaMessageTypes.({ 
+    name = fname; 
+    mapdepth = map_depth; 
+    indices = keys; 
+    deletemapkey = is_delete 
+  }) in
+  let encoder = Pbrt.Encoder.create () in 
+  encoder.encode_proto_scilla_query query encoder; *)
+
+
 
 (* TO IMPLEMENT
 1. construct_and_serialize_query
@@ -83,4 +103,3 @@ let fetch ~socket_address ~fname ~keys ~is_map =
 3. add_gas
 4. serialize_value
 *)
-
