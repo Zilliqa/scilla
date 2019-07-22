@@ -1,0 +1,5 @@
+let apply =
+  fun (_ : Int32 -> Int32) =>
+  fun (x : Int32) =>
+    _ x
+in apply

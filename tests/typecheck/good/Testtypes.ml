@@ -97,6 +97,7 @@ module Tests = TestUtil.DiffBasedTests(
       "builtin-bech32-2.scilexp";
       "fun.scilexp";
       "fun1.scilexp";
+      "fun-underscore-as-ident.scilexp";
       "addr.scilexp";
       "app.scilexp";
       "hash1.scilexp";

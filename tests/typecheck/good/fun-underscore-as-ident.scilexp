@@ -1,0 +1,11 @@
+(* allow underscore for ignored parameters *)
+
+(* test 1 *)
+let const : forall 'A. forall 'B. 'A -> 'B -> 'A =
+  tfun 'A => tfun 'B =>
+  fun (x : 'A) => fun (_ : 'B) =>
+    x
+in
+(* test 2 *)
+fun (_ : Int32) =>
+  Int32 0

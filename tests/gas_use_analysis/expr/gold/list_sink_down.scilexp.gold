@@ -5,7 +5,7 @@ Gas use polynomial:
 22 + 19(a) + 1(b)(a)
 Legend:
 
-b: Cost of calling flt(Element of: ls, e)
 a: Length of: ls
+b: Cost of calling flt(Element of: ls, e)
 Result size: 1(Container (2(Length of: ls), Element of: 1 + 1(Container (0, 1)))) + 1 + 1(e)
 

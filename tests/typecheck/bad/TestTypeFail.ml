@@ -146,6 +146,9 @@ module Tests = TestUtil.DiffBasedTests(
       "fun2.scilexp";
       "fun3.scilexp";
       "fun4.scilexp";
+      "fun-prefix-underscore.scilexp";
+      "fun-not-allowed-to-use-underscore1.scilexp";
+      "fun-not-allowed-to-use-underscore2.scilexp";
       "foo-expr.scilexp";
       "list-error.scilexp";
       "list-error2.scilexp";

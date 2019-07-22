@@ -160,6 +160,10 @@ scid :
 | name = CID { name }
 | ns = CID; PERIOD; name = CID { ns ^ "." ^ name }
 
+funident :
+| name = ID { Ident (name, toLoc $startpos) }
+| UNDERSCORE { Ident ("_", toLoc $startpos) }
+
 (***********************************************)
 (*                  Types                      *)
 (***********************************************)
@@ -217,8 +221,8 @@ simple_exp :
   EQ; f = simple_exp; IN; e = exp
   {(Let ((Ident (x, toLoc $startpos)), t, f, e), toLoc $startpos) }
 (* Function *)
-| FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
-  { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) }
+| FUN; LPAREN; i = funident; COLON; t = typ; RPAREN; ARROW; e = exp
+  { (Fun (i, t, e), toLoc $startpos ) }
 (* Application *)
 | f = sid;
   args = nonempty_list(sident)
