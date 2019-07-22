@@ -207,25 +207,22 @@ let list_eq : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool =
     end
   end
 
-(* Return True iff all elements of list "l" satisfy predicate "f". *)
+(* Return True iff all elements of list "l" satisfy predicate "p". *)
 let list_forall : forall 'A. ('A -> Bool) -> List 'A -> Bool =
   tfun 'A =>
-  fun (f : 'A -> Bool) =>
-  fun (l : List 'A) =>
-    let folder = @list_foldl 'A Bool in
-    let init = True in
-    let iter =
-      fun (z : Bool) =>
-      fun (h : 'A) =>
-        let res = f h in
-        match res with
-        | False =>
-          False
-        | True =>
-          z
-        end
-    in
-    folder iter init l
+  fun (p : 'A -> Bool) =>
+  let sat_p =
+  fun (ignore : Bool) => fun (x: 'A) =>
+  fun (recu: Bool -> Bool) =>
+    let p_x = p x in
+    match p_x with
+    | True => recu p_x
+    | False => False
+    end in
+  let foldk = @list_foldk 'A Bool in
+  (* vacuously true if nothing *)
+  let init = True in
+  foldk sat_p init
 
 (* Stable sort the input list "l". *)
 (* "flt" returns True if the first argument is lesser-than the second *)

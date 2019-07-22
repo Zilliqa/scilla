@@ -92,6 +92,8 @@ let explist = [
   "list_zip_with.scilexp"; 
   "list_foldl_while.scilexp";
   "list_foldl_nth.scilexp";
+  "list_foldl.scilexp";
+  "list_foldr.scilexp";
   "map1.scilexp";
   "map2.scilexp";
   "map3.scilexp";
