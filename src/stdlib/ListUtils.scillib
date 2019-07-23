@@ -185,45 +185,27 @@ let list_eq_helper : forall 'A. ('A -> 'A -> Bool) ->
       folder iter init l1
 
 (* Return true iff two lists compare equal. *)
-(* Comparison is performed using the "f" function provided. *)
+(* Comparison is performed using the "equal" function provided. *)
 let list_eq : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool =
   tfun 'A =>
-  fun (f : 'A -> 'A -> Bool) =>
-  fun (l1 : List 'A) =>
-  fun (l2 : List 'A) =>
-  let true = True in
-  let false = False in
-  let nil = Nil {'A} in
-  let element_eq =
-    fun (status_ls : Pair Bool (List 'A)) => fun (x : 'A) =>
-    fun (recurse: Pair Bool (List 'A) -> Pair Bool (List 'A)) =>
-      match status_ls with
-      | Pair _ remaining =>
-        match remaining with
-        | Cons y ys => let x_eq_y = f x y in
-          match x_eq_y with
-          | True => let next = Pair {Bool (List 'A)} true ys in
-            recurse next
-          | False => let next = Pair {Bool (List 'A)} false nil
-            in next
-          end
-        | Nil => Pair {Bool (List 'A)} false nil
+  fun (equal : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) => fun (l2 : List 'A) =>
+    let iter = fun (xs2 : List 'A) => fun (x1 : 'A) => fun (recurse : List 'A -> List 'A) =>
+      match xs2 with
+      | Cons x2 tl2 =>
+        let eq_x1_x2 = equal x1 x2 in
+        match eq_x1_x2 with
+        | True => recurse tl2
+        | False => l1   (* l1 is not empty in this context *)
         end
+      | Nil => l1       (* l1 is not empty in this context *)
       end in
-  let folder = @list_foldk 'A (Pair Bool (List 'A)) in
-  (* in case of empty l2, foldk terminates so set init *)
-  let init = match l1 with
-  | Cons _ _ => Pair {Bool (List 'A)} false l1
-  | Nil => Pair {Bool (List 'A)} true l1
-  end in
-  let res = folder element_eq init l2 in
-  match res with
-  | Pair l1_eq_l2 last =>
-    match last with
+    let folder = @list_foldk 'A (List 'A) in
+    let remaining = folder iter l2 l1 in
+    match remaining with
     | Cons _ _ => False
-    | Nil => l1_eq_l2
+    | Nil => True
     end
-  end
 
 (* Return True iff all elements of list "l" satisfy predicate "p". *)
 let list_forall : forall 'A. ('A -> Bool) -> List 'A -> Bool =
