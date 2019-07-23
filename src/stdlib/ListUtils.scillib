@@ -1,6 +1,6 @@
 library ListUtils
 
-(* Returns result of left fold on f *)
+(* (* Returns result of left fold on f *)
 let list_foldl : forall 'A. forall 'B. ( 'B -> 'A -> 'B) -> 'B -> List 'A -> 'B =
   tfun 'A => tfun 'B =>
   fun (f : 'B -> 'A -> 'B) =>
@@ -17,7 +17,7 @@ let list_foldr : forall 'A. forall 'B. ('A -> 'B -> 'B) -> 'B -> List 'A -> 'B =
   let right_f = fun (z: 'B) => fun (x: 'A) =>
     fun (recurse : 'B -> 'B) => let res = recurse z in f x res in
   let folder = @list_foldk 'A 'B in
-  folder right_f
+  folder right_f *)
 
 (* list_foldl with early termination. Continues recursing as long as f returns Some _.
    Once f returns None, the recursion terminates. *)

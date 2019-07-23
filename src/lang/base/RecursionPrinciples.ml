@@ -74,18 +74,58 @@ module NatRec = struct
     let avar = mk_ident "'A"
     let bvar = mk_ident "'B"
 
-    module Foldk = struct
+    module Foldl = struct
+      let f_type = parse_type_wrapper "'B -> 'A -> 'B"
+      let fold_type = parse_type_wrapper "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
+      let fold_type_opt = Some (PolyFun(get_id avar, (PolyFun(get_id bvar, fold_type))))
       (* The type of the fixpoint argument *)
+      let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
+      let (_, loc) as fix_arg = parse_expr_wrapper (
+          "fun (z : 'B) => fun (l: List 'A) => " ^
+          "match l with " ^
+          "| Cons h t => let res = f z h in g res t " ^
+          "| Nil => z " ^
+          "end"
+      )
+      let id = mk_ident "list_foldl"
+      let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
+      let fold_fixed = (Fun (f, f_type, fold_fix), loc)
+      let fold = (TFun(avar, (TFun (bvar, fold_fixed), loc)), loc)
+      let entry = LibVar (id, fold_type_opt, fold)
+    end
+
+    module Foldr = struct
+      let f_type = parse_type_wrapper "'A -> 'B -> 'B"
+      let fold_type = parse_type_wrapper "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
+      let fold_type_opt = Some (PolyFun(get_id avar, (PolyFun(get_id bvar, fold_type))))
+      (* The type of the fixpoint argument *)
+      let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
+      let (_, loc) as fix_arg = parse_expr_wrapper (
+          "fun (z : 'B) => fun (l: List 'A) => " ^
+          "match l with " ^
+          "| Cons h t => let res = g z t in f h res " ^
+          "| Nil => z " ^
+          "end"
+      )
+      let id = mk_ident "list_foldr"
+      let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
+      let fold_fixed = (Fun (f, f_type, fold_fix), loc)
+      let fold = (TFun(avar, (TFun (bvar, fold_fixed), loc)), loc)
+      let entry = LibVar (id, fold_type_opt, fold)
+    end
+
+    module Foldk = struct
       let comb_type = parse_type_wrapper "'B -> 'A -> ('B -> 'B) -> 'B"
       let fold_type = parse_type_wrapper "('B -> 'A -> ('B -> 'B) -> 'B) -> 'B -> (List 'A) -> 'B"
       let fold_type_opt = Some (PolyFun(get_id avar, (PolyFun(get_id bvar, fold_type))))
+      (* The type of the fixpoint argument *)
       let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
       let (_, loc) as fix_arg = parse_expr_wrapper ( 
           "fun (z : 'B) => fun (l: List 'A) => " ^
           "match l with " ^
-          " | Cons h t => let partial = fun (k : 'B) => g k t in " ^
+          "| Cons h t => let partial = fun (k : 'B) => g k t in " ^
           "   f z h partial " ^
-          " | Nil => z " ^
+          "| Nil => z " ^
           "end"
         )
       let id = mk_ident "list_foldk"
@@ -100,5 +140,7 @@ let recursion_principles =
   [
     NatRec.Foldl.entry;
     ListRec.Foldk.entry;
+    ListRec.Foldl.entry;
+    ListRec.Foldr.entry;
   ]
 

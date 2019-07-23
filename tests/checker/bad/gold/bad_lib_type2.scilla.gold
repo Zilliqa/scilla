@@ -4,7 +4,7 @@
       "error_message": "Type error(s) in contract BadLibType:\n",
       "start_location": {
         "file": "checker/bad/bad_lib_type2.scilla",
-        "line": 27,
+        "line": 25,
         "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -13,7 +13,7 @@
       "error_message": "Type error in library BadLibType:\n\n",
       "start_location": {
         "file": "checker/bad/bad_lib_type2.scilla",
-        "line": 9,
+        "line": 7,
         "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
