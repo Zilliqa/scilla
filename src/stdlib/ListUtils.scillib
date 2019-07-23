@@ -7,8 +7,8 @@ let list_foldl : forall 'A. forall 'B. ( 'B -> 'A -> 'B) -> 'B -> List 'A -> 'B 
   let left_f = fun (z: 'B) => fun (x: 'A) =>
     fun (recurse : 'B -> 'B) => let res = f z x in
                                 recurse res in
-  let foldk = @list_foldk 'A 'B in
-  foldk left_f
+  let folder = @list_foldk 'A 'B in
+  folder left_f
 
 (* Returns result of right fold on f *)
 let list_foldr : forall 'A. forall 'B. ('A -> 'B -> 'B) -> 'B -> List 'A -> 'B =
@@ -16,10 +16,11 @@ let list_foldr : forall 'A. forall 'B. ('A -> 'B -> 'B) -> 'B -> List 'A -> 'B =
   fun (f : 'A -> 'B -> 'B) =>
   let right_f = fun (z: 'B) => fun (x: 'A) =>
     fun (recurse : 'B -> 'B) => let res = recurse z in f x res in
-  let foldk = @list_foldk 'A 'B in
-  foldk right_f
+  let folder = @list_foldk 'A 'B in
+  folder right_f
 
-(* Returns result of folding left on f while Some _ otherwise early termination *)
+(* list_foldl with early termination. Continues recursing as long as f returns Some _.
+   Once f returns None, the recursion terminates. *)
 let list_foldl_while : forall 'A. forall 'B.
   ('B -> 'A -> Option 'B) -> 'B -> List 'A -> 'B =
   tfun 'A => tfun 'B =>
@@ -30,36 +31,8 @@ let list_foldl_while : forall 'A. forall 'B.
     | Some acc => recurse acc
     | None => z
     end in
-  let foldk = @list_foldk 'A 'B in
-  foldk whilel_f
-
-(* Returns result of folding left on f but terminates early if reaches nth application *)
-let list_foldl_nth =
-  tfun 'A => tfun 'B =>
-  fun (final : Uint32) => fun (f : 'B -> 'A -> 'B) => fun (acc : 'B) =>
-  fun (ls : List 'A) =>
-  let left_nth = fun (zn : Pair 'B Uint32) => fun (x : 'A) =>
-  fun (recurse : (Pair 'B Uint32) -> (Pair 'B Uint32)) =>
-    match zn with
-    | Pair z n => let n_lt_end = builtin lt n final in
-      (* Terminate early if reached n=end *)
-      match n_lt_end with
-      | False => zn
-      | True =>
-        let one = Uint32 1 in
-        let n_plus_one = builtin add n one in
-        let res = f z x in
-        let res_next = Pair {'B Uint32} res n_plus_one in
-        recurse res_next
-      end
-    end in
-  let foldk = @list_foldk 'A (Pair 'B Uint32) in
-  let zero = Uint32 0 in
-  let init = Pair {'B Uint32} acc zero in
-  let nth_foldl = foldk left_nth init ls in
-    match nth_foldl with
-    | Pair final _ => final
-    end
+  let folder = @list_foldk 'A 'B in
+  folder whilel_f
 
 (* Apply (f : 'A -> 'B) to every element of List 'A *)
 (* to generate List 'B. *)
@@ -111,7 +84,6 @@ let list_tail : forall 'A. List 'A -> Option (List 'A) =
   tfun 'A =>
   fun (l : List 'A) =>
     match l with
-
     | Cons h t =>
       Some {(List 'A)} t
     | Nil =>
@@ -176,34 +148,80 @@ let list_length : forall 'A. List 'A -> Uint32 =
      in
        folder iter init l
 
+(* Not for public use, to be removed in next major version *)
+(* Returns Some Nil on successful match. None otherwise. *)
+let list_eq_helper : forall 'A. ('A -> 'A -> Bool) ->
+  List 'A -> List 'A -> Option (List 'A) =
+  tfun 'A =>
+  fun (eq : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+    let folder = @list_foldl 'A (Option (List 'A)) in
+    let init = Some {(List 'A)} l2 in
+    let iter =
+      fun (z : Option (List 'A)) =>
+      fun (h1 : 'A) =>
+        match z with
+        | Some ll2 =>
+          let headF = @list_head 'A in
+          let h2o = headF ll2 in
+          match h2o with
+          | Some h2 =>
+            let eqb = eq h1 h2 in
+            match eqb with
+            | True =>
+              let tailF = @list_tail 'A in
+              tailF ll2
+            | False =>
+              None {(List 'A)}
+            end
+          | None =>
+            None {(List 'A)}
+          end
+        | None =>
+          None {(List 'A)}
+        end
+    in
+      folder iter init l1
+
 (* Return true iff two lists compare equal. *)
 (* Comparison is performed using the "f" function provided. *)
 let list_eq : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool =
   tfun 'A =>
-  fun (equal : 'A -> 'A -> Bool) => fun (l1 : List 'A) => fun (l2 : List 'A) =>
-  (* fold while on non-empty list and fail when not-equal or other empty *)
-  match l1 with
-  | Cons _ _ =>
-    let equal_step = fun (rest: List 'A) => fun (compare: 'A) =>
-      match rest with
-      | Cons x xs => let eq_x_compare = equal x compare in
-        match eq_x_compare with
-        | True => Some {(List 'A)} xs
-        | False => None {(List 'A)}
+  fun (f : 'A -> 'A -> Bool) =>
+  fun (l1 : List 'A) =>
+  fun (l2 : List 'A) =>
+  let true = True in
+  let false = False in
+  let nil = Nil {'A} in
+  let element_eq =
+    fun (status_ls : Pair Bool (List 'A)) => fun (x : 'A) =>
+    fun (recurse: Pair Bool (List 'A) -> Pair Bool (List 'A)) =>
+      match status_ls with
+      | Pair _ remaining =>
+        match remaining with
+        | Cons y ys => let x_eq_y = f x y in
+          match x_eq_y with
+          | True => let next = Pair {Bool (List 'A)} true ys in
+            recurse next
+          | False => let next = Pair {Bool (List 'A)} false nil
+            in next
+          end
+        | Nil => Pair {Bool (List 'A)} false nil
         end
-      | Nil => None {(List 'A)}
       end in
-    let fold_while = @list_foldl_while 'A (List 'A) in
-    let remaining = fold_while equal_step l1 l2 in
-    match remaining with
+  let folder = @list_foldk 'A (Pair Bool (List 'A)) in
+  (* in case of empty l2, foldk terminates so set init *)
+  let init = match l1 with
+  | Cons _ _ => Pair {Bool (List 'A)} false l1
+  | Nil => Pair {Bool (List 'A)} true l1
+  end in
+  let res = folder element_eq init l2 in
+  match res with
+  | Pair l1_eq_l2 last =>
+    match last with
     | Cons _ _ => False
-    | Nil => True
-    end
-  (* Special case starting with empty list *)
-  | Nil =>
-    match l2 with
-    | Cons _ _ => False
-    | Nil => True
+    | Nil => l1_eq_l2
     end
   end
 
@@ -213,16 +231,16 @@ let list_forall : forall 'A. ('A -> Bool) -> List 'A -> Bool =
   fun (p : 'A -> Bool) =>
   let sat_p =
   fun (ignore : Bool) => fun (x: 'A) =>
-  fun (recu: Bool -> Bool) =>
+  fun (recurse: Bool -> Bool) =>
     let p_x = p x in
     match p_x with
-    | True => recu p_x
+    | True => recurse p_x
     | False => False
     end in
-  let foldk = @list_foldk 'A Bool in
+  let folder = @list_foldk 'A Bool in
   (* vacuously true if nothing *)
   let init = True in
-  foldk sat_p init
+  folder sat_p init
 
 (* Stable sort the input list "l". *)
 (* "flt" returns True if the first argument is lesser-than the second *)
@@ -281,11 +299,11 @@ let list_find : forall 'A. ('A -> Bool) -> List 'A -> Option 'A =
   fun (p : 'A -> Bool) => fun (ls : List 'A) =>
   let none = None {'A} in
   (* continue fold on None, exit fold when Some compare st. p(compare) *)
-  let predicate_step = fun (ignore : Option 'A) => fun (compare : 'A) =>
+  let predicate_step = fun (ignore : Option 'A) => fun (x : 'A) =>
   fun (recurse: Option 'A -> Option 'A) =>
-    let satisfies_p = p compare in
-    match satisfies_p with
-    | True => Some {'A} compare
+    let p_x = p x in
+    match p_x with
+    | True => Some {'A} x
     | False => recurse none
     end in
   let foldk = @list_foldk 'A (Option 'A) in
@@ -324,22 +342,22 @@ let list_zip_with : forall 'A. forall 'B. forall 'C. ('A -> 'B -> 'C) ->
   fun (l1: List 'A) =>
   fun (l2: List 'B) =>
   (* Fail when l1 empty, empty l2 case done by foldk *)
-  let zip_step = fun (current_new : Pair (List 'C) (List 'A)) =>
+  let zip_step = fun (state : Pair (List 'C) (List 'A)) =>
   fun (y : 'B) =>
-    match current_new with
-    | Pair current new =>
-      match new with
+    match state with
+    | Pair res_rev rest_a =>
+      match rest_a with
       | Cons x xs => let next = f x y in
-                     let ad = Cons {'C} next current in
-                     let ad_rem = Pair { (List 'C) (List 'A) } ad xs in
-                     Some {(Pair (List 'C) (List 'A))} ad_rem
+                     let next_res_rev = Cons {'C} next res_rev in
+                     let next_rest_a = Pair { (List 'C) (List 'A) } next_res_rev xs in
+                     Some {(Pair (List 'C) (List 'A))} next_rest_a
       | Nil => None {(Pair (List 'C) (List 'A))}
       end
     end in
-  let foldWhile = @list_foldl_while 'B (Pair (List 'C) (List 'A)) in
+  let folder = @list_foldl_while 'B (Pair (List 'C) (List 'A)) in
   let nil = Nil {'C} in
   let init = Pair {(List 'C) (List 'A)} nil l1 in
-  let zipped_accompanied = foldWhile zip_step init l2 in
+  let zipped_accompanied = folder zip_step init l2 in
   let zipped = match zipped_accompanied with
   | Pair l _ => l
   end in
