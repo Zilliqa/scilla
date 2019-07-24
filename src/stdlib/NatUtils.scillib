@@ -1,13 +1,13 @@
 library NatUtils
 
-let nat_prev : Nat -> Option Nat = 
+let nat_prev : Nat -> Option Nat =
   fun (n: Nat) =>
     match n with
     | Succ n1 => Some {Nat} n1
     | Zero => None {Nat}
     end
 
-let is_some_zero : Nat -> Bool = 
+let is_some_zero : Nat -> Bool =
   fun (n: Nat) =>
     match n with
     | Zero => True
@@ -19,23 +19,22 @@ let is_some_zero : Nat -> Bool =
 let nat_fold_while : forall 'T. ('T -> Nat -> Option 'T) -> 'T -> Nat -> 'T =
   tfun 'T =>
   fun (f : 'T -> Nat -> Option 'T) =>
-  let foldk = @nat_foldk 'T in
-  let c = fun (z : 'T) => fun (n : Nat) =>
-  fun (recurse : 'T -> 'T) =>
-    let res_opt = f z n in
-    match res_opt with
-    | Some res => recurse res
-    | None => z
-    end in
-  foldk c
+    let foldk = @nat_foldk 'T in
+    let iter = fun (z : 'T) => fun (n : Nat) =>
+      fun (recurse : 'T -> 'T) =>
+        let res_opt = f z n in
+        match res_opt with
+        | Some res => recurse res
+        | None => z
+        end in
+    foldk iter
 
-let nat_eq : Nat -> Nat -> Bool = 
-  fun (n : Nat) => 
-  fun (m : Nat) =>
+let nat_eq : Nat -> Nat -> Bool =
+  fun (n : Nat) => fun (m : Nat) =>
   let fold_while = @nat_fold_while Nat in
-  let f = fun (a : Nat) => fun(ignore : Nat) =>
+  let iter = fun (a : Nat) => fun (ignore : Nat) =>
     nat_prev a in
-  let res = fold_while f n m in
+  let res = fold_while iter n m in
   match res with
   | Zero => True
   | _ => False
@@ -44,16 +43,11 @@ let nat_eq : Nat -> Nat -> Bool =
 let nat_to_int : Nat -> Uint32 =
   fun (n : Nat) =>
     let fold = @nat_fold Uint32 in
-    let f =
-      fun (z : Uint32) =>
-      fun (n : Nat) =>
-        match n with
-        | _ =>
-          let one_int = Uint32 1 in
-          builtin add z one_int
-        end in
+    let one_int = Uint32 1 in
+    let f = fun (z : Uint32) => fun (ignore : Nat) =>
+      builtin add z one_int in
     let zero_int = Uint32 0 in
-      fold f zero_int n
+    fold f zero_int n
 
 let uint32_to_nat_helper : Option Uint32 -> Option Nat =
   fun (m : Option Uint32) =>
