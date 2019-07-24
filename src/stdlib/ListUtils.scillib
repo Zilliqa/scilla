@@ -277,11 +277,10 @@ let list_zip_with : forall 'A. forall 'B. forall 'C.
     let nil = Nil {'C} in
     let init = Pair {(List 'C) (List 'A)} nil l1 in
     let zipped_accompanied = foldl_while zip_step init l2 in
-    let zipped = match zipped_accompanied with
-    | Pair l _ => l
-    end in
     let reverse = @list_reverse 'C in
-    reverse zipped
+    match zipped_accompanied with
+    | Pair rev_res _ => reverse rev_res
+    end
 
 (* Combine corresponding elements of m1 and m2 into a pair *)
 (* and return the resulting list. In case of different number *)
