@@ -6,26 +6,26 @@ let list_foldl_while : forall 'A. forall 'B.
   ('B -> 'A -> Option 'B) -> 'B -> List 'A -> 'B =
   tfun 'A => tfun 'B =>
   fun (f : 'B -> 'A -> Option 'B) =>
-  let whilel_f = fun (z : 'B) => fun(x : 'A) =>
-    fun (recurse : 'B -> 'B) => let res = f z x in
-    match res with
-    | Some acc => recurse acc
-    | None => z
-    end in
-  let folder = @list_foldk 'A 'B in
-  folder whilel_f
+    let folder = @list_foldk 'A 'B in
+    let whilel_f = fun (z : 'B) => fun(x : 'A) => fun (recurse : 'B -> 'B) =>
+      let res = f z x in
+      match res with
+      | Some acc => recurse acc
+      | None => z
+      end in
+    folder whilel_f
 
 (* Apply (f : 'A -> 'B) to every element of List 'A *)
 (* to generate List 'B. *)
 let list_map : forall 'A. forall 'B. ('A -> 'B) -> List 'A -> List 'B = 
   tfun 'A => tfun 'B =>
-  fun (f : 'A -> 'B) => fun (l : List 'A) =>
+  fun (f : 'A -> 'B) =>
   let folder = @list_foldr 'A (List 'B) in
-  let init = Nil {'B} in
   let iter = fun (h : 'A) => fun (z : List 'B) =>
     let h1 = f h in
-    Cons {'B} h1 z  		
-	in folder iter init l
+    Cons {'B} h1 z in
+  let init = Nil {'B} in
+  folder iter init
 
 (* Preserving the order of elements in (l : List 'A),  *)
 (* return new list containing only those elements *)
@@ -33,31 +33,23 @@ let list_map : forall 'A. forall 'B. ('A -> 'B) -> List 'A -> List 'B =
 let list_filter : forall 'A. ('A -> Bool) -> List 'A -> List 'A =
   tfun 'A =>
   fun (f : 'A -> Bool) =>
-  fun (l : List 'A) =>
     let folder = @list_foldr 'A (List 'A) in
+    let iter = fun (h : 'A) => fun (z : List 'A) =>
+      let h1 = f h in
+      match h1 with
+      | True => Cons {'A} h z
+      | False => z
+      end in
     let init = Nil {'A} in
-    let iter =
-      fun (h : 'A) =>
-      fun (z : List 'A) =>
-        let h1 = f h in
-        match h1 with
-        | True =>
-          Cons {'A} h z
-        | False =>
-          z
-        end
-     in
-       folder iter init l
+    folder iter init
 
 (* Return the head element of a list as Some 'A, None otherwise *)
 let list_head : forall 'A. List 'A -> Option 'A =
   tfun 'A =>
   fun (l : List 'A) =>
     match l with
-    | Cons h t =>
-      Some {'A} h
-    | Nil =>
-      None {'A}
+    | Cons h t => Some {'A} h
+    | Nil => None {'A}
     end
 
 (* Return the list except for the head *)
@@ -65,10 +57,8 @@ let list_tail : forall 'A. List 'A -> Option (List 'A) =
   tfun 'A =>
   fun (l : List 'A) =>
     match l with
-    | Cons h t =>
-      Some {(List 'A)} t
-    | Nil =>
-      None {(List 'A)}
+    | Cons _ t => Some {(List 'A)} t
+    | Nil => None {(List 'A)}
     end
 
 (* Append the second list to the first one and return a new List *)
@@ -77,57 +67,41 @@ let list_append : forall 'A. List 'A -> List 'A -> List 'A =
   fun (l1 : List 'A) =>
   fun (l2 : List 'A) =>
     (* Fold right over l1 and keep prepending elements to l2 *)
-    (* l2 is the initial accumulator *)
     let folder = @list_foldr 'A (List 'A) in
-    let init = l2 in
-    let iter =
-      fun (h : 'A) =>
-      fun (z : List 'A) =>
-        Cons {'A} h z
-    in
-      folder iter init l1
+    let iter = fun (h : 'A) => fun (z : List 'A) =>
+      Cons {'A} h z in
+    (* l2 is the initial accumulator *)
+    folder iter l2 l1
 
 (* Return the reverse of the argument list *)
 let list_reverse : forall 'A. List 'A -> List 'A =
   tfun 'A =>
-  fun (l : List 'A) =>
-    let folder = @list_foldl 'A (List 'A) in
-    let init = Nil {'A} in
-    let iter =
-      fun (z : List 'A) =>
-      fun (h : 'A) =>
-        Cons {'A} h z
-    in
-      folder iter init l
+  let folder = @list_foldl 'A (List 'A) in
+  let iter = fun (z : List 'A) => fun (h : 'A) =>
+    Cons {'A} h z in
+  let init = Nil {'A} in
+  folder iter init
 
 (* Concatenate a list of lists. The elements of the argument are all *)
 (* concatenated together (in the same order) to give the result. *)
 let list_flatten : forall 'A. List (List 'A) -> List 'A =
   tfun 'A =>
-  fun (l : List (List 'A)) =>
-    let folder = @list_foldr (List 'A) (List 'A) in
-    let init = Nil {'A} in
-    let iter =
-      fun (h : List 'A) =>
-      fun (z : List 'A) =>
-        let app = @list_append 'A in
-        app h z
-    in
-      folder iter init l
+  let folder = @list_foldr (List 'A) (List 'A) in
+  let app = @list_append 'A in
+  let iter = fun (h : List 'A) => fun (z : List 'A) =>
+    app h z in
+  let init = Nil {'A} in
+  folder iter init
 
 (* Number of elements in list *)
 let list_length : forall 'A. List 'A -> Uint32 =
   tfun 'A =>
-  fun (l : List 'A) =>
-    let folder = @list_foldl 'A Uint32 in
-    let init = Uint32 0 in
-    let iter =
-      fun (z : Uint32) =>
-      fun (h : 'A) =>
-        let one = Uint32 1 in
-          builtin add one z
-     in
-       folder iter init l
+  let folder = @list_foldl 'A Uint32 in
+  let one = Uint32 1 in
+  let iter = fun (z : Uint32) => fun (h : 'A) =>
+    builtin add one z in
+  let init = Uint32 0 in
+  folder iter init
 
 (* Not for public use, to be removed in next major version *)
 (* Returns Some Nil on successful match. None otherwise. *)
@@ -138,32 +112,25 @@ let list_eq_helper : forall 'A. ('A -> 'A -> Bool) ->
   fun (l1 : List 'A) =>
   fun (l2 : List 'A) =>
     let folder = @list_foldl 'A (Option (List 'A)) in
-    let init = Some {(List 'A)} l2 in
-    let iter =
-      fun (z : Option (List 'A)) =>
-      fun (h1 : 'A) =>
-        match z with
-        | Some ll2 =>
-          let headF = @list_head 'A in
-          let h2o = headF ll2 in
-          match h2o with
-          | Some h2 =>
-            let eqb = eq h1 h2 in
-            match eqb with
-            | True =>
-              let tailF = @list_tail 'A in
-              tailF ll2
-            | False =>
-              None {(List 'A)}
-            end
-          | None =>
-            None {(List 'A)}
+    let tailF = @list_tail 'A in
+    let headF = @list_head 'A in
+    let iter = fun (z : Option (List 'A)) => fun (h1 : 'A) =>
+      match z with
+      | Some ll2 =>
+        let h2o = headF ll2 in
+        match h2o with
+        | Some h2 =>
+          let eqb = eq h1 h2 in
+          match eqb with
+          | True => tailF ll2
+          | False => None {(List 'A)}
           end
-        | None =>
-          None {(List 'A)}
+        | None => None {(List 'A)}
         end
-    in
-      folder iter init l1
+      | None => None {(List 'A)}
+      end in
+    let init = Some {(List 'A)} l2 in
+    folder iter init l1
 
 (* Return true iff two lists compare equal. *)
 (* Comparison is performed using the "equal" function provided. *)
@@ -171,17 +138,19 @@ let list_eq : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool =
   tfun 'A =>
   fun (equal : 'A -> 'A -> Bool) =>
   fun (l1 : List 'A) => fun (l2 : List 'A) =>
-    let iter = fun (xs2 : List 'A) => fun (x1 : 'A) => fun (recurse : List 'A -> List 'A) =>
-      match xs2 with
-      | Cons x2 tl2 =>
-        let eq_x1_x2 = equal x1 x2 in
-        match eq_x1_x2 with
-        | True => recurse tl2
-        | False => l1   (* l1 is not empty in this context *)
-        end
-      | Nil => l1       (* l1 is not empty in this context *)
-      end in
     let folder = @list_foldk 'A (List 'A) in
+    let iter =
+      fun (xs2 : List 'A) => fun (x1 : 'A) =>
+      fun (recurse : List 'A -> List 'A) =>
+        match xs2 with
+        | Cons x2 tl2 =>
+          let eq_x1_x2 = equal x1 x2 in
+          match eq_x1_x2 with
+          | True => recurse tl2
+          | False => l1   (* l1 is not empty in this context *)
+          end
+        | Nil => l1       (* l1 is not empty in this context *)
+        end in
     let remaining = folder iter l2 l1 in
     match remaining with
     | Cons _ _ => False
@@ -192,18 +161,18 @@ let list_eq : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool =
 let list_forall : forall 'A. ('A -> Bool) -> List 'A -> Bool =
   tfun 'A =>
   fun (p : 'A -> Bool) =>
-  let sat_p =
-  fun (ignore : Bool) => fun (x: 'A) =>
-  fun (recurse: Bool -> Bool) =>
-    let p_x = p x in
-    match p_x with
-    | True => recurse p_x
-    | False => False
-    end in
-  let folder = @list_foldk 'A Bool in
-  (* vacuously true if nothing *)
-  let init = True in
-  folder sat_p init
+    let folder = @list_foldk 'A Bool in
+    let sat_p =
+      fun (ignore : Bool) => fun (x: 'A) =>
+      fun (recurse: Bool -> Bool) =>
+        let p_x = p x in
+        match p_x with
+        | True => recurse p_x
+        | False => False
+        end in
+    (* vacuously true if empty list *)
+    let init = True in
+    folder sat_p init
 
 (* Stable sort the input list "l". *)
 (* "flt" returns True if the first argument is lesser-than the second *)
@@ -217,41 +186,31 @@ let list_sort : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A =
     let rec_A_A = @list_foldr 'A (List 'A) in
     let rec_A_Pair = @list_foldr 'A (Pair Bool (List 'A))  in
     let nil_A = Nil {'A} in 
-    let sink_down =
-      fun (e : 'A) => fun (ls : List 'A) =>
-        let init = Pair {Bool (List 'A)} false nil_A in
-        let iter1 =
-          fun (h : 'A) =>
-          fun (res : Pair Bool (List 'A)) =>
-            match res with
-            | Pair True rest =>
-              let z = Cons {'A} h rest in
-              Pair {Bool (List 'A)} true z
-            | Pair False rest =>
-              let bl = flt h e in
-              match bl with
-              | True =>
-                let z = Cons {'A} e rest in
-                let z2 = Cons {'A} h z in
-                Pair {Bool (List 'A)} true z2
-              | False =>
-                let z = Cons {'A} h rest in
-                Pair {Bool (List 'A)} false z
-              end
-            end   
-        in
-        let res1 = rec_A_Pair iter1 init ls in
-        match res1 with
-        | Pair True ls1 => ls1
-        | Pair False ls1 => Cons {'A} e ls1
-        end
-    in
-    let iter2 =
-      fun (h : 'A) =>
-      fun (res : List 'A) =>
-        sink_down h res
-    in 
-      rec_A_A iter2 nil_A ls
+    let sink_down = fun (e : 'A) => fun (ls : List 'A) =>
+      let init = Pair {Bool (List 'A)} false nil_A in
+      let iter1 = fun (h : 'A) => fun (res : Pair Bool (List 'A)) =>
+        match res with
+        | Pair True rest =>
+          let z = Cons {'A} h rest in
+          Pair {Bool (List 'A)} true z
+        | Pair False rest =>
+          let bl = flt h e in
+          match bl with
+          | True =>
+            let z = Cons {'A} e rest in
+            let z2 = Cons {'A} h z in
+            Pair {Bool (List 'A)} true z2
+          | False =>
+            let z = Cons {'A} h rest in
+            Pair {Bool (List 'A)} false z
+          end
+        end in
+      let res1 = rec_A_Pair iter1 init ls in
+      match res1 with
+      | Pair True ls1 => ls1
+      | Pair False ls1 => Cons {'A} e ls1
+      end in
+    rec_A_A sink_down nil_A ls
 
 
 (* Return Some a, where "a" is the first element of *)
