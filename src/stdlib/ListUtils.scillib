@@ -6,26 +6,26 @@ let list_foldl_while : forall 'A. forall 'B.
   ('B -> 'A -> Option 'B) -> 'B -> List 'A -> 'B =
   tfun 'A => tfun 'B =>
   fun (f : 'B -> 'A -> Option 'B) =>
-    let folder = @list_foldk 'A 'B in
+    let foldk = @list_foldk 'A 'B in
     let whilel_f = fun (z : 'B) => fun(x : 'A) => fun (recurse : 'B -> 'B) =>
       let res = f z x in
       match res with
       | Some acc => recurse acc
       | None => z
       end in
-    folder whilel_f
+    foldk whilel_f
 
 (* Apply (f : 'A -> 'B) to every element of List 'A *)
 (* to generate List 'B. *)
 let list_map : forall 'A. forall 'B. ('A -> 'B) -> List 'A -> List 'B = 
   tfun 'A => tfun 'B =>
   fun (f : 'A -> 'B) =>
-  let folder = @list_foldr 'A (List 'B) in
+  let foldr = @list_foldr 'A (List 'B) in
   let iter = fun (h : 'A) => fun (z : List 'B) =>
     let h1 = f h in
     Cons {'B} h1 z in
   let init = Nil {'B} in
-  folder iter init
+  foldr iter init
 
 (* Preserving the order of elements in (l : List 'A),  *)
 (* return new list containing only those elements *)
@@ -33,7 +33,7 @@ let list_map : forall 'A. forall 'B. ('A -> 'B) -> List 'A -> List 'B =
 let list_filter : forall 'A. ('A -> Bool) -> List 'A -> List 'A =
   tfun 'A =>
   fun (f : 'A -> Bool) =>
-    let folder = @list_foldr 'A (List 'A) in
+    let foldr = @list_foldr 'A (List 'A) in
     let iter = fun (h : 'A) => fun (z : List 'A) =>
       let h1 = f h in
       match h1 with
@@ -41,7 +41,7 @@ let list_filter : forall 'A. ('A -> Bool) -> List 'A -> List 'A =
       | False => z
       end in
     let init = Nil {'A} in
-    folder iter init
+    foldr iter init
 
 (* Return the head element of a list as Some 'A, None otherwise *)
 let list_head : forall 'A. List 'A -> Option 'A =
@@ -67,41 +67,41 @@ let list_append : forall 'A. List 'A -> List 'A -> List 'A =
   fun (l1 : List 'A) =>
   fun (l2 : List 'A) =>
     (* Fold right over l1 and keep prepending elements to l2 *)
-    let folder = @list_foldr 'A (List 'A) in
+    let foldr = @list_foldr 'A (List 'A) in
     let iter = fun (h : 'A) => fun (z : List 'A) =>
       Cons {'A} h z in
     (* l2 is the initial accumulator *)
-    folder iter l2 l1
+    foldr iter l2 l1
 
 (* Return the reverse of the argument list *)
 let list_reverse : forall 'A. List 'A -> List 'A =
   tfun 'A =>
-  let folder = @list_foldl 'A (List 'A) in
+  let foldl = @list_foldl 'A (List 'A) in
   let iter = fun (z : List 'A) => fun (h : 'A) =>
     Cons {'A} h z in
   let init = Nil {'A} in
-  folder iter init
+  foldl iter init
 
 (* Concatenate a list of lists. The elements of the argument are all *)
 (* concatenated together (in the same order) to give the result. *)
 let list_flatten : forall 'A. List (List 'A) -> List 'A =
   tfun 'A =>
-  let folder = @list_foldr (List 'A) (List 'A) in
+  let foldr = @list_foldr (List 'A) (List 'A) in
   let app = @list_append 'A in
   let iter = fun (h : List 'A) => fun (z : List 'A) =>
     app h z in
   let init = Nil {'A} in
-  folder iter init
+  foldr iter init
 
 (* Number of elements in list *)
 let list_length : forall 'A. List 'A -> Uint32 =
   tfun 'A =>
-  let folder = @list_foldl 'A Uint32 in
+  let foldl = @list_foldl 'A Uint32 in
   let one = Uint32 1 in
   let iter = fun (z : Uint32) => fun (h : 'A) =>
     builtin add one z in
   let init = Uint32 0 in
-  folder iter init
+  foldl iter init
 
 (* Not for public use, to be removed in next major version *)
 (* Returns Some Nil on successful match. None otherwise. *)
@@ -111,7 +111,7 @@ let list_eq_helper : forall 'A. ('A -> 'A -> Bool) ->
   fun (eq : 'A -> 'A -> Bool) =>
   fun (l1 : List 'A) =>
   fun (l2 : List 'A) =>
-    let folder = @list_foldl 'A (Option (List 'A)) in
+    let foldl = @list_foldl 'A (Option (List 'A)) in
     let tailF = @list_tail 'A in
     let headF = @list_head 'A in
     let iter = fun (z : Option (List 'A)) => fun (h1 : 'A) =>
@@ -130,7 +130,7 @@ let list_eq_helper : forall 'A. ('A -> 'A -> Bool) ->
       | None => None {(List 'A)}
       end in
     let init = Some {(List 'A)} l2 in
-    folder iter init l1
+    foldl iter init l1
 
 (* Return true iff two lists compare equal. *)
 (* Comparison is performed using the "equal" function provided. *)
@@ -138,7 +138,7 @@ let list_eq : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool =
   tfun 'A =>
   fun (equal : 'A -> 'A -> Bool) =>
   fun (l1 : List 'A) => fun (l2 : List 'A) =>
-    let folder = @list_foldk 'A (List 'A) in
+    let foldk = @list_foldk 'A (List 'A) in
     let iter =
       fun (xs2 : List 'A) => fun (x1 : 'A) =>
       fun (recurse : List 'A -> List 'A) =>
@@ -151,7 +151,7 @@ let list_eq : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool =
           end
         | Nil => l1       (* l1 is not empty in this context *)
         end in
-    let remaining = folder iter l2 l1 in
+    let remaining = foldk iter l2 l1 in
     match remaining with
     | Cons _ _ => False
     | Nil => True
@@ -161,7 +161,7 @@ let list_eq : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool =
 let list_forall : forall 'A. ('A -> Bool) -> List 'A -> Bool =
   tfun 'A =>
   fun (p : 'A -> Bool) =>
-    let folder = @list_foldk 'A Bool in
+    let foldk = @list_foldk 'A Bool in
     let sat_p =
       fun (ignore : Bool) => fun (x: 'A) =>
       fun (recurse: Bool -> Bool) =>
@@ -172,7 +172,7 @@ let list_forall : forall 'A. ('A -> Bool) -> List 'A -> Bool =
         end in
     (* vacuously true if empty list *)
     let init = True in
-    folder sat_p init
+    foldk sat_p init
 
 (* Stable sort the input list "l". *)
 (* "flt" returns True if the first argument is lesser-than the second *)
@@ -218,133 +218,128 @@ let list_sort : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A =
 (* Return None iff none of the elements in "l" satisfy "f". *)
 let list_find : forall 'A. ('A -> Bool) -> List 'A -> Option 'A =
   tfun 'A =>
-  fun (p : 'A -> Bool) => fun (ls : List 'A) =>
-  let none = None {'A} in
-  (* continue fold on None, exit fold when Some compare st. p(compare) *)
-  let predicate_step = fun (ignore : Option 'A) => fun (x : 'A) =>
-  fun (recurse: Option 'A -> Option 'A) =>
-    let p_x = p x in
-    match p_x with
-    | True => Some {'A} x
-    | False => recurse none
-    end in
-  let foldk = @list_foldk 'A (Option 'A) in
-  foldk predicate_step none ls
+  fun (p : 'A -> Bool) =>
+    let foldk = @list_foldk 'A (Option 'A) in
+    let init = None {'A} in
+    (* continue fold on None, exit fold when Some compare st. p(compare) *)
+    let predicate_step =
+      fun (ignore : Option 'A) => fun (x : 'A) =>
+      fun (recurse: Option 'A -> Option 'A) =>
+        let p_x = p x in
+        match p_x with
+        | True => Some {'A} x
+        | False => recurse init
+        end in
+    foldk predicate_step init
 
 (* Return True iff at least one element of list "l" satisfy predicate "f". *)
 let list_exists : forall 'A. ('A -> Bool) -> List 'A -> Bool =
   tfun 'A =>
   fun (p : 'A -> Bool) => fun (ls: List 'A) =>
-  let find = @list_find 'A in
-  let search = find p ls in
-  match search with
-  | Some _ => True
-  | None => False
-  end
+    let find = @list_find 'A in
+    let search = find p ls in
+    match search with
+    | Some _ => True
+    | None => False
+    end
 
 (* Return True iff "m" is in the list "l", as compared by function "f". *)
 let list_mem : forall 'A. ('A -> 'A -> Bool) -> 'A -> List 'A -> Bool =
   tfun 'A =>
-  fun (f : 'A -> 'A -> Bool) =>
-  fun (m : 'A) =>
-  fun (l : List 'A) =>
+  fun (f : 'A -> 'A -> Bool) => fun (m : 'A) =>
     let ex_pred = f m in
     let ex = @list_exists 'A in
-    ex ex_pred l
+    ex ex_pred
 
 (* Combine corresponding elements of m1 and m2 using "f" *)
 (* and return the resulting list of 'C. In case of different number *)
 (* of elements in the lists, the extra elements are ignored. *)
-let list_zip_with : forall 'A. forall 'B. forall 'C. ('A -> 'B -> 'C) -> 
-  List 'A -> List 'B -> List 'C =
-  tfun 'A =>
-  tfun 'B =>
-  tfun 'C =>
+let list_zip_with : forall 'A. forall 'B. forall 'C.
+  ('A -> 'B -> 'C) -> List 'A -> List 'B -> List 'C =
+  tfun 'A => tfun 'B => tfun 'C =>
   fun (f : 'A -> 'B -> 'C) =>
   fun (l1: List 'A) =>
   fun (l2: List 'B) =>
-  (* Fail when l1 empty, empty l2 case done by foldk *)
-  let zip_step = fun (state : Pair (List 'C) (List 'A)) =>
-  fun (y : 'B) =>
-    match state with
-    | Pair res_rev rest_a =>
-      match rest_a with
-      | Cons x xs => let next = f x y in
-                     let next_res_rev = Cons {'C} next res_rev in
-                     let next_rest_a = Pair { (List 'C) (List 'A) } next_res_rev xs in
-                     Some {(Pair (List 'C) (List 'A))} next_rest_a
-      | Nil => None {(Pair (List 'C) (List 'A))}
-      end
+    (* Fail when l1 empty, empty l2 case done by foldk *)
+    let zip_step = fun (state : Pair (List 'C) (List 'A)) => fun (y : 'B) =>
+      match state with
+      | Pair res_rev rest_a =>
+        match rest_a with
+        | Cons x xs =>
+          let next = f x y in
+          let next_res_rev = Cons {'C} next res_rev in
+          let next_rest_a = Pair { (List 'C) (List 'A) } next_res_rev xs in
+          Some {(Pair (List 'C) (List 'A))} next_rest_a
+        | Nil => None {(Pair (List 'C) (List 'A))}
+        end
+      end in
+    let foldl_while = @list_foldl_while 'B (Pair (List 'C) (List 'A)) in
+    let nil = Nil {'C} in
+    let init = Pair {(List 'C) (List 'A)} nil l1 in
+    let zipped_accompanied = foldl_while zip_step init l2 in
+    let zipped = match zipped_accompanied with
+    | Pair l _ => l
     end in
-  let folder = @list_foldl_while 'B (Pair (List 'C) (List 'A)) in
-  let nil = Nil {'C} in
-  let init = Pair {(List 'C) (List 'A)} nil l1 in
-  let zipped_accompanied = folder zip_step init l2 in
-  let zipped = match zipped_accompanied with
-  | Pair l _ => l
-  end in
-  let reverse = @list_reverse 'C in
-  reverse zipped
+    let reverse = @list_reverse 'C in
+    reverse zipped
 
 (* Combine corresponding elements of m1 and m2 into a pair *)
 (* and return the resulting list. In case of different number *)
 (* of elements in the lists, the extra elements are ignored. *)
 let list_zip : forall 'A. forall 'B. List 'A -> List 'B -> List (Pair 'A 'B) =
-  tfun 'A =>
-  tfun 'B =>
+  tfun 'A => tfun 'B =>
   let zip_with = @list_zip_with 'A 'B (Pair 'A 'B) in
   let pair_up = fun (a : 'A) => fun (b : 'B) =>
-    let res = Pair {'A 'B} a b in res in
+    Pair {'A 'B} a b in
   zip_with pair_up
 
-let list_unzip : forall 'A. forall 'B. List (Pair 'A 'B) -> Pair (List 'A) (List 'B) =
-  tfun 'A =>
-  tfun 'B =>
-  fun (l : List (Pair 'A 'B)) =>
-    let folder = @list_foldr (Pair 'A 'B) (Pair (List 'A) (List 'B)) in
-    let nil1 = Nil {'A} in
-    let nil2 = Nil {'B} in
-    let init = Pair {(List 'A) (List 'B)} nil1 nil2 in
-    let iter =
-      fun (h : Pair 'A 'B) =>
-      fun (z : Pair (List 'A) (List 'B)) =>
-        match h with
-        | Pair a b =>
-          match z with
-          | Pair la lb =>
-            let nla = Cons {'A} a la in
-            let nlb = Cons {'B} b lb in
-            Pair {(List 'A)(List 'B)} nla nlb
-          end
-        end
-    in
-      folder iter init l
+let list_unzip : forall 'A. forall 'B.
+  List (Pair 'A 'B) -> Pair (List 'A) (List 'B) =
+  tfun 'A => tfun 'B =>
+  let foldr = @list_foldr (Pair 'A 'B) (Pair (List 'A) (List 'B)) in
+  let iter = fun (h : Pair 'A 'B) => fun (z : Pair (List 'A) (List 'B)) =>
+    match h with
+    | Pair a b =>
+      match z with
+      | Pair la lb =>
+        let nla = Cons {'A} a la in
+        let nlb = Cons {'B} b lb in
+        Pair {(List 'A)(List 'B)} nla nlb
+      end
+    end in
+  let nila = Nil {'A} in
+  let nilb = Nil {'B} in
+  let init = Pair {(List 'A) (List 'B)} nila nilb in
+  foldr iter init
 
 (* Returns (Some 'A) if n'th element exists in list. None otherwise *)
 let list_nth : forall 'A. Uint32 -> List 'A -> Option 'A =
   tfun 'A =>
-  fun (n : Uint32) => fun (ls : List 'A) =>
+  fun (n : Uint32) => fun (l : List 'A) =>
+    let foldk = @list_foldk 'A (Pair Uint32 (Option 'A)) in
     let none = None {'A} in
-    (* each step bring down counter with no result, on zero stop with result *)
-    let c = fun (counter : Pair Uint32 (Option 'A)) =>
-    fun (potential : 'A) =>
-    fun (recurse: (Pair Uint32 (Option 'A)) -> (Pair Uint32 (Option 'A))) =>
-      match counter with
-      | Pair count _ =>
-        let zero = Uint32 0 in
-        let is_zero = builtin eq zero count in
-        match is_zero with
-        | True => let res = Some {'A} potential
-                  in Pair {Uint32 (Option 'A)} count res
-        | False => let one = Uint32 1 in
-                   let count_sub_1 = builtin sub count one in
-                   let res = Pair {Uint32 (Option 'A)} count_sub_1 none in
-                   recurse res
-        end
-      end in
-  let foldk = @list_foldk 'A (Pair Uint32 (Option 'A)) in
-  let init = Pair {Uint32 (Option 'A)} n none in
-  let search = foldk c init ls in
-  match search with
-  | Pair _ discovery => discovery
-  end
+    let zero = Uint32 0 in
+    let one = Uint32 1 in
+    (* each step brings down counter with no result, on zero stop with result *)
+    let iter =
+      fun (counter : Pair Uint32 (Option 'A)) =>
+      fun (x : 'A) =>
+      fun (recurse: (Pair Uint32 (Option 'A)) -> (Pair Uint32 (Option 'A))) =>
+        match counter with
+        | Pair count _ =>
+          let is_zero = builtin eq zero count in
+          match is_zero with
+          | True =>
+            let res = Some {'A} x in
+            Pair {Uint32 (Option 'A)} count res
+          | False => 
+            let count_sub_1 = builtin sub count one in
+            let res = Pair {Uint32 (Option 'A)} count_sub_1 none in
+            recurse res
+          end
+        end in
+    let init = Pair {Uint32 (Option 'A)} n none in
+    let search = foldk iter init l in
+    match search with
+    | Pair _ discovery => discovery
+    end
