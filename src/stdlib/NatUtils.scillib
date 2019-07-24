@@ -29,16 +29,22 @@ let nat_fold_while : forall 'T. ('T -> Nat -> Option 'T) -> 'T -> Nat -> 'T =
         end in
     foldk iter
 
+(* Return true iff two lists compare equal. *)
+(* Comparison is performed using the "equal" function provided. *)
 let nat_eq : Nat -> Nat -> Bool =
   fun (n : Nat) => fun (m : Nat) =>
-  let fold_while = @nat_fold_while Nat in
-  let iter = fun (a : Nat) => fun (ignore : Nat) =>
-    nat_prev a in
-  let res = fold_while iter n m in
-  match res with
-  | Zero => True
-  | _ => False
-  end
+    let foldk = @nat_foldk Nat in
+    let iter =
+      fun (n : Nat) => fun (ignore : Nat) => fun (recurse : Nat -> Nat) =>
+        match n with
+        | Succ n_pred => recurse n_pred
+        | Zero => m   (* m is not zero in this context *)
+        end in
+    let remaining = foldk iter n m in
+    match remaining with
+    | Zero => True
+    |   _ => False
+    end
 
 let nat_to_int : Nat -> Uint32 =
   fun (n : Nat) =>
