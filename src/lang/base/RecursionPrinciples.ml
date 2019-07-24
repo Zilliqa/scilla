@@ -65,6 +65,26 @@ module NatRec = struct
       let fold = (TFun(tvar, fold_fixed), loc)
       let entry = LibVar (id, fold_type_opt, fold)
     end
+
+    module Foldk = struct
+      (* The type of the fixpoint argument *)
+     let fix_type = parse_type_wrapper "'T -> Nat -> 'T"
+     let comb_type = parse_type_wrapper "'T -> Nat -> ('T -> 'T) -> 'T"
+     let fold_type = parse_type_wrapper "('T -> Nat -> ('T -> 'T) -> 'T) -> 'T -> Nat -> 'T"
+     let fold_type_opt = Some (PolyFun(get_id tvar, fold_type))
+     let (_, loc) as fix_arg = parse_expr_wrapper (
+         "fun (f0 : 'T) => fun (n: Nat) => " ^
+         "match n with " ^
+         " | Zero => f0 " ^
+         " | Succ n1 => let partial = fun (k : 'T) => g k n1 in " ^
+         " fn f0 n partial " ^
+         "end" )
+     let id = mk_ident "nat_foldk"
+     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
+     let fold_fixed = (Fun (fn, comb_type, fold_fix), loc)
+     let fold = (TFun(tvar, fold_fixed), loc)
+     let entry = LibVar (id, fold_type_opt, fold)
+     end
   end
 
   (* Folding over lists *)
@@ -139,6 +159,7 @@ module NatRec = struct
 let recursion_principles = 
   [
     NatRec.Foldl.entry;
+    NatRec.Foldk.entry;
     ListRec.Foldk.entry;
     ListRec.Foldl.entry;
     ListRec.Foldr.entry;
