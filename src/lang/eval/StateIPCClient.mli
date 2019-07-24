@@ -28,3 +28,5 @@ val fetch : socket_address:string -> fname:loc ident -> keys:(literal list) -> i
 Value can be None, which implies a remove operation *)
 val update : socket_address:string -> fname:loc ident -> keys:(literal list) -> value:literal option 
              -> is_map:bool -> (stmt_eval_context, scilla_error list) result
+
+val test_server_rpc : socket_address:string -> query:string -> (string, Idl.DefaultError.t) result

@@ -15,9 +15,7 @@
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-
 open Idl
-open Stdlib
 open Core
 open Result.Let_syntax
 open MonadUtil
@@ -27,41 +25,37 @@ module IPCClientIdl(R: RPC) = struct
   let query = Param.mk ~name: "query" Rpc.Types.string
   let value = Param.mk ~name: "value" Rpc.Types.string
   let return_string = Param.mk Rpc.Types.string
+  let boolean = Param.mk Rpc.Types.bool
   let void = Param.mk Rpc.Types.unit
   (* TODO Change error to something other than default error *)
   let error = Idl.DefaultError.err
   let fetch_state_value = declare "fetchStateValue" ["Fetch state value from blockchain"] (query @-> returning return_string error)
-  let update_state_value = declare "updateStateValue" ["Update state value in blockchain"] (query @-> value @-> returning void error)
+  let update_state_value = declare "updateStateValue" ["Update state value in blockchain"] (query @-> value @-> returning boolean error)
   
   let test_server_rpc = declare "testServerRPC" ["Check if client server interaction is working"] (query @-> returning return_string error)
 end
 
 module IPCClient = IPCClientIdl(Idl.GenClient ())
 
-(* TODO figure buffer sizes out *)
+(* Send msg via socket s with a delimiting character "0xA". *)
+let send_delimited oc msg =
+  let msg' = msg ^ "\n" in
+  Stdlib.output_string oc msg';
+  Core.Out_channel.flush oc
+
 let binary_rpc ~socket_address (call: Rpc.call) : Rpc.response =
   let sockaddr = Unix.ADDR_UNIX socket_address in
-  let s = Unix.socket Unix.PF_UNIX Unix.SOCK_STREAM 0 in
-  Unix.connect s sockaddr;
-  let ic = Unix.in_channel_of_descr s in
-  let oc = Unix.out_channel_of_descr s in
+  let (ic, oc) = Unix.open_connection sockaddr in
   let msg_buf = Jsonrpc.string_of_call ~version: Jsonrpc.V2 call in
-  output_string oc msg_buf;
-  flush oc;
-  (* let len_buf = Bytes.make 128 '\000' in *)
-  (* really_input ic len_buf 0 128; *)
-  (* let _ = Printf.printf "%s" (Bytes.unsafe_to_string len_buf) in *)
-  (* let len = Int64.of_string (Bytes.unsafe_to_string len_buf) in *)
-  (* let len_int = Int64.to_int len in *)
-  let msg_buf = Bytes.make 38 '\000' in
-  really_input ic msg_buf 0 38;
-  let _ = Printf.printf "%s" (Bytes.unsafe_to_string msg_buf) in
-  let (response: Rpc.response) = Jsonrpc.response_of_string (Bytes.unsafe_to_string msg_buf) in
-  (* let (response: Rpc.response) = Jsonrpc.response_of_string msg_buf in *)
-  response
+  (* Send data to the socket. *)
+  let _ = send_delimited oc msg_buf in
+  (* Get response. *)
+  let response = Stdlib.input_line ic in
+  Printf.printf "Response: %s\n" response;
+  Jsonrpc.response_of_string response
 
 let update ~socket_address ~fname ~keys ~value ~is_map =
-  (* let is_delete = 
+  (* let is_delete =
     match value with
     | Some _ -> true
     | None -> false
