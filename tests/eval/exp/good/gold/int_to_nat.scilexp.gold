@@ -10,6 +10,8 @@
   [three_nat2 -> (Nat 3)],
   [two_nat2 -> (Nat 2)],
   [one_nat2 -> (Nat 1)],
+  [stress_test_nat -> (Nat 1000000)],
+  [stress_test_uint -> (Uint32 1000000)],
   [three_nat1 -> (Nat 3)],
   [three_uint -> (Uint32 3)],
   [zero_nat2 -> (Nat 0)],
