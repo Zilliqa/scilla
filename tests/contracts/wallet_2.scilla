@@ -341,27 +341,15 @@ end
 
 (* Revoke signature for new owner *)
 transition RevokeOwnerSignature (new_owner : ByStr20)
-  (* new owner must occur in signatures map *)
-  sigs_tmp <- owner_signatures;
-  sigs_opt = builtin get sigs_tmp new_owner;
-  match sigs_opt with
-  | None =>
-    err = NoSignatureListFound;
+  (* Sender must have signed already *)
+  sender_has_signed <- exists owner_signatures[new_owner][_sender];
+  match sender_has_signed with
+  | False =>
+    err = NotAlreadySigned;
     e = mk_error_event err;
     event e
-  | Some sigs =>
-    (* Sender must have signed already *)
-    sender_has_signed = address_mem _sender sigs;
-    match sender_has_signed with
-    | False =>
-      err = NotAlreadySigned;
-      e = mk_error_event err;
-      event e
-    | True =>
-      new_sigs = builtin remove sigs _sender;
-      new_signatures = builtin put sigs_tmp new_owner new_sigs;
-      owner_signatures := new_signatures
-    end
+  | True =>
+    delete owner_signatures[new_owner][_sender]
   end
 end
 
