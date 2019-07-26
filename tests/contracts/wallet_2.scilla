@@ -231,9 +231,6 @@ end
 
 (* Sign off on an existing transaction *)
 transition SignTransaction (transactionId : Uint32)
-  (* Helper function *)
-  sender_mem = address_mem _sender;
-
   (* Only the owner is allowed to sign off transactions *)
   sender_is_owner <- exists owners[_sender];
   match sender_is_owner with
@@ -251,29 +248,17 @@ transition SignTransaction (transactionId : Uint32)
       e = mk_error_event err;
       event e
     | Some (Trans recipient amount) =>
-      (* Transaction must occur in signatures map *)
-      sigs_tmp <- signatures;
-      sigs_opt = builtin get sigs_tmp transactionId;
-      match sigs_opt with
-      | None =>
-        err = NoSignatureListFound;
+      (* Sender must not have signed already *)
+      sender_has_signed <- exists signatures[transactionId][_sender];
+      match sender_has_signed with
+      | True =>
+        err = AlreadySigned;
         e = mk_error_event err;
         event e
-      | Some sigs =>
-        (* Sender must not have signed already *)
-        sender_has_signed = sender_mem sigs;
-        match sender_has_signed with
-        | True =>
-          err = AlreadySigned;
-          e = mk_error_event err;
-          event e
-        | False =>
-          (* Signature is valid. Add to collected signatures *)
-          t = True;
-          new_sigs = builtin put sigs _sender t;
-          new_signatures = builtin put sigs_tmp transactionId new_sigs;
-          signatures := new_signatures
-        end
+      | False =>
+        (* Signature is valid. Add to collected signatures *)
+        t = True;
+        signatures[transactionId][_sender] := t
       end
     end
   end
