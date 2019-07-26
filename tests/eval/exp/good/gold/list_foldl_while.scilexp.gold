@@ -1,0 +1,13 @@
+(Int32 -4),
+{ [foldWhile -> <closure>],
+  [sub_neq2 -> <closure>],
+  [subtract -> <closure>],
+  [l4 -> (List (Int32 3), (Int32 1), (Int32 2), (Int32 3), (Nil))],
+  [l3 -> (List (Int32 1), (Int32 2), (Int32 3), (Nil))],
+  [l2 -> (List (Int32 2), (Int32 3), (Nil))],
+  [l1 -> (List (Int32 3), (Nil))],
+  [nil -> (Nil)],
+  [three -> (Int32 3)],
+  [two -> (Int32 2)],
+  [one -> (Int32 1)],
+  [zero -> (Int32 0)] }
