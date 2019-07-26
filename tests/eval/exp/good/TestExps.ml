@@ -106,6 +106,7 @@ let explist = [
   "nat_eq_false.scilexp";
   "nat_eq_foldl.scilexp";
   "nat_to_int.scilexp";
+  "nat_fold_stress.scilexp";
   "option.scilexp";
   "pair1.scilexp";
   "pair2.scilexp";
