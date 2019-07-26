@@ -1,0 +1,440 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "initial_owners", "tag": "NoInfo" },
+      { "field": "required_signatures", "tag": "NotMoney" },
+      { "field": "validity_checked", "tag": "NotMoney" },
+      { "field": "contract_valid", "tag": "NotMoney" },
+      { "field": "owners", "tag": "(Map NotMoney)" },
+      { "field": "transactionCount", "tag": "NotMoney" },
+      { "field": "signatures", "tag": "(Map (Map NotMoney))" },
+      { "field": "transactions", "tag": "(Map (Transaction ))" },
+      { "field": "owner_signatures", "tag": "(Map (Map NotMoney))" }
+    ],
+    "ADT constructors": [
+      {
+        "Transaction": [
+          { "constructor": "Trans", "tags": [ "NotMoney", "Money" ] }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Wallet",
+    "params": [
+      { "vname": "initial_owners", "type": "List (ByStr20)" },
+      { "vname": "required_signatures", "type": "Uint32" }
+    ],
+    "fields": [
+      { "vname": "validity_checked", "type": "Bool" },
+      { "vname": "contract_valid", "type": "Bool" },
+      { "vname": "owners", "type": "Map (ByStr20) (Bool)" },
+      { "vname": "transactionCount", "type": "Uint32" },
+      {
+        "vname": "signatures",
+        "type": "Map (Uint32) (Map (ByStr20) (Bool))"
+      },
+      { "vname": "transactions", "type": "Map (Uint32) (Transaction)" },
+      {
+        "vname": "owner_signatures",
+        "type": "Map (ByStr20) (Map (ByStr20) (Bool))"
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "SubmitTransaction",
+        "params": [
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "SignTransaction",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      },
+      {
+        "vname": "ExecuteTransaction",
+        "params": [
+          { "vname": "transactionId", "type": "Uint32" },
+          { "vname": "tag", "type": "String" }
+        ]
+      },
+      {
+        "vname": "RevokeSignature",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      },
+      {
+        "vname": "RevokeOwnerSignature",
+        "params": [ { "vname": "new_owner", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "AddCandidateOwner",
+        "params": [ { "vname": "candidate", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "SignOffNewOwner",
+        "params": [ { "vname": "candidate", "type": "ByStr20" } ]
+      },
+      { "vname": "ClaimOwnership", "params": [] },
+      { "vname": "AddFunds", "params": [] }
+    ],
+    "events": [
+      {
+        "vname": "WalletError",
+        "params": [ { "vname": "err_code", "type": "Int32" } ]
+      },
+      { "vname": "New owner approved", "params": [] },
+      {
+        "vname": "Owner signed",
+        "params": [ { "vname": "signature_count", "type": "Uint32" } ]
+      },
+      { "vname": "Candiate owner added", "params": [] },
+      {
+        "vname": "Transaction signed",
+        "params": [ { "vname": "signature_count", "type": "Uint32" } ]
+      },
+      {
+        "vname": "Transaction created",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "Error",
+        "tparams": [],
+        "tmap": [
+          { "cname": "NonOwnerCannotSign", "argtypes": [] },
+          { "cname": "UnknownTransactionId", "argtypes": [] },
+          { "cname": "InsufficientFunds", "argtypes": [] },
+          { "cname": "NoSignatureListFound", "argtypes": [] },
+          { "cname": "AlreadySigned", "argtypes": [] },
+          { "cname": "NotAlreadySigned", "argtypes": [] },
+          { "cname": "InvalidContract", "argtypes": [] },
+          { "cname": "InvalidAmount", "argtypes": [] },
+          { "cname": "NotEnoughSignatures", "argtypes": [] },
+          { "cname": "SenderIsNotRecipient", "argtypes": [] },
+          { "cname": "CandidateAlreadyAdded", "argtypes": [] },
+          { "cname": "UnknownCandidate", "argtypes": [] },
+          { "cname": "CandidateAlreadyOwner", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Transaction",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Trans", "argtypes": [ "ByStr20", "Uint128" ] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 533,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 518,
+        "column": 14
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 515,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 501,
+        "column": 23
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 491,
+        "column": 27
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 479,
+        "column": 26
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 460,
+        "column": 29
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 452,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 439,
+        "column": 26
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 427,
+        "column": 21
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 418,
+        "column": 29
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 403,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 390,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 372,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 364,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 346,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 333,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 331,
+        "column": 26
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 310,
+        "column": 27
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 284,
+        "column": 23
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 275,
+        "column": 22
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 255,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 246,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 224,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 223,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 215,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 211,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}

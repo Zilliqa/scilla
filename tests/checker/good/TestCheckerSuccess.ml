@@ -49,6 +49,7 @@ module Tests = TestUtil.DiffBasedTests(
       "schnorr.scilla";
       "simple-dex.scilla";
       "wallet.scilla";
+      "wallet_2.scilla";
       "zil-game.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
