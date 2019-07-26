@@ -54,9 +54,9 @@ module NatRec = struct
       let (_, loc) as fix_arg = parse_expr_wrapper ( 
           "fun (f0 : 'T) => fun (n: Nat) => " ^
           "match n with " ^
-          " | Zero => f0 " ^
           " | Succ n1 => let res = fn f0 n1 in " ^
           "   g res n1 " ^
+          " | Zero => f0 " ^
           "end"
         )
       let id = mk_ident "nat_fold"
@@ -75,9 +75,9 @@ module NatRec = struct
      let (_, loc) as fix_arg = parse_expr_wrapper (
          "fun (f0 : 'T) => fun (n: Nat) => " ^
          "match n with " ^
-         " | Zero => f0 " ^
          " | Succ n1 => let partial = fun (k : 'T) => g k n1 in " ^
          " fn f0 n partial " ^
+         " | Zero => f0 " ^
          "end" )
      let id = mk_ident "nat_foldk"
      let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
