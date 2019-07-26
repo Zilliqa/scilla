@@ -353,28 +353,24 @@ transition AddCandidateOwner (candidate : ByStr20)
     e = mk_error_event err;
     event e
   | True =>
-    owner_signatures_tmp <- owner_signatures;
-    sigs_option = builtin get owner_signatures_tmp candidate;
-    match sigs_option with
-    | Some _ =>
+    already_added <- exists owner_signatures[candidate];
+    match already_added with
+    | True =>
       (* Candidate already added *)
       err = CandidateAlreadyAdded;
       e = mk_error_event err;
       event e
-    | None =>
-      owners_tmp <- owners;
-      owner_option = builtin get owners_tmp candidate;
-      match owner_option with
-      | Some _ =>
+    | False =>
+      already_owner <- exists owners[candidate];
+      match already_owner with
+      | True =>
         (* Candidate is already an owner *)
         err = CandidateAlreadyOwner;
         e = mk_error_event err;
         event e
-      | None =>
+      | False =>
         (* New candidate *)
-        empty_sigs = Emp ByStr20 Bool;
-        new_owner_signatures = builtin put owner_signatures_tmp candidate empty_sigs;
-        owner_signatures := new_owner_signatures
+        owner_signatures[candidate] := empty_sigs
       end
     end
   end
