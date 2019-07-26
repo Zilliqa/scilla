@@ -222,8 +222,7 @@ transition SignTransaction (transactionId : Uint32)
     event e
   | True =>
     (* Transaction must have been submitted *)
-    ts_tmp <- transactions;
-    transaction = builtin get ts_tmp transactionId;
+    transaction <- transactions[transactionId];
     match transaction with
     | None =>
       err = UnknownTransactionId;

@@ -170,7 +170,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 456,
+        "line": 455,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -180,7 +180,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 441,
+        "line": 440,
         "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -190,7 +190,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 438,
+        "line": 437,
         "column": 24
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -200,7 +200,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 424,
+        "line": 423,
         "column": 23
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -210,7 +210,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 414,
+        "line": 413,
         "column": 27
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -220,7 +220,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 382,
+        "line": 381,
         "column": 26
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -230,7 +230,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 370,
+        "line": 369,
         "column": 21
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -240,7 +240,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 361,
+        "line": 360,
         "column": 29
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -250,7 +250,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 346,
+        "line": 345,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -260,7 +260,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 300,
+        "line": 299,
         "column": 24
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -270,7 +270,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 298,
+        "line": 297,
         "column": 26
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -280,7 +280,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 277,
+        "line": 276,
         "column": 27
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -290,18 +290,8 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 251,
+        "line": 250,
         "column": 23
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet_2.scilla",
-        "line": 225,
-        "column": 15
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
