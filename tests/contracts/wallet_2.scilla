@@ -194,22 +194,16 @@ transition SubmitTransaction (recipient : ByStr20, amount : Uint128)
   | False =>
     (* Create new transaction *)
     transaction = Trans recipient amount;
-    
     (* Add transaction to outstanding list of transactions *)
-    ts_tmp <- transactions;
-    ts_new = builtin put ts_tmp tc transaction;
-    
+    transactions[tc] := transaction; 
     (* Add empty list of signatures *)
-    sigs_tmp <- signatures;
-    sigs_new = builtin put sigs_tmp tc empty_sigs;
+    signatures[tc] := empty_sigs;
     
     (* Increment transaction counter *)
     tc_new = builtin add tc transaction_inc;
     
     (* Update fields *)
     transactionCount := tc_new;
-    transactions := ts_new;
-    signatures := sigs_new;
     
     (* Create event with transaction Id *)
     e = mk_transaction_added_event tc;
