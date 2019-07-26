@@ -225,28 +225,26 @@ let rec pp_literal_simplified l =
         (match cn with
         | "Cons" ->
           (* Print non-empty lists in a readable way. *)
-          let rec pcons largs =
-            if List.length largs = 0 then "(Nil)" else
-            let this = (pp_literal_simplified (List.nth_exn largs 0)) ^ ", " in
-            let next =
-              if List.length largs <> 2 then "(Malformed List)" else
-              (match (List.nth_exn largs 1) with
-              | ADTValue(_, _, al') ->
-                pcons al'
-              | _ -> "(Malformed List") in
-            (this ^ next)
+          let list_buffer = Buffer.create 1024 in
+          let rec plist = function
+            | ADTValue ("Nil", _, []) -> Buffer.add_string list_buffer "(Nil)"
+            | ADTValue ("Cons", _, [head; tail]) ->
+                let head_str = (pp_literal_simplified head) ^ ", " in
+                Buffer.add_string list_buffer head_str;
+                plist tail
+            | _ -> Buffer.clear list_buffer; Buffer.add_string list_buffer "(Malformed List)"
           in
-            "(List " ^ pcons al ^ ")"
+          plist l;
+          "(List " ^ Buffer.contents list_buffer ^ ")"
         | "Zero" | "Succ" ->
-            let rec counter largs =
-              if List.length largs = 0 then "0" else
-              if List.length largs <> 1 then "(Malformed Nat)" else
-              (match (List.nth_exn largs 0) with
-              | ADTValue (_, _, al') ->
-                Int.to_string ((Int.of_string (counter al')) + 1)
-              | _ -> "(Malformed Nat)")
+            let rec counter nat acc =
+              match nat with
+              | ADTValue ("Zero", _, []) -> Some acc
+              | ADTValue ("Succ", _, [pred]) -> counter pred (Uint32.succ acc)
+              | _ -> None
             in
-              "(Nat "^ (counter al) ^ ")"
+            let res = Option.map (counter l Uint32.zero) ~f:Uint32.to_string in
+            "(Nat " ^ Option.value res ~default:"(Malformed Nat)" ^ ")"
         | _ ->
           (* Generic printing for other ADTs. *)
           "(" ^ cn ^

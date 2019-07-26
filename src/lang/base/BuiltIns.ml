@@ -528,14 +528,12 @@ module ScillaBuiltIns
 
     let to_nat ls _ = match ls with
       | [UintLit (Uint32L n)] ->
-        let zero = ADTValue ("Zero", [], []) in
-        let rec nat_builder (i : Uint32.t) =
-          if i = Uint32.zero then zero
-          else
-            let prev = nat_builder (Uint32.sub i Uint32.one) in
-            ADTValue ("Succ", [], [prev])
+        let rec nat_builder (i : Uint32.t) (acc : Syntax.literal) =
+          if i = Uint32.zero then acc
+          else nat_builder (Uint32.pred i) (ADTValue ("Succ", [], [acc]))
         in
-        pure (nat_builder n)
+        let zero = ADTValue ("Zero", [], []) in
+        pure @@ nat_builder n zero
       (* Other integer widths can be in the library, using integer conversions. *)
       | _ -> builtin_fail "Uint.to_nat only supported for Uint32" ls
 
