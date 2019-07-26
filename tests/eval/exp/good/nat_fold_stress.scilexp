@@ -1,0 +1,13 @@
+(* this is a performance test introduced to catch performance degradation
+   by observing tests stall for several seconds before proceeding to the next test,
+   or even failing with a timeout message *)
+let silly_zero = fun (n : Uint32) =>
+  let n_nat = builtin to_nat n in
+  let fold = @nat_fold Uint32 in
+  let zero = Uint32 0 in
+  let iter = fun (ignore : Uint32) => fun (ignore : Nat) =>
+    zero in
+  fold iter zero n_nat
+in
+let large_n = Uint32 80000 in
+silly_zero large_n
