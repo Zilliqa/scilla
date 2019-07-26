@@ -247,8 +247,7 @@ end
 
 (* Execute signed-off transaction *)
 transition ExecuteTransaction (transactionId : Uint32, tag : String)
-  transactions_tmp <- transactions;
-  transaction_opt = builtin get transactions_tmp transactionId;
+  transaction_opt <- transactions[transactionId];
   match transaction_opt with
   | None =>
     (* Transaction was not found. *)
@@ -273,8 +272,7 @@ transition ExecuteTransaction (transactionId : Uint32, tag : String)
         e = mk_error_event err;
         event e
       | False =>
-        signatures_tmp <- signatures;
-        sigs_opt = builtin get signatures_tmp transactionId;
+        sigs_opt <- signatures[transactionId];
         match sigs_opt with
         | None =>
           (* Signatures not found, even though the transaction exists.*)
@@ -293,10 +291,8 @@ transition ExecuteTransaction (transactionId : Uint32, tag : String)
           | False =>
             (* Transaction approved, and enough money available. *)
             (* Remove transaction and signatures, and execute. *)
-            new_transactions = builtin remove transactions_tmp transactionId;
-            transactions := new_transactions;
-            new_signatures = builtin remove signatures_tmp transactionId;
-            signatures := new_signatures;
+            delete transactions[transactionId];
+            delete signatures[transactionId];
             msgs = transaction_msg_as_list recipient amount tag;
             send msgs
           end

@@ -170,7 +170,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 455,
+        "line": 451,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -180,7 +180,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 440,
+        "line": 436,
         "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -190,7 +190,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 437,
+        "line": 433,
         "column": 24
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -200,7 +200,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 423,
+        "line": 419,
         "column": 23
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -210,7 +210,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 413,
+        "line": 409,
         "column": 27
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -220,7 +220,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 381,
+        "line": 377,
         "column": 26
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -230,7 +230,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 369,
+        "line": 365,
         "column": 21
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -240,7 +240,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 360,
+        "line": 356,
         "column": 29
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -250,7 +250,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 345,
+        "line": 341,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -260,38 +260,8 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 299,
-        "column": 24
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet_2.scilla",
-        "line": 297,
-        "column": 26
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet_2.scilla",
-        "line": 276,
-        "column": 27
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet_2.scilla",
-        "line": 250,
-        "column": 23
+        "line": 275,
+        "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
