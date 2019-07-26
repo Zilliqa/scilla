@@ -238,15 +238,14 @@ let rec pp_literal_simplified l =
           in
             "(List " ^ pcons al ^ ")"
         | "Zero" | "Succ" ->
-            let rec counter largs =
-              if List.length largs = 0 then "0" else
-              if List.length largs <> 1 then "(Malformed Nat)" else
-              (match (List.nth_exn largs 0) with
-              | ADTValue (_, _, al') ->
-                Int.to_string ((Int.of_string (counter al')) + 1)
-              | _ -> "(Malformed Nat)")
+            let rec counter nat acc =
+              match nat with
+              | ADTValue ("Zero", _, []) -> Some acc
+              | ADTValue ("Succ", _, [pred]) -> counter pred (Uint32.succ acc)
+              | _ -> None
             in
-              "(Nat "^ (counter al) ^ ")"
+            let res = Option.map (counter l Uint32.zero) ~f:Uint32.to_string in
+            "(Nat " ^ Option.value res ~default:"(Malformed Nat)" ^ ")"
         | _ ->
           (* Generic printing for other ADTs. *)
           "(" ^ cn ^
