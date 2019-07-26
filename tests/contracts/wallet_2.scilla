@@ -327,27 +327,15 @@ end
 
 (* Revoke signature of existing transaction, if it has not yet been executed. *)
 transition RevokeSignature (transactionId : Uint32)
-  (* Transaction must occur in signatures map *)
-  sigs_tmp <- signatures;
-  sigs_opt = builtin get sigs_tmp transactionId;
-  match sigs_opt with
-  | None =>
-    err = NoSignatureListFound;
+  (* Sender must have signed already *)
+  sender_has_signed <- exists signatures[transactionId][_sender];
+  match sender_has_signed with
+  | False =>
+    err = NotAlreadySigned;
     e = mk_error_event err;
     event e
-  | Some sigs =>
-    (* Sender must have signed already *)
-    sender_has_signed = address_mem _sender sigs;
-    match sender_has_signed with
-    | False =>
-      err = NotAlreadySigned;
-      e = mk_error_event err;
-      event e
-    | True =>
-      new_sigs = builtin remove sigs _sender;
-      new_signatures = builtin put sigs_tmp transactionId new_sigs;
-      signatures := new_signatures
-    end
+  | True =>
+    delete signatures[transactionId][_sender]
   end
 end
 
