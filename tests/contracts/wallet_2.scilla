@@ -410,8 +410,7 @@ transition SignOffNewOwner (candidate : ByStr20)
   t = True;
 
   (* Only owners are allowed to sign off new owners *)
-  owners_tmp <- owners;
-  sender_is_owner = sender_mem owners_tmp;
+  sender_is_owner <- exists owners[_sender];
   match sender_is_owner with
   | False =>
     err = NonOwnerCannotSign;
