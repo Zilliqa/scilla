@@ -68,6 +68,7 @@ let mk_error_event =
 
 let transaction_inc = Uint32 1
 let empty_sigs = Emp ByStr20 Bool
+let t = True
 
 (* One (potential) transaction, consisting of a recipient address and an amount *)
 type Transaction =
@@ -87,7 +88,6 @@ let mk_owners_map =
           acc
         | _ =>
           (* owner not yet added, or removed *)
-          let t = True in
           builtin put acc cur_owner t
         end in
     let folder = @list_foldl ByStr20 (Map ByStr20 Bool) in
@@ -238,7 +238,6 @@ transition SignTransaction (transactionId : Uint32)
         event e
       | False =>
         (* Signature is valid. Add to collected signatures *)
-        t = True;
         signatures[transactionId][_sender] := t
       end
     end
@@ -394,7 +393,6 @@ transition SignOffNewOwner (candidate : ByStr20)
       e = mk_error_event err;
       event e
     | False =>
-      t = True;
       owner_signatures[candidate][_sender] := t
     end
   end  
@@ -402,8 +400,7 @@ end
 
 (* Promote _sender to owner, if all existing owners have signed *)
 transition ClaimOwnership ()
-  owner_signatures_tmp <- owner_signatures;
-  sigs_option = builtin get owner_signatures_tmp _sender;
+  sigs_option <- owner_signatures[_sender];
   (* Check if all owners have signed *)
   match sigs_option with
   | None =>
@@ -411,7 +408,7 @@ transition ClaimOwnership ()
     err = UnknownCandidate;
     e = mk_error_event err;
     event e
-  | Some sigs => 
+  | Some sigs =>
     current_owners <- owners;
     no_of_owners = builtin size current_owners;
     no_of_sigs = builtin size sigs;
@@ -425,11 +422,8 @@ transition ClaimOwnership ()
     | True =>
       (* Enough signatures collected. *)
       (* Remove signatures, and add sender to owner collection *)
-      new_owner_signatures = builtin remove owner_signatures_tmp _sender;
-      owner_signatures := new_owner_signatures;
-      t = True;
-      new_owners = builtin put current_owners _sender t;
-      owners := new_owners;
+      delete owner_signatures[_sender];
+      owners[_sender] := t;
       (* Create event with owner id *)
       e = mk_new_owner_approved_event;
       event e
