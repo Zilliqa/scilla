@@ -19,6 +19,8 @@ open Idl
 open Core
 open Result.Let_syntax
 open MonadUtil
+open Syntax
+open Stdint
 
 module IPCClientIdl(R: RPC) = struct
   open R
@@ -54,32 +56,15 @@ let binary_rpc ~socket_address (call: Rpc.call) : Rpc.response =
   Printf.printf "Response: %s\n" response;
   Jsonrpc.response_of_string response
 
-let update ~socket_address ~fname ~keys ~value ~is_map =
-  (* let is_delete =
-    match value with
-    | Some _ -> true
-    | None -> false
-  in
-  let%bind query = construct_and_serialize_query ~fname ~keys ~is_delete ~is_map in
-  let%bind serialized_value = serialize_value ~keys ~value ~is_delete in
-  let _ = IPCClient.update_state_value binary_rpc ~socket_address query serialized_value in
-  let gas_and_value = add_gas ~value:serialized_value ~fname ~keys ~is_map in
-  pure @@ gas_and_value *)
-  fail0 "StateService: update not implemented yet for IPC mode" 
+let serialize_literal literal =
+  PrettyPrinters.literal_to_jstring literal
 
-
-let fetch ~socket_address ~fname ~keys ~is_map =
-  (* let%bind query = construct_and_serialize_query ~fname ~keys ~is_delete: false ~is_map in
-  let%bind return_string = IPCClient.fetch_state_value binary_rpc ~socket_address query in
-  let%bind value = deserialize return_string in
-  let gas_and_value = add_gas ~value ~fname ~keys ~is_map in
-  pure @@ gas_and_value *)
-  fail0 "StateService: fetch not implemented yet for IPC mode"
-
-let test_server_rpc ~socket_address ~query = 
-  IPCClient.test_server_rpc (binary_rpc ~socket_address) query
-
-(* let construct_and_serialize_query ~fname ~keys ~is_delete ~is_map =
+let rec serialize_value value =
+  match value with
+  | Map m -> ScillaMessageTypes.Mval 
+  | _ -> ScillaMessageTypes.Bval (serialize_literal value)
+  
+let construct_and_serialize_query ~fname ~keys ~is_delete ~is_map =
   let map_depth = 
     match is_map with
     | true -> List.length keys
@@ -88,17 +73,42 @@ let test_server_rpc ~socket_address ~query =
   let query = ScillaMessageTypes.({ 
     name = fname; 
     mapdepth = map_depth; 
-    indices = keys; 
+    indices = List.map keys serialize_literal; 
     deletemapkey = is_delete 
   }) in
   let encoder = Pbrt.Encoder.create () in 
-  encoder.encode_proto_scilla_query query encoder; *)
+  ScillaMessage_pb.encode_proto_scilla_query query encoder;
+  Pbrt.Encoder.to_bytes encoder
+  (* Bytes.to_string query_bytes *)
+
+let construct_and_serialize_value ~value = function
+  | true -> "" (*The value is irrelevant for a delete operation *)
+  | false ->
+    let scilla_val = serialize_value value in
+    let encoder = Pbrt.Encoder.create () in
+    ScillaMessage_pb.encode_proto_scilla_val scilla_val encoder;
+    Pbrt.Encoder.to_bytes encoder
+    (* Bytes.to_string value_bytes *)
+    
+let update ~socket_address ~fname ~keys ~value ~is_map =
+  let is_delete =
+    match value with
+    | Some _ -> true
+    | None -> false
+  in
+  let query = construct_and_serialize_query ~fname ~keys ~is_delete ~is_map in
+  let%bind serialized_value = construct_and_serialize_value ~value is_delete in
+  let _ = IPCClient.update_state_value binary_rpc ~socket_address query serialized_value in
+  let gas_and_value = add_gas ~value:serialized_value ~fname ~keys ~is_map in
+  pure @@ gas_and_value
 
 
+let fetch ~socket_address ~fname ~keys ~is_map =
+  let query = construct_and_serialize_query ~fname ~keys ~is_delete: false ~is_map in
+  let%bind return_string = IPCClient.fetch_state_value binary_rpc ~socket_address query in
+  let%bind value = deserialize_value return_string in
+  let gas_and_value = add_gas ~value ~fname ~keys ~is_map in
+  pure @@ gas_and_value
 
-(* TO IMPLEMENT
-1. construct_and_serialize_query
-2. deserialize
-3. add_gas
-4. serialize_value
-*)
+let test_server_rpc ~socket_address ~query = 
+  IPCClient.test_server_rpc (binary_rpc ~socket_address) query
