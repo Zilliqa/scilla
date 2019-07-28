@@ -20,95 +20,159 @@ open Core
 open Result.Let_syntax
 open MonadUtil
 open Syntax
-open Stdint
+open JSON
+open ParserUtil
+open TypeUtil
+
+module ER = ParserRep
 
 module IPCClientIdl(R: RPC) = struct
   open R
   let query = Param.mk ~name: "query" Rpc.Types.string
   let value = Param.mk ~name: "value" Rpc.Types.string
-  let return_string = Param.mk Rpc.Types.string
-  let boolean = Param.mk Rpc.Types.bool
-  let void = Param.mk Rpc.Types.unit
-  (* TODO Change error to something other than default error *)
+  (* TODO: [@warning "-32"] doesn't seem to work for "unused" types. *)
+  type _retopt = string option [@@deriving rpcty] (* defines `typ_of_retopt` *)
+  let return_value = Param.mk { name = ""; description = ["Found Value"]; ty = typ_of__retopt }
+  let return_unit = Param.mk Rpc.Types.unit
   let error = Idl.DefaultError.err
-  let fetch_state_value = declare "fetchStateValue" ["Fetch state value from blockchain"] (query @-> returning return_string error)
-  let update_state_value = declare "updateStateValue" ["Update state value in blockchain"] (query @-> value @-> returning boolean error)
-  
-  let test_server_rpc = declare "testServerRPC" ["Check if client server interaction is working"] (query @-> returning return_string error)
+  let fetch_state_value = declare "fetchStateValue" ["Fetch state value from blockchain"] (query @-> returning return_value error)
+  let update_state_value = declare "updateStateValue" ["Update state value in blockchain"] (query @-> value @-> returning return_unit error)
 end
 
 module IPCClient = IPCClientIdl(Idl.GenClient ())
 
+(* Translate JRPC result to our result. *)
+let translate_res res =
+  match res with
+  | Error (Idl.DefaultError.InternalError s) -> fail0 (Printf.sprintf "Error in IPC access: %s." s)
+  | Ok res' -> pure res'
+
 (* Send msg via socket s with a delimiting character "0xA". *)
 let send_delimited oc msg =
   let msg' = msg ^ "\n" in
-  Stdlib.output_string oc msg';
-  Core.Out_channel.flush oc
+  Caml.output_string oc msg';
+  Caml.flush oc
 
-let binary_rpc ~socket_address (call: Rpc.call) : Rpc.response =
-  let sockaddr = Unix.ADDR_UNIX socket_address in
+let binary_rpc ~socket_addr (call: Rpc.call) : Rpc.response =
+  let sockaddr = Unix.ADDR_UNIX socket_addr in
   let (ic, oc) = Unix.open_connection sockaddr in
   let msg_buf = Jsonrpc.string_of_call ~version: Jsonrpc.V2 call in
+  Printf.printf "Sending: %s\n" msg_buf;
   (* Send data to the socket. *)
   let _ = send_delimited oc msg_buf in
   (* Get response. *)
-  let response = Stdlib.input_line ic in
-  Printf.printf "Response: %s\n" response;
+  let response = Caml.input_line ic in
+   Printf.printf "Response: %s\n" response;
   Jsonrpc.response_of_string response
 
-let serialize_literal literal =
-  PrettyPrinters.literal_to_jstring literal
+(* Encode a literal into bytes, opaque to the backend storage. *)
+let serialize_literal l = Bytes.of_string (PrettyPrinters.literal_to_jstring l)
 
-let rec serialize_value value =
+(* Map fields are serialized into ScillaMessageTypes.MVal
+   Other fields are serialized using serialize_literal into bytes/string. *)
+let rec serialize_field value =
   match value with
-  | Map m -> ScillaMessageTypes.Mval 
+  | Map (_, mlit) ->
+    let mpb = Caml.Hashtbl.fold (fun key value acc ->
+      let key' = Bytes.to_string (serialize_literal key) in
+      (* values can be Maps or non-map literals. Hence a recursive call. *)
+      let val' = serialize_field value in
+      (key', val') :: acc
+    ) mlit [] in
+    ScillaMessageTypes.Mval({ ScillaMessageTypes.m = mpb })
+    (* If there are maps _inside_ a non-map field, they are treated same
+     * as non-Map field values are not serialized as protobuf maps. *)
   | _ -> ScillaMessageTypes.Bval (serialize_literal value)
-  
-let construct_and_serialize_query ~fname ~keys ~is_delete ~is_map =
-  let map_depth = 
-    match is_map with
-    | true -> List.length keys
-    | false -> 0
-  in
-  let query = ScillaMessageTypes.({ 
-    name = fname; 
-    mapdepth = map_depth; 
-    indices = List.map keys serialize_literal; 
-    deletemapkey = is_delete 
-  }) in
-  let encoder = Pbrt.Encoder.create () in 
+
+(* Deserialize proto_scilla_val, given its type. *)
+let rec deserialize_value value tp =
+  match value with
+  | ScillaMessageTypes.Bval s ->
+    (match tp with
+    | MapType _ -> fail0 "Type mismatch deserializing value. Did not expect MapType."
+    | _ -> pure (ContractState.jstring_to_literal (Bytes.to_string s)))
+  | ScillaMessageTypes.Mval m ->
+    (match tp with
+    | MapType (kt, vt) ->
+      let mlit = Caml.Hashtbl.create (List.length m.m) in
+      let _ = iterM m.m ~f:(fun (k, v) ->
+        let k' = ContractState.jstring_to_literal k in
+        let%bind v' = deserialize_value v vt in
+        Caml.Hashtbl.add mlit k' v';
+        pure ()
+      ) in
+      pure (Map ((kt, vt), mlit))
+    | _ -> fail0 "Type mismatch deserializing value. Expected MapType.")
+
+let encode_serialized_value value =
+  let encoder = Pbrt.Encoder.create () in
+  ScillaMessage_pb.encode_proto_scilla_val value encoder;
+  Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+
+let decode_serialized_value value =
+  let decoder = Pbrt.Decoder.of_bytes value in
+  ScillaMessage_pb.decode_proto_scilla_val decoder
+
+let encode_serialized_query query =
+  let encoder = Pbrt.Encoder.create () in
   ScillaMessage_pb.encode_proto_scilla_query query encoder;
-  Pbrt.Encoder.to_bytes encoder
-  (* Bytes.to_string query_bytes *)
+  Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
 
-let construct_and_serialize_value ~value = function
-  | true -> "" (*The value is irrelevant for a delete operation *)
-  | false ->
-    let scilla_val = serialize_value value in
-    let encoder = Pbrt.Encoder.create () in
-    ScillaMessage_pb.encode_proto_scilla_val scilla_val encoder;
-    Pbrt.Encoder.to_bytes encoder
-    (* Bytes.to_string value_bytes *)
-    
-let update ~socket_address ~fname ~keys ~value ~is_map =
-  let is_delete =
-    match value with
-    | Some _ -> true
-    | None -> false
-  in
-  let query = construct_and_serialize_query ~fname ~keys ~is_delete ~is_map in
-  let%bind serialized_value = construct_and_serialize_value ~value is_delete in
-  let _ = IPCClient.update_state_value binary_rpc ~socket_address query serialized_value in
-  let gas_and_value = add_gas ~value:serialized_value ~fname ~keys ~is_map in
-  pure @@ gas_and_value
+(* Fetch a field value. keys is empty iff the value being fetched is not a whole map itself.
+ * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
+let fetch ~socket_addr ~fname ~keys ~tp =
+  let open ScillaMessageTypes in
+  let q = {
+    name = (get_id fname);
+    mapdepth = TypeUtilities.map_depth tp;
+    indices = List.map keys ~f:(serialize_literal);
+    deletemapkey = false;
+  } in
+  let q' = encode_serialized_query q in
+  let%bind res = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
+  match res with
+  | Some res' ->
+    let%bind res'' = deserialize_value (decode_serialized_value (Bytes.of_string res')) tp in
+    pure @@ Some (res'')
+  | None -> pure None
 
+(* Update a field. keys is empty iff the value being updated is not a whole map itself. *)
+let update ~socket_addr ~fname ~keys ~value ~tp =
+  let open ScillaMessageTypes in
+  let q = {
+    name = (get_id fname);
+    mapdepth = TypeUtilities.map_depth tp;
+    indices = List.map keys ~f:(serialize_literal);
+    deletemapkey = false;
+  } in
+  let q' = encode_serialized_query q in
+  let value' =  encode_serialized_value (serialize_field value) in
+  let%bind _ = translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' value' in
+  pure ()
 
-let fetch ~socket_address ~fname ~keys ~is_map =
-  let query = construct_and_serialize_query ~fname ~keys ~is_delete: false ~is_map in
-  let%bind return_string = IPCClient.fetch_state_value binary_rpc ~socket_address query in
-  let%bind value = deserialize_value return_string in
-  let gas_and_value = add_gas ~value ~fname ~keys ~is_map in
-  pure @@ gas_and_value
+  (* Is a key in a map. keys must be non-empty. *)
+let is_member ~socket_addr ~fname ~keys ~tp =
+  let open ScillaMessageTypes in
+  let q = {
+    name = (get_id fname);
+    mapdepth = TypeUtilities.map_depth tp;
+    indices = List.map keys ~f:(serialize_literal);
+    deletemapkey = true;
+  } in
+  let q' = encode_serialized_query q in
+  let%bind res = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
+  match res with | Some _ -> pure true | None -> pure false
 
-let test_server_rpc ~socket_address ~query = 
-  IPCClient.test_server_rpc (binary_rpc ~socket_address) query
+(* Remove a key from a map. keys must be non-empty. *)
+let remove ~socket_addr ~fname ~keys ~tp =
+  let open ScillaMessageTypes in
+  let q = {
+    name = (get_id fname);
+    mapdepth = TypeUtilities.map_depth tp;
+    indices = List.map keys ~f:(serialize_literal);
+    deletemapkey = true;
+  } in
+  let q' = encode_serialized_query q in
+  let dummy_val = "" in
+  let%bind _ = translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' dummy_val in
+  pure ()

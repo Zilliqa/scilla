@@ -166,7 +166,6 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
 
 let () =
   let cli = Cli.parse () in
-  let response = StateIPCClient.test_server_rpc ~socket_address: "/tmp/scillaipcservertestsocket" ~query: "testQuery" in
   let is_deployment = (cli.input_message = "") in
   let is_ipc = cli.ipc_address <> "" in
   let is_library =

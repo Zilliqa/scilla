@@ -60,7 +60,7 @@ let get_full_state () =
       | None -> fail0 (sprintf "StateService: Field %s's value is not known" f.fname)
       | Some l -> pure (f.fname, l)
     )
-  | SS (IPC socket_address, _) -> fail0 "StateService: get_full_state not implemented yet for IPC mode"
+  | SS (IPC _, _) -> fail0 "StateService: get_full_state not implemented yet for IPC mode"
 
 (* Finalize: no more queries. *)
 let finalize () = pure ()
@@ -69,6 +69,12 @@ let assert_init () =
   match !ss_cur_state with
   | Uninitialized -> fail0 "StateService: Uninitialized"
   | SS (sm, fields) -> pure (sm, fields)
+
+let field_type fields fname =
+  match List.find fields ~f:(fun z -> z.fname = (get_id fname)) with
+  | Some f -> pure @@ f.ftyp
+  | None -> fail1 (sprintf "StateService: Unable to determine the type of field %s." (get_id fname))
+    (ER.get_loc (get_rep fname))
 
 let fetch_local ~fname ~keys fields =
   let s = fields in
@@ -108,18 +114,13 @@ let fetch_local ~fname ~keys fields =
   | _ -> fail1 (sprintf "StateService: field \"%s\" not found.\n" (get_id fname))
           (ER.get_loc (get_rep fname))
 
-let fetch_ipc ~socket_address ~fname ~keys fields =
-  let is_map = 
-    match List.find fields ~f:(fun z -> z.fname = (get_id fname)) with
-    | Some {fname =  _; ftyp = MapType _; fval = _ } -> true
-    | _ -> false 
-  in
-  StateIPCClient.fetch ~socket_address ~fname ~keys ~is_map
-
 let fetch ~fname ~keys =
   let%bind (sm, fields) = assert_init() in
   match sm with
-  | IPC socket_address -> fetch_ipc ~socket_address ~fname ~keys fields
+  | IPC socket_addr ->
+      let%bind tp = field_type fields fname in
+      let%bind res = StateIPCClient.fetch ~socket_addr ~fname ~keys ~tp in
+      pure @@ (res, G_MapGet(List.length keys, res))
   | Local -> fetch_local ~fname ~keys fields
 
 let update_local ~fname ~keys vopt fields =
@@ -142,7 +143,7 @@ let update_local ~fname ~keys vopt fields =
           (match Caml.Hashtbl.find_opt mlit' k with
             | Some (Map((_, vt''), mlit'')) -> recurser mlit'' krest vt''
             | None ->
-              if (is_some vopt) then (* not a delete operation. *)
+            if (is_some vopt) then (* not a delete operation. *)
                 (* We have more keys remaining, but no entry for "k".
                   So create an empty map for "k" and then proceed. *)
                 let mlit'' = Caml.Hashtbl.create 4 in
@@ -181,21 +182,13 @@ let update_local ~fname ~keys vopt fields =
   | _ -> fail1 (sprintf "StateService: Field \"%s\" not found.\n" (get_id fname))
           (ER.get_loc (get_rep fname))
 
-let update_ipc ~socket_address ~fname ~keys vopt fields =
-  let is_map = 
-    match List.find fields ~f:(fun z -> z.fname = (get_id fname)) with
-    | Some {fname =  _; ftyp = MapType _; fval = _ } -> true
-    | _ -> false 
-  in
-  let g = StateIPCClient.update ~socket_address ~fname ~keys ~value:vopt ~is_map in
-  pure @@ (fields, g)
-
 let update ~fname ~keys ~value =
   let%bind (sm, fields) = assert_init() in
   match sm with
-  | IPC socket_address -> 
-    let%bind (fields', g) = update_ipc ~socket_address ~fname ~keys (Some value) fields in
-    pure g
+  | IPC socket_addr ->
+    let%bind tp = field_type fields fname in
+    let%bind _ = StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp in
+    pure @@ (G_MapUpdate(List.length keys, Some value))
   | Local ->
     let%bind (fields', g) = update_local ~fname ~keys (Some value) fields in
     let _ = (ss_cur_state := SS(sm, fields')) in
@@ -205,10 +198,12 @@ let update ~fname ~keys ~value =
 let is_member ~fname ~keys =
   let%bind (sm, fields) = assert_init() in
   match sm with
-  | IPC socket_address ->
-    let%bind (v, g) = fetch_ipc ~socket_address ~fname ~keys fields in
-    pure @@ (Option.is_some v, g)
+  | IPC socket_addr ->
+    let%bind tp = field_type fields fname in
+    let%bind res = StateIPCClient.is_member ~socket_addr ~fname ~keys ~tp in
+    pure @@ (res, G_MapGet(List.length keys, None))
   | Local -> 
+    (* TODO: gas cost shouldn't depend on key/value queried for. *)
     let%bind (v, g) = fetch_local ~fname ~keys fields in
     pure @@ (Option.is_some v, g)
 
@@ -216,9 +211,10 @@ let is_member ~fname ~keys =
 let remove ~fname ~keys =
   let%bind (sm, fields) = assert_init() in
   match sm with
-  | IPC socket_address ->
-    let%bind (_, g) = update_ipc ~socket_address ~fname ~keys None fields in
-    pure @@ g
+  | IPC socket_addr ->
+    let%bind tp = field_type fields fname in
+    let%bind _ = StateIPCClient.remove ~socket_addr ~fname ~keys ~tp in
+    pure @@ G_MapUpdate(List.length keys, None)
   | Local -> 
     let%bind (_, g) = update_local ~fname ~keys None fields in
     (* We don't need to update ss_cur_state because only map keys can be removed, and that's stateful. *)
