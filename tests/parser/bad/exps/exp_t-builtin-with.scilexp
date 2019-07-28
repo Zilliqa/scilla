@@ -1,0 +1,3 @@
+let one = Uint128 1 in
+(* should be add *)
+builtin (+) one one

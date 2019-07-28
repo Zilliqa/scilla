@@ -1,0 +1,12 @@
+scilla_version 0
+
+library TestLib
+
+contract Test
+()
+
+field money : Uint64 = Uint64 0
+
+transition arbitrary ()
+ money transition
+end

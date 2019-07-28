@@ -1,0 +1,6 @@
+scilla_version 0
+
+library TestLib
+
+(* this is an invalid type identifier *)
+let f : forall invalidtypeid

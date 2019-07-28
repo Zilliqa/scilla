@@ -121,7 +121,7 @@ let rec output_event_json elist =
 
 let deploy_library (cli : Cli.ioFiles) gas_remaining =
   let parse_lmodule =
-    FrontEndParser.parse_file ScillaParser.lmodule cli.input in
+    FrontEndParser.parse_file ScillaParser.Incremental.lmodule cli.input in
   match parse_lmodule with
   | Error e ->
     (* Error is printed by the parser. *)
@@ -194,7 +194,7 @@ let () =
   if is_library then deploy_library cli gas_remaining  else
 
   let parse_module =
-    FrontEndParser.parse_file ScillaParser.cmodule cli.input in
+    FrontEndParser.parse_file ScillaParser.Incremental.cmodule cli.input in
   match parse_module with
   | Error e -> 
     (* Error is printed by the parser. *)

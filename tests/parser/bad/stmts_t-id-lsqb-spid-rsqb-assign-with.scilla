@@ -1,0 +1,16 @@
+scilla_version 0
+
+library TestLib
+
+let one = Uint128 1
+let false = False
+
+contract Test
+()
+
+field map : Map Uint128 Bool = Emp Uint128 Bool
+
+(* Typo *)
+transition arbitrary ()
+ map[one] := [false
+end

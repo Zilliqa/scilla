@@ -1,0 +1,8 @@
+scilla_version 0
+
+library TestLib
+
+let f : forall 'A. 'B. something = True
+
+contract Test
+()

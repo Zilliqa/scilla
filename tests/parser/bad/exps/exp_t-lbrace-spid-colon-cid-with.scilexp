@@ -1,0 +1,3 @@
+let a = Uint128 1 in
+(* Typo should be semicolon *)
+{_tag: "": _recipient:0x1234567890123456789012345678901234567890; _amount: a}

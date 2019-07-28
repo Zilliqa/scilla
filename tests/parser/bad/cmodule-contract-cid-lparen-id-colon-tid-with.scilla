@@ -1,0 +1,5 @@
+scilla_version 0
+
+(* missing the comma *)
+contract Test
+(truth: (Bool) amount : Uint128)

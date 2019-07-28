@@ -39,6 +39,7 @@ let main =
   } in
   (* Add calls to new tests from here *)
   let contract_tests = Testcontracts.add_tests env in
+  let parser_tests = TestParser.parser_tests env in
   let exp_tests_good = TestExps.Tests.add_tests env in
   let exp_tests_bad = TestExpsFail.Tests.add_tests env in
   let type_tests_good = Testtypes.all_tests env in
@@ -59,7 +60,7 @@ let main =
                    pm_tests_bad; signature_tests; polynomial_tests; (*gas_expr_tests;
                    gas_contract_tests; *)bech32_tests;
                    contract_tests; checker_tests; integer256_tests; syntax_tests;
-                   arith_builtin_tests] in
+                   arith_builtin_tests; parser_tests] in
 
   (* Run all tests *)
   run_test_tt_main all_tests

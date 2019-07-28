@@ -1,0 +1,7 @@
+scilla_version 0
+
+library TestLib
+
+(* Map key types begin capitalised *)
+
+let f : Map faulty

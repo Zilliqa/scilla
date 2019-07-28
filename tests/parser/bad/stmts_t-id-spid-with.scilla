@@ -1,0 +1,15 @@
+scilla_version 0
+
+library TestLib
+let a = True
+
+contract Test
+()
+
+procedure to_call (x : Bool)
+end
+
+(* bad procedure call *)
+transition arbitrary ()
+  to_call a : Bool
+nd

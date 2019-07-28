@@ -1,0 +1,7 @@
+scilla_version 0
+
+contract Test
+()
+
+(* field is a key word *)
+transition something ( field : Bool) end

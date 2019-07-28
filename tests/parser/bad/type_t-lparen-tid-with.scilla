@@ -1,0 +1,4 @@
+scilla_version 0
+
+library TestLib
+let f : ('A extra) = False

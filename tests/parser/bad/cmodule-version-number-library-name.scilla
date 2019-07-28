@@ -1,0 +1,5 @@
+scilla_version 0
+
+library TestLib
+
+(* missing a contract *)

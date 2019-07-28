@@ -1,0 +1,2 @@
+let id = fun(x : (Option Bool)) => x in
+id False.Thing (* False.Thing should be more like False.thing *)

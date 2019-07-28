@@ -1,0 +1,6 @@
+library TestLib
+
+(* Should be 'type' *)
+
+Type House =
+| Kind of String

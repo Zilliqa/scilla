@@ -1,7 +1,8 @@
 {
   "errors": [
     {
-      "error_message": "Syntax error.",
+      "error_message":
+        "This map type likely has an invalid map value type.\n",
       "start_location": {
         "file": "eval/exp/bad/list_to_map.scilexp",
         "line": 7,

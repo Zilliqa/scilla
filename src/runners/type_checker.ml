@@ -44,7 +44,7 @@ module GUA_Checker = ScillaGUA(TCSRep)(TCERep)
 
 (* Check that the expression parses *)
 let check_parsing filename = 
-    match FrontEndParser.parse_file ScillaParser.exp_term filename with
+    match FrontEndParser.parse_file ScillaParser.Incremental.exp_term filename with
     | Error _ -> fail0 (sprintf "Failed to parse input file %s\n." filename)
     | Ok e ->
         plog @@ sprintf
@@ -72,7 +72,7 @@ let () =
     StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
     set_debug_level Debug_None;
     let filename = cli.input_file in
-    match FrontEndParser.parse_file ScillaParser.exp_term filename  with
+    match FrontEndParser.parse_file ScillaParser.Incremental.exp_term filename  with
     | Ok e ->
         (* Get list of stdlib dirs. *)
         let lib_dirs = StdlibTracker.get_stdlib_dirs() in

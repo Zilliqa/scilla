@@ -1,0 +1,9 @@
+scilla_version 0
+
+library TestLib
+
+(* this should be a period instead *)
+let f : forall 'A :
+
+contract Test
+()

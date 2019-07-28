@@ -1,0 +1,9 @@
+scilla_version 0
+
+library TestLib
+
+contract Test
+()
+
+(* invalid type *)
+field truth : bool = True

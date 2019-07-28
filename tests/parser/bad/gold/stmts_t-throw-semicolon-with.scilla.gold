@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "After a throw statement, another statement or end is expected.\n",
+      "start_location": {
+        "file": "parser/bad/stmts_t-throw-semicolon-with.scilla",
+        "line": 8,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

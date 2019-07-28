@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "error_message": "Syntax error.",
+      "error_message": "This let expression is likely missing an 'in'.\n",
       "start_location": {
         "file": "typecheck/bad/parsing_hex_literals.scilexp",
         "line": 1,

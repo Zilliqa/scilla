@@ -1,0 +1,6 @@
+scilla_version 0
+
+library TestLib
+(* faulty is not a valid map key *)
+
+let f : Map Uint128 Option Map faulty

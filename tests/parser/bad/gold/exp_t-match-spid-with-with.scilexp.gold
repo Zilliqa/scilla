@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid match expression, a pattern matching clause is necessary (possible missing '|').\n",
+      "start_location": {
+        "file": "parser/bad/exps/exp_t-match-spid-with-with.scilexp",
+        "line": 3,
+        "column": 2
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

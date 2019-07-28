@@ -1,0 +1,5 @@
+(* should be 'TestLib' instead*)
+library _TestLib
+
+type House =
+| Kind of String
