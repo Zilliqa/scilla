@@ -62,7 +62,7 @@ let binary_rpc ~socket_addr (call: Rpc.call) : Rpc.response =
   let _ = send_delimited oc msg_buf in
   (* Get response. *)
   let response = Caml.input_line ic in
-   Printf.printf "Response: %s\n" response;
+  Printf.printf "Response: %s\n" response;
   Jsonrpc.response_of_string response
 
 (* Encode a literal into bytes, opaque to the backend storage. *)
@@ -118,8 +118,8 @@ let encode_serialized_query query =
   ScillaMessage_pb.encode_proto_scilla_query query encoder;
   Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
 
-(* Fetch a field value. keys is empty iff the value being fetched is not a whole map itself.
- * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
+(* Fetch a field value. keys is empty iff ths e value being fetched is not a whole map itself.
+ * If a map key is not found, then None ireturned, otherwise (Some value) is returned. *)
 let fetch ~socket_addr ~fname ~keys ~tp =
   let open ScillaMessageTypes in
   let q = {
@@ -150,14 +150,14 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
   let%bind _ = translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' value' in
   pure ()
 
-  (* Is a key in a map. keys must be non-empty. *)
+(* Is a key in a map. keys must be non-empty. *)
 let is_member ~socket_addr ~fname ~keys ~tp =
   let open ScillaMessageTypes in
   let q = {
     name = (get_id fname);
     mapdepth = TypeUtilities.map_depth tp;
     indices = List.map keys ~f:(serialize_literal);
-    deletemapkey = true;
+    deletemapkey = false;
   } in
   let q' = encode_serialized_query q in
   let%bind res = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
