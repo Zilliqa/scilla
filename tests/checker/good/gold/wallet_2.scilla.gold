@@ -14,7 +14,10 @@
     "ADT constructors": [
       {
         "Transaction": [
-          { "constructor": "Trans", "tags": [ "NotMoney", "Money" ] }
+          {
+            "constructor": "Trans",
+            "tags": [ "NotMoney", "Money", "NoInfo" ]
+          }
         ]
       }
     ]
@@ -46,7 +49,8 @@
         "vname": "SubmitTransaction",
         "params": [
           { "vname": "recipient", "type": "ByStr20" },
-          { "vname": "amount", "type": "Uint128" }
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "tag", "type": "String" }
         ]
       },
       {
@@ -55,10 +59,7 @@
       },
       {
         "vname": "ExecuteTransaction",
-        "params": [
-          { "vname": "transactionId", "type": "Uint32" },
-          { "vname": "tag", "type": "String" }
-        ]
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
       },
       {
         "vname": "RevokeSignature",
@@ -126,7 +127,10 @@
         "tname": "Transaction",
         "tparams": [],
         "tmap": [
-          { "cname": "Trans", "argtypes": [ "ByStr20", "Uint128" ] }
+          {
+            "cname": "Trans",
+            "argtypes": [ "ByStr20", "Uint128", "String" ]
+          }
         ]
       },
       {
@@ -165,7 +169,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 465,
+        "line": 467,
         "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -175,7 +179,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 432,
+        "line": 434,
         "column": 23
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -185,7 +189,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 423,
+        "line": 425,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -195,7 +199,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 388,
+        "line": 390,
         "column": 40
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -205,7 +209,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 355,
+        "line": 357,
         "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -215,7 +219,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 285,
+        "line": 287,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -225,7 +229,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 209,
+        "line": 211,
         "column": 23
       },
       "end_location": { "file": "", "line": 0, "column": 0 },

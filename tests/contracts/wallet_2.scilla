@@ -72,9 +72,10 @@ let transaction_inc = Uint32 1
 let empty_sigs = Emp ByStr20 Bool
 let t = True
 
-(* One (potential) transaction, consisting of a recipient address and an amount *)
+(* One (potential) transaction, consisting of a recipient address, an amount, *)
+(* and a tag (in case the recipient is another contract *)
 type Transaction =
-| Trans of ByStr20 Uint128
+| Trans of ByStr20 Uint128 String
 
 (* Make map of owners *)
 let mk_owners_map =
@@ -170,7 +171,8 @@ field contract_valid   : Bool = False
 (* adr not in map indicates non-owner *)
 (* adr -> False is not used *)
 (* The initial owners will be added as owners when funds are *)
-(* initially added to the contract. *)
+(* initially added to the contract, or *)
+(* when a new candidate owner is added. *) 
 field owners           : Map ByStr20 Bool = Emp ByStr20 Bool
 
 field transactionCount : Uint32 = Uint32 0
@@ -188,7 +190,7 @@ field owner_signatures : Map ByStr20 (Map ByStr20 Bool) =
 
 
 (* Submit a transaction for future signoff *)
-transition SubmitTransaction (recipient : ByStr20, amount : Uint128)
+transition SubmitTransaction (recipient : ByStr20, amount : Uint128, tag : String)
   tc <- transactionCount;
 
   zero = Uint128 0;
@@ -202,7 +204,7 @@ transition SubmitTransaction (recipient : ByStr20, amount : Uint128)
     event e
   | False =>
     (* Create new transaction *)
-    transaction = Trans recipient amount;
+    transaction = Trans recipient amount tag;
     (* Add transaction to outstanding list of transactions *)
     transactions[tc] := transaction; 
     (* Add empty list of signatures *)
@@ -237,7 +239,7 @@ transition SignTransaction (transactionId : Uint32)
       err = UnknownTransactionId;
       e = mk_error_event err;
       event e
-    | Some (Trans recipient amount) =>
+    | Some (Trans recipient amount _) =>
       (* Sender must not have signed already *)
       sender_has_signed <- exists signatures[transactionId][_sender];
       match sender_has_signed with
@@ -256,7 +258,7 @@ transition SignTransaction (transactionId : Uint32)
 end
 
 (* Execute signed-off transaction *)
-transition ExecuteTransaction (transactionId : Uint32, tag : String)
+transition ExecuteTransaction (transactionId : Uint32)
   transaction_opt <- transactions[transactionId];
   match transaction_opt with
   | None =>
@@ -264,7 +266,7 @@ transition ExecuteTransaction (transactionId : Uint32, tag : String)
     err = UnknownTransactionId;
     e = mk_error_event err;
     event e
-  | Some (Trans recipient amount) =>
+  | Some (Trans recipient amount tag) =>
     (* Only the recipient can initiate the transaction *)
     recipient_is_sender = builtin eq recipient _sender;
     match recipient_is_sender with
@@ -286,7 +288,7 @@ transition ExecuteTransaction (transactionId : Uint32, tag : String)
         match sigs_opt with
         | None =>
           (* Signatures not found, even though the transaction exists.*)
-          err = UnknownTransactionId;
+          err = NoSignatureListFound;
           e = mk_error_event err;
           event e
         | Some sigs =>
@@ -360,7 +362,7 @@ transition AddCandidateOwner (candidate : ByStr20)
     end
   | True =>
   end;
-  (* Only accept funds if the contract is valid. *)
+  (* Only add candidate if the contract is valid. *)
   valid <- contract_valid;
   match valid with
   | False =>
