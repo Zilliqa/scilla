@@ -30,14 +30,14 @@ type proto_scilla_query_mutable = {
   mutable name : string;
   mutable mapdepth : int;
   mutable indices : bytes list;
-  mutable deletemapkey : bool;
+  mutable ignoreval : bool;
 }
 
 let default_proto_scilla_query_mutable () : proto_scilla_query_mutable = {
   name = "";
   mapdepth = 0;
   indices = [];
-  deletemapkey = false;
+  ignoreval = false;
 }
 
 
@@ -104,7 +104,7 @@ let rec decode_proto_scilla_query d =
     | Some (3, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(proto_scilla_query), field(3)" pk
     | Some (4, Pbrt.Varint) -> begin
-      v.deletemapkey <- Pbrt.Decoder.bool d;
+      v.ignoreval <- Pbrt.Decoder.bool d;
     end
     | Some (4, pk) -> 
       Pbrt.Decoder.unexpected_payload "Message(proto_scilla_query), field(4)" pk
@@ -114,7 +114,7 @@ let rec decode_proto_scilla_query d =
     ScillaMessageTypes.name = v.name;
     ScillaMessageTypes.mapdepth = v.mapdepth;
     ScillaMessageTypes.indices = v.indices;
-    ScillaMessageTypes.deletemapkey = v.deletemapkey;
+    ScillaMessageTypes.ignoreval = v.ignoreval;
   } : ScillaMessageTypes.proto_scilla_query)
 
 let rec encode_proto_scilla_val_map (v:ScillaMessageTypes.proto_scilla_val_map) encoder = 
@@ -149,5 +149,5 @@ let rec encode_proto_scilla_query (v:ScillaMessageTypes.proto_scilla_query) enco
     Pbrt.Encoder.bytes x encoder;
   ) v.ScillaMessageTypes.indices;
   Pbrt.Encoder.key (4, Pbrt.Varint) encoder; 
-  Pbrt.Encoder.bool v.ScillaMessageTypes.deletemapkey encoder;
+  Pbrt.Encoder.bool v.ScillaMessageTypes.ignoreval encoder;
   ()

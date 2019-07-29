@@ -34,7 +34,7 @@ type proto_scilla_query = {
   name : string;
   mapdepth : int;
   indices : bytes list;
-  deletemapkey : bool;
+  ignoreval : bool;
 }
 
 
@@ -53,7 +53,7 @@ val default_proto_scilla_query :
   ?name:string ->
   ?mapdepth:int ->
   ?indices:bytes list ->
-  ?deletemapkey:bool ->
+  ?ignoreval:bool ->
   unit ->
   proto_scilla_query
 (** [default_proto_scilla_query ()] is the default value for type [proto_scilla_query] *)

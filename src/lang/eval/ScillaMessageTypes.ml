@@ -30,7 +30,7 @@ type proto_scilla_query = {
   name : string;
   mapdepth : int;
   indices : bytes list;
-  deletemapkey : bool;
+  ignoreval : bool;
 }
 
 let rec default_proto_scilla_val_map 
@@ -45,10 +45,10 @@ let rec default_proto_scilla_query
   ?name:((name:string) = "")
   ?mapdepth:((mapdepth:int) = 0)
   ?indices:((indices:bytes list) = [])
-  ?deletemapkey:((deletemapkey:bool) = false)
+  ?ignoreval:((ignoreval:bool) = false)
   () : proto_scilla_query  = {
   name;
   mapdepth;
   indices;
-  deletemapkey;
+  ignoreval;
 }

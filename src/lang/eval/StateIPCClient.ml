@@ -126,7 +126,7 @@ let fetch ~socket_addr ~fname ~keys ~tp =
     name = (get_id fname);
     mapdepth = TypeUtilities.map_depth tp;
     indices = List.map keys ~f:(serialize_literal);
-    deletemapkey = false;
+    ignoreval = false;
   } in
   let q' = encode_serialized_query q in
   let%bind res = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
@@ -143,7 +143,7 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
     name = (get_id fname);
     mapdepth = TypeUtilities.map_depth tp;
     indices = List.map keys ~f:(serialize_literal);
-    deletemapkey = false;
+    ignoreval = false;
   } in
   let q' = encode_serialized_query q in
   let value' =  encode_serialized_value (serialize_field value) in
@@ -157,7 +157,7 @@ let is_member ~socket_addr ~fname ~keys ~tp =
     name = (get_id fname);
     mapdepth = TypeUtilities.map_depth tp;
     indices = List.map keys ~f:(serialize_literal);
-    deletemapkey = false;
+    ignoreval = true;
   } in
   let q' = encode_serialized_query q in
   let%bind res = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
@@ -170,7 +170,7 @@ let remove ~socket_addr ~fname ~keys ~tp =
     name = (get_id fname);
     mapdepth = TypeUtilities.map_depth tp;
     indices = List.map keys ~f:(serialize_literal);
-    deletemapkey = true;
+    ignoreval = true;
   } in
   let q' = encode_serialized_query q in
   let dummy_val = "" in
