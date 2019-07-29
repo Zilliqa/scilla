@@ -1,6 +1,6 @@
 scilla_version 0
 
-import ListUtils IntUtils
+import ListUtils IntUtils BoolUtils
 
 (***************************************************)
 (*               Associated library                *)
@@ -95,10 +95,17 @@ let mk_owners_map =
 
 (* Check that the number of distinct owners is greater than 0 *)
 let check_contract_validity =
-  fun (owners : Map ByStr20 Bool) =>
-    let no_of_owners = builtin size owners in
+  fun (owners : List ByStr20) =>
+  fun (required_signatures : Uint32) =>
+    let len = @list_length ByStr20 in
+    let no_of_owners = len owners in
     let zero = Uint32 0 in
-    builtin lt zero no_of_owners
+    let owners_ok = builtin lt zero no_of_owners in
+    let required_sigs_not_too_low = builtin lt zero required_signatures in
+    let required_sigs_too_high = builtin lt no_of_owners required_signatures in
+    let required_sigs_not_too_high = negb required_sigs_too_high in
+    let required_sigs_ok = andb required_sigs_not_too_high required_sigs_not_too_low in
+    andb required_sigs_ok owners_ok
 
 let transaction_executed = Int32 2
 
@@ -336,12 +343,11 @@ transition AddCandidateOwner (candidate : ByStr20)
   checked <- validity_checked;
   match checked with
   | False =>
+    valid_contract = check_contract_validity initial_owners required_signatures;
+    contract_valid := valid_contract;
     owners_map = mk_owners_map initial_owners;
     owners := owners_map;
-    valid_contract = check_contract_validity owners_map;
-    contract_valid := valid_contract;
-    checked = True;
-    validity_checked := checked
+    validity_checked := t
   | True =>
   end;
   (* Only accept funds if the contract is valid. *)
@@ -437,12 +443,11 @@ transition AddFunds ()
   checked <- validity_checked;
   match checked with
   | False =>
+    valid_contract = check_contract_validity initial_owners required_signatures;
+    contract_valid := valid_contract;
     owners_map = mk_owners_map initial_owners;
     owners := owners_map;
-    valid_contract = check_contract_validity owners_map;
-    contract_valid := valid_contract;
-    checked = True;
-    validity_checked := checked
+    validity_checked := t
   | True =>
   end;
 
