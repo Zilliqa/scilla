@@ -26,17 +26,33 @@ open TypeUtil
 
 module ER = ParserRep
 
+(* This error matches for the error returned by jsonrpccpp *)
+module RPCError = struct
+  type err_t = { code : int ; message : string } [@@deriving rpcty] (* defines `typ_of_err_t` *)
+  exception RPCErrorExn of err_t
+
+  let err = Idl.Error.{
+      def = err_t;
+      raiser = (function | e -> raise (RPCErrorExn (e)));
+      matcher = (function | RPCErrorExn e -> Some e | _ -> None)
+    }
+end
+
 module IPCClientIdl(R: RPC) = struct
   open R
   let query = Param.mk ~name: "query" Rpc.Types.string
   let value = Param.mk ~name: "value" Rpc.Types.string
+  (* The return value for `fetchStateValue` will be a pair (found : bool, value : string)
+   * "value" is valid only if "found && !query.ignoreval" *)
   (* TODO: [@warning "-32"] doesn't seem to work for "unused" types. *)
-  type _retopt = string option [@@deriving rpcty] (* defines `typ_of_retopt` *)
-  let return_value = Param.mk { name = ""; description = ["Found Value"]; ty = typ_of__retopt }
-  let return_unit = Param.mk Rpc.Types.unit
-  let error = Idl.DefaultError.err
-  let fetch_state_value = declare "fetchStateValue" ["Fetch state value from blockchain"] (query @-> returning return_value error)
-  let update_state_value = declare "updateStateValue" ["Update state value in blockchain"] (query @-> value @-> returning return_unit error)
+  type _fetch_ret_t = (bool * string) [@@deriving rpcty] (* defines `typ_of__fetch_ret_t` *)
+  let return_fetch = Param.mk { name = ""; description = ["(found,value)"]; ty = typ_of__fetch_ret_t }
+  let return_update = Param.mk Rpc.Types.unit
+
+  let fetch_state_value = declare "fetchStateValue" ["Fetch state value from blockchain"]
+    (query @-> returning return_fetch RPCError.err)
+  let update_state_value = declare "updateStateValue" ["Update state value in blockchain"]
+    (query @-> value @-> returning return_update RPCError.err)
 end
 
 module IPCClient = IPCClientIdl(Idl.GenClient ())
@@ -44,7 +60,8 @@ module IPCClient = IPCClientIdl(Idl.GenClient ())
 (* Translate JRPC result to our result. *)
 let translate_res res =
   match res with
-  | Error (Idl.DefaultError.InternalError s) -> fail0 (Printf.sprintf "Error in IPC access: %s." s)
+  | Error (e : RPCError.err_t) ->
+    fail0 (Printf.sprintf "Error in IPC access: (code:%d, message:%s)." e.code e.message)
   | Ok res' -> pure res'
 
 (* Send msg via socket s with a delimiting character "0xA". *)
@@ -131,10 +148,10 @@ let fetch ~socket_addr ~fname ~keys ~tp =
   let q' = encode_serialized_query q in
   let%bind res = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
   match res with
-  | Some res' ->
+  | (true, res') ->
     let%bind res'' = deserialize_value (decode_serialized_value (Bytes.of_string res')) tp in
     pure @@ Some (res'')
-  | None -> pure None
+  | (false, _) -> pure None
 
 (* Update a field. keys is empty iff the value being updated is not a whole map itself. *)
 let update ~socket_addr ~fname ~keys ~value ~tp =
@@ -161,7 +178,7 @@ let is_member ~socket_addr ~fname ~keys ~tp =
   } in
   let q' = encode_serialized_query q in
   let%bind res = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
-  match res with | Some _ -> pure true | None -> pure false
+  pure @@ (fst res)
 
 (* Remove a key from a map. keys must be non-empty. *)
 let remove ~socket_addr ~fname ~keys ~tp =
@@ -173,6 +190,6 @@ let remove ~socket_addr ~fname ~keys ~tp =
     ignoreval = true;
   } in
   let q' = encode_serialized_query q in
-  let dummy_val = "" in
+  let dummy_val = "" in (* This will be ignored by the blockchain. *)
   let%bind _ = translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' dummy_val in
   pure ()
