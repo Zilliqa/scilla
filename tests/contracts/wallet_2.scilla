@@ -7,6 +7,10 @@ import ListUtils IntUtils BoolUtils
 (***************************************************)
 library WalletLib
 
+(* Event emitted when the contract is initialized *)
+let mk_contract_initialized_event =
+  { _eventname : "Contract initialized" }
+
 (* Event for communicating a new transaction id *)
 let mk_transaction_added_event =
   fun (tc : Uint32) =>
@@ -14,8 +18,7 @@ let mk_transaction_added_event =
 
 (* Event for communicating the signing of a transaction *)
 let mk_transaction_signed_event =
-  fun (no_of_sigs : Uint32) =>
-    { _eventname : "Transaction signed" ; signature_count : no_of_sigs }
+    { _eventname : "Transaction signed" }
 
 (* Event for communicating the addition of a new owner *)
 let mk_candidate_owner_added_event =
@@ -23,8 +26,7 @@ let mk_candidate_owner_added_event =
 
 (* Event for communicating the signing off of a new owner *)
 let mk_owner_signed_event =
-  fun (no_of_sigs : Uint32) =>
-    { _eventname : "Owner signed" ; signature_count : no_of_sigs }
+    { _eventname : "Owner signed" }
 
 (* Event for communicating the addition of a new owner *)
 let mk_new_owner_approved_event =
@@ -245,7 +247,9 @@ transition SignTransaction (transactionId : Uint32)
         event e
       | False =>
         (* Signature is valid. Add to collected signatures *)
-        signatures[transactionId][_sender] := t
+        signatures[transactionId][_sender] := t;
+        e = mk_transaction_signed_event;
+        event e
       end
     end
   end
@@ -345,9 +349,15 @@ transition AddCandidateOwner (candidate : ByStr20)
   | False =>
     valid_contract = check_contract_validity initial_owners required_signatures;
     contract_valid := valid_contract;
-    owners_map = mk_owners_map initial_owners;
-    owners := owners_map;
-    validity_checked := t
+    match valid_contract with
+    | True =>
+      owners_map = mk_owners_map initial_owners;
+      owners := owners_map;
+      validity_checked := t;
+      e = mk_contract_initialized_event;
+      event e
+    | False =>
+    end
   | True =>
   end;
   (* Only accept funds if the contract is valid. *)
@@ -375,7 +385,9 @@ transition AddCandidateOwner (candidate : ByStr20)
         event e
       | False =>
         (* New candidate *)
-        owner_signatures[candidate] := empty_sigs
+        owner_signatures[candidate] := empty_sigs;
+        e = mk_candidate_owner_added_event;
+        event e
       end
     end
   end
@@ -399,7 +411,9 @@ transition SignOffNewOwner (candidate : ByStr20)
       e = mk_error_event err;
       event e
     | False =>
-      owner_signatures[candidate][_sender] := t
+      owner_signatures[candidate][_sender] := t;
+      e = mk_owner_signed_event;
+      event e
     end
   end  
 end
@@ -445,9 +459,15 @@ transition AddFunds ()
   | False =>
     valid_contract = check_contract_validity initial_owners required_signatures;
     contract_valid := valid_contract;
-    owners_map = mk_owners_map initial_owners;
-    owners := owners_map;
-    validity_checked := t
+    match valid_contract with
+    | True =>
+      owners_map = mk_owners_map initial_owners;
+      owners := owners_map;
+      validity_checked := t;
+      e = mk_contract_initialized_event;
+      event e
+    | False =>
+    end
   | True =>
   end;
 
