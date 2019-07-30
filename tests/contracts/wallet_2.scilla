@@ -62,7 +62,7 @@ type Transaction =
 
 (* Make map of owners *)
 let mk_owners_map =
-  fun (initial_owners : List ByStr20) =>
+  fun (owners : List ByStr20) =>
     let init = Emp ByStr20 Bool in
     let iter =
       fun (acc : Map ByStr20 Bool) =>
@@ -77,7 +77,7 @@ let mk_owners_map =
           builtin put acc cur_owner t
         end in
     let folder = @list_foldl ByStr20 (Map ByStr20 Bool) in
-    folder iter init initial_owners
+    folder iter init owners
 
 (* Check that the number of distinct owners is greater than 0 *)
 let check_contract_validity =
@@ -137,10 +137,60 @@ let transaction_msg_as_list =
 (* If an owner changes his mind about a            *)
 (* transaction, the signature can be revoked until *)
 (* the transaction is executed.                    *)
+(*                                                 *)
+(* This wallet does not allow adding or removing   *)
+(* owners, or changing the number of required      *)
+(* signatures. To do any of those things, perform  *)
+(* the following steps:                            *)
+(*                                                 *)
+(* 1. Deploy a new wallet with owners and  *)
+(*    required_signatures set to the new values.   *)
+(*    MAKE SURE THAT THE NEW WALLET HAS BEEN       *)
+(*    SUCCESFULLY DEPLOYED WITH THE CORRECT        *)
+(*    PARAMETERS BEFORE CONTINUING!                *)
+(* 2. Invoke the SubmitTransaction transition on   *)
+(*    the old wallet with the following            *)
+(*    parameters:                                  *)
+(*    recipient : The address of the new wallet    *)
+(*    amount : The _balance of the old wallet      *)
+(*    tag : "AddFunds"                             *)
+(* 3. Have (a sufficient number of) the owners of  *)
+(*    the old contract invoke the SignTransaction  *)
+(*    transition on the old wallet. The parameter  *)
+(*    transactionId should be set to the Id of the *)
+(*    transaction created in step 2.               *)
+(* 4. Have one of the owners of the old contract   *)
+(*    invoke the ExecuteTransaction transition on  *)
+(*    the old contract. This will cause the entire *)
+(*    balance of the old contract to be            *)
+(*    transferred to the new wallet. Note that no  *)
+(*    un-executed transactions will be transferred *)
+(*    to the new wallet along with the funds.      *)
+(*                                                 *)
+(* WARNING: If a sufficient number of owners lose  *)
+(* their private keys, or for any other reason are *)
+(* unable or unwilling to sign for new             *)
+(* transactions, the funds in the wallet will be   *)
+(* locked forever. It is therefore a good idea to  *)
+(* set required_signatures to a value strictly     *)
+(* less than the number of owners, so that the     *)
+(* remaining owners can retrieve the funds should  *)
+(* such a scenario occur.                          *)
+(*                                                 *)
+(* If an owner loses his private key, the          *)
+(* remaining owners should move the funds to a new *)
+(* wallet (using the workflow described above) to  *)
+(* ensure that funds are not locked if another     *)
+(* owner loses his private key. The owner who      *)
+(* originally lost his private key can generate a  *)
+(* new key, and the corresponding address be added *)
+(* to the new wallet, so that the same set of      *)
+(* persons own the new wallet.                     *)
+(*                                                 *)
 (***************************************************)
 contract Wallet
 (
-initial_owners      : List ByStr20,
+owners_list         : List ByStr20,
 required_signatures : Uint32
 )
 
@@ -315,12 +365,12 @@ transition AddFunds ()
   checked <- validity_checked;
   match checked with
   | False =>
-    valid_contract = check_contract_validity initial_owners required_signatures;
+    valid_contract = check_contract_validity owners_list required_signatures;
     contract_valid := valid_contract;
     validity_checked := t;
     match valid_contract with
     | True =>
-      owners_map = mk_owners_map initial_owners;
+      owners_map = mk_owners_map owners_list;
       owners := owners_map;
       e = mk_contract_initialized_event;
       event e

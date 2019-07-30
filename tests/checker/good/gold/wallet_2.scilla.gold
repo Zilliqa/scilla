@@ -1,7 +1,7 @@
 {
   "cashflow_tags": {
     "State variables": [
-      { "field": "initial_owners", "tag": "NoInfo" },
+      { "field": "owners_list", "tag": "NoInfo" },
       { "field": "required_signatures", "tag": "NotMoney" },
       { "field": "validity_checked", "tag": "NotMoney" },
       { "field": "contract_valid", "tag": "NotMoney" },
@@ -25,7 +25,7 @@
     "scilla_major_version": "0",
     "vname": "Wallet",
     "params": [
-      { "vname": "initial_owners", "type": "List (ByStr20)" },
+      { "vname": "owners_list", "type": "List (ByStr20)" },
       { "vname": "required_signatures", "type": "Uint32" }
     ],
     "fields": [
@@ -146,7 +146,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 324,
+        "line": 374,
         "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -156,7 +156,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 268,
+        "line": 318,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
