@@ -20,18 +20,6 @@ let mk_transaction_added_event =
 let mk_transaction_signed_event =
     { _eventname : "Transaction signed" }
 
-(* Event for communicating the addition of a new owner *)
-let mk_candidate_owner_added_event =
-    { _eventname : "Candiate owner added" }
-
-(* Event for communicating the signing off of a new owner *)
-let mk_owner_signed_event =
-    { _eventname : "Owner signed" }
-
-(* Event for communicating the addition of a new owner *)
-let mk_new_owner_approved_event =
-  { _eventname : "New owner approved" }
-    
 type Error =
 | NonOwnerCannotSign
 | UnknownTransactionId
@@ -42,10 +30,8 @@ type Error =
 | InvalidContract
 | InvalidAmount
 | NotEnoughSignatures
-| SenderIsNotRecipient
-| CandidateAlreadyAdded
-| UnknownCandidate
-| CandidateAlreadyOwner
+| SenderMayNotExecute
+| NonOwnerCannotSubmit
 
 (* Error events *)
 let mk_error_event =
@@ -61,15 +47,12 @@ let mk_error_event =
     | InvalidContract       => Int32 -7
     | InvalidAmount         => Int32 -8
     | NotEnoughSignatures   => Int32 -9
-    | SenderIsNotRecipient  => Int32 -10
-    | CandidateAlreadyAdded => Int32 -11
-    | UnknownCandidate      => Int32 -12
-    | CandidateAlreadyOwner => Int32 -13
+    | SenderMayNotExecute   => Int32 -10
+    | NonOwnerCannotSubmit  => Int32 -11
     end in
   { _eventname : "WalletError" ; err_code : err_code }
 
 let transaction_inc = Uint32 1
-let empty_sigs = Emp ByStr20 Bool
 let t = True
 
 (* One (potential) transaction, consisting of a recipient address, an amount, *)
@@ -110,15 +93,12 @@ let check_contract_validity =
     let required_sigs_ok = andb required_sigs_not_too_high required_sigs_not_too_low in
     andb required_sigs_ok owners_ok
 
-let transaction_executed = Int32 2
-
 (* Create one transaction message *)
 let transaction_msg =
   fun (recipient : ByStr20) =>
   fun (amount : Uint128) =>
   fun (tag : String) =>
-    {_tag : tag; _recipient : recipient; _amount : amount;
-     code : transaction_executed }
+    {_tag : tag; _recipient : recipient; _amount : amount }
 
 (* Wrap one transaction message as singleton list *)
 let transaction_msg_as_list =
@@ -138,15 +118,15 @@ let transaction_msg_as_list =
 (* This contract holds funds that can be paid out  *)
 (* to arbitrary users, provided that enough people *)
 (* in the collection of owners sign off on the     *)
-(* payout                                          *)
+(* payout.                                         *)
 (*                                                 *)
 (* Before transactions can be submitted or signed  *)
 (* for, the contract must be initialized. This is  *)
-(* done by invoking either the AddFunds transition *)
-(* or the AddCandidateOwner transition. Both       *)
-(* transitions initialize the contract fields - if *)
-(* the fields have not been initialized, all other *)
-(* transitions will fail whenever they are invoked *)
+(* done by invoking the AddFunds transition. This  *)
+(* transitions initializes the contract fields -   *)
+(* if the fields have not been initialized, all    *)
+(* other transitions will fail whenever they are   *)
+(* invoked.                                        *)
 (*                                                 *)
 (* The transaction must be added to the contract   *)
 (* before signatures can be collected. Once enough *)
@@ -154,17 +134,9 @@ let transaction_msg_as_list =
 (* for the transaction to be executed and the      *)
 (* money paid out.                                 *)
 (*                                                 *)
-(* A new owner can be added, provided that every   *)
-(* existing user signs off on the new owner. Once  *)
-(* all existing owners have signed for the new     *)
-(* owner, the new owner can claim ownership and be *)
-(* added to the owners map.                        *)
-(*                                                 *)
 (* If an owner changes his mind about a            *)
-(* transaction or an owner he has already signed   *)
-(* for, the signature can be revoked until the     *)
-(* transaction is executed or the owner has been   *)
-(* approved.                                       *)
+(* transaction, the signature can be revoked until *)
+(* the transaction is executed.                    *)
 (***************************************************)
 contract Wallet
 (
@@ -180,8 +152,7 @@ field contract_valid   : Bool = False
 (* adr not in map indicates non-owner *)
 (* adr -> False is not used *)
 (* The initial owners will be added as owners when funds are *)
-(* initially added to the contract, or *)
-(* when a new candidate owner is added. *) 
+(* initially added to the contract. *) 
 field owners           : Map ByStr20 Bool = Emp ByStr20 Bool
 
 field transactionCount : Uint32 = Uint32 0
@@ -193,41 +164,40 @@ field signatures       : Map Uint32 (Map ByStr20 Bool) =
 field transactions     : Map Uint32 Transaction =
                            Emp Uint32 Transaction
 
-(* Collected signatures for new owners *)
-field owner_signatures : Map ByStr20 (Map ByStr20 Bool) =
-                           Emp ByStr20 (Map ByStr20 Bool)
-
-
 (* Submit a transaction for future signoff *)
 transition SubmitTransaction (recipient : ByStr20, amount : Uint128, tag : String)
-  tc <- transactionCount;
-
-  zero = Uint128 0;
-  amount_is_zero = builtin eq amount zero;
-
-  match amount_is_zero with
-  | True =>
-    (* Illegal transaction *)
-    err = InvalidAmount;
+  (* Only allow owners to submit new transactions *)
+  sender_is_owner <- exists owners[_sender];
+  match sender_is_owner with
+  | False =>
+    err = NonOwnerCannotSubmit;
     e = mk_error_event err;
     event e
-  | False =>
-    (* Create new transaction *)
-    transaction = Trans recipient amount tag;
-    (* Add transaction to outstanding list of transactions *)
-    transactions[tc] := transaction; 
-    (* Add empty list of signatures *)
-    signatures[tc] := empty_sigs;
-    
-    (* Increment transaction counter *)
-    tc_new = builtin add tc transaction_inc;
-    
-    (* Update fields *)
-    transactionCount := tc_new;
-    
-    (* Create event with transaction Id *)
-    e = mk_transaction_added_event tc;
-    event e
+  | True =>
+    tc <- transactionCount;
+    zero = Uint128 0;
+    amount_is_zero = builtin eq amount zero;
+    match amount_is_zero with
+    | True =>
+      (* Illegal transaction *)
+      err = InvalidAmount;
+      e = mk_error_event err;
+      event e
+    | False =>
+      (* Create new transaction *)
+      transaction = Trans recipient amount tag;
+      (* Add transaction to outstanding list of transactions *)
+      transactions[tc] := transaction; 
+      (* Sender implicitly signs *)
+      signatures[tc][_sender] := t;
+      (* Increment transaction counter *)
+      tc_new = builtin add tc transaction_inc;
+      (* Update transaction count *)
+      transactionCount := tc_new;
+      (* Create event with transaction Id *)
+      e = mk_transaction_added_event tc;
+      event e
+    end
   end
 end
 
@@ -278,9 +248,11 @@ transition ExecuteTransaction (transactionId : Uint32)
   | Some (Trans recipient amount tag) =>
     (* Only the recipient can initiate the transaction *)
     recipient_is_sender = builtin eq recipient _sender;
-    match recipient_is_sender with
+    sender_is_owner <- exists owners[_sender];
+    sender_may_execute = orb recipient_is_sender sender_is_owner;
+    match sender_may_execute with
     | False =>
-      err = SenderIsNotRecipient;
+      err = SenderMayNotExecute;
       e = mk_error_event err;
       event e
     | True =>
@@ -325,7 +297,7 @@ end
 
 (* Revoke signature of existing transaction, if it has not yet been executed. *)
 transition RevokeSignature (transactionId : Uint32)
-  (* Sender must have signed already *)
+  (* Sender must have signed already, and transaction must not have been executed. *)
   sender_has_signed <- exists signatures[transactionId][_sender];
   match sender_has_signed with
   | False =>
@@ -337,144 +309,19 @@ transition RevokeSignature (transactionId : Uint32)
   end
 end
 
-(* Revoke signature for new owner *)
-transition RevokeOwnerSignature (new_owner : ByStr20)
-  (* Sender must have signed already *)
-  sender_has_signed <- exists owner_signatures[new_owner][_sender];
-  match sender_has_signed with
-  | False =>
-    err = NotAlreadySigned;
-    e = mk_error_event err;
-    event e
-  | True =>
-    delete owner_signatures[new_owner][_sender]
-  end
-end
-
-(* Add candidate owner *)
-transition AddCandidateOwner (candidate : ByStr20)
-  (* Check validity of contract. *)
-  (* Owners map must be initialized for new owners to be added. *)
-  checked <- validity_checked;
-  match checked with
-  | False =>
-    valid_contract = check_contract_validity initial_owners required_signatures;
-    contract_valid := valid_contract;
-    match valid_contract with
-    | True =>
-      owners_map = mk_owners_map initial_owners;
-      owners := owners_map;
-      validity_checked := t;
-      e = mk_contract_initialized_event;
-      event e
-    | False =>
-    end
-  | True =>
-  end;
-  (* Only add candidate if the contract is valid. *)
-  valid <- contract_valid;
-  match valid with
-  | False =>
-    err = InvalidContract;
-    e = mk_error_event err;
-    event e
-  | True =>
-    already_added <- exists owner_signatures[candidate];
-    match already_added with
-    | True =>
-      (* Candidate already added *)
-      err = CandidateAlreadyAdded;
-      e = mk_error_event err;
-      event e
-    | False =>
-      already_owner <- exists owners[candidate];
-      match already_owner with
-      | True =>
-        (* Candidate is already an owner *)
-        err = CandidateAlreadyOwner;
-        e = mk_error_event err;
-        event e
-      | False =>
-        (* New candidate *)
-        owner_signatures[candidate] := empty_sigs;
-        e = mk_candidate_owner_added_event;
-        event e
-      end
-    end
-  end
-end
-
-(* Sign off on new owner. *)
-transition SignOffNewOwner (candidate : ByStr20)
-  (* Only owners are allowed to sign off new owners *)
-  sender_is_owner <- exists owners[_sender];
-  match sender_is_owner with
-  | False =>
-    err = NonOwnerCannotSign;
-    e = mk_error_event err;
-    event e
-  | True =>
-    (* Sender must not have signed already *)
-    sender_has_signed <- exists owner_signatures[candidate][_sender];
-    match sender_has_signed with
-    | True =>
-      err = AlreadySigned;
-      e = mk_error_event err;
-      event e
-    | False =>
-      owner_signatures[candidate][_sender] := t;
-      e = mk_owner_signed_event;
-      event e
-    end
-  end  
-end
-
-(* Promote _sender to owner, if all existing owners have signed *)
-transition ClaimOwnership ()
-  sigs_option <- owner_signatures[_sender];
-  (* Check if all owners have signed *)
-  match sigs_option with
-  | None =>
-    (* Unknown candidate *)
-    err = UnknownCandidate;
-    e = mk_error_event err;
-    event e
-  | Some sigs =>
-    current_owners <- owners;
-    no_of_owners = builtin size current_owners;
-    no_of_sigs = builtin size sigs;
-    all_have_signed = uint32_eq no_of_sigs no_of_owners;
-    match all_have_signed with
-    | False =>
-      (* Not enough signatures *)
-      err = NotEnoughSignatures;
-      e = mk_error_event err;
-      event e
-    | True =>
-      (* Enough signatures collected. *)
-      (* Remove signatures, and add sender to owner collection *)
-      delete owner_signatures[_sender];
-      owners[_sender] := t;
-      (* Create event with owner id *)
-      e = mk_new_owner_approved_event;
-      event e
-    end
-  end
-end
-
 (* Add funds to wallet *)
 transition AddFunds ()
-  (* Check validity of contract. If the contract is invalid, funds may become locked *)
+  (* Check validity of contract. If the contract is invalid, funds will not be accepted. *)
   checked <- validity_checked;
   match checked with
   | False =>
     valid_contract = check_contract_validity initial_owners required_signatures;
     contract_valid := valid_contract;
+    validity_checked := t;
     match valid_contract with
     | True =>
       owners_map = mk_owners_map initial_owners;
       owners := owners_map;
-      validity_checked := t;
       e = mk_contract_initialized_event;
       event e
     | False =>
