@@ -5,7 +5,7 @@ module RPCError = struct
   type err_t = { code : int ; message : string } [@@deriving rpcty] (* defines `typ_of_err_t` *)
   exception RPCErrorExn of err_t
 
-  let err = Idl.Error.{
+  let err = Error.{
       def = err_t;
       raiser = (function | e -> raise (RPCErrorExn (e)));
       matcher = (function | RPCErrorExn e -> Some e | _ -> None)
