@@ -156,7 +156,7 @@ module Configuration = struct
     Blockchain conf =\n%s\nIncoming funds = %s\nEmitted Messages =\n%s\nEmitted events =\n%s\n"
       pp_env pp_fields pp_balance pp_accepted pp_bc_conf pp_in_funds pp_emitted pp_events
 
-  (*  Manipulations with configuartion *)
+  (*  Manipulations with configuration *)
   
   let store i l =
     fromR @@ StateService.update ~fname:i ~keys:[] ~value:l
