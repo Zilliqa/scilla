@@ -282,9 +282,12 @@ let () =
           | Error s -> fatal_error_gas s remaining_gas'
           | Ok _ -> ()
         );
+
+        (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
+        let field_vals' = if is_ipc then [] else field_vals in
          
         (plog (sprintf "\nContract initialized successfully\n");
-          (`Null, output_state_json cstate'.balance field_vals, `List [], false), remaining_gas')
+          (`Null, output_state_json cstate'.balance field_vals', `List [], false), remaining_gas')
       else
         (* Not initialization, execute transition specified in the message *)
         (let mmsg = 
