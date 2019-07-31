@@ -5,5 +5,5 @@
              testexps testexpsfail
              testtypes testtypefail
              testpmfail testgasexpr testgascontracts
-             testchecker testinteger256)
+             testchecker testinteger256 stateIPCTestServer)
 )

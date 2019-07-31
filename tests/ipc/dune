@@ -1,0 +1,5 @@
+(library
+  (name stateIPCTestServer)
+  (libraries core scilla_base
+             rpclib unix rpclib.json rresult
+             ocaml-protoc scilla_eval))
