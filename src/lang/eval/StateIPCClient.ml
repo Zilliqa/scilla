@@ -15,7 +15,6 @@
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-open Idl
 open Core
 open Result.Let_syntax
 open MonadUtil
@@ -23,39 +22,11 @@ open Syntax
 open JSON
 open ParserUtil
 open TypeUtil
+open StateIPCIdl
 
 module ER = ParserRep
 
-(* This error matches for the error returned by jsonrpccpp *)
-module RPCError = struct
-  type err_t = { code : int ; message : string } [@@deriving rpcty] (* defines `typ_of_err_t` *)
-  exception RPCErrorExn of err_t
-
-  let err = Idl.Error.{
-      def = err_t;
-      raiser = (function | e -> raise (RPCErrorExn (e)));
-      matcher = (function | RPCErrorExn e -> Some e | _ -> None)
-    }
-end
-
-module IPCClientIdl(R: RPC) = struct
-  open R
-  let query = Param.mk ~name: "query" Rpc.Types.string
-  let value = Param.mk ~name: "value" Rpc.Types.string
-  (* The return value for `fetchStateValue` will be a pair (found : bool, value : string)
-   * "value" is valid only if "found && !query.ignoreval" *)
-  (* TODO: [@warning "-32"] doesn't seem to work for "unused" types. *)
-  type _fetch_ret_t = (bool * string) [@@deriving rpcty] (* defines `typ_of__fetch_ret_t` *)
-  let return_fetch = Param.mk { name = ""; description = ["(found,value)"]; ty = typ_of__fetch_ret_t }
-  let return_update = Param.mk Rpc.Types.unit
-
-  let fetch_state_value = declare "fetchStateValue" ["Fetch state value from blockchain"]
-    (query @-> returning return_fetch RPCError.err)
-  let update_state_value = declare "updateStateValue" ["Update state value in blockchain"]
-    (query @-> value @-> returning return_update RPCError.err)
-end
-
-module IPCClient = IPCClientIdl(Idl.GenClient ())
+module IPCClient = IPCIdl(Idl.GenClient ())
 
 (* Translate JRPC result to our result. *)
 let translate_res res =
