@@ -23,6 +23,7 @@ open JSON
 open ParserUtil
 open TypeUtil
 open StateIPCIdl
+open ErrorUtils
 
 module ER = ParserRep
 
@@ -34,6 +35,14 @@ let translate_res res =
   | Error (e : RPCError.err_t) ->
     fail0 (Printf.sprintf "Error in IPC access: (code:%d, message:%s)." e.code e.message)
   | Ok res' -> pure res'
+
+let ipcclient_exn_wrapper thunk =
+  try
+    thunk()
+  with
+  | Unix.Unix_error (_, s1, s2) ->
+    fail0 ("Unix error: " ^ s1 ^ s2)
+  | _ -> fail0 "Unexpected error making JSON-RPC call"
 
 (* Send msg via socket s with a delimiting character "0xA". *)
 let send_delimited oc msg =
@@ -55,6 +64,12 @@ let binary_rpc ~socket_addr (call: Rpc.call) : Rpc.response =
 
 (* Encode a literal into bytes, opaque to the backend storage. *)
 let serialize_literal l = Bytes.of_string (PrettyPrinters.literal_to_jstring l)
+let deserialize_literal s tp =
+  try
+    pure @@ ContractState.jstring_to_literal s tp
+  with
+  | Invalid_json s ->
+    fail (s @ mk_error0 "Error deserializing literal fetched from IPC call")
 
 (* Map fields are serialized into ScillaMessageTypes.MVal
    Other fields are serialized using serialize_literal into bytes/string. *)
@@ -76,21 +91,19 @@ let rec serialize_field value =
 let rec deserialize_value value tp =
   match value with
   | ScillaMessageTypes.Bval s ->
-    (match tp with
-    | MapType _ -> fail0 "Type mismatch deserializing value. Did not expect MapType."
-    | _ -> pure (ContractState.jstring_to_literal (Bytes.to_string s)))
+    deserialize_literal (Bytes.to_string s) tp
   | ScillaMessageTypes.Mval m ->
     (match tp with
     | MapType (kt, vt) ->
       let mlit = Caml.Hashtbl.create (List.length m.m) in
       let _ = iterM m.m ~f:(fun (k, v) ->
-        let k' = ContractState.jstring_to_literal k in
+        let%bind k' = deserialize_literal k kt in
         let%bind v' = deserialize_value v vt in
         Caml.Hashtbl.add mlit k' v';
         pure ()
       ) in
       pure (Map ((kt, vt), mlit))
-    | _ -> fail0 "Type mismatch deserializing value. Expected MapType.")
+    | _ -> fail0 "Type mismatch deserializing value. Unexpected protobuf map.")
 
 let encode_serialized_value value =
   let encoder = Pbrt.Encoder.create () in
@@ -117,10 +130,14 @@ let fetch ~socket_addr ~fname ~keys ~tp =
     ignoreval = false;
   } in
   let q' = encode_serialized_query q in
-  let%bind res = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
+  let%bind res =
+    let thunk() = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
+    ipcclient_exn_wrapper thunk
+  in
   match res with
   | (true, res') ->
-    let%bind res'' = deserialize_value (decode_serialized_value (Bytes.of_string res')) tp in
+    let%bind tp' = TypeUtilities.map_access_type tp (List.length keys) in
+    let%bind res'' = deserialize_value (decode_serialized_value (Bytes.of_string res')) tp' in
     pure @@ Some (res'')
   | (false, _) -> pure None
 
@@ -135,7 +152,10 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
   } in
   let q' = encode_serialized_query q in
   let value' =  encode_serialized_value (serialize_field value) in
-  let%bind _ = translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' value' in
+  let%bind _ =
+    let thunk() = translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' value' in
+    ipcclient_exn_wrapper thunk
+  in
   pure ()
 
 (* Is a key in a map. keys must be non-empty. *)
@@ -148,7 +168,10 @@ let is_member ~socket_addr ~fname ~keys ~tp =
     ignoreval = true;
   } in
   let q' = encode_serialized_query q in
-  let%bind res = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
+  let%bind res =
+    let thunk() = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
+    ipcclient_exn_wrapper thunk
+  in
   pure @@ (fst res)
 
 (* Remove a key from a map. keys must be non-empty. *)
@@ -162,5 +185,8 @@ let remove ~socket_addr ~fname ~keys ~tp =
   } in
   let q' = encode_serialized_query q in
   let dummy_val = "" in (* This will be ignored by the blockchain. *)
-  let%bind _ = translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' dummy_val in
+  let%bind _ =
+    let thunk() = translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' dummy_val in
+    ipcclient_exn_wrapper thunk
+  in
   pure ()

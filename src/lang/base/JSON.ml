@@ -327,10 +327,10 @@ let get_init_extlibs filename =
   | _ -> raise (mk_invalid_json ("Multiple " ^ ContractUtil.extlibs_label ^ " entries in init json "^ filename))
 
 (* Convert a single JSON serialized literal back to its Scilla value. *)
-let jstring_to_literal jstring =
+let jstring_to_literal jstring tp =
   let thunk () = Yojson.Basic.from_string jstring in
   let jobj = json_exn_wrapper ~filename:"ipc_fetch" thunk in
-  snd @@ jobj_to_statevar jobj
+  json_to_lit tp jobj
 
 end
 
