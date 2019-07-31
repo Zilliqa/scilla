@@ -77,7 +77,7 @@ let validate_main usage =
     (* input_message.json and input_state.json / i_ipc_address can either both be there or both absent *)
     if (!f_input_message <> "") &&
        ((!f_input_state <> "") && (!i_ipc_address <> "") || (!f_input_state = "" && !i_ipc_address = ""))
-      then msg5 ^ "Input message provided, but either none or both of input state / IPC port provided"
+      then msg5 ^ "Input message provided, but either none or both of input state / IPC address provided\n"
       else msg5 in
   if msg6 <> ""
   then
@@ -141,7 +141,7 @@ let parse () =
     " -gaslimit limit" ^ "\n" in
   let optional_usage = String.concat "\n  "
     (List.map (fun (flag, _, desc) -> flag ^ " " ^ desc) speclist) in
-  let usage = mandatory_usage ^ "\n  " ^ optional_usage in
+  let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
 
   let ignore_anon _ = () in
   let () = Arg.parse speclist ignore_anon mandatory_usage in
