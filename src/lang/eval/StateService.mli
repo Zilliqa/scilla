@@ -69,7 +69,7 @@ val is_member : fname:loc ident -> keys:(literal list) -> ((bool * stmt_eval_con
 val remove : fname:loc ident -> keys:(literal list) -> (stmt_eval_context, scilla_error list) result
 
 
- (* Should rarely be used, and is useful only when multiple State Service objects are required *)
+ (* Should rarely be used, and is useful only when multiple StateService objects are required *)
 module MakeStateService () : sig
 
 val initialize : sm:service_mode -> fields:ss_field list-> unit
