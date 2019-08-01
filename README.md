@@ -41,7 +41,7 @@ From the project root, execute
 ./bin/eval-runner -libdir src/stdlib tests/eval/exp/good/let.scilexp
 ```
 
-Instead of `let.scilla` you might want to try any dfferent file in
+Instead of `let.scilla` you might want to try any different file in
 `tests/eval/exp`. The second argument, which is a path to the Scilla
 standard library can alternatively be specified in the environment
 variable `SCILLA_STDLIB_PATH`. This must be an absolute path (or a
@@ -55,7 +55,7 @@ From the project root, execute
 ./bin/scilla-checker -libdir src/stdlib tests/contracts/auction.scilla
 ```
 
-Instead of `auction.scilla` you might want to try any dfferent file in
+Instead of `auction.scilla` you might want to try any different file in
 `tests/contracts` with a complete implementation of a contract, or your
 own contract code. The second argument, which is a path to the Scilla
 standard library can alternatively be specified in the environment
@@ -164,7 +164,7 @@ For enabling flycheck mode for Scilla (see [INSTALL.md](./INSTALL.md)).
 ```
 ### Vim plugin for Scilla
 
-A vim plugin for editing Scilla contracts is [provided](./misc/vim-plugin).
+A vim plugin for editing Scilla contracts is provided.
 
 You can install the vim config files through Pathogen by:
 ```
@@ -176,4 +176,4 @@ Or through Vundle by adding the following line to your `~/.vimrc`:
 Plugin 'edisonljh/vim-scilla'
 ```
 
-Mirror Repo: [vim-scilla](https://github.com/edisonljh/vim-scilla).
+Repo: [vim-scilla](https://github.com/edisonljh/vim-scilla).

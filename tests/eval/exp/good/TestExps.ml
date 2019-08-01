@@ -89,7 +89,10 @@ let explist = [
   "list_tail.scilexp";
   "list_unzip.scilexp";
   "list_zip.scilexp";
-  "list_zip_with.scilexp";  
+  "list_zip_with.scilexp"; 
+  "list_foldl_while.scilexp";
+  "list_foldl.scilexp";
+  "list_foldr.scilexp";
   "map1.scilexp";
   "map2.scilexp";
   "map3.scilexp";
@@ -103,6 +106,7 @@ let explist = [
   "nat_eq_false.scilexp";
   "nat_eq_foldl.scilexp";
   "nat_to_int.scilexp";
+  "nat_fold_stress.scilexp";
   "option.scilexp";
   "pair1.scilexp";
   "pair2.scilexp";

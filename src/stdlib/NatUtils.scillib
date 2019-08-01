@@ -1,49 +1,59 @@
 library NatUtils
 
-let nat_prev : Nat -> Option Nat = 
+let nat_prev : Nat -> Option Nat =
   fun (n: Nat) =>
     match n with
     | Succ n1 => Some {Nat} n1
     | Zero => None {Nat}
     end
 
-let is_some_zero : Nat -> Bool = 
+let is_some_zero : Nat -> Bool =
   fun (n: Nat) =>
     match n with
     | Zero => True
     | _ => False
     end
 
-let nat_eq : Nat -> Nat -> Bool = 
-  fun (n : Nat) => 
-  fun (m : Nat) =>
-    let z = Some {Nat} m in
-      let f = fun (res : Option Nat) => fun (n : Nat) =>
-        match res with
-        | None => None {Nat}
-        | Some m1 => nat_prev m1
+(* nat_fold with early termination. Continues recursing so long as f returns Some _.
+   Once f returns None, the recursion terminates. *)
+let nat_fold_while : forall 'T. ('T -> Nat -> Option 'T) -> 'T -> Nat -> 'T =
+  tfun 'T =>
+  fun (f : 'T -> Nat -> Option 'T) =>
+    let foldk = @nat_foldk 'T in
+    let iter = fun (z : 'T) => fun (n : Nat) =>
+      fun (recurse : 'T -> 'T) =>
+        let res_opt = f z n in
+        match res_opt with
+        | Some res => recurse res
+        | None => z
         end in
-    let folder = @nat_fold (Option Nat) in
-    let e = folder f z n in
-    match e with
-    | Some Zero => True
-    | _ => False
+    foldk iter
+
+(* Return true iff two lists compare equal. *)
+(* Comparison is performed using the "equal" function provided. *)
+let nat_eq : Nat -> Nat -> Bool =
+  fun (n : Nat) => fun (m : Nat) =>
+    let foldk = @nat_foldk Nat in
+    let iter =
+      fun (n : Nat) => fun (ignore : Nat) => fun (recurse : Nat -> Nat) =>
+        match n with
+        | Succ n_pred => recurse n_pred
+        | Zero => m   (* m is not zero in this context *)
+        end in
+    let remaining = foldk iter n m in
+    match remaining with
+    | Zero => True
+    |   _ => False
     end
 
 let nat_to_int : Nat -> Uint32 =
   fun (n : Nat) =>
-    let f =
-      fun (z : Uint32) =>
-      fun (n : Nat) =>
-        match n with
-        | _ =>
-          let one_int = Uint32 1 in
-          builtin add z one_int
-        end
-    in
-    let folder = @nat_fold Uint32 in
+    let fold = @nat_fold Uint32 in
+    let one_int = Uint32 1 in
+    let f = fun (z : Uint32) => fun (ignore : Nat) =>
+      builtin add z one_int in
     let zero_int = Uint32 0 in
-      folder f zero_int n
+    fold f zero_int n
 
 let uint32_to_nat_helper : Option Uint32 -> Option Nat =
   fun (m : Option Uint32) =>

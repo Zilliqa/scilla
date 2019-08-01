@@ -5,6 +5,8 @@ let zero_nat2 = Zero in
 
 let three_uint = Uint32 3 in
 let three_nat1 = builtin to_nat three_uint in
+let stress_test_uint = Uint32 1000000 in
+let stress_test_nat = builtin to_nat stress_test_uint in
 let one_nat2 = Succ zero_nat2 in
 let two_nat2 = Succ one_nat2 in
 let three_nat2 = Succ two_nat2 in
