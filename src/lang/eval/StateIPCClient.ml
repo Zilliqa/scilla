@@ -71,7 +71,7 @@ let deserialize_literal s tp =
   | Invalid_json s ->
     fail (s @ mk_error0 "Error deserializing literal fetched from IPC call")
 
-(* Map fields are serialized into ScillaMessageTypes.MVal
+(* Map fields are serialized into Ipcmessage_types.MVal
    Other fields are serialized using serialize_literal into bytes/string. *)
 let rec serialize_field value =
   match value with
@@ -82,17 +82,17 @@ let rec serialize_field value =
       let val' = serialize_field value in
       (key', val') :: acc
     ) mlit [] in
-    ScillaMessageTypes.Mval({ ScillaMessageTypes.m = mpb })
+    Ipcmessage_types.Mval({ Ipcmessage_types.m = mpb })
     (* If there are maps _inside_ a non-map field, they are treated same
      * as non-Map field values are not serialized as protobuf maps. *)
-  | _ -> ScillaMessageTypes.Bval (serialize_literal value)
+  | _ -> Ipcmessage_types.Bval (serialize_literal value)
 
 (* Deserialize proto_scilla_val, given its type. *)
 let rec deserialize_value value tp =
   match value with
-  | ScillaMessageTypes.Bval s ->
+  | Ipcmessage_types.Bval s ->
     deserialize_literal (Bytes.to_string s) tp
-  | ScillaMessageTypes.Mval m ->
+  | Ipcmessage_types.Mval m ->
     (match tp with
     | MapType (kt, vt) ->
       let mlit = Caml.Hashtbl.create (List.length m.m) in
@@ -107,22 +107,22 @@ let rec deserialize_value value tp =
 
 let encode_serialized_value value =
   let encoder = Pbrt.Encoder.create () in
-  ScillaMessage_pb.encode_proto_scilla_val value encoder;
+  Ipcmessage_pb.encode_proto_scilla_val value encoder;
   Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
 
 let decode_serialized_value value =
   let decoder = Pbrt.Decoder.of_bytes value in
-  ScillaMessage_pb.decode_proto_scilla_val decoder
+  Ipcmessage_pb.decode_proto_scilla_val decoder
 
 let encode_serialized_query query =
   let encoder = Pbrt.Encoder.create () in
-  ScillaMessage_pb.encode_proto_scilla_query query encoder;
+  Ipcmessage_pb.encode_proto_scilla_query query encoder;
   Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
 
 (* Fetch a field value. keys is empty iff this value being fetched is not a whole map itself.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
 let fetch ~socket_addr ~fname ~keys ~tp =
-  let open ScillaMessageTypes in
+  let open Ipcmessage_types in
   let q = {
     name = (get_id fname);
     mapdepth = TypeUtilities.map_depth tp;
@@ -143,7 +143,7 @@ let fetch ~socket_addr ~fname ~keys ~tp =
 
 (* Update a field. keys is empty iff the value being updated is not a whole map itself. *)
 let update ~socket_addr ~fname ~keys ~value ~tp =
-  let open ScillaMessageTypes in
+  let open Ipcmessage_types in
   let q = {
     name = (get_id fname);
     mapdepth = TypeUtilities.map_depth tp;
@@ -160,7 +160,7 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
 
 (* Is a key in a map. keys must be non-empty. *)
 let is_member ~socket_addr ~fname ~keys ~tp =
-  let open ScillaMessageTypes in
+  let open Ipcmessage_types in
   let q = {
     name = (get_id fname);
     mapdepth = TypeUtilities.map_depth tp;
@@ -176,7 +176,7 @@ let is_member ~socket_addr ~fname ~keys ~tp =
 
 (* Remove a key from a map. keys must be non-empty. *)
 let remove ~socket_addr ~fname ~keys ~tp =
-  let open ScillaMessageTypes in
+  let open Ipcmessage_types in
   let q = {
     name = (get_id fname);
     mapdepth = TypeUtilities.map_depth tp;
