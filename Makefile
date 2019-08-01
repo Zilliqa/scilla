@@ -27,8 +27,12 @@ utop: all
 	OCAMLPATH=_build/install/default/lib:$(OCAMLPATH) utop
 
 # Build and run tests
+# the make utility increases the maximum stack limit, this allows our tests
+# to pass but analogous programs might break when run on users' machines
+# (e.g. on macOS 10.14.5 make sets the limit to 65532kB, but the standard
+# value is 8192kB)
 test: dev
-	dune exec tests/testsuite.exe -- -print-diff true
+	ulimit -s 128; dune exec tests/testsuite.exe -- -print-diff true
 
 gold: dev
 	dune exec tests/testsuite.exe -- -update-gold true

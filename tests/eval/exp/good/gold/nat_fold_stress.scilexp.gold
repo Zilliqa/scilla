@@ -1,0 +1,3 @@
+(Uint32 0),
+{ [large_n -> (Uint32 80000)],
+  [silly_zero -> <closure>] }

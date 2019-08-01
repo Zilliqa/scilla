@@ -43,6 +43,8 @@ type ss_state =
   | Uninitialized
   | SS of service_mode * (ss_field list)
 
+module MakeStateService () = struct
+
 (* Internal state for the state service. *)
 let ss_cur_state = ref Uninitialized
 
@@ -219,3 +221,8 @@ let remove ~fname ~keys =
     let%bind (_, g) = update_local ~fname ~keys None fields in
     (* We don't need to update ss_cur_state because only map keys can be removed, and that's stateful. *)
     pure @@ g
+end
+
+module StateServiceInstance = MakeStateService ()
+include StateServiceInstance
+

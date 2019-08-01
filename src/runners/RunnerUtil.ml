@@ -294,6 +294,7 @@ let import_all_libs ldirs  =
 type runner_cli = {
   input_file : string;
   stdlib_dirs : string list;
+  gas_limit : Stdint.uint64;
   (* Run gas use analysis? *)
   gua_flag : bool;
   init_file : string option;
@@ -305,6 +306,7 @@ type runner_cli = {
 
 let parse_cli () =
   let r_stdlib_dir = ref [] in
+  let r_gas_limit = ref (Stdint.Uint64.zero) in
   let r_input_file = ref "" in
   let r_init_file = ref None in
   let r_json_errors = ref false in
@@ -323,6 +325,15 @@ let parse_cli () =
            r_stdlib_dir := !r_stdlib_dir @ FilePath.path_of_string s
         ),
       "Path(s) to libraries separated with ':' (';' on windows)");
+    ("-gaslimit", Arg.String
+       (fun i ->
+          let g =
+            try Stdint.Uint64.of_string i
+            with
+            | _ -> PrettyPrinters.fatal_error (ErrorUtils.mk_error0 (Printf.sprintf "Invalid gaslimit %s\n" i))
+          in
+          r_gas_limit := g)
+    , "Gas limit");
     ("-gua", Arg.Unit (fun () -> r_gua := true), "Run gas use analysis and print use polynomial.");
     ("-init", Arg.String (fun x -> r_init_file := Some x), "Path to initialization json");
     ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results");
@@ -342,7 +353,7 @@ let parse_cli () =
   if !r_input_file = "" then fatal_error_noformat usage;
   if !r_cf_token_fields <> [] then r_cf := true;
   GlobalConfig.set_use_json_errors !r_json_errors;
-  { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir;
+  { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; gas_limit = !r_gas_limit;
     gua_flag = !r_gua; p_contract_info = !r_contract_info;
     cf_flag = !r_cf; cf_token_fields = !r_cf_token_fields;
     init_file = !r_init_file }

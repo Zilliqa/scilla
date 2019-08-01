@@ -1,0 +1,10 @@
+(Int32 3),
+{ [foldr -> <closure>],
+  [subtract -> <closure>],
+  [ls -> (List (Int32 5), (Int32 4), (Int32 3), (Int32 2), (Int32 1), (Nil))],
+  [five -> (Int32 5)],
+  [four -> (Int32 4)],
+  [three -> (Int32 3)],
+  [two -> (Int32 2)],
+  [one -> (Int32 1)],
+  [zero -> (Int32 0)] }

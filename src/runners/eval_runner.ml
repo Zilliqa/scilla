@@ -33,11 +33,12 @@ module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
 
 
-let gas_limit = Stdint.Uint64.of_int 2000
+let default_gas_limit = Stdint.Uint64.of_int 2000
 
 let () =
   let cli = parse_cli() in
   let filename = cli.input_file in
+  let gas_limit = if cli.gas_limit = Stdint.Uint64.zero then default_gas_limit else cli.gas_limit in
   match FrontEndParser.parse_file ScillaParser.exp_term filename with
   | Ok e ->
       (* Since this is not a contract, we have no in-contract lib defined. *)

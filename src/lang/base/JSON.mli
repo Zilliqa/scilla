@@ -43,7 +43,7 @@ module ContractState : sig
   val get_init_extlibs : string -> (string * string) list
 
   (* Convert a single JSON serialized literal back to its Scilla value. *)
-  val jstring_to_literal : string -> Syntax.literal
+  val jstring_to_literal : string -> Syntax.typ -> Syntax.literal
 
 end
 
