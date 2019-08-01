@@ -206,11 +206,5 @@ let remove ~fname ~keys =
 end
 
 module StateServiceInstance = MakeStateService ()
+include StateServiceInstance
 
-let initialize = StateServiceInstance.initialize
-let get_full_state  = StateServiceInstance.get_full_state
-let finalize = StateServiceInstance.finalize
-let fetch = StateServiceInstance.fetch
-let update = StateServiceInstance.update
-let is_member = StateServiceInstance.is_member
-let remove = StateServiceInstance.remove
