@@ -6,10 +6,7 @@ module IPCTestServer = IPCIdl(Idl.GenServer ())
 
 let num_pending_requests = 5
 let permission = 0o0755
-(* 
-let fetch_state_value ~query = 
-
-let update_state_value ~query ~value = *)
+let balance_label = "_balance"
 
 let mkdir_rec dir perm =
   let rec p_mkdir dir =
@@ -21,9 +18,8 @@ let mkdir_rec dir perm =
 
 let finally f g conn =
   try
-    let result = f conn in
+    f conn;
     g conn;
-    result
   with e ->
     g conn;
     raise e
@@ -57,14 +53,26 @@ let serve_requests sock_addr =
     ()
   done
 
-let start_server ~sock_addr ~state_json_path =
-  (* IPCTestServer.fetchStateValue fetch_state_value;
+let fetch_state_value ~query = 
+
+(*let update_state_value ~query ~value = *)
+
+
+(* let start_server ~sock_addr ~state_json_path =
+  IPCTestServer.fetchStateValue fetch_state_value;
   IPCTestServer.updateStateValue update_state_value;
 
   (* Read json and initialize *)
-  match state_json_path with 
-  | Some path
+  let _ = (match state_json_path with 
+  | Some path ->
+    let states = JSON.ContractState.get_json_data path in
+    let match_balance ((vname : string), _) : bool = vname = balance_label in
+    let no_bal_states = List.filter states ~f:(fun c -> not @@ match_balance c) in
 
-  | None -> *)
-
-  serve_requests sock_addr
+    let fields = List.map field_vals ~f:(fun (s, l) ->
+      let t = List.Assoc.find_exn cstate.fields ~equal:(=) s in
+      { fname = s; ftyp = t; fval = Some l }
+    ) in
+    initialize ~sm: Local ~fields
+  | None -> ()) in
+  serve_requests sock_addr *)
