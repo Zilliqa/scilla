@@ -68,16 +68,16 @@ let serve_requests sock_addr =
 
 let decode_serialized_value value =
   let decoder = Pbrt.Decoder.of_bytes (Bytes.of_string value) in
-  ScillaMessage_pb.decode_proto_scilla_val decoder
+  Ipcmessage_pb.decode_proto_scilla_val decoder
 
 let encode_serialized_value value =
   let encoder = Pbrt.Encoder.create () in
-  ScillaMessage_pb.encode_proto_scilla_val value encoder;
+  Ipcmessage_pb.encode_proto_scilla_val value encoder;
   Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
 
 let decode_serialized_query query =
   let decoder = Pbrt.Decoder.of_bytes (Bytes.of_string query) in
-  ScillaMessage_pb.decode_proto_scilla_query decoder
+  Ipcmessage_pb.decode_proto_scilla_query decoder
 
 let json_exn_wrapper ?filename thunk  =
   try
@@ -156,11 +156,11 @@ let rec recurser value indices =
 
 let rec serialize_value value =
   match value with
-  | NonMapVal v -> ScillaMessageTypes.Bval v
+  | NonMapVal v -> Ipcmessage_types.Bval v
   | MapVal m -> 
     let map_list = Hashtbl.to_alist m in
     let serialized_map_list = List.map map_list ~f:(fun (str, value) -> (str, serialize_value value)) in
-    ScillaMessageTypes.Mval({ m = serialized_map_list})
+    Ipcmessage_types.Mval({ m = serialized_map_list})
 
 let fetch_state_value ~query =
   let query = decode_serialized_query (Bytes.of_string query) in
