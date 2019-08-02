@@ -126,11 +126,11 @@ let parse_typ_exn t =
 let rec populate_table table json_list =
   match json_list with
   | [] -> ()
-  | first :: rest ->
-    let name = member_exn "vname" first |> to_string_exn in
-    let tstring = member_exn "type" first |> to_string_exn in
+  | head :: tail ->
+    let name = member_exn "vname" head |> to_string_exn in
+    let tstring = member_exn "type" head |> to_string_exn in
     let t = parse_typ_exn tstring in
-    let value = member_exn "value" first in
+    let value = member_exn "value" head in
     let _ = (match t with
     | MapType (_, _) ->
       let new_table = Hashtbl.create (module String) in
@@ -138,16 +138,48 @@ let rec populate_table table json_list =
       | `List vli -> populate_table new_table vli
       | `Null -> ()
       | _ -> raise (mk_invalid_json ("JSON parsing: error parsing Map"))) in
-      Hashtbl.set table ~key:name ~data: (MapVal new_table)
-      (* let _ = populate_table new_table in *)
-    | _ -> Hashtbl.set table ~key:name ~data: (NonMapVal (value |> to_string_exn))) in
-    populate_table table rest
+      Hashtbl.set table ~key: name ~data: (MapVal new_table)
+    | _ -> Hashtbl.set table ~key: name ~data: (NonMapVal (value |> to_string_exn))) in
+    populate_table table tail
 
+let rec recurser value indices =
+  match indices with
+  | [] -> pure @@ value
+  | head :: tail ->
+    match value with
+    | NonMapVal _ -> fail0 "TODO"
+    | MapVal m ->
+      let vopt = Hashtbl.find m head in
+      match vopt with
+      | Some v -> recurser v tail
+      | None -> fail0 "TODO"
 
-(* let fetch_state_value ~query =
+let rec serialize_value value =
+  match value with
+  | NonMapVal v -> ScillaMessageTypes.Bval v
+  | MapVal m -> 
+    let map_list = Hashtbl.to_alist m in
+    let serialized_map_list = List.map map_list ~f:(fun (str, value) -> (str, serialize_value value)) in
+    ScillaMessageTypes.Mval({ m = serialized_map_list})
+
+let fetch_state_value ~query =
   let query = decode_serialized_query (Bytes.of_string query) in
+  match query with 
+  | { name; indices; ignoreval; _ } ->
+    let vopt = Hashtbl.find table name in
+    match vopt with 
+    | None -> pure @@ (false, "")
+    | Some value ->
+      match ignoreval with
+      | true -> pure @@ (true, "")
+      | false ->
+        match value with
+        | NonMapVal _ -> pure @@ (true, encode_serialized_value (serialize_value value))
+        | MapVal m -> 
+          let%bind v = recurser (MapVal m) indices in
+          pure @@ (true, encode_serialized_value (serialize_value v))
 
-let update_state_value ~query ~value =
+(* let update_state_value ~query ~value =
   let query = decode_serialized_query (Bytes.of_string query) in
   match query with
   | { name; indices; _ } ->
