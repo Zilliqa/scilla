@@ -1,25 +1,7 @@
-(*
-  This file is part of scilla.
-
-  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
-  scilla is free software: you can redistribute it and/or modify it under the
-  terms of the GNU General Public License as published by the Free Software
-  Foundation, either version 3 of the License, or (at your option) any later
-  version.
- 
-  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
-  You should have received a copy of the GNU General Public License along with
-  scilla.  If not, see <http://www.gnu.org/licenses/>.
-*)
-
 [@@@ocaml.warning "-27-30-39"]
 
 type proto_scilla_val_map_mutable = {
-  mutable m : (string * ScillaMessageTypes.proto_scilla_val) list;
+  mutable m : (string * Ipcmessage_types.proto_scilla_val) list;
 }
 
 let default_proto_scilla_val_map_mutable () : proto_scilla_val_map_mutable = {
@@ -62,15 +44,15 @@ let rec decode_proto_scilla_val_map d =
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   ({
-    ScillaMessageTypes.m = v.m;
-  } : ScillaMessageTypes.proto_scilla_val_map)
+    Ipcmessage_types.m = v.m;
+  } : Ipcmessage_types.proto_scilla_val_map)
 
 and decode_proto_scilla_val d = 
   let rec loop () = 
-    let ret:ScillaMessageTypes.proto_scilla_val = match Pbrt.Decoder.key d with
+    let ret:Ipcmessage_types.proto_scilla_val = match Pbrt.Decoder.key d with
       | None -> Pbrt.Decoder.malformed_variant "proto_scilla_val"
-      | Some (1, _) -> ScillaMessageTypes.Bval (Pbrt.Decoder.bytes d)
-      | Some (2, _) -> ScillaMessageTypes.Mval (decode_proto_scilla_val_map (Pbrt.Decoder.nested d))
+      | Some (1, _) -> Ipcmessage_types.Bval (Pbrt.Decoder.bytes d)
+      | Some (2, _) -> Ipcmessage_types.Mval (decode_proto_scilla_val_map (Pbrt.Decoder.nested d))
       | Some (n, payload_kind) -> (
         Pbrt.Decoder.skip d payload_kind; 
         loop () 
@@ -111,13 +93,13 @@ let rec decode_proto_scilla_query d =
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
   ({
-    ScillaMessageTypes.name = v.name;
-    ScillaMessageTypes.mapdepth = v.mapdepth;
-    ScillaMessageTypes.indices = v.indices;
-    ScillaMessageTypes.ignoreval = v.ignoreval;
-  } : ScillaMessageTypes.proto_scilla_query)
+    Ipcmessage_types.name = v.name;
+    Ipcmessage_types.mapdepth = v.mapdepth;
+    Ipcmessage_types.indices = v.indices;
+    Ipcmessage_types.ignoreval = v.ignoreval;
+  } : Ipcmessage_types.proto_scilla_query)
 
-let rec encode_proto_scilla_val_map (v:ScillaMessageTypes.proto_scilla_val_map) encoder = 
+let rec encode_proto_scilla_val_map (v:Ipcmessage_types.proto_scilla_val_map) encoder = 
   let encode_key = Pbrt.Encoder.string in
   let encode_value = (fun x encoder ->
     Pbrt.Encoder.nested (encode_proto_scilla_val x) encoder;
@@ -126,28 +108,28 @@ let rec encode_proto_scilla_val_map (v:ScillaMessageTypes.proto_scilla_val_map) 
     Pbrt.Encoder.key (1, Pbrt.Bytes) encoder; 
     let map_entry = (k, Pbrt.Bytes), (v, Pbrt.Bytes) in
     Pbrt.Encoder.map_entry ~encode_key ~encode_value map_entry encoder
-  ) v.ScillaMessageTypes.m;
+  ) v.Ipcmessage_types.m;
   ()
 
-and encode_proto_scilla_val (v:ScillaMessageTypes.proto_scilla_val) encoder = 
+and encode_proto_scilla_val (v:Ipcmessage_types.proto_scilla_val) encoder = 
   begin match v with
-  | ScillaMessageTypes.Bval x ->
+  | Ipcmessage_types.Bval x ->
     Pbrt.Encoder.key (1, Pbrt.Bytes) encoder; 
     Pbrt.Encoder.bytes x encoder;
-  | ScillaMessageTypes.Mval x ->
+  | Ipcmessage_types.Mval x ->
     Pbrt.Encoder.key (2, Pbrt.Bytes) encoder; 
     Pbrt.Encoder.nested (encode_proto_scilla_val_map x) encoder;
   end
 
-let rec encode_proto_scilla_query (v:ScillaMessageTypes.proto_scilla_query) encoder = 
+let rec encode_proto_scilla_query (v:Ipcmessage_types.proto_scilla_query) encoder = 
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder; 
-  Pbrt.Encoder.string v.ScillaMessageTypes.name encoder;
+  Pbrt.Encoder.string v.Ipcmessage_types.name encoder;
   Pbrt.Encoder.key (2, Pbrt.Varint) encoder; 
-  Pbrt.Encoder.int_as_varint v.ScillaMessageTypes.mapdepth encoder;
+  Pbrt.Encoder.int_as_varint v.Ipcmessage_types.mapdepth encoder;
   List.iter (fun x -> 
     Pbrt.Encoder.key (3, Pbrt.Bytes) encoder; 
     Pbrt.Encoder.bytes x encoder;
-  ) v.ScillaMessageTypes.indices;
+  ) v.Ipcmessage_types.indices;
   Pbrt.Encoder.key (4, Pbrt.Varint) encoder; 
-  Pbrt.Encoder.bool v.ScillaMessageTypes.ignoreval encoder;
+  Pbrt.Encoder.bool v.Ipcmessage_types.ignoreval encoder;
   ()
