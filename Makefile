@@ -32,7 +32,7 @@ utop: all
 # (e.g. on macOS 10.14.5 make sets the limit to 65532kB, but the standard
 # value is 8192kB)
 test: dev
-	ulimit -s 128; dune exec tests/testsuite.exe -- -print-diff true
+	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -print-diff true
 
 gold: dev
 	dune exec tests/testsuite.exe -- -update-gold true
