@@ -35,7 +35,7 @@ test: dev
 	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -print-diff true
 
 gold: dev
-	dune exec tests/testsuite.exe -- -update-gold true
+	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -update-gold true
 
 # Clean up
 clean:
