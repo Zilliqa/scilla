@@ -70,7 +70,8 @@ It should look like
 export PKG_CONFIG_PATH="/usr/local/opt/openssl@_Version_/lib/pkgconfig:$PKG_CONFIG_PATH"
 ```
 
-To run tests with `make test` you might need to increase the maximum number of open file descriptors:
+To run tests using Dune (`dune exec tests/testsuite.exe`), you may need to increase
+the maximum number of open file descriptors as `Makefile`'s `test` target does:
 ```shell
 ulimit -n 1024
 ```
