@@ -154,41 +154,75 @@ let rec recurser value indices =
       | Some v -> recurser v tail
       | None -> fail0 "TODO"
 
+let rec recurser_update ?(new_val = None) map indices =
+  match indices with 
+  | [] -> fail0 "TODO"
+  | [index] ->
+    pure @@ (match new_val with
+    | None -> Hashtbl.remove map index
+    | Some v -> Hashtbl.set map ~key: index ~data: v)
+  | head :: tail ->
+    let vopt = Hashtbl.find map head in
+    match vopt with
+    | None -> fail0 "TODO"
+    | Some v ->
+      match v with
+      | NonMapVal _ -> fail0 "TODO"
+      | MapVal m -> recurser_update ~new_val m tail
+
 let rec serialize_value value =
   match value with
-  | NonMapVal v -> Ipcmessage_types.Bval v
+  | NonMapVal v -> Ipcmessage_types.Bval (Bytes.of_string v)
   | MapVal m -> 
     let map_list = Hashtbl.to_alist m in
-    let serialized_map_list = List.map map_list ~f:(fun (str, value) -> (str, serialize_value value)) in
+    let serialized_map_list = List.map map_list ~f: (fun (str, v) -> (str, serialize_value v)) in
     Ipcmessage_types.Mval({ m = serialized_map_list})
 
+let rec deserialize_value value =
+  match value with 
+  | Ipcmessage_types.Bval v -> NonMapVal (Bytes.to_string v)
+  | Ipcmessage_types.Mval m_list ->
+    let new_table = Hashtbl.create (module String) in
+    List.iter m_list.m ~f: (fun (str, v) -> 
+      Hashtbl.set new_table ~key: str ~data: (deserialize_value v));
+    MapVal new_table
+
+(* Not sure if need to check mapdepth vs length of indices? *)
 let fetch_state_value ~query =
-  let query = decode_serialized_query (Bytes.of_string query) in
-  match query with 
+  let query = decode_serialized_query query in
+  match query with
   | { name; indices; ignoreval; _ } ->
     let vopt = Hashtbl.find table name in
     match vopt with 
-    | None -> pure @@ (false, "")
+    | None -> fail0 "SSS"
     | Some value ->
       match ignoreval with
       | true -> pure @@ (true, "")
       | false ->
         match value with
-        | NonMapVal _ -> pure @@ (true, encode_serialized_value (serialize_value value))
         | MapVal m -> 
-          let%bind v = recurser (MapVal m) indices in
+          let%bind v = recurser (MapVal m) (List.map indices ~f: Bytes.to_string) in
           pure @@ (true, encode_serialized_value (serialize_value v))
+        | NonMapVal _ ->
+          match indices with
+          | [] -> pure @@ (true, encode_serialized_value (serialize_value value))
+          | _ -> fail0 "TODO"
 
-(* let update_state_value ~query ~value =
-  let query = decode_serialized_query (Bytes.of_string query) in
+(* Not sure if need to check mapdepth vs length of indices? *)
+let update_state_value ~query ~value =
+  let query = decode_serialized_query query in
   match query with
-  | { name; indices; _ } ->
-    let%bind value' = decode_serialized_value Bytes.of_string value in *)
-
+  | { name; indices; ignoreval; _ } ->
+    let string_indices_list = List.map indices ~f: Bytes.to_string in
+    match ignoreval with
+    | true -> recurser_update table (name::string_indices_list)
+    | false -> 
+      let new_val = deserialize_value (decode_serialized_value value) in
+      recurser_update ~new_val: (Some new_val) table (name::string_indices_list)
 
 let start_server ~sock_addr ~state_json_path =
-  IPCTestServer.fetchStateValue fetch_state_value;
-  IPCTestServer.updateStateValue update_state_value;
+  IPCTestServer.fetch_state_value fetch_state_value;
+  IPCTestServer.update_state_value update_state_value;
 
   let _ = (match state_json_path with 
   | Some path ->
