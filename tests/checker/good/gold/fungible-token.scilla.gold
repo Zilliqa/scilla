@@ -22,10 +22,11 @@
       { "vname": "symbol", "type": "String" }
     ],
     "fields": [
-      { "vname": "balances", "type": "Map (ByStr20) (Uint128)" },
+      { "vname": "balances", "type": "Map (ByStr20) (Uint128)", "depth": 1 },
       {
         "vname": "allowed",
-        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))"
+        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+        "depth": 2
       }
     ],
     "transitions": [

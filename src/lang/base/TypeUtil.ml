@@ -325,6 +325,11 @@ module TypeUtilities = struct
       recurser mt nindices
   | _ -> fail0 "map_access_type: not a map type"
 
+  (* The depth of a nested map. *)
+  let rec map_depth mt = match mt with
+    | MapType (_, vt) -> 1 + (map_depth vt)
+    | _ -> 0
+
   let pp_typ_list ts =
     let tss = List.map ~f:(fun t -> pp_typ t) ts in
     sprintf "[%s]" (String.concat ~sep:"; " tss)
