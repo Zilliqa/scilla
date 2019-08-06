@@ -254,7 +254,7 @@ let () =
               (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_blockchain)))
             gas_remaining
       in
-      let (output_msg_json, output_state_json, field_depth_map, output_events_json, accepted_b), gas =
+      let (output_msg_json, output_state_json, output_events_json, accepted_b), gas = 
       if is_deployment
       then
         (* Initializing the contract's state, just for checking things. *)
@@ -285,17 +285,9 @@ let () =
 
         (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
         let field_vals' = if is_ipc then [] else field_vals in
-
-        (* The blockchain needs to know the depth of each field (non-maps have depth 0)
-         * to enable efficient accesses of map keys. *)
-        let field_depth_map =
-          `Assoc (List.map cstate'.fields ~f:(fun (s, t) ->
-            (s, `Int (TypeUtil.TypeUtilities.map_depth t)))) in
          
         (plog (sprintf "\nContract initialized successfully\n");
-
-        (`Null, output_state_json cstate'.balance field_vals',
-          field_depth_map, `List [], false), remaining_gas')
+          (`Null, output_state_json cstate'.balance field_vals', `List [], false), remaining_gas')
       else
         (* Not initialization, execute transition specified in the message *)
         (let mmsg = 
@@ -370,11 +362,10 @@ let () =
 
         let osj = output_state_json cstate'.balance field_vals in
         let omj = output_message_json gas mlist in
-        let fdmj = `List [] in (* Not required after deployment. *)
         let oej = `List (output_event_json elist) in
-          (omj, osj, fdmj, oej, accepted_b), gas)
+          (omj, osj, oej, accepted_b), gas)
       in
-      let output_items =  [
+      let output_json = `Assoc [
         ("scilla_major_version", `String (Int.to_string cmod.smver));
         "gas_remaining", `String (Uint64.to_string gas);
         ContractUtil.accepted_label, `String (Bool.to_string accepted_b);
@@ -382,11 +373,7 @@ let () =
         ("states", output_state_json);
         ("events", output_events_json);
         (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
-      ] @
-        (* The blockchain needs field_depth_map during deployment. *)
-        (if is_deployment then [("field_depth_map", field_depth_map)] else []) in
-      let output_json = `Assoc output_items in
-
+      ] in
         Out_channel.with_file cli.output ~f:(fun channel -> 
           if cli.pp_json then
             Yojson.pretty_to_string output_json |> Out_channel.output_string channel

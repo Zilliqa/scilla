@@ -12,6 +12,5 @@
     },
     { "vname": "a", "type": "BNum", "value": "200" }
   ],
-  "events": [],
-  "field_depth_map": { "is_owner": 0, "a": 0 }
+  "events": []
 }

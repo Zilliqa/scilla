@@ -33,6 +33,5 @@
       }
     }
   ],
-  "events": [],
-  "field_depth_map": { "player_a_hash": 0, "player_b_hash": 0, "timer": 0 }
+  "events": []
 }
