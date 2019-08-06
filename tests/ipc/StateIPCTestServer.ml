@@ -18,6 +18,10 @@ let permission = 0o0755
 let balance_label = "_balance"
 let table = Hashtbl.create (module String)
 
+let error_code = 0
+let fetch_message = "TBC"
+let update_message = "TBC"
+
 let mkdir_rec dir perm =
   let rec p_mkdir dir =
     let p_name = Filename.dirname dir in
@@ -144,16 +148,16 @@ let rec recurser value indices =
   | [] -> pure @@ value
   | head :: tail ->
     match value with
-    | NonMapVal _ -> Error RPCError.({ code = 4; message = "ASDADASD"})
+    | NonMapVal _ -> Error RPCError.({ code = 0; message = fetch_message})
     | MapVal m ->
       let vopt = Hashtbl.find m head in
       match vopt with
       | Some v -> recurser v tail
-      | None -> Error RPCError.({ code = 4; message = "ASDADASD"})
+      | None -> Error RPCError.({ code = 0; message = fetch_message})
 
 let rec recurser_update ?(new_val = None) map indices =
   match indices with 
-  | [] -> Error RPCError.({ code = 4; message = "ASDADASD"})
+  | [] -> Error RPCError.({ code = 0; message = update_message})
   | [index] ->
     pure @@ (match new_val with
     | None -> Hashtbl.remove map index
@@ -161,10 +165,10 @@ let rec recurser_update ?(new_val = None) map indices =
   | head :: tail ->
     let vopt = Hashtbl.find map head in
     match vopt with
-    | None -> Error RPCError.({ code = 4; message = "ASDADASD"})
+    | None -> Error RPCError.({ code = 0; message = update_message})
     | Some v ->
       match v with
-      | NonMapVal _ -> Error RPCError.({ code = 4; message = "ASDADASD"})
+      | NonMapVal _ -> Error RPCError.({ code = 0; message = update_message})
       | MapVal m -> recurser_update ~new_val m tail
 
 let rec serialize_value value =
@@ -191,7 +195,7 @@ let fetch_state_value query =
   | { name; indices; ignoreval; _ } ->
     let vopt = Hashtbl.find table name in
     match vopt with 
-    | None -> Error RPCError.({ code = 4; message = "ASDADASD"})
+    | None -> Error RPCError.({ code = 0; message = fetch_message})
     | Some value ->
       match ignoreval with
       | true -> pure @@ (true, "")
@@ -203,7 +207,7 @@ let fetch_state_value query =
         | NonMapVal _ ->
           match indices with
           | [] -> pure @@ (true, encode_serialized_value (serialize_value value))
-          | _ -> Error RPCError.({ code = 4; message = "ASDADASD"})
+          | _ -> Error RPCError.({ code = 0; message = fetch_message})
 
 (* Not sure if need to check mapdepth vs length of indices? *)
 let update_state_value query value =
