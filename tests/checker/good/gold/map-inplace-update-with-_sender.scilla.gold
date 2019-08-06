@@ -7,7 +7,9 @@
     "scilla_major_version": "0",
     "vname": "Test",
     "params": [],
-    "fields": [ { "vname": "map", "type": "Map (Uint32) (ByStr20)" } ],
+    "fields": [
+      { "vname": "map", "type": "Map (Uint32) (ByStr20)", "depth": 1 }
+    ],
     "transitions": [ { "vname": "test1", "params": [] } ],
     "events": [],
     "ADTs": [

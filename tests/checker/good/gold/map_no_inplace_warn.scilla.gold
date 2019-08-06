@@ -8,7 +8,11 @@
     "vname": "TestNonInplaceMapWarn",
     "params": [],
     "fields": [
-      { "vname": "map1", "type": "Map (Uint128) (Map (Uint128) (Uint128))" }
+      {
+        "vname": "map1",
+        "type": "Map (Uint128) (Map (Uint128) (Uint128))",
+        "depth": 2
+      }
     ],
     "transitions": [
       {

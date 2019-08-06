@@ -7,7 +7,7 @@
     "scilla_major_version": "0",
     "vname": "BackwardDefinitionProcedure",
     "params": [],
-    "fields": [ { "vname": "tmp", "type": "Int32" } ],
+    "fields": [ { "vname": "tmp", "type": "Int32", "depth": 0 } ],
     "transitions": [
       { "vname": "Proc1", "params": [ { "vname": "arg", "type": "Bool" } ] },
       { "vname": "Proc2", "params": [ { "vname": "arg", "type": "Int32" } ] }

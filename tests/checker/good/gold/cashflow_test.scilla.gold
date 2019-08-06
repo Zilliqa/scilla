@@ -14,13 +14,19 @@
     "fields": [
       {
         "vname": "transaction_pairs",
-        "type": "List (Pair (ByStr20) (Uint128))"
+        "type": "List (Pair (ByStr20) (Uint128))",
+        "depth": 0
       },
       {
         "vname": "map_money",
-        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))"
+        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+        "depth": 2
       },
-      { "vname": "map_also_money", "type": "Map (ByStr20) (Uint128)" }
+      {
+        "vname": "map_also_money",
+        "type": "Map (ByStr20) (Uint128)",
+        "depth": 1
+      }
     ],
     "transitions": [
       { "vname": "Test1", "params": [] },

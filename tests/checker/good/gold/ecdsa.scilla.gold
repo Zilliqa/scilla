@@ -9,7 +9,9 @@
     "scilla_major_version": "0",
     "vname": "Ecdsa",
     "params": [],
-    "fields": [ { "vname": "pub_key", "type": "Option (ByStr33)" } ],
+    "fields": [
+      { "vname": "pub_key", "type": "Option (ByStr33)", "depth": 0 }
+    ],
     "transitions": [
       {
         "vname": "verify",
