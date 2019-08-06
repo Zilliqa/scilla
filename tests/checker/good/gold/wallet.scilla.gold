@@ -27,18 +27,24 @@
       { "vname": "required_signatures", "type": "Uint32" }
     ],
     "fields": [
-      { "vname": "validity_checked", "type": "Bool" },
-      { "vname": "contract_valid", "type": "Bool" },
-      { "vname": "owners", "type": "Map (ByStr20) (Bool)" },
-      { "vname": "transactionCount", "type": "Uint32" },
+      { "vname": "validity_checked", "type": "Bool", "depth": 0 },
+      { "vname": "contract_valid", "type": "Bool", "depth": 0 },
+      { "vname": "owners", "type": "Map (ByStr20) (Bool)", "depth": 1 },
+      { "vname": "transactionCount", "type": "Uint32", "depth": 0 },
       {
         "vname": "signatures",
-        "type": "Map (Uint32) (Map (ByStr20) (Bool))"
+        "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+        "depth": 2
       },
-      { "vname": "transactions", "type": "Map (Uint32) (Transaction)" },
+      {
+        "vname": "transactions",
+        "type": "Map (Uint32) (Transaction)",
+        "depth": 1
+      },
       {
         "vname": "owner_signatures",
-        "type": "Map (ByStr20) (Map (ByStr20) (Bool))"
+        "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+        "depth": 2
       }
     ],
     "transitions": [

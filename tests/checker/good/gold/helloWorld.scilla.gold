@@ -10,7 +10,7 @@
     "scilla_major_version": "0",
     "vname": "HelloWorld",
     "params": [ { "vname": "owner", "type": "ByStr20" } ],
-    "fields": [ { "vname": "welcome_msg", "type": "String" } ],
+    "fields": [ { "vname": "welcome_msg", "type": "String", "depth": 0 } ],
     "transitions": [
       {
         "vname": "setHello",

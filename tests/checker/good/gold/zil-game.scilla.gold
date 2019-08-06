@@ -21,9 +21,9 @@
       { "vname": "puzzle", "type": "ByStr32" }
     ],
     "fields": [
-      { "vname": "player_a_hash", "type": "Option (ByStr32)" },
-      { "vname": "player_b_hash", "type": "Option (ByStr32)" },
-      { "vname": "timer", "type": "Option (BNum)" }
+      { "vname": "player_a_hash", "type": "Option (ByStr32)", "depth": 0 },
+      { "vname": "player_b_hash", "type": "Option (ByStr32)", "depth": 0 },
+      { "vname": "timer", "type": "Option (BNum)", "depth": 0 }
     ],
     "transitions": [
       {

@@ -20,10 +20,14 @@
       { "vname": "beneficiary", "type": "ByStr20" }
     ],
     "fields": [
-      { "vname": "ended", "type": "Bool" },
-      { "vname": "highestBidder", "type": "Option (ByStr20)" },
-      { "vname": "highestBid", "type": "Uint128" },
-      { "vname": "pendingReturns", "type": "Map (ByStr20) (Uint128)" }
+      { "vname": "ended", "type": "Bool", "depth": 0 },
+      { "vname": "highestBidder", "type": "Option (ByStr20)", "depth": 0 },
+      { "vname": "highestBid", "type": "Uint128", "depth": 0 },
+      {
+        "vname": "pendingReturns",
+        "type": "Map (ByStr20) (Uint128)",
+        "depth": 1
+      }
     ],
     "transitions": [
       { "vname": "Bid", "params": [] },

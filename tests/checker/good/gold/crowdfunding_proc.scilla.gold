@@ -18,8 +18,8 @@
       { "vname": "goal", "type": "Uint128" }
     ],
     "fields": [
-      { "vname": "backers", "type": "Map (ByStr20) (Uint128)" },
-      { "vname": "funded", "type": "Bool" }
+      { "vname": "backers", "type": "Map (ByStr20) (Uint128)", "depth": 1 },
+      { "vname": "funded", "type": "Bool", "depth": 0 }
     ],
     "transitions": [
       {

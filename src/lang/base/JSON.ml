@@ -413,7 +413,10 @@ module ContractInfo = struct
     (* 3. fields *)
     let fieldsl = contr.cfields in
     let fieldslj = List.map fieldsl ~f: (fun (i, t, _) ->
-        `Assoc [("vname", `String (get_id i)); ("type", `String (pp_typ t))]) in
+        `Assoc [("vname", `String (get_id i));
+                ("type", `String (pp_typ t));
+                ("depth", `Int (JSONTypeUtilities.map_depth t))
+              ]) in
     let fieldsj = ("fields", `List fieldslj) in
     (* 4. transitions *)
     let transl = contr.ccomps in
