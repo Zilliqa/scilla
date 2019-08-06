@@ -12,5 +12,6 @@
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     }
   ],
-  "events": []
+  "events": [],
+  "field_depth_map": { "backers": 1, "funded": 0 }
 }
