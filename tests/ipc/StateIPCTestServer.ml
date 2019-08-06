@@ -2,9 +2,6 @@ open Core
 open Result.Let_syntax
 open MonadUtil
 open Syntax
-open JSON
-open ParserUtil
-open TypeUtil
 open StateIPCIdl
 open ErrorUtils
 
@@ -147,16 +144,16 @@ let rec recurser value indices =
   | [] -> pure @@ value
   | head :: tail ->
     match value with
-    | NonMapVal _ -> fail0 "TODO"
+    | NonMapVal _ -> Error RPCError.({ code = 4; message = "ASDADASD"})
     | MapVal m ->
       let vopt = Hashtbl.find m head in
       match vopt with
       | Some v -> recurser v tail
-      | None -> fail0 "TODO"
+      | None -> Error RPCError.({ code = 4; message = "ASDADASD"})
 
 let rec recurser_update ?(new_val = None) map indices =
   match indices with 
-  | [] -> fail0 "TODO"
+  | [] -> Error RPCError.({ code = 4; message = "ASDADASD"})
   | [index] ->
     pure @@ (match new_val with
     | None -> Hashtbl.remove map index
@@ -164,10 +161,10 @@ let rec recurser_update ?(new_val = None) map indices =
   | head :: tail ->
     let vopt = Hashtbl.find map head in
     match vopt with
-    | None -> fail0 "TODO"
+    | None -> Error RPCError.({ code = 4; message = "ASDADASD"})
     | Some v ->
       match v with
-      | NonMapVal _ -> fail0 "TODO"
+      | NonMapVal _ -> Error RPCError.({ code = 4; message = "ASDADASD"})
       | MapVal m -> recurser_update ~new_val m tail
 
 let rec serialize_value value =
@@ -188,28 +185,28 @@ let rec deserialize_value value =
     MapVal new_table
 
 (* Not sure if need to check mapdepth vs length of indices? *)
-let fetch_state_value ~query =
+let fetch_state_value query =
   let query = decode_serialized_query query in
   match query with
   | { name; indices; ignoreval; _ } ->
     let vopt = Hashtbl.find table name in
     match vopt with 
-    | None -> fail0 "SSS"
+    | None -> Error RPCError.({ code = 4; message = "ASDADASD"})
     | Some value ->
       match ignoreval with
       | true -> pure @@ (true, "")
       | false ->
         match value with
-        | MapVal m -> 
+        | MapVal m ->
           let%bind v = recurser (MapVal m) (List.map indices ~f: Bytes.to_string) in
           pure @@ (true, encode_serialized_value (serialize_value v))
         | NonMapVal _ ->
           match indices with
           | [] -> pure @@ (true, encode_serialized_value (serialize_value value))
-          | _ -> fail0 "TODO"
+          | _ -> Error RPCError.({ code = 4; message = "ASDADASD"})
 
 (* Not sure if need to check mapdepth vs length of indices? *)
-let update_state_value ~query ~value =
+let update_state_value query value =
   let query = decode_serialized_query query in
   match query with
   | { name; indices; ignoreval; _ } ->
