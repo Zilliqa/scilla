@@ -1,3 +1,21 @@
+(*
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
 open Core
 open Result.Let_syntax
 open MonadUtil
@@ -143,34 +161,6 @@ let rec populate_table table json_list =
     | _ -> Hashtbl.set table ~key: name ~data: (NonMapVal (value |> to_string_exn))) in
     populate_table table tail
 
-let rec recurser value indices =
-  match indices with
-  | [] -> pure @@ value
-  | head :: tail ->
-    match value with
-    | NonMapVal _ -> Error RPCError.({ code = 0; message = fetch_message})
-    | MapVal m ->
-      let vopt = Hashtbl.find m head in
-      match vopt with
-      | Some v -> recurser v tail
-      | None -> Error RPCError.({ code = 0; message = fetch_message})
-
-let rec recurser_update ?(new_val = None) map indices =
-  match indices with 
-  | [] -> Error RPCError.({ code = 0; message = update_message})
-  | [index] ->
-    pure @@ (match new_val with
-    | None -> Hashtbl.remove map index
-    | Some v -> Hashtbl.set map ~key: index ~data: v)
-  | head :: tail ->
-    let vopt = Hashtbl.find map head in
-    match vopt with
-    | None -> Error RPCError.({ code = 0; message = update_message})
-    | Some v ->
-      match v with
-      | NonMapVal _ -> Error RPCError.({ code = 0; message = update_message})
-      | MapVal m -> recurser_update ~new_val m tail
-
 let rec serialize_value value =
   match value with
   | NonMapVal v -> Ipcmessage_types.Bval (Bytes.of_string v)
@@ -190,6 +180,18 @@ let rec deserialize_value value =
 
 (* Not sure if need to check mapdepth vs length of indices? *)
 let fetch_state_value query =
+  let rec recurser value indices =
+    match indices with
+    | [] -> pure @@ value
+    | head :: tail ->
+      match value with
+      | NonMapVal _ -> Error RPCError.({ code = 0; message = fetch_message})
+      | MapVal m ->
+        let vopt = Hashtbl.find m head in
+        match vopt with
+        | Some v -> recurser v tail
+        | None -> Error RPCError.({ code = 0; message = fetch_message})
+  in
   let query = decode_serialized_query query in
   match query with
   | { name; indices; ignoreval; _ } ->
@@ -211,6 +213,22 @@ let fetch_state_value query =
 
 (* Not sure if need to check mapdepth vs length of indices? *)
 let update_state_value query value =
+  let rec recurser_update ?(new_val = None) map indices =
+    match indices with
+    | [] -> Error RPCError.({ code = 0; message = update_message})
+    | [index] ->
+      pure @@ (match new_val with
+      | None -> Hashtbl.remove map index
+      | Some v -> Hashtbl.set map ~key: index ~data: v)
+    | head :: tail ->
+      let vopt = Hashtbl.find map head in
+      match vopt with
+      | None -> Error RPCError.({ code = 0; message = update_message})
+      | Some v ->
+        match v with
+        | NonMapVal _ -> Error RPCError.({ code = 0; message = update_message})
+        | MapVal m -> recurser_update ~new_val m tail
+  in
   let query = decode_serialized_query query in
   match query with
   | { name; indices; ignoreval; _ } ->
