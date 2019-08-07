@@ -36,14 +36,16 @@
     "fields": [
       {
         "vname": "board",
-        "type": "Map (Uint32) (Map (Uint32) (SquareContents))"
+        "type": "Map (Uint32) (Map (Uint32) (SquareContents))",
+        "depth": 2
       },
       {
         "vname": "captured_pieces",
-        "type": "Map (ByStr20) (Map (Uint32) (Uint32))"
+        "type": "Map (ByStr20) (Map (Uint32) (Uint32))",
+        "depth": 2
       },
-      { "vname": "player_in_turn", "type": "Option (ByStr20)" },
-      { "vname": "winner", "type": "Option (ByStr20)" }
+      { "vname": "player_in_turn", "type": "Option (ByStr20)", "depth": 0 },
+      { "vname": "winner", "type": "Option (ByStr20)", "depth": 0 }
     ],
     "transitions": [
       {

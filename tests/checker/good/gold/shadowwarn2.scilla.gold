@@ -12,8 +12,8 @@
     "vname": "ShadowWarn2",
     "params": [ { "vname": "p1", "type": "Uint32" } ],
     "fields": [
-      { "vname": "p1", "type": "ByStr1" },
-      { "vname": "p2", "type": "ByStr1" }
+      { "vname": "p1", "type": "ByStr1", "depth": 0 },
+      { "vname": "p2", "type": "ByStr1", "depth": 0 }
     ],
     "transitions": [
       { "vname": "Foo", "params": [ { "vname": "p2", "type": "String" } ] }
