@@ -313,10 +313,10 @@ module TypeUtilities = struct
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
   let map_access_type mt nindices = match mt with
-  | MapType (_, vt) ->
+  | MapType _ ->
     let rec recurser t nkeys =
       (match t, nkeys with
-      | MapType (_, _), 0 -> pure vt
+      | MapType (_, _), 0 -> pure t
       | MapType (_, vt'), 1 -> pure vt'
       | MapType (_, vt'), nkeys' when nkeys' > 1 -> recurser vt' (nkeys-1)
       | _, _ -> fail0 "Cannot index into map %s: Too many index keys or non-map type"
