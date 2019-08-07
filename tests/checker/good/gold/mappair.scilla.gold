@@ -15,11 +15,19 @@
     "vname": "Test",
     "params": [ { "vname": "owner", "type": "ByStr20" } ],
     "fields": [
-      { "vname": "gmap", "type": "Map (ByStr20) (Pair (Int32) (Int32))" },
-      { "vname": "gpair", "type": "Pair (List (Int64)) (Option (Bool))" },
-      { "vname": "llist", "type": "List (List (Int64))" },
-      { "vname": "plist", "type": "List (Option (Int32))" },
-      { "vname": "gnat", "type": "Nat" }
+      {
+        "vname": "gmap",
+        "type": "Map (ByStr20) (Pair (Int32) (Int32))",
+        "depth": 1
+      },
+      {
+        "vname": "gpair",
+        "type": "Pair (List (Int64)) (Option (Bool))",
+        "depth": 0
+      },
+      { "vname": "llist", "type": "List (List (Int64))", "depth": 0 },
+      { "vname": "plist", "type": "List (Option (Int32))", "depth": 0 },
+      { "vname": "gnat", "type": "Nat", "depth": 0 }
     ],
     "transitions": [
       { "vname": "testMapPair", "params": [] },
