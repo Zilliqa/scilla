@@ -28,6 +28,7 @@ let use_test_server = false
 open OUnit2
 open ErrorUtils
 open JSON
+open Core.Result.Let_syntax
 open PrettyPrinters
 open TypeUtil
 open Core
@@ -68,7 +69,12 @@ let setup_and_initialize ~sock_addr ~state_json_path =
   let () = SS.initialize ~sm ~fields in
   (* Update the server (via StateService) with the state values we want. *)
   match
-    mapM state ~f:(fun (s, v) -> SS.update ~fname:(asId s) ~keys:[] ~value:v)
+    mapM state ~f:(fun (s, v) ->
+      if s <> ContractUtil.balance_label then
+        let%bind _ = SS.update ~fname:(asId s) ~keys:[] ~value:v in
+        pure ()
+      else pure ()
+    )
   with
   | Error s -> assert_failure (scilla_error_to_string s)
   | Ok _ -> ()
