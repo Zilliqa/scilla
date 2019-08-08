@@ -23,6 +23,7 @@ open ScillaUtil.FilePathInfix
 open TestUtil
 
 let testsuit_gas_limit = "8000"
+let ipc_socket_addr = "/tmp/scillaipcsocket"
 
 let succ_code : Caml.Unix.process_status = WEXITED 0
 let fail_code : Caml.Unix.process_status = WEXITED 1
@@ -36,7 +37,7 @@ let rec build_contract_tests env name exit_code i n additional_libs =
     then []
   else
     (* Create a contract test with an option to disable JSON validation (fast parsing). *)
-    let test disable_validate_json =
+    let test ~disable_validate_json ~ipc_mode =
       let istr = Int.to_string i in
       let testname = name ^ "_" ^ istr ^
         (if disable_validate_json then "_disable_validate_json" else "") in
@@ -48,7 +49,7 @@ let rec build_contract_tests env name exit_code i n additional_libs =
         let dir = tests_dir ^/ "runner" ^/ name in
         let tmpdir = bracket_tmpdir test_ctxt in
         let output_file = tmpdir ^/ name ^ "_output_" ^ istr ^. "json" in
-        let args_tmp =
+        let args_basic =
               ["-init"; dir ^/ "init.json";
                "-i"; contract_dir ^/ name ^. "scilla";
                (* stdlib is in src/stdlib *)
@@ -56,11 +57,20 @@ let rec build_contract_tests env name exit_code i n additional_libs =
               "-o"; output_file;
               "-gaslimit"; testsuit_gas_limit;
               "-imessage"; dir ^/ "message_" ^ istr ^. "json";
-              "-istate" ; dir ^/ "state_" ^ istr ^. "json";
               "-jsonerrors";
               "-iblockchain" ; dir ^/ "blockchain_" ^ istr ^. "json"] in
+
+        let state_json_path = dir ^/ "state_" ^ istr ^. "json" in
+        let args_state =
+          if ipc_mode then
+            (StateIPCTest.setup_and_initialize ~sock_addr:ipc_socket_addr ~state_json_path;
+            args_basic @ ["-ipcaddress"; ipc_socket_addr])
+          else
+            args_basic @ ["-istate" ; state_json_path]
+        in
+
         let args' =
-          List.fold_right additional_libs ~init:args_tmp
+          List.fold_right additional_libs ~init:args_state
             ~f:(fun lib_name cur_args ->
                 "-libdir" :: (contract_dir ^/ lib_name) :: cur_args)
         in
@@ -76,10 +86,17 @@ let rec build_contract_tests env name exit_code i n additional_libs =
           ~foutput:(fun s ->
               (* if the test is supposed to succeed we read the output from a file,
                  otherwise we read from the output stream *)
-              let out =
+              let out' =
                 if exit_code = succ_code
                 then In_channel.read_all output_file
                 else BatStream.to_string s
+              in
+              let out =
+                if ipc_mode then
+                (* The output of the interpreter in IPC mode will only contain "_balance" as
+                 * the state. The remaining have to be gotten from the server and appended. *)
+                  StateIPCTest.get_final_finish() |> StateIPCTest.append_full_state out'
+                else out'
               in
               if env.update_gold test_ctxt
               then output_updater goldoutput_file test_name out
@@ -90,9 +107,15 @@ let rec build_contract_tests env name exit_code i n additional_libs =
        * Both should succeed. *)
       if exit_code = succ_code
       then
-        (test true) :: (test false) :: (build_contract_tests env name exit_code (i+1) n additional_libs)
+    (*  (test ~disable_validate_json:true ~ipc_mode:true) ::
+        (test ~disable_validate_json:false ~ipc_mode:true) :: *)
+        (test ~disable_validate_json:true ~ipc_mode:false) ::
+        (test ~disable_validate_json:false ~ipc_mode:false) ::
+        (build_contract_tests env name exit_code (i+1) n additional_libs)
       else
-        (test false) :: (build_contract_tests env name exit_code (i+1) n additional_libs)
+        (* (test ~disable_validate_json:false ~ipc_mode:true) :: *)
+        (test ~disable_validate_json:false ~ipc_mode:false) ::
+        (build_contract_tests env name exit_code (i+1) n additional_libs)
 
 let build_contract_init_test env exit_code name is_library =
   name ^ "_init" >::

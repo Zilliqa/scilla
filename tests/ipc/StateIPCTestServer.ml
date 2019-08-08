@@ -16,12 +16,15 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+(* This file implements a state server that mimics the behaviour of the
+ * actual blockchain state server. It begins with an empty state and hence
+ * must be "updated" to have the required state by calling update_state_value
+ * before the contract is executed. *)
+
 open Core
 open Result.Let_syntax
 open MonadUtil
-open Syntax
 open StateIPCIdl
-open ErrorUtils
 
 module IPCTestServer = IPCIdl(Idl.GenServer ())
 
@@ -33,10 +36,10 @@ and value_type =
 
 let num_pending_requests = 5
 let permission = 0o0755
-let balance_label = "_balance"
 let table = Hashtbl.create (module String)
 
 let error_code = 0
+(* TODO *)
 let fetch_message = "TBC"
 let update_message = "TBC"
 
@@ -97,69 +100,6 @@ let encode_serialized_value value =
 let decode_serialized_query query =
   let decoder = Pbrt.Decoder.of_bytes (Bytes.of_string query) in
   Ipcmessage_pb.decode_proto_scilla_query decoder
-
-let json_exn_wrapper ?filename thunk  =
-  try
-    thunk ()
-  with
-    | Yojson.Json_error s
-    | Yojson.Basic.Util.Undefined (s, _)
-    | Yojson.Basic.Util.Type_error (s, _)
-      -> raise (mk_invalid_json s)
-    | _ ->
-      (match filename with
-      | Some f -> raise (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON %s" f))
-      | None -> raise (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON"))
-      )
-
-let from_file f =
-  let thunk () = Yojson.Basic.from_file f in
-  json_exn_wrapper thunk ~filename:f
-
-let to_list_exn j =
-  let thunk() = Yojson.Basic.Util.to_list j in
-  json_exn_wrapper thunk
-
-let get_json_data filename =
-  let json = from_file filename in
-  (* input json is a list of key/value pairs *)
-  let jlist = json |> to_list_exn in
-  jlist
-
-let member_exn m j =
-  let thunk () = Yojson.Basic.Util.member m j in
-  let v = json_exn_wrapper thunk in
-  match v with
-  | `Null -> raise (mk_invalid_json ("Member '" ^ m ^ "' not found in json"))
-  | j -> j
-
-let to_string_exn j =
-  let thunk() = Yojson.Basic.Util.to_string j in
-  json_exn_wrapper thunk
-
-let parse_typ_exn t =
-  match FrontEndParser.parse_type t with
-  | Error _ -> raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t))
-  | Ok s -> s
-
-let rec populate_table table json_list =
-  match json_list with
-  | [] -> ()
-  | head :: tail ->
-    let name = member_exn "vname" head |> to_string_exn in
-    let tstring = member_exn "type" head |> to_string_exn in
-    let t = parse_typ_exn tstring in
-    let value = member_exn "value" head in
-    let _ = (match t with
-    | MapType (_, _) ->
-      let new_table = Hashtbl.create (module String) in
-      let _ = (match value with
-      | `List vli -> populate_table new_table vli
-      | `Null -> ()
-      | _ -> raise (mk_invalid_json ("JSON parsing: error parsing Map"))) in
-      Hashtbl.set table ~key: name ~data: (MapVal new_table)
-    | _ -> Hashtbl.set table ~key: name ~data: (NonMapVal (value |> to_string_exn))) in
-    populate_table table tail
 
 let rec serialize_value value =
   match value with
@@ -239,14 +179,10 @@ let update_state_value query value =
       let new_val = deserialize_value (decode_serialized_value value) in
       recurser_update ~new_val: (Some new_val) table (name::string_indices_list)
 
-let start_server ~sock_addr ~state_json_path =
+let start_server ~sock_addr =
   IPCTestServer.fetch_state_value fetch_state_value;
   IPCTestServer.update_state_value update_state_value;
-
-  let _ = (match state_json_path with 
-  | Some path ->
-    let json_list = get_json_data path in
-    populate_table table json_list
-  | None -> ()) in
-
   serve_requests sock_addr
+
+let stop_server () =
+  (* TODO *)()

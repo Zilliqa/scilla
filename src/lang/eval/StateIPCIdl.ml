@@ -17,7 +17,7 @@ module IPCIdl(R: RPC) = struct
 
   let description = Interface.{
     name = "IPCIdl";
-    namespace = Some "IPCIdl";
+    namespace = None;
     description = ["This is a functor used to generate Clients and Servers that follow the json rpc protocol" ];
     version=(1,0,0);
   }

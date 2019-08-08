@@ -355,9 +355,9 @@ let () =
         (* If we're using a local state (JSON file) then need to fetch and dump it. *)
         let field_vals =
           if is_ipc then [] else
-            match StateService.get_full_state () with
-            | Error s -> fatal_error_gas s gas
-            | Ok fv -> fv
+            match StateService.get_full_state (), StateService.finalize() with
+            | Ok fv, Ok () -> fv
+            | _ -> fatal_error_gas (mk_error0 "Error finalizing state from StateService") gas
         in
 
         let osj = output_state_json cstate'.balance field_vals in

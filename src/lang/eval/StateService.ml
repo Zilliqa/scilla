@@ -52,18 +52,6 @@ let ss_cur_state = ref Uninitialized
 let initialize ~sm ~fields =
   ss_cur_state := SS (sm, fields)
 
-(* Expensive operation, use with care. *)
-let get_full_state () =
-  match !ss_cur_state with
-  | Uninitialized -> fail0 "StateService: Uninitialized"
-  | SS (Local, fl) ->
-    mapM fl ~f:(fun f ->
-      match f.fval with
-      | None -> fail0 (sprintf "StateService: Field %s's value is not known" f.fname)
-      | Some l -> pure (f.fname, l)
-    )
-  | SS (IPC _, _) -> fail0 "StateService: get_full_state not implemented yet for IPC mode"
-
 (* Finalize: no more queries. *)
 let finalize () = pure ()
 
@@ -221,7 +209,27 @@ let remove ~fname ~keys =
     let%bind (_, g) = update_local ~fname ~keys None fields in
     (* We don't need to update ss_cur_state because only map keys can be removed, and that's stateful. *)
     pure @@ g
-end
+
+(* Expensive operation, use with care. *)
+let get_full_state () =
+  match !ss_cur_state with
+  | Uninitialized -> fail0 "StateService: Uninitialized"
+  | SS (Local, fl) ->
+    mapM fl ~f:(fun f ->
+      match f.fval with
+      | None -> fail0 (sprintf "StateService: Field %s's value is not known" f.fname)
+      | Some l -> pure (f.fname, l)
+    )
+  | SS (IPC _, fl) ->
+    let%bind sl = mapM fl ~f:(fun f ->
+      let%bind (vopt, _) = fetch ~fname:(asId f.fname) ~keys:[] in
+      match vopt with
+      | Some v -> pure (f.fname, v)
+      | None -> fail0 (sprintf "StateService: Field %s's value not found on server" f.fname)
+    ) in
+    pure sl
+
+end (* module MakeStateService *)
 
 module StateServiceInstance = MakeStateService ()
 include StateServiceInstance
