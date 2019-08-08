@@ -25,6 +25,7 @@ open Core
 open Result.Let_syntax
 open MonadUtil
 open StateIPCIdl
+open OUnit2
 
 module IPCTestServer = IPCIdl(Idl.GenServer ())
 
@@ -35,29 +36,14 @@ and value_type =
   | MapVal of hashtable
 
 let num_pending_requests = 5
-let permission = 0o0755
+let fetch_message = "Fetching state value failed"
+let update_message = "Updating state value failed"
+
+(* Global state of the server. *)
 let table = Hashtbl.create (module String)
+let threadref = ref None
 
-let error_code = 0
-(* TODO *)
-let fetch_message = "TBC"
-let update_message = "TBC"
-
-let mkdir_rec dir perm =
-  let rec p_mkdir dir =
-    let p_name = Filename.dirname dir in
-    if p_name <> "/" && p_name <> "."
-    then p_mkdir p_name;
-    (try Unix.mkdir dir ~perm with Unix.Unix_error(Unix.EEXIST, _, _) -> ()) in
-  p_mkdir dir
-
-let finally f g conn =
-  try
-    f conn;
-    g conn;
-  with e ->
-    g conn;
-    raise e
+let fail a = Error a
 
 (* Send msg with delimiting character "0xA". *)
 let send_delimited oc msg =
@@ -72,21 +58,33 @@ let binary_rpc conn =
   let response = (Idl.server IPCTestServer.implementation) request in
   send_delimited oc (Jsonrpc.string_of_response response)
 
-let serve_requests sock_addr =
+let prepare_server sock_addr =
   (try Unix.unlink sock_addr with Unix.Unix_error(Unix.ENOENT, _, _) -> ());
-  mkdir_rec (Filename.dirname sock_addr) permission;
   let socket = Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol: 0 in
-  Unix.bind socket ~addr: (Unix.ADDR_UNIX sock_addr);
-  Unix.listen socket ~backlog: num_pending_requests;
-  Printf.fprintf stdout "Listening on %s" sock_addr;
-  while true do
-    let conn, _ = Unix.accept socket in
-    let (_: Thread.t) = Thread.create
-      (fun connection ->
-        finally binary_rpc Unix.close connection
-      ) conn in
-    ()
-  done
+  Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_addr);
+  Unix.listen socket ~backlog:num_pending_requests;
+  Printf.fprintf stdout "ScillaIPCTestServer: listening on %s\n" sock_addr;
+  let server () =
+    while true do
+      let conn, _ = Unix.accept socket in
+      try
+        match !threadref with
+        | Some _ ->
+          (* Sleep for 25 milliseconds, similar to the jsonrpccpp server. *)
+          let _ = Thread.delay(0.025) in
+          binary_rpc conn
+        | None ->
+          Unix.shutdown conn ~mode:Unix.SHUTDOWN_RECEIVE;
+          Unix.unlink sock_addr;
+          Thread.exit () (* No active server thead. *)
+      with
+      | _ ->
+          Unix.shutdown conn ~mode:Unix.SHUTDOWN_RECEIVE;
+          Unix.unlink sock_addr;
+          assert_failure "IPC Server raised exception."
+    done
+  in
+  server
 
 let decode_serialized_value value =
   let decoder = Pbrt.Decoder.of_bytes (Bytes.of_string value) in
@@ -115,58 +113,50 @@ let rec deserialize_value value =
   | Ipcmessage_types.Mval m_list ->
     let new_table = Hashtbl.create (module String) in
     List.iter m_list.m ~f: (fun (str, v) -> 
-      Hashtbl.set new_table ~key: str ~data: (deserialize_value v));
+      Hashtbl.set new_table ~key:str ~data:(deserialize_value v));
     MapVal new_table
 
 (* Not sure if need to check mapdepth vs length of indices? *)
 let fetch_state_value query =
   let rec recurser value indices =
     match indices with
-    | [] -> pure @@ value
+    | [] -> pure (Some value)
     | head :: tail ->
       match value with
-      | NonMapVal _ -> Error RPCError.({ code = 0; message = fetch_message})
+      | NonMapVal _ -> fail RPCError.({ code = 0; message = fetch_message})
       | MapVal m ->
         let vopt = Hashtbl.find m head in
         match vopt with
         | Some v -> recurser v tail
-        | None -> Error RPCError.({ code = 0; message = fetch_message})
+        | None -> pure None
   in
   let query = decode_serialized_query query in
   match query with
   | { name; indices; ignoreval; _ } ->
-    let vopt = Hashtbl.find table name in
-    match vopt with 
-    | None -> Error RPCError.({ code = 0; message = fetch_message})
-    | Some value ->
-      match ignoreval with
-      | true -> pure @@ (true, "")
-      | false ->
-        match value with
-        | MapVal m ->
-          let%bind v = recurser (MapVal m) (List.map indices ~f: Bytes.to_string) in
-          pure @@ (true, encode_serialized_value (serialize_value v))
-        | NonMapVal _ ->
-          match indices with
-          | [] -> pure @@ (true, encode_serialized_value (serialize_value value))
-          | _ -> Error RPCError.({ code = 0; message = fetch_message})
+    let string_indices_list = name :: (List.map indices ~f: Bytes.to_string) in
+    let%bind vopt = recurser (MapVal table) string_indices_list in
+    match vopt with
+    | Some v ->
+      if ignoreval then pure @@ (true, "") else
+      pure @@ (true, encode_serialized_value (serialize_value v))
+    | None -> pure @@ (false, "")
 
 (* Not sure if need to check mapdepth vs length of indices? *)
 let update_state_value query value =
   let rec recurser_update ?(new_val = None) map indices =
     match indices with
-    | [] -> Error RPCError.({ code = 0; message = update_message})
+    | [] -> fail RPCError.({ code = 0; message = update_message})
     | [index] ->
       pure @@ (match new_val with
       | None -> Hashtbl.remove map index
-      | Some v -> Hashtbl.set map ~key: index ~data: v)
+      | Some v -> Hashtbl.set map ~key:index ~data:v)
     | head :: tail ->
       let vopt = Hashtbl.find map head in
       match vopt with
-      | None -> Error RPCError.({ code = 0; message = update_message})
-      | Some v ->
+      | None -> fail RPCError.({ code = 0; message = update_message})
+      | Some v -> 
         match v with
-        | NonMapVal _ -> Error RPCError.({ code = 0; message = update_message})
+        | NonMapVal _ -> fail RPCError.({ code = 0; message = update_message})
         | MapVal m -> recurser_update ~new_val m tail
   in
   let query = decode_serialized_query query in
@@ -177,12 +167,20 @@ let update_state_value query value =
     | true -> recurser_update table (name::string_indices_list)
     | false -> 
       let new_val = deserialize_value (decode_serialized_value value) in
-      recurser_update ~new_val: (Some new_val) table (name::string_indices_list)
+      recurser_update ~new_val:(Some new_val) table (name::string_indices_list)
 
 let start_server ~sock_addr =
   IPCTestServer.fetch_state_value fetch_state_value;
   IPCTestServer.update_state_value update_state_value;
-  serve_requests sock_addr
+  match !threadref with
+  | Some _ -> assert_failure "Server already running, cannot restart"
+  | None ->
+    let server = prepare_server sock_addr in
+    let t = Thread.create server () in
+    threadref := Some t
 
 let stop_server () =
-  (* TODO *)()
+  match !threadref with
+  | Some _ -> threadref := None
+  | None ->
+    assert_failure "No server running, cannot stop."

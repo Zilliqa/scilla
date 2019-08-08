@@ -23,7 +23,7 @@
  * true unless we know there's a capable external server
  * running in the same socket address to connect to.
  * TODO: If need be, provide a command line flag for this. *)
-let use_test_server = false
+let use_test_server = true
 
 open OUnit2
 open ErrorUtils
@@ -62,8 +62,9 @@ let setup_and_initialize ~sock_addr ~state_json_path =
   if use_test_server then StateIPCTestServer.start_server ~sock_addr;
 
   (* Initialize StateService. *)
-  let fields = List.map state
-    ~f:(fun (s, l) -> { fname = s; StateService.ftyp = literal_type_failure l; fval = None })
+  let fields = List.filter_map state ~f:(fun (s, l) -> 
+    if s = ContractUtil.balance_label then None else
+    Some { fname = s; StateService.ftyp = literal_type_failure l; fval = None })
   in
   let sm = StateService.IPC (sock_addr) in
   let () = SS.initialize ~sm ~fields in
@@ -77,7 +78,15 @@ let setup_and_initialize ~sock_addr ~state_json_path =
     )
   with
   | Error s -> assert_failure (scilla_error_to_string s)
-  | Ok _ -> ()
+  | Ok _ ->
+    match List.Assoc.find state ~equal:(=) ContractUtil.balance_label with
+    | Some bal ->
+      (match bal with
+      | UintLit (Uint128L b) -> Stdint.Uint128.to_string b
+      | _ -> assert_failure "Incorrect literal type of " ^
+              ContractUtil.balance_label ^ " in state.json")
+    | None -> assert_failure ("Unable to find " ^
+                ContractUtil.balance_label ^ " in state.json")
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
 let get_final_finish () =
@@ -112,11 +121,15 @@ let json_member m j =
   let thunk () = Basic.Util.member m j in
   json_exn_wrapper thunk
 
+let json_to_list j =
+  let thunk () = Basic.Util.to_list j in
+  json_exn_wrapper thunk
+
 let json_to_string j =
   let thunk() = Basic.Util.to_string j in
   json_exn_wrapper thunk
  
-(* Given the interpreter's output, parse the JSON, append svars to it and print out new JSOn. *)
+(* Given the interpreter's output, parse the JSON, append svars to it and print out new JSON. *)
 let append_full_state interpreter_output svars =
   let j = json_from_string interpreter_output in
   let items = json_to_assoc j in
@@ -124,7 +137,7 @@ let append_full_state interpreter_output svars =
     if s <> "states" then (s, j) else
     (* Just add our states to "_balance" that's in the output JSON. *)
     let svars_j = ContractState.state_to_json svars in
-    (s, Basic.Util.combine j svars_j)
+    (s, `List ((json_to_list j) @ (json_to_list svars_j)))
   ) in
   Yojson.Basic.pretty_to_string (`Assoc items')
 

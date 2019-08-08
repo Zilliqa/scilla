@@ -63,8 +63,8 @@ let rec build_contract_tests env name exit_code i n additional_libs =
         let state_json_path = dir ^/ "state_" ^ istr ^. "json" in
         let args_state =
           if ipc_mode then
-            (StateIPCTest.setup_and_initialize ~sock_addr:ipc_socket_addr ~state_json_path;
-            args_basic @ ["-ipcaddress"; ipc_socket_addr])
+            let balance = StateIPCTest.setup_and_initialize ~sock_addr:ipc_socket_addr ~state_json_path in
+            args_basic @ ["-ipcaddress"; ipc_socket_addr; "-balance"; balance]
           else
             args_basic @ ["-istate" ; state_json_path]
         in

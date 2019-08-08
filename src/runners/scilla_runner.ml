@@ -269,7 +269,11 @@ let () =
           let open StateService in
           let open MonadUtil in
           let open Result.Let_syntax in
-          let fields = List.map cstate'.fields ~f:(fun (s, t) -> { fname = s; ftyp = t; fval = None }) in
+          (* We push all fields except _balance. *)
+          let fields = List.filter_map cstate'.fields ~f:(fun (s, t) ->
+            if s = balance_label then None else
+            Some { fname = s; ftyp = t; fval = None })
+          in
           let sm = IPC (cli.ipc_address) in
           let () = initialize ~sm ~fields in
           match
@@ -303,14 +307,13 @@ let () =
 
         let cstate, gas_remaining' = 
         if is_ipc then
-          (* TODO: Get balance as command line argument. *)
-          let cur_bal = Stdint.Uint128.zero in
+          let cur_bal = cli.balance in
           let init_res = init_module cmod initargs [] cur_bal bstate elibs in
           let cstate, gas_remaining', _ = check_extract_cstate cli.input init_res gas_remaining in
           (* Initialize the state server. *)
-          let fields = List.map cstate.fields ~f:(fun (s, t) ->
+          let fields = List.filter_map cstate.fields ~f:(fun (s, t) ->
             let open StateService in
-            { fname = s; ftyp = t; fval = None }
+            if s = balance_label then None else Some { fname = s; ftyp = t; fval = None }
           ) in
           let () = StateService.initialize ~sm:(IPC cli.ipc_address) ~fields in
           (cstate, gas_remaining')
