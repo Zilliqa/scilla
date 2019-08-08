@@ -105,6 +105,7 @@ let map_access_type_tests = [
   ("Map (Uint32) (Map (Uint32) (Int32))", "Map (Uint32) (Map (Uint32) (Int32))", 0);
   ("Map (Uint32) (Map (Uint32) (Int32))", "Map (Uint32) (Int32)", 1);
   ("Map (Uint32) (Map (Uint32) (Int32))", "Int32", 2);
+  ("Int32", "Int32", 0);
 ]
 
 let make_map_access_type_tests tlist =
