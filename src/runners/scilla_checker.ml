@@ -193,7 +193,7 @@ let check_cmodule cli =
         | Some cf_info -> ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: base_output in
       let j = `Assoc output_with_cf in
       check_version cmod.smver;
-      pout (sprintf "%s\n" (Yojson.pretty_to_string j));)
+      pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string j));)
 
 let () =
     let cli = parse_cli () in
