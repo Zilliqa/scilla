@@ -37,7 +37,7 @@ module ContractState : sig
   val state_to_string : ?pp:bool -> ((string * Syntax.literal) list) -> string
 
   (* Get a json object from given states *)
-  val state_to_json : ((string * Syntax.literal) list) -> Yojson.t
+  val state_to_json : ((string * Syntax.literal) list) -> Yojson.Basic.t
 
   (* Given an init.json filename, return extlib fields *)
   val get_init_extlibs : string -> (string * string) list
@@ -83,7 +83,7 @@ module Message : sig
    **)
   val message_to_jstring : ?pp:bool -> ((string * Syntax.literal) list) -> string
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
-  val message_to_json : ((string * Syntax.literal) list) -> Yojson.t
+  val message_to_json : ((string * Syntax.literal) list) -> Yojson.Basic.t
 
 end
 
@@ -133,7 +133,7 @@ open ParserUtil.ParsedSyntax
         }
   *)
   val get_string : int -> contract -> (string * (string * Syntax.typ) list) list -> string
-  val get_json : int -> contract -> (string * (string * Syntax.typ) list) list -> Yojson.t
+  val get_json : int -> contract -> (string * (string * Syntax.typ) list) list -> Yojson.Basic.t
 
 end
 
@@ -145,7 +145,7 @@ module Event : sig
    **)
   val event_to_jstring : ?pp:bool -> (string * Syntax.literal) list -> string
   (* Same as Event_to_jstring, but instead gives out raw json, not it's string *)
-  val event_to_json : (string * Syntax.literal) list -> Yojson.t
+  val event_to_json : (string * Syntax.literal) list -> Yojson.Basic.t
 
 end
 
@@ -179,5 +179,5 @@ module CashflowInfo : sig
 
   *)
 
-  val get_json : ((string * string) list * (string * ((string * string list) list)) list) -> Yojson.t
+  val get_json : ((string * string) list * (string * ((string * string list) list)) list) -> Yojson.Basic.t
 end
