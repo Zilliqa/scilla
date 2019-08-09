@@ -28,9 +28,9 @@ open StateIPCIdl
 open OUnit2
 
 module IPCTestServer = IPCIdl(Idl.GenServer ())
+module Hashtbl = Caml.Hashtbl
 
-type hashtable =  (string, value_type) Hashtbl_intf.Hashtbl.t
-
+type hashtable =  (string, value_type) Hashtbl.t
 and value_type =
   | NonMapVal of string
   | MapVal of hashtable
@@ -40,7 +40,7 @@ let fetch_message = "Fetching state value failed"
 let update_message = "Updating state value failed"
 
 (* Global state of the server. *)
-let table = Hashtbl.create (module String)
+let table = Hashtbl.create 8
 let threadref = ref None
 
 let fail a = Error a
@@ -103,7 +103,7 @@ let rec serialize_value value =
   match value with
   | NonMapVal v -> Ipcmessage_types.Bval (Bytes.of_string v)
   | MapVal m -> 
-    let map_list = Hashtbl.to_alist m in
+    let map_list = Hashtbl.fold (fun k v acc -> (k, v) :: acc) m [] in
     let serialized_map_list = List.map map_list ~f: (fun (str, v) -> (str, serialize_value v)) in
     Ipcmessage_types.Mval({ m = serialized_map_list})
 
@@ -111,9 +111,9 @@ let rec deserialize_value value =
   match value with 
   | Ipcmessage_types.Bval v -> NonMapVal (Bytes.to_string v)
   | Ipcmessage_types.Mval m_list ->
-    let new_table = Hashtbl.create (module String) in
+    let new_table = Hashtbl.create (List.length m_list.m) in
     List.iter m_list.m ~f: (fun (str, v) -> 
-      Hashtbl.set new_table ~key:str ~data:(deserialize_value v));
+      Hashtbl.replace new_table str (deserialize_value v));
     MapVal new_table
 
 (* Not sure if need to check mapdepth vs length of indices? *)
@@ -125,7 +125,7 @@ let fetch_state_value query =
       match value with
       | NonMapVal _ -> fail RPCError.({ code = 0; message = fetch_message})
       | MapVal m ->
-        let vopt = Hashtbl.find m head in
+        let vopt = Hashtbl.find_opt m head in
         match vopt with
         | Some v -> recurser v tail
         | None -> pure None
@@ -149,9 +149,9 @@ let update_state_value query value =
     | [index] ->
       pure @@ (match new_val with
       | None -> Hashtbl.remove map index
-      | Some v -> Hashtbl.set map ~key:index ~data:v)
+      | Some v -> Hashtbl.replace map index v)
     | head :: tail ->
-      let vopt = Hashtbl.find map head in
+      let vopt = Hashtbl.find_opt map head in
       match vopt with
       | None -> fail RPCError.({ code = 0; message = update_message})
       | Some v -> 
