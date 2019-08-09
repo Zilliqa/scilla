@@ -313,10 +313,10 @@ module TypeUtilities = struct
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
   let rec map_access_type mt nindices = match mt, nindices with
-      | MapType (_, _), 0 -> pure mt
-      | MapType (_, vt'), 1 -> pure vt'
-      | MapType (_, vt'), nkeys' when nkeys' > 1 -> map_access_type vt' (nindices-1)
-      | _, _ -> fail0 "Cannot index into map %s: Too many index keys or non-map type"
+    | _ , 0 -> pure mt
+    | MapType (_, vt'), 1 -> pure vt'
+    | MapType (_, vt'), nkeys' when nkeys' > 1 -> map_access_type vt' (nindices-1)
+    | _, _ -> fail0 "Cannot index into map: Too many index keys."
 
   (* The depth of a nested map. *)
   let rec map_depth mt = match mt with
