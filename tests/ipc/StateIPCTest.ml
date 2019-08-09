@@ -26,78 +26,14 @@
 let use_test_server = true
 
 open OUnit2
-open ErrorUtils
-open JSON
-open Core.Result.Let_syntax
-open PrettyPrinters
-open TypeUtil
 open Core
-open MonadUtil
 open Syntax
-
-(* This is used as a client to initialize the server with
- * whatever state we want to run the contract with. *)
-module SS = StateService.MakeStateService ()
-
-let literal_type_failure l =
-  let t = TypeUtilities.literal_type l in
-  match t with
-  | Error emsg ->
-    assert_failure (scilla_error_to_string emsg)
-  | Ok s-> s
-
-let json_file_to_state path =
-  try
-    ContractState.get_json_data path
-  with
-  | Invalid_json s ->
-    assert_failure (scilla_error_to_string s)
-
-(* Start a mock server (if set) at ~sock_addr and initialize its
- * state with ~state_json_path. *)
-let setup_and_initialize ~sock_addr ~state_json_path =
-  let state = json_file_to_state state_json_path in
-
-  (* Setup a mock server within the testsuite? *)
-  if use_test_server then StateIPCTestServer.start_server ~sock_addr;
-
-  (* Initialize StateService. *)
-  let fields = List.filter_map state ~f:(fun (s, l) -> 
-    if s = ContractUtil.balance_label then None else
-    Some { fname = s; StateService.ftyp = literal_type_failure l; fval = None })
-  in
-  let sm = StateService.IPC (sock_addr) in
-  let () = SS.initialize ~sm ~fields in
-  (* Update the server (via StateService) with the state values we want. *)
-  match
-    mapM state ~f:(fun (s, v) ->
-      if s <> ContractUtil.balance_label then
-        let%bind _ = SS.update ~fname:(asId s) ~keys:[] ~value:v in
-        pure ()
-      else pure ()
-    )
-  with
-  | Error s -> assert_failure (scilla_error_to_string s)
-  | Ok _ ->
-    match List.Assoc.find state ~equal:(=) ContractUtil.balance_label with
-    | Some bal ->
-      (match bal with
-      | UintLit (Uint128L b) -> Stdint.Uint128.to_string b
-      | _ -> assert_failure "Incorrect literal type of " ^
-              ContractUtil.balance_label ^ " in state.json")
-    | None -> assert_failure ("Unable to find " ^
-                ContractUtil.balance_label ^ " in state.json")
-
-(* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
-let get_final_finish () =
-  match SS.get_full_state (), SS.finalize() with
-  | Ok fs', Ok () ->
-    if use_test_server then StateIPCTestServer.stop_server();
-    fs'
-  | Error s, _ | Ok _, Error s ->
-    assert_failure (scilla_error_to_string s)
-
 open Yojson
+
+let parse_typ_wrapper t = 
+  match FrontEndParser.parse_type t with
+  | Error _ -> assert_failure (sprintf "StateIPCTest: Invalid type in json: %s\n" t)
+  | Ok s -> s
 
 let json_exn_wrapper thunk =
   try
@@ -106,8 +42,12 @@ let json_exn_wrapper thunk =
     | Json_error s
     | Basic.Util.Undefined (s, _)
     | Basic.Util.Type_error (s, _)
-      -> raise (mk_invalid_json s)
+      -> assert_failure s
     | _ -> assert_failure (Printf.sprintf "Unknown error parsing output JSON")
+
+let json_from_file f =
+  let thunk () = Basic.from_file f in
+  json_exn_wrapper thunk
 
 let json_from_string s =
   let thunk () = Basic.from_string s in
@@ -128,7 +68,90 @@ let json_to_list j =
 let json_to_string j =
   let thunk() = Basic.Util.to_string j in
   json_exn_wrapper thunk
- 
+
+let rec json_to_pb t j =
+  match t with
+  | MapType (_, vt) ->
+    let kvlist = json_to_list j in
+    let kvlist' = List.map kvlist ~f:(fun kvj ->
+      let kj = json_member "key" kvj in
+      let vj = json_member "val" kvj in
+      let kpb =  Basic.pretty_to_string kj in
+      let vpb = json_to_pb vt vj in
+      (kpb, vpb)
+    ) in
+    Ipcmessage_types.Mval ({m = kvlist' })
+  | _ -> Ipcmessage_types.Bval (Bytes.of_string (Basic.pretty_to_string j))
+
+let rec pb_to_json pb =
+  match pb with
+  | Ipcmessage_types.Mval pbm ->
+    `List (
+      List.map pbm.m ~f:(fun (k, vpb) ->
+         let k'= (json_from_string  k |> json_to_string) in
+        `Assoc([("key", `String k'); ("val", pb_to_json vpb)])
+      )
+    )
+  | Ipcmessage_types.Bval s -> json_from_string (Bytes.to_string s)
+
+(* Parse a state JSON file into (fname, ftyp, fval) where fval is protobuf encoded. *)
+let json_file_to_state path =
+  let j = json_from_file path in
+
+  let svars = List.map (json_to_list j) ~f:(fun sv ->
+    let fname = json_member "vname" sv |> json_to_string in
+    let ftyp = json_member "type" sv |> json_to_string |> parse_typ_wrapper in
+    let fval = json_to_pb ftyp (json_member "value" sv) in
+    (fname, ftyp, fval)
+  ) in
+  svars
+
+let state_to_json s =
+  `List (
+    List.map s ~f:(fun (fname, ftyp, fval) ->
+      `Assoc [
+        ("vname", `String fname);
+        ("type", `String (pp_typ ftyp));
+        ("value", pb_to_json fval);
+      ]
+    )
+  )
+
+(* Start a mock server (if set) at ~sock_addr and initialize its
+ * state with ~state_json_path. *)
+let setup_and_initialize ~sock_addr ~state_json_path =
+  let state = json_file_to_state state_json_path in
+
+  (* Setup a mock server within the testsuite? *)
+  if use_test_server then StateIPCTestServer.start_server ~sock_addr;
+
+  let fields = List.filter_map state ~f:(fun (s, t, _) -> 
+    if s = ContractUtil.balance_label then None else Some (s, t))
+  in
+  let () = StateIPCTestClient.initialize ~fields ~sock_addr in
+  (* Update the server (via the test client) with the state values we want. *)
+  List.iter state ~f:(fun (fname, _, value) ->
+      if fname <> ContractUtil.balance_label
+      then StateIPCTestClient.update ~fname ~value 
+      else ()
+    );
+  (* Find the balance from state and return it. *)
+  match List.find state ~f:(fun (fname, _, _) -> fname = ContractUtil.balance_label) with
+  | Some (_, _, balpb) ->
+    (match balpb with
+    | Ipcmessage_types.Bval (bal) ->
+      (json_from_string (Bytes.to_string bal) |> json_to_string)
+    | _ -> assert_failure "Incorrect type of " ^
+            ContractUtil.balance_label ^ " in state.json")
+  | None -> assert_failure ("Unable to find " ^
+              ContractUtil.balance_label ^ " in state.json")
+
+(* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
+let get_final_finish () =
+  let state = StateIPCTestClient.fetch_all () in
+  if use_test_server then StateIPCTestServer.stop_server();
+  state
+
 (* Given the interpreter's output, parse the JSON, append svars to it and print out new JSON. *)
 let append_full_state interpreter_output svars =
   let j = json_from_string interpreter_output in
@@ -136,7 +159,7 @@ let append_full_state interpreter_output svars =
   let items' = List.map items ~f:(fun (s, j) ->
     if s <> "states" then (s, j) else
     (* Just add our states to "_balance" that's in the output JSON. *)
-    let svars_j = ContractState.state_to_json svars in
+    let svars_j = state_to_json svars in
     (s, `List ((json_to_list j) @ (json_to_list svars_j)))
   ) in
   Yojson.Basic.pretty_to_string (`Assoc items')

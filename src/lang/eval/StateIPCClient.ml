@@ -33,7 +33,7 @@ module IPCClient = IPCIdl(Idl.GenClient ())
 let translate_res res =
   match res with
   | Error (e : RPCError.err_t) ->
-    fail0 (Printf.sprintf "Error in IPC access: (code:%d, message:%s)." e.code e.message)
+    fail0 (Printf.sprintf "StateIPCClient: Error in IPC access: (code:%d, message:%s)." e.code e.message)
   | Ok res' -> pure res'
 
 let ipcclient_exn_wrapper thunk =
@@ -41,8 +41,8 @@ let ipcclient_exn_wrapper thunk =
     thunk()
   with
   | Unix.Unix_error (_, s1, s2) ->
-    fail0 ("Unix error: " ^ s1 ^ s2)
-  | _ -> fail0 "Unexpected error making JSON-RPC call"
+    fail0 ("StateIPCClient: Unix error: " ^ s1 ^ s2)
+  | _ -> fail0 "StateIPCClient: Unexpected error making JSON-RPC call"
 
 (* Send msg via socket s with a delimiting character "0xA". *)
 let send_delimited oc msg =
@@ -54,12 +54,12 @@ let binary_rpc ~socket_addr (call: Rpc.call) : Rpc.response =
   let sockaddr = Unix.ADDR_UNIX socket_addr in
   let (ic, oc) = Unix.open_connection sockaddr in
   let msg_buf = Jsonrpc.string_of_call ~version: Jsonrpc.V2 call in
-  Printf.printf "Sending: %s\n" msg_buf;
+  DebugMessage.plog (Printf.sprintf "Sending: %s\n" msg_buf);
   (* Send data to the socket. *)
   let _ = send_delimited oc msg_buf in
   (* Get response. *)
   let response = Caml.input_line ic in
-  Printf.printf "Response: %s\n" response;
+  DebugMessage.plog (Printf.sprintf "Response: %s\n" response);
   Jsonrpc.response_of_string response
 
 (* Encode a literal into bytes, opaque to the backend storage. *)
@@ -69,7 +69,7 @@ let deserialize_literal s tp =
     pure @@ ContractState.jstring_to_literal s tp
   with
   | Invalid_json s ->
-    fail (s @ mk_error0 "Error deserializing literal fetched from IPC call")
+    fail (s @ mk_error0 "StateIPCClient: Error deserializing literal fetched from IPC call")
 
 (* Map fields are serialized into Ipcmessage_types.MVal
    Other fields are serialized using serialize_literal into bytes/string. *)
@@ -103,7 +103,7 @@ let rec deserialize_value value tp =
         pure ()
       ) in
       pure (Map ((kt, vt), mlit))
-    | _ -> fail0 "Type mismatch deserializing value. Unexpected protobuf map.")
+    | _ -> fail0 "StateIPCClient: Type mismatch deserializing value. Unexpected protobuf map.")
 
 let encode_serialized_value value =
   let encoder = Pbrt.Encoder.create () in
