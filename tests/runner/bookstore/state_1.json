@@ -1,3 +1,10 @@
 [
-  { "vname": "_balance", "type": "Uint128", "value": "0" }
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
+  { "vname": "members", "type": "Map (ByStr20) (Member)", "value": [] },
+  {
+    "vname": "is_store_open",
+    "type": "Bool",
+    "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+  },
+  { "vname": "bookInventory", "type": "Map (Uint32) (Book)", "value": [] }
 ]
