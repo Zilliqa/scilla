@@ -25,9 +25,7 @@ open Core
 open Result.Let_syntax
 open MonadUtil
 open StateIPCIdl
-open OUnit2
 
-module IPCTestServer = IPCIdl(Idl.GenServer ())
 module Hashtbl = Caml.Hashtbl
 
 type hashtable =  (string, value_type) Hashtbl.t
@@ -35,14 +33,11 @@ and value_type =
   | NonMapVal of string
   | MapVal of hashtable
 
+type t = Unix.File_descr.t option ref
+
 let num_pending_requests = 5
 let fetch_message = "Fetching state value failed"
 let update_message = "Updating state value failed"
-
-(* Global state of the server. *)
-let table = Hashtbl.create 8
-let threadref = ref None
-
 let fail a = Error a
 
 (* Send msg with delimiting character "0xA". *)
@@ -50,41 +45,6 @@ let send_delimited oc msg =
   let msg' = msg ^ "\n" in
   Caml.output_string oc msg';
   Caml.flush oc
-
-let binary_rpc conn =
-  let ic = Unix.in_channel_of_descr conn in
-  let oc = Unix.out_channel_of_descr conn in 
-  let request = Jsonrpc.call_of_string (Caml.input_line ic) in
-  let response = (Idl.server IPCTestServer.implementation) request in
-  send_delimited oc (Jsonrpc.string_of_response response)
-
-let prepare_server sock_addr =
-  (try Unix.unlink sock_addr with Unix.Unix_error(Unix.ENOENT, _, _) -> ());
-  let socket = Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol: 0 in
-  Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_addr);
-  Unix.listen socket ~backlog:num_pending_requests;
-  Printf.fprintf stdout "ScillaIPCTestServer: listening on %s\n" sock_addr;
-  let server () =
-    while true do
-      let conn, _ = Unix.accept socket in
-      try
-        match !threadref with
-        | Some _ ->
-          (* Sleep for 25 milliseconds, similar to the jsonrpccpp server. *)
-          let _ = Thread.delay(0.025) in
-          binary_rpc conn
-        | None ->
-          Unix.shutdown conn ~mode:Unix.SHUTDOWN_RECEIVE;
-          Unix.unlink sock_addr;
-          Thread.exit () (* No active server thead. *)
-      with
-      | _ ->
-          Unix.shutdown conn ~mode:Unix.SHUTDOWN_RECEIVE;
-          Unix.unlink sock_addr;
-          assert_failure "IPC Server raised exception."
-    done
-  in
-  server
 
 let decode_serialized_value value =
   let decoder = Pbrt.Decoder.of_bytes (Bytes.of_string value) in
@@ -99,88 +59,126 @@ let decode_serialized_query query =
   let decoder = Pbrt.Decoder.of_bytes (Bytes.of_string query) in
   Ipcmessage_pb.decode_proto_scilla_query decoder
 
-let rec serialize_value value =
-  match value with
-  | NonMapVal v -> Ipcmessage_types.Bval (Bytes.of_string v)
-  | MapVal m -> 
-    let map_list = Hashtbl.fold (fun k v acc -> (k, v) :: acc) m [] in
-    let serialized_map_list = List.map map_list ~f: (fun (str, v) -> (str, serialize_value v)) in
-    Ipcmessage_types.Mval({ m = serialized_map_list})
+module MakeServer() = struct
 
-let rec deserialize_value value =
-  match value with 
-  | Ipcmessage_types.Bval v -> NonMapVal (Bytes.to_string v)
-  | Ipcmessage_types.Mval m_list ->
-    let new_table = Hashtbl.create (List.length m_list.m) in
-    List.iter m_list.m ~f: (fun (str, v) -> 
-      Hashtbl.replace new_table str (deserialize_value v));
-    MapVal new_table
+  module IPCTestServer = IPCIdl(Idl.GenServer ())
 
-(* Not sure if need to check mapdepth vs length of indices? *)
-let fetch_state_value query =
-  let rec recurser value indices =
-    match indices with
-    | [] -> pure (Some value)
-    | head :: tail ->
-      match value with
-      | NonMapVal _ -> fail RPCError.({ code = 0; message = fetch_message})
-      | MapVal m ->
-        let vopt = Hashtbl.find_opt m head in
-        match vopt with
-        | Some v -> recurser v tail
-        | None -> pure None
-  in
-  let query = decode_serialized_query query in
-  match query with
-  | { name; indices; ignoreval; _ } ->
-    let string_indices_list = name :: (List.map indices ~f: Bytes.to_string) in
-    let%bind vopt = recurser (MapVal table) string_indices_list in
-    match vopt with
-    | Some v ->
-      if ignoreval then pure @@ (true, "") else
-      pure @@ (true, encode_serialized_value (serialize_value v))
-    | None -> pure @@ (false, "")
+  let socket = ref None
 
-(* Not sure if need to check mapdepth vs length of indices? *)
-let update_state_value query value =
-  let rec recurser_update ?(new_val = None) map indices =
-    match indices with
-    | [] -> fail RPCError.({ code = 0; message = update_message})
-    | [index] ->
-      pure @@ (match new_val with
-      | None -> Hashtbl.remove map index
-      | Some v -> Hashtbl.replace map index v)
-    | head :: tail ->
-      let vopt = Hashtbl.find_opt map head in
+  (* Global state of the server. *)
+  let table = Hashtbl.create 8
+
+  let binary_rpc conn =
+    let ic = Unix.in_channel_of_descr conn in
+    let oc = Unix.out_channel_of_descr conn in 
+    let request = Jsonrpc.call_of_string (Caml.input_line ic) in
+    let response = (Idl.server IPCTestServer.implementation) request in
+    send_delimited oc (Jsonrpc.string_of_response response)
+
+  let prepare_server sock_addr =
+    (try Unix.unlink sock_addr with Unix.Unix_error(Unix.ENOENT, _, _) -> ());
+    socket := Some (Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol:0);
+    Unix.bind (BatOption.get !socket) ~addr:(Unix.ADDR_UNIX sock_addr);
+    Unix.listen (BatOption.get !socket) ~backlog:num_pending_requests;
+    let server () =
+      Printf.printf "ScillaIPCTestServer: Thread %d: listening on %s\n" (Thread.id (Thread.self())) sock_addr;
+      while true do
+        try
+          (* main threading closing socket will trigger an exception in "accept". *)
+          let conn, _ = Unix.accept (BatOption.get !socket) in
+          binary_rpc conn;
+          Unix.close conn
+        with
+        | _ ->
+          Printf.printf "Exiting thread %d\n" (Thread.id (Thread.self()));
+          Thread.exit() (* Time to be done with this thread. *)
+      done
+    in
+    server
+
+  let rec serialize_value value =
+    match value with
+    | NonMapVal v -> Ipcmessage_types.Bval (Bytes.of_string v)
+    | MapVal m -> 
+      let map_list = Hashtbl.fold (fun k v acc -> (k, v) :: acc) m [] in
+      let serialized_map_list = List.map map_list ~f: (fun (str, v) -> (str, serialize_value v)) in
+      Ipcmessage_types.Mval({ m = serialized_map_list})
+
+  let rec deserialize_value value =
+    match value with 
+    | Ipcmessage_types.Bval v -> NonMapVal (Bytes.to_string v)
+    | Ipcmessage_types.Mval m_list ->
+      let new_table = Hashtbl.create (List.length m_list.m) in
+      List.iter m_list.m ~f: (fun (str, v) -> 
+        Hashtbl.replace new_table str (deserialize_value v));
+      MapVal new_table
+
+  (* Not sure if need to check mapdepth vs length of indices? *)
+  let fetch_state_value query =
+    let rec recurser value indices =
+      match indices with
+      | [] -> pure (Some value)
+      | head :: tail ->
+        match value with
+        | NonMapVal _ -> fail RPCError.({ code = 0; message = fetch_message})
+        | MapVal m ->
+          let vopt = Hashtbl.find_opt m head in
+          match vopt with
+          | Some v -> recurser v tail
+          | None -> pure None
+    in
+    let query = decode_serialized_query query in
+    match query with
+    | { name; indices; ignoreval; _ } ->
+      let string_indices_list = name :: (List.map indices ~f: Bytes.to_string) in
+      let%bind vopt = recurser (MapVal table) string_indices_list in
       match vopt with
-      | None -> fail RPCError.({ code = 0; message = update_message})
-      | Some v -> 
-        match v with
-        | NonMapVal _ -> fail RPCError.({ code = 0; message = update_message})
-        | MapVal m -> recurser_update ~new_val m tail
-  in
-  let query = decode_serialized_query query in
-  match query with
-  | { name; indices; ignoreval; _ } ->
-    let string_indices_list = List.map indices ~f: Bytes.to_string in
-    match ignoreval with
-    | true -> recurser_update table (name::string_indices_list)
-    | false -> 
-      let new_val = deserialize_value (decode_serialized_value value) in
-      recurser_update ~new_val:(Some new_val) table (name::string_indices_list)
+      | Some v ->
+        if ignoreval then pure @@ (true, "") else
+        pure @@ (true, encode_serialized_value (serialize_value v))
+      | None -> pure @@ (false, "")
+
+  (* Not sure if need to check mapdepth vs length of indices? *)
+  let update_state_value query value =
+    let rec recurser_update ?(new_val = None) map indices =
+      match indices with
+      | [] -> fail RPCError.({ code = 0; message = update_message})
+      | [index] ->
+        pure @@ (match new_val with
+        | None -> Hashtbl.remove map index
+        | Some v -> Hashtbl.replace map index v)
+      | head :: tail ->
+        let vopt = Hashtbl.find_opt map head in
+        match vopt with
+        | None -> fail RPCError.({ code = 0; message = update_message})
+        | Some v -> 
+          match v with
+          | NonMapVal _ -> fail RPCError.({ code = 0; message = update_message})
+          | MapVal m -> recurser_update ~new_val m tail
+    in
+    let query = decode_serialized_query query in
+    match query with
+    | { name; indices; ignoreval; _ } ->
+      let string_indices_list = List.map indices ~f: Bytes.to_string in
+      match ignoreval with
+      | true -> recurser_update table (name::string_indices_list)
+      | false -> 
+        let new_val = deserialize_value (decode_serialized_value value) in
+        recurser_update ~new_val:(Some new_val) table (name::string_indices_list)
+
+end
 
 let start_server ~sock_addr =
-  IPCTestServer.fetch_state_value fetch_state_value;
-  IPCTestServer.update_state_value update_state_value;
-  match !threadref with
-  | Some _ -> assert_failure "Server already running, cannot restart"
-  | None ->
-    let server = prepare_server sock_addr in
-    let t = Thread.create server () in
-    threadref := Some t
+  let module ServerModule = MakeServer() in
+  ServerModule.IPCTestServer.fetch_state_value ServerModule.fetch_state_value;
+  ServerModule.IPCTestServer.update_state_value ServerModule.update_state_value;
+  let server = ServerModule.prepare_server sock_addr in
+  let _ = Thread.create server () in
+  ServerModule.socket
 
-let stop_server () =
-  match !threadref with
-  | Some _ -> threadref := None
-  | None ->
-    assert_failure "No server running, cannot stop."
+let stop_server socketref =
+  match !socketref with
+  | Some socket ->
+    (* Closing the socket will trigger the "accept" to raise. *)
+    Unix.close socket
+  | None -> ()

@@ -61,12 +61,12 @@ let rec build_contract_tests env name exit_code i n additional_libs =
               "-iblockchain" ; dir ^/ "blockchain_" ^ istr ^. "json"] in
 
         let state_json_path = dir ^/ "state_" ^ istr ^. "json" in
-        let args_state =
+        let (args_state, t) =
           if ipc_mode then
-            let balance = StateIPCTest.setup_and_initialize ~sock_addr:ipc_socket_addr ~state_json_path in
-            args_basic @ ["-ipcaddress"; ipc_socket_addr; "-balance"; balance]
+            let (balance, t) = StateIPCTest.setup_and_initialize ~sock_addr:ipc_socket_addr ~state_json_path in
+            args_basic @ ["-ipcaddress"; ipc_socket_addr; "-balance"; balance], t
           else
-            args_basic @ ["-istate" ; state_json_path]
+            args_basic @ ["-istate" ; state_json_path], StateIPCTest.noserver
         in
 
         let args' =
@@ -86,7 +86,7 @@ let rec build_contract_tests env name exit_code i n additional_libs =
           ~foutput:(fun s ->
               (* if the test is supposed to succeed we read the output from a file,
                  otherwise we read from the output stream *)
-              let out' =
+              let interpreter_output =
                 if exit_code = succ_code
                 then In_channel.read_all output_file
                 else BatStream.to_string s
@@ -95,10 +95,11 @@ let rec build_contract_tests env name exit_code i n additional_libs =
                 if ipc_mode then
                 (* The output of the interpreter in IPC mode will only contain "_balance" as
                  * the state. The remaining have to be gotten from the server and appended. *)
-                  StateIPCTest.get_final_finish() |> StateIPCTest.append_full_state out'
-                else out'
+                  StateIPCTest.get_final_finish t ~sock_addr:ipc_socket_addr 
+                    |> StateIPCTest.append_full_state ~goldoutput_file ~interpreter_output
+                else interpreter_output
               in
-              if env.update_gold test_ctxt
+              if env.update_gold test_ctxt && not ipc_mode
               then output_updater goldoutput_file test_name out
               else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out))
       in

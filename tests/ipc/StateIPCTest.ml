@@ -30,6 +30,9 @@ open Core
 open Syntax
 open Yojson
 
+type t = StateIPCTestServer.t
+let noserver : t = ref None
+
 let parse_typ_wrapper t = 
   match FrontEndParser.parse_type t with
   | Error _ -> assert_failure (sprintf "StateIPCTest: Invalid type in json: %s\n" t)
@@ -117,13 +120,64 @@ let state_to_json s =
     )
   )
 
+(* Given two output JSONs, sort map keys in the second one w.r.t the first.
+ * The order of variables in the "state" member is asserted to be the same. *)
+let sort_mapkeys goldj outj =
+  let goldstates = json_to_list @@ json_member "states" goldj in
+  let outstates = json_to_list @@ json_member "states" outj in
+  let rec map_sorter goldmap outmap t =
+    match t with
+    | MapType (_, vt) ->
+      let goldlist = json_to_list goldmap in
+      let outlist = json_to_list outmap in
+      let outlist' = List.fold_right goldlist ~f:(fun gold outacc ->
+        let goldkey = json_member "key" gold |> json_to_string in
+        let corressponding_out = List.find outlist ~f:(fun outelm ->
+          let outkey = json_member "key" outelm |> json_to_string in
+          goldkey = outkey
+        ) in
+        match corressponding_out with
+        | Some out ->
+          let outkey = json_member "key" out in
+          let outval = json_member "val" out in
+          let outval' = map_sorter gold outval vt in
+          let outj = `Assoc ([ ("key", outkey); ("val", outval') ]) in
+          outj :: outacc
+        | None -> outacc
+      ) ~init:[] in
+      `List outlist'
+    | _ -> outmap
+  in
+  let outstates' = `List (
+    List.map2_exn goldstates outstates ~f:(fun goldstate outstate ->
+      let vname = json_member "vname" goldstate in
+      let t = json_member "type" goldstate |> json_to_string |> parse_typ_wrapper in
+      assert_bool "sort_mapkeys: order of gold states and out states mismatch"
+        (vname |> json_to_string = (json_member "vname" outstate |> json_to_string));
+      let outval = map_sorter (json_member "value" goldstate) (json_member "value" outstate) t in
+      `Assoc [
+        ("vname", vname);
+        ("type", json_member "type" goldstate);
+        ("value", outval);
+      ]
+    )
+  ) in
+  (* Replace outstates with outstates' in outj. *)
+  `Assoc (
+    List.fold_right (json_to_assoc outj) ~f:(fun (s, j) acc ->
+      if s = "states" then (s, outstates')::acc else (s, j)::acc
+    ) ~init:[]
+  )
+
 (* Start a mock server (if set) at ~sock_addr and initialize its
  * state with ~state_json_path. *)
 let setup_and_initialize ~sock_addr ~state_json_path =
   let state = json_file_to_state state_json_path in
 
   (* Setup a mock server within the testsuite? *)
-  if use_test_server then StateIPCTestServer.start_server ~sock_addr;
+  let serverref : t =
+    if use_test_server then StateIPCTestServer.start_server ~sock_addr else ref None
+  in
 
   let fields = List.filter_map state ~f:(fun (s, t, _) -> 
     if s = ContractUtil.balance_label then None else Some (s, t))
@@ -140,27 +194,45 @@ let setup_and_initialize ~sock_addr ~state_json_path =
   | Some (_, _, balpb) ->
     (match balpb with
     | Ipcmessage_types.Bval (bal) ->
-      (json_from_string (Bytes.to_string bal) |> json_to_string)
-    | _ -> assert_failure "Incorrect type of " ^
+      ((json_from_string (Bytes.to_string bal) |> json_to_string), serverref)
+    | _ -> assert_failure ("Incorrect type of " ^
             ContractUtil.balance_label ^ " in state.json")
+    )
   | None -> assert_failure ("Unable to find " ^
               ContractUtil.balance_label ^ " in state.json")
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
-let get_final_finish () =
+let get_final_finish (serverref : t) ~sock_addr =
   let state = StateIPCTestClient.fetch_all () in
-  if use_test_server then StateIPCTestServer.stop_server();
+  if use_test_server then
+    (match !serverref with
+    | Some _ -> StateIPCTestServer.stop_server serverref; Unix.unlink sock_addr;
+    | None -> assert_failure "StateIPCTest received None thread when using test server");
   state
 
-(* Given the interpreter's output, parse the JSON, append svars to it and print out new JSON. *)
-let append_full_state interpreter_output svars =
+(* Given the interpreter's output, parse the JSON, append svars to it and print out new JSON.
+ * The gold output is used to re-order state variables and map keys from StateIPCTestServer. *)
+let append_full_state ~goldoutput_file ~interpreter_output svars =
+  (* Let's first re-order variables based on gold. *)
+  let goldj =  json_from_file goldoutput_file in
+  let goldjs = json_to_list @@ json_member "states" goldj in
+  let svars' = List.fold_right goldjs ~init:svars ~f:(fun goldv acc ->
+    let golds = json_member "vname" goldv |> json_to_string in
+    if golds = ContractUtil.balance_label then acc else
+    let (s', rest) =  List.partition_tf acc ~f:(fun (s, _, _) -> s = golds) in
+    s' @ rest
+  ) in
+  (* Now we go about generating an appended output JSON. *)
   let j = json_from_string interpreter_output in
   let items = json_to_assoc j in
-  let items' = List.map items ~f:(fun (s, j) ->
-    if s <> "states" then (s, j) else
-    (* Just add our states to "_balance" that's in the output JSON. *)
-    let svars_j = state_to_json svars in
-    (s, `List ((json_to_list j) @ (json_to_list svars_j)))
+  let unsorted_output_j = `Assoc (
+    List.map items ~f:(fun (s, j) ->
+      if s <> "states" then (s, j) else
+      (* Just add our states to "_balance" that's in the output JSON. *)
+      let svars_j = state_to_json svars' in
+      (s, `List ((json_to_list j) @ (json_to_list svars_j)))
+    )
   ) in
-  Yojson.Basic.pretty_to_string (`Assoc items')
-
+  (* Let's now sort within each state variable (for maps). *)
+  let sorted_output_j = sort_mapkeys goldj unsorted_output_j in
+  Basic.pretty_to_string sorted_output_j
