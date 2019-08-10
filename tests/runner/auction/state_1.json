@@ -1,7 +1,23 @@
 [
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
   {
-    "vname": "_balance",
-    "type": "Uint128",
-    "value": "0"
+    "vname": "ended",
+    "type": "Bool",
+    "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+  },
+  {
+    "vname": "highestBidder",
+    "type": "Option (ByStr20)",
+    "value": {
+      "constructor": "None",
+      "argtypes": [ "ByStr20" ],
+      "arguments": []
+    }
+  },
+  { "vname": "highestBid", "type": "Uint128", "value": "0" },
+  {
+    "vname": "pendingReturns",
+    "type": "Map (ByStr20) (Uint128)",
+    "value": []
   }
 ]
