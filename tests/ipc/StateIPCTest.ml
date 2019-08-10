@@ -132,6 +132,7 @@ let sort_mapkeys goldj outj =
       let outlist = json_to_list outmap in
       let outlist' = List.fold_right goldlist ~f:(fun gold outacc ->
         let goldkey = json_member "key" gold |> json_to_string in
+        let goldval = json_member "val" gold in
         let corressponding_out = List.find outlist ~f:(fun outelm ->
           let outkey = json_member "key" outelm |> json_to_string in
           goldkey = outkey
@@ -140,7 +141,7 @@ let sort_mapkeys goldj outj =
         | Some out ->
           let outkey = json_member "key" out in
           let outval = json_member "val" out in
-          let outval' = map_sorter gold outval vt in
+          let outval' = map_sorter goldval outval vt in
           let outj = `Assoc ([ ("key", outkey); ("val", outval') ]) in
           outj :: outacc
         | None -> outacc

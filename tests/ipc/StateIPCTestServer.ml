@@ -150,7 +150,10 @@ module MakeServer() = struct
       | head :: tail ->
         let vopt = Hashtbl.find_opt map head in
         match vopt with
-        | None -> fail RPCError.({ code = 0; message = update_message})
+        | None ->
+          let m = Hashtbl.create 8 in
+          let () = Hashtbl.replace map head (MapVal m) in
+          recurser_update ~new_val m tail
         | Some v -> 
           match v with
           | NonMapVal _ -> fail RPCError.({ code = 0; message = update_message})
