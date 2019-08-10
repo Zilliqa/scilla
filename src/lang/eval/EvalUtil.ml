@@ -204,11 +204,11 @@ module Configuration = struct
     else 
       let%bind (is_member, g) = fromR @@ StateService.is_member ~fname:m ~keys:klist in
       match (is_member, g) with
-      | true, G_MapGet(i, Some _) ->
+      | true, G_MapGet(i, _) ->
         let scillit = ADTValue ("True", [], []) in
         let g' = G_MapGet(i, Some scillit) in
         pure (scillit, g')
-      | false, G_MapGet(i, None) ->
+      | false, G_MapGet(i, _) ->
         let scillit = ADTValue ("False", [], []) in
         let g' = G_MapGet(i, Some scillit) in
          pure (scillit, g')
