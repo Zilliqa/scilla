@@ -43,8 +43,8 @@ let fail a = Error a
 (* Send msg with delimiting character "0xA". *)
 let send_delimited oc msg =
   let msg' = msg ^ "\n" in
-  Caml.output_string oc msg';
-  Caml.flush oc
+  Out_channel.output_string oc msg';
+  Out_channel.flush oc
 
 let decode_serialized_value value =
   let decoder = Pbrt.Decoder.of_bytes (Bytes.of_string value) in
@@ -81,14 +81,8 @@ module MakeServer() = struct
     let server () =
       while true do
         let conn, _ = Unix.accept socket in
-        Printf.printf "Accepted connection %d on thread %d\n"
-          (Unix.File_descr.to_int conn) (Thread.id (Thread.self()));
-        Caml.flush_all();
         binary_rpc conn;
-        Unix.shutdown ~mode:Unix.SHUTDOWN_ALL conn;
         Unix.close conn;
-        Printf.printf "Closed connection %d on thread %d\n"
-          (Unix.File_descr.to_int conn) (Thread.id (Thread.self()));
       done
     in
     server

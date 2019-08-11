@@ -114,7 +114,6 @@ let rec build_contract_tests env name exit_code i n additional_libs =
         (test ~disable_validate_json:false ~ipc_mode:false) ::
         (build_contract_tests env name exit_code (i+1) n additional_libs)
       else
-        (test ~disable_validate_json:false ~ipc_mode:true) ::
         (test ~disable_validate_json:false ~ipc_mode:false) ::
         (build_contract_tests env name exit_code (i+1) n additional_libs)
 

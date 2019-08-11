@@ -47,8 +47,8 @@ let ipcclient_exn_wrapper thunk =
 (* Send msg via socket s with a delimiting character "0xA". *)
 let send_delimited oc msg =
   let msg' = msg ^ "\n" in
-  Caml.output_string oc msg';
-  Caml.flush oc
+  Out_channel.output_string oc msg';
+  Out_channel.flush oc
 
 let binary_rpc ~socket_addr (call: Rpc.call) : Rpc.response =
   let socket = Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol:0 in

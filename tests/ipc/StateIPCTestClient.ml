@@ -78,13 +78,15 @@ let send_delimited oc msg =
   Caml.flush oc
 
 let binary_rpc ~sock_addr (call: Rpc.call) : Rpc.response =
-  let sockaddr = Unix.ADDR_UNIX sock_addr in
-  let (ic, oc) = Unix.open_connection sockaddr in
+  let socket = Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol:0 in
+  Unix.connect socket ~addr:(Unix.ADDR_UNIX sock_addr);
+  let (ic, oc) = Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket in
   let msg_buf = Jsonrpc.string_of_call ~version: Jsonrpc.V2 call in
   (* Send data to the socket. *)
   let _ = send_delimited oc msg_buf in
   (* Get response. *)
   let response = Caml.input_line ic in
+  Unix.close socket;
   Jsonrpc.response_of_string response
 
 (* Fetch full state variable from server (no indexing). *)
@@ -104,7 +106,7 @@ let fetch ~fname =
   let res = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~sock_addr) q' in
   match res with
   | (true, res') -> decode_serialized_value (Bytes.of_string res')
-  | (false, _) -> assert_failure ("UnabStateIPCTestClient: Field " ^ fname ^ " not found on server")
+  | (false, _) -> assert_failure ("StateIPCTestClient: Field " ^ fname ^ " not found on server")
 
 (* Update full state variable to server (no indexing). *)
 let update ~fname ~value =
