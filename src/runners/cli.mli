@@ -25,6 +25,7 @@ type ioFiles = {
     input : string;
     libdirs : string list;
     gas_limit : Stdint.uint64;
+    balance : Stdint.uint128;
     pp_json : bool;
     ipc_address : string;
 }

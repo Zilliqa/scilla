@@ -14,6 +14,16 @@ end
 
 module IPCIdl(R: RPC) = struct
   open R
+
+  let description = Interface.{
+    name = "IPCIdl";
+    namespace = None;
+    description = ["This is a functor used to generate Clients and Servers that follow the json rpc protocol" ];
+    version=(1,0,0);
+  }
+  
+  let implementation = implement description
+
   let query = Param.mk ~name: "query" Rpc.Types.string
   let value = Param.mk ~name: "value" Rpc.Types.string
   (* The return value for `fetchStateValue` will be a pair (found : bool, value : string)
