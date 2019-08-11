@@ -51,15 +51,16 @@ let send_delimited oc msg =
   Caml.flush oc
 
 let binary_rpc ~socket_addr (call: Rpc.call) : Rpc.response =
-  let sockaddr = Unix.ADDR_UNIX socket_addr in
-  let (ic, oc) = Unix.open_connection sockaddr in
+  let socket = Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol:0 in
+  Unix.connect socket ~addr:(Unix.ADDR_UNIX socket_addr);
+  let (ic, oc) = Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket in
   let msg_buf = Jsonrpc.string_of_call ~version: Jsonrpc.V2 call in
   DebugMessage.plog (Printf.sprintf "Sending: %s\n" msg_buf);
   (* Send data to the socket. *)
   let _ = send_delimited oc msg_buf in
   (* Get response. *)
   let response = Caml.input_line ic in
-  Unix.shutdown_connection ic;
+  Unix.close socket;
   DebugMessage.plog (Printf.sprintf "Response: %s\n" response);
   Jsonrpc.response_of_string response
 
