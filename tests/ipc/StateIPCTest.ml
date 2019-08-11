@@ -30,9 +30,6 @@ open Core
 open Syntax
 open Yojson
 
-type t = StateIPCTestServer.t
-let noserver : t = ref None
-
 let parse_typ_wrapper t = 
   match FrontEndParser.parse_type t with
   | Error _ -> assert_failure (sprintf "StateIPCTest: Invalid type in json: %s\n" t)
@@ -176,9 +173,7 @@ let setup_and_initialize ~sock_addr ~state_json_path =
   let state = json_file_to_state state_json_path in
 
   (* Setup a mock server within the testsuite? *)
-  let serverref : t =
-    if use_test_server then StateIPCTestServer.start_server ~sock_addr else ref None
-  in
+  if use_test_server then StateIPCTestServer.start_server ~sock_addr;
 
   let fields = List.filter_map state ~f:(fun (s, t, _) -> 
     if s = ContractUtil.balance_label then None else Some (s, t))
@@ -195,7 +190,7 @@ let setup_and_initialize ~sock_addr ~state_json_path =
   | Some (_, _, balpb) ->
     (match balpb with
     | Ipcmessage_types.Bval (bal) ->
-      ((json_from_string (Bytes.to_string bal) |> json_to_string), serverref)
+      (json_from_string (Bytes.to_string bal) |> json_to_string)
     | _ -> assert_failure ("Incorrect type of " ^
             ContractUtil.balance_label ^ " in state.json")
     )
@@ -203,12 +198,9 @@ let setup_and_initialize ~sock_addr ~state_json_path =
               ContractUtil.balance_label ^ " in state.json")
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
-let get_final_finish (serverref : t) ~sock_addr =
+let get_final_finish  ~sock_addr =
   let state = StateIPCTestClient.fetch_all () in
-  if use_test_server then
-    (match !serverref with
-    | Some _ -> StateIPCTestServer.stop_server serverref; Unix.unlink sock_addr;
-    | None -> assert_failure "StateIPCTest received None thread when using test server");
+  StateIPCTestServer.stop_server ~sock_addr;
   state
 
 (* Given the interpreter's output, parse the JSON, append svars to it and print out new JSON.

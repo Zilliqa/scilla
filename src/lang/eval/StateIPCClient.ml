@@ -59,6 +59,7 @@ let binary_rpc ~socket_addr (call: Rpc.call) : Rpc.response =
   let _ = send_delimited oc msg_buf in
   (* Get response. *)
   let response = Caml.input_line ic in
+  Unix.shutdown_connection ic;
   DebugMessage.plog (Printf.sprintf "Response: %s\n" response);
   Jsonrpc.response_of_string response
 

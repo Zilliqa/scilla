@@ -33,7 +33,7 @@ and value_type =
   | NonMapVal of string
   | MapVal of hashtable
 
-type t = Unix.File_descr.t option ref
+let thread_pool : (string, hashtable) Hashtbl.t =  Hashtbl.create 4
 
 let num_pending_requests = 5
 let fetch_message = "Fetching state value failed"
@@ -63,9 +63,7 @@ module MakeServer() = struct
 
   module IPCTestServer = IPCIdl(Idl.GenServer ())
 
-  let socket = ref None
-
-  (* Global state of the server. *)
+  (* Global state of the server thread. *)
   let table = Hashtbl.create 8
 
   let binary_rpc conn =
@@ -77,21 +75,20 @@ module MakeServer() = struct
 
   let prepare_server sock_addr =
     (try Unix.unlink sock_addr with Unix.Unix_error(Unix.ENOENT, _, _) -> ());
-    socket := Some (Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol:0);
-    Unix.bind (BatOption.get !socket) ~addr:(Unix.ADDR_UNIX sock_addr);
-    Unix.listen (BatOption.get !socket) ~backlog:num_pending_requests;
+    let socket = Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol:0 in
+    Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_addr);
+    Unix.listen socket ~backlog:num_pending_requests;
     let server () =
-      Printf.printf "ScillaIPCTestServer: Thread %d: listening on %s\n" (Thread.id (Thread.self())) sock_addr;
       while true do
-        try
-          (* main threading closing socket will trigger an exception in "accept". *)
-          let conn, _ = Unix.accept (BatOption.get !socket) in
-          binary_rpc conn;
-          Unix.close conn
-        with
-        | _ ->
-          Printf.printf "Exiting thread %d\n" (Thread.id (Thread.self()));
-          Thread.exit() (* Time to be done with this thread. *)
+        let conn, _ = Unix.accept socket in
+        Printf.printf "Accepted connection %d on thread %d\n"
+          (Unix.File_descr.to_int conn) (Thread.id (Thread.self()));
+        Caml.flush_all();
+        binary_rpc conn;
+        Unix.shutdown ~mode:Unix.SHUTDOWN_ALL conn;
+        Unix.close conn;
+        Printf.printf "Closed connection %d on thread %d\n"
+          (Unix.File_descr.to_int conn) (Thread.id (Thread.self()));
       done
     in
     server
@@ -172,16 +169,19 @@ module MakeServer() = struct
 end
 
 let start_server ~sock_addr =
-  let module ServerModule = MakeServer() in
-  ServerModule.IPCTestServer.fetch_state_value ServerModule.fetch_state_value;
-  ServerModule.IPCTestServer.update_state_value ServerModule.update_state_value;
-  let server = ServerModule.prepare_server sock_addr in
-  let _ = Thread.create server () in
-  ServerModule.socket
+  (* Check if we already have a thread to serve this socket. *)
+  match Hashtbl.find_opt thread_pool sock_addr with
+  | Some _ -> () (* There's already a server running. Nothing to do. *)
+  | None ->
+    let module ServerModule = MakeServer() in
+    ServerModule.IPCTestServer.fetch_state_value ServerModule.fetch_state_value;
+    ServerModule.IPCTestServer.update_state_value ServerModule.update_state_value;
+    let server = ServerModule.prepare_server sock_addr in
+    let _ = Thread.create server () in
+    Hashtbl.replace thread_pool sock_addr ServerModule.table
 
-let stop_server socketref =
-  match !socketref with
-  | Some socket ->
-    (* Closing the socket will trigger the "accept" to raise. *)
-    Unix.close socket
-  | None -> ()
+let stop_server ~sock_addr =
+  match Hashtbl.find_opt thread_pool sock_addr with
+  | Some h -> (* Just reset the table of this server. *)
+    Hashtbl.clear h;
+  | None -> () (* Nothing to do. *)

@@ -61,12 +61,12 @@ let rec build_contract_tests env name exit_code i n additional_libs =
               "-iblockchain" ; dir ^/ "blockchain_" ^ istr ^. "json"] in
 
         let state_json_path = dir ^/ "state_" ^ istr ^. "json" in
-        let (args_state, t) =
+        let args_state =
           if ipc_mode then
-            let (balance, t) = StateIPCTest.setup_and_initialize ~sock_addr:ipc_socket_addr ~state_json_path in
-            args_basic @ ["-ipcaddress"; ipc_socket_addr; "-balance"; balance], t
+            let balance = StateIPCTest.setup_and_initialize ~sock_addr:ipc_socket_addr ~state_json_path in
+            args_basic @ ["-ipcaddress"; ipc_socket_addr; "-balance"; balance]
           else
-            args_basic @ ["-istate" ; state_json_path], StateIPCTest.noserver
+            args_basic @ ["-istate" ; state_json_path]
         in
 
         let args' =
@@ -95,7 +95,7 @@ let rec build_contract_tests env name exit_code i n additional_libs =
                 if ipc_mode then
                 (* The output of the interpreter in IPC mode will only contain "_balance" as
                  * the state. The remaining have to be gotten from the server and appended. *)
-                  StateIPCTest.get_final_finish t ~sock_addr:ipc_socket_addr 
+                  StateIPCTest.get_final_finish ~sock_addr:ipc_socket_addr 
                     |> StateIPCTest.append_full_state ~goldoutput_file ~interpreter_output
                 else interpreter_output
               in
@@ -108,13 +108,13 @@ let rec build_contract_tests env name exit_code i n additional_libs =
        * Both should succeed. *)
       if exit_code = succ_code
       then
-    (*  (test ~disable_validate_json:true ~ipc_mode:true) ::
-        (test ~disable_validate_json:false ~ipc_mode:true) :: *)
+        (test ~disable_validate_json:true ~ipc_mode:true) ::
+        (test ~disable_validate_json:false ~ipc_mode:true) ::
         (test ~disable_validate_json:true ~ipc_mode:false) ::
         (test ~disable_validate_json:false ~ipc_mode:false) ::
         (build_contract_tests env name exit_code (i+1) n additional_libs)
       else
-        (* (test ~disable_validate_json:false ~ipc_mode:true) :: *)
+        (test ~disable_validate_json:false ~ipc_mode:true) ::
         (test ~disable_validate_json:false ~ipc_mode:false) ::
         (build_contract_tests env name exit_code (i+1) n additional_libs)
 
