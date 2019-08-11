@@ -21,6 +21,7 @@ open Core
 open OUnit2
 open ScillaUtil.FilePathInfix
 open TestUtil
+open OUnitTest
 
 let testsuit_gas_limit = "8000"
 let ipc_socket_addr = "/tmp/scillaipcsocket"
@@ -60,11 +61,12 @@ let rec build_contract_tests env name exit_code i n additional_libs =
               "-jsonerrors";
               "-iblockchain" ; dir ^/ "blockchain_" ^ istr ^. "json"] in
 
+        let ipc_addr_thread = ipc_socket_addr ^ get_shard_id test_ctxt in
         let state_json_path = dir ^/ "state_" ^ istr ^. "json" in
         let args_state =
           if ipc_mode then
-            let balance = StateIPCTest.setup_and_initialize ~sock_addr:ipc_socket_addr ~state_json_path in
-            args_basic @ ["-ipcaddress"; ipc_socket_addr; "-balance"; balance]
+            let balance = StateIPCTest.setup_and_initialize ~sock_addr:ipc_addr_thread ~state_json_path in
+            args_basic @ ["-ipcaddress"; ipc_addr_thread; "-balance"; balance]
           else
             args_basic @ ["-istate" ; state_json_path]
         in
@@ -95,7 +97,7 @@ let rec build_contract_tests env name exit_code i n additional_libs =
                 if ipc_mode then
                 (* The output of the interpreter in IPC mode will only contain "_balance" as
                  * the state. The remaining have to be gotten from the server and appended. *)
-                  StateIPCTest.get_final_finish ~sock_addr:ipc_socket_addr 
+                  StateIPCTest.get_final_finish ~sock_addr:ipc_addr_thread
                     |> StateIPCTest.append_full_state ~goldoutput_file ~interpreter_output
                 else interpreter_output
               in
