@@ -184,7 +184,7 @@ module Configuration = struct
   let map_get st m klist fetchval =
     let open BuiltIns.UsefulLiterals in
     if fetchval
-    then 
+    then
       let%bind vopt = fromR @@ StateService.fetch ~fname:m ~keys:klist in
       match List.find st.fields ~f:(fun (z, _) -> z = (get_id m)) with
       | Some (_, mt) ->
@@ -204,15 +204,13 @@ module Configuration = struct
         )
       | None -> fail1 (sprintf "Unable to fetch from map field %s" (get_id m))
                   (ER.get_loc (get_rep m))
-    else 
+    else
       let%bind (is_member, g) = fromR @@ StateService.is_member ~fname:m ~keys:klist in
-      match (is_member, g) with
-      | true, G_MapGet(i, _) ->
-        let g' = G_MapGet(i, Some true_lit) in
-        pure (true_lit, g')
-      | false, G_MapGet(i, _) ->
-        let g' = G_MapGet(i, Some false_lit) in
-         pure (false_lit, g')
+      match g with
+      | G_MapGet (i, _) ->
+          let is_member_lit = to_Bool is_member in
+          let g' = G_MapGet(i, Some is_member_lit) in
+          pure (is_member_lit, g')
       | _ -> fail1 (sprintf "Unable to check exists for map field %s" (get_id m))
                   (ER.get_loc (get_rep m))
 
