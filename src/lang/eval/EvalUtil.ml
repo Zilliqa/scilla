@@ -182,6 +182,7 @@ module Configuration = struct
 
   (* Fetch from a map. If "fetchval" is true, fetch the value, else just query if the key exists. *)
   let map_get st m klist fetchval =
+    let open BuiltIns.UsefulLiterals in
     if fetchval
     then 
       let%bind vopt = fromR @@ StateService.fetch ~fname:m ~keys:klist in
@@ -191,11 +192,13 @@ module Configuration = struct
         (* Need to wrap the result in a Scilla Option. *)
         (match vopt with
         | (Some v, G_MapGet(i, Some lo)) ->
-          let g' = G_MapGet(i, Some (ADTValue("Some", [vt], [lo]))) in
-          pure (ADTValue ("Some", [vt], [v]), g')
+          let%bind lo_lit = fromR @@ some_lit lo in
+          let%bind v_lit = fromR @@ some_lit v in
+          let g' = G_MapGet(i, Some lo_lit) in
+          pure (v_lit, g')
         | (None, G_MapGet(i, None)) ->
-          let g' = G_MapGet(i, Some (ADTValue("None", [vt], []))) in
-          pure (ADTValue ("None", [vt], []), g')
+          let g' = G_MapGet(i, Some (none_lit vt)) in
+          pure (none_lit vt, g')
         | _ -> fail1 (sprintf "Inconsistency in fetching map value form StateService for field %s" (get_id m))
                   (ER.get_loc (get_rep m))
         )
@@ -205,13 +208,11 @@ module Configuration = struct
       let%bind (is_member, g) = fromR @@ StateService.is_member ~fname:m ~keys:klist in
       match (is_member, g) with
       | true, G_MapGet(i, _) ->
-        let scillit = ADTValue ("True", [], []) in
-        let g' = G_MapGet(i, Some scillit) in
-        pure (scillit, g')
+        let g' = G_MapGet(i, Some true_lit) in
+        pure (true_lit, g')
       | false, G_MapGet(i, _) ->
-        let scillit = ADTValue ("False", [], []) in
-        let g' = G_MapGet(i, Some scillit) in
-         pure (scillit, g')
+        let g' = G_MapGet(i, Some false_lit) in
+         pure (false_lit, g')
       | _ -> fail1 (sprintf "Unable to check exists for map field %s" (get_id m))
                   (ER.get_loc (get_rep m))
 
