@@ -25,9 +25,7 @@ open Big_int
 open Stdint
 open TypeUtil
 open Integer256
-
-module BuiltinTypeUtilities = TypeUtilities
-open BuiltinTypeUtilities
+open TypeUtilities
 
 module UsefulLiterals = struct
   let true_lit = ADTValue ("True", [], [])
