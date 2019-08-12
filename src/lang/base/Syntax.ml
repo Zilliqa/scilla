@@ -632,8 +632,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   type stmt_eval_context =
     (* literal being loaded *)
     | G_Load of literal
-    (* old value of stored literal, new value *)
-    | G_Store of (literal * literal)
+    (* literal being stored *)
+    | G_Store of literal
     (* none *)
     | G_Bind
     (* nesting depth, new value *)

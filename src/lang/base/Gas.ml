@@ -101,18 +101,10 @@ module ScillaGas
     | Builtin _ -> pure 0 (* this is a dynamic cost. *)
 
   let stmt_cost scon = match scon with
-    | G_Load l -> literal_cost l
-    | G_Store (old_l, new_l) -> 
-        let%bind old_cost =  literal_cost(old_l) in 
-        let%bind new_cost = literal_cost(new_l) in
-        let storage_cost = new_cost - old_cost in
-        let op_cost = Int.max old_cost new_cost in
-        pure @@ op_cost + storage_cost
+    | G_Load l | G_Store l -> literal_cost l
     | G_MapUpdate (n, lopt)
     | G_MapGet (n, lopt) ->
       let%bind l_cost = 
-        (* Deleting a key only has the cost of indexing 
-           (to incentivice removal of data). *)
         (match lopt with | Some l -> (literal_cost l) | None -> pure 0) in
       pure @@ n + l_cost
     | G_Bind -> pure 1
