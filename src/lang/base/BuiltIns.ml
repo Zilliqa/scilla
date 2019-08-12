@@ -30,19 +30,17 @@ open TypeUtilities
 module UsefulLiterals = struct
   let true_lit = ADTValue ("True", [], [])
   let false_lit = ADTValue ("False", [], [])
+  let to_Bool b = if b then true_lit else false_lit
 
   let some_lit l =
     let%bind t = literal_type l in
     pure @@ ADTValue ("Some", [t], [l])
-
   let none_lit t = ADTValue ("None", [t], [])
 
   let pair_lit l1 l2 =
     let%bind t1 = literal_type l1 in
     let%bind t2 = literal_type l2 in
     pure @@ ADTValue ("Pair", [t1;t2], [l1;l2])
-
-  let to_Bool b = if b then true_lit else false_lit
 end
 
 module ScillaBuiltIns
