@@ -110,7 +110,14 @@ let fetch ~fname ~keys =
   | IPC socket_addr ->
       let%bind tp = field_type fields fname in
       let%bind res = StateIPCClient.fetch ~socket_addr ~fname ~keys ~tp in
-      pure @@ (res, G_MapGet(List.length keys, res))
+      if keys <> []
+      then pure @@ (res, G_MapGet(List.length keys, res))
+      else
+        (match res with
+        | None -> fail1 (sprintf "StateService: Field %s not found on IPC server." (get_id fname))
+          (ER.get_loc (get_rep fname))
+        | Some res' -> pure @@ (res, G_Load(res'))
+        )
   | Local -> fetch_local ~fname ~keys fields
 
 let update_local ~fname ~keys vopt fields =
@@ -178,7 +185,9 @@ let update ~fname ~keys ~value =
   | IPC socket_addr ->
     let%bind tp = field_type fields fname in
     let%bind _ = StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp in
-    pure @@ (G_MapUpdate(List.length keys, Some value))
+    if keys <> []
+      then pure @@ (G_MapUpdate(List.length keys, Some value))
+      else pure @@ (G_Store(value))
   | Local ->
     let%bind (fields', g) = update_local ~fname ~keys (Some value) fields in
     let _ = (ss_cur_state := SS(sm, fields')) in

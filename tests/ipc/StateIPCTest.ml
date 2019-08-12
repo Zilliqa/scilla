@@ -120,7 +120,6 @@ let state_to_json s =
 (* Given two output JSONs, sort map keys in the second one w.r.t the first.
  * The order of variables in the "state" member is asserted to be the same. *)
 let sort_mapkeys goldj outj =
-  if true then goldj else  (* TODO: Remove once gas issue is solved. *)
   let goldstates = json_to_list @@ json_member "states" goldj in
   let outstates = json_to_list @@ json_member "states" outj in
   let rec map_sorter goldmap outmap t =
