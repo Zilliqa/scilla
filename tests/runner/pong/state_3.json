@@ -1,12 +1,13 @@
 [
-    {
-        "vname" : "count",
-        "type" : "Int32",
-        "value" : "2"
-    },
-    {
-        "vname": "_balance",
-        "type": "Uint128",
-        "value": "0"
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
+  {
+    "vname": "ping_addr",
+    "type": "Option (ByStr20)",
+    "value": {
+      "constructor": "None",
+      "argtypes": [ "ByStr20" ],
+      "arguments": []
     }
+  },
+  { "vname": "count", "type": "Int32", "value": "2" }
 ]

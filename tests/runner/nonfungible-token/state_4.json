@@ -1,6 +1,11 @@
 [
   { "vname": "_balance", "type": "Uint128", "value": "0" },
   {
+    "vname": "operatorApprovals",
+    "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+    "value": []
+  },
+  {
     "vname": "tokenApprovals",
     "type": "Map (Uint256) (ByStr20)",
     "value": []

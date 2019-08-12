@@ -1,22 +1,27 @@
 [
-    { "vname": "_balance", "type": "Uint128", "value": "0" },
-    {
-        "vname": "tokenApprovals",
-        "type": "Map (Uint256) (ByStr20)",
-        "value": []
-      },
-    {
-      "vname": "ownedTokenCount",
-      "type": "Map (ByStr20) (Uint256)",
-      "value": [
-        { "key": "0x1234567890123456789012345678901234567892", "val": "1" }
-      ]
-    },
-    {
-      "vname": "tokenOwnerMap",
-      "type": "Map (Uint256) (ByStr20)",
-      "value": [
-        { "key": "1", "val": "0x1234567890123456789012345678901234567892" }
-      ]
-    }
-  ]
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
+  {
+    "vname": "operatorApprovals",
+    "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+    "value": []
+  },
+  {
+    "vname": "tokenApprovals",
+    "type": "Map (Uint256) (ByStr20)",
+    "value": []
+  },
+  {
+    "vname": "ownedTokenCount",
+    "type": "Map (ByStr20) (Uint256)",
+    "value": [
+      { "key": "0x1234567890123456789012345678901234567892", "val": "1" }
+    ]
+  },
+  {
+    "vname": "tokenOwnerMap",
+    "type": "Map (Uint256) (ByStr20)",
+    "value": [
+      { "key": "1", "val": "0x1234567890123456789012345678901234567892" }
+    ]
+  }
+]
