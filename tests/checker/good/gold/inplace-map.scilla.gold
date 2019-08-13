@@ -12,10 +12,11 @@
     "vname": "Test",
     "params": [ { "vname": "owner", "type": "ByStr20" } ],
     "fields": [
-      { "vname": "gmap", "type": "Map (String) (Int32)" },
+      { "vname": "gmap", "type": "Map (String) (Int32)", "depth": 1 },
       {
         "vname": "gmap3",
-        "type": "Map (String) (Map (Int32) (Map (Int64) (String)))"
+        "type": "Map (String) (Map (Int32) (Map (Int64) (String)))",
+        "depth": 3
       }
     ],
     "transitions": [

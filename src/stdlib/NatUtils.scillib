@@ -29,8 +29,7 @@ let nat_fold_while : forall 'T. ('T -> Nat -> Option 'T) -> 'T -> Nat -> 'T =
         end in
     foldk iter
 
-(* Return true iff two lists compare equal. *)
-(* Comparison is performed using the "equal" function provided. *)
+(* Return true iff two nats compare equal. *)
 let nat_eq : Nat -> Nat -> Bool =
   fun (n : Nat) => fun (m : Nat) =>
     let foldk = @nat_foldk Nat in

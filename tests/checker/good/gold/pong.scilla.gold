@@ -11,8 +11,8 @@
     "vname": "Pong",
     "params": [],
     "fields": [
-      { "vname": "count", "type": "Int32" },
-      { "vname": "ping_addr", "type": "Option (ByStr20)" }
+      { "vname": "count", "type": "Int32", "depth": 0 },
+      { "vname": "ping_addr", "type": "Option (ByStr20)", "depth": 0 }
     ],
     "transitions": [
       { "vname": "Pong", "params": [] },

@@ -80,8 +80,41 @@ let ground_type_tests = [
 let make_ground_type_tests tlist =
   List.map (fun (st, eq) -> make_ground_type_test st eq) tlist
 
+let make_map_access_type_test t at nindices =
+  let open FrontEndParser in
+  let open TestTypeUtils in
+  let (t', at') =
+    match parse_type t, parse_type at with
+    | Ok t', Ok at' -> (t', at')
+    | _ -> raise (SyntaxError (("Error parsing type in map_access_type tests"), dummy_loc))
+  in
+  let at_computed = map_access_type t' nindices in
+  test_case (fun _ ->
+    match at_computed with
+    | Error _ -> assert_failure "Failed map_access_type test. map_access_type returned failure."
+    | Ok at_computed' ->
+      let b = type_equiv at' at_computed' in
+      assert_bool (Printf.sprintf "Failed map_access_type test for %s[%d]. Expected %s, but got %s.\n"
+                   t nindices at (pp_typ at_computed')) b
+  )
+
+let map_access_type_tests = [
+  (* (Test type, expected access type, number of indices) *)
+  ("Map (Uint32) (Uint32)", "Map (Uint32) (Uint32)", 0);
+  ("Map (Uint32) (Uint32)", "Uint32", 1);
+  ("Map (Uint32) (Map (Uint32) (Int32))", "Map (Uint32) (Map (Uint32) (Int32))", 0);
+  ("Map (Uint32) (Map (Uint32) (Int32))", "Map (Uint32) (Int32)", 1);
+  ("Map (Uint32) (Map (Uint32) (Int32))", "Int32", 2);
+  ("Int32", "Int32", 0);
+]
+
+let make_map_access_type_tests tlist =
+  List.map (fun (t, at, nindices) -> make_map_access_type_test t at nindices) tlist
+
 let type_equiv_tests = "type_equiv_tests" >::: (make_type_equiv_tests type_equiv_tests)
 let ground_type_tests = "ground_type_tests" >::: (make_ground_type_tests ground_type_tests)
+let map_access_type_tests = "map_access_type_tests" >::: (make_map_access_type_tests map_access_type_tests)
+
 
 module Tests = TestUtil.DiffBasedTests(
   struct
@@ -116,4 +149,5 @@ module Tests = TestUtil.DiffBasedTests(
     let exit_code : Unix.process_status = WEXITED 0
   end)
 
-let all_tests env = "type_check_success_tests" >::: [type_equiv_tests;Tests.add_tests env;ground_type_tests]
+let all_tests env = "type_check_success_tests" >:::
+  [type_equiv_tests;Tests.add_tests env;ground_type_tests;map_access_type_tests]

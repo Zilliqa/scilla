@@ -22,14 +22,16 @@
     "vname": "SimpleDex",
     "params": [ { "vname": "contractOwner", "type": "ByStr20" } ],
     "fields": [
-      { "vname": "orderbook", "type": "Map (ByStr32) (Order)" },
+      { "vname": "orderbook", "type": "Map (ByStr32) (Order)", "depth": 1 },
       {
         "vname": "orderInfo",
-        "type": "Map (ByStr32) (Pair (ByStr20) (BNum))"
+        "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
+        "depth": 1
       },
       {
         "vname": "pendingReturns",
-        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))"
+        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+        "depth": 2
       }
     ],
     "transitions": [

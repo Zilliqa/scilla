@@ -16,7 +16,11 @@
     "vname": "EarmarkedCoin",
     "params": [],
     "fields": [
-      { "vname": "earmarked_coins", "type": "Map (ByStr20) (EarmarkedCoin)" }
+      {
+        "vname": "earmarked_coins",
+        "type": "Map (ByStr20) (EarmarkedCoin)",
+        "depth": 1
+      }
     ],
     "transitions": [
       {
