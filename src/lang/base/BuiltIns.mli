@@ -20,6 +20,17 @@ open Syntax
 open ErrorUtils
 open Core
 
+module UsefulLiterals : sig
+  val true_lit : literal
+  val false_lit : literal
+  val to_Bool : bool -> literal
+
+  val some_lit : literal -> (literal, ErrorUtils.scilla_error list) result
+  val none_lit : typ -> literal
+
+  val pair_lit : literal -> literal -> (literal, ErrorUtils.scilla_error list) result
+end
+
 module ScillaBuiltIns
     (SR : Rep)
     (ER : Rep) : sig

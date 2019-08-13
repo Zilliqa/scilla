@@ -25,13 +25,27 @@ open Big_int
 open Stdint
 open TypeUtil
 open Integer256
+open TypeUtilities
+
+module UsefulLiterals = struct
+  let true_lit = ADTValue ("True", [], [])
+  let false_lit = ADTValue ("False", [], [])
+  let to_Bool b = if b then true_lit else false_lit
+
+  let some_lit l =
+    let%bind t = literal_type l in
+    pure @@ ADTValue ("Some", [t], [l])
+  let none_lit t = ADTValue ("None", [t], [])
+
+  let pair_lit l1 l2 =
+    let%bind t1 = literal_type l1 in
+    let%bind t2 = literal_type l2 in
+    pure @@ ADTValue ("Pair", [t1;t2], [l1;l2])
+end
 
 module ScillaBuiltIns
     (SR : Rep)
     (ER : Rep) = struct
-
-  module BuiltinTypeUtilities = TypeUtilities
-  open BuiltinTypeUtilities
 
   let print_literal_list ls =
     PrettyPrinters.pp_literal_list ls
@@ -39,24 +53,6 @@ module ScillaBuiltIns
   let builtin_fail name ls =
     fail0 @@ sprintf "Cannot apply built-in %s to a list of arguments:%s."
       name (print_literal_list ls)
-
-  module UsefulLiterals = struct
-    let true_lit = ADTValue ("True", [], [])
-    let false_lit = ADTValue ("False", [], [])
-
-    let some_lit l =
-      let%bind t = literal_type l in
-      pure @@ ADTValue ("Some", [t], [l])
-
-    let none_lit t = ADTValue ("None", [t], [])
-
-    let pair_lit l1 l2 =
-      let%bind t1 = literal_type l1 in
-      let%bind t2 = literal_type l2 in
-      pure @@ ADTValue ("Pair", [t1;t2], [l1;l2])
-
-    let to_Bool b = if b then true_lit else false_lit
-  end
 
   (* Convert int_lit to raw byte string. *)
   let bstring_from_int_lit = function
