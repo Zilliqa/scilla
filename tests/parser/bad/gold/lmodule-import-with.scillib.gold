@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "If import is mentioned there must be one or more imported libaries with capital identifiers.\n",
+        "If import is mentioned there must be one or more imported libraries with capital identifiers.\n",
       "start_location": {
         "file": "parser/bad/lib/lmodule-import-with.scillib",
         "line": 1,

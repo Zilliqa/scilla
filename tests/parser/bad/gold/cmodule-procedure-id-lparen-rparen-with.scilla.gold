@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "In the transition body the parser expects a list of semi-colon seperated statements.\n",
+        "In the transition body the parser expects a list of semi-colon separated statements.\n",
       "start_location": {
         "file": "parser/bad/cmodule-procedure-id-lparen-rparen-with.scilla",
         "line": 8,

@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid map type, the map value type is likely incorrect. In the brackets we expect a seperated capital identifier.\n",
+        "This is an invalid map type, the map value type is likely incorrect. In the brackets we expect a separated capital identifier.\n",
       "start_location": {
         "file": "parser/bad/type_t-map-cid-cid-lparen-with.scilla",
         "line": 5,

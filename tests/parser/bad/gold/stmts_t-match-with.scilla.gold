@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "In a match statement, the parser expects a seperated identifier to match with.\n",
+        "In a match statement, the parser expects a separated identifier to match with.\n",
       "start_location": {
         "file": "parser/bad/stmts_t-match-with.scilla",
         "line": 12,

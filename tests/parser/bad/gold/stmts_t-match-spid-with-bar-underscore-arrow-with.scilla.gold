@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid statements term. In the match expression, after an arrow the parser expects a valid list of semicolon seperated statements.\n",
+        "This is an invalid statements term. In the match expression, after an arrow the parser expects a valid list of semicolon separated statements.\n",
       "start_location": {
         "file":
           "parser/bad/stmts_t-match-spid-with-bar-underscore-arrow-with.scilla",

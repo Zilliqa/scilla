@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid delete statment, it lacks the keys to delete.\n",
+        "This is an invalid delete statement, it lacks the keys to delete.\n",
       "start_location": {
         "file": "parser/bad/stmts_t-delete-id-with.scilla",
         "line": 10,

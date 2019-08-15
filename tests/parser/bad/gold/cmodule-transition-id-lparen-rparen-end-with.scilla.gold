@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Following a transition defintion, the parser expects a transition or a procedure or end of file.\n",
+        "Following a transition definition, the parser expects a transition or a procedure or end of file.\n",
       "start_location": {
         "file":
           "parser/bad/cmodule-transition-id-lparen-rparen-end-with.scilla",

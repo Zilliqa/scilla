@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid event statement, it lacks a seperated identifier for the event name.\n",
+        "This is an invalid event statement, it lacks a separated identifier for the event name.\n",
       "start_location": {
         "file": "parser/bad/stmts_t-event-with.scilla",
         "line": 8,
