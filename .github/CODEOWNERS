@@ -17,12 +17,12 @@
 
 ########## Build system, CI, opam ##########
 
-*dune*             @vaivaswatha @Gnnng @iantanwx @anton-trunov
-/.dockerignore     @vaivaswatha @Gnnng @iantanwx
-/.travis.yml       @vaivaswatha @Gnnng @iantanwx
-/Dockerfile*       @vaivaswatha @Gnnng @iantanwx
-/Makefile          @vaivaswatha @Gnnng @iantanwx
-/scripts/build_openssl.sh @vaivaswatha @Gnnng @iantanwx
+*dune*             @vaivaswatha @anton-trunov
+/.dockerignore     @vaivaswatha
+/.travis.yml       @vaivaswatha
+/Dockerfile*       @vaivaswatha
+/Makefile          @vaivaswatha @anton-trunov
+/scripts/build_openssl.sh @vaivaswatha
 *.opam             @anton-trunov
 
 
@@ -35,7 +35,7 @@
 ########## Documentation ##########
 
 /README.md        @AmritKumar @jjcnn @vaivaswatha
-/INSTALL.md       @vaivaswatha @iantanwx @anton-trunov
+/INSTALL.md       @vaivaswatha @anton-trunov
 /docs/            @jjcnn
 
 
