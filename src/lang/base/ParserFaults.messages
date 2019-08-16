@@ -583,7 +583,7 @@ stmts_term: ACCEPT WITH
 ##
 # see tests/parser/bad/stmts-t-accept-with.scilla
 
-This is likely an improperly terminated accept statement (lacking the semicolon).
+This is likely an improperly terminated statement (lacking the semicolon).
 
 stmts_term: CID WITH
 ##
@@ -1987,7 +1987,7 @@ exp_term: SPID CID WITH
 ##
 # see tests/parser/bad/exps/exp_t-spid-cid-with.scilexp
 
-It is likely that this is function application with incorrect arguments, do not use constructors directly.
+This may be a type application missing '@' or an incorrect function application.
 
 exp_term: SPID SPID WITH
 ##

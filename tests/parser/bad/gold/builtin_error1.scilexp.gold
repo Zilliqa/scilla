@@ -3,7 +3,7 @@
     {
       "error_message": "Syntax error: \"hack\" is not a builtin",
       "start_location": {
-        "file": "eval/exp/bad/builtin_error1.scilexp",
+        "file": "parser/bad/exps/builtin_error1.scilexp",
         "line": 10,
         "column": 20
       },

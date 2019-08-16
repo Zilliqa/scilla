@@ -141,8 +141,6 @@ module Tests = TestUtil.DiffBasedTests(
       "branch-mismatch.scilexp";
       "builtin-tvar.scilexp";
       "builtin-bech32-1.scilexp";
-      "bad-map-key.scilexp";
-      "bad-map-key2.scilexp";
       "fun2.scilexp";
       "fun3.scilexp";
       "fun4.scilexp";

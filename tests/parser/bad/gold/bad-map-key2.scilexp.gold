@@ -3,7 +3,7 @@
     {
       "error_message": "Syntax error: Invalid map key type Bool",
       "start_location": {
-        "file": "typecheck/bad/bad-map-key2.scilexp",
+        "file": "parser/bad/exps/bad-map-key2.scilexp",
         "line": 2,
         "column": 10
       },

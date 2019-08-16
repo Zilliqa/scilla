@@ -26,6 +26,9 @@ module Tests = TestUtil.DiffBasedTests(
     let custom_args = ["-contractinfo"]
     let additional_libdirs = []
     let tests = [
+        "bad_map_key_2.scilla";
+        "bad_map_key_3.scilla";
+        "bad_map_key_4.scilla";
         "cmodule-contract-cid-lparen-id-colon-comma-with.scilla";
         "cmodule-contract-cid-lparen-id-colon-tid-with.scilla";
         "cmodule-contract-cid-lparen-id-colon-with.scilla";
@@ -158,6 +161,10 @@ module ExpTests = TestUtil.DiffBasedTests(
       let custom_args = []
       let additional_libdirs = []
       let tests = [
+          "bad-map-key.scilexp";
+          "bad-map-key2.scilexp";
+          "builtin-overflow4.scilexp";
+          "builtin_error1.scilexp";
           "exp_t-at-spid-tid-with.scilexp";
           "exp_t-at-spid-with.scilexp";
           "exp_t-at-with.scilexp";

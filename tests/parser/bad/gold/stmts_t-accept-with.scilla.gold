@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is likely an improperly terminated accept statement (lacking the semicolon).\n",
+        "This is likely an improperly terminated statement (lacking the semicolon).\n",
       "start_location": {
         "file": "parser/bad/stmts_t-accept-with.scilla",
         "line": 11,

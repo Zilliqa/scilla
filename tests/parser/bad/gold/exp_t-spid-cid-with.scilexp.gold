@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "It is likely that this is function application with incorrect arguments, do not use constructors directly.\n",
+        "This may be a type application missing '@' or an incorrect function application.\n",
       "start_location": {
         "file": "parser/bad/exps/exp_t-spid-cid-with.scilexp",
         "line": 3,
