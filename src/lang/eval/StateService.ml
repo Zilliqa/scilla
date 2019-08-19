@@ -43,6 +43,8 @@ type ss_state =
   | Uninitialized
   | SS of service_mode * (ss_field list)
 
+module MakeStateService () = struct
+
 (* Internal state for the state service. *)
 let ss_cur_state = ref Uninitialized
 
@@ -162,11 +164,11 @@ let update_local ~fname ~keys vopt fields =
       )
     in
       recurser mlit keys vt
-  | Some {fname = f; ftyp =  t; fval = Some l} ->
+  | Some {fname = f; ftyp =  t; fval = Some _} ->
     (match vopt with
     | Some fval' ->
       let fields' = List.filter fields ~f:(fun f -> f.fname <> (get_id fname)) in
-      pure ({fname = f; ftyp = t; fval = Some fval'} :: fields', G_Store (l, fval'))
+      pure ({fname = f; ftyp = t; fval = Some fval'} :: fields', G_Store fval')
     | None ->
       fail1 (sprintf "StateService: Cannot remove non-map value %s from state" (get_id fname))
         (ER.get_loc (get_rep fname))
@@ -201,3 +203,8 @@ let remove ~fname ~keys =
     let%bind (_, g) = update_local ~fname ~keys None fields in
     (* We don't need to update ss_cur_state because only map keys can be removed, and that's stateful. *)
     pure @@ g
+end
+
+module StateServiceInstance = MakeStateService ()
+include StateServiceInstance
+

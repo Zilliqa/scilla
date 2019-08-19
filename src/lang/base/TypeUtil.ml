@@ -312,18 +312,16 @@ module TypeUtilities = struct
     fail0 ("Invalid message construct. Not any of send, event or exception.")
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
-  let map_access_type mt nindices = match mt with
-  | MapType (_, vt) ->
-    let rec recurser t nkeys =
-      (match t, nkeys with
-      | MapType (_, _), 0 -> pure vt
-      | MapType (_, vt'), 1 -> pure vt'
-      | MapType (_, vt'), nkeys' when nkeys' > 1 -> recurser vt' (nkeys-1)
-      | _, _ -> fail0 "Cannot index into map %s: Too many index keys or non-map type"
-      )
-    in
-      recurser mt nindices
-  | _ -> fail0 "map_access_type: not a map type"
+  let rec map_access_type mt nindices = match mt, nindices with
+    | _ , 0 -> pure mt
+    | MapType (_, vt'), 1 -> pure vt'
+    | MapType (_, vt'), nkeys' when nkeys' > 1 -> map_access_type vt' (nindices-1)
+    | _, _ -> fail0 "Cannot index into map: Too many index keys."
+
+  (* The depth of a nested map. *)
+  let rec map_depth mt = match mt with
+    | MapType (_, vt) -> 1 + (map_depth vt)
+    | _ -> 0
 
   let pp_typ_list ts =
     let tss = List.map ~f:(fun t -> pp_typ t) ts in

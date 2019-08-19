@@ -26,9 +26,9 @@
       { "vname": "store_name", "type": "String" }
     ],
     "fields": [
-      { "vname": "members", "type": "Map (ByStr20) (Member)" },
-      { "vname": "is_store_open", "type": "Bool" },
-      { "vname": "bookInventory", "type": "Map (Uint32) (Book)" }
+      { "vname": "members", "type": "Map (ByStr20) (Member)", "depth": 1 },
+      { "vname": "is_store_open", "type": "Bool", "depth": 0 },
+      { "vname": "bookInventory", "type": "Map (Uint32) (Book)", "depth": 1 }
     ],
     "transitions": [
       {
