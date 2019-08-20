@@ -2,11 +2,12 @@
   "errors": [
     {
       "error_message":
-        "This typed let expression does not have a well placed equals, '='.\n",
+        "This map value type has invalid constructor arguments.\n",
       "start_location": {
-        "file": "parser/bad/exps/exp_t-let-id-colon-tid-with.scilexp",
+        "file":
+          "parser/bad/exps/type_t-map-cid-lparen-cid-lparen-with.scilexp",
         "line": 1,
-        "column": 22
+        "column": 38
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

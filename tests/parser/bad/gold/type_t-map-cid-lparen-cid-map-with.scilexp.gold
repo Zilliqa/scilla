@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "The map value type defined in brackets must have a capital identifier for a type.\n",
+      "start_location": {
+        "file": "parser/bad/exps/type_t-map-cid-lparen-cid-map-with.scilexp",
+        "line": 1,
+        "column": 40
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
