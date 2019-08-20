@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Following a library import, another may be specified by having another capital identifier following alternatively\na contract or library may be defined after that.\n",
+        "After importing a library, the parser expects a library definition or to import another library.\n",
       "start_location": {
         "file": "parser/bad/lmodule-import-cid-with.scilla",
         "line": 4,

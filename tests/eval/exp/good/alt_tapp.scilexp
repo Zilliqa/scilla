@@ -1,5 +1,0 @@
-let true = True in
-let a = tfun 'A =>
-  fun (x: 'A) => x in
-let b = a {Bool} in
-a {Bool} true

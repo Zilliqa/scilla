@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is possibly an invalid statements term, likely a bad procedure call with faulty arguments.\nAlternately it is an improperly terminated expression.\n",
+        "This is an invalid statements term, likely a bad procedure call with faulty arguments.\n",
       "start_location": {
         "file": "parser/bad/stmts_t-id-with.scilla",
         "line": 11,

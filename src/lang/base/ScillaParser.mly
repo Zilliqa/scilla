@@ -217,11 +217,6 @@ simple_exp :
 (* Function *)
 | FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
   { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) }
-(* Unified type application syntax *)
-| tf = sid; LBRACE; targs = nonempty_list(targ); RBRACE; args = list(sident)
-  { let f = (TApp ((Ident (tf, toLoc $startpos)), targs), toLoc $startpos) in
-    let e = (App ((Ident ("_temp_tapp", toLoc $startpos)), args), toLoc $startpos ) in
-   (Let ((Ident ("_temp_tapp", toLoc $startpos)), None, f, e), toLoc $startpos)}
 (* Application *)
 | f = sid;
   args = nonempty_list(sident)
