@@ -204,6 +204,9 @@ module ExpTests = TestUtil.DiffBasedTests(
           "exp_t-match-spid-with-bar-underscore-with.scilexp";
           "exp_t-match-spid-with-with.scilexp";
           "exp_t-match-with.scilexp";
+          "exp_t-spid-lbrace-tid-rbrace-with.scilexp";
+          "exp_t-spid-lbrace-tid-type.scilexp";
+          "exp_t-spid-lbrace-with.scilexp";
           "exp_t-spid-cid-period-with.scilexp";
           "exp_t-spid-cid-with.scilexp";
           "exp_t-spid-spid-with.scilexp";

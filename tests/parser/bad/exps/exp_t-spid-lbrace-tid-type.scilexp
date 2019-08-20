@@ -1,0 +1,2 @@
+let a = tfun 'A => tfun 'B => fun (x : 'A) => x in
+a {Bool field} 

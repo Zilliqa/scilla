@@ -18,6 +18,7 @@
 
 let explist = [
   "addr.scilexp";
+  "alt_tapp.scilexp";
   "app2.scilexp";
   "app3.scilexp";
   "app4.scilexp";

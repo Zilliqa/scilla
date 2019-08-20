@@ -1,0 +1,5 @@
+(True),
+{ [_temp_tapp -> <closure>],
+  [b -> <closure>],
+  [a -> <type_closure>],
+  [true -> (True)] }

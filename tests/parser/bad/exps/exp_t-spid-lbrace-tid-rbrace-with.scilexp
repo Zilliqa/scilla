@@ -1,0 +1,3 @@
+let a = tfun 'A => fun (x : 'A) => x in
+let b = True in
+a {Bool} [b]

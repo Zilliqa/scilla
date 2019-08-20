@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Following a valid type argument for an alternate type application, a closing brace or more valid type arguments are expected.\n",
+      "start_location": {
+        "file": "parser/bad/exps/exp_t-spid-lbrace-tid-type.scilexp",
+        "line": 2,
+        "column": 14
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
