@@ -126,10 +126,21 @@ let string_of_uint_lit = function
   | Uint128L i' -> Uint128.to_string i'
   | Uint256L i' -> Uint256.to_string i'
 
+(* Scilla only allows printable ASCII characters from 32 (0x20) up-to 126 (0x7e).
+ * The only exceptions allowed are various whitespaces: \b \f \n \r \t. *)
+let validate_string_literal s =
+  let specials = ['\b'; '\012'; '\n'; '\r'; '\t'] in
+  String.fold s ~init:true ~f:(fun safe c ->
+    if not safe then false else
+    let c_int = Char.to_int c in
+    if c_int >= 32 && c_int <= 126 then true else
+    if List.mem specials c ~equal:(=) then true else false
+  )
+
 let build_prim_literal pt v =
   match pt with
   | Int_typ _ | Uint_typ _ -> build_int pt v
-  | String_typ -> Some (StringLit v)
+  | String_typ -> Option.some_if (validate_string_literal v) (StringLit v)
   | Bnum_typ ->
       Option.some_if (let re = Str.regexp "[0-9]+$" in
                       Str.string_match re v 0)

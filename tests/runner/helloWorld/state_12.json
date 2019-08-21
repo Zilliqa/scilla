@@ -1,0 +1,4 @@
+[
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
+  { "vname": "welcome_msg", "type": "String", "value": "" }
+]
