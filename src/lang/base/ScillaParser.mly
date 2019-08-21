@@ -180,7 +180,10 @@ t_map_value :
       | [] -> to_type d
       | _ -> ADT (d, targs) }
 | LPAREN; MAP; k=t_map_key; v = t_map_value_args; RPAREN; { MapType (k, v) }
-| d = scid { to_type d }
+| d = scid; targs=list(t_map_value_args)
+    { match targs with
+      | [] -> to_type d
+      | _ -> ADT (d, targs) }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 typ :
@@ -193,7 +196,6 @@ typ :
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
 | LPAREN; t = typ; RPAREN; { t }
 | FORALL; tv = TID; PERIOD; t = typ; {PolyFun (tv, t)}
-%prec TARROW
 | t = TID; { TypeVar t }
 
 targ:

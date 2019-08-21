@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This typed let expression does not have a well placed equals, '='.\n",
+        "This type-annotated let expression is likely missing an equals '='.\n",
       "start_location": {
         "file": "parser/bad/exps/exp_t-let-id-colon-tid-with.scilexp",
         "line": 1,

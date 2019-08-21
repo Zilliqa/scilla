@@ -102,6 +102,12 @@ module Tests = TestUtil.DiffBasedTests(
         "type_t-forall-tid-with.scilla";
         "type_t-forall-with.scilla";
         "type_t-lparen-tid-with.scilla";
+        "type_t-map-cid-cid-cid-underscore.scilla";
+        "type_t-map-cid-cid-lparen-cid-underscore.scilla";
+        "type_t-map-cid-cid-lparen-with.scilla";
+        "type_t-map-cid-cid-map-cid-underscore.scilla";
+        "type_t-map-cid-cid-map-with.scilla";
+        "type_t-map-cid-cid-underscore.scilla";
         "type_t-map-cid-lparen-cid-cid-type.scilla";
         "type_t-map-cid-lparen-map-cid-cid-underscore.scilla";
         "type_t-map-cid-lparen-map-cid-underscore.scilla";
@@ -165,7 +171,6 @@ module ExpTests = TestUtil.DiffBasedTests(
           "exp_t-builtin-id-lparen-with.scilexp";
           "exp_t-builtin-id-with.scilexp";
           "exp_t-builtin-with.scilexp";
-          "exp_t-cid-lbrace-rbrace-at.scilexp";
           "exp_t-cid-lbrace-tid-eq.scilexp";
           "exp_t-cid-lbrace-with.scilexp";
           "exp_t-cid-period-cid-with.scilexp";
@@ -187,8 +192,6 @@ module ExpTests = TestUtil.DiffBasedTests(
           "exp_t-lbrace-spid-with.scilexp";
           "exp_t-lbrace-with.scilexp";
           "exp_t-let-id-colon-tid-eq-string-in-with.scilexp";
-          "exp_t-let-id-colon-tid-eq-string-with.scilexp";
-          "exp_t-let-id-colon-tid-eq-with.scilexp";
           "exp_t-let-id-colon-tid-with.scilexp";
           "exp_t-let-id-colon-with.scilexp";
           "exp_t-let-id-eq-string-in-with.scilexp";
@@ -212,10 +215,6 @@ module ExpTests = TestUtil.DiffBasedTests(
           "exp_t-tfun-tid-with.scilexp";
           "exp_t-tfun-with.scilexp";
           "exp_t-with.scilexp";
-          "type_t-map-cid-lparen-cid-lparen-cid-underscore.scilexp";
-          "type_t-map-cid-lparen-cid-lparen-with.scilexp";
-          "type_t-map-cid-lparen-cid-map-cid-underscore.scilla";
-          "type_t-map-cid-lparen-cid-map-with.scilexp";
       ]
       let exit_code : Unix.process_status = WEXITED 1
     end)

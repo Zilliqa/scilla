@@ -1,1 +1,0 @@
-let a : (Map Uint128 (Option (nothing))) = Emp Uint128 (Option (nothing))
