@@ -107,7 +107,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 508,
+        "line": 511,
         "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -117,7 +117,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 446,
+        "line": 449,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -127,7 +127,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 437,
+        "line": 440,
         "column": 6
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -137,7 +137,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 425,
+        "line": 428,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -147,7 +147,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 416,
+        "line": 419,
         "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -157,7 +157,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 390,
+        "line": 393,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -167,7 +167,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 381,
+        "line": 384,
         "column": 18
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -177,7 +177,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 368,
+        "line": 371,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -187,7 +187,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 360,
+        "line": 363,
         "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -197,7 +197,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 348,
+        "line": 351,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -207,7 +207,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 321,
+        "line": 324,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -217,7 +217,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 311,
+        "line": 314,
         "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -227,7 +227,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 297,
+        "line": 300,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -237,7 +237,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 288,
+        "line": 291,
         "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -247,7 +247,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 147,
+        "line": 150,
         "column": 18
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
