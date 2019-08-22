@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "After importing a library, the parser expects a library definition or to import another library.\n",
+        "To import another library mention the new library name directly after the previous one, alternatively following the name of the imported library there can be a library defintion or sometimes a contract.\n",
       "start_location": {
         "file": "parser/bad/lmodule-import-cid-with.scilla",
         "line": 4,

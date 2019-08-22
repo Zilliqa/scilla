@@ -196,6 +196,7 @@ typ :
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
 | LPAREN; t = typ; RPAREN; { t }
 | FORALL; tv = TID; PERIOD; t = typ; {PolyFun (tv, t)}
+%prec TARROW
 | t = TID; { TypeVar t }
 
 targ:

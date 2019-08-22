@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "After a throw statement, another statement or end is expected.\n",
+        "What follows the statement was unexpected, for example possibly a statement or termination is expected.\n",
       "start_location": {
         "file": "parser/bad/stmts_t-throw-semicolon-with.scilla",
         "line": 8,

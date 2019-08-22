@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "If this is an application of a function, it is necessary to supply a list of valid arguments.\n",
+        "If this is an application of a function, it is necessary to supply a list of valid arguments. Alternatively consider ending the expression earlier.\n",
       "start_location": {
         "file": "parser/bad/exps/exp_t-spid-spid-with.scilexp",
         "line": 3,

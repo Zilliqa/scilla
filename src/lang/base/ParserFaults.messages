@@ -5,6 +5,7 @@
 # for leading to that error state.
 # In this case, the --list-errors flag chooses an arbitrary token,
 # that is not valid.
+# To maintain this file, see the Menhir documentation.
 
 type_term: CID LPAREN TID WITH
 ##
@@ -815,7 +816,7 @@ stmts_term: ID SPID WITH
 ##
 # see tests/parser/bad/stmts_t-id-spid-with.scilla
 
-This is an invalid statements term, likely a bad procedure call with faulty arguments.
+This is an invalid statements term, likely a bad procedure call with faulty arguments. Alternately it is an improperly terminated..
 
 stmts_term: ID WITH
 ##
@@ -1010,8 +1011,10 @@ stmts_term: THROW SEMICOLON WITH
 ## stmt SEMICOLON
 ##
 # see tests/parser/bad/stmts_t-throw-semicolon-with.scilla
+# to understand this do not look at the tokens 'THROW SEMICOLON WITH'
+# instead look at the stack, these are merely tokens in a way associated
 
-After a throw statement, another statement or end is expected.
+What follows the statement was unexpected, for example possibly a statement or termination is expected.
 
 stmts_term: THROW WITH
 ##
@@ -1077,7 +1080,7 @@ lmodule: IMPORT CID WITH
 ##
 # see tests/parser/bad/lmodule-import-cid-with.scilla
 
-After importing a library, the parser expects a library definition or to import another library.
+To import another library mention the new library name directly after the previous one, alternatively following the name of the imported library there can be a library defintion or sometimes a contract.
 
 lmodule: IMPORT CONTRACT
 ##
@@ -1607,7 +1610,7 @@ exp_term: FUN LPAREN WITH
 ##
 # see tests/parser/bad/exp_t-fun-lparen-with.scilexp
 
-This function is missing an argument identifier.
+This function is missing a valid argument identifier, beginning with a lower case letter.
 
 exp_term: FUN WITH
 ##
@@ -1729,8 +1732,10 @@ exp_term: LET ID COLON TID WITH
 ## COLON typ
 ##
 # see tests/parser/bad/exps/exp_t-let-id-colon-tid-with.scilexp
+# say misplaced not missing because a reduction may not happen
+# as early as the user wanted in some cases
 
-This type-annotated let expression is likely missing an equals '='.
+This type-annotated let expression likely has a misplaced equals, '='.
 
 exp_term: LET ID COLON WITH
 ##
@@ -2000,8 +2005,10 @@ exp_term: SPID SPID WITH
 ## sident
 ##
 # see tests/parser/bad/exps/exp_t-spid-spid-with.scilexp
+# this occurs in many contexts where the reduction isn't happening as early as the
+# user wants it to happen
 
-If this is an application of a function, it is necessary to supply a list of valid arguments.
+If this is an application of a function, it is necessary to supply a list of valid arguments. Alternatively consider ending the expression earlier.
 
 exp_term: SPID WITH
 ##
@@ -2303,7 +2310,7 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN R
 ##
 # see tests/parser/bad/cmodule-transition-id-lparen-rparen-with.scilla
 
-After a transition has the parameters defined, we expect a semi-colon separated list of statements in the body.
+After a transition has the parameters defined, we expect a semi-colon separated list of valid statements in the body.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN WITH
 ##
