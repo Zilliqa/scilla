@@ -1,0 +1,17 @@
+{
+  "gas_remaining": "7725",
+  "errors": [
+    {
+      "error_message": "Invalid String value Hello\u0016World in JSON",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Failed to parse json tests/runner/helloWorld/message_12.json:\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
