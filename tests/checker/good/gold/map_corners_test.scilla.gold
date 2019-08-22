@@ -1,0 +1,264 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "f_s1", "tag": "NoInfo" },
+      { "field": "f_m1", "tag": "(Map NoInfo)" },
+      { "field": "f_m2", "tag": "(Map (Map NoInfo))" },
+      { "field": "f_m3", "tag": "(Map (Map (Map NoInfo)))" },
+      { "field": "f_m", "tag": "NoInfo" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "MapCornersTest",
+    "params": [],
+    "fields": [
+      { "vname": "f_s1", "type": "String", "depth": 0 },
+      { "vname": "f_m1", "type": "Map (String) (String)", "depth": 1 },
+      {
+        "vname": "f_m2",
+        "type": "Map (String) (Map (String) (String))",
+        "depth": 2
+      },
+      {
+        "vname": "f_m3",
+        "type": "Map (String) (Map (String) (Map (String) (String)))",
+        "depth": 3
+      },
+      {
+        "vname": "f_m",
+        "type": "Map (String) (Map (String) (String))",
+        "depth": 2
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "fail",
+        "params": [ { "vname": "tname", "type": "String" } ]
+      },
+      {
+        "vname": "fail_msg",
+        "params": [
+          { "vname": "tname", "type": "String" },
+          { "vname": "msg", "type": "String" }
+        ]
+      },
+      { "vname": "t1", "params": [] },
+      { "vname": "t2", "params": [] },
+      { "vname": "t3", "params": [] },
+      { "vname": "t4", "params": [] },
+      { "vname": "t5", "params": [] },
+      { "vname": "t6", "params": [] },
+      { "vname": "t7", "params": [] },
+      { "vname": "t8", "params": [] },
+      { "vname": "t9", "params": [] },
+      { "vname": "t10", "params": [] },
+      { "vname": "t11", "params": [] },
+      { "vname": "t12", "params": [] },
+      { "vname": "t13", "params": [] },
+      { "vname": "t14", "params": [] },
+      { "vname": "t15", "params": [] },
+      { "vname": "t16", "params": [] }
+    ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 508,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 446,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 437,
+        "column": 6
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 425,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 416,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 390,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 381,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 368,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 360,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 348,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 321,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 311,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 297,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 288,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 147,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "No transition in contract MapCornersTest contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}
