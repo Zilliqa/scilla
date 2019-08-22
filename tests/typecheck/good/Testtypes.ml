@@ -145,6 +145,7 @@ module Tests = TestUtil.DiffBasedTests(
       "type-subst-avoids-capture-1.scilexp";
       "type-subst-avoids-capture-2.scilexp";
       "zip.scilexp";
+      "str-nonprint-char-1.scilexp";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)

@@ -194,7 +194,7 @@ let add_tests env =
       "earmarked-coin" >:::(build_contract_tests env "earmarked-coin" succ_code 1 6 []);
     ];
     "these_tests_must_FAIL" >:::[
-      "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 5 11 []);
+      "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 5 12 []);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 8 8 []);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 12 14 []);
       "multiple_msgs_test" >::: (build_contract_tests env "multiple-msgs" fail_code 1 1 []);
