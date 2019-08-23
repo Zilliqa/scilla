@@ -314,4 +314,10 @@ module ScillaGas
     let %bind (_, cost) = tryM dict ~f:matcher ~msg:(fun () -> mk_error0 msg) in
     pure cost
 
+  (* TODO: Temporary additions - most likely not correct, but need it in order to typecheck *)
+  let module_static_cost _mod = pure 0
+  let rec_libs_static_cost _mod = pure 0
+  let elibs_static_cost _mod = pure 0
+
+  
 end

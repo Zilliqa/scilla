@@ -27,7 +27,9 @@ open BuiltIns
 open ContractUtil
 open Utils
 open PrimTypes
-    
+open Gas
+open EvalMonad
+
 (*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
@@ -75,6 +77,8 @@ module ScillaTypechecker
   module TBuiltins = ScillaBuiltIns (SR) (ER)
   module TypeEnv = TU.MakeTEnv(PlainTypes)(ER)
   module CU = ScillaContractUtil (SR) (ER)
+  (* TODO: This is most likely wrong, as the gas accounting in ScillaGas is based on evaluation rather than typechecking *)
+  module TypeGas = ScillaGas (SR) (ER)
 
   open TU
   open TBuiltins
@@ -704,7 +708,7 @@ module ScillaTypechecker
     in
     if emsgs <> [] then fail emsgs else pure (typed_elibs, elibs_env)
 
-  let type_lmodule
+  let type_lmodule_internal
     (md : UntypedSyntax.lmodule)
     (rec_libs : UntypedSyntax.lib_entry list)
     (elibs : UntypedSyntax.libtree list)
@@ -801,6 +805,46 @@ module ScillaTypechecker
     else fail @@ emsgs'
 
 
+(* [Initial Gas-Passing Continuation]
+
+   The following function is used as an initial continuation to
+   "bootstrap" the gas-aware type-checking and then retrieve not just
+   the result, but also the remaining gas.
+*)
+  let init_gas_kont r gas' = (match r with
+      | Ok z -> Ok (z, gas')
+      | Error msg -> Error (msg, gas'))
+
+(* Gas accounting wrapper for typechecking modules.
+   The result is either Ok (did not run out of gas) or Error (ran out of gas).
+   Type errors are reported as Ok (Error ...).
+*)
+(* TODO: This needs to be embedded into type_lmodule_internal because the cost
+   of checking each parameter should be allowed to be different *)
+  let type_lmodule_gas_wrapper md rec_libs elibs gas =
+    let thunk () = type_lmodule_internal md rec_libs elibs init_gas_kont gas in
+    let%bind md_cost = fromR @@ TypeGas.module_static_cost md in
+    let%bind rec_libs_cost = fromR @@ TypeGas.rec_libs_static_cost rec_libs in
+    let%bind elibs_cost = fromR @@ TypeGAs.elibs_static_cost in
+    let emsg = sprintf "Ran out of gas during typechecking.\n" in
+    let res = checkwrap_op thunk (Uint64.of_int cost) (mk_error0 emsg) in
+    match res with
+    | Ok (z, g) -> (Ok z, g)
+    | Error (m, g) -> (Error m, g)
+
+(* Gas-aware type-checking. There are 3 different possible results:
+   1. No errors: Ok (Ok (typed_module, typed_lib_entries, typed_lib_tree), remaining_gas)
+   2. Type error: Ok (Error <type errors>, remaining_gas)
+   3. Out of gas error: Error (<gas errors>)
+*)
+  let type_lmodule
+    (md : UntypedSyntax.lmodule)
+    (rec_libs : UntypedSyntax.lib_entry list)
+    (elibs : UntypedSyntax.libtree list)
+    (gas : Stdint.uint64)
+    : (((TypedSyntax.lmodule * TypedSyntax.lib_entry list * TypedSyntax.libtree list, scilla_error list) result, scilla_error list) result * Stdint.uint64) =
+    type_lmodule_gas_wrapper md rec_libs elibs gas
+  
   (**************************************************************)
   (*                    Staging API                             *)
   (**************************************************************)
