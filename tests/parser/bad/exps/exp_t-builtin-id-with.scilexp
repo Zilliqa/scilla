@@ -1,3 +1,2 @@
-let one = Uint128 1 in
-(* 'One' is an invalid identifier *)
-builtin add One One
+(* 'field' is an invalid identifier *)
+builtin add field field

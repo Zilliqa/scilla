@@ -1994,7 +1994,7 @@ exp_term: SPID CID WITH
 ##
 # see tests/parser/bad/exps/exp_t-spid-cid-with.scilexp
 
-This may be a type application missing '@' or an incorrect function application or a data constructor given types or something else.
+This may be a type application missing '@' or an incorrect function application or a data constructor given unnecessary types or something else.
 
 exp_term: SPID SPID WITH
 ##
