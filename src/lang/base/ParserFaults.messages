@@ -19,7 +19,7 @@ type_term: CID LPAREN TID WITH
 ##
 # See tests/parser/bad/type_t-cid-lparen-tid-with.scilla
 
-This is an invalid type term, likely the ADT argument brackets are not closed properly.
+This is an invalid type term, likely the ADT argument brackets are not closed properly or the arguments are invalid.
 
 type_term: CID LPAREN WITH
 ##
@@ -65,7 +65,7 @@ type_term: CID MAP WITH
 ##
 # see tests/parser/bad/type_t-cid-map-with.scilla
 
-This is an invalid type term, the ADT constructor has invalid type arguments. The map key is wrong.
+This is an invalid type term, the ADT constructor has invalid type arguments. The map key is invalid.
 
 type_term: CID PERIOD WITH
 ##
@@ -583,6 +583,7 @@ stmts_term: ACCEPT WITH
 ## stmt
 ##
 # see tests/parser/bad/stmts-t-accept-with.scilla
+# see the stack to notice that we are missing a semicolon most likely
 
 This is likely an improperly terminated statement (lacking the semicolon).
 
@@ -1355,6 +1356,7 @@ exp_term: AT SPID TID WITH
 ##
 ## The known suffix of the stack is as follows:
 ## targ
+##
 # see tests/parser/bad/exps/exp_t-at-spid-tid-with.scilexp
 
 The type application is wrong. The list of types is problematic.
@@ -1992,7 +1994,7 @@ exp_term: SPID CID WITH
 ##
 # see tests/parser/bad/exps/exp_t-spid-cid-with.scilexp
 
-This may be a type application missing '@' or an incorrect function application.
+This may be a type application missing '@' or an incorrect function application or a data constructor given types or something else.
 
 exp_term: SPID SPID WITH
 ##
@@ -2093,12 +2095,12 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON CID COMMA WITH
 ##
 ## Ends in an error in state: 201.
 ##
-#
 ## separated_nonempty_list(COMMA,param_pair) -> param_pair COMMA . separated_nonempty_list(COMMA,param_pair) [ RPAREN ]
 ##
 ## The known suffix of the stack is as follows:
 ## param_pair COMMA
 ##
+#
 # see tests/parser/bad/cmodule-contract-cid-lparen-id-colon-comma-with.scilla
 
 Following a comma in the list of immutable fields, the parser expects another immutable field.
@@ -2464,3 +2466,42 @@ cmodule: WITH
 # see tests/parser/bad/cmodule-with.scilla
 
 Scilla version number unspecified.
+
+exp_term: CID LBRACE RBRACE AT
+##
+## Ends in an error in state: 161.
+##
+## simple_exp -> scid option(ctargs) . list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+##
+## The known suffix of the stack is as follows:
+## scid option(ctargs)
+##
+# see tests/parser/bad/exps/exp_t-cid-lbrace-rbrace-at.scilexp
+
+In a data constructor application, the parser expects valid seperated uncapitalised identifiers for arguments.
+
+exp_term: LET ID COLON TID EQ STRING WITH
+##
+## Ends in an error in state: 176.
+##
+## simple_exp -> LET ID type_annot EQ simple_exp . IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+##
+## The known suffix of the stack is as follows:
+## LET ID type_annot EQ simple_exp
+##
+# see tests/parser/bad/exp_t-let-id-colon-tid-eq-string-with.scilexp
+
+This typed let expression does not have a well placed 'in'.
+
+exp_term: LET ID COLON TID EQ WITH
+##
+## Ends in an error in state: 175.
+##
+## simple_exp -> LET ID type_annot EQ . simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+##
+## The known suffix of the stack is as follows:
+## LET ID type_annot EQ
+##
+# see tests/parser/bad/exp_t-let-id-colon-tid-eq-with.scilexp
+
+This typed let expression does not have a valid expression to use for the substitute variable.

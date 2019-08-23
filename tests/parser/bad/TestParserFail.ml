@@ -171,6 +171,7 @@ module ExpTests = TestUtil.DiffBasedTests(
           "exp_t-builtin-id-lparen-with.scilexp";
           "exp_t-builtin-id-with.scilexp";
           "exp_t-builtin-with.scilexp";
+          "exp_t-cid-lbrace-rbrace-at.scilexp";
           "exp_t-cid-lbrace-tid-eq.scilexp";
           "exp_t-cid-lbrace-with.scilexp";
           "exp_t-cid-period-cid-with.scilexp";
@@ -192,6 +193,8 @@ module ExpTests = TestUtil.DiffBasedTests(
           "exp_t-lbrace-spid-with.scilexp";
           "exp_t-lbrace-with.scilexp";
           "exp_t-let-id-colon-tid-eq-string-in-with.scilexp";
+          "exp_t-let-id-colon-tid-eq-string-with.scilexp";
+          "exp_t-let-id-colon-tid-eq-with.scilexp";
           "exp_t-let-id-colon-tid-with.scilexp";
           "exp_t-let-id-colon-with.scilexp";
           "exp_t-let-id-eq-string-in-with.scilexp";

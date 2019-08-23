@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid type term, likely the ADT argument brackets are not closed properly.\n",
+        "This is an invalid type term, likely the ADT argument brackets are not closed properly or the arguments are invalid.\n",
       "start_location": {
         "file": "parser/bad/type_t-cid-lparen-tid-with.scilla",
         "line": 7,

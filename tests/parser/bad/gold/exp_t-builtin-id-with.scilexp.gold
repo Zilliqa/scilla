@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This may be a type application missing '@' or an incorrect function application.\n",
+        "This may be a type application missing '@' or an incorrect function application or a data constructor given types or something else.\n",
       "start_location": {
         "file": "parser/bad/exps/exp_t-builtin-id-with.scilexp",
         "line": 3,

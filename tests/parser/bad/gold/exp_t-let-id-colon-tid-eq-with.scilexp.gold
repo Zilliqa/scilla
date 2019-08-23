@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This typed let expression does not have a valid expression to use for the substitute variable.\n",
+      "start_location": {
+        "file": "parser/bad/exps/exp_t-let-id-colon-tid-eq-with.scilexp",
+        "line": 1,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
