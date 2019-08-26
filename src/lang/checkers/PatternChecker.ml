@@ -11,7 +11,7 @@
 (* This file implements pattern match checks for
  * - Exhaustiveness: All possible patterns are covered
  * - Reachability: All provided patterns can be reached
- * Reference: ML pattern match compilation partial evaluation - Peter Sestoft
+ * Reference: ML pattern match compilation and partial evaluation - Peter Sestoft
  *)
 
 open Syntax
