@@ -8,6 +8,12 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  *)
 
+(* This file implements pattern match checks for
+ * - Exhaustiveness: All possible patterns are covered
+ * - Reachability: All provided patterns can be reached
+ * Reference: ML pattern match compilation and partial evaluation - Peter Sestoft
+ *)
+
 open Syntax
 open Core
 open ErrorUtils
