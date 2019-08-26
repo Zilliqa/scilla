@@ -43,7 +43,7 @@ let json_exn_wrapper thunk =
     | Basic.Util.Undefined (s, _)
     | Basic.Util.Type_error (s, _)
       -> assert_failure s
-    | _ -> assert_failure (Printf.sprintf "Unknown error parsing output JSON")
+    | e -> assert_failure (Exn.to_string e)
 
 let json_from_file f =
   let thunk () = Basic.from_file f in
