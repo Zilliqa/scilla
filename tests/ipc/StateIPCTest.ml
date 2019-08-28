@@ -19,12 +19,6 @@
 (* This file aids Testcontracts.ml in setting up a state server
  * and initializing it with some initial data. *)
 
-(* Use mock server in StateIPCTestServer? This should be
- * true unless we know there's a capable external server
- * running in the same socket address to connect to.
- * TODO: If need be, provide a command line flag for this. *)
-let use_test_server = true
-
 open OUnit2
 open Core
 open Syntax
@@ -167,13 +161,13 @@ let sort_mapkeys goldj outj =
     ) ~init:[]
   )
 
-(* Start a mock server (if set) at ~sock_addr and initialize its
- * state with ~state_json_path. *)
-let setup_and_initialize ~sock_addr ~state_json_path =
+(* Start a mock server (if set) at ~sock_addr and initialize server
+ * (external or mock server) state with ~state_json_path. *)
+let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
   let state = json_file_to_state state_json_path in
 
   (* Setup a mock server within the testsuite? *)
-  if use_test_server then StateIPCTestServer.start_server ~sock_addr;
+  if start_mock_server then StateIPCTestServer.start_server ~sock_addr;
 
   let fields = List.filter_map state ~f:(fun (s, t, _) -> 
     if s = ContractUtil.balance_label then None else Some (s, t))
@@ -198,7 +192,7 @@ let setup_and_initialize ~sock_addr ~state_json_path =
               ContractUtil.balance_label ^ " in state.json")
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
-let get_final_finish  ~sock_addr =
+let get_final_finish ~sock_addr =
   let state = StateIPCTestClient.fetch_all () in
   StateIPCTestServer.stop_server ~sock_addr;
   state

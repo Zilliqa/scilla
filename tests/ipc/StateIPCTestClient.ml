@@ -82,11 +82,15 @@ let binary_rpc ~sock_addr (call: Rpc.call) : Rpc.response =
   Unix.connect socket ~addr:(Unix.ADDR_UNIX sock_addr);
   let (ic, oc) = Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket in
   let msg_buf = Jsonrpc.string_of_call ~version: Jsonrpc.V2 call in
+  (* Cannot use DebugMessage here as we're part of testsuite, and don't want to 
+   * have races with the main executable that also (may) logs to the same files. *)
+  (* (Printf.printf "StateIPCTestClient: Sending: %s\n" msg_buf); *)
   (* Send data to the socket. *)
   let _ = send_delimited oc msg_buf in
   (* Get response. *)
   let response = Caml.input_line ic in
   Unix.close socket;
+  (* (Printf.printf "StateIPCTestClient: Response: %s\n" response); *)
   Jsonrpc.response_of_string response
 
 (* Fetch full state variable from server (no indexing). *)

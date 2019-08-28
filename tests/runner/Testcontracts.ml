@@ -61,11 +61,20 @@ let rec build_contract_tests env name exit_code i n additional_libs =
               "-jsonerrors";
               "-iblockchain" ; dir ^/ "blockchain_" ^ istr ^. "json"] in
 
-        let ipc_addr_thread = ipc_socket_addr ^ get_shard_id test_ctxt in
+        (* If an external IPC server is provided, we'll use that, otherwise
+         * we'll have an in-testsuite mock server setup based on the shard-id. *)
+        let start_mock_server = env.ext_ipc_server test_ctxt = "" in
+        let ipc_addr_thread =
+          if start_mock_server
+          then ipc_socket_addr ^ get_shard_id test_ctxt
+           (* TODO: assert that "-runner sequential" CLI is provided to testsuite. *)
+          else env.ext_ipc_server test_ctxt
+        in
         let state_json_path = dir ^/ "state_" ^ istr ^. "json" in
         let args_state =
           if ipc_mode then
-            let balance = StateIPCTest.setup_and_initialize ~sock_addr:ipc_addr_thread ~state_json_path in
+            let balance = StateIPCTest.setup_and_initialize
+              ~start_mock_server ~sock_addr:ipc_addr_thread ~state_json_path in
             args_basic @ ["-ipcaddress"; ipc_addr_thread; "-balance"; balance]
           else
             args_basic @ ["-istate" ; state_json_path]
