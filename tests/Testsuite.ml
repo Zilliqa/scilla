@@ -59,11 +59,18 @@ let main =
   let bech32_tests = TestBech32.bech32_tests in
 
   let all_tests = "all_tests" >:::
-                  [type_tests_bad; type_tests_good; exp_tests_good; exp_tests_bad;
-                   pm_tests_bad; signature_tests; polynomial_tests; (*gas_expr_tests;
-                   gas_contract_tests; *)bech32_tests;
-                   contract_tests; checker_tests; integer256_tests; syntax_tests;
-                   arith_builtin_tests] in
+    [
+      (* contract_tests should always be the first to be run. This is required
+       * for us to be able to run _only_ contract_tests from the blockchain for
+       * external IPC server tests. If the order changes, then the test_id of
+       * these tests will change, resulting in the tests not being run.
+       * See the Makefile target "test_extipcserver". *)
+      contract_tests;
+      type_tests_bad; type_tests_good; exp_tests_good; exp_tests_bad;
+      pm_tests_bad; signature_tests; polynomial_tests; bech32_tests;
+      (*gas_expr_tests; gas_contract_tests; *)
+      checker_tests; integer256_tests; syntax_tests; arith_builtin_tests
+    ] in
 
   (* Run all tests *)
   run_test_tt_main all_tests
