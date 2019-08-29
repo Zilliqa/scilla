@@ -51,6 +51,8 @@ module Tests = TestUtil.DiffBasedTests(
       "wallet.scilla";
       "zil-game.scilla";
       "map_corners_test.scilla";
+      "ud-registry.scilla";
+      "ud-proxy.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
