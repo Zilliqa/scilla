@@ -107,7 +107,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 539,
+        "line": 541,
         "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -117,7 +117,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 477,
+        "line": 479,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -127,7 +127,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 468,
+        "line": 470,
         "column": 6
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -137,7 +137,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 456,
+        "line": 458,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -147,7 +147,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 447,
+        "line": 449,
         "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -157,7 +157,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 421,
+        "line": 423,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -167,7 +167,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 412,
+        "line": 414,
         "column": 18
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -177,7 +177,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 399,
+        "line": 401,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -187,7 +187,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 391,
+        "line": 393,
         "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -197,7 +197,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 379,
+        "line": 381,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -207,7 +207,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 352,
+        "line": 354,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -217,7 +217,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 342,
+        "line": 344,
         "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -227,7 +227,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 328,
+        "line": 330,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -237,7 +237,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 319,
+        "line": 321,
         "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
