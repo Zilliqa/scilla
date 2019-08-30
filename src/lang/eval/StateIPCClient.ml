@@ -108,18 +108,27 @@ let rec deserialize_value value tp =
     | _ -> fail0 "StateIPCClient: Type mismatch deserializing value. Unexpected protobuf map.")
 
 let encode_serialized_value value =
-  let encoder = Pbrt.Encoder.create () in
-  Ipcmessage_pb.encode_proto_scilla_val value encoder;
-  Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+  try
+    let encoder = Pbrt.Encoder.create () in
+    Ipcmessage_pb.encode_proto_scilla_val value encoder;
+    pure @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+  with
+  | e -> fail0 (Exn.to_string e)
 
 let decode_serialized_value value =
-  let decoder = Pbrt.Decoder.of_bytes value in
-  Ipcmessage_pb.decode_proto_scilla_val decoder
+  try
+    let decoder = Pbrt.Decoder.of_bytes value in
+    pure @@ Ipcmessage_pb.decode_proto_scilla_val decoder
+  with
+  | e -> fail0 (Exn.to_string e)
 
 let encode_serialized_query query =
-  let encoder = Pbrt.Encoder.create () in
-  Ipcmessage_pb.encode_proto_scilla_query query encoder;
-  Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+  try
+    let encoder = Pbrt.Encoder.create () in
+    Ipcmessage_pb.encode_proto_scilla_query query encoder;
+    pure @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+  with
+  | e -> fail0 (Exn.to_string e)
 
 (* Fetch a field value. keys is empty iff this value being fetched is not a whole map itself.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
@@ -131,7 +140,7 @@ let fetch ~socket_addr ~fname ~keys ~tp =
     indices = List.map keys ~f:(serialize_literal);
     ignoreval = false;
   } in
-  let q' = encode_serialized_query q in
+  let%bind q' = encode_serialized_query q in
   let%bind res =
     let thunk() = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
     ipcclient_exn_wrapper thunk
@@ -139,7 +148,8 @@ let fetch ~socket_addr ~fname ~keys ~tp =
   match res with
   | (true, res') ->
     let%bind tp' = TypeUtilities.map_access_type tp (List.length keys) in
-    let%bind res'' = deserialize_value (decode_serialized_value (Bytes.of_string res')) tp' in
+    let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
+    let%bind res'' = deserialize_value decoded_pb tp' in
     pure @@ Some (res'')
   | (false, _) -> pure None
 
@@ -152,8 +162,8 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
     indices = List.map keys ~f:(serialize_literal);
     ignoreval = false;
   } in
-  let q' = encode_serialized_query q in
-  let value' =  encode_serialized_value (serialize_field value) in
+  let%bind q' = encode_serialized_query q in
+  let%bind value' =  encode_serialized_value (serialize_field value) in
   let%bind _ =
     let thunk() = translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' value' in
     ipcclient_exn_wrapper thunk
@@ -169,7 +179,7 @@ let is_member ~socket_addr ~fname ~keys ~tp =
     indices = List.map keys ~f:(serialize_literal);
     ignoreval = true;
   } in
-  let q' = encode_serialized_query q in
+  let%bind q' = encode_serialized_query q in
   let%bind res =
     let thunk() = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q' in
     ipcclient_exn_wrapper thunk
@@ -185,7 +195,7 @@ let remove ~socket_addr ~fname ~keys ~tp =
     indices = List.map keys ~f:(serialize_literal);
     ignoreval = true;
   } in
-  let q' = encode_serialized_query q in
+  let%bind q' = encode_serialized_query q in
   let dummy_val = "" in (* This will be ignored by the blockchain. *)
   let%bind _ =
     let thunk() = translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' dummy_val in
