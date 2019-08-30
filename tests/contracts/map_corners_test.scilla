@@ -239,6 +239,15 @@ transition t7()
   end;
 
   (* And _not_ contain f_m2[key1b] *)
+  key1b = "key1b";
+  c1 <- f_m2[key1b];
+  match c1 with
+  | Some _ =>
+      m = "Fail: deleted value for key1b found!";
+      fail_msg tname m
+  | None =>
+  end;
+
   key1b = "key1b"; key2b = "key2b";
   c1 <- f_m2[key1b][key2b];
   match c1 with
