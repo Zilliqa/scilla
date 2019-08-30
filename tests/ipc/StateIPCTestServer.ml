@@ -104,7 +104,6 @@ module MakeServer() = struct
         Hashtbl.replace new_table str (deserialize_value v));
       MapVal new_table
 
-  (* Not sure if need to check mapdepth vs length of indices? *)
   let fetch_state_value query =
     let rec recurser value indices =
       match indices with
@@ -129,7 +128,6 @@ module MakeServer() = struct
         pure @@ (true, encode_serialized_value (serialize_value v))
       | None -> pure @@ (false, "")
 
-  (* Not sure if need to check mapdepth vs length of indices? *)
   let update_state_value query value =
     let rec recurser_update ?(new_val = None) map indices =
       match indices with

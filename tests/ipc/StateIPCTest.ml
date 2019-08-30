@@ -124,11 +124,11 @@ let sort_mapkeys goldj outj =
       let outlist' = List.fold_right goldlist ~f:(fun gold outacc ->
         let goldkey = json_member "key" gold |> json_to_string in
         let goldval = json_member "val" gold in
-        let corressponding_out = List.find outlist ~f:(fun outelm ->
+        let corresponding_out = List.find outlist ~f:(fun outelm ->
           let outkey = json_member "key" outelm |> json_to_string in
           goldkey = outkey
         ) in
-        match corressponding_out with
+        match corresponding_out with
         | Some out ->
           let outkey = json_member "key" out in
           let outval = json_member "val" out in

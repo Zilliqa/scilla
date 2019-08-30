@@ -172,7 +172,7 @@ transition t6 ()
       fail_msg tname m
     end
   | None =>
-    m = "key1a,key2a no found";
+    m = "key1a,key2a not found";
     fail_msg tname m
   end;
 
@@ -189,7 +189,7 @@ transition t6 ()
       fail_msg tname m
     end
   | None =>
-    m = "key1b,key2b no found";
+    m = "key1b,key2b not found";
     fail_msg tname m
   end;
 
@@ -206,7 +206,7 @@ transition t6 ()
       fail_msg tname m
     end
   | None =>
-    m = "key1b,key2c no found";
+    m = "key1b,key2c not found";
     fail_msg tname m
   end;
 
@@ -215,7 +215,7 @@ transition t6 ()
 
 end
 
-(* test_query_map_2 *)
+(* test_query_delete_to_empty *)
 transition t7()
   tname = "t7";
 
@@ -234,8 +234,27 @@ transition t7()
       fail_msg tname m
     end
   | None =>
-    m = "key1a,key2a no found";
+    m = "key1a,key2a not found";
     fail_msg tname m
+  end;
+
+  (* And _not_ contain f_m2[key1b] *)
+  key1b = "key1b"; key2b = "key2b";
+  c1 <- f_m2[key1b][key2b];
+  match c1 with
+  | Some _ =>
+      m = "Fail: deleted value for key1b,key2b found!";
+      fail_msg tname m
+  | None =>
+  end;
+
+  key1b = "key1b"; key2c = "key2c";
+  c1 <- f_m2[key1b][key2c];
+  match c1 with
+  | Some _ =>
+      m = "Fail: deleted value for key1b,key2c found!";
+      fail_msg tname m
+  | None =>
   end;
 
   (* Add f_m2[key1b][key2c] back again, with a different value. *)
@@ -265,7 +284,7 @@ transition t8()
       fail_msg tname m
     end
   | None =>
-    m = "key1a,key2a no found";
+    m = "key1a,key2a not found";
     fail_msg tname m
   end;
 
@@ -282,7 +301,7 @@ transition t8()
       fail_msg tname m
     end
   | None =>
-    m = "key1b,key2c no found";
+    m = "key1b,key2c not found";
     fail_msg tname m
   end;
 
@@ -334,7 +353,7 @@ transition t10()
       fail_msg tname m
     end
   | None =>
-    m = "key1a no found";
+    m = "key1a not found";
     fail_msg tname m
   end;
 

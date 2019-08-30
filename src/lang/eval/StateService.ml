@@ -202,9 +202,8 @@ let is_member ~fname ~keys =
     let%bind res = StateIPCClient.is_member ~socket_addr ~fname ~keys ~tp in
     pure @@ (res, G_MapGet(List.length keys, None))
   | Local -> 
-    (* TODO: gas cost shouldn't depend on key/value queried for. *)
-    let%bind (v, g) = fetch_local ~fname ~keys fields in
-    pure @@ (Option.is_some v, g)
+    let%bind (v, _) = fetch_local ~fname ~keys fields in
+    pure @@ (Option.is_some v, G_MapGet(List.length keys, None))
 
 (* Remove a key from a map. keys must be non-empty. *)
 let remove ~fname ~keys =
