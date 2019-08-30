@@ -258,7 +258,7 @@ transition t7()
   | None =>
   end;
 
-  (* and _not_ contain f_m2[key1b][key2d] *)
+  (* and _not_ contain f_m2[key1b][key2d] (which never existed) *)
   key1b = "key1b"; key2d = "key2d";
   c1 <- f_m2[key1b][key2d];
   match c1 with
