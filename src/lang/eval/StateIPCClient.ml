@@ -130,7 +130,7 @@ let encode_serialized_query query =
   with
   | e -> fail0 (Exn.to_string e)
 
-(* Fetch a field value. keys is empty iff this value being fetched is not a whole map itself.
+(* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
 let fetch ~socket_addr ~fname ~keys ~tp =
   let open Ipcmessage_types in
@@ -153,7 +153,7 @@ let fetch ~socket_addr ~fname ~keys ~tp =
     pure @@ Some (res'')
   | (false, _) -> pure None
 
-(* Update a field. keys is empty iff the value being updated is not a whole map itself. *)
+(* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 let update ~socket_addr ~fname ~keys ~value ~tp =
   let open Ipcmessage_types in
   let q = {

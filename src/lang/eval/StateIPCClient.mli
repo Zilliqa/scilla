@@ -18,12 +18,12 @@
 open Syntax
 open ErrorUtils
 
-(* Fetch a field value. keys is empty iff the value being fetched is not a whole map itself.
+(* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
 val fetch : socket_addr : string -> fname:loc ident -> keys:(literal list) -> tp : typ ->
             ((literal option), scilla_error list) result
 
-(* Update a field. keys is empty iff the value being updated is not a whole map itself. *)
+(* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update : socket_addr : string -> fname:loc ident -> keys:(literal list) -> value:literal -> tp : typ ->
             (unit, scilla_error list) result
 

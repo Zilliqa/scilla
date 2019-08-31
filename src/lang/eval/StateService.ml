@@ -201,7 +201,7 @@ let is_member ~fname ~keys =
     let%bind tp = field_type fields fname in
     let%bind res = StateIPCClient.is_member ~socket_addr ~fname ~keys ~tp in
     pure @@ (res, G_MapGet(List.length keys, None))
-  | Local -> 
+  | Local ->
     let%bind (v, _) = fetch_local ~fname ~keys fields in
     pure @@ (Option.is_some v, G_MapGet(List.length keys, None))
 
