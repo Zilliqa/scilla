@@ -94,6 +94,12 @@ let rec mapM ~f ls = match ls with
       pure (z :: zs)
   | [] -> pure []
 
+let rec iterM ~f ls = match ls with
+  | x :: ls' ->
+    let%bind _ = f x in
+    iterM ~f ls'
+  | [] -> pure ()
+
 let liftPair1 m x = 
   let%bind z = m in
   pure (z, x)

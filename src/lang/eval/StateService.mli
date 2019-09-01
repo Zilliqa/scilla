@@ -30,7 +30,7 @@ type ss_field =
     fval : literal option; (* Value may not be available (in IPC mode) *)
   }
 type service_mode = 
-  | IPC of int (* port number for IPC *)
+  | IPC of string (* port number for IPC *)
   | Local
 
 (* [ Initialization of StateService ]
@@ -58,10 +58,10 @@ val get_full_state : unit -> ((string * literal) list, scilla_error list) result
 (* Finalize: no more queries. *)
 val finalize : unit -> (unit, scilla_error list) result
 
-(* Fetch a field value. keys is empty iff the value being fetched is not a whole map itself.
+(* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
 val fetch : fname:loc ident -> keys:(literal list) -> ((literal option * stmt_eval_context), scilla_error list) result
-(* Update a field. keys is empty iff the value being updated is not a whole map itself. *)
+(* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update : fname:loc ident -> keys:(literal list) -> value:literal -> (stmt_eval_context, scilla_error list) result
 (* Is a key in a map. keys must be non-empty. *)
 val is_member : fname:loc ident -> keys:(literal list) -> ((bool * stmt_eval_context), scilla_error list) result

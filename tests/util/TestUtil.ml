@@ -28,6 +28,7 @@ type tsuite_env =
     print_cli : test_ctxt -> bool;
     update_gold : test_ctxt -> bool;
     print_diff : test_ctxt -> bool;
+    ext_ipc_server : test_ctxt -> string;
   }
 
 let output_verifier goldoutput_file msg print_diff output =
