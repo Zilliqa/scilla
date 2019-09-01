@@ -251,6 +251,15 @@ module TypeUtilities = struct
         "Type mismatch: %s expected, but %s provided."
         (pp_typ expected) (pp_typ given)
 
+  (* TODO: make this charge gas *)
+  let assert_type_equiv_with_gas expected given remaining_gas =
+    if type_equiv expected given
+    then pure remaining_gas
+    else Error (mk_error0 (sprintf
+                            "Type mismatch: %s expected, but %s provided."
+                            (pp_typ expected) (pp_typ given)),
+               remaining_gas)
+
   let rec is_ground_type t = match t with 
     | FunType (a, r) -> is_ground_type a && is_ground_type r
     | MapType (k, v) -> is_ground_type k && is_ground_type v
@@ -348,21 +357,23 @@ module TypeUtilities = struct
        mapM arg_pairs ~f:(fun (formal, actual) ->
             assert_type_equiv formal actual)
     | None -> fail0 "Incorrect number of arguments to procedure"
-  
-  let rec elab_tfun_with_args tf args = match tf, args with
+
+  (* TODO: Make this deduct gas *)
+  let rec elab_tfun_with_args tf args gas = match tf, args with
     | PolyFun _ as pf, a :: args' ->
         let afv = free_tvars a in
-        let%bind (n, tp) = (match refresh_tfun pf afv with
-            | PolyFun (a, b) -> pure (a, b)
-            | _ -> fail0 "This can't happen!") in
+        let%bind (n, tp, remaining_gas) = (match refresh_tfun pf afv with
+            | PolyFun (a, b) -> pure (a, b, gas)
+            | _ -> Error (mk_error0 "This can't happen!", gas)) in
+        (* This needs to account for gas *)
         let tp' = subst_type_in_type n a tp in
-        elab_tfun_with_args tp' args'
-    | t, [] -> pure t
+        elab_tfun_with_args tp' args' remaining_gas
+    | t, [] -> pure (t, gas)
     | _ ->
         let msg = sprintf
             "Cannot elaborate expression of type\n%s\napplied, as a type function, to type arguments\n%s." (pp_typ tf)
             (pp_typ_list args) in
-        fail0 msg
+         Error (mk_error0 msg, gas)
 
   (****************************************************************)
   (*                        Working with ADTs                     *)
