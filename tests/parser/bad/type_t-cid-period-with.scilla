@@ -2,7 +2,7 @@ scilla_version 0
 
 library TestLib
 
-(* incorrect seperated identifier *)
+(* incorrect separated identifier *)
 let f = fun (x : Option.imaginary ) => x
 let m = True
 

@@ -2478,7 +2478,7 @@ exp_term: CID LBRACE RBRACE AT
 ##
 # see tests/parser/bad/exps/exp_t-cid-lbrace-rbrace-at.scilexp
 
-In a data constructor application, the parser expects valid seperated uncapitalised identifiers for arguments.
+In a data constructor application, the parser expects valid separated uncapitalised identifiers for arguments.
 
 exp_term: LET ID COLON TID EQ STRING WITH
 ##
