@@ -21,7 +21,8 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
     let test_path f = ["contracts"; f]
     let runner = "scilla-checker"
-    let custom_args = ["-cf"; "-contractinfo"]
+    let gas_limit = Stdint.Uint64.of_int 8000
+    let custom_args = ["-cf"; "-contractinfo";]
     let additional_libdirs = []
     let tests = [
       "auction.scilla";
@@ -62,7 +63,8 @@ module CheckerTests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
     let test_path f = ["checker"; "good"; f]
     let runner = "scilla-checker"
-    let custom_args = ["-cf"; "-contractinfo"]
+    let gas_limit = Stdint.Uint64.of_int 8000
+    let custom_args = ["-cf"; "-contractinfo";]
     let additional_libdirs = [["checker"; "good"; "lib"]]
     let tests = [
       "adt_test.scilla";
@@ -105,6 +107,7 @@ module ShogiTests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
     let test_path f = ["contracts"; f]
     let runner = "scilla-checker"
+    let gas_limit = Stdint.Uint64.of_int 8000
     let custom_args = ["-cf"; "-contractinfo"]
     let additional_libdirs = [[ "contracts"; "shogi_lib"]]
     let tests = [

@@ -62,6 +62,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "eval"; "exp"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["eval"; "exp"; "bad"; f]
     let runner = "eval-runner"
+    let gas_limit = Stdint.Uint64.of_int 4002000
     let custom_args = []
     let additional_libdirs = []
     let tests = explist
