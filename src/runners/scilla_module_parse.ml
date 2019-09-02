@@ -25,7 +25,7 @@ open Core
 
 let () =
   let filename = Sys.argv.(1) in
-  match FrontEndParser.parse_file ScillaParser.cmodule filename with
+  match FrontEndParser.parse_file ScillaParser.Incremental.cmodule filename with
   | Some cs ->
       printf "%s \n" (sexp_of_cmodule sexp_of_loc cs |> Sexplib.Sexp.to_string)
   | None -> ()

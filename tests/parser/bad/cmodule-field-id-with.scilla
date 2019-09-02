@@ -1,0 +1,7 @@
+scilla_version 0
+
+contract Test
+()
+
+(* 'as' should be a colon instead *)
+field something as bool = False

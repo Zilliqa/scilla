@@ -1,0 +1,3 @@
+let a = tfun 'A => True in
+(* accidental period *)
+tfun 'B => @a 'B .

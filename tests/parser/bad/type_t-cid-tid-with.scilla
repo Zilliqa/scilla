@@ -1,0 +1,10 @@
+scilla_version 0
+
+library TestLib
+
+(* there is an extra argument *)
+let f = tfun 'A => fun (x: Option 'A extra) => x
+let m = True
+
+contract Test
+()

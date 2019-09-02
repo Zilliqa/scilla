@@ -1,0 +1,11 @@
+scilla_version 0
+
+contract Test
+()
+
+transition something ()
+end
+
+(* Typo *)
+transsition something_else ()
+end

@@ -1,0 +1,5 @@
+scilla_version 0
+
+(* this type is wrong *)
+contract Test
+( something : bool)

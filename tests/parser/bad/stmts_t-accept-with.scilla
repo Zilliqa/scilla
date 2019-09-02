@@ -1,0 +1,12 @@
+scilla_version 0
+
+library TestLib
+
+contract Test
+()
+
+(* this needs another semi-colon *)
+transition arbitrary ()
+accept
+accept
+end

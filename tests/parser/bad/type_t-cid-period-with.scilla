@@ -1,0 +1,10 @@
+scilla_version 0
+
+library TestLib
+
+(* incorrect separated identifier *)
+let f = fun (x : Option.imaginary ) => x
+let m = True
+
+contract Test
+()

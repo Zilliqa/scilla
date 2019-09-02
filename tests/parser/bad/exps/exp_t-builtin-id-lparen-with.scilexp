@@ -1,0 +1,3 @@
+(* only unit type would ever parse *)
+let one = Uint128 1 in
+builtin add (one) (one)

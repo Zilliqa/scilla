@@ -1,0 +1,5 @@
+scilla_version 0
+
+(* this immutable field starts with a capital *)
+contract Test
+( something : Uint128, Extra)

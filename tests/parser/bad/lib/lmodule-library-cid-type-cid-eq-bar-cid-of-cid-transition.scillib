@@ -1,0 +1,10 @@
+library TestLib
+
+type House =
+| Kind of String
+
+(* No transitions or procedures in libraries *)
+
+transition a ()
+  accept
+end

@@ -1,7 +1,8 @@
 {
   "errors": [
     {
-      "error_message": "Syntax error.",
+      "error_message":
+        "This let expression is missing an identifier for the variable.\n",
       "start_location": {
         "file": "typecheck/bad/bad_assign2.scilexp",
         "line": 1,

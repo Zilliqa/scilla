@@ -1,0 +1,7 @@
+scilla_version 0
+
+contract Test
+()
+
+(* a field cannot be named field *)
+field field : Bool = True

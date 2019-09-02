@@ -1,0 +1,1 @@
+fun (x: Bool) -> x (* wrong arrow, should be '=>' *)

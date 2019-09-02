@@ -1,0 +1,6 @@
+scilla_version 0
+
+contract Test
+()
+
+field something : Uint128 with

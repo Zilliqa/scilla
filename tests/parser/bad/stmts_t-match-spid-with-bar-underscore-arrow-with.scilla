@@ -1,0 +1,15 @@
+scilla_version 0
+
+library TestLib
+
+let a = True
+
+contract Test
+()
+
+(* field cannot be a procedure so fails *)
+transition arbitrary ()
+  match a with
+  | _ => field
+  end
+end

@@ -1,0 +1,5 @@
+library TestLib
+
+(* Should have a capital letter *)
+type House =
+| Kind of string

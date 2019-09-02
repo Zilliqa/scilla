@@ -1,0 +1,10 @@
+scilla_version 0
+
+contract Test
+()
+
+(* Typo *)
+
+transition arbitrary ()
+  send [item
+end

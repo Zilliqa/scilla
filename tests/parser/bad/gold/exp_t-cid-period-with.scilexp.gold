@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid expression, most likely the data constructor name is unfinished.\n",
+      "start_location": {
+        "file": "parser/bad/exps/exp_t-cid-period-with.scilexp",
+        "line": 1,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

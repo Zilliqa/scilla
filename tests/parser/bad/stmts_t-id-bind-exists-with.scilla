@@ -1,0 +1,9 @@
+scilla_version 0
+
+contract Test
+()
+
+(* Needs lower case identifier *)
+transition something ()
+  b <- exists Map
+end

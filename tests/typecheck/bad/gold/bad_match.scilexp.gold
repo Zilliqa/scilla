@@ -1,7 +1,8 @@
 {
   "errors": [
     {
-      "error_message": "Syntax error.",
+      "error_message":
+        "This is an invalid match expression. In a pattern matching clause following the bar the parser expects a pattern. The pattern may be an identifier or an ADT constructor.\n",
       "start_location": {
         "file": "typecheck/bad/bad_match.scilexp",
         "line": 3,

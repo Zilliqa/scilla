@@ -1,0 +1,5 @@
+library TestLib
+
+(* missing bar *)
+type House =
+Kind of String

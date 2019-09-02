@@ -153,7 +153,7 @@ let check_lmodule cli =
   let r = (
     let initial_gas = cli.gas_limit in
     let%bind (lmod : ParsedSyntax.lmodule) = wrap_error_with_gas initial_gas @@
-      check_parsing cli.input_file ScillaParser.lmodule in
+      check_parsing cli.input_file ScillaParser.Incremental.lmodule in
     let elibs = import_libs lmod.elibs cli.init_file  in
     let%bind (recursion_lmod, recursion_rec_principles, recursion_elibs) = 
       wrap_error_with_gas initial_gas @@ check_recursion_lmod lmod elibs in
@@ -177,7 +177,7 @@ let check_cmodule cli =
   let r = (
     let initial_gas = cli.gas_limit in
     let%bind (cmod : ParsedSyntax.cmodule) = wrap_error_with_gas initial_gas @@
-      check_parsing cli.input_file ScillaParser.cmodule  in
+      check_parsing cli.input_file ScillaParser.Incremental.cmodule  in
     (* Import whatever libs we want. *)
     let elibs = import_libs cmod.elibs cli.init_file in
     let%bind (recursion_cmod, recursion_rec_principles, recursion_elibs) =

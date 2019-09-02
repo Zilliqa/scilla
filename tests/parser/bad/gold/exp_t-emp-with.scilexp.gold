@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "The empty map has invalid key type (capitalised identifier).\n",
+      "start_location": {
+        "file": "parser/bad/exps/exp_t-emp-with.scilexp",
+        "line": 1,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

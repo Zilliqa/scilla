@@ -1,0 +1,6 @@
+library TestLib
+
+(* 'equals' should be '=' *)
+
+type House equals
+| Kind of String
