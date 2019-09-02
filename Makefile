@@ -37,6 +37,14 @@ test: dev
 gold: dev
 	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -update-gold true
 
+# This must be run only if there is an external IPC server available at "/tmp/scillaipcsocket"
+# that can handle access requests. It is important to use the sequential runner here as we
+# don't want multiple threads of the testsuite connecting to the same server concurrently.
+test_extipcserver: dev
+	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
+	-ext-ipc-server "/tmp/scillaipcsocket" \
+	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
+
 # Clean up
 clean:
 # Remove files produced by dune.

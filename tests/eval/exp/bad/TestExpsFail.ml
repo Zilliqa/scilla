@@ -22,6 +22,7 @@ let explist = [
   "app_error1.scilexp";
   "app_error2.scilexp";
   "builtin4.scilexp";
+  "blowup.scilexp";             (* Should fail with out-of-gas. *)
   "builtin-divzero.scilexp";
   "builtin-divzero2.scilexp";
   "builtin-divzero3.scilexp";
