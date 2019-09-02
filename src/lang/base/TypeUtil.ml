@@ -358,7 +358,23 @@ module TypeUtilities = struct
             assert_type_equiv formal actual)
     | None -> fail0 "Incorrect number of arguments to procedure"
 
-  (* TODO: Make this deduct gas *)
+  let rec elab_tfun_with_args_no_gas tf args = match tf, args with
+    | PolyFun _ as pf, a :: args' ->
+        let afv = free_tvars a in
+        let%bind (n, tp) = (match refresh_tfun pf afv with
+            | PolyFun (a, b) -> pure (a, b)
+            | _ -> Error (mk_error0 "This can't happen!")) in
+        (* This needs to account for gas *)
+        let tp' = subst_type_in_type n a tp in
+        elab_tfun_with_args_no_gas tp' args'
+    | t, [] -> pure t
+    | _ ->
+        let msg = sprintf
+            "Cannot elaborate expression of type\n%s\napplied, as a type function, to type arguments\n%s." (pp_typ tf)
+            (pp_typ_list args) in
+         Error (mk_error0 msg)
+
+    (* TODO: Make this deduct gas *)
   let rec elab_tfun_with_args tf args gas = match tf, args with
     | PolyFun _ as pf, a :: args' ->
         let afv = free_tvars a in

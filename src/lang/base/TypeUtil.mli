@@ -122,6 +122,8 @@ module TypeUtilities : sig
   (* Applying a procedure "type" *)
   val proc_type_applies : typ list -> typ list -> (unit list, scilla_error list) result
 
+  (* Applying a type function without gas charge (for builtins) *)
+  val elab_tfun_with_args_no_gas : typ -> typ list -> (typ, scilla_error list) result
   (* Applying a type function *)
   val elab_tfun_with_args : typ -> typ list -> Stdint.uint64 -> (typ * Stdint.uint64, scilla_error list * Stdint.uint64) result
 

@@ -84,3 +84,7 @@ let get_warnings () =
 
 exception Invalid_json of scilla_error list
 let mk_invalid_json msg = Invalid_json (mk_error0 msg)
+
+let wrap_error_with_gas gas res = match res with
+  | Ok r -> Ok r
+  | Error e -> Error (e, gas)
