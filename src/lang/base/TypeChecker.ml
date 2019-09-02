@@ -685,7 +685,7 @@ module ScillaTypechecker
   let type_libraries elibs tenv0 remaining_gas =
     let ((typed_elibs, elibs_env), emsgs, remaining_gas) = 
 
-      let rec recurser libl =
+      let rec recurser libl remaining_gas =
 
         (* Do a preliminary check to ensure no name conflicts b/w
          * libraries in elibs at just the root levels. *)
@@ -724,7 +724,7 @@ module ScillaTypechecker
         ~f:(fun ((lib_acc, tenv_acc), emsgs_acc, remaining_gas) elib ->
             (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
             let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
-            let ((dep_libs, dep_env), dep_emsgs, remaining_gas) = recurser elib.deps in
+            let ((dep_libs, dep_env), dep_emsgs, remaining_gas) = recurser elib.deps remaining_gas in
             let ((typed_libraries, tenv'), emsg, remaining_gas') =
               match type_library dep_env elib.libn remaining_gas with
               | Ok ((t_lib, t_env), remaining_gas) ->
@@ -742,7 +742,7 @@ module ScillaTypechecker
             ((typed_libraries, tenv'), emsg, remaining_gas')
           )
       in
-      recurser elibs
+      recurser elibs remaining_gas
     in
     if emsgs <> [] then Error (emsgs, remaining_gas) else pure (typed_elibs, elibs_env, remaining_gas)
 

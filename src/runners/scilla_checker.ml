@@ -87,7 +87,7 @@ let check_typing cmod rprin elibs gas =
     | Ok (_, remaining_gas) ->
         plog @@ sprintf "\n[Type Check]:\n module [%s] is successfully checked.\n" (get_id cmod.contr.cname);
         let open Stdint.Uint64 in
-        plog @@ sprintf "Gas cost for typechecking: %s units.\n" (to_string (gas - remaining_gas))
+        plog @@ sprintf "Gas remaining after typechecking: %s units.\n" (to_string remaining_gas)
     | _ -> () in
     res
 
@@ -99,7 +99,7 @@ let check_typing_lmod lmod rprin elibs gas =
     | Ok (_, remaining_gas) ->
         plog @@ sprintf "\n[Type Check]:\n lmodule [%s] is successfully checked.\n" (get_id lmod.libs.lname);
         let open Stdint.Uint64 in
-        plog @@ sprintf "Gas cost for typechecking: %s units.\n" (to_string (gas - remaining_gas))
+        plog @@ sprintf "Gas remaining after typechecking: %s units.\n" (to_string remaining_gas)
     | _ -> () in
   res
 
@@ -163,7 +163,7 @@ let check_lmodule cli =
   ) in
   (match r with
   | Error (s, g) -> fatal_error_gas s g
-  | Ok (res, g) ->
+  | Ok (_, g) ->
       let warnings_and_gas_output =
         [ ("warnings", scilla_warning_to_json (get_warnings()));
           ("gas_remaining", `String (Stdint.Uint64.to_string g));

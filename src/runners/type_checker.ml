@@ -81,7 +81,7 @@ let () =
         (* Import all libs. *)
         let std_lib = import_all_libs lib_dirs  in
         (match check_typing e std_lib gas_limit with
-         | Ok ((_, (e_typ, _)) as typed_erep, remaining_gas) ->
+         | Ok ((_, (e_typ, _)) as typed_erep, _remaining_gas) ->
              (match check_patterns typed_erep with
               | Ok _ -> 
                 printf "%s\n" (pp_typ e_typ.tp);
