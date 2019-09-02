@@ -1,0 +1,206 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "initialOwner", "tag": "NoInfo" },
+      { "field": "rootNode", "tag": "NoInfo" },
+      { "field": "records", "tag": "(Map (Record ))" },
+      { "field": "registrar", "tag": "NotMoney" },
+      { "field": "approvals", "tag": "(Map NoInfo)" },
+      { "field": "operators", "tag": "(Map (List NoInfo))" },
+      { "field": "admins", "tag": "(List NoInfo)" }
+    ],
+    "ADT constructors": [
+      {
+        "Record": [
+          { "constructor": "Record", "tags": [ "NoInfo", "NotMoney" ] }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Registry",
+    "params": [
+      { "vname": "initialOwner", "type": "ByStr20" },
+      { "vname": "rootNode", "type": "ByStr32" }
+    ],
+    "fields": [
+      { "vname": "records", "type": "Map (ByStr32) (Record)", "depth": 1 },
+      { "vname": "registrar", "type": "ByStr20", "depth": 0 },
+      { "vname": "approvals", "type": "Map (ByStr32) (ByStr20)", "depth": 1 },
+      {
+        "vname": "operators",
+        "type": "Map (ByStr20) (List (ByStr20))",
+        "depth": 1
+      },
+      { "vname": "admins", "type": "List (ByStr20)", "depth": 0 }
+    ],
+    "transitions": [
+      {
+        "vname": "setAdmin",
+        "params": [
+          { "vname": "address", "type": "ByStr20" },
+          { "vname": "isApproved", "type": "Bool" }
+        ]
+      },
+      {
+        "vname": "approve",
+        "params": [
+          { "vname": "node", "type": "ByStr32" },
+          { "vname": "address", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "approveFor",
+        "params": [
+          { "vname": "address", "type": "ByStr20" },
+          { "vname": "isApproved", "type": "Bool" }
+        ]
+      },
+      {
+        "vname": "configureNode",
+        "params": [
+          { "vname": "node", "type": "ByStr32" },
+          { "vname": "owner", "type": "ByStr20" },
+          { "vname": "resolver", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "configureResolver",
+        "params": [
+          { "vname": "node", "type": "ByStr32" },
+          { "vname": "resolver", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "transfer",
+        "params": [
+          { "vname": "node", "type": "ByStr32" },
+          { "vname": "owner", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "assign",
+        "params": [
+          { "vname": "parent", "type": "ByStr32" },
+          { "vname": "label", "type": "String" },
+          { "vname": "owner", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "bestow",
+        "params": [
+          { "vname": "label", "type": "String" },
+          { "vname": "owner", "type": "ByStr20" },
+          { "vname": "resolver", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "setRegistrar",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "register",
+        "params": [
+          { "vname": "parent", "type": "ByStr32" },
+          { "vname": "label", "type": "String" }
+        ]
+      },
+      {
+        "vname": "onResolverConfigured",
+        "params": [ { "vname": "node", "type": "ByStr32" } ]
+      }
+    ],
+    "events": [
+      {
+        "vname": "Error",
+        "params": [ { "vname": "msg", "type": "String" } ]
+      },
+      {
+        "vname": "Configured",
+        "params": [
+          { "vname": "node", "type": "ByStr32" },
+          { "vname": "owner", "type": "ByStr20" },
+          { "vname": "resolver", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "NewDomain",
+        "params": [
+          { "vname": "parent", "type": "ByStr32" },
+          { "vname": "label", "type": "String" }
+        ]
+      },
+      {
+        "vname": "NewRegistrar",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "Approved",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "ApprovedFor",
+        "params": [
+          { "vname": "user", "type": "ByStr20" },
+          { "vname": "operator", "type": "ByStr20" },
+          { "vname": "isApproved", "type": "Bool" }
+        ]
+      },
+      {
+        "vname": "AdminSet",
+        "params": [
+          { "vname": "address", "type": "ByStr20" },
+          { "vname": "isApproved", "type": "Bool" }
+        ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "Record",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Record", "argtypes": [ "ByStr20", "ByStr20" ] }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": []
+}

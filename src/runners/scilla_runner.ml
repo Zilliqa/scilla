@@ -167,7 +167,7 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
 let () =
   let cli = Cli.parse () in
   let is_deployment = (cli.input_message = "") in
-  let is_ipc = cli.ipc_port <> 0 in
+  let is_ipc = cli.ipc_address <> "" in
   let is_library =
     (FilePath.get_extension cli.input = GlobalConfig.StdlibTracker.file_extn_library) in
   let gas_remaining =
@@ -269,8 +269,12 @@ let () =
           let open StateService in
           let open MonadUtil in
           let open Result.Let_syntax in
-          let fields = List.map cstate'.fields ~f:(fun (s, t) -> { fname = s; ftyp = t; fval = None }) in
-          let sm = IPC (cli.ipc_port) in
+          (* We push all fields except _balance. *)
+          let fields = List.filter_map cstate'.fields ~f:(fun (s, t) ->
+            if s = balance_label then None else
+            Some { fname = s; ftyp = t; fval = None })
+          in
+          let sm = IPC (cli.ipc_address) in
           let () = initialize ~sm ~fields in
           match
              (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
@@ -282,9 +286,12 @@ let () =
           | Error s -> fatal_error_gas s remaining_gas'
           | Ok _ -> ()
         );
+
+        (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
+        let field_vals' = if is_ipc then [] else field_vals in
          
         (plog (sprintf "\nContract initialized successfully\n");
-          (`Null, output_state_json cstate'.balance field_vals, `List [], false), remaining_gas')
+          (`Null, output_state_json cstate'.balance field_vals', `List [], false), remaining_gas')
       else
         (* Not initialization, execute transition specified in the message *)
         (let mmsg = 
@@ -300,16 +307,15 @@ let () =
 
         let cstate, gas_remaining' = 
         if is_ipc then
-          (* TODO: Get balance as command line argument. *)
-          let cur_bal = Stdint.Uint128.zero in
+          let cur_bal = cli.balance in
           let init_res = init_module cmod initargs [] cur_bal bstate elibs in
           let cstate, gas_remaining', _ = check_extract_cstate cli.input init_res gas_remaining in
           (* Initialize the state server. *)
-          let fields = List.map cstate.fields ~f:(fun (s, t) ->
+          let fields = List.filter_map cstate.fields ~f:(fun (s, t) ->
             let open StateService in
-            { fname = s; ftyp = t; fval = None }
+            if s = balance_label then None else Some { fname = s; ftyp = t; fval = None }
           ) in
-          let () = StateService.initialize ~sm:(IPC cli.ipc_port) ~fields in
+          let () = StateService.initialize ~sm:(IPC cli.ipc_address) ~fields in
           (cstate, gas_remaining')
         else
 
@@ -352,9 +358,9 @@ let () =
         (* If we're using a local state (JSON file) then need to fetch and dump it. *)
         let field_vals =
           if is_ipc then [] else
-            match StateService.get_full_state () with
-            | Error s -> fatal_error_gas s gas
-            | Ok fv -> fv
+            match StateService.get_full_state (), StateService.finalize() with
+            | Ok fv, Ok () -> fv
+            | _ -> fatal_error_gas (mk_error0 "Error finalizing state from StateService") gas
         in
 
         let osj = output_state_json cstate'.balance field_vals in

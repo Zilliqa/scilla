@@ -265,7 +265,7 @@ lit :
     build_prim_literal_exn (to_prim_type_exn i iloc) string_of_n (toLoc $startpos)
   }
 | h = HEXLIT   { ByStrX (Bystrx.parse_hex h) }
-| s = STRING   { StringLit s }
+| s = STRING   { build_prim_literal_exn String_typ s (toLoc $startpos) }
 | EMP; kt = t_map_key; vt = t_map_value
 {
   Map ((kt, vt), Hashtbl.create 4) (* 4 is arbitrary here. *)

@@ -1,0 +1,11 @@
+{
+  "gas_remaining": "0",
+  "errors": [
+    {
+      "error_message": "Ran out of gas.\n",
+      "start_location": { "file": "Prelude", "line": 1, "column": 74 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

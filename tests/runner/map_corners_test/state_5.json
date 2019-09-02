@@ -1,0 +1,22 @@
+[
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
+  { "vname": "f_s1", "type": "String", "value": "421" },
+  { "vname": "f_m1", "type": "Map (String) (String)", "value": [] },
+  {
+    "vname": "f_m2",
+    "type": "Map (String) (Map (String) (String))",
+    "value": [
+      { "key": "key1a", "val": [ { "key": "key2a", "val": "420" } ] }
+    ]
+  },
+  {
+    "vname": "f_m3",
+    "type": "Map (String) (Map (String) (Map (String) (String)))",
+    "value": []
+  },
+  {
+    "vname": "f_m",
+    "type": "Map (String) (Map (String) (String))",
+    "value": []
+  }
+]

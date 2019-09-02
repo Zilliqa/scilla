@@ -38,7 +38,7 @@ open JSONTypeUtilities
 (*                    Exception wrappers                        *)
 (****************************************************************)
 
-let json_exn_wrapper  ?filename thunk  =
+let json_exn_wrapper ?filename thunk  =
   try
     thunk ()
   with
@@ -325,6 +325,12 @@ let get_init_extlibs filename =
       )
     )
   | _ -> raise (mk_invalid_json ("Multiple " ^ ContractUtil.extlibs_label ^ " entries in init json "^ filename))
+
+(* Convert a single JSON serialized literal back to its Scilla value. *)
+let jstring_to_literal jstring tp =
+  let thunk () = Yojson.Basic.from_string jstring in
+  let jobj = json_exn_wrapper ~filename:"ipc_fetch" thunk in
+  json_to_lit tp jobj
 
 end
 
