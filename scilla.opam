@@ -27,7 +27,7 @@ depends: [
   "secp256k1" {>= "0.4.0" & < "0.5~"}
   "stdint" {>= "0.5.1" & < "0.6~"}
   "ounit" {with-test & (>= "2.0.8" & < "2.1~")}
-  "patdiff" {with-test & (>= "v0.12.2" & < "v0.13~")}
+  "patdiff" {with-test & (>= "v0.12.0" & < "v0.13~")}
 ]
 build: [
   [ "dune" "build" "-j" jobs "@install" ]
