@@ -1,7 +1,16 @@
+(rule
+  (deps ParserFaults.messages)
+  (targets ParserFaults.ml)
+  (action
+    (with-stdout-to ParserFaults.ml
+      (run menhir --compile-errors ParserFaults.messages ScillaParser.mly)))
+)
+
 (ocamllex
   (modules ScillaLexer))
 
 (menhir
+ (flags "--table")
  (modules ScillaParser))
 
 (library
@@ -11,7 +20,8 @@
               num hex stdint batteries
               ppx_deriving.show
               cryptokit secp256k1 bitstring
-              yojson scilla_cpp_deps scilla_util)
+              yojson scilla_cpp_deps scilla_util
+              menhirLib)
   (preprocess (pps ppx_sexp_conv
                     ppx_let 
                     ppx_deriving.show

@@ -1,0 +1,10 @@
+scilla_version 0
+
+library TestLib
+
+contract Test
+()
+
+transition arbitrary ()
+  delete store
+end

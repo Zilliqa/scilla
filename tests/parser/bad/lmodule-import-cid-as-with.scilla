@@ -1,0 +1,7 @@
+scilla_version 0
+
+(* should be uppercase *)
+import BoolUtils as boolUtils
+
+contract Test
+()

@@ -1,0 +1,4 @@
+library TestLib
+
+(* equals should be '=' *)
+let a equals True

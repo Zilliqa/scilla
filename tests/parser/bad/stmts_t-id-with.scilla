@@ -1,0 +1,12 @@
+scilla_version 0
+
+contract Test
+()
+
+field true : Bool = True
+field a : Bool = False
+
+transition arbitrary ()
+ (* can't have delete after an id *)
+ true _more delete
+end

@@ -1,0 +1,7 @@
+scilla_version 0
+
+(* unnecessary semi colon *)
+import BoolUtils ;
+
+contract Test
+()

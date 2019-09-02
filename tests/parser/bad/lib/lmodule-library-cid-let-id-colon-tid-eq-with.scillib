@@ -1,0 +1,4 @@
+library TestLib
+
+(* field is always an incorrect expression *)
+let a : Bool = field

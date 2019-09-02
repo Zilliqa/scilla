@@ -1,0 +1,4 @@
+(* missing library declaration *)
+
+type House =
+| Kind of String

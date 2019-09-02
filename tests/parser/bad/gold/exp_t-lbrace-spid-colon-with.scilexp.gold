@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid message construction. Following the colon, a literal or separated identifier is expected (value of the message field).\n",
+      "start_location": {
+        "file": "parser/bad/exps/exp_t-lbrace-spid-colon-with.scilexp",
+        "line": 3,
+        "column": 87
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

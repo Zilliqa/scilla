@@ -1,0 +1,7 @@
+scilla_version 0
+
+library TestLib
+
+(* this value type has a broken key type *)
+
+let f : Map Uint128 Map faulty

@@ -143,7 +143,7 @@ let check_version vernum =
 (* Check a library module. *)
 let check_lmodule cli =
   let r = (
-    let%bind (lmod : ParsedSyntax.lmodule) = check_parsing cli.input_file ScillaParser.lmodule in
+    let%bind (lmod : ParsedSyntax.lmodule) = check_parsing cli.input_file ScillaParser.Incremental.lmodule in
     let elibs = import_libs lmod.elibs cli.init_file  in
     let%bind (recursion_lmod, recursion_rec_principles, recursion_elibs) = 
       check_recursion_lmod lmod elibs in
@@ -163,7 +163,7 @@ let check_lmodule cli =
 (* Check a contract module. *)
 let check_cmodule cli =
   let r = (
-    let%bind (cmod : ParsedSyntax.cmodule) = check_parsing cli.input_file ScillaParser.cmodule  in
+    let%bind (cmod : ParsedSyntax.cmodule) = check_parsing cli.input_file ScillaParser.Incremental.cmodule  in
     (* Import whatever libs we want. *)
     let elibs = import_libs cmod.elibs cli.init_file in
     let%bind (recursion_cmod, recursion_rec_principles, recursion_elibs) = check_recursion cmod elibs in

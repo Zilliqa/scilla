@@ -1,0 +1,8 @@
+scilla_version 0
+
+contract Test
+(map : Map Uint128 Bool)
+
+transition arbitrary ()
+  id <- map{1}
+end

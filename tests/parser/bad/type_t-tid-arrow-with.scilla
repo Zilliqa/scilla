@@ -1,0 +1,7 @@
+scilla_version 0
+
+library TestLib
+
+(* should be 'Bool' *)
+
+let f : Uint128 -> bool

@@ -1,0 +1,9 @@
+scilla_version 0
+
+contract Test
+()
+
+transition arbitrary ()
+  throw; (* invalid statement field *)
+  field
+end

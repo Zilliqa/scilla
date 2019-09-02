@@ -1,0 +1,9 @@
+scilla_version 0
+
+contract Test
+()
+
+(* field is not a statement *)
+procedure something ()
+  field arbitrary : Bool = True
+end

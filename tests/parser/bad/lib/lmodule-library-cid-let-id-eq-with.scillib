@@ -1,0 +1,4 @@
+library TestLib
+
+(* can't assign types to variables *)
+let a = Map

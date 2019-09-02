@@ -1,0 +1,9 @@
+scilla_version 0
+
+contract Test
+()
+
+(* procedures may not be called field *) 
+procedure field ()
+  accept
+end

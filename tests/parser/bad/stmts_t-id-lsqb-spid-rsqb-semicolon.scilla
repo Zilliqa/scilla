@@ -1,0 +1,10 @@
+scilla_version 0
+
+contract Test
+()
+field one : Uint128 = Uint128 
+field map : Map Uint128 Bool = Emp Uint128 Bool
+
+transition arbitrary ()
+  map[one] ;
+end
