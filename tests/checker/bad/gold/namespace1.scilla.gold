@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "8000",
+  "gas_remaining": "7339",
   "errors": [
     {
       "error_message": "Type error(s) in contract TestContr1:\n",
