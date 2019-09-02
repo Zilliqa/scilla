@@ -18,12 +18,12 @@
 ########## Build system, CI, opam ##########
 
 *dune*             @vaivaswatha @anton-trunov
-/.dockerignore     @vaivaswatha
-/.travis.yml       @vaivaswatha
-/Dockerfile*       @vaivaswatha
+/.dockerignore     @vaivaswatha @Gnnng
+/.travis.yml       @vaivaswatha @Gnnng
+/Dockerfile*       @vaivaswatha @Gnnng
 /Makefile          @vaivaswatha @anton-trunov
 /scripts/build_openssl.sh @vaivaswatha
-*.opam             @anton-trunov
+*.opam             @vaivaswatha @anton-trunov
 
 
 ########## Test suite ##########
