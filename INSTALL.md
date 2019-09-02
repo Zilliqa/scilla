@@ -83,7 +83,7 @@ ulimit -n 1024
 
 #### Initialize opam
 ```shell
-opam init --disable-sandboxing --compiler=4.06.1 --yes
+opam init --disable-sandboxing --compiler=4.07.1 --yes
 ```
 Note: the initializer will change your shell configuration to setup the environment opam needs to work.
 You can remove `--yes` from the above command to manually control that process.

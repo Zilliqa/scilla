@@ -69,7 +69,7 @@ zilliqa-docker:
 	docker build --build-arg BASE_IMAGE=$(ZILLIQA_IMAGE) .
 
 opamdep:
-	opam init --disable-sandboxing -y --compiler=4.06.1
+	opam init --disable-sandboxing -y --compiler=4.07.1
 	opam install ./scilla.opam --deps-only --with-test --yes
 
 
