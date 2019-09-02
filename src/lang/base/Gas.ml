@@ -314,33 +314,4 @@ module ScillaGas
     let %bind (_, cost) = tryM dict ~f:matcher ~msg:(fun () -> mk_error0 msg) in
     pure cost
 
-  (* TODO:
-     - Charge gas for type substitution (t1 [t2/x]): |t1| + (|t2| * #(free occurrences of x in t1)
-     - Charge gas for type lookup (lookup tenv x): Lookup itself is constant time (hashtable), but each new scope requires copying the existing type env, so that is what should be charged. We should probably change this to a stack of hashtables.
-     - Charge gas for type_equiv at compile-time, but not at run-time.
-     - Charge gas for is_wf_type?
-     - Charge gas for BuiltinDictionary.find_builtin_op?
-  *)
-  
-  (* TODO: Temporary additions - most likely not correct, but need it in order to typecheck *)
-(*  let module_static_cost _mod = pure 0
-  let rec_libs_static_cost _mod = pure 0
-    let elibs_static_cost _mod = pure 0 *)
-  (* TODO: We don't charge for type_equiv at runtime, so I'm not charging statically *)
-(*  let type_equiv_cost _mod = pure 0
-
-  let expr_static_typing_cost erep =
-    let (e, _) = erep in
-    match e with
-    | Literal _ | Var _ | Let _
-    | Message _ | Fun _ | App _
-    | Constr _ | TFun _ | TApp _ ->
-        pure 1
-    | MatchExpr (_, clauses) ->
-        pure @@ List.length clauses
-    | Fixpoint _ -> pure 1 (* more cost accounted during recursive evaluation. *)
-    | Builtin _ -> pure 0 (* this is a dynamic cost. *)
-
-    pure 0
-*)
 end
