@@ -134,6 +134,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "typecheck"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["typecheck"; "bad"; f]
     let runner = "type-checker"      
+    let gas_limit = Stdint.Uint64.of_int 4002000
     let custom_args = []
     let additional_libdirs = []
     let tests = [

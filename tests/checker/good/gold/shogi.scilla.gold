@@ -205,5 +205,6 @@
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
-  ]
+  ],
+  "gas_remaining": "7327"
 }

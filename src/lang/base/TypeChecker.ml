@@ -81,8 +81,21 @@ module ScillaTypechecker
   open TypeEnv
   open UntypedSyntax
       
-  let wrap_type_err e ?opt:(opt = "") = wrap_err e "typechecking" ~opt:opt
-  let wrap_type_serr s ?opt:(opt = "") = wrap_serr s "typechecking" ~opt:opt
+  let wrap_with_info_and_gas (msg, sloc) res = match res with
+    | Ok (r, g) -> Ok (r, g)
+    | Error (e, g) -> Error ({emsg = msg; startl = sloc; endl = dummy_loc}::e, g)
+
+  let wrap_with_gas gas res = match res with
+    | Ok r -> Ok r
+    | Error e -> Error (e, gas)
+  
+  let wrap_type_err erep ?opt:(opt = "") res = match res with
+    | Ok r -> Ok r
+    | Error (e, g) -> wrap_error_with_gas g (wrap_err erep "typechecking" ~opt:opt (Error e))
+                        
+  let wrap_type_serr s ?opt:(opt = "") res = match res with
+    | Ok r -> Ok r
+    | Error (e, g) -> wrap_error_with_gas g (wrap_serr s "typechecking" ~opt:opt (Error e))
       
   (*****************************************************************)
   (*               Blockchain component typing                     *)
@@ -131,102 +144,108 @@ module ScillaTypechecker
   (*                   Typing expressions                       *)
   (**************************************************************)
 
-  let rec type_expr tenv (erep : UntypedSyntax.expr_annot) =
+  let rec type_expr tenv (erep : UntypedSyntax.expr_annot) remaining_gas =
     let (e, rep) = erep in
     match e with
     | Literal l ->
-        let%bind lt = literal_type l in
-        pure @@ (TypedSyntax.Literal l, (mk_qual_tp lt, rep))
+        let%bind lt = wrap_error_with_gas remaining_gas @@ literal_type l in
+        pure @@ ((TypedSyntax.Literal l, (mk_qual_tp lt, rep)), remaining_gas)
     | Var i ->
-        let%bind r = TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_rep i)) in
+        let%bind r = wrap_error_with_gas remaining_gas @@ TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_rep i)) in
         let typ = rr_typ r in
-        pure @@ (TypedSyntax.Var (add_type_to_ident i typ), (typ, rep))
+        pure @@ ((TypedSyntax.Var (add_type_to_ident i typ), (typ, rep)), remaining_gas)
     |  Fun (arg, t, body) ->
-        let%bind _ = TEnv.is_wf_type tenv t in
+        let%bind _ = wrap_error_with_gas remaining_gas @@ TEnv.is_wf_type tenv t in
         let tenv' = TEnv.addT (TEnv.copy tenv) arg t in
-        let%bind (_, (bt, _)) as b = type_expr tenv' body in
+        let%bind ((_, (bt, _)) as b, remaining_gas) = type_expr tenv' body remaining_gas in
         let typed_arg = add_type_to_ident arg (mk_qual_tp t) in
-        pure @@ (TypedSyntax.Fun (typed_arg, t, b), (mk_qual_tp (FunType (t, bt.tp)), rep))
+        pure @@ ((TypedSyntax.Fun (typed_arg, t, b), (mk_qual_tp (FunType (t, bt.tp)), rep)), remaining_gas)
     | App (f, actuals) ->
         wrap_type_err erep @@ 
-        let%bind fres = TEnv.resolveT tenv (get_id f) ~lopt:(Some (get_rep f)) in
-        let%bind (typed_actuals, apptyp) = app_type tenv (rr_typ fres).tp actuals in
+        let%bind fres = wrap_error_with_gas remaining_gas @@ TEnv.resolveT tenv (get_id f) ~lopt:(Some (get_rep f)) in
+        let%bind (typed_actuals, apptyp, remaining_gas) = app_type tenv (rr_typ fres).tp actuals remaining_gas in
         let typed_f = add_type_to_ident f (rr_typ fres) in
-        pure @@ (TypedSyntax.App (typed_f, typed_actuals), (apptyp, rep))
+        pure @@ ((TypedSyntax.App (typed_f, typed_actuals), (apptyp, rep)), remaining_gas)
     | Builtin (b, actuals) ->
         wrap_type_err erep @@ 
-        let%bind (targs, typed_actuals) = type_actuals tenv actuals in
-        let%bind (_, ret_typ, _) = BuiltInDictionary.find_builtin_op b targs in
-        let%bind _ = TEnv.is_wf_type tenv ret_typ in
+        let%bind (targs, typed_actuals, remaining_gas) = type_actuals tenv actuals remaining_gas in
+        let%bind (_, ret_typ, _) = wrap_error_with_gas remaining_gas @@ BuiltInDictionary.find_builtin_op b targs in
+        let%bind _ = wrap_error_with_gas remaining_gas @@ TEnv.is_wf_type tenv ret_typ in
         let q_ret_typ = mk_qual_tp ret_typ in
         let q_ret_tag = ETR.mk_rep rep q_ret_typ in
-        pure @@ (TypedSyntax.Builtin ((fst b, q_ret_tag), typed_actuals), (q_ret_typ, rep))
+        pure @@ ((TypedSyntax.Builtin ((fst b, q_ret_tag), typed_actuals), (q_ret_typ, rep)), remaining_gas)
     | Let (i, topt, lhs, rhs) ->
         (* Poor man's error reporting *)
-        let%bind (_, (ityp, _)) as checked_lhs = wrap_type_err erep @@ type_expr tenv lhs in
-        let%bind _ = match topt with Some tannot -> assert_type_equiv tannot ityp.tp | None -> pure () in
+        let%bind ((_, (ityp, _)) as checked_lhs, remaining_gas) = wrap_type_err erep @@ type_expr tenv lhs remaining_gas in
+        let%bind () = match topt with
+          | Some tannot -> wrap_error_with_gas remaining_gas @@ assert_type_equiv tannot ityp.tp
+          | None -> pure () in
         let tenv' = TEnv.addT (TEnv.copy tenv) i ityp.tp in
         let typed_i = add_type_to_ident i ityp in
-        let%bind (_, (rhstyp, _)) as checked_rhs = type_expr tenv' rhs in
-        pure @@ (TypedSyntax.Let (typed_i, topt, checked_lhs, checked_rhs), (rhstyp, rep))
+        let%bind ((_, (rhstyp, _)) as checked_rhs, remaining_gas) = type_expr tenv' rhs remaining_gas in
+        pure @@ ((TypedSyntax.Let (typed_i, topt, checked_lhs, checked_rhs), (rhstyp, rep)), remaining_gas)
     | Constr (cname, ts, actuals) ->
-        let%bind _ = mapM ts ~f:(TEnv.is_wf_type tenv) in
+        let%bind _ = wrap_error_with_gas remaining_gas @@ mapM ts ~f:(TEnv.is_wf_type tenv) in
         let open Datatypes.DataTypeDictionary in 
-        let%bind (_, constr) = lookup_constructor cname in
+        let%bind (_, constr) = wrap_error_with_gas remaining_gas @@ lookup_constructor cname in
         let alen = List.length actuals in
         if (constr.arity <> alen)
-        then fail0 @@ (sprintf
+        then Error (mk_error0 @@ sprintf
             "Constructor %s expects %d arguments, but got %d."
-            cname constr.arity alen)
+            cname constr.arity alen, remaining_gas)
         else
-          let%bind ftyp = elab_constr_type cname ts in
+          let%bind ftyp = wrap_error_with_gas remaining_gas @@ elab_constr_type cname ts in
           (* Now type-check as a function application *)
-          let%bind (typed_actuals, apptyp) = app_type tenv ftyp actuals in
-          pure @@ (TypedSyntax.Constr (cname, ts, typed_actuals), (apptyp, rep))
+          let%bind (typed_actuals, apptyp, remaining_gas) = app_type tenv ftyp actuals remaining_gas in
+          pure @@ ((TypedSyntax.Constr (cname, ts, typed_actuals), (apptyp, rep)), remaining_gas)
     | MatchExpr (x, clauses) ->
         if List.is_empty clauses
-        then fail0 @@ sprintf
+        then wrap_error_with_gas remaining_gas @@ fail0 @@ sprintf
             "List of pattern matching clauses is empty:\n%s" (pp_expr e)
         else
-          let%bind sctyp = TEnv.resolveT tenv (get_id x)
+          let%bind sctyp = wrap_error_with_gas remaining_gas @@ TEnv.resolveT tenv (get_id x)
               ~lopt:(Some (get_rep x)) in
           let sct = (rr_typ sctyp).tp in
           let msg = sprintf " of type %s" (pp_typ sct) in
           wrap_type_err erep ~opt:msg (
-            let%bind typed_clauses = mapM clauses ~f:(fun (ptrn, ex) ->
-                type_check_match_branch tenv sct ptrn ex) in
+            let%bind (typed_clauses_rev, remaining_gas) =
+              foldM clauses ~init:([], remaining_gas)
+                ~f:(fun (typed_clauses_acc, remaining_gas) (ptrn, ex) ->
+                    let%bind (typed_clause, remaining_gas') = type_check_match_branch tenv sct ptrn ex remaining_gas in
+                    pure (typed_clause :: typed_clauses_acc, remaining_gas')) in
+            let typed_clauses = List.rev typed_clauses_rev in
             let cl_types = List.map typed_clauses ~f:(fun (_, (_, (t, _))) -> t) in
-            let%bind _ =
+            let%bind _ = wrap_error_with_gas remaining_gas @@
               assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types) in
             (* Return the first type since all they are the same *)
-            pure @@ (TypedSyntax.MatchExpr
-                       (add_type_to_ident x (rr_typ sctyp),
-                        typed_clauses),
-                     (List.hd_exn cl_types, rep))
+            pure @@ ((TypedSyntax.MatchExpr
+                        (add_type_to_ident x (rr_typ sctyp),
+                         typed_clauses),
+                      (List.hd_exn cl_types, rep)), remaining_gas)
           )
     | Fixpoint (f, t, body) ->
         wrap_type_err erep @@ 
         let tenv' = TEnv.addT (TEnv.copy tenv) f t in
-        let%bind (_, (bt, _)) as typed_b = type_expr tenv' body in
-        let%bind _ = assert_type_equiv t bt.tp in
-        pure @@ (TypedSyntax.Fixpoint (add_type_to_ident f (mk_qual_tp t), t, typed_b), (mk_qual_tp t, rep))
+        let%bind ((_, (bt, _)) as typed_b, remaining_gas) = type_expr tenv' body remaining_gas in
+        let%bind _ = wrap_error_with_gas remaining_gas @@ assert_type_equiv t bt.tp in
+        pure @@ ((TypedSyntax.Fixpoint (add_type_to_ident f (mk_qual_tp t), t, typed_b), (mk_qual_tp t, rep)), remaining_gas)
     | TFun (tvar, body) ->
         let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
-        let%bind (_, (bt, _)) as typed_b = type_expr tenv' body in
+        let%bind ((_, (bt, _)) as typed_b, remaining_gas) = type_expr tenv' body remaining_gas in
         let typed_tvar = add_type_to_ident tvar bt in
-        pure @@ (TypedSyntax.TFun (typed_tvar, typed_b), (mk_qual_tp (PolyFun ((get_id tvar), bt.tp)), rep))
+        pure @@ ((TypedSyntax.TFun (typed_tvar, typed_b), (mk_qual_tp (PolyFun ((get_id tvar), bt.tp)), rep)), remaining_gas)
     | TApp (tf, arg_types) ->
-        let%bind _ = mapM arg_types ~f:(TEnv.is_wf_type tenv) in
-        let%bind tfres = TEnv.resolveT tenv (get_id tf)
+        let%bind _ = wrap_error_with_gas remaining_gas @@ mapM arg_types ~f:(TEnv.is_wf_type tenv) in
+        let%bind tfres = wrap_error_with_gas remaining_gas @@ TEnv.resolveT tenv (get_id tf)
             ~lopt:(Some (get_rep tf)) in
         let tf_rr = rr_typ tfres in
         let tftyp = tf_rr.tp in
-        let%bind res_type = elab_tfun_with_args tftyp arg_types in
-        let%bind _ = TEnv.is_wf_type tenv res_type in
-        pure @@ (TypedSyntax.TApp (add_type_to_ident tf tf_rr, arg_types), (mk_qual_tp res_type, rep))
+        let%bind (res_type, remaining_gas) = elab_tfun_with_args tftyp arg_types remaining_gas in
+        let%bind _ = wrap_error_with_gas remaining_gas @@ TEnv.is_wf_type tenv res_type in
+        pure @@ ((TypedSyntax.TApp (add_type_to_ident tf tf_rr, arg_types), (mk_qual_tp res_type, rep)), remaining_gas)
     | Message bs ->
-        let%bind msg_typ = get_msgevnt_type bs in
-        let payload_type fld pld =
+        let%bind msg_typ = wrap_error_with_gas remaining_gas @@ get_msgevnt_type bs in
+        let payload_type fld pld remaining_gas =
           let check_field_type seen_type =
             match Caml.List.assoc_opt fld CU.msg_mandatory_field_types with
             | Some fld_t when fld_t <> seen_type ->
@@ -236,43 +255,48 @@ module ScillaTypechecker
           in
           (match pld with
            | MLit l ->
-               let%bind (_, (lt, _)) = type_expr tenv (Literal l, rep)  in
-               let%bind _ = check_field_type lt.tp in
-               pure @@ TypedSyntax.MLit l
+               let%bind ((_, (lt, _)), remaining_gas) = type_expr tenv (Literal l, rep) remaining_gas in
+               let%bind _ = wrap_error_with_gas remaining_gas @@ check_field_type lt.tp in
+               pure @@ (TypedSyntax.MLit l, remaining_gas)
            | MVar i ->
-               let%bind r = TEnv.resolveT tenv (get_id i)
+               let%bind r = wrap_error_with_gas remaining_gas @@ TEnv.resolveT tenv (get_id i)
                    ~lopt:(Some (get_rep i)) in
                let t = rr_typ r in
                let rtp = t.tp in
-               let%bind _ = check_field_type rtp in
+               let%bind _ = wrap_error_with_gas remaining_gas @@ check_field_type rtp in
                if is_serializable_type rtp
-               then pure @@ TypedSyntax.MVar (add_type_to_ident i t)
-               else fail1 (sprintf "Cannot serialize values of type %s." (pp_typ rtp))
-                          (ER.get_loc (get_rep i)))
+               then pure @@ (TypedSyntax.MVar (add_type_to_ident i t), remaining_gas)
+               else Error (mk_error1
+                             (sprintf "Cannot serialize values of type %s." (pp_typ rtp))
+                             (ER.get_loc (get_rep i)), remaining_gas))
         in
-        let%bind typed_bs =
+        let%bind (typed_bs_rev, remaining_gas) =
           (* Make sure we resolve all the payload *)
-          mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ payload_type s pld)
+          foldM bs ~init:([], remaining_gas)
+            ~f:(fun (typed_bs_acc, remaining_gas) (s, pld) ->
+              let%bind (typed_pld, remaining_gas') = payload_type s pld remaining_gas in
+              let typed_bs = (s, typed_pld) in
+              pure (typed_bs :: typed_bs_acc, remaining_gas'))
         in
-        pure @@ (TypedSyntax.Message typed_bs, (mk_qual_tp @@ msg_typ, rep))
+        pure @@ ((TypedSyntax.Message (List.rev typed_bs_rev), (mk_qual_tp @@ msg_typ, rep)), remaining_gas)
 
-  and app_type tenv ftyp actuals =
+  and app_type tenv ftyp actuals remaining_gas =
     (* Type-check function application *)  
-    let%bind _ = TEnv.is_wf_type tenv ftyp in
-    let%bind (targs, typed_actuals) = type_actuals tenv actuals in
-    let%bind res_type = fun_type_applies ftyp targs in
-    let%bind _ = TEnv.is_wf_type tenv res_type in
-    pure @@ (typed_actuals, mk_qual_tp res_type)
+    let%bind _ = wrap_error_with_gas remaining_gas @@ TEnv.is_wf_type tenv ftyp in
+    let%bind (targs, typed_actuals, remaining_gas) = type_actuals tenv actuals remaining_gas in
+    let%bind res_type = wrap_error_with_gas remaining_gas @@ fun_type_applies ftyp targs in
+    let%bind _ = wrap_error_with_gas remaining_gas @@ TEnv.is_wf_type tenv res_type in
+    pure @@ (typed_actuals, mk_qual_tp res_type, remaining_gas)
 
-  and type_check_match_branch tenv styp ptrn e =
-    let%bind (new_p, new_typings) = assign_types_for_pattern styp ptrn in
+  and type_check_match_branch tenv styp ptrn e remaining_gas =
+    let%bind (new_p, new_typings) = wrap_error_with_gas remaining_gas @@ assign_types_for_pattern styp ptrn in
     let tenv' = TEnv.addTs (TEnv.copy tenv) new_typings in
-    let%bind typed_e = type_expr tenv' e in
-    pure @@ (new_p, typed_e)
+    let%bind ((_ as typed_e), remaining_gas) = type_expr tenv' e remaining_gas in
+    pure @@ ((new_p, typed_e), remaining_gas)
 
-  and type_actuals tenv actuals =
+  and type_actuals tenv actuals remaining_gas =
     let%bind tresults = mapM actuals
-        ~f:(fun arg -> TEnv.resolveT tenv (get_id arg)
+        ~f:(fun arg -> wrap_error_with_gas remaining_gas @@ TEnv.resolveT tenv (get_id arg)
                ~lopt:(Some (get_rep arg))) in
     let tqargs = List.map tresults ~f:rr_typ in
     let targs = List.map tqargs ~f:(fun rr -> rr.tp) in
@@ -281,7 +305,7 @@ module ScillaTypechecker
       | Some l -> l
       | None -> raise (mk_internal_error "Different number of actuals and Types of actuals")  in
     let typed_actuals = List.map actuals_with_types ~f:(fun (a, t) -> add_type_to_ident a t) in
-    pure @@ (targs, typed_actuals)
+    pure @@ (targs, typed_actuals, remaining_gas)
 
   (**************************************************************)
   (*                   Typing statements                        *)
@@ -296,95 +320,96 @@ module ScillaTypechecker
 
   (* Return typed map accesses and the accessed value's type. *)
   (* (m[k1][k2]... -> (typed_m, typed_k_list, type_of_accessed_value) *)
-  let type_map_access env m' keys' =
-    let%bind t' = TEnv.resolveT env.fields (get_id m') ~lopt:(Some (get_rep m'))  in
+  let type_map_access env m' keys' remaining_gas =
+    let%bind t' = wrap_error_with_gas remaining_gas @@
+      TEnv.resolveT env.fields (get_id m') ~lopt:(Some (get_rep m'))  in
     let rec helper t keys =
       match t, keys with
       | MapType (kt, vt), k :: rest ->
-        let%bind k_t = TEnv.resolveT env.pure (get_id k) ~lopt:(Some (get_rep k)) in
-        let%bind _ = assert_type_equiv kt (rr_typ k_t).tp in
-        let%bind (typed_keys, res) = helper vt rest in
-        let typed_k = add_type_to_ident k (rr_typ k_t) in
-        pure @@ (typed_k::typed_keys, res)
+          let%bind k_t = TEnv.resolveT env.pure (get_id k) ~lopt:(Some (get_rep k)) in
+          let%bind _ = assert_type_equiv kt (rr_typ k_t).tp in
+          let%bind (typed_keys, res) = helper vt rest in
+          let typed_k = add_type_to_ident k (rr_typ k_t) in
+          pure @@ (typed_k::typed_keys, res)
       (* If there are no more keys left, we have the result type. *)
       | _, [] -> pure @@ ([], t)
       | _ , k :: _ -> fail1 (sprintf "Type failure in map access. Cannot index into key %s" (get_id k))
                         (ER.get_loc (get_rep k))
     in
-      let%bind (typed_keys, res) = helper (rr_typ t').tp keys' in
+      let%bind (typed_keys, res) = wrap_error_with_gas remaining_gas @@ helper (rr_typ t').tp keys' in
       let typed_m = add_type_to_ident m' (rr_typ t') in
-      pure (typed_m, typed_keys, res)
+      pure (typed_m, typed_keys, res, remaining_gas)
 
-  let add_stmt_to_stmts_env s repstmts =
+  let add_stmt_to_stmts_env_gas s repstmts remaining_gas =
     match repstmts with
-    | (stmts, env) -> (s :: stmts, env)
+    | (stmts, env) -> ((s :: stmts, env), remaining_gas)
 
-  let rec type_stmts env stmts get_loc =
+  let rec type_stmts env stmts get_loc remaining_gas =
     let open PrimTypes in
     let open Datatypes.DataTypeDictionary in 
     match stmts with
-    | [] -> pure ([], env)
+    | [] -> pure (([], env), remaining_gas)
     | ((s, rep) as stmt) :: sts ->
         (match s with
          | Load (x, f) ->
              let%bind (next_env, ident_type) = wrap_type_serr stmt (
-                 let%bind fr = TEnv.resolveT env.fields (get_id f) ~lopt:(Some (get_rep f)) in
+                 let%bind fr = wrap_error_with_gas remaining_gas @@ TEnv.resolveT env.fields (get_id f) ~lopt:(Some (get_rep f)) in
                  let pure' = TEnv.addT (TEnv.copy env.pure) x (rr_typ fr).tp in
                  let next_env = {env with pure = pure'} in
                  pure @@ (next_env, rr_typ fr)
                ) in
-             let%bind checked_stmts = type_stmts next_env sts get_loc in
+             let%bind (checked_stmts, remaining_gas) = type_stmts next_env sts get_loc remaining_gas in
              let typed_x = add_type_to_ident x ident_type in
              let typed_f = add_type_to_ident f ident_type in
-             pure @@ add_stmt_to_stmts_env (TypedSyntax.Load (typed_x, typed_f), rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.Load (typed_x, typed_f), rep) checked_stmts remaining_gas
          | Store (f, r) ->
              if List.mem ~equal:(fun s1 s2 -> s1 = s2)
                  no_store_fields (get_id f) then
                wrap_type_serr stmt (
-                 fail0 @@ sprintf
-                   "Writing to the field `%s` is prohibited." (get_id f)) 
+                 Error (mk_error0 (sprintf
+                                     "Writing to the field `%s` is prohibited." (get_id f)), remaining_gas))
              else
-               let%bind (checked_stmts, f_type, r_type) = wrap_type_serr stmt (
-                   let%bind fr = TEnv.resolveT env.fields (get_id f) ~lopt:(Some (get_rep f)) in
-                   let%bind r = TEnv.resolveT env.pure (get_id r) ~lopt:(Some (get_rep r)) in
-                   let%bind _ = assert_type_equiv (rr_typ fr).tp (rr_typ r).tp in
-                   let%bind checked_stmts = type_stmts env sts get_loc in
-                   pure @@ (checked_stmts, rr_typ fr, rr_typ r)
+               let%bind (checked_stmts, f_type, r_type, remaining_gas) = wrap_type_serr stmt (
+                   let%bind fr = wrap_error_with_gas remaining_gas @@ TEnv.resolveT env.fields (get_id f) ~lopt:(Some (get_rep f)) in
+                   let%bind r = wrap_error_with_gas remaining_gas @@ TEnv.resolveT env.pure (get_id r) ~lopt:(Some (get_rep r)) in
+                   let%bind _ = wrap_error_with_gas remaining_gas @@ assert_type_equiv (rr_typ fr).tp (rr_typ r).tp in
+                   let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
+                   pure @@ (checked_stmts, rr_typ fr, rr_typ r, remaining_gas)
                  ) in
                let typed_f = add_type_to_ident f f_type in
                let typed_r = add_type_to_ident r r_type in
-               pure @@ add_stmt_to_stmts_env (TypedSyntax.Store (typed_f, typed_r), rep) checked_stmts
+               pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.Store (typed_f, typed_r), rep) checked_stmts remaining_gas
          | Bind (x, e) ->
-             let%bind (_, (ityp, _)) as checked_e = wrap_type_serr stmt @@ type_expr env.pure e in
+             let%bind ((_, (ityp, _)) as checked_e, remaining_gas) = wrap_type_serr stmt @@ type_expr env.pure e remaining_gas in
              let pure' = TEnv.addT (TEnv.copy env.pure) x ityp.tp in
              let env' = {env with pure = pure'} in
-             let%bind checked_stmts = type_stmts env' sts get_loc in
+             let%bind (checked_stmts, remaining_gas) = type_stmts env' sts get_loc remaining_gas in
              let typed_x = add_type_to_ident x ityp in
-             pure @@ add_stmt_to_stmts_env (TypedSyntax.Bind (typed_x, checked_e), rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.Bind (typed_x, checked_e), rep) checked_stmts remaining_gas
          | MapUpdate (m, klist, vopt) ->
-             let%bind (typed_m, typed_klist, typed_v) = wrap_type_serr stmt (
-                let%bind (typed_m, typed_klist, v_type) = type_map_access env m klist in
+             let%bind (typed_m, typed_klist, typed_v, remaining_gas) = wrap_type_serr stmt (
+                let%bind (typed_m, typed_klist, v_type, remaining_gas) = type_map_access env m klist remaining_gas in
                 let%bind typed_v = 
                   (match vopt with
                    | Some v -> (* This is adding/replacing the value for a key. *) 
-                      let%bind v_resolv = TEnv.resolveT env.pure (get_id v) ~lopt:(Some (get_rep v)) in
+                      let%bind v_resolv = wrap_error_with_gas remaining_gas @@ TEnv.resolveT env.pure (get_id v) ~lopt:(Some (get_rep v)) in
                       let typed_v = rr_typ v_resolv in
-                      let%bind _ = assert_type_equiv v_type typed_v.tp in
+                      let%bind _ = wrap_error_with_gas remaining_gas @@ assert_type_equiv v_type typed_v.tp in
                       let typed_v' = add_type_to_ident v typed_v in
-                      pure @@ (Some typed_v')
+                      pure @@ Some typed_v'
                    | None -> pure None (* This is deleting a key from the map. *)
                   )
                 in
-                pure @@ (typed_m, typed_klist, typed_v)
+                pure @@ (typed_m, typed_klist, typed_v, remaining_gas)
              ) in
              (* Check rest of the statements. *)
-             let%bind checked_stmts = type_stmts env sts get_loc in
+             let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
              (* Update annotations. *)
-             pure @@ add_stmt_to_stmts_env (TypedSyntax.MapUpdate(typed_m, typed_klist, typed_v), rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.MapUpdate(typed_m, typed_klist, typed_v), rep) checked_stmts remaining_gas
          | MapGet (v, m, klist, valfetch) ->
-             let%bind (typed_m, typed_klist, v_type) = wrap_type_serr stmt (
-                let%bind (typed_m, typed_klist, v_type) = type_map_access env m klist in
-                pure @@ (typed_m, typed_klist, v_type)
+             let%bind (typed_m, typed_klist, v_type, remaining_gas) = wrap_type_serr stmt (
+                let%bind (typed_m, typed_klist, v_type, remaining_gas) = type_map_access env m klist remaining_gas in
+                pure @@ (typed_m, typed_klist, v_type, remaining_gas)
              ) in
              (* The return type of MapGet would be (Option v_type) or Bool. *)
              let v_type' = if valfetch then ADT("Option", [v_type]) else ADT("Bool", []) in
@@ -393,152 +418,163 @@ module ScillaTypechecker
              let env' = {env with pure = pure'} in
              let typed_v = add_type_to_ident v (mk_qual_tp v_type') in
              (* Check rest of the statements. *)
-             let%bind checked_stmts = type_stmts env' sts get_loc in
+             let%bind (checked_stmts, remaining_gas) = type_stmts env' sts get_loc remaining_gas in
              (* Update annotations. *)
-             pure @@ add_stmt_to_stmts_env (TypedSyntax.MapGet(typed_v, typed_m, typed_klist, valfetch), rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.MapGet(typed_v, typed_m, typed_klist, valfetch), rep) checked_stmts remaining_gas
          | ReadFromBC (x, bf) ->
-             let%bind bt = wrap_type_serr stmt @@ lookup_bc_type bf in
+             let%bind bt = wrap_type_serr stmt @@ wrap_error_with_gas remaining_gas @@ lookup_bc_type bf in
              let pure' = TEnv.addT (TEnv.copy env.pure) x bt in
              let env' = {env with pure = pure'} in
-             let%bind checked_stmts = type_stmts env' sts get_loc in
+             let%bind (checked_stmts, remaining_gas) = type_stmts env' sts get_loc remaining_gas in
              let typed_x = add_type_to_ident x (mk_qual_tp bt) in
-             pure @@ add_stmt_to_stmts_env (TypedSyntax.ReadFromBC (typed_x, bf), rep) checked_stmts
+             pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.ReadFromBC (typed_x, bf), rep) checked_stmts remaining_gas
          | MatchStmt (x, clauses) ->
              if List.is_empty clauses
-             then wrap_type_serr stmt @@ fail0 @@ sprintf
-                 "List of pattern matching clauses is empty:\n%s" (pp_stmt s)
+             then wrap_type_serr stmt @@ Error (mk_error0 @@ sprintf
+                 "List of pattern matching clauses is empty:\n%s" (pp_stmt s), remaining_gas)
              else
-               let%bind sctyp = TEnv.resolveT env.pure (get_id x)
+               let%bind sctyp = wrap_error_with_gas remaining_gas @@
+                 TEnv.resolveT env.pure (get_id x)
                    ~lopt:(Some (get_rep x)) in
                let sctype = rr_typ sctyp in
                let sct = sctype.tp in
                let msg = sprintf "Error in pattern matching \"%s\" of type %s" (get_id x) (pp_typ sct) in
                let sloc = ER.get_loc (get_rep x) in
                let typed_x = add_type_to_ident x sctype in
-               let%bind checked_clauses = wrap_with_info (msg, sloc) @@
-                 mapM clauses ~f:(fun (ptrn, ex) ->
-                     type_match_stmt_branch env sct ptrn ex get_loc ) in
-               let%bind checked_stmts = type_stmts env sts get_loc in
-               pure @@ add_stmt_to_stmts_env (TypedSyntax.MatchStmt (typed_x, checked_clauses), rep) checked_stmts
+               let%bind (checked_clauses_rev, remaining_gas) =
+                 wrap_with_info_and_gas (msg, sloc) @@ 
+                 foldM clauses ~init:([], remaining_gas)
+                   ~f:(fun (checked_clauses_acc, remaining_gas) (ptrn, ex) ->
+                       let%bind (typed_clause, remaining_gas') = type_match_stmt_branch env sct ptrn ex get_loc remaining_gas in
+                       pure @@ (typed_clause :: checked_clauses_acc, remaining_gas')) in
+               let checked_clauses = List.rev checked_clauses_rev in
+               let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
+               pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.MatchStmt (typed_x, checked_clauses), rep) checked_stmts remaining_gas
          | AcceptPayment ->
-             let%bind checked_stmts = type_stmts env sts get_loc in
-             pure @@ add_stmt_to_stmts_env (TypedSyntax.AcceptPayment, rep) checked_stmts
+             let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
+             pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.AcceptPayment, rep) checked_stmts remaining_gas
          | SendMsgs i ->
-             let%bind r = TEnv.resolveT env.pure (get_id i)
+             let%bind r = wrap_error_with_gas remaining_gas @@
+               TEnv.resolveT env.pure (get_id i)
                  ~lopt:(Some (get_rep i)) in
              let i_type = rr_typ r in
              let expected = list_typ msg_typ in
              let%bind _ = wrap_type_serr stmt @@
-               assert_type_equiv expected i_type.tp in
+               wrap_error_with_gas remaining_gas @@ assert_type_equiv expected i_type.tp in
              let typed_i = add_type_to_ident i i_type in
-             let%bind checked_stmts = type_stmts env sts get_loc in
-             pure @@ add_stmt_to_stmts_env (TypedSyntax.SendMsgs typed_i, rep) checked_stmts
+             let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
+             pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.SendMsgs typed_i, rep) checked_stmts remaining_gas
          | CreateEvnt i ->
             (* Same as SendMsgs except that this takes a single message instead of a list. *)
-             let%bind r = TEnv.resolveT env.pure (get_id i)
+             let%bind r = wrap_error_with_gas remaining_gas @@
+               TEnv.resolveT env.pure (get_id i)
                  ~lopt:(Some (get_rep i)) in
              let i_type = rr_typ r in
              let%bind _ = wrap_type_serr stmt @@
-               assert_type_equiv event_typ i_type.tp in
+               wrap_error_with_gas remaining_gas @@ assert_type_equiv event_typ i_type.tp in
              let typed_i = add_type_to_ident i i_type in
-             let%bind checked_stmts = type_stmts env sts get_loc in
-             pure @@ add_stmt_to_stmts_env (TypedSyntax.CreateEvnt typed_i, rep) checked_stmts
+             let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
+             pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.CreateEvnt typed_i, rep) checked_stmts remaining_gas
          | CallProc (p, args) ->
              let msg = sprintf "Type error(s) in procedure call %s:\n" (get_id p) in
-             let%bind typed_args =
-               wrap_with_info (msg, SR.get_loc (get_rep p)) @@
-               let%bind (targs, typed_actuals) = type_actuals env.pure args in
+             let%bind (typed_args, remaining_gas) =
+               wrap_with_info_and_gas (msg, SR.get_loc (get_rep p)) @@
+               let%bind (targs, typed_actuals, remaining_gas) = type_actuals env.pure args remaining_gas in
                match List.Assoc.find env.procedures ~equal:(=) (get_id p) with
                | Some arg_typs ->
-                   let%bind _ = proc_type_applies arg_typs targs in
-                   pure @@ typed_actuals
+                   let%bind _ = wrap_error_with_gas remaining_gas @@ proc_type_applies arg_typs targs in
+                   pure @@ (typed_actuals, remaining_gas)
                | None -> 
-                   fail0 @@ sprintf
-                     "Procedure %s not found." (get_id p) in
-             let%bind checked_stmts = type_stmts env sts get_loc in
-             pure @@ add_stmt_to_stmts_env (TypedSyntax.CallProc (p, typed_args), rep) checked_stmts
+                   Error (mk_error0 @@ sprintf
+                     "Procedure %s not found." (get_id p), remaining_gas) in
+             let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
+             pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.CallProc (p, typed_args), rep) checked_stmts remaining_gas
          | Throw iopt ->
-             let%bind checked_stmts = type_stmts env sts get_loc in
+             let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
             (match iopt with
             | Some i ->
               (* Same as CreateEvent. *)
-              let%bind r = TEnv.resolveT env.pure (get_id i)
+                let%bind r = wrap_error_with_gas remaining_gas @@
+                  TEnv.resolveT env.pure (get_id i)
                   ~lopt:(Some (get_rep i)) in
-              let i_type = rr_typ r in
-              let%bind _ = wrap_type_serr stmt @@
-                assert_type_equiv exception_typ i_type.tp in
-              let typed_i = add_type_to_ident i i_type in
-              pure @@ add_stmt_to_stmts_env (TypedSyntax.Throw (Some typed_i), rep) checked_stmts
+                let i_type = rr_typ r in
+                let%bind _ = wrap_type_serr stmt @@
+                  wrap_error_with_gas remaining_gas @@
+                  assert_type_equiv exception_typ i_type.tp in
+                let typed_i = add_type_to_ident i i_type in
+                pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.Throw (Some typed_i), rep) checked_stmts remaining_gas
             | None ->
-              pure @@ add_stmt_to_stmts_env (TypedSyntax.Throw None, rep) checked_stmts
+                pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.Throw None, rep) checked_stmts remaining_gas
             )
         )
         
-  and type_match_stmt_branch env styp ptrn sts get_loc =
-    let%bind (new_p, new_typings) = assign_types_for_pattern styp ptrn in
+  and type_match_stmt_branch env styp ptrn sts get_loc remaining_gas =
+    let%bind (new_p, new_typings) = wrap_error_with_gas remaining_gas @@
+      assign_types_for_pattern styp ptrn in
     let pure' = TEnv.addTs (TEnv.copy env.pure) new_typings in
     let env' = {env with pure = pure'} in
-    let%bind (new_stmts, _) = type_stmts env' sts get_loc in
-    pure @@ (new_p, new_stmts)
+    let%bind ((new_stmts, _), remaining_gas) = type_stmts env' sts get_loc remaining_gas in
+    pure @@ ((new_p, new_stmts), remaining_gas)
 
-  let type_component env0 tr : ((TypedSyntax.component * (string * typ list) list), scilla_error list) result  =
+  let type_component env0 tr remaining_gas : ((TypedSyntax.component * (string * typ list) list) * Stdint.uint64, scilla_error list * Stdint.uint64) result  =
     let {comp_type; comp_name; comp_params; comp_body} = tr in
     let tenv0 = env0.pure in
     let procedures = env0.procedures in
     let component_type_string = component_type_to_string comp_type in
     let msg = sprintf "Type error(s) in %s %s:\n" component_type_string (get_id comp_name) in
-    wrap_with_info (msg, SR.get_loc (get_rep comp_name)) @@
+    wrap_with_info_and_gas (msg, SR.get_loc (get_rep comp_name)) @@
     let param_checker =
       match comp_type with
       | CompTrans -> is_serializable_type
       | CompProc -> is_non_map_ground_type in
     let%bind typed_cparams =
+      wrap_error_with_gas remaining_gas @@
       mapM ~f:(fun (param, t) ->
           if param_checker t
           then pure (add_type_to_ident param (mk_qual_tp t), t)
           else fail1 (sprintf "Type %s cannot be used as %s parameter" (pp_typ t) component_type_string) (ER.get_loc (get_rep param))) comp_params in
-
     let append_params = CU.append_implict_comp_params comp_params in
     let tenv1 = TEnv.addTs tenv0 append_params in
     let env = {env0 with pure = tenv1} in
-    let%bind (typed_stmts, _) = type_stmts env comp_body ER.get_loc in
+    let%bind ((typed_stmts, _), remaining_gas) = type_stmts env comp_body ER.get_loc remaining_gas in
     let new_proc_signatures =
       match comp_type with
       | CompTrans -> procedures
       | CompProc ->
           let proc_sig = List.map comp_params ~f:snd in
           List.Assoc.add procedures ~equal:(=) (get_id comp_name) proc_sig in
-    pure @@ ({ TypedSyntax.comp_type = comp_type ;
-               TypedSyntax.comp_name = comp_name ;
-               TypedSyntax.comp_params = typed_cparams;
-               TypedSyntax.comp_body = typed_stmts },
-             new_proc_signatures)
+    pure @@ (({ TypedSyntax.comp_type = comp_type ;
+                TypedSyntax.comp_name = comp_name ;
+                TypedSyntax.comp_params = typed_cparams;
+                TypedSyntax.comp_body = typed_stmts },
+              new_proc_signatures),
+             remaining_gas)
 
 
   (*****************************************************************)
   (*                 Typing entire contracts                       *)
   (*****************************************************************)
-  let type_fields tenv flds =
-    let%bind (typed_flds, new_env) = foldM flds ~init:([], TEnv.mk)
-        ~f:(fun (acc, fenv) (fn, ft, fe) ->
+  let type_fields tenv flds remaining_gas =
+    let%bind ((typed_flds, new_env), remaining_gas) =
+      foldM flds ~init:(([], TEnv.mk), remaining_gas)
+        ~f:(fun ((acc, fenv), remaining_gas) (fn, ft, fe) ->
             let msg = sprintf
                 "Type error in field %s:\n" (get_id fn) in
-            wrap_with_info (msg, ER.get_loc (get_rep fn)) @@
-            let%bind (_, (ar, _)) as typed_expr = type_expr tenv fe in
+            wrap_with_info_and_gas (msg, ER.get_loc (get_rep fn)) @@
+            let%bind ((_, (ar, _)) as typed_expr, remaining_gas') = type_expr tenv fe remaining_gas in
             let actual = ar.tp in
-            let%bind _ = assert_type_equiv ft actual in
+            let%bind _ = wrap_error_with_gas remaining_gas' @@ assert_type_equiv ft actual in
             let typed_fs = add_type_to_ident fn ar in
             if is_storable_type ft then
-              pure @@ ((typed_fs, ft, typed_expr) :: acc,
-                       TEnv.addT (TEnv.copy fenv) fn actual)
-            else fail0 @@ sprintf "Values of the type \"%s\" cannot be stored." (pp_typ ft)) in
-        pure @@ (List.rev typed_flds, new_env)
+              pure @@ (((typed_fs, ft, typed_expr) :: acc,
+                       TEnv.addT (TEnv.copy fenv) fn actual), remaining_gas')
+            else Error (mk_error0 @@ sprintf "Values of the type \"%s\" cannot be stored." (pp_typ ft), remaining_gas')) in
+        pure @@ (List.rev typed_flds, new_env, remaining_gas)
 
   (**************************************************************)
   (*                    Typing libraries                        *)
   (**************************************************************)
-      
-  let type_rec_libs rec_libs =
+  let type_rec_libs rec_libs remaining_gas =
     let (lib_vars, lib_types) =
       List.partition_map rec_libs
         ~f:(fun le -> match le with
@@ -547,20 +583,22 @@ module ScillaTypechecker
     (* recursion primitives must not contain type declarations *)
     let%bind _ =
       match lib_types with
-      | _ :: _ -> fail0 @@ "Type declarations not allowed in recursion primitives"
+      | _ :: _ -> Error (mk_error0 "Type declarations not allowed in recursion primitives", remaining_gas)
       | [] -> pure () in
     let env0 = TEnv.copy TEnv.mk in
-    foldM lib_vars ~init:([], env0)
-      ~f:(fun (entry_acc, env_acc) (rn, topt, body) ->
-          wrap_with_info
+    foldM lib_vars ~init:(([], env0), remaining_gas)
+      ~f:(fun ((entry_acc, env_acc), remaining_gas) (rn, topt, body) ->
+          wrap_with_info_and_gas
             (sprintf "Type error when checking recursion primitive %s:\n"
                (get_id rn), dummy_loc) @@
-          let%bind ((_, (ar, _)) as typed_body) = type_expr env0 body in
-          let%bind _ = match topt with Some tannot -> assert_type_equiv tannot ar.tp | None -> pure () in
+          let%bind ((_, (ar, _)) as typed_body, remaining_gas') = type_expr env0 body remaining_gas in
+          let%bind _ = match topt with
+            | Some tannot -> wrap_error_with_gas remaining_gas' @@ assert_type_equiv tannot ar.tp
+            | None -> pure () in
           let typed_rn = add_type_to_ident rn ar in
           let new_entries = (TypedSyntax.LibVar (typed_rn, topt, typed_body)) :: entry_acc in
           let new_env = TEnv.addT (TEnv.copy env_acc) rn ar.tp in
-          pure @@ (new_entries, new_env))
+          pure @@ ((new_entries, new_env), remaining_gas))
 
   (* Check that ADT constructors are well-formed.
      Declared ADTs and constructors are added to stored datatypes 
@@ -576,45 +614,49 @@ module ScillaTypechecker
             ctr_def.c_arg_types )
       ctr_defs
 
-  let type_library env0 { lname ; lentries = ents } =
+  let type_library env0 { lname ; lentries = ents } remaining_gas =
     let msg = sprintf
         "Type error in library %s:\n\n" (get_id lname) in
-    wrap_with_info (msg, SR.get_loc (get_rep lname)) @@
-    let%bind (typed_entries, new_tenv, errs, _) =
-      foldM ~init:([], env0, [], []) ents
-        ~f:(fun (acc, env, errs, blist) lib_entry ->
+    wrap_with_info_and_gas (msg, SR.get_loc (get_rep lname)) @@
+    let%bind ((typed_entries, new_tenv, errs, _), remaining_gas) =
+      foldM ~init:(([], env0, [], []), remaining_gas) ents
+        ~f:(fun ((acc, env, errs, blist), remaining_gas) lib_entry ->
             match lib_entry with
             | LibTyp (tname, ctr_defs) ->
                 let msg = sprintf
                     "Type error in library type %s:\n\n" (get_id tname) in
-                wrap_with_info (msg, ER.get_loc (get_rep tname)) @@
-                let%bind _ = type_lib_typ_ctrs env ctr_defs in
-                pure @@ (acc, env, errs, blist)
+                wrap_with_info_and_gas (msg, ER.get_loc (get_rep tname)) @@
+                let%bind _ = wrap_error_with_gas remaining_gas @@ type_lib_typ_ctrs env ctr_defs in
+                pure @@ ((acc, env, errs, blist), remaining_gas)
             | LibVar (ln, ltopt, le) ->
                 let msg = sprintf
                     "Type error in library variable %s:\n\n" (get_id ln) in
                 let dep_on_blist = free_vars_dep_check le blist in
                 (* If exp depends on a blacklisted exp, then let's ignore it. *)
-                if dep_on_blist then pure @@ (acc, env, errs, ln :: blist) else
-                  let res = wrap_with_info (msg, SR.get_loc (get_rep lname)) (type_expr env le) in
+                if dep_on_blist then pure @@ ((acc, env, errs, ln :: blist), remaining_gas) else
+                  let res = wrap_with_info_and_gas (msg, SR.get_loc (get_rep lname)) (type_expr env le remaining_gas) in
                   match res with
-                  | Error e ->
+                  | Error (e, remaining_gas) ->
                       (* A new original failure. Add to blocklist and move on. *)
-                      pure @@ (acc, env, errs @ e, ln :: blist)
-                  | Ok res' ->
+                      pure @@ ((acc, env, errs @ e, ln :: blist), remaining_gas)
+                  | Ok (res', remaining_gas) ->
                       (* This went good. *)
                       let (_, (tr, _)) as typed_e = res' in
-                      let%bind _ = match ltopt with Some tannot -> assert_type_equiv tannot tr.tp | None -> pure () in
+                      let%bind _ = match ltopt with
+                        | Some tannot -> wrap_error_with_gas remaining_gas @@ assert_type_equiv tannot tr.tp
+                        | None -> pure () in
                       let typed_ln = add_type_to_ident ln tr in
-                      pure @@ (TypedSyntax.LibVar (typed_ln, ltopt, typed_e) :: acc,
-                               TEnv.addT (TEnv.copy env) ln tr.tp, errs, blist))
+                      pure @@ ((TypedSyntax.LibVar (typed_ln, ltopt, typed_e) :: acc,
+                                TEnv.addT (TEnv.copy env) ln tr.tp, errs, blist), remaining_gas))
     in
     (* If there has been no errors at all, we're good to go. *)
     if errs = [] then
-        pure @@ ( { TypedSyntax.lname = lname ;
-                TypedSyntax.lentries = List.rev typed_entries }, TEnv.copy new_tenv)
+        pure @@ (({ TypedSyntax.lname = lname ;
+                   TypedSyntax.lentries = List.rev typed_entries },
+                  TEnv.copy new_tenv),
+                 remaining_gas)
     (* Else report all errors together. *)
-    else fail @@ errs
+    else Error (errs, remaining_gas)
 
   (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
   (* type library, handling cache as necessary. *)
@@ -640,10 +682,10 @@ module ScillaTypechecker
   *)
 
   (* Type a list of libtrees, with tenv0 as the base environment. *)
-  let type_libraries elibs tenv0 =
-    let ((typed_elibs, elibs_env), emsgs) = 
+  let type_libraries elibs tenv0 remaining_gas =
+    let ((typed_elibs, elibs_env), emsgs, remaining_gas) = 
 
-      let rec recurser libl =
+      let rec recurser libl remaining_gas =
 
         (* Do a preliminary check to ensure no name conflicts b/w
          * libraries in elibs at just the root levels. *)
@@ -678,82 +720,84 @@ module ScillaTypechecker
         in
 
         (* Do the actual typing. *)
-        List.fold libl ~init:(([], tenv0), err_dups)
-        ~f:(fun ((lib_acc, tenv_acc), emsgs_acc) elib ->
+        List.fold libl ~init:(([], tenv0), err_dups, remaining_gas)
+        ~f:(fun ((lib_acc, tenv_acc), emsgs_acc, remaining_gas) elib ->
             (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
             let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
-            let ((dep_libs, dep_env), dep_emsgs) = recurser elib.deps in
-            let ((typed_libraries, tenv'), emsg) =
-              match type_library dep_env elib.libn with
-              | Ok (t_lib, t_env) ->
+            let ((dep_libs, dep_env), dep_emsgs, remaining_gas) = recurser elib.deps remaining_gas in
+            let ((typed_libraries, tenv'), emsg, remaining_gas') =
+              match type_library dep_env elib.libn remaining_gas with
+              | Ok ((t_lib, t_env), remaining_gas) ->
                 let (elib' : TypedSyntax.libtree) = { libn = t_lib; deps = dep_libs } in
                 (* from t_env, retain only entries from t_lib and tenv0 *)
                 let env' = TEnv.filterTs (TEnv.copy t_env) ~f:(fun name ->
                   List.exists t_lib.lentries ~f:(function | LibTyp _ -> false | LibVar (i, _, _) -> get_id i = name)
                   || TEnv.existsT tenv0 name
                 ) in
-                ((lib_acc @ [elib'], TEnv.append (TEnv.copy tenv_acc) env'), emsgs_acc @ dep_emsgs)
-              | Error el ->
-                ((lib_acc, tenv_acc), emsgs_acc @ dep_emsgs @ el)
+                ((lib_acc @ [elib'], TEnv.append (TEnv.copy tenv_acc) env'), emsgs_acc @ dep_emsgs, remaining_gas)
+              | Error (el, remaining_gas) ->
+                ((lib_acc, tenv_acc), emsgs_acc @ dep_emsgs @ el, remaining_gas)
             in
             (* Updated env and error messages are what we accummulate in the fold. *)
-            ((typed_libraries, tenv'), emsg)
+            ((typed_libraries, tenv'), emsg, remaining_gas')
           )
       in
-      recurser elibs
+      recurser elibs remaining_gas
     in
-    if emsgs <> [] then fail emsgs else pure (typed_elibs, elibs_env)
+    if emsgs <> [] then Error (emsgs, remaining_gas) else pure (typed_elibs, elibs_env, remaining_gas)
 
   let type_lmodule
     (md : UntypedSyntax.lmodule)
     (rec_libs : UntypedSyntax.lib_entry list)
     (elibs : UntypedSyntax.libtree list)
-    : (TypedSyntax.lmodule * TypedSyntax.lib_entry list * TypedSyntax.libtree list, scilla_error list) result =
+    (gas : Stdint.uint64)
+    : ((TypedSyntax.lmodule * TypedSyntax.lib_entry list * TypedSyntax.libtree list) * Stdint.uint64, scilla_error list * Stdint.uint64) result =
 
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id md.libs.lname) in
-    wrap_with_info (msg, SR.get_loc (get_rep md.libs.lname)) @@
+    wrap_with_info_and_gas (msg, SR.get_loc (get_rep md.libs.lname)) @@
 
     (* Step 0: Type check recursion principles *)
-    let%bind (typed_rlib, tenv0) = type_rec_libs rec_libs in
-
+    let%bind ((typed_rlib, tenv0), remaining_gas) = type_rec_libs rec_libs gas in
+      
     (* Step 1: Type check external libraries. *)
-    let%bind (typed_elibs, elibs_env) = type_libraries elibs tenv0 in
-
+    let%bind (typed_elibs, elibs_env, remaining_gas) = type_libraries elibs tenv0 remaining_gas in
+      
     (* Type the library of this module. *)
-    let%bind (typed_mlib, _) = type_library elibs_env md.libs in
-
+    let%bind ((typed_mlib, _), remaining_gas) = type_library elibs_env md.libs remaining_gas in
+      
     let typed_lmodule = { TypedSyntax.elibs = md.elibs; TypedSyntax.libs = typed_mlib } in
-    pure (typed_lmodule, typed_rlib, typed_elibs)
+    pure ((typed_lmodule, typed_rlib, typed_elibs), remaining_gas)
 
   let type_module
       (md : UntypedSyntax.cmodule)
       (* TODO, issue #225 : rec_libs should be added to the libraries when we allow custom, inductive ADTs *)
       (rec_libs : UntypedSyntax.lib_entry list)
       (elibs : UntypedSyntax.libtree list)
-    : (TypedSyntax.cmodule * stmt_tenv * TypedSyntax.libtree list * TypedSyntax.lib_entry list, scilla_error list) result =
+      (gas : Stdint.uint64)
+    : ((TypedSyntax.cmodule * stmt_tenv * TypedSyntax.libtree list * TypedSyntax.lib_entry list) * Stdint.uint64, scilla_error list * Stdint.uint64) result =
 
     let {smver = mod_smver;cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ccomps} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
-    wrap_with_info (msg, SR.get_loc (get_rep ctr_cname)) @@
+    wrap_with_info_and_gas (msg, SR.get_loc (get_rep ctr_cname)) @@
 
     (* Step 0: Type check recursion principles *)
-    let%bind (typed_rlib, tenv0) = type_rec_libs rec_libs in
+    let%bind ((typed_rlib, tenv0), remaining_gas) = type_rec_libs rec_libs gas in
     
     (* Step 1: Type check external libraries *)
-    let ((typed_elibs, elibs_env), emsgs) = 
-      match type_libraries elibs tenv0 with
+    let ((typed_elibs, elibs_env, remaining_gas), emsgs) = 
+      match type_libraries elibs tenv0 remaining_gas with
       | Ok (_ as te) -> (te, [])
-      | Error e -> (([], tenv0), e)
+      | Error (e, g) -> (([], tenv0, g), e)
     in
     (* Step 2: Type check contract library, if defined. *)
-    let ((typed_clibs, tenv), emsgs) = 
+    let ((typed_clibs, tenv, remaining_gas), emsgs) = 
       match libs with
       | Some lib ->
-        (match type_library elibs_env lib with
-        | Ok (lib', env') -> ((Some lib', env'), emsgs)
-        | Error e -> ((None, elibs_env), emsgs @ e))
-      | None ->  ((None, elibs_env), emsgs)
+        (match type_library elibs_env lib remaining_gas with
+        | Ok ((lib', env'), g) -> ((Some lib', env', g), emsgs)
+        | Error (e, g) -> ((None, elibs_env, g), emsgs @ e))
+      | None ->  ((None, elibs_env, remaining_gas), emsgs)
     in
 
     (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
@@ -761,10 +805,10 @@ module ScillaTypechecker
     let tenv3 = TEnv.addTs tenv params in
 
     (* Step 4: Type-check fields and add balance *)
-    let%bind (typed_fields, fenv0), femsgs0 = 
-      match type_fields tenv3 cfields with
-      | Error el -> Ok (([], tenv3), emsgs @ el)
-      | Ok (typed_fields, tenv) -> Ok ((typed_fields, tenv), emsgs)
+    let%bind (typed_fields, fenv0, remaining_gas), femsgs0 = 
+      match type_fields tenv3 cfields remaining_gas with
+      | Error (el, g) -> Ok (([], tenv3, g), emsgs @ el)
+      | Ok (typed_fields, tenv, g) -> Ok ((typed_fields, tenv, g), emsgs)
     in
     let (bn, bt) = CU.balance_field in
     let fenv = TEnv.addT fenv0 bn bt in
@@ -773,12 +817,12 @@ module ScillaTypechecker
     let env = {pure= tenv3; fields= fenv; procedures = []} in
 
     (* Step 6: Type-checking all components in batch *)
-    let%bind ((t_comps, _), emsgs') = foldM ~init:(([], []), femsgs0) ccomps
-        ~f:(fun ((comp_acc, proc_acc), emsgs) tr -> 
+    let%bind ((t_comps, _, remaining_gas), emsgs') = foldM ~init:(([], [], remaining_gas), femsgs0) ccomps
+        ~f:(fun ((comp_acc, proc_acc, remaining_gas'), emsgs) tr ->
             let toplevel_env = {pure = TEnv.copy env.pure; fields = TEnv.copy fenv; procedures = proc_acc} in
-            match type_component toplevel_env tr with
-            | Error el -> Ok ((comp_acc, proc_acc), emsgs @ el)
-            | Ok (typed_comp, proc_sigs) -> Ok ((typed_comp :: comp_acc, proc_sigs), emsgs)
+            match type_component toplevel_env tr remaining_gas' with
+            | Error (el, g) -> Ok ((comp_acc, proc_acc, g), emsgs @ el)
+            | Ok ((typed_comp, proc_sigs), g) -> Ok ((typed_comp :: comp_acc, proc_sigs, g), emsgs)
           ) in
     let typed_comps = List.rev t_comps in
 
@@ -788,17 +832,18 @@ module ScillaTypechecker
 
     if emsgs' = []
     (* Return pure environment *)  
-    then pure ({TypedSyntax.smver = mod_smver;
-                TypedSyntax.cname = mod_cname;
-                TypedSyntax.libs = typed_clibs;
-                TypedSyntax.elibs = mod_elibs;
-                TypedSyntax.contr =
-                  {TypedSyntax.cname = ctr_cname;
-                   TypedSyntax.cparams = typed_params;
-                   TypedSyntax.cfields = typed_fields;
-                   TypedSyntax.ccomps = typed_comps}}, env, typed_elibs, typed_rlib)
+    then pure (({TypedSyntax.smver = mod_smver;
+                 TypedSyntax.cname = mod_cname;
+                 TypedSyntax.libs = typed_clibs;
+                 TypedSyntax.elibs = mod_elibs;
+                 TypedSyntax.contr =
+                   {TypedSyntax.cname = ctr_cname;
+                    TypedSyntax.cparams = typed_params;
+                    TypedSyntax.cfields = typed_fields;
+                    TypedSyntax.ccomps = typed_comps}}, env, typed_elibs, typed_rlib),
+               remaining_gas)
     (* Return error messages *)
-    else fail @@ emsgs'
+    else Error (emsgs', remaining_gas)
 
 
   (**************************************************************)

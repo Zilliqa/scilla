@@ -138,7 +138,7 @@ module ScillaBuiltIns
     let to_string_elab _ ts = match ts with
       | [t] when is_int_type t || is_uint_type t ||
                  is_bystrx_type t || t = bystr_typ ->
-          elab_tfun_with_args to_string_type ts
+          elab_tfun_with_args_no_gas to_string_type ts
       | _ -> fail0 "Failed to elaborate"
 
     let to_string ls _ =
@@ -177,13 +177,13 @@ module ScillaBuiltIns
     let eq_arity = 2
     let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
     let eq_elab t ts = match ts with
-      | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args t [i1]
+      | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args_no_gas t [i1]
       | _ -> fail0 "Failed to elaborate"
 
     let binop_arity = 2
     let binop_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
     let binop_elab t ts = match ts with
-      | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args t [i1]
+      | [i1; i2] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args_no_gas t [i1]
       | _ -> fail0 "Failed to elaborate"
 
     let eq ls _ = match ls with
@@ -278,7 +278,7 @@ module ScillaBuiltIns
     let pow_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (uint32_typ) (tvar "'A"))
     let pow_elab t ts = match ts with
     | [i1; i2] when is_int_type i1 && (i2 = uint32_typ) ->
-       elab_tfun_with_args t [i1]
+       elab_tfun_with_args_no_gas t [i1]
     | _ -> fail0 "Failed to elaborate"
     let pow ls _ = 
     try 
@@ -317,7 +317,7 @@ module ScillaBuiltIns
       | [PrimType (Int_typ _) as t] | [PrimType (Uint_typ _) as t]
       | [PrimType String_typ as t] ->
           let ityp = PrimType (Int_typ w) in
-          elab_tfun_with_args sc [t; ityp]
+          elab_tfun_with_args_no_gas sc [t; ityp]
       | _ -> fail0 "Failed to elaborate"
 
     let to_int_helper ls w =
@@ -350,13 +350,13 @@ module ScillaBuiltIns
     let eq_arity = 2
     let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
     let eq_elab sc ts = match ts with
-      | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args sc [i1]
+      | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args_no_gas sc [i1]
       | _ -> fail0 "Failed to elaborate"
 
     let binop_arity = 2
     let binop_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
     let binop_elab sc ts = match ts with
-      | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args sc [i1]
+      | [i1; i2] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args_no_gas sc [i1]
       | _ -> fail0 "Failed to elaborate"
 
     let eq ls _ = match ls with
@@ -451,7 +451,7 @@ module ScillaBuiltIns
     let pow_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (uint32_typ) (tvar "'A"))
     let pow_elab t ts = match ts with
     | [i1; i2] when is_uint_type i1 && (i2 = uint32_typ) ->
-       elab_tfun_with_args t [i1]
+       elab_tfun_with_args_no_gas t [i1]
     | _ -> fail0 "Failed to elaborate"
     let pow ls _ = 
       try 
@@ -492,7 +492,7 @@ module ScillaBuiltIns
       | [PrimType (Int_typ _) as t] | [PrimType (Uint_typ _) as t]
       | [PrimType String_typ as t] ->
           let ityp = PrimType (Uint_typ w) in
-          elab_tfun_with_args sc [t; ityp]
+          elab_tfun_with_args_no_gas sc [t; ityp]
       | _ -> fail0 "Failed to elaborate"
 
     let to_uint_helper ls w = 
@@ -519,7 +519,7 @@ module ScillaBuiltIns
     let to_nat_type = tfun_typ "'A" @@ (fun_typ (tvar "'A") nat_typ)
     let to_nat_elab sc ts = match ts with
       | [t] when is_uint_type t ->
-          elab_tfun_with_args sc [t]
+          elab_tfun_with_args_no_gas sc [t]
       | _ -> fail0 "Failed to elaborate"
 
     let to_nat ls _ = match ls with
@@ -566,7 +566,7 @@ module ScillaBuiltIns
     (* Elaborator to run with arbitrary uints *)
     let badd_elab sc ts = match ts with
       | [s; u] when s = bnum_typ && is_uint_type u ->
-          elab_tfun_with_args sc ts
+          elab_tfun_with_args_no_gas sc ts
       | _ -> fail0 "Failed to elaborate"
 
     let badd ls _ = match ls with
@@ -586,7 +586,7 @@ module ScillaBuiltIns
     (* Elaborator to run with arbitrary uints *)
     let bsub_elab sc ts = match ts with
       | [b1; b2] when b1 = bnum_typ && b2 = bnum_typ ->
-          elab_tfun_with_args sc ts
+          elab_tfun_with_args_no_gas sc ts
       | _ -> fail0 "Failed to elaborate"
     let bsub ls _ = match ls with
       | [BNum x; BNum y] ->
@@ -652,7 +652,7 @@ module ScillaBuiltIns
       | [bstyp1; bstyp2] when
           (* We want both types to be ByStr with equal width. *)
           is_bystrx_type bstyp1 && bstyp1 = bstyp2
-        -> elab_tfun_with_args sc [bstyp1]
+        -> elab_tfun_with_args_no_gas sc [bstyp1]
       | _ -> fail0 "Failed to elaborate"
     let eq ls _ = match ls with
       | [ByStrX bs1; ByStrX bs2] ->
@@ -662,7 +662,7 @@ module ScillaBuiltIns
     let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ hash_length)
     let hash_arity = 1
     let hash_elab sc ts = match ts with
-      | [_]  -> elab_tfun_with_args sc ts
+      | [_]  -> elab_tfun_with_args_no_gas sc ts
       | _ -> fail0 "Failed to elaborate"
     let sha256hash ls _ = hash_helper sha256_hasher "sha256hash" hash_length ls
     let keccak256hash ls _ = hash_helper keccak256_hasher "keccak256hash" hash_length ls
@@ -674,7 +674,7 @@ module ScillaBuiltIns
     let to_bystr_type = tfun_typ "'A" @@ fun_typ (tvar "'A") bystr_typ
     let to_bystr_arity = 1
     let to_bystr_elab sc ts = match ts with
-      | [t] when is_bystrx_type t -> elab_tfun_with_args sc ts
+      | [t] when is_bystrx_type t -> elab_tfun_with_args_no_gas sc ts
       | _ -> fail0 "Failed to elaborate"
     let to_bystr ls _ = match ls with
       | [ByStrX bs] -> pure @@ ByStr (Bystrx.to_bystr bs)
@@ -683,7 +683,7 @@ module ScillaBuiltIns
     let to_uint256_type = tfun_typ "'A" @@ fun_typ (tvar "'A") uint256_typ
     let to_uint256_arity = 1
     let to_uint256_elab sc ts = match ts with
-      | [PrimType (Bystrx_typ w)] when w <= 32 -> elab_tfun_with_args sc ts
+      | [PrimType (Bystrx_typ w)] when w <= 32 -> elab_tfun_with_args_no_gas sc ts
       | _ -> fail0 "Failed to elaborate"
     let to_uint256 ls _ = match ls with
       | [ByStrX bs] when Bystrx.width bs <= 32 ->
@@ -729,7 +729,7 @@ module ScillaBuiltIns
     let concat_arity = 2
     let concat_elab sc ts = match ts with
       | [PrimType (Bystrx_typ w1); PrimType (Bystrx_typ w2)] ->
-          elab_tfun_with_args sc (ts @ [bystrx_typ (w1 + w2)])
+          elab_tfun_with_args_no_gas sc (ts @ [bystrx_typ (w1 + w2)])
       | _ -> fail0 "Failed to elaborate"
     let concat ls _ = match ls with
       | [ByStrX bs1; ByStrX bs2] -> pure @@ ByStrX (Bystrx.concat bs1 bs2)
@@ -843,7 +843,7 @@ module ScillaBuiltIns
       (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@ fun_typ (tvar "'K") bool_typ)
     let contains_elab sc ts = match ts with
       | [MapType (kt, vt); u] when kt = u  ->
-          elab_tfun_with_args sc [kt; vt]
+          elab_tfun_with_args_no_gas sc [kt; vt]
       | _ -> fail0 "Failed to elaborate"
     let contains ls _ = match ls with
       | [Map (_, entries); key] ->
@@ -860,7 +860,7 @@ module ScillaBuiltIns
        fun_typ (tvar "'V") (map_typ (tvar "'K") (tvar "'V")))
     let put_elab sc ts = match ts with
       | [MapType (kt, vt); kt'; vt'] when kt = kt' && vt = vt'  ->
-          elab_tfun_with_args sc [kt; vt]
+          elab_tfun_with_args_no_gas sc [kt; vt]
       | _ -> fail0 "Failed to elaborate"
     let put ls _ = match ls with
       | [Map (tm, entries); key; value] ->
@@ -879,7 +879,7 @@ module ScillaBuiltIns
        fun_typ (tvar "'K") (option_typ (tvar "'V")))
     let get_elab sc ts = match ts with
       | [MapType (kt, vt); kt'] when kt = kt'  ->
-          elab_tfun_with_args sc [kt; vt]
+          elab_tfun_with_args_no_gas sc [kt; vt]
       | _ -> fail0 "Failed to elaborate"
     (* Notice that get passes return type *)
     let get ls rt = match ls, rt with
@@ -897,7 +897,7 @@ module ScillaBuiltIns
        fun_typ (tvar "'K") (map_typ (tvar "'K") (tvar "'V")))
     let remove_elab sc ts = match ts with
       | [MapType (kt, vt); u] when kt = u  ->
-          elab_tfun_with_args sc [kt; vt]
+          elab_tfun_with_args_no_gas sc [kt; vt]
       | _ -> fail0 "Failed to elaborate" 
     let remove ls _ = match ls with
       | [Map (tm, entries); key] ->
@@ -914,7 +914,7 @@ module ScillaBuiltIns
       (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
        (list_typ (pair_typ (tvar "'K") (tvar "'V"))))
     let to_list_elab sc ts = match ts with
-      | [MapType (kt, vt)]  -> elab_tfun_with_args sc [kt; vt]
+      | [MapType (kt, vt)]  -> elab_tfun_with_args_no_gas sc [kt; vt]
       | _ -> fail0 "Failed to elaborate" 
     let to_list ls _ = match ls with
       | [Map ((kt, vt), entries)] ->
@@ -935,7 +935,7 @@ module ScillaBuiltIns
       (fun_typ (map_typ (tvar "'K") (tvar "'V")) @@
        uint32_typ)
     let size_elab sc ts = match ts with
-      | [MapType (kt, vt)]  -> elab_tfun_with_args sc [kt; vt]
+      | [MapType (kt, vt)]  -> elab_tfun_with_args_no_gas sc [kt; vt]
       | _ -> fail0 "Failed to elaborate" 
     let size ls _ = match ls with
       | [Map (_, entries)] ->

@@ -1,4 +1,5 @@
 {
+  "gas_remaining": "8000",
   "errors": [
     {
       "error_message": "Lexical error: Comment unfinished",
