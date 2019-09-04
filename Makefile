@@ -78,7 +78,7 @@ coverage :
 	make clean
 	mkdir -p _build/coverage
 	BISECT_ENABLE=YES make
-	./bin/testsuite
+	dune exec tests/testsuite.exe
 	bisect-ppx-report -I _build/default/ -html _coverage/ `find . -name 'bisect*.out'`
 	make clean
 	-find . -name 'bisect*.out' | xargs rm
