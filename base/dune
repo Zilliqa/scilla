@@ -14,16 +14,16 @@
  (modules ScillaParser))
 
 (library
- (name scilla_base)
+ (name scilla_base) (public_name scilla-base)
   (wrapped false)
   (libraries core ppx_sexp_conv
-              num hex stdint batteries
+              hex stdint batteries
               ppx_deriving.show
-              cryptokit secp256k1 bitstring
+              secp256k1 bitstring
               yojson scilla_cpp_deps scilla_util
               menhirLib)
   (preprocess (pps ppx_sexp_conv
-                    ppx_let 
+                    ppx_let
                     ppx_deriving.show
                     bisect_ppx -exclude-file=../../bisect.exclude -conditional
                     ))

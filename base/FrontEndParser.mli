@@ -23,10 +23,13 @@ open ParserUtil
 
 module MInter = ScillaParser.MenhirInterpreter
 
+(* Main parsing loop *)
 val parse_lexbuf : (position -> 'a MInter.checkpoint) -> lexbuf -> string -> ('a, scilla_error list) result
 
+(* Parse a string using an entry point checkpoint starter *)
 val parse_string : (position -> 'a MInter.checkpoint) -> string -> ('a, scilla_error list) result
 
+(* Parse a file using an entry point checkpoint starter *)
 val parse_file : (position -> 'a MInter.checkpoint) -> string -> ('a, scilla_error list) result
 
 val parse_type : string -> (typ, scilla_error list) result

@@ -1,5 +1,5 @@
 (library
- (name scilla_util)
+ (name scilla_util) (public_name scilla-base.util)
  (wrapped false)
  (synopsis "[Internal] Utility library of Scilla")
  (libraries core_kernel fileutils))

@@ -31,8 +31,15 @@ utop: all
 # to pass but analogous programs might break when run on users' machines
 # (e.g. on macOS 10.14.5 make sets the limit to 65532kB, but the standard
 # value is 8192kB)
-test: dev
+test-extra: dev
 	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -print-diff true
+
+test-core: dev
+	ulimit -s 128 -n 1024; dune exec base/tests/testsuiteCore.exe
+
+test: dev
+	dune exec base/tests/testsuiteCore.exe
+	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -print-diff true;
 
 gold: dev
 	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -update-gold true
