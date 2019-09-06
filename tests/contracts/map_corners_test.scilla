@@ -594,6 +594,50 @@ transition t16()
   | True =>
   | False =>
     fail tname
-  end
+  end;
 
+  (* Insert an empty string key. *)
+  m1 =
+    let k = "" in
+    let v = "420" in
+    let e = Emp String String in
+    builtin put e k v;
+
+  f_m1 := m1
+
+end
+
+(* test_query_empty_key *)
+transition t17 ()
+
+  tname = "t17";
+
+  (* We now expect the storage to contain: *)
+  (* f_m1[""] : 420 *)
+  key = "";
+  found <- exists f_m1[key];
+  match found with
+  | True =>
+  | False =>
+    fail tname
+  end;
+
+  (* delete key "" for next test *)
+  delete f_m1[key]
+end
+
+(* test_query_empty_key *)
+transition t18 ()
+
+  tname = "t18";
+
+  (* We now expect the storage to NOT contain: *)
+  (* f_m1[""] *)
+  key = "";
+  found <- exists f_m1[key];
+  match found with
+  | True =>
+    fail tname
+  | False =>
+  end
 end

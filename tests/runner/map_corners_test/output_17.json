@@ -1,16 +1,12 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7665",
+  "gas_remaining": "7862",
   "_accepted": "false",
   "message": null,
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    {
-      "vname": "f_m1",
-      "type": "Map (String) (String)",
-      "value": [ { "key": "", "val": "420" } ]
-    },
     { "vname": "f_s1", "type": "String", "value": "421" },
+    { "vname": "f_m1", "type": "Map (String) (String)", "value": [] },
     {
       "vname": "f_m2",
       "type": "Map (String) (Map (String) (String))",
