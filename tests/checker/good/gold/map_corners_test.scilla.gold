@@ -59,7 +59,9 @@
       { "vname": "t13", "params": [] },
       { "vname": "t14", "params": [] },
       { "vname": "t15", "params": [] },
-      { "vname": "t16", "params": [] }
+      { "vname": "t16", "params": [] },
+      { "vname": "t17", "params": [] },
+      { "vname": "t18", "params": [] }
     ],
     "events": [],
     "ADTs": [
@@ -103,6 +105,16 @@
     ]
   },
   "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 606,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
     {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
