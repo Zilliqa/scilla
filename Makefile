@@ -73,13 +73,13 @@ zilliqa-docker:
 .PHONY : opamdep
 opamdep:
 	opam init --compiler=$(OCAML_VERSION_RECOMMENDED) --yes
-	eval $(opam env)
+	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
 
 .PHONY : opamdep-ci
 opamdep-ci:
 	opam init --disable-sandboxing --compiler=$(OCAML_VERSION) --yes
-	eval $(opam env)
+	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
 
 .PHONY : coverage
