@@ -1,9 +1,9 @@
 # This script assumes that there is an IPC state server running
-# at /tmp/scillaipcsocket and runs the interpreter to deploy
+# at /tmp/zilliqa.sock and runs the interpreter to deploy
 # and run all transitions of tests/contracts/map_corners_test.scilla.
 
-num_transitions=16
-ipcaddress=/tmp/scillaipcsocket
+num_transitions=18
+ipcaddress=/tmp/zilliqa.sock
 scilla_runner=../bin/scilla-runner
 test_source=../tests/contracts/map_corners_test.scilla
 libdir=../src/stdlib
