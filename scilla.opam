@@ -1,4 +1,5 @@
 opam-version: "2.0"
+name: "scilla"
 maintainer: "ilya@zilliqa.com"
 authors: ["Zilliqa Research Pvt. Ltd."]
 homepage: "https://scilla-lang.org"
@@ -8,6 +9,7 @@ license: "GPL-3.0"
 depends: [
   "ocaml" {>= "4.06.1" & < "4.08~"}
   "dune" {build & >= "1.5"}
+  "scilla-base"
   "menhir"
   "core" {>= "v0.11" & < "v0.12~"}
   "batteries" {>= "2.9.0" & < "2.10~"}
@@ -30,7 +32,7 @@ depends: [
   "patdiff" {with-test & (>= "v0.11" & < "v0.12~")}
 ]
 build: [
-  [ "dune" "build" "-j" jobs "@install" ]
+  [ "dune" "build" "-p" name "-j" jobs "@install" ]
   [ "dune" "runtest" "-p" name "-j" jobs ] {with-test}
 ]
 synopsis: "Scilla: Safe-By-Design Smart Contract Language"

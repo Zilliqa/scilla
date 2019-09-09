@@ -1,4 +1,5 @@
 opam-version: "2.0"
+name: "scilla-base"
 maintainer: "ilya@zilliqa.com"
 authors: ["Zilliqa Research Pvt. Ltd."]
 homepage: "https://scilla-lang.org"
@@ -28,7 +29,7 @@ depends: [
   "ounit" {with-test & (>= "2.0.8" & < "2.1~")}
 ]
 build: [
-  [ "dune" "build" "-j" jobs "@install" ]
+  [ "dune" "build" "-p" name "-j" jobs "@install" ]
   [ "dune" "runtest" "-p" name "-j" jobs ] {with-test}
 ]
 synopsis: "Scilla-base: Base component of Scilla"
