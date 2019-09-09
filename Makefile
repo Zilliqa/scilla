@@ -1,5 +1,7 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
+OCAML_VERSION_RECOMMENDED=4.06.1
+
 .PHONY: default all utop dev clean docker zilliqa-docker
 
 default: all
@@ -75,10 +77,17 @@ zilliqa-docker:
 	fi
 	docker build --build-arg BASE_IMAGE=$(ZILLIQA_IMAGE) .
 
+.PHONY : opamdep
 opamdep:
-	opam init --disable-sandboxing -y --compiler=4.06.1
+	opam init --compiler=$(OCAML_VERSION_RECOMMENDED) --yes
+	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
 
+.PHONY : opamdep-ci
+opamdep-ci:
+	opam init --disable-sandboxing --compiler=$(OCAML_VERSION) --yes
+	eval $$(opam env)
+	opam install ./scilla.opam --deps-only --with-test --yes
 
 .PHONY : coverage
 coverage :

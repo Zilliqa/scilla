@@ -52,11 +52,10 @@ branches:
     - /^release-v.*$/
 before_install:
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
-- opam init --disable-sandboxing --compiler=$OCAML_VERSION -y
-- eval $(opam env)
-- opam install ./scilla.opam --deps-only --with-test -y
+- make opamdep-ci
 - rm $HOME/.opam/log/*
 script:
 - if [ $TRAVIS_OS_NAME = osx ]; then ulimit -n 1024; fi
+- eval $(opam env)
 - make test
 - make coveralls
