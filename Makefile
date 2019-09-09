@@ -37,10 +37,10 @@ test-extra: dev
 	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -print-diff true
 
 test-core: dev
-	ulimit -s 128 -n 1024; dune exec base/tests/testsuiteCore.exe
+	ulimit -s 128 -n 1024; dune exec tests/base/testsuite_base.exe
 
 test: dev
-	dune exec base/tests/testsuiteCore.exe
+	dune exec tests/base/testsuite_base.exe
 	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -print-diff true;
 
 gold: dev
@@ -106,6 +106,7 @@ coveralls:
 	make clean
 	mkdir -p _build/coverage
 	BISECT_ENABLE=YES make
+	dune exec tests/base/testsuite_base.exe
 	dune exec tests/testsuite.exe
 	bisect-ppx-report -ignore-missing-files -I _build/ -coveralls coverage.json -service-name travis-ci -service-job-id ${TRAVIS_JOB_ID} `find . -name 'bisect*.out'`
 	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs

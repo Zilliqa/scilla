@@ -1,5 +1,5 @@
 (rule
-  (deps ParserFaults.messages)
+  (deps ParserFaults.messages ScillaParser.mly)
   (targets ParserFaults.ml)
   (action
     (with-stdout-to ParserFaults.ml
