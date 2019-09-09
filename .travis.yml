@@ -56,5 +56,6 @@ before_install:
 - rm $HOME/.opam/log/*
 script:
 - if [ $TRAVIS_OS_NAME = osx ]; then ulimit -n 1024; fi
+- eval $(opam env)
 - make test
 - make coveralls
