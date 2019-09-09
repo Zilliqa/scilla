@@ -83,7 +83,7 @@ ulimit -n 1024
 
 #### Initialize opam
 ```shell
-opam init --disable-sandboxing --compiler=4.06.1 --yes
+opam init --compiler=4.06.1 --yes
 ```
 Note: the initializer will change your shell configuration to setup the environment opam needs to work.
 You can remove `--yes` from the above command to manually control that process.
@@ -112,7 +112,7 @@ This is like a standard opam switch but instead of `$HOME/.opam`, it will reside
 This lets us to avoid dependency conflict and changing our switches back and forth when working on different projects.
 To create a local opam switch and install all the Scilla dependencies, `cd` into project root and execute:
 ```shell
-opam switch create . --deps-only --with-test --yes
+opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.06.1
 ```
 Now, whenever you are inside the project directory, opam will prefer the local switch to any globally installed switches,
 unless being told explicitly which one to use.
