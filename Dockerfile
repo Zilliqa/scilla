@@ -31,5 +31,5 @@ RUN apt-get update \
 
 RUN cd /scilla/${MAJOR_VERSION} && make opamdep-ci \
     && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
-    && eval `opam config env` && \
+    && eval $(opam env) && \
     make
