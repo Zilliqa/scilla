@@ -1,5 +1,5 @@
 (executable
   (name testsuiteCore)
   (preprocess (pps ppx_sexp_conv ppx_let ppx_deriving.show))
-  (libraries core oUnit scilla_base scilla_util)
+  (libraries core oUnit scilla-base scilla_util)
 )

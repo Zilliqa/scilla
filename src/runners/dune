@@ -12,5 +12,5 @@
               ppx_sexp_conv ppx_deriving
               ppx_let yojson cryptokit
               fileutils
-              scilla_base scilla_eval scilla_checkers scilla_cpp_deps)
+              scilla-base scilla_eval scilla_checkers)
   (preprocess (pps ppx_sexp_conv ppx_let ppx_deriving.show bisect_ppx -conditional)))
