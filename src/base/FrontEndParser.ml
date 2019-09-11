@@ -69,3 +69,5 @@ let parse_type s =
 let parse_expr s =
   parse_string ScillaParser.Incremental.exp_term s
 
+let parse_lmodule s =
+  parse_string ScillaParser.Incremental.lmodule s
