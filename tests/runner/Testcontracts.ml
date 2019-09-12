@@ -185,7 +185,7 @@ let add_tests env =
       "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8 []);
       "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14 []);
       "wallet" >:::(build_contract_tests env "wallet" succ_code 1 11 []);
-      "wallet_2" >:::(build_contract_tests env "wallet_2" succ_code 1 11 []);
+      "wallet_2" >:::(build_contract_tests env "wallet_2" succ_code 1 19 []);
       "one_msg_test" >::: (build_contract_tests env "one-msg" succ_code 1 1 []);
       "one_msg1_test" >::: (build_contract_tests env "one-msg1" succ_code 1 1 []);
       "simple-dex" >:::(build_contract_tests env "simple-dex" succ_code 1 8 []);
