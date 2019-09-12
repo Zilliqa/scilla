@@ -296,7 +296,7 @@ transition ExecuteTransaction (transactionId : Uint32)
     e = mk_error_event err;
     event e
   | Some (Trans recipient amount tag) =>
-    (* Only the recipient can initiate the transaction *)
+    (* Only the recipient or an owner can execute the transaction *)
     recipient_is_sender = builtin eq recipient _sender;
     sender_is_owner <- exists owners[_sender];
     sender_may_execute = orb recipient_is_sender sender_is_owner;
