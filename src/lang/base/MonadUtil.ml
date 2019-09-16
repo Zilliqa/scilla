@@ -94,6 +94,12 @@ let rec mapM ~f ls = match ls with
       pure (z :: zs)
   | [] -> pure []
 
+let rec iterM ~f ls = match ls with
+  | x :: ls' ->
+    let%bind _ = f x in
+    iterM ~f ls'
+  | [] -> pure ()
+
 let liftPair1 m x = 
   let%bind z = m in
   pure (z, x)
@@ -143,6 +149,8 @@ module EvalMonad = struct
     | Core.Error s -> fail s
     | Core.Ok a -> pure a
 
+  let out_of_gas_err = mk_error0 "Ran out of gas"
+  
   (* [Wrappers for Gas Accounting]  *)
   let checkwrap_opR op_thunk cost =
     (fun k remaining_gas ->
@@ -151,7 +159,7 @@ module EvalMonad = struct
          let res = op_thunk () in
          k res (Uint64.sub remaining_gas cost)
        else 
-         k (Error (mk_error0 "Ran out of gas")) remaining_gas)
+         k (Error out_of_gas_err) remaining_gas)
 
   let checkwrap_op op_thunk cost emsg =
     (fun k remaining_gas ->

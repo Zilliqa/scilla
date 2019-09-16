@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "This map type likely has an invalid map value type. The map value type is a map with a malformed map key type.\n",
+      "start_location": {
+        "file": "parser/bad/type_t-map-cid-map-with.scilla",
+        "line": 7,
+        "column": 31
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

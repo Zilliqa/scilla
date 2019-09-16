@@ -24,6 +24,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["checker"; "bad"; f]
     let runner = "scilla-checker"
+    let gas_limit = Stdint.Uint64.of_int 8000
     let custom_args = ["-cf"; "-contractinfo"]
     let additional_libdirs = []
     let tests = [
@@ -34,9 +35,6 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_comment_1.scilla";
       "bad_comment_2.scilla";
       "bad_map_key_1.scilla";
-      "bad_map_key_2.scilla";
-      "bad_map_key_3.scilla";
-      "bad_map_key_4.scilla";
       "bad_map_key_5.scilla";
       "map_value_function.scilla";
       "bad_message1.scilla";
@@ -78,6 +76,7 @@ module Tests = TestUtil.DiffBasedTests(
       "procedure_env.scilla";
       "global_scope_procedures.scilla";
       "bad-exception1.scilla";
+      "blowup.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
@@ -87,6 +86,7 @@ module LibTests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["checker"; "bad"; f]
     let runner = "scilla-checker"
+    let gas_limit = Stdint.Uint64.of_int 8000
     let custom_args = ["-cf"]
     let additional_libdirs = [["checker"; "bad"; "lib"]]
     let tests = [

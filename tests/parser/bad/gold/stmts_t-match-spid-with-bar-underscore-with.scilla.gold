@@ -1,0 +1,17 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid statements term. In the match expression, after a pattern is specified the parser expects an arrow (e.g. '=>') leading to the list of statements.\n",
+      "start_location": {
+        "file":
+          "parser/bad/stmts_t-match-spid-with-bar-underscore-with.scilla",
+        "line": 13,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

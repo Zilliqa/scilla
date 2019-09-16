@@ -1,0 +1,57 @@
+{
+  "gas_remaining": "2",
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract Blowup:\n",
+      "start_location": {
+        "file": "checker/bad/blowup.scilla",
+        "line": 32,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in library Blowup:\n\n",
+      "start_location": {
+        "file": "checker/bad/blowup.scilla",
+        "line": 3,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in library variable bar8:\n\n",
+      "start_location": {
+        "file": "checker/bad/blowup.scilla",
+        "line": 3,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Ran out of gas",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition setHello:\n",
+      "start_location": {
+        "file": "checker/bad/blowup.scilla",
+        "line": 34,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `e`:\nCouldn't resolve the identifier \"not_owner_code\".\n",
+      "start_location": {
+        "file": "checker/bad/blowup.scilla",
+        "line": 35,
+        "column": 42
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

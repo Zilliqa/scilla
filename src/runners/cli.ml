@@ -26,11 +26,12 @@ let f_trace_file = ref ""
 let f_trace_level = ref ""
 let d_libs = ref []
 let v_gas_limit = ref (Stdint.Uint64.zero)
+let v_balance = ref None
 let b_pp_lit = ref true
 let b_json_errors = ref false
 let b_pp_json = ref true
 let b_validate_json = ref true
-let i_ipc_port = ref 0
+let i_ipc_address = ref ""
 
 let process_trace () =
   match !f_trace_level with
@@ -74,10 +75,11 @@ let validate_main usage =
     (* output file is mandatory *)
     (if !f_output = "" then msg4 ^ "Output file not specified\n" else msg4) in
   let msg6 =
-    (* input_message.json and input_state.json / i_ipc_port can either both be there or both absent *)
+    (* input_message.json and input_state.json / i_ipc_address+balance can either both be there or both absent *)
     if (!f_input_message <> "") &&
-       ((!f_input_state <> "") && (!i_ipc_port <> 0) || (!f_input_state = "" && !i_ipc_port = 0))
-      then msg5 ^ "Input message provided, but either none or both of input state / IPC port provided"
+       ((!f_input_state <> "") && ((!i_ipc_address <> "") || (Core.is_some !v_balance)) ||
+        (!f_input_state = "" && (!i_ipc_address = "" || Core.is_none !v_balance)))
+      then msg5 ^ "Input message provided, but either none or both of input state / (IPC address and balance) provided\n"
       else msg5 in
   if msg6 <> ""
   then
@@ -94,8 +96,9 @@ type ioFiles = {
     input : string;
     libdirs : string list;
     gas_limit : Stdint.uint64;
+    balance : Stdint.uint128;
     pp_json : bool;
-    ipc_port : int;
+    ipc_address : string;
 }
 
 let parse () =
@@ -109,7 +112,7 @@ let parse () =
     ("-init", Arg.String (fun x -> f_input_init := x), "Path to initialization json");
     ("-istate", Arg.String (fun x -> f_input_state := x), "Path to state input json");
     ("-imessage", Arg.String (fun x -> f_input_message := x), "Path to message input json");
-    ("-ipcport", Arg.Int (fun x -> i_ipc_port := x), "Port number for IPC communication with blockchain for state access");
+    ("-ipcaddress", Arg.String (fun x -> i_ipc_address := x), "Socket address for IPC communication with blockchain for state access");
     ("-iblockchain", Arg.String (fun x -> f_input_blockchain := x), "Path to blockchain input json");
     ("-o", Arg.String (fun x -> f_output := x), "Path to output json");
     ("-i", Arg.String (fun x -> f_input := x), "Path to scilla contract");
@@ -129,6 +132,16 @@ let parse () =
         in
         v_gas_limit := g)
       , "Gas limit");
+    ("-balance", Arg.String
+      (fun i ->
+        let g = 
+          try
+            Stdint.Uint128.of_string i
+          with
+          | _ -> PrettyPrinters.fatal_error (ErrorUtils.mk_error0 (Printf.sprintf "Invalid balance %s\n" i))
+        in
+        v_balance := Some g)
+      , "Account balance");
     ("-pplit", Arg.Bool (fun b -> b_pp_lit := b), "Pretty print literals");
     ("-jsonerrors", Arg.Unit (fun () -> b_json_errors := true), "Print errors in JSON format");
     ("-disable-pp-json", Arg.Unit (fun () -> b_pp_json := false), "Disable pretty printing of JSONs");
@@ -141,7 +154,7 @@ let parse () =
     " -gaslimit limit" ^ "\n" in
   let optional_usage = String.concat "\n  "
     (List.map (fun (flag, _, desc) -> flag ^ " " ^ desc) speclist) in
-  let usage = mandatory_usage ^ "\n  " ^ optional_usage in
+  let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
 
   let ignore_anon _ = () in
   let () = Arg.parse speclist ignore_anon mandatory_usage in
@@ -152,4 +165,5 @@ let parse () =
   let () = validate_main usage in
     {input_init = !f_input_init; input_state = !f_input_state; input_message = !f_input_message;
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input;
-     libdirs = !d_libs; gas_limit = !v_gas_limit; pp_json = !b_pp_json; ipc_port = !i_ipc_port}
+     balance = (match !v_balance with | Some v -> v | None -> Stdint.Uint128.zero);
+     libdirs = !d_libs; gas_limit = !v_gas_limit; pp_json = !b_pp_json; ipc_address = !i_ipc_address}

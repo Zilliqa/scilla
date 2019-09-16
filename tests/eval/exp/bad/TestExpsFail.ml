@@ -22,7 +22,7 @@ let explist = [
   "app_error1.scilexp";
   "app_error2.scilexp";
   "builtin4.scilexp";
-  "builtin_error1.scilexp";
+  "blowup.scilexp";             (* Should fail with out-of-gas. *)
   "builtin-divzero.scilexp";
   "builtin-divzero2.scilexp";
   "builtin-divzero3.scilexp";
@@ -36,7 +36,6 @@ let explist = [
   "builtin-overflow1.scilexp";
   "builtin-overflow2.scilexp";
   "builtin-overflow3.scilexp";
-  "builtin-overflow4.scilexp";
   "builtin-overflow5.scilexp";
   "builtin-overflow6.scilexp";
   "builtin-overflow7.scilexp";
@@ -61,6 +60,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "eval"; "exp"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["eval"; "exp"; "bad"; f]
     let runner = "eval-runner"
+    let gas_limit = Stdint.Uint64.of_int 4002000
     let custom_args = []
     let additional_libdirs = []
     let tests = explist

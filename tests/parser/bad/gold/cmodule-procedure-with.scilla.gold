@@ -1,0 +1,15 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message": "A procedure requires a valid name.\n",
+      "start_location": {
+        "file": "parser/bad/cmodule-procedure-with.scilla",
+        "line": 7,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

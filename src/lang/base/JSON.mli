@@ -42,6 +42,9 @@ module ContractState : sig
   (* Given an init.json filename, return extlib fields *)
   val get_init_extlibs : string -> (string * string) list
 
+  (* Convert a single JSON serialized literal back to its Scilla value. *)
+  val jstring_to_literal : string -> Syntax.typ -> Syntax.literal
+
 end
 
 (** Message json parsing and printing. A message json has three mandatory

@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "There is a malformed pattern matching clause, the bar is likely missing.\n",
+      "start_location": {
+        "file": "parser/bad/stmts_t-match-spid-with-with.scilla",
+        "line": 13,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

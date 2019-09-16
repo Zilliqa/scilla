@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "This function needs brackets for the argument.\n",
+      "start_location": {
+        "file": "parser/bad/exps/exp_t-fun-with.scilexp",
+        "line": 1,
+        "column": 6
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

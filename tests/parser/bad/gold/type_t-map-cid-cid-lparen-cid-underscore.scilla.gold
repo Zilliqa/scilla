@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid map type, the map value type is incorrect. It is possible that the key type is a nested ADT where the inner constructor arguments are faulty.\n",
+      "start_location": {
+        "file": "parser/bad/type_t-map-cid-cid-lparen-cid-underscore.scilla",
+        "line": 5,
+        "column": 42
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

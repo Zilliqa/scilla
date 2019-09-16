@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid statements term. Scilla expects to do something with the identifier.\n",
+      "start_location": {
+        "file": "parser/bad/stmts_t-cid-with.scilla",
+        "line": 11,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

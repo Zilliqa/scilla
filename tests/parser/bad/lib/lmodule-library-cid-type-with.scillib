@@ -1,0 +1,6 @@
+library TestLib
+
+(* Missing 'House' *)
+
+type of
+| Kind of String

@@ -1,0 +1,6 @@
+library TestLib
+
+(* Typo | instead of l *)
+let a = 0x1234
+|et b = 0x2345
+

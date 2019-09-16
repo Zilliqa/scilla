@@ -1,7 +1,9 @@
 {
+  "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Syntax error.",
+      "error_message":
+        "This is an invalid message construction. The parser expects another message entry separated by a semicolon or a closing brace.\n",
       "start_location": {
         "file": "checker/bad/message_field3.scilla",
         "line": 15,

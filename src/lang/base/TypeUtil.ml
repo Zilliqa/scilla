@@ -251,6 +251,15 @@ module TypeUtilities = struct
         "Type mismatch: %s expected, but %s provided."
         (pp_typ expected) (pp_typ given)
 
+  (* TODO: make this charge gas *)
+  let assert_type_equiv_with_gas expected given remaining_gas =
+    if type_equiv expected given
+    then pure remaining_gas
+    else Error (mk_error0 (sprintf
+                            "Type mismatch: %s expected, but %s provided."
+                            (pp_typ expected) (pp_typ given)),
+               remaining_gas)
+
   let rec is_ground_type t = match t with 
     | FunType (a, r) -> is_ground_type a && is_ground_type r
     | MapType (k, v) -> is_ground_type k && is_ground_type v
@@ -348,21 +357,105 @@ module TypeUtilities = struct
        mapM arg_pairs ~f:(fun (formal, actual) ->
             assert_type_equiv formal actual)
     | None -> fail0 "Incorrect number of arguments to procedure"
-  
-  let rec elab_tfun_with_args tf args = match tf, args with
+
+  let rec elab_tfun_with_args_no_gas tf args = match tf, args with
     | PolyFun _ as pf, a :: args' ->
         let afv = free_tvars a in
         let%bind (n, tp) = (match refresh_tfun pf afv with
             | PolyFun (a, b) -> pure (a, b)
-            | _ -> fail0 "This can't happen!") in
+            | _ -> Error (mk_error0 "This can't happen!")) in
+        (* This needs to account for gas *)
         let tp' = subst_type_in_type n a tp in
-        elab_tfun_with_args tp' args'
+        elab_tfun_with_args_no_gas tp' args'
     | t, [] -> pure t
     | _ ->
         let msg = sprintf
             "Cannot elaborate expression of type\n%s\napplied, as a type function, to type arguments\n%s." (pp_typ tf)
             (pp_typ_list args) in
-        fail0 msg
+         Error (mk_error0 msg)
+
+  let subst_type_cost tvar tm tp_size = match tm with
+    | PrimType _
+    | Unit
+    | MapType (_, _)
+    | FunType (_, _)
+    | ADT (_, _)
+    | PolyFun (_, _)
+      -> 1
+    | TypeVar n ->
+        if n = tvar then tp_size else 1
+
+  (* Count the number of AST nodes in a type *)
+  let rec type_size t = match t with
+    | PrimType _
+    | Unit
+    | TypeVar _
+      -> 1
+    | PolyFun (_, t)
+      -> 1 + (type_size t)
+    | MapType (t1, t2)
+    | FunType (t1, t2)
+      -> 1 + (type_size t1) + (type_size t2)
+    | ADT (_, ts)
+      -> List.fold_left ts ~init:1 ~f:(fun acc t -> acc + (type_size t))
+  
+  (* tm[tvar := tp]
+     Parallel implementation to the one in Syntax.ml to allow gas accounting.
+  *)
+  let subst_type_in_type_with_gas tvar tp tm gas =
+    let tp_size = type_size tp in
+    let rec recurser t remaining_gas =
+      let gas_cost = Stdint.Uint64.of_int @@ subst_type_cost tvar t tp_size in
+      if (Stdint.Uint64.compare remaining_gas gas_cost) >= 0
+      then
+        let remaining_gas' = Stdint.Uint64.sub remaining_gas gas_cost in
+        (*        let _ = printf "recursing over %s\n" (pp_typ t) in *)
+        match t with
+        | PrimType _ | Unit -> pure (t, remaining_gas')
+        (* Make sure the map's type is still primitive! *)
+        | MapType (kt, vt) ->
+            let%bind (kts, remaining_gas) = recurser kt remaining_gas' in
+            let%bind (vts, remaining_gas) = recurser vt remaining_gas in
+            pure (MapType (kts, vts), remaining_gas)
+        | FunType (at, rt) ->
+            let%bind (ats, remaining_gas) = recurser at remaining_gas' in
+            let%bind (rts, remaining_gas) = recurser rt remaining_gas in
+            pure (FunType (ats, rts), remaining_gas)
+        | TypeVar n ->
+            let res = if tvar = n then tp else t in
+            pure (res, remaining_gas')
+        | ADT (s, ts) ->
+            let%bind (ts'_rev, remaining_gas) = foldM ts ~init:([], remaining_gas')
+                ~f:(fun (ts'_rev_acc, remaining_gas) t' ->
+                    let%bind (res, remaining_gas) = recurser t' remaining_gas in
+                    pure (res :: ts'_rev_acc, remaining_gas)) in
+            pure (ADT (s, List.rev ts'_rev), remaining_gas)
+        | PolyFun (arg, t') ->
+            if tvar = arg
+            then pure (t, remaining_gas')
+            else
+              let%bind (res, remaining_gas) = recurser t' remaining_gas' in
+              pure (PolyFun (arg, res), remaining_gas)
+      else
+        Error (EvalMonad.out_of_gas_err, remaining_gas)
+    in
+    recurser tm gas
+    
+  
+  let rec elab_tfun_with_args tf args gas = match tf, args with
+    | PolyFun _ as pf, a :: args' ->
+        let afv = free_tvars a in
+        let%bind (n, tp) = (match refresh_tfun pf afv with
+            | PolyFun (a, b) -> pure (a, b)
+            | _ -> Error (mk_error0 "This can't happen!", gas)) in
+        let%bind (tp', remaining_gas) = subst_type_in_type_with_gas n a tp gas in
+        elab_tfun_with_args tp' args' remaining_gas
+    | t, [] -> pure (t, gas)
+    | _ ->
+        let msg = sprintf
+            "Cannot elaborate expression of type\n%s\napplied, as a type function, to type arguments\n%s." (pp_typ tf)
+            (pp_typ_list args) in
+         Error (mk_error0 msg, gas)
 
   (****************************************************************)
   (*                        Working with ADTs                     *)

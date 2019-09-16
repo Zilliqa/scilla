@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "In the match statement there is a malformed pattern.\n",
+      "start_location": {
+        "file": "parser/bad/stmts_t-match-spid-with-bar-with.scilla",
+        "line": 13,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

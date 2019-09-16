@@ -1,0 +1,5 @@
+scilla_version 0
+
+(* 'as' should be a colon *)
+contract Test
+(valid as bool)

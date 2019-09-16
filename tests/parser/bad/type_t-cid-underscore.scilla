@@ -1,0 +1,8 @@
+scilla_version 0
+
+library TestLib
+(* underscore is not a valid argument *)
+let f = fun (x : Option _) => x
+
+contract Test
+()

@@ -1,0 +1,17 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid map type, the map value is likely incorrect. The map value being a map itself with an invalid map value (possible malformed ADT).\n",
+      "start_location": {
+        "file":
+          "parser/bad/type_t-map-cid-lparen-map-cid-cid-underscore.scilla",
+        "line": 4,
+        "column": 50
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

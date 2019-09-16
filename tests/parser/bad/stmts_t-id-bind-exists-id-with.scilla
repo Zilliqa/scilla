@@ -1,0 +1,9 @@
+scilla_version 0
+
+contract Test
+(a : Map Uint128 Bool)
+
+(* lacks key access *)
+transition something ()
+  b <- exists map
+end

@@ -64,7 +64,7 @@ let check_parsing ctr syn =
     plog @@ sprintf "\n[Parsing]:\n module [%s] is successfully parsed.\n" ctr;
   cmod
 
-(* Type check the contract with external libraries *)
+(* Check restrictions on inductive datatypes, and on associated recursion principles *)
 let check_recursion cmod elibs  =
   let open Rec in
   let res = recursion_module cmod recursion_principles elibs in
@@ -80,19 +80,27 @@ let check_recursion_lmod lmod elibs  =
   res
 
 (* Type check the contract with external libraries *)
-let check_typing cmod rprin elibs  =
+let check_typing cmod rprin elibs gas =
   let open TC in
-  let res = type_module cmod rprin elibs in
-  if Result.is_ok res then
-    plog @@ sprintf "\n[Type Check]:\n module [%s] is successfully checked.\n" (get_id cmod.contr.cname);
-  res
+  let res = type_module cmod rprin elibs gas in
+  let _ = match res with
+    | Ok (_, remaining_gas) ->
+        plog @@ sprintf "\n[Type Check]:\n module [%s] is successfully checked.\n" (get_id cmod.contr.cname);
+        let open Stdint.Uint64 in
+        plog @@ sprintf "Gas remaining after typechecking: %s units.\n" (to_string remaining_gas)
+    | _ -> () in
+    res
 
 (* Type check the contract with external libraries *)
-let check_typing_lmod lmod rprin elibs  =
+let check_typing_lmod lmod rprin elibs gas =
   let open TC in
-  let res = type_lmodule lmod rprin elibs in
-  if Result.is_ok res then
-    plog @@ sprintf "\n[Type Check]:\n lmodule [%s] is successfully checked.\n" (get_id lmod.libs.lname);
+  let res = type_lmodule lmod rprin elibs gas in
+  let _ = match res with
+    | Ok (_, remaining_gas) ->
+        plog @@ sprintf "\n[Type Check]:\n lmodule [%s] is successfully checked.\n" (get_id lmod.libs.lname);
+        let open Stdint.Uint64 in
+        plog @@ sprintf "Gas remaining after typechecking: %s units.\n" (to_string remaining_gas)
+    | _ -> () in
   res
 
 let check_patterns e  =
@@ -143,49 +151,59 @@ let check_version vernum =
 (* Check a library module. *)
 let check_lmodule cli =
   let r = (
-    let%bind (lmod : ParsedSyntax.lmodule) = check_parsing cli.input_file ScillaParser.lmodule in
+    let initial_gas = cli.gas_limit in
+    let%bind (lmod : ParsedSyntax.lmodule) = wrap_error_with_gas initial_gas @@
+      check_parsing cli.input_file ScillaParser.Incremental.lmodule in
     let elibs = import_libs lmod.elibs cli.init_file  in
     let%bind (recursion_lmod, recursion_rec_principles, recursion_elibs) = 
-      check_recursion_lmod lmod elibs in
-    let%bind (typed_lmod, typed_elibs, typed_rlibs) = 
-      check_typing_lmod recursion_lmod recursion_rec_principles recursion_elibs in
-    pure (typed_lmod, typed_elibs, typed_rlibs)
+      wrap_error_with_gas initial_gas @@ check_recursion_lmod lmod elibs in
+    let%bind ((typed_lmod, typed_elibs, typed_rlibs), remaining_gas) = 
+      check_typing_lmod recursion_lmod recursion_rec_principles recursion_elibs initial_gas in
+    pure ((typed_lmod, typed_elibs, typed_rlibs), remaining_gas)
   ) in
   (match r with
-  | Error s -> fatal_error s
-  | Ok _ ->
-      let warnings_output =
-        [ ("warnings", scilla_warning_to_json (get_warnings())) ]
+  | Error (s, g) -> fatal_error_gas s g
+  | Ok (_, g) ->
+      let warnings_and_gas_output =
+        [ ("warnings", scilla_warning_to_json (get_warnings()));
+          ("gas_remaining", `String (Stdint.Uint64.to_string g));
+        ]
       in
-      let j = `Assoc warnings_output in
+      let j = `Assoc warnings_and_gas_output in
       pout (sprintf "%s\n" (Yojson.pretty_to_string j));)
 
 (* Check a contract module. *)
 let check_cmodule cli =
   let r = (
-    let%bind (cmod : ParsedSyntax.cmodule) = check_parsing cli.input_file ScillaParser.cmodule  in
+    let initial_gas = cli.gas_limit in
+    let%bind (cmod : ParsedSyntax.cmodule) = wrap_error_with_gas initial_gas @@
+      check_parsing cli.input_file ScillaParser.Incremental.cmodule  in
     (* Import whatever libs we want. *)
     let elibs = import_libs cmod.elibs cli.init_file in
-    let%bind (recursion_cmod, recursion_rec_principles, recursion_elibs) = check_recursion cmod elibs in
-    let%bind (typed_cmod, tenv, typed_elibs, typed_rlibs) = check_typing recursion_cmod recursion_rec_principles recursion_elibs  in
-    let%bind pm_checked_cmod = check_patterns typed_cmod  in
+    let%bind (recursion_cmod, recursion_rec_principles, recursion_elibs) =
+      wrap_error_with_gas initial_gas @@ check_recursion cmod elibs in
+    let%bind ((typed_cmod, tenv, typed_elibs, typed_rlibs), remaining_gas) =
+      check_typing recursion_cmod recursion_rec_principles recursion_elibs initial_gas in
+    let%bind pm_checked_cmod = wrap_error_with_gas remaining_gas @@ check_patterns typed_cmod  in
     let _ = if cli.cf_flag then check_accepts typed_cmod else () in
-    let%bind _ = check_sanity typed_cmod typed_rlibs typed_elibs in
-    let%bind event_info = EI.event_info pm_checked_cmod in
-    let%bind _ = if cli.gua_flag then analyze_print_gas typed_cmod typed_elibs else pure [] in
+    let%bind _ = wrap_error_with_gas remaining_gas @@ check_sanity typed_cmod typed_rlibs typed_elibs in
+    let%bind event_info = wrap_error_with_gas remaining_gas @@ EI.event_info pm_checked_cmod in
+    let%bind _ = if cli.gua_flag then wrap_error_with_gas remaining_gas @@ analyze_print_gas typed_cmod typed_elibs else pure [] in
     let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields) else None in
-    pure @@ (cmod, tenv, event_info, cf_info_opt)
+    pure @@ (cmod, tenv, event_info, cf_info_opt, remaining_gas)
   ) in
   (match r with
-  | Error s -> fatal_error s
-  | Ok (cmod, _, event_info, cf_info_opt) ->
+  | Error (s, g) -> fatal_error_gas s g
+  | Ok (cmod, _, event_info, cf_info_opt, g) ->
       let base_output =
-        let warnings_output =
-          [ ("warnings", scilla_warning_to_json (get_warnings())) ]
+        let warnings_and_gas_output =
+          [ ("warnings", scilla_warning_to_json (get_warnings()));
+            ("gas_remaining", `String (Stdint.Uint64.to_string g));
+          ]
         in
         if cli.p_contract_info then
-          ("contract_info", (JSON.ContractInfo.get_json cmod.smver cmod.contr event_info)) :: warnings_output
-        else warnings_output
+          ("contract_info", (JSON.ContractInfo.get_json cmod.smver cmod.contr event_info)) :: warnings_and_gas_output
+        else warnings_and_gas_output
       in
       let output_with_cf =
         match cf_info_opt with

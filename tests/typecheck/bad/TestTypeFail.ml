@@ -134,6 +134,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "typecheck"; "bad"; "gold"; f ^ ".gold" ]
     let test_path f = ["typecheck"; "bad"; f]
     let runner = "type-checker"      
+    let gas_limit = Stdint.Uint64.of_int 4002000
     let custom_args = []
     let additional_libdirs = []
     let tests = [
@@ -141,8 +142,6 @@ module Tests = TestUtil.DiffBasedTests(
       "branch-mismatch.scilexp";
       "builtin-tvar.scilexp";
       "builtin-bech32-1.scilexp";
-      "bad-map-key.scilexp";
-      "bad-map-key2.scilexp";
       "fun2.scilexp";
       "fun3.scilexp";
       "fun4.scilexp";
@@ -164,6 +163,9 @@ module Tests = TestUtil.DiffBasedTests(
       "bad_assign2.scilexp";
       "bad_match.scilexp";
       "let-error.scilexp";
+      "str-bad-char-1.scilexp";
+      "str-bad-char-2.scilexp";
+      "str-bad-char-3.scilexp";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

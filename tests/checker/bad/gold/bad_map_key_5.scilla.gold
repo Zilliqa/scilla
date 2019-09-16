@@ -1,7 +1,9 @@
 {
+  "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Syntax error.",
+      "error_message":
+        "This map type has an invalid key type. In the brackets we expect a separated capital identifier.\n",
       "start_location": {
         "file": "checker/bad/bad_map_key_5.scilla",
         "line": 7,

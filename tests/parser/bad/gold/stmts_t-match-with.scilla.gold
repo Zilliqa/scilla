@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "In a match statement, the parser expects a separated identifier to match with.\n",
+      "start_location": {
+        "file": "parser/bad/stmts_t-match-with.scilla",
+        "line": 12,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

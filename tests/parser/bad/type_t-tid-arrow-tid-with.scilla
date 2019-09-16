@@ -1,0 +1,7 @@
+scilla_version 0
+
+library TestLib
+
+(* likely missing an arrow *)
+
+let f : 'A -> 'B 'C

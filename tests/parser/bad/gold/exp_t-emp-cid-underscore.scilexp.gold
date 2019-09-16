@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "This empty map has invalid value type.\n",
+      "start_location": {
+        "file": "parser/bad/exps/exp_t-emp-cid-underscore.scilexp",
+        "line": 1,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

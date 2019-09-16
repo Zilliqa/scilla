@@ -1,0 +1,37 @@
+scilla_version 0
+
+library Blowup
+
+let not_owner_code = Int32 1
+let foo = tfun 'A => fun (f : 'A -> 'A) => fun (x : 'A) => f x
+let bar0 = tfun 'A => @foo ('A -> 'A)
+let bar1 = tfun 'A => @bar0 ('A -> 'A)
+let bar1 = tfun 'A => @bar0 ('A -> 'A)
+let bar2 = tfun 'A => @bar1 ('A -> 'A)
+let bar3 = tfun 'A => @bar2 ('A -> 'A)
+let bar4 = tfun 'A => @bar3 ('A -> 'A)
+let bar5 = tfun 'A => @bar4 ('A -> 'A)
+let bar6 = tfun 'A => @bar5 ('A -> 'A)
+let bar7 = tfun 'A => @bar6 ('A -> 'A)
+let bar8 = tfun 'A => @bar7 ('A -> 'A)
+let bar9 = tfun 'A => @bar8 ('A -> 'A)
+let bar10 = tfun 'A => @bar9 ('A -> 'A)
+let bar11 = tfun 'A => @bar10 ('A -> 'A)
+let bar12 = tfun 'A => @bar11 ('A -> 'A)
+let bar13 = tfun 'A => @bar12 ('A -> 'A)
+let bar14 = tfun 'A => @bar13 ('A -> 'A)
+let bar15 = tfun 'A => @bar14 ('A -> 'A)
+let bar16 = tfun 'A => @bar15 ('A -> 'A)
+let bar17 = tfun 'A => @bar16 ('A -> 'A)
+let bar18 = tfun 'A => @bar17 ('A -> 'A)
+let bar19 = tfun 'A => @bar18 ('A -> 'A)
+let bar20 = tfun 'A => @bar19 ('A -> 'A)
+let bar21 = tfun 'A => @bar20 ('A -> 'A)
+let bar22 = tfun 'A => @bar21 ('A -> 'A)
+
+contract Blowup (owner: ByStr20)
+
+transition setHello (msg : String)
+  e = {_eventname : "setHello()"; code : not_owner_code};
+  event e
+end

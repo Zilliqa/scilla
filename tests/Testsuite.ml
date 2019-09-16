@@ -24,21 +24,26 @@ let main =
   let bin_dir_default = (Sys.getcwd () ^/ "bin") in
   let tests_dir_default = (Sys.getcwd () ^/ "tests") in
   let stdlib_dir_default = (Sys.getcwd() ^/ "src" ^/ "stdlib") in
+  let ext_ipc_server_default = "" in
   let bin_dir = Conf.make_string "bin_dir" bin_dir_default "Directory containing binaries" in
   let tests_dir = Conf.make_string "tests_dir" tests_dir_default "Directory containing tests" in
   let stdlib_dir = Conf.make_string "stdlib_dir" stdlib_dir_default "Directory containing stdlib" in
   let print_cli = Conf.make_bool "print_cli" false "Print command line arguments used for test(s)" in
   let update_gold = Conf.make_bool "update_gold" false "Ignore compare mismatch and update gold file(s)" in
   let print_diff = Conf.make_bool "print_diff" false "Print the diff between gold file and actual output" in
+  let ext_ipc_server = Conf.make_string "ext_ipc_server" ext_ipc_server_default
+    "Address of external IPC server for IPC tests. Ensure that \"-runner sequential\" is set" in
 
   let env : tsuite_env = {
     bin_dir = bin_dir;
     tests_dir = tests_dir; stdlib_dir = stdlib_dir;
     print_cli = print_cli; update_gold = update_gold;
     print_diff = print_diff;
+    ext_ipc_server = ext_ipc_server;
   } in
   (* Add calls to new tests from here *)
   let contract_tests = Testcontracts.add_tests env in
+  let parser_tests = TestParser.parser_tests env in
   let exp_tests_good = TestExps.Tests.add_tests env in
   let exp_tests_bad = TestExpsFail.Tests.add_tests env in
   let type_tests_good = Testtypes.all_tests env in
@@ -55,11 +60,19 @@ let main =
   let bech32_tests = TestBech32.bech32_tests in
 
   let all_tests = "all_tests" >:::
-                  [type_tests_bad; type_tests_good; exp_tests_good; exp_tests_bad;
-                   pm_tests_bad; signature_tests; polynomial_tests; (*gas_expr_tests;
-                   gas_contract_tests; *)bech32_tests;
-                   contract_tests; checker_tests; integer256_tests; syntax_tests;
-                   arith_builtin_tests] in
-
+    [
+      (* contract_tests should always be the first to be run. This is required
+       * for us to be able to run _only_ contract_tests from the blockchain for
+       * external IPC server tests. If the order changes, then the test_id of
+       * these tests will change, resulting in the tests not being run.
+       * See the Makefile target "test_extipcserver". *)
+      contract_tests;
+      type_tests_bad; type_tests_good; exp_tests_good; exp_tests_bad;
+      pm_tests_bad; signature_tests; polynomial_tests; bech32_tests;
+      (*gas_expr_tests; gas_contract_tests; *)
+      checker_tests; integer256_tests; syntax_tests; arith_builtin_tests;
+      parser_tests;
+    ] in
+  
   (* Run all tests *)
   run_test_tt_main all_tests

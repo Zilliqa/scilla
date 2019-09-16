@@ -1,7 +1,8 @@
 {
   "errors": [
     {
-      "error_message": "Syntax error.",
+      "error_message":
+        "This may be a type application missing '@' or an incorrect function application or a data constructor given unnecessary types or something else.\n",
       "start_location": {
         "file": "typecheck/bad/foo-expr.scilexp",
         "line": 8,

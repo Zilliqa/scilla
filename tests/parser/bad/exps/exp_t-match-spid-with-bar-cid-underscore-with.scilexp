@@ -1,0 +1,5 @@
+let a = None {Bool} in
+match a with
+| Some x -> x
+| _ => False
+end

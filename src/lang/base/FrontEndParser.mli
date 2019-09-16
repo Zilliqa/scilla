@@ -17,14 +17,17 @@
 *)
 
 open Syntax
-open ParserUtil
 open ErrorUtils
+open Lexing
+open ParserUtil
 
-val parse_file : ((Lexing.lexbuf -> ScillaParser.token) ->
-                  Lexing.lexbuf -> 'a) -> string -> ('a, scilla_error list) result
+module MInter = ScillaParser.MenhirInterpreter
 
-val parse_string : ((Lexing.lexbuf -> ScillaParser.token) ->
-                  Lexing.lexbuf -> 'a) -> string -> ('a, scilla_error list) result
+val parse_lexbuf : (position -> 'a MInter.checkpoint) -> lexbuf -> string -> ('a, scilla_error list) result
+
+val parse_string : (position -> 'a MInter.checkpoint) -> string -> ('a, scilla_error list) result
+
+val parse_file : (position -> 'a MInter.checkpoint) -> string -> ('a, scilla_error list) result
 
 val parse_type : string -> (typ, scilla_error list) result
 

@@ -1,0 +1,9 @@
+scilla_version 0
+
+contract Test
+()
+
+(* this bind doesn't do anything *)
+transition arbitrary ()
+  a <- ;
+end

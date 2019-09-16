@@ -1,5 +1,7 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
+OCAML_VERSION_RECOMMENDED=4.06.1
+
 .PHONY: default all utop dev clean docker zilliqa-docker
 
 default: all
@@ -37,6 +39,14 @@ test: dev
 gold: dev
 	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -update-gold true
 
+# This must be run only if there is an external IPC server available
+# that can handle access requests. It is important to use the sequential runner here as we
+# don't want multiple threads of the testsuite connecting to the same server concurrently.
+test_extipcserver: dev
+	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
+	-ext-ipc-server "/tmp/zilliqa.sock" \
+	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
+
 # Clean up
 clean:
 # Remove files produced by dune.
@@ -60,17 +70,24 @@ zilliqa-docker:
 	fi
 	docker build --build-arg BASE_IMAGE=$(ZILLIQA_IMAGE) .
 
+.PHONY : opamdep
 opamdep:
-	opam init --disable-sandboxing -y --compiler=4.06.1
+	opam init --compiler=$(OCAML_VERSION_RECOMMENDED) --yes
+	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
 
+.PHONY : opamdep-ci
+opamdep-ci:
+	opam init --disable-sandboxing --compiler=$(OCAML_VERSION) --yes
+	eval $$(opam env)
+	opam install ./scilla.opam --deps-only --with-test --yes
 
 .PHONY : coverage
 coverage :
 	make clean
 	mkdir -p _build/coverage
 	BISECT_ENABLE=YES make
-	./bin/testsuite
+	dune exec tests/testsuite.exe
 	bisect-ppx-report -I _build/default/ -html _coverage/ `find . -name 'bisect*.out'`
 	make clean
 	-find . -name 'bisect*.out' | xargs rm

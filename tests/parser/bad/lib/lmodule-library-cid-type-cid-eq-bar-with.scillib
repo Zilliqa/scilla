@@ -1,0 +1,6 @@
+library TestLib
+
+(* 'kind' should start with a capital *)
+
+type House =
+| kind of String

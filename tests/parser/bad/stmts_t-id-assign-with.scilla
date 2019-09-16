@@ -1,0 +1,9 @@
+scilla_version 0
+
+contract Test
+()
+
+(* Assigned to invalid identifier *)
+transition arbitrary ()
+  some_var := 'A
+end

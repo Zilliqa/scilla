@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid bind statement, it is lacking a non empty list of map accesses.\n",
+      "start_location": {
+        "file": "parser/bad/stmts_t-id-bind-id-with.scilla",
+        "line": 7,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

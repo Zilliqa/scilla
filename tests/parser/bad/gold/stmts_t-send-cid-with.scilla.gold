@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "This send statement is either unfinished or not properly terminated.\n",
+      "start_location": {
+        "file": "parser/bad/stmts_t-send-cid-with.scilla",
+        "line": 7,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

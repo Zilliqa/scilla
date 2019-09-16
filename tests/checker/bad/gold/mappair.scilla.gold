@@ -1,4 +1,5 @@
 {
+  "gas_remaining": "7278",
   "errors": [
     {
       "error_message": "Type error(s) in contract Test:\n",

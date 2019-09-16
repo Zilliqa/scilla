@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "This library let expression is missing an equals, '='.\n",
+      "start_location": {
+        "file": "parser/bad/lib/lmodule-library-cid-let-id-with.scillib",
+        "line": 4,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

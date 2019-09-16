@@ -1,0 +1,1 @@
+tfun 'A -> Nil {'A} (* should be '=>' *)

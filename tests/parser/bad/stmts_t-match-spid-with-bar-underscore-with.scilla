@@ -1,0 +1,15 @@
+scilla_version 0
+
+library TestLib
+
+let a = True
+
+contract Test
+()
+
+(* wrong arrow, should be => *)
+transition arbitrary ()
+  match a with
+  | _ -> accept
+  end
+end  

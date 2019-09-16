@@ -1,7 +1,9 @@
 {
+  "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Syntax error.",
+      "error_message":
+        "For a mutable field declaration, the parser expects a valid lower case beginning identifier.\n",
       "start_location": {
         "file": "checker/bad/balance_field.scilla",
         "line": 5,

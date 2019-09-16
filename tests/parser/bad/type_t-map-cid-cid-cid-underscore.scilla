@@ -1,0 +1,6 @@
+scilla_version 0
+
+library TestLib
+
+(* bool is an incorrect ADT constructor argument *)
+let f : Map Uint128 Option Bool bool = False

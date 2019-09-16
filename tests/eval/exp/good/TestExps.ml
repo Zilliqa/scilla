@@ -125,6 +125,7 @@ let explist = [
   "uint_conversions.scilexp";
   "let_in_let_in.scilexp";
   "builtin-schnorr_get_address.scilexp";
+  "str-char-1.scilexp";
 ]
 
 module Tests = TestUtil.DiffBasedTests(
@@ -132,6 +133,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "eval"; "exp"; "good"; "gold"; f ^ ".gold" ]
     let test_path f = ["eval"; "exp"; "good"; f]
     let runner = "eval-runner"
+    let gas_limit = Stdint.Uint64.of_int 4002000
     let custom_args = []
     let additional_libdirs = []
     let tests = explist

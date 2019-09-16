@@ -64,7 +64,7 @@ module type MakeTEnvFunctor = functor
       (* Check type for well-formedness in the type environment *)
       val is_wf_type : t -> typ -> (unit, scilla_error list) result
       (* Resolve the identifier *)    
-      val resolveT : ?lopt:(R.rep option) -> t -> string ->
+      val resolveT : ?lopt:(R.rep option) -> t -> string -> 
         (resolve_result, scilla_error list) result
       (* Is bound in environment? *)
       val existsT : t -> string -> bool
@@ -115,14 +115,17 @@ module TypeUtilities : sig
   val type_equiv_list : typ list -> typ list -> bool
 
   val assert_type_equiv : typ -> typ -> (unit, scilla_error list) result
+  val assert_type_equiv_with_gas : typ -> typ -> Stdint.uint64 -> ((Stdint.uint64, scilla_error list * Stdint.uint64) result)
 
   (* Applying a function type *)
   val fun_type_applies : typ -> typ list -> (typ, scilla_error list) result
   (* Applying a procedure "type" *)
   val proc_type_applies : typ list -> typ list -> (unit list, scilla_error list) result
 
+  (* Applying a type function without gas charge (for builtins) *)
+  val elab_tfun_with_args_no_gas : typ -> typ list -> (typ, scilla_error list) result
   (* Applying a type function *)
-  val elab_tfun_with_args : typ -> typ list -> (typ, scilla_error list) result
+  val elab_tfun_with_args : typ -> typ list -> Stdint.uint64 -> (typ * Stdint.uint64, scilla_error list * Stdint.uint64) result
 
   val pp_typ_list : typ list -> string  
 

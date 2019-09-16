@@ -1,0 +1,16 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "In this match expression, following the pattern the parser expects an arrow (e.g. '=>').\n",
+      "start_location": {
+        "file":
+          "parser/bad/exps/exp_t-match-spid-with-bar-cid-underscore-with.scilexp",
+        "line": 3,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

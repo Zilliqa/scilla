@@ -1,0 +1,15 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message": "This is an invalid library entry.\n",
+      "start_location": {
+        "file": "parser/bad/lib/lmodule-library-cid-with.scillib",
+        "line": 5,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

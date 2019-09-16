@@ -1,0 +1,3 @@
+let a = tfun 'A => True in
+(* bad type *)
+tfun 'B => @a b

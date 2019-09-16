@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "The Scilla version must be specified with a numeric literal.\n",
+      "start_location": {
+        "file": "parser/bad/cmodule-version-with.scilla",
+        "line": 3,
+        "column": 20
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
