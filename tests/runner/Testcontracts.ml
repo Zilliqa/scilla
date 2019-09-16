@@ -31,7 +31,7 @@ let fail_code : Caml.Unix.process_status = WEXITED 1
  * Build tests to invoke scilla-runner with the right arguments, for
  * multiple test cases, each suffixed with _i up to _n (both inclusive)
  *)
-let rec build_contract_tests env name exit_code i n additional_libs =
+let rec build_contract_tests_with_init_file env name exit_code i n additional_libs init_name =
   if i > n
     then []
   else
@@ -49,7 +49,7 @@ let rec build_contract_tests env name exit_code i n additional_libs =
         let tmpdir = bracket_tmpdir test_ctxt in
         let output_file = tmpdir ^/ name ^ "_output_" ^ istr ^. "json" in
         let args_tmp =
-              ["-init"; dir ^/ "init.json";
+              ["-init"; dir ^/ init_name ^. "json";
                "-i"; contract_dir ^/ name ^. "scilla";
                (* stdlib is in src/stdlib *)
                "-libdir"; env.stdlib_dir test_ctxt;
@@ -90,9 +90,17 @@ let rec build_contract_tests env name exit_code i n additional_libs =
        * Both should succeed. *)
       if exit_code = succ_code
       then
-        (test true) :: (test false) :: (build_contract_tests env name exit_code (i+1) n additional_libs)
+        (test true) :: (test false) :: (build_contract_tests_with_init_file env name exit_code (i+1) n additional_libs init_name)
       else
-        (test false) :: (build_contract_tests env name exit_code (i+1) n additional_libs)
+        (test false) :: (build_contract_tests_with_init_file env name exit_code (i+1) n additional_libs init_name)
+
+(*
+ * Build tests to invoke scilla-runner with the right arguments, for
+ * multiple test cases, each suffixed with _i up to _n (both inclusive).
+ * The init.json file is fixed as "init.json"
+ *)
+let build_contract_tests env name exit_code i n additional_libs =
+  build_contract_tests_with_init_file env name exit_code i n additional_libs "init"
 
 let build_contract_init_test env exit_code name is_library =
   name ^ "_init" >::
@@ -133,6 +141,7 @@ let build_contract_init_test env exit_code name is_library =
         then output_updater goldoutput_file test_name out
         else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out))
 
+    
 let build_misc_tests env =
   let scillabin bin_dir test_ctxt =
     bin_dir test_ctxt ^/ "scilla-runner" in
@@ -185,7 +194,10 @@ let add_tests env =
       "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8 []);
       "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14 []);
       "wallet" >:::(build_contract_tests env "wallet" succ_code 1 11 []);
-      "wallet_2" >:::(build_contract_tests env "wallet_2" succ_code 1 40 []);
+      "wallet_2" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 1 40 [] "init");
+      "wallet_2_no_owners" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 100 100 [] "init_no_owners");
+      "wallet_2_req_sigs_zero" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 200 200 [] "init_req_sigs_zero");
+      "wallet_2_not_enough_owners" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 300 300 [] "init_not_enough_owners");
       "one_msg_test" >::: (build_contract_tests env "one-msg" succ_code 1 1 []);
       "one_msg1_test" >::: (build_contract_tests env "one-msg1" succ_code 1 1 []);
       "simple-dex" >:::(build_contract_tests env "simple-dex" succ_code 1 8 []);
