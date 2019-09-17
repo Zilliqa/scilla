@@ -81,7 +81,7 @@ let mk_owners_map =
     folder iter init owners
 
 (* Check that the number of distinct owners is greater than 0 *)
-let check_contract_validity =
+let check_validity_and_build_owners_map =
   fun (owners : List ByStr20) =>
   fun (required_signatures : Uint32) =>
     let len = @list_length ByStr20 in
@@ -128,6 +128,14 @@ let transaction_msg_as_list =
         Cons {Message} msg nil_msg in
     let msg = transaction_msg recipient amount tag in
     one_msg msg
+
+type ContractValidity =
+| Valid
+| Invalid
+| Unchecked
+
+let valid = Valid
+let invalid = Invalid
 
 (***************************************************)
 (*             The contract definition             *)
@@ -212,8 +220,7 @@ required_signatures : Uint32
 )
 
 (* Funds are not allowed to be added if the contract is not valid *)
-field validity_checked : Bool = False
-field contract_valid   : Bool = False
+field contract_valid : ContractValidity = Unchecked
 
 (* adr -> True indicates an owner *)
 (* adr not in map indicates non-owner *)
@@ -379,31 +386,40 @@ end
 (* Add funds to wallet *)
 transition AddFunds ()
   (* Check validity of contract. If the contract is invalid, funds will not be accepted. *)
-  checked <- validity_checked;
-  match checked with
-  | False =>
-    owners_map_opt = check_contract_validity owners_list required_signatures;
-    validity_checked := t;
+  validity <- contract_valid;
+  match validity with
+  | Unchecked =>
+    (* Check validity and build owners map *)
+    owners_map_opt = check_validity_and_build_owners_map owners_list required_signatures;
     match owners_map_opt with
     | Some owners_map =>
-      contract_valid := t;
+      contract_valid := valid;
       owners := owners_map;
       e = mk_contract_initialized_event;
       event e
     | None =>
-      contract_valid := f
+      contract_valid := invalid
     end
-  | True =>
+  | Valid =>
+    (* Already checked *)
+  | Invalid =>
+    (* Already checked *)
   end;
 
-  (* Only accept funds if the contract is valid. *)
-  valid <- contract_valid;
-  match valid with
-  | False =>
+(* Read validity field again, as it may have been updated. *)
+(* Only accept funds if the contract is valid. *)
+  validity <- contract_valid;
+  match validity with
+  | Unchecked =>
+    (* This should not happen *)
     err = InvalidContract;
     e = mk_error_event err;
     event e
-  | True =>
+  | Invalid =>
+    err = InvalidContract;
+    e = mk_error_event err;
+    event e
+  | Valid =>
     accept
   end
 end

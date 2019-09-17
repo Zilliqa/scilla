@@ -3,7 +3,6 @@
     "State variables": [
       { "field": "owners_list", "tag": "NoInfo" },
       { "field": "required_signatures", "tag": "NotMoney" },
-      { "field": "validity_checked", "tag": "NotMoney" },
       { "field": "contract_valid", "tag": "NotMoney" },
       { "field": "owners", "tag": "(Map NoInfo)" },
       { "field": "transactionCount", "tag": "NoInfo" },
@@ -29,8 +28,7 @@
       { "vname": "required_signatures", "type": "Uint32" }
     ],
     "fields": [
-      { "vname": "validity_checked", "type": "Bool", "depth": 0 },
-      { "vname": "contract_valid", "type": "Bool", "depth": 0 },
+      { "vname": "contract_valid", "type": "ContractValidity", "depth": 0 },
       { "vname": "owners", "type": "Map (ByStr20) (Bool)", "depth": 1 },
       { "vname": "transactionCount", "type": "Uint32", "depth": 0 },
       {
@@ -80,6 +78,15 @@
       { "vname": "Contract initialized", "params": [] }
     ],
     "ADTs": [
+      {
+        "tname": "ContractValidity",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Valid", "argtypes": [] },
+          { "cname": "Invalid", "argtypes": [] },
+          { "cname": "Unchecked", "argtypes": [] }
+        ]
+      },
       {
         "tname": "Error",
         "tparams": [],
@@ -151,7 +158,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 390,
+        "line": 397,
         "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -161,7 +168,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 335,
+        "line": 342,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
