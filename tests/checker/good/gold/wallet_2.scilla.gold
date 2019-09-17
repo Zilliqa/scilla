@@ -151,7 +151,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 374,
+        "line": 390,
         "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -161,7 +161,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 318,
+        "line": 335,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },

@@ -38,22 +38,23 @@ let mk_error_event =
   fun (err : Error) =>
   let err_code = 
     match err with
-    | NonOwnerCannotSign    => Int32 -1
-    | UnknownTransactionId  => Int32 -2
-    | InsufficientFunds     => Int32 -3
-    | NoSignatureListFound  => Int32 -4
-    | AlreadySigned         => Int32 -5
-    | NotAlreadySigned      => Int32 -6
-    | InvalidContract       => Int32 -7
-    | InvalidAmount         => Int32 -8
-    | NotEnoughSignatures   => Int32 -9
-    | SenderMayNotExecute   => Int32 -10
-    | NonOwnerCannotSubmit  => Int32 -11
+    | NonOwnerCannotSign        => Int32 -1
+    | UnknownTransactionId      => Int32 -2
+    | InsufficientFunds         => Int32 -3
+    | NoSignatureListFound      => Int32 -4
+    | AlreadySigned             => Int32 -5
+    | NotAlreadySigned          => Int32 -6
+    | InvalidContract           => Int32 -7
+    | InvalidAmount             => Int32 -8
+    | NotEnoughSignatures       => Int32 -9
+    | SenderMayNotExecute       => Int32 -10
+    | NonOwnerCannotSubmit      => Int32 -11
     end in
   { _eventname : "WalletError" ; err_code : err_code }
 
 let transaction_inc = Uint32 1
 let t = True
+let f = False
 
 (* One (potential) transaction, consisting of a recipient address, an amount, *)
 (* and a tag (in case the recipient is another contract *)
@@ -91,8 +92,24 @@ let check_contract_validity =
     let required_sigs_too_high = builtin lt no_of_owners required_signatures in
     let required_sigs_not_too_high = negb required_sigs_too_high in
     let required_sigs_ok = andb required_sigs_not_too_high required_sigs_not_too_low in
-    andb required_sigs_ok owners_ok
-
+    let all_ok = andb required_sigs_ok owners_ok in
+    match all_ok with
+    | True =>
+      let owners_map = mk_owners_map owners in
+      let size_of_owners_map = builtin size owners_map in
+      let equal_size = builtin eq size_of_owners_map no_of_owners in
+      match equal_size with
+      | True =>
+        (* No duplicates *)
+        Some {Map ByStr20 Bool} owners_map
+      | False =>
+        (* Duplicate owners found *)
+        None {Map ByStr20 Bool}
+      end
+    | False =>
+      None {Map ByStr20 Bool}
+    end
+    
 (* Create one transaction message *)
 let transaction_msg =
   fun (recipient : ByStr20) =>
@@ -123,7 +140,7 @@ let transaction_msg_as_list =
 (* Before transactions can be submitted or signed  *)
 (* for, the contract must be initialized. This is  *)
 (* done by invoking the AddFunds transition. This  *)
-(* transitions initializes the contract fields -   *)
+(* transition initializes the contract fields -    *)
 (* if the fields have not been initialized, all    *)
 (* other transitions will fail whenever they are   *)
 (* invoked.                                        *)
@@ -143,7 +160,7 @@ let transaction_msg_as_list =
 (* signatures. To do any of those things, perform  *)
 (* the following steps:                            *)
 (*                                                 *)
-(* 1. Deploy a new wallet with owners and  *)
+(* 1. Deploy a new wallet with owners and          *)
 (*    required_signatures set to the new values.   *)
 (*    MAKE SURE THAT THE NEW WALLET HAS BEEN       *)
 (*    SUCCESFULLY DEPLOYED WITH THE CORRECT        *)
@@ -198,7 +215,7 @@ required_signatures : Uint32
 field validity_checked : Bool = False
 field contract_valid   : Bool = False
 
-(* adr -> True indicates that an owner *)
+(* adr -> True indicates an owner *)
 (* adr not in map indicates non-owner *)
 (* adr -> False is not used *)
 (* The initial owners will be added as owners when funds are *)
@@ -365,16 +382,16 @@ transition AddFunds ()
   checked <- validity_checked;
   match checked with
   | False =>
-    valid_contract = check_contract_validity owners_list required_signatures;
-    contract_valid := valid_contract;
+    owners_map_opt = check_contract_validity owners_list required_signatures;
     validity_checked := t;
-    match valid_contract with
-    | True =>
-      owners_map = mk_owners_map owners_list;
+    match owners_map_opt with
+    | Some owners_map =>
+      contract_valid := t;
       owners := owners_map;
       e = mk_contract_initialized_event;
       event e
-    | False =>
+    | None =>
+      contract_valid := f
     end
   | True =>
   end;
