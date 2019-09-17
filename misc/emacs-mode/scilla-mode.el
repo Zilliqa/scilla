@@ -3,7 +3,7 @@
 ;;    ;; For enabling flycheck mode for Scilla.
 ;;    (setq scilla-root "/absolute/path/to/scilla")
 ;;    ;; Load the Scilla major mode.
-;;    load-file "/absolute/path/to/scilla/misc/emacs-mode/scilla-mode.el")
+;;    (load-file (concat scilla-root "/misc/emacs-mode/scilla-mode.el"))
 ;;
 ;; or via use-package, e.g.:
 ;;
