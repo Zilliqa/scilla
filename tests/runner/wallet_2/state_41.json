@@ -5,7 +5,7 @@
     {
       "vname": "contract_valid",
       "type": "ContractValidity",
-      "value": { "constructor": "Valid", "argtypes": [], "arguments": [] }
+      "value": { "constructor": "Invalid", "argtypes": [], "arguments": [] }
     },
     {
       "vname": "owners",

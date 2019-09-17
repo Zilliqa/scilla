@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7109",
+  "gas_remaining": "7105",
   "_accepted": "true",
   "message": null,
   "states": [
@@ -25,13 +25,8 @@
     },
     {
       "vname": "contract_valid",
-      "type": "Bool",
-      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
-    },
-    {
-      "vname": "validity_checked",
-      "type": "Bool",
-      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+      "type": "ContractValidity",
+      "value": { "constructor": "Valid", "argtypes": [], "arguments": [] }
     },
     { "vname": "transactionCount", "type": "Uint32", "value": "0" },
     {

@@ -1,9 +1,9 @@
 Current tests:
 
-1: AddFunds. validity_checked is false.
+1: AddFunds. Contract validity is Unchecked.
    Contract is initialised, and balance is increased.
 
-2: AddFunds. validity_checked is true.
+2: AddFunds. Contract validity is Valid.
    No further initialisation. Balance is increased.
 
 3: SubmitTransaction. sender is not owner.
@@ -119,6 +119,9 @@ Current tests:
 
 40. RevokeSignature. sender has signed. Number of signatures is greater than required.
     Signature is removed. Other signatures unaffected.
+
+41: AddFunds. Contract validity is Invalid.
+    Error. Invalid contract. No funds added.
 
 
 100. Initialize with empty list of owners, required signatures = 0, then call AddFunds.

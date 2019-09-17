@@ -1,30 +1,14 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "6958",
+  "gas_remaining": "7300",
   "_accepted": "false",
-  "message": {
-    "_tag": "",
-    "_amount": "10",
-    "_recipient": "0x1234567890123456789012345678906780000000",
-    "params": []
-  },
+  "message": null,
   "states": [
-    { "vname": "_balance", "type": "Uint128", "value": "90" },
-    { "vname": "transactionCount", "type": "Uint32", "value": "2" },
-    {
-      "vname": "signatures",
-      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
-      "value": []
-    },
-    {
-      "vname": "transactions",
-      "type": "Map (Uint32) (Transaction)",
-      "value": []
-    },
+    { "vname": "_balance", "type": "Uint128", "value": "100" },
     {
       "vname": "contract_valid",
       "type": "ContractValidity",
-      "value": { "constructor": "Valid", "argtypes": [], "arguments": [] }
+      "value": { "constructor": "Invalid", "argtypes": [], "arguments": [] }
     },
     {
       "vname": "owners",
@@ -43,7 +27,23 @@
           "val": { "constructor": "True", "argtypes": [], "arguments": [] }
         }
       ]
+    },
+    { "vname": "transactionCount", "type": "Uint32", "value": "0" },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "value": []
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Transaction)",
+      "value": []
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "WalletError",
+      "params": [ { "vname": "err_code", "type": "Int32", "value": "-7" } ]
+    }
+  ]
 }
