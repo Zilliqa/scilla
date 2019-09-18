@@ -68,15 +68,9 @@ let mk_owners_map =
     let iter =
       fun (acc : Map ByStr20 Bool) =>
       fun (cur_owner : ByStr20) =>
-        let mem = builtin get acc cur_owner in
-        match mem with
-        | Some True =>
-          (* owner already added *)
-          acc
-        | _ =>
-          (* owner not yet added, or removed *)
-          builtin put acc cur_owner t
-        end in
+        (* Add owner unconditionally. We check for duplicates later *)
+        builtin put acc cur_owner t
+        in
     let folder = @list_foldl ByStr20 (Map ByStr20 Bool) in
     folder iter init owners
 
