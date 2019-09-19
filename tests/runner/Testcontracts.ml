@@ -24,7 +24,7 @@ open TestUtil
 open OUnitTest
 
 let testsuit_gas_limit = "8000"
-let ipc_socket_addr = Filename.(concat temp_dir_name "scillaipcsocket")
+let ipc_socket_addr = Filename.temp_dir_name ^/ "scillaipcsocket"
 
 let succ_code : Caml.Unix.process_status = WEXITED 0
 let fail_code : Caml.Unix.process_status = WEXITED 1
