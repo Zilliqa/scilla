@@ -2,11 +2,6 @@
 
 OCAML_VERSION_RECOMMENDED=4.06.1
 
-# The :- allows for a variable to be assigned a value if another variable is either empty or is undefined
-# (according to gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html)
-TMP=${TMPDIR:-/tmp}
-IPC_SOCK_PATH="$TMP/zilliqa.sock"
-
 .PHONY: default all utop dev clean docker zilliqa-docker
 
 default: all
@@ -49,7 +44,7 @@ gold: dev
 # don't want multiple threads of the testsuite connecting to the same server concurrently.
 test_extipcserver: dev
 	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
-	-ext-ipc-server $(IPC_SOCK_PATH) \
+	-ext-ipc-server "/tmp/zilliqa.sock" \
 	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
 
 # Clean up
