@@ -2,6 +2,8 @@
 
 OCAML_VERSION_RECOMMENDED=4.06.1
 
+# The :- allows for a variable to be assigned a value if another variable is either empty or is undefined
+# (according to gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html)
 TMP=${TMPDIR:-/tmp}
 IPC_SOCK_PATH="$TMP/zilliqa.sock"
 
