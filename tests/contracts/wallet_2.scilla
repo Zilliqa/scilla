@@ -257,7 +257,7 @@ procedure AddSignature (transactionId : Uint32, signee : ByStr20)
       signature_counts[transactionId] := one
     | Some c =>
       new_c = builtin add c one;
-      signature_counts[transactionId] := c
+      signature_counts[transactionId] := new_c
     end;
     signatures[transactionId][signee] := t
   | True =>
@@ -328,7 +328,7 @@ end
 procedure DeleteTransaction (transactionId : Uint32)
   delete transactions[transactionId];
   delete signatures[transactionId];
-  delete signatures[transactionId]
+  delete signature_counts[transactionId]
 end
 
 (* Execute signed-off transaction *)

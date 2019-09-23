@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "6958",
+  "gas_remaining": "6993",
   "_accepted": "false",
   "message": {
     "_tag": "",
@@ -14,6 +14,11 @@
     {
       "vname": "signatures",
       "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "value": []
+    },
+    {
+      "vname": "signature_counts",
+      "type": "Map (Uint32) (Uint32)",
       "value": []
     },
     {
