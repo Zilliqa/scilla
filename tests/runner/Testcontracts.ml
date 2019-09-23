@@ -228,7 +228,7 @@ let add_tests env =
       "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8 []);
       "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14 []);
       "wallet" >:::(build_contract_tests env "wallet" succ_code 1 11 []);
-      "wallet_2" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 1 41 [] "init");
+      "wallet_2" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 1 42 [] "init");
       "wallet_2_no_owners" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 100 100 [] "init_no_owners");
       "wallet_2_req_sigs_zero" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 200 200 [] "init_req_sigs_zero");
       "wallet_2_not_enough_owners" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 300 300 [] "init_not_enough_owners");

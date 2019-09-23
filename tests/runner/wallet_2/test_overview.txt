@@ -123,6 +123,8 @@ Current tests:
 41: AddFunds. Contract validity is Invalid.
     Error. Invalid contract. No funds added.
 
+42. ExecuteTransaction. Multiple transaction exists with required number of signatures. Sender is owner. Balance is sufficient. 
+    Transaction is executed. No other transaction affected. Message should be sent to recipient carrying transaction amount and transaction tag. Balance reduced accordingly.
 
 100. Initialize with empty list of owners, required signatures = 0, then call AddFunds.
      Error. Invalid contract. No funds added.
