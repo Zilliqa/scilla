@@ -32,6 +32,7 @@ type Error =
 | NotEnoughSignatures
 | SenderMayNotExecute
 | NonOwnerCannotSubmit
+| IncorrectSignatureCount
 
 (* Error events *)
 let mk_error_event =
@@ -49,12 +50,15 @@ let mk_error_event =
     | NotEnoughSignatures       => Int32 -9
     | SenderMayNotExecute       => Int32 -10
     | NonOwnerCannotSubmit      => Int32 -11
+    | IncorrectSignatureCount   => Int32 -12
     end in
   { _eventname : "WalletError" ; err_code : err_code }
 
-let transaction_inc = Uint32 1
 let t = True
 let f = False
+let zero = Uint32 0
+let one = Uint32 1
+let transaction_inc = one
 
 (* One (potential) transaction, consisting of a recipient address, an amount, *)
 (* and a tag (in case the recipient is another contract *)
@@ -80,7 +84,6 @@ let check_validity_and_build_owners_map =
   fun (required_signatures : Uint32) =>
     let len = @list_length ByStr20 in
     let no_of_owners = len owners in
-    let zero = Uint32 0 in
     let owners_ok = builtin lt zero no_of_owners in
     let required_sigs_not_too_low = builtin lt zero required_signatures in
     let required_sigs_too_high = builtin lt no_of_owners required_signatures in
@@ -130,6 +133,7 @@ type ContractValidity =
 
 let valid = Valid
 let invalid = Invalid
+
 
 (***************************************************)
 (*             The contract definition             *)
@@ -227,10 +231,41 @@ field transactionCount : Uint32 = Uint32 0
 
 (* Collected signatures for transactions *)
 field signatures       : Map Uint32 (Map ByStr20 Bool) =
-                           Emp Uint32 (Map ByStr20 Bool)
+  Emp Uint32 (Map ByStr20 Bool)
+
+(* Running count of collected signatures for transactions *)
+field signature_counts : Map Uint32 Uint32 =
+  Emp Uint32 Uint32
+
 (* Transactions *) 
 field transactions     : Map Uint32 Transaction =
                            Emp Uint32 Transaction
+procedure MakeError (err : Error)
+  e = mk_error_event err;
+  event e
+end
+
+(* Add signature to signature list *)
+procedure AddSignature (transactionId : Uint32, signee : ByStr20)
+  sig <- exists signatures[transactionId][signee];
+  match sig with
+  | False =>
+    count <- signature_counts[transactionId];
+    match count with
+    | None =>
+      (* 0 signatures *)
+      signature_counts[transactionId] := one
+    | Some c =>
+      new_c = builtin add c one;
+      signature_counts[transactionId] := c
+    end;
+    signatures[transactionId][signee] := t
+  | True =>
+    (* Already signed *)
+    err = AlreadySigned;
+    MakeError err
+  end
+end
 
 (* Submit a transaction for future signoff *)
 transition SubmitTransaction (recipient : ByStr20, amount : Uint128, tag : String)
@@ -239,8 +274,7 @@ transition SubmitTransaction (recipient : ByStr20, amount : Uint128, tag : Strin
   match sender_is_owner with
   | False =>
     err = NonOwnerCannotSubmit;
-    e = mk_error_event err;
-    event e
+    MakeError err
   | True =>
     tc <- transactionCount;
     zero = Uint128 0;
@@ -249,15 +283,14 @@ transition SubmitTransaction (recipient : ByStr20, amount : Uint128, tag : Strin
     | True =>
       (* Illegal transaction *)
       err = InvalidAmount;
-      e = mk_error_event err;
-      event e
+      MakeError err
     | False =>
       (* Create new transaction *)
       transaction = Trans recipient amount tag;
       (* Add transaction to outstanding list of transactions *)
       transactions[tc] := transaction; 
       (* Sender implicitly signs *)
-      signatures[tc][_sender] := t;
+      AddSignature tc _sender;
       (* Increment transaction counter *)
       tc_new = builtin add tc transaction_inc;
       (* Update transaction count *)
@@ -276,32 +309,26 @@ transition SignTransaction (transactionId : Uint32)
   match sender_is_owner with
   | False =>
     err = NonOwnerCannotSign;
-    e = mk_error_event err;
-    event e
+    MakeError err
   | True =>
     (* Transaction must have been submitted *)
     transaction <- transactions[transactionId];
     match transaction with
     | None =>
       err = UnknownTransactionId;
-      e = mk_error_event err;
-      event e
-    | Some (Trans recipient amount _) =>
-      (* Sender must not have signed already *)
-      sender_has_signed <- exists signatures[transactionId][_sender];
-      match sender_has_signed with
-      | True =>
-        err = AlreadySigned;
-        e = mk_error_event err;
-        event e
-      | False =>
-        (* Signature is valid. Add to collected signatures *)
-        signatures[transactionId][_sender] := t;
-        e = mk_transaction_signed_event;
-        event e
-      end
+      MakeError err
+    | Some _ =>
+      (* Remaining error cases handled by AddSignature *)
+      AddSignature transactionId _sender
     end
   end
+end
+
+(* Delete transaction and signatures *)
+procedure DeleteTransaction (transactionId : Uint32)
+  delete transactions[transactionId];
+  delete signatures[transactionId];
+  delete signatures[transactionId]
 end
 
 (* Execute signed-off transaction *)
@@ -311,8 +338,7 @@ transition ExecuteTransaction (transactionId : Uint32)
   | None =>
     (* Transaction was not found. *)
     err = UnknownTransactionId;
-    e = mk_error_event err;
-    event e
+    MakeError err
   | Some (Trans recipient amount tag) =>
     (* Only the recipient or an owner can execute the transaction *)
     recipient_is_sender = builtin eq recipient _sender;
@@ -321,8 +347,7 @@ transition ExecuteTransaction (transactionId : Uint32)
     match sender_may_execute with
     | False =>
       err = SenderMayNotExecute;
-      e = mk_error_event err;
-      event e
+      MakeError err
     | True =>
       (* Check for sufficient funds  *)
       bal <- _balance;
@@ -330,30 +355,24 @@ transition ExecuteTransaction (transactionId : Uint32)
       match not_enough_money with
       | True =>
         err = InsufficientFunds;
-        e = mk_error_event err;
-        event e
+        MakeError err
       | False =>
-        sigs_opt <- signatures[transactionId];
-        match sigs_opt with
+        sig_count_opt <- signature_counts[transactionId];
+        match sig_count_opt with
         | None =>
-          (* Signatures not found, even though the transaction exists.*)
+          (* Signature count not found, even though the transaction exists.*)
           err = NoSignatureListFound;
-          e = mk_error_event err;
-          event e
-        | Some sigs =>
-          (* Check for sufficient number of signatures *)
-          no_of_sigs = builtin size sigs;
-          not_enough_signatures = builtin lt no_of_sigs required_signatures;
+          MakeError err
+        | Some sig_count =>
+          not_enough_signatures = builtin lt sig_count required_signatures;
           match not_enough_signatures with
           | True =>
             err = NotEnoughSignatures;
-            e = mk_error_event err;
-            event e
+            MakeError err
           | False =>
             (* Transaction approved, and enough money available. *)
             (* Remove transaction and signatures, and execute. *)
-            delete transactions[transactionId];
-            delete signatures[transactionId];
+            DeleteTransaction transactionId;
             msgs = transaction_msg_as_list recipient amount tag;
             send msgs
           end
@@ -365,15 +384,29 @@ end
 
 (* Revoke signature of existing transaction, if it has not yet been executed. *)
 transition RevokeSignature (transactionId : Uint32)
-  (* Sender must have signed already, and transaction must not have been executed. *)
-  sender_has_signed <- exists signatures[transactionId][_sender];
-  match sender_has_signed with
+  sig <- exists signatures[transactionId][_sender];
+  match sig with
   | False =>
     err = NotAlreadySigned;
-    e = mk_error_event err;
-    event e
+    MakeError err
   | True =>
-    delete signatures[transactionId][_sender]
+    count <- signature_counts[transactionId];
+    match count with
+    | None =>
+      err = IncorrectSignatureCount;
+      MakeError err
+    | Some c =>
+      c_is_zero = builtin eq c zero;
+      match c_is_zero with
+      | True =>
+        err = IncorrectSignatureCount;
+        MakeError err
+      | False =>
+        new_c = builtin sub c one;
+        signature_counts[transactionId] := new_c;
+        delete signatures[transactionId][_sender]
+      end
+    end
   end
 end
 
@@ -407,12 +440,10 @@ transition AddFunds ()
   | Unchecked =>
     (* This should not happen *)
     err = InvalidContract;
-    e = mk_error_event err;
-    event e
+    MakeError err
   | Invalid =>
     err = InvalidContract;
-    e = mk_error_event err;
-    event e
+    MakeError err
   | Valid =>
     accept
   end
