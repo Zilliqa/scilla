@@ -206,7 +206,6 @@ let build_misc_tests env =
 let add_tests env =
   "contract_tests" >:::[
     "these_tests_must_SUCCEED" >:::[
-(*
       "crowdfunding" >:::(build_contract_tests env "crowdfunding" succ_code 1 6 []);
       "crowdfunding_init" >:(build_contract_init_test env succ_code "crowdfunding" false);
       "crowdfunding_proc" >:::(build_contract_tests env "crowdfunding_proc" succ_code 1 6 []);
@@ -230,9 +229,6 @@ let add_tests env =
       "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14 []);
       "wallet" >:::(build_contract_tests env "wallet" succ_code 1 11 []);
       "wallet_2" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 1 41 [] "init");
-*)
-      "wallet_2" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 41 41 [] "init");
-(*
       "wallet_2_no_owners" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 100 100 [] "init_no_owners");
       "wallet_2_req_sigs_zero" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 200 200 [] "init_req_sigs_zero");
       "wallet_2_not_enough_owners" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 300 300 [] "init_not_enough_owners");
@@ -244,9 +240,7 @@ let add_tests env =
       "map_key_test" >::: (build_contract_tests env "map_key_test" succ_code 1 1 []);
       "earmarked-coin" >:::(build_contract_tests env "earmarked-coin" succ_code 1 6 []);
       "map_corners_test" >:::(build_contract_tests env "map_corners_test" succ_code 1 18 []);
-*)
     ];
-(*
     "these_tests_must_FAIL" >:::[
       "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 5 12 []);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 8 8 []);
@@ -256,6 +250,5 @@ let add_tests env =
       "testlib1_init" >:(build_contract_init_test env fail_code "0x565556789012345678901234567890123456abcd" true);
     ];
     "misc_tests" >::: build_misc_tests env;
-*)
   ]
 
