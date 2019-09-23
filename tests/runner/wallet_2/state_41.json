@@ -34,6 +34,11 @@
       "value": []
     },
     {
+      "vname": "signature_counts",
+      "type": "Map (Uint32) (Uint32)",
+      "value": []
+    },
+    {
       "vname": "transactions",
       "type": "Map (Uint32) (Transaction)",
       "value": []

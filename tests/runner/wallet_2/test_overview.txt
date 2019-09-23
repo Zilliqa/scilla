@@ -54,7 +54,7 @@ Current tests:
 18. SignTransaction. sender is owner. Transaction needs two additional signatures.
     Signature added to signatures map.
 
-19. SignTransaction. sender is owner. Transaction needs one additional signatures.
+19. SignTransaction. sender is owner. Transaction needs one additional signature.
     Signature added to signatures map.
 
 20. SignTransaction. sender is owner. Transaction does not need additional signatures.
