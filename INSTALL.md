@@ -54,7 +54,7 @@ sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev
 ### macOS
 
 The dependencies (listed in [Brewfile](Brewfile)) can be installed via [Homebrew](https://brew.sh/) as follows.
-Run 
+Run
 ```shell
 brew bundle
 ```
@@ -75,6 +75,12 @@ the maximum number of open file descriptors as `Makefile`'s `test` target does:
 ```shell
 ulimit -n 1024
 ```
+
+### Nix and NixOS
+
+There is a `shell.nix` for Nix users, so running the `nix-shell`
+should drop you into and isolated environment with all the
+necessary dependencies available.
 
 
 ## Installing opam packages
@@ -105,7 +111,7 @@ make opamdep
 
 ### If you have opam package manager already installed
 You can try installing the Scilla dependencies using the instructions above, but skipping the initialization step.
-If `opam` reports a dependency conflict, one way out might be creating yet another opam switch and 
+If `opam` reports a dependency conflict, one way out might be creating yet another opam switch and
 managing your switches when doing Scilla- and non-Scilla- related hacking.
 Another way is to use opam's feature called "local switch".
 This is like a standard opam switch but instead of `$HOME/.opam`, it will reside in the project root directory in `_opam` subdirectory.
