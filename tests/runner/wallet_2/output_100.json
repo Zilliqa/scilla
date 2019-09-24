@@ -1,0 +1,37 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7231",
+  "_accepted": "false",
+  "message": null,
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "contract_valid",
+      "type": "ContractValidity",
+      "value": { "constructor": "Invalid", "argtypes": [], "arguments": [] }
+    },
+    { "vname": "owners", "type": "Map (ByStr20) (Bool)", "value": [] },
+    { "vname": "transactionCount", "type": "Uint32", "value": "0" },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "value": []
+    },
+    {
+      "vname": "signature_counts",
+      "type": "Map (Uint32) (Uint32)",
+      "value": []
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Transaction)",
+      "value": []
+    }
+  ],
+  "events": [
+    {
+      "_eventname": "WalletError",
+      "params": [ { "vname": "err_code", "type": "Int32", "value": "-7" } ]
+    }
+  ]
+}

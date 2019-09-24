@@ -1,0 +1,191 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "owners_list", "tag": "NoInfo" },
+      { "field": "required_signatures", "tag": "NoInfo" },
+      { "field": "contract_valid", "tag": "NotMoney" },
+      { "field": "owners", "tag": "(Map NoInfo)" },
+      { "field": "transactionCount", "tag": "NoInfo" },
+      { "field": "signatures", "tag": "(Map (Map NoInfo))" },
+      { "field": "signature_counts", "tag": "(Map NoInfo)" },
+      { "field": "transactions", "tag": "(Map (Transaction ))" }
+    ],
+    "ADT constructors": [
+      {
+        "Transaction": [
+          {
+            "constructor": "Trans",
+            "tags": [ "NotMoney", "Money", "NoInfo" ]
+          }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Wallet",
+    "params": [
+      { "vname": "owners_list", "type": "List (ByStr20)" },
+      { "vname": "required_signatures", "type": "Uint32" }
+    ],
+    "fields": [
+      { "vname": "contract_valid", "type": "ContractValidity", "depth": 0 },
+      { "vname": "owners", "type": "Map (ByStr20) (Bool)", "depth": 1 },
+      { "vname": "transactionCount", "type": "Uint32", "depth": 0 },
+      {
+        "vname": "signatures",
+        "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+        "depth": 2
+      },
+      {
+        "vname": "signature_counts",
+        "type": "Map (Uint32) (Uint32)",
+        "depth": 1
+      },
+      {
+        "vname": "transactions",
+        "type": "Map (Uint32) (Transaction)",
+        "depth": 1
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "MakeError",
+        "params": [ { "vname": "err", "type": "Error" } ]
+      },
+      {
+        "vname": "AddSignature",
+        "params": [
+          { "vname": "transactionId", "type": "Uint32" },
+          { "vname": "signee", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "SubmitTransaction",
+        "params": [
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" },
+          { "vname": "tag", "type": "String" }
+        ]
+      },
+      {
+        "vname": "SignTransaction",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      },
+      {
+        "vname": "DeleteTransaction",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      },
+      {
+        "vname": "ExecuteTransaction",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      },
+      {
+        "vname": "RevokeSignature",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      },
+      { "vname": "AddFunds", "params": [] }
+    ],
+    "events": [
+      {
+        "vname": "WalletError",
+        "params": [ { "vname": "err_code", "type": "Int32" } ]
+      },
+      { "vname": "Transaction signed", "params": [] },
+      {
+        "vname": "Transaction created",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      },
+      { "vname": "Contract initialized", "params": [] }
+    ],
+    "ADTs": [
+      {
+        "tname": "ContractValidity",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Valid", "argtypes": [] },
+          { "cname": "Invalid", "argtypes": [] },
+          { "cname": "Unchecked", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Error",
+        "tparams": [],
+        "tmap": [
+          { "cname": "NonOwnerCannotSign", "argtypes": [] },
+          { "cname": "UnknownTransactionId", "argtypes": [] },
+          { "cname": "InsufficientFunds", "argtypes": [] },
+          { "cname": "NoSignatureListFound", "argtypes": [] },
+          { "cname": "AlreadySigned", "argtypes": [] },
+          { "cname": "NotAlreadySigned", "argtypes": [] },
+          { "cname": "InvalidContract", "argtypes": [] },
+          { "cname": "InvalidAmount", "argtypes": [] },
+          { "cname": "NotEnoughSignatures", "argtypes": [] },
+          { "cname": "SenderMayNotExecute", "argtypes": [] },
+          { "cname": "NonOwnerCannotSubmit", "argtypes": [] },
+          { "cname": "IncorrectSignatureCount", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Transaction",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "Trans",
+            "argtypes": [ "ByStr20", "Uint128", "String" ]
+          }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 424,
+        "column": 14
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "6848"
+}

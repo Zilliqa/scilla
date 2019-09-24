@@ -1,0 +1,137 @@
+Current tests:
+
+1: AddFunds. Contract validity is Unchecked.
+   Contract is initialised, and balance is increased.
+
+2: AddFunds. Contract validity is Valid.
+   No further initialisation. Balance is increased.
+
+3: SubmitTransaction. sender is not owner.
+   Error. Non-owner cannot submit transactions.
+
+4: SubmitTransaction. sender is owner. Tag is empty. No transactions previously submitted.
+   Transaction submitted, and signed by sender. Awaiting further signatures.
+
+5: SubmitTransaction. sender is owner. Tag is empty. Other transactions previously submitted by same sender.
+   New transaction submitted, and signed by sender. Previously submitted transactions unaffected.
+   
+6: SubmitTransaction. sender is not owner. Other transactions previously submitted.
+   Error. Non-owner cannot submit transactions. Previously submitted transactions unaffected.
+
+7. SubmitTransaction. sender is owner. Tag is not empty.
+   New transaction submitted, and signed by sender.
+
+8. SubmitTransaction. sender is owner. amount is 0.
+   Error. Amount must be non-zero. Transaction not submitted. Previously submitted transactions unaffected.
+
+9. SubmitTransaction. sender is owner. Contract is not initialized.
+   Error. Non-owner cannot submit transactions (owners map not initialized).
+
+10. SubmitTransaction. sender is not owner. Contract is not initialized.
+    Error. Non-owner cannot submit transactions.
+
+11. SignTransaction. sender is not owner.
+    Error. Non-owner cannot sign transactions. All transactions unaffected.
+
+12. SignTransaction. sender is recipient but not owner.
+    Error. Non-owner cannot sign transactions. All transactions unaffected.
+
+13. SignTransaction. sender is owner. Contract is not initialized.
+    Error. Non-owner cannot submit transactions (owners map not initialized).
+
+14. SignTransaction. sender is owner. TransactionId is larger than transactionCount (transaction has never been submitted).
+    Error. Unknown transaction id.
+
+15. SignTransaction. sender is owner. TransactionId is equal to transactionCount (transaction has never been submitted).
+    Error. Unknown transaction id.
+
+16. SignTransaction. sender is owner. TransactionId is smaller than transactionCount, but transaction has already been executed, so does not exist in transaction map.
+    Error. Unknown transaction id.
+
+17. SignTransaction. sender is owner. sender has already signed.
+    Error. Sender has already signed.
+
+18. SignTransaction. sender is owner. Transaction needs two additional signatures.
+    Signature added to signatures map.
+
+19. SignTransaction. sender is owner. Transaction needs one additional signature.
+    Signature added to signatures map.
+
+20. SignTransaction. sender is owner. Transaction does not need additional signatures.
+    Signature added to signatures map.
+
+21. ExecuteTransaction. Contract is not initialized, thus owners map is empty, and no transaction exists.
+    Error. Unknown transaction id.
+
+22. ExecuteTransaction. sender is owner. TransactionId is larger than transactionCount (transaction has never been submitted).
+    Error. Unknown transaction id.
+
+23. ExecuteTransaction. sender is owner. TransactionId is smaller than transactionCount, but transaction has already been executed, so does not exist in transaction map.
+    Error. Unknown transaction id.
+
+24. ExecuteTransaction. Transaction exists. sender is neither owner nor recipient. 
+    Error. Sender may not execute.
+
+25. ExecuteTransaction. Transaction exists. Sender is owner. Balance is less than transaction amount.
+    Error. Insufficient funds.
+
+26. ExecuteTransaction. Transaction exists. Sender is owner. Balance is sufficient. Signature map for transaction does not exist.
+    (This should never happen). Error. No signature list found.
+
+27. ExecuteTransaction. Transaction exists. Sender is owner. Balance is sufficient. Number of signatures is one less than required.
+    Error. Not enough signatures.
+
+28. ExecuteTransaction. Transaction exists. Sender is owner. Balance is sufficient. Number of signatures is equal to required. Transaction has empty tag.
+    Transaction is executed. Message should be sent to recipient carrying transaction amount and empty tag. Balance reduced accordingly.
+
+29. ExecuteTransaction. Transaction exists. Sender is owner. Balance is sufficient. Number of signatures is greater than required. Transaction has empty tag.
+    Transaction is executed. Message should be sent to recipient carrying transaction amount and empty tag. Balance reduced accordingly.
+
+30. ExecuteTransaction. Transaction exists. Sender is owner. Balance is sufficient. Number of signatures is equal to required. Transaction has non-empty tag.
+    Transaction is executed. Message should be sent to recipient carrying transaction amount and transaction tag. Balance reduced accordingly.
+
+31. ExecuteTransaction. Transaction exists. Sender is recipient. Balance is sufficient. Number of signatures is equal to required. Transaction has empty tag.
+    Transaction is executed. Message should be sent to recipient carrying transaction amount and empty tag. Balance reduced accordingly.
+
+32. ExecuteTransaction. Transaction exists. Sender is owner. Balance is equal to transaction amount. Number of signatures is equal to required. Transaction has empty tag.
+    Transaction is executed. Message should be sent to recipient carrying transaction amount and empty tag. Balance reduced accordingly.
+
+33. RevokeSignature. Contract is not initialized, thus signatures map is empty.
+    Error. Not already signed.
+
+34. RevokeSignature. sender is owner. TransactionId is larger than transactionCount (transaction has never been submitted).
+    Error. Not already signed. Other signatures unaffected.
+
+35. RevokeSignature. sender is owner. TransactionId is smaller than transactionCount, but transaction has already been executed, so does not exist in transaction map.
+    Error. Not already signed. Other signatures unaffected.
+
+36. RevokeSignature. sender is owner. Transaction exists, but sender has not signed.
+    Error. Not already signed. Other signatures unaffected.
+
+37. RevokeSignature. sender is recipient but not owner, and thus cannot have signature in signature map. 
+    Error. Not already signed. Other signatures unaffected.
+
+38. RevokeSignature. sender has signed. Number of signatures is one less than required.
+    Signature is removed. Other signatures unaffected.
+
+39. RevokeSignature. sender has signed. Number of signatures is equal to required.
+    Signature is removed. Other signatures unaffected.
+
+40. RevokeSignature. sender has signed. Number of signatures is greater than required.
+    Signature is removed. Other signatures unaffected.
+
+41: AddFunds. Contract validity is Invalid.
+    Error. Invalid contract. No funds added.
+
+42. ExecuteTransaction. Multiple transaction exists with required number of signatures. Sender is owner. Balance is sufficient. 
+    Transaction is executed. No other transaction affected. Message should be sent to recipient carrying transaction amount and transaction tag. Balance reduced accordingly.
+
+100. Initialize with empty list of owners, required signatures = 0, then call AddFunds.
+     Error. Invalid contract. No funds added.
+
+200. Initialize with non-empty list of owners, required signatures = 0, Then call AddFunds.
+     Error. Invalid contract. No funds added.
+
+300. Initialize with required_signatures > length of list of owners, then call AddFunds.
+     Error. Invalid contract. No funds added.
+
