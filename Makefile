@@ -1,6 +1,7 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
 OCAML_VERSION_RECOMMENDED=4.06.1
+IPC_SOCK_PATH="/tmp/zilliqa.sock"
 
 .PHONY: default all utop dev clean docker zilliqa-docker
 
@@ -44,7 +45,7 @@ gold: dev
 # don't want multiple threads of the testsuite connecting to the same server concurrently.
 test_extipcserver: dev
 	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
-	-ext-ipc-server "/tmp/zilliqa.sock" \
+	-ext-ipc-server $(IPC_SOCK_PATH) \
 	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
 
 # Clean up
