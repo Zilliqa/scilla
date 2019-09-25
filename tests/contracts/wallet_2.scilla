@@ -17,8 +17,8 @@ let mk_transaction_added_event =
     { _eventname : "Transaction created" ; transactionId : tc }
 
 (* Event for communicating the signing of a transaction *)
-let mk_transaction_signed_event =
-    { _eventname : "Transaction signed" }
+let mk_transaction_executed_event =
+    { _eventname : "Transaction executed" }
 
 type Error =
 | NonOwnerCannotSign
@@ -374,7 +374,9 @@ transition ExecuteTransaction (transactionId : Uint32)
             (* Remove transaction and signatures, and execute. *)
             DeleteTransaction transactionId;
             msgs = transaction_msg_as_list recipient amount tag;
-            send msgs
+            send msgs;
+            e = mk_transaction_executed_event;
+            event e
           end
         end
       end

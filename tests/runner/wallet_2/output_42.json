@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "6993",
+  "gas_remaining": "6951",
   "_accepted": "false",
   "message": {
     "_tag": "",
@@ -72,5 +72,5 @@
       ]
     }
   ],
-  "events": []
+  "events": [ { "_eventname": "Transaction executed", "params": [] } ]
 }
