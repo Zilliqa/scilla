@@ -1,0 +1,28 @@
+{
+  "name": "ipc",
+  "state_mode": "IPC",
+  "transitions": [
+    { "name": "get1" },
+    { "name": "get5" },
+    { "name": "get10" },
+
+    { "name": "set1" },
+    { "name": "set5" },
+    { "name": "set10" },
+
+    { "name": "getMap1" },
+    { "name": "setMap1" },
+
+    { "name": "getMap2" },
+    { "name": "setMap2" },
+
+    { "name": "getMap3" },
+    { "name": "setMap3" },
+
+    { "name": "getMap4" },
+    { "name": "setMap4" },
+
+    { "name": "getMap5" },
+    { "name": "setMap5" }
+  ]
+}

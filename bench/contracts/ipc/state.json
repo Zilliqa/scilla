@@ -1,0 +1,29 @@
+[
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
+  { "vname": "n", "type": "Uint128", "value": "0" },
+  {
+    "vname": "map1",
+    "type": "Map (Uint128) (Uint128)",
+    "value": []
+  },
+  {
+    "vname": "map2",
+    "type": "Map (Uint128) (Map (Uint128) (Uint128))",
+    "value": []
+  },
+  {
+    "vname": "map3",
+    "type": "Map (Uint128) (Map (Uint128) (Map (Uint128) (Uint128)))",
+    "value": []
+  },
+  {
+    "vname": "map4",
+    "type": "Map (Uint128) (Map (Uint128) (Map (Uint128) (Map (Uint128) (Uint128))))",
+    "value": []
+  },
+  {
+    "vname": "map5",
+    "type": "Map (Uint128) (Map (Uint128) (Map (Uint128) (Map (Uint128) (Map (Uint128) (Uint128)))))",
+    "value": []
+  }
+]

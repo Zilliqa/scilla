@@ -1,0 +1,111 @@
+scilla_version 0
+
+(* contract for IPC benchmark: *)
+(* contains a few mutable fields and transitions *)
+
+library BenchIPC
+
+let k1 = Uint128 1
+let k2 = Uint128 2
+
+let v = Uint128 2
+
+contract BenchIPC ()
+
+field n : Uint128 = Uint128 0
+
+field map1 : Map Uint128 Uint128 = Emp Uint128 Uint128
+field map2 : Map Uint128 (Map Uint128 Uint128) = Emp Uint128 (Map Uint128 Uint128)
+field map3 : Map Uint128 (Map Uint128 (Map Uint128 Uint128)) = Emp Uint128 (Map Uint128 (Map Uint128 Uint128))
+field map4 : Map Uint128 (Map Uint128 (Map Uint128 (Map Uint128 Uint128))) = Emp Uint128 (Map Uint128 (Map Uint128 (Map Uint128 Uint128)))
+field map5 : Map Uint128 (Map Uint128 (Map Uint128 (Map Uint128 (Map Uint128 Uint128)))) = Emp Uint128 (Map Uint128 (Map Uint128 (Map Uint128 (Map Uint128 Uint128))))
+
+transition get1()
+  x0 <- n
+end
+
+transition get5()
+  x0 <- n;
+  x1 <- n;
+  x2 <- n;
+  x3 <- n;
+  x4 <- n
+end
+
+transition get10()
+  x0 <- n;
+  x1 <- n;
+  x2 <- n;
+  x3 <- n;
+  x4 <- n;
+  x5 <- n;
+  x6 <- n;
+  x7 <- n;
+  x8 <- n;
+  x9 <- n
+end
+
+transition set1()
+  n := v
+end
+
+transition set5()
+  n := v;
+  n := v;
+  n := v;
+  n := v;
+  n := v
+end
+
+transition set10()
+  n := v;
+  n := v;
+  n := v;
+  n := v;
+  n := v;
+  n := v;
+  n := v;
+  n := v;
+  n := v;
+  n := v
+end
+
+transition setMap1()
+  map1[k2] := v
+end
+
+transition getMap1()
+  r <- map1[k2]
+end
+
+transition setMap2()
+  map2[k1][k2] := v
+end
+
+transition getMap2()
+  r <- map2[k1][k2]
+end
+
+transition setMap3()
+  map3[k1][k1][k2] := v
+end
+
+transition getMap3()
+  r <- map3[k1][k1][k2]
+end
+
+transition setMap4()
+  map4[k1][k1][k1][k2] := v
+end
+
+transition getMap4()
+  r <- map4[k1][k1][k1][k2]
+end
+
+transition setMap5()
+  map5[k1][k1][k1][k1][k2] := v
+end
+
+transition getMap5()
+  r <- map5[k1][k1][k1][k1][k2]
+end

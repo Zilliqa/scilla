@@ -1,0 +1,12 @@
+(executable
+ (name scilla_bench_runner)
+ (public_name scilla-bench-runner)
+ (modules scilla_bench_runner)
+ (libraries
+   core core_bench.inline_benchmarks
+   scilla_bench)
+ (preprocess (pps
+   ppx_sexp_conv
+   ppx_inline_test)))
+
+(env (dev (flags (:standard -warn-error -A))))
