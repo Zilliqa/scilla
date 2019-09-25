@@ -13,7 +13,7 @@
 (library
  (name scilla_bench)
  (library_flags -linkall)
- (modules spec transition spec_t spec_j env json)
+ (modules spec transition spec_t spec_j env)
  (libraries
    core core_bench.inline_benchmarks yojson atdgen
    scilla_base scilla_eval scilla_util stateIPCTest)
