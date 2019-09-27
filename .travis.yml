@@ -34,6 +34,7 @@ addons:
     - libpcre3-dev
     - aspcud
     - libsecp256k1-dev
+    - libprocps-dev
   homebrew:
     brewfile: true
     update: true
