@@ -16,9 +16,16 @@
  */
 
 #include <vector>
+#include <string>
 
 typedef std::vector<char> bytes;
 typedef const bytes& bytesConstRef;
+
+
+struct SnarkExn {
+  std::string m_msg;
+  SnarkExn(std::string c) : m_msg(c) { }
+};
 
 // The input is a sequence of pairs, where each pair
 // is a value of size (2 * 32) + (2 * 64).

@@ -20,27 +20,42 @@
 
 extern "C" {
 
-void alt_bn128_pairing_product_Z(const RawBytes_Z* pairs, RawBytes_Z *result)
+bool alt_bn128_pairing_product_Z(const RawBytes_Z* pairs, RawBytes_Z *result)
 {
-  bytes pairs_b(pairs->data, pairs->data + pairs->len);
-  bytes result_b = alt_bn128_pairing_product(pairs_b);
-  std::copy(result_b.begin(), result_b.end(), result->data);
+  try {
+    bytes pairs_b(pairs->data, pairs->data + pairs->len);
+    bytes result_b = alt_bn128_pairing_product(pairs_b);
+    std::copy(result_b.begin(), result_b.end(), result->data);
+    return true;
+  } catch (...) {
+    return false;
+  }
 }
 
-void alt_bn128_G1_mul_Z(const RawBytes_Z* p1, const RawBytes_Z* s, RawBytes_Z* result)
+bool alt_bn128_G1_mul_Z(const RawBytes_Z* p1, const RawBytes_Z* s, RawBytes_Z* result)
 {
-  bytes p1_b(p1->data, p1->data + p1->len);
-  bytes s_b(s->data, s->data + s->len);
-  bytes result_b = alt_bn128_G1_mul(p1_b, s_b);
-  std::copy(result_b.begin(), result_b.end(), result->data);
+  try {
+    bytes p1_b(p1->data, p1->data + p1->len);
+    bytes s_b(s->data, s->data + s->len);
+    bytes result_b = alt_bn128_G1_mul(p1_b, s_b);
+    std::copy(result_b.begin(), result_b.end(), result->data);
+    return true;
+  } catch (...) {
+    return false;
+  }
 }
 
-void alt_bn128_G1_add_Z(const RawBytes_Z* p1, const RawBytes_Z* p2, RawBytes_Z* result)
+bool alt_bn128_G1_add_Z(const RawBytes_Z* p1, const RawBytes_Z* p2, RawBytes_Z* result)
 {
-  bytes p1_b(p1->data, p1->data + p1->len);
-  bytes p2_b(p2->data, p2->data + p2->len);
-  bytes result_b = alt_bn128_G1_add(p1_b, p2_b);
-  std::copy(result_b.begin(), result_b.end(), result->data);
+  try {
+    bytes p1_b(p1->data, p1->data + p1->len);
+    bytes p2_b(p2->data, p2->data + p2->len);
+    bytes result_b = alt_bn128_G1_add(p1_b, p2_b);
+    std::copy(result_b.begin(), result_b.end(), result->data);
+    return true;
+  } catch (...) {
+    return false;
+  }
 }
 
 } // extern "C"

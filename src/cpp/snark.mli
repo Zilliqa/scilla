@@ -20,4 +20,4 @@ val scalar_len : int
 val point_len : int
 val pair_len : int (* each pair in alt_bn128_pairing_product *)
 
-val alt_bn128_G1_add : string -> string -> string
+val alt_bn128_G1_add : string -> string -> string option

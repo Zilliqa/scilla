@@ -29,17 +29,18 @@ extern "C" {
 #define pair_len 32 * 2 + 64 * 2 // each pair in alt_bn128_pairing_product
 
 // For details of the interfaces, see Snark.h. All memory for the
-// buffers below must be allocated by the caller.
+// buffers below must be allocated by the caller. All functions
+// return true on success and false on failure.
 
 // "result" must be allocated to be of size scalar_len.
 // "pairs"'s length must be a multiple of pair_len.
-void alt_bn128_pairing_product_Z(const RawBytes_Z* pairs, RawBytes_Z *result);
+bool alt_bn128_pairing_product_Z(const RawBytes_Z* pairs, RawBytes_Z *result);
 // "result" must be allocated to be of size point_len
 // "p1" must have length point_len and "s" scalar_len
-void alt_bn128_G1_mul_Z(const RawBytes_Z* p1, const RawBytes_Z* s, RawBytes_Z* result);
+bool alt_bn128_G1_mul_Z(const RawBytes_Z* p1, const RawBytes_Z* s, RawBytes_Z* result);
 // "result" must be allocated to be of size point_len
 // "p1" and "p2" must have length point_len.
-void alt_bn128_G1_add_Z(const RawBytes_Z* p1, const RawBytes_Z* p2, RawBytes_Z* result);
+bool alt_bn128_G1_add_Z(const RawBytes_Z* p1, const RawBytes_Z* p2, RawBytes_Z* result);
 
 #ifdef __cplusplus
 } // extern "C"

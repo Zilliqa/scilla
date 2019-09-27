@@ -28,7 +28,7 @@ bytes operator+(bytesConstRef _a, bytesConstRef _b)
 bytes splice(bytesConstRef b, size_t from, size_t to)
 {
   if (to > b.size())
-    err_abort ("Snark: splice: Invalid arguments");
+    throw SnarkExn ("Snark: splice: Invalid arguments");
   bytes r (b.begin() + from, b.begin() + to);
   return r;
 }
@@ -72,12 +72,12 @@ bytes fromLibsnarkBigint(libff::bigint<libff::alt_bn128_q_limbs> const& _b)
 libff::alt_bn128_Fq decodeFqElement(bytesConstRef _data)
 {
   if (_data.size() != 32)
-    err_abort ("Snakr: decodeFqElement: Invalid input");
+    throw SnarkExn ("Snark: decodeFqElement: Invalid input");
 
 #if 0 // TODO: 256 bit arithmetic leads to a dependency on boost.
   // TODO: Consider using a compiler time constant for comparison.
   if (u256(xbin) >= u256(fromLibsnarkBigint(libff::alt_bn128_Fq::mod)))
-    err_abort ("Snark: decodeFqElement: Invalid encoding");
+    throw SnarkExn ("Snark: decodeFqElement: Invalid encoding");
 #endif
 
   return toLibsnarkBigint(_data);
@@ -91,7 +91,7 @@ libff::alt_bn128_G1 decodePointG1(bytesConstRef _data)
     return libff::alt_bn128_G1::zero();
   libff::alt_bn128_G1 p(x, y, libff::alt_bn128_Fq::one());
   if (!p.is_well_formed())
-    err_abort ("Snark: decodePointG1: Invalid input");
+    throw SnarkExn ("Snark: decodePointG1: Invalid input");
   return p;
 }
 
@@ -122,7 +122,7 @@ libff::alt_bn128_G2 decodePointG2(bytesConstRef _data)
     return libff::alt_bn128_G2::zero();
   libff::alt_bn128_G2 p(x, y, libff::alt_bn128_Fq2::one());
   if (!p.is_well_formed())
-    err_abort ("Snark: decodePointG2: Invalid input");
+    throw SnarkExn ("Snark: decodePointG2: Invalid input");
   return p;
 }
 
@@ -138,7 +138,7 @@ bytes alt_bn128_pairing_product(bytesConstRef _in)
   size_t const pairs = _in.size() / pairSize;
   if (pairs * pairSize != _in.size())
     // Invalid length.
-    err_abort ("Snark: alt_bn128_pairing_product: Invalid input length");
+    throw SnarkExn ("Snark: alt_bn128_pairing_product: Invalid input length");
 
   initLibSnark();
   libff::alt_bn128_Fq12 x = libff::alt_bn128_Fq12::one();
@@ -149,7 +149,7 @@ bytes alt_bn128_pairing_product(bytesConstRef _in)
     libff::alt_bn128_G2 const p = decodePointG2(splice(pair, 2 * 32, 2 * 64));
     if (-libff::alt_bn128_G2::scalar_field::one() * p + p != libff::alt_bn128_G2::zero())
       // p is not an element of the group (has wrong order)
-      err_abort ("Snark: alt_bn128_pairing_product: incorrect order");
+      throw SnarkExn ("Snark: alt_bn128_pairing_product: incorrect order");
     if (p.is_zero() || g1.is_zero())
       continue; // the pairing is one
     x = x * libff::alt_bn128_miller_loop(
@@ -170,7 +170,7 @@ bytes alt_bn128_pairing_product(bytesConstRef _in)
 bytes alt_bn128_G1_add(bytesConstRef _p1, bytesConstRef _p2)
 {
   if (_p1.size() != 64 || _p2.size() != 64)
-    err_abort("Snark: alt_bn128_G1_add: Invalid input");
+    throw SnarkExn("Snark: alt_bn128_G1_add: Invalid input");
 
   initLibSnark();
   libff::alt_bn128_G1 const p1 = decodePointG1(_p1);
@@ -181,7 +181,7 @@ bytes alt_bn128_G1_add(bytesConstRef _p1, bytesConstRef _p2)
 bytes alt_bn128_G1_mul(bytesConstRef _p1, bytesConstRef _s)
 {
   if (_p1.size() != 64 || _s.size() != 32)
-    err_abort("Snark: alt_bn128_G1_mul: Invalid input");
+    throw SnarkExn("Snark: alt_bn128_G1_mul: Invalid input");
 
   initLibSnark();
   libff::alt_bn128_G1 const p = decodePointG1(_p1);

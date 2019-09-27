@@ -30,10 +30,12 @@ let pair_len = 32 * 2 + 64 * 2 (* each pair in alt_bn128_pairing_product *)
 (* privKey, pubKey and msg are raw bytes. *)
 let alt_bn128_G1_add p1 p2 =
 
-  (* void alt_bn128_G1_add_Z(const RawBytes_Z* p1, const RawBytes_Z* p2, RawBytes_Z* result) *)
+  if String.length p1 <> point_len || String.length p2 <> point_len then None else
+
+  (* bool alt_bn128_G1_add_Z(const RawBytes_Z* p1, const RawBytes_Z* p2, RawBytes_Z* result) *)
   let alt_bn128_G1_add_Z =
     foreign "alt_bn128_G1_add_Z"
-      (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning void) in
+      (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning bool) in
 
   (* Create container for inputs and output. *)
   let p1S = make rawBytes_Z in
@@ -59,4 +61,4 @@ let alt_bn128_G1_add p1 p2 =
   let pres = copy_from_tstring @@ string_from_ptr presD ~length:point_len in
   (* Dummy use to avoid GC of memory. *)
   let _ = p1S, p1D, p2S, p2D, presS, presD in
-  pres
+  Some pres
