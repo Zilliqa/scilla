@@ -31,7 +31,7 @@ RUN apt-get update \
 
 ENV OCAML_VERSION 4.06.1
 
-RUN cd /scilla/${MAJOR_VERSION} && make opamdep-ci && ./scripts/libffi.sh \
+RUN cd /scilla/${MAJOR_VERSION} && make opamdep-ci && ./scripts/libff.sh \
     && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
     && eval $(opam env) && \
     make

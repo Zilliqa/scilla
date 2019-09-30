@@ -53,7 +53,7 @@ branches:
 before_install:
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
 - make opamdep-ci
-- ./scripts/libffi.sh # fetch and install libffi locally
+- ./scripts/libff.sh # fetch and install libff locally
 - rm $HOME/.opam/log/*
 script:
 - if [ $TRAVIS_OS_NAME = osx ]; then ulimit -n 1024; fi
