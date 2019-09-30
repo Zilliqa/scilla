@@ -74,11 +74,106 @@ transition setMap1()
   map1[k2] := v
 end
 
+transition setMap1_5()
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v
+end
+
+transition setMap1_10()
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v
+end
+
+transition setMap1_50()
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v;
+  map1[k2] := v
+end
+
 transition getMap1()
   r <- map1[k2]
 end
 
 transition setMap2()
+  map2[k1][k2] := v
+end
+
+transition setMap2_5()
+  map2[k1][k2] := v;
+  map2[k1][k2] := v;
+  map2[k1][k2] := v;
+  map2[k1][k2] := v;
+  map2[k1][k2] := v
+end
+
+transition setMap2_10()
+  map2[k1][k2] := v;
+  map2[k1][k2] := v;
+  map2[k1][k2] := v;
+  map2[k1][k2] := v;
+  map2[k1][k2] := v;
+  map2[k1][k2] := v;
+  map2[k1][k2] := v;
+  map2[k1][k2] := v;
+  map2[k1][k2] := v;
   map2[k1][k2] := v
 end
 
@@ -90,6 +185,27 @@ transition setMap3()
   map3[k1][k1][k2] := v
 end
 
+transition setMap3_5()
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v
+end
+
+transition setMap3_10()
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v;
+  map3[k1][k1][k2] := v
+end
+
 transition getMap3()
   r <- map3[k1][k1][k2]
 end
@@ -98,11 +214,53 @@ transition setMap4()
   map4[k1][k1][k1][k2] := v
 end
 
+transition setMap4_5()
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v
+end
+
+transition setMap4_10()
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v;
+  map4[k1][k1][k1][k2] := v
+end
+
 transition getMap4()
   r <- map4[k1][k1][k1][k2]
 end
 
 transition setMap5()
+  map5[k1][k1][k1][k1][k2] := v
+end
+
+transition setMap5_5()
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v
+end
+
+transition setMap5_10()
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v;
+  map5[k1][k1][k1][k1][k2] := v;
   map5[k1][k1][k1][k1][k2] := v
 end
 

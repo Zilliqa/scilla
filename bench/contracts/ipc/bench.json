@@ -12,17 +12,27 @@
 
     { "name": "getMap1" },
     { "name": "setMap1" },
+    { "name": "setMap1_5" },
+    { "name": "setMap1_10" },
+    { "name": "setMap1_50" },
 
     { "name": "getMap2" },
     { "name": "setMap2" },
+    { "name": "setMap2_5" },
+    { "name": "setMap2_10" },
 
     { "name": "getMap3" },
     { "name": "setMap3" },
+    { "name": "setMap3_5" },
+    { "name": "setMap3_10" },
 
     { "name": "getMap4" },
     { "name": "setMap4" },
+    { "name": "setMap4_5" },
+    { "name": "setMap4_10" },
 
     { "name": "getMap5" },
-    { "name": "setMap5" }
+    { "name": "setMap5_5" },
+    { "name": "setMap5_10" }
   ]
 }

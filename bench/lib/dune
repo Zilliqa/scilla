@@ -15,7 +15,7 @@
  (library_flags -linkall)
  (modules spec transition spec_t spec_j env)
  (libraries
-   core core_bench.inline_benchmarks yojson atdgen
+   core core_bench yojson atdgen
    scilla_base scilla_eval scilla_util stateIPCTest)
  (preprocess (pps ppx_sexp_conv ppx_inline_test)))
 

@@ -44,9 +44,9 @@ let () =
   let sock_addr = "/home/vyorkin/zilliqa.sock" in
   let env = Env.mk sock_addr in
   let specs = Spec.read_all env in
-  let spec = List.hd_exn specs in
-  let benchmarks = List.mapi
-      spec.transitions
-      ~f:(fun i tr -> Transition.mk ~env spec tr i) in
-  let command = Bench.make_command benchmarks in
+  let groups = List.map specs ~f:(fun spec ->
+      let benchmarks = List.mapi spec.transitions
+          ~f:(fun i tr -> Transition.mk ~env spec tr i) in
+    Bench.Test.create_group ~name:spec.name benchmarks) in
+  let command = Bench.make_command groups in
   Command.run command
