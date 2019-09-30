@@ -25,7 +25,6 @@ RUN apt-get update \
     libffi-dev \
     libssl-dev \
     libsecp256k1-dev \
-    libprocps-dev \
     libboost-system-dev \
     libpcre3-dev \
     && rm -rf /var/lib/apt/lists/*
