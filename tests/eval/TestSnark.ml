@@ -16,32 +16,32 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+(* The tests in this file are modelled after Ethereum's unit tests for zkSNARKs.
+   https://github.com/ethereum/aleth/blob/master/test/unittests/libdevcrypto/LibSnark.cpp *)
+
 open Core
 open OUnit2
-open Syntax
 open Snark
+open Integer256
 
-let alt_bn128_G1_add_io =
-  [
-    ("0x2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824486ea46224d1bb4fb680f34f7c9ad96a8f24ec88be73ea8e5a6c65260e9cb8a7",
-     "0x936a185caaa266bb9cbe981e9e05cb78cd732b0b3280eb944412bb6f8f8f07af486ea46224d1bb4fb680f34f7c9ad96a8f24ec88be73ea8e5a6c65260e9cb8a7",
-     "0x936a185caaa266bb9cbe981e9e05cb78cd732b0b3280eb944412bb6f8f8f07af936a185caaa266bb9cbe981e9e05cb78cd732b0b3280eb944412bb6f8f8f07af");
-  ]
+(* Convert a decimal string to a binary string of 32 bytes. *)
+let decimal_to_bystr32_raw s =
+  let b = Bytes.create 32 in
+  Uint256.to_bytes_big_endian (Uint256.of_string s) b 0;
+  Bytes.to_string b
 
-let alt_bn128_G1_add_tests = 
-  "alt_bn128_G1_add_tests" >::: 
-  List.map alt_bn128_G1_add_io ~f:(fun (p1, p2, pres) ->
-    let p1' = Bystrx.to_raw_bytes @@ Bystrx.parse_hex p1 in
-    let p2' = Bystrx.to_raw_bytes @@ Bystrx.parse_hex p2 in
-    let pres' = Bystrx.to_raw_bytes @@ Bystrx.parse_hex pres in
-    test_case (fun _ ->
-      match alt_bn128_G1_add p1' p2' with
-      | Some psum ->
-        let psum_hex = Bystrx.hex_encoding @@ Option.value_exn (Bystrx.of_raw_bytes point_len psum) in
-        let msg = (Printf.sprintf "alt_bn128_G1_add failed: Expected %s vs Got %s" pres psum_hex) in
-        assert_bool msg (psum = pres')
-      | None -> assert_failure "alt_bn128_G1_add: Invalid value"
-    )
-  )
+let scalars_to_point x y = x ^ y
 
-let snark_tests _ = "snark_tests" >::: [alt_bn128_G1_add_tests]
+let test_mul_add = test_case (fun _ ->
+  let p = scalars_to_point
+    (decimal_to_bystr32_raw "6851077925310461602867742977619883934042581405263014789956638244065803308498")
+    (decimal_to_bystr32_raw "10336382210592135525880811046708757754106524561907815205241508542912494488506")
+  in
+  let s = (decimal_to_bystr32_raw "2") in
+  match alt_bn128_G1_add p p, alt_bn128_G1_mul p s with
+  | Some sum, Some prod ->
+    assert_bool "TestSnark failed: test_mul_add: comparison failed" (prod = sum) 
+  | _ -> assert_failure "TestSnark failed: test_mul_add: alt_bn128_(add/mul) failed"
+)
+
+let snark_tests _ = "snark_tests" >::: [test_mul_add]

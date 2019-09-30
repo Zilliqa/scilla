@@ -27,7 +27,6 @@ let scalar_len = 32
 let point_len = 64
 let pair_len = 32 * 2 + 64 * 2 (* each pair in alt_bn128_pairing_product *)
 
-(* privKey, pubKey and msg are raw bytes. *)
 let alt_bn128_G1_add p1 p2 =
 
   if String.length p1 <> point_len || String.length p2 <> point_len then None else
@@ -61,4 +60,39 @@ let alt_bn128_G1_add p1 p2 =
   let pres = copy_from_tstring @@ string_from_ptr presD ~length:point_len in
   (* Dummy use to avoid GC of memory. *)
   let _ = p1S, p1D, p2S, p2D, presS, presD in
+  Some pres
+
+let alt_bn128_G1_mul p s =
+
+  if String.length p <> point_len || String.length s <> scalar_len then None else
+
+  (* bool alt_bn128_G1_mul_Z(const RawBytes_Z* p, const RawBytes_Z* s, RawBytes_Z* result) *)
+  let alt_bn128_G1_mul_Z =
+    foreign "alt_bn128_G1_mul_Z"
+      (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning bool) in
+
+  (* Create container for inputs and output. *)
+  let pS = make rawBytes_Z in
+  let sS = make rawBytes_Z in
+  let presS = make rawBytes_Z in
+  (* and allocate data *)
+  let pD = allocate_n char ~count:point_len in
+  let sD = allocate_n char ~count:point_len in
+  let presD = allocate_n char ~count:point_len in
+  (* and fill the fields. *)
+  let _ = setf pS rawBytes_data pD in
+  let _ = setf pS rawBytes_len point_len in
+  let _ = setf sS rawBytes_data sD in
+  let _ = setf sS rawBytes_len point_len in
+  let _ = setf presS rawBytes_data presD in
+  let _ = setf presS rawBytes_len point_len in
+  (* Copy input data to input structs. *)
+  let _ = copy_to_cptr pD p in
+  let _ = copy_to_cptr sD s in
+  (* Call the signing C function. *)
+  let _ = alt_bn128_G1_mul_Z (addr pS) (addr sS) (addr presS) in
+  (* Copy back the signature. *)
+  let pres = copy_from_tstring @@ string_from_ptr presD ~length:point_len in
+  (* Dummy use to avoid GC of memory. *)
+  let _ = pS, pD, sS, sD, presS, presD in
   Some pres
