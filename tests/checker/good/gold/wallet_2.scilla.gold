@@ -91,7 +91,7 @@
         "vname": "WalletError",
         "params": [ { "vname": "err_code", "type": "Int32" } ]
       },
-      { "vname": "Transaction signed", "params": [] },
+      { "vname": "Transaction executed", "params": [] },
       {
         "vname": "Transaction created",
         "params": [ { "vname": "transactionId", "type": "Uint32" } ]
@@ -180,7 +180,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 424,
+        "line": 426,
         "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
