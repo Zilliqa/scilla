@@ -50,6 +50,7 @@ module Tests = TestUtil.DiffBasedTests(
       "schnorr.scilla";
       "simple-dex.scilla";
       "wallet.scilla";
+      "wallet_2.scilla";
       "zil-game.scilla";
       "map_corners_test.scilla";
       "ud-registry.scilla";

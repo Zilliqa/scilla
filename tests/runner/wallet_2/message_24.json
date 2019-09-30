@@ -1,0 +1,12 @@
+{
+    "_tag": "ExecuteTransaction",
+    "_amount": "0",
+    "_sender" : "0xffcdeabcde1267867890abcd5678901234567890",
+    "params": [
+        {
+            "vname": "transactionId",
+            "type": "Uint32",
+            "value": "1"
+        }
+    ]
+}

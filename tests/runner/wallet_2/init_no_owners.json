@@ -1,0 +1,31 @@
+[
+    { 
+        "vname" : "_scilla_version",
+        "type" : "Uint32",
+        "value" : "0"
+    },
+    {
+        "vname" : "_this_address",
+        "type" : "ByStr20",
+        "value" : "0xabfeccdc9012345678901234567890f777567890"
+    },
+    {
+        "vname" : "owners_list",
+        "type" : "List ByStr20",
+        "value" : {
+            "constructor" : "Nil",
+            "argtypes"    : [ "ByStr20" ],
+            "arguments"   : []
+        }
+    },
+    {
+        "vname" : "required_signatures",
+        "type" : "Uint32",
+        "value" : "0"
+    },
+    {
+        "vname" : "_creation_block",
+        "type" : "BNum",
+        "value" : "1"
+    }
+]

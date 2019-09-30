@@ -1,6 +1,9 @@
 ;; This is an Emacs major mode for the Scilla language.
-;; Include the below line (with path set properly) in ~/.emacs
-;;   (load-file "/path/to/scilla-mode.el")
+;; Include the below lines (with path set properly) in ~/.emacs
+;;    ;; For enabling flycheck mode for Scilla.
+;;    (setq scilla-root "/absolute/path/to/scilla")
+;;    ;; Load the Scilla major mode.
+;;    (load-file (concat scilla-root "/misc/emacs-mode/scilla-mode.el"))
 ;;
 ;; or via use-package, e.g.:
 ;;
