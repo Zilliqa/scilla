@@ -87,6 +87,7 @@ opamdep-ci:
 coverage :
 	make clean
 	mkdir -p _build/coverage
+	./scripts/libff.sh
 	BISECT_ENABLE=YES make
 	dune exec tests/testsuite.exe
 	bisect-ppx-report -I _build/default/ -html _coverage/ `find . -name 'bisect*.out'`
@@ -97,6 +98,7 @@ coverage :
 coveralls:
 	make clean
 	mkdir -p _build/coverage
+	./scripts/libff.sh
 	BISECT_ENABLE=YES make
 	dune exec tests/testsuite.exe
 	bisect-ppx-report -ignore-missing-files -I _build/ -coveralls coverage.json -service-name travis-ci -service-job-id ${TRAVIS_JOB_ID} `find . -name 'bisect*.out'`
