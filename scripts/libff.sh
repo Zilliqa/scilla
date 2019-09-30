@@ -31,6 +31,6 @@ echo "Fetching submodules for libff"
 git submodule init && git submodule update
 echo "Installing libff into ${libffdir}/install"
 cd ../build
-cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1
+cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DWITH_PROCPS=OFF
 make -j4 install
 echo "Installation of libff complete"
