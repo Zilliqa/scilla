@@ -32,6 +32,20 @@ let decimal_to_bystr32_raw s =
 
 let scalars_to_point x y = x ^ y
 
+let test_invalid = test_case (fun _ ->
+  let x = scalars_to_point
+    (decimal_to_bystr32_raw "6851077925310461602867742977619883934042581405263014789956638244065803308498")
+    (decimal_to_bystr32_raw "10336382210592135525880811046708757754106524561907815205241508542912494488506")
+  in
+  let invalid = (String.sub x ~pos:0 ~len:3) ^
+    (((Char.to_int x.[3]) lxor 1) |> Char.of_int_exn |> String.of_char) ^
+    (String.sub x ~pos:4 ~len:(String.length x - 4))
+  in
+  match alt_bn128_G1_add x invalid with
+  | Some _ -> assert_failure "TestSnark failed: test_invalid: alt_bn128_add succeeded on invalid input"
+  | None -> ()
+)
+
 let test_mul_add = test_case (fun _ ->
   let p = scalars_to_point
     (decimal_to_bystr32_raw "6851077925310461602867742977619883934042581405263014789956638244065803308498")
@@ -44,4 +58,4 @@ let test_mul_add = test_case (fun _ ->
   | _ -> assert_failure "TestSnark failed: test_mul_add: alt_bn128_(add/mul) failed"
 )
 
-let snark_tests _ = "snark_tests" >::: [test_mul_add]
+let snark_tests _ = "snark_tests" >::: [test_invalid;test_mul_add]

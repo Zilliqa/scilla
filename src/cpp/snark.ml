@@ -54,13 +54,17 @@ let alt_bn128_G1_add p1 p2 =
   (* Copy input data to input structs. *)
   let _ = copy_to_cptr p1D p1 in
   let _ = copy_to_cptr p2D p2 in
-  (* Call the signing C function. *)
-  let _ = alt_bn128_G1_add_Z (addr p1S) (addr p2S) (addr presS) in
-  (* Copy back the signature. *)
-  let pres = copy_from_tstring @@ string_from_ptr presD ~length:point_len in
+  (* Call the C function. *)
+  let succ = alt_bn128_G1_add_Z (addr p1S) (addr p2S) (addr presS) in
+  (* Copy back the result. *)
+  let pres =
+    if succ
+    then Some (copy_from_tstring @@ string_from_ptr presD ~length:point_len)
+    else None
+  in
   (* Dummy use to avoid GC of memory. *)
   let _ = p1S, p1D, p2S, p2D, presS, presD in
-  Some pres
+  pres
 
 let alt_bn128_G1_mul p s =
 
@@ -77,22 +81,26 @@ let alt_bn128_G1_mul p s =
   let presS = make rawBytes_Z in
   (* and allocate data *)
   let pD = allocate_n char ~count:point_len in
-  let sD = allocate_n char ~count:point_len in
+  let sD = allocate_n char ~count:scalar_len in
   let presD = allocate_n char ~count:point_len in
   (* and fill the fields. *)
   let _ = setf pS rawBytes_data pD in
   let _ = setf pS rawBytes_len point_len in
   let _ = setf sS rawBytes_data sD in
-  let _ = setf sS rawBytes_len point_len in
+  let _ = setf sS rawBytes_len scalar_len in
   let _ = setf presS rawBytes_data presD in
   let _ = setf presS rawBytes_len point_len in
   (* Copy input data to input structs. *)
   let _ = copy_to_cptr pD p in
   let _ = copy_to_cptr sD s in
-  (* Call the signing C function. *)
-  let _ = alt_bn128_G1_mul_Z (addr pS) (addr sS) (addr presS) in
-  (* Copy back the signature. *)
-  let pres = copy_from_tstring @@ string_from_ptr presD ~length:point_len in
+  (* Call the C function. *)
+  let succ = alt_bn128_G1_mul_Z (addr pS) (addr sS) (addr presS) in
+  let pres =
+    if succ
+    (* Copy back the result. *)
+    then Some (copy_from_tstring @@ string_from_ptr presD ~length:point_len)
+    else None
+  in
   (* Dummy use to avoid GC of memory. *)
   let _ = pS, pD, sS, sD, presS, presD in
-  Some pres
+  pres
