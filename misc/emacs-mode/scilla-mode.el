@@ -264,7 +264,7 @@
           (progn
             (flycheck-define-checker scilla
               "A Scilla syntax checker using scilla-checker. See URL `https://www.scilla-lang.org/'."
-              :command ("scilla-checker" "-libdir" (eval lib-dir) source)
+              :command ("scilla-checker" "-gaslimit" "999999999" "-libdir" (eval lib-dir) source)
               :error-patterns
               (
                (error line-start (file-name) ":" line ":" column ": error: " (message) line-end)
@@ -280,7 +280,7 @@
             ;; Querying buffer-file-name anywhere here returns nil.
             (flycheck-define-checker scilexp
               "A Scilla expression syntax checker using type-checker. See URL `https://www.scilla-lang.org/'."
-              :command ("type-checker" "-libdir" (eval lib-dir) source)
+              :command ("type-checker" "-gaslimit" "999999999" "-libdir" (eval lib-dir) source)
               :error-patterns
               (
                (error line-start (file-name) ":" line ":" column ": error: " (message) line-end)

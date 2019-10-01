@@ -306,7 +306,7 @@ type runner_cli = {
 
 let parse_cli () =
   let r_stdlib_dir = ref [] in
-  let r_gas_limit = ref (Stdint.Uint64.zero) in
+  let r_gas_limit = ref None in
   let r_input_file = ref "" in
   let r_init_file = ref None in
   let r_json_errors = ref false in
@@ -332,7 +332,7 @@ let parse_cli () =
             with
             | _ -> PrettyPrinters.fatal_error (ErrorUtils.mk_error0 (Printf.sprintf "Invalid gaslimit %s\n" i))
           in
-          r_gas_limit := g)
+          r_gas_limit := Some g)
     , "Gas limit");
     ("-gua", Arg.Unit (fun () -> r_gua := true), "Run gas use analysis and print use polynomial.");
     ("-init", Arg.String (fun x -> r_init_file := Some x), "Path to initialization json");
@@ -342,7 +342,7 @@ let parse_cli () =
     ("-contractinfo", Arg.Unit (fun () -> r_contract_info := true), "Print various contract information");
   ] in 
 
-  let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -libdir /path/to/stdlib input.scilla\n" in
+  let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -gaslimit <limit> -libdir /path/to/stdlib input.scilla\n" in
   let optional_usage = String.concat ~sep:"\n "
     (List.map ~f:(fun (flag,_,desc) -> flag ^ " " ^ desc) speclist) in
   let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
@@ -351,9 +351,14 @@ let parse_cli () =
   let anon_handler s = r_input_file := s in
   let () = Arg.parse speclist anon_handler mandatory_usage in
   if !r_input_file = "" then fatal_error_noformat usage;
+  let gas_limit =
+    match !r_gas_limit with
+    | Some g -> g
+    | None -> fatal_error_noformat usage;
+  in
   if !r_cf_token_fields <> [] then r_cf := true;
   GlobalConfig.set_use_json_errors !r_json_errors;
-  { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; gas_limit = !r_gas_limit;
+  { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; gas_limit = gas_limit;
     gua_flag = !r_gua; p_contract_info = !r_contract_info;
     cf_flag = !r_cf; cf_token_fields = !r_cf_token_fields;
     init_file = !r_init_file }
