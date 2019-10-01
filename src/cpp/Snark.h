@@ -18,7 +18,7 @@
 #include <vector>
 #include <string>
 
-typedef std::vector<char> bytes;
+typedef std::vector<uint8_t> bytes;
 typedef const bytes& bytesConstRef;
 
 

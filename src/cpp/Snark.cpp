@@ -27,7 +27,7 @@ bytes operator+(bytesConstRef _a, bytesConstRef _b)
 //       (that's what the aleth implementation's bytesConstRef::cropped() does).
 bytes splice(bytesConstRef b, size_t from, size_t to)
 {
-  if (to > b.size())
+  if (to > b.size() || from > to)
     throw SnarkExn ("Snark: splice: Invalid arguments");
   bytes r (b.begin() + from, b.begin() + to);
   return r;
