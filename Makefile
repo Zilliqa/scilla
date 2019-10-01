@@ -11,16 +11,19 @@ default: all
 # multiple subcommands and uses the library.
 # The library can be loaded in utop for interactive testing.
 all:
+	./scripts/libff.sh
 	dune build --profile release @install
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Build only scilla-checker and scilla-runner
 slim:
+	./scripts/libff.sh
 	dune build --profile release src/runners/scilla_runner.exe
 	dune build --profile release src/runners/scilla_checker.exe
 	@test -L bin || mkdir bin; ln -s _build/default/src/runners/*.exe bin/
 
 dev:
+	./scripts/libff.sh
 	dune build --profile dev @install
 	dune build tests/testsuite.exe
 	@test -L bin || ln -s _build/install/default/bin .
