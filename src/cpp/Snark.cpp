@@ -144,7 +144,7 @@ bytes alt_bn128_pairing_product(bytesConstRef _in)
   libff::alt_bn128_Fq12 x = libff::alt_bn128_Fq12::one();
   for (size_t i = 0; i < pairs; ++i)
   {
-    bytesConstRef const pair = splice(_in, i * pairSize, (i * pairSize) + pairSize);
+    bytesConstRef pair = splice(_in, i * pairSize, (i * pairSize) + pairSize);
     libff::alt_bn128_G1 const g1 = decodePointG1(splice(pair, 0, 2 * 32));
     libff::alt_bn128_G2 const p = decodePointG2(splice(pair, 2 * 32, 2 * 64));
     if (-libff::alt_bn128_G2::scalar_field::one() * p + p != libff::alt_bn128_G2::zero())
