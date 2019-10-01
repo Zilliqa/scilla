@@ -5,7 +5,7 @@
 # _build directory of Scilla root.
 
 libffurl="https://github.com/scipr-lab/libff.git"
-libffdir="_build/libff"
+libffdir="_deps/libff"
 
 # Check if CWD has `scilla.opam`, assuring us that it's the root.
 if [[ ! -f scilla.opam ]]
@@ -29,6 +29,7 @@ git clone $libffurl src
 cd src
 echo "Fetching submodules for libff"
 git submodule init && git submodule update
+git checkout f2067162520f91438b44e71a2cab2362f1c3cab4
 echo "Installing libff into ${libffdir}/install"
 cd ../build
 cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DWITH_PROCPS=OFF
