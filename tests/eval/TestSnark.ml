@@ -32,6 +32,14 @@ let decimal_to_bystr32_raw s =
 
 let scalars_to_point x y = x ^ y
 
+let test_add_zero = test_case (fun _ ->
+  (*  "0 + 0 == 0" *)
+  let zero_zero_p = scalars_to_point (decimal_to_bystr32_raw "0") (decimal_to_bystr32_raw "0") in
+  match alt_bn128_G1_add zero_zero_p zero_zero_p with
+  | Some result -> assert_bool "TestSnark failed: test_add_zero: incorrect result" (result = zero_zero_p)
+  | None -> assert_failure "TestSnark failed: test_add_zero: failed."
+)
+
 let test_invalid = test_case (fun _ ->
   let x = scalars_to_point
     (decimal_to_bystr32_raw "6851077925310461602867742977619883934042581405263014789956638244065803308498")
@@ -58,4 +66,8 @@ let test_mul_add = test_case (fun _ ->
   | _ -> assert_failure "TestSnark failed: test_mul_add: alt_bn128_(add/mul) failed"
 )
 
-let snark_tests _ = "snark_tests" >::: [test_invalid;test_mul_add]
+let snark_tests _ = "snark_tests" >::: [
+  test_add_zero;
+  test_invalid;
+  test_mul_add
+]
