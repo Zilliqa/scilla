@@ -22,7 +22,6 @@ open Sexplib.Std
 open MonadUtil
 open ErrorUtils
 open Stdint
-open Bystr
 
 exception SyntaxError of string * loc
 
@@ -167,6 +166,61 @@ let sexp_of_uint_lit = function
   | Uint256L i' -> Sexp.Atom ("Uint256 " ^ Integer256.Uint256.to_string i')
 
 let uint_lit_of_sexp _ = failwith "uint_lit_of_sexp is not implemented"
+
+module type BYSTR = sig
+  type t [@@deriving sexp]
+  val width : t -> int
+  val parse_hex : string -> t
+  val hex_encoding : t -> string
+  val to_raw_bytes : t -> string
+  val of_raw_bytes : int -> string -> t option
+  val equal : t -> t -> bool
+  val concat : t -> t -> t
+end
+
+module Bystr : BYSTR = struct
+  type t = string [@@deriving sexp]
+
+  let width = String.length
+
+  let parse_hex s =
+    if not (String.equal (String.prefix s 2) "0x") then
+      raise @@ Invalid_argument "hex conversion: 0x prefix is missing"
+    else
+      let s_nopref = String.drop_prefix s 2 in
+      if String.length s_nopref = 0 then
+        raise @@ Invalid_argument "hex conversion: empty byte sequence"
+      else
+        Hex.to_string (`Hex s_nopref)
+
+  let hex_encoding bs = "0x" ^ Hex.show @@ Hex.of_string bs
+
+  let to_raw_bytes = Fn.id
+
+  let of_raw_bytes expected_width raw =
+    Option.some_if (String.length raw = expected_width) raw
+
+  let equal = String.equal
+
+  let concat = (^)
+end
+
+module type BYSTRX = sig
+  type t [@@deriving sexp]
+  val width : t -> int
+  val parse_hex : string -> t
+  val hex_encoding : t -> string
+  val to_raw_bytes : t -> string
+  val of_raw_bytes : int -> string -> t option
+  val equal : t -> t -> bool
+  val concat : t -> t -> t
+  val to_bystr : t -> Bystr.t
+end
+
+module Bystrx : BYSTRX = struct
+  include Bystr
+  let to_bystr = Fn.id
+end
 
 (* [Specialising the Return Type of Closures]
 

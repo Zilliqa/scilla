@@ -24,7 +24,6 @@ open MonadUtil
 open Result.Let_syntax
 open Datatypes
 open PrettyPrinters
-open Bystr
 
 (****************************************************************)
 (*                Inferred types and qualifiers                 *)
