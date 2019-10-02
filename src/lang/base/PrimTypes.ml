@@ -21,6 +21,7 @@ open Core
 open Syntax
 open Stdint
 open Integer256
+open Bystr
 
 let int32_typ = PrimType (Int_typ Bits32)
 let int64_typ = PrimType (Int_typ Bits64)

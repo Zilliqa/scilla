@@ -23,6 +23,7 @@ open Yojson
 open PrimTypes
 open ErrorUtils
 open Stdint
+open Bystr
 
 (****************************************************************)
 (*                    Exception wrappers                        *)

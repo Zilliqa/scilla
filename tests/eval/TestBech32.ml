@@ -18,7 +18,7 @@
 
 open OUnit2
 open Bech32
-open Syntax
+open Bystr
 open Utils
 open Core
 

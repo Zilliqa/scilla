@@ -27,6 +27,7 @@ open PrimTypes
 open TypeUtil
 open Datatypes
 open Utils
+open Bystr
 
 module JSONTypeUtilities = TypeUtilities
 open JSONTypeUtilities

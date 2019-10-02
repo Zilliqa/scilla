@@ -20,6 +20,7 @@
   open Syntax
   open ErrorUtils
   open ParserUtil
+  open Bystr
 
   open ParsedSyntax
 

@@ -26,6 +26,7 @@ open Stdint
 open TypeUtil
 open Integer256
 open TypeUtilities
+open Bystr
 
 module UsefulLiterals = struct
   let true_lit = ADTValue ("True", [], [])
