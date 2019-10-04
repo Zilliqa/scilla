@@ -207,14 +207,20 @@ module SnarkTypes = struct
   let g2point_type = pair_typ (bystrx_typ g2comp_len) (bystrx_typ g2comp_len)
   let g1g2pair_type = pair_typ g1point_type g2point_type
 
+  let scilla_scalar_to_ocaml s =
+    match s with
+    | ByStrX s' when Bystrx.width s' = scalar_len ->
+      pure @@ Bystrx.to_raw_bytes s'
+    | _ -> fail0 @@ sprintf "Cannot convert scilla G1 point to ocaml G1 point."
+
   let scilla_g1point_to_ocaml g1p =
     match g1p with
     | ADTValue("Pair", [p1xt; p1yt], [ByStrX p1x; ByStrX p1y]) 
       when 
         p1xt = scalar_type && p1yt = scalar_type &&
-        Bystrx.width p1x = Snark.scalar_len &&
-        Bystrx.width p1y = Snark.scalar_len ->
-      pure { Snark.g1x = Bystrx.to_raw_bytes p1x; g1y = Bystrx.to_raw_bytes p1y}
+        Bystrx.width p1x = scalar_len &&
+        Bystrx.width p1y = scalar_len ->
+      pure { g1x = Bystrx.to_raw_bytes p1x; g1y = Bystrx.to_raw_bytes p1y}
     | _ -> fail0 @@ sprintf "Cannot convert scilla G1 point to ocaml G1 point."
 
   let ocaml_g1point_to_scilla_lit g1p =

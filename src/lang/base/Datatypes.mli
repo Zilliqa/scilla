@@ -72,6 +72,7 @@ module SnarkTypes : sig
   val g2point_type : typ
   val g1g2pair_type : typ
 
+  val scilla_scalar_to_ocaml : literal -> (scalar, scilla_error list) result
   val scilla_g1point_to_ocaml : literal -> (g1point, scilla_error list) result
   val ocaml_g1point_to_scilla_lit : g1point -> (literal, scilla_error list) result
 end

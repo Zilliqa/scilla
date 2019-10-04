@@ -265,6 +265,7 @@ module ScillaGas
     (Builtin_concat, [tvar "'A"; tvar "'A"], crypto_coster, 1);
     (Builtin_schnorr_get_address, [bystrx_typ pubkey_len], crypto_coster, 1);
     (Builtin_alt_bn128_G1_add, [g1point_type; g1point_type], crypto_coster, 1);
+    (Builtin_alt_bn128_G1_mul, [g1point_type; scalar_type], crypto_coster, 1);
 
     (* Maps *)
     (Builtin_contains, [tvar "'A"; tvar "'A"], map_coster, 1);
