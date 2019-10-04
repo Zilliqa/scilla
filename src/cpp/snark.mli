@@ -30,3 +30,12 @@ val g1g2pair_len : int (* length of each pair in alt_bn128_pairing_product *)
 val alt_bn128_G1_add : g1point -> g1point -> g1point option
 val alt_bn128_G1_mul : g1point -> scalar -> g1point option
 val alt_bn128_pairing_product : (g1point * g2point) list -> bool option
+
+val encode_g1point_bytes : g1point -> string
+val decode_g1point_bytes : string -> g1point option
+val encode_g2point_bytes : g2point -> string
+val encode_g1g2pair_bytes : g1point -> g2point -> string
+
+val eq_scalar : scalar -> scalar -> bool
+val eq_g1 : g1point -> g1point -> bool
+val eq_g2 : g2point -> g2point -> bool

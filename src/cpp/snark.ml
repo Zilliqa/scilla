@@ -172,3 +172,7 @@ let alt_bn128_pairing_product pairs =
   (* Dummy use to avoid GC of memory. *)
   let _ = pS, pD, presS, presD in
   pres
+
+let eq_scalar = (=) (* Replace with proper operator once we have a string type. *)
+let eq_g1 p1 p2 = p1.g1x = p2.g1x && p1.g1y = p2.g1y
+let eq_g2 p1 p2 = p1.g2x = p2.g2x && p1.g2y = p2.g2y
