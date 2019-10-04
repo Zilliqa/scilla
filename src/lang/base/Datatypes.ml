@@ -196,3 +196,30 @@ let scilla_list_to_ocaml_rev v =
     | _ -> fail0 @@ sprintf "Cannot convert scilla list to reverse ocaml list:\n"
   in
   convert_to_list v []
+
+module SnarkTypes = struct
+  open Snark
+  open PrimTypes
+  open DataTypeDictionary
+
+  let scalar_type = bystrx_typ scalar_len
+  let g1point_type = pair_typ scalar_type scalar_type
+  let g2point_type = pair_typ (bystrx_typ g2comp_len) (bystrx_typ g2comp_len)
+  let g1g2pair_type = pair_typ g1point_type g2point_type
+
+  let scilla_g1point_to_ocaml g1p =
+    match g1p with
+    | ADTValue("Pair", [p1xt; p1yt], [ByStrX p1x; ByStrX p1y]) 
+      when 
+        p1xt = scalar_type && p1yt = scalar_type &&
+        Bystrx.width p1x = Snark.scalar_len &&
+        Bystrx.width p1y = Snark.scalar_len ->
+      pure { Snark.g1x = Bystrx.to_raw_bytes p1x; g1y = Bystrx.to_raw_bytes p1y}
+    | _ -> fail0 @@ sprintf "Cannot convert scilla G1 point to ocaml G1 point."
+
+  let ocaml_g1point_to_scilla_lit g1p =
+    match Bystrx.of_raw_bytes scalar_len g1p.g1x, Bystrx.of_raw_bytes scalar_len g1p.g1y with
+    | Some x, Some y ->
+      pure @@ ADTValue("Pair", [g1point_type;g1point_type], [ByStrX x; ByStrX y])
+    | _ -> fail0 @@ sprintf "Cannot convert OCaml G1 point to Scilla literal."
+end

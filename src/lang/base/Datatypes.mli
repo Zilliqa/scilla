@@ -63,3 +63,15 @@ end
 
 val scilla_list_to_ocaml : literal -> (literal list, scilla_error list) result
 val scilla_list_to_ocaml_rev : literal -> (literal list, scilla_error list) result
+
+open Snark
+module SnarkTypes : sig
+
+  val scalar_type : typ
+  val g1point_type : typ
+  val g2point_type : typ
+  val g1g2pair_type : typ
+
+  val scilla_g1point_to_ocaml : literal -> (g1point, scilla_error list) result
+  val ocaml_g1point_to_scilla_lit : g1point -> (literal, scilla_error list) result
+end

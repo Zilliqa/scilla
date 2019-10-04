@@ -827,6 +827,26 @@ module ScillaBuiltIns
         | None -> builtin_fail "schnorr_get_address: Internal error." ls)
       | _ -> builtin_fail "schnorr_get_address" ls
 
+
+    open Datatypes.SnarkTypes
+    (* alt_bn128_G1_add : zksnark_g1point_typ -> zksnark_g1point_type -> 
+                          Option {zksnark_g1point_type} *)
+    let alt_bn128_G1_add_type = fun_typ g1point_type
+                                        (fun_typ g1point_type
+                                                (option_typ g1point_type))
+    let alt_bn128_G1_add_arity = 2
+    let alt_bn128_G1_add ls _ = match ls with
+      | [p1; p2] ->
+        let%bind p1' = scilla_g1point_to_ocaml p1 in
+        let%bind p2' = scilla_g1point_to_ocaml p2 in
+        (match Snark.alt_bn128_G1_add p1' p2' with
+        | None -> pure @@ none_lit g1point_type
+        | Some pr ->
+          let%bind pr' = ocaml_g1point_to_scilla_lit pr in
+          some_lit pr'
+        )
+      | _ -> builtin_fail "Crypto.alt_bn128_G1_add" ls
+
   end
 
   (***********************************************************)
@@ -1002,6 +1022,9 @@ module ScillaBuiltIns
       | Builtin_schnorr_verify -> [Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify]
       | Builtin_ecdsa_verify -> [Crypto.ecdsa_verify_arity, Crypto.ecdsa_verify_type, elab_id, Crypto.ecdsa_verify]
       | Builtin_schnorr_get_address -> [Crypto.schnorr_get_address_arity, Crypto.schnorr_get_address_type, elab_id, Crypto.schnorr_get_address]
+      | Builtin_alt_bn128_G1_add -> [Crypto.alt_bn128_G1_add_arity, Crypto.alt_bn128_G1_add_type, elab_id, Crypto.alt_bn128_G1_add]
+      | Builtin_alt_bn128_G1_mul -> [Crypto.alt_bn128_G1_add_arity, Crypto.alt_bn128_G1_add_type, elab_id, Crypto.alt_bn128_G1_add]
+      | Builtin_alt_bn128_pairing_product -> [Crypto.alt_bn128_G1_add_arity, Crypto.alt_bn128_G1_add_type, elab_id, Crypto.alt_bn128_G1_add]
 
       (* Maps *)
       | Builtin_contains -> [Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains]
