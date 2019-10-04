@@ -146,7 +146,7 @@ bytes alt_bn128_pairing_product(bytesConstRef _in)
   {
     bytesConstRef pair = splice(_in, i * pairSize, (i * pairSize) + pairSize);
     libff::alt_bn128_G1 const g1 = decodePointG1(splice(pair, 0, 2 * 32));
-    libff::alt_bn128_G2 const p = decodePointG2(splice(pair, 2 * 32, 2 * 64));
+    libff::alt_bn128_G2 const p = decodePointG2(splice(pair, 2 * 32, 2 * 32 + 2 * 64));
     if (-libff::alt_bn128_G2::scalar_field::one() * p + p != libff::alt_bn128_G2::zero())
       // p is not an element of the group (has wrong order)
       throw SnarkExn ("Snark: alt_bn128_pairing_product: incorrect order");

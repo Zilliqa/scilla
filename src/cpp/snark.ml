@@ -129,7 +129,7 @@ let alt_bn128_pairing_product pairs =
 
   (* This check can be removed once we have a strong type for g2point. *)
   if
-    not @@ List.exists (fun (g1p, g2p) ->
+    List.exists (fun (g1p, g2p) ->
       String.length g1p.g1x <> scalar_len || String.length g1p.g1y <> scalar_len ||
       String.length g2p.g2x <> g2comp_len || String.length g2p.g2y <> g2comp_len
     ) pairs
