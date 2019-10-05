@@ -388,7 +388,7 @@ let parse_builtin s loc = match s with
   | "schnorr_get_address" -> Builtin_schnorr_get_address
   | "alt_bn128_G1_add" -> Builtin_alt_bn128_G1_add
   | "alt_bn128_G1_mul" -> Builtin_alt_bn128_G1_mul
-  | "alt_bn128_G1_pairing_product" -> Builtin_alt_bn128_pairing_product
+  | "alt_bn128_pairing_product" -> Builtin_alt_bn128_pairing_product
   | "contains" -> Builtin_contains
   | "put" -> Builtin_put
   | "get" -> Builtin_get

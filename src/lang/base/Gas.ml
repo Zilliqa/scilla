@@ -184,9 +184,11 @@ module ScillaGas
     | Builtin_alt_bn128_G1_mul, _, _ ->
       (* TODO: Measure and set cost. *)
       pure @@ 2 * 128 * base
-    | Builtin_alt_bn128_pairing_product, _, pairs ->
+    | Builtin_alt_bn128_pairing_product, _, [pairs] ->
       (* TODO: Measure and set cost. *)
-      pure @@ List.length pairs * Snark.g1g2pair_len * base
+      let%bind opairs = scilla_g1g2pairlist_to_ocaml pairs in
+      let list_len = List.length opairs in
+      pure @@ list_len * Snark.g1g2pair_len * base
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
   let map_coster op args base =
@@ -266,6 +268,7 @@ module ScillaGas
     (Builtin_schnorr_get_address, [bystrx_typ pubkey_len], crypto_coster, 1);
     (Builtin_alt_bn128_G1_add, [g1point_type; g1point_type], crypto_coster, 1);
     (Builtin_alt_bn128_G1_mul, [g1point_type; scalar_type], crypto_coster, 1);
+    (Builtin_alt_bn128_pairing_product, [g1g2pair_list_type], crypto_coster, 1);
 
     (* Maps *)
     (Builtin_contains, [tvar "'A"; tvar "'A"], map_coster, 1);

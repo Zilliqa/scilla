@@ -144,6 +144,7 @@ module Tests = TestUtil.DiffBasedTests(
       "builtin-bech32-1.scilexp";
       "builtin-alt-bn128-add.scilexp";
       "builtin-alt-bn128-mul.scilexp";
+      "builtin-alt-bn128-pairing-product.scilexp";
       "fun2.scilexp";
       "fun3.scilexp";
       "fun4.scilexp";

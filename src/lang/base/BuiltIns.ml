@@ -865,6 +865,18 @@ module ScillaBuiltIns
         )
       | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
 
+    (* alt_bn128_pairing_roduct : List (g1g2pair_type) -> Option {Bool} *)
+    let alt_bn128_pairing_product_type = fun_typ g1g2pair_list_type (option_typ bool_typ)
+    let alt_bn128_pairing_product_arity = 1
+    let alt_bn128_pairing_product ls _ = match ls with
+      | [pairs] ->
+        let%bind pairs' = scilla_g1g2pairlist_to_ocaml pairs in
+        (match Snark.alt_bn128_pairing_product pairs' with
+        | None -> pure @@ none_lit bool_typ
+        | Some b -> some_lit (to_Bool b)
+        )
+      | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
+
   end
 
   (***********************************************************)
@@ -1042,7 +1054,8 @@ module ScillaBuiltIns
       | Builtin_schnorr_get_address -> [Crypto.schnorr_get_address_arity, Crypto.schnorr_get_address_type, elab_id, Crypto.schnorr_get_address]
       | Builtin_alt_bn128_G1_add -> [Crypto.alt_bn128_G1_add_arity, Crypto.alt_bn128_G1_add_type, elab_id, Crypto.alt_bn128_G1_add]
       | Builtin_alt_bn128_G1_mul -> [Crypto.alt_bn128_G1_mul_arity, Crypto.alt_bn128_G1_mul_type, elab_id, Crypto.alt_bn128_G1_mul]
-      | Builtin_alt_bn128_pairing_product -> [Crypto.alt_bn128_G1_add_arity, Crypto.alt_bn128_G1_add_type, elab_id, Crypto.alt_bn128_G1_add]
+      | Builtin_alt_bn128_pairing_product -> [Crypto.alt_bn128_pairing_product_arity, 
+                                              Crypto.alt_bn128_pairing_product_type, elab_id, Crypto.alt_bn128_pairing_product]
 
       (* Maps *)
       | Builtin_contains -> [Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains]
