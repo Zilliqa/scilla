@@ -180,6 +180,7 @@ Repo: [vim-scilla](https://github.com/edisonljh/vim-scilla).
 
 ### VSCode Plugin
 
-Thanks to @as1ndu, Visual Studio Code support for Scilla is now avaiable! [Github Source](https://github.com/as1ndu/vscode-scilla)
-
+Visual Studio Code support for Scilla is avaiable. [Github Source](https://github.com/as1ndu/vscode-scilla)
 You can install it through:https://marketplace.visualstudio.com/items?itemName=as1ndu.scilla
+
+Credits: [as1ndu](https://github.com/as1ndu)
