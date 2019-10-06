@@ -150,7 +150,7 @@ The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
 
 ## Developer Tools
-### Emacs mode for Scilla
+### Emacs mode
 
 An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode/scilla-mode.el).
 Add the following line to your `.emacs` file to load this mode for files ending with `.scilla` and `.scillib`.
@@ -162,7 +162,7 @@ For enabling flycheck mode for Scilla (see [INSTALL.md](./INSTALL.md)).
 ;; Scilla mode
 (load-file "/path/to/scilla-mode.el")
 ```
-### Vim plugin for Scilla
+### Vim plugin
 
 A vim plugin for editing Scilla contracts is provided.
 
@@ -177,3 +177,9 @@ Plugin 'edisonljh/vim-scilla'
 ```
 
 Repo: [vim-scilla](https://github.com/edisonljh/vim-scilla).
+
+### VSCode Plugin
+
+Thanks to @as1ndu, Visual Studio Code support for Scilla is now avaiable! [Github Source](https://github.com/as1ndu/vscode-scilla)
+
+You can install it through:https://marketplace.visualstudio.com/items?itemName=as1ndu.scilla
