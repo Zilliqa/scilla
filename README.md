@@ -38,7 +38,7 @@ Once the project is built you can try the following things:
 From the project root, execute
 
 ```
-./bin/eval-runner -libdir src/stdlib tests/eval/exp/good/let.scilexp
+./bin/eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/exp/good/let.scilexp
 ```
 
 Instead of `let.scilla` you might want to try any different file in
@@ -52,13 +52,13 @@ list of paths separated with `:` (or `;` on Windows).
 From the project root, execute
 
 ```
-./bin/scilla-checker -libdir src/stdlib tests/contracts/auction.scilla
+./bin/scilla-checker -gaslimit 10000 -libdir src/stdlib tests/contracts/auction.scilla
 ```
 
 Instead of `auction.scilla` you might want to try any different file in
 `tests/contracts` with a complete implementation of a contract, or your
 own contract code. The second argument, which is a path to the Scilla
-standard library can alternatively be specified in the environment
+standard library can alternatively be specified in the environment 
 variable `SCILLA_STDLIB_PATH`. As above, this must be an absolute
 path(s).
 
