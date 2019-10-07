@@ -33,5 +33,17 @@ git checkout f2067162520f91438b44e71a2cab2362f1c3cab4
 echo "Installing libff into ${libffdir}/install"
 cd ../build
 cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DWITH_PROCPS=OFF
+if [[ $? -ne 0 ]]
+then
+    echo "libff: CMake configuration failed"
+    exit 1
+fi
+
 make -j4 install
-echo "Installation of libff complete"
+if [[ $? -ne 0 ]]
+then
+    echo "libff: build failed"
+    exit 1
+fi
+
+echo "libff: installation complete"
