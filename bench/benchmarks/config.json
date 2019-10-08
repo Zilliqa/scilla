@@ -1,0 +1,28 @@
+{
+  "expressions": [
+    {
+      "name": "eval",
+      "path": "tests/eval/exp/good",
+      "tests": [
+        "addr",
+        "app",
+        "app2",
+        "app3",
+        "app4",
+        "app5",
+        "builtin1",
+        "nat_fold_stress"
+      ],
+      "gas_limit": 1000000
+    }
+  ],
+  "contracts": [
+    {
+      "name": "main",
+      "included": [
+        "ipc"
+      ],
+      "excluded": []
+    }
+  ]
+}

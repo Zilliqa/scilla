@@ -15,7 +15,7 @@ let
     base core core_bench core_profiler ppx_deriving ppx_tools_versioned
     ppx_sexp_conv bisect_ppx fileutils hex stdint batteries zarith cryptokit atdgen
     bitstring ctypes findlib utop angstrom ounit expect_test_helpers patience_diff
-    ocaml_pcre merlin ocp-indent ocp-index yojson menhir secp256k1 rpclib
+    ocaml_pcre merlin ocp-indent ocp-index yojson menhir secp256k1 rpclib re2 ppx_let
     ppx_deriving_protobuf ocaml-protoc ppx_deriving_rpc result rresult xmlm
   ];
   packages = systemPkgs ++ ocamlPkgs;

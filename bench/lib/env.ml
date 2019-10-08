@@ -21,16 +21,21 @@ open ScillaUtil
 type t =
   { bin_dir : string;
     stdlib_dir : string;
-    contracts_dir : string;
+    benchmarks_dir : string;
     tmp_dir : string;
-    sock_addr : string;
+    state_mode : StateService.service_mode;
   }
 
-let mk sock_addr =
+let mk ~sock_addr =
   let open FilePathInfix in
   let cwd = Sys.getcwd () in
   let bin_dir = cwd ^/ "bin" in
-  let contracts_dir = cwd ^/ "bench" ^/ "contracts" in
+  let benchmarks_dir = cwd ^/ "bench" ^/ "benchmarks" in
   let tmp_dir = Filename.get_temp_dir_name () in
   let stdlib_dir = cwd ^/ "src" ^/ "stdlib" in
-  { bin_dir; contracts_dir; tmp_dir; stdlib_dir; sock_addr }
+  let state_mode = match sock_addr with
+    | Some addr -> StateService.IPC addr
+    | None -> StateService.Local
+  in { bin_dir; benchmarks_dir; tmp_dir;
+       stdlib_dir; state_mode
+     }

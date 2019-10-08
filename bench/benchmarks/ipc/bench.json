@@ -1,6 +1,6 @@
 {
   "name": "ipc",
-  "state_mode": "IPC",
+  "ipc": true,
   "transitions": [
     { "name": "get1" },
     { "name": "get5" },

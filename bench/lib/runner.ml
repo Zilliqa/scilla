@@ -12,32 +12,11 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-(* ATD for a contract benchmark *)
+open Core
 
-type state_mode = [
-  | IPC
-  | Local
-]
-
-type transition = {
-  name: string; (* transition benchmark name *)
-  ?message: string option;
-  ?init: string option;
-  ?state: string option;
-  ?blockchain: string option;
-}
-
-type spec = {
-  name: string; (* contract benchmark name *)
-  state_mode: state_mode;
-  ~shallow <ocaml default="false">: bool;
-
-  ~input <ocaml default="\"contract.scilla\"">: string;
-
-  ?init: string option;
-  ?state: string option;
-  ?blockchain: string option;
-  ~gas_limit <ocaml default="8000">: int;
-
-  transitions: transition list;
-}
+let exec ~prog ~args =
+  let pi = Unix.create_process ~prog ~args in
+  let exit_or_signal = Unix.waitpid pi.pid in
+  if Result.is_error exit_or_signal then
+    let cmd = prog ^ " " ^ String.concat ~sep:" " args in
+    failwith @@ "Benchmark failed: " ^ cmd

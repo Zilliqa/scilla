@@ -12,13 +12,4 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Spec_t
-
-(** Read the contract benchmark specification JSON file from the given path *)
-val from_json_file : string -> spec
-
-(** Read the contract benchmark specification from the given directory *)
-val read : env:Env.t -> string -> spec
-
-(** Read all contract benchmark specifications *)
-val read_all : Env.t -> spec list
+val read : Env.t -> Config_t.config

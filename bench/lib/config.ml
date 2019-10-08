@@ -12,8 +12,11 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_bench
-open Config_t
+open Core
+open Env
+open ScillaUtil.FilePathInfix
 
-(** Make a new transition benchmark *)
-val mk : int -> transition -> contract:contract -> group:contract_group -> env:Env.t -> Bench.Test.t
+let read env =
+  env.benchmarks_dir ^/ "config.json"
+  |> In_channel.read_all
+  |> Config_j.config_of_string

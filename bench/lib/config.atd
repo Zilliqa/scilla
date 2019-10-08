@@ -1,0 +1,70 @@
+(*
+  This file is part of scilla.
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
+(* Expression benchmark group *)
+type expression_group = {
+  name: string;
+  (* path to the contract benchmarks *)
+  path: string;
+  (* Expression names (without extension) to
+     run as part of a benchmark *)
+  tests: string list;
+
+  ~gas_limit <ocaml default="80000">: int;
+}
+
+(* Contract benchmark group *)
+type contract_group = {
+  name: string;
+
+  (* Path to the expression benchmarks *)
+  ?path: string option;
+
+  included: string list;
+  excluded: string list;
+}
+
+(* Describes a transition benchmark *)
+type transition = {
+  name: string;
+
+  ?message: string option;
+  ?init: string option;
+  ?state: string option;
+  ?blockchain: string option;
+}
+
+(* Describes a contract benchmark *)
+type contract = {
+  name: string;
+
+  (* Whether this contract benchmark should
+     be tested against the IPC state server *)
+  ~ipc <ocaml default="false">: bool;
+
+  ~input <ocaml default="\"contract.scilla\"">: string;
+  ~gas_limit <ocaml default="80000">: int;
+
+  ?init: string option;
+  ?state: string option;
+  ?blockchain: string option;
+
+  (* Transitions to run as part of a contract benchmark *)
+  transitions: transition list;
+}
+
+type config = {
+  expressions: expression_group list;
+  contracts: contract_group list;
+}

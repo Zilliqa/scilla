@@ -12,8 +12,26 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core
 open Core_bench
+open ScillaUtil.FilePathInfix
+open Env
 open Config_t
 
-(** Make a new transition benchmark *)
-val mk : int -> transition -> contract:contract -> group:contract_group -> env:Env.t -> Bench.Test.t
+let mk (group : expression_group) ~env =
+  let cwd = Sys.getcwd () in
+  let mk_bench name =
+    (* Example: ./bin/eval-runner -libdir src/stdlib tests/eval/exp/good/let.scilexp *)
+    let input = cwd ^/ group.path ^/ name ^. "scilexp" in
+    let prog = env.bin_dir ^/ "eval-runner" in
+    let args = [
+      "-libdir"; env.stdlib_dir;
+      "-gaslimit"; string_of_int group.gas_limit;
+      input;
+    ] in
+    let run () = Runner.exec ~prog ~args in
+    Bench.Test.create ~name run
+  in
+  group.tests
+  |> List.map ~f:mk_bench
+  |> Bench.Test.create_group ~name:("exp/" ^ group.name)

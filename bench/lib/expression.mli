@@ -12,22 +12,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
-open ScillaUtil
-open Env
+open Core_bench
+open Config_t
 
-let from_json_file path =
-  path
-  |> In_channel.read_all
-  |> Spec_j.spec_of_string
-
-let read ~env dir =
-  let open FilePathInfix in
-  let dir = env.contracts_dir ^/ dir in
-  from_json_file @@ dir ^/ "bench.json"
-
-let read_all env =
-  env.contracts_dir
-  |> Sys.ls_dir
-  (* |> List.filter ~f:Sys.is_directory_exn *)
-  |> List.map ~f:(read ~env)
+(** Make a standalone expressions benchmark group. *)
+val mk : expression_group -> env:Env.t -> Bench.Test.t

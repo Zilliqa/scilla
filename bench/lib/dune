@@ -1,19 +1,21 @@
 (rule
-  (targets spec_j.ml spec_j.mli)
-  (deps    spec.atd)
+  (targets config_j.ml config_j.mli)
+  (deps    config.atd)
   (mode    fallback)
   (action  (run atdgen -j %{deps})))
 
 (rule
-  (targets spec_t.ml spec_t.mli)
-  (deps    spec.atd)
+  (targets config_t.ml config_t.mli)
+  (deps    config.atd)
   (mode    fallback)
   (action  (run atdgen -t %{deps})))
 
 (library
  (name scilla_bench)
  (library_flags -linkall)
- (modules spec transition spec_t spec_j env)
+ (modules
+   config contract transition expression
+   config_t config_j env runner)
  (libraries
    core core_bench yojson atdgen
    scilla_base scilla_eval scilla_util stateIPCTest)

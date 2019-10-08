@@ -19,9 +19,9 @@
 type t =
   { bin_dir : string;
     stdlib_dir : string;
-    contracts_dir : string;
+    benchmarks_dir : string;
     tmp_dir : string;
-    sock_addr : string;
+    state_mode : StateService.service_mode;
   }
 
-val mk : string -> t
+val mk : sock_addr:string option -> t
