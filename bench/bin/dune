@@ -1,6 +1,6 @@
 (executable
  (name scilla_bench_runner)
- (public_name scilla-bench-runner)
+ (public_name scilla-bench)
  (modules scilla_bench_runner)
  (libraries
    core core_bench re2

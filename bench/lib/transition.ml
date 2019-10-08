@@ -18,26 +18,29 @@ open Config_t
 open ScillaUtil.FilePathInfix
 open Env
 
-module Info = struct
+module Args = struct
   type t = {
-    name : string;
     index : int;
     init : string;
     state : string;
     blockchain : string;
     message : string;
+    gas_limit: string;
+    lib_dir : string;
+    input : string;
     output : string;
   }
 
-  let mk group (contract : contract) (index : int) (tr : transition) ~env =
+  let mk index (tr : transition) ~(contract : contract) ~group ~env =
     let subpath = Option.value group.path ~default:"" in
-    let dir = env.benchmarks_dir ^/ subpath ^/ contract.name in
+    let dir = env.benchmarks_dir ^/  subpath ^/ contract.name  in
+    let input = dir ^/ contract.input in
     let mk_path name def fallback =
-      let spec_path = Option.map def ~f:(fun f -> dir ^/ f) in
-      let tr_path = Option.map name ~f:(fun f -> dir ^/ "transitions" ^/ f) in
-      let path = Option.first_some tr_path spec_path in
-      Option.value path ~default:(dir ^/ fallback) in
-
+      let open Option in
+      let spec_path = map def ~f:(fun f -> dir ^/ f) in
+      let tr_path = map name ~f:(fun f -> dir ^/ "transitions" ^/ f) in
+      let file_path = first_some tr_path spec_path in
+      value file_path ~default:(dir ^/ fallback) in
     let init = mk_path tr.init contract.init "init.json" in
     let state = mk_path tr.state contract.state "state.json" in
     let blockchain = mk_path tr.blockchain contract.blockchain "blockchain.json" in
@@ -45,41 +48,46 @@ module Info = struct
       tr.message
       |> Option.value ~default:(tr.name ^. "json")
       |> (fun f -> dir ^/ "transitions" ^/ f) in
+    let gas_limit = string_of_int contract.gas_limit in
     let istr = string_of_int index in
     let output = env.tmp_dir ^/ tr.name ^ "_output_" ^ istr ^. "json" in
-    { name = tr.name; index; init; state; blockchain; message; output }
+    { lib_dir = env.stdlib_dir;
+      index; init; state;
+      blockchain; message; gas_limit;
+      input; output
+    }
+
+  let to_list args =
+    [ "-init"; args.init;
+      "-i"; args.input;
+      "-libdir"; args.lib_dir;
+      "-gaslimit"; args.gas_limit;
+      "-imessage"; args.message;
+      "-jsonerrors";
+      "-iblockchain"; args.blockchain;
+      "-o"; args.output
+    ]
 end
 
 let mk index tr ~contract ~group ~env =
-  let info = Info.mk ~env group contract index tr in
-  let subpath = Option.value group.path ~default:"" in
-  let input = env.benchmarks_dir ^/ subpath ^/ contract.name ^/ contract.input in
-  let base_args =
-    [ "-init"; info.init;
-      "-i"; input;
-      "-libdir"; env.stdlib_dir;
-      "-gaslimit"; string_of_int contract.gas_limit;
-      "-imessage"; info.message;
-      "-jsonerrors";
-      "-iblockchain"; info.blockchain;
-      "-o"; info.output
-    ] in
+  (* Prepare a CLI args to run the given transition benchmark *)
+  let args = Args.mk index tr ~contract ~group ~env in
+  let base_args = Args.to_list args in
   let extra_args =
     match env.state_mode with
-    | StateService.Local -> ["-istate"; info.state]
+    | StateService.Local -> ["-istate"; args.state]
     | StateService.IPC sock_addr ->
         if contract.ipc then
           (* Initialize IPC state server *)
           let balance = StateIPCTest.setup_and_initialize
               ~start_mock_server:false
               ~sock_addr
-              ~state_json_path:info.state in
+              ~state_json_path:args.state in
           ["-ipcaddress"; sock_addr; "-balance"; balance]
         else
-          ["-istate"; info.state]
+          ["-istate"; args.state]
   in
-  let prog = env.bin_dir ^/ "scilla-runner" in
-  (* Get a CLI args to run the given transition benchmark *)
-  let args = base_args @ extra_args in
-  let run () = Runner.exec ~prog ~args in
-  Bench.Test.create ~name:info.name run
+  let run () = Runner.exec
+      ~prog:(env.bin_dir ^/ "scilla-runner")
+      ~args:(base_args @ extra_args) in
+  Bench.Test.create ~name:tr.name run
