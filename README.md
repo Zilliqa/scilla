@@ -38,7 +38,7 @@ Once the project is built you can try the following things:
 From the project root, execute
 
 ```
-./bin/eval-runner -libdir src/stdlib tests/eval/exp/good/let.scilexp
+./bin/eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/exp/good/let.scilexp
 ```
 
 Instead of `let.scilla` you might want to try any different file in
@@ -52,13 +52,13 @@ list of paths separated with `:` (or `;` on Windows).
 From the project root, execute
 
 ```
-./bin/scilla-checker -libdir src/stdlib tests/contracts/auction.scilla
+./bin/scilla-checker -gaslimit 10000 -libdir src/stdlib tests/contracts/auction.scilla
 ```
 
 Instead of `auction.scilla` you might want to try any different file in
 `tests/contracts` with a complete implementation of a contract, or your
 own contract code. The second argument, which is a path to the Scilla
-standard library can alternatively be specified in the environment
+standard library can alternatively be specified in the environment 
 variable `SCILLA_STDLIB_PATH`. As above, this must be an absolute
 path(s).
 
@@ -150,7 +150,7 @@ The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
 
 ## Developer Tools
-### Emacs mode for Scilla
+### Emacs mode
 
 An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode/scilla-mode.el).
 Add the following line to your `.emacs` file to load this mode for files ending with `.scilla` and `.scillib`.
@@ -162,7 +162,7 @@ For enabling flycheck mode for Scilla (see [INSTALL.md](./INSTALL.md)).
 ;; Scilla mode
 (load-file "/path/to/scilla-mode.el")
 ```
-### Vim plugin for Scilla
+### Vim plugin
 
 A vim plugin for editing Scilla contracts is provided.
 
@@ -177,3 +177,10 @@ Plugin 'edisonljh/vim-scilla'
 ```
 
 Repo: [vim-scilla](https://github.com/edisonljh/vim-scilla).
+
+### VSCode Plugin
+
+Visual Studio Code support for Scilla is avaiable. [Github Source](https://github.com/as1ndu/vscode-scilla)
+You can install it through:https://marketplace.visualstudio.com/items?itemName=as1ndu.scilla
+
+Credits: [as1ndu](https://github.com/as1ndu)
