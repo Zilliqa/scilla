@@ -60,9 +60,7 @@ brew bundle
 ```
 from the project root.
 
-Normally, by this moment everything should be set up as the [Dune](https://dune.build) build system
-takes care of environment variables for `pkg-config` utility.
-However Homebrew's `openssl` package is keg-only, which means it doesn't get symlinked
+Homebrew's `openssl` package is _keg-only_, which means it doesn't get symlinked
 into `/usr/local` directory, so in case of a non-default version of the package,
 you will need to set up `PKG_CONFIG_PATH` environment variable as Homebrew suggests.
 It should look like
