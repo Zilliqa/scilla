@@ -179,16 +179,19 @@ module ScillaGas
       when is_bystrx_type a1 && is_bystrx_type a2 ->
       pure @@ (get(bystrx_width a1) + get(bystrx_width a2)) * base
     | Builtin_alt_bn128_G1_add, _, _ ->
-      (* TODO: Measure and set cost. *)
-      pure @@ 128 * base
-    | Builtin_alt_bn128_G1_mul, _, _ ->
-      (* TODO: Measure and set cost. *)
-      pure @@ 2 * 128 * base
+      pure @@ 20 * base
+    | Builtin_alt_bn128_G1_mul, _, [_;s] ->
+      let%bind s' = scilla_scalar_to_ocaml s in
+      let u = Integer256.Uint256.of_bytes_big_endian (Bytes.of_string s') 0 in
+      let us = Integer256.Uint256.to_string u in
+      let f = Float.of_string us in
+      let multiplier = Float.log f in
+      let multiplier_int = Float.to_int multiplier in
+      pure @@ 20 * multiplier_int * base
     | Builtin_alt_bn128_pairing_product, _, [pairs] ->
-      (* TODO: Measure and set cost. *)
       let%bind opairs = scilla_g1g2pairlist_to_ocaml pairs in
       let list_len = List.length opairs in
-      pure @@ list_len * Snark.g1g2pair_len * base
+      pure @@ list_len * 40 * base
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
   let map_coster op args base =
