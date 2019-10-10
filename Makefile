@@ -103,3 +103,14 @@ coveralls:
 	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs
 	make clean
 	-find . -name 'bisect*.out' | xargs rm
+
+
+# Diagnostic builds
+
+verbose:
+	dune build --profile dev @install --verbose
+
+# sequential build
+verbose-j1:
+	dune build -j1 --profile dev @install --verbose
+
