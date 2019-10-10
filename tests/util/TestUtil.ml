@@ -93,7 +93,7 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
       let goldoutput_file = FilePath.make_filename (gold_path dir fname) in
       let open FilePath in
       let additional_dirs = List.map ~f:make_filename additional_libdirs in
-      let stdlib = env.stdlib_dir test_ctxt in
+      let stdlib = FilePath.make_relative dir (env.stdlib_dir test_ctxt) in
       let path = string_of_path @@ stdlib :: additional_dirs in
       let args = custom_args @ ["-libdir";path;"-jsonerrors";input_file;"-gaslimit";(Stdint.Uint64.to_string gas_limit)] in
       let msg = cli_usage_on_err evalbin args in
