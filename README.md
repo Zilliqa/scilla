@@ -18,7 +18,7 @@ Zilliqa - the underlying blockchain platform on which Scilla contracts are run, 
 
 ### Language Reference
 
-A comprehensive documentation on Scilla, its features and constructs can be found (here)[https://scilla.readthedocs.io/en/latest/]
+A comprehensive documentation on Scilla, its features and constructs can be found [here](https://scilla.readthedocs.io/en/latest/)
 
 ## Building and Running
 
