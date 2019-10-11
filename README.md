@@ -16,6 +16,10 @@ Scilla imposes a structure on smart contracts that will make applications less v
 
 Zilliqa - the underlying blockchain platform on which Scilla contracts are run, has been designed to be scalable. It employs the idea of sharding to validate transactions in parallel. Zilliqa has an intrinsic token named Zilling, ZIL for short that are required to run smart contracts on Zilliqa.
 
+### Language Reference
+
+A comprehensive documentation on Scilla, its features and constructs can be found [here](https://scilla.readthedocs.io/en/latest/)
+
 ## Building and Running
 
 ### Source code
