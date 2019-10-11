@@ -77,6 +77,7 @@ module Tests = TestUtil.DiffBasedTests(
       "global_scope_procedures.scilla";
       "bad-exception1.scilla";
       "blowup.scilla";
+      "BadPMLib.scillib";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
@@ -106,6 +107,7 @@ module LibTests = TestUtil.DiffBasedTests(
       "bad_lib_type.scilla";
       "bad_lib_type2.scilla";
       "bad_lib_type3.scilla";
+      "bad_lib_pm_import.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
