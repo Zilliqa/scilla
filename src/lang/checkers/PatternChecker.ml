@@ -165,7 +165,6 @@ module ScillaPatternchecker
         let%bind checked_body = pm_check_expr body in
         pure @@ (CheckedPatternSyntax.Fixpoint (i, t, checked_body), rep)
 
-
   let rec pm_check_stmts stmts =
     match stmts with
     | [] -> pure @@ []
@@ -210,8 +209,7 @@ module ScillaPatternchecker
               CheckedPatternSyntax.comp_params = comp_params;
               CheckedPatternSyntax.comp_body = checked_body }
 
-  let pm_check_library l =
-    let { lname = libname; lentries } = l in
+  let pm_check_libentries lentries =
     let%bind checked_lentries = mapM
         ~f:(fun entry ->
             match entry with
@@ -225,8 +223,19 @@ module ScillaPatternchecker
                 let msg = sprintf "Error during pattern-match checking of library %s:\n" (get_id entryname) in
                 let%bind checked_lexp = wrap_with_info (msg, ER.get_loc (get_rep entryname)) @@ pm_check_expr lexp in
                 pure @@ CheckedPatternSyntax.LibVar (entryname, t, checked_lexp)) lentries in
+    pure @@ checked_lentries                
+
+
+  let pm_check_library l =
+    let { lname = libname; lentries } = l in
+    let%bind checked_lentries = pm_check_libentries lentries in
     pure @@ { CheckedPatternSyntax.lname = libname;
               CheckedPatternSyntax.lentries = checked_lentries }
+
+  let rec pm_check_libtree ltree =
+    let%bind deps = mapM ltree.deps ~f:pm_check_libtree in
+    let%bind l = pm_check_library ltree.libn in
+    pure { CheckedPatternSyntax.libn = l; CheckedPatternSyntax.deps = deps }
 
   let pm_check_fields fs =
     mapM ~f:(fun (i, t, e) ->
@@ -244,11 +253,24 @@ module ScillaPatternchecker
               CheckedPatternSyntax.cfields = checked_flds;
               CheckedPatternSyntax.ccomps = checked_comp }
 
-  let pm_check_module md =
+  let pm_check_lmodule lm rlibs elibs =
+    let {elibs = mod_elibs; libs} = lm in
+    let%bind checked_rlibs = pm_check_libentries rlibs in
+    let%bind checked_elibs = mapM elibs ~f:pm_check_libtree in
+
+    let%bind checked_libs = pm_check_library libs in
+    pure ({ CheckedPatternSyntax.elibs = mod_elibs;
+            CheckedPatternSyntax.libs = checked_libs},
+          checked_rlibs, checked_elibs)
+
+  let pm_check_module md rlibs elibs =
     let { smver = mod_smver; cname = mod_cname; libs; elibs = mod_elibs; contr } = md in
     let { cname = ctr_cname; cparams; cfields; ccomps} = contr in
     let init_msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
     wrap_with_info (init_msg, dummy_loc) @@
+
+    let%bind checked_rlibs = pm_check_libentries rlibs in
+    let%bind checked_elibs = mapM elibs ~f:pm_check_libtree in
 
     let%bind (checked_lib, emsgs) =
       match libs with
@@ -274,7 +296,7 @@ module ScillaPatternchecker
     
     if emsgs'' = []
     (* Return pure environment *)  
-    then pure @@ {CheckedPatternSyntax.smver = mod_smver;
+    then pure (  {CheckedPatternSyntax.smver = mod_smver;
                   CheckedPatternSyntax.cname = mod_cname;
                   CheckedPatternSyntax.libs = checked_lib;
                   CheckedPatternSyntax.elibs = mod_elibs;
@@ -283,6 +305,7 @@ module ScillaPatternchecker
                      CheckedPatternSyntax.cparams = cparams;
                      CheckedPatternSyntax.cfields = checked_fields;
                      CheckedPatternSyntax.ccomps = checked_comps}}
+                , checked_rlibs, checked_elibs)
     (* Return error messages *)
     else fail @@ emsgs''
     
