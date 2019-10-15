@@ -391,7 +391,7 @@ let non_arithmetic_tests = test_case (fun _ ->
 
 module Uint256Tester = IntTester (Uint256) (Uint256_Emu)
 let list_uint256 = (Uint256Tester.binary_tests binary_inputs_uint)
-let uint256_tests_list = List.append (t1_uint::t2_uint::t3_uint::[]) list_uint256
+let uint256_tests_list = List.append [t1_uint; t2_uint; t3_uint] list_uint256
 let uint256_tests = "uint256_tests" >::: uint256_tests_list
 
 module Int256Tester = IntTester (Int256) (Int256_Emu)
