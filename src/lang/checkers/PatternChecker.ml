@@ -233,7 +233,7 @@ module ScillaPatternchecker
               CheckedPatternSyntax.lentries = checked_lentries }
 
   let rec pm_check_libtree ltree =
-    let%bind deps = mapM ltree.deps ~f:(fun dep -> pm_check_libtree dep) in
+    let%bind deps = mapM ltree.deps ~f:pm_check_libtree in
     let%bind l = pm_check_library ltree.libn in
     pure { CheckedPatternSyntax.libn = l; CheckedPatternSyntax.deps = deps }
 
