@@ -286,6 +286,9 @@ type builtin =
   | Builtin_bystr20_to_bech32
   | Builtin_schnorr_verify
   | Builtin_ecdsa_verify
+  | Builtin_alt_bn128_G1_add
+  | Builtin_alt_bn128_G1_mul
+  | Builtin_alt_bn128_pairing_product
   (* https://github.com/Zilliqa/scilla/pull/486#discussion_r266069221 *)
   (*
   | Builtin_ec_gen_key_pair (* in gas coster only *)
@@ -339,6 +342,9 @@ let pp_builtin b = match b with
   | Builtin_schnorr_verify -> "schnorr_verify"
   | Builtin_ecdsa_verify -> "ecdsa_verify"
   | Builtin_schnorr_get_address -> "schnorr_get_address"
+  | Builtin_alt_bn128_G1_add -> "alt_bn128_G1_add"
+  | Builtin_alt_bn128_G1_mul -> "alt_bn128_G1_mul"
+  | Builtin_alt_bn128_pairing_product -> "alt_bn128_pairing_product"
   | Builtin_contains -> "contains"
   | Builtin_put -> "put"
   | Builtin_get -> "get"
@@ -380,6 +386,9 @@ let parse_builtin s loc = match s with
   | "schnorr_verify" -> Builtin_schnorr_verify
   | "ecdsa_verify" -> Builtin_ecdsa_verify
   | "schnorr_get_address" -> Builtin_schnorr_get_address
+  | "alt_bn128_G1_add" -> Builtin_alt_bn128_G1_add
+  | "alt_bn128_G1_mul" -> Builtin_alt_bn128_G1_mul
+  | "alt_bn128_pairing_product" -> Builtin_alt_bn128_pairing_product
   | "contains" -> Builtin_contains
   | "put" -> Builtin_put
   | "get" -> Builtin_get

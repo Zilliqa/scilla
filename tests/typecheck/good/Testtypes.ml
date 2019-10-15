@@ -129,6 +129,7 @@ module Tests = TestUtil.DiffBasedTests(
       "builtin-strings.scilexp";
       "builtin-bech32-1.scilexp";
       "builtin-bech32-2.scilexp";
+      "builtin-alt-bn128.scilexp";
       "fun.scilexp";
       "fun1.scilexp";
       "addr.scilexp";

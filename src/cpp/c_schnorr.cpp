@@ -1,17 +1,8 @@
 #include <cassert>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
 
 #include "c_schnorr.h"
 #include "Schnorr.h"
-
-// OCaml CTypes does not support handling exceptions. So just abort.
-void err_abort(const char* msg)
-{
-    fprintf(stderr, "%s\n", msg);
-    abort();
-}
 
 extern "C" {
 

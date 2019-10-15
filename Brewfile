@@ -11,4 +11,4 @@ brew "openssl"
 brew "boost"
 brew "pcre"
 brew "iantanwx/crypto/secp256k1"
-
+brew "cmake"

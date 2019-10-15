@@ -25,6 +25,7 @@ open TypeUtil
 open PrimTypes
 open Schnorr
 open PrettyPrinters
+open Datatypes.SnarkTypes
 
 (* Arbitrarily picked, the largest prime less than 100. *)
 let version_mismatch_penalty = 97
@@ -177,6 +178,18 @@ module ScillaGas
     | Builtin_concat, [a1;a2], _
       when is_bystrx_type a1 && is_bystrx_type a2 ->
       pure @@ (get(bystrx_width a1) + get(bystrx_width a2)) * base
+    | Builtin_alt_bn128_G1_add, _, _ ->
+      pure @@ 20 * base
+    | Builtin_alt_bn128_G1_mul, _, [_;s] ->
+      let%bind s' = scilla_scalar_to_ocaml s in
+      let u = Integer256.Uint256.of_bytes_big_endian (Bytes.of_string s') 0 in
+      let multiplier = Float.log (Integer256.Uint256.to_float u) in
+      let multiplier_int = Float.to_int multiplier in
+      pure @@ 20 * multiplier_int * base
+    | Builtin_alt_bn128_pairing_product, _, [pairs] ->
+      let%bind opairs = scilla_g1g2pairlist_to_ocaml pairs in
+      let list_len = List.length opairs in
+      pure @@ list_len * 40 * base
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
   let map_coster op args base =
@@ -254,6 +267,9 @@ module ScillaGas
     (Builtin_ecdsa_verify, [bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster, 1);
     (Builtin_concat, [tvar "'A"; tvar "'A"], crypto_coster, 1);
     (Builtin_schnorr_get_address, [bystrx_typ pubkey_len], crypto_coster, 1);
+    (Builtin_alt_bn128_G1_add, [g1point_type; g1point_type], crypto_coster, 1);
+    (Builtin_alt_bn128_G1_mul, [g1point_type; scalar_type], crypto_coster, 1);
+    (Builtin_alt_bn128_pairing_product, [g1g2pair_list_type], crypto_coster, 1);
 
     (* Maps *)
     (Builtin_contains, [tvar "'A"; tvar "'A"], map_coster, 1);

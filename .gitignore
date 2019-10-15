@@ -58,3 +58,6 @@ cv/*.out
 src/stdlib/*.json
 .DS_Store
 
+# external dependencies
+_deps/*
+

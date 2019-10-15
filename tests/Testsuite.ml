@@ -53,6 +53,7 @@ let main =
   let integer256_tests = TestInteger256.integer256_tests in
   let polynomial_tests = TestPolynomial.polynomial_tests in
   let signature_tests = TestSignatures.signature_tests env in
+  let snark_tests = TestSnark.snark_tests env in
   (* let gas_expr_tests = TestGasExpr.Tests.add_tests env in
   let gas_contract_tests = TestGasContracts.Tests.add_tests env in *)
   let syntax_tests = TestSyntax.syntax_tests in
@@ -71,7 +72,7 @@ let main =
       pm_tests_bad; signature_tests; polynomial_tests; bech32_tests;
       (*gas_expr_tests; gas_contract_tests; *)
       checker_tests; integer256_tests; syntax_tests; arith_builtin_tests;
-      parser_tests;
+      parser_tests; snark_tests;
     ] in
   
   (* Run all tests *)
