@@ -183,9 +183,7 @@ module ScillaGas
     | Builtin_alt_bn128_G1_mul, _, [_;s] ->
       let%bind s' = scilla_scalar_to_ocaml s in
       let u = Integer256.Uint256.of_bytes_big_endian (Bytes.of_string s') 0 in
-      let us = Integer256.Uint256.to_string u in
-      let f = Float.of_string us in
-      let multiplier = Float.log f in
+      let multiplier = Float.log (Integer256.Uint256.to_float u) in
       let multiplier_int = Float.to_int multiplier in
       pure @@ 20 * multiplier_int * base
     | Builtin_alt_bn128_pairing_product, _, [pairs] ->
