@@ -103,10 +103,16 @@ let check_typing_lmod lmod rprin elibs gas =
     | _ -> () in
   res
 
-let check_patterns e  =
-  let res = PMC.pm_check_module e in
+let check_patterns e rlibs elibs =
+  let res = PMC.pm_check_module e rlibs elibs in
   if Result.is_ok res then
     plog @@ sprintf "\n[Pattern Check]:\n module [%s] is successfully checked.\n" (get_id e.contr.cname);
+  res
+
+let check_patterns_lmodule e rlibs elibs =
+  let res = PMC.pm_check_lmodule e rlibs elibs in
+  if Result.is_ok res then
+    plog @@ sprintf "\n[Pattern Check]:\n library module is successfully checked.\n";
   res
 
 let check_sanity m rlibs elibs =
@@ -157,9 +163,11 @@ let check_lmodule cli =
     let elibs = import_libs lmod.elibs cli.init_file  in
     let%bind (recursion_lmod, recursion_rec_principles, recursion_elibs) = 
       wrap_error_with_gas initial_gas @@ check_recursion_lmod lmod elibs in
-    let%bind ((typed_lmod, typed_elibs, typed_rlibs), remaining_gas) = 
+    let%bind ((typed_lmod, typed_rlibs, typed_elibs), remaining_gas) = 
       check_typing_lmod recursion_lmod recursion_rec_principles recursion_elibs initial_gas in
-    pure ((typed_lmod, typed_elibs, typed_rlibs), remaining_gas)
+    let%bind _ = wrap_error_with_gas remaining_gas @@ 
+      check_patterns_lmodule typed_lmod typed_rlibs typed_elibs in
+    pure ((typed_lmod, typed_rlibs, typed_elibs), remaining_gas)
   ) in
   (match r with
   | Error (s, g) -> fatal_error_gas s g
@@ -184,7 +192,8 @@ let check_cmodule cli =
       wrap_error_with_gas initial_gas @@ check_recursion cmod elibs in
     let%bind ((typed_cmod, tenv, typed_elibs, typed_rlibs), remaining_gas) =
       check_typing recursion_cmod recursion_rec_principles recursion_elibs initial_gas in
-    let%bind pm_checked_cmod = wrap_error_with_gas remaining_gas @@ check_patterns typed_cmod  in
+    let%bind (pm_checked_cmod, _pm_checked_rlibs, _pm_checked_elibs) =
+      wrap_error_with_gas remaining_gas @@ check_patterns typed_cmod typed_rlibs typed_elibs in
     let _ = if cli.cf_flag then check_accepts typed_cmod else () in
     let%bind _ = wrap_error_with_gas remaining_gas @@ check_sanity typed_cmod typed_rlibs typed_elibs in
     let%bind event_info = wrap_error_with_gas remaining_gas @@ EI.event_info pm_checked_cmod in
