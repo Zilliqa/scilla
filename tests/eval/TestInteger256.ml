@@ -157,6 +157,25 @@ let t2_uint = test_case (fun _ ->
   let b = (compare Uint256.max_int c) = 0 in
   assert_bool "Uint256 string conversion fail" b)
 
+let t3_uint = test_case (fun _ ->
+  let do_conv ui = Printf.sprintf "%f" (Uint256.to_float ui) in
+  let uint256_two = Uint256.add Uint256.one Uint256.one in
+  let uint256_max_minus_one = Uint256.sub Uint256.max_int Uint256.one in
+  let uint256_max_minus_two = Uint256.sub uint256_max_minus_one Uint256.one in
+  let max_float = "115792089237316195423570985008687907853269984665640564039457584007913129639936.000000" in
+  let zero_float = "0.000000" in
+  let one_float = "1.000000" in
+  let two_float = "2.000000" in
+  let max_minus_one_float = "115792089237316195423570985008687907853269984665640564039457584007913129639936.000000" in
+  let max_minus_two_float = "115792089237316195423570985008687907853269984665640564039457584007913129639936.000000" in
+  assert_bool "Uint256.to_float failed max_int" (max_float = do_conv Uint256.max_int);
+  assert_bool "Uint256.to_float failed one" (one_float = do_conv Uint256.one);
+  assert_bool "Uint256.to_float failed zero" (zero_float = do_conv Uint256.zero);
+  assert_bool "Uint256.to_float failed two" (two_float = do_conv uint256_two);
+  assert_bool "Uint256.to_float failed max_minus_one" (max_minus_one_float = do_conv uint256_max_minus_one);
+  assert_bool "Uint256.to_float failed max_minus_two" (max_minus_two_float = do_conv uint256_max_minus_two);
+)
+
 let t1_int = test_case (fun _ ->
   let b = (Int256.to_string Int256.max_int) = int256_max_str in
   assert_bool "Int256.max_int invalid" b)
@@ -372,7 +391,7 @@ let non_arithmetic_tests = test_case (fun _ ->
 
 module Uint256Tester = IntTester (Uint256) (Uint256_Emu)
 let list_uint256 = (Uint256Tester.binary_tests binary_inputs_uint)
-let uint256_tests_list = List.append (t1_uint::t2_uint::[]) list_uint256
+let uint256_tests_list = List.append [t1_uint; t2_uint; t3_uint] list_uint256
 let uint256_tests = "uint256_tests" >::: uint256_tests_list
 
 module Int256Tester = IntTester (Int256) (Int256_Emu)

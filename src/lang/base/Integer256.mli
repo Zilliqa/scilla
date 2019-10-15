@@ -46,6 +46,7 @@ module Uint256 : sig
 
   val of_string : string -> t
   val to_string : t -> string
+  val to_float : t -> float
   val to_bytes_big_endian : t -> Bytes.t -> int -> unit
   val to_bytes_little_endian : t -> Bytes.t -> int -> unit
   val of_bytes_big_endian : Bytes.t -> int -> t

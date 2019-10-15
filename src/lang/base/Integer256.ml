@@ -263,6 +263,9 @@ module Uint256 = struct
     in
       app ui ""
 
+  let to_float ui =
+    (Uint128.to_float ui.high) *. (2.0 ** 128.0) +. (Uint128.to_float ui.low)
+
   let to_bytes_big_endian ui buf off =
     let _ = Uint128.to_bytes_big_endian ui.high buf off in
     let _ = Uint128.to_bytes_big_endian ui.low buf (off+16) in

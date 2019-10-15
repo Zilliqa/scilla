@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "4001744",
+  "errors": [
+    {
+      "error_message":
+        "Type error: cannot apply \"alt_bn128_G1_add\" built-in to argument(s) of type(s) [Pair (ByStr32) (ByStr32); ByStr32].",
+      "start_location": {
+        "file": "eval/exp/bad/builtin-alt-bn128-add.scilexp",
+        "line": 12,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

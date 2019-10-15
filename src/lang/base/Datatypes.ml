@@ -19,6 +19,7 @@
 open Syntax
 open Core
 open MonadUtil
+open Result.Let_syntax
 
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)
@@ -196,3 +197,62 @@ let scilla_list_to_ocaml_rev v =
     | _ -> fail0 @@ sprintf "Cannot convert scilla list to reverse ocaml list:\n"
   in
   convert_to_list v []
+
+module SnarkTypes = struct
+  open Snark
+  open PrimTypes
+  open DataTypeDictionary
+
+  let scalar_type = bystrx_typ scalar_len
+  let g1point_type = pair_typ scalar_type scalar_type
+  let g2point_type = pair_typ (bystrx_typ g2comp_len) (bystrx_typ g2comp_len)
+  let g2comp_type = bystrx_typ g2comp_len
+  let g1g2pair_type = pair_typ g1point_type g2point_type
+  let g1g2pair_list_type = list_typ g1g2pair_type
+
+  let scilla_scalar_to_ocaml s =
+    match s with
+    | ByStrX s' when Bystrx.width s' = scalar_len ->
+      pure @@ Bystrx.to_raw_bytes s'
+    | _ -> fail0 @@ sprintf "Cannot convert scilla G1 point to ocaml G1 point."
+
+  let scilla_g1point_to_ocaml g1p =
+    match g1p with
+    | ADTValue("Pair", [pxt; pyt], [ByStrX px; ByStrX py]) 
+      when 
+        pxt = scalar_type && pyt = scalar_type &&
+        Bystrx.width px = scalar_len &&
+        Bystrx.width py = scalar_len ->
+      pure { g1x = Bystrx.to_raw_bytes px; g1y = Bystrx.to_raw_bytes py}
+    | _ -> fail0 @@ sprintf "Cannot convert scilla G1 point to ocaml G1 point."
+
+  let scilla_g2point_to_ocaml g2p =
+    match g2p with
+    | ADTValue("Pair", [pxt; pyt], [ByStrX px; ByStrX py]) 
+      when 
+        pxt = g2comp_type && pyt = g2comp_type &&
+        Bystrx.width px = g2comp_len &&
+        Bystrx.width py = g2comp_len ->
+      pure { g2x = Bystrx.to_raw_bytes px; g2y = Bystrx.to_raw_bytes py}
+    | _ -> fail0 @@ sprintf "Cannot convert scilla G2 point to ocaml G2 point."
+
+  let ocaml_g1point_to_scilla_lit g1p =
+    match Bystrx.of_raw_bytes scalar_len g1p.g1x, Bystrx.of_raw_bytes scalar_len g1p.g1y with
+    | Some x, Some y ->
+      pure @@ ADTValue("Pair", [g1point_type;g1point_type], [ByStrX x; ByStrX y])
+    | _ -> fail0 @@ sprintf "Cannot convert OCaml G1 point to Scilla literal."
+
+  let scilla_g1g2pairlist_to_ocaml g1g2pl =
+    let%bind g1g2ol = scilla_list_to_ocaml g1g2pl in
+    let%bind g1g2ol' = mapM g1g2ol ~f:(fun g1g2p_lit ->
+      match g1g2p_lit with
+      | ADTValue("Pair", [g1pt; g2pt], [g1p; g2p]) when
+          g1pt = g1point_type && g2pt = g2point_type ->
+        let%bind g1p' = scilla_g1point_to_ocaml g1p in
+        let%bind g2p' = scilla_g2point_to_ocaml g2p in
+        pure (g1p', g2p')
+      | _ -> fail0 @@ sprintf "Cannot convert scilla G1-G2 pair list to ocaml."
+    ) in
+    pure g1g2ol'
+
+end

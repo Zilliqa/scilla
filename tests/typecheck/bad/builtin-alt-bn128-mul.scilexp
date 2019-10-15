@@ -1,0 +1,28 @@
+let px = 0x025a6f4181d2b4ea8b724290ffb40156eb0adb514c688556eb79cdea0752c2bb in
+let py = 0x2eff3f31dea215f1eb86023a133a996eb6300b44da664d64251d05381bb8a02e in
+let s = 0x183227397098d014dc2822db40c0ac2ecbc0b548b438e5469e10460b6c3e7ea3 in
+
+let p = Pair {ByStr32 ByStr32} px py in
+
+let mul_x = 0x14789d0d4a730b354403b5fac948113739e276c23e0258d8596ee72f9cd9d323 in
+let mul_y = 0x0af18a63153e0ec25ff9f2951dd3fa90ed0197bfef6e2a1a62b5095b9d2b4a27 in
+
+let mul = builtin alt_bn128_G1_mul p p in
+let mul_test =
+  match mul with
+  | Some (Pair mulx muly) =>
+    let xeq = builtin eq mul_x mulx in
+    let yeq = builtin eq mul_y muly in
+    andb xeq yeq
+  | _ => False
+  end
+in
+
+let succm = "Success" in
+let failm = "Fail" in
+
+let succ = andb sum_test mul_test in
+match succ with
+| True => succm
+| False => failm
+end

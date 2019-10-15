@@ -11,16 +11,19 @@ default: all
 # multiple subcommands and uses the library.
 # The library can be loaded in utop for interactive testing.
 all:
+	./scripts/libff.sh
 	dune build --profile release @install
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Build only scilla-checker and scilla-runner
 slim:
+	./scripts/libff.sh
 	dune build --profile release src/runners/scilla_runner.exe
 	dune build --profile release src/runners/scilla_checker.exe
 	@test -L bin || mkdir bin; ln -s _build/default/src/runners/*.exe bin/
 
 dev:
+	./scripts/libff.sh
 	dune build --profile dev @install
 	dune build tests/testsuite.exe
 	@test -L bin || ln -s _build/install/default/bin .
@@ -53,8 +56,8 @@ clean:
 # Remove files produced by dune.
 	dune clean
 # Remove remaining files/folders ignored by git as defined in .gitignore (-X)
-# but keeping a local opam switch
-	git clean -dfXq --exclude=\!_opam/**
+# but keeping a local opam switch and other dependencies built.
+	git clean -dfXq --exclude=\!_deps/** --exclude=\!_opam/**
 
 # Build a standalone scilla docker
 docker:
@@ -87,6 +90,7 @@ opamdep-ci:
 coverage :
 	make clean
 	mkdir -p _build/coverage
+	./scripts/libff.sh
 	BISECT_ENABLE=YES make
 	dune exec tests/testsuite.exe
 	bisect-ppx-report -I _build/default/ -html _coverage/ `find . -name 'bisect*.out'`
@@ -97,6 +101,7 @@ coverage :
 coveralls:
 	make clean
 	mkdir -p _build/coverage
+	./scripts/libff.sh
 	BISECT_ENABLE=YES make
 	dune exec tests/testsuite.exe
 	bisect-ppx-report -ignore-missing-files -I _build/ -coveralls coverage.json -service-name travis-ci -service-job-id ${TRAVIS_JOB_ID} `find . -name 'bisect*.out'`
