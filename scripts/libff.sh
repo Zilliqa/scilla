@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script is expected to be executed from Scilla root
 # $./scripts/libff.sh
 # The script fetches, builds and installs libff in the
