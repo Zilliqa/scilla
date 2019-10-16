@@ -76,28 +76,28 @@ let run ctx =
     ?save_to_file:ctx.save_to_file
     (expressions @ contracts)
 
-let command =
+let param =
   let open Command.Spec in
   let open Command.Let_syntax in
   let re = Arg_type.create Re2.create_exn in
-  Bench.make_command_ext
-    ~summary:"Run Scilla benchmarks."
-    [%map_open
-      let regex = flag "-matching" (optional re) ~doc:"REGEX Select benchmarks matching given regex."
-      and list = flag "-list" no_arg ~doc:"List benchmark names without running them"
-      and sock_addr = flag "-ipcaddress" (optional string) ~doc:"Socket address for IPC communication with blockchain for state access"
-      in fun (analysis_configs, display_config, mode) -> (
-          match mode with
-          | `From_file _ ->
-              failwith "This executable is for running benchmarks, not analyzing saved measurements."
-          | `Run (save_to_file, run_config) ->
-              let ctx =
-                { regex; list; sock_addr;
-                  analysis_configs; display_config;
-                  save_to_file; run_config;
-                } in
-              run ctx
-        )
-    ]
+  [%map_open
+    let regex = flag "-matching" (optional re) ~doc:"REGEX Select benchmarks matching given regex."
+    and list = flag "-list" no_arg ~doc:"List benchmark names without running them"
+    and sock_addr = flag "-ipcaddress" (optional string) ~doc:"Socket address for IPC communication with blockchain for state access"
+    in fun (analysis_configs, display_config, mode) -> (
+        match mode with
+        | `From_file _ ->
+            failwith "This executable is for running benchmarks, not analyzing saved measurements."
+        | `Run (save_to_file, run_config) ->
+            let ctx =
+              { regex; list; sock_addr;
+                analysis_configs; display_config;
+                save_to_file; run_config;
+              } in
+            run ctx
+      )
+  ]
 
-let () = Command.run command
+let () =
+  let command = Bench.make_command_ext ~summary:"Run Scilla benchmarks." param in
+  Command.run command
