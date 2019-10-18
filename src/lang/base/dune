@@ -27,5 +27,5 @@
   (pps ppx_sexp_conv
        ppx_let
        ppx_deriving.show
-       bisect_ppx -exclude-file=../../bisect.exclude -conditional))
+       bisect_ppx -conditional))
  (synopsis "Scilla workbench implementation."))
