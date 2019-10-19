@@ -28,3 +28,25 @@ let bool_to_string : Bool -> String =
     | True => "True"
     | False => "False"
     end
+
+let orb_3 : Bool -> Bool -> Bool -> Bool =
+  fun (a : Bool) => fun (b : Bool) => fun (c : Bool) =>
+    let t = orb a b in
+    orb c t
+
+let and_3 : Bool -> Bool -> Bool -> Bool =
+  fun (a : Bool) => fun (b : Bool) => fun (c : Bool) =>
+    let t = andb a b in
+    andb c t
+
+let orb_4 : Bool -> Bool -> Bool -> Bool -> Bool =
+  fun (a : Bool) => fun (b : Bool) => fun (c : Bool) => fun (d : Bool) =>
+    let t1 = orb a b in
+    let t2 = orb t1 c in
+    orb t2 d
+
+let and_4 : Bool -> Bool -> Bool -> Bool -> Bool =
+  fun (a : Bool) => fun (b : Bool) => fun (c : Bool) => fun (d : Bool) =>
+    let t1 = andb a b in
+    let t2 = andb t1 c in
+    andb t2 d
