@@ -81,23 +81,23 @@ should drop you into and isolated environment with all the
 necessary dependencies available.
 
 
-## Installing opam packages
+## Installing OPAM packages
 
-### If you just installed opam package manager
+### If you just installed OPAM package manager
 
-#### Initialize opam
+#### Initialize OPAM
 ```shell
 opam init --compiler=4.06.1 --yes
 ```
-Note: the initializer will change your shell configuration to setup the environment opam needs to work.
+Note: the initializer will change your shell configuration to setup the environment OPAM needs to work.
 You can remove `--yes` from the above command to manually control that process.
 
-#### Setup your current shell to work with opam
+#### Setup your current shell to work with OPAM
 ```shell
 eval $(opam env)
 ```
 
-#### Install Scilla dependencies using opam
+#### Install Scilla dependencies using OPAM
 ```shell
 cd PROJECT_DIR    # go inside your Scilla project directory
 opam install ./scilla.opam --deps-only --with-test
@@ -107,18 +107,18 @@ The above commands can, alternatively, be run using the make target `opamdep`:
 make opamdep
 ```
 
-### If you have opam package manager already installed
+### If you have OPAM package manager already installed
 You can try installing the Scilla dependencies using the instructions above, but skipping the initialization step.
-If `opam` reports a dependency conflict, one way out might be creating yet another opam switch and
+If `opam` reports a dependency conflict, one way out might be creating yet another OPAM switch and
 managing your switches when doing Scilla- and non-Scilla- related hacking.
-Another way is to use opam's feature called "local switch".
-This is like a standard opam switch but instead of `$HOME/.opam`, it will reside in the project root directory in `_opam` subdirectory.
+Another way is to use OPAM's feature called "local switch".
+This is like a standard OPAM switch but instead of `$HOME/.opam`, it will reside in the project root directory in `_opam` subdirectory.
 This lets us to avoid dependency conflict and changing our switches back and forth when working on different projects.
-To create a local opam switch and install all the Scilla dependencies, `cd` into project root and execute:
+To create a local OPAM switch and install all the Scilla dependencies, `cd` into project root and execute:
 ```shell
 opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.06.1
 ```
-Now, whenever you are inside the project directory, opam will prefer the local switch to any globally installed switches,
+Now, whenever you are inside the project directory, OPAM will prefer the local switch to any globally installed switches,
 unless being told explicitly which one to use.
 
 Note: using `git clean`, extra care should be paid so that it won't delete `_opam` directory.
@@ -128,7 +128,7 @@ git clean -dfX --exclude=\!_opam/**
 ```
 
 
-## Using Ocaml with Emacs
+## Using OCaml with Emacs
 
 As Scilla is written in [OCaml](https://ocaml.org/), the following extensions would be
 useful for working on this codebase:
