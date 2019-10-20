@@ -17,6 +17,4044 @@
       }
     ]
   },
+  "type_info": [
+    {
+      "vname": "getAddressFromPair",
+      "type": "Pair (ByStr20) (Uint128) -> ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 12,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 12,
+        "column": 23
+      }
+    },
+    {
+      "vname": "fst",
+      "type": "forall 'A. forall 'B. Pair ('A) ('B) -> 'A",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 12,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 12,
+        "column": 29
+      }
+    },
+    {
+      "vname": "getValueFromPair",
+      "type": "Pair (ByStr20) (Uint128) -> Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 13,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 13,
+        "column": 21
+      }
+    },
+    {
+      "vname": "snd",
+      "type": "forall 'A. forall 'B. Pair ('A) ('B) -> 'B",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 13,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 13,
+        "column": 27
+      }
+    },
+    {
+      "vname": "make_error_event",
+      "type": "String -> String -> Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 16,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 16,
+        "column": 21
+      }
+    },
+    {
+      "vname": "location",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 17,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 17,
+        "column": 11
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 18,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 18,
+        "column": 6
+      }
+    },
+    {
+      "vname": "location",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 19,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 19,
+        "column": 48
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 19,
+        "column": 59
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 19,
+        "column": 62
+      }
+    },
+    {
+      "vname": "createOrderId",
+      "type": "Order -> ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 26,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 26,
+        "column": 18
+      }
+    },
+    {
+      "vname": "order",
+      "type": "Order",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 27,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 27,
+        "column": 8
+      }
+    },
+    {
+      "vname": "order",
+      "type": "Order",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 28,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 28,
+        "column": 29
+      }
+    },
+    {
+      "vname": "transaction_msg",
+      "type": "ByStr20 -> String -> ByStr20 -> ByStr20 -> Uint128 -> Message",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 31,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 31,
+        "column": 20
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 32,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 32,
+        "column": 12
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 33,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 33,
+        "column": 6
+      }
+    },
+    {
+      "vname": "transferFromAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 34,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 34,
+        "column": 19
+      }
+    },
+    {
+      "vname": "transferToAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 35,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 35,
+        "column": 17
+      }
+    },
+    {
+      "vname": "transferAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 36,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 36,
+        "column": 14
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 37,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 37,
+        "column": 16
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 37,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 37,
+        "column": 40
+      }
+    },
+    {
+      "vname": "transferFromAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 38,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 38,
+        "column": 28
+      }
+    },
+    {
+      "vname": "transferToAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 38,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 38,
+        "column": 48
+      }
+    },
+    {
+      "vname": "transferAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 38,
+        "column": 58
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 38,
+        "column": 69
+      }
+    },
+    {
+      "vname": "transaction_msg_as_list",
+      "type":
+        "ByStr20 -> String -> ByStr20 -> ByStr20 -> Uint128 -> List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 41,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 41,
+        "column": 28
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 42,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 42,
+        "column": 12
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 43,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 43,
+        "column": 6
+      }
+    },
+    {
+      "vname": "transferFromAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 44,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 44,
+        "column": 19
+      }
+    },
+    {
+      "vname": "transferToAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 45,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 45,
+        "column": 17
+      }
+    },
+    {
+      "vname": "transferAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 46,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 46,
+        "column": 14
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 47,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 47,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 48,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 48,
+        "column": 10
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 49,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 49,
+        "column": 16
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 50,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 50,
+        "column": 27
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 50,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 50,
+        "column": 35
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 8
+      }
+    },
+    {
+      "vname": "transaction_msg",
+      "type": "ByStr20 -> String -> ByStr20 -> ByStr20 -> Uint128 -> Message",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 30
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 40
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 44
+      }
+    },
+    {
+      "vname": "transferFromAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 61
+      }
+    },
+    {
+      "vname": "transferToAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 62
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 76
+      }
+    },
+    {
+      "vname": "transferAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 77
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 51,
+        "column": 88
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 52,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 52,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 52,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 52,
+        "column": 16
+      }
+    },
+    {
+      "vname": "computePendingReturnsVal",
+      "type": "Option (Uint128) -> Uint128 -> Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 57,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 57,
+        "column": 29
+      }
+    },
+    {
+      "vname": "prevVal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 58,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 58,
+        "column": 10
+      }
+    },
+    {
+      "vname": "incomingTokensAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 59,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 59,
+        "column": 20
+      }
+    },
+    {
+      "vname": "prevVal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 60,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 60,
+        "column": 18
+      }
+    },
+    {
+      "vname": "v",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 61,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 61,
+        "column": 13
+      }
+    },
+    {
+      "vname": "v",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 62,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 62,
+        "column": 20
+      }
+    },
+    {
+      "vname": "incomingTokensAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 62,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 62,
+        "column": 38
+      }
+    },
+    {
+      "vname": "incomingTokensAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 64,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 64,
+        "column": 24
+      }
+    },
+    {
+      "vname": "contractOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 72,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 72,
+        "column": 15
+      }
+    },
+    {
+      "vname": "orderbook",
+      "type": "Map (ByStr32) (Order)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 79,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 79,
+        "column": 16
+      }
+    },
+    {
+      "vname": "orderInfo",
+      "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 82,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 82,
+        "column": 16
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 86,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 86,
+        "column": 21
+      }
+    },
+    {
+      "vname": "tokenA",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 89,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 89,
+        "column": 28
+      }
+    },
+    {
+      "vname": "valueA",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 89,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 89,
+        "column": 45
+      }
+    },
+    {
+      "vname": "tokenB",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 89,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 89,
+        "column": 62
+      }
+    },
+    {
+      "vname": "valueB",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 89,
+        "column": 73
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 89,
+        "column": 79
+      }
+    },
+    {
+      "vname": "expirationBlock",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 89,
+        "column": 90
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 89,
+        "column": 105
+      }
+    },
+    {
+      "vname": "currentBlock",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 90,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 90,
+        "column": 28
+      }
+    },
+    {
+      "vname": "validExpirationBlock",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 91,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 91,
+        "column": 44
+      }
+    },
+    {
+      "vname": "minBlocksFromCreation",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 91,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 91,
+        "column": 48
+      }
+    },
+    {
+      "vname": "minExpiration",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 92,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 92,
+        "column": 40
+      }
+    },
+    {
+      "vname": "currentBlock",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 92,
+        "column": 60
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 92,
+        "column": 72
+      }
+    },
+    {
+      "vname": "minBlocksFromCreation",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 92,
+        "column": 73
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 92,
+        "column": 94
+      }
+    },
+    {
+      "vname": "minExpiration",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 93,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 93,
+        "column": 52
+      }
+    },
+    {
+      "vname": "expirationBlock",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 93,
+        "column": 53
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 93,
+        "column": 68
+      }
+    },
+    {
+      "vname": "validExpirationBlock",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 94,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 94,
+        "column": 29
+      }
+    },
+    {
+      "vname": "newOrder",
+      "type": "Order",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 97,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 97,
+        "column": 22
+      }
+    },
+    {
+      "vname": "tokenA",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 97,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 97,
+        "column": 28
+      }
+    },
+    {
+      "vname": "valueA",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 97,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 97,
+        "column": 35
+      }
+    },
+    {
+      "vname": "tokenB",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 97,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 97,
+        "column": 42
+      }
+    },
+    {
+      "vname": "valueB",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 97,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 97,
+        "column": 49
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 98,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 98,
+        "column": 20
+      }
+    },
+    {
+      "vname": "createOrderId",
+      "type": "Order -> ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 98,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 98,
+        "column": 28
+      }
+    },
+    {
+      "vname": "newOrder",
+      "type": "Order",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 98,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 98,
+        "column": 37
+      }
+    },
+    {
+      "vname": "orderbook",
+      "type": "Map (ByStr32) (Order)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 99,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 99,
+        "column": 14
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 99,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 99,
+        "column": 22
+      }
+    },
+    {
+      "vname": "newOrder",
+      "type": "Order",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 99,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 99,
+        "column": 35
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (ByStr20) (BNum)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 102,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 102,
+        "column": 8
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 102,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 102,
+        "column": 40
+      }
+    },
+    {
+      "vname": "expirationBlock",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 102,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 102,
+        "column": 56
+      }
+    },
+    {
+      "vname": "orderInfo",
+      "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 103,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 103,
+        "column": 14
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 103,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 103,
+        "column": 22
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (ByStr20) (BNum)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 103,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 103,
+        "column": 28
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 105,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 105,
+        "column": 8
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 105,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 105,
+        "column": 52
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 106,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 106,
+        "column": 6
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 109,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 109,
+        "column": 14
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 109,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 109,
+        "column": 15
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 110,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 110,
+        "column": 16
+      }
+    },
+    {
+      "vname": "transaction_msg_as_list",
+      "type":
+        "ByStr20 -> String -> ByStr20 -> ByStr20 -> Uint128 -> List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 35
+      }
+    },
+    {
+      "vname": "tokenA",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 42
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 46
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 54
+      }
+    },
+    {
+      "vname": "_this_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 55
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 68
+      }
+    },
+    {
+      "vname": "valueA",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 69
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 111,
+        "column": 75
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 112,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 112,
+        "column": 9
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 114,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 114,
+        "column": 8
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 114,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 114,
+        "column": 13
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 115,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 115,
+        "column": 18
+      }
+    },
+    {
+      "vname": "make_error_event",
+      "type": "String -> String -> Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 116,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 116,
+        "column": 25
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 116,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 116,
+        "column": 30
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 116,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 116,
+        "column": 40
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 117,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 117,
+        "column": 6
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 123,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 123,
+        "column": 29
+      }
+    },
+    {
+      "vname": "getOrder",
+      "type": "Option (Order)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 124,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 124,
+        "column": 11
+      }
+    },
+    {
+      "vname": "orderbook",
+      "type": "Map (ByStr32) (Order)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 124,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 124,
+        "column": 24
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 124,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 124,
+        "column": 32
+      }
+    },
+    {
+      "vname": "getOrder",
+      "type": "Option (Order)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 125,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 125,
+        "column": 17
+      }
+    },
+    {
+      "vname": "valueB",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 126,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 126,
+        "column": 44
+      }
+    },
+    {
+      "vname": "tokenB",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 126,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 126,
+        "column": 37
+      }
+    },
+    {
+      "vname": "valueA",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 126,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 126,
+        "column": 30
+      }
+    },
+    {
+      "vname": "tokenA",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 126,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 126,
+        "column": 23
+      }
+    },
+    {
+      "vname": "optionOrderInfo",
+      "type": "Option (Pair (ByStr20) (BNum))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 128,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 128,
+        "column": 20
+      }
+    },
+    {
+      "vname": "orderInfo",
+      "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 128,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 128,
+        "column": 33
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 128,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 128,
+        "column": 41
+      }
+    },
+    {
+      "vname": "optionOrderInfo",
+      "type": "Option (Pair (ByStr20) (BNum))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 129,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 129,
+        "column": 26
+      }
+    },
+    {
+      "vname": "info",
+      "type": "Pair (ByStr20) (BNum)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 130,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 130,
+        "column": 16
+      }
+    },
+    {
+      "vname": "currentBlock",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 131,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 131,
+        "column": 32
+      }
+    },
+    {
+      "vname": "blockBeforeExpiration",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 132,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 132,
+        "column": 50
+      }
+    },
+    {
+      "vname": "getBNum",
+      "type": "Pair (ByStr20) (BNum) -> BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 132,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 132,
+        "column": 38
+      }
+    },
+    {
+      "vname": "snd",
+      "type": "forall 'A. forall 'B. Pair ('A) ('B) -> 'B",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 132,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 132,
+        "column": 48
+      }
+    },
+    {
+      "vname": "expirationBlock",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 133,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 133,
+        "column": 46
+      }
+    },
+    {
+      "vname": "getBNum",
+      "type": "Pair (ByStr20) (BNum) -> BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 133,
+        "column": 53
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 133,
+        "column": 60
+      }
+    },
+    {
+      "vname": "info",
+      "type": "Pair (ByStr20) (BNum)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 133,
+        "column": 61
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 133,
+        "column": 65
+      }
+    },
+    {
+      "vname": "currentBlock",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 134,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 134,
+        "column": 55
+      }
+    },
+    {
+      "vname": "expirationBlock",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 134,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 134,
+        "column": 71
+      }
+    },
+    {
+      "vname": "blockBeforeExpiration",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 135,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 135,
+        "column": 34
+      }
+    },
+    {
+      "vname": "makerAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 137,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 137,
+        "column": 28
+      }
+    },
+    {
+      "vname": "getMakerAddr",
+      "type": "Pair (ByStr20) (BNum) -> ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 137,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 137,
+        "column": 33
+      }
+    },
+    {
+      "vname": "fst",
+      "type": "forall 'A. forall 'B. Pair ('A) ('B) -> 'A",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 137,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 137,
+        "column": 43
+      }
+    },
+    {
+      "vname": "getMakerAddr",
+      "type": "Pair (ByStr20) (BNum) -> ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 138,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 138,
+        "column": 33
+      }
+    },
+    {
+      "vname": "info",
+      "type": "Pair (ByStr20) (BNum)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 138,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 138,
+        "column": 38
+      }
+    },
+    {
+      "vname": "prevVal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 140,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 140,
+        "column": 16
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 140,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 140,
+        "column": 34
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 140,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 140,
+        "column": 42
+      }
+    },
+    {
+      "vname": "tokenA",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 140,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 140,
+        "column": 50
+      }
+    },
+    {
+      "vname": "takerAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 141,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 141,
+        "column": 26
+      }
+    },
+    {
+      "vname": "computePendingReturnsVal",
+      "type": "Option (Uint128) -> Uint128 -> Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 141,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 141,
+        "column": 44
+      }
+    },
+    {
+      "vname": "prevVal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 141,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 141,
+        "column": 52
+      }
+    },
+    {
+      "vname": "valueA",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 141,
+        "column": 53
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 141,
+        "column": 59
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 142,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 142,
+        "column": 23
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 142,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 142,
+        "column": 31
+      }
+    },
+    {
+      "vname": "tokenA",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 142,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 142,
+        "column": 39
+      }
+    },
+    {
+      "vname": "takerAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 142,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 142,
+        "column": 52
+      }
+    },
+    {
+      "vname": "prevVal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 144,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 144,
+        "column": 16
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 144,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 144,
+        "column": 34
+      }
+    },
+    {
+      "vname": "makerAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 144,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 144,
+        "column": 44
+      }
+    },
+    {
+      "vname": "tokenB",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 144,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 144,
+        "column": 52
+      }
+    },
+    {
+      "vname": "makerAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 145,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 145,
+        "column": 26
+      }
+    },
+    {
+      "vname": "computePendingReturnsVal",
+      "type": "Option (Uint128) -> Uint128 -> Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 145,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 145,
+        "column": 44
+      }
+    },
+    {
+      "vname": "prevVal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 145,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 145,
+        "column": 52
+      }
+    },
+    {
+      "vname": "valueB",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 145,
+        "column": 53
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 145,
+        "column": 59
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 146,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 146,
+        "column": 23
+      }
+    },
+    {
+      "vname": "makerAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 146,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 146,
+        "column": 33
+      }
+    },
+    {
+      "vname": "tokenB",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 146,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 146,
+        "column": 41
+      }
+    },
+    {
+      "vname": "makerAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 146,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 146,
+        "column": 54
+      }
+    },
+    {
+      "vname": "orderInfo",
+      "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 149,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 149,
+        "column": 25
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 149,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 149,
+        "column": 33
+      }
+    },
+    {
+      "vname": "orderbook",
+      "type": "Map (ByStr32) (Order)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 150,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 150,
+        "column": 25
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 150,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 150,
+        "column": 33
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 152,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 152,
+        "column": 12
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 152,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 152,
+        "column": 55
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 153,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 153,
+        "column": 10
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 155,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 155,
+        "column": 18
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 155,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 155,
+        "column": 19
+      }
+    },
+    {
+      "vname": "transaction_msg_as_list",
+      "type":
+        "ByStr20 -> String -> ByStr20 -> ByStr20 -> Uint128 -> List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 39
+      }
+    },
+    {
+      "vname": "tokenB",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 46
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 50
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 51
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 58
+      }
+    },
+    {
+      "vname": "_this_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 59
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 72
+      }
+    },
+    {
+      "vname": "valueB",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 73
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 156,
+        "column": 79
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 157,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 157,
+        "column": 13
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 159,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 159,
+        "column": 12
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 159,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 159,
+        "column": 17
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 160,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 160,
+        "column": 22
+      }
+    },
+    {
+      "vname": "make_error_event",
+      "type": "String -> String -> Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 161,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 161,
+        "column": 29
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 161,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 161,
+        "column": 34
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 161,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 161,
+        "column": 44
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 162,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 162,
+        "column": 10
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 165,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 165,
+        "column": 10
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 165,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 165,
+        "column": 15
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 166,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 166,
+        "column": 20
+      }
+    },
+    {
+      "vname": "make_error_event",
+      "type": "String -> String -> Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 167,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 167,
+        "column": 27
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 167,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 167,
+        "column": 32
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 167,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 167,
+        "column": 42
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 168,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 168,
+        "column": 8
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 171,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 171,
+        "column": 8
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 171,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 171,
+        "column": 13
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 172,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 172,
+        "column": 18
+      }
+    },
+    {
+      "vname": "make_error_event",
+      "type": "String -> String -> Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 173,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 173,
+        "column": 25
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 173,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 173,
+        "column": 30
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 173,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 173,
+        "column": 40
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 174,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 174,
+        "column": 6
+      }
+    },
+    {
+      "vname": "token",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 180,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 180,
+        "column": 27
+      }
+    },
+    {
+      "vname": "getAmtOutstanding",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 181,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 181,
+        "column": 20
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 181,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 181,
+        "column": 38
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 181,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 181,
+        "column": 46
+      }
+    },
+    {
+      "vname": "token",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 181,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 181,
+        "column": 53
+      }
+    },
+    {
+      "vname": "getAmtOutstanding",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 182,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 182,
+        "column": 26
+      }
+    },
+    {
+      "vname": "amtOutstanding",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 183,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 183,
+        "column": 24
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 184,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 184,
+        "column": 28
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 184,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 184,
+        "column": 36
+      }
+    },
+    {
+      "vname": "token",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 184,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 184,
+        "column": 43
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 185,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 185,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 185,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 185,
+        "column": 63
+      }
+    },
+    {
+      "vname": "token",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 185,
+        "column": 76
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 185,
+        "column": 81
+      }
+    },
+    {
+      "vname": "amtOutstanding",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 185,
+        "column": 88
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 185,
+        "column": 102
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 186,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 186,
+        "column": 8
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 188,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 188,
+        "column": 16
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 188,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 188,
+        "column": 17
+      }
+    },
+    {
+      "vname": "transaction_msg_as_list",
+      "type":
+        "ByStr20 -> String -> ByStr20 -> ByStr20 -> Uint128 -> List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 37
+      }
+    },
+    {
+      "vname": "token",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 43
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 47
+      }
+    },
+    {
+      "vname": "_this_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 61
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 62
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 69
+      }
+    },
+    {
+      "vname": "amtOutstanding",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 70
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 189,
+        "column": 84
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 190,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 190,
+        "column": 11
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 192,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 192,
+        "column": 10
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 192,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 192,
+        "column": 15
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 193,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 193,
+        "column": 20
+      }
+    },
+    {
+      "vname": "make_error_event",
+      "type": "String -> String -> Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 194,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 194,
+        "column": 27
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 194,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 194,
+        "column": 32
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 194,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 194,
+        "column": 42
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 195,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 195,
+        "column": 8
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 201,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 201,
+        "column": 31
+      }
+    },
+    {
+      "vname": "getOrderInfo",
+      "type": "Option (Pair (ByStr20) (BNum))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 202,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 202,
+        "column": 15
+      }
+    },
+    {
+      "vname": "orderInfo",
+      "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 202,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 202,
+        "column": 28
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 202,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 202,
+        "column": 36
+      }
+    },
+    {
+      "vname": "getOrderInfo",
+      "type": "Option (Pair (ByStr20) (BNum))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 203,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 203,
+        "column": 21
+      }
+    },
+    {
+      "vname": "orderInfoForId",
+      "type": "Pair (ByStr20) (BNum)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 204,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 204,
+        "column": 24
+      }
+    },
+    {
+      "vname": "makerAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 205,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 205,
+        "column": 26
+      }
+    },
+    {
+      "vname": "getMakerAddr",
+      "type": "Pair (ByStr20) (BNum) -> ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 205,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 205,
+        "column": 31
+      }
+    },
+    {
+      "vname": "fst",
+      "type": "forall 'A. forall 'B. Pair ('A) ('B) -> 'A",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 205,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 205,
+        "column": 41
+      }
+    },
+    {
+      "vname": "getMakerAddr",
+      "type": "Pair (ByStr20) (BNum) -> ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 206,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 206,
+        "column": 31
+      }
+    },
+    {
+      "vname": "orderInfoForId",
+      "type": "Pair (ByStr20) (BNum)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 206,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 206,
+        "column": 46
+      }
+    },
+    {
+      "vname": "checkSender",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 207,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 207,
+        "column": 30
+      }
+    },
+    {
+      "vname": "makerAddr",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 207,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 207,
+        "column": 41
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 207,
+        "column": 42
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 207,
+        "column": 49
+      }
+    },
+    {
+      "vname": "checkSender",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 208,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 208,
+        "column": 24
+      }
+    },
+    {
+      "vname": "fetchOrder",
+      "type": "Option (Order)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 211,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 211,
+        "column": 19
+      }
+    },
+    {
+      "vname": "orderbook",
+      "type": "Map (ByStr32) (Order)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 211,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 211,
+        "column": 32
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 211,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 211,
+        "column": 40
+      }
+    },
+    {
+      "vname": "fetchOrder",
+      "type": "Option (Order)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 212,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 212,
+        "column": 25
+      }
+    },
+    {
+      "vname": "valueA",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 213,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 213,
+        "column": 36
+      }
+    },
+    {
+      "vname": "tokenA",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 213,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 213,
+        "column": 29
+      }
+    },
+    {
+      "vname": "prevVal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 216,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 216,
+        "column": 18
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 216,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 216,
+        "column": 36
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 216,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 216,
+        "column": 44
+      }
+    },
+    {
+      "vname": "tokenA",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 216,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 216,
+        "column": 52
+      }
+    },
+    {
+      "vname": "takerAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 217,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 217,
+        "column": 28
+      }
+    },
+    {
+      "vname": "computePendingReturnsVal",
+      "type": "Option (Uint128) -> Uint128 -> Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 217,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 217,
+        "column": 46
+      }
+    },
+    {
+      "vname": "prevVal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 217,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 217,
+        "column": 54
+      }
+    },
+    {
+      "vname": "valueA",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 217,
+        "column": 55
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 217,
+        "column": 61
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 218,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 218,
+        "column": 25
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 218,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 218,
+        "column": 33
+      }
+    },
+    {
+      "vname": "tokenA",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 218,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 218,
+        "column": 41
+      }
+    },
+    {
+      "vname": "takerAmt",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 218,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 218,
+        "column": 54
+      }
+    },
+    {
+      "vname": "orderInfo",
+      "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 221,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 221,
+        "column": 27
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 221,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 221,
+        "column": 35
+      }
+    },
+    {
+      "vname": "orderbook",
+      "type": "Map (ByStr32) (Order)",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 222,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 222,
+        "column": 27
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 222,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 222,
+        "column": 35
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 224,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 224,
+        "column": 14
+      }
+    },
+    {
+      "vname": "orderId",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 224,
+        "column": 61
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 224,
+        "column": 68
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 225,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 225,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 229,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 229,
+        "column": 14
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 229,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 229,
+        "column": 19
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 230,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 230,
+        "column": 24
+      }
+    },
+    {
+      "vname": "make_error_event",
+      "type": "String -> String -> Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 231,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 231,
+        "column": 31
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 231,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 231,
+        "column": 36
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 231,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 231,
+        "column": 46
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 232,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 232,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 237,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 237,
+        "column": 12
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 237,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 237,
+        "column": 17
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 238,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 238,
+        "column": 22
+      }
+    },
+    {
+      "vname": "make_error_event",
+      "type": "String -> String -> Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 239,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 239,
+        "column": 29
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 239,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 239,
+        "column": 34
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 239,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 239,
+        "column": 44
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 240,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 240,
+        "column": 10
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 244,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 244,
+        "column": 10
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 244,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 244,
+        "column": 15
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 245,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 245,
+        "column": 20
+      }
+    },
+    {
+      "vname": "make_error_event",
+      "type": "String -> String -> Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 246,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 246,
+        "column": 27
+      }
+    },
+    {
+      "vname": "func",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 246,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 246,
+        "column": 32
+      }
+    },
+    {
+      "vname": "error_msg",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 246,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 246,
+        "column": 42
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 247,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 247,
+        "column": 8
+      }
+    }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "SimpleDex",

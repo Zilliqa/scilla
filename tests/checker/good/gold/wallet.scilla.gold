@@ -19,6 +19,7025 @@
       }
     ]
   },
+  "type_info": [
+    {
+      "vname": "mk_transaction_added_event",
+      "type": "Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 11,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 11,
+        "column": 31
+      }
+    },
+    {
+      "vname": "tc",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 12,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 12,
+        "column": 5
+      }
+    },
+    {
+      "vname": "tc",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 13,
+        "column": 60
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 13,
+        "column": 62
+      }
+    },
+    {
+      "vname": "mk_transaction_signed_event",
+      "type": "Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 16,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 16,
+        "column": 32
+      }
+    },
+    {
+      "vname": "no_of_sigs",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 17,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 17,
+        "column": 13
+      }
+    },
+    {
+      "vname": "no_of_sigs",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 18,
+        "column": 61
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 18,
+        "column": 71
+      }
+    },
+    {
+      "vname": "mk_candidate_owner_added_event",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 21,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 21,
+        "column": 35
+      }
+    },
+    {
+      "vname": "mk_owner_signed_event",
+      "type": "Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 25,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 25,
+        "column": 26
+      }
+    },
+    {
+      "vname": "no_of_sigs",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 26,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 26,
+        "column": 13
+      }
+    },
+    {
+      "vname": "no_of_sigs",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 27,
+        "column": 55
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 27,
+        "column": 65
+      }
+    },
+    {
+      "vname": "mk_new_owner_approved_event",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 30,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 30,
+        "column": 32
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 49,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 49,
+        "column": 19
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 50,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 50,
+        "column": 6
+      }
+    },
+    {
+      "vname": "err_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 51,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 51,
+        "column": 11
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 52,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 52,
+        "column": 14
+      }
+    },
+    {
+      "vname": "err_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 67,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 67,
+        "column": 53
+      }
+    },
+    {
+      "vname": "transaction_inc",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 69,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 69,
+        "column": 20
+      }
+    },
+    {
+      "vname": "empty_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 70,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 70,
+        "column": 15
+      }
+    },
+    {
+      "vname": "mk_owners_map",
+      "type": "List (ByStr20) -> Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 77,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 77,
+        "column": 18
+      }
+    },
+    {
+      "vname": "initial_owners",
+      "type": "List (ByStr20)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 78,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 78,
+        "column": 17
+      }
+    },
+    {
+      "vname": "init",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 79,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 79,
+        "column": 9
+      }
+    },
+    {
+      "vname": "iter",
+      "type": "Map (ByStr20) (Bool) -> ByStr20 -> Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 80,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 80,
+        "column": 9
+      }
+    },
+    {
+      "vname": "acc",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 81,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 81,
+        "column": 10
+      }
+    },
+    {
+      "vname": "cur_owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 82,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 82,
+        "column": 16
+      }
+    },
+    {
+      "vname": "mem",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 83,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 83,
+        "column": 12
+      }
+    },
+    {
+      "vname": "acc",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 83,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 83,
+        "column": 34
+      }
+    },
+    {
+      "vname": "cur_owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 83,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 83,
+        "column": 44
+      }
+    },
+    {
+      "vname": "mem",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 84,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 84,
+        "column": 18
+      }
+    },
+    {
+      "vname": "acc",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 87,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 87,
+        "column": 14
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 90,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 90,
+        "column": 12
+      }
+    },
+    {
+      "vname": "acc",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 91,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 91,
+        "column": 26
+      }
+    },
+    {
+      "vname": "cur_owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 91,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 91,
+        "column": 36
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 91,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 91,
+        "column": 38
+      }
+    },
+    {
+      "vname": "folder",
+      "type":
+        "(Map (ByStr20) (Bool) -> ByStr20 -> Map (ByStr20) (Bool)) -> Map (ByStr20) (Bool) -> List (ByStr20) -> Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 93,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 93,
+        "column": 11
+      }
+    },
+    {
+      "vname": "list_foldl",
+      "type":
+        "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 93,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 93,
+        "column": 28
+      }
+    },
+    {
+      "vname": "folder",
+      "type":
+        "(Map (ByStr20) (Bool) -> ByStr20 -> Map (ByStr20) (Bool)) -> Map (ByStr20) (Bool) -> List (ByStr20) -> Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 94,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 94,
+        "column": 11
+      }
+    },
+    {
+      "vname": "iter",
+      "type": "Map (ByStr20) (Bool) -> ByStr20 -> Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 94,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 94,
+        "column": 16
+      }
+    },
+    {
+      "vname": "init",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 94,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 94,
+        "column": 21
+      }
+    },
+    {
+      "vname": "initial_owners",
+      "type": "List (ByStr20)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 94,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 94,
+        "column": 36
+      }
+    },
+    {
+      "vname": "check_contract_validity",
+      "type": "Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 97,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 97,
+        "column": 28
+      }
+    },
+    {
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 98,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 98,
+        "column": 9
+      }
+    },
+    {
+      "vname": "no_of_owners",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 99,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 99,
+        "column": 17
+      }
+    },
+    {
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 99,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 99,
+        "column": 43
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 100,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 100,
+        "column": 9
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 101,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 101,
+        "column": 20
+      }
+    },
+    {
+      "vname": "no_of_owners",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 101,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 101,
+        "column": 33
+      }
+    },
+    {
+      "vname": "transaction_executed",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 103,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 103,
+        "column": 25
+      }
+    },
+    {
+      "vname": "transaction_msg",
+      "type": "ByStr20 -> Uint128 -> String -> Message",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 106,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 106,
+        "column": 20
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 107,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 107,
+        "column": 12
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 108,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 108,
+        "column": 9
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 109,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 109,
+        "column": 6
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 110,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 110,
+        "column": 16
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 110,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 110,
+        "column": 40
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 110,
+        "column": 52
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 110,
+        "column": 58
+      }
+    },
+    {
+      "vname": "transaction_executed",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 111,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 111,
+        "column": 33
+      }
+    },
+    {
+      "vname": "transaction_msg_as_list",
+      "type": "ByStr20 -> Uint128 -> String -> List (Message)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 114,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 114,
+        "column": 28
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 115,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 115,
+        "column": 12
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 116,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 116,
+        "column": 9
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 117,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 117,
+        "column": 6
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 118,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 118,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 119,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 119,
+        "column": 10
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 120,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 120,
+        "column": 16
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 121,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 121,
+        "column": 27
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 121,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 121,
+        "column": 35
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 122,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 122,
+        "column": 8
+      }
+    },
+    {
+      "vname": "transaction_msg",
+      "type": "ByStr20 -> Uint128 -> String -> Message",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 122,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 122,
+        "column": 30
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 122,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 122,
+        "column": 40
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 122,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 122,
+        "column": 47
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 122,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 122,
+        "column": 51
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 123,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 123,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 123,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 123,
+        "column": 16
+      }
+    },
+    {
+      "vname": "address_mem",
+      "type": "ByStr20 -> Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 126,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 126,
+        "column": 16
+      }
+    },
+    {
+      "vname": "sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 127,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 127,
+        "column": 9
+      }
+    },
+    {
+      "vname": "mem_map",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 128,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 128,
+        "column": 10
+      }
+    },
+    {
+      "vname": "mem",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 129,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 129,
+        "column": 8
+      }
+    },
+    {
+      "vname": "mem_map",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 129,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 129,
+        "column": 34
+      }
+    },
+    {
+      "vname": "sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 129,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 129,
+        "column": 41
+      }
+    },
+    {
+      "vname": "mem",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 130,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 130,
+        "column": 14
+      }
+    },
+    {
+      "vname": "initial_owners",
+      "type": "List (ByStr20)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 164,
+        "column": 1
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 164,
+        "column": 15
+      }
+    },
+    {
+      "vname": "required_signatures",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 165,
+        "column": 1
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 165,
+        "column": 20
+      }
+    },
+    {
+      "vname": "validity_checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 169,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 169,
+        "column": 23
+      }
+    },
+    {
+      "vname": "contract_valid",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 170,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 170,
+        "column": 21
+      }
+    },
+    {
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 177,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 177,
+        "column": 13
+      }
+    },
+    {
+      "vname": "transactionCount",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 179,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 179,
+        "column": 23
+      }
+    },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 182,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 182,
+        "column": 17
+      }
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 185,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 185,
+        "column": 19
+      }
+    },
+    {
+      "vname": "owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 189,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 189,
+        "column": 23
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 194,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 194,
+        "column": 40
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 194,
+        "column": 52
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 194,
+        "column": 58
+      }
+    },
+    {
+      "vname": "tc",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 195,
+        "column": 6
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 195,
+        "column": 8
+      }
+    },
+    {
+      "vname": "transactionCount",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 195,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 195,
+        "column": 25
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 197,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 197,
+        "column": 12
+      }
+    },
+    {
+      "vname": "amount_is_zero",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 198,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 198,
+        "column": 32
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 198,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 198,
+        "column": 37
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 198,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 198,
+        "column": 42
+      }
+    },
+    {
+      "vname": "amount_is_zero",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 200,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 200,
+        "column": 23
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 203,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 203,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 204,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 204,
+        "column": 8
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 204,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 204,
+        "column": 23
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 204,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 204,
+        "column": 27
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 205,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 205,
+        "column": 6
+      }
+    },
+    {
+      "vname": "transaction",
+      "type": "Transaction",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 208,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 208,
+        "column": 28
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 208,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 208,
+        "column": 34
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 208,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 208,
+        "column": 41
+      }
+    },
+    {
+      "vname": "ts_tmp",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 211,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 211,
+        "column": 18
+      }
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 211,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 211,
+        "column": 27
+      }
+    },
+    {
+      "vname": "ts_new",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 212,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 212,
+        "column": 18
+      }
+    },
+    {
+      "vname": "ts_tmp",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 212,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 212,
+        "column": 32
+      }
+    },
+    {
+      "vname": "tc",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 212,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 212,
+        "column": 35
+      }
+    },
+    {
+      "vname": "transaction",
+      "type": "Transaction",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 212,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 212,
+        "column": 47
+      }
+    },
+    {
+      "vname": "sigs_tmp",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 215,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 215,
+        "column": 22
+      }
+    },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 215,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 215,
+        "column": 27
+      }
+    },
+    {
+      "vname": "sigs_new",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 216,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 216,
+        "column": 22
+      }
+    },
+    {
+      "vname": "sigs_tmp",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 216,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 216,
+        "column": 36
+      }
+    },
+    {
+      "vname": "tc",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 216,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 216,
+        "column": 39
+      }
+    },
+    {
+      "vname": "empty_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 216,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 216,
+        "column": 50
+      }
+    },
+    {
+      "vname": "tc_new",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 219,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 219,
+        "column": 18
+      }
+    },
+    {
+      "vname": "tc",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 219,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 219,
+        "column": 28
+      }
+    },
+    {
+      "vname": "transaction_inc",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 219,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 219,
+        "column": 44
+      }
+    },
+    {
+      "vname": "tc_new",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 222,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 222,
+        "column": 31
+      }
+    },
+    {
+      "vname": "transactionCount",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 222,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 222,
+        "column": 38
+      }
+    },
+    {
+      "vname": "ts_new",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 223,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 223,
+        "column": 27
+      }
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 223,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 223,
+        "column": 30
+      }
+    },
+    {
+      "vname": "sigs_new",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 224,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 224,
+        "column": 27
+      }
+    },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 224,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 224,
+        "column": 26
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 227,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 227,
+        "column": 8
+      }
+    },
+    {
+      "vname": "mk_transaction_added_event",
+      "type": "Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 227,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 227,
+        "column": 35
+      }
+    },
+    {
+      "vname": "tc",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 227,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 227,
+        "column": 38
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 228,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 228,
+        "column": 6
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 233,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 233,
+        "column": 42
+      }
+    },
+    {
+      "vname": "sender_mem",
+      "type": "Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 235,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 235,
+        "column": 24
+      }
+    },
+    {
+      "vname": "address_mem",
+      "type": "ByStr20 -> Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 235,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 235,
+        "column": 27
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 235,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 235,
+        "column": 35
+      }
+    },
+    {
+      "vname": "owners_tmp",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 238,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 238,
+        "column": 24
+      }
+    },
+    {
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 238,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 238,
+        "column": 23
+      }
+    },
+    {
+      "vname": "sender_is_owner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 239,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 239,
+        "column": 34
+      }
+    },
+    {
+      "vname": "sender_mem",
+      "type": "Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 239,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 239,
+        "column": 31
+      }
+    },
+    {
+      "vname": "owners_tmp",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 239,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 239,
+        "column": 42
+      }
+    },
+    {
+      "vname": "sender_is_owner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 240,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 240,
+        "column": 24
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 242,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 242,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 243,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 243,
+        "column": 8
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 243,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 243,
+        "column": 23
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 243,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 243,
+        "column": 27
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 244,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 244,
+        "column": 6
+      }
+    },
+    {
+      "vname": "ts_tmp",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 247,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 247,
+        "column": 18
+      }
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 247,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 247,
+        "column": 27
+      }
+    },
+    {
+      "vname": "transaction",
+      "type": "Option (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 248,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 248,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ts_tmp",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 248,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 248,
+        "column": 37
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 248,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 248,
+        "column": 51
+      }
+    },
+    {
+      "vname": "transaction",
+      "type": "Option (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 249,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 249,
+        "column": 22
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 251,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 251,
+        "column": 14
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 252,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 252,
+        "column": 10
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 252,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 252,
+        "column": 25
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 252,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 252,
+        "column": 29
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 253,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 253,
+        "column": 8
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 254,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 254,
+        "column": 35
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 254,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 254,
+        "column": 28
+      }
+    },
+    {
+      "vname": "sigs_tmp",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 256,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 256,
+        "column": 24
+      }
+    },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 256,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 256,
+        "column": 29
+      }
+    },
+    {
+      "vname": "sigs_opt",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 257,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 257,
+        "column": 24
+      }
+    },
+    {
+      "vname": "sigs_tmp",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 257,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 257,
+        "column": 38
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 257,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 257,
+        "column": 52
+      }
+    },
+    {
+      "vname": "sigs_opt",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 258,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 258,
+        "column": 21
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 260,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 260,
+        "column": 16
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 261,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 261,
+        "column": 12
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 261,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 261,
+        "column": 27
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 261,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 261,
+        "column": 31
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 262,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 262,
+        "column": 10
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 263,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 263,
+        "column": 18
+      }
+    },
+    {
+      "vname": "sender_has_signed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 265,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 265,
+        "column": 44
+      }
+    },
+    {
+      "vname": "sender_mem",
+      "type": "Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 265,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 265,
+        "column": 39
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 265,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 265,
+        "column": 44
+      }
+    },
+    {
+      "vname": "sender_has_signed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 266,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 266,
+        "column": 32
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 268,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 268,
+        "column": 18
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 269,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 269,
+        "column": 14
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 269,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 269,
+        "column": 29
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 269,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 269,
+        "column": 33
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 270,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 270,
+        "column": 12
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 273,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 273,
+        "column": 14
+      }
+    },
+    {
+      "vname": "new_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 274,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 274,
+        "column": 28
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 274,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 274,
+        "column": 38
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 274,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 274,
+        "column": 46
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 274,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 274,
+        "column": 48
+      }
+    },
+    {
+      "vname": "new_signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 275,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 275,
+        "column": 40
+      }
+    },
+    {
+      "vname": "sigs_tmp",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 275,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 275,
+        "column": 48
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 275,
+        "column": 49
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 275,
+        "column": 62
+      }
+    },
+    {
+      "vname": "new_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 275,
+        "column": 63
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 275,
+        "column": 71
+      }
+    },
+    {
+      "vname": "new_signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 276,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 276,
+        "column": 39
+      }
+    },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 276,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 276,
+        "column": 32
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 284,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 284,
+        "column": 45
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 284,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 284,
+        "column": 59
+      }
+    },
+    {
+      "vname": "transactions_tmp",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 285,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 285,
+        "column": 36
+      }
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 285,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 285,
+        "column": 35
+      }
+    },
+    {
+      "vname": "transaction_opt",
+      "type": "Option (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 286,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 286,
+        "column": 34
+      }
+    },
+    {
+      "vname": "transactions_tmp",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 286,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 286,
+        "column": 49
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 286,
+        "column": 50
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 286,
+        "column": 63
+      }
+    },
+    {
+      "vname": "transaction_opt",
+      "type": "Option (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 287,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 287,
+        "column": 24
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 290,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 290,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 291,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 291,
+        "column": 8
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 291,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 291,
+        "column": 23
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 291,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 291,
+        "column": 27
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 292,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 292,
+        "column": 6
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 293,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 293,
+        "column": 33
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 293,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 293,
+        "column": 26
+      }
+    },
+    {
+      "vname": "recipient_is_sender",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 295,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 295,
+        "column": 44
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 295,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 295,
+        "column": 47
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 295,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 295,
+        "column": 55
+      }
+    },
+    {
+      "vname": "recipient_is_sender",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 296,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 296,
+        "column": 30
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 298,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 298,
+        "column": 14
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 299,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 299,
+        "column": 10
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 299,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 299,
+        "column": 25
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 299,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 299,
+        "column": 29
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 300,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 300,
+        "column": 8
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 303,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 303,
+        "column": 14
+      }
+    },
+    {
+      "vname": "_balance",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 303,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 303,
+        "column": 22
+      }
+    },
+    {
+      "vname": "not_enough_money",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 304,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 304,
+        "column": 40
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 304,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 304,
+        "column": 40
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 304,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 304,
+        "column": 47
+      }
+    },
+    {
+      "vname": "not_enough_money",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 305,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 305,
+        "column": 29
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 307,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 307,
+        "column": 16
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 308,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 308,
+        "column": 12
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 308,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 308,
+        "column": 27
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 308,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 308,
+        "column": 31
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 309,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 309,
+        "column": 10
+      }
+    },
+    {
+      "vname": "signatures_tmp",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 311,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 311,
+        "column": 38
+      }
+    },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 311,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 311,
+        "column": 37
+      }
+    },
+    {
+      "vname": "sigs_opt",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 312,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 312,
+        "column": 26
+      }
+    },
+    {
+      "vname": "signatures_tmp",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 312,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 312,
+        "column": 46
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 312,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 312,
+        "column": 60
+      }
+    },
+    {
+      "vname": "sigs_opt",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 313,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 313,
+        "column": 23
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 316,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 316,
+        "column": 18
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 317,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 317,
+        "column": 14
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 317,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 317,
+        "column": 29
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 317,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 317,
+        "column": 33
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 318,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 318,
+        "column": 12
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 319,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 319,
+        "column": 20
+      }
+    },
+    {
+      "vname": "no_of_sigs",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 321,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 321,
+        "column": 32
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 321,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 321,
+        "column": 41
+      }
+    },
+    {
+      "vname": "not_enough_signatures",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 322,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 322,
+        "column": 54
+      }
+    },
+    {
+      "vname": "no_of_sigs",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 322,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 322,
+        "column": 56
+      }
+    },
+    {
+      "vname": "required_signatures",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 322,
+        "column": 57
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 322,
+        "column": 76
+      }
+    },
+    {
+      "vname": "not_enough_signatures",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 323,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 323,
+        "column": 38
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 325,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 325,
+        "column": 20
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 326,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 326,
+        "column": 16
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 326,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 326,
+        "column": 31
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 326,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 326,
+        "column": 35
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 327,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 327,
+        "column": 14
+      }
+    },
+    {
+      "vname": "new_transactions",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 331,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 331,
+        "column": 46
+      }
+    },
+    {
+      "vname": "transactions_tmp",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 331,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 331,
+        "column": 63
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 331,
+        "column": 64
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 331,
+        "column": 77
+      }
+    },
+    {
+      "vname": "new_transactions",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 332,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 332,
+        "column": 45
+      }
+    },
+    {
+      "vname": "transactions",
+      "type": "Map (Uint32) (Transaction)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 332,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 332,
+        "column": 38
+      }
+    },
+    {
+      "vname": "new_signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 333,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 333,
+        "column": 42
+      }
+    },
+    {
+      "vname": "signatures_tmp",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 333,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 333,
+        "column": 59
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 333,
+        "column": 60
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 333,
+        "column": 73
+      }
+    },
+    {
+      "vname": "new_signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 334,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 334,
+        "column": 41
+      }
+    },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 334,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 334,
+        "column": 34
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 335,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 335,
+        "column": 22
+      }
+    },
+    {
+      "vname": "transaction_msg_as_list",
+      "type": "ByStr20 -> Uint128 -> String -> List (Message)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 335,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 335,
+        "column": 43
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 335,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 335,
+        "column": 53
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 335,
+        "column": 54
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 335,
+        "column": 60
+      }
+    },
+    {
+      "vname": "tag",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 335,
+        "column": 61
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 335,
+        "column": 64
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 336,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 336,
+        "column": 17
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 345,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 345,
+        "column": 42
+      }
+    },
+    {
+      "vname": "sigs_tmp",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 347,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 347,
+        "column": 20
+      }
+    },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 347,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 347,
+        "column": 25
+      }
+    },
+    {
+      "vname": "sigs_opt",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 348,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 348,
+        "column": 20
+      }
+    },
+    {
+      "vname": "sigs_tmp",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 348,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 348,
+        "column": 34
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 348,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 348,
+        "column": 48
+      }
+    },
+    {
+      "vname": "sigs_opt",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 349,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 349,
+        "column": 17
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 351,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 351,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 352,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 352,
+        "column": 8
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 352,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 352,
+        "column": 23
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 352,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 352,
+        "column": 27
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 353,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 353,
+        "column": 6
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 354,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 354,
+        "column": 14
+      }
+    },
+    {
+      "vname": "sender_has_signed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 356,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 356,
+        "column": 40
+      }
+    },
+    {
+      "vname": "address_mem",
+      "type": "ByStr20 -> Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 356,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 356,
+        "column": 36
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 356,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 356,
+        "column": 44
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 356,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 356,
+        "column": 49
+      }
+    },
+    {
+      "vname": "sender_has_signed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 357,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 357,
+        "column": 28
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 359,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 359,
+        "column": 14
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 360,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 360,
+        "column": 10
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 360,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 360,
+        "column": 25
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 360,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 360,
+        "column": 29
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 361,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 361,
+        "column": 8
+      }
+    },
+    {
+      "vname": "new_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 363,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 363,
+        "column": 24
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 363,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 363,
+        "column": 37
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 363,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 363,
+        "column": 45
+      }
+    },
+    {
+      "vname": "new_signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 364,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 364,
+        "column": 36
+      }
+    },
+    {
+      "vname": "sigs_tmp",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 364,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 364,
+        "column": 44
+      }
+    },
+    {
+      "vname": "transactionId",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 364,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 364,
+        "column": 58
+      }
+    },
+    {
+      "vname": "new_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 364,
+        "column": 59
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 364,
+        "column": 67
+      }
+    },
+    {
+      "vname": "new_signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 365,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 365,
+        "column": 35
+      }
+    },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 365,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 365,
+        "column": 28
+      }
+    },
+    {
+      "vname": "new_owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 371,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 371,
+        "column": 43
+      }
+    },
+    {
+      "vname": "sigs_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 373,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 373,
+        "column": 20
+      }
+    },
+    {
+      "vname": "owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 373,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 373,
+        "column": 31
+      }
+    },
+    {
+      "vname": "sigs_opt",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 374,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 374,
+        "column": 20
+      }
+    },
+    {
+      "vname": "sigs_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 374,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 374,
+        "column": 34
+      }
+    },
+    {
+      "vname": "new_owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 374,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 374,
+        "column": 44
+      }
+    },
+    {
+      "vname": "sigs_opt",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 375,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 375,
+        "column": 17
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 377,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 377,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 378,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 378,
+        "column": 8
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 378,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 378,
+        "column": 23
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 378,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 378,
+        "column": 27
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 379,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 379,
+        "column": 6
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 380,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 380,
+        "column": 14
+      }
+    },
+    {
+      "vname": "sender_has_signed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 382,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 382,
+        "column": 40
+      }
+    },
+    {
+      "vname": "address_mem",
+      "type": "ByStr20 -> Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 382,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 382,
+        "column": 36
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 382,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 382,
+        "column": 44
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 382,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 382,
+        "column": 49
+      }
+    },
+    {
+      "vname": "sender_has_signed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 383,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 383,
+        "column": 28
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 385,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 385,
+        "column": 14
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 386,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 386,
+        "column": 10
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 386,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 386,
+        "column": 25
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 386,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 386,
+        "column": 29
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 387,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 387,
+        "column": 8
+      }
+    },
+    {
+      "vname": "new_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 389,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 389,
+        "column": 24
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 389,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 389,
+        "column": 37
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 389,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 389,
+        "column": 45
+      }
+    },
+    {
+      "vname": "new_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 390,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 390,
+        "column": 36
+      }
+    },
+    {
+      "vname": "sigs_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 390,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 390,
+        "column": 44
+      }
+    },
+    {
+      "vname": "new_owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 390,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 390,
+        "column": 54
+      }
+    },
+    {
+      "vname": "new_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 390,
+        "column": 55
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 390,
+        "column": 63
+      }
+    },
+    {
+      "vname": "new_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 391,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 391,
+        "column": 41
+      }
+    },
+    {
+      "vname": "owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 391,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 391,
+        "column": 40
+      }
+    },
+    {
+      "vname": "candidate",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 397,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 397,
+        "column": 40
+      }
+    },
+    {
+      "vname": "checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 400,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 400,
+        "column": 18
+      }
+    },
+    {
+      "vname": "validity_checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 400,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 400,
+        "column": 30
+      }
+    },
+    {
+      "vname": "checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 401,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 401,
+        "column": 16
+      }
+    },
+    {
+      "vname": "owners_map",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 403,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 403,
+        "column": 26
+      }
+    },
+    {
+      "vname": "mk_owners_map",
+      "type": "List (ByStr20) -> Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 403,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 403,
+        "column": 31
+      }
+    },
+    {
+      "vname": "initial_owners",
+      "type": "List (ByStr20)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 403,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 403,
+        "column": 46
+      }
+    },
+    {
+      "vname": "owners_map",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 404,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 404,
+        "column": 25
+      }
+    },
+    {
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 404,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 404,
+        "column": 18
+      }
+    },
+    {
+      "vname": "valid_contract",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 405,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 405,
+        "column": 34
+      }
+    },
+    {
+      "vname": "check_contract_validity",
+      "type": "Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 405,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 405,
+        "column": 45
+      }
+    },
+    {
+      "vname": "owners_map",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 405,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 405,
+        "column": 56
+      }
+    },
+    {
+      "vname": "valid_contract",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 406,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 406,
+        "column": 37
+      }
+    },
+    {
+      "vname": "contract_valid",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 406,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 406,
+        "column": 34
+      }
+    },
+    {
+      "vname": "checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 407,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 407,
+        "column": 20
+      }
+    },
+    {
+      "vname": "checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 408,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 408,
+        "column": 32
+      }
+    },
+    {
+      "vname": "validity_checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 408,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 408,
+        "column": 38
+      }
+    },
+    {
+      "vname": "valid",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 412,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 412,
+        "column": 14
+      }
+    },
+    {
+      "vname": "contract_valid",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 412,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 412,
+        "column": 26
+      }
+    },
+    {
+      "vname": "valid",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 413,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 413,
+        "column": 14
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 415,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 415,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 416,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 416,
+        "column": 8
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 416,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 416,
+        "column": 23
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 416,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 416,
+        "column": 27
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 417,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 417,
+        "column": 6
+      }
+    },
+    {
+      "vname": "owner_signatures_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 419,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 419,
+        "column": 46
+      }
+    },
+    {
+      "vname": "owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 419,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 419,
+        "column": 45
+      }
+    },
+    {
+      "vname": "sigs_option",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 420,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 420,
+        "column": 28
+      }
+    },
+    {
+      "vname": "owner_signatures_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 420,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 420,
+        "column": 51
+      }
+    },
+    {
+      "vname": "candidate",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 420,
+        "column": 52
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 420,
+        "column": 61
+      }
+    },
+    {
+      "vname": "sigs_option",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 421,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 421,
+        "column": 22
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 424,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 424,
+        "column": 14
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 425,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 425,
+        "column": 10
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 425,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 425,
+        "column": 25
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 425,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 425,
+        "column": 29
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 426,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 426,
+        "column": 8
+      }
+    },
+    {
+      "vname": "owners_tmp",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 428,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 428,
+        "column": 28
+      }
+    },
+    {
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 428,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 428,
+        "column": 27
+      }
+    },
+    {
+      "vname": "owner_option",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 429,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 429,
+        "column": 32
+      }
+    },
+    {
+      "vname": "owners_tmp",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 429,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 429,
+        "column": 44
+      }
+    },
+    {
+      "vname": "candidate",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 429,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 429,
+        "column": 54
+      }
+    },
+    {
+      "vname": "owner_option",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 430,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 430,
+        "column": 25
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 433,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 433,
+        "column": 16
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 434,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 434,
+        "column": 12
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 434,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 434,
+        "column": 27
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 434,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 434,
+        "column": 31
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 435,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 435,
+        "column": 10
+      }
+    },
+    {
+      "vname": "empty_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 438,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 438,
+        "column": 30
+      }
+    },
+    {
+      "vname": "new_owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 439,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 439,
+        "column": 50
+      }
+    },
+    {
+      "vname": "owner_signatures_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 439,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 439,
+        "column": 64
+      }
+    },
+    {
+      "vname": "candidate",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 439,
+        "column": 65
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 439,
+        "column": 74
+      }
+    },
+    {
+      "vname": "empty_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 439,
+        "column": 75
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 439,
+        "column": 85
+      }
+    },
+    {
+      "vname": "new_owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 440,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 440,
+        "column": 49
+      }
+    },
+    {
+      "vname": "owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 440,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 440,
+        "column": 42
+      }
+    },
+    {
+      "vname": "candidate",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 447,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 447,
+        "column": 38
+      }
+    },
+    {
+      "vname": "sender_mem",
+      "type": "Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 449,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 449,
+        "column": 24
+      }
+    },
+    {
+      "vname": "address_mem",
+      "type": "ByStr20 -> Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 449,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 449,
+        "column": 27
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 449,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 449,
+        "column": 35
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 450,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 450,
+        "column": 6
+      }
+    },
+    {
+      "vname": "owners_tmp",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 453,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 453,
+        "column": 24
+      }
+    },
+    {
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 453,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 453,
+        "column": 23
+      }
+    },
+    {
+      "vname": "sender_is_owner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 454,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 454,
+        "column": 34
+      }
+    },
+    {
+      "vname": "sender_mem",
+      "type": "Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 454,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 454,
+        "column": 31
+      }
+    },
+    {
+      "vname": "owners_tmp",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 454,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 454,
+        "column": 42
+      }
+    },
+    {
+      "vname": "sender_is_owner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 455,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 455,
+        "column": 24
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 457,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 457,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 458,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 458,
+        "column": 8
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 458,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 458,
+        "column": 23
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 458,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 458,
+        "column": 27
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 459,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 459,
+        "column": 6
+      }
+    },
+    {
+      "vname": "owner_signatures_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 461,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 461,
+        "column": 46
+      }
+    },
+    {
+      "vname": "owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 461,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 461,
+        "column": 45
+      }
+    },
+    {
+      "vname": "sigs_option",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 462,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 462,
+        "column": 28
+      }
+    },
+    {
+      "vname": "owner_signatures_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 462,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 462,
+        "column": 51
+      }
+    },
+    {
+      "vname": "candidate",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 462,
+        "column": 52
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 462,
+        "column": 61
+      }
+    },
+    {
+      "vname": "sigs_option",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 463,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 463,
+        "column": 22
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 466,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 466,
+        "column": 14
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 467,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 467,
+        "column": 10
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 467,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 467,
+        "column": 25
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 467,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 467,
+        "column": 29
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 468,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 468,
+        "column": 8
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 469,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 469,
+        "column": 16
+      }
+    },
+    {
+      "vname": "sender_has_signed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 471,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 471,
+        "column": 42
+      }
+    },
+    {
+      "vname": "sender_mem",
+      "type": "Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 471,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 471,
+        "column": 37
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 471,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 471,
+        "column": 42
+      }
+    },
+    {
+      "vname": "sender_has_signed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 472,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 472,
+        "column": 30
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 474,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 474,
+        "column": 16
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 475,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 475,
+        "column": 12
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 475,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 475,
+        "column": 27
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 475,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 475,
+        "column": 31
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 476,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 476,
+        "column": 10
+      }
+    },
+    {
+      "vname": "new_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 478,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 478,
+        "column": 26
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 478,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 478,
+        "column": 36
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 478,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 478,
+        "column": 44
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 478,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 478,
+        "column": 46
+      }
+    },
+    {
+      "vname": "new_owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 479,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 479,
+        "column": 50
+      }
+    },
+    {
+      "vname": "owner_signatures_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 479,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 479,
+        "column": 64
+      }
+    },
+    {
+      "vname": "candidate",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 479,
+        "column": 65
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 479,
+        "column": 74
+      }
+    },
+    {
+      "vname": "new_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 479,
+        "column": 75
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 479,
+        "column": 83
+      }
+    },
+    {
+      "vname": "new_owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 480,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 480,
+        "column": 49
+      }
+    },
+    {
+      "vname": "owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 480,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 480,
+        "column": 42
+      }
+    },
+    {
+      "vname": "no_of_sigs",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 482,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 482,
+        "column": 30
+      }
+    },
+    {
+      "vname": "new_sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 482,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 482,
+        "column": 43
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 483,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 483,
+        "column": 12
+      }
+    },
+    {
+      "vname": "mk_owner_signed_event",
+      "type": "Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 483,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 483,
+        "column": 34
+      }
+    },
+    {
+      "vname": "no_of_sigs",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 483,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 483,
+        "column": 45
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 484,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 484,
+        "column": 10
+      }
+    },
+    {
+      "vname": "owner_signatures_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 492,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 492,
+        "column": 44
+      }
+    },
+    {
+      "vname": "owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 492,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 492,
+        "column": 43
+      }
+    },
+    {
+      "vname": "sigs_option",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 493,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 493,
+        "column": 26
+      }
+    },
+    {
+      "vname": "owner_signatures_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 493,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 493,
+        "column": 49
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 493,
+        "column": 50
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 493,
+        "column": 57
+      }
+    },
+    {
+      "vname": "sigs_option",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 495,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 495,
+        "column": 20
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 498,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 498,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 499,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 499,
+        "column": 8
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 499,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 499,
+        "column": 23
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 499,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 499,
+        "column": 27
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 500,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 500,
+        "column": 6
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 501,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 501,
+        "column": 14
+      }
+    },
+    {
+      "vname": "current_owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 502,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 502,
+        "column": 34
+      }
+    },
+    {
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 502,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 502,
+        "column": 29
+      }
+    },
+    {
+      "vname": "no_of_owners",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 503,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 503,
+        "column": 30
+      }
+    },
+    {
+      "vname": "current_owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 503,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 503,
+        "column": 47
+      }
+    },
+    {
+      "vname": "no_of_sigs",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 504,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 504,
+        "column": 26
+      }
+    },
+    {
+      "vname": "sigs",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 504,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 504,
+        "column": 35
+      }
+    },
+    {
+      "vname": "all_have_signed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 505,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 505,
+        "column": 36
+      }
+    },
+    {
+      "vname": "uint32_eq",
+      "type": "Uint32 -> Uint32 -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 505,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 505,
+        "column": 32
+      }
+    },
+    {
+      "vname": "no_of_sigs",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 505,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 505,
+        "column": 43
+      }
+    },
+    {
+      "vname": "no_of_owners",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 505,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 505,
+        "column": 56
+      }
+    },
+    {
+      "vname": "all_have_signed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 506,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 506,
+        "column": 26
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 509,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 509,
+        "column": 14
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 510,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 510,
+        "column": 10
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 510,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 510,
+        "column": 25
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 510,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 510,
+        "column": 29
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 511,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 511,
+        "column": 8
+      }
+    },
+    {
+      "vname": "new_owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 515,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 515,
+        "column": 48
+      }
+    },
+    {
+      "vname": "owner_signatures_tmp",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 515,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 515,
+        "column": 65
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 515,
+        "column": 66
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 515,
+        "column": 73
+      }
+    },
+    {
+      "vname": "new_owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 516,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 516,
+        "column": 47
+      }
+    },
+    {
+      "vname": "owner_signatures",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 516,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 516,
+        "column": 40
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 517,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 517,
+        "column": 10
+      }
+    },
+    {
+      "vname": "new_owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 518,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 518,
+        "column": 28
+      }
+    },
+    {
+      "vname": "current_owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 518,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 518,
+        "column": 46
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 518,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 518,
+        "column": 54
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 518,
+        "column": 55
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 518,
+        "column": 56
+      }
+    },
+    {
+      "vname": "new_owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 519,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 519,
+        "column": 27
+      }
+    },
+    {
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 519,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 519,
+        "column": 20
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 521,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 521,
+        "column": 10
+      }
+    },
+    {
+      "vname": "mk_new_owner_approved_event",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 521,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 521,
+        "column": 38
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 522,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 522,
+        "column": 8
+      }
+    },
+    {
+      "vname": "checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 530,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 530,
+        "column": 18
+      }
+    },
+    {
+      "vname": "validity_checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 530,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 530,
+        "column": 30
+      }
+    },
+    {
+      "vname": "checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 531,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 531,
+        "column": 16
+      }
+    },
+    {
+      "vname": "owners_map",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 533,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 533,
+        "column": 26
+      }
+    },
+    {
+      "vname": "mk_owners_map",
+      "type": "List (ByStr20) -> Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 533,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 533,
+        "column": 31
+      }
+    },
+    {
+      "vname": "initial_owners",
+      "type": "List (ByStr20)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 533,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 533,
+        "column": 46
+      }
+    },
+    {
+      "vname": "owners_map",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 534,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 534,
+        "column": 25
+      }
+    },
+    {
+      "vname": "owners",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 534,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 534,
+        "column": 18
+      }
+    },
+    {
+      "vname": "valid_contract",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 535,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 535,
+        "column": 34
+      }
+    },
+    {
+      "vname": "check_contract_validity",
+      "type": "Map (ByStr20) (Bool) -> Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 535,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 535,
+        "column": 45
+      }
+    },
+    {
+      "vname": "owners_map",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 535,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 535,
+        "column": 56
+      }
+    },
+    {
+      "vname": "valid_contract",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 536,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 536,
+        "column": 37
+      }
+    },
+    {
+      "vname": "contract_valid",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 536,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 536,
+        "column": 34
+      }
+    },
+    {
+      "vname": "checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 537,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 537,
+        "column": 20
+      }
+    },
+    {
+      "vname": "checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 538,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 538,
+        "column": 32
+      }
+    },
+    {
+      "vname": "validity_checked",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 538,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 538,
+        "column": 38
+      }
+    },
+    {
+      "vname": "valid",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 543,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 543,
+        "column": 14
+      }
+    },
+    {
+      "vname": "contract_valid",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 543,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 543,
+        "column": 26
+      }
+    },
+    {
+      "vname": "valid",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 544,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 544,
+        "column": 14
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 546,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 546,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 547,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 547,
+        "column": 8
+      }
+    },
+    {
+      "vname": "mk_error_event",
+      "type": "Error -> Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 547,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 547,
+        "column": 23
+      }
+    },
+    {
+      "vname": "err",
+      "type": "Error",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 547,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 547,
+        "column": 27
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 548,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 548,
+        "column": 6
+      }
+    }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Wallet",

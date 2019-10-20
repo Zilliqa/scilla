@@ -11,6 +11,1226 @@
       }
     ]
   },
+  "type_info": [
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 21,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 21,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 22,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 22,
+        "column": 6
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 23,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 23,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 24,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 24,
+        "column": 23
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 24,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 24,
+        "column": 31
+      }
+    },
+    {
+      "vname": "success_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 26,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 26,
+        "column": 17
+      }
+    },
+    {
+      "vname": "already_earmarked_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 27,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 27,
+        "column": 27
+      }
+    },
+    {
+      "vname": "not_authorized_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 28,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 28,
+        "column": 24
+      }
+    },
+    {
+      "vname": "did_not_earmark_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 29,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 29,
+        "column": 25
+      }
+    },
+    {
+      "vname": "earmarked_coins",
+      "type": "Map (ByStr20) (EarmarkedCoin)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 34,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 34,
+        "column": 22
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 38,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 38,
+        "column": 32
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 38,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 38,
+        "column": 53
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 39,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 39,
+        "column": 10
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 39,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 39,
+        "column": 43
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 39,
+        "column": 55
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 39,
+        "column": 61
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 40,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 40,
+        "column": 12
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 40,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 40,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 40,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 40,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 41,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 41,
+        "column": 7
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 44,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 44,
+        "column": 42
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 44,
+        "column": 54
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 44,
+        "column": 56
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 45,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 45,
+        "column": 6
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 46,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 46,
+        "column": 18
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 46,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 46,
+        "column": 27
+      }
+    },
+    {
+      "vname": "success_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 46,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 46,
+        "column": 48
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 47,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 47,
+        "column": 4
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 50,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 50,
+        "column": 38
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 50,
+        "column": 50
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 50,
+        "column": 52
+      }
+    },
+    {
+      "vname": "error_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 50,
+        "column": 64
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 50,
+        "column": 74
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 51,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 51,
+        "column": 6
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 52,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 52,
+        "column": 18
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 52,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 52,
+        "column": 27
+      }
+    },
+    {
+      "vname": "error_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 52,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 52,
+        "column": 46
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 53,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 53,
+        "column": 4
+      }
+    },
+    {
+      "vname": "recip",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 64,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 64,
+        "column": 26
+      }
+    },
+    {
+      "vname": "c",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 65,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 65,
+        "column": 4
+      }
+    },
+    {
+      "vname": "earmarked_coins",
+      "type": "Map (ByStr20) (EarmarkedCoin)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 65,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 65,
+        "column": 30
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 65,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 65,
+        "column": 38
+      }
+    },
+    {
+      "vname": "c",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 66,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 66,
+        "column": 10
+      }
+    },
+    {
+      "vname": "e_coin",
+      "type": "EarmarkedCoin",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 69,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 69,
+        "column": 18
+      }
+    },
+    {
+      "vname": "_amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 69,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 69,
+        "column": 35
+      }
+    },
+    {
+      "vname": "recip",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 69,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 69,
+        "column": 41
+      }
+    },
+    {
+      "vname": "earmarked_coins",
+      "type": "Map (ByStr20) (EarmarkedCoin)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 70,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 70,
+        "column": 20
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 70,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 70,
+        "column": 28
+      }
+    },
+    {
+      "vname": "e_coin",
+      "type": "EarmarkedCoin",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 70,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 70,
+        "column": 39
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 71,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 71,
+        "column": 38
+      }
+    },
+    {
+      "vname": "_this_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 71,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 71,
+        "column": 52
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 73,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 73,
+        "column": 34
+      }
+    },
+    {
+      "vname": "_this_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 73,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 73,
+        "column": 48
+      }
+    },
+    {
+      "vname": "already_earmarked_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 73,
+        "column": 49
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 73,
+        "column": 71
+      }
+    },
+    {
+      "vname": "earmarked_coin_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 78,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 78,
+        "column": 53
+      }
+    },
+    {
+      "vname": "e_coin_opt",
+      "type": "Option (EarmarkedCoin)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 79,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 79,
+        "column": 13
+      }
+    },
+    {
+      "vname": "earmarked_coins",
+      "type": "Map (ByStr20) (EarmarkedCoin)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 79,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 79,
+        "column": 32
+      }
+    },
+    {
+      "vname": "earmarked_coin_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 79,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 79,
+        "column": 55
+      }
+    },
+    {
+      "vname": "e_coin_opt",
+      "type": "Option (EarmarkedCoin)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 80,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 80,
+        "column": 19
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 81,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 81,
+        "column": 41
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 81,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 81,
+        "column": 31
+      }
+    },
+    {
+      "vname": "authorized_to_claim",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 83,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 83,
+        "column": 44
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 83,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 83,
+        "column": 47
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 83,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 83,
+        "column": 55
+      }
+    },
+    {
+      "vname": "authorized_to_claim",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 84,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 84,
+        "column": 30
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 86,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 86,
+        "column": 27
+      }
+    },
+    {
+      "vname": "recipient",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 86,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 86,
+        "column": 37
+      }
+    },
+    {
+      "vname": "earmarked_coins",
+      "type": "Map (ByStr20) (EarmarkedCoin)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 87,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 87,
+        "column": 29
+      }
+    },
+    {
+      "vname": "earmarked_coin_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 87,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 87,
+        "column": 52
+      }
+    },
+    {
+      "vname": "_this_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 88,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 88,
+        "column": 46
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 88,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 88,
+        "column": 54
+      }
+    },
+    {
+      "vname": "_this_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 90,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 90,
+        "column": 42
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 90,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 90,
+        "column": 50
+      }
+    },
+    {
+      "vname": "not_authorized_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 90,
+        "column": 51
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 90,
+        "column": 70
+      }
+    },
+    {
+      "vname": "_this_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 94,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 94,
+        "column": 40
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 94,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 94,
+        "column": 48
+      }
+    },
+    {
+      "vname": "did_not_earmark_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 94,
+        "column": 49
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 94,
+        "column": 69
+      }
+    },
+    {
+      "vname": "e_coin_opt",
+      "type": "Option (EarmarkedCoin)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 104,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 104,
+        "column": 13
+      }
+    },
+    {
+      "vname": "earmarked_coins",
+      "type": "Map (ByStr20) (EarmarkedCoin)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 104,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 104,
+        "column": 32
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 104,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 104,
+        "column": 40
+      }
+    },
+    {
+      "vname": "e_coin_opt",
+      "type": "Option (EarmarkedCoin)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 105,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 105,
+        "column": 19
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 106,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 106,
+        "column": 31
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 108,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 108,
+        "column": 25
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 108,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 108,
+        "column": 33
+      }
+    },
+    {
+      "vname": "earmarked_coins",
+      "type": "Map (ByStr20) (EarmarkedCoin)",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 109,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 109,
+        "column": 27
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 109,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 109,
+        "column": 35
+      }
+    },
+    {
+      "vname": "_this_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 110,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 110,
+        "column": 44
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 110,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 110,
+        "column": 52
+      }
+    },
+    {
+      "vname": "_this_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 113,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 113,
+        "column": 40
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 113,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 113,
+        "column": 48
+      }
+    },
+    {
+      "vname": "did_not_earmark_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 113,
+        "column": 49
+      },
+      "end_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 113,
+        "column": 69
+      }
+    }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "EarmarkedCoin",

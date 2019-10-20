@@ -11,6 +11,3718 @@
     ],
     "ADT constructors": []
   },
+  "type_info": [
+    {
+      "vname": "one",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 10,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 10,
+        "column": 8
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 11,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 11,
+        "column": 9
+      }
+    },
+    {
+      "vname": "min_int",
+      "type": "Uint128 -> Uint128 -> Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 13,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 13,
+        "column": 12
+      }
+    },
+    {
+      "vname": "a",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 14,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 14,
+        "column": 4
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 14,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 14,
+        "column": 25
+      }
+    },
+    {
+      "vname": "alt",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 15,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 15,
+        "column": 6
+      }
+    },
+    {
+      "vname": "a",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 15,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 15,
+        "column": 25
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 15,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 15,
+        "column": 27
+      }
+    },
+    {
+      "vname": "alt",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 16,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 16,
+        "column": 12
+      }
+    },
+    {
+      "vname": "a",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 18,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 18,
+        "column": 6
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 20,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 20,
+        "column": 6
+      }
+    },
+    {
+      "vname": "le_int",
+      "type": "Uint128 -> Uint128 -> Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 23,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 23,
+        "column": 11
+      }
+    },
+    {
+      "vname": "a",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 24,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 24,
+        "column": 4
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 24,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 24,
+        "column": 25
+      }
+    },
+    {
+      "vname": "x",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 25,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 25,
+        "column": 6
+      }
+    },
+    {
+      "vname": "a",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 25,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 25,
+        "column": 25
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 25,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 25,
+        "column": 27
+      }
+    },
+    {
+      "vname": "x",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 26,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 26,
+        "column": 12
+      }
+    },
+    {
+      "vname": "y",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 29,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 29,
+        "column": 8
+      }
+    },
+    {
+      "vname": "a",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 29,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 29,
+        "column": 27
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 29,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 29,
+        "column": 29
+      }
+    },
+    {
+      "vname": "y",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 30,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 30,
+        "column": 14
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 37,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 37,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 38,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 38,
+        "column": 8
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 39,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 39,
+        "column": 16
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 40,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 40,
+        "column": 27
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 40,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 40,
+        "column": 35
+      }
+    },
+    {
+      "vname": "owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 48,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 48,
+        "column": 7
+      }
+    },
+    {
+      "vname": "total_tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 49,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 49,
+        "column": 14
+      }
+    },
+    {
+      "vname": "decimals",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 50,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 50,
+        "column": 10
+      }
+    },
+    {
+      "vname": "name",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 51,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 51,
+        "column": 6
+      }
+    },
+    {
+      "vname": "symbol",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 52,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 52,
+        "column": 8
+      }
+    },
+    {
+      "vname": "balances",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 56,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 56,
+        "column": 15
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 57,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 57,
+        "column": 4
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 58,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 58,
+        "column": 18
+      }
+    },
+    {
+      "vname": "owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 58,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 58,
+        "column": 24
+      }
+    },
+    {
+      "vname": "total_tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 58,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 58,
+        "column": 37
+      }
+    },
+    {
+      "vname": "allowed",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 59,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 59,
+        "column": 14
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 61,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 61,
+        "column": 33
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 62,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 62,
+        "column": 6
+      }
+    },
+    {
+      "vname": "balances",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 62,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 62,
+        "column": 18
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 62,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 62,
+        "column": 29
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 63,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 63,
+        "column": 12
+      }
+    },
+    {
+      "vname": "v",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 64,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 64,
+        "column": 11
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 65,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 65,
+        "column": 12
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 65,
+        "column": 54
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 65,
+        "column": 61
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 65,
+        "column": 73
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 65,
+        "column": 77
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 66,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 66,
+        "column": 33
+      }
+    },
+    {
+      "vname": "v",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 66,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 66,
+        "column": 46
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 67,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 67,
+        "column": 14
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 67,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 67,
+        "column": 19
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 67,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 67,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 68,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 68,
+        "column": 9
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 70,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 70,
+        "column": 12
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 70,
+        "column": 54
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 70,
+        "column": 61
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 70,
+        "column": 73
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 70,
+        "column": 77
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 71,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 71,
+        "column": 33
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 71,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 71,
+        "column": 49
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 72,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 72,
+        "column": 14
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 72,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 72,
+        "column": 19
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 72,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 72,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 73,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 73,
+        "column": 9
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 78,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 78,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 78,
+        "column": 54
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 78,
+        "column": 61
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 78,
+        "column": 73
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 78,
+        "column": 77
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 79,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 79,
+        "column": 27
+      }
+    },
+    {
+      "vname": "total_tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 79,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 79,
+        "column": 55
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 80,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 80,
+        "column": 12
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 80,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 80,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 80,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 80,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 81,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 81,
+        "column": 7
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 84,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 84,
+        "column": 24
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 84,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 84,
+        "column": 42
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 85,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 85,
+        "column": 6
+      }
+    },
+    {
+      "vname": "balances",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 85,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 85,
+        "column": 18
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 85,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 85,
+        "column": 26
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 86,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 86,
+        "column": 12
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 87,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 87,
+        "column": 11
+      }
+    },
+    {
+      "vname": "can_do",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 88,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 88,
+        "column": 18
+      }
+    },
+    {
+      "vname": "le_int",
+      "type": "Uint128 -> Uint128 -> Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 88,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 88,
+        "column": 20
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 88,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 88,
+        "column": 27
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 88,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 88,
+        "column": 29
+      }
+    },
+    {
+      "vname": "can_do",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 89,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 89,
+        "column": 17
+      }
+    },
+    {
+      "vname": "new_sender_bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 92,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 92,
+        "column": 36
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 92,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 92,
+        "column": 37
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 92,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 92,
+        "column": 44
+      }
+    },
+    {
+      "vname": "balances",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 93,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 93,
+        "column": 15
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 93,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 93,
+        "column": 23
+      }
+    },
+    {
+      "vname": "new_sender_bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 93,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 93,
+        "column": 42
+      }
+    },
+    {
+      "vname": "to_bal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 96,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 96,
+        "column": 13
+      }
+    },
+    {
+      "vname": "balances",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 96,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 96,
+        "column": 25
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 96,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 96,
+        "column": 28
+      }
+    },
+    {
+      "vname": "new_to_bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 97,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 97,
+        "column": 28
+      }
+    },
+    {
+      "vname": "to_bal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 97,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 97,
+        "column": 32
+      }
+    },
+    {
+      "vname": "x",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 98,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 98,
+        "column": 15
+      }
+    },
+    {
+      "vname": "x",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 98,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 98,
+        "column": 32
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 98,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 98,
+        "column": 39
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 99,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 99,
+        "column": 23
+      }
+    },
+    {
+      "vname": "balances",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 102,
+        "column": 6
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 102,
+        "column": 14
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 102,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 102,
+        "column": 17
+      }
+    },
+    {
+      "vname": "new_to_bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 102,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 102,
+        "column": 32
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 103,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 103,
+        "column": 14
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 103,
+        "column": 54
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 103,
+        "column": 61
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 103,
+        "column": 73
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 103,
+        "column": 77
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 104,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 104,
+        "column": 31
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 104,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 104,
+        "column": 47
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 104,
+        "column": 58
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 104,
+        "column": 64
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 105,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 105,
+        "column": 16
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 105,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 105,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 105,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 105,
+        "column": 25
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 106,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 106,
+        "column": 11
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 109,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 109,
+        "column": 14
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 109,
+        "column": 54
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 109,
+        "column": 61
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 109,
+        "column": 73
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 109,
+        "column": 77
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 110,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 110,
+        "column": 31
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 110,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 110,
+        "column": 47
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 110,
+        "column": 58
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 110,
+        "column": 62
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 111,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 111,
+        "column": 16
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 111,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 111,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 111,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 111,
+        "column": 25
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 112,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 112,
+        "column": 11
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 116,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 116,
+        "column": 12
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 116,
+        "column": 52
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 116,
+        "column": 59
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 116,
+        "column": 71
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 116,
+        "column": 75
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 117,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 117,
+        "column": 29
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 117,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 117,
+        "column": 45
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 117,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 117,
+        "column": 60
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 118,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 118,
+        "column": 14
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 118,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 118,
+        "column": 19
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 118,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 118,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 119,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 119,
+        "column": 9
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 123,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 123,
+        "column": 30
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 123,
+        "column": 42
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 123,
+        "column": 44
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 123,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 123,
+        "column": 62
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 124,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 124,
+        "column": 6
+      }
+    },
+    {
+      "vname": "balances",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 124,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 124,
+        "column": 18
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 124,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 124,
+        "column": 23
+      }
+    },
+    {
+      "vname": "sender_allowed_from",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 126,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 126,
+        "column": 22
+      }
+    },
+    {
+      "vname": "allowed",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 126,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 126,
+        "column": 33
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 126,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 126,
+        "column": 38
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 126,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 126,
+        "column": 47
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 127,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 127,
+        "column": 12
+      }
+    },
+    {
+      "vname": "a",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 128,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 128,
+        "column": 11
+      }
+    },
+    {
+      "vname": "sender_allowed_from",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 129,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 129,
+        "column": 30
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 130,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 130,
+        "column": 13
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 132,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 132,
+        "column": 12
+      }
+    },
+    {
+      "vname": "min_int",
+      "type": "Uint128 -> Uint128 -> Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 132,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 132,
+        "column": 20
+      }
+    },
+    {
+      "vname": "a",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 132,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 132,
+        "column": 22
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 132,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 132,
+        "column": 24
+      }
+    },
+    {
+      "vname": "can_do",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 133,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 133,
+        "column": 22
+      }
+    },
+    {
+      "vname": "le_int",
+      "type": "Uint128 -> Uint128 -> Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 133,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 133,
+        "column": 24
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 133,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 133,
+        "column": 31
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 133,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 133,
+        "column": 33
+      }
+    },
+    {
+      "vname": "can_do",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 134,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 134,
+        "column": 21
+      }
+    },
+    {
+      "vname": "new_from_bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 137,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 137,
+        "column": 38
+      }
+    },
+    {
+      "vname": "a",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 137,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 137,
+        "column": 41
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 137,
+        "column": 42
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 137,
+        "column": 48
+      }
+    },
+    {
+      "vname": "balances",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 138,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 138,
+        "column": 21
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 138,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 138,
+        "column": 26
+      }
+    },
+    {
+      "vname": "new_from_bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 138,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 138,
+        "column": 43
+      }
+    },
+    {
+      "vname": "to_bal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 139,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 139,
+        "column": 19
+      }
+    },
+    {
+      "vname": "balances",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 139,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 139,
+        "column": 31
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 139,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 139,
+        "column": 34
+      }
+    },
+    {
+      "vname": "to_bal",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 140,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 140,
+        "column": 25
+      }
+    },
+    {
+      "vname": "tb",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 141,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 141,
+        "column": 22
+      }
+    },
+    {
+      "vname": "new_to_bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 142,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 142,
+        "column": 38
+      }
+    },
+    {
+      "vname": "tb",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 142,
+        "column": 42
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 142,
+        "column": 44
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 142,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 142,
+        "column": 51
+      }
+    },
+    {
+      "vname": "balances",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 143,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 143,
+        "column": 25
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 143,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 143,
+        "column": 28
+      }
+    },
+    {
+      "vname": "new_to_bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 143,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 143,
+        "column": 43
+      }
+    },
+    {
+      "vname": "balances",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 146,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 146,
+        "column": 25
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 146,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 146,
+        "column": 28
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 146,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 146,
+        "column": 39
+      }
+    },
+    {
+      "vname": "new_allowed",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 149,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 149,
+        "column": 36
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 149,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 149,
+        "column": 40
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 149,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 149,
+        "column": 47
+      }
+    },
+    {
+      "vname": "allowed",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 150,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 150,
+        "column": 20
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 150,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 150,
+        "column": 25
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 150,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 150,
+        "column": 34
+      }
+    },
+    {
+      "vname": "new_allowed",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 150,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 150,
+        "column": 50
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 151,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 151,
+        "column": 20
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 151,
+        "column": 64
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 151,
+        "column": 71
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 151,
+        "column": 83
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 151,
+        "column": 87
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 152,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 152,
+        "column": 34
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 152,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 152,
+        "column": 50
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 152,
+        "column": 61
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 152,
+        "column": 67
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 153,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 153,
+        "column": 22
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 153,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 153,
+        "column": 27
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 153,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 153,
+        "column": 31
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 154,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 154,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 156,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 156,
+        "column": 20
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 156,
+        "column": 64
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 156,
+        "column": 71
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 156,
+        "column": 83
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 156,
+        "column": 87
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 157,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 157,
+        "column": 34
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 157,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 157,
+        "column": 50
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 157,
+        "column": 61
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 157,
+        "column": 65
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 158,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 158,
+        "column": 22
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 158,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 158,
+        "column": 27
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 158,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 158,
+        "column": 31
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 159,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 159,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 162,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 162,
+        "column": 16
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 162,
+        "column": 60
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 162,
+        "column": 67
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 162,
+        "column": 79
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 162,
+        "column": 83
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 163,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 163,
+        "column": 30
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 163,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 163,
+        "column": 46
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 163,
+        "column": 57
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 163,
+        "column": 61
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 164,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 164,
+        "column": 18
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 164,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 164,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 164,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 164,
+        "column": 27
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 165,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 165,
+        "column": 13
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 168,
+        "column": 6
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 168,
+        "column": 9
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 168,
+        "column": 53
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 168,
+        "column": 60
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 168,
+        "column": 72
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 168,
+        "column": 76
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 169,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 169,
+        "column": 26
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 169,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 169,
+        "column": 42
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 169,
+        "column": 53
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 169,
+        "column": 57
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 170,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 170,
+        "column": 14
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 170,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 170,
+        "column": 19
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 170,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 170,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 171,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 171,
+        "column": 9
+      }
+    },
+    {
+      "vname": "spender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 175,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 175,
+        "column": 28
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 175,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 175,
+        "column": 46
+      }
+    },
+    {
+      "vname": "allowed",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 176,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 176,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 176,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 176,
+        "column": 18
+      }
+    },
+    {
+      "vname": "spender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 176,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 176,
+        "column": 27
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 176,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 176,
+        "column": 38
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 177,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 177,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 177,
+        "column": 49
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 177,
+        "column": 56
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 177,
+        "column": 68
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 177,
+        "column": 72
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 178,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 178,
+        "column": 29
+      }
+    },
+    {
+      "vname": "spender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 178,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 178,
+        "column": 48
+      }
+    },
+    {
+      "vname": "tokens",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 178,
+        "column": 59
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 178,
+        "column": 65
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 179,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 179,
+        "column": 12
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 179,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 179,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 179,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 179,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 180,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 180,
+        "column": 7
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 183,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 183,
+        "column": 33
+      }
+    },
+    {
+      "vname": "spender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 183,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 183,
+        "column": 52
+      }
+    },
+    {
+      "vname": "spender_allowance",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 184,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 184,
+        "column": 20
+      }
+    },
+    {
+      "vname": "allowed",
+      "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 184,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 184,
+        "column": 31
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 184,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 184,
+        "column": 42
+      }
+    },
+    {
+      "vname": "spender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 184,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 184,
+        "column": 51
+      }
+    },
+    {
+      "vname": "spender_allowance",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 185,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 185,
+        "column": 26
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 186,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 186,
+        "column": 11
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 187,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 187,
+        "column": 14
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 187,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 187,
+        "column": 63
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 187,
+        "column": 75
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 187,
+        "column": 79
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 188,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 188,
+        "column": 33
+      }
+    },
+    {
+      "vname": "spender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 188,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 188,
+        "column": 52
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 188,
+        "column": 63
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 188,
+        "column": 64
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 189,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 189,
+        "column": 16
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 189,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 189,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 189,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 189,
+        "column": 25
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 190,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 190,
+        "column": 11
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 192,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 192,
+        "column": 14
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 192,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 192,
+        "column": 63
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 192,
+        "column": 75
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 192,
+        "column": 79
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 193,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 193,
+        "column": 33
+      }
+    },
+    {
+      "vname": "spender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 193,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 193,
+        "column": 52
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 193,
+        "column": 63
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 193,
+        "column": 67
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 194,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 194,
+        "column": 16
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 194,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 194,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 194,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 194,
+        "column": 25
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 195,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 195,
+        "column": 11
+      }
+    }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "FungibleToken",

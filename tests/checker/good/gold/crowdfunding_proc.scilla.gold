@@ -9,6 +9,2514 @@
     ],
     "ADT constructors": []
   },
+  "type_info": [
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 14,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 14,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 15,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 15,
+        "column": 6
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 16,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 16,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 17,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 17,
+        "column": 23
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 17,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 17,
+        "column": 31
+      }
+    },
+    {
+      "vname": "blk_leq",
+      "type": "BNum -> BNum -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 19,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 19,
+        "column": 12
+      }
+    },
+    {
+      "vname": "blk1",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 20,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 20,
+        "column": 7
+      }
+    },
+    {
+      "vname": "blk2",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 21,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 21,
+        "column": 7
+      }
+    },
+    {
+      "vname": "bc1",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 22,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 22,
+        "column": 8
+      }
+    },
+    {
+      "vname": "blk1",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 22,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 22,
+        "column": 31
+      }
+    },
+    {
+      "vname": "blk2",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 22,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 22,
+        "column": 36
+      }
+    },
+    {
+      "vname": "bc2",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 23,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 23,
+        "column": 8
+      }
+    },
+    {
+      "vname": "blk1",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 23,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 23,
+        "column": 30
+      }
+    },
+    {
+      "vname": "blk2",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 23,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 23,
+        "column": 35
+      }
+    },
+    {
+      "vname": "orb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 24,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 24,
+        "column": 8
+      }
+    },
+    {
+      "vname": "bc1",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 24,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 24,
+        "column": 12
+      }
+    },
+    {
+      "vname": "bc2",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 24,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 24,
+        "column": 16
+      }
+    },
+    {
+      "vname": "get_funds_allowed",
+      "type": "BNum -> BNum -> Uint128 -> Uint128 -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 26,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 26,
+        "column": 22
+      }
+    },
+    {
+      "vname": "cur_block",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 27,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 27,
+        "column": 12
+      }
+    },
+    {
+      "vname": "max_block",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 28,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 28,
+        "column": 12
+      }
+    },
+    {
+      "vname": "balance",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 29,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 29,
+        "column": 10
+      }
+    },
+    {
+      "vname": "goal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 30,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 30,
+        "column": 7
+      }
+    },
+    {
+      "vname": "in_time",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 31,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 31,
+        "column": 12
+      }
+    },
+    {
+      "vname": "blk_leq",
+      "type": "BNum -> BNum -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 31,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 31,
+        "column": 26
+      }
+    },
+    {
+      "vname": "cur_block",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 31,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 31,
+        "column": 36
+      }
+    },
+    {
+      "vname": "max_block",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 31,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 31,
+        "column": 46
+      }
+    },
+    {
+      "vname": "deadline_passed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 32,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 32,
+        "column": 20
+      }
+    },
+    {
+      "vname": "negb",
+      "type": "Bool -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 32,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 32,
+        "column": 31
+      }
+    },
+    {
+      "vname": "in_time",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 32,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 32,
+        "column": 39
+      }
+    },
+    {
+      "vname": "target_not_reached",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 33,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 33,
+        "column": 23
+      }
+    },
+    {
+      "vname": "balance",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 33,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 33,
+        "column": 48
+      }
+    },
+    {
+      "vname": "goal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 33,
+        "column": 49
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 33,
+        "column": 53
+      }
+    },
+    {
+      "vname": "target_reached",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 34,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 34,
+        "column": 19
+      }
+    },
+    {
+      "vname": "negb",
+      "type": "Bool -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 34,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 34,
+        "column": 30
+      }
+    },
+    {
+      "vname": "target_not_reached",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 34,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 34,
+        "column": 49
+      }
+    },
+    {
+      "vname": "andb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 35,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 35,
+        "column": 9
+      }
+    },
+    {
+      "vname": "deadline_passed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 35,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 35,
+        "column": 25
+      }
+    },
+    {
+      "vname": "target_reached",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 35,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 35,
+        "column": 40
+      }
+    },
+    {
+      "vname": "claimback_allowed",
+      "type": "Uint128 -> Uint128 -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 37,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 37,
+        "column": 22
+      }
+    },
+    {
+      "vname": "balance",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 38,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 38,
+        "column": 10
+      }
+    },
+    {
+      "vname": "goal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 39,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 39,
+        "column": 7
+      }
+    },
+    {
+      "vname": "already_funded",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 40,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 40,
+        "column": 17
+      }
+    },
+    {
+      "vname": "target_not_reached",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 41,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 41,
+        "column": 23
+      }
+    },
+    {
+      "vname": "balance",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 41,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 41,
+        "column": 48
+      }
+    },
+    {
+      "vname": "goal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 41,
+        "column": 49
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 41,
+        "column": 53
+      }
+    },
+    {
+      "vname": "not_already_funded",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 42,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 42,
+        "column": 23
+      }
+    },
+    {
+      "vname": "negb",
+      "type": "Bool -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 42,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 42,
+        "column": 34
+      }
+    },
+    {
+      "vname": "already_funded",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 42,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 42,
+        "column": 49
+      }
+    },
+    {
+      "vname": "andb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 43,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 43,
+        "column": 9
+      }
+    },
+    {
+      "vname": "target_not_reached",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 43,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 43,
+        "column": 28
+      }
+    },
+    {
+      "vname": "not_already_funded",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 43,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 43,
+        "column": 47
+      }
+    },
+    {
+      "vname": "accepted_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 45,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 45,
+        "column": 18
+      }
+    },
+    {
+      "vname": "missed_deadline_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 46,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 46,
+        "column": 25
+      }
+    },
+    {
+      "vname": "already_backed_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 47,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 47,
+        "column": 24
+      }
+    },
+    {
+      "vname": "not_owner_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 48,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 48,
+        "column": 19
+      }
+    },
+    {
+      "vname": "too_early_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 49,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 49,
+        "column": 19
+      }
+    },
+    {
+      "vname": "got_funds_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 50,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 50,
+        "column": 19
+      }
+    },
+    {
+      "vname": "cannot_get_funds",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 51,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 51,
+        "column": 21
+      }
+    },
+    {
+      "vname": "cannot_reclaim_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 52,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 52,
+        "column": 24
+      }
+    },
+    {
+      "vname": "reclaimed_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 53,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 53,
+        "column": 19
+      }
+    },
+    {
+      "vname": "owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 61,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 61,
+        "column": 7
+      }
+    },
+    {
+      "vname": "max_block",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 62,
+        "column": 1
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 62,
+        "column": 10
+      }
+    },
+    {
+      "vname": "goal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 63,
+        "column": 1
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 63,
+        "column": 5
+      }
+    },
+    {
+      "vname": "backers",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 66,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 66,
+        "column": 14
+      }
+    },
+    {
+      "vname": "funded",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 67,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 67,
+        "column": 13
+      }
+    },
+    {
+      "vname": "failure",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 69,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 69,
+        "column": 33
+      }
+    },
+    {
+      "vname": "error_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 69,
+        "column": 42
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 69,
+        "column": 52
+      }
+    },
+    {
+      "vname": "failure",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 70,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 70,
+        "column": 16
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 72,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 72,
+        "column": 8
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 72,
+        "column": 50
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 72,
+        "column": 57
+      }
+    },
+    {
+      "vname": "_amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 73,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 73,
+        "column": 26
+      }
+    },
+    {
+      "vname": "accepted_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 73,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 73,
+        "column": 48
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 74,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 74,
+        "column": 6
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 76,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 76,
+        "column": 8
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 76,
+        "column": 50
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 76,
+        "column": 57
+      }
+    },
+    {
+      "vname": "_amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 77,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 77,
+        "column": 26
+      }
+    },
+    {
+      "vname": "error_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 77,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 77,
+        "column": 45
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 78,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 78,
+        "column": 6
+      }
+    },
+    {
+      "vname": "c",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 83,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 83,
+        "column": 4
+      }
+    },
+    {
+      "vname": "backers",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 83,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 83,
+        "column": 22
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 83,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 83,
+        "column": 30
+      }
+    },
+    {
+      "vname": "c",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 84,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 84,
+        "column": 10
+      }
+    },
+    {
+      "vname": "backers",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 87,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 87,
+        "column": 12
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 87,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 87,
+        "column": 20
+      }
+    },
+    {
+      "vname": "_amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 87,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 87,
+        "column": 32
+      }
+    },
+    {
+      "vname": "c",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 88,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 88,
+        "column": 20
+      }
+    },
+    {
+      "vname": "accepted_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 88,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 88,
+        "column": 34
+      }
+    },
+    {
+      "vname": "c",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 90,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 90,
+        "column": 20
+      }
+    },
+    {
+      "vname": "already_backed_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 90,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 90,
+        "column": 40
+      }
+    },
+    {
+      "vname": "blk",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 95,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 95,
+        "column": 10
+      }
+    },
+    {
+      "vname": "in_time",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 96,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 96,
+        "column": 18
+      }
+    },
+    {
+      "vname": "blk_leq",
+      "type": "BNum -> BNum -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 96,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 96,
+        "column": 20
+      }
+    },
+    {
+      "vname": "blk",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 96,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 96,
+        "column": 24
+      }
+    },
+    {
+      "vname": "max_block",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 96,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 96,
+        "column": 34
+      }
+    },
+    {
+      "vname": "in_time",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 97,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 97,
+        "column": 16
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 101,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 101,
+        "column": 8
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 102,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 102,
+        "column": 20
+      }
+    },
+    {
+      "vname": "missed_deadline_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 102,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 102,
+        "column": 41
+      }
+    },
+    {
+      "vname": "error_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 106,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 106,
+        "column": 38
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 107,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 107,
+        "column": 6
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 107,
+        "column": 49
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 107,
+        "column": 56
+      }
+    },
+    {
+      "vname": "_amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 108,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 108,
+        "column": 24
+      }
+    },
+    {
+      "vname": "error_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 108,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 108,
+        "column": 43
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 109,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 109,
+        "column": 4
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 113,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 113,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_balance",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 113,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 113,
+        "column": 18
+      }
+    },
+    {
+      "vname": "tt",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 114,
+        "column": 6
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 114,
+        "column": 8
+      }
+    },
+    {
+      "vname": "tt",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 115,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 115,
+        "column": 15
+      }
+    },
+    {
+      "vname": "funded",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 115,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 115,
+        "column": 16
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 116,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 116,
+        "column": 10
+      }
+    },
+    {
+      "vname": "owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 116,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 116,
+        "column": 39
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 116,
+        "column": 51
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 116,
+        "column": 54
+      }
+    },
+    {
+      "vname": "got_funds_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 116,
+        "column": 63
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 116,
+        "column": 77
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 117,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 117,
+        "column": 12
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 117,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 117,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 117,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 117,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 118,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 118,
+        "column": 7
+      }
+    },
+    {
+      "vname": "is_owner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 122,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 122,
+        "column": 20
+      }
+    },
+    {
+      "vname": "owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 122,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 122,
+        "column": 30
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 122,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 122,
+        "column": 38
+      }
+    },
+    {
+      "vname": "is_owner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 123,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 123,
+        "column": 17
+      }
+    },
+    {
+      "vname": "not_owner_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 125,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 125,
+        "column": 35
+      }
+    },
+    {
+      "vname": "blk",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 127,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 127,
+        "column": 12
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 128,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 128,
+        "column": 12
+      }
+    },
+    {
+      "vname": "_balance",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 128,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 128,
+        "column": 20
+      }
+    },
+    {
+      "vname": "allowed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 20
+      }
+    },
+    {
+      "vname": "get_funds_allowed",
+      "type": "BNum -> BNum -> Uint128 -> Uint128 -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 32
+      }
+    },
+    {
+      "vname": "blk",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 36
+      }
+    },
+    {
+      "vname": "max_block",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 46
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 50
+      }
+    },
+    {
+      "vname": "goal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 51
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 129,
+        "column": 55
+      }
+    },
+    {
+      "vname": "allowed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 130,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 130,
+        "column": 18
+      }
+    },
+    {
+      "vname": "cannot_get_funds",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 132,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 132,
+        "column": 39
+      }
+    },
+    {
+      "vname": "error_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 139,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 139,
+        "column": 39
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 140,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 140,
+        "column": 6
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 140,
+        "column": 50
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 140,
+        "column": 57
+      }
+    },
+    {
+      "vname": "_amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 141,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 141,
+        "column": 24
+      }
+    },
+    {
+      "vname": "error_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 141,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 141,
+        "column": 43
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 142,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 142,
+        "column": 4
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 145,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 145,
+        "column": 35
+      }
+    },
+    {
+      "vname": "backers",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 146,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 146,
+        "column": 17
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 146,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 146,
+        "column": 25
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 147,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 147,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 147,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 147,
+        "column": 41
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 147,
+        "column": 53
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 147,
+        "column": 59
+      }
+    },
+    {
+      "vname": "reclaimed_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 147,
+        "column": 68
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 147,
+        "column": 82
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 148,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 148,
+        "column": 12
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 148,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 148,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 148,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 148,
+        "column": 21
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 149,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 149,
+        "column": 6
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 149,
+        "column": 51
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 149,
+        "column": 58
+      }
+    },
+    {
+      "vname": "amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 149,
+        "column": 69
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 149,
+        "column": 75
+      }
+    },
+    {
+      "vname": "reclaimed_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 149,
+        "column": 84
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 149,
+        "column": 98
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 150,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 150,
+        "column": 4
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 151,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 151,
+        "column": 7
+      }
+    },
+    {
+      "vname": "blk",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 156,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 156,
+        "column": 10
+      }
+    },
+    {
+      "vname": "after_deadline",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 157,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 157,
+        "column": 32
+      }
+    },
+    {
+      "vname": "max_block",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 157,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 157,
+        "column": 41
+      }
+    },
+    {
+      "vname": "blk",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 157,
+        "column": 42
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 157,
+        "column": 45
+      }
+    },
+    {
+      "vname": "after_deadline",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 158,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 158,
+        "column": 23
+      }
+    },
+    {
+      "vname": "too_early_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 160,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 160,
+        "column": 36
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 162,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 162,
+        "column": 12
+      }
+    },
+    {
+      "vname": "_balance",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 162,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 162,
+        "column": 20
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 163,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 163,
+        "column": 8
+      }
+    },
+    {
+      "vname": "funded",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 163,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 163,
+        "column": 16
+      }
+    },
+    {
+      "vname": "allowed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 164,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 164,
+        "column": 20
+      }
+    },
+    {
+      "vname": "claimback_allowed",
+      "type": "Uint128 -> Uint128 -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 164,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 164,
+        "column": 32
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 164,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 164,
+        "column": 36
+      }
+    },
+    {
+      "vname": "goal",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 164,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 164,
+        "column": 41
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 164,
+        "column": 42
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 164,
+        "column": 43
+      }
+    },
+    {
+      "vname": "allowed",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 165,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 165,
+        "column": 18
+      }
+    },
+    {
+      "vname": "cannot_reclaim_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 167,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 167,
+        "column": 43
+      }
+    },
+    {
+      "vname": "res",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 169,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 169,
+        "column": 10
+      }
+    },
+    {
+      "vname": "backers",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 169,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 169,
+        "column": 21
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 169,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 169,
+        "column": 29
+      }
+    },
+    {
+      "vname": "res",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 170,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 170,
+        "column": 16
+      }
+    },
+    {
+      "vname": "cannot_reclaim_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 173,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 173,
+        "column": 45
+      }
+    },
+    {
+      "vname": "v",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 174,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 174,
+        "column": 15
+      }
+    },
+    {
+      "vname": "v",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 175,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 175,
+        "column": 27
+      }
+    }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Crowdfunding",

@@ -10,6 +10,1870 @@
     ],
     "ADT constructors": []
   },
+  "type_info": [
+    {
+      "vname": "no_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 7,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 7,
+        "column": 11
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 9,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 9,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 10,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 10,
+        "column": 6
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 11,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 11,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 12,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 12,
+        "column": 23
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 12,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 12,
+        "column": 31
+      }
+    },
+    {
+      "vname": "flip_obool",
+      "type": "Option (Bool) -> Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 14,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 14,
+        "column": 15
+      }
+    },
+    {
+      "vname": "ob",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 15,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 15,
+        "column": 5
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 16,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 16,
+        "column": 6
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 17,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 17,
+        "column": 6
+      }
+    },
+    {
+      "vname": "ob",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 18,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 18,
+        "column": 13
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 19,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 19,
+        "column": 28
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 20,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 20,
+        "column": 13
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 21,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 21,
+        "column": 14
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 22,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 22,
+        "column": 30
+      }
+    },
+    {
+      "vname": "t",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 23,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 23,
+        "column": 31
+      }
+    },
+    {
+      "vname": "fst_f",
+      "type": "Pair (List (Int64)) (Option (Bool)) -> List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 27,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 27,
+        "column": 10
+      }
+    },
+    {
+      "vname": "fst",
+      "type": "forall 'A. forall 'B. Pair ('A) ('B) -> 'A",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 27,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 27,
+        "column": 16
+      }
+    },
+    {
+      "vname": "snd_f",
+      "type": "Pair (List (Int64)) (Option (Bool)) -> Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 28,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 28,
+        "column": 10
+      }
+    },
+    {
+      "vname": "snd",
+      "type": "forall 'A. forall 'B. Pair ('A) ('B) -> 'B",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 28,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 28,
+        "column": 16
+      }
+    },
+    {
+      "vname": "owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 31,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 31,
+        "column": 7
+      }
+    },
+    {
+      "vname": "gmap",
+      "type": "Map (ByStr20) (Pair (Int32) (Int32))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 33,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 33,
+        "column": 11
+      }
+    },
+    {
+      "vname": "gpair",
+      "type": "Pair (List (Int64)) (Option (Bool))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 34,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 34,
+        "column": 12
+      }
+    },
+    {
+      "vname": "el",
+      "type": "List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 35,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 35,
+        "column": 7
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 36,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 36,
+        "column": 6
+      }
+    },
+    {
+      "vname": "el",
+      "type": "List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 37,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 37,
+        "column": 43
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 37,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 37,
+        "column": 45
+      }
+    },
+    {
+      "vname": "llist",
+      "type": "List (List (Int64))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 39,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 39,
+        "column": 12
+      }
+    },
+    {
+      "vname": "plist",
+      "type": "List (Option (Int32))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 40,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 40,
+        "column": 12
+      }
+    },
+    {
+      "vname": "gnat",
+      "type": "Nat",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 42,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 42,
+        "column": 11
+      }
+    },
+    {
+      "vname": "is_owner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 45,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 45,
+        "column": 20
+      }
+    },
+    {
+      "vname": "owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 45,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 45,
+        "column": 30
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 45,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 45,
+        "column": 38
+      }
+    },
+    {
+      "vname": "is_owner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 46,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 46,
+        "column": 17
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 48,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 48,
+        "column": 12
+      }
+    },
+    {
+      "vname": "two",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 49,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 49,
+        "column": 12
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (Int32) (Int32)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 50,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 50,
+        "column": 8
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 50,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 50,
+        "column": 35
+      }
+    },
+    {
+      "vname": "two",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 50,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 50,
+        "column": 39
+      }
+    },
+    {
+      "vname": "gmap",
+      "type": "Map (ByStr20) (Pair (Int32) (Int32))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 51,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 51,
+        "column": 9
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 51,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 51,
+        "column": 17
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (Int32) (Int32)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 51,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 51,
+        "column": 23
+      }
+    },
+    {
+      "vname": "no_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 52,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 52,
+        "column": 11
+      }
+    },
+    {
+      "vname": "three",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 54,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 54,
+        "column": 16
+      }
+    },
+    {
+      "vname": "four",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 55,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 55,
+        "column": 14
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (Int32) (Int32)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 56,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 56,
+        "column": 8
+      }
+    },
+    {
+      "vname": "three",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 56,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 56,
+        "column": 37
+      }
+    },
+    {
+      "vname": "four",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 56,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 56,
+        "column": 42
+      }
+    },
+    {
+      "vname": "gmap",
+      "type": "Map (ByStr20) (Pair (Int32) (Int32))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 57,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 57,
+        "column": 9
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 57,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 57,
+        "column": 17
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (Int32) (Int32)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 57,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 57,
+        "column": 23
+      }
+    },
+    {
+      "vname": "no_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 58,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 58,
+        "column": 11
+      }
+    },
+    {
+      "vname": "num",
+      "type": "Int64",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 62,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 62,
+        "column": 28
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (List (Int64)) (Option (Bool))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 63,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 63,
+        "column": 6
+      }
+    },
+    {
+      "vname": "gpair",
+      "type": "Pair (List (Int64)) (Option (Bool))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 63,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 63,
+        "column": 13
+      }
+    },
+    {
+      "vname": "l1",
+      "type": "List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 65,
+        "column": 6
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 65,
+        "column": 8
+      }
+    },
+    {
+      "vname": "fst_f",
+      "type": "Pair (List (Int64)) (Option (Bool)) -> List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 65,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 65,
+        "column": 13
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (List (Int64)) (Option (Bool))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 65,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 65,
+        "column": 15
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 67,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 67,
+        "column": 6
+      }
+    },
+    {
+      "vname": "snd_f",
+      "type": "Pair (List (Int64)) (Option (Bool)) -> Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 67,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 67,
+        "column": 12
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (List (Int64)) (Option (Bool))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 67,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 67,
+        "column": 14
+      }
+    },
+    {
+      "vname": "bflip",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 69,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 69,
+        "column": 14
+      }
+    },
+    {
+      "vname": "flip_obool",
+      "type": "Option (Bool) -> Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 69,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 69,
+        "column": 21
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 69,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 69,
+        "column": 23
+      }
+    },
+    {
+      "vname": "l2",
+      "type": "List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 71,
+        "column": 6
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 71,
+        "column": 8
+      }
+    },
+    {
+      "vname": "num",
+      "type": "Int64",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 71,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 71,
+        "column": 23
+      }
+    },
+    {
+      "vname": "l1",
+      "type": "List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 71,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 71,
+        "column": 26
+      }
+    },
+    {
+      "vname": "new_p",
+      "type": "Pair (List (Int64)) (Option (Bool))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 73,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 73,
+        "column": 14
+      }
+    },
+    {
+      "vname": "l2",
+      "type": "List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 73,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 73,
+        "column": 49
+      }
+    },
+    {
+      "vname": "bflip",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 73,
+        "column": 50
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 73,
+        "column": 55
+      }
+    },
+    {
+      "vname": "new_p",
+      "type": "Pair (List (Int64)) (Option (Bool))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 74,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 74,
+        "column": 17
+      }
+    },
+    {
+      "vname": "gpair",
+      "type": "Pair (List (Int64)) (Option (Bool))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 74,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 74,
+        "column": 14
+      }
+    },
+    {
+      "vname": "len",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 75,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 75,
+        "column": 10
+      }
+    },
+    {
+      "vname": "my_list_length",
+      "type": "List (Int64) -> Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 75,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 75,
+        "column": 23
+      }
+    },
+    {
+      "vname": "list_length",
+      "type": "forall 'A. List ('A) -> Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 75,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 75,
+        "column": 41
+      }
+    },
+    {
+      "vname": "my_list_length",
+      "type": "List (Int64) -> Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 75,
+        "column": 52
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 75,
+        "column": 66
+      }
+    },
+    {
+      "vname": "l2",
+      "type": "List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 75,
+        "column": 67
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 75,
+        "column": 69
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 76,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 76,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 76,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 76,
+        "column": 41
+      }
+    },
+    {
+      "vname": "len",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 76,
+        "column": 77
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 76,
+        "column": 80
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 77,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 77,
+        "column": 12
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 77,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 77,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 77,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 77,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 78,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 78,
+        "column": 7
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Nat",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 82,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 82,
+        "column": 6
+      }
+    },
+    {
+      "vname": "gnat",
+      "type": "Nat",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 82,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 82,
+        "column": 12
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Nat",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 83,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 83,
+        "column": 6
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Nat",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 83,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 83,
+        "column": 13
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Nat",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 84,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 84,
+        "column": 12
+      }
+    },
+    {
+      "vname": "gnat",
+      "type": "Nat",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 84,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 84,
+        "column": 12
+      }
+    },
+    {
+      "vname": "i",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 85,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 85,
+        "column": 6
+      }
+    },
+    {
+      "vname": "nat_to_int",
+      "type": "Nat -> Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 85,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 85,
+        "column": 17
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Nat",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 85,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 85,
+        "column": 19
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 86,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 86,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 86,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 86,
+        "column": 41
+      }
+    },
+    {
+      "vname": "i",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 86,
+        "column": 70
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 86,
+        "column": 71
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 87,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 87,
+        "column": 12
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 87,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 87,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 87,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 87,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 88,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 88,
+        "column": 7
+      }
+    },
+    {
+      "vname": "n",
+      "type": "List (List (Int64))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 92,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 92,
+        "column": 6
+      }
+    },
+    {
+      "vname": "llist",
+      "type": "List (List (Int64))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 92,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 92,
+        "column": 13
+      }
+    },
+    {
+      "vname": "lfl",
+      "type": "List (List (Int64)) -> List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 93,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 93,
+        "column": 10
+      }
+    },
+    {
+      "vname": "list_flatten",
+      "type": "forall 'A. List (List ('A)) -> List ('A)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 93,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 93,
+        "column": 21
+      }
+    },
+    {
+      "vname": "m",
+      "type": "List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 94,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 94,
+        "column": 6
+      }
+    },
+    {
+      "vname": "lfl",
+      "type": "List (List (Int64)) -> List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 94,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 94,
+        "column": 10
+      }
+    },
+    {
+      "vname": "n",
+      "type": "List (List (Int64))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 94,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 94,
+        "column": 12
+      }
+    },
+    {
+      "vname": "len",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 95,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 95,
+        "column": 10
+      }
+    },
+    {
+      "vname": "my_list_length",
+      "type": "List (Int64) -> Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 95,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 95,
+        "column": 23
+      }
+    },
+    {
+      "vname": "list_length",
+      "type": "forall 'A. List ('A) -> Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 95,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 95,
+        "column": 41
+      }
+    },
+    {
+      "vname": "my_list_length",
+      "type": "List (Int64) -> Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 95,
+        "column": 52
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 95,
+        "column": 66
+      }
+    },
+    {
+      "vname": "m",
+      "type": "List (Int64)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 95,
+        "column": 67
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 95,
+        "column": 68
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 96,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 96,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 96,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 96,
+        "column": 41
+      }
+    },
+    {
+      "vname": "len",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 96,
+        "column": 77
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 96,
+        "column": 80
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 97,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 97,
+        "column": 12
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 97,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 97,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 97,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 97,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 98,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 98,
+        "column": 7
+      }
+    },
+    {
+      "vname": "n",
+      "type": "List (Option (Int32))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 102,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 102,
+        "column": 6
+      }
+    },
+    {
+      "vname": "plist",
+      "type": "List (Option (Int32))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 102,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 102,
+        "column": 13
+      }
+    },
+    {
+      "vname": "len",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 103,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 103,
+        "column": 10
+      }
+    },
+    {
+      "vname": "my_list_length",
+      "type": "List (Option (Int32)) -> Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 103,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 103,
+        "column": 23
+      }
+    },
+    {
+      "vname": "list_length",
+      "type": "forall 'A. List ('A) -> Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 103,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 103,
+        "column": 41
+      }
+    },
+    {
+      "vname": "my_list_length",
+      "type": "List (Option (Int32)) -> Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 103,
+        "column": 62
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 103,
+        "column": 76
+      }
+    },
+    {
+      "vname": "n",
+      "type": "List (Option (Int32))",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 103,
+        "column": 77
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 103,
+        "column": 78
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 104,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 104,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 104,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 104,
+        "column": 41
+      }
+    },
+    {
+      "vname": "len",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 104,
+        "column": 77
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 104,
+        "column": 80
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 105,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 105,
+        "column": 12
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 105,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 105,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 105,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 105,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 106,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 106,
+        "column": 7
+      }
+    }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Test",

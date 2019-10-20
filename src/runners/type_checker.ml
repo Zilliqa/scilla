@@ -29,6 +29,7 @@ open Result.Let_syntax
 open PatternChecker
 open PrettyPrinters
 open GasUseAnalysis
+open TypeInfo
 
 module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
@@ -39,7 +40,7 @@ module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
 
 module PM_Checker = ScillaPatternchecker (TCSRep) (TCERep)
-
+module TI = ScillaTypeInfo (TCSRep) (TCERep)
 module GUA_Checker = ScillaGUA(TCSRep)(TCERep)
 
 (* Check that the expression parses *)
@@ -83,8 +84,17 @@ let () =
         (match check_typing e std_lib gas_limit with
          | Ok ((_, (e_typ, _)) as typed_erep, _remaining_gas) ->
              (match check_patterns typed_erep with
-              | Ok _ -> 
-                printf "%s\n" (pp_typ e_typ.tp);
+              | Ok _ ->
+                let tj = [("type", `String (pp_typ e_typ.tp))] in
+                let output_j = `Assoc (
+                  if cli.p_type_info
+                  then
+                    ("type_info", (JSON.TypeInfo.type_info_to_json (TI.type_info_expr typed_erep))) :: tj
+                  else
+                    tj
+                )
+                in
+                pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string output_j));
                 if cli.gua_flag then
                 (match analyze_gas typed_erep with
                  | Ok _ -> ()

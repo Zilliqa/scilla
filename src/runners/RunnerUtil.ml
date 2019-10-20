@@ -301,6 +301,7 @@ type runner_cli = {
   cf_flag : bool;
   cf_token_fields : string list;
   p_contract_info : bool;
+  p_type_info : bool
 }
 
 
@@ -312,6 +313,7 @@ let parse_cli () =
   let r_json_errors = ref false in
   let r_gua = ref false in
   let r_contract_info = ref false in
+  let r_type_info = ref false in
   let r_cf = ref false in
   let r_cf_token_fields = ref [] in
   let speclist = [
@@ -340,6 +342,7 @@ let parse_cli () =
     ("-cf-token-field", Arg.String (fun s -> r_cf_token_fields := s :: !r_cf_token_fields), "Make the cashflow checker consider a field to be money (implicitly sets -cf)");
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
     ("-contractinfo", Arg.Unit (fun () -> r_contract_info := true), "Print various contract information");
+    ("-typeinfo", Arg.Unit (fun () -> r_type_info := true), "Print types of variables with location");
   ] in 
 
   let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -gaslimit <limit> -libdir /path/to/stdlib input.scilla\n" in
@@ -361,4 +364,4 @@ let parse_cli () =
   { input_file = !r_input_file; stdlib_dirs = !r_stdlib_dir; gas_limit = gas_limit;
     gua_flag = !r_gua; p_contract_info = !r_contract_info;
     cf_flag = !r_cf; cf_token_fields = !r_cf_token_fields;
-    init_file = !r_init_file }
+    init_file = !r_init_file; p_type_info = !r_type_info}

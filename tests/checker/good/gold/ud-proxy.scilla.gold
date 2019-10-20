@@ -7,6 +7,834 @@
     ],
     "ADT constructors": []
   },
+  "type_info": [
+    {
+      "vname": "true",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 7,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 7,
+        "column": 9
+      }
+    },
+    {
+      "vname": "nilMessage",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 8,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 8,
+        "column": 15
+      }
+    },
+    {
+      "vname": "oneMsg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 10,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 10,
+        "column": 11
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 11,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 11,
+        "column": 6
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 12,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 12,
+        "column": 23
+      }
+    },
+    {
+      "vname": "nilMessage",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 12,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 12,
+        "column": 34
+      }
+    },
+    {
+      "vname": "eAdminSet",
+      "type": "ByStr20 -> Bool -> Event",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 14,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 14,
+        "column": 14
+      }
+    },
+    {
+      "vname": "address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 15,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 15,
+        "column": 10
+      }
+    },
+    {
+      "vname": "isApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 16,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 16,
+        "column": 13
+      }
+    },
+    {
+      "vname": "address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 17,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 17,
+        "column": 46
+      }
+    },
+    {
+      "vname": "isApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 17,
+        "column": 60
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 17,
+        "column": 70
+      }
+    },
+    {
+      "vname": "eError",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 19,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 19,
+        "column": 11
+      }
+    },
+    {
+      "vname": "initialAdmin",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 23,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 23,
+        "column": 14
+      }
+    },
+    {
+      "vname": "registry",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 23,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 23,
+        "column": 33
+      }
+    },
+    {
+      "vname": "admins",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 25,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 25,
+        "column": 13
+      }
+    },
+    {
+      "vname": "empty",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 26,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 26,
+        "column": 8
+      }
+    },
+    {
+      "vname": "empty",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 27,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 27,
+        "column": 22
+      }
+    },
+    {
+      "vname": "initialAdmin",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 27,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 27,
+        "column": 35
+      }
+    },
+    {
+      "vname": "true",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 27,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 27,
+        "column": 40
+      }
+    },
+    {
+      "vname": "address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 29,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 29,
+        "column": 28
+      }
+    },
+    {
+      "vname": "isApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 29,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 29,
+        "column": 49
+      }
+    },
+    {
+      "vname": "maybeAdmin",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 30,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 30,
+        "column": 13
+      }
+    },
+    {
+      "vname": "admins",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 30,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 30,
+        "column": 23
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 30,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 30,
+        "column": 31
+      }
+    },
+    {
+      "vname": "isSenderAdmin",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 32,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 32,
+        "column": 30
+      }
+    },
+    {
+      "vname": "maybeAdmin",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 33,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 33,
+        "column": 21
+      }
+    },
+    {
+      "vname": "approval",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 34,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 34,
+        "column": 20
+      }
+    },
+    {
+      "vname": "approval",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 34,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 34,
+        "column": 32
+      }
+    },
+    {
+      "vname": "isSenderAdmin",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 38,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 38,
+        "column": 22
+      }
+    },
+    {
+      "vname": "admins",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 40,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 40,
+        "column": 11
+      }
+    },
+    {
+      "vname": "address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 40,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 40,
+        "column": 19
+      }
+    },
+    {
+      "vname": "isApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 40,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 40,
+        "column": 34
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 42,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 42,
+        "column": 8
+      }
+    },
+    {
+      "vname": "eAdminSet",
+      "type": "ByStr20 -> Bool -> Event",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 42,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 42,
+        "column": 18
+      }
+    },
+    {
+      "vname": "address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 42,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 42,
+        "column": 26
+      }
+    },
+    {
+      "vname": "isApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 42,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 42,
+        "column": 37
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 43,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 43,
+        "column": 6
+      }
+    },
+    {
+      "vname": "eError",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 45,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 45,
+        "column": 11
+      }
+    },
+    {
+      "vname": "label",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 49,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 49,
+        "column": 24
+      }
+    },
+    {
+      "vname": "owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 49,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 49,
+        "column": 39
+      }
+    },
+    {
+      "vname": "resolver",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 49,
+        "column": 50
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 49,
+        "column": 58
+      }
+    },
+    {
+      "vname": "maybeAdmin",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 50,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 50,
+        "column": 13
+      }
+    },
+    {
+      "vname": "admins",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 50,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 50,
+        "column": 23
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 50,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 50,
+        "column": 31
+      }
+    },
+    {
+      "vname": "isSenderAdmin",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 52,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 52,
+        "column": 30
+      }
+    },
+    {
+      "vname": "maybeAdmin",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 53,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 53,
+        "column": 21
+      }
+    },
+    {
+      "vname": "isAdmin",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 54,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 54,
+        "column": 19
+      }
+    },
+    {
+      "vname": "isAdmin",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 54,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 54,
+        "column": 30
+      }
+    },
+    {
+      "vname": "isSenderAdmin",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 58,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 58,
+        "column": 22
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 60,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 60,
+        "column": 14
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 61,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 61,
+        "column": 8
+      }
+    },
+    {
+      "vname": "registry",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 61,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 61,
+        "column": 52
+      }
+    },
+    {
+      "vname": "label",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 62,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 62,
+        "column": 28
+      }
+    },
+    {
+      "vname": "owner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 62,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 62,
+        "column": 42
+      }
+    },
+    {
+      "vname": "resolver",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 62,
+        "column": 54
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 62,
+        "column": 62
+      }
+    },
+    {
+      "vname": "oneMsg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 63,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 63,
+        "column": 13
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 63,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 63,
+        "column": 15
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 64,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 64,
+        "column": 9
+      }
+    },
+    {
+      "vname": "eError",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 66,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/ud-proxy.scilla",
+        "line": 66,
+        "column": 11
+      }
+    }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Admin",

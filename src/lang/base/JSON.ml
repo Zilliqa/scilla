@@ -502,6 +502,29 @@ module Event = struct
 
 end
 
+module TypeInfo = struct
+
+  let type_info_to_json til =
+    `List (List.map til ~f:(fun (name, t, sloc, eloc) ->
+        `Assoc [
+          ("vname", `String name);
+          ("type", `String (pp_typ t));
+          ("start_location", loc_to_json sloc);
+          ("end_location", loc_to_json eloc);
+        ]
+      )
+    )
+
+  let type_info_to_jstring ?(pp = false) til =
+    let j = type_info_to_json til in
+      if pp
+      then
+        Basic.pretty_to_string j
+      else
+        Basic.to_string j
+
+end
+
 module CashflowInfo = struct
 
   let get_json (param_field_tags, ctr_tags) =

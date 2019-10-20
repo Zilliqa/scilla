@@ -1,1 +1,481 @@
-List (Pair (String) (Int64))
+{
+  "type_info": [
+    {
+      "vname": "one",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 1,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 1,
+        "column": 4
+      }
+    },
+    {
+      "vname": "two",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 2,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 2,
+        "column": 4
+      }
+    },
+    {
+      "vname": "three",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 3,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 3,
+        "column": 6
+      }
+    },
+    {
+      "vname": "four",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 4,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 4,
+        "column": 5
+      }
+    },
+    {
+      "vname": "ones",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 6,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "vname": "twos",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 7,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 7,
+        "column": 5
+      }
+    },
+    {
+      "vname": "threes",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 8,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 8,
+        "column": 7
+      }
+    },
+    {
+      "vname": "fours",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 9,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 9,
+        "column": 6
+      }
+    },
+    {
+      "vname": "pair1",
+      "type": "Pair (String) (Int64)",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 11,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 11,
+        "column": 6
+      }
+    },
+    {
+      "vname": "ones",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 11,
+        "column": 33
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 11,
+        "column": 37
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 11,
+        "column": 38
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 11,
+        "column": 41
+      }
+    },
+    {
+      "vname": "pair2",
+      "type": "Pair (String) (Int64)",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 12,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 12,
+        "column": 6
+      }
+    },
+    {
+      "vname": "twos",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 12,
+        "column": 33
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 12,
+        "column": 37
+      }
+    },
+    {
+      "vname": "two",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 12,
+        "column": 38
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 12,
+        "column": 41
+      }
+    },
+    {
+      "vname": "pair3",
+      "type": "Pair (String) (Int64)",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 13,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 13,
+        "column": 6
+      }
+    },
+    {
+      "vname": "threes",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 13,
+        "column": 33
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 13,
+        "column": 39
+      }
+    },
+    {
+      "vname": "three",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 13,
+        "column": 40
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 13,
+        "column": 45
+      }
+    },
+    {
+      "vname": "pair4",
+      "type": "Pair (String) (Int64)",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 14,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 14,
+        "column": 6
+      }
+    },
+    {
+      "vname": "fours",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 14,
+        "column": 33
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 14,
+        "column": 38
+      }
+    },
+    {
+      "vname": "four",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 14,
+        "column": 39
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 14,
+        "column": 43
+      }
+    },
+    {
+      "vname": "nil",
+      "type": "List (Pair (String) (Int64))",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 16,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 16,
+        "column": 4
+      }
+    },
+    {
+      "vname": "l1",
+      "type": "List (Pair (String) (Int64))",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 17,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 17,
+        "column": 3
+      }
+    },
+    {
+      "vname": "pair4",
+      "type": "Pair (String) (Int64)",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 17,
+        "column": 37
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 17,
+        "column": 42
+      }
+    },
+    {
+      "vname": "nil",
+      "type": "List (Pair (String) (Int64))",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 17,
+        "column": 43
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 17,
+        "column": 46
+      }
+    },
+    {
+      "vname": "l2",
+      "type": "List (Pair (String) (Int64))",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 18,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 18,
+        "column": 3
+      }
+    },
+    {
+      "vname": "pair3",
+      "type": "Pair (String) (Int64)",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 18,
+        "column": 37
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 18,
+        "column": 42
+      }
+    },
+    {
+      "vname": "l1",
+      "type": "List (Pair (String) (Int64))",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 18,
+        "column": 43
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 18,
+        "column": 45
+      }
+    },
+    {
+      "vname": "l3",
+      "type": "List (Pair (String) (Int64))",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 19,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 19,
+        "column": 3
+      }
+    },
+    {
+      "vname": "pair2",
+      "type": "Pair (String) (Int64)",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 19,
+        "column": 37
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 19,
+        "column": 42
+      }
+    },
+    {
+      "vname": "l2",
+      "type": "List (Pair (String) (Int64))",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 19,
+        "column": 43
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 19,
+        "column": 45
+      }
+    },
+    {
+      "vname": "l4",
+      "type": "List (Pair (String) (Int64))",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 20,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 20,
+        "column": 3
+      }
+    },
+    {
+      "vname": "pair1",
+      "type": "Pair (String) (Int64)",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 20,
+        "column": 37
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 20,
+        "column": 42
+      }
+    },
+    {
+      "vname": "l3",
+      "type": "List (Pair (String) (Int64))",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 20,
+        "column": 43
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 20,
+        "column": 45
+      }
+    },
+    {
+      "vname": "l4",
+      "type": "List (Pair (String) (Int64))",
+      "start_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 21,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/list1.scilexp",
+        "line": 21,
+        "column": 3
+      }
+    }
+  ],
+  "type": "List (Pair (String) (Int64))"
+}
