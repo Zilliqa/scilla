@@ -255,7 +255,8 @@
   (save-excursion
     (goto-char point)
     (beginning-of-line)
-    (- point (point))))
+    ;; count columns from 1 instead of emacs default 0.
+    (+ 1 (- point (point)))))
 
 (defun get-scilla-type (checker-bin filename pos)
   "Given a checker and a filename, Run and extract from the checker output the type of the current variable."
