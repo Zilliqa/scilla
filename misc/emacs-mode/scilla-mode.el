@@ -249,10 +249,39 @@
 (provide 'scilexp-mode)
 (add-to-list 'auto-mode-alist '("\\.scilexp\\'" . scilexp-mode))
 
+;; This is different from (current-column).
+;; See https://stackoverflow.com/a/52391495/2128804
+(defun column-number-at-pos (point)
+  (save-excursion
+    (goto-char point)
+    (beginning-of-line)
+    (- point (point))))
+
+(defun get-scilla-type (checker-bin filename pos)
+  "Given a checker and a filename, Run and extract from the checker output the type of the current variable."
+  (progn
+    (setq linn (line-number-at-pos pos))
+    (setq coln (column-number-at-pos pos))
+    (concat "command " checker-bin " " filename " : " (number-to-string linn) " : " (number-to-string coln))
+    )
+  )
+
+;; Global variable set when type-inference can be done.
+(defvar checker-bin)
+
+(defun print-scilla-type ()
+  "Print the type of the variable at current cursor position."
+  (interactive)
+  (when (boundp 'checker-bin)
+    (setq type (get-scilla-type checker-bin buffer-file-name (point)))
+    (message "%s" type)
+    )
+  )
+
 ;; Set scilla-root in your ~/.emacs file as "setq scilla-root /path/to/scilla".
 ;;  Note: make sure to set scilla-root *before* loading this file (scilla-mode.el)
 ;; If scilla-root has been set and flycheck is available, enable flycheck.
-(if (and (boundp 'scilla-root) (require 'flycheck nil t))
+(if (and (boundp 'scilla-root) (require 'json nil t))
     (progn
       ;; derive stdlib and scilla-checker paths from scilla-root.
       (setq lib-dir (concat scilla-root "/src/stdlib"))
@@ -261,42 +290,69 @@
       (setq type-checker-bin (concat scilla-root "/bin/type-checker"))
       (if (and  (file-directory-p scilla-root) (file-directory-p lib-dir)
                 (file-exists-p scilla-checker-bin) (file-exists-p type-checker-bin))
-          (progn
-            (flycheck-define-checker scilla
-              "A Scilla syntax checker using scilla-checker. See URL `https://www.scilla-lang.org/'."
-              :command ("scilla-checker" "-gaslimit" "999999999" "-libdir" (eval lib-dir) source)
-              :error-patterns
-              (
-               (error line-start (file-name) ":" line ":" column ": error: " (message) line-end)
-               (warning line-start (file-name) ":" line ":" column ": warning: [" (id (one-or-more alnum)) "] " (message) line-end)
-               )
-              :modes scilla-mode
-              )
-            (setq flycheck-scilla-executable scilla-checker-bin)
-            (add-to-list 'flycheck-checkers 'scilla)
-            (add-hook 'scilla-mode-hook 'flycheck-mode)
-            ;; This flycheck mode is created and finalized before we load a source file (static).
-            ;; So *-checker-bin cannot be defined conditionally. We need to define two flycheck modes.
-            ;; Querying buffer-file-name anywhere here returns nil.
-            (flycheck-define-checker scilexp
-              "A Scilla expression syntax checker using type-checker. See URL `https://www.scilla-lang.org/'."
-              :command ("type-checker" "-gaslimit" "999999999" "-libdir" (eval lib-dir) source)
-              :error-patterns
-              (
-               (error line-start (file-name) ":" line ":" column ": error: " (message) line-end)
-               (warning line-start (file-name) ":" line ":" column ": warning: [" (id (one-or-more alnum)) "] " (message) line-end)
-               )
-              :modes scilexp-mode
-              )
-            (setq flycheck-scilexp-executable type-checker-bin)
-            (add-to-list 'flycheck-checkers 'scilexp)
-            (add-hook 'scilexp-mode-hook 'flycheck-mode)
-            ;;(flycheck-mode 1)
+        (progn
+          (if (require 'flycheck nil t)
+              (progn
+                (flycheck-define-checker scilla
+                  "A Scilla syntax checker using scilla-checker. See URL `https://www.scilla-lang.org/'."
+                  :command ("scilla-checker" "-gaslimit" "999999999" "-libdir" (eval lib-dir) source)
+                  :error-patterns
+                  (
+                   (error line-start (file-name) ":" line ":" column ": error: " (message) line-end)
+                   (warning line-start (file-name) ":" line ":" column ": warning: [" (id (one-or-more alnum)) "] " (message) line-end)
+                   )
+                  :modes scilla-mode
+                  )
+                (setq flycheck-scilla-executable scilla-checker-bin)
+                (add-to-list 'flycheck-checkers 'scilla)
+                (add-hook 'scilla-mode-hook 'flycheck-mode)
+                ;; This flycheck mode is created and finalized before we load a source file (static).
+                ;; So *-checker-bin cannot be defined conditionally. We need to define two flycheck modes.
+                ;; Querying buffer-file-name anywhere here returns nil.
+                (flycheck-define-checker scilexp
+                  "A Scilla expression syntax checker using type-checker. See URL `https://www.scilla-lang.org/'."
+                  :command ("type-checker" "-gaslimit" "999999999" "-libdir" (eval lib-dir) source)
+                  :error-patterns
+                  (
+                   (error line-start (file-name) ":" line ":" column ": error: " (message) line-end)
+                   (warning line-start (file-name) ":" line ":" column ": warning: [" (id (one-or-more alnum)) "] " (message) line-end)
+                   )
+                  :modes scilexp-mode
+                  )
+                (setq flycheck-scilexp-executable type-checker-bin)
+                (add-to-list 'flycheck-checkers 'scilexp)
+                (add-hook 'scilexp-mode-hook 'flycheck-mode)
+                ;;(flycheck-mode 1)
+                )
+            (message "Flycheck-mode not available")
             )
+          ;; If there's a JSON library available, use it to deserialize and print type information.
+          (if (require 'json nil t)
+              (progn
+                (add-hook 'scilla-mode-hook
+                    (lambda ()
+                      (progn
+                        (setq checker-bin scilla-checker-bin)
+                        (local-set-key (kbd "C-c C-t") 'print-scilla-type)
+                        )
+                      )
+                  )
+                (add-hook 'scilexp-mode-hook
+                    (lambda ()
+                      (progn
+                        (setq checker-bin type-checker-bin)
+                        (local-set-key (kbd "C-c C-t") 'print-scilla-type)
+                        )
+                      )
+                  )
+                )
+            (message "json package not available")
+            )
+          )
         (message "Scilla-Flycheck: scilla-root set incorrectly or one of src/stdlib bin/(scilla/type)-checker missing.")
         )
       )
-  (message "Scilla-FlyCheck: scilla-root not set or flycheck not available.")
+  (message "Scilla-FlyCheck: scilla-root not set.")
   )
 
  ;;; scilla-mode.el ends here
