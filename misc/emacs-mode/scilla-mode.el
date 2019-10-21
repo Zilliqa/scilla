@@ -258,23 +258,40 @@
     ;; count columns from 1 instead of emacs default 0.
     (+ 1 (- point (point)))))
 
-(defun get-scilla-type (checker-bin filename pos)
+(defun get-scilla-type (checker-bin libdir-path filename pos)
   "Given a checker and a filename, Run and extract from the checker output the type of the current variable."
   (progn
+    (setq cmd (string-join (list checker-bin filename "-typeinfo" "-gaslimit" "10000" "-libdir" libdir-path) " "))
+    (setq checker-output (shell-command-to-string cmd))
     (setq linn (line-number-at-pos pos))
     (setq coln (column-number-at-pos pos))
-    (concat "command " checker-bin " " filename " : " (number-to-string linn) " : " (number-to-string coln))
+    (let* ((json-object-type 'hash-table)
+       (json-array-type 'list)
+       (json-key-type 'string)
+       (json (json-read-from-string checker-output)))
+      (progn
+        (setq val (gethash "type_info" json))
+        (if val
+            (progn
+              (message "type_info size: %d" (length val))
+              )
+          (message "%s" "Warning: type_info not found in checker output")
+          )
+        )
+      )
+    "Unit"
     )
   )
 
-;; Global variable set when type-inference can be done.
+;; Global variables set when type-inference can be done.
 (defvar checker-bin)
+(defvar libdir-path)
 
 (defun print-scilla-type ()
   "Print the type of the variable at current cursor position."
   (interactive)
-  (when (boundp 'checker-bin)
-    (setq type (get-scilla-type checker-bin buffer-file-name (point)))
+  (when (and (boundp 'checker-bin) (boundp 'libdir-path))
+    (setq type (get-scilla-type checker-bin libdir-path buffer-file-name (point)))
     (message "%s" type)
     )
   )
@@ -334,6 +351,7 @@
                     (lambda ()
                       (progn
                         (setq checker-bin scilla-checker-bin)
+                        (setq libdir-path lib-dir)
                         (local-set-key (kbd "C-c C-t") 'print-scilla-type)
                         )
                       )
@@ -342,6 +360,7 @@
                     (lambda ()
                       (progn
                         (setq checker-bin type-checker-bin)
+                        (setq libdir-path lib-dir)
                         (local-set-key (kbd "C-c C-t") 'print-scilla-type)
                         )
                       )
