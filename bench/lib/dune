@@ -16,7 +16,7 @@
  (modules
    runner bench_command
    contract_bench transition_bench expression_bench
-   env defaults params measurements
+   env defaults params measurements display
    tests suite config config_t config_j)
  (libraries
    core core_bench re2 textutils

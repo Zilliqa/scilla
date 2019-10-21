@@ -12,26 +12,14 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
 open Core_bench
 
-(** Save benchmark measurements. *)
-val save : Measurement.t list -> env:Env.t -> unit
+(** Print the benchmark groups along with their tests. *)
+val print_tests : Test.t list -> unit
 
-(** Load measurements for the specified [timestamp].
-    If the [timestamp] is not given then the latest (previous)
-    measurements will be loaded (if any). *)
-val load
-  :  timestamp:string option
-  -> env:Env.t
-  -> Measurement.t list option
+(* TODO: In the future we might want to print the original, current and deltas side-by-side,
+   but after taking a quick look at the [Core_bench.Display] module I've concluded that it
+   might make sense to postpone that *)
 
-(** Analyze benchmark measurements. *)
-val analyze : Measurement.t list -> Analysis_result.t list
-
-(** Compare the [orig_meas] and [curr_meas],
-    return [B.Measurement.t list] containing deltas. *)
-val calc_deltas
-   : orig_meas:Measurement.t list
-  -> curr_meas:Measurement.t list
-  -> Measurement.t list
+(** Print the comparison results (deltas). *)
+val print_deltas : (Measurement.t list * Analysis_result.t list) -> unit

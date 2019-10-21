@@ -15,7 +15,7 @@
 open Core
 open ScillaUtil
 
-module B = Core_bench.Bench
+module B = Core_bench
 
 let result_to_option = function
   | Error err ->
@@ -42,7 +42,7 @@ let load ~timestamp ~env =
      the latest (previous) measurements *)
   let find_latest () =
     paths
-    |> List.sort ~compare:String.compare
+    |> List.sort ~compare:String.compare (* TODO: use the [Time.parse] instead *)
     |> List.hd in
   (* If we're given the timestamp of measurements to compare with
      then try to find a directory named after that timestamp,
@@ -84,10 +84,44 @@ let save meas ~env =
   (* Save each measurement as a separate file *)
   List.iter meas ~f:(save_one ~path)
 
-(* Helper function to run the [Bench.analyze] for each
+(* Run the [B.analyze] for each
    measurement and get back the results *)
-let analyze meas =
-  let open Defaults in
+let analyze (meas : B.Measurement.t list) =
   meas
-  |> List.map ~f:(B.analyze ~analysis_configs)
+  |> List.map ~f:(fun m -> B.Analysis.analyze m Defaults.analysis_configs)
   |> List.filter_map ~f:result_to_option
+
+(* Calculate the absolute delta for
+   each measurement of one run of the benchmark *)
+let calc_samples_delta x y =
+  let open B.Measurement_sample in
+  (* Actually, we're only interested in the [runs] and [nanos].
+     But let's just calculate everything for consistency.
+     Maybe we'll need those later *)
+  { runs              = abs (x.runs - y.runs);
+    cycles            = abs (x.cycles - y.cycles);
+    nanos             = abs (x.nanos - y.nanos);
+    compactions       = abs (x.compactions - y.compactions);
+    minor_allocated   = abs (x.minor_allocated - y.minor_allocated);
+    major_allocated   = abs (x.major_allocated - y.major_allocated);
+    promoted          = abs (x.promoted - y.promoted);
+    major_collections = abs (x.major_collections - y.major_collections);
+    minor_collections = abs (x.minor_collections - y.minor_collections);
+  }
+
+let calc_delta orig curr =
+  let open B.Measurement in
+  let samples = Array.map2_exn
+      (samples orig) (samples curr)
+      ~f:calc_samples_delta in
+  create
+    ~name:(name orig ^ "_deltas")
+    ~test_name:(test_name orig)
+    ~file_name:(file_name orig)
+    ~module_name:(module_name orig)
+    ~largest_run:(largest_run orig)
+    ~sample_count:(sample_count orig)
+    ~samples
+
+let calc_deltas ~orig_meas ~curr_meas =
+  List.map2_exn orig_meas curr_meas ~f:calc_delta

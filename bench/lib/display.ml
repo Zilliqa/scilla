@@ -13,25 +13,23 @@
 *)
 
 open Core
-open Core_bench
+open Textutils
+open ScillaUtil
 
-(** Save benchmark measurements. *)
-val save : Measurement.t list -> env:Env.t -> unit
+let print_tests groups =
+  let open Core_bench in
+  let open Ascii_table in
+  List.iter groups ~f:(fun group ->
+      let cells =
+        List.map (Test.tests group)
+          ~f:(fun test ->
+              [ Test.name group
+              ; Test.Basic_test.name test
+              ])
+      in simple_list_table
+        ~display:Display.column_titles
+        ["group"; "test"] cells)
 
-(** Load measurements for the specified [timestamp].
-    If the [timestamp] is not given then the latest (previous)
-    measurements will be loaded (if any). *)
-val load
-  :  timestamp:string option
-  -> env:Env.t
-  -> Measurement.t list option
-
-(** Analyze benchmark measurements. *)
-val analyze : Measurement.t list -> Analysis_result.t list
-
-(** Compare the [orig_meas] and [curr_meas],
-    return [B.Measurement.t list] containing deltas. *)
-val calc_deltas
-   : orig_meas:Measurement.t list
-  -> curr_meas:Measurement.t list
-  -> Measurement.t list
+let print_deltas (_, results) =
+  Core_bench.Bench.display results
+    ~display_config:Defaults.display_config

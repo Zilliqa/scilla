@@ -13,7 +13,7 @@
 *)
 
 open Core
-open Core_bench.Bench
+open Core_bench
 
 (* How long to measure, 1 second should be enough *)
 let time_quota_float = 1.0
@@ -23,7 +23,7 @@ let time_quota = Time.Span.of_sec time_quota_float
    and the relative execution time as a percentage *)
 
 let display_config =
-  Display_config.create
+  Bench.Display_config.create
     ~show_samples: false
     ~show_speedup: false
     ~show_percentage: true

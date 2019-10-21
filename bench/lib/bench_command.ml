@@ -40,8 +40,7 @@ let mk_param bench =
     and display = flag "-display" (optional_with_default Defaults.display bool)
         ~doc:"Display benchmarking results."
     and compare = flag "-compare" (optional_with_default Defaults.compare bool)
-        ~doc:"Compare with previous benchmarking results \
-              (if available) and output the difference."
+        ~doc:"Compare benchmarking results and output the difference."
     and timestamp = flag "-timestamp" (optional string)
         ~doc:"Timestamp of measurements to compare with. If not given, \
               the latest (previous) measurements will be used for comparison."
