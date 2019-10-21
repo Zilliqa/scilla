@@ -281,7 +281,7 @@
 ;; Set scilla-root in your ~/.emacs file as "setq scilla-root /path/to/scilla".
 ;;  Note: make sure to set scilla-root *before* loading this file (scilla-mode.el)
 ;; If scilla-root has been set and flycheck is available, enable flycheck.
-(if (and (boundp 'scilla-root) (require 'json nil t))
+(if (boundp 'scilla-root)
     (progn
       ;; derive stdlib and scilla-checker paths from scilla-root.
       (setq lib-dir (concat scilla-root "/src/stdlib"))
