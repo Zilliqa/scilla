@@ -12,8 +12,16 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_bench
-open Config_t
+type t =
+  { suites : Suite.t list;
+    quota : float;
+    regex : Re2.t option;
+    list : bool;
+    save : bool;
+    display : bool;
+    compare : bool;
+    timestamp : string option;
+  }
 
-(** Make a new transition benchmark *)
-val mk : int -> transition -> contract:contract -> group:contract_group -> env:Env.t -> Bench.Test.t
+let mk ~suites ~quota ~regex ~list ~save ~display ~compare ~timestamp =
+  { suites; quota; regex; list; save; display; compare; timestamp }

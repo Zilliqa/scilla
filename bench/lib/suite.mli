@@ -12,12 +12,23 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Config_t
+open Core
+open Core_bench
 
-(** Read top-level benchmarking config *)
-val read : Env.t -> config
+(** Types of the benchmark suites. *)
+type t =
+  | Expressions (** Benchmarks for standalone expressions *)
+  | Contracts (** Contract (and transition) benchmarks *)
+  | Modules (** Internal benchmarks for performance-critical modules *)
+[@@deriving compare]
 
-module Contract : sig
-  (** Read contract benchmark configs *)
-  val read_group : contract_group -> env:Env.t -> contract list
-end
+val equal : t -> t -> bool
+
+val all : t list
+
+(** Load benchmark test suite. *)
+val load : t -> cfg:Config_t.config -> env:Env.t -> Test.t list
+
+val of_string : string -> t
+
+val arg_type : t Command.Arg_type.t

@@ -22,6 +22,7 @@ type t =
   { bin_dir : string;
     stdlib_dir : string;
     benchmarks_dir : string;
+    results_dir : string;
     tmp_dir : string;
     state_mode : StateService.service_mode;
   }
@@ -31,11 +32,13 @@ let mk ~sock_addr =
   let cwd = Sys.getcwd () in
   let bin_dir = cwd ^/ "bin" in
   let benchmarks_dir = cwd ^/ "bench" ^/ "benchmarks" in
+  let results_dir = cwd ^/ "bench" ^/ "results" in
   let tmp_dir = Filename.get_temp_dir_name () in
   let stdlib_dir = cwd ^/ "src" ^/ "stdlib" in
   let state_mode = match sock_addr with
     | Some addr -> StateService.IPC addr
     | None -> StateService.Local
-  in { bin_dir; benchmarks_dir; tmp_dir;
-       stdlib_dir; state_mode
+  in { bin_dir; benchmarks_dir;
+       results_dir; tmp_dir;
+       stdlib_dir; state_mode;
      }

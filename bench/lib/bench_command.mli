@@ -12,12 +12,11 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Config_t
+open Core
+open Core_bench
 
-(** Read top-level benchmarking config *)
-val read : Env.t -> config
+type callback_bench = params:Params.t -> env:Env.t -> unit
 
-module Contract : sig
-  (** Read contract benchmark configs *)
-  val read_group : contract_group -> env:Env.t -> contract list
-end
+(** Create a [Command.t] that executes a given callback
+    which is passed parameters parsed from the command line. *)
+val mk : callback_bench -> Command.t

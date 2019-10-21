@@ -12,12 +12,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_bench
 open Config_t
 
-(** Read top-level benchmarking config *)
-val read : Env.t -> config
-
-module Contract : sig
-  (** Read contract benchmark configs *)
-  val read_group : contract_group -> env:Env.t -> contract list
-end
+(** Make contract benchmarks *)
+val mk : contract_group list -> env:Env.t -> Test.t list

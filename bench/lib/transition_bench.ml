@@ -75,7 +75,10 @@ let mk index tr ~contract ~group ~env =
   let base_args = Args.to_list args in
   let extra_args =
     match env.state_mode with
-    | StateService.Local -> ["-istate"; args.state]
+    | StateService.Local ->
+        (* No external state-server is running,
+           using local (stateless) mode  *)
+        ["-istate"; args.state]
     | StateService.IPC sock_addr ->
         if contract.ipc then
           (* Initialize IPC state server *)

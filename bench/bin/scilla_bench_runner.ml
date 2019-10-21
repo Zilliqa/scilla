@@ -14,6 +14,7 @@
 
 open Core
 open Core_bench
+open Textutils
 open ScillaUtil
 open Scilla_bench
 
@@ -37,67 +38,18 @@ open Scilla_bench
      the corresponding benchmark directory. See the "ipc" benchmark for example.
 *)
 
-type ctx =
-  { regex: Re2.t option;
-    list: bool;
-    sock_addr: string option;
-    analysis_configs: Bench.Analysis_config.t list;
-    display_config: Bench.Display_config.t;
-    save_to_file: (Bench.Measurement.t -> string) option;
-    run_config: Bench.Run_config.t;
-  }
-
-let mk_contract_benchmarks ~env ~cfg =
-  let open Config_t in
-  (* Create a benchmark group given the [contract] and [group] *)
-  let mk_bench_group contract ~group =
-    contract.transitions
-    |> List.mapi ~f:(Transition.mk ~contract ~group ~env)
-    |> Bench.Test.create_group ~name:("contract/" ^ group.name ^ "/" ^ contract.name)
-  in
-  (* Create a benchmark group out of
-     the given [group] of benchmark contracts *)
-  let to_bench_group group =
-    group
-    |> Contract.read_group ~env
-    |> List.map ~f:(mk_bench_group ~group)
-  in
-  List.concat_map cfg.contracts ~f:to_bench_group
-
-let run ctx =
-  let env = Env.mk ~sock_addr:ctx.sock_addr in
+let bench ~params ~env =
+  let open Params in
+  (* Prepare the environment and load tests *)
   let cfg = Config.read env in
-  let expressions = List.map cfg.expressions ~f:(Expression.mk ~env) in
-  let contracts = mk_contract_benchmarks ~env ~cfg in
-  Bench.bench
-    ~run_config:ctx.run_config
-    ~analysis_configs:ctx.analysis_configs
-    ~display_config:ctx.display_config
-    ?save_to_file:ctx.save_to_file
-    (expressions @ contracts)
-
-let param =
-  let open Command.Spec in
-  let open Command.Let_syntax in
-  let re = Arg_type.create Re2.create_exn in
-  [%map_open
-    let regex = flag "-matching" (optional re) ~doc:"REGEX Select benchmarks matching given regex."
-    and list = flag "-list" no_arg ~doc:"List benchmark names without running them"
-    and sock_addr = flag "-ipcaddress" (optional string) ~doc:"Socket address for IPC communication with blockchain for state access"
-    in fun (analysis_configs, display_config, mode) -> (
-        match mode with
-        | `From_file _ ->
-            failwith "This executable is for running benchmarks, not analyzing saved measurements."
-        | `Run (save_to_file, run_config) ->
-            let ctx =
-              { regex; list; sock_addr;
-                analysis_configs; display_config;
-                save_to_file; run_config;
-              } in
-            run ctx
-      )
-  ]
+  (* Load contract and expression benchmarks *)
+  let tests = Tests.load ~params ~cfg ~env in
+  (* Run the benchmarks or just list them *)
+  if params.list
+  then Tests.list tests
+  else Tests.exec tests ~params ~env
 
 let () =
-  let command = Bench.make_command_ext ~summary:"Run Scilla benchmarks." param in
-  Command.run command
+  bench
+  |> Bench_command.mk
+  |> Command.run

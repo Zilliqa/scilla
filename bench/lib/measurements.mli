@@ -12,12 +12,18 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Config_t
+open Core
+open Core_bench
 
-(** Read top-level benchmarking config *)
-val read : Env.t -> config
+module B = Bench
 
-module Contract : sig
-  (** Read contract benchmark configs *)
-  val read_group : contract_group -> env:Env.t -> contract list
-end
+(** Save benchmark measurements. *)
+val save : B.Measurement.t list -> env:Env.t -> unit
+
+(** Load measurements for the specified [timestamp].
+    If the [timestamp] is not given then the latest (previous)
+    measurements will be loaded (if any). *)
+val load : timestamp:string option -> env:Env.t -> B.Measurement.t list option
+
+(** Analyze benchmark measurements. *)
+val analyze : B.Measurement.t list -> Analysis_result.t list

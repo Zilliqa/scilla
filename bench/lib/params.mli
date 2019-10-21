@@ -12,6 +12,25 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Config_t
+(** Benchmarks execution parameters. *)
+type t =
+  { suites : Suite.t list;
+    quota : float;
+    regex : Re2.t option;
+    list : bool;
+    save : bool;
+    display : bool;
+    compare : bool;
+    timestamp : string option;
+  }
 
-val read_group : contract_group -> env:Env.t -> contract list
+val mk
+  :  suites:Suite.t list
+  -> quota:float
+  -> regex:Re2.t option
+  -> list:bool
+  -> save:bool
+  -> display:bool
+  -> compare:bool
+  -> timestamp:string option
+  -> t

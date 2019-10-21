@@ -20,6 +20,7 @@ type t =
   { bin_dir : string;
     stdlib_dir : string;
     benchmarks_dir : string;
+    results_dir : string;
     tmp_dir : string;
     state_mode : StateService.service_mode;
   }
