@@ -12,7 +12,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
 open Core_bench
 
 val calc_one : Measurement.t -> Measurement.t -> Measurement.t

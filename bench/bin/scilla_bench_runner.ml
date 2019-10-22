@@ -13,9 +13,6 @@
 *)
 
 open Core
-open Core_bench
-open Textutils
-open ScillaUtil
 open Scilla_bench
 
 (* The basic idea is to have 3 kinds of benchmarks:

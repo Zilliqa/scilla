@@ -12,11 +12,10 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
 open Core_bench
 
-(** Fails with an error if the measurement
-    with [name] have different numbers of samples. **)
+(** Fails with an error if two measurements
+    with the same [name] have a different number of samples. **)
 val assert_length
   :  Measurement_sample.t array
   -> Measurement_sample.t array

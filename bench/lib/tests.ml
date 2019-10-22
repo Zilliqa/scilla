@@ -13,8 +13,6 @@
 *)
 
 open Core
-open Textutils
-open ScillaUtil
 
 let load ~params ~cfg ~env =
   let open Core_bench in

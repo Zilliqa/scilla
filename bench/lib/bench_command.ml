@@ -13,7 +13,6 @@
 *)
 
 open Core
-open ScillaUtil
 
 type callback_bench = params:Params.t -> env:Env.t -> unit
 

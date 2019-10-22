@@ -14,7 +14,6 @@
 
 open Core
 open Textutils
-open ScillaUtil
 
 let print_tests groups =
   let open Core_bench in
