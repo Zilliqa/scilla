@@ -313,10 +313,10 @@ type_term :
 (***********************************************)
 
 stmt:
-| l = ID; BIND; r = sid   { (Load (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
-| l = ID; ASSIGN; r = sid { (Store (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
-| l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos($2)), r), toLoc $startpos) }
-| l = ID; BIND; AND; c = CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
+| l = ID; BIND; r = sid   { (Load (asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; ASSIGN; r = sid { (Store (asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos(l)), r), toLoc $startpos) }
+| l = ID; BIND; AND; c = CID { (ReadFromBC (asIdL l (toLoc $startpos(l)), c), toLoc $startpos) }
 | l = ID; BIND; r = ID; keys = nonempty_list(map_access)
   { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, true), toLoc $startpos }
 | l = ID; BIND; EXISTS; r = ID; keys = nonempty_list(map_access)
@@ -326,8 +326,8 @@ stmt:
 | DELETE; l = ID; keys = nonempty_list(map_access)
   { MapUpdate(asIdL l (toLoc $startpos(l)), keys, None), toLoc $startpos }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
-| SEND; m = sid;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
-| EVENT; m = sid; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }
+| SEND; m = sid;          { (SendMsgs (asIdL m (toLoc $startpos(m))), toLoc $startpos) }
+| EVENT; m = sid; { (CreateEvnt (asIdL m (toLoc $startpos(m))), toLoc $startpos) }
 | THROW; mopt = option(sid); { Throw (BatOption.map (fun m -> (asIdL m (toLoc $startpos))) mopt), toLoc $startpos }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
