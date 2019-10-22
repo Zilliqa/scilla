@@ -15,10 +15,11 @@
 open Core
 open Core_bench
 
-let assert_length x y ~name =
-  let xl = Array.length x in
-  let yl = Array.length y in
-  if xl <> yl then failwith @@ sprintf
+let assert_length xs ys ~name =
+  let xl = Array.length xs in
+  let yl = Array.length ys in
+  if xl <> yl then
+    failwith @@ sprintf
       "Measurement \"%s\" have different number \
        of samples: %d <> %d" name xl yl
 

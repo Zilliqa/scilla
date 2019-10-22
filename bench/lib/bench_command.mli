@@ -13,7 +13,6 @@
 *)
 
 open Core
-open Core_bench
 
 type callback_bench = params:Params.t -> env:Env.t -> unit
 

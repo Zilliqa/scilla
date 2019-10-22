@@ -16,7 +16,6 @@ open Core
 
 let load ~params ~cfg ~env =
   let open Core_bench in
-  let open Config_t in
   let open Params in
   let include_suite b = List.mem params.suites b ~equal:Suite.equal in
   (* Load benchmarks for standalone closed expressions *)

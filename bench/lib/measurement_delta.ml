@@ -15,20 +15,20 @@
 open Core
 open Core_bench
 
+let shrink =
+  let open Measurement_sample in
+  Array.filter ~f:(fun x -> x.runs <> 0)
+
 let calc_one orig curr =
   let open Measurement in
   (* print_endline @@ (sprintf "orig measurement name: %s\n" (name orig));
    * print_endline @@ (sprintf "curr measurement name: %s\n" (name curr)); *)
-  let orig_samples = samples orig in
-  let curr_samples = samples curr in
+  let orig_samples = orig |> samples |> shrink in
+  let curr_samples = curr |> samples |> shrink in
   (* Let's make sure we have the same
      number of samples for each measurement. *)
-  Sample_delta.assert_length
-    (samples orig) (samples curr) ~name:(name orig);
-  let samples = Array.map2_exn
-      orig_samples curr_samples
-      ~f:Sample_delta.calc
-  in
+  Sample_delta.assert_length orig_samples curr_samples ~name:(name orig);
+  let samples = Array.map2_exn orig_samples curr_samples ~f:Sample_delta.calc in
   create
     ~name:(name orig ^ "_deltas")
     ~test_name:(test_name orig)
