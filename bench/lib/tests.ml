@@ -48,9 +48,8 @@ let analyze_and_display meas ~current_dir ~params ~env =
   (* Analyze the measurements, get the results *)
   let results = Measurements.analyze meas in
   (* Print the current results *)
-  print_endline @@ sprintf
-    "Current results (%s):\n"
-    (Option.value current_dir ~default:"not saved");
+  let curr_dir = Option.value current_dir ~default:"not saved" in
+  print_endline @@ sprintf "Current results (%s):\n" curr_dir;
   Bench.display results ~display_config;
   (* Now, load the measurements we want to compare with *)
   let result = Measurements.load ~dir:params.timestamp ~current_dir ~env in
@@ -64,10 +63,11 @@ let analyze_and_display meas ~current_dir ~params ~env =
       (* Print the original measurement results *)
       print_endline @@ sprintf "Previous results (%s):\n" orig_dir;
       Bench.display orig_results ~display_config;
+      (* Calculate measurement deltas and run the analysis on them *)
       let deltas = Measurement_delta.calc_all orig_meas meas in
       let deltas_results = Measurements.analyze deltas in
       (* Print the comparison results (time deltas) *)
-      print_endline "Deltas";
+      print_endline @@ sprintf "Deltas (%s / %s)\n" orig_dir curr_dir;
       Display.print_deltas (deltas, deltas_results)
 
 (* Save measurements into a file system, if needed *)
