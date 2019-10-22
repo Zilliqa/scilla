@@ -270,16 +270,43 @@
        (json-key-type 'string)
        (json (json-read-from-string checker-output)))
       (progn
-        (setq val (gethash "type_info" json))
-        (if val
-            (progn
-              (message "type_info size: %d" (length val))
+        (setq tilist (gethash "type_info" json))
+        (if tilist
+            (catch 'vtype               ;; If the loop finds an appropriate entry, it'll throw.
+              (progn
+                (dolist (vari tilist)
+                  (progn
+                    (setq startloc (gethash "start_location" vari))
+                    (setq endloc (gethash "end_location" vari))
+                    (if (and startloc endloc)
+                        (progn
+                          (setq startline (gethash "line" startloc))
+                          (setq startcol (gethash "column" startloc))
+                          (setq endline (gethash "line" endloc))
+                          (setq endcol (gethash "column" endloc))
+                          (if (and startline startcol endline endcol)
+                              (when (and (= startline linn) (>= coln startcol) (< coln endcol))
+                                (message "hello")
+                                (setq type (gethash "type" vari))
+                                (if type
+                                    (throw 'vtype type)
+                                  "field type missing in checker output"
+                                  )
+                                )
+                            "start/end line/column not found"
+                            )
+                          )
+                      "(start/end)_location not found"
+                      )
+                    )
+                  )
+                "type not found for variable"
+                )
               )
-          (message "%s" "Warning: type_info not found in checker output")
+          "type_info not found in checker output"
           )
         )
       )
-    "Unit"
     )
   )
 
