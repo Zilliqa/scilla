@@ -15,21 +15,16 @@
 open Core
 open Core_bench
 
-(** Save benchmark measurements, returns
-    the directory where it was saved. *)
-val save : Measurement.t list -> env:Env.t -> string
+(** Fails with an error if two measurements
+    have different number of samples. **)
+val assert_length
+  :  Measurement_sample list
+  -> Measurement_sample list
+  -> unit
 
-(** Load measurements from the specified [dir].
-    If the [dir] is not given then previous measurements will
-    be loaded by finding the directory named after the
-    latest timestamp, which is not the same as the [current_dir].
-    Returns the [Measurement.t list] along with
-    used timestamp (directory name) represented as a [string]. *)
-val load
-  :  dir:string option
-  -> current_dir:string option
-  -> env:Env.t
-  -> (Measurement.t list * string) option
-
-(** Analyze benchmark measurements. *)
-val analyze : Measurement.t list -> Analysis_result.t list
+(** Calculate the absolute delta for each
+    measurement of one run of the benchmark. *)
+val calc_delta
+  :  Measurement_sample
+  -> Measurement_sample
+  -> Measurement_sample

@@ -16,12 +16,14 @@
  (modules
    runner bench_command
    contract_bench transition_bench expression_bench
-   env defaults params measurements display
-   tests suite config config_t config_j)
+   env defaults params timestamp measurements
+   measurement_delta sample_delta
+   display tests suite config config_t config_j)
  (libraries
    core core_bench re2 textutils
    yojson atdgen
    scilla_base scilla_eval scilla_util stateIPCTest)
+ (inline_tests)
  (preprocess
   (pps
     ppx_let

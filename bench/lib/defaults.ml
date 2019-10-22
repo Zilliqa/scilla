@@ -32,8 +32,9 @@ let display_config =
 let analysis_configs =
   [Analysis_config.nanos_vs_runs]
 
-(* Override the default time quota *)
-let run_config =
+let mk_run_config quota_float =
+  (* Override the default time quota *)
+  let time_quota = Time.Span.of_sec quota_float in
   Run_config.create ~time_quota ()
 
 (* Save benchmark data *)

@@ -41,36 +41,46 @@ let load ~params ~cfg ~env =
 
 let list = Display.print_tests
 
-let analyze_and_display meas ~params ~env =
+let analyze_and_display meas ~current_dir ~params ~env =
   let module Bench = Core_bench.Bench in
   let open Params in
   let open Defaults in
   (* Analyze the measurements, get the results *)
   let results = Measurements.analyze meas in
   (* Print the current results *)
-  print_endline "Current results";
+  print_endline @@ sprintf
+    "Current results (%s):\n"
+    (Option.value current_dir ~default:"not saved");
   Bench.display results ~display_config;
-  (* Now, load the measurements to compare with *)
-  match Measurements.load ~timestamp:params.timestamp ~env with
+  (* Now, load the measurements we want to compare with *)
+  let result = Measurements.load ~dir:params.timestamp ~current_dir ~env in
+  match result with
   | None -> print_endline "Nothing to compare with, the comparison is skipped"
-  | Some orig_meas ->
+  | Some (orig_meas, orig_dir) ->
       (* We have to analyze the loaded measurements here to be display them.
          This is because of how the [core_bench] is designed:
          it stores and loads measurements, not their results *)
       let orig_results = Measurements.analyze orig_meas in
       (* Print the original measurement results *)
-      print_endline "Previous results";
+      print_endline @@ sprintf "Previous results (%s):\n" orig_dir;
       Bench.display orig_results ~display_config;
-      let deltas = Measurements.calc_deltas ~orig_meas ~curr_meas:meas in
+      let deltas = Measurement_delta.calc_all orig_meas meas in
       let deltas_results = Measurements.analyze deltas in
-      (* Print the comparison results (time detlas) *)
+      (* Print the comparison results (time deltas) *)
       print_endline "Deltas";
       Display.print_deltas (deltas, deltas_results)
+
+(* Save measurements into a file system, if needed *)
+let save meas ~params ~env =
+  let open Params in
+  if params.save
+  then Some (Measurements.save meas ~env)
+  else None
 
 let exec tests ~params ~env =
   let module B = Core_bench in
   let open Params in
-  let open Defaults in
+  let run_config = Defaults.mk_run_config params.quota in
   (* First, run the benchmarks and get back the measurements.
      Note that we can't just use the [B.measure] here because it returns
      the [B.Bench.Measurement.t], but we want use the [B.Measurement.t] to
@@ -80,8 +90,6 @@ let exec tests ~params ~env =
     tests
     |> B.Test.expand
     |> B.Benchmark.measure_all run_config in
-  (* let meas = Bench.measure ~run_config tests in *)
-  (* Next, save measurements into a file system, if needed *)
-  if params.save then Measurements.save meas ~env;
   (* Finally, display the benchmarking results *)
-  analyze_and_display meas ~params ~env
+  let current_dir = save meas ~params ~env in
+  analyze_and_display meas ~current_dir ~params ~env

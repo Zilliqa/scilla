@@ -36,13 +36,13 @@ let mk_param bench =
     and list = flag "-list" no_arg
         ~doc:"List benchmark names without running them."
     and save = flag "-save" (optional_with_default Defaults.save bool)
-        ~doc:"Save benchmark data."
+        ~doc:" Save benchmark data."
     and display = flag "-display" (optional_with_default Defaults.display bool)
-        ~doc:"Display benchmarking results."
+        ~doc:" Display benchmarking results."
     and compare = flag "-compare" (optional_with_default Defaults.compare bool)
-        ~doc:"Compare benchmarking results and output the difference."
+        ~doc:" Compare benchmarking results and output the difference."
     and timestamp = flag "-timestamp" (optional string)
-        ~doc:"Timestamp of measurements to compare with. If not given, \
+        ~doc:" Timestamp of measurements to compare with. If not given, \
               the latest (previous) measurements will be used for comparison."
     and sock_addr = flag "-ipcaddress" (optional string)
         ~doc:"SOCKET Address for IPC communication \
