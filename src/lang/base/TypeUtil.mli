@@ -114,8 +114,17 @@ module TypeUtilities : sig
   val type_equiv : typ -> typ -> bool
   val type_equiv_list : typ list -> typ list -> bool
 
+  type typeCheckerErrorType =
+    | TypeError
+    | GasError
+
+  val mk_type_error0 : string -> Stdint.uint64 -> (typeCheckerErrorType * scilla_error list * Stdint.uint64) 
+  val mk_type_error1 : string -> loc -> Stdint.uint64 -> (typeCheckerErrorType * scilla_error list * Stdint.uint64)
+  val wrap_error_with_errortype_and_gas : typeCheckerErrorType -> Stdint.uint64 -> ('a, 'b) result -> ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
+  val mark_error_as_type_error : Stdint.uint64 -> ('a, 'b) result -> ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
+  
   val assert_type_equiv : typ -> typ -> (unit, scilla_error list) result
-  val assert_type_equiv_with_gas : typ -> typ -> Stdint.uint64 -> ((Stdint.uint64, scilla_error list * Stdint.uint64) result)
+  val assert_type_equiv_with_gas : typ -> typ -> Stdint.uint64 -> ((Stdint.uint64, typeCheckerErrorType * scilla_error list * Stdint.uint64) result)
 
   (* Applying a function type *)
   val fun_type_applies : typ -> typ list -> (typ, scilla_error list) result
@@ -125,7 +134,7 @@ module TypeUtilities : sig
   (* Applying a type function without gas charge (for builtins) *)
   val elab_tfun_with_args_no_gas : typ -> typ list -> (typ, scilla_error list) result
   (* Applying a type function *)
-  val elab_tfun_with_args : typ -> typ list -> Stdint.uint64 -> (typ * Stdint.uint64, scilla_error list * Stdint.uint64) result
+  val elab_tfun_with_args : typ -> typ list -> Stdint.uint64 -> (typ * Stdint.uint64, typeCheckerErrorType * scilla_error list * Stdint.uint64) result
 
   val pp_typ_list : typ list -> string  
 
