@@ -260,53 +260,78 @@
 
 (defun get-scilla-type (checker-bin libdir-path filename pos)
   "Given a checker and a filename, Run and extract from the checker output the type of the current variable."
-  (progn
-    (setq cmd (string-join (list checker-bin filename "-typeinfo" "-gaslimit" "10000" "-libdir" libdir-path) " "))
-    (setq checker-output (shell-command-to-string cmd))
-    (setq linn (line-number-at-pos pos))
-    (setq coln (column-number-at-pos pos))
-    (let* ((json-object-type 'hash-table)
-       (json-array-type 'list)
-       (json-key-type 'string)
-       (json (json-read-from-string checker-output)))
-      (progn
-        (setq tilist (gethash "type_info" json))
-        (if tilist
-            (catch 'vtype               ;; If the loop finds an appropriate entry, it'll throw.
-              (progn
-                (dolist (vari tilist)
-                  (progn
-                    (setq startloc (gethash "start_location" vari))
-                    (setq endloc (gethash "end_location" vari))
-                    (if (and startloc endloc)
-                        (progn
-                          (setq startline (gethash "line" startloc))
-                          (setq startcol (gethash "column" startloc))
-                          (setq endline (gethash "line" endloc))
-                          (setq endcol (gethash "column" endloc))
-                          (if (and startline startcol endline endcol)
-                              (when (and (= startline linn) (>= coln startcol) (< coln endcol))
-                                (message "hello")
-                                (setq type (gethash "type" vari))
-                                (if type
-                                    (throw 'vtype type)
-                                  "field type missing in checker output"
+  (condition-case nil
+    (progn
+      (setq cmd (string-join (list checker-bin filename "-typeinfo" "-gaslimit" "10000" "-libdir" libdir-path) " "))
+      (setq checker-output (shell-command-to-string cmd))
+      (setq linn (line-number-at-pos pos))
+      (setq coln (column-number-at-pos pos))
+      (let* ((json-object-type 'hash-table)
+             (json-array-type 'list)
+             (json-key-type 'string)
+             (json (json-read-from-string checker-output)))
+        (progn
+          ;; The checker output looks like this:
+          ;;{
+          ;;   "type_info": [
+          ;;   {
+          ;;      "vname": "one_msg",
+          ;;      "type": "Message -> List (Message)",
+          ;;      "start_location": {
+          ;;        "file": "tests/contracts/crowdfunding.scilla",
+          ;;        "line": 11,
+          ;;        "column": 5
+          ;;      },
+          ;;      "end_location": {
+          ;;        "file": "tests/contracts/crowdfunding.scilla",
+          ;;        "line": 11,
+          ;;        "column": 12
+          ;;      }
+          ;;   },
+          ;;   ...
+          ;;   ]
+          ;;}
+          (setq tilist (gethash "type_info" json))
+          (if tilist
+              (catch 'vtype               ;; If the loop finds an appropriate entry, it'll throw.
+                (progn
+                  (dolist (vari tilist)
+                    (progn
+                      (setq startloc (gethash "start_location" vari))
+                      (setq endloc (gethash "end_location" vari))
+                      (if (and startloc endloc)
+                          (progn
+                            (setq startline (gethash "line" startloc))
+                            (setq startcol (gethash "column" startloc))
+                            (setq endline (gethash "line" endloc))
+                            (setq endcol (gethash "column" endloc))
+                            (if (and startline startcol endline endcol)
+                                (when (and (= startline linn) (>= coln startcol) (< coln endcol))
+                                  (message "hello")
+                                  (setq type (gethash "type" vari))
+                                  (if type
+                                      (throw 'vtype type)
+                                    "field type missing in checker output"
+                                    )
                                   )
-                                )
-                            "start/end line/column not found"
+                              "start/end line/column not found"
+                              )
                             )
-                          )
-                      "(start/end)_location not found"
+                        "(start/end)_location not found"
+                        )
                       )
                     )
+                  "type not found for variable"
                   )
-                "type not found for variable"
                 )
-              )
-          "type_info not found in checker output"
+            "type_info not found in checker output"
+            )
           )
         )
       )
+    ;; This error is thrown by the json.el library when it cannot parser the output JSON of the
+    ;; checker. This usually happens if the checker found an error, and hence doesn't print a JSON.
+    (json-readtable-error "Error inferring type information from the checker. Check the contract.")
     )
   )
 
