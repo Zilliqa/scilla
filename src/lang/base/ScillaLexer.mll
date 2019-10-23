@@ -108,7 +108,7 @@ rule read =
   | "->"          { TARROW }                  
   | "="           { EQ }                  
   | "&"           { AND }                  
-  | "<-"          { BIND }                  
+  | "<-"          { FETCH }                  
   | ":="          { ASSIGN }                  
   | "@"           { AT }                  
   | "_"           { UNDERSCORE } 
