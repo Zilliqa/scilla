@@ -27,12 +27,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 6,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 6,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -41,12 +41,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 7,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 7,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -111,12 +111,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 22,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 22,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -153,12 +153,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 23,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 23,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -195,12 +195,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 24,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 24,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -223,12 +223,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 28,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 28,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -251,12 +251,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 29,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 29,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -279,12 +279,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 30,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 30,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -293,12 +293,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 31,
-        "column": 13
+        "column": 3
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 31,
-        "column": 22
+        "column": 12
       }
     },
     {
@@ -349,12 +349,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 35,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 35,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -391,12 +391,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 36,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 36,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -433,12 +433,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 37,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 37,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -447,12 +447,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 39,
-        "column": 17
+        "column": 5
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 39,
-        "column": 28
+        "column": 16
       }
     },
     {
@@ -461,12 +461,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 40,
-        "column": 18
+        "column": 5
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 40,
-        "column": 30
+        "column": 17
       }
     },
     {
@@ -517,12 +517,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 43,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 43,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -545,12 +545,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 44,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 44,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -587,12 +587,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 45,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 45,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -601,12 +601,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 47,
-        "column": 18
+        "column": 7
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 47,
-        "column": 28
+        "column": 17
       }
     },
     {
@@ -615,12 +615,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 48,
-        "column": 19
+        "column": 7
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 48,
-        "column": 30
+        "column": 18
       }
     },
     {
@@ -671,12 +671,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 51,
-        "column": 13
+        "column": 9
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 51,
-        "column": 16
+        "column": 12
       }
     },
     {
@@ -699,12 +699,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 52,
-        "column": 14
+        "column": 9
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 52,
-        "column": 18
+        "column": 13
       }
     },
     {
@@ -741,12 +741,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 53,
-        "column": 9
+        "column": 14
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 53,
-        "column": 13
+        "column": 18
       }
     },
     {
@@ -755,12 +755,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 55,
-        "column": 13
+        "column": 9
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 55,
-        "column": 16
+        "column": 12
       }
     },
     {
@@ -783,12 +783,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 56,
-        "column": 14
+        "column": 9
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 56,
-        "column": 18
+        "column": 13
       }
     },
     {
@@ -825,12 +825,12 @@
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 57,
-        "column": 9
+        "column": 14
       },
       "end_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 57,
-        "column": 13
+        "column": 18
       }
     }
   ],

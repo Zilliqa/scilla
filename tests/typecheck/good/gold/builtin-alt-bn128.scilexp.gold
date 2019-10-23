@@ -6,12 +6,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 1,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 1,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -20,12 +20,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 2,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 2,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -34,12 +34,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 3,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 3,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -48,12 +48,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 4,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 4,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -62,12 +62,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 6,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 6,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -76,12 +76,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 7,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 7,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -90,12 +90,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 9,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 9,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -132,12 +132,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 10,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 10,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -174,12 +174,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 12,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 12,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -216,12 +216,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 13,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 13,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -272,12 +272,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 16,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 16,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -314,12 +314,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 17,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 17,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -398,12 +398,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 23,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 23,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -412,12 +412,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 24,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 24,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -426,12 +426,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 25,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 25,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -440,12 +440,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 27,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 27,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -482,12 +482,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 29,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 29,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -496,12 +496,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 30,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 30,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -510,12 +510,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 32,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 32,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -552,12 +552,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 33,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 33,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -608,12 +608,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 36,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 36,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -650,12 +650,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 37,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 37,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -734,12 +734,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 43,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 43,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -748,12 +748,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 44,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 44,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -762,12 +762,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 45,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 45,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -804,12 +804,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 46,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 46,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -818,12 +818,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 47,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 47,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -832,12 +832,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 48,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 48,
-        "column": 5
+        "column": 9
       }
     },
     {
@@ -874,12 +874,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 50,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 50,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -916,12 +916,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 52,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 52,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -930,12 +930,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 53,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 53,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -944,12 +944,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 54,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 54,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -986,12 +986,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 55,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 55,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -1000,12 +1000,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 56,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 56,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -1014,12 +1014,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 57,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 57,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -1056,12 +1056,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 59,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 59,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -1099,12 +1099,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 61,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 61,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -1114,12 +1114,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 62,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 62,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -1158,12 +1158,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 63,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 63,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -1201,12 +1201,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 65,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 65,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -1230,12 +1230,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 66,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 66,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -1258,12 +1258,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 73,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 73,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -1272,12 +1272,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 74,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 74,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -1286,12 +1286,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 76,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 76,
-        "column": 5
+        "column": 9
       }
     },
     {
@@ -1300,12 +1300,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 77,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "typecheck/good/builtin-alt-bn128.scilexp",
         "line": 77,
-        "column": 5
+        "column": 9
       }
     },
     {

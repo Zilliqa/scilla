@@ -21,12 +21,12 @@
       "start_location": {
         "file": "contracts/chain-call-balance-3.scilla",
         "line": 6,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/chain-call-balance-3.scilla",
         "line": 6,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -35,12 +35,12 @@
       "start_location": {
         "file": "contracts/chain-call-balance-3.scilla",
         "line": 7,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/chain-call-balance-3.scilla",
         "line": 7,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -77,12 +77,12 @@
       "start_location": {
         "file": "contracts/chain-call-balance-3.scilla",
         "line": 15,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/chain-call-balance-3.scilla",
         "line": 15,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -105,12 +105,12 @@
       "start_location": {
         "file": "contracts/chain-call-balance-3.scilla",
         "line": 16,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/chain-call-balance-3.scilla",
         "line": 16,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -147,12 +147,12 @@
       "start_location": {
         "file": "contracts/chain-call-balance-3.scilla",
         "line": 17,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/chain-call-balance-3.scilla",
         "line": 17,
-        "column": 5
+        "column": 10
       }
     }
   ],

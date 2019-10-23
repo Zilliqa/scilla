@@ -6,12 +6,12 @@
       "start_location": {
         "file": "typecheck/good/nat_to_int.scilexp",
         "line": 1,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/nat_to_int.scilexp",
         "line": 1,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -20,12 +20,12 @@
       "start_location": {
         "file": "typecheck/good/nat_to_int.scilexp",
         "line": 2,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/nat_to_int.scilexp",
         "line": 2,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -48,12 +48,12 @@
       "start_location": {
         "file": "typecheck/good/nat_to_int.scilexp",
         "line": 3,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/nat_to_int.scilexp",
         "line": 3,
-        "column": 4
+        "column": 8
       }
     },
     {

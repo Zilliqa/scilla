@@ -6,12 +6,12 @@
       "start_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 1,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 1,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -20,12 +20,12 @@
       "start_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 2,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 2,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -34,12 +34,12 @@
       "start_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 3,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 3,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -48,12 +48,12 @@
       "start_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 4,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 4,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -62,12 +62,12 @@
       "start_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 6,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 6,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -76,12 +76,12 @@
       "start_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 7,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 7,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -132,12 +132,12 @@
       "start_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 8,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 8,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -188,12 +188,12 @@
       "start_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 10,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 10,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -216,12 +216,12 @@
       "start_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 11,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/hash1.scilexp",
         "line": 11,
-        "column": 3
+        "column": 7
       }
     },
     {

@@ -12,12 +12,12 @@
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 12,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 12,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -26,12 +26,12 @@
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 13,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 13,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -40,12 +40,12 @@
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 14,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 14,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -54,12 +54,12 @@
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 15,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 15,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -82,12 +82,12 @@
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 16,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 16,
-        "column": 12
+        "column": 7
       }
     },
     {

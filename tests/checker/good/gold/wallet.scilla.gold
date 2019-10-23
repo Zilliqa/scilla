@@ -40,12 +40,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 12,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 12,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -82,12 +82,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 17,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 17,
-        "column": 13
+        "column": 18
       }
     },
     {
@@ -138,12 +138,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 26,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 26,
-        "column": 13
+        "column": 18
       }
     },
     {
@@ -194,12 +194,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 50,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 50,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -208,12 +208,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 51,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 51,
-        "column": 11
+        "column": 15
       }
     },
     {
@@ -292,12 +292,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 78,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 78,
-        "column": 17
+        "column": 22
       }
     },
     {
@@ -306,12 +306,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 79,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 79,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -320,12 +320,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 80,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 80,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -334,12 +334,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 81,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 81,
-        "column": 10
+        "column": 15
       }
     },
     {
@@ -348,12 +348,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 82,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 82,
-        "column": 16
+        "column": 21
       }
     },
     {
@@ -362,12 +362,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 83,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 83,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -432,12 +432,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 90,
-        "column": 11
+        "column": 15
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 90,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -489,12 +489,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 93,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 93,
-        "column": 11
+        "column": 15
       }
     },
     {
@@ -504,12 +504,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 93,
-        "column": 18
+        "column": 19
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 93,
-        "column": 28
+        "column": 29
       }
     },
     {
@@ -589,12 +589,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 98,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 98,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -603,12 +603,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 99,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 99,
-        "column": 17
+        "column": 21
       }
     },
     {
@@ -631,12 +631,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 100,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 100,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -701,12 +701,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 107,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 107,
-        "column": 12
+        "column": 17
       }
     },
     {
@@ -715,12 +715,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 108,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 108,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -729,12 +729,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 109,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 109,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -813,12 +813,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 115,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 115,
-        "column": 12
+        "column": 17
       }
     },
     {
@@ -827,12 +827,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 116,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 116,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -841,12 +841,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 117,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 117,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -855,12 +855,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 118,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 118,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -869,12 +869,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 119,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 119,
-        "column": 10
+        "column": 15
       }
     },
     {
@@ -883,12 +883,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 120,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 120,
-        "column": 16
+        "column": 20
       }
     },
     {
@@ -925,12 +925,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 122,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 122,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -1037,12 +1037,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 127,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 127,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -1051,12 +1051,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 128,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 128,
-        "column": 10
+        "column": 15
       }
     },
     {
@@ -1065,12 +1065,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 129,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 129,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -1275,12 +1275,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 195,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 195,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -1303,12 +1303,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 197,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 197,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -1317,12 +1317,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 198,
-        "column": 18
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 198,
-        "column": 32
+        "column": 17
       }
     },
     {
@@ -1373,12 +1373,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 203,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 203,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -1387,12 +1387,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 204,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 204,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -1429,12 +1429,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 205,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 205,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -1443,12 +1443,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 208,
-        "column": 17
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 208,
-        "column": 28
+        "column": 16
       }
     },
     {
@@ -1485,12 +1485,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 211,
-        "column": 12
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 211,
-        "column": 18
+        "column": 11
       }
     },
     {
@@ -1513,12 +1513,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 212,
-        "column": 12
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 212,
-        "column": 18
+        "column": 11
       }
     },
     {
@@ -1569,12 +1569,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 215,
-        "column": 14
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 215,
-        "column": 22
+        "column": 13
       }
     },
     {
@@ -1597,12 +1597,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 216,
-        "column": 14
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 216,
-        "column": 22
+        "column": 13
       }
     },
     {
@@ -1653,12 +1653,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 219,
-        "column": 12
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 219,
-        "column": 18
+        "column": 11
       }
     },
     {
@@ -1709,12 +1709,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 222,
-        "column": 22
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 222,
-        "column": 38
+        "column": 21
       }
     },
     {
@@ -1737,12 +1737,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 223,
-        "column": 18
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 223,
-        "column": 30
+        "column": 17
       }
     },
     {
@@ -1765,12 +1765,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 224,
-        "column": 16
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 224,
-        "column": 26
+        "column": 15
       }
     },
     {
@@ -1779,12 +1779,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 227,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 227,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -1821,12 +1821,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 228,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 228,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -1849,12 +1849,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 235,
-        "column": 14
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 235,
-        "column": 24
+        "column": 13
       }
     },
     {
@@ -1891,12 +1891,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 238,
-        "column": 14
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 238,
-        "column": 24
+        "column": 13
       }
     },
     {
@@ -1919,12 +1919,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 239,
-        "column": 19
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 239,
-        "column": 34
+        "column": 18
       }
     },
     {
@@ -1975,12 +1975,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 242,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 242,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -1989,12 +1989,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 243,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 243,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -2031,12 +2031,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 244,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 244,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -2045,12 +2045,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 247,
-        "column": 12
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 247,
-        "column": 18
+        "column": 11
       }
     },
     {
@@ -2073,12 +2073,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 248,
-        "column": 17
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 248,
-        "column": 28
+        "column": 16
       }
     },
     {
@@ -2129,12 +2129,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 251,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 251,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -2143,12 +2143,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 252,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 252,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -2185,12 +2185,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 253,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 253,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -2227,12 +2227,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 256,
-        "column": 16
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 256,
-        "column": 24
+        "column": 15
       }
     },
     {
@@ -2255,12 +2255,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 257,
-        "column": 16
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 257,
-        "column": 24
+        "column": 15
       }
     },
     {
@@ -2311,12 +2311,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 260,
-        "column": 13
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 260,
-        "column": 16
+        "column": 12
       }
     },
     {
@@ -2325,12 +2325,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 261,
-        "column": 11
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 261,
-        "column": 12
+        "column": 10
       }
     },
     {
@@ -2367,12 +2367,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 262,
-        "column": 9
+        "column": 15
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 262,
-        "column": 10
+        "column": 16
       }
     },
     {
@@ -2395,12 +2395,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 265,
-        "column": 27
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 265,
-        "column": 44
+        "column": 26
       }
     },
     {
@@ -2451,12 +2451,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 268,
-        "column": 15
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 268,
-        "column": 18
+        "column": 14
       }
     },
     {
@@ -2465,12 +2465,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 269,
-        "column": 13
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 269,
-        "column": 14
+        "column": 12
       }
     },
     {
@@ -2507,12 +2507,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 270,
-        "column": 11
+        "column": 17
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 270,
-        "column": 12
+        "column": 18
       }
     },
     {
@@ -2521,12 +2521,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 273,
-        "column": 13
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 273,
-        "column": 14
+        "column": 12
       }
     },
     {
@@ -2535,12 +2535,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 274,
-        "column": 20
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 274,
-        "column": 28
+        "column": 19
       }
     },
     {
@@ -2591,12 +2591,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 275,
-        "column": 26
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 275,
-        "column": 40
+        "column": 25
       }
     },
     {
@@ -2661,12 +2661,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 276,
-        "column": 22
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 276,
-        "column": 32
+        "column": 21
       }
     },
     {
@@ -2703,12 +2703,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 285,
-        "column": 20
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 285,
-        "column": 36
+        "column": 19
       }
     },
     {
@@ -2731,12 +2731,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 286,
-        "column": 19
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 286,
-        "column": 34
+        "column": 18
       }
     },
     {
@@ -2787,12 +2787,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 290,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 290,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -2801,12 +2801,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 291,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 291,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -2843,12 +2843,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 292,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 292,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -2885,12 +2885,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 295,
-        "column": 25
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 295,
-        "column": 44
+        "column": 24
       }
     },
     {
@@ -2941,12 +2941,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 298,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 298,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -2955,12 +2955,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 299,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 299,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -2997,12 +2997,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 300,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 300,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -3011,12 +3011,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 303,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 303,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -3039,12 +3039,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 304,
-        "column": 24
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 304,
-        "column": 40
+        "column": 23
       }
     },
     {
@@ -3095,12 +3095,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 307,
-        "column": 13
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 307,
-        "column": 16
+        "column": 12
       }
     },
     {
@@ -3109,12 +3109,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 308,
-        "column": 11
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 308,
-        "column": 12
+        "column": 10
       }
     },
     {
@@ -3151,12 +3151,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 309,
-        "column": 9
+        "column": 15
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 309,
-        "column": 10
+        "column": 16
       }
     },
     {
@@ -3165,12 +3165,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 311,
-        "column": 24
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 311,
-        "column": 38
+        "column": 23
       }
     },
     {
@@ -3193,12 +3193,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 312,
-        "column": 18
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 312,
-        "column": 26
+        "column": 17
       }
     },
     {
@@ -3249,12 +3249,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 316,
-        "column": 15
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 316,
-        "column": 18
+        "column": 14
       }
     },
     {
@@ -3263,12 +3263,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 317,
-        "column": 13
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 317,
-        "column": 14
+        "column": 12
       }
     },
     {
@@ -3305,12 +3305,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 318,
-        "column": 11
+        "column": 17
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 318,
-        "column": 12
+        "column": 18
       }
     },
     {
@@ -3333,12 +3333,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 321,
-        "column": 22
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 321,
-        "column": 32
+        "column": 21
       }
     },
     {
@@ -3361,12 +3361,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 322,
-        "column": 33
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 322,
-        "column": 54
+        "column": 32
       }
     },
     {
@@ -3417,12 +3417,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 325,
-        "column": 17
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 325,
-        "column": 20
+        "column": 16
       }
     },
     {
@@ -3431,12 +3431,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 326,
-        "column": 15
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 326,
-        "column": 16
+        "column": 14
       }
     },
     {
@@ -3473,12 +3473,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 327,
-        "column": 13
+        "column": 19
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 327,
-        "column": 14
+        "column": 20
       }
     },
     {
@@ -3487,12 +3487,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 331,
-        "column": 30
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 331,
-        "column": 46
+        "column": 29
       }
     },
     {
@@ -3543,12 +3543,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 332,
-        "column": 26
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 332,
-        "column": 38
+        "column": 25
       }
     },
     {
@@ -3557,12 +3557,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 333,
-        "column": 28
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 333,
-        "column": 42
+        "column": 27
       }
     },
     {
@@ -3613,12 +3613,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 334,
-        "column": 24
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 334,
-        "column": 34
+        "column": 23
       }
     },
     {
@@ -3627,12 +3627,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 335,
-        "column": 18
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 335,
-        "column": 22
+        "column": 17
       }
     },
     {
@@ -3697,12 +3697,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 336,
-        "column": 13
+        "column": 18
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 336,
-        "column": 17
+        "column": 22
       }
     },
     {
@@ -3725,12 +3725,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 347,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 347,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -3753,12 +3753,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 348,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 348,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -3809,12 +3809,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 351,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 351,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -3823,12 +3823,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 352,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 352,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -3865,12 +3865,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 353,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 353,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -3893,12 +3893,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 356,
-        "column": 23
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 356,
-        "column": 40
+        "column": 22
       }
     },
     {
@@ -3963,12 +3963,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 359,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 359,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -3977,12 +3977,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 360,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 360,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -4019,12 +4019,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 361,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 361,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -4033,12 +4033,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 363,
-        "column": 16
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 363,
-        "column": 24
+        "column": 15
       }
     },
     {
@@ -4075,12 +4075,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 364,
-        "column": 22
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 364,
-        "column": 36
+        "column": 21
       }
     },
     {
@@ -4145,12 +4145,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 365,
-        "column": 18
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 365,
-        "column": 28
+        "column": 17
       }
     },
     {
@@ -4173,12 +4173,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 373,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 373,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -4201,12 +4201,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 374,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 374,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -4257,12 +4257,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 377,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 377,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -4271,12 +4271,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 378,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 378,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -4313,12 +4313,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 379,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 379,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -4341,12 +4341,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 382,
-        "column": 23
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 382,
-        "column": 40
+        "column": 22
       }
     },
     {
@@ -4411,12 +4411,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 385,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 385,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -4425,12 +4425,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 386,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 386,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -4467,12 +4467,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 387,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 387,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -4481,12 +4481,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 389,
-        "column": 16
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 389,
-        "column": 24
+        "column": 15
       }
     },
     {
@@ -4523,12 +4523,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 390,
-        "column": 22
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 390,
-        "column": 36
+        "column": 21
       }
     },
     {
@@ -4593,12 +4593,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 391,
-        "column": 24
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 391,
-        "column": 40
+        "column": 23
       }
     },
     {
@@ -4621,12 +4621,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 400,
-        "column": 11
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 400,
-        "column": 18
+        "column": 10
       }
     },
     {
@@ -4663,12 +4663,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 403,
-        "column": 16
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 403,
-        "column": 26
+        "column": 15
       }
     },
     {
@@ -4719,12 +4719,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 404,
-        "column": 12
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 404,
-        "column": 18
+        "column": 11
       }
     },
     {
@@ -4733,12 +4733,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 405,
-        "column": 20
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 405,
-        "column": 34
+        "column": 19
       }
     },
     {
@@ -4789,12 +4789,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 406,
-        "column": 20
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 406,
-        "column": 34
+        "column": 19
       }
     },
     {
@@ -4803,12 +4803,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 407,
-        "column": 13
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 407,
-        "column": 20
+        "column": 12
       }
     },
     {
@@ -4831,12 +4831,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 408,
-        "column": 22
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 408,
-        "column": 38
+        "column": 21
       }
     },
     {
@@ -4845,12 +4845,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 412,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 412,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -4887,12 +4887,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 415,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 415,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -4901,12 +4901,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 416,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 416,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -4943,12 +4943,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 417,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 417,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -4957,12 +4957,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 419,
-        "column": 26
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 419,
-        "column": 46
+        "column": 25
       }
     },
     {
@@ -4985,12 +4985,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 420,
-        "column": 17
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 420,
-        "column": 28
+        "column": 16
       }
     },
     {
@@ -5041,12 +5041,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 424,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 424,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -5055,12 +5055,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 425,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 425,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -5097,12 +5097,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 426,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 426,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -5111,12 +5111,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 428,
-        "column": 18
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 428,
-        "column": 28
+        "column": 17
       }
     },
     {
@@ -5139,12 +5139,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 429,
-        "column": 20
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 429,
-        "column": 32
+        "column": 19
       }
     },
     {
@@ -5195,12 +5195,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 433,
-        "column": 13
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 433,
-        "column": 16
+        "column": 12
       }
     },
     {
@@ -5209,12 +5209,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 434,
-        "column": 11
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 434,
-        "column": 12
+        "column": 10
       }
     },
     {
@@ -5251,12 +5251,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 435,
-        "column": 9
+        "column": 15
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 435,
-        "column": 10
+        "column": 16
       }
     },
     {
@@ -5265,12 +5265,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 438,
-        "column": 20
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 438,
-        "column": 30
+        "column": 19
       }
     },
     {
@@ -5279,12 +5279,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 439,
-        "column": 30
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 439,
-        "column": 50
+        "column": 29
       }
     },
     {
@@ -5349,12 +5349,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 440,
-        "column": 26
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 440,
-        "column": 42
+        "column": 25
       }
     },
     {
@@ -5377,12 +5377,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 449,
-        "column": 14
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 449,
-        "column": 24
+        "column": 13
       }
     },
     {
@@ -5419,12 +5419,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 450,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 450,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -5433,12 +5433,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 453,
-        "column": 14
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 453,
-        "column": 24
+        "column": 13
       }
     },
     {
@@ -5461,12 +5461,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 454,
-        "column": 19
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 454,
-        "column": 34
+        "column": 18
       }
     },
     {
@@ -5517,12 +5517,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 457,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 457,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -5531,12 +5531,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 458,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 458,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -5573,12 +5573,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 459,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 459,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -5587,12 +5587,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 461,
-        "column": 26
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 461,
-        "column": 46
+        "column": 25
       }
     },
     {
@@ -5615,12 +5615,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 462,
-        "column": 17
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 462,
-        "column": 28
+        "column": 16
       }
     },
     {
@@ -5671,12 +5671,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 466,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 466,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -5685,12 +5685,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 467,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 467,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -5727,12 +5727,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 468,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 468,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -5755,12 +5755,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 471,
-        "column": 25
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 471,
-        "column": 42
+        "column": 24
       }
     },
     {
@@ -5811,12 +5811,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 474,
-        "column": 13
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 474,
-        "column": 16
+        "column": 12
       }
     },
     {
@@ -5825,12 +5825,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 475,
-        "column": 11
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 475,
-        "column": 12
+        "column": 10
       }
     },
     {
@@ -5867,12 +5867,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 476,
-        "column": 9
+        "column": 15
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 476,
-        "column": 10
+        "column": 16
       }
     },
     {
@@ -5881,12 +5881,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 478,
-        "column": 18
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 478,
-        "column": 26
+        "column": 17
       }
     },
     {
@@ -5937,12 +5937,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 479,
-        "column": 30
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 479,
-        "column": 50
+        "column": 29
       }
     },
     {
@@ -6007,12 +6007,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 480,
-        "column": 26
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 480,
-        "column": 42
+        "column": 25
       }
     },
     {
@@ -6021,12 +6021,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 482,
-        "column": 20
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 482,
-        "column": 30
+        "column": 19
       }
     },
     {
@@ -6049,12 +6049,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 483,
-        "column": 11
+        "column": 9
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 483,
-        "column": 12
+        "column": 10
       }
     },
     {
@@ -6091,12 +6091,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 484,
-        "column": 9
+        "column": 15
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 484,
-        "column": 10
+        "column": 16
       }
     },
     {
@@ -6105,12 +6105,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 492,
-        "column": 24
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 492,
-        "column": 44
+        "column": 23
       }
     },
     {
@@ -6133,12 +6133,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 493,
-        "column": 15
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 493,
-        "column": 26
+        "column": 14
       }
     },
     {
@@ -6189,12 +6189,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 498,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 498,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -6203,12 +6203,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 499,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 499,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -6245,12 +6245,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 500,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 500,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -6273,12 +6273,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 502,
-        "column": 20
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 502,
-        "column": 34
+        "column": 19
       }
     },
     {
@@ -6301,12 +6301,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 503,
-        "column": 18
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 503,
-        "column": 30
+        "column": 17
       }
     },
     {
@@ -6329,12 +6329,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 504,
-        "column": 16
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 504,
-        "column": 26
+        "column": 15
       }
     },
     {
@@ -6357,12 +6357,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 505,
-        "column": 21
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 505,
-        "column": 36
+        "column": 20
       }
     },
     {
@@ -6427,12 +6427,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 509,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 509,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -6441,12 +6441,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 510,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 510,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -6483,12 +6483,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 511,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 511,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -6497,12 +6497,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 515,
-        "column": 28
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 515,
-        "column": 48
+        "column": 27
       }
     },
     {
@@ -6553,12 +6553,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 516,
-        "column": 24
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 516,
-        "column": 40
+        "column": 23
       }
     },
     {
@@ -6567,12 +6567,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 517,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 517,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -6581,12 +6581,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 518,
-        "column": 18
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 518,
-        "column": 28
+        "column": 17
       }
     },
     {
@@ -6651,12 +6651,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 519,
-        "column": 14
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 519,
-        "column": 20
+        "column": 13
       }
     },
     {
@@ -6665,12 +6665,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 521,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 521,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -6693,12 +6693,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 522,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 522,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -6707,12 +6707,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 530,
-        "column": 11
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 530,
-        "column": 18
+        "column": 10
       }
     },
     {
@@ -6749,12 +6749,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 533,
-        "column": 16
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 533,
-        "column": 26
+        "column": 15
       }
     },
     {
@@ -6805,12 +6805,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 534,
-        "column": 12
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 534,
-        "column": 18
+        "column": 11
       }
     },
     {
@@ -6819,12 +6819,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 535,
-        "column": 20
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 535,
-        "column": 34
+        "column": 19
       }
     },
     {
@@ -6875,12 +6875,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 536,
-        "column": 20
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 536,
-        "column": 34
+        "column": 19
       }
     },
     {
@@ -6889,12 +6889,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 537,
-        "column": 13
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 537,
-        "column": 20
+        "column": 12
       }
     },
     {
@@ -6917,12 +6917,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 538,
-        "column": 22
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 538,
-        "column": 38
+        "column": 21
       }
     },
     {
@@ -6931,12 +6931,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 543,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 543,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -6973,12 +6973,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 546,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 546,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -6987,12 +6987,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 547,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 547,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -7029,12 +7029,12 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 548,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/wallet.scilla",
         "line": 548,
-        "column": 6
+        "column": 12
       }
     }
   ],
@@ -7196,7 +7196,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 534,
-        "column": 12
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7206,7 +7206,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 519,
-        "column": 14
+        "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7216,7 +7216,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 516,
-        "column": 24
+        "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7246,7 +7246,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 480,
-        "column": 26
+        "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7276,7 +7276,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 440,
-        "column": 26
+        "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7306,7 +7306,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 404,
-        "column": 12
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7316,7 +7316,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 391,
-        "column": 24
+        "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7336,7 +7336,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 365,
-        "column": 18
+        "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7356,7 +7356,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 334,
-        "column": 24
+        "column": 13
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7366,7 +7366,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 332,
-        "column": 26
+        "column": 13
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7396,7 +7396,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 276,
-        "column": 22
+        "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7436,7 +7436,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 224,
-        "column": 16
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -7446,7 +7446,7 @@
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 223,
-        "column": 18
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

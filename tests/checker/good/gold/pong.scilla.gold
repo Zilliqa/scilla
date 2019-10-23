@@ -27,12 +27,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 6,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 6,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -41,12 +41,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 7,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 7,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -111,12 +111,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 23,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 23,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -125,12 +125,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 24,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 24,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -181,12 +181,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 27,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 27,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -209,12 +209,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 28,
-        "column": 18
+        "column": 5
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 28,
-        "column": 30
+        "column": 17
       }
     },
     {
@@ -265,12 +265,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 31,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 31,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -279,12 +279,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 32,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 32,
-        "column": 10
+        "column": 16
       }
     },
     {
@@ -293,12 +293,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 34,
-        "column": 16
+        "column": 7
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 34,
-        "column": 24
+        "column": 15
       }
     },
     {
@@ -349,12 +349,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 35,
-        "column": 13
+        "column": 7
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 35,
-        "column": 18
+        "column": 12
       }
     },
     {
@@ -363,12 +363,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 36,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 36,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -391,12 +391,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 37,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 37,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -433,12 +433,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 38,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 38,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -447,40 +447,26 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 39,
-        "column": 9
-      },
-      "end_location": {
-        "file": "contracts/pong.scilla",
-        "line": 39,
-        "column": 10
-      }
-    },
-    {
-      "vname": "e",
-      "type": "Event",
-      "start_location": {
-        "file": "contracts/pong.scilla",
-        "line": 40,
         "column": 7
       },
       "end_location": {
         "file": "contracts/pong.scilla",
-        "line": 40,
+        "line": 39,
         "column": 8
       }
     },
     {
-      "vname": "msg",
+      "vname": "e",
       "type": "Event",
       "start_location": {
         "file": "contracts/pong.scilla",
-        "line": 43,
-        "column": 9
+        "line": 40,
+        "column": 13
       },
       "end_location": {
         "file": "contracts/pong.scilla",
-        "line": 43,
-        "column": 12
+        "line": 40,
+        "column": 14
       }
     },
     {
@@ -488,13 +474,27 @@
       "type": "Event",
       "start_location": {
         "file": "contracts/pong.scilla",
-        "line": 44,
+        "line": 43,
         "column": 5
       },
       "end_location": {
         "file": "contracts/pong.scilla",
-        "line": 44,
+        "line": 43,
         "column": 8
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/pong.scilla",
+        "line": 44,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/pong.scilla",
+        "line": 44,
+        "column": 14
       }
     },
     {
@@ -517,12 +517,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 49,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 49,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -559,12 +559,12 @@
       "start_location": {
         "file": "contracts/pong.scilla",
         "line": 50,
-        "column": 13
+        "column": 3
       },
       "end_location": {
         "file": "contracts/pong.scilla",
         "line": 50,
-        "column": 22
+        "column": 12
       }
     }
   ],

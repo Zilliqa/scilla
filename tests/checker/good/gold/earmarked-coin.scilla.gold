@@ -32,12 +32,12 @@
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 22,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 22,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -46,12 +46,12 @@
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 23,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 23,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -186,12 +186,12 @@
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 39,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 39,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -228,12 +228,12 @@
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 40,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 40,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -270,12 +270,12 @@
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 41,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 41,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -312,12 +312,12 @@
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 45,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 45,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -368,12 +368,12 @@
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 47,
-        "column": 3
+        "column": 9
       },
       "end_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 47,
-        "column": 4
+        "column": 10
       }
     },
     {
@@ -424,12 +424,12 @@
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 51,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 51,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -480,12 +480,12 @@
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 53,
-        "column": 3
+        "column": 9
       },
       "end_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 53,
-        "column": 4
+        "column": 10
       }
     },
     {
@@ -564,12 +564,12 @@
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 69,
-        "column": 12
+        "column": 5
       },
       "end_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 69,
-        "column": 18
+        "column": 11
       }
     },
     {
@@ -816,12 +816,12 @@
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 83,
-        "column": 25
+        "column": 5
       },
       "end_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 83,
-        "column": 44
+        "column": 24
       }
     },
     {

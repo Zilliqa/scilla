@@ -21,12 +21,12 @@
       "start_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 13,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 13,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -35,12 +35,12 @@
       "start_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 14,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 14,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -77,12 +77,12 @@
       "start_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 27,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 27,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -105,12 +105,12 @@
       "start_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 28,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 28,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -133,12 +133,12 @@
       "start_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 29,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 29,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -175,12 +175,12 @@
       "start_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 30,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 30,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -217,12 +217,12 @@
       "start_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 31,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 31,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -301,12 +301,12 @@
       "start_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 34,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 34,
-        "column": 7
+        "column": 12
       }
     }
   ],

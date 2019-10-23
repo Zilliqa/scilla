@@ -6,12 +6,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 1,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 1,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -20,12 +20,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 2,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 2,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -34,12 +34,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 3,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 3,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -104,12 +104,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 13,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 13,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -118,12 +118,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 14,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 14,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -132,12 +132,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 15,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 15,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -202,12 +202,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 25,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 25,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -216,12 +216,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 26,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 26,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -230,12 +230,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 27,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 27,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -245,12 +245,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 28,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 28,
-        "column": 11
+        "column": 15
       }
     },
     {
@@ -260,12 +260,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 28,
-        "column": 18
+        "column": 19
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 28,
-        "column": 28
+        "column": 29
       }
     },
     {
@@ -274,12 +274,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 29,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 29,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -288,12 +288,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 30,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 30,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -302,12 +302,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 31,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 31,
-        "column": 8
+        "column": 13
       }
     },
     {
@@ -316,12 +316,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 32,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 32,
-        "column": 8
+        "column": 13
       }
     },
     {
@@ -416,12 +416,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 39,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 39,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -430,12 +430,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 40,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 40,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -444,12 +444,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 41,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 41,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -458,12 +458,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 42,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 42,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -472,12 +472,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 43,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 43,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -487,12 +487,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 44,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 44,
-        "column": 20
+        "column": 24
       }
     },
     {
@@ -502,12 +502,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 45,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 45,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -517,12 +517,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 46,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 46,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -531,12 +531,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 47,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 47,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -545,12 +545,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 48,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 48,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -560,12 +560,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 49,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 49,
-        "column": 15
+        "column": 19
       }
     },
     {
@@ -575,12 +575,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 49,
-        "column": 22
+        "column": 23
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 49,
-        "column": 32
+        "column": 33
       }
     },
     {
@@ -589,12 +589,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 50,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 50,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -603,12 +603,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 51,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 51,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -646,12 +646,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 52,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 52,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -660,12 +660,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 53,
-        "column": 11
+        "column": 16
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 53,
-        "column": 12
+        "column": 17
       }
     },
     {
@@ -674,12 +674,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 54,
-        "column": 11
+        "column": 16
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 54,
-        "column": 12
+        "column": 17
       }
     },
     {
@@ -730,12 +730,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 58,
-        "column": 15
+        "column": 19
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 58,
-        "column": 21
+        "column": 25
       }
     },
     {
@@ -744,12 +744,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 58,
-        "column": 28
+        "column": 29
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 58,
-        "column": 37
+        "column": 38
       }
     },
     {
@@ -758,12 +758,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 59,
-        "column": 15
+        "column": 19
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 59,
-        "column": 21
+        "column": 25
       }
     },
     {
@@ -772,12 +772,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 59,
-        "column": 28
+        "column": 29
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 59,
-        "column": 37
+        "column": 38
       }
     },
     {
@@ -786,12 +786,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 60,
-        "column": 15
+        "column": 19
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 60,
-        "column": 20
+        "column": 24
       }
     },
     {
@@ -856,12 +856,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 63,
-        "column": 17
+        "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 63,
-        "column": 21
+        "column": 25
       }
     },
     {
@@ -898,12 +898,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 64,
-        "column": 17
+        "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 64,
-        "column": 28
+        "column": 32
       }
     },
     {
@@ -940,12 +940,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 65,
-        "column": 17
+        "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 65,
-        "column": 22
+        "column": 26
       }
     },
     {
@@ -982,12 +982,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 66,
-        "column": 17
+        "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 66,
-        "column": 21
+        "column": 25
       }
     },
     {
@@ -1038,12 +1038,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 71,
-        "column": 21
+        "column": 25
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 71,
-        "column": 25
+        "column": 29
       }
     },
     {
@@ -1167,12 +1167,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 83,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 83,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -1182,12 +1182,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 83,
-        "column": 20
+        "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 83,
-        "column": 35
+        "column": 36
       }
     },
     {
@@ -1196,12 +1196,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 84,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 84,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -1295,12 +1295,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 87,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 87,
-        "column": 17
+        "column": 21
       }
     },
     {
@@ -1309,12 +1309,12 @@
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 87,
-        "column": 24
+        "column": 25
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 87,
-        "column": 36
+        "column": 37
       }
     },
     {

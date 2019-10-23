@@ -6,12 +6,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 2,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 2,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -20,12 +20,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 3,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 3,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -34,12 +34,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 4,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 4,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -76,12 +76,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 7,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 7,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -90,12 +90,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 8,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 8,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -104,12 +104,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 9,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 9,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -146,12 +146,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 12,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 12,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -160,12 +160,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 13,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 13,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -174,12 +174,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 14,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 14,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -188,12 +188,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 15,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 15,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -244,12 +244,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 18,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 18,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -258,12 +258,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 19,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 19,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -272,12 +272,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 20,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 20,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -286,12 +286,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 21,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 21,
-        "column": 5
+        "column": 9
       }
     },
     {
@@ -342,12 +342,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 22,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 22,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -356,12 +356,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 23,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 23,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -370,12 +370,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 24,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 24,
-        "column": 5
+        "column": 9
       }
     },
     {
@@ -426,12 +426,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 25,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 25,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -440,12 +440,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 26,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 26,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -496,12 +496,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 27,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 27,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -552,12 +552,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 28,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 28,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -566,12 +566,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 29,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 29,
-        "column": 5
+        "column": 9
       }
     },
     {
@@ -580,12 +580,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 30,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 30,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -650,12 +650,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 32,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 32,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -664,12 +664,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 33,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 33,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -692,12 +692,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 34,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 34,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -720,12 +720,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 35,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 35,
-        "column": 5
+        "column": 9
       }
     },
     {
@@ -748,12 +748,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 37,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 37,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -762,12 +762,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 38,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 38,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -776,12 +776,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 39,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 39,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -790,12 +790,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 40,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 40,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -818,12 +818,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 41,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 41,
-        "column": 3
+        "column": 7
       }
     },
     {
@@ -846,12 +846,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 42,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 42,
-        "column": 3
+        "column": 7
       }
     },
     {

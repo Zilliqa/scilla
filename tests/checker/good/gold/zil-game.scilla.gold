@@ -32,12 +32,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 12,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 12,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -46,12 +46,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 13,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 13,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -116,12 +116,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 19,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 19,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -130,12 +130,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 20,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 20,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -144,12 +144,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 21,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 21,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -172,12 +172,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 22,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 22,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -200,12 +200,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 23,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 23,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -326,12 +326,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 32,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 32,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -340,12 +340,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 33,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 33,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -424,12 +424,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 40,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 40,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -438,12 +438,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 41,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 41,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -494,12 +494,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 45,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 45,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -508,12 +508,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 46,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 46,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -578,12 +578,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 52,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 52,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -592,12 +592,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 53,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 53,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -676,12 +676,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 60,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 60,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -690,12 +690,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 61,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 61,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -732,12 +732,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 65,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 65,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -817,12 +817,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 70,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 70,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -831,12 +831,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 71,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 71,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -845,12 +845,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 72,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 72,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -859,12 +859,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 73,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 73,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -873,12 +873,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 74,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 74,
-        "column": 10
+        "column": 15
       }
     },
     {
@@ -887,12 +887,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 75,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 75,
-        "column": 10
+        "column": 15
       }
     },
     {
@@ -901,12 +901,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 76,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 76,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -943,12 +943,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 77,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 77,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -985,12 +985,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 78,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 78,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -1027,12 +1027,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 79,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 79,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -1097,12 +1097,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 82,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 82,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -1181,12 +1181,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 87,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 87,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -1251,12 +1251,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 95,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 95,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -1265,12 +1265,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 96,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 96,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -1279,12 +1279,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 97,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 97,
-        "column": 11
+        "column": 15
       }
     },
     {
@@ -1293,12 +1293,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 98,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 98,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -1378,12 +1378,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 103,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 103,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -1392,12 +1392,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 104,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 104,
-        "column": 10
+        "column": 15
       }
     },
     {
@@ -1406,12 +1406,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 105,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 105,
-        "column": 10
+        "column": 15
       }
     },
     {
@@ -1420,12 +1420,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 106,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 106,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -1434,12 +1434,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 107,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 107,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -1448,12 +1448,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 108,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 108,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -1462,12 +1462,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 109,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 109,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -1546,12 +1546,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 112,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 112,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -1602,12 +1602,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 113,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 113,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -1658,12 +1658,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 114,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 114,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -1728,12 +1728,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 118,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 118,
-        "column": 11
+        "column": 15
       }
     },
     {
@@ -2064,12 +2064,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 155,
-        "column": 10
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 155,
-        "column": 16
+        "column": 9
       }
     },
     {
@@ -2092,12 +2092,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 156,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 156,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -2106,12 +2106,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 158,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 158,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -2176,12 +2176,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 161,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 161,
-        "column": 13
+        "column": 8
       }
     },
     {
@@ -2218,12 +2218,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 163,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 163,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -2260,12 +2260,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 164,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 164,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -2274,12 +2274,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 166,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 166,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -2316,12 +2316,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 167,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 167,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -2358,12 +2358,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 168,
-        "column": 8
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 168,
-        "column": 10
+        "column": 7
       }
     },
     {
@@ -2386,12 +2386,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 171,
-        "column": 10
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 171,
-        "column": 12
+        "column": 9
       }
     },
     {
@@ -2414,12 +2414,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 172,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 172,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -2484,12 +2484,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 173,
-        "column": 21
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 173,
-        "column": 34
+        "column": 20
       }
     },
     {
@@ -2498,12 +2498,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 174,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 174,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -2568,12 +2568,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 175,
-        "column": 13
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 175,
-        "column": 18
+        "column": 12
       }
     },
     {
@@ -2582,12 +2582,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 176,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 176,
-        "column": 15
+        "column": 10
       }
     },
     {
@@ -2624,12 +2624,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 178,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 178,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -2666,12 +2666,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 179,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 179,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -2694,12 +2694,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 183,
-        "column": 12
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 183,
-        "column": 14
+        "column": 11
       }
     },
     {
@@ -2722,12 +2722,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 184,
-        "column": 14
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 184,
-        "column": 18
+        "column": 13
       }
     },
     {
@@ -2792,12 +2792,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 185,
-        "column": 23
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 185,
-        "column": 36
+        "column": 22
       }
     },
     {
@@ -2806,12 +2806,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 186,
-        "column": 13
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 186,
-        "column": 16
+        "column": 12
       }
     },
     {
@@ -2876,12 +2876,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 187,
-        "column": 15
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 187,
-        "column": 20
+        "column": 14
       }
     },
     {
@@ -2890,12 +2890,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 188,
-        "column": 14
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 188,
-        "column": 17
+        "column": 12
       }
     },
     {
@@ -2932,12 +2932,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 190,
-        "column": 14
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 190,
-        "column": 18
+        "column": 13
       }
     },
     {
@@ -2974,12 +2974,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 191,
-        "column": 9
+        "column": 14
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 191,
-        "column": 13
+        "column": 18
       }
     },
     {
@@ -2988,12 +2988,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 193,
-        "column": 14
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 193,
-        "column": 17
+        "column": 12
       }
     },
     {
@@ -3030,12 +3030,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 195,
-        "column": 14
+        "column": 9
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 195,
-        "column": 18
+        "column": 13
       }
     },
     {
@@ -3072,12 +3072,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 196,
-        "column": 9
+        "column": 14
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 196,
-        "column": 13
+        "column": 18
       }
     },
     {
@@ -3100,12 +3100,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 203,
-        "column": 10
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 203,
-        "column": 16
+        "column": 9
       }
     },
     {
@@ -3128,12 +3128,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 204,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 204,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -3142,12 +3142,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 206,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 206,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -3212,12 +3212,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 209,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 209,
-        "column": 13
+        "column": 8
       }
     },
     {
@@ -3254,12 +3254,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 211,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 211,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -3296,12 +3296,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 212,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 212,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -3310,12 +3310,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 214,
-        "column": 8
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 214,
-        "column": 10
+        "column": 7
       }
     },
     {
@@ -3338,12 +3338,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 215,
-        "column": 8
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 215,
-        "column": 10
+        "column": 7
       }
     },
     {
@@ -3366,12 +3366,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 216,
-        "column": 14
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 216,
-        "column": 22
+        "column": 13
       }
     },
     {
@@ -3493,12 +3493,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 219,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 219,
-        "column": 15
+        "column": 10
       }
     },
     {
@@ -3535,12 +3535,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 221,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 221,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -3577,12 +3577,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 222,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 222,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -3591,12 +3591,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 224,
-        "column": 14
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 224,
-        "column": 20
+        "column": 13
       }
     },
     {
@@ -3704,12 +3704,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 225,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 225,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -3732,12 +3732,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 226,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 226,
-        "column": 15
+        "column": 10
       }
     },
     {
@@ -3788,12 +3788,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 228,
-        "column": 10
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 228,
-        "column": 12
+        "column": 9
       }
     },
     {
@@ -3802,12 +3802,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 229,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 229,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -3844,12 +3844,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 230,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 230,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -3858,12 +3858,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 236,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 236,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -3886,12 +3886,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 237,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 237,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -3900,12 +3900,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 238,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 238,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -3956,12 +3956,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 239,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 239,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -3998,12 +3998,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 240,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 240,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -4026,12 +4026,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 241,
-        "column": 14
+        "column": 3
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 241,
-        "column": 24
+        "column": 13
       }
     },
     {
@@ -4096,12 +4096,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 244,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 244,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -4152,12 +4152,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 245,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 245,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -4194,12 +4194,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 246,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 246,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -4208,12 +4208,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 247,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 247,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -4222,12 +4222,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 248,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 248,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -4236,12 +4236,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 250,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 250,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -4278,12 +4278,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 251,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 251,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -4320,12 +4320,12 @@
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 252,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/zil-game.scilla",
         "line": 252,
-        "column": 9
+        "column": 14
       }
     }
   ],

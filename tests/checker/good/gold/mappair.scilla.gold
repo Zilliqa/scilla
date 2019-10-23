@@ -45,12 +45,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 10,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 10,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -59,12 +59,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 11,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 11,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -115,12 +115,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 15,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 15,
-        "column": 5
+        "column": 10
       }
     },
     {
@@ -129,12 +129,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 16,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 16,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -143,12 +143,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 17,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 17,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -255,12 +255,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 27,
-        "column": 13
+        "column": 14
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 27,
-        "column": 16
+        "column": 17
       }
     },
     {
@@ -283,12 +283,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 28,
-        "column": 13
+        "column": 14
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 28,
-        "column": 16
+        "column": 17
       }
     },
     {
@@ -339,12 +339,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 35,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 35,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -353,12 +353,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 36,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 36,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -437,12 +437,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 45,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 45,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -493,12 +493,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 48,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 48,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -507,12 +507,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 49,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 49,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -521,12 +521,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 50,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 50,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -605,12 +605,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 52,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 52,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -619,12 +619,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 54,
-        "column": 11
+        "column": 5
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 54,
-        "column": 16
+        "column": 10
       }
     },
     {
@@ -633,12 +633,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 55,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 55,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -647,12 +647,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 56,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 56,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -731,12 +731,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 58,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 58,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -759,12 +759,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 63,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 63,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -787,12 +787,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 65,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 65,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -829,12 +829,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 67,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 67,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -871,12 +871,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 69,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 69,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -913,12 +913,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 71,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 71,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -955,12 +955,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 73,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 73,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -1011,12 +1011,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 74,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 74,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -1025,12 +1025,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 75,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 75,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1039,12 +1039,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 75,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 75,
-        "column": 23
+        "column": 27
       }
     },
     {
@@ -1053,12 +1053,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 75,
-        "column": 30
+        "column": 31
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 75,
-        "column": 41
+        "column": 42
       }
     },
     {
@@ -1095,12 +1095,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 76,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 76,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1137,12 +1137,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 77,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 77,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -1179,12 +1179,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 78,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 78,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -1193,12 +1193,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 82,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 82,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -1221,12 +1221,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 83,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 83,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -1263,12 +1263,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 84,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 84,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -1277,12 +1277,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 85,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 85,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -1319,12 +1319,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 86,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 86,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1361,12 +1361,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 87,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 87,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -1403,12 +1403,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 88,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 88,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -1417,12 +1417,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 92,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 92,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -1445,12 +1445,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 93,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 93,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1459,12 +1459,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 93,
-        "column": 9
+        "column": 10
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 93,
-        "column": 21
+        "column": 22
       }
     },
     {
@@ -1473,12 +1473,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 94,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 94,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -1515,12 +1515,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 95,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 95,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1529,12 +1529,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 95,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 95,
-        "column": 23
+        "column": 27
       }
     },
     {
@@ -1543,12 +1543,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 95,
-        "column": 30
+        "column": 31
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 95,
-        "column": 41
+        "column": 42
       }
     },
     {
@@ -1585,12 +1585,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 96,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 96,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1627,12 +1627,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 97,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 97,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -1669,12 +1669,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 98,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 98,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -1683,12 +1683,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 102,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 102,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -1711,12 +1711,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 103,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 103,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1725,12 +1725,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 103,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 103,
-        "column": 23
+        "column": 27
       }
     },
     {
@@ -1739,12 +1739,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 103,
-        "column": 30
+        "column": 31
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 103,
-        "column": 41
+        "column": 42
       }
     },
     {
@@ -1781,12 +1781,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 104,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 104,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1823,12 +1823,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 105,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 105,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -1865,12 +1865,12 @@
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 106,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/mappair.scilla",
         "line": 106,
-        "column": 7
+        "column": 12
       }
     }
   ],

@@ -30,12 +30,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 15,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 15,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -44,12 +44,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 16,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 16,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -100,12 +100,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 20,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 20,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -114,12 +114,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 21,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 21,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -128,12 +128,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 22,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 22,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -170,12 +170,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 23,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 23,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -268,12 +268,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 27,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 27,
-        "column": 12
+        "column": 17
       }
     },
     {
@@ -282,12 +282,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 28,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 28,
-        "column": 12
+        "column": 17
       }
     },
     {
@@ -296,12 +296,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 29,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 29,
-        "column": 10
+        "column": 15
       }
     },
     {
@@ -310,12 +310,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 30,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 30,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -324,12 +324,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 31,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 31,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -380,12 +380,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 32,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 32,
-        "column": 20
+        "column": 24
       }
     },
     {
@@ -422,12 +422,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 33,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 33,
-        "column": 23
+        "column": 27
       }
     },
     {
@@ -464,12 +464,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 34,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 34,
-        "column": 19
+        "column": 23
       }
     },
     {
@@ -562,12 +562,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 38,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 38,
-        "column": 10
+        "column": 15
       }
     },
     {
@@ -576,12 +576,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 39,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 39,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -590,12 +590,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 40,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 40,
-        "column": 17
+        "column": 22
       }
     },
     {
@@ -604,12 +604,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 41,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 41,
-        "column": 23
+        "column": 27
       }
     },
     {
@@ -646,12 +646,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 42,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 42,
-        "column": 23
+        "column": 27
       }
     },
     {
@@ -968,12 +968,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 72,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 72,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -1024,12 +1024,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 74,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 74,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -1038,12 +1038,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 76,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 76,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -1094,12 +1094,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 78,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 78,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -1262,12 +1262,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 95,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 95,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1276,12 +1276,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 96,
-        "column": 11
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 96,
-        "column": 18
+        "column": 10
       }
     },
     {
@@ -1346,12 +1346,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 101,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 101,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -1402,12 +1402,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 107,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 107,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -1458,12 +1458,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 109,
-        "column": 3
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 109,
-        "column": 4
+        "column": 10
       }
     },
     {
@@ -1472,12 +1472,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 113,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 113,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1500,12 +1500,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 114,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 114,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -1528,12 +1528,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 115,
-        "column": 10
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 115,
-        "column": 16
+        "column": 9
       }
     },
     {
@@ -1542,12 +1542,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 116,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 116,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1598,12 +1598,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 117,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 117,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -1640,12 +1640,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 118,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 118,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -1654,12 +1654,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 122,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 122,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -1724,12 +1724,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 127,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 127,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -1738,12 +1738,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 128,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 128,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -1766,12 +1766,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 129,
-        "column": 13
+        "column": 5
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 129,
-        "column": 20
+        "column": 12
       }
     },
     {
@@ -1892,12 +1892,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 140,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 140,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -1948,12 +1948,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 142,
-        "column": 3
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 142,
-        "column": 4
+        "column": 10
       }
     },
     {
@@ -2004,12 +2004,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 147,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 147,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -2060,12 +2060,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 148,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 148,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -2102,12 +2102,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 149,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 149,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -2158,12 +2158,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 150,
-        "column": 3
+        "column": 9
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 150,
-        "column": 4
+        "column": 10
       }
     },
     {
@@ -2172,12 +2172,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 151,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 151,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -2186,12 +2186,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 156,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 156,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -2200,12 +2200,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 157,
-        "column": 18
+        "column": 3
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 157,
-        "column": 32
+        "column": 17
       }
     },
     {
@@ -2270,12 +2270,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 162,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 162,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -2298,12 +2298,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 163,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 163,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -2326,12 +2326,12 @@
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 164,
-        "column": 13
+        "column": 5
       },
       "end_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 164,
-        "column": 20
+        "column": 12
       }
     },
     {

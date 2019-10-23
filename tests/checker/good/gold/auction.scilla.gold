@@ -32,12 +32,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 12,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 12,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -46,12 +46,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 13,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 13,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -60,12 +60,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 14,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 14,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -102,12 +102,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 15,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 15,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -200,12 +200,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 20,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 20,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -214,12 +214,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 21,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 21,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -480,12 +480,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 59,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 59,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -494,12 +494,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 60,
-        "column": 11
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 60,
-        "column": 18
+        "column": 10
       }
     },
     {
@@ -536,12 +536,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 61,
-        "column": 13
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 61,
-        "column": 22
+        "column": 12
       }
     },
     {
@@ -550,12 +550,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 61,
-        "column": 15
+        "column": 19
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 61,
-        "column": 18
+        "column": 22
       }
     },
     {
@@ -592,12 +592,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 63,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 63,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -620,12 +620,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 64,
-        "column": 11
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 64,
-        "column": 18
+        "column": 10
       }
     },
     {
@@ -676,12 +676,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 65,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 65,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -732,12 +732,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 66,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 66,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -802,12 +802,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 69,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 69,
-        "column": 13
+        "column": 8
       }
     },
     {
@@ -844,12 +844,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 70,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 70,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -886,12 +886,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 71,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 71,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -914,12 +914,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 75,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 75,
-        "column": 15
+        "column": 10
       }
     },
     {
@@ -956,12 +956,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 76,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 76,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -998,12 +998,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 77,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 77,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -1012,12 +1012,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 79,
-        "column": 10
+        "column": 7
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 79,
-        "column": 12
+        "column": 9
       }
     },
     {
@@ -1040,12 +1040,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 82,
-        "column": 21
+        "column": 7
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 82,
-        "column": 34
+        "column": 20
       }
     },
     {
@@ -1096,12 +1096,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 85,
-        "column": 14
+        "column": 9
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 85,
-        "column": 17
+        "column": 12
       }
     },
     {
@@ -1138,12 +1138,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 86,
-        "column": 14
+        "column": 9
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 86,
-        "column": 18
+        "column": 13
       }
     },
     {
@@ -1180,12 +1180,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 87,
-        "column": 9
+        "column": 14
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 87,
-        "column": 13
+        "column": 18
       }
     },
     {
@@ -1194,12 +1194,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 90,
-        "column": 16
+        "column": 9
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 90,
-        "column": 22
+        "column": 15
       }
     },
     {
@@ -1292,12 +1292,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 97,
-        "column": 37
+        "column": 11
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 97,
-        "column": 62
+        "column": 36
       }
     },
     {
@@ -1418,12 +1418,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 107,
-        "column": 14
+        "column": 7
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 107,
-        "column": 20
+        "column": 13
       }
     },
     {
@@ -1460,12 +1460,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 108,
-        "column": 21
+        "column": 7
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 108,
-        "column": 34
+        "column": 20
       }
     },
     {
@@ -1488,12 +1488,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 109,
-        "column": 18
+        "column": 7
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 109,
-        "column": 28
+        "column": 17
       }
     },
     {
@@ -1502,12 +1502,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 110,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 110,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -1558,12 +1558,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 111,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 111,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -1572,12 +1572,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 114,
-        "column": 22
+        "column": 9
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 114,
-        "column": 34
+        "column": 21
       }
     },
     {
@@ -1614,12 +1614,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 115,
-        "column": 23
+        "column": 9
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 115,
-        "column": 36
+        "column": 22
       }
     },
     {
@@ -1642,12 +1642,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 116,
-        "column": 20
+        "column": 9
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 116,
-        "column": 30
+        "column": 19
       }
     },
     {
@@ -1656,12 +1656,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 117,
-        "column": 11
+        "column": 9
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 117,
-        "column": 12
+        "column": 10
       }
     },
     {
@@ -1712,12 +1712,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 118,
-        "column": 9
+        "column": 15
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 118,
-        "column": 10
+        "column": 16
       }
     },
     {
@@ -1726,12 +1726,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 128,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 128,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -1754,12 +1754,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 129,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 129,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -1810,12 +1810,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 132,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 132,
-        "column": 13
+        "column": 8
       }
     },
     {
@@ -1852,12 +1852,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 133,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 133,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -1894,12 +1894,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 134,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 134,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -1950,12 +1950,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 137,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 137,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -1978,12 +1978,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 138,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 138,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -1992,12 +1992,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 139,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 139,
-        "column": 13
+        "column": 8
       }
     },
     {
@@ -2048,12 +2048,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 140,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 140,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -2090,12 +2090,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 141,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 141,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -2104,12 +2104,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 148,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 148,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -2118,12 +2118,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 149,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 149,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -2146,12 +2146,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 150,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 150,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -2188,12 +2188,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 151,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 151,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -2244,12 +2244,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 152,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 152,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -2286,12 +2286,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 153,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 153,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -2356,12 +2356,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 156,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 156,
-        "column": 13
+        "column": 8
       }
     },
     {
@@ -2398,12 +2398,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 157,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 157,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -2440,12 +2440,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 158,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 158,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -2454,12 +2454,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 160,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 160,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -2482,12 +2482,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 161,
-        "column": 11
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 161,
-        "column": 16
+        "column": 10
       }
     },
     {
@@ -2496,12 +2496,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 162,
-        "column": 8
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 162,
-        "column": 10
+        "column": 7
       }
     },
     {
@@ -2524,12 +2524,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 163,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 163,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -2552,12 +2552,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 164,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 164,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -2566,12 +2566,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 165,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 165,
-        "column": 13
+        "column": 8
       }
     },
     {
@@ -2636,12 +2636,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 166,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 166,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -2678,12 +2678,12 @@
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 167,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/auction.scilla",
         "line": 167,
-        "column": 9
+        "column": 14
       }
     }
   ],

@@ -6,12 +6,12 @@
       "start_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 1,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 1,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -20,12 +20,12 @@
       "start_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 2,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 2,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -34,12 +34,12 @@
       "start_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 2,
-        "column": 9
+        "column": 14
       },
       "end_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 2,
-        "column": 10
+        "column": 15
       }
     },
     {
@@ -48,12 +48,12 @@
       "start_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 3,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 3,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -76,12 +76,12 @@
       "start_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 4,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 4,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -104,12 +104,12 @@
       "start_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 6,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 6,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -118,12 +118,12 @@
       "start_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 7,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/app.scilexp",
         "line": 7,
-        "column": 2
+        "column": 6
       }
     },
     {

@@ -100,12 +100,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 18,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 18,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -170,12 +170,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 23,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 23,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -226,12 +226,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 30,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 30,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -240,12 +240,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 31,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 31,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -268,12 +268,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 32,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 32,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -282,12 +282,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 33,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 33,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -352,12 +352,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 41,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 41,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -380,12 +380,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 42,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 42,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -394,12 +394,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 48,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 48,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -408,12 +408,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 49,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 49,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -436,12 +436,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 50,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 50,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -450,12 +450,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 51,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 51,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -520,12 +520,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 59,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 59,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -534,12 +534,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 60,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 60,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -590,12 +590,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 66,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 66,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -604,12 +604,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 67,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 67,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -618,12 +618,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 69,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 69,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -702,12 +702,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 73,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 73,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -758,12 +758,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 76,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 76,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -814,12 +814,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 85,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 85,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -884,12 +884,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 89,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 89,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -954,12 +954,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 100,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 100,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -968,12 +968,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 103,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 103,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -1052,12 +1052,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 112,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 112,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -1066,12 +1066,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 113,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 113,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -1080,12 +1080,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 114,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 114,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -1150,12 +1150,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 120,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 120,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -1164,12 +1164,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 121,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 121,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -1178,12 +1178,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 124,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 124,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -1192,12 +1192,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 125,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 125,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -1290,12 +1290,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 129,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 129,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -1346,12 +1346,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 133,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 133,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -1402,12 +1402,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 141,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 141,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -1416,12 +1416,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 142,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 142,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -1430,12 +1430,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 143,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 143,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -1444,12 +1444,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 144,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 144,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -1458,12 +1458,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 145,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 145,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -1514,12 +1514,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 146,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 146,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -1528,12 +1528,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 147,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 147,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -1584,12 +1584,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 149,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 149,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -1640,12 +1640,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 156,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 156,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -1654,12 +1654,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 162,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 162,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -1668,12 +1668,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 162,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 162,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -1766,12 +1766,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 166,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 166,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -1780,12 +1780,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 167,
-        "column": 8
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 167,
-        "column": 10
+        "column": 7
       }
     },
     {
@@ -1836,12 +1836,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 171,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 171,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -1878,12 +1878,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 175,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 175,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -1920,12 +1920,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 179,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 179,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -1934,12 +1934,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 179,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 179,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -2032,12 +2032,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 183,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 183,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -2046,12 +2046,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 184,
-        "column": 8
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 184,
-        "column": 10
+        "column": 7
       }
     },
     {
@@ -2102,12 +2102,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 188,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 188,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -2144,12 +2144,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 192,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 192,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -2186,12 +2186,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 196,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 196,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -2200,12 +2200,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 196,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 196,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -2298,12 +2298,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 200,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 200,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -2312,12 +2312,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 201,
-        "column": 8
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 201,
-        "column": 10
+        "column": 7
       }
     },
     {
@@ -2368,12 +2368,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 205,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 205,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -2410,12 +2410,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 209,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 209,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -2480,12 +2480,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 220,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 220,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -2494,12 +2494,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 224,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 224,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -2508,12 +2508,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 224,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 224,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -2606,12 +2606,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 228,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 228,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -2620,12 +2620,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 229,
-        "column": 8
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 229,
-        "column": 10
+        "column": 7
       }
     },
     {
@@ -2676,12 +2676,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 233,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 233,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -2718,12 +2718,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 237,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 237,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -2760,12 +2760,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 242,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 242,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -2830,12 +2830,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 246,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 246,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -2872,12 +2872,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 252,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 252,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -2886,12 +2886,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 252,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 252,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -2970,12 +2970,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 256,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 256,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -3012,12 +3012,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 262,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 262,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -3026,12 +3026,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 262,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 262,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -3110,12 +3110,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 266,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 266,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -3152,12 +3152,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 272,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 272,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -3166,12 +3166,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 272,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 272,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -3180,12 +3180,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 273,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 273,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -3250,12 +3250,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 280,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 280,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -3264,12 +3264,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 285,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 285,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -3278,12 +3278,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 285,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 285,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -3376,12 +3376,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 289,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 289,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -3390,12 +3390,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 290,
-        "column": 8
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 290,
-        "column": 10
+        "column": 7
       }
     },
     {
@@ -3446,12 +3446,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 294,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 294,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -3488,12 +3488,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 298,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 298,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -3530,12 +3530,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 302,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 302,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -3544,12 +3544,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 302,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 302,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -3642,12 +3642,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 306,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 306,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -3656,12 +3656,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 307,
-        "column": 8
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 307,
-        "column": 10
+        "column": 7
       }
     },
     {
@@ -3712,12 +3712,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 311,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 311,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -3754,12 +3754,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 315,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 315,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -3796,12 +3796,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 320,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 320,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -3824,12 +3824,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 321,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 321,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -3838,12 +3838,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 327,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 327,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -3852,12 +3852,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 330,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 330,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -3880,12 +3880,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 331,
-        "column": 11
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 331,
-        "column": 18
+        "column": 10
       }
     },
     {
@@ -3908,12 +3908,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 332,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 332,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -3922,12 +3922,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 333,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 333,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -3992,12 +3992,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 341,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 341,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -4006,12 +4006,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 342,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 342,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -4020,12 +4020,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 343,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 343,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -4090,12 +4090,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 344,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 344,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -4104,12 +4104,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 349,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 349,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -4118,12 +4118,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 353,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 353,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -4132,12 +4132,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 354,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 354,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -4160,12 +4160,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 355,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 355,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -4230,12 +4230,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 358,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 358,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -4244,12 +4244,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 359,
-        "column": 8
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 359,
-        "column": 10
+        "column": 7
       }
     },
     {
@@ -4300,12 +4300,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 363,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 363,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -4342,12 +4342,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 367,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 367,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -4412,12 +4412,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 378,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 378,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -4426,12 +4426,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 381,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 381,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -4454,12 +4454,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 382,
-        "column": 11
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 382,
-        "column": 18
+        "column": 10
       }
     },
     {
@@ -4482,12 +4482,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 383,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 383,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -4496,12 +4496,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 384,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 384,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -4566,12 +4566,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 392,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 392,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -4594,12 +4594,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 393,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 393,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -4608,12 +4608,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 398,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 398,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -4622,12 +4622,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 401,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 401,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -4650,12 +4650,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 402,
-        "column": 11
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 402,
-        "column": 18
+        "column": 10
       }
     },
     {
@@ -4678,12 +4678,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 403,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 403,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -4692,12 +4692,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 404,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 404,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -4762,12 +4762,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 412,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 412,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -4776,12 +4776,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 413,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 413,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -4832,12 +4832,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 419,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 419,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -4846,12 +4846,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 422,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 422,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -4930,12 +4930,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 426,
-        "column": 12
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 426,
-        "column": 18
+        "column": 11
       }
     },
     {
@@ -4958,12 +4958,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 427,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 427,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -4972,12 +4972,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 428,
-        "column": 14
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 428,
-        "column": 22
+        "column": 13
       }
     },
     {
@@ -5028,12 +5028,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 432,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 432,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -5084,12 +5084,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 440,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 440,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -5098,12 +5098,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 441,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 441,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -5112,12 +5112,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 442,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 442,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -5126,12 +5126,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 443,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 443,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -5182,12 +5182,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 445,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 445,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -5196,12 +5196,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 446,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 446,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -5266,12 +5266,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 449,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 449,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -5280,12 +5280,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 455,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 455,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -5294,12 +5294,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 458,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 458,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -5322,12 +5322,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 459,
-        "column": 11
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 459,
-        "column": 18
+        "column": 10
       }
     },
     {
@@ -5350,12 +5350,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 460,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 460,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -5364,12 +5364,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 461,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 461,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -5434,12 +5434,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 469,
-        "column": 4
+        "column": 2
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 469,
-        "column": 5
+        "column": 3
       }
     },
     {
@@ -5462,12 +5462,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 470,
-        "column": 6
+        "column": 2
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 470,
-        "column": 9
+        "column": 5
       }
     },
     {
@@ -5476,12 +5476,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 476,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 476,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -5490,12 +5490,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 479,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 479,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -5518,12 +5518,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 480,
-        "column": 11
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 480,
-        "column": 18
+        "column": 10
       }
     },
     {
@@ -5546,12 +5546,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 481,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 481,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -5560,12 +5560,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 482,
-        "column": 10
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 482,
-        "column": 16
+        "column": 9
       }
     },
     {
@@ -5616,12 +5616,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 486,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 486,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -5658,12 +5658,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 490,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 490,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -5672,12 +5672,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 491,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 491,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -5686,12 +5686,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 492,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 492,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -5756,12 +5756,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 495,
-        "column": 13
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 495,
-        "column": 20
+        "column": 12
       }
     },
     {
@@ -5784,12 +5784,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 496,
-        "column": 12
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 496,
-        "column": 18
+        "column": 11
       }
     },
     {
@@ -5840,12 +5840,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 499,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 499,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -5910,12 +5910,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 502,
-        "column": 17
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 502,
-        "column": 24
+        "column": 16
       }
     },
     {
@@ -5938,12 +5938,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 503,
-        "column": 14
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 503,
-        "column": 18
+        "column": 13
       }
     },
     {
@@ -5952,12 +5952,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 504,
-        "column": 18
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 504,
-        "column": 26
+        "column": 17
       }
     },
     {
@@ -6008,12 +6008,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 508,
-        "column": 15
+        "column": 11
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 508,
-        "column": 18
+        "column": 14
       }
     },
     {
@@ -6050,12 +6050,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 512,
-        "column": 13
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 512,
-        "column": 16
+        "column": 12
       }
     },
     {
@@ -6092,12 +6092,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 516,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 516,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -6134,12 +6134,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 520,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 520,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -6176,12 +6176,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 525,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 525,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -6190,12 +6190,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 525,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 525,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -6204,12 +6204,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 526,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 526,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -6218,12 +6218,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 526,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 526,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -6232,12 +6232,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 527,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 527,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -6246,12 +6246,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 527,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 527,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -6260,12 +6260,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 528,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 528,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -6274,12 +6274,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 528,
-        "column": 18
+        "column": 15
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 528,
-        "column": 20
+        "column": 17
       }
     },
     {
@@ -6288,12 +6288,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 528,
-        "column": 30
+        "column": 27
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 528,
-        "column": 32
+        "column": 29
       }
     },
     {
@@ -6302,12 +6302,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 528,
-        "column": 42
+        "column": 39
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 528,
-        "column": 44
+        "column": 41
       }
     },
     {
@@ -6316,12 +6316,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 529,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 529,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -6330,12 +6330,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 530,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 530,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -6344,12 +6344,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 531,
-        "column": 11
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 531,
-        "column": 18
+        "column": 10
       }
     },
     {
@@ -6358,12 +6358,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 532,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 532,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -6414,12 +6414,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 533,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 533,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -6470,12 +6470,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 534,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 534,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -6526,12 +6526,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 535,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 535,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -6582,12 +6582,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 536,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 536,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -6638,12 +6638,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 537,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 537,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -6694,12 +6694,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 538,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 538,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -6750,12 +6750,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 539,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 539,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -6834,12 +6834,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 541,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 541,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -6848,12 +6848,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 546,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 546,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -6862,12 +6862,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 553,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 553,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -6876,12 +6876,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 553,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 553,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -6890,12 +6890,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 554,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 554,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -6904,12 +6904,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 554,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 554,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -6918,12 +6918,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 555,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 555,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -6932,12 +6932,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 555,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 555,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -6946,12 +6946,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 556,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 556,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -6960,12 +6960,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 556,
-        "column": 26
+        "column": 20
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 556,
-        "column": 31
+        "column": 25
       }
     },
     {
@@ -7198,12 +7198,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 562,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 562,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -7212,12 +7212,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 562,
-        "column": 18
+        "column": 15
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 562,
-        "column": 20
+        "column": 17
       }
     },
     {
@@ -7226,12 +7226,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 562,
-        "column": 30
+        "column": 27
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 562,
-        "column": 32
+        "column": 29
       }
     },
     {
@@ -7240,12 +7240,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 562,
-        "column": 42
+        "column": 39
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 562,
-        "column": 44
+        "column": 41
       }
     },
     {
@@ -7254,12 +7254,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 564,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 564,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -7324,12 +7324,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 570,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 570,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -7394,12 +7394,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 576,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 576,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -7464,12 +7464,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 582,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 582,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -7534,12 +7534,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 588,
-        "column": 5
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 588,
-        "column": 6
+        "column": 4
       }
     },
     {
@@ -7548,12 +7548,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 589,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 589,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -7604,12 +7604,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 590,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 590,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -7730,12 +7730,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 600,
-        "column": 6
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 600,
-        "column": 8
+        "column": 5
       }
     },
     {
@@ -7744,12 +7744,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 601,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 601,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -7758,12 +7758,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 602,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 602,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -7772,12 +7772,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 603,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 603,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -7842,12 +7842,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 606,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 606,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -7856,12 +7856,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 613,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 613,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -7870,12 +7870,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 617,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 617,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -7982,12 +7982,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 632,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 632,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -7996,12 +7996,12 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 636,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 636,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -8176,7 +8176,7 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 606,
-        "column": 8
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -8186,7 +8186,7 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 541,
-        "column": 8
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -8206,7 +8206,7 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 470,
-        "column": 6
+        "column": 2
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -8226,7 +8226,7 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 449,
-        "column": 8
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -8266,7 +8266,7 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 393,
-        "column": 8
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -8296,7 +8296,7 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 344,
-        "column": 8
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -8316,7 +8316,7 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 321,
-        "column": 8
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

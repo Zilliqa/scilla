@@ -108,12 +108,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 13,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 13,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -164,12 +164,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 16,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 16,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -178,12 +178,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 17,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 17,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -234,12 +234,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 20,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 20,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -248,12 +248,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 21,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 21,
-        "column": 5
+        "column": 9
       }
     },
     {
@@ -263,12 +263,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 22,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 22,
-        "column": 19
+        "column": 23
       }
     },
     {
@@ -277,12 +277,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 22,
-        "column": 26
+        "column": 27
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 22,
-        "column": 34
+        "column": 35
       }
     },
     {
@@ -362,12 +362,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 25,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 25,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -376,12 +376,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 26,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 26,
-        "column": 5
+        "column": 9
       }
     },
     {
@@ -390,12 +390,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 27,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 27,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -488,12 +488,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 29,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 29,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -502,12 +502,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 30,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 30,
-        "column": 5
+        "column": 9
       }
     },
     {
@@ -516,12 +516,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 31,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 31,
-        "column": 22
+        "column": 26
       }
     },
     {
@@ -530,12 +530,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 31,
-        "column": 29
+        "column": 30
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 31,
-        "column": 40
+        "column": 41
       }
     },
     {
@@ -544,12 +544,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 32,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 32,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -558,12 +558,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 32,
-        "column": 14
+        "column": 18
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 32,
-        "column": 15
+        "column": 19
       }
     },
     {
@@ -572,12 +572,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 33,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 33,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -698,12 +698,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 37,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 37,
-        "column": 5
+        "column": 9
       }
     },
     {
@@ -712,12 +712,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 38,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 38,
-        "column": 5
+        "column": 9
       }
     },
     {
@@ -782,12 +782,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 52,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 52,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -796,12 +796,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 53,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 53,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -852,12 +852,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 56,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 56,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -866,12 +866,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 57,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 57,
-        "column": 11
+        "column": 15
       }
     },
     {
@@ -880,12 +880,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 58,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 58,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -950,12 +950,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 61,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 61,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -992,12 +992,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 64,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 64,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -1034,12 +1034,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 67,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 67,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -1048,12 +1048,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 68,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 68,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -1104,12 +1104,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 71,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 71,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -1118,12 +1118,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 72,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 72,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -1132,12 +1132,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 73,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 73,
-        "column": 11
+        "column": 15
       }
     },
     {
@@ -1202,12 +1202,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 76,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 76,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -1244,12 +1244,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 81,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 81,
-        "column": 14
+        "column": 18
       }
     },
     {
@@ -1370,12 +1370,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 90,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 90,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -1384,12 +1384,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 91,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 91,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -1398,12 +1398,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 92,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 92,
-        "column": 14
+        "column": 18
       }
     },
     {
@@ -1426,12 +1426,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 93,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 93,
-        "column": 14
+        "column": 18
       }
     },
     {
@@ -1497,12 +1497,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 96,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 96,
-        "column": 9
+        "column": 13
       }
     },
     {
@@ -1511,12 +1511,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 97,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 97,
-        "column": 14
+        "column": 18
       }
     },
     {
@@ -1525,12 +1525,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 98,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 98,
-        "column": 16
+        "column": 20
       }
     },
     {
@@ -1539,12 +1539,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 99,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 99,
-        "column": 17
+        "column": 21
       }
     },
     {
@@ -1553,12 +1553,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 100,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 100,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -1595,12 +1595,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 101,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 101,
-        "column": 15
+        "column": 19
       }
     },
     {
@@ -1665,12 +1665,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 106,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 106,
-        "column": 15
+        "column": 19
       }
     },
     {
@@ -1749,12 +1749,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 110,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 110,
-        "column": 7
+        "column": 11
       }
     },
     {
@@ -1889,12 +1889,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 114,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 114,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -1903,12 +1903,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 115,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 115,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -2113,12 +2113,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 122,
-        "column": 17
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 122,
-        "column": 30
+        "column": 16
       }
     },
     {
@@ -2141,12 +2141,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 123,
-        "column": 17
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 123,
-        "column": 30
+        "column": 16
       }
     },
     {
@@ -2211,12 +2211,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 126,
-        "column": 19
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 126,
-        "column": 32
+        "column": 18
       }
     },
     {
@@ -2225,12 +2225,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 127,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 127,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -2337,12 +2337,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 130,
-        "column": 17
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 130,
-        "column": 26
+        "column": 16
       }
     },
     {
@@ -2449,12 +2449,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 134,
-        "column": 14
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 134,
-        "column": 20
+        "column": 13
       }
     },
     {
@@ -2463,12 +2463,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 135,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 135,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -2519,12 +2519,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 136,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 136,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -2533,12 +2533,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 140,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 140,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -2547,12 +2547,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 140,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 140,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -2589,12 +2589,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 141,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 141,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -2673,12 +2673,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 146,
-        "column": 15
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 146,
-        "column": 26
+        "column": 14
       }
     },
     {
@@ -2715,12 +2715,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 147,
-        "column": 21
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 147,
-        "column": 38
+        "column": 20
       }
     },
     {
@@ -2813,12 +2813,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 151,
-        "column": 23
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 151,
-        "column": 40
+        "column": 22
       }
     },
     {
@@ -2883,12 +2883,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 155,
-        "column": 19
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 155,
-        "column": 32
+        "column": 18
       }
     },
     {
@@ -2897,12 +2897,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 155,
-        "column": 21
+        "column": 25
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 155,
-        "column": 22
+        "column": 26
       }
     },
     {
@@ -3023,12 +3023,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 159,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 159,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -3065,12 +3065,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 160,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 160,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -3079,12 +3079,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 164,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 164,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -3093,12 +3093,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 164,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 164,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -3135,12 +3135,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 165,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 165,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -3219,12 +3219,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 170,
-        "column": 20
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 170,
-        "column": 36
+        "column": 19
       }
     },
     {
@@ -3289,12 +3289,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 174,
-        "column": 17
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 174,
-        "column": 30
+        "column": 16
       }
     },
     {
@@ -3303,12 +3303,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 174,
-        "column": 19
+        "column": 23
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 174,
-        "column": 20
+        "column": 24
       }
     },
     {
@@ -3415,12 +3415,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 178,
-        "column": 18
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 178,
-        "column": 30
+        "column": 17
       }
     },
     {
@@ -3555,12 +3555,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 183,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 183,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -3625,12 +3625,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 184,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 184,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -3765,12 +3765,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 191,
-        "column": 15
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 191,
-        "column": 26
+        "column": 14
       }
     },
     {
@@ -3849,12 +3849,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 193,
-        "column": 15
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 193,
-        "column": 26
+        "column": 14
       }
     },
     {
@@ -3948,12 +3948,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 196,
-        "column": 15
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 196,
-        "column": 24
+        "column": 14
       }
     },
     {
@@ -4032,12 +4032,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 198,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 198,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -4102,12 +4102,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 199,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 199,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -4116,12 +4116,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 200,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 200,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -4130,12 +4130,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 200,
-        "column": 12
+        "column": 16
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 200,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -4214,12 +4214,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 203,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 203,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -4228,12 +4228,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 205,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 205,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -4242,12 +4242,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 205,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 205,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -4284,12 +4284,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 206,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 206,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -4298,12 +4298,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 207,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 207,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -4312,12 +4312,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 207,
-        "column": 12
+        "column": 16
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 207,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -4396,12 +4396,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 210,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 210,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -4522,12 +4522,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 216,
-        "column": 15
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 216,
-        "column": 26
+        "column": 14
       }
     },
     {
@@ -4606,12 +4606,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 218,
-        "column": 15
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 218,
-        "column": 26
+        "column": 14
       }
     },
     {
@@ -4705,12 +4705,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 221,
-        "column": 15
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 221,
-        "column": 24
+        "column": 14
       }
     },
     {
@@ -4789,12 +4789,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 223,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 223,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -4859,12 +4859,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 224,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 224,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -4873,12 +4873,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 226,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 226,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -4887,12 +4887,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 226,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 226,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -4929,12 +4929,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 227,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 227,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -5055,12 +5055,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 233,
-        "column": 15
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 233,
-        "column": 26
+        "column": 14
       }
     },
     {
@@ -5139,12 +5139,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 235,
-        "column": 15
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 235,
-        "column": 26
+        "column": 14
       }
     },
     {
@@ -5266,12 +5266,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 239,
-        "column": 15
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 239,
-        "column": 24
+        "column": 14
       }
     },
     {
@@ -5350,12 +5350,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 241,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 241,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -5420,12 +5420,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 242,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 242,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -5434,12 +5434,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 243,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 243,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -5448,12 +5448,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 243,
-        "column": 12
+        "column": 16
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 243,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -5532,12 +5532,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 246,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 246,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -5546,12 +5546,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 248,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 248,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -5560,12 +5560,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 248,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 248,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -5602,12 +5602,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 249,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 249,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -5616,12 +5616,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 250,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 250,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -5630,12 +5630,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 250,
-        "column": 12
+        "column": 16
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 250,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -5714,12 +5714,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 253,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 253,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -5854,12 +5854,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 259,
-        "column": 15
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 259,
-        "column": 26
+        "column": 14
       }
     },
     {
@@ -5938,12 +5938,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 261,
-        "column": 15
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 261,
-        "column": 26
+        "column": 14
       }
     },
     {
@@ -6037,12 +6037,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 264,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 264,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -6149,12 +6149,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 268,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 268,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -6205,12 +6205,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 269,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 269,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -6247,12 +6247,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 273,
-        "column": 15
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 273,
-        "column": 24
+        "column": 14
       }
     },
     {
@@ -6331,12 +6331,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 275,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 275,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -6401,12 +6401,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 276,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 276,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -6415,12 +6415,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 277,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 277,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -6429,12 +6429,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 277,
-        "column": 12
+        "column": 16
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 277,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -6527,12 +6527,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 280,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 280,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -6541,12 +6541,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 282,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 282,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -6555,12 +6555,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 282,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 282,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -6597,12 +6597,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 283,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 283,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -6611,12 +6611,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 284,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 284,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -6625,12 +6625,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 284,
-        "column": 12
+        "column": 16
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 284,
-        "column": 13
+        "column": 17
       }
     },
     {
@@ -6723,12 +6723,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 287,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 287,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -6779,12 +6779,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 291,
-        "column": 17
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 291,
-        "column": 30
+        "column": 16
       }
     },
     {
@@ -6807,12 +6807,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 292,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 292,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -6947,12 +6947,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 295,
-        "column": 20
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 295,
-        "column": 36
+        "column": 19
       }
     },
     {
@@ -6975,12 +6975,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 296,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 296,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -6989,12 +6989,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 297,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 297,
-        "column": 18
+        "column": 22
       }
     },
     {
@@ -7045,12 +7045,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 298,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 298,
-        "column": 22
+        "column": 26
       }
     },
     {
@@ -7087,12 +7087,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 299,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 299,
-        "column": 15
+        "column": 19
       }
     },
     {
@@ -7143,12 +7143,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 300,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 300,
-        "column": 16
+        "column": 20
       }
     },
     {
@@ -7185,12 +7185,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 301,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 301,
-        "column": 20
+        "column": 24
       }
     },
     {
@@ -7227,12 +7227,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 302,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 302,
-        "column": 29
+        "column": 33
       }
     },
     {
@@ -7269,12 +7269,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 303,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 303,
-        "column": 30
+        "column": 34
       }
     },
     {
@@ -7325,12 +7325,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 304,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 304,
-        "column": 20
+        "column": 24
       }
     },
     {
@@ -7451,12 +7451,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 310,
-        "column": 9
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 310,
-        "column": 10
+        "column": 8
       }
     },
     {
@@ -7507,12 +7507,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 311,
-        "column": 7
+        "column": 13
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 311,
-        "column": 8
+        "column": 14
       }
     },
     {
@@ -7521,12 +7521,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 314,
-        "column": 15
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 314,
-        "column": 24
+        "column": 14
       }
     },
     {
@@ -7605,12 +7605,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 316,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 316,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -7675,12 +7675,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 317,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 317,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -7689,12 +7689,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 319,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 319,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -7703,12 +7703,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 319,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 319,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -7745,12 +7745,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 320,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 320,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -7773,12 +7773,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 324,
-        "column": 17
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 324,
-        "column": 30
+        "column": 16
       }
     },
     {
@@ -7801,12 +7801,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 325,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 325,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -7871,12 +7871,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 328,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 328,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -7913,12 +7913,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 329,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 329,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -7941,12 +7941,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 330,
-        "column": 15
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 330,
-        "column": 24
+        "column": 14
       }
     },
     {
@@ -7983,12 +7983,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 335,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 335,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -8123,12 +8123,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 338,
-        "column": 15
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 338,
-        "column": 26
+        "column": 14
       }
     },
     {
@@ -8165,12 +8165,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 339,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 339,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -8235,12 +8235,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 344,
-        "column": 20
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 344,
-        "column": 36
+        "column": 19
       }
     },
     {
@@ -8263,12 +8263,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 345,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 345,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -8277,12 +8277,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 346,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 346,
-        "column": 20
+        "column": 24
       }
     },
     {
@@ -8319,12 +8319,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 347,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 347,
-        "column": 17
+        "column": 21
       }
     },
     {
@@ -8417,12 +8417,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 352,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 352,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -8431,12 +8431,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 353,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 353,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -8557,12 +8557,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 356,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 356,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -8697,12 +8697,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 367,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 367,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -8753,12 +8753,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 370,
-        "column": 11
+        "column": 9
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 370,
-        "column": 12
+        "column": 10
       }
     },
     {
@@ -8823,12 +8823,12 @@
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 371,
-        "column": 9
+        "column": 15
       },
       "end_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 371,
-        "column": 10
+        "column": 16
       }
     }
   ],

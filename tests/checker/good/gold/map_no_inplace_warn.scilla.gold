@@ -79,7 +79,7 @@
       "start_location": {
         "file": "checker/good/map_no_inplace_warn.scilla",
         "line": 24,
-        "column": 8
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

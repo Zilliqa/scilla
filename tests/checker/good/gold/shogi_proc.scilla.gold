@@ -234,7 +234,7 @@
       "start_location": {
         "file": "contracts/shogi_proc.scilla",
         "line": 697,
-        "column": 13
+        "column": 18
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 2

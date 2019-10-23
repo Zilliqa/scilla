@@ -60,12 +60,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 14,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 14,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -74,12 +74,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 14,
-        "column": 24
+        "column": 29
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 14,
-        "column": 25
+        "column": 30
       }
     },
     {
@@ -88,12 +88,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 15,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 15,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -186,12 +186,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 24,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 24,
-        "column": 4
+        "column": 9
       }
     },
     {
@@ -200,12 +200,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 24,
-        "column": 24
+        "column": 29
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 24,
-        "column": 25
+        "column": 30
       }
     },
     {
@@ -214,12 +214,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 25,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 25,
-        "column": 6
+        "column": 10
       }
     },
     {
@@ -270,12 +270,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 29,
-        "column": 7
+        "column": 11
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 29,
-        "column": 8
+        "column": 12
       }
     },
     {
@@ -340,12 +340,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 38,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 38,
-        "column": 8
+        "column": 13
       }
     },
     {
@@ -354,12 +354,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 39,
-        "column": 9
+        "column": 13
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 39,
-        "column": 16
+        "column": 20
       }
     },
     {
@@ -480,12 +480,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 57,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 57,
-        "column": 4
+        "column": 8
       }
     },
     {
@@ -634,12 +634,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 65,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 65,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -704,12 +704,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 67,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 67,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -746,12 +746,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 68,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 68,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -760,12 +760,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 70,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 70,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -830,12 +830,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 72,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 72,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -872,12 +872,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 73,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 73,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -886,12 +886,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 78,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 78,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -956,12 +956,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 80,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 80,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -998,12 +998,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 81,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 81,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -1110,12 +1110,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 88,
-        "column": 12
+        "column": 5
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 88,
-        "column": 18
+        "column": 11
       }
     },
     {
@@ -1180,12 +1180,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 92,
-        "column": 22
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 92,
-        "column": 36
+        "column": 21
       }
     },
     {
@@ -1306,12 +1306,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 97,
-        "column": 18
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 97,
-        "column": 28
+        "column": 17
       }
     },
     {
@@ -1432,12 +1432,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 103,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 103,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -1516,12 +1516,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 105,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 105,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -1558,12 +1558,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 106,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 106,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -1572,12 +1572,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 109,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 109,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -1656,12 +1656,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 111,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 111,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -1698,12 +1698,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 112,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 112,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -1712,12 +1712,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 116,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 116,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -1796,12 +1796,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 118,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 118,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -1838,12 +1838,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 119,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 119,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -2048,12 +2048,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 132,
-        "column": 11
+        "column": 9
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 132,
-        "column": 12
+        "column": 10
       }
     },
     {
@@ -2104,12 +2104,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 133,
-        "column": 16
+        "column": 9
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 133,
-        "column": 22
+        "column": 15
       }
     },
     {
@@ -2174,12 +2174,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 137,
-        "column": 26
+        "column": 13
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 137,
-        "column": 38
+        "column": 25
       }
     },
     {
@@ -2328,12 +2328,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 142,
-        "column": 28
+        "column": 17
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 142,
-        "column": 38
+        "column": 27
       }
     },
     {
@@ -2454,12 +2454,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 149,
-        "column": 25
+        "column": 13
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 149,
-        "column": 36
+        "column": 24
       }
     },
     {
@@ -2552,12 +2552,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 151,
-        "column": 17
+        "column": 13
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 151,
-        "column": 20
+        "column": 16
       }
     },
     {
@@ -2636,12 +2636,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 153,
-        "column": 18
+        "column": 13
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 153,
-        "column": 22
+        "column": 17
       }
     },
     {
@@ -2678,12 +2678,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 154,
-        "column": 13
+        "column": 18
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 154,
-        "column": 17
+        "column": 22
       }
     },
     {
@@ -2692,12 +2692,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 156,
-        "column": 17
+        "column": 13
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 156,
-        "column": 20
+        "column": 16
       }
     },
     {
@@ -2776,12 +2776,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 158,
-        "column": 18
+        "column": 13
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 158,
-        "column": 22
+        "column": 17
       }
     },
     {
@@ -2818,12 +2818,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 159,
-        "column": 13
+        "column": 18
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 159,
-        "column": 17
+        "column": 22
       }
     },
     {
@@ -2832,12 +2832,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 162,
-        "column": 13
+        "column": 9
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 162,
-        "column": 16
+        "column": 12
       }
     },
     {
@@ -2916,12 +2916,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 164,
-        "column": 14
+        "column": 9
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 164,
-        "column": 18
+        "column": 13
       }
     },
     {
@@ -2958,12 +2958,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 165,
-        "column": 9
+        "column": 14
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 165,
-        "column": 13
+        "column": 18
       }
     },
     {
@@ -2972,12 +2972,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 168,
-        "column": 6
+        "column": 2
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 168,
-        "column": 9
+        "column": 5
       }
     },
     {
@@ -3056,12 +3056,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 170,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 170,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -3098,12 +3098,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 171,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 171,
-        "column": 9
+        "column": 14
       }
     },
     {
@@ -3196,12 +3196,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 177,
-        "column": 7
+        "column": 3
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 177,
-        "column": 10
+        "column": 6
       }
     },
     {
@@ -3280,12 +3280,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 179,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 179,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -3322,12 +3322,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 180,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 180,
-        "column": 7
+        "column": 12
       }
     },
     {
@@ -3448,12 +3448,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 187,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 187,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -3532,12 +3532,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 189,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 189,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -3574,12 +3574,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 190,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 190,
-        "column": 11
+        "column": 16
       }
     },
     {
@@ -3588,12 +3588,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 192,
-        "column": 11
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 192,
-        "column": 14
+        "column": 10
       }
     },
     {
@@ -3672,12 +3672,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 194,
-        "column": 12
+        "column": 7
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 194,
-        "column": 16
+        "column": 11
       }
     },
     {
@@ -3714,12 +3714,12 @@
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 195,
-        "column": 7
+        "column": 12
       },
       "end_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 195,
-        "column": 11
+        "column": 16
       }
     }
   ],

@@ -27,12 +27,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 13,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 13,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -41,12 +41,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 14,
-        "column": 3
+        "column": 7
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 14,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -153,12 +153,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 30,
-        "column": 12
+        "column": 3
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 30,
-        "column": 20
+        "column": 11
       }
     },
     {
@@ -209,12 +209,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 33,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 33,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -237,12 +237,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 34,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 34,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -265,12 +265,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 36,
-        "column": 17
+        "column": 5
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 36,
-        "column": 28
+        "column": 16
       }
     },
     {
@@ -279,12 +279,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 37,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 37,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -307,12 +307,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 38,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 38,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -321,12 +321,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 44,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 44,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -349,12 +349,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 45,
-        "column": 7
+        "column": 5
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 45,
-        "column": 8
+        "column": 6
       }
     },
     {
@@ -377,12 +377,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 46,
-        "column": 5
+        "column": 11
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 46,
-        "column": 6
+        "column": 12
       }
     },
     {
@@ -391,12 +391,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 50,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 50,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -419,12 +419,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 51,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 51,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -447,12 +447,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 52,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 52,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -489,12 +489,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 53,
-        "column": 9
+        "column": 3
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 53,
-        "column": 14
+        "column": 8
       }
     },
     {
@@ -531,12 +531,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 54,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 54,
-        "column": 8
+        "column": 13
       }
     },
     {
@@ -545,12 +545,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 58,
-        "column": 8
+        "column": 3
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 58,
-        "column": 12
+        "column": 7
       }
     },
     {
@@ -573,12 +573,12 @@
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 59,
-        "column": 3
+        "column": 9
       },
       "end_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 59,
-        "column": 7
+        "column": 13
       }
     }
   ],

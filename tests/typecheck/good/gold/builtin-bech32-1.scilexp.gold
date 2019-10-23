@@ -6,12 +6,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-bech32-1.scilexp",
         "line": 1,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-bech32-1.scilexp",
         "line": 1,
-        "column": 10
+        "column": 14
       }
     },
     {
@@ -20,12 +20,12 @@
       "start_location": {
         "file": "typecheck/good/builtin-bech32-1.scilexp",
         "line": 2,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-bech32-1.scilexp",
         "line": 2,
-        "column": 7
+        "column": 11
       }
     },
     {

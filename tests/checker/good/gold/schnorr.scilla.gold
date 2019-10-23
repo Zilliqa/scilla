@@ -24,12 +24,12 @@
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 8,
-        "column": 3
+        "column": 8
       },
       "end_location": {
         "file": "contracts/schnorr.scilla",
         "line": 8,
-        "column": 6
+        "column": 11
       }
     },
     {
@@ -38,12 +38,12 @@
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 9,
-        "column": 5
+        "column": 9
       },
       "end_location": {
         "file": "contracts/schnorr.scilla",
         "line": 9,
-        "column": 12
+        "column": 16
       }
     },
     {
@@ -94,12 +94,12 @@
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 12,
-        "column": 13
+        "column": 14
       },
       "end_location": {
         "file": "contracts/schnorr.scilla",
         "line": 12,
-        "column": 16
+        "column": 17
       }
     },
     {
@@ -122,12 +122,12 @@
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 13,
-        "column": 13
+        "column": 14
       },
       "end_location": {
         "file": "contracts/schnorr.scilla",
         "line": 13,
-        "column": 16
+        "column": 17
       }
     },
     {
@@ -178,12 +178,12 @@
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 21,
-        "column": 10
+        "column": 3
       },
       "end_location": {
         "file": "contracts/schnorr.scilla",
         "line": 21,
-        "column": 16
+        "column": 9
       }
     },
     {
@@ -234,12 +234,12 @@
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 24,
-        "column": 9
+        "column": 5
       },
       "end_location": {
         "file": "contracts/schnorr.scilla",
         "line": 24,
-        "column": 12
+        "column": 8
       }
     },
     {
@@ -304,180 +304,180 @@
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 27,
-        "column": 9
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 27,
-        "column": 10
-      }
-    },
-    {
-      "vname": "_sender",
-      "type": "ByStr20",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 27,
-        "column": 37
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 27,
-        "column": 44
-      }
-    },
-    {
-      "vname": "mone",
-      "type": "List (Message)",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 28,
-        "column": 12
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 28,
-        "column": 16
-      }
-    },
-    {
-      "vname": "one_msg",
-      "type": "Message -> List (Message)",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 28,
-        "column": 14
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 28,
-        "column": 21
-      }
-    },
-    {
-      "vname": "m",
-      "type": "Message",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 28,
-        "column": 22
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 28,
-        "column": 23
-      }
-    },
-    {
-      "vname": "mone",
-      "type": "List (Message)",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 29,
         "column": 7
       },
       "end_location": {
         "file": "contracts/schnorr.scilla",
-        "line": 29,
-        "column": 11
-      }
-    },
-    {
-      "vname": "m",
-      "type": "Message",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 31,
-        "column": 9
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 31,
-        "column": 10
-      }
-    },
-    {
-      "vname": "_sender",
-      "type": "ByStr20",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 31,
-        "column": 37
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 31,
-        "column": 44
-      }
-    },
-    {
-      "vname": "mone",
-      "type": "List (Message)",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 32,
-        "column": 12
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 32,
-        "column": 16
-      }
-    },
-    {
-      "vname": "one_msg",
-      "type": "Message -> List (Message)",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 32,
-        "column": 14
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 32,
-        "column": 21
-      }
-    },
-    {
-      "vname": "m",
-      "type": "Message",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 32,
-        "column": 22
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 32,
-        "column": 23
-      }
-    },
-    {
-      "vname": "mone",
-      "type": "List (Message)",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 33,
-        "column": 7
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 33,
-        "column": 11
-      }
-    },
-    {
-      "vname": "m",
-      "type": "Message",
-      "start_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 37,
-        "column": 7
-      },
-      "end_location": {
-        "file": "contracts/schnorr.scilla",
-        "line": 37,
+        "line": 27,
         "column": 8
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 27,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 27,
+        "column": 44
+      }
+    },
+    {
+      "vname": "mone",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 28,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 28,
+        "column": 11
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 28,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 28,
+        "column": 21
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 28,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 28,
+        "column": 23
+      }
+    },
+    {
+      "vname": "mone",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 29,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 29,
+        "column": 16
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 31,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 31,
+        "column": 8
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 31,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 31,
+        "column": 44
+      }
+    },
+    {
+      "vname": "mone",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 32,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 32,
+        "column": 11
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 32,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 32,
+        "column": 21
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 32,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 32,
+        "column": 23
+      }
+    },
+    {
+      "vname": "mone",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 33,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 33,
+        "column": 16
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 37,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 37,
+        "column": 6
       }
     },
     {
@@ -500,12 +500,12 @@
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 38,
-        "column": 10
+        "column": 5
       },
       "end_location": {
         "file": "contracts/schnorr.scilla",
         "line": 38,
-        "column": 14
+        "column": 9
       }
     },
     {
@@ -542,12 +542,12 @@
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 39,
-        "column": 5
+        "column": 10
       },
       "end_location": {
         "file": "contracts/schnorr.scilla",
         "line": 39,
-        "column": 9
+        "column": 14
       }
     }
   ],
@@ -614,7 +614,7 @@
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 24,
-        "column": 9
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 2

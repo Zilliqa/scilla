@@ -6,12 +6,12 @@
       "start_location": {
         "file": "typecheck/good/pm1.scilexp",
         "line": 1,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/pm1.scilexp",
         "line": 1,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -20,12 +20,12 @@
       "start_location": {
         "file": "typecheck/good/pm1.scilexp",
         "line": 2,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/pm1.scilexp",
         "line": 2,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -34,12 +34,12 @@
       "start_location": {
         "file": "typecheck/good/pm1.scilexp",
         "line": 3,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/pm1.scilexp",
         "line": 3,
-        "column": 2
+        "column": 6
       }
     },
     {
@@ -48,12 +48,12 @@
       "start_location": {
         "file": "typecheck/good/pm1.scilexp",
         "line": 3,
-        "column": 9
+        "column": 14
       },
       "end_location": {
         "file": "typecheck/good/pm1.scilexp",
         "line": 3,
-        "column": 10
+        "column": 15
       }
     },
     {
