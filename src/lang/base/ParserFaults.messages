@@ -652,70 +652,70 @@ stmts_term: ID ASSIGN WITH
 
 This is an invalid assign statement, it lacks a separated identifier.
 
-stmts_term: ID BIND AND WITH
+stmts_term: ID FETCH AND WITH
 ##
 ## Ends in an error in state: 245.
 ##
-## stmt -> ID BIND AND . CID [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH AND . CID [ SEMICOLON EOF END BAR ]
 ##
 ## The known suffix of the stack is as follows:
-## ID BIND AND
+## ID FETCH AND
 ##
 # see tests/parser/bad/stmts_t-id-bind-and-with.scilla
 
 This is an invalid bind and statement. The parser expects a capital identifier associated with a block number.
 
-stmts_term: ID BIND EXISTS ID WITH
+stmts_term: ID FETCH EXISTS ID WITH
 ##
 ## Ends in an error in state: 243.
 ##
-## stmt -> ID BIND EXISTS ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH EXISTS ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
 ## The known suffix of the stack is as follows:
-## ID BIND EXISTS ID
+## ID FETCH EXISTS ID
 ##
 # see tests/parser/bad/stmts_t-id-bind-exists-id-with.scilla
 
 This is an invalid existence bind statement. It lacks a non-empty list of accesses.
 
-stmts_term: ID BIND EXISTS WITH
+stmts_term: ID FETCH EXISTS WITH
 ##
 ## Ends in an error in state: 242.
 ##
-## stmt -> ID BIND EXISTS . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH EXISTS . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
 ## The known suffix of the stack is as follows:
-## ID BIND EXISTS
+## ID FETCH EXISTS
 ##
 # see tests/parser/bad/stmts_t-id-bind-exists-with.scilla
 
 This is an invalid existence bind statement. It lacks a map to check existence of keys in.
 
-stmts_term: ID BIND ID WITH
+stmts_term: ID FETCH ID WITH
 ##
 ## Ends in an error in state: 238.
 ##
 ## sid -> ID . [ SEMICOLON EOF END BAR ]
-## stmt -> ID BIND ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
 ## The known suffix of the stack is as follows:
-## ID BIND ID
+## ID FETCH ID
 ##
 # see tests/parser/bad/stmts_t-id-bind-id-with.scilla 
 
 This is an invalid bind statement, it is lacking a non empty list of map accesses.
 
-stmts_term: ID BIND WITH
+stmts_term: ID FETCH WITH
 ##
 ## Ends in an error in state: 237.
 ##
-## stmt -> ID BIND . sid [ SEMICOLON EOF END BAR ]
-## stmt -> ID BIND . AND CID [ SEMICOLON EOF END BAR ]
-## stmt -> ID BIND . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
-## stmt -> ID BIND . EXISTS ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH . sid [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH . AND CID [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH . EXISTS ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
 ## The known suffix of the stack is as follows:
-## ID BIND
+## ID FETCH
 ##
 # see tests/parser/bad/stmts_t-id-bind-with.scilla
 
@@ -824,12 +824,12 @@ stmts_term: ID WITH
 ## Ends in an error in state: 231.
 ##
 ## component_id -> ID . [ SPID SEMICOLON ID EOF END CID BAR ]
-## stmt -> ID . BIND sid [ SEMICOLON EOF END BAR ]
+## stmt -> ID . FETCH sid [ SEMICOLON EOF END BAR ]
 ## stmt -> ID . ASSIGN sid [ SEMICOLON EOF END BAR ]
 ## stmt -> ID . EQ exp [ SEMICOLON EOF END BAR ]
-## stmt -> ID . BIND AND CID [ SEMICOLON EOF END BAR ]
-## stmt -> ID . BIND ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
-## stmt -> ID . BIND EXISTS ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+## stmt -> ID . FETCH AND CID [ SEMICOLON EOF END BAR ]
+## stmt -> ID . FETCH ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+## stmt -> ID . FETCH EXISTS ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ## stmt -> ID . nonempty_list(map_access) ASSIGN sid [ SEMICOLON EOF END BAR ]
 ##
 ## The known suffix of the stack is as follows:

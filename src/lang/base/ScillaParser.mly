@@ -93,7 +93,7 @@
 %token PERIOD
 %token EQ
 %token AND
-%token BIND
+%token FETCH
 %token ASSIGN
 (* %token LANGLE
  * %token RANGLE *)
@@ -313,13 +313,13 @@ type_term :
 (***********************************************)
 
 stmt:
-| l = ID; BIND; r = sid   { (Load (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; FETCH; r = sid   { (Load (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; ASSIGN; r = sid { (Store (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos($2)), r), toLoc $startpos) }
-| l = ID; BIND; AND; c = CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
-| l = ID; BIND; r = ID; keys = nonempty_list(map_access)
+| l = ID; FETCH; AND; c = CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
+| l = ID; FETCH; r = ID; keys = nonempty_list(map_access)
   { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, true), toLoc $startpos }
-| l = ID; BIND; EXISTS; r = ID; keys = nonempty_list(map_access)
+| l = ID; FETCH; EXISTS; r = ID; keys = nonempty_list(map_access)
   { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, false), toLoc $startpos }
 | l = ID; keys = nonempty_list(map_access); ASSIGN; r = sid
   { MapUpdate(asIdL l (toLoc $startpos(l)), keys, Some (asIdL r (toLoc $startpos(r)))), toLoc $startpos }
