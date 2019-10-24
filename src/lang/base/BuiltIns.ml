@@ -742,12 +742,14 @@ module ScillaBuiltIns
     let [@warning "-32"] ec_gen_key_pair ls _ =
       match ls with
       | [] ->
-        let privK, pubK = genKeyPair () in
-        let privK_lit_o = Bystrx.of_raw_bytes privkey_len privK in
-        let pubK_lit_o = Bystrx.of_raw_bytes pubkey_len pubK in
-        (match privK_lit_o, pubK_lit_o with
-        | Some privK', Some pubK' -> pair_lit (ByStrX privK') (ByStrX pubK')
-        | _ -> builtin_fail "ec_gen_key_pair: internal error, invalid private/public key(s)." ls)
+        (match genKeyPair () with
+        | Some (privK, pubK) ->
+          let privK_lit_o = Bystrx.of_raw_bytes privkey_len privK in
+          let pubK_lit_o = Bystrx.of_raw_bytes pubkey_len pubK in
+          (match privK_lit_o, pubK_lit_o with
+          | Some privK', Some pubK' -> pair_lit (ByStrX privK') (ByStrX pubK')
+          | _ -> builtin_fail "ec_gen_key_pair: internal error, invalid private/public key(s)." ls)
+        | None -> builtin_fail "ec_gen_key_pair: internal error." ls)
       | _ -> builtin_fail "ec_gen_key_pair" ls
 
     let [@warning "-32"] schnorr_sign_type =
@@ -761,10 +763,12 @@ module ScillaBuiltIns
       | [ByStrX privkey; ByStrX pubkey; ByStr msg]
           when Bystrx.width privkey = privkey_len &&
                Bystrx.width pubkey = pubkey_len ->
-        let s = sign (Bystrx.to_raw_bytes privkey) (Bystrx.to_raw_bytes pubkey) (Bystr.to_raw_bytes msg) in
-        (match Bystrx.of_raw_bytes signature_len s with
-        | Some bs -> pure @@ ByStrX bs
-        | None -> builtin_fail "schnorr_sign: internal error, invalid signature." ls)
+        (match sign (Bystrx.to_raw_bytes privkey) (Bystrx.to_raw_bytes pubkey) (Bystr.to_raw_bytes msg) with
+        | Some s ->
+          (match Bystrx.of_raw_bytes signature_len s with
+          | Some bs -> pure @@ ByStrX bs
+          | None -> builtin_fail "schnorr_sign: internal error, invalid signature." ls)
+        | None -> builtin_fail "schnorr_sign: internal error." ls)
       | _ -> builtin_fail "schnorr_sign" ls
 
     let schnorr_verify_type = fun_typ (bystrx_typ pubkey_len) @@ (* public key *)
@@ -777,8 +781,9 @@ module ScillaBuiltIns
       | [ByStrX pubkey; ByStr msg; ByStrX signature]
           when Bystrx.width pubkey = pubkey_len &&
                Bystrx.width signature = signature_len ->
-        let v = verify (Bystrx.to_raw_bytes pubkey) (Bystr.to_raw_bytes msg) (Bystrx.to_raw_bytes signature) in
-        pure @@ to_Bool v
+        (match verify (Bystrx.to_raw_bytes pubkey) (Bystr.to_raw_bytes msg) (Bystrx.to_raw_bytes signature) with
+        | Some v-> pure @@ to_Bool v
+        | None -> builtin_fail "schnorr_verify: internal error" ls)
       | _ -> builtin_fail "schnorr_verify" ls
 
     let [@warning "-32"] ecdsa_sign_type =

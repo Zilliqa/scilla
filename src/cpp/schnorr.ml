@@ -29,8 +29,8 @@ let signature_len = 64
 
 let genKeyPair () =
 
-  (* void genKeyPair_Z(RawBytes_Z* privKey, RawBytes_Z* pubKey); *)
-  let genKeyPair_Z = foreign "genKeyPair_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning void) in
+  (* bool genKeyPair_Z(RawBytes_Z* privKey, RawBytes_Z* pubKey); *)
+  let genKeyPair_Z = foreign "genKeyPair_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning bool) in
 
   (* Allocate buffers *)
   let dataPrivKey = allocate_n char ~count:privkey_len in
@@ -44,21 +44,21 @@ let genKeyPair () =
   let _ = setf privK rawBytes_len privkey_len in
   let _ = setf pubK rawBytes_len pubkey_len in
   (* Call the C function to generate a key pair. *)
-  let _ = genKeyPair_Z (addr privK) (addr pubK) in
+  if not (genKeyPair_Z (addr privK) (addr pubK)) then None else
   (* Read the keys into OCaml strings. *)
   let privK' = copy_from_tstring @@ string_from_ptr dataPrivKey ~length:privkey_len in
   let pubK' = copy_from_tstring @@ string_from_ptr dataPubKey ~length:pubkey_len in
   (* Dummy use to avoid GC of memory. *)
   let _ = dataPrivKey, dataPubKey, privK, pubK in
-  (privK', pubK')
+  Some (privK', pubK')
 
 (* privKey, pubKey and msg are raw bytes. *)
 let sign privKey pubKey msg =
 
-  (* void sign_Z(const RawBytes_Z* privKey, const RawBytes_Z* pubKey,
+  (* bool sign_Z(const RawBytes_Z* privKey, const RawBytes_Z* pubKey,
    *             const RawBytes_Z* message, RawBytes_Z* signature)
    *)
-  let sign_Z = foreign "sign_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning void) in
+  let sign_Z = foreign "sign_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning bool) in
 
 
   (* Create container for Schnorr inputs *)
@@ -85,20 +85,20 @@ let sign privKey pubKey msg =
   let _ = copy_to_cptr pubKD pubKey in
   let _ = copy_to_cptr msgD msg in
   (* Call the signing C function. *)
-  let _ = sign_Z (addr privKS) (addr pubKS) (addr msgS) (addr signS) in
+  if not (sign_Z (addr privKS) (addr pubKS) (addr msgS) (addr signS)) then None else 
   (* Copy back the signature. *)
   let signS' = copy_from_tstring @@ string_from_ptr signD ~length:signature_len in
   (* Dummy use to avoid GC of memory. *)
   let _ = privKS, privKD, pubKS, pubKD, msgS, msgD, signS, signD in
-  signS'
+  Some signS'
 
 (* pubKey, signature and msg are raw bytes. *)
 let verify pubKey msg signature =
 
-  (* int verify_Z(const RawBytes_Z* pubKey, const RawBytes_Z* message,
-   *            RawBytes_Z* signature);
+  (* bool verify_Z(const RawBytes_Z* pubKey, const RawBytes_Z* message,
+   *            RawBytes_Z* signature, int *result);
    *)
-  let verify_Z = foreign "verify_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning int) in
+  let verify_Z = foreign "verify_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr int @-> returning bool) in
 
   (* Create container for Schnorr inputs *)
   let pubKS = make rawBytes_Z in
@@ -108,6 +108,7 @@ let verify pubKey msg signature =
   let pubKD = allocate_n char ~count:pubkey_len in
   let msgD = allocate_n char ~count:(String.length msg) in
   let signD = allocate_n char ~count:signature_len in
+  let resD = allocate int 0 in
   (* and fill the fields. *)
   let _ = setf pubKS rawBytes_data pubKD in
   let _ = setf pubKS rawBytes_len pubkey_len in
@@ -120,7 +121,7 @@ let verify pubKey msg signature =
   let _ = copy_to_cptr msgD msg in
   let _ = copy_to_cptr signD signature in
   (* Call the signing C function. *)
-  let succ = verify_Z (addr pubKS) (addr msgS) (addr signS) in
+  if not (verify_Z (addr pubKS) (addr msgS) (addr signS) resD) then None else
   (* Dummy use to avoid GC of memory. *)
-  let _ = pubKD, msgD, signD, pubKS, msgS, signS in
-  succ = 1
+  let _ = pubKD, msgD, signD, pubKS, msgS, signS, resD in
+  Some ((!@resD) = 1)
