@@ -30,15 +30,15 @@ extern "C" {
 
 // Generate a private/public key pair.
 // Memory must already be allocated by caller.
-void genKeyPair_Z(RawBytes_Z* privKey, RawBytes_Z* pubKey);
+bool genKeyPair_Z(RawBytes_Z* privKey, RawBytes_Z* pubKey);
 
 // Sign message with privKey/pubKey. Memory for signature must be allocated by caller.
-void sign_Z(const RawBytes_Z* privKey, const RawBytes_Z* pubKey,
+bool sign_Z(const RawBytes_Z* privKey, const RawBytes_Z* pubKey,
             const RawBytes_Z* message, RawBytes_Z* signature);
 
 // Verify message with signature and public key of signer
-int verify_Z(const RawBytes_Z* pubKey, const RawBytes_Z* message,
-             RawBytes_Z* signature);
+bool verify_Z(const RawBytes_Z* pubKey, const RawBytes_Z* message,
+             RawBytes_Z* signature, int* result);
 
 #ifdef __cplusplus
 } // extern "C"

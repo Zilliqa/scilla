@@ -230,8 +230,7 @@ bool Schnorr::Sign(const bytes& message, unsigned int offset, unsigned int size,
     } while (res);
   } else {
     LOG_GENERAL(WARNING, "Memory allocation failure");
-    return false;
-    // throw exception();
+    throw exception();
   }
 
   return (res == 0);
@@ -381,8 +380,7 @@ bool Schnorr::Verify(const bytes& message, unsigned int offset,
       sha2.Reset();
     } else {
       LOG_GENERAL(WARNING, "Memory allocation failure");
-      // throw exception();
-      return false;
+      throw exception();
     }
     return (!err) && (BN_cmp(challenge_built.get(), toverify.m_r.get()) == 0);
   } catch (const std::exception& e) {
