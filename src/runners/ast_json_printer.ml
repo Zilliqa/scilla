@@ -407,7 +407,7 @@ let lmodule_to_json (lmod : ParsedSyntax.lmodule) =
 let scillalib_to_json (file) =
     let r = check_parsing file ScillaParser.Incremental.lmodule in
     match r with
-        | Error e -> fatal_error_gas e (Stdint.Uint64.of_int 0)
+        | Error e -> fatal_error e
         | Ok lmod ->
             let mod_json =  lmodule_to_json lmod in
             pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string mod_json))
@@ -416,7 +416,7 @@ let scillalib_to_json (file) =
 let scilla_to_json (file) =
     let r = check_parsing file ScillaParser.Incremental.cmodule in
     match r with
-        | Error e -> fatal_error_gas e (Stdint.Uint64.of_int 0)
+        | Error e -> fatal_error e
         | Ok cmod -> 
             let mod_json =  cmodule_to_json cmod in
             pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string mod_json))
@@ -427,4 +427,4 @@ let () =
     match f_ext with
         | "scillib" -> scillalib_to_json cli.input_file
         | "scilla" -> scilla_to_json cli.input_file
-        | _ -> pout(sprintf "Unhandled type %s\n" f_ext)
+        | _ -> pout(sprintf "Wrong file extention %s\n" f_ext)
