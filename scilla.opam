@@ -10,6 +10,7 @@ depends: [
   "dune" {build & >= "1.5"}
   "menhir"
   "core" {>= "v0.11" & < "v0.12~"}
+  "atdgen" {>= "v2.2.0" & < "v2.3~"}
   "core_bench" {>= "v0.12" & < "v0.12~"}
   "batteries" {>= "2.9.0" & < "2.11~"}
   "bitstring" {>= "3.1.0" & < "3.2~"}
