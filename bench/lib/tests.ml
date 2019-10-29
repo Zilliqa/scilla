@@ -36,42 +36,13 @@ let load ~params ~cfg ~env =
   | Some re -> List.filter tests ~f:(fun t -> Re2.matches re (Test.name t))
   | None -> tests
 
-let list = Display.print_tests
+let list =
+  Display.print_tests
 
-let analyze_and_display meas ~current_dir ~params ~env =
-  let module Bench = Core_bench.Bench in
-  let open Params in
-  let open Defaults in
-  (* Analyze the measurements, get the results *)
-  let results = Measurements.analyze meas in
-  (* Print the current results *)
-  let curr_dir = Option.value current_dir ~default:"not saved" in
-  print_endline @@ sprintf "Current results (%s):\n" curr_dir;
-  Bench.display results ~display_config;
-  (* Now, load the measurements we want to compare with *)
-  let result = Measurements.load ~dir:params.timestamp ~current_dir ~env in
-  match result with
-  | None -> print_endline "Nothing to compare with, the comparison is skipped"
-  | Some (orig_meas, orig_dir) ->
-      (* We have to analyze the loaded measurements here to be display them.
-         This is because of how the [core_bench] is designed:
-         it stores and loads measurements, not their results *)
-      let orig_results = Measurements.analyze orig_meas in
-      (* Print the original measurement results *)
-      print_endline @@ sprintf "Previous results (%s):\n" orig_dir;
-      Bench.display orig_results ~display_config;
-      (* Calculate measurement deltas and run the analysis on them *)
-      let deltas = Measurement_delta.calc_all orig_meas meas in
-      let deltas_results = Measurements.analyze deltas in
-      (* Print the comparison results (time deltas) *)
-      print_endline @@ sprintf "Deltas (%s / %s)\n" orig_dir curr_dir;
-      Display.print_deltas (deltas, deltas_results)
-
-(* Save measurements into a file system, if needed *)
-let save meas ~params ~env =
+let save results ~params ~env =
   let open Params in
   if params.save
-  then Some (Measurements.save meas ~env)
+  then Some (Measurement_results.save results ~env)
   else None
 
 let exec tests ~params ~env =
@@ -87,6 +58,28 @@ let exec tests ~params ~env =
     tests
     |> B.Test.expand
     |> B.Benchmark.measure_all run_config in
-  (* Finally, display the benchmarking results *)
-  let current_dir = save meas ~params ~env in
-  analyze_and_display meas ~current_dir ~params ~env
+  (* Analyze the measurements, get the results *)
+  let analysis_results = Measurements.analyze meas in
+  (* Create an intermediate representation for the
+     benchmark results, which we use for storage and comparison *)
+  let results = Measurement_results.mk analysis_results in
+  (* Save current benchmark results, get back the timestamp/directory *)
+  let current_dir = save results ~params ~env in
+  let current_timestamp = Option.value current_dir ~default:"current (not saved)" in
+  (* Now, load the benchmark results we want to compare with *)
+  let latest = Measurement_results.load_latest
+      ~timestamp:params.timestamp
+      ~current:current_dir ~env in
+  match latest with
+  | None ->
+      Display.print_results results;
+      print_endline "Nothing to compare with, the comparison is skipped"
+  | Some (previous_results, previous_timestamp) ->
+      (* Calculate benchmark results deltas *)
+      let deltas = Measurement_results.calc_deltas
+          ~previous:previous_results ~current:results in
+      (* Print the comparison results (along with the time deltas) *)
+      Display.print_comparison
+        ~previous:(previous_results, previous_timestamp)
+        ~current:(results, current_timestamp)
+        ~deltas

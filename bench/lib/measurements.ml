@@ -12,7 +12,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-
 open Core
 open ScillaUtil.FilePathInfix
 
@@ -34,41 +33,12 @@ let load_from path =
 let load ~dir ~current_dir ~env =
   let open Env in
   let mk_path dir = env.results_dir ^/ dir in
-  (* Get paths containing measurement results *)
-  let paths =
-    env.results_dir
-    |> Sys.ls_dir
-    |> Timestamp.sort_desc
-    |> List.filter ~f:(fun dir ->
-        let path = mk_path dir in
-        Sys.is_directory_exn path) in
-  (* Helper function to find dir with
-     the latest (previous) measurements *)
-  let find_latest () =
-    let paths =
-      match current_dir with
-      | None -> paths
-      | Some s -> List.filter paths ~f:(fun dir -> dir <> s)
-    in List.hd paths
-  in
-  (* If we're given the timestamp of measurements to compare with
-     then try to find a directory named after that timestamp,
-     otherwise just find the latest one, if it exists *)
-  let path =
-    match dir with
-    | Some s -> List.find paths ~f:(fun p -> p = s)
-    | None -> find_latest () in
+  let path = Storage.latest ~timestamp:dir ~current:current_dir ~env in
   Option.map path ~f:(fun s ->
       load_from (mk_path s), s)
 
-let sanitize =
-  String.map ~f:(fun c ->
-      if Char.is_alphanum c || String.mem "-_." c
-      then c
-      else '_')
-
 let save_one m ~path =
-  let name = m |> B.Measurement.name |> sanitize in
+  let name = m |> B.Measurement.name |> Util.sanitize in
   let filename = path ^/ name ^. "txt" in
   B.Measurement.save m ~filename
 
@@ -85,7 +55,7 @@ let save meas ~env =
   List.iter meas ~f:(save_one ~path);
   dir
 
-(* Run the [B.analyze] for each
+(* Run the [B.Analysis.analyze] for each
    measurement and get back the results *)
 let analyze meas =
   let analyze_one m = B.Analysis.analyze m Defaults.analysis_configs in

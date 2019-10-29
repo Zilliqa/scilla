@@ -14,7 +14,7 @@
 
 open Core_bench
 
-(** Save benchmark measurements, returns
+(** Save benchmark measurements, return
     the directory where it was saved. *)
 val save : Measurement.t list -> env:Env.t -> string
 
@@ -22,7 +22,7 @@ val save : Measurement.t list -> env:Env.t -> string
     If the [dir] is not given then previous measurements will
     be loaded by finding the directory named after the
     latest timestamp, which is not the same as the [current_dir].
-    Returns the [Measurement.t list] along with
+    Return the [Measurement.t list] along with
     used timestamp (directory name) represented as a [string]. *)
 val load
   :  dir:string option

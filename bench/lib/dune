@@ -18,6 +18,7 @@
    contract_bench transition_bench expression_bench
    env defaults params timestamp measurements
    measurement_delta sample_delta
+   util storage measurement_result measurement_results
    display tests suite config config_t config_j)
  (libraries
    core core_bench re2 textutils

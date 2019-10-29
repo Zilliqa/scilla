@@ -12,23 +12,15 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
+(** List paths containing benchmark results. *)
+val ls : env:Env.t -> string list
 
-let fmt = "%Y%m%d%H%M%S"
-let zone = force Time.Zone.local
-
-let format time = Time.format time fmt ~zone
-
-let parse = Time.parse ~fmt ~zone
-
-let mk () = format @@ Time.now ()
-
-let sort_desc ts =
-  ts
-  |> List.map ~f:parse
-  |> List.sort ~compare:Time.compare
-  |> List.rev_map ~f:format
-
-let%test "roundtrip" =
-  let ts = Time.now () in
-  format ts = format (parse (format ts))
+(** Given the [timestamp] of the benchmark results to
+    compare with return a directory named after that timestamp,
+    otherwise return the latest one, if it exists and
+    it is not the same as the [current] timestamp. *)
+val latest
+  :  timestamp:string option
+  -> current:string option
+  -> env:Env.t
+  -> string option

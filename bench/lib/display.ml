@@ -29,6 +29,35 @@ let print_tests groups =
         ~display:Display.column_titles
         ["group"; "test"] cells)
 
-let print_deltas (_, results) =
-  Core_bench.Bench.display results
-    ~display_config:Defaults.display_config
+let to_ms ns =
+  ns
+  |> Time.Span.of_ns
+  |> Time.Span.to_string_hum ~decimals:2
+
+let print_results results =
+  let open Ascii_table in
+  let open Measurement_result in
+  let cells = List.map results ~f:(fun res ->
+      let ms = to_ms res.time_per_run_nanos in
+      [res.benchmark_name; ms])
+  in simple_list_table
+    ~display:Display.column_titles
+    ["benchmark name"; "ms"] cells
+
+let print_comparison
+    ~previous:(prev, prev_ts) ~current:(curr, curr_ts) ~deltas =
+  let open Ascii_table in
+  let open Measurement_result in
+  let cells = List.map3_exn prev curr deltas ~f:(fun prev curr delta ->
+      [ curr.benchmark_name
+      ; to_ms prev.time_per_run_nanos
+      ; to_ms curr.time_per_run_nanos
+      ; to_ms delta.time_per_run_nanos
+      ])
+  in simple_list_table
+    ~display:Display.column_titles
+    [ "benchmark name"
+    ; "previous (ms)"
+    ; "current (ms)"
+    ; sprintf "delta (%s / %s)" prev_ts curr_ts
+    ] cells

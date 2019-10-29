@@ -12,23 +12,5 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
-
-let fmt = "%Y%m%d%H%M%S"
-let zone = force Time.Zone.local
-
-let format time = Time.format time fmt ~zone
-
-let parse = Time.parse ~fmt ~zone
-
-let mk () = format @@ Time.now ()
-
-let sort_desc ts =
-  ts
-  |> List.map ~f:parse
-  |> List.sort ~compare:Time.compare
-  |> List.rev_map ~f:format
-
-let%test "roundtrip" =
-  let ts = Time.now () in
-  format ts = format (parse (format ts))
+(** Replace characters that couldn't be a part of the file name. *)
+val sanitize : string -> string

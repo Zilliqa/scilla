@@ -17,9 +17,12 @@ open Core_bench
 (** Print the benchmark groups along with their tests. *)
 val print_tests : Test.t list -> unit
 
-(* TODO: In the future we might want to print the original, current and deltas side-by-side,
-   but after taking a quick look at the [Core_bench.Display] module I've concluded that it
-   might make sense to postpone that *)
+(** Print benchmark results. *)
+val print_results : Measurement_result.t list -> unit
 
-(** Print the comparison results (deltas). *)
-val print_deltas : (Measurement.t list * Analysis_result.t list) -> unit
+(** Print previous and current benchmark results along with their deltas. *)
+val print_comparison
+  :  previous:(Measurement_result.t list * string)
+  -> current:(Measurement_result.t list * string)
+  -> deltas:Measurement_result.t list
+  -> unit

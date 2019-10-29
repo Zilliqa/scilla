@@ -14,21 +14,8 @@
 
 open Core
 
-let fmt = "%Y%m%d%H%M%S"
-let zone = force Time.Zone.local
-
-let format time = Time.format time fmt ~zone
-
-let parse = Time.parse ~fmt ~zone
-
-let mk () = format @@ Time.now ()
-
-let sort_desc ts =
-  ts
-  |> List.map ~f:parse
-  |> List.sort ~compare:Time.compare
-  |> List.rev_map ~f:format
-
-let%test "roundtrip" =
-  let ts = Time.now () in
-  format ts = format (parse (format ts))
+let sanitize =
+  String.map ~f:(fun c ->
+      if Char.is_alphanum c || String.mem "-_." c
+      then c
+      else '_')
