@@ -81,23 +81,18 @@ module ScillaTypechecker
   open TypeEnv
   open UntypedSyntax
       
-  let wrap_error_with_info (msg, sloc) res = match res with
-    | Ok (r, g) -> Ok (r, g)
-    | Error (errorType, e, g) ->
-        Error (errorType, {emsg = msg; startl = sloc; endl = dummy_loc}::e, g)
-
-  let wrap_info_and_strip_error_type (msg, sloc) res =
-    match wrap_error_with_info (msg, sloc) res with
-    | Ok (r, g) -> Ok (r, g)
-    | Error (errorType, e, g) -> Error (e, g)
-
-  let wrap_with_gas gas res = match res with
-    | Ok r -> Ok r
-    | Error e -> Error (e, gas)
-  
   let wrap_type_err erep ?opt:(opt = "") res = match res with
     | Ok r -> Ok r
-    | Error (error_type, e, g) -> mark_error_as_type_error g (wrap_err erep "typechecking" ~opt:opt (Error e))
+    | Error (TypeError, e, g) -> mark_error_as_type_error g (wrap_err erep "typechecking" ~opt:opt (Error e))
+    | Error (GasError, e, g) -> Error (GasError, e, g)
+
+  let wrap_type_error_with_info (msg, sloc) res = match res with
+    | Ok (r, g) -> Ok (r, g)
+    | Error (TypeError, e, g) ->
+        Error (TypeError, {emsg = msg; startl = sloc; endl = dummy_loc}::e, g)
+    | Error (GasError, e, g) ->
+        (* Do not add info to gas errors *)
+        Error (GasError, e, g)
 
   let wrap_type_serr s ?opt:(opt = "") res = match res with
     | Ok r -> Ok r
@@ -107,8 +102,12 @@ module ScillaTypechecker
         wrap_error_with_errortype_and_gas TypeError g wrapped_error
     | Error (GasError, e, g) ->
         (* Do not wrap gas errors *)
-        res
-        
+        Error (GasError, e, g)
+
+  let strip_error_type res = match res with
+    | Ok (r, g) -> Ok (r, g)
+    | Error (_, e, g) -> Error (e, g)
+  
   (*****************************************************************)
   (*               Blockchain component typing                     *)
   (*****************************************************************)
@@ -462,7 +461,7 @@ module ScillaTypechecker
                let sloc = ER.get_loc (get_rep x) in
                let typed_x = add_type_to_ident x sctype in
                let%bind (checked_clauses_rev, remaining_gas) =
-                 wrap_error_with_info (msg, sloc) @@ 
+                 wrap_type_error_with_info (msg, sloc) @@ 
                  foldM clauses ~init:([], remaining_gas)
                    ~f:(fun (checked_clauses_acc, remaining_gas) (ptrn, ex) ->
                        let%bind (typed_clause, remaining_gas') = type_match_stmt_branch env sct ptrn ex get_loc remaining_gas in
@@ -498,7 +497,7 @@ module ScillaTypechecker
          | CallProc (p, args) ->
              let msg = sprintf "Type error(s) in procedure call %s:\n" (get_id p) in
              let%bind (typed_args, remaining_gas) =
-               wrap_error_with_info (msg, SR.get_loc (get_rep p)) @@
+               wrap_type_error_with_info (msg, SR.get_loc (get_rep p)) @@
                let%bind (targs, typed_actuals, remaining_gas) = type_actuals env.pure args remaining_gas in
                match List.Assoc.find env.procedures ~equal:(=) (get_id p) with
                | Some arg_typs ->
@@ -543,7 +542,7 @@ module ScillaTypechecker
     let procedures = env0.procedures in
     let component_type_string = component_type_to_string comp_type in
     let msg = sprintf "Type error(s) in %s %s:\n" component_type_string (get_id comp_name) in
-    wrap_error_with_info (msg, SR.get_loc (get_rep comp_name)) @@
+    wrap_type_error_with_info (msg, SR.get_loc (get_rep comp_name)) @@
     let param_checker =
       match comp_type with
       | CompTrans -> is_serializable_type
@@ -581,7 +580,7 @@ module ScillaTypechecker
         ~f:(fun ((acc, fenv), remaining_gas) (fn, ft, fe) ->
             let msg = sprintf
                 "Type error in field %s:\n" (get_id fn) in
-            wrap_error_with_info (msg, ER.get_loc (get_rep fn)) @@
+            wrap_type_error_with_info (msg, ER.get_loc (get_rep fn)) @@
             let%bind ((_, (ar, _)) as typed_expr, remaining_gas') = type_expr tenv fe remaining_gas in
             let actual = ar.tp in
             let%bind _ = mark_error_as_type_error remaining_gas' @@ assert_type_equiv ft actual in
@@ -611,7 +610,7 @@ module ScillaTypechecker
     let env0 = TEnv.copy TEnv.mk in
     foldM lib_vars ~init:(([], env0), remaining_gas)
       ~f:(fun ((entry_acc, env_acc), remaining_gas) (rn, topt, body) ->
-          wrap_error_with_info
+          wrap_type_error_with_info
             (sprintf "Type error when checking recursion primitive %s:\n"
                (get_id rn), dummy_loc) @@
           let%bind ((_, (ar, _)) as typed_body, remaining_gas') = type_expr env0 body remaining_gas in
@@ -640,7 +639,7 @@ module ScillaTypechecker
   let type_library env0 { lname ; lentries = ents } remaining_gas =
     let msg = sprintf
         "Type error in library %s:\n\n" (get_id lname) in
-    wrap_error_with_info (msg, SR.get_loc (get_rep lname)) @@
+    wrap_type_error_with_info (msg, SR.get_loc (get_rep lname)) @@
     let%bind ((typed_entries, new_tenv, errs, _), remaining_gas) =
       foldM ~init:(([], env0, [], []), remaining_gas) ents
         ~f:(fun ((acc, env, errs, blist), remaining_gas) lib_entry ->
@@ -648,7 +647,7 @@ module ScillaTypechecker
             | LibTyp (tname, ctr_defs) ->
                 let msg = sprintf
                     "Type error in library type %s:\n\n" (get_id tname) in
-                wrap_error_with_info (msg, ER.get_loc (get_rep tname)) @@
+                wrap_type_error_with_info (msg, ER.get_loc (get_rep tname)) @@
                 let%bind _ = mark_error_as_type_error remaining_gas @@ type_lib_typ_ctrs env ctr_defs in
                 pure @@ ((acc, env, errs, blist), remaining_gas)
             | LibVar (ln, ltopt, le) ->
@@ -657,11 +656,8 @@ module ScillaTypechecker
                 let dep_on_blist = free_vars_dep_check le blist in
                 (* If exp depends on a blacklisted exp, then let's ignore it. *)
                 if dep_on_blist then pure @@ ((acc, env, errs, ln :: blist), remaining_gas) else
-                  let res = wrap_error_with_info (msg, SR.get_loc (get_rep lname)) (type_expr env le remaining_gas) in
+                  let res = wrap_type_error_with_info (msg, SR.get_loc (get_rep lname)) (type_expr env le remaining_gas) in
                   match res with
-                  | Error (_, e, remaining_gas) ->
-                      (* A new original failure. Add to blocklist and move on. *)
-                      pure @@ ((acc, env, errs @ e, ln :: blist), remaining_gas)
                   | Ok (res', remaining_gas) ->
                       (* This went good. *)
                       let (_, (tr, _)) as typed_e = res' in
@@ -670,7 +666,13 @@ module ScillaTypechecker
                         | None -> pure () in
                       let typed_ln = add_type_to_ident ln tr in
                       pure @@ ((TypedSyntax.LibVar (typed_ln, ltopt, typed_e) :: acc,
-                                TEnv.addT (TEnv.copy env) ln tr.tp, errs, blist), remaining_gas))
+                                TEnv.addT (TEnv.copy env) ln tr.tp, errs, blist), remaining_gas)
+                  | Error (TypeError, e, remaining_gas) ->
+                      (* A new original type failure. Add to blocklist and move on. *)
+                      pure @@ ((acc, env, errs @ e, ln :: blist), remaining_gas)
+                  | Error (GasError, e, remaining_gas) ->
+                      (* Out of gas. Bail out. *)
+                      Error (GasError, e, remaining_gas))
     in
     (* If there has been no errors at all, we're good to go. *)
     if errs = [] then
@@ -679,7 +681,7 @@ module ScillaTypechecker
                   TEnv.copy new_tenv),
                  remaining_gas)
     (* Else report all errors together. *)
-    else Error (errs, remaining_gas)
+    else Error (TypeError, errs, remaining_gas)
 
   (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
   (* type library, handling cache as necessary. *)
@@ -706,7 +708,7 @@ module ScillaTypechecker
 
   (* Type a list of libtrees, with tenv0 as the base environment. *)
   let type_libraries elibs tenv0 remaining_gas =
-    let ((typed_elibs, elibs_env), emsgs, remaining_gas) = 
+    let%bind ((typed_elibs, elibs_env), emsgs, remaining_gas) = 
 
       let rec recurser libl remaining_gas =
 
@@ -743,12 +745,12 @@ module ScillaTypechecker
         in
 
         (* Do the actual typing. *)
-        List.fold libl ~init:(([], tenv0), err_dups, remaining_gas)
+        foldM libl ~init:(([], tenv0), err_dups, remaining_gas)
         ~f:(fun ((lib_acc, tenv_acc), emsgs_acc, remaining_gas) elib ->
             (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
             let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
-            let ((dep_libs, dep_env), dep_emsgs, remaining_gas) = recurser elib.deps remaining_gas in
-            let ((typed_libraries, tenv'), emsg, remaining_gas') =
+            let%bind ((dep_libs, dep_env), dep_emsgs, remaining_gas) = recurser elib.deps remaining_gas in
+            let%bind ((typed_libraries, tenv'), emsg, remaining_gas') =
               match type_library dep_env elib.libn remaining_gas with
               | Ok ((t_lib, t_env), remaining_gas) ->
                 let (elib' : TypedSyntax.libtree) = { libn = t_lib; deps = dep_libs } in
@@ -757,27 +759,32 @@ module ScillaTypechecker
                   List.exists t_lib.lentries ~f:(function | LibTyp _ -> false | LibVar (i, _, _) -> get_id i = name)
                   || TEnv.existsT tenv0 name
                 ) in
-                ((lib_acc @ [elib'], TEnv.append (TEnv.copy tenv_acc) env'), emsgs_acc @ dep_emsgs, remaining_gas)
-              | Error (el, remaining_gas) ->
-                ((lib_acc, tenv_acc), emsgs_acc @ dep_emsgs @ el, remaining_gas)
+                pure ((lib_acc @ [elib'], TEnv.append (TEnv.copy tenv_acc) env'), emsgs_acc @ dep_emsgs, remaining_gas)
+              | Error (TypeError, el, remaining_gas) ->
+                  (* Collect error, and continue typechecking. *)
+                  pure ((lib_acc, tenv_acc), emsgs_acc @ dep_emsgs @ el, remaining_gas)
+              | Error (GasError, el, remaining_gas) ->
+                  (* Gas error - bail out *)
+                  Error (GasError, el, remaining_gas)
             in
             (* Updated env and error messages are what we accummulate in the fold. *)
-            ((typed_libraries, tenv'), emsg, remaining_gas')
+            pure ((typed_libraries, tenv'), emsg, remaining_gas')
           )
       in
       recurser elibs remaining_gas
     in
-    if emsgs <> [] then Error (emsgs, remaining_gas) else pure (typed_elibs, elibs_env, remaining_gas)
+    if emsgs <> [] then Error (TypeError, emsgs, remaining_gas) else pure (typed_elibs, elibs_env, remaining_gas)
 
   let type_lmodule
     (md : UntypedSyntax.lmodule)
     (rec_libs : UntypedSyntax.lib_entry list)
     (elibs : UntypedSyntax.libtree list)
     (gas : Stdint.uint64)
-    : ((TypedSyntax.lmodule * TypedSyntax.lib_entry list * TypedSyntax.libtree list) * Stdint.uint64, scilla_error list * Stdint.uint64) result =
+    : ((TypedSyntax.lmodule * TypedSyntax.lib_entry list * TypedSyntax.libtree list) * Stdint.uint64,
+       TU.typeCheckerErrorType * scilla_error list * Stdint.uint64) result =
 
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id md.libs.lname) in
-    wrap_error_with_info (msg, SR.get_loc (get_rep md.libs.lname)) @@
+    wrap_type_error_with_info (msg, SR.get_loc (get_rep md.libs.lname)) @@
 
     (* Step 0: Type check recursion principles *)
     let%bind ((typed_rlib, tenv0), remaining_gas) = type_rec_libs rec_libs gas in
@@ -802,25 +809,28 @@ module ScillaTypechecker
     let {smver = mod_smver;cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
     let {cname = ctr_cname; cparams; cfields; ccomps} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
-    wrap_error_with_info (msg, SR.get_loc (get_rep ctr_cname)) @@
+    strip_error_type @@
+    wrap_type_error_with_info (msg, SR.get_loc (get_rep ctr_cname)) @@
 
     (* Step 0: Type check recursion principles *)
     let%bind ((typed_rlib, tenv0), remaining_gas) = type_rec_libs rec_libs gas in
     
     (* Step 1: Type check external libraries *)
-    let ((typed_elibs, elibs_env, remaining_gas), emsgs) = 
+    let%bind ((typed_elibs, elibs_env, remaining_gas), emsgs) = 
       match type_libraries elibs tenv0 remaining_gas with
-      | Ok (_ as te) -> (te, [])
-      | Error (e, g) -> (([], tenv0, g), e)
+      | Ok (_ as te) -> Ok (te, [])
+      | Error (TypeError, e, g) -> Ok (([], tenv0, g), e)
+      | Error (GasError, e, g) -> Error (GasError, e, g)
     in
     (* Step 2: Type check contract library, if defined. *)
-    let ((typed_clibs, tenv, remaining_gas), emsgs) = 
+    let%bind ((typed_clibs, tenv, remaining_gas), emsgs) = 
       match libs with
       | Some lib ->
         (match type_library elibs_env lib remaining_gas with
-        | Ok ((lib', env'), g) -> ((Some lib', env', g), emsgs)
-        | Error (e, g) -> ((None, elibs_env, g), emsgs @ e))
-      | None ->  ((None, elibs_env, remaining_gas), emsgs)
+        | Ok ((lib', env'), g) -> Ok ((Some lib', env', g), emsgs)
+        | Error (TypeError, e, g) -> Ok ((None, elibs_env, g), emsgs @ e)
+        | Error (GasError, e, g) -> Error (GasError, e, g))
+      | None -> Ok ((None, elibs_env, remaining_gas), emsgs)
     in
 
     (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
@@ -830,8 +840,9 @@ module ScillaTypechecker
     (* Step 4: Type-check fields and add balance *)
     let%bind (typed_fields, fenv0, remaining_gas), femsgs0 = 
       match type_fields tenv3 cfields remaining_gas with
-      | Error (el, g) -> Ok (([], tenv3, g), emsgs @ el)
       | Ok (typed_fields, tenv, g) -> Ok ((typed_fields, tenv, g), emsgs)
+      | Error (TypeError, el, g) -> Ok (([], tenv3, g), emsgs @ el)
+      | Error (GasError, el, g) -> Error (GasError, el, g)
     in
     let (bn, bt) = CU.balance_field in
     let fenv = TEnv.addT fenv0 bn bt in
@@ -844,8 +855,9 @@ module ScillaTypechecker
         ~f:(fun ((comp_acc, proc_acc, remaining_gas'), emsgs) tr ->
             let toplevel_env = {pure = TEnv.copy env.pure; fields = TEnv.copy fenv; procedures = proc_acc} in
             match type_component toplevel_env tr remaining_gas' with
-            | Error (el, g) -> Ok ((comp_acc, proc_acc, g), emsgs @ el)
             | Ok ((typed_comp, proc_sigs), g) -> Ok ((typed_comp :: comp_acc, proc_sigs, g), emsgs)
+            | Error (TypeError, el, g) -> Ok ((comp_acc, proc_acc, g), emsgs @ el)
+            | Error (GasError, el, g) -> Error (GasError, el, g)
           ) in
     let typed_comps = List.rev t_comps in
 
@@ -866,7 +878,7 @@ module ScillaTypechecker
                     TypedSyntax.ccomps = typed_comps}}, env, typed_elibs, typed_rlib),
                remaining_gas)
     (* Return error messages *)
-    else Error (emsgs', remaining_gas)
+    else Error (TypeError, emsgs', remaining_gas)
 
 
   (**************************************************************)
