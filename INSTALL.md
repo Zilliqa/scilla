@@ -80,6 +80,102 @@ There is a `shell.nix` for Nix users, so running the `nix-shell`
 should drop you into and isolated environment with all the
 necessary dependencies available.
 
+### Windows 10 Pro/Home Edition (Creators Update & later) via WSL
+
+1. Enable [Windows Subsystem for Linux](https://youtu.be/epZOKY83t8g) (Choose Ubuntu 18.04 LTS)
+
+2. Install required Ubuntu Packages
+
+- OpenSSL ships with WSL so there is no further action needed.
+```shell
+sudo add-apt-repository ppa:tah83/secp256k1 -y
+```
+
+```shell
+sudo add-apt-repository -y ppa:avsm/ppa
+```
+
+```
+sudo apt-get install -y curl build-essential m4 ocaml pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev
+```
+
+3. Delete other ppa entries
+
+```
+sudo rm -rf /var/lib/apt/lists/*
+sudo rm -rf /etc/apt/sources.list.d/*
+sudo apt-get update
+```
+
+4. Re-install the packages (but this time with a  `--fix-missing` flag)
+
+```
+sudo apt-get install -y curl build-essential m4 ocaml pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev --fix-missing
+```
+
+5. Install Opam 2.x
+
+Since `--disable-sandboxing` is only available in Opam 2.x & not Opam 1.x, WSL users should *not* use `apt-get` for installing Opam as it will install 1.x which wont work on WSL.
+
+To install Opam 2.x run the script below;
+
+```
+sh <(curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
+```
+
+6. Initialize Opam (with `--disable-sandboxing` flag)
+
+Disabling sandboxing is required since [WSL does not support Sandboxing](https://github.com/ocaml/opam/issues/3505) (via `bubblewrap`) at this time. 
+
+To disable sandboxing, simply run;
+
+```
+opam init --disable-sandboxing --compiler=4.06.1 --yes 
+```
+
+7. Set up current sell to work with Opam
+```
+eval $(opam env)
+```
+
+8. Install Scilla's depenencies
+
+Go to directory where you unzipped the [latest Scilla release](https://github.com/Zilliqa/scilla/releases)
+
+```
+cd <path/to/unzipped/latest/scilla/release>
+
+opam install ./scilla.opam --deps-only --with-test
+```
+then;
+
+```
+opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.06.1
+```
+
+9. Build the binaries
+
+```
+make clean; make
+```
+
+10. Test your installation by running ;
+```
+./bin/eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/exp/good/let.scilexp
+```
+
+If the output is as below, then you are good to go 👍. No further actions will be necessary.
+The binaries (`eval-runner`, `scilla-checker`, `scilla-runner` & `type-checker`) are all located in the `bin/` directory
+
+```
+{ [a -> (Int32 42)],
+  [y -> (Int32 42)],
+  [f -> <closure>],
+  [x -> (Int32 42)] }
+```
+
+
+
 
 ## Installing opam packages
 
