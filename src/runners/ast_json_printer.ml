@@ -335,10 +335,11 @@ let param_to_json (i, t) =
 
 let component_to_json (c : ParsedSyntax.component) =
     let node_type_json = ("node_type", `String "Component") in
+    let comp_type_json = ("component_type", `String (component_type_to_string c.comp_type) ) in
     let comp_name_json = ("name", ident_to_json c.comp_name ) in
     let comp_params_json = ("params", `List (List.map c.comp_params ~f:param_to_json)) in
     let comp_body = ("body", `List (List.map c.comp_body ~f:stmt_annot_to_json)) in
-    `Assoc [ comp_params_json ; comp_name_json; comp_body; node_type_json]
+    `Assoc [ comp_params_json ; comp_type_json; comp_name_json; comp_body; node_type_json]
 
 let contract_to_json (c : ParsedSyntax.contract) =
     let node_type_json = ("node_type", `String "Contract") in
