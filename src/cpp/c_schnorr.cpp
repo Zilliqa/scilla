@@ -8,8 +8,10 @@ extern "C" {
 
 // Generate a private/public key pair.
 // Memory must already be allocated by caller.
-void genKeyPair_Z(RawBytes_Z* privKey, RawBytes_Z* pubKey)
+bool genKeyPair_Z(RawBytes_Z* privKey, RawBytes_Z* pubKey)
 {
+    try {
+
     // Get key pair from C++ lib.
     Schnorr& s = Schnorr::GetInstance();
     std::pair<PrivKey, PubKey> kpair = s.GenKeyPair();
@@ -30,12 +32,20 @@ void genKeyPair_Z(RawBytes_Z* privKey, RawBytes_Z* pubKey)
     // Pass on the result.
     std::memcpy(privKey->data, privK.data(), privKSize);
     std::memcpy(pubKey->data, pubK.data(), pubKSize);
+
+    } catch (...) {
+        return false;
+    }
+
+    return true;
 }
 
 // Sign message with privKey/pubKey. Memory for signature must be allocated by caller.
-void sign_Z(const RawBytes_Z* privKey, const RawBytes_Z* pubKey,
+bool sign_Z(const RawBytes_Z* privKey, const RawBytes_Z* pubKey,
             const RawBytes_Z* message, RawBytes_Z* signature)
 {
+    try {
+
     std::vector<unsigned char> privK(privKey->len), pubK(pubKey->len),
         M(message->len), S;
 
@@ -65,12 +75,20 @@ void sign_Z(const RawBytes_Z* privKey, const RawBytes_Z* pubKey,
 
     // Copy the results for use by caller.
     std::memcpy(signature->data, S.data(), S.size());
+
+    } catch (...) {
+        return false;
+    }
+
+    return true;
 }
 
 // Verify message with signature and public key of signer
-int verify_Z(const RawBytes_Z* pubKey, const RawBytes_Z* message,
-             RawBytes_Z* signature)
+bool verify_Z(const RawBytes_Z* pubKey, const RawBytes_Z* message,
+             RawBytes_Z* signature, int *res)
 {
+    try {
+
     std::vector<unsigned char> pubK(pubKey->len), M(message->len),
         S(signature->len);
 
@@ -92,8 +110,14 @@ int verify_Z(const RawBytes_Z* pubKey, const RawBytes_Z* message,
 
     // Sign the message.
     if (s.Verify(M, sig, keyPub))
-        return 1;
+        *res = 1;
     else
-        return 0;
+        *res = 0;
+
+    } catch (...) {
+        return false;
+    }
+
+    return true;
 }
 }

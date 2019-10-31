@@ -24,15 +24,14 @@ val signature_len : int
  * The output is a raw string pair representing
  * privkey_len / pubkey_len bytes of the keys
  *)
-val genKeyPair : unit -> string * string
+val genKeyPair : unit -> (string * string) option
 
 (* Given private key, public key and message,
  * sign the message and return the signature.
  *)
-val sign : string -> string -> string -> string
+val sign : string -> string -> string -> string option
 
 (* Given public key, message and a signature, verify
  * that the message was indeed signed by the public key.
  *)
-val verify : string -> string -> string -> bool
-
+val verify : string -> string -> string -> bool option
