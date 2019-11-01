@@ -225,6 +225,23 @@ module TypeUtilities = struct
 
   module MakeTEnv = MakeTEnv
 
+  type typeCheckerErrorType =
+    | TypeError
+    | GasError
+
+  let mk_type_error0 msg remaining_gas =
+    (TypeError, mk_error0 msg, remaining_gas)
+
+  let mk_type_error1 msg loc remaining_gas =
+    (TypeError, mk_error1 msg loc, remaining_gas)
+
+  let wrap_error_with_errortype_and_gas errorType gas res = match res with
+    | Ok r -> Ok r
+    | Error e -> Error (errorType, e, gas)
+
+  let mark_error_as_type_error gas res =
+    wrap_error_with_errortype_and_gas TypeError gas res
+
   (* Some useful data type constructors *)
   let fun_typ t s = FunType (t, s)
   let tvar i = TypeVar i
@@ -255,7 +272,8 @@ module TypeUtilities = struct
   let assert_type_equiv_with_gas expected given remaining_gas =
     if type_equiv expected given
     then pure remaining_gas
-    else Error (mk_error0 (sprintf
+    else Error (TypeError,
+                mk_error0 (sprintf
                             "Type mismatch: %s expected, but %s provided."
                             (pp_typ expected) (pp_typ given)),
                remaining_gas)
@@ -437,7 +455,7 @@ module TypeUtilities = struct
               let%bind (res, remaining_gas) = recurser t' remaining_gas' in
               pure (PolyFun (arg, res), remaining_gas)
       else
-        Error (EvalMonad.out_of_gas_err, remaining_gas)
+        Error (GasError, EvalMonad.out_of_gas_err, remaining_gas)
     in
     recurser tm gas
     
@@ -447,7 +465,7 @@ module TypeUtilities = struct
         let afv = free_tvars a in
         let%bind (n, tp) = (match refresh_tfun pf afv with
             | PolyFun (a, b) -> pure (a, b)
-            | _ -> Error (mk_error0 "This can't happen!", gas)) in
+            | _ -> Error (TypeError, mk_error0 "This can't happen!", gas)) in
         let%bind (tp', remaining_gas) = subst_type_in_type_with_gas n a tp gas in
         elab_tfun_with_args tp' args' remaining_gas
     | t, [] -> pure (t, gas)
@@ -455,7 +473,7 @@ module TypeUtilities = struct
         let msg = sprintf
             "Cannot elaborate expression of type\n%s\napplied, as a type function, to type arguments\n%s." (pp_typ tf)
             (pp_typ_list args) in
-         Error (mk_error0 msg, gas)
+         Error (TypeError, mk_error0 msg, gas)
 
   (****************************************************************)
   (*                        Working with ADTs                     *)

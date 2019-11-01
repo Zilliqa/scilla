@@ -94,6 +94,7 @@ let check_typing cmod rprin elibs gas =
 (* Type check the contract with external libraries *)
 let check_typing_lmod lmod rprin elibs gas =
   let open TC in
+  strip_error_type @@
   let res = type_lmodule lmod rprin elibs gas in
   let _ = match res with
     | Ok (_, remaining_gas) ->
@@ -153,6 +154,10 @@ let check_version vernum =
   then
     let emsg =  sprintf "Scilla version mismatch. Expected %d vs Contract %d\n" mver vernum in
     fatal_error (mk_error0 emsg)
+
+let wrap_error_with_gas gas res = match res with
+  | Ok r -> Ok r
+  | Error e -> Error (e, gas)
 
 (* Check a library module. *)
 let check_lmodule cli =

@@ -90,5 +90,5 @@ let () =
                  | Ok _ -> ()
                  | Error el -> fatal_error el)
               | Error el -> fatal_error el)
-         | Error (el, _remaining_gas) -> fatal_error el)
+         | Error (_, el, _remaining_gas) -> fatal_error el)
     | Error e -> fatal_error e
