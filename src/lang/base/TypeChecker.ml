@@ -35,7 +35,8 @@ open PrimTypes
 module TypecheckerERep (R : Rep) = struct
   type rep = PlainTypes.t inferred_type * R.rep
   [@@deriving sexp]
- 
+
+  let dummy_rep = (PlainTypes.mk_qualified_type Unit, R.dummy_rep)
   let get_loc r = match r with | (_, rr) -> R.get_loc rr
 
   let mk_id s t =
@@ -746,6 +747,8 @@ module ScillaTypechecker
     in
     if emsgs <> [] then Error (emsgs, remaining_gas) else pure (typed_elibs, elibs_env, remaining_gas)
 
+  let type_contract_constraint
+  
   let type_lmodule
     (md : UntypedSyntax.lmodule)
     (rec_libs : UntypedSyntax.lib_entry list)
@@ -777,7 +780,7 @@ module ScillaTypechecker
     : ((TypedSyntax.cmodule * stmt_tenv * TypedSyntax.libtree list * TypedSyntax.lib_entry list) * Stdint.uint64, scilla_error list * Stdint.uint64) result =
 
     let {smver = mod_smver;cname = mod_cname; libs; elibs = mod_elibs; contr} = md in
-    let {cname = ctr_cname; cparams; cfields; ccomps} = contr in
+    let {cname = ctr_cname; cparams; cconstraint; cfields; ccomps} = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
     wrap_with_info_and_gas (msg, SR.get_loc (get_rep ctr_cname)) @@
 
@@ -804,7 +807,20 @@ module ScillaTypechecker
     let params = CU.append_implict_contract_params cparams in
     let tenv3 = TEnv.addTs tenv params in
 
-    (* Step 4: Type-check fields and add balance *)
+    (* Step 4: Typecheck contract constraint. *)
+    let%bind (typed_constraint, remaining_gas, emsgs) =
+      match type_expr tenv cconstraint remaining_gas with
+      | Ok ((_, (ityp, _)) as checked_constraint, remaining_gas) ->
+          (* TODO: Wrap error with info about contract constraint, then return OK *)
+          (match assert_type_equiv (TypedSyntax.ADT "Bool" []) ityp.tp with
+           | Ok _ => Ok (checked_constraint, remaining_gas, emsgs)
+           | Error (e, g) => Ok (
+          )
+      | Error (e, g) ->
+          Ok (((TypedSyntax.Constr "True" [] []), ETR.dummy_rep), g, emsgs @ e)
+
+    
+    (* Step 5: Type-check fields and add balance *)
     let%bind (typed_fields, fenv0, remaining_gas), femsgs0 = 
       match type_fields tenv3 cfields remaining_gas with
       | Error (el, g) -> Ok (([], tenv3, g), emsgs @ el)
@@ -813,10 +829,10 @@ module ScillaTypechecker
     let (bn, bt) = CU.balance_field in
     let fenv = TEnv.addT fenv0 bn bt in
 
-    (* Step 5: Form a general environment for checking components *)
+    (* Step 6: Form a general environment for checking components *)
     let env = {pure= tenv3; fields= fenv; procedures = []} in
 
-    (* Step 6: Type-checking all components in batch *)
+    (* Step 7: Type-checking all components in batch *)
     let%bind ((t_comps, _, remaining_gas), emsgs') = foldM ~init:(([], [], remaining_gas), femsgs0) ccomps
         ~f:(fun ((comp_acc, proc_acc, remaining_gas'), emsgs) tr ->
             let toplevel_env = {pure = TEnv.copy env.pure; fields = TEnv.copy fenv; procedures = proc_acc} in
@@ -826,7 +842,7 @@ module ScillaTypechecker
           ) in
     let typed_comps = List.rev t_comps in
 
-    (* Step 7: Lift contract parameters to ETR.rep ident *)
+    (* Step 8: Lift contract parameters to ETR.rep ident *)
     let typed_params = List.map cparams
         ~f:(fun (id, t) -> (add_type_to_ident id (mk_qual_tp t), t)) in
 
