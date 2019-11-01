@@ -776,8 +776,6 @@ module ScillaTypechecker
     in
     if emsgs <> [] then Error (TypeError, emsgs, remaining_gas) else pure (typed_elibs, elibs_env, remaining_gas)
 
-  let type_contract_constraint
-  
   let type_lmodule
     (md : UntypedSyntax.lmodule)
     (rec_libs : UntypedSyntax.lib_entry list)
@@ -842,16 +840,23 @@ module ScillaTypechecker
 
     (* Step 4: Typecheck contract constraint. *)
     let%bind (typed_constraint, remaining_gas, emsgs) =
-      match type_expr tenv cconstraint remaining_gas with
-      | Ok ((_, (ityp, _)) as checked_constraint, remaining_gas) ->
-          (* TODO: Wrap error with info about contract constraint, then return OK *)
-          (match assert_type_equiv (TypedSyntax.ADT "Bool" []) ityp.tp with
-           | Ok _ => Ok (checked_constraint, remaining_gas, emsgs)
-           | Error (e, g) => Ok (
-          )
-      | Error (e, g) ->
-          Ok (((TypedSyntax.Constr "True" [] []), ETR.dummy_rep), g, emsgs @ e)
-
+      let (_, constraint_rep) = cconstraint in
+      let msg = "Type error(s) in contract contraint:\n" in
+      let res =
+        wrap_type_error_with_info (msg, ER.get_loc constraint_rep) @@
+        let%bind ((_, (ityp, _)) as checked_constraint, remaining_gas) =
+          type_expr tenv3 cconstraint remaining_gas in
+        let%bind _ = mark_error_as_type_error remaining_gas @@
+          assert_type_equiv (ADT ("Bool", [])) ityp.tp in
+        pure (checked_constraint, remaining_gas) in
+      match res with
+      | Ok (checked_constraint, remaining_gas) ->
+        Ok (checked_constraint, remaining_gas, emsgs)
+      | Error (TypeError, e, g) ->
+        Ok (((TypedSyntax.Constr ("True", [], [])), ETR.dummy_rep), g, emsgs @ e)
+      | Error (GasError, e, g) ->
+          Error (GasError, e, g)
+    in
     
     (* Step 5: Type-check fields and add balance *)
     let%bind (typed_fields, fenv0, remaining_gas), femsgs0 = 
@@ -890,6 +895,7 @@ module ScillaTypechecker
                  TypedSyntax.contr =
                    {TypedSyntax.cname = ctr_cname;
                     TypedSyntax.cparams = typed_params;
+                    TypedSyntax.cconstraint = typed_constraint;
                     TypedSyntax.cfields = typed_fields;
                     TypedSyntax.ccomps = typed_comps}}, env, typed_elibs, typed_rlib),
                remaining_gas)

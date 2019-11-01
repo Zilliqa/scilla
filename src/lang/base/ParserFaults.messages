@@ -2354,7 +2354,7 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION WITH
 
 Transitions must begin with a valid name, this can be a lower case or capital letter ('A' - 'z').
 
-cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN END
+## cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN WITH
 ##
 ## Ends in an error in state: 204.
 ##
@@ -2365,7 +2365,7 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN END
 ##
 # see tests/parser/bad/cmodule-version-number-contract-name-lparen-rparen-with.scilla
 
-After the definition of the immutable fields, either a contract constraint, the mutable fields definition, a transition or procedure is expected.
+## After the definition of the immutable fields, either a contract constraint, the mutable fields definition, a transition or procedure is expected.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN WITH
 ##
