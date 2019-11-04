@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -27,7 +27,7 @@ open BuiltIns
 open ContractUtil
 open Utils
 open PrimTypes
-    
+
 (*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
@@ -35,7 +35,7 @@ open PrimTypes
 module TypecheckerERep (R : Rep) = struct
   type rep = PlainTypes.t inferred_type * R.rep
   [@@deriving sexp]
- 
+
   let get_loc r = match r with | (_, rr) -> R.get_loc rr
 
   let mk_id s t =
@@ -47,9 +47,9 @@ module TypecheckerERep (R : Rep) = struct
   let mk_id_uint32 s = mk_id (R.mk_id_uint128 s) uint32_typ
   let mk_id_bnum    s = mk_id (R.mk_id_bnum s) bnum_typ
   let mk_id_string  s = mk_id (R.mk_id_string s) string_typ
-  
+
   let mk_rep (r : R.rep) (t : PlainTypes.t inferred_type) = (t, r)
-  
+
   let parse_rep s = (PlainTypes.mk_qualified_type uint128_typ, R.parse_rep s)
   let get_rep_str r = match r with | (_, rr) -> R.get_rep_str rr
 
@@ -61,8 +61,8 @@ end
 (*****************************************************************)
 
 module ScillaTypechecker
-  (SR : Rep)
-  (ER : Rep) = struct
+    (SR : Rep)
+    (ER : Rep) = struct
 
   module STR = SR
   module ETR = TypecheckerERep (ER)
@@ -70,7 +70,7 @@ module ScillaTypechecker
   module TypedSyntax = ScillaSyntax (STR) (ETR)
   include TypedSyntax
   include ETR
-  
+
   module TU = TypeUtilities
   module TBuiltins = ScillaBuiltIns (SR) (ER)
   module TypeEnv = TU.MakeTEnv(PlainTypes)(ER)
@@ -80,7 +80,7 @@ module ScillaTypechecker
   open TBuiltins
   open TypeEnv
   open UntypedSyntax
-      
+
   let wrap_type_err erep ?opt:(opt = "") res = match res with
     | Ok r -> Ok r
     | Error (TypeError, e, g) -> mark_error_as_type_error g (wrap_err erep "typechecking" ~opt:opt (Error e))
@@ -107,11 +107,11 @@ module ScillaTypechecker
   let strip_error_type res = match res with
     | Ok (r, g) -> Ok (r, g)
     | Error (_, e, g) -> Error (e, g)
-  
+
   (*****************************************************************)
   (*               Blockchain component typing                     *)
   (*****************************************************************)
-      
+
   let bc_types =
     let open PrimTypes in 
     [(TypeUtil.blocknum_name, bnum_typ)]
@@ -120,7 +120,7 @@ module ScillaTypechecker
     match List.findi bc_types ~f:(fun _ (f, _) -> f = x) with
     | Some (_, (_, t)) -> pure @@ t
     | None -> fail0 @@ sprintf "Unknown blockchain field %s." x
-  
+
   (**************************************************************)
   (*             Auxiliary functions for typing                 *)
   (**************************************************************)
@@ -202,10 +202,10 @@ module ScillaTypechecker
         let alen = List.length actuals in
         if (constr.arity <> alen)
         then Error (mk_type_error0
-                    (sprintf
-                       "Constructor %s expects %d arguments, but got %d."
-                       cname constr.arity alen)
-                     remaining_gas)
+                      (sprintf
+                         "Constructor %s expects %d arguments, but got %d."
+                         cname constr.arity alen)
+                      remaining_gas)
         else
           let%bind ftyp = mark_error_as_type_error remaining_gas @@ elab_constr_type cname ts in
           (* Now type-check as a function application *)
@@ -262,8 +262,8 @@ module ScillaTypechecker
           let check_field_type seen_type =
             match Caml.List.assoc_opt fld CU.msg_mandatory_field_types with
             | Some fld_t when fld_t <> seen_type ->
-              fail1 (sprintf "Type mismatch for Message field %s. Expected %s but got %s"
-                    fld (pp_typ fld_t) (pp_typ seen_type)) (ER.get_loc rep) 
+                fail1 (sprintf "Type mismatch for Message field %s. Expected %s but got %s"
+                         fld (pp_typ fld_t) (pp_typ seen_type)) (ER.get_loc rep) 
             | _ -> pure ()
           in
           (match pld with
@@ -288,9 +288,9 @@ module ScillaTypechecker
           (* Make sure we resolve all the payload *)
           foldM bs ~init:([], remaining_gas)
             ~f:(fun (typed_bs_acc, remaining_gas) (s, pld) ->
-              let%bind (typed_pld, remaining_gas') = payload_type s pld remaining_gas in
-              let typed_bs = (s, typed_pld) in
-              pure (typed_bs :: typed_bs_acc, remaining_gas'))
+                let%bind (typed_pld, remaining_gas') = payload_type s pld remaining_gas in
+                let typed_bs = (s, typed_pld) in
+                pure (typed_bs :: typed_bs_acc, remaining_gas'))
         in
         pure @@ ((TypedSyntax.Message (List.rev typed_bs_rev), (mk_qual_tp @@ msg_typ, rep)), remaining_gas)
 
@@ -316,8 +316,8 @@ module ScillaTypechecker
     let targs = List.map tqargs ~f:(fun rr -> rr.tp) in
     let actuals_with_types =
       match List.zip actuals tqargs with
-      | Some l -> l
-      | None -> raise (mk_internal_error "Different number of actuals and Types of actuals")  in
+      | Ok l -> l
+      | Unequal_lengths -> raise (mk_internal_error "Different number of actuals and Types of actuals")  in
     let typed_actuals = List.map actuals_with_types ~f:(fun (a, t) -> add_type_to_ident a t) in
     pure @@ (targs, typed_actuals, remaining_gas)
 
@@ -350,9 +350,9 @@ module ScillaTypechecker
       | _ , k :: _ -> fail1 (sprintf "Type failure in map access. Cannot index into key %s" (get_id k))
                         (ER.get_loc (get_rep k))
     in
-      let%bind (typed_keys, res) = mark_error_as_type_error remaining_gas @@ helper (rr_typ t').tp keys' in
-      let typed_m = add_type_to_ident m' (rr_typ t') in
-      pure (typed_m, typed_keys, res, remaining_gas)
+    let%bind (typed_keys, res) = mark_error_as_type_error remaining_gas @@ helper (rr_typ t').tp keys' in
+    let typed_m = add_type_to_ident m' (rr_typ t') in
+    pure (typed_m, typed_keys, res, remaining_gas)
 
   let add_stmt_to_stmts_env_gas s repstmts remaining_gas =
     match repstmts with
@@ -404,29 +404,29 @@ module ScillaTypechecker
              pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.Bind (typed_x, checked_e), rep) checked_stmts remaining_gas
          | MapUpdate (m, klist, vopt) ->
              let%bind (typed_m, typed_klist, typed_v, remaining_gas) = wrap_type_serr stmt (
-                let%bind (typed_m, typed_klist, v_type, remaining_gas) = type_map_access env m klist remaining_gas in
-                let%bind typed_v = 
-                  (match vopt with
-                   | Some v -> (* This is adding/replacing the value for a key. *) 
-                      let%bind v_resolv = mark_error_as_type_error remaining_gas @@ TEnv.resolveT env.pure (get_id v) ~lopt:(Some (get_rep v)) in
-                      let typed_v = rr_typ v_resolv in
-                      let%bind _ = mark_error_as_type_error remaining_gas @@ assert_type_equiv v_type typed_v.tp in
-                      let typed_v' = add_type_to_ident v typed_v in
-                      pure @@ Some typed_v'
-                   | None -> pure None (* This is deleting a key from the map. *)
-                  )
-                in
-                pure @@ (typed_m, typed_klist, typed_v, remaining_gas)
-             ) in
+                 let%bind (typed_m, typed_klist, v_type, remaining_gas) = type_map_access env m klist remaining_gas in
+                 let%bind typed_v = 
+                   (match vopt with
+                    | Some v -> (* This is adding/replacing the value for a key. *) 
+                        let%bind v_resolv = mark_error_as_type_error remaining_gas @@ TEnv.resolveT env.pure (get_id v) ~lopt:(Some (get_rep v)) in
+                        let typed_v = rr_typ v_resolv in
+                        let%bind _ = mark_error_as_type_error remaining_gas @@ assert_type_equiv v_type typed_v.tp in
+                        let typed_v' = add_type_to_ident v typed_v in
+                        pure @@ Some typed_v'
+                    | None -> pure None (* This is deleting a key from the map. *)
+                   )
+                 in
+                 pure @@ (typed_m, typed_klist, typed_v, remaining_gas)
+               ) in
              (* Check rest of the statements. *)
              let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
              (* Update annotations. *)
              pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.MapUpdate(typed_m, typed_klist, typed_v), rep) checked_stmts remaining_gas
          | MapGet (v, m, klist, valfetch) ->
              let%bind (typed_m, typed_klist, v_type, remaining_gas) = wrap_type_serr stmt (
-                let%bind (typed_m, typed_klist, v_type, remaining_gas) = type_map_access env m klist remaining_gas in
-                pure @@ (typed_m, typed_klist, v_type, remaining_gas)
-             ) in
+                 let%bind (typed_m, typed_klist, v_type, remaining_gas) = type_map_access env m klist remaining_gas in
+                 pure @@ (typed_m, typed_klist, v_type, remaining_gas)
+               ) in
              (* The return type of MapGet would be (Option v_type) or Bool. *)
              let v_type' = if valfetch then ADT("Option", [v_type]) else ADT("Bool", []) in
              (* Update environment. *)
@@ -484,7 +484,7 @@ module ScillaTypechecker
              let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
              pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.SendMsgs typed_i, rep) checked_stmts remaining_gas
          | CreateEvnt i ->
-            (* Same as SendMsgs except that this takes a single message instead of a list. *)
+             (* Same as SendMsgs except that this takes a single message instead of a list. *)
              let%bind r = mark_error_as_type_error remaining_gas @@
                TEnv.resolveT env.pure (get_id i)
                  ~lopt:(Some (get_rep i)) in
@@ -506,28 +506,28 @@ module ScillaTypechecker
                | None -> 
                    Error (mk_type_error0
                             (sprintf "Procedure %s not found." (get_id p))
-                         remaining_gas) in
+                            remaining_gas) in
              let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
              pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.CallProc (p, typed_args), rep) checked_stmts remaining_gas
          | Throw iopt ->
              let%bind (checked_stmts, remaining_gas) = type_stmts env sts get_loc remaining_gas in
-            (match iopt with
-            | Some i ->
-              (* Same as CreateEvent. *)
-                let%bind r = mark_error_as_type_error remaining_gas @@
-                  TEnv.resolveT env.pure (get_id i)
-                  ~lopt:(Some (get_rep i)) in
-                let i_type = rr_typ r in
-                let%bind _ = wrap_type_serr stmt @@
-                  mark_error_as_type_error remaining_gas @@
-                  assert_type_equiv exception_typ i_type.tp in
-                let typed_i = add_type_to_ident i i_type in
-                pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.Throw (Some typed_i), rep) checked_stmts remaining_gas
-            | None ->
-                pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.Throw None, rep) checked_stmts remaining_gas
-            )
+             (match iopt with
+              | Some i ->
+                  (* Same as CreateEvent. *)
+                  let%bind r = mark_error_as_type_error remaining_gas @@
+                    TEnv.resolveT env.pure (get_id i)
+                      ~lopt:(Some (get_rep i)) in
+                  let i_type = rr_typ r in
+                  let%bind _ = wrap_type_serr stmt @@
+                    mark_error_as_type_error remaining_gas @@
+                    assert_type_equiv exception_typ i_type.tp in
+                  let typed_i = add_type_to_ident i i_type in
+                  pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.Throw (Some typed_i), rep) checked_stmts remaining_gas
+              | None ->
+                  pure @@ add_stmt_to_stmts_env_gas (TypedSyntax.Throw None, rep) checked_stmts remaining_gas
+             )
         )
-        
+
   and type_match_stmt_branch env styp ptrn sts get_loc remaining_gas =
     let%bind (new_p, new_typings) = mark_error_as_type_error remaining_gas @@
       assign_types_for_pattern styp ptrn in
@@ -587,11 +587,11 @@ module ScillaTypechecker
             let typed_fs = add_type_to_ident fn ar in
             if is_storable_type ft then
               pure @@ (((typed_fs, ft, typed_expr) :: acc,
-                       TEnv.addT (TEnv.copy fenv) fn actual), remaining_gas')
+                        TEnv.addT (TEnv.copy fenv) fn actual), remaining_gas')
             else Error (mk_type_error0
                           (sprintf "Values of the type \"%s\" cannot be stored." (pp_typ ft))
                           remaining_gas')) in
-        pure @@ (List.rev typed_flds, new_env, remaining_gas)
+    pure @@ (List.rev typed_flds, new_env, remaining_gas)
 
   (**************************************************************)
   (*                    Typing libraries                        *)
@@ -676,30 +676,30 @@ module ScillaTypechecker
     in
     (* If there has been no errors at all, we're good to go. *)
     if errs = [] then
-        pure @@ (({ TypedSyntax.lname = lname ;
-                   TypedSyntax.lentries = List.rev typed_entries },
-                  TEnv.copy new_tenv),
-                 remaining_gas)
-    (* Else report all errors together. *)
+      pure @@ (({ TypedSyntax.lname = lname ;
+                  TypedSyntax.lentries = List.rev typed_entries },
+                TEnv.copy new_tenv),
+               remaining_gas)
+      (* Else report all errors together. *)
     else Error (TypeError, errs, remaining_gas)
 
   (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
-  (* type library, handling cache as necessary. *)
-  let type_library_cache (tenv : TEnv.t) (elib : UntypedSyntax.library)  =
-    (* We are caching TypeEnv = MakeTEnv(PlainTypes)(ER) *)
-    let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) (STR) (ER) in
-    let open STC in
-    (* Check if we have the type info in cache. *)
-    match get_lib_tenv_cache tenv elib with
-    | Some tenv' ->
+     (* type library, handling cache as necessary. *)
+     let type_library_cache (tenv : TEnv.t) (elib : UntypedSyntax.library)  =
+     (* We are caching TypeEnv = MakeTEnv(PlainTypes)(ER) *)
+     let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) (STR) (ER) in
+     let open STC in
+     (* Check if we have the type info in cache. *)
+     match get_lib_tenv_cache tenv elib with
+     | Some tenv' ->
         (* Use cached entries. *)
-    pure (tenv', "")
-    | None ->
+     pure (tenv', "")
+     | None ->
         (* Couldn't find in cache. Actually type the library. *)
         let res = type_library tenv elib in
         (match res with
-    | Error (msg, es) -> Ok((tenv, msg), es)
-    | Ok ((_, tenv'), es) as lib_res -> 
+     | Error (msg, es) -> Ok((tenv, msg), es)
+     | Ok ((_, tenv'), es) as lib_res -> 
              (* Since we don't have this in cache, cache it now. *)
              cache_lib_tenv tenv' elib;
         Ok((lib_res, ""), es)
@@ -718,27 +718,27 @@ module ScillaTypechecker
           (* check if any entry in "lib" is in "rest". *)
           let check_dup lib rest (err_acc : scilla_error list) =
             List.fold lib.lentries ~init:err_acc ~f:(fun err_acc entry ->
-              (* Check if entry is in rest. *)
-              let ename = match entry with | LibTyp (i, _) | LibVar (i, _, _) -> i in
-              List.fold rest ~init:err_acc ~f:(fun err_acc lib' ->
-                List.fold lib'.lentries ~init:err_acc ~f:(fun err_acc entry' ->
-                  let ename' = match entry' with | LibTyp (i, _) | LibVar (i, _, _) -> i in
-                  if get_id ename = get_id ename'
-                  then
-                    err_acc @ (mk_error1 (sprintf "Entry %s in library %s conflicts with entry in library %s" 
-                      (get_id ename) (get_id lib'.lname) (get_id lib.lname)) (ER.get_loc (get_rep ename')))
-                  else
-                    err_acc
-                )
+                (* Check if entry is in rest. *)
+                let ename = match entry with | LibTyp (i, _) | LibVar (i, _, _) -> i in
+                List.fold rest ~init:err_acc ~f:(fun err_acc lib' ->
+                    List.fold lib'.lentries ~init:err_acc ~f:(fun err_acc entry' ->
+                        let ename' = match entry' with | LibTyp (i, _) | LibVar (i, _, _) -> i in
+                        if get_id ename = get_id ename'
+                        then
+                          err_acc @ (mk_error1 (sprintf "Entry %s in library %s conflicts with entry in library %s" 
+                                                  (get_id ename) (get_id lib'.lname) (get_id lib.lname)) (ER.get_loc (get_rep ename')))
+                        else
+                          err_acc
+                      )
+                  )
               )
-            )
           in
           let rec checker libs err_acc =
             match libs with
             | [] | [_] -> err_acc
             | lib :: rest ->
-              let err_acc' = check_dup lib rest err_acc in
-              checker rest err_acc'
+                let err_acc' = check_dup lib rest err_acc in
+                checker rest err_acc'
           in
           let libl' = List.map libl ~f:(fun l -> l.libn) in
           checker libl' []
@@ -746,40 +746,40 @@ module ScillaTypechecker
 
         (* Do the actual typing. *)
         foldM libl ~init:(([], tenv0), err_dups, remaining_gas)
-        ~f:(fun ((lib_acc, tenv_acc), emsgs_acc, remaining_gas) elib ->
-            (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
-            let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
-            let%bind ((dep_libs, dep_env), dep_emsgs, remaining_gas) = recurser elib.deps remaining_gas in
-            let%bind ((typed_libraries, tenv'), emsg, remaining_gas') =
-              match type_library dep_env elib.libn remaining_gas with
-              | Ok ((t_lib, t_env), remaining_gas) ->
-                let (elib' : TypedSyntax.libtree) = { libn = t_lib; deps = dep_libs } in
-                (* from t_env, retain only entries from t_lib and tenv0 *)
-                let env' = TEnv.filterTs (TEnv.copy t_env) ~f:(fun name ->
-                  List.exists t_lib.lentries ~f:(function | LibTyp _ -> false | LibVar (i, _, _) -> get_id i = name)
-                  || TEnv.existsT tenv0 name
-                ) in
-                pure ((lib_acc @ [elib'], TEnv.append (TEnv.copy tenv_acc) env'), emsgs_acc @ dep_emsgs, remaining_gas)
-              | Error (TypeError, el, remaining_gas) ->
-                  (* Collect error, and continue typechecking. *)
-                  pure ((lib_acc, tenv_acc), emsgs_acc @ dep_emsgs @ el, remaining_gas)
-              | Error (GasError, el, remaining_gas) ->
-                  (* Gas error - bail out *)
-                  Error (GasError, el, remaining_gas)
-            in
-            (* Updated env and error messages are what we accummulate in the fold. *)
-            pure ((typed_libraries, tenv'), emsg, remaining_gas')
-          )
+          ~f:(fun ((lib_acc, tenv_acc), emsgs_acc, remaining_gas) elib ->
+              (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
+                 let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
+              let%bind ((dep_libs, dep_env), dep_emsgs, remaining_gas) = recurser elib.deps remaining_gas in
+              let%bind ((typed_libraries, tenv'), emsg, remaining_gas') =
+                match type_library dep_env elib.libn remaining_gas with
+                | Ok ((t_lib, t_env), remaining_gas) ->
+                    let (elib' : TypedSyntax.libtree) = { libn = t_lib; deps = dep_libs } in
+                    (* from t_env, retain only entries from t_lib and tenv0 *)
+                    let env' = TEnv.filterTs (TEnv.copy t_env) ~f:(fun name ->
+                        List.exists t_lib.lentries ~f:(function | LibTyp _ -> false | LibVar (i, _, _) -> get_id i = name)
+                        || TEnv.existsT tenv0 name
+                      ) in
+                    pure ((lib_acc @ [elib'], TEnv.append (TEnv.copy tenv_acc) env'), emsgs_acc @ dep_emsgs, remaining_gas)
+                | Error (TypeError, el, remaining_gas) ->
+                    (* Collect error, and continue typechecking. *)
+                    pure ((lib_acc, tenv_acc), emsgs_acc @ dep_emsgs @ el, remaining_gas)
+                | Error (GasError, el, remaining_gas) ->
+                    (* Gas error - bail out *)
+                    Error (GasError, el, remaining_gas)
+              in
+              (* Updated env and error messages are what we accummulate in the fold. *)
+              pure ((typed_libraries, tenv'), emsg, remaining_gas')
+            )
       in
       recurser elibs remaining_gas
     in
     if emsgs <> [] then Error (TypeError, emsgs, remaining_gas) else pure (typed_elibs, elibs_env, remaining_gas)
 
   let type_lmodule
-    (md : UntypedSyntax.lmodule)
-    (rec_libs : UntypedSyntax.lib_entry list)
-    (elibs : UntypedSyntax.libtree list)
-    (gas : Stdint.uint64)
+      (md : UntypedSyntax.lmodule)
+      (rec_libs : UntypedSyntax.lib_entry list)
+      (elibs : UntypedSyntax.libtree list)
+      (gas : Stdint.uint64)
     : ((TypedSyntax.lmodule * TypedSyntax.lib_entry list * TypedSyntax.libtree list) * Stdint.uint64,
        TU.typeCheckerErrorType * scilla_error list * Stdint.uint64) result =
 
@@ -788,13 +788,13 @@ module ScillaTypechecker
 
     (* Step 0: Type check recursion principles *)
     let%bind ((typed_rlib, tenv0), remaining_gas) = type_rec_libs rec_libs gas in
-      
+
     (* Step 1: Type check external libraries. *)
     let%bind (typed_elibs, elibs_env, remaining_gas) = type_libraries elibs tenv0 remaining_gas in
-      
+
     (* Type the library of this module. *)
     let%bind ((typed_mlib, _), remaining_gas) = type_library elibs_env md.libs remaining_gas in
-      
+
     let typed_lmodule = { TypedSyntax.elibs = md.elibs; TypedSyntax.libs = typed_mlib } in
     pure ((typed_lmodule, typed_rlib, typed_elibs), remaining_gas)
 
@@ -814,7 +814,7 @@ module ScillaTypechecker
 
     (* Step 0: Type check recursion principles *)
     let%bind ((typed_rlib, tenv0), remaining_gas) = type_rec_libs rec_libs gas in
-    
+
     (* Step 1: Type check external libraries *)
     let%bind ((typed_elibs, elibs_env, remaining_gas), emsgs) = 
       match type_libraries elibs tenv0 remaining_gas with
@@ -826,10 +826,10 @@ module ScillaTypechecker
     let%bind ((typed_clibs, tenv, remaining_gas), emsgs) = 
       match libs with
       | Some lib ->
-        (match type_library elibs_env lib remaining_gas with
-        | Ok ((lib', env'), g) -> Ok ((Some lib', env', g), emsgs)
-        | Error (TypeError, e, g) -> Ok ((None, elibs_env, g), emsgs @ e)
-        | Error (GasError, e, g) -> Error (GasError, e, g))
+          (match type_library elibs_env lib remaining_gas with
+           | Ok ((lib', env'), g) -> Ok ((Some lib', env', g), emsgs)
+           | Error (TypeError, e, g) -> Ok ((None, elibs_env, g), emsgs @ e)
+           | Error (GasError, e, g) -> Error (GasError, e, g))
       | None -> Ok ((None, elibs_env, remaining_gas), emsgs)
     in
 
