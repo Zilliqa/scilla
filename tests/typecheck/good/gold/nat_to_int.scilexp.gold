@@ -1,1 +1,103 @@
-Uint32
+{
+  "type_info": [
+    {
+      "vname": "z",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 1,
+        "column": 6
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 2,
+        "column": 8
+      }
+    },
+    {
+      "vname": "z",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 2,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 2,
+        "column": 17
+      }
+    },
+    {
+      "vname": "two",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 3,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 3,
+        "column": 8
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 3,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 3,
+        "column": 19
+      }
+    },
+    {
+      "vname": "nat_to_int",
+      "type": "Nat -> Uint32",
+      "start_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 4,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 4,
+        "column": 11
+      }
+    },
+    {
+      "vname": "two",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 4,
+        "column": 12
+      },
+      "end_location": {
+        "file": "typecheck/good/nat_to_int.scilexp",
+        "line": 4,
+        "column": 15
+      }
+    }
+  ],
+  "type": "Uint32"
+}

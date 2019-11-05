@@ -33,7 +33,7 @@
       "start_location": {
         "file": "checker/bad/lib/TestLib2.scillib",
         "line": 5,
-        "column": 19
+        "column": 20
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

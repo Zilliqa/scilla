@@ -152,6 +152,15 @@ module Event : sig
 
 end
 
+module TypeInfo : sig
+
+  val type_info_to_json :
+    (string * Syntax.typ * ErrorUtils.loc * ErrorUtils.loc) list -> Yojson.Basic.t
+
+  val type_info_to_jstring : ?pp:bool -> 
+    (string * Syntax.typ * ErrorUtils.loc * ErrorUtils.loc) list -> string
+end
+
 module CashflowInfo : sig
   (* Given: A pair of lists.
             The first element is an association list from fields to their tags.

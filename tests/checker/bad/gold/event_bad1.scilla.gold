@@ -7,7 +7,7 @@
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 165,
-        "column": 11
+        "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
@@ -18,7 +18,7 @@
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 161,
-        "column": 17
+        "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -38,7 +38,7 @@
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 73,
-        "column": 15
+        "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

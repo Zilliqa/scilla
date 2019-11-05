@@ -1,1 +1,61 @@
-Bool
+{
+  "type_info": [
+    {
+      "vname": "a",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "typecheck/good/addr.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/addr.scilexp",
+        "line": 1,
+        "column": 6
+      }
+    },
+    {
+      "vname": "b",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "typecheck/good/addr.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/addr.scilexp",
+        "line": 2,
+        "column": 6
+      }
+    },
+    {
+      "vname": "a",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "typecheck/good/addr.scilexp",
+        "line": 3,
+        "column": 12
+      },
+      "end_location": {
+        "file": "typecheck/good/addr.scilexp",
+        "line": 3,
+        "column": 13
+      }
+    },
+    {
+      "vname": "b",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "typecheck/good/addr.scilexp",
+        "line": 3,
+        "column": 14
+      },
+      "end_location": {
+        "file": "typecheck/good/addr.scilexp",
+        "line": 3,
+        "column": 15
+      }
+    }
+  ],
+  "type": "Bool"
+}
