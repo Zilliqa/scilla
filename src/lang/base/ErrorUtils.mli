@@ -60,5 +60,3 @@ val get_warnings : unit -> scilla_warning list
 
 exception Invalid_json of scilla_error list
 val mk_invalid_json : string -> exn
-
-val wrap_error_with_gas : Stdint.uint64 -> ('a, 'b) result -> ('a, 'b * Stdint.uint64) result
