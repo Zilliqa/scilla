@@ -54,7 +54,7 @@ end
 
     {%html:
 
-      <code>
+      <pre>
       {
         "_tag" : "foo",
         "_sender" : "0x1234567890123456789012345678901234567890"
@@ -68,7 +68,7 @@ end
           }
         ]
       }
-      </code>
+      </pre>
     %}
 
  *)
@@ -106,7 +106,7 @@ open ParserUtil.ParsedSyntax
   (** Given a parsed contract, give a string JSON with these details:
 
     {%html:
-      <code>
+      <pre>
        { 
          "name" : "foo",
          "params" : [ 
@@ -138,7 +138,7 @@ open ParserUtil.ParsedSyntax
             }
           ]
         }
-      </code>
+      </pre>
       %}
   *)
   val get_string : int -> contract -> (string * (string * Syntax.typ) list) list -> string
@@ -170,7 +170,6 @@ module CashflowInfo : sig
 
       {%html:
         <pre>
-        <div class="h3 code">
         {
          "cashflow_tags" : {
              "State variables": [
