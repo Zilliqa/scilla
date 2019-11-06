@@ -1,1 +1,159 @@
-Int32 -> Int32
+{
+  "type_info": [
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 1,
+        "column": 6
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Int32 -> Int32 -> Int32",
+      "start_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 2,
+        "column": 6
+      }
+    },
+    {
+      "vname": "z",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 2,
+        "column": 14
+      },
+      "end_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 2,
+        "column": 15
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 3,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 3,
+        "column": 10
+      }
+    },
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 3,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 3,
+        "column": 14
+      }
+    },
+    {
+      "vname": "c",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 4,
+        "column": 10
+      },
+      "end_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 4,
+        "column": 11
+      }
+    },
+    {
+      "vname": "z",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 4,
+        "column": 24
+      },
+      "end_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 4,
+        "column": 25
+      }
+    },
+    {
+      "vname": "a",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 6,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 6,
+        "column": 6
+      }
+    },
+    {
+      "vname": "d",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 7,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 7,
+        "column": 6
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Int32 -> Int32 -> Int32",
+      "start_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 8,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 8,
+        "column": 2
+      }
+    },
+    {
+      "vname": "d",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 8,
+        "column": 3
+      },
+      "end_location": {
+        "file": "typecheck/good/app.scilexp",
+        "line": 8,
+        "column": 4
+      }
+    }
+  ],
+  "type": "Int32 -> Int32"
+}

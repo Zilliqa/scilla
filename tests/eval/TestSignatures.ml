@@ -3,25 +3,38 @@ open Core.Result
 
 let t1 = test_case (fun _ ->
   let open Schnorr in
-  let privK, pubK = genKeyPair () in
-  let msg = "Hello world\n" in
-  let signature = sign privK pubK msg in
-  let succ = verify pubK msg signature in
-  assert_bool "Signature verification failed" succ)
+  try
+    let privK, pubK = BatOption.get @@ genKeyPair () in
+    let msg = "Hello world\n" in
+    let signature = BatOption.get @@ sign privK pubK msg in
+    let succ = BatOption.get @@ verify pubK msg signature in
+    assert_bool "Signature verification failed" succ
+  with
+  (* Check if BatOption.get() failed. *)
+  | Invalid_argument _ -> assert_failure "Schnorr function errored when called from testsuite"
+)
 
 let t2 = test_case (fun _ ->
   let open Schnorr in
-  let privK, pubK = genKeyPair () in
-  let msg = "Hello world\n" in
-  let signature = sign privK pubK msg in
-  let succ = verify pubK (msg ^ "\n") signature in
-  assert_bool "Signature incorrectly verified" (not succ))
+  try
+    let privK, pubK = BatOption.get @@ genKeyPair () in
+    let msg = "Hello world\n" in
+    let signature = BatOption.get @@ sign privK pubK msg in
+    let succ = BatOption.get @@ verify pubK (msg ^ "\n") signature in
+    assert_bool "Signature incorrectly verified" (not succ)
+  with
+  (* Check if BatOption.get() failed. *)
+  | Invalid_argument _ -> assert_failure "Schnorr function errored when called from testsuite"
+)
 
 let schnorr_tests = "schnorr_tests" >::: [t1;t2]
 
 let t1' = test_case (fun _ ->
   let open Secp256k1Wrapper in
-  let privK, pubK = Schnorr.genKeyPair() in
+
+  match Schnorr.genKeyPair() with
+  | None -> assert_failure "Schnorr function errored when called from testsuite" | Some (privK, pubK) ->
+
   let msg = "Hello world\n" in
   (* Verify public key's match b/w implementations. *)
   let pubK' = pk_from_sk privK in
@@ -51,7 +64,8 @@ let t1' = test_case (fun _ ->
 
 let t2' = test_case (fun _ ->
   let open Secp256k1Wrapper in
-  let privK, pubK = Schnorr.genKeyPair() in
+  match Schnorr.genKeyPair() with
+  | None -> assert_failure "Schnorr function errored when called from testsuite" | Some (privK, pubK) ->
   let msg = "Hello world\n" in
   (* Verify public key's match b/w implementations. *)
   let pubK' = pk_from_sk privK in

@@ -1,1 +1,61 @@
-Int32 -> Int32 -> Int32
+{
+  "type_info": [
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/fun1.scilexp",
+        "line": 1,
+        "column": 6
+      },
+      "end_location": {
+        "file": "typecheck/good/fun1.scilexp",
+        "line": 1,
+        "column": 7
+      }
+    },
+    {
+      "vname": "y",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/fun1.scilexp",
+        "line": 2,
+        "column": 6
+      },
+      "end_location": {
+        "file": "typecheck/good/fun1.scilexp",
+        "line": 2,
+        "column": 7
+      }
+    },
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/fun1.scilexp",
+        "line": 2,
+        "column": 32
+      },
+      "end_location": {
+        "file": "typecheck/good/fun1.scilexp",
+        "line": 2,
+        "column": 33
+      }
+    },
+    {
+      "vname": "y",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/fun1.scilexp",
+        "line": 2,
+        "column": 34
+      },
+      "end_location": {
+        "file": "typecheck/good/fun1.scilexp",
+        "line": 2,
+        "column": 35
+      }
+    }
+  ],
+  "type": "Int32 -> Int32 -> Int32"
+}

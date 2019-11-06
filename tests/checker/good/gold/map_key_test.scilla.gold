@@ -5,6 +5,134 @@
       { "TestType": [ { "constructor": "T", "tags": [ "NoInfo" ] } ] }
     ]
   },
+  "type_info": [
+    {
+      "vname": "map",
+      "type": "Map (String) (TestType)",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 12,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 12,
+        "column": 6
+      }
+    },
+    {
+      "vname": "k",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 13,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 13,
+        "column": 4
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 14,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 14,
+        "column": 7
+      }
+    },
+    {
+      "vname": "v",
+      "type": "TestType",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 15,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 15,
+        "column": 4
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 15,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 15,
+        "column": 13
+      }
+    },
+    {
+      "vname": "map2",
+      "type": "Map (String) (TestType)",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 16,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 16,
+        "column": 7
+      }
+    },
+    {
+      "vname": "map",
+      "type": "Map (String) (TestType)",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 16,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 16,
+        "column": 25
+      }
+    },
+    {
+      "vname": "k",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 16,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 16,
+        "column": 27
+      }
+    },
+    {
+      "vname": "v",
+      "type": "TestType",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 16,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 16,
+        "column": 29
+      }
+    }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Test",

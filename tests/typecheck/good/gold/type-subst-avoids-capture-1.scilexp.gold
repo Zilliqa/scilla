@@ -1,1 +1,145 @@
-forall 'A. forall 'B. ('B -> 'A) -> 'B -> 'A
+{
+  "type_info": [
+    {
+      "vname": "id_with_dummy",
+      "type": "forall 'A. forall 'B. 'A -> 'A",
+      "start_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 1,
+        "column": 18
+      }
+    },
+    {
+      "vname": "'A",
+      "type": "forall 'B. 'A -> 'A",
+      "start_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 1,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 1,
+        "column": 28
+      }
+    },
+    {
+      "vname": "'B",
+      "type": "'A -> 'A",
+      "start_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 1,
+        "column": 37
+      },
+      "end_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 1,
+        "column": 39
+      }
+    },
+    {
+      "vname": "x",
+      "type": "'A",
+      "start_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 1,
+        "column": 48
+      },
+      "end_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 1,
+        "column": 49
+      }
+    },
+    {
+      "vname": "x",
+      "type": "'A",
+      "start_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 1,
+        "column": 59
+      },
+      "end_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 1,
+        "column": 60
+      }
+    },
+    {
+      "vname": "try_to_capture_type_var",
+      "type": "forall 'A. forall 'B. ('B -> 'A) -> 'B -> 'A",
+      "start_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 2,
+        "column": 28
+      }
+    },
+    {
+      "vname": "'A",
+      "type": "forall 'B. ('B -> 'A) -> 'B -> 'A",
+      "start_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 2,
+        "column": 36
+      },
+      "end_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 2,
+        "column": 38
+      }
+    },
+    {
+      "vname": "'B",
+      "type": "('B -> 'A) -> 'B -> 'A",
+      "start_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 2,
+        "column": 47
+      },
+      "end_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 2,
+        "column": 49
+      }
+    },
+    {
+      "vname": "id_with_dummy",
+      "type": "forall 'A. forall 'B. 'A -> 'A",
+      "start_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 3,
+        "column": 4
+      },
+      "end_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 3,
+        "column": 17
+      }
+    },
+    {
+      "vname": "try_to_capture_type_var",
+      "type": "forall 'A. forall 'B. ('B -> 'A) -> 'B -> 'A",
+      "start_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 4,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/type-subst-avoids-capture-1.scilexp",
+        "line": 4,
+        "column": 24
+      }
+    }
+  ],
+  "type": "forall 'A. forall 'B. ('B -> 'A) -> 'B -> 'A"
+}

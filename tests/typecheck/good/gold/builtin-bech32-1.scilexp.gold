@@ -1,1 +1,61 @@
-Option (ByStr20)
+{
+  "type_info": [
+    {
+      "vname": "bech32str",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-bech32-1.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-bech32-1.scilexp",
+        "line": 1,
+        "column": 14
+      }
+    },
+    {
+      "vname": "prefix",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-bech32-1.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-bech32-1.scilexp",
+        "line": 2,
+        "column": 11
+      }
+    },
+    {
+      "vname": "prefix",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-bech32-1.scilexp",
+        "line": 3,
+        "column": 27
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-bech32-1.scilexp",
+        "line": 3,
+        "column": 33
+      }
+    },
+    {
+      "vname": "bech32str",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-bech32-1.scilexp",
+        "line": 3,
+        "column": 34
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-bech32-1.scilexp",
+        "line": 3,
+        "column": 43
+      }
+    }
+  ],
+  "type": "Option (ByStr20)"
+}
