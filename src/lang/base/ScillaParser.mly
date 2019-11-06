@@ -61,8 +61,9 @@
     | Some l -> l
     | None -> raise (SyntaxError (("Invalid " ^ (pp_prim_typ t) ^ " literal " ^ v), loc))
 
-  let build_bool_literal_exn v =
-    let lit_v = Literal 
+  let build_bool_literal v loc =
+    let lit_v = if v then "True" else "False" in
+    (Literal (ADTValue (lit_v, [], [])), loc)
 %}
 
 (* Identifiers *)
@@ -408,7 +409,7 @@ contract:
   comps = list(component)
   { { cname   = asIdL c (toLoc $startpos(c));
       cparams = params;
-      cconstraint = Option.default (Constr "True" [] []) ct;
+      cconstraint = BatOption.default (build_bool_literal true dummy_loc) ct;
       cfields = fs;
       ccomps = comps } }
 

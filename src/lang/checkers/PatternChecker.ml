@@ -244,12 +244,14 @@ module ScillaPatternchecker
         pure @@ (i, t, checked_e)) fs
   
   let pm_check_contract c =
-    let { cname; cparams; cfields; ccomps } = c in
+    let { cname; cparams; cconstraint; cfields; ccomps } = c in
     let%bind checked_flds = pm_check_fields cfields in
+    let%bind checked_constraint = pm_check_expr cconstraint in
     let%bind checked_comp = mapM
         ~f:(fun c -> pm_check_component c) ccomps in
     pure @@ { CheckedPatternSyntax.cname = cname;
               CheckedPatternSyntax.cparams = cparams;
+              CheckedPatternSyntax.cconstraint = checked_constraint;
               CheckedPatternSyntax.cfields = checked_flds;
               CheckedPatternSyntax.ccomps = checked_comp }
 
