@@ -1,1 +1,145 @@
-Option (Option (Int32)) -> Int32
+{
+  "type_info": [
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 1,
+        "column": 6
+      }
+    },
+    {
+      "vname": "y",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 2,
+        "column": 6
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Option (Option (Int32)) -> Int32",
+      "start_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 3,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 3,
+        "column": 6
+      }
+    },
+    {
+      "vname": "o",
+      "type": "Option (Option (Int32))",
+      "start_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 3,
+        "column": 14
+      },
+      "end_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 3,
+        "column": 15
+      }
+    },
+    {
+      "vname": "o",
+      "type": "Option (Option (Int32))",
+      "start_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 4,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 4,
+        "column": 10
+      }
+    },
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 5,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 5,
+        "column": 14
+      }
+    },
+    {
+      "vname": "y",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 6,
+        "column": 18
+      },
+      "end_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 6,
+        "column": 19
+      }
+    },
+    {
+      "vname": "z",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 7,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 7,
+        "column": 17
+      }
+    },
+    {
+      "vname": "z",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 7,
+        "column": 22
+      },
+      "end_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 7,
+        "column": 23
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Option (Option (Int32)) -> Int32",
+      "start_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 9,
+        "column": 4
+      },
+      "end_location": {
+        "file": "typecheck/good/pm2.scilexp",
+        "line": 9,
+        "column": 5
+      }
+    }
+  ],
+  "type": "Option (Option (Int32)) -> Int32"
+}

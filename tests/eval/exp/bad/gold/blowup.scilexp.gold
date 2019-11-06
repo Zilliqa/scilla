@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message": "Ran out of gas.\n",
-      "start_location": { "file": "Prelude", "line": 1, "column": 17 },
+      "start_location": { "file": "Prelude", "line": 1, "column": 37 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

@@ -1,1 +1,1439 @@
-String
+{
+  "type_info": [
+    {
+      "vname": "p1x",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 1,
+        "column": 8
+      }
+    },
+    {
+      "vname": "p1y",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 2,
+        "column": 8
+      }
+    },
+    {
+      "vname": "p2x",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 3,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 3,
+        "column": 8
+      }
+    },
+    {
+      "vname": "p2y",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 4,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 4,
+        "column": 8
+      }
+    },
+    {
+      "vname": "sum_x",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 6,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 6,
+        "column": 10
+      }
+    },
+    {
+      "vname": "sum_y",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 7,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 7,
+        "column": 10
+      }
+    },
+    {
+      "vname": "p1",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 9,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 9,
+        "column": 7
+      }
+    },
+    {
+      "vname": "p1x",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 9,
+        "column": 33
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 9,
+        "column": 36
+      }
+    },
+    {
+      "vname": "p1y",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 9,
+        "column": 37
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 9,
+        "column": 40
+      }
+    },
+    {
+      "vname": "p2",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 10,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 10,
+        "column": 7
+      }
+    },
+    {
+      "vname": "p2x",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 10,
+        "column": 33
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 10,
+        "column": 36
+      }
+    },
+    {
+      "vname": "p2y",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 10,
+        "column": 37
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 10,
+        "column": 40
+      }
+    },
+    {
+      "vname": "sum",
+      "type": "Option (Pair (ByStr32) (ByStr32))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 12,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 12,
+        "column": 8
+      }
+    },
+    {
+      "vname": "p1",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 12,
+        "column": 36
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 12,
+        "column": 38
+      }
+    },
+    {
+      "vname": "p2",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 12,
+        "column": 39
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 12,
+        "column": 41
+      }
+    },
+    {
+      "vname": "sum_test",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 13,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 13,
+        "column": 13
+      }
+    },
+    {
+      "vname": "sum",
+      "type": "Option (Pair (ByStr32) (ByStr32))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 14,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 14,
+        "column": 12
+      }
+    },
+    {
+      "vname": "sumy",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 15,
+        "column": 21
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 15,
+        "column": 25
+      }
+    },
+    {
+      "vname": "sumx",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 15,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 15,
+        "column": 20
+      }
+    },
+    {
+      "vname": "xeq",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 16,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 16,
+        "column": 12
+      }
+    },
+    {
+      "vname": "sum_x",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 16,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 16,
+        "column": 31
+      }
+    },
+    {
+      "vname": "sumx",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 16,
+        "column": 32
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 16,
+        "column": 36
+      }
+    },
+    {
+      "vname": "yeq",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 17,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 17,
+        "column": 12
+      }
+    },
+    {
+      "vname": "sum_y",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 17,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 17,
+        "column": 31
+      }
+    },
+    {
+      "vname": "sumy",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 17,
+        "column": 32
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 17,
+        "column": 36
+      }
+    },
+    {
+      "vname": "andb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 18,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 18,
+        "column": 9
+      }
+    },
+    {
+      "vname": "xeq",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 18,
+        "column": 10
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 18,
+        "column": 13
+      }
+    },
+    {
+      "vname": "yeq",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 18,
+        "column": 14
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 18,
+        "column": 17
+      }
+    },
+    {
+      "vname": "px",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 23,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 23,
+        "column": 7
+      }
+    },
+    {
+      "vname": "py",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 24,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 24,
+        "column": 7
+      }
+    },
+    {
+      "vname": "s",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 25,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 25,
+        "column": 6
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 27,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 27,
+        "column": 6
+      }
+    },
+    {
+      "vname": "px",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 27,
+        "column": 32
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 27,
+        "column": 34
+      }
+    },
+    {
+      "vname": "py",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 27,
+        "column": 35
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 27,
+        "column": 37
+      }
+    },
+    {
+      "vname": "mul_x",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 29,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 29,
+        "column": 10
+      }
+    },
+    {
+      "vname": "mul_y",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 30,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 30,
+        "column": 10
+      }
+    },
+    {
+      "vname": "mul",
+      "type": "Option (Pair (ByStr32) (ByStr32))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 32,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 32,
+        "column": 8
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 32,
+        "column": 36
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 32,
+        "column": 37
+      }
+    },
+    {
+      "vname": "s",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 32,
+        "column": 38
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 32,
+        "column": 39
+      }
+    },
+    {
+      "vname": "mul_test",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 33,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 33,
+        "column": 13
+      }
+    },
+    {
+      "vname": "mul",
+      "type": "Option (Pair (ByStr32) (ByStr32))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 34,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 34,
+        "column": 12
+      }
+    },
+    {
+      "vname": "muly",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 35,
+        "column": 21
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 35,
+        "column": 25
+      }
+    },
+    {
+      "vname": "mulx",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 35,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 35,
+        "column": 20
+      }
+    },
+    {
+      "vname": "xeq",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 36,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 36,
+        "column": 12
+      }
+    },
+    {
+      "vname": "mul_x",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 36,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 36,
+        "column": 31
+      }
+    },
+    {
+      "vname": "mulx",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 36,
+        "column": 32
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 36,
+        "column": 36
+      }
+    },
+    {
+      "vname": "yeq",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 37,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 37,
+        "column": 12
+      }
+    },
+    {
+      "vname": "mul_y",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 37,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 37,
+        "column": 31
+      }
+    },
+    {
+      "vname": "muly",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 37,
+        "column": 32
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 37,
+        "column": 36
+      }
+    },
+    {
+      "vname": "andb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 38,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 38,
+        "column": 9
+      }
+    },
+    {
+      "vname": "xeq",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 38,
+        "column": 10
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 38,
+        "column": 13
+      }
+    },
+    {
+      "vname": "yeq",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 38,
+        "column": 14
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 38,
+        "column": 17
+      }
+    },
+    {
+      "vname": "proof_Ax",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 43,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 43,
+        "column": 13
+      }
+    },
+    {
+      "vname": "proof_Ay",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 44,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 44,
+        "column": 13
+      }
+    },
+    {
+      "vname": "proof_A",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 45,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 45,
+        "column": 12
+      }
+    },
+    {
+      "vname": "proof_Ax",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 45,
+        "column": 38
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 45,
+        "column": 46
+      }
+    },
+    {
+      "vname": "proof_Ay",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 45,
+        "column": 47
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 45,
+        "column": 55
+      }
+    },
+    {
+      "vname": "vk_Ax",
+      "type": "ByStr64",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 46,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 46,
+        "column": 10
+      }
+    },
+    {
+      "vname": "vk_Ay",
+      "type": "ByStr64",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 47,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 47,
+        "column": 10
+      }
+    },
+    {
+      "vname": "vk_A",
+      "type": "Pair (ByStr64) (ByStr64)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 48,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 48,
+        "column": 9
+      }
+    },
+    {
+      "vname": "vk_Ax",
+      "type": "ByStr64",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 48,
+        "column": 35
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 48,
+        "column": 40
+      }
+    },
+    {
+      "vname": "vk_Ay",
+      "type": "ByStr64",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 48,
+        "column": 41
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 48,
+        "column": 46
+      }
+    },
+    {
+      "vname": "pair1",
+      "type": "Pair (Pair (ByStr32) (ByStr32)) (Pair (ByStr64) (ByStr64))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 50,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 50,
+        "column": 10
+      }
+    },
+    {
+      "vname": "proof_A",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 50,
+        "column": 67
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 50,
+        "column": 74
+      }
+    },
+    {
+      "vname": "vk_A",
+      "type": "Pair (ByStr64) (ByStr64)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 50,
+        "column": 75
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 50,
+        "column": 79
+      }
+    },
+    {
+      "vname": "proof_Apx",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 52,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 52,
+        "column": 14
+      }
+    },
+    {
+      "vname": "proof_Apy",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 53,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 53,
+        "column": 14
+      }
+    },
+    {
+      "vname": "proof_Ap",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 54,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 54,
+        "column": 13
+      }
+    },
+    {
+      "vname": "proof_Apx",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 54,
+        "column": 39
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 54,
+        "column": 48
+      }
+    },
+    {
+      "vname": "proof_Apy",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 54,
+        "column": 49
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 54,
+        "column": 58
+      }
+    },
+    {
+      "vname": "p2x",
+      "type": "ByStr64",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 55,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 55,
+        "column": 8
+      }
+    },
+    {
+      "vname": "p2y",
+      "type": "ByStr64",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 56,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 56,
+        "column": 8
+      }
+    },
+    {
+      "vname": "p2",
+      "type": "Pair (ByStr64) (ByStr64)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 57,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 57,
+        "column": 7
+      }
+    },
+    {
+      "vname": "p2x",
+      "type": "ByStr64",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 57,
+        "column": 33
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 57,
+        "column": 36
+      }
+    },
+    {
+      "vname": "p2y",
+      "type": "ByStr64",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 57,
+        "column": 37
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 57,
+        "column": 40
+      }
+    },
+    {
+      "vname": "pair2",
+      "type": "Pair (Pair (ByStr32) (ByStr32)) (Pair (ByStr64) (ByStr64))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 59,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 59,
+        "column": 10
+      }
+    },
+    {
+      "vname": "proof_Ap",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 59,
+        "column": 66
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 59,
+        "column": 74
+      }
+    },
+    {
+      "vname": "p2",
+      "type": "Pair (ByStr64) (ByStr64)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 59,
+        "column": 75
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 59,
+        "column": 77
+      }
+    },
+    {
+      "vname": "nil",
+      "type":
+        "List (Pair (Pair (ByStr32) (ByStr32)) (Pair (ByStr64) (ByStr64)))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 61,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 61,
+        "column": 8
+      }
+    },
+    {
+      "vname": "l1",
+      "type":
+        "List (Pair (Pair (ByStr32) (ByStr32)) (Pair (ByStr64) (ByStr64)))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 62,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 62,
+        "column": 7
+      }
+    },
+    {
+      "vname": "pair2",
+      "type": "Pair (Pair (ByStr32) (ByStr32)) (Pair (ByStr64) (ByStr64))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 62,
+        "column": 70
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 62,
+        "column": 75
+      }
+    },
+    {
+      "vname": "nil",
+      "type":
+        "List (Pair (Pair (ByStr32) (ByStr32)) (Pair (ByStr64) (ByStr64)))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 62,
+        "column": 76
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 62,
+        "column": 79
+      }
+    },
+    {
+      "vname": "l",
+      "type":
+        "List (Pair (Pair (ByStr32) (ByStr32)) (Pair (ByStr64) (ByStr64)))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 63,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 63,
+        "column": 6
+      }
+    },
+    {
+      "vname": "pair1",
+      "type": "Pair (Pair (ByStr32) (ByStr32)) (Pair (ByStr64) (ByStr64))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 63,
+        "column": 69
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 63,
+        "column": 74
+      }
+    },
+    {
+      "vname": "l1",
+      "type":
+        "List (Pair (Pair (ByStr32) (ByStr32)) (Pair (ByStr64) (ByStr64)))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 63,
+        "column": 75
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 63,
+        "column": 77
+      }
+    },
+    {
+      "vname": "paired",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 65,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 65,
+        "column": 11
+      }
+    },
+    {
+      "vname": "l",
+      "type":
+        "List (Pair (Pair (ByStr32) (ByStr32)) (Pair (ByStr64) (ByStr64)))",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 65,
+        "column": 48
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 65,
+        "column": 49
+      }
+    },
+    {
+      "vname": "paired_test",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 66,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 66,
+        "column": 16
+      }
+    },
+    {
+      "vname": "paired",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 67,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 67,
+        "column": 15
+      }
+    },
+    {
+      "vname": "succm",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 73,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 73,
+        "column": 10
+      }
+    },
+    {
+      "vname": "failm",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 74,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 74,
+        "column": 10
+      }
+    },
+    {
+      "vname": "succ",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 76,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 76,
+        "column": 9
+      }
+    },
+    {
+      "vname": "b1",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 77,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 77,
+        "column": 9
+      }
+    },
+    {
+      "vname": "andb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 77,
+        "column": 12
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 77,
+        "column": 16
+      }
+    },
+    {
+      "vname": "sum_test",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 77,
+        "column": 17
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 77,
+        "column": 25
+      }
+    },
+    {
+      "vname": "mul_test",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 77,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 77,
+        "column": 34
+      }
+    },
+    {
+      "vname": "andb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 78,
+        "column": 3
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 78,
+        "column": 7
+      }
+    },
+    {
+      "vname": "paired_test",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 78,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 78,
+        "column": 19
+      }
+    },
+    {
+      "vname": "b1",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 78,
+        "column": 20
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 78,
+        "column": 22
+      }
+    },
+    {
+      "vname": "succ",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 81,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 81,
+        "column": 11
+      }
+    },
+    {
+      "vname": "succm",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 82,
+        "column": 11
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 82,
+        "column": 16
+      }
+    },
+    {
+      "vname": "failm",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 83,
+        "column": 12
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-alt-bn128.scilexp",
+        "line": 83,
+        "column": 17
+      }
+    }
+  ],
+  "type": "String"
+}

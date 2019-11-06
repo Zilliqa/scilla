@@ -1,1 +1,117 @@
-Pair (Option (Int32)) (Int32) -> Int32
+{
+  "type_info": [
+    {
+      "vname": "f",
+      "type": "Pair (Option (Int32)) (Int32) -> Int32",
+      "start_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 1,
+        "column": 6
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (Option (Int32)) (Int32)",
+      "start_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 1,
+        "column": 14
+      },
+      "end_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 1,
+        "column": 15
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (Option (Int32)) (Int32)",
+      "start_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 2,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 2,
+        "column": 10
+      }
+    },
+    {
+      "vname": "z",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 3,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 3,
+        "column": 17
+      }
+    },
+    {
+      "vname": "z",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 3,
+        "column": 24
+      },
+      "end_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 3,
+        "column": 25
+      }
+    },
+    {
+      "vname": "i",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 4,
+        "column": 12
+      },
+      "end_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 4,
+        "column": 13
+      }
+    },
+    {
+      "vname": "i",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 4,
+        "column": 17
+      },
+      "end_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 4,
+        "column": 18
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Pair (Option (Int32)) (Int32) -> Int32",
+      "start_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 6,
+        "column": 4
+      },
+      "end_location": {
+        "file": "typecheck/good/pm3.scilexp",
+        "line": 6,
+        "column": 5
+      }
+    }
+  ],
+  "type": "Pair (Option (Int32)) (Int32) -> Int32"
+}

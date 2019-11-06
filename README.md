@@ -158,7 +158,9 @@ that has been used to run the test.
 
 An emacs major mode for editing Scilla contracts is [provided](./misc/emacs-mode/scilla-mode.el).
 Add the following line to your `.emacs` file to load this mode for files ending with `.scilla` and `.scillib`.
-For enabling flycheck mode for Scilla (see [INSTALL.md](./INSTALL.md)).
+For enabling flycheck mode for Scilla (see [INSTALL.md](./INSTALL.md)). When `scilla-checker` is available,
+type reporting is also supported. The key binding `C-c C-t` will print the type of the variable on which
+the cursor currently is.
 
 ```
 ;; For enabling flycheck mode for Scilla.

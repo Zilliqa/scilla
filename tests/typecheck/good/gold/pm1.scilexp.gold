@@ -1,1 +1,117 @@
-Bool -> Int32
+{
+  "type_info": [
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 1,
+        "column": 6
+      }
+    },
+    {
+      "vname": "y",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 2,
+        "column": 6
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Bool -> Int32",
+      "start_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 3,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 3,
+        "column": 6
+      }
+    },
+    {
+      "vname": "c",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 3,
+        "column": 14
+      },
+      "end_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 3,
+        "column": 15
+      }
+    },
+    {
+      "vname": "c",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 4,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 4,
+        "column": 10
+      }
+    },
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 5,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 5,
+        "column": 14
+      }
+    },
+    {
+      "vname": "y",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 6,
+        "column": 10
+      },
+      "end_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 6,
+        "column": 11
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Bool -> Int32",
+      "start_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 8,
+        "column": 4
+      },
+      "end_location": {
+        "file": "typecheck/good/pm1.scilexp",
+        "line": 8,
+        "column": 5
+      }
+    }
+  ],
+  "type": "Bool -> Int32"
+}

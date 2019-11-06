@@ -10,23 +10,23 @@ depends: [
   "dune" {build & >= "1.5"}
   "menhir"
   "core" {>= "v0.11" & < "v0.12~"}
-  "batteries" {>= "2.9.0" & < "2.10~"}
+  "batteries" {>= "2.9.0" & < "2.11~"}
   "bitstring" {>= "3.1.0" & < "3.2~"}
-  "angstrom" {>= "0.11.0" & < "0.12~"}
+  "angstrom" {>= "0.11.0" & < "0.13~"}
   "bisect_ppx" {>= "1.4.0" & < "1.5~"}
-  "cryptokit" {>= "1.13" & < "1.14~"}
+  "cryptokit" {>= "1.13" & < "1.15~"}
   "ctypes" {>= "0.14.0" & < "0.16~"}
   "ctypes-foreign" {>= "0.4.0" & < "0.5~"}
-  "fileutils" {>= "0.5.3" & < "0.6~"}
+  "fileutils" {>= "0.5.3" & < "0.7~"}
   "hex" {>= "1.3.0" & < "1.5~"}
   "yojson" {>= "1.7.0" & < "1.8~"}
-  "ocaml-protoc" {>= "1.2.0" & < "1.3~"}
+  "ocaml-protoc" {>= "1.2.0" & < "2.1~"}
   "ppx_deriving" {>= "4.2.1" & < "4.5~"}
   "ppx_sexp_conv" {>= "v0.11.2" & < "v0.12~"}
   "ppx_deriving_rpc" {>= "5.9.0" & < "5.10~"}
   "secp256k1" {>= "0.4.0" & < "0.5~"}
   "stdint" {>= "0.5.1" & < "0.6~"}
-  "ounit" {with-test & (>= "2.0.8" & < "2.1~")}
+  "ounit" {with-test & (>= "2.0.8" & < "2.3~")}
   "patdiff" {with-test & (>= "v0.11" & < "v0.12~")}
 ]
 build: [

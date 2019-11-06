@@ -11,6 +11,4617 @@
     ],
     "ADT constructors": []
   },
+  "type_info": [
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 9,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 9,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 10,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 10,
+        "column": 11
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 11,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 11,
+        "column": 14
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 12,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 12,
+        "column": 19
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 12,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 12,
+        "column": 27
+      }
+    },
+    {
+      "vname": "checkContractOwner",
+      "type": "ByStr20 -> ByStr20 -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 15,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 15,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgSender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 16,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 16,
+        "column": 19
+      }
+    },
+    {
+      "vname": "contractOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 17,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 17,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgSender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 18,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 18,
+        "column": 29
+      }
+    },
+    {
+      "vname": "contractOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 18,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 18,
+        "column": 43
+      }
+    },
+    {
+      "vname": "isTokenOwner",
+      "type": "ByStr20 -> Uint256 -> Map (Uint256) (ByStr20) -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 21,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 21,
+        "column": 17
+      }
+    },
+    {
+      "vname": "msgSender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 22,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 22,
+        "column": 19
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 23,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 23,
+        "column": 17
+      }
+    },
+    {
+      "vname": "tokenOwnerMap_tmp",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 24,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 24,
+        "column": 27
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 25,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 25,
+        "column": 23
+      }
+    },
+    {
+      "vname": "tokenOwnerMap_tmp",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 25,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 25,
+        "column": 55
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 25,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 25,
+        "column": 63
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 26,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 26,
+        "column": 25
+      }
+    },
+    {
+      "vname": "val",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 28,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 28,
+        "column": 19
+      }
+    },
+    {
+      "vname": "val",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 29,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 29,
+        "column": 27
+      }
+    },
+    {
+      "vname": "msgSender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 29,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 29,
+        "column": 37
+      }
+    },
+    {
+      "vname": "isApproved",
+      "type": "ByStr20 -> Uint256 -> Map (Uint256) (ByStr20) -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 34,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 34,
+        "column": 15
+      }
+    },
+    {
+      "vname": "msgSender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 35,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 35,
+        "column": 19
+      }
+    },
+    {
+      "vname": "tokenID",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 36,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 36,
+        "column": 17
+      }
+    },
+    {
+      "vname": "approvalMap_tmp",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 37,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 37,
+        "column": 25
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 38,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 38,
+        "column": 16
+      }
+    },
+    {
+      "vname": "approvalMap_tmp",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 38,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 38,
+        "column": 46
+      }
+    },
+    {
+      "vname": "tokenID",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 38,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 38,
+        "column": 54
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 39,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 39,
+        "column": 18
+      }
+    },
+    {
+      "vname": "val",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 41,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 41,
+        "column": 19
+      }
+    },
+    {
+      "vname": "val",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 42,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 42,
+        "column": 27
+      }
+    },
+    {
+      "vname": "msgSender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 42,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 42,
+        "column": 37
+      }
+    },
+    {
+      "vname": "isApprovedForAll",
+      "type":
+        "ByStr20 -> ByStr20 -> Map (ByStr20) (Map (ByStr20) (Bool)) -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 46,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 46,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msgSender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 47,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 47,
+        "column": 19
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 48,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 48,
+        "column": 20
+      }
+    },
+    {
+      "vname": "operatorMap",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 49,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 49,
+        "column": 21
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 50,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 50,
+        "column": 14
+      }
+    },
+    {
+      "vname": "operatorMap",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 50,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 50,
+        "column": 40
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 50,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 50,
+        "column": 51
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Option (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 51,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 51,
+        "column": 16
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 54,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 54,
+        "column": 19
+      }
+    },
+    {
+      "vname": "check_list",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 56,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 56,
+        "column": 27
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Map (ByStr20) (Bool)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 56,
+        "column": 42
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 56,
+        "column": 45
+      }
+    },
+    {
+      "vname": "msgSender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 56,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 56,
+        "column": 55
+      }
+    },
+    {
+      "vname": "check_list",
+      "type": "Option (Bool)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 57,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 57,
+        "column": 29
+      }
+    },
+    {
+      "vname": "is_sender_approved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 59,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 59,
+        "column": 38
+      }
+    },
+    {
+      "vname": "is_sender_approved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 61,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 61,
+        "column": 41
+      }
+    },
+    {
+      "vname": "isApprovedOrOwner",
+      "type": "Bool -> Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 70,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 70,
+        "column": 22
+      }
+    },
+    {
+      "vname": "isOwner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 71,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 71,
+        "column": 17
+      }
+    },
+    {
+      "vname": "isApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 72,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 72,
+        "column": 20
+      }
+    },
+    {
+      "vname": "isApprovedForAll",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 73,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 73,
+        "column": 26
+      }
+    },
+    {
+      "vname": "isOwnerOrApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 74,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 74,
+        "column": 30
+      }
+    },
+    {
+      "vname": "orb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 74,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 74,
+        "column": 37
+      }
+    },
+    {
+      "vname": "isOwner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 74,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 74,
+        "column": 45
+      }
+    },
+    {
+      "vname": "isApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 74,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 74,
+        "column": 56
+      }
+    },
+    {
+      "vname": "orb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 75,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 75,
+        "column": 12
+      }
+    },
+    {
+      "vname": "isOwnerOrApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 75,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 75,
+        "column": 30
+      }
+    },
+    {
+      "vname": "isApprovedForAll",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 75,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 75,
+        "column": 47
+      }
+    },
+    {
+      "vname": "makeErrorEvent",
+      "type": "String -> Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 78,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 78,
+        "column": 19
+      }
+    },
+    {
+      "vname": "location",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 79,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 79,
+        "column": 18
+      }
+    },
+    {
+      "vname": "errorCode",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 80,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 80,
+        "column": 19
+      }
+    },
+    {
+      "vname": "location",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 81,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 81,
+        "column": 49
+      }
+    },
+    {
+      "vname": "errorCode",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 81,
+        "column": 57
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 81,
+        "column": 66
+      }
+    },
+    {
+      "vname": "code_success",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 84,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 84,
+        "column": 17
+      }
+    },
+    {
+      "vname": "code_failure",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 85,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 85,
+        "column": 17
+      }
+    },
+    {
+      "vname": "code_not_authorized",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 86,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 86,
+        "column": 24
+      }
+    },
+    {
+      "vname": "code_not_found",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 87,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 87,
+        "column": 19
+      }
+    },
+    {
+      "vname": "code_bad_request",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 88,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 88,
+        "column": 21
+      }
+    },
+    {
+      "vname": "code_token_exists",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 89,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 89,
+        "column": 22
+      }
+    },
+    {
+      "vname": "code_unexpected_error",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 90,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 90,
+        "column": 26
+      }
+    },
+    {
+      "vname": "contractOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 98,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 98,
+        "column": 15
+      }
+    },
+    {
+      "vname": "name",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 99,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 99,
+        "column": 6
+      }
+    },
+    {
+      "vname": "symbol",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 100,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 100,
+        "column": 8
+      }
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 106,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 106,
+        "column": 20
+      }
+    },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (ByStr20) (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 108,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 108,
+        "column": 22
+      }
+    },
+    {
+      "vname": "tokenApprovals",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 112,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 112,
+        "column": 21
+      }
+    },
+    {
+      "vname": "operatorApprovals",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 115,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 115,
+        "column": 24
+      }
+    },
+    {
+      "vname": "address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 121,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 121,
+        "column": 29
+      }
+    },
+    {
+      "vname": "optionBal",
+      "type": "Option (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 122,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 122,
+        "column": 14
+      }
+    },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (ByStr20) (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 122,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 122,
+        "column": 33
+      }
+    },
+    {
+      "vname": "address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 122,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 122,
+        "column": 41
+      }
+    },
+    {
+      "vname": "balance",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 123,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 123,
+        "column": 12
+      }
+    },
+    {
+      "vname": "optionBal",
+      "type": "Option (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 123,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 123,
+        "column": 30
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 124,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 124,
+        "column": 15
+      }
+    },
+    {
+      "vname": "bal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 124,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 124,
+        "column": 22
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 127,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 127,
+        "column": 6
+      }
+    },
+    {
+      "vname": "balance",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 127,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 127,
+        "column": 47
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 128,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 128,
+        "column": 12
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 133,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 133,
+        "column": 27
+      }
+    },
+    {
+      "vname": "someVal",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 134,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 134,
+        "column": 12
+      }
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 134,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 134,
+        "column": 29
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 134,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 134,
+        "column": 37
+      }
+    },
+    {
+      "vname": "someVal",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 135,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 135,
+        "column": 18
+      }
+    },
+    {
+      "vname": "val",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 136,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 136,
+        "column": 15
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 137,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 137,
+        "column": 10
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 137,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 137,
+        "column": 48
+      }
+    },
+    {
+      "vname": "val",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 137,
+        "column": 57
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 137,
+        "column": 60
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 138,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 138,
+        "column": 16
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 140,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 140,
+        "column": 10
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 140,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 140,
+        "column": 25
+      }
+    },
+    {
+      "vname": "makeErrorEvent",
+      "type": "String -> Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 140,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 140,
+        "column": 55
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 140,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 140,
+        "column": 64
+      }
+    },
+    {
+      "vname": "code_not_found",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 140,
+        "column": 65
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 140,
+        "column": 79
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 141,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 141,
+        "column": 16
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 149,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 149,
+        "column": 19
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 149,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 149,
+        "column": 37
+      }
+    },
+    {
+      "vname": "isAuthorized",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 152,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 152,
+        "column": 17
+      }
+    },
+    {
+      "vname": "checkContractOwner",
+      "type": "ByStr20 -> ByStr20 -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 152,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 152,
+        "column": 38
+      }
+    },
+    {
+      "vname": "contractOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 152,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 152,
+        "column": 52
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 152,
+        "column": 53
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 152,
+        "column": 60
+      }
+    },
+    {
+      "vname": "isAuthorized",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 153,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 153,
+        "column": 23
+      }
+    },
+    {
+      "vname": "currentTokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 155,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 155,
+        "column": 29
+      }
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 155,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 155,
+        "column": 46
+      }
+    },
+    {
+      "vname": "tokenExist",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 157,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 157,
+        "column": 19
+      }
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 157,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 157,
+        "column": 43
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 157,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 157,
+        "column": 51
+      }
+    },
+    {
+      "vname": "tokenExist",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 158,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 158,
+        "column": 25
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 161,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 161,
+        "column": 14
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 161,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 161,
+        "column": 29
+      }
+    },
+    {
+      "vname": "makeErrorEvent",
+      "type": "String -> Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 161,
+        "column": 42
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 161,
+        "column": 56
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 161,
+        "column": 57
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 161,
+        "column": 65
+      }
+    },
+    {
+      "vname": "code_token_exists",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 161,
+        "column": 66
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 161,
+        "column": 83
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 162,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 162,
+        "column": 20
+      }
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 165,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 165,
+        "column": 26
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 165,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 165,
+        "column": 34
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 165,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 165,
+        "column": 41
+      }
+    },
+    {
+      "vname": "userCnt",
+      "type": "Option (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 167,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 167,
+        "column": 20
+      }
+    },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (ByStr20) (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 167,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 167,
+        "column": 39
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 167,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 167,
+        "column": 42
+      }
+    },
+    {
+      "vname": "userCnt",
+      "type": "Option (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 168,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 168,
+        "column": 26
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 169,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 169,
+        "column": 23
+      }
+    },
+    {
+      "vname": "newVal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 171,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 171,
+        "column": 23
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 171,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 171,
+        "column": 32
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 171,
+        "column": 60
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 171,
+        "column": 63
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 171,
+        "column": 64
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 171,
+        "column": 67
+      }
+    },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (ByStr20) (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 172,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 172,
+        "column": 32
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 172,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 172,
+        "column": 35
+      }
+    },
+    {
+      "vname": "newVal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 172,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 172,
+        "column": 46
+      }
+    },
+    {
+      "vname": "newVal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 175,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 175,
+        "column": 23
+      }
+    },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (ByStr20) (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 176,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 176,
+        "column": 32
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 176,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 176,
+        "column": 35
+      }
+    },
+    {
+      "vname": "newVal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 176,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 176,
+        "column": 46
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 180,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 180,
+        "column": 14
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 180,
+        "column": 53
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 180,
+        "column": 60
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 180,
+        "column": 73
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 180,
+        "column": 75
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 180,
+        "column": 84
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 180,
+        "column": 91
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 181,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 181,
+        "column": 20
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 185,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 185,
+        "column": 10
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 185,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 185,
+        "column": 25
+      }
+    },
+    {
+      "vname": "makeErrorEvent",
+      "type": "String -> Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 185,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 185,
+        "column": 52
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 185,
+        "column": 53
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 185,
+        "column": 61
+      }
+    },
+    {
+      "vname": "code_not_authorized",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 185,
+        "column": 62
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 185,
+        "column": 81
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 186,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 186,
+        "column": 16
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 196,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 196,
+        "column": 29
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 196,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 196,
+        "column": 42
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 196,
+        "column": 53
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 196,
+        "column": 60
+      }
+    },
+    {
+      "vname": "copy_tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 197,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 197,
+        "column": 23
+      }
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 197,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 197,
+        "column": 40
+      }
+    },
+    {
+      "vname": "copy_tokenApprovals",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 198,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 198,
+        "column": 24
+      }
+    },
+    {
+      "vname": "tokenApprovals",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 198,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 198,
+        "column": 42
+      }
+    },
+    {
+      "vname": "copy_operatorApproval",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 199,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 199,
+        "column": 26
+      }
+    },
+    {
+      "vname": "operatorApprovals",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 199,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 199,
+        "column": 47
+      }
+    },
+    {
+      "vname": "getTokenOwner",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 202,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 202,
+        "column": 18
+      }
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 202,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 202,
+        "column": 35
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 202,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 202,
+        "column": 43
+      }
+    },
+    {
+      "vname": "getTokenOwner",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 203,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 203,
+        "column": 24
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 206,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 206,
+        "column": 10
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 206,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 206,
+        "column": 25
+      }
+    },
+    {
+      "vname": "makeErrorEvent",
+      "type": "String -> Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 206,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 206,
+        "column": 60
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 206,
+        "column": 61
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 206,
+        "column": 69
+      }
+    },
+    {
+      "vname": "code_not_found",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 206,
+        "column": 70
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 206,
+        "column": 84
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 207,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 207,
+        "column": 16
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 209,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 209,
+        "column": 22
+      }
+    },
+    {
+      "vname": "checkOwner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 212,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 212,
+        "column": 19
+      }
+    },
+    {
+      "vname": "isTokenOwner",
+      "type": "ByStr20 -> Uint256 -> Map (Uint256) (ByStr20) -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 212,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 212,
+        "column": 34
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 212,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 212,
+        "column": 42
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 212,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 212,
+        "column": 50
+      }
+    },
+    {
+      "vname": "copy_tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 212,
+        "column": 51
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 212,
+        "column": 69
+      }
+    },
+    {
+      "vname": "checkApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 213,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 213,
+        "column": 22
+      }
+    },
+    {
+      "vname": "isApproved",
+      "type": "ByStr20 -> Uint256 -> Map (Uint256) (ByStr20) -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 213,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 213,
+        "column": 35
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 213,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 213,
+        "column": 43
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 213,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 213,
+        "column": 51
+      }
+    },
+    {
+      "vname": "copy_tokenApprovals",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 213,
+        "column": 52
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 213,
+        "column": 71
+      }
+    },
+    {
+      "vname": "checkApprovedForAll",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 214,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 214,
+        "column": 28
+      }
+    },
+    {
+      "vname": "isApprovedForAll",
+      "type":
+        "ByStr20 -> ByStr20 -> Map (ByStr20) (Map (ByStr20) (Bool)) -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 214,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 214,
+        "column": 47
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 214,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 214,
+        "column": 55
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 214,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 214,
+        "column": 66
+      }
+    },
+    {
+      "vname": "copy_operatorApproval",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 214,
+        "column": 67
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 214,
+        "column": 88
+      }
+    },
+    {
+      "vname": "isFromTokenOwner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 217,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 217,
+        "column": 25
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 217,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 217,
+        "column": 49
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 217,
+        "column": 50
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 217,
+        "column": 54
+      }
+    },
+    {
+      "vname": "isFromTokenOwner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 218,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 218,
+        "column": 31
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 221,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 221,
+        "column": 14
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 221,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 221,
+        "column": 29
+      }
+    },
+    {
+      "vname": "makeErrorEvent",
+      "type": "String -> Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 221,
+        "column": 50
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 221,
+        "column": 64
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 221,
+        "column": 65
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 221,
+        "column": 73
+      }
+    },
+    {
+      "vname": "code_bad_request",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 221,
+        "column": 74
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 221,
+        "column": 90
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 222,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 222,
+        "column": 20
+      }
+    },
+    {
+      "vname": "isAuthorized",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 225,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 225,
+        "column": 25
+      }
+    },
+    {
+      "vname": "isApprovedOrOwner",
+      "type": "Bool -> Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 225,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 225,
+        "column": 45
+      }
+    },
+    {
+      "vname": "checkOwner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 225,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 225,
+        "column": 56
+      }
+    },
+    {
+      "vname": "checkApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 225,
+        "column": 57
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 225,
+        "column": 70
+      }
+    },
+    {
+      "vname": "checkApprovedForAll",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 225,
+        "column": 71
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 225,
+        "column": 90
+      }
+    },
+    {
+      "vname": "isAuthorized",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 227,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 227,
+        "column": 31
+      }
+    },
+    {
+      "vname": "checkApproved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 230,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 230,
+        "column": 36
+      }
+    },
+    {
+      "vname": "tokenApprovals",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 233,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 233,
+        "column": 42
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 233,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 233,
+        "column": 50
+      }
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 238,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 238,
+        "column": 30
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 238,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 238,
+        "column": 38
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 238,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 238,
+        "column": 45
+      }
+    },
+    {
+      "vname": "curr_otc",
+      "type": "Map (ByStr20) (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 241,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 241,
+        "column": 25
+      }
+    },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (ByStr20) (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 241,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 241,
+        "column": 44
+      }
+    },
+    {
+      "vname": "somePrevBal",
+      "type": "Option (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 244,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 244,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (ByStr20) (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 244,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 244,
+        "column": 47
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 244,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 244,
+        "column": 52
+      }
+    },
+    {
+      "vname": "somePrevBal",
+      "type": "Option (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 245,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 245,
+        "column": 34
+      }
+    },
+    {
+      "vname": "prevBal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 246,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 246,
+        "column": 31
+      }
+    },
+    {
+      "vname": "newBal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 247,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 247,
+        "column": 27
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 247,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 247,
+        "column": 38
+      }
+    },
+    {
+      "vname": "prevBal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 247,
+        "column": 66
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 247,
+        "column": 73
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 247,
+        "column": 74
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 247,
+        "column": 77
+      }
+    },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (ByStr20) (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 248,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 248,
+        "column": 36
+      }
+    },
+    {
+      "vname": "from",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 248,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 248,
+        "column": 41
+      }
+    },
+    {
+      "vname": "newBal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 248,
+        "column": 46
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 248,
+        "column": 52
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 250,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 250,
+        "column": 22
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 250,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 250,
+        "column": 37
+      }
+    },
+    {
+      "vname": "makeErrorEvent",
+      "type": "String -> Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 250,
+        "column": 58
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 250,
+        "column": 72
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 250,
+        "column": 73
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 250,
+        "column": 81
+      }
+    },
+    {
+      "vname": "code_unexpected_error",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 250,
+        "column": 82
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 250,
+        "column": 103
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 251,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 251,
+        "column": 28
+      }
+    },
+    {
+      "vname": "userCnt",
+      "type": "Option (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 255,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 255,
+        "column": 24
+      }
+    },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (ByStr20) (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 255,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 255,
+        "column": 43
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 255,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 255,
+        "column": 46
+      }
+    },
+    {
+      "vname": "newVal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 257,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 257,
+        "column": 23
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 257,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 257,
+        "column": 33
+      }
+    },
+    {
+      "vname": "userCnt",
+      "type": "Option (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 257,
+        "column": 55
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 257,
+        "column": 62
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 258,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 258,
+        "column": 27
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 260,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 260,
+        "column": 36
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 260,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 260,
+        "column": 40
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 261,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 261,
+        "column": 30
+      }
+    },
+    {
+      "vname": "ownedTokenCount",
+      "type": "Map (ByStr20) (Uint256)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 263,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 263,
+        "column": 32
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 263,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 263,
+        "column": 35
+      }
+    },
+    {
+      "vname": "newVal",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 263,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 263,
+        "column": 46
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 264,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 264,
+        "column": 18
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 264,
+        "column": 67
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 264,
+        "column": 74
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 264,
+        "column": 87
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 264,
+        "column": 89
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 264,
+        "column": 98
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 264,
+        "column": 105
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 265,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 265,
+        "column": 24
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 268,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 268,
+        "column": 18
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 268,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 268,
+        "column": 33
+      }
+    },
+    {
+      "vname": "makeErrorEvent",
+      "type": "String -> Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 268,
+        "column": 54
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 268,
+        "column": 68
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 268,
+        "column": 69
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 268,
+        "column": 77
+      }
+    },
+    {
+      "vname": "code_not_authorized",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 268,
+        "column": 78
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 268,
+        "column": 97
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 269,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 269,
+        "column": 24
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 282,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 282,
+        "column": 22
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 282,
+        "column": 33
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 282,
+        "column": 40
+      }
+    },
+    {
+      "vname": "copy_tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 284,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 284,
+        "column": 23
+      }
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 284,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 284,
+        "column": 40
+      }
+    },
+    {
+      "vname": "copy_operatorApproval",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 285,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 285,
+        "column": 26
+      }
+    },
+    {
+      "vname": "operatorApprovals",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 285,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 285,
+        "column": 47
+      }
+    },
+    {
+      "vname": "getTokenOwner",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 288,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 288,
+        "column": 18
+      }
+    },
+    {
+      "vname": "tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 288,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 288,
+        "column": 35
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 288,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 288,
+        "column": 43
+      }
+    },
+    {
+      "vname": "getTokenOwner",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 289,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 289,
+        "column": 24
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 292,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 292,
+        "column": 10
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 292,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 292,
+        "column": 25
+      }
+    },
+    {
+      "vname": "makeErrorEvent",
+      "type": "String -> Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 292,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 292,
+        "column": 55
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 292,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 292,
+        "column": 64
+      }
+    },
+    {
+      "vname": "code_not_found",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 292,
+        "column": 65
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 292,
+        "column": 79
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 293,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 293,
+        "column": 16
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 294,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 294,
+        "column": 22
+      }
+    },
+    {
+      "vname": "checkApprovedForAll",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 295,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 295,
+        "column": 28
+      }
+    },
+    {
+      "vname": "isApprovedForAll",
+      "type":
+        "ByStr20 -> ByStr20 -> Map (ByStr20) (Map (ByStr20) (Bool)) -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 295,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 295,
+        "column": 47
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 295,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 295,
+        "column": 55
+      }
+    },
+    {
+      "vname": "tokenOwner",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 295,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 295,
+        "column": 66
+      }
+    },
+    {
+      "vname": "copy_operatorApproval",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 295,
+        "column": 67
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 295,
+        "column": 88
+      }
+    },
+    {
+      "vname": "checkOwner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 296,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 296,
+        "column": 19
+      }
+    },
+    {
+      "vname": "isTokenOwner",
+      "type": "ByStr20 -> Uint256 -> Map (Uint256) (ByStr20) -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 296,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 296,
+        "column": 34
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 296,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 296,
+        "column": 42
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 296,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 296,
+        "column": 50
+      }
+    },
+    {
+      "vname": "copy_tokenOwnerMap",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 296,
+        "column": 51
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 296,
+        "column": 69
+      }
+    },
+    {
+      "vname": "isAuthorized",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 297,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 297,
+        "column": 21
+      }
+    },
+    {
+      "vname": "orb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 297,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 297,
+        "column": 27
+      }
+    },
+    {
+      "vname": "checkApprovedForAll",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 297,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 297,
+        "column": 47
+      }
+    },
+    {
+      "vname": "checkOwner",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 297,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 297,
+        "column": 58
+      }
+    },
+    {
+      "vname": "isAuthorized",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 298,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 298,
+        "column": 27
+      }
+    },
+    {
+      "vname": "tokenApprovals",
+      "type": "Map (Uint256) (ByStr20)",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 301,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 301,
+        "column": 27
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 301,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 301,
+        "column": 35
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 301,
+        "column": 40
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 301,
+        "column": 42
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 303,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 303,
+        "column": 14
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 303,
+        "column": 58
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 303,
+        "column": 65
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 303,
+        "column": 79
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 303,
+        "column": 81
+      }
+    },
+    {
+      "vname": "tokenId",
+      "type": "Uint256",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 303,
+        "column": 90
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 303,
+        "column": 97
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 304,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 304,
+        "column": 20
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 307,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 307,
+        "column": 14
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 307,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 307,
+        "column": 29
+      }
+    },
+    {
+      "vname": "makeErrorEvent",
+      "type": "String -> Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 307,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 307,
+        "column": 59
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 307,
+        "column": 60
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 307,
+        "column": 68
+      }
+    },
+    {
+      "vname": "code_not_authorized",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 307,
+        "column": 69
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 307,
+        "column": 88
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 308,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 308,
+        "column": 20
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 317,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 317,
+        "column": 32
+      }
+    },
+    {
+      "vname": "approved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 317,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 317,
+        "column": 51
+      }
+    },
+    {
+      "vname": "copy_operatorApproval",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 319,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 319,
+        "column": 26
+      }
+    },
+    {
+      "vname": "operatorApprovals",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 319,
+        "column": 30
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 319,
+        "column": 47
+      }
+    },
+    {
+      "vname": "isValidOperation",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 21
+      }
+    },
+    {
+      "vname": "check",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 28
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 33
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 47
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 54
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 55
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 57
+      }
+    },
+    {
+      "vname": "negb",
+      "type": "Bool -> Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 61
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 65
+      }
+    },
+    {
+      "vname": "check",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 66
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 321,
+        "column": 71
+      }
+    },
+    {
+      "vname": "isValidOperation",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 323,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 323,
+        "column": 27
+      }
+    },
+    {
+      "vname": "operatorApprovals",
+      "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 326,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 326,
+        "column": 26
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 326,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 326,
+        "column": 34
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 326,
+        "column": 36
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 326,
+        "column": 38
+      }
+    },
+    {
+      "vname": "approved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 326,
+        "column": 43
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 326,
+        "column": 51
+      }
+    },
+    {
+      "vname": "approvedStr",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 328,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 328,
+        "column": 20
+      }
+    },
+    {
+      "vname": "bool_to_string",
+      "type": "Bool -> String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 328,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 328,
+        "column": 37
+      }
+    },
+    {
+      "vname": "approved",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 328,
+        "column": 38
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 328,
+        "column": 46
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 329,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 329,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 329,
+        "column": 64
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 329,
+        "column": 71
+      }
+    },
+    {
+      "vname": "to",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 329,
+        "column": 84
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 329,
+        "column": 86
+      }
+    },
+    {
+      "vname": "approvedStr",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 329,
+        "column": 96
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 329,
+        "column": 107
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 330,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 330,
+        "column": 16
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 332,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 332,
+        "column": 10
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 332,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 332,
+        "column": 25
+      }
+    },
+    {
+      "vname": "makeErrorEvent",
+      "type": "String -> Uint32 -> Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 332,
+        "column": 51
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 332,
+        "column": 65
+      }
+    },
+    {
+      "vname": "raisedAt",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 332,
+        "column": 66
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 332,
+        "column": 74
+      }
+    },
+    {
+      "vname": "code_not_authorized",
+      "type": "Uint32",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 332,
+        "column": 75
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 332,
+        "column": 94
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 333,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 333,
+        "column": 16
+      }
+    }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "NonfungibleToken",

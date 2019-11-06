@@ -122,7 +122,7 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["typecheck"; "good"; f]
     let runner = "type-checker"
     let gas_limit = Stdint.Uint64.of_int 4002000
-    let custom_args = []
+    let custom_args = ["-typeinfo"]
     let additional_libdirs = []
     let tests = [
       "branch-match.scilexp";
