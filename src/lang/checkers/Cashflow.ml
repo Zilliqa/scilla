@@ -1561,26 +1561,30 @@ module ScillaCashflowChecker
       let empty_field_env = AssocDictionary.make_dict () in
       let implicit_field_env = AssocDictionary.insert "_balance" Money empty_field_env in
       let ctr_tag_map = init_ctr_tag_map () in
-      let param_field_env =
+      let init_param_env =
         List.fold_left cparams ~init:implicit_field_env
           ~f:(fun acc_env (p, _) ->
              AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
       in 
       let init_field_env =
-        List.fold_left cfields ~init:new_param_field_env
+        List.fold_left cfields ~init:(AssocDictionary.make_dict ())
           ~f:(fun acc_env (f, _, e) ->
              let ((_, (e_tag, _)), _, _, _, _) =
-                  cf_tag_expr e (lub_tags (get_id_tag f) NoInfo) (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) new_ctr_tag_map in
+                  cf_tag_expr e (lub_tags (get_id_tag f) NoInfo) (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) ctr_tag_map in
              AssocDictionary.insert (get_id f) e_tag acc_env)
           in
-      let rec tagger components field_env ctr_tag_map =
+      let rec tagger components param_env field_env ctr_tag_map =
       (* TODO: This bit needs to be recalculated for every recursive call to tagger.
          However, only the contract parameters should be in scope, and not the mutable fields.
          We therefore need to somehow split the field environment before tagging the constraint,
          and merge them again after tagging the constraint. *)
-      let (new_constraint, new_param_field_env, _, new_ctr_tag_map, constraint_changes) =
-        cf_tag_expr cconstraint NotMoney param_field_env_and_something (AssocDictionary.make_dict()) ctr_tag_map in
-      let (new_ts, new_field_env, tmp_ctr_tag_map, ccomps_changes) =
+        let (params, mut_fields) =
+          List.partition_tf field_env
+            ~f:(fun (f, _) -> List.exists cparams ~f:(fun (p, _) -> (get_id p) = (get_id f))) in
+        let (new_constraint, new_param_env, _, new_ctr_tag_map, constraint_changes) =
+          cf_tag_expr cconstraint NotMoney param_env (AssocDictionary.make_dict()) ctr_tag_map in
+        let new_field_env = mut_field_env @ new_param_env in
+        let (new_ts, new_field_env, tmp_ctr_tag_map, ccomps_changes) =
           List.fold_right components ~init:([], field_env, ctr_tag_map, false) 
             ~f:(fun t (acc_ts, acc_field_env, acc_ctr_tag_map, acc_changes) ->
                let (new_t, new_field_env, new_ctr_tag_map, t_changes) =
@@ -1589,9 +1593,9 @@ module ScillaCashflowChecker
             in
         if ccomps_changes
         then
-          tagger new_ts new_field_env tmp_ctr_tag_map
+          tagger new_ts new_param_env new_field_env tmp_ctr_tag_map
         else (new_ts, new_field_env, tmp_ctr_tag_map) in
-      let (new_ccomps, new_field_env, final_ctr_tag_map) = tagger ccomps init_field_env ctr_tag_map in
+      let (new_ccomps, new_field_env, final_ctr_tag_map) = tagger ccomps init_param_env init_field_env ctr_tag_map in
       let new_fields =
         List.fold_right cfields ~init:[] 
           ~f:(fun (f, t, e) acc_fields ->

@@ -33,6 +33,8 @@ module type Dictionary = sig
   val remove_all : key -> 'a dict -> 'a dict
   (* Inserts new kv pair without checking for duplicates. *)
   val insert : key -> 'a -> 'a dict -> 'a dict
+  (* Inserts all kv pairs from the first dictionary into the second dictionary, without checking for duplicates.  *)
+  val insert_all : 'a dict -> 'a dict -> 'a dict
   val lookup : key -> 'a dict -> 'a option
   (* Updates the first key if it exists. No new entry created. *)
   val update : key -> 'a -> 'a dict -> 'a dict
@@ -72,6 +74,9 @@ module AssocDictionary : Dictionary = struct
   let insert k v d =
     (k, v) :: d
 
+  let insert_all other_d this_d =
+    other_d @ this_d
+  
   let lookup k d =
     match List.find_opt (fun (kd, _) -> k = kd) d with
     | None -> None
