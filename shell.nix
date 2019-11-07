@@ -8,8 +8,8 @@ let
   ppx_deriving_rpc = opkgs.callPackage ./scripts/nix/ppx_deriving_rpc.nix { inherit rpclib; };
   ocamlVersion = opkgs.ocaml.version;
   systemPkgs = [
-    ocaml opam gcc dune ncurses boost openssl
-    zlib secp256k1 libffi pkgconfig pcre patdiff
+    m4 ocaml cmake opam gcc dune ncurses boost openssl
+    zlib gmp procps secp256k1 libffi pkgconfig pcre patdiff
   ];
   ocamlPkgs = with opkgs; [
     base core core_bench core_profiler ppx_deriving ppx_tools_versioned

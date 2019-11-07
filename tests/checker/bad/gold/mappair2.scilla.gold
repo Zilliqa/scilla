@@ -24,7 +24,7 @@
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
         "line": 95,
-        "column": 7
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
@@ -33,7 +33,7 @@
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
         "line": 108,
-        "column": 7
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
@@ -44,7 +44,7 @@
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
         "line": 58,
-        "column": 10
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -64,7 +64,7 @@
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
         "line": 50,
-        "column": 10
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

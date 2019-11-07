@@ -1,1 +1,33 @@
-Int32 -> Int32
+{
+  "type_info": [
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/fun.scilexp",
+        "line": 1,
+        "column": 6
+      },
+      "end_location": {
+        "file": "typecheck/good/fun.scilexp",
+        "line": 1,
+        "column": 7
+      }
+    },
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/fun.scilexp",
+        "line": 1,
+        "column": 20
+      },
+      "end_location": {
+        "file": "typecheck/good/fun.scilexp",
+        "line": 1,
+        "column": 21
+      }
+    }
+  ],
+  "type": "Int32 -> Int32"
+}

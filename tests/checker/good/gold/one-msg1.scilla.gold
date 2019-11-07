@@ -1,5 +1,315 @@
 {
   "cashflow_tags": { "State variables": [], "ADT constructors": [] },
+  "type_info": [
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 12,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 12,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 13,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 13,
+        "column": 11
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 14,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 14,
+        "column": 14
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 15,
+        "column": 18
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 15,
+        "column": 21
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 15,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 15,
+        "column": 29
+      }
+    },
+    {
+      "vname": "msg1",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 27,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 27,
+        "column": 7
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 27,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 27,
+        "column": 42
+      }
+    },
+    {
+      "vname": "msg2",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 28,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 28,
+        "column": 7
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 28,
+        "column": 35
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 28,
+        "column": 42
+      }
+    },
+    {
+      "vname": "msgs1",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 29,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 29,
+        "column": 8
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 29,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 29,
+        "column": 18
+      }
+    },
+    {
+      "vname": "msg1",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 29,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 29,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgs2",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 30,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 30,
+        "column": 8
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 30,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 30,
+        "column": 18
+      }
+    },
+    {
+      "vname": "msg2",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 30,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 30,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgs2",
+      "type": "Pair (List (Message)) (List (Message))",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 31,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 31,
+        "column": 8
+      }
+    },
+    {
+      "vname": "msgs1",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 31,
+        "column": 48
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 31,
+        "column": 53
+      }
+    },
+    {
+      "vname": "msgs2",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 31,
+        "column": 54
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 31,
+        "column": 59
+      }
+    },
+    {
+      "vname": "msgs2",
+      "type": "Pair (List (Message)) (List (Message))",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 32,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 32,
+        "column": 14
+      }
+    },
+    {
+      "vname": "m2",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 33,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 33,
+        "column": 15
+      }
+    },
+    {
+      "vname": "m1",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 33,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 33,
+        "column": 12
+      }
+    },
+    {
+      "vname": "m1",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 34,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 34,
+        "column": 12
+      }
+    }
+  ],
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "HelloWorld",

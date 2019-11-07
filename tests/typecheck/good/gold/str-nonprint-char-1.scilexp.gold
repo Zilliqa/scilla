@@ -1,1 +1,33 @@
-String
+{
+  "type_info": [
+    {
+      "vname": "s",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/str-nonprint-char-1.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/str-nonprint-char-1.scilexp",
+        "line": 1,
+        "column": 6
+      }
+    },
+    {
+      "vname": "s",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/str-nonprint-char-1.scilexp",
+        "line": 2,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/str-nonprint-char-1.scilexp",
+        "line": 2,
+        "column": 2
+      }
+    }
+  ],
+  "type": "String"
+}

@@ -1,1 +1,47 @@
-Map (Int32) (Pair (BNum) (Uint128)) -> Uint128
+{
+  "type_info": [
+    {
+      "vname": "f",
+      "type": "Map (Int32) (Pair (BNum) (Uint128)) -> Uint128",
+      "start_location": {
+        "file": "typecheck/good/pair.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/pair.scilexp",
+        "line": 2,
+        "column": 6
+      }
+    },
+    {
+      "vname": "a",
+      "type": "Map (Int32) (Pair (BNum) (Uint128))",
+      "start_location": {
+        "file": "typecheck/good/pair.scilexp",
+        "line": 3,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/pair.scilexp",
+        "line": 3,
+        "column": 9
+      }
+    },
+    {
+      "vname": "f",
+      "type": "Map (Int32) (Pair (BNum) (Uint128)) -> Uint128",
+      "start_location": {
+        "file": "typecheck/good/pair.scilexp",
+        "line": 6,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/pair.scilexp",
+        "line": 6,
+        "column": 2
+      }
+    }
+  ],
+  "type": "Map (Int32) (Pair (BNum) (Uint128)) -> Uint128"
+}

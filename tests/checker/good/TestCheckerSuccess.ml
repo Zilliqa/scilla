@@ -22,7 +22,7 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["contracts"; f]
     let runner = "scilla-checker"
     let gas_limit = Stdint.Uint64.of_int 8000
-    let custom_args = ["-cf"; "-contractinfo";]
+    let custom_args = ["-cf"; "-contractinfo"; "-typeinfo"]
     let additional_libdirs = []
     let tests = [
       "auction.scilla";

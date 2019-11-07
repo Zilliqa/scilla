@@ -1,1 +1,117 @@
-Bool
+{
+  "type_info": [
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 1,
+        "column": 6
+      }
+    },
+    {
+      "vname": "y",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 2,
+        "column": 6
+      }
+    },
+    {
+      "vname": "o",
+      "type": "Option (Int64)",
+      "start_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 3,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 3,
+        "column": 6
+      }
+    },
+    {
+      "vname": "x",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 3,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 3,
+        "column": 27
+      }
+    },
+    {
+      "vname": "o",
+      "type": "Option (Int64)",
+      "start_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 4,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 4,
+        "column": 8
+      }
+    },
+    {
+      "vname": "x1",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 5,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 5,
+        "column": 10
+      }
+    },
+    {
+      "vname": "x1",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 5,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 5,
+        "column": 27
+      }
+    },
+    {
+      "vname": "y",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 5,
+        "column": 28
+      },
+      "end_location": {
+        "file": "typecheck/good/to_int.scilexp",
+        "line": 5,
+        "column": 29
+      }
+    }
+  ],
+  "type": "Bool"
+}
