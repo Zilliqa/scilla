@@ -1,0 +1,82 @@
+{
+  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "ShadowWarn3",
+    "params": [],
+    "fields": [],
+    "transitions": [ { "vname": "warn1", "params": [] } ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "Deprecated: variable a shadows a previous binding in the same pattern.",
+      "start_location": {
+        "file": "checker/good/shadowwarn3.scilla",
+        "line": 19,
+        "column": 20
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "Deprecated: variable a shadows a previous binding in the same pattern.",
+      "start_location": {
+        "file": "checker/good/shadowwarn3.scilla",
+        "line": 11,
+        "column": 20
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "No transition in contract ShadowWarn3 contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "8000"
+}
