@@ -1,1 +1,887 @@
-String
+{
+  "type_info": [
+    {
+      "vname": "feq",
+      "type": "String -> String -> Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 2,
+        "column": 8
+      }
+    },
+    {
+      "vname": "a",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 3,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 3,
+        "column": 9
+      }
+    },
+    {
+      "vname": "b",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 4,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 4,
+        "column": 9
+      }
+    },
+    {
+      "vname": "a",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 5,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 5,
+        "column": 17
+      }
+    },
+    {
+      "vname": "b",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 5,
+        "column": 18
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 5,
+        "column": 19
+      }
+    },
+    {
+      "vname": "fconcat",
+      "type": "String -> String -> String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 7,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 7,
+        "column": 12
+      }
+    },
+    {
+      "vname": "a",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 8,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 8,
+        "column": 9
+      }
+    },
+    {
+      "vname": "b",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 9,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 9,
+        "column": 9
+      }
+    },
+    {
+      "vname": "a",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 10,
+        "column": 20
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 10,
+        "column": 21
+      }
+    },
+    {
+      "vname": "b",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 10,
+        "column": 22
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 10,
+        "column": 23
+      }
+    },
+    {
+      "vname": "fsubstr",
+      "type": "String -> Uint32 -> Uint32 -> String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 12,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 12,
+        "column": 12
+      }
+    },
+    {
+      "vname": "a",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 13,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 13,
+        "column": 9
+      }
+    },
+    {
+      "vname": "s",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 14,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 14,
+        "column": 9
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 15,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 15,
+        "column": 9
+      }
+    },
+    {
+      "vname": "a",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 16,
+        "column": 20
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 16,
+        "column": 21
+      }
+    },
+    {
+      "vname": "s",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 16,
+        "column": 22
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 16,
+        "column": 23
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 16,
+        "column": 24
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 16,
+        "column": 25
+      }
+    },
+    {
+      "vname": "a",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 18,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 18,
+        "column": 6
+      }
+    },
+    {
+      "vname": "b",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 19,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 19,
+        "column": 6
+      }
+    },
+    {
+      "vname": "sep",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 20,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 20,
+        "column": 8
+      }
+    },
+    {
+      "vname": "res1",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 21,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 21,
+        "column": 9
+      }
+    },
+    {
+      "vname": "feq",
+      "type": "String -> String -> Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 21,
+        "column": 12
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 21,
+        "column": 15
+      }
+    },
+    {
+      "vname": "a",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 21,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 21,
+        "column": 17
+      }
+    },
+    {
+      "vname": "b",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 21,
+        "column": 18
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 21,
+        "column": 19
+      }
+    },
+    {
+      "vname": "c",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 22,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 22,
+        "column": 6
+      }
+    },
+    {
+      "vname": "d",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 23,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 23,
+        "column": 6
+      }
+    },
+    {
+      "vname": "res2",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 24,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 24,
+        "column": 9
+      }
+    },
+    {
+      "vname": "feq",
+      "type": "String -> String -> Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 24,
+        "column": 12
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 24,
+        "column": 15
+      }
+    },
+    {
+      "vname": "c",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 24,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 24,
+        "column": 17
+      }
+    },
+    {
+      "vname": "d",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 24,
+        "column": 18
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 24,
+        "column": 19
+      }
+    },
+    {
+      "vname": "s1",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 25,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 25,
+        "column": 7
+      }
+    },
+    {
+      "vname": "s2",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 26,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 26,
+        "column": 7
+      }
+    },
+    {
+      "vname": "fconcat",
+      "type": "String -> String -> String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 26,
+        "column": 10
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 26,
+        "column": 17
+      }
+    },
+    {
+      "vname": "s1",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 26,
+        "column": 18
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 26,
+        "column": 20
+      }
+    },
+    {
+      "vname": "sep",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 26,
+        "column": 21
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 26,
+        "column": 24
+      }
+    },
+    {
+      "vname": "s3",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 27,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 27,
+        "column": 7
+      }
+    },
+    {
+      "vname": "fconcat",
+      "type": "String -> String -> String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 27,
+        "column": 10
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 27,
+        "column": 17
+      }
+    },
+    {
+      "vname": "s2",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 27,
+        "column": 18
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 27,
+        "column": 20
+      }
+    },
+    {
+      "vname": "b",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 27,
+        "column": 21
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 27,
+        "column": 22
+      }
+    },
+    {
+      "vname": "startp",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 28,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 28,
+        "column": 11
+      }
+    },
+    {
+      "vname": "endp",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 29,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 29,
+        "column": 9
+      }
+    },
+    {
+      "vname": "res",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 30,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 30,
+        "column": 8
+      }
+    },
+    {
+      "vname": "fsubstr",
+      "type": "String -> Uint32 -> Uint32 -> String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 30,
+        "column": 11
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 30,
+        "column": 18
+      }
+    },
+    {
+      "vname": "s3",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 30,
+        "column": 19
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 30,
+        "column": 21
+      }
+    },
+    {
+      "vname": "startp",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 30,
+        "column": 22
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 30,
+        "column": 28
+      }
+    },
+    {
+      "vname": "endp",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 30,
+        "column": 29
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 30,
+        "column": 33
+      }
+    },
+    {
+      "vname": "bs",
+      "type": "ByStr3",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 32,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 32,
+        "column": 7
+      }
+    },
+    {
+      "vname": "bsx",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 33,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 33,
+        "column": 8
+      }
+    },
+    {
+      "vname": "bs",
+      "type": "ByStr3",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 33,
+        "column": 28
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 33,
+        "column": 30
+      }
+    },
+    {
+      "vname": "bss",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 34,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 34,
+        "column": 8
+      }
+    },
+    {
+      "vname": "bs",
+      "type": "ByStr3",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 34,
+        "column": 29
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 34,
+        "column": 31
+      }
+    },
+    {
+      "vname": "bsxs",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 35,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 35,
+        "column": 9
+      }
+    },
+    {
+      "vname": "bsx",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 35,
+        "column": 30
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 35,
+        "column": 33
+      }
+    },
+    {
+      "vname": "i",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 37,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 37,
+        "column": 6
+      }
+    },
+    {
+      "vname": "j",
+      "type": "Uint128",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 38,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 38,
+        "column": 6
+      }
+    },
+    {
+      "vname": "k",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 39,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 39,
+        "column": 6
+      }
+    },
+    {
+      "vname": "is",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 40,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 40,
+        "column": 7
+      }
+    },
+    {
+      "vname": "i",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 40,
+        "column": 28
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 40,
+        "column": 29
+      }
+    },
+    {
+      "vname": "js",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 41,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 41,
+        "column": 7
+      }
+    },
+    {
+      "vname": "j",
+      "type": "Uint128",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 41,
+        "column": 28
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 41,
+        "column": 29
+      }
+    },
+    {
+      "vname": "ks",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 42,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 42,
+        "column": 7
+      }
+    },
+    {
+      "vname": "k",
+      "type": "Int64",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 42,
+        "column": 28
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 42,
+        "column": 29
+      }
+    },
+    {
+      "vname": "res",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 44,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 44,
+        "column": 4
+      }
+    }
+  ],
+  "type": "String"
+}

@@ -216,14 +216,14 @@ simple_exp :
 | LET; x = ID;
   t = ioption(type_annot)
   EQ; f = simple_exp; IN; e = exp
-  {(Let ((Ident (x, toLoc $startpos)), t, f, e), toLoc $startpos) }
+  {(Let ((Ident (x, toLoc $startpos(x))), t, f, e), toLoc $startpos(f)) }
 (* Function *)
 | FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
-  { (Fun (Ident (i, toLoc $startpos), t, e), toLoc $startpos ) }
+  { (Fun (Ident (i, toLoc $startpos(i)), t, e), toLoc $startpos(e) ) }
 (* Application *)
 | f = sid;
   args = nonempty_list(sident)
-  { (App ((Ident (f, toLoc $startpos)), args), toLoc $startpos ) }
+  { (App ((Ident (f, toLoc $startpos(f))), args), toLoc $startpos ) }
 (* Atomic expression *)
 | a = atomic_exp {a}
 (* Built-in call *)
@@ -246,13 +246,13 @@ simple_exp :
   { (MatchExpr (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos) }
 (* Type function *)
 | TFUN; i = TID ARROW; e = exp
-  { (TFun (Ident (i, toLoc $startpos), e), toLoc $startpos) }
+  { (TFun (Ident (i, toLoc $startpos(i)), e), toLoc $startpos) }
 (* Type application *)
 | AT; f = sid; targs = nonempty_list(targ)
-  { (TApp ((Ident (f, toLoc $startpos)), targs), toLoc $startpos) }
+  { (TApp ((Ident (f, toLoc $startpos(f))), targs), toLoc $startpos) }
 
 atomic_exp :
-| i = sid       { (Var (Ident (i, toLoc $startpos)), toLoc $startpos) }
+| i = sid       { (Var (Ident (i, toLoc $startpos(i))), toLoc $startpos) }
 | l = lit      { (Literal l, toLoc $startpos) }
 
 lit :
@@ -280,12 +280,12 @@ map_access:
 
 pattern:
 | UNDERSCORE { Wildcard }
-| x = ID { Binder (Ident (x, toLoc $startpos)) }
+| x = ID { Binder (Ident (x, toLoc $startpos(x))) }
 | c = scid; ps = list(arg_pattern) { Constructor (c, ps) }
 
 arg_pattern:
 | UNDERSCORE { Wildcard }
-| x = ID { Binder (Ident (x, toLoc $startpos)) }
+| x = ID { Binder (Ident (x, toLoc $startpos(x))) }
 | c = scid;  { Constructor (c, []) }
 | LPAREN; p = pattern RPAREN; { p }
 
@@ -313,10 +313,10 @@ type_term :
 (***********************************************)
 
 stmt:
-| l = ID; FETCH; r = sid   { (Load (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
-| l = ID; ASSIGN; r = sid { (Store (asIdL l (toLoc $startpos($2)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
-| l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos($2)), r), toLoc $startpos) }
-| l = ID; FETCH; AND; c = CID { (ReadFromBC (asIdL l (toLoc $startpos($2)), c), toLoc $startpos) }
+| l = ID; FETCH; r = sid   { (Load (asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; ASSIGN; r = sid { (Store (asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos(l)), r), toLoc $startpos) }
+| l = ID; FETCH; AND; c = CID { (ReadFromBC (asIdL l (toLoc $startpos(l)), c), toLoc $startpos) }
 | l = ID; FETCH; r = ID; keys = nonempty_list(map_access)
   { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, true), toLoc $startpos }
 | l = ID; FETCH; EXISTS; r = ID; keys = nonempty_list(map_access)
@@ -326,8 +326,8 @@ stmt:
 | DELETE; l = ID; keys = nonempty_list(map_access)
   { MapUpdate(asIdL l (toLoc $startpos(l)), keys, None), toLoc $startpos }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
-| SEND; m = sid;          { (SendMsgs (asIdL m (toLoc $startpos)), toLoc $startpos) }
-| EVENT; m = sid; { (CreateEvnt (asIdL m (toLoc $startpos)), toLoc $startpos) }
+| SEND; m = sid;          { (SendMsgs (asIdL m (toLoc $startpos(m))), toLoc $startpos) }
+| EVENT; m = sid; { (CreateEvnt (asIdL m (toLoc $startpos(m))), toLoc $startpos) }
 | THROW; mopt = option(sid); { Throw (BatOption.map (fun m -> (asIdL m (toLoc $startpos))) mopt), toLoc $startpos }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }

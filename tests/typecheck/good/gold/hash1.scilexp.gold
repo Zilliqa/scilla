@@ -1,1 +1,271 @@
-ByStr64
+{
+  "type_info": [
+    {
+      "vname": "k1",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 1,
+        "column": 7
+      }
+    },
+    {
+      "vname": "k2",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 2,
+        "column": 7
+      }
+    },
+    {
+      "vname": "v1",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 3,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 3,
+        "column": 7
+      }
+    },
+    {
+      "vname": "v2",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 4,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 4,
+        "column": 7
+      }
+    },
+    {
+      "vname": "m0",
+      "type": "Map (Int32) (Int32)",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 6,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 6,
+        "column": 7
+      }
+    },
+    {
+      "vname": "m1",
+      "type": "Map (Int32) (Int32)",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 7,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 7,
+        "column": 7
+      }
+    },
+    {
+      "vname": "m0",
+      "type": "Map (Int32) (Int32)",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 7,
+        "column": 22
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 7,
+        "column": 24
+      }
+    },
+    {
+      "vname": "k1",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 7,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 7,
+        "column": 27
+      }
+    },
+    {
+      "vname": "v1",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 7,
+        "column": 28
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 7,
+        "column": 30
+      }
+    },
+    {
+      "vname": "m2",
+      "type": "Map (Int32) (Int32)",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 8,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 8,
+        "column": 7
+      }
+    },
+    {
+      "vname": "m1",
+      "type": "Map (Int32) (Int32)",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 8,
+        "column": 22
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 8,
+        "column": 24
+      }
+    },
+    {
+      "vname": "k2",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 8,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 8,
+        "column": 27
+      }
+    },
+    {
+      "vname": "v2",
+      "type": "Int32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 8,
+        "column": 28
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 8,
+        "column": 30
+      }
+    },
+    {
+      "vname": "b1",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 10,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 10,
+        "column": 7
+      }
+    },
+    {
+      "vname": "m1",
+      "type": "Map (Int32) (Int32)",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 10,
+        "column": 29
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 10,
+        "column": 31
+      }
+    },
+    {
+      "vname": "b2",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 11,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 11,
+        "column": 7
+      }
+    },
+    {
+      "vname": "m1",
+      "type": "Map (Int32) (Int32)",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 11,
+        "column": 29
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 11,
+        "column": 31
+      }
+    },
+    {
+      "vname": "b1",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 12,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 12,
+        "column": 18
+      }
+    },
+    {
+      "vname": "b2",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 12,
+        "column": 19
+      },
+      "end_location": {
+        "file": "typecheck/good/hash1.scilexp",
+        "line": 12,
+        "column": 21
+      }
+    }
+  ],
+  "type": "ByStr64"
+}

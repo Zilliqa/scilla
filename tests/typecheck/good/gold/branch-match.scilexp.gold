@@ -1,1 +1,160 @@
-forall 'X. forall 'A. ('A -> 'X) -> ('A -> 'X) -> 'A -> Bool -> 'X
+{
+  "type_info": [
+    {
+      "vname": "'X",
+      "type": "forall 'A. ('A -> 'X) -> ('A -> 'X) -> 'A -> Bool -> 'X",
+      "start_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 1,
+        "column": 6
+      },
+      "end_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 1,
+        "column": 8
+      }
+    },
+    {
+      "vname": "'A",
+      "type": "('A -> 'X) -> ('A -> 'X) -> 'A -> Bool -> 'X",
+      "start_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 2,
+        "column": 6
+      },
+      "end_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 2,
+        "column": 8
+      }
+    },
+    {
+      "vname": "f",
+      "type": "'A -> 'X",
+      "start_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 3,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 3,
+        "column": 8
+      }
+    },
+    {
+      "vname": "g",
+      "type": "'A -> 'X",
+      "start_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 4,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 4,
+        "column": 8
+      }
+    },
+    {
+      "vname": "a",
+      "type": "'A",
+      "start_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 5,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 5,
+        "column": 8
+      }
+    },
+    {
+      "vname": "c",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 6,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 6,
+        "column": 8
+      }
+    },
+    {
+      "vname": "c",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 7,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 7,
+        "column": 9
+      }
+    },
+    {
+      "vname": "f",
+      "type": "'A -> 'X",
+      "start_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 8,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 8,
+        "column": 14
+      }
+    },
+    {
+      "vname": "a",
+      "type": "'A",
+      "start_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 8,
+        "column": 15
+      },
+      "end_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 8,
+        "column": 16
+      }
+    },
+    {
+      "vname": "g",
+      "type": "'A -> 'X",
+      "start_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 9,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 9,
+        "column": 14
+      }
+    },
+    {
+      "vname": "a",
+      "type": "'A",
+      "start_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 9,
+        "column": 15
+      },
+      "end_location": {
+        "file": "typecheck/good/branch-match.scilexp",
+        "line": 9,
+        "column": 16
+      }
+    }
+  ],
+  "type":
+    "forall 'X. forall 'A. ('A -> 'X) -> ('A -> 'X) -> 'A -> Bool -> 'X"
+}
