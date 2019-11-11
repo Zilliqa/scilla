@@ -14,7 +14,7 @@
 
 type t =
   { suites : Suite.t list;
-    quota : float;
+    quota : Quota.t;
     regex : Re2.t option;
     list : bool;
     save : bool;

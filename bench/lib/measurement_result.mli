@@ -12,7 +12,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
 open Core_bench
 
 (* We have to repeat the [Simplified_benchmark] module functionality here.

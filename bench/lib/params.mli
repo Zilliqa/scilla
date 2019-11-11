@@ -12,10 +12,12 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_bench
+
 (** Benchmarks execution parameters. *)
 type t =
   { suites : Suite.t list;
-    quota : float;
+    quota : Quota.t;
     regex : Re2.t option;
     list : bool;
     save : bool;
@@ -26,7 +28,7 @@ type t =
 
 val mk
   :  suites:Suite.t list
-  -> quota:float
+  -> quota:Quota.t
   -> regex:Re2.t option
   -> list:bool
   -> save:bool

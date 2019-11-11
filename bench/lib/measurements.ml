@@ -58,7 +58,10 @@ let save meas ~env =
 (* Run the [B.Analysis.analyze] for each
    measurement and get back the results *)
 let analyze meas =
-  let analyze_one m = B.Analysis.analyze m Defaults.analysis_configs in
+  (* Usually, we only interested in the number of nano secs taken
+     and the relative execution time as a percentage *)
+  let analysis_configs = [B.Analysis_config.nanos_vs_runs] in
+  let analyze_one m = B.Analysis.analyze m analysis_configs in
   meas
   |> List.map ~f:analyze_one
   |> List.filter_map ~f:result_to_option

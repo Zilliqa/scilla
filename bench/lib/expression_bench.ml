@@ -18,10 +18,21 @@ open ScillaUtil.FilePathInfix
 open Env
 open Config_t
 
+let to_exp_name path =
+  match Filename.split_extension path with
+  | name, Some "scilexp" -> Some name
+  | _ -> None
+
+let ls_exp_names path =
+  path
+  |> Sys.ls_dir
+  |> List.filter_map ~f:to_exp_name
+
 let mk (group : expression_group) ~env =
   let cwd = Sys.getcwd () in
   let mk_bench name =
-    (* Example: ./bin/eval-runner -libdir src/stdlib tests/eval/exp/good/let.scilexp *)
+    (* Example:
+       ./bin/eval-runner -libdir src/stdlib tests/eval/exp/good/let.scilexp *)
     let input = cwd ^/ group.path ^/ name ^. "scilexp" in
     let prog = env.bin_dir ^/ "eval-runner" in
     let args = [
@@ -30,8 +41,15 @@ let mk (group : expression_group) ~env =
       input;
     ] in
     let run () = Runner.exec ~prog ~args in
-    Bench.Test.create ~name run
+    Bench.Test.create ~name run in
+  let names =
+    (* If there no tests listed explicitly then just load all
+       files with ".scilexp" extension from the specified path *)
+    match group.tests with
+    | [] -> ls_exp_names group.path
+    | names -> names
   in
-  group.tests
-  |> List.map ~f:mk_bench
-  |> Bench.Test.create_group ~name:("exp/" ^ group.name)
+  let tests = List.map names ~f:mk_bench in
+  (* All benchmark names for standalone
+     expressions start with the "exp/" prefix *)
+  Bench.Test.create_group tests ~name:("exp/" ^ group.name)

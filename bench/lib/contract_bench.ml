@@ -22,7 +22,8 @@ let mk_bench_group contract ~group ~env =
   |> List.mapi ~f:(Transition_bench.mk ~contract ~group ~env)
   |> Bench.Test.create_group ~name:("contract/" ^ group.name ^ "/" ^ contract.name)
 
-(* Create a benchmark group out of the given [group] of benchmark contracts *)
+(* Create a benchmark group out of the
+   given [group] of benchmark contracts *)
 let to_bench_group group ~env =
   group
   |> Config.Contract.read_group ~env

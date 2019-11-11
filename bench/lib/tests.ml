@@ -45,26 +45,8 @@ let save results ~params ~env =
   then Some (Measurement_results.save results ~env)
   else None
 
-let exec tests ~params ~env =
-  let module B = Core_bench in
+let compare_and_display ~current_dir ~results ~params ~env =
   let open Params in
-  let run_config = Defaults.mk_run_config params.quota in
-  (* First, run the benchmarks and get back the measurements.
-     Note that we can't just use the [B.measure] here because it returns
-     the [B.Bench.Measurement.t], but we want use the [B.Measurement.t] to
-     be able to access its fields for deltas calculation later.
-     Hence we have to repeat it's implementation here ourselves: *)
-  let meas =
-    tests
-    |> B.Test.expand
-    |> B.Benchmark.measure_all run_config in
-  (* Analyze the measurements, get the results *)
-  let analysis_results = Measurements.analyze meas in
-  (* Create an intermediate representation for the
-     benchmark results, which we use for storage and comparison *)
-  let results = Measurement_results.mk analysis_results in
-  (* Save current benchmark results, get back the timestamp/directory *)
-  let current_dir = save results ~params ~env in
   let current_timestamp = Option.value current_dir ~default:"current (not saved)" in
   (* Now, load the benchmark results we want to compare with *)
   let latest = Measurement_results.load_latest
@@ -83,3 +65,27 @@ let exec tests ~params ~env =
         ~previous:(previous_results, previous_timestamp)
         ~current:(results, current_timestamp)
         ~deltas
+
+let exec tests ~params ~env =
+  let module B = Core_bench in
+  let open Params in
+  let run_config = B.Run_config.create () in
+  let (quota : Quota.t) = params.quota in
+  (* First, run the benchmarks and get back the measurements.
+     Note that we can't just use the [B.measure] here because it
+     returns the [B.Bench.Measurement.t], but we want to use the
+     [B.Measurement.t] to be able to access its fields for
+     deltas calculation later. Hence we have to repeat it's
+     implementation here ourselves *)
+  let meas =
+    tests
+    |> B.Test.expand
+    |> Benchmark.measure_all ~run_config ~quota in
+  (* Analyze the measurements, get the results *)
+  let analysis_results = Measurements.analyze meas in
+  (* Create an intermediate representation for the
+     benchmark results, which we use for storage and comparison *)
+  let results = Measurement_results.mk analysis_results in
+  (* Save current benchmark results, get back the timestamp/directory *)
+  let current_dir = save results ~params ~env in
+  compare_and_display ~current_dir ~results ~params ~env

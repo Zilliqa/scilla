@@ -21,8 +21,6 @@ let shrink =
 
 let calc_one orig curr =
   let open Measurement in
-  (* print_endline @@ (sprintf "orig measurement name: %s\n" (name orig));
-   * print_endline @@ (sprintf "curr measurement name: %s\n" (name curr)); *)
   let orig_samples = orig |> samples |> shrink in
   let curr_samples = curr |> samples |> shrink in
   (* Let's make sure we have the same

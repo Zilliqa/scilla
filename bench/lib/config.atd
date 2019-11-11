@@ -21,7 +21,7 @@ type expression_group = {
      run as part of a benchmark *)
   tests: string list;
 
-  ~gas_limit <ocaml default="80000">: int;
+  ~gas_limit <ocaml default="100000000">: int;
 }
 
 (* Contract benchmark group *)
@@ -54,7 +54,7 @@ type contract = {
   ~ipc <ocaml default="false">: bool;
 
   ~input <ocaml default="\"contract.scilla\"">: string;
-  ~gas_limit <ocaml default="80000">: int;
+  ~gas_limit <ocaml default="1000000">: int;
 
   ?init: string option;
   ?state: string option;
