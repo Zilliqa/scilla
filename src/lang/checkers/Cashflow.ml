@@ -1021,34 +1021,35 @@ module ScillaCashflowChecker
   (*            Helper functions for patterns            *)
   (*******************************************************)
 
-  let rec get_pattern_vars acc p =
+  let rec get_pattern_vars p acc =
     match p with
     | Wildcard -> acc
     | Binder x -> x :: acc
     | Constructor (_, ps) ->
-        List.fold_left ps ~init:acc ~f:get_pattern_vars
+        List.fold_right ps ~init:acc ~f:get_pattern_vars
 
-  let update_pattern_vars_tags_from_usage p local_env ctr_tag_map =
-    let rec walk p ctr_tag_map =
+  let update_pattern_vars_tags_from_usage_and_remove_from_env p local_env ctr_tag_map =
+    let rec walk p local_env ctr_tag_map =
       match p with
-      | Wildcard -> (Wildcard, NoInfo, ctr_tag_map, false)
+      | Wildcard -> (Wildcard, NoInfo, local_env, ctr_tag_map, false)
       | Binder x ->
           let new_x_tag = lookup_var_tag x local_env in
           let new_x = update_id_tag x new_x_tag in
-          (Binder new_x, new_x_tag, ctr_tag_map, get_id_tag x <> get_id_tag new_x)
+          let new_local_env = AssocDictionary.remove (get_id x) local_env in
+          (Binder new_x, new_x_tag, new_local_env, ctr_tag_map, get_id_tag x <> get_id_tag new_x)
       | Constructor (s, ps) ->
-          let (new_ps, new_ps_tags, ps_ctr_tag_map, ps_changes) =
-            List.fold_right ps ~init:([], [], ctr_tag_map, false)
-              ~f:(fun p (acc_ps, acc_ps_tags, acc_ctr_tag_map, acc_changes) ->
-                 let (new_p, new_p_tag, p_ctr_tag_map, p_changes) = walk p acc_ctr_tag_map in
-                 (new_p :: acc_ps, new_p_tag :: acc_ps_tags, p_ctr_tag_map, acc_changes || p_changes)) in
+          let (new_ps, new_ps_tags, new_local_env, ps_ctr_tag_map, ps_changes) =
+            List.fold_right ps ~init:([], [], local_env, ctr_tag_map, false)
+              ~f:(fun p (acc_ps, acc_ps_tags, acc_local_env, acc_ctr_tag_map, acc_changes) ->
+                 let (new_p, new_p_tag, p_local_env, p_ctr_tag_map, p_changes) = walk p acc_local_env acc_ctr_tag_map in
+                 (new_p :: acc_ps, new_p_tag :: acc_ps_tags, p_local_env, p_ctr_tag_map, acc_changes || p_changes)) in
           let (new_ctr_tag_map, ctr_tag_map_changes) =
             update_ctr_tag_map ps_ctr_tag_map s new_ps_tags |>
             Option.value_map ~default:(ps_ctr_tag_map, false) ~f:(fun map -> (map, true)) in
           let ctr_tag = ctr_to_adt_tag s new_ps_tags in
-          (Constructor (s, new_ps), ctr_tag, new_ctr_tag_map, ctr_tag_map_changes || ps_changes) in
-    let (new_p, _, new_ctr_tag_map, changes) = walk p ctr_tag_map in
-    (new_p, new_ctr_tag_map, changes)
+          (Constructor (s, new_ps), ctr_tag, new_local_env, new_ctr_tag_map, ctr_tag_map_changes || ps_changes) in
+    let (new_p, _, new_local_env, new_ctr_tag_map, changes) = walk p local_env ctr_tag_map in
+    (new_p, new_local_env, new_ctr_tag_map, changes)
 
   let update_pattern_vars_tags_from_scrutinee p scrutinee_tag =
     let rec walk p expected_tag =
@@ -1075,16 +1076,11 @@ module ScillaCashflowChecker
     walk p scrutinee_tag
               
   let insert_pattern_vars_into_env p local_env =
-    let pattern_vars = get_pattern_vars [] p in
+    let pattern_vars = get_pattern_vars p [] in
     List.fold_left pattern_vars ~init:local_env
       ~f:(fun l_env x ->
          AssocDictionary.insert (get_id x) (get_id_tag x) l_env)
       
-  let remove_pattern_vars_from_env p local_env =
-    let pattern_vars = get_pattern_vars [] p in
-    List.fold_left pattern_vars ~init:local_env
-      ~f:(fun l_env x -> AssocDictionary.remove (get_id x) l_env)
-
   (* Find least upper bound of scrutinee based on patterns and pattern tags *)
   let lub_pattern_tags ps =
     let rec walk acc_tag p =
@@ -1244,12 +1240,11 @@ module ScillaCashflowChecker
                    insert_pattern_vars_into_env p acc_local_env in
                  let ((_, (new_e_tag, _)) as new_e, new_field_env, new_local_env, e_ctr_tag_map, new_changes) =
                    cf_tag_expr ep expected_tag acc_field_env sub_local_env acc_ctr_tag_map in
-                 let (new_p, new_ctr_tag_map, p_changes) = update_pattern_vars_tags_from_usage p new_local_env e_ctr_tag_map in
-                 let res_local_env = remove_pattern_vars_from_env p new_local_env in
+                 let (new_p, new_local_env, new_ctr_tag_map, p_changes) = update_pattern_vars_tags_from_usage_and_remove_from_env p new_local_env e_ctr_tag_map in
                  ((new_p, new_e) :: acc_clauses,
                   lub_tags acc_res_tag new_e_tag,
                   new_field_env,
-                  res_local_env,
+                  new_local_env,
                   new_ctr_tag_map,
                   acc_changes || new_changes || p_changes)) in
           let (x_res_clauses, clause_changes) =
@@ -1565,16 +1560,16 @@ module ScillaCashflowChecker
         List.fold_left comp_params ~init:implicit_local_env
           ~f:(fun acc_env (p, _) ->
              AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
-          in
+      in
       let (new_comp_body, new_param_env, new_field_env, new_local_env, new_ctr_tag_map, body_changes) =
         cf_tag_stmts comp_body param_env field_env init_local_env ctr_tag_map in
       let (new_params, new_changes) =
         List.fold_right comp_params ~init:([], body_changes)
           ~f:(fun (p, typ) (acc_ps, acc_changes) ->
-             let new_tag = lookup_var_tag p new_local_env in
+              let new_tag = lookup_var_tag p new_local_env in
              ((update_id_tag p new_tag, typ) :: acc_ps,
               acc_changes || (get_id_tag p) <> new_tag))
-          in
+      in
       ({ comp_type = comp_type; comp_name = comp_name ; comp_params = new_params ; comp_body = new_comp_body },
        new_param_env,
        new_field_env,
@@ -1589,7 +1584,7 @@ module ScillaCashflowChecker
         List.fold_left cparams ~init:empty_env
           ~f:(fun acc_env (p, _) ->
              AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
-          in
+      in
       let implicit_field_env = AssocDictionary.insert "_balance" Money empty_env in
       let init_field_env =
         List.fold_left cfields ~init:implicit_field_env
@@ -1597,7 +1592,7 @@ module ScillaCashflowChecker
              let ((_, (e_tag, _)), _, _, _, _) =
                   cf_tag_expr e (lub_tags (get_id_tag f) NoInfo) (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) ctr_tag_map in
              AssocDictionary.insert (get_id f) e_tag acc_env)
-          in
+      in
       let rec tagger components param_env field_env ctr_tag_map =
         let (new_ts, new_param_env, new_field_env, tmp_ctr_tag_map, ccomps_changes) =
           List.fold_right components ~init:([], param_env, field_env, ctr_tag_map, false) 
@@ -1605,7 +1600,7 @@ module ScillaCashflowChecker
                let (new_t, new_param_env, new_field_env, new_ctr_tag_map, t_changes) =
                  cf_tag_component t acc_param_env acc_field_env acc_ctr_tag_map in
                (new_t :: acc_ts, new_param_env, new_field_env, new_ctr_tag_map, acc_changes || t_changes))
-            in
+        in
         if ccomps_changes
         then
           tagger new_ts new_param_env new_field_env tmp_ctr_tag_map

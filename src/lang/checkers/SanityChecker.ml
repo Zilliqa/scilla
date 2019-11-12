@@ -406,10 +406,10 @@ module ScillaSanityChecker
     pure ()
 
   (* ************************************** *)
-  (* ********* Warn name shadowing ******** *)
+  (* ******** Check name shadowing ******** *)
   (* ************************************** *)
 
-  let warn_shadowing cmod =
+  module CheckShadowing = struct
 
     (* A utility function that checks if "id" is shadowing cparams, cfields or pnames. *)
     let check_warn_redef cparams cfields pnames id =
@@ -429,75 +429,120 @@ module ScillaSanityChecker
         warning_level_name_shadowing
         (ER.get_loc (get_rep id));
       )
-    in
 
-    let cparams = List.map (fun (p, _) -> get_id p) cmod.contr.cparams in
-    (* Check if a field shadows any contract parameter. *)
-    List.iter (fun (f, _, _) -> check_warn_redef cparams [] [] f) cmod.contr.cfields;
-  
-    let cfields = List.map (fun (f, _, _) -> get_id f) cmod.contr.cfields in
+    (* Check for shadowing in patterns. *)
+    let pattern_iter pat cparams cfields pnames =
+      (* Check if any variable bound in this pattern shadows cparams/cfields/pnames *)
+      let rec outer_scope_iter = function
+      | Wildcard -> ()
+      | Binder i -> check_warn_redef cparams cfields pnames i
+      | Constructor (_, plist) ->
+        List.iter (fun pat -> outer_scope_iter pat) plist
+      in
+      outer_scope_iter pat;
+      (* Check for shadowing of names within this pattern and warn that it is
+       * deprecated. This will be disallowed (i.e., an error) in future versions.
+       * https://github.com/Zilliqa/scilla/issues/687. To close this Issue:
+       * Make this an error by just using fail1 below instead of warn1. *)
+      let bounds = get_pattern_bounds pat in
+      match Core.List.find_a_dup ~compare:compare_id bounds with
+      | Some v ->
+        warn1 (Printf.sprintf "Deprecated: variable %s shadows a previous binding in the same pattern." (get_id v)) 
+        warning_level_name_shadowing
+        (ER.get_loc (get_rep v));
+        pure ()
+      | None -> pure ()
 
-    (* Go through each component. *)
-    List.iter (fun c ->
+    (* Check for shadowing in expressions. *)
+    let rec expr_iter (e, _) cparams cfields pnames =
+      match e with
+      | Literal _ | Builtin _ | Constr _ | App _ | Message _ 
+      | Var _ | TApp _ -> pure ()
+      | Let (i, _, e_lhs, e_rhs) ->
+        check_warn_redef cparams cfields pnames i;
+        let%bind _ = expr_iter e_lhs cparams cfields pnames in
+        expr_iter e_rhs cparams cfields pnames
+      | Fun (i, _, e_body)
+      | Fixpoint (i, _, e_body)
+      | TFun (i, e_body) ->
+        (* "i" being a type variable shouldn't be shadowing contract parameters,
+          fields or component parameters. This is just a conservative check. *)
+        check_warn_redef cparams cfields pnames i;
+        expr_iter e_body cparams cfields pnames
+      | MatchExpr (_, clauses) ->
+        iterM ~f:(fun (pat, mbody) ->
+          let%bind _ = pattern_iter pat cparams cfields pnames in
+          expr_iter mbody cparams cfields pnames;
+        ) clauses
 
-    (* 1. If a parameter name shadows one of cparams or cfields, warn. *)
-      List.iter (fun (p, _) -> check_warn_redef cparams cfields [] p) c.comp_params;
-      let pnames = List.map (fun (p, _) -> get_id p) c.comp_params in
+    let shadowing_libentries lentries =
+      iterM ~f:(fun lentry ->
+        match lentry with
+        | LibTyp _ -> pure ()
+        | LibVar (_, _, vexp) ->
+          expr_iter vexp [] [] []
+      ) lentries
 
-      (* Check for shadowing in patterns. *)
-      let rec pattern_iter = function
-        | Wildcard -> ()
-        | Binder i -> check_warn_redef cparams cfields pnames i
-        | Constructor (_, plist) ->
-          List.iter (fun pat -> pattern_iter pat) plist
+    let rec shadowing_libtree ltree =
+      let%bind _ = iterM ~f:(fun dep -> shadowing_libtree dep) ltree.deps in
+      shadowing_libentries ltree.libn.lentries
+
+    let shadowing_cmod (cmod : cmodule) =
+
+      (* Check for match pattern shadowing in library functions. *)
+      let%bind _ =
+        (match cmod.libs with
+        | Some lib -> shadowing_libentries lib.lentries;
+        | None -> pure ()
+        )
       in
 
-      (* Check for shadowing in expressions. *)
-      let rec expr_iter (e, _) =
-        match e with
-        | Literal _ | Builtin _ | Constr _ | App _ | Message _ 
-        | Var _ | TApp _ -> ()
-        | Let (i, _, e_lhs, e_rhs) ->
-          check_warn_redef cparams cfields pnames i;
-          expr_iter e_lhs;
-          expr_iter e_rhs
-        | Fun (i, _, e_body)
-        | Fixpoint (i, _, e_body)
-        | TFun (i, e_body) ->
-          (* "i" being a type variable shouldn't be shadowing contract parameters,
-            fields or component parameters. This is just a conservative check. *)
-          check_warn_redef cparams cfields pnames i;
-          expr_iter e_body
-        | MatchExpr (_, clauses) ->
-          List.iter (fun (pat, mbody) ->
-            pattern_iter pat;
-            expr_iter mbody
-          ) clauses
+      let cparams = List.map (fun (p, _) -> get_id p) cmod.contr.cparams in
+      (* Check if a field shadows any contract parameter. *)
+      let%bind _ = iterM ~f:(fun (f, _, finit_expr) ->
+          check_warn_redef cparams [] [] f;
+          expr_iter finit_expr cparams [] []
+        ) cmod.contr.cfields
       in
+    
+      let cfields = List.map (fun (f, _, _) -> get_id f) cmod.contr.cfields in
 
-      (* Check for shadowing in statements. *)
-      let rec stmt_iter stmts =
-        List.iter (fun (s, _) ->
-          match s with
-          | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
-            check_warn_redef cparams cfields pnames x;
-          | Store _ | MapUpdate _ | SendMsgs _
-          | AcceptPayment | CreateEvnt _ | Throw _
-          | CallProc _ ->
-            ()
-          | Bind (x, e) ->
-            check_warn_redef cparams cfields pnames x;
-            expr_iter e
-          | MatchStmt (_, clauses) ->
-            List.iter (fun (pat, mbody) ->
-              pattern_iter pat;
-              stmt_iter mbody
-            ) clauses
-        ) stmts
-      in
-      (* Go through all statements and see if any of cparams, cfields or pnames are redefined. *)
-      stmt_iter c.comp_body
-    ) cmod.contr.ccomps
+      (* Go through each component. *)
+      iterM ~f:(fun c ->
+
+      (* 1. If a parameter name shadows one of cparams or cfields, warn. *)
+        List.iter (fun (p, _) -> check_warn_redef cparams cfields [] p) c.comp_params;
+        let pnames = List.map (fun (p, _) -> get_id p) c.comp_params in
+
+        (* Check for shadowing in statements. *)
+        let rec stmt_iter stmts =
+          iterM ~f:(fun (s, _) ->
+            match s with
+            | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
+              check_warn_redef cparams cfields pnames x;
+              pure ()
+            | Store _ | MapUpdate _ | SendMsgs _
+            | AcceptPayment | CreateEvnt _ | Throw _
+            | CallProc _ -> pure ()
+            | Bind (x, e) ->
+              check_warn_redef cparams cfields pnames x;
+              expr_iter e cparams cfields pnames
+            | MatchStmt (_, clauses) ->
+              iterM ~f:(fun (pat, mbody) ->
+                let%bind _ = pattern_iter pat cparams cfields pnames in
+                stmt_iter mbody
+              ) clauses
+          ) stmts
+        in
+        (* Go through all statements and see if any of cparams, cfields or pnames are redefined. *)
+        stmt_iter c.comp_body
+      ) cmod.contr.ccomps
+
+    let shadowing_lmod (lmod : lmodule) =
+      (* Check for match pattern shadowing in library functions. *)
+      shadowing_libentries lmod.libs.lentries;
+
+  end
 
   (* ************************************** *)
   (* ******** Interface to Checker ******** *)
@@ -505,7 +550,16 @@ module ScillaSanityChecker
 
   let contr_sanity (cmod : cmodule) (rlibs : lib_entry list) (elibs : libtree list) =
     let%bind _ = basic_sanity cmod in
-    warn_shadowing cmod;
+    let%bind _ = CheckShadowing.shadowing_libentries rlibs in
+    let%bind _ = iterM ~f:(CheckShadowing.shadowing_libtree) elibs in
+    let%bind _ = CheckShadowing.shadowing_cmod cmod in
+
     one_msg_checker cmod rlibs elibs
+
+  let lmod_sanity (lmod : lmodule) (rlibs : lib_entry list) (elibs : libtree list) =
+    let%bind _ = CheckShadowing.shadowing_libentries rlibs in
+    let%bind _ = iterM ~f:(CheckShadowing.shadowing_libtree) elibs in
+    let%bind _ = CheckShadowing.shadowing_lmod lmod in
+    pure ()
 
 end

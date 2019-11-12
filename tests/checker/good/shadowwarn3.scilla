@@ -1,0 +1,22 @@
+scilla_version 0
+
+library ShadowWarn3
+
+let i = Int32 0
+let n = Nil {Int32}
+let p = Cons {Int32} i n
+
+let f = 
+  match p with
+  | Cons a (Cons b a) => a
+  | _ => n
+  end
+
+contract ShadowWarn3 ()
+
+transition warn1 ()
+  match p with
+  | Cons a (Cons b a) =>
+  | _ =>
+  end
+end

@@ -85,6 +85,7 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "map_no_inplace_warn.scilla";
       "shadowwarn1.scilla";
       "shadowwarn2.scilla";
+      "shadowwarn3.scilla";
       "simple-dex-shadowwarn.scilla";
       "namespace1.scilla";
       "namespace2.scilla";
