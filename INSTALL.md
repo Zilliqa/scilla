@@ -1,8 +1,10 @@
 # Building and Developing Scilla
 
-Please, read the instructions below if you intend to hack on Scilla implementation.
-Setup OCaml using the instructions [here](https://github.com/realworldocaml/book/wiki/Installation-Instructions).
-Please make sure you install opam v2.0 or greater (this can be done by running `opam --version`)
+The recommended installation process is comprised of two separate steps:
+- installation of system-wide packages using your OS native package manager and
+- installation of OCaml packages using the [opam](https://opam.ocaml.org) package manager.
+
+Please make sure you install opam v2.0 or greater (this can be checked by running `opam --version`).
 
 Scilla requires OpenSSL 1.0.2 and if your platform does not have packages for this, you may need to build OpenSSL
 yourself and set `PKG_CONFIG_PATH` environment variable accordingly
@@ -226,18 +228,21 @@ git clean -dfX --exclude=\!_opam/**
 
 ## Using OCaml with Emacs
 
-As Scilla is written in [OCaml](https://ocaml.org/), the following extensions would be
-useful for working on this codebase:
+Please, read the instructions below if you intend to hack on Scilla implementation.
+Scilla is written in [OCaml](https://ocaml.org/).
+You can read about how to setup your OCaml development environment [here](https://dev.realworldocaml.org/install.html).
+The following extensions would be useful for working on this codebase:
 
 * [tuareg](https://github.com/ocaml/tuareg) for syntax highlighting
 * [merlin](https://github.com/ocaml/merlin/wiki/emacs-from-scratch) for auto-completion
 * [ocp-indent](https://github.com/OCamlPro/ocp-indent) for smart indentation
 
-All those libraries can be installed via [opem-user-setup](https://github.com/OCamlPro/opam-user-setup):
-
+All those libraries can be installed via [opam-user-setup](https://github.com/OCamlPro/opam-user-setup):
 ```shell
 opam install user-setup
 ```
+
+Additionally, you might want to install a nice OCaml REPL called [utop](https://github.com/ocaml-community/utop).
 
 To enable flycheck mode (integration of `scilla-checker` with Emacs for editing Scilla files), install
 flycheck for Emacs. See installation instructions [here](http://www.flycheck.org/en/latest/user/installation.html).
