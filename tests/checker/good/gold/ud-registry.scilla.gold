@@ -12,7 +12,7 @@
     "ADT constructors": [
       {
         "Record": [
-          { "constructor": "Record", "tags": [ "NoInfo", "NotMoney" ] }
+          { "constructor": "Record", "tags": [ "NotMoney", "NotMoney" ] }
         ]
       }
     ]
