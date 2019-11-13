@@ -52,13 +52,13 @@ let calc_deltas ~previous ~current =
   List.map2_exn previous current ~f:Measurement_result_delta.calc
 
 let detect_regressions ~previous ~deltas ~threshold =
+  let open Util in
   let open Measurement_result in
   let open Measurement_result_delta in
   let detect prev delta =
     if is_regression ~prev ~delta ~threshold
     then raise (Failure (
-                  sprintf "Detected performance regression in benchmark %s\n Time per run delta: %s\n"
-                    prev.benchmark_name
-                    (Util.ns_to_ms_string prev.time_per_run_nanos)))
-    else () in
+                    sprintf "Detected performance regression in benchmark %s\n Time per run delta: %s (> %f percent threshold)\n"
+                      prev.benchmark_name
+                      (ns_to_ms_string delta.time_per_run_nanos) threshold)) in
   List.iter2_exn previous deltas ~f:detect
