@@ -109,7 +109,6 @@ coveralls:
 	make clean
 	-find . -name 'bisect*.out' | xargs rm
 
-
 # Diagnostic builds
 
 verbose:
@@ -119,3 +118,8 @@ verbose:
 verbose-j1:
 	dune build -j1 --profile dev @install --verbose
 
+# Benchmarks
+
+.PHONY : bench
+bench:
+	./scripts/run_benchmarks.sh

@@ -37,6 +37,10 @@ addons:
   homebrew:
     brewfile: true
     update: true
+env:
+  global:
+  - WORKSPACE="${TRAVIS_BUILD_DIR}/_workspace"
+  - BENCH_DEBUG=true
 cache:
   directories:
   - $HOME/.opam
@@ -47,7 +51,7 @@ cache:
 before_cache:
   - if [ $TRAVIS_OS_NAME = osx ]; then brew cleanup; fi
 branches:
-  only: 
+  only:
     - master
     - /^release-v.*$/
 before_install:
@@ -59,3 +63,4 @@ script:
 - eval $(opam env)
 - make test
 - make coveralls
+- if [ $TRAVIS_PULL_REQUEST = true ]; then make bench; fi
