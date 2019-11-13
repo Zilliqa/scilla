@@ -49,7 +49,7 @@ let mk_param bench =
               the latest (previous) results will be used for comparison."
     and threshold = flag "-threshold" (optional_with_default threshold float)
         ~doc: " Time per run delta threshold value (in percentage)."
-    and ci = flag "-ci" (optional_with_default false bool)
+    and ci = flag "-ci" no_arg
         ~doc:" Exit with non-zero code if any time per run delta exceeds the threshold."
     and sock_addr = flag "-ipcaddress" (optional string)
         ~doc:"SOCKET Address for IPC communication with blockchain for state access."
