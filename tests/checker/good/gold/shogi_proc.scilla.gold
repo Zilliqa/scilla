@@ -1,7 +1,7 @@
 {
   "cashflow_tags": {
     "State variables": [
-      { "field": "player1", "tag": "NoInfo" },
+      { "field": "player1", "tag": "NotMoney" },
       { "field": "player2", "tag": "NoInfo" },
       { "field": "board", "tag": "(Map (Map (SquareContents )))" },
       { "field": "captured_pieces", "tag": "(Map (Map NoInfo))" },

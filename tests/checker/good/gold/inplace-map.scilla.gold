@@ -2,8 +2,8 @@
   "cashflow_tags": {
     "State variables": [
       { "field": "owner", "tag": "NotMoney" },
-      { "field": "gmap", "tag": "(Map NoInfo)" },
-      { "field": "gmap3", "tag": "(Map (Map (Map NoInfo)))" }
+      { "field": "gmap", "tag": "(Map NotMoney)" },
+      { "field": "gmap3", "tag": "(Map (Map (Map NotMoney)))" }
     ],
     "ADT constructors": []
   },
