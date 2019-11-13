@@ -21,10 +21,10 @@ let mk_param bench =
   let open Command.Spec in
   let open Command.Let_syntax in
   let re = Arg_type.create Re2.create_exn in
-  (* Perform 50 iterations for each benchmark by default *)
-  let quota = Quota.Num_calls 50 in
+  (* Perform a few iterations for each benchmark by default *)
+  let quota = Quota.Num_calls 30 in
   (* Default time per run threshold value (in percentage) *)
-  let threshold = 5.0 in
+  let threshold = 2.0 in
   [%map_open
     let suites = flag "-suite" (listed Suite.arg_type)
         ~doc:"SUITE Type of the benchmark suite to run. \
