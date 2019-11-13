@@ -23,6 +23,8 @@ let mk_param bench =
   let re = Arg_type.create Re2.create_exn in
   (* Perform 50 iterations for each benchmark by default *)
   let quota = Quota.Num_calls 50 in
+  (* Default time per run threshold value (in percentage) *)
+  let threshold = 5.0 in
   [%map_open
     let suites = flag "-suite" (listed Suite.arg_type)
         ~doc:"SUITE Type of the benchmark suite to run. \
@@ -45,6 +47,10 @@ let mk_param bench =
     and timestamp = flag "-timestamp" (optional string)
         ~doc:" Timestamp of benchmark results to compare with. If not given, \
               the latest (previous) results will be used for comparison."
+    and threshold = flag "-threshold" (optional_with_default threshold float)
+        ~doc: " Time per run delta threshold value (in percentage)."
+    and ci = flag "-ci" (optional_with_default false bool)
+        ~doc:" Exit with non-zero code if any time per run delta exceeds the threshold."
     and sock_addr = flag "-ipcaddress" (optional string)
         ~doc:"SOCKET Address for IPC communication with blockchain for state access."
     in
@@ -56,7 +62,8 @@ let mk_param bench =
       let env = Env.mk ~sock_addr:sock_addr in
       let params = Params.mk
           ~suites ~quota ~regex ~list
-          ~save ~display ~compare ~timestamp
+          ~save ~display ~compare
+          ~threshold ~ci ~timestamp
       in
       bench ~params ~env
   ]

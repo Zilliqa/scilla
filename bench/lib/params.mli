@@ -23,6 +23,8 @@ type t =
     save : bool;
     display : bool;
     compare : bool;
+    threshold : float;
+    ci : bool;
     timestamp : string option;
   }
 
@@ -34,5 +36,7 @@ val mk
   -> save:bool
   -> display:bool
   -> compare:bool
+  -> threshold:float
+  -> ci:bool
   -> timestamp:string option
   -> t

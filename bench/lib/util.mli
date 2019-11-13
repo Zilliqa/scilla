@@ -12,5 +12,10 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core
+
 (** Replace characters that couldn't be a part of the file name. *)
 val sanitize : string -> string
+
+(** Convert nanoseconds to a milliseconds and format accordingly *)
+val ns_to_ms_string : float -> string

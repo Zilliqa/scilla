@@ -20,8 +20,14 @@ type t =
     save : bool;
     display : bool;
     compare : bool;
+    threshold : float;
+    ci : bool;
     timestamp : string option;
   }
 
-let mk ~suites ~quota ~regex ~list ~save ~display ~compare ~timestamp =
-  { suites; quota; regex; list; save; display; compare; timestamp }
+let mk ~suites ~quota ~regex ~list
+       ~save ~display ~compare
+       ~threshold ~ci ~timestamp =
+  { suites; quota; regex; list;
+    save; display; compare;
+    threshold; ci; timestamp }

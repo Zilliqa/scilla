@@ -60,6 +60,12 @@ let compare_and_display ~current_dir ~results ~params ~env =
       (* Calculate benchmark results deltas *)
       let deltas = Measurement_results.calc_deltas
           ~previous:previous_results ~current:results in
+      (* Detect significant performance regressions when
+         running on CI and fail with non-zero exit code, if any *)
+      if params.ci then
+        Measurement_results.detect_regressions
+          ~previous:previous_results ~deltas
+          ~threshold:params.threshold;
       (* Print the comparison results (along with the time deltas) *)
       Display.print_comparison
         ~previous:(previous_results, previous_timestamp)

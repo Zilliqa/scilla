@@ -30,7 +30,7 @@ let ls ~env =
 let latest ~timestamp ~current ~env =
   (* List paths containing benchmark results *)
   let paths = ls ~env in
-  (* Helper function to find dir with
+  (* Helper function to find a dir with
      the latest (previous) benchmark results *)
   let find_latest () =
     let paths = match current with

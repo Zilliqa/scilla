@@ -43,3 +43,11 @@ val calc_deltas
   :  previous:(Measurement_result.t list)
   -> current:(Measurement_result.t list)
   -> Measurement_result.t list
+
+(** Check for significant performance regressions and
+    raise an exception, if any. *)
+val detect_regressions
+  :  previous:(Measurement_result.t list)
+  -> deltas:(Measurement_result.t list)
+  -> threshold:float
+  -> unit

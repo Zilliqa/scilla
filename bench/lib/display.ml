@@ -29,10 +29,7 @@ let print_tests groups =
         ~display:Display.column_titles
         ["group"; "test"] cells)
 
-let to_ms ns =
-  ns
-  |> Time.Span.of_ns
-  |> Time.Span.to_string_hum ~decimals:2
+let to_ms = Util.ns_to_ms_string
 
 let print_results results =
   let open Ascii_table in

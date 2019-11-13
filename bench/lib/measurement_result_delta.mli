@@ -12,13 +12,16 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_bench
+(** Compare the previous and current results,
+    return [t] containing deltas. *)
+val calc
+    :  Measurement_result.t
+    -> Measurement_result.t
+    -> Measurement_result.t
 
-val calc_one : Measurement.t -> Measurement.t -> Measurement.t
-
-(** Compare the [orig_meas] and [curr_meas],
-    return [B.Measurement.t list] containing deltas. *)
-val calc_all
-  :  Measurement.t list
-  -> Measurement.t list
-  -> Measurement.t list
+(** Check if there is a significant performance drop. *)
+val is_regression
+    :  prev:Measurement_result.t
+    -> delta:Measurement_result.t
+    -> threshold:float
+    -> bool

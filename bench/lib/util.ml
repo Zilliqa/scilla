@@ -19,3 +19,8 @@ let sanitize =
       if Char.is_alphanum c || String.mem "-_." c
       then c
       else '_')
+
+let ns_to_ms_string ns =
+  ns
+  |> Time.Span.of_ns
+  |> Time.Span.to_string_hum ~decimals:2

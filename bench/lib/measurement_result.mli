@@ -22,11 +22,16 @@ type t =
     machine_id : string; (** Stores the name of the machine used to run the benchmarks. *)
     ocaml_version : string;
 
-    (* Various stats computed by bench: **)
+    (* Various stats computed by bench: *)
     time_r_square : float;
     time_per_run_nanos : float;
+
+    (* 95% confidence intervals *)
+    (* If not enough data was collected for a good estimate,
+       then one would typically see a wide 95% confidence interval. *)
     ci95_upper_bound : float;
     ci95_lower_bound : float;
+
     minor_words_per_run : float;
     major_words_per_run : float;
     promoted_words_per_run : float;
@@ -40,7 +45,3 @@ val save : t -> path:string -> unit
 
 (** Load the benchmark result from the specified path. *)
 val load : string -> t
-
-(** Compare the previous and current results,
-     return [t] containing deltas. *)
-val calc_delta : t -> t -> t

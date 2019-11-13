@@ -106,17 +106,3 @@ let load path =
   |> In_channel.read_all
   |> Sexp.of_string
   |> t_of_sexp
-
-let calc_delta x y =
-  let open Float in
-  { benchmark_name = y.benchmark_name;
-    machine_id = y.machine_id;
-    ocaml_version = y.ocaml_version;
-    time_r_square = y.time_r_square - x.time_r_square;
-    time_per_run_nanos = y.time_per_run_nanos - x.time_per_run_nanos;
-    ci95_upper_bound = y.ci95_upper_bound - x.ci95_upper_bound;
-    ci95_lower_bound = y.ci95_lower_bound - x.ci95_upper_bound;
-    minor_words_per_run = y.minor_words_per_run - x.minor_words_per_run;
-    major_words_per_run = y.major_words_per_run - x.major_words_per_run;
-    promoted_words_per_run = y.promoted_words_per_run - x.promoted_words_per_run;
-  }
