@@ -22,6 +22,9 @@ git checkout -q "$TRAVIS_COMMIT"
 # Increase the maximum number of open files
 ulimit -s 40096 -n 81092
 
+# Clean up previous benchmark results
+rm -rf ./bench/results/*
+
 make
 dune exe ./bench/bin/scilla_bench_runner.exe -- -ci
 
