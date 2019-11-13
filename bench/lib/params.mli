@@ -12,8 +12,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_bench
-
 (** Benchmarks execution parameters. *)
 type t =
   { suites : Suite.t list;

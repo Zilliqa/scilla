@@ -13,7 +13,6 @@
 *)
 
 open Core
-open Core_bench
 open Measurement_result
 open Float
 

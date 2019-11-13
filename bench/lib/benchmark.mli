@@ -1,4 +1,3 @@
-open Core
 open Core_bench
 
 val measure_all
