@@ -58,7 +58,7 @@ let detect_regressions ~previous ~deltas ~threshold =
   let detect prev delta =
     if is_regression ~prev ~delta ~threshold
     then raise (Failure (
-                    sprintf "Detected performance regression in benchmark %s\n Time per run delta: %s (> %f percent threshold)\n"
+                    sprintf "Detected performance regression in benchmark %s. Time per run delta: %s (> %.2f percent threshold)"
                       prev.benchmark_name
                       (ns_to_ms_string delta.time_per_run_nanos) threshold)) in
   List.iter2_exn previous deltas ~f:detect
