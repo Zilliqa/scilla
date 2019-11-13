@@ -22,6 +22,7 @@ then
    echo "DEBUG: TRAVIS_COMMIT = $TRAVIS_COMMIT"
 fi
 
+rm -rf "$working_dir"
 mkdir -p "$working_dir"
 
 scilla_dir="$working_dir/scilla"
