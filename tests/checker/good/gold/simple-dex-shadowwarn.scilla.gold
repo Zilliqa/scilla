@@ -11,7 +11,7 @@
         "Order": [
           {
             "constructor": "Order",
-            "tags": [ "NoInfo", "NoInfo", "NoInfo", "NoInfo" ]
+            "tags": [ "NotMoney", "NoInfo", "NotMoney", "NoInfo" ]
           }
         ]
       }

@@ -4,7 +4,7 @@
       { "field": "contractOwner", "tag": "NoInfo" },
       { "field": "name", "tag": "NoInfo" },
       { "field": "symbol", "tag": "NoInfo" },
-      { "field": "tokenOwnerMap", "tag": "(Map NoInfo)" },
+      { "field": "tokenOwnerMap", "tag": "(Map NotMoney)" },
       { "field": "ownedTokenCount", "tag": "(Map NoInfo)" },
       { "field": "tokenApprovals", "tag": "(Map NoInfo)" },
       { "field": "operatorApprovals", "tag": "(Map (Map NoInfo))" }

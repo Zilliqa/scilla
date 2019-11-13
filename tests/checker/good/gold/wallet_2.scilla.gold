@@ -5,7 +5,7 @@
       { "field": "required_signatures", "tag": "NoInfo" },
       { "field": "contract_valid", "tag": "NotMoney" },
       { "field": "owners", "tag": "(Map NoInfo)" },
-      { "field": "transactionCount", "tag": "NoInfo" },
+      { "field": "transactionCount", "tag": "NotMoney" },
       { "field": "signatures", "tag": "(Map (Map NoInfo))" },
       { "field": "signature_counts", "tag": "(Map NoInfo)" },
       { "field": "transactions", "tag": "(Map (Transaction ))" }
