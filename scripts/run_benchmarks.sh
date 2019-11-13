@@ -19,6 +19,11 @@ fi
 
 git checkout -q "$TRAVIS_COMMIT"
 
+# Increase the maximum number of open files for macOS
+if [[ $(uname) == "Darwin" ]]; then
+    ulimit -s 40096 -n 81092
+fi
+
 make
 dune exe ./bench/bin/scilla_bench_runner.exe -- -ci
 
