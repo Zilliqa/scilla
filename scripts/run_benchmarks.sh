@@ -21,6 +21,7 @@ git checkout -q "$TRAVIS_COMMIT"
 
 # Clean up previous benchmark results
 rm -rf ./bench/results/*
+mkdir -p ./bench/results
 
 make
 dune exe ./bench/bin/scilla_bench_runner.exe -- -ci
