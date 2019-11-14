@@ -26,7 +26,8 @@ mkdir -p ./bench/results
 make
 dune exe ./bench/bin/scilla_bench_runner.exe -- -ci
 
-git checkout -q perf-benchmarks
+# TODO: replace with the master branch before merging
+git checkout -q "$TRAVIS_COMMIT"
 
 make
 dune exe ./bench/bin/scilla_bench_runner.exe -- -ci
