@@ -70,7 +70,7 @@ let compare_and_display ~current_dir ~results ~params ~env =
       if params.ci then
         Measurement_results.detect_regressions
           ~previous:previous_results ~deltas
-          ~threshold:params.threshold;
+          ~threshold:params.threshold
 
 let exec tests ~params ~env =
   let module B = Core_bench in
