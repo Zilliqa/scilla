@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7055",
+  "gas_remaining": "7094",
   "_accepted": "false",
   "message": null,
   "states": [
@@ -90,12 +90,7 @@
     {
       "_eventname": "Transaction signed",
       "params": [
-        { "vname": "transactionId", "type": "Uint32", "value": "1" },
-        {
-          "vname": "signedBy",
-          "type": "ByStr20",
-          "value": "0x1234567890123456789012345678906784567890"
-        }
+        { "vname": "transactionId", "type": "Uint32", "value": "1" }
       ]
     }
   ]

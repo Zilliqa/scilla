@@ -72,7 +72,7 @@
   ],
   "events": [
     {
-      "_eventname": "Transact revoked",
+      "_eventname": "Signature revoked",
       "params": [
         { "vname": "transactionId", "type": "Uint32", "value": "1" }
       ]

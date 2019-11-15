@@ -35,7 +35,7 @@ let mk_signed_transaction_event =
 (* Event for communicating that a signature was revoked *)
 let mk_signature_revoked_event =
   fun (tc : Uint32) =>
-    { _eventname : "Transact revoked"; transactionId : tc }
+    { _eventname : "Signature revoked"; transactionId : tc }
 
 type Error =
 | NonOwnerCannotSign
@@ -277,7 +277,7 @@ procedure AddSignature (transactionId : Uint32, signee : ByStr20)
       signature_counts[transactionId] := new_c
     end;
     signatures[transactionId][signee] := t;
-    e = mk_signed_transaction_event transactionId signee;
+    e = mk_signed_transaction_event transactionId;
     event e
   | True =>
     (* Already signed *)

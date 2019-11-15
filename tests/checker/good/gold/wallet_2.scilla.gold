@@ -92,15 +92,17 @@
         "params": [ { "vname": "err_code", "type": "Int32" } ]
       },
       {
+        "vname": "Signature revoked",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      },
+      {
         "vname": "Transaction signed",
-        "params": [
-          { "vname": "transactionId", "type": "Uint32" },
-          { "vname": "signedBy", "type": "ByStr20" }
-        ]
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
       },
       {
         "vname": "Transaction executed",
         "params": [
+          { "vname": "transactionId", "type": "Uint32" },
           { "vname": "recipient", "type": "ByStr20" },
           { "vname": "amount", "type": "Uint128" },
           { "vname": "tag", "type": "String" }
@@ -199,7 +201,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
-        "line": 440,
+        "line": 447,
         "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
