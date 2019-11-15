@@ -22,7 +22,7 @@ module Tests = TestUtil.DiffBasedTests(
     let test_path f = ["contracts"; f]
     let runner = "scilla-checker"
     let gas_limit = Stdint.Uint64.of_int 8000
-    let custom_args = ["-cf"; "-contractinfo"; "-typeinfo"]
+    let custom_args = ["-cf"; "-contractinfo"]
     let additional_libdirs = []
     let tests = [
       "auction.scilla";
@@ -59,6 +59,7 @@ module Tests = TestUtil.DiffBasedTests(
     let exit_code : Unix.process_status = WEXITED 0
   end)
 
+(* These differ from "Tests" because of an additional libdir argument. *)
 module CheckerTests = TestUtil.DiffBasedTests(
   struct
     let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
@@ -115,6 +116,24 @@ module ShogiTests = TestUtil.DiffBasedTests(
     let tests = [
       "shogi.scilla";
       "shogi_proc.scilla"; 
+    ]
+    let exit_code : Unix.process_status = WEXITED 0
+  end)
+
+(* We don't add the "-typeinfo" argument to the main set of "Tests"
+ * because that adds a lot of diff noise when things change. *)
+module TypeInfoTests = TestUtil.DiffBasedTests(
+  struct
+    let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".typeinfo.gold" ]
+    let test_path f = ["contracts"; f]
+    let runner = "scilla-checker"
+    let gas_limit = Stdint.Uint64.of_int 8000
+    let custom_args = ["-cf"; "-typeinfo"]
+    let additional_libdirs = []
+    let tests = [
+      "map_corners_test.scilla";
+      "auction.scilla";
+      "wallet_2.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
