@@ -14,11 +14,23 @@ let mk_contract_initialized_event =
 (* Event for communicating a new transaction id *)
 let mk_transaction_added_event =
   fun (tc : Uint32) =>
-    { _eventname : "Transaction created" ; transactionId : tc }
+  fun (recipient : ByStr20) =>
+  fun (amount : Uint128) =>
+  fun (tag : String) =>
+    { _eventname : "Transaction created" ; transactionId : tc; recipient : recipient; amount : amount; tag : tag  }
 
-(* Event for communicating the signing of a transaction *)
+(* Event for communicating the execution of a transaction *)
 let mk_transaction_executed_event =
-    { _eventname : "Transaction executed" }
+  fun (recipient : ByStr20) =>
+  fun (amount : Uint128) =>
+  fun (tag : String) =>
+    { _eventname : "Transaction executed"; recipient : recipient; amount : amount; tag : tag }
+
+(* Event for communicating that a transaction was signed *)
+let mk_signed_transaction_event =
+  fun (tc : Uint32) =>
+  fun (signedBy : ByStr20) =>
+    { _eventname : "Transaction signed"; transactionId : tc; signedBy : signedBy }
 
 type Error =
 | NonOwnerCannotSign
@@ -259,7 +271,9 @@ procedure AddSignature (transactionId : Uint32, signee : ByStr20)
       new_c = builtin add c one;
       signature_counts[transactionId] := new_c
     end;
-    signatures[transactionId][signee] := t
+    signatures[transactionId][signee] := t;
+    e = mk_signed_transaction_event transactionId signee;
+    event e
   | True =>
     (* Already signed *)
     err = AlreadySigned;
@@ -296,7 +310,7 @@ transition SubmitTransaction (recipient : ByStr20, amount : Uint128, tag : Strin
       (* Update transaction count *)
       transactionCount := tc_new;
       (* Create event with transaction Id *)
-      e = mk_transaction_added_event tc;
+      e = mk_transaction_added_event tc recipient amount tag;
       event e
     end
   end
@@ -375,7 +389,7 @@ transition ExecuteTransaction (transactionId : Uint32)
             DeleteTransaction transactionId;
             msgs = transaction_msg_as_list recipient amount tag;
             send msgs;
-            e = mk_transaction_executed_event;
+            e = mk_transaction_executed_event recipient amount tag;
             event e
           end
         end
