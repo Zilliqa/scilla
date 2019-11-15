@@ -133,7 +133,6 @@ module TypeInfoTests = TestUtil.DiffBasedTests(
     let tests = [
       "map_corners_test.scilla";
       "auction.scilla";
-      "wallet_2.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)
