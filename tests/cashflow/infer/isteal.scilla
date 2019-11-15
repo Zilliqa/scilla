@@ -1,3 +1,4 @@
+scilla_version 0
 (* A simple contract that exhibits a non-trivial cash-flow and several *)
 (* cash-flow bugs, violating, in particular, the linearity of the *)
 (* contract wrt. to the funds it stores: *)
@@ -10,6 +11,7 @@
 
 (* 3. The withdraw field does not voids the entry of the _sender in *)
 (* "folks" upon withdrawing money. *)
+
 
 library ISteal
 
