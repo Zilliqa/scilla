@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7221",
+  "gas_remaining": "7152",
   "_accepted": "false",
   "message": null,
   "states": [
@@ -78,5 +78,12 @@
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "Transact revoked",
+      "params": [
+        { "vname": "transactionId", "type": "Uint32", "value": "1" }
+      ]
+    }
+  ]
 }

@@ -21,16 +21,21 @@ let mk_transaction_added_event =
 
 (* Event for communicating the execution of a transaction *)
 let mk_transaction_executed_event =
+  fun (tc : Uint32) =>
   fun (recipient : ByStr20) =>
   fun (amount : Uint128) =>
   fun (tag : String) =>
-    { _eventname : "Transaction executed"; recipient : recipient; amount : amount; tag : tag }
+    { _eventname : "Transaction executed"; transactionId : tc; recipient : recipient; amount : amount; tag : tag }
 
 (* Event for communicating that a transaction was signed *)
 let mk_signed_transaction_event =
   fun (tc : Uint32) =>
-  fun (signedBy : ByStr20) =>
-    { _eventname : "Transaction signed"; transactionId : tc; signedBy : signedBy }
+    { _eventname : "Transaction signed"; transactionId : tc }
+
+(* Event for communicating that a signature was revoked *)
+let mk_signature_revoked_event =
+  fun (tc : Uint32) =>
+    { _eventname : "Transact revoked"; transactionId : tc }
 
 type Error =
 | NonOwnerCannotSign
@@ -389,7 +394,7 @@ transition ExecuteTransaction (transactionId : Uint32)
             DeleteTransaction transactionId;
             msgs = transaction_msg_as_list recipient amount tag;
             send msgs;
-            e = mk_transaction_executed_event recipient amount tag;
+            e = mk_transaction_executed_event transactionId recipient amount tag;
             event e
           end
         end
@@ -420,7 +425,9 @@ transition RevokeSignature (transactionId : Uint32)
       | False =>
         new_c = builtin sub c one;
         signature_counts[transactionId] := new_c;
-        delete signatures[transactionId][_sender]
+        delete signatures[transactionId][_sender];
+        e = mk_signature_revoked_event transactionId;
+        event e
       end
     end
   end
