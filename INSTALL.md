@@ -1,8 +1,10 @@
 # Building and Developing Scilla
 
-Please, read the instructions below if you intend to hack on Scilla implementation.
-Setup OCaml using the instructions [here](https://github.com/realworldocaml/book/wiki/Installation-Instructions).
-Please make sure you install opam v2.0 or greater (this can be done by running `opam --version`)
+The recommended installation process is comprised of two separate steps:
+- installation of system-wide packages using your OS native package manager and
+- installation of OCaml packages using the [opam](https://opam.ocaml.org) package manager.
+
+Please make sure you install opam v2.0 or greater (this can be checked by running `opam --version`).
 
 Scilla requires OpenSSL 1.0.2 and if your platform does not have packages for this, you may need to build OpenSSL
 yourself and set `PKG_CONFIG_PATH` environment variable accordingly
@@ -95,13 +97,13 @@ sudo add-apt-repository ppa:tah83/secp256k1 -y
 sudo add-apt-repository -y ppa:avsm/ppa
 ```
 
-```
+```shell
 sudo apt-get install -y curl build-essential m4 ocaml pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev
 ```
 
 3. Delete other ppa entries
 
-```
+```shell
 sudo rm -rf /var/lib/apt/lists/*
 sudo rm -rf /etc/apt/sources.list.d/*
 sudo apt-get update
@@ -109,62 +111,62 @@ sudo apt-get update
 
 4. Re-install the packages (but this time with a  `--fix-missing` flag)
 
-```
+```shell
 sudo apt-get install -y curl build-essential m4 ocaml pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev --fix-missing
 ```
 
-5. Install Opam 2.x
+5. Install opam 2.x
 
-Since `--disable-sandboxing` is only available in Opam 2.x & not Opam 1.x, WSL users should *not* use `apt-get` for installing Opam as it will install 1.x which wont work on WSL.
+Since `--disable-sandboxing` is only available in opam 2.x & not opam 1.x, WSL users should *not* use `apt-get` for installing opam as it will install 1.x which won't work on WSL.
 
-To install Opam 2.x run the script below;
+To install opam 2.x run the script below:
 
-```
+```shell
 sh <(curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
 ```
 
-6. Initialize Opam (with `--disable-sandboxing` flag)
+6. Initialize opam (with `--disable-sandboxing` flag)
 
 Disabling sandboxing is required since [WSL does not support Sandboxing](https://github.com/ocaml/opam/issues/3505) (via `bubblewrap`) at this time. 
 
-To disable sandboxing, simply run;
+To disable sandboxing, simply run:
 
-```
-opam init --disable-sandboxing --compiler=4.06.1 --yes 
+```shell
+opam init --disable-sandboxing --compiler=4.06.1 --yes
 ```
 
-7. Set up current sell to work with Opam
-```
+7. Set up current shell to work with opam
+```shell
 eval $(opam env)
 ```
 
-8. Install Scilla's depenencies
+8. Install Scilla's dependencies
 
 Go to directory where you unzipped the [latest Scilla release](https://github.com/Zilliqa/scilla/releases)
 
-```
+```shell
 cd <path/to/unzipped/latest/scilla/release>
 
 opam install ./scilla.opam --deps-only --with-test
 ```
-then;
+then
 
-```
+```shell
 opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.06.1
 ```
 
 9. Build the binaries
 
-```
+```shell
 make clean; make
 ```
 
-10. Test your installation by running ;
-```
+10. Test your installation by running
+```shell
 ./bin/eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/exp/good/let.scilexp
 ```
 
-If the output is as below, then you are good to go 👍. No further actions will be necessary.
+If the output is as below, then you are good to go 👍. No further action will be necessary.
 The binaries (`eval-runner`, `scilla-checker`, `scilla-runner` & `type-checker`) are all located in the `bin/` directory
 
 ```
@@ -224,20 +226,23 @@ git clean -dfX --exclude=\!_opam/**
 ```
 
 
-## Using Ocaml with Emacs
+## Using OCaml with Emacs
 
-As Scilla is written in [OCaml](https://ocaml.org/), the following extensions would be
-useful for working on this codebase:
+Please, read the instructions below if you intend to hack on Scilla implementation.
+Scilla is written in [OCaml](https://ocaml.org/).
+You can read about how to setup your OCaml development environment [here](https://dev.realworldocaml.org/install.html).
+The following extensions would be useful for working on this codebase:
 
 * [tuareg](https://github.com/ocaml/tuareg) for syntax highlighting
 * [merlin](https://github.com/ocaml/merlin/wiki/emacs-from-scratch) for auto-completion
 * [ocp-indent](https://github.com/OCamlPro/ocp-indent) for smart indentation
 
-All those libraries can be installed via [opem-user-setup](https://github.com/OCamlPro/opam-user-setup):
-
+All those libraries can be installed via [opam-user-setup](https://github.com/OCamlPro/opam-user-setup):
 ```shell
 opam install user-setup
 ```
+
+Additionally, you might want to install a nice OCaml REPL called [utop](https://github.com/ocaml-community/utop).
 
 To enable flycheck mode (integration of `scilla-checker` with Emacs for editing Scilla files), install
 flycheck for Emacs. See installation instructions [here](http://www.flycheck.org/en/latest/user/installation.html).

@@ -1,0 +1,2703 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "auctionStart", "tag": "NotMoney" },
+      { "field": "biddingTime", "tag": "NotMoney" },
+      { "field": "beneficiary", "tag": "NotMoney" },
+      { "field": "ended", "tag": "NotMoney" },
+      { "field": "highestBidder", "tag": "(Option NotMoney)" },
+      { "field": "highestBid", "tag": "Money" },
+      { "field": "pendingReturns", "tag": "(Map Money)" }
+    ],
+    "ADT constructors": []
+  },
+  "type_info": [
+    {
+      "vname": "blk_leq",
+      "type": "BNum -> BNum -> Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 11,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 11,
+        "column": 12
+      }
+    },
+    {
+      "vname": "blk1",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 12,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 12,
+        "column": 12
+      }
+    },
+    {
+      "vname": "blk2",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 13,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 13,
+        "column": 12
+      }
+    },
+    {
+      "vname": "bc1",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 14,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 14,
+        "column": 12
+      }
+    },
+    {
+      "vname": "blk1",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 14,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 14,
+        "column": 31
+      }
+    },
+    {
+      "vname": "blk2",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 14,
+        "column": 32
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 14,
+        "column": 36
+      }
+    },
+    {
+      "vname": "bc2",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 15,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 15,
+        "column": 12
+      }
+    },
+    {
+      "vname": "blk1",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 15,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 15,
+        "column": 30
+      }
+    },
+    {
+      "vname": "blk2",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 15,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 15,
+        "column": 35
+      }
+    },
+    {
+      "vname": "orb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 16,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 16,
+        "column": 8
+      }
+    },
+    {
+      "vname": "bc1",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 16,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 16,
+        "column": 12
+      }
+    },
+    {
+      "vname": "bc2",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 16,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 16,
+        "column": 16
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 19,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 19,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 20,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 20,
+        "column": 11
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 21,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 21,
+        "column": 16
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 22,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 22,
+        "column": 23
+      }
+    },
+    {
+      "vname": "nil_msg",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 22,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 22,
+        "column": 31
+      }
+    },
+    {
+      "vname": "late_to_bid_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 25,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 25,
+        "column": 21
+      }
+    },
+    {
+      "vname": "too_early_to_bid_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 26,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 26,
+        "column": 26
+      }
+    },
+    {
+      "vname": "bid_too_low_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 27,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 27,
+        "column": 21
+      }
+    },
+    {
+      "vname": "first_bid_accepted_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 28,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 28,
+        "column": 28
+      }
+    },
+    {
+      "vname": "bid_accepted_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 29,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 29,
+        "column": 22
+      }
+    },
+    {
+      "vname": "money_sent_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 30,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 30,
+        "column": 20
+      }
+    },
+    {
+      "vname": "nothing_to_withdraw_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 31,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 31,
+        "column": 29
+      }
+    },
+    {
+      "vname": "auction_is_still_on_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 32,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 32,
+        "column": 29
+      }
+    },
+    {
+      "vname": "auction_end_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 33,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 33,
+        "column": 21
+      }
+    },
+    {
+      "vname": "auctionStart",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 44,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 44,
+        "column": 14
+      }
+    },
+    {
+      "vname": "biddingTime",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 45,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 45,
+        "column": 13
+      }
+    },
+    {
+      "vname": "beneficiary",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 46,
+        "column": 2
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 46,
+        "column": 13
+      }
+    },
+    {
+      "vname": "ended",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 51,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 51,
+        "column": 12
+      }
+    },
+    {
+      "vname": "highestBidder",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 52,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 52,
+        "column": 20
+      }
+    },
+    {
+      "vname": "highestBid",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 53,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 53,
+        "column": 17
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 54,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 54,
+        "column": 21
+      }
+    },
+    {
+      "vname": "blk",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 59,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 59,
+        "column": 6
+      }
+    },
+    {
+      "vname": "endtime",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 60,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 60,
+        "column": 10
+      }
+    },
+    {
+      "vname": "auctionStart",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 60,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 60,
+        "column": 38
+      }
+    },
+    {
+      "vname": "biddingTime",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 60,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 60,
+        "column": 50
+      }
+    },
+    {
+      "vname": "after_end",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 61,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 61,
+        "column": 12
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 61,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 61,
+        "column": 22
+      }
+    },
+    {
+      "vname": "endtime",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 62,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 62,
+        "column": 28
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 62,
+        "column": 29
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 62,
+        "column": 32
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 63,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 63,
+        "column": 4
+      }
+    },
+    {
+      "vname": "ended",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 63,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 63,
+        "column": 13
+      }
+    },
+    {
+      "vname": "in_time",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 64,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 64,
+        "column": 10
+      }
+    },
+    {
+      "vname": "blk_leq",
+      "type": "BNum -> BNum -> Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 64,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 64,
+        "column": 20
+      }
+    },
+    {
+      "vname": "after_end",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 64,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 64,
+        "column": 30
+      }
+    },
+    {
+      "vname": "blk",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 64,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 64,
+        "column": 34
+      }
+    },
+    {
+      "vname": "flag1",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 65,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 65,
+        "column": 8
+      }
+    },
+    {
+      "vname": "orb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 65,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 65,
+        "column": 14
+      }
+    },
+    {
+      "vname": "in_time",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 65,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 65,
+        "column": 22
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 65,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 65,
+        "column": 24
+      }
+    },
+    {
+      "vname": "early",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 66,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 66,
+        "column": 8
+      }
+    },
+    {
+      "vname": "blk_leq",
+      "type": "BNum -> BNum -> Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 66,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 66,
+        "column": 18
+      }
+    },
+    {
+      "vname": "blk",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 66,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 66,
+        "column": 22
+      }
+    },
+    {
+      "vname": "auctionStart",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 66,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 66,
+        "column": 35
+      }
+    },
+    {
+      "vname": "early",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 67,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 67,
+        "column": 14
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 69,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 69,
+        "column": 8
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 69,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 69,
+        "column": 44
+      }
+    },
+    {
+      "vname": "too_early_to_bid_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 69,
+        "column": 74
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 69,
+        "column": 95
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 70,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 70,
+        "column": 9
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 70,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 70,
+        "column": 19
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 70,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 70,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 71,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 71,
+        "column": 14
+      }
+    },
+    {
+      "vname": "flag1",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 73,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 73,
+        "column": 16
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 75,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 75,
+        "column": 10
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 75,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 75,
+        "column": 46
+      }
+    },
+    {
+      "vname": "late_to_bid_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 75,
+        "column": 76
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 75,
+        "column": 92
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 76,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 76,
+        "column": 11
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 76,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 76,
+        "column": 21
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 76,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 76,
+        "column": 25
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 77,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 77,
+        "column": 16
+      }
+    },
+    {
+      "vname": "hb",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 79,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 79,
+        "column": 9
+      }
+    },
+    {
+      "vname": "highestBid",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 79,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 79,
+        "column": 23
+      }
+    },
+    {
+      "vname": "sufficientBid",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 82,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 82,
+        "column": 20
+      }
+    },
+    {
+      "vname": "hb",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 82,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 82,
+        "column": 36
+      }
+    },
+    {
+      "vname": "_amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 82,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 82,
+        "column": 44
+      }
+    },
+    {
+      "vname": "sufficientBid",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 83,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 83,
+        "column": 26
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 85,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 85,
+        "column": 12
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 85,
+        "column": 41
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 85,
+        "column": 48
+      }
+    },
+    {
+      "vname": "bid_too_low_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 85,
+        "column": 78
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 85,
+        "column": 94
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 86,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 86,
+        "column": 13
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 86,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 86,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 86,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 86,
+        "column": 27
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 87,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 87,
+        "column": 18
+      }
+    },
+    {
+      "vname": "hbPrev",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 90,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 90,
+        "column": 15
+      }
+    },
+    {
+      "vname": "highestBidder",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 90,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 90,
+        "column": 32
+      }
+    },
+    {
+      "vname": "hbPrev",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 92,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 92,
+        "column": 21
+      }
+    },
+    {
+      "vname": "prevHighestBidder",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 93,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 93,
+        "column": 33
+      }
+    },
+    {
+      "vname": "option_pendingReturnsForPrevHB",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 95,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 95,
+        "column": 41
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 95,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 95,
+        "column": 59
+      }
+    },
+    {
+      "vname": "prevHighestBidder",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 95,
+        "column": 60
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 95,
+        "column": 77
+      }
+    },
+    {
+      "vname": "getPRForPrevHighestBidder",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 97,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 97,
+        "column": 36
+      }
+    },
+    {
+      "vname": "option_pendingReturnsForPrevHB",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 97,
+        "column": 45
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 97,
+        "column": 75
+      }
+    },
+    {
+      "vname": "pendingReturnsForPrevHB",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 98,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 98,
+        "column": 39
+      }
+    },
+    {
+      "vname": "hb",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 100,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 100,
+        "column": 25
+      }
+    },
+    {
+      "vname": "pendingReturnsForPrevHB",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 100,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 100,
+        "column": 49
+      }
+    },
+    {
+      "vname": "hb",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 101,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 101,
+        "column": 21
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 104,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 104,
+        "column": 21
+      }
+    },
+    {
+      "vname": "prevHighestBidder",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 104,
+        "column": 22
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 104,
+        "column": 39
+      }
+    },
+    {
+      "vname": "getPRForPrevHighestBidder",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 104,
+        "column": 44
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 104,
+        "column": 69
+      }
+    },
+    {
+      "vname": "bidder",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 107,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 107,
+        "column": 13
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 107,
+        "column": 31
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 107,
+        "column": 38
+      }
+    },
+    {
+      "vname": "bidder",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 108,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 108,
+        "column": 30
+      }
+    },
+    {
+      "vname": "highestBidder",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 108,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 108,
+        "column": 20
+      }
+    },
+    {
+      "vname": "_amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 109,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 109,
+        "column": 28
+      }
+    },
+    {
+      "vname": "highestBid",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 109,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 109,
+        "column": 17
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 110,
+        "column": 7
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 110,
+        "column": 8
+      }
+    },
+    {
+      "vname": "bid_accepted_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 110,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 110,
+        "column": 54
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 110,
+        "column": 62
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 110,
+        "column": 69
+      }
+    },
+    {
+      "vname": "_amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 110,
+        "column": 79
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 110,
+        "column": 86
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 111,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 111,
+        "column": 14
+      }
+    },
+    {
+      "vname": "first_bidder",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 114,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 114,
+        "column": 21
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 114,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 114,
+        "column": 46
+      }
+    },
+    {
+      "vname": "first_bidder",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 115,
+        "column": 26
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 115,
+        "column": 38
+      }
+    },
+    {
+      "vname": "highestBidder",
+      "type": "Option (ByStr20)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 115,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 115,
+        "column": 22
+      }
+    },
+    {
+      "vname": "_amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 116,
+        "column": 23
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 116,
+        "column": 30
+      }
+    },
+    {
+      "vname": "highestBid",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 116,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 116,
+        "column": 19
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 117,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 117,
+        "column": 10
+      }
+    },
+    {
+      "vname": "first_bid_accepted_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 117,
+        "column": 39
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 117,
+        "column": 62
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 117,
+        "column": 70
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 117,
+        "column": 77
+      }
+    },
+    {
+      "vname": "_amount",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 117,
+        "column": 87
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 117,
+        "column": 94
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 118,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 118,
+        "column": 16
+      }
+    },
+    {
+      "vname": "prs",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 128,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 128,
+        "column": 6
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 128,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 128,
+        "column": 24
+      }
+    },
+    {
+      "vname": "pr",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 129,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 129,
+        "column": 5
+      }
+    },
+    {
+      "vname": "prs",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 129,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 129,
+        "column": 23
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 129,
+        "column": 24
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 129,
+        "column": 31
+      }
+    },
+    {
+      "vname": "pr",
+      "type": "Option (Uint128)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 130,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 130,
+        "column": 11
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 132,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 132,
+        "column": 8
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 132,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 132,
+        "column": 44
+      }
+    },
+    {
+      "vname": "nothing_to_withdraw_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 132,
+        "column": 74
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 132,
+        "column": 98
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 133,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 133,
+        "column": 9
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 133,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 133,
+        "column": 19
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 133,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 133,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 134,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 134,
+        "column": 14
+      }
+    },
+    {
+      "vname": "v",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 135,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 135,
+        "column": 11
+      }
+    },
+    {
+      "vname": "pendingReturns",
+      "type": "Map (ByStr20) (Uint128)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 136,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 136,
+        "column": 26
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 136,
+        "column": 27
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 136,
+        "column": 34
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 137,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 137,
+        "column": 6
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 137,
+        "column": 51
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 137,
+        "column": 58
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 138,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 138,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 139,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 139,
+        "column": 8
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 139,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 139,
+        "column": 44
+      }
+    },
+    {
+      "vname": "v",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 139,
+        "column": 56
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 139,
+        "column": 57
+      }
+    },
+    {
+      "vname": "money_sent_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 139,
+        "column": 66
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 139,
+        "column": 81
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 140,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 140,
+        "column": 9
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 140,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 140,
+        "column": 19
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 140,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 140,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 141,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 141,
+        "column": 14
+      }
+    },
+    {
+      "vname": "blk",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 148,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 148,
+        "column": 6
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 149,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 149,
+        "column": 4
+      }
+    },
+    {
+      "vname": "ended",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 149,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 149,
+        "column": 13
+      }
+    },
+    {
+      "vname": "t1",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 150,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 150,
+        "column": 5
+      }
+    },
+    {
+      "vname": "auctionStart",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 150,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 150,
+        "column": 33
+      }
+    },
+    {
+      "vname": "biddingTime",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 150,
+        "column": 34
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 150,
+        "column": 45
+      }
+    },
+    {
+      "vname": "t2",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 151,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 151,
+        "column": 5
+      }
+    },
+    {
+      "vname": "blk_leq",
+      "type": "BNum -> BNum -> Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 151,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 151,
+        "column": 15
+      }
+    },
+    {
+      "vname": "t1",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 151,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 151,
+        "column": 18
+      }
+    },
+    {
+      "vname": "blk",
+      "type": "BNum",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 151,
+        "column": 19
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 151,
+        "column": 22
+      }
+    },
+    {
+      "vname": "t3",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 152,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 152,
+        "column": 5
+      }
+    },
+    {
+      "vname": "negb",
+      "type": "Bool -> Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 152,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 152,
+        "column": 12
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 152,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 152,
+        "column": 14
+      }
+    },
+    {
+      "vname": "t4",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 153,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 153,
+        "column": 5
+      }
+    },
+    {
+      "vname": "andb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 153,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 153,
+        "column": 12
+      }
+    },
+    {
+      "vname": "t2",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 153,
+        "column": 13
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 153,
+        "column": 15
+      }
+    },
+    {
+      "vname": "t3",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 153,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 153,
+        "column": 18
+      }
+    },
+    {
+      "vname": "t4",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 154,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 154,
+        "column": 11
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 156,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 156,
+        "column": 8
+      }
+    },
+    {
+      "vname": "_sender",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 156,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 156,
+        "column": 44
+      }
+    },
+    {
+      "vname": "auction_is_still_on_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 156,
+        "column": 74
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 156,
+        "column": 98
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 157,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 157,
+        "column": 9
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 157,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 157,
+        "column": 19
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 157,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 157,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 158,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 158,
+        "column": 14
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 160,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 160,
+        "column": 8
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 161,
+        "column": 14
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 161,
+        "column": 17
+      }
+    },
+    {
+      "vname": "ended",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 161,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 161,
+        "column": 10
+      }
+    },
+    {
+      "vname": "hb",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 162,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 162,
+        "column": 7
+      }
+    },
+    {
+      "vname": "highestBid",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 162,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 162,
+        "column": 21
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 163,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 163,
+        "column": 6
+      }
+    },
+    {
+      "vname": "hb",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 163,
+        "column": 52
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 163,
+        "column": 54
+      }
+    },
+    {
+      "vname": "e",
+      "type": "Event",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 164,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 164,
+        "column": 12
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 165,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 165,
+        "column": 8
+      }
+    },
+    {
+      "vname": "beneficiary",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 165,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 165,
+        "column": 48
+      }
+    },
+    {
+      "vname": "hb",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 165,
+        "column": 60
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 165,
+        "column": 62
+      }
+    },
+    {
+      "vname": "auction_end_code",
+      "type": "Int32",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 165,
+        "column": 71
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 165,
+        "column": 87
+      }
+    },
+    {
+      "vname": "hb",
+      "type": "Uint128",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 165,
+        "column": 103
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 165,
+        "column": 105
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 166,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 166,
+        "column": 9
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 166,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 166,
+        "column": 19
+      }
+    },
+    {
+      "vname": "msg",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 166,
+        "column": 20
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 166,
+        "column": 23
+      }
+    },
+    {
+      "vname": "msgs",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 167,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/auction.scilla",
+        "line": 167,
+        "column": 14
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/auction.scilla",
+        "line": 128,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "8000"
+}

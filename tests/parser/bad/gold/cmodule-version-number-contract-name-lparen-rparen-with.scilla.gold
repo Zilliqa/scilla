@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "After the definition of the immutable fields, either the mutable fields definition, a transition or procedure is expected.\n",
+        "After the definition of the immutable fields, either a contract constraint, the mutable fields definition, a transition or procedure is expected.\n",
       "start_location": {
         "file":
           "parser/bad/cmodule-version-number-contract-name-lparen-rparen-with.scilla",

@@ -22,4 +22,6 @@ let checker_tests env = "checker_tests" >::: [TestCheckerSuccess.Tests.add_tests
                                               TestCheckerSuccess.CheckerTests.add_tests env;
                                               TestCheckerSuccess.ShogiTests.add_tests env;
                                               TestCheckerFail.Tests.add_tests env;
-                                              TestCheckerFail.LibTests.add_tests env]
+                                              TestCheckerFail.LibTests.add_tests env;
+                                              TestCheckerSuccess.TypeInfoTests.add_tests env;
+                                              ]

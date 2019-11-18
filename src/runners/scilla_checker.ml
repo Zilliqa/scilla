@@ -124,6 +124,12 @@ let check_sanity m rlibs elibs =
     plog @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n" (get_id m.contr.cname);
   res
 
+let check_sanity_lmod m rlibs elibs =
+  let res = SC.lmod_sanity m rlibs elibs in
+  if Result.is_ok res then
+    plog @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n" (get_id m.libs.lname);
+  res
+
 let check_accepts m =AC.contr_sanity m
 
 let analyze_print_gas cmod typed_elibs =
@@ -174,6 +180,7 @@ let check_lmodule cli =
       check_typing_lmod recursion_lmod recursion_rec_principles recursion_elibs initial_gas in
     let%bind _ = wrap_error_with_gas remaining_gas @@ 
       check_patterns_lmodule typed_lmod typed_rlibs typed_elibs in
+    let%bind _ = wrap_error_with_gas remaining_gas @@ check_sanity_lmod typed_lmod typed_rlibs typed_elibs in
     pure ((typed_lmod, typed_rlibs, typed_elibs), remaining_gas)
   ) in
   (match r with
