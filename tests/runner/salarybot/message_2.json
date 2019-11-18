@@ -1,0 +1,17 @@
+{
+    "_tag": "add_employee",
+    "_amount": "0",
+    "_sender" : "0x1234567890123456789012345678901234567890",
+    "params": [
+        {
+            "vname" : "emp_addr",
+            "type" : "ByStr20",
+            "value" : "0x01345678901234567890123456789012345678ab"
+        },
+        {
+            "vname" : "salary",
+            "type" : "Uint128",
+            "value" : "11000"
+        }
+    ]
+}
