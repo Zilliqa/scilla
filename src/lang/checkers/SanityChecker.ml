@@ -553,8 +553,8 @@ module ScillaSanityChecker
     let%bind _ = CheckShadowing.shadowing_libentries rlibs in
     let%bind _ = iterM ~f:(CheckShadowing.shadowing_libtree) elibs in
     let%bind _ = CheckShadowing.shadowing_cmod cmod in
-
-    one_msg_checker cmod rlibs elibs
+    (* one_msg_checker cmod rlibs elibs *)
+    pure ()
 
   let lmod_sanity (lmod : lmodule) (rlibs : lib_entry list) (elibs : libtree list) =
     let%bind _ = CheckShadowing.shadowing_libentries rlibs in

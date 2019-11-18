@@ -2,7 +2,7 @@
   "scilla_major_version": "0",
   "gas_remaining": "7166",
   "_accepted": "false",
-  "message": null,
+  "message": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "100" },
     { "vname": "transactionCount", "type": "Uint32", "value": "1" },

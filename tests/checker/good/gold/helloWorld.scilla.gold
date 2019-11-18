@@ -77,17 +77,6 @@
   "warnings": [
     {
       "warning_message":
-        "Unable to validate that send arguments is null or single message",
-      "start_location": {
-        "file": "contracts/helloWorld.scilla",
-        "line": 54,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message":
         "No transition in contract HelloWorld contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },

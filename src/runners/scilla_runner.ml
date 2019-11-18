@@ -96,17 +96,12 @@ let output_state_json balance field_vals =
     JSON.ContractState.state_to_json concatlist;;
 
 let output_message_json gas_remaining mlist =
-  match mlist with
-  | [one_message] ->
-    (match one_message with
-     | Msg m ->
-        JSON.Message.message_to_json m
-     | _ -> `Null
-    )
-  | [] -> `Null
-  | _ ->
-    fatal_error_gas (mk_error0 "Sending more than one message not currently permitted") gas_remaining
-
+  let ml = List.map mlist ~f:(fun m ->
+    match m with
+    | Msg m -> JSON.Message.message_to_json m
+    | _ -> fatal_error_gas (mk_error0 "Attempt to send non-message construct.") gas_remaining
+  ) in
+  `List ml
 
 let rec output_event_json elist =
   match elist with
