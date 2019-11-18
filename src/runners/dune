@@ -1,11 +1,12 @@
 (executables
- (names scilla_runner eval_runner type_checker scilla_checker)
-  (public_names scilla-runner eval-runner type-checker scilla-checker)
+ (names scilla_runner eval_runner type_checker scilla_checker ast_json_printer)
+  (public_names scilla-runner eval-runner type-checker scilla-checker ast-json-printer)
   (package scilla)
   (modules scilla_runner
             eval_runner
             type_checker
             scilla_checker
+            ast_json_printer
             cli RunnerUtil)
   (libraries core
               angstrom
