@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7165",
+  "gas_remaining": "7094",
   "_accepted": "false",
   "message": [],
   "states": [
@@ -70,5 +70,12 @@
       ]
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "Transaction signed",
+      "params": [
+        { "vname": "transactionId", "type": "Uint32", "value": "1" }
+      ]
+    }
+  ]
 }
