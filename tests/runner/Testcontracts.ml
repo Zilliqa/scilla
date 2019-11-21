@@ -224,6 +224,7 @@ let add_tests env =
       "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27 []);
       "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 3 []);
       "salarybot" >:::(build_contract_tests env "salarybot" succ_code 0 5 []);
+      "loopy-tree-call" >:::(build_contract_tests env "loopy-tree-call" succ_code 1 1 []);
       "ecdsa" >:::(build_contract_tests env "ecdsa" succ_code 1 4 []);
       "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1 []);
       "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8 []);
