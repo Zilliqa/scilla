@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "4795",
+  "gas_remaining": "4708",
   "_accepted": "false",
   "message": [
     {
@@ -79,5 +79,16 @@
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "1000000" }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "loopy-tree-call executed",
+      "params": [
+        {
+          "vname": "this_address",
+          "type": "ByStr20",
+          "value": "0xabfeccdc9012345678901234567890f777567890"
+        }
+      ]
+    }
+  ]
 }

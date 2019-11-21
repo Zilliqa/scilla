@@ -69,6 +69,8 @@ transition Exec (chain_length : Uint32, other_instances : List ByStr20)
   | True =>
     new_length = builtin add chain_length one;
     messages = create_msgs new_length other_instances _this_address;
+    e = mk_executed_event _this_address;
+    event e;
     send messages
   end
 end
