@@ -1,15 +1,10 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7280",
-  "_accepted": "false",
+  "gas_remaining": "7187",
+  "_accepted": "true",
   "message": null,
   "states": [
-    { "vname": "_balance", "type": "Uint128", "value": "100" },
-    {
-      "vname": "contract_valid",
-      "type": "ContractValidity",
-      "value": { "constructor": "Invalid", "argtypes": [], "arguments": [] }
-    },
+    { "vname": "_balance", "type": "Uint128", "value": "200" },
     {
       "vname": "owners",
       "type": "Map (ByStr20) (Bool)",
@@ -45,10 +40,5 @@
       "value": []
     }
   ],
-  "events": [
-    {
-      "_eventname": "WalletError",
-      "params": [ { "vname": "err_code", "type": "Int32", "value": "-7" } ]
-    }
-  ]
+  "events": []
 }

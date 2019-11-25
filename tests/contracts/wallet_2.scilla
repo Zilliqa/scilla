@@ -95,35 +95,6 @@ let mk_owners_map =
     let folder = @list_foldl ByStr20 (Map ByStr20 Bool) in
     folder iter init owners
 
-(* Check that the number of distinct owners is greater than 0 *)
-let check_validity_and_build_owners_map =
-  fun (owners : List ByStr20) =>
-  fun (required_signatures : Uint32) =>
-    let len = @list_length ByStr20 in
-    let no_of_owners = len owners in
-    let owners_ok = builtin lt zero no_of_owners in
-    let required_sigs_not_too_low = builtin lt zero required_signatures in
-    let required_sigs_too_high = builtin lt no_of_owners required_signatures in
-    let required_sigs_not_too_high = negb required_sigs_too_high in
-    let required_sigs_ok = andb required_sigs_not_too_high required_sigs_not_too_low in
-    let all_ok = andb required_sigs_ok owners_ok in
-    match all_ok with
-    | True =>
-      let owners_map = mk_owners_map owners in
-      let size_of_owners_map = builtin size owners_map in
-      let equal_size = builtin eq size_of_owners_map no_of_owners in
-      match equal_size with
-      | True =>
-        (* No duplicates *)
-        Some {Map ByStr20 Bool} owners_map
-      | False =>
-        (* Duplicate owners found *)
-        None {Map ByStr20 Bool}
-      end
-    | False =>
-      None {Map ByStr20 Bool}
-    end
-    
 (* Create one transaction message *)
 let transaction_msg =
   fun (recipient : ByStr20) =>
@@ -143,15 +114,6 @@ let transaction_msg_as_list =
     let msg = transaction_msg recipient amount tag in
     one_msg msg
 
-type ContractValidity =
-| Valid
-| Invalid
-| Unchecked
-
-let valid = Valid
-let invalid = Invalid
-
-
 (***************************************************)
 (*             The contract definition             *)
 (*                                                 *)
@@ -159,14 +121,6 @@ let invalid = Invalid
 (* to arbitrary users, provided that enough people *)
 (* in the collection of owners sign off on the     *)
 (* payout.                                         *)
-(*                                                 *)
-(* Before transactions can be submitted or signed  *)
-(* for, the contract must be initialized. This is  *)
-(* done by invoking the AddFunds transition. This  *)
-(* transition initializes the contract fields -    *)
-(* if the fields have not been initialized, all    *)
-(* other transitions will fail whenever they are   *)
-(* invoked.                                        *)
 (*                                                 *)
 (* The transaction must be added to the contract   *)
 (* before signatures can be collected. Once enough *)
@@ -233,16 +187,31 @@ contract Wallet
 owners_list         : List ByStr20,
 required_signatures : Uint32
 )
-
-(* Funds are not allowed to be added if the contract is not valid *)
-field contract_valid : ContractValidity = Unchecked
+with
+  let len = @list_length ByStr20 in
+  let no_of_owners = len owners_list in
+  let owners_ok = builtin lt zero no_of_owners in
+  let required_sigs_not_too_low = builtin lt zero required_signatures in
+  let required_sigs_too_high = builtin lt no_of_owners required_signatures in
+  let required_sigs_not_too_high = negb required_sigs_too_high in
+  let required_sigs_ok = andb required_sigs_not_too_high required_sigs_not_too_low in
+  let all_ok = andb required_sigs_ok owners_ok in
+  (* Building the owners map is expensive, so avoid checking the owners map until *)
+  (* everything else has been checked *)
+  match all_ok with
+  | True =>
+    let owners_map = mk_owners_map owners_list in
+    let size_of_owners_map = builtin size owners_map in
+    builtin eq size_of_owners_map no_of_owners
+  | False =>
+    False
+  end
+=>
 
 (* adr -> True indicates an owner *)
 (* adr not in map indicates non-owner *)
 (* adr -> False is not used *)
-(* The initial owners will be added as owners when funds are *)
-(* initially added to the contract. *) 
-field owners           : Map ByStr20 Bool = Emp ByStr20 Bool
+field owners           : Map ByStr20 Bool = mk_owners_map owners_list
 
 field transactionCount : Uint32 = Uint32 0
 
@@ -257,6 +226,7 @@ field signature_counts : Map Uint32 Uint32 =
 (* Transactions *) 
 field transactions     : Map Uint32 Transaction =
                            Emp Uint32 Transaction
+
 procedure MakeError (err : Error)
   e = mk_error_event err;
   event e
@@ -435,39 +405,5 @@ end
 
 (* Add funds to wallet *)
 transition AddFunds ()
-  (* Check validity of contract. If the contract is invalid, funds will not be accepted. *)
-  validity <- contract_valid;
-  match validity with
-  | Unchecked =>
-    (* Check validity and build owners map *)
-    owners_map_opt = check_validity_and_build_owners_map owners_list required_signatures;
-    match owners_map_opt with
-    | Some owners_map =>
-      contract_valid := valid;
-      owners := owners_map;
-      e = mk_contract_initialized_event;
-      event e
-    | None =>
-      contract_valid := invalid
-    end
-  | Valid =>
-    (* Already checked *)
-  | Invalid =>
-    (* Already checked *)
-  end;
-
-(* Read validity field again, as it may have been updated. *)
-(* Only accept funds if the contract is valid. *)
-  validity <- contract_valid;
-  match validity with
-  | Unchecked =>
-    (* This should not happen *)
-    err = InvalidContract;
-    MakeError err
-  | Invalid =>
-    err = InvalidContract;
-    MakeError err
-  | Valid =>
-    accept
-  end
+  accept
 end

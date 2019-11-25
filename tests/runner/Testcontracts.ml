@@ -232,6 +232,10 @@ let add_tests env =
       "wallet_2_no_owners" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 100 100 [] "init_no_owners");
       "wallet_2_req_sigs_zero" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 200 200 [] "init_req_sigs_zero");
       "wallet_2_not_enough_owners" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 300 300 [] "init_not_enough_owners");
+      "wallet_constraint" >:::(build_contract_tests_with_init_file env "wallet_constraint" succ_code 1 42 [] "init");
+      "wallet_constraint_no_owners" >:::(build_contract_tests_with_init_file env "wallet_constraint" succ_code 100 100 [] "init_no_owners");
+      "wallet_constraint_req_sigs_zero" >:::(build_contract_tests_with_init_file env "wallet_constraint" succ_code 200 200 [] "init_req_sigs_zero");
+      "wallet_constraint_not_enough_owners" >:::(build_contract_tests_with_init_file env "wallet_constraint" succ_code 300 300 [] "init_not_enough_owners");
       "one_msg_test" >::: (build_contract_tests env "one-msg" succ_code 1 1 []);
       "one_msg1_test" >::: (build_contract_tests env "one-msg1" succ_code 1 1 []);
       "simple-dex" >:::(build_contract_tests env "simple-dex" succ_code 1 8 []);
