@@ -1,0 +1,15 @@
+scilla_version 0
+
+library Constraint
+
+contract Constraint()
+with
+  let x = True in
+  x
+=>
+
+field f : Bool = x
+
+transition T ()
+  y = x
+end

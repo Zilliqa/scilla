@@ -248,6 +248,7 @@ let add_tests env =
       "multiple_msgs_test" >::: (build_contract_tests env "multiple-msgs" fail_code 1 1 []);
       "exception-example" >::: (build_contract_tests env "exception-example" fail_code 1 2 []);
       "testlib1_init" >:(build_contract_init_test env fail_code "0x565556789012345678901234567890123456abcd" true);
+      "constraint_test" >:(build_contract_init_test env fail_code "constraint" false);
     ];
     "misc_tests" >::: build_misc_tests env;
   ]

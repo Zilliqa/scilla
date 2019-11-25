@@ -78,6 +78,9 @@ module Tests = TestUtil.DiffBasedTests(
       "bad-exception1.scilla";
       "blowup.scilla";
       "BadPMLib.scillib";
+      "constraint_field_not_in_scope.scilla";
+      "constraint_locals_not_in_scope.scilla";
+      "constraint_type_illegal.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
