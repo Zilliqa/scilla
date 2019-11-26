@@ -121,23 +121,23 @@ module ScillaContractUtil
    * ~f takes a message and an accumulator and updates the accumulator. *)
   let fold_over_messages (cmod : cmodule) ~init ~f =
 
-    let rec expr_folder b ex acc =
+    let rec expr_folder loc ex acc =
       match ex with
       (* Basis of the recursion. *)
-      | Message m -> f b m acc
+      | Message m -> f loc m acc
       (* More, unimportant bases. *)
       | Literal _ | Var _ | App _ | Constr _ | Builtin _ | TApp _ -> pure acc
       (* We don't really expect Message inside a Fixpoint. *)
       | Fixpoint _ -> pure acc
       (* Recursion. *)
       | Let (b', _, (e1, _), (e2, _)) ->
-        let%bind acc' = expr_folder b' e1 acc in
-        expr_folder b e2 acc'
+        let%bind acc' = expr_folder (ER.get_loc @@ get_rep b') e1 acc in
+        expr_folder loc e2 acc'
       | Fun (_, _, (e', _)) | TFun (_, (e', _) ) ->
-        expr_folder b e' acc
+        expr_folder loc e' acc
       | MatchExpr (p, pl) ->
         foldM ~f:(fun acc (_, (e', _)) ->
-          expr_folder p e' acc
+          expr_folder (ER.get_loc @@ get_rep p) e' acc
         ) ~init:acc pl
     in
 
@@ -146,7 +146,7 @@ module ScillaContractUtil
       let lentries = (match cmod.libs with |  None -> [] | Some lib -> lib.lentries) in
       foldM ~f:(fun acc le ->
         match le with
-        | LibVar (b, _, (ex, _)) -> expr_folder b ex acc
+        | LibVar (b, _, (ex, _)) -> expr_folder (ER.get_loc @@ get_rep b) ex acc
         | LibTyp _ -> pure acc
       ) ~init:init lentries
     in
@@ -165,7 +165,7 @@ module ScillaContractUtil
                          stmt_iter stmt_list'' acc''
                        ) ~init:acc clauses
                  (* Every message created gets bound to some variable. *)
-                 | Bind (b, (e, _)) -> expr_folder b e acc
+                 | Bind (b, (e, _)) -> expr_folder (ER.get_loc @@ get_rep b) e acc
                  | _ -> (* Uninteresting statement. *) pure acc
                 ) in  stmt_iter stmt_list' acc'
           | [] -> pure acc
@@ -174,4 +174,3 @@ module ScillaContractUtil
       ) ~init:acc cmod.contr.ccomps
 
 end
-
