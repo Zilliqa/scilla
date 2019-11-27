@@ -370,6 +370,9 @@ module ScillaSanityChecker
       | None -> pure env_elibs
     in
 
+    (* We ignore the contract constraints, since a list of messages constructed 
+       inside a constraint cannot become the argument to a send statement. *) 
+    
     (* Bind contract parameters to Many. *)
     let env = List.fold_left (fun acc (p, _) ->
         add_env acc p Many
@@ -495,6 +498,10 @@ module ScillaSanityChecker
       in
 
       let cparams = List.map (fun (p, _) -> get_id p) cmod.contr.cparams in
+
+      (* Check for shadowing in contract constraint *)
+      let%bind _ = expr_iter cmod.contr.cconstraint cparams [] [] in
+      
       (* Check if a field shadows any contract parameter. *)
       let%bind _ = iterM ~f:(fun (f, _, finit_expr) ->
           check_warn_redef cparams [] [] f;

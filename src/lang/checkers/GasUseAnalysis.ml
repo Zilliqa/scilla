@@ -1087,6 +1087,9 @@ module ScillaGUA
     let genv_cparams = identity_bind_ident_list genv_lib
       (List.map (fun (i, _) -> i) all_cparams) in
 
+    (* Analyze contract constraints *)
+    let%bind _ = gua_expr genv_lib cmod.contr.cconstraint in
+    
     (* Bind state variables. *)
     (* TODO: account for the cost of evaluating state initializers. *)
     let genv_cfields = identity_bind_ident_list genv_cparams
