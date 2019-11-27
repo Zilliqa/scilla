@@ -62,8 +62,7 @@
     | None -> raise (SyntaxError (("Invalid " ^ (pp_prim_typ t) ^ " literal " ^ v), loc))
 
   let build_bool_literal v loc =
-    let lit_v = if v then "True" else "False" in
-    (Literal (ADTValue (lit_v, [], [])), loc)
+    (Literal (BuiltIns.UsefulLiterals.to_Bool v), loc)
 %}
 
 (* Identifiers *)
