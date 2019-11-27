@@ -27,8 +27,7 @@ module ScillaEventInfo
 
     (* Given a message and a current list of event info, extract
      * info from message and append to the list. *)
-    let extract_from_message b m acc =
-      let bloc = (ER.get_loc (get_rep b)) in
+    let extract_from_message bloc m acc =
       (* Check if this is for an event. *)
       (match (List.find_opt (fun (label, _) -> label = eventname_label) m) with
        | Some (_, epld) ->
