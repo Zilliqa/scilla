@@ -83,10 +83,7 @@ module ScillaSanityChecker
     in
 
     (* Message literals must either be for "send" or "event" and well formed. *)
-    let check_message b msg e =
-      (* Use location of "b" to represent the location of msg. *)
-      let eloc = ER.get_loc @@ get_rep b in
-
+    let check_message eloc msg e =
       (* No repeating message field. *)
       let e = e @ check_duplicate_ident (fun _ -> eloc) (List.map (fun (s, _) -> SR.mk_id_string s) msg) in
 
