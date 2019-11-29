@@ -367,7 +367,7 @@ let () =
         ("scilla_major_version", `String (Int.to_string cmod.smver));
         "gas_remaining", `String (Uint64.to_string gas);
         ContractUtil.accepted_label, `String (Bool.to_string accepted_b);
-        ("message", output_msg_json); 
+        ("messages", output_msg_json); 
         ("states", output_state_json);
         ("events", output_events_json);
         (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)

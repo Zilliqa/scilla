@@ -2,7 +2,7 @@
   "scilla_major_version": "0",
   "gas_remaining": "5969",
   "_accepted": "false",
-  "message": [
+  "messages": [
     {
       "_tag": "PlayerAction",
       "_amount": "0",

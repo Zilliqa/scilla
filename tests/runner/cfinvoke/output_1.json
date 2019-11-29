@@ -2,7 +2,7 @@
   "scilla_major_version": "0",
   "gas_remaining": "7610",
   "_accepted": "true",
-  "message": [
+  "messages": [
     {
       "_tag": "Donate",
       "_amount": "122",

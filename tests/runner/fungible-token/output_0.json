@@ -2,7 +2,7 @@
   "scilla_major_version": "0",
   "gas_remaining": "7468",
   "_accepted": "false",
-  "message": [
+  "messages": [
     {
       "_tag": "BalanceOfResponse",
       "_amount": "0",

@@ -2,7 +2,7 @@
   "scilla_major_version": "0",
   "gas_remaining": "6556",
   "_accepted": "false",
-  "message": [
+  "messages": [
     {
       "_tag": "TransferFrom",
       "_amount": "0",
