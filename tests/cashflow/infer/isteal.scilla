@@ -1,3 +1,5 @@
+scilla_version 0
+
 (* A simple contract that exhibits a non-trivial cash-flow and several *)
 (* cash-flow bugs, violating, in particular, the linearity of the *)
 (* contract wrt. to the funds it stores: *)
@@ -13,9 +15,9 @@
 
 library ISteal
 
-let my_condition =
+let auction_ended =
   fun (b : BNum) =>
-    let anchor = block 100 in
+    let anchor = BNum 100 in
     builtin blt anchor b 
 
 let one_msg = 
@@ -31,7 +33,7 @@ field folks : Map ByStr20 Uint128 = Emp ByStr20 Uint128
 transition put()
   f <- folks;
   b <- &BLOCKNUMBER;
-  c = my_condition b;
+  c = auction_ended b;
   match c with
   | True =>
     accept;
