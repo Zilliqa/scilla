@@ -225,6 +225,17 @@ We suggest using `make clean` command or keeping `_opam` directory like so:
 git clean -dfX --exclude=\!_opam/**
 ```
 
+To get rid of Dune warnings like the following one
+```shell
+File "/path/to/scilla/_opam/lib/expect_test_helpers_kernel/expect_test_helpers_kernel.dune", line 1, characters 0-0:
+Warning: .dune files are ignored since 2.0. Reinstall the library with dune
+>= 2.0 to get rid of this warning and enable support for the subsystem this
+library provides.
+```
+simply delete all the `.dune` files in the local opam switch:
+```shell
+find ./_opam/ -type f -iname '*.dune' | xargs rm
+```
 
 ## Using OCaml with Emacs
 
