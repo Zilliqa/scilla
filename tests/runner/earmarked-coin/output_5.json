@@ -2,12 +2,14 @@
   "scilla_major_version": "0",
   "gas_remaining": "7513",
   "_accepted": "false",
-  "message": {
-    "_tag": "",
-    "_amount": "100",
-    "_recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "params": []
-  },
+  "messages": [
+    {
+      "_tag": "",
+      "_amount": "100",
+      "_recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "params": []
+    }
+  ],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {

@@ -2,15 +2,17 @@
   "scilla_major_version": "0",
   "gas_remaining": "7417",
   "_accepted": "false",
-  "message": {
-    "_tag": "",
-    "_amount": "200",
-    "_recipient": "0x1234567890123456789012345678901234567890",
-    "params": [
-      { "vname": "code", "type": "Int32", "value": "9" },
-      { "vname": "highest_bid", "type": "Uint128", "value": "200" }
-    ]
-  },
+  "messages": [
+    {
+      "_tag": "",
+      "_amount": "200",
+      "_recipient": "0x1234567890123456789012345678901234567890",
+      "params": [
+        { "vname": "code", "type": "Int32", "value": "9" },
+        { "vname": "highest_bid", "type": "Uint128", "value": "200" }
+      ]
+    }
+  ],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "100" },
     {

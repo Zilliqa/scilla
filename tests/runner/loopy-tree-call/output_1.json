@@ -1,0 +1,94 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "4708",
+  "_accepted": "false",
+  "messages": [
+    {
+      "_tag": "Exec",
+      "_amount": "0",
+      "_recipient": "0x01345678901234567890123456789012345678ab",
+      "params": [
+        { "vname": "chain_length", "type": "Uint32", "value": "2" },
+        {
+          "vname": "other_instances",
+          "type": "List (ByStr20)",
+          "value": [
+            "0x02345678901234567890123456789012345678ab",
+            "0x03345678901234567890123456789012345678ab",
+            "0x04345678901234567890123456789012345678ab",
+            "0xabfeccdc9012345678901234567890f777567890"
+          ]
+        }
+      ]
+    },
+    {
+      "_tag": "Exec",
+      "_amount": "0",
+      "_recipient": "0x02345678901234567890123456789012345678ab",
+      "params": [
+        { "vname": "chain_length", "type": "Uint32", "value": "2" },
+        {
+          "vname": "other_instances",
+          "type": "List (ByStr20)",
+          "value": [
+            "0x01345678901234567890123456789012345678ab",
+            "0x03345678901234567890123456789012345678ab",
+            "0x04345678901234567890123456789012345678ab",
+            "0xabfeccdc9012345678901234567890f777567890"
+          ]
+        }
+      ]
+    },
+    {
+      "_tag": "Exec",
+      "_amount": "0",
+      "_recipient": "0x03345678901234567890123456789012345678ab",
+      "params": [
+        { "vname": "chain_length", "type": "Uint32", "value": "2" },
+        {
+          "vname": "other_instances",
+          "type": "List (ByStr20)",
+          "value": [
+            "0x01345678901234567890123456789012345678ab",
+            "0x02345678901234567890123456789012345678ab",
+            "0x04345678901234567890123456789012345678ab",
+            "0xabfeccdc9012345678901234567890f777567890"
+          ]
+        }
+      ]
+    },
+    {
+      "_tag": "Exec",
+      "_amount": "0",
+      "_recipient": "0x04345678901234567890123456789012345678ab",
+      "params": [
+        { "vname": "chain_length", "type": "Uint32", "value": "2" },
+        {
+          "vname": "other_instances",
+          "type": "List (ByStr20)",
+          "value": [
+            "0x01345678901234567890123456789012345678ab",
+            "0x02345678901234567890123456789012345678ab",
+            "0x03345678901234567890123456789012345678ab",
+            "0xabfeccdc9012345678901234567890f777567890"
+          ]
+        }
+      ]
+    }
+  ],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "1000000" }
+  ],
+  "events": [
+    {
+      "_eventname": "loopy-tree-call executed",
+      "params": [
+        {
+          "vname": "this_address",
+          "type": "ByStr20",
+          "value": "0xabfeccdc9012345678901234567890f777567890"
+        }
+      ]
+    }
+  ]
+}

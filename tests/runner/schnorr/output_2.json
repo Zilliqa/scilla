@@ -2,18 +2,20 @@
   "scilla_major_version": "0",
   "gas_remaining": "6950",
   "_accepted": "false",
-  "message": {
-    "_tag": "",
-    "_amount": "0",
-    "_recipient": "0x12345678901234567890123456789012345678ab",
-    "params": [
-      {
-        "vname": "status",
-        "type": "String",
-        "value": "verification successful"
-      }
-    ]
-  },
+  "messages": [
+    {
+      "_tag": "",
+      "_amount": "0",
+      "_recipient": "0x12345678901234567890123456789012345678ab",
+      "params": [
+        {
+          "vname": "status",
+          "type": "String",
+          "value": "verification successful"
+        }
+      ]
+    }
+  ],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {

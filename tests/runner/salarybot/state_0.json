@@ -1,0 +1,12 @@
+[
+  {
+    "vname": "employees",
+    "type": "Map (ByStr20) (Uint128)",
+    "value": []
+  },
+  {
+    "vname": "_balance",
+    "type": "Uint128",
+    "value": "0"
+  }
+]

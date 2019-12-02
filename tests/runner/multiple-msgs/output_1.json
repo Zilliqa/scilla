@@ -1,12 +1,21 @@
 {
+  "scilla_major_version": "0",
   "gas_remaining": "7574",
-  "errors": [
+  "_accepted": "false",
+  "messages": [
     {
-      "error_message":
-        "Sending more than one message not currently permitted",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
+      "_tag": "",
+      "_amount": "0",
+      "_recipient": "0x1234567890123456789012345678906784567890",
+      "params": []
+    },
+    {
+      "_tag": "",
+      "_amount": "0",
+      "_recipient": "0x1234567890123456789012345678906784567890",
+      "params": []
     }
   ],
-  "warnings": []
+  "states": [ { "vname": "_balance", "type": "Uint128", "value": "0" } ],
+  "events": []
 }

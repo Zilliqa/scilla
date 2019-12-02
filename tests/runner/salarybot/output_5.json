@@ -1,0 +1,37 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7425",
+  "_accepted": "false",
+  "messages": [
+    {
+      "_tag": "",
+      "_amount": "12000",
+      "_recipient": "0x02345678901234567890123456789012345678ab",
+      "params": []
+    },
+    {
+      "_tag": "",
+      "_amount": "11000",
+      "_recipient": "0x01345678901234567890123456789012345678ab",
+      "params": []
+    }
+  ],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "977000" },
+    {
+      "vname": "employees",
+      "type": "Map (ByStr20) (Uint128)",
+      "value": [
+        {
+          "key": "0x02345678901234567890123456789012345678ab",
+          "val": "12000"
+        },
+        {
+          "key": "0x01345678901234567890123456789012345678ab",
+          "val": "11000"
+        }
+      ]
+    }
+  ],
+  "events": []
+}

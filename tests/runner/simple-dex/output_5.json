@@ -2,24 +2,26 @@
   "scilla_major_version": "0",
   "gas_remaining": "7246",
   "_accepted": "false",
-  "message": {
-    "_tag": "TransferFrom",
-    "_amount": "0",
-    "_recipient": "0x1234567890123456789012345678901234567001",
-    "params": [
-      {
-        "vname": "from",
-        "type": "ByStr20",
-        "value": "0xabfeccdc9012345678901234567890f777567890"
-      },
-      {
-        "vname": "to",
-        "type": "ByStr20",
-        "value": "0x1234567890123456789012345678901234567899"
-      },
-      { "vname": "tokens", "type": "Uint128", "value": "100" }
-    ]
-  },
+  "messages": [
+    {
+      "_tag": "TransferFrom",
+      "_amount": "0",
+      "_recipient": "0x1234567890123456789012345678901234567001",
+      "params": [
+        {
+          "vname": "from",
+          "type": "ByStr20",
+          "value": "0xabfeccdc9012345678901234567890f777567890"
+        },
+        {
+          "vname": "to",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567899"
+        },
+        { "vname": "tokens", "type": "Uint128", "value": "100" }
+      ]
+    }
+  ],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     { "vname": "orderbook", "type": "Map (ByStr32) (Order)", "value": [] },

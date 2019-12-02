@@ -223,6 +223,8 @@ let add_tests env =
       "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 1 12 []);
       "nonfungible-token" >:::(build_contract_tests env "nonfungible-token" succ_code 21 27 []);
       "schnorr" >:::(build_contract_tests env "schnorr" succ_code 1 3 []);
+      "salarybot" >:::(build_contract_tests env "salarybot" succ_code 0 5 []);
+      "loopy-tree-call" >:::(build_contract_tests env "loopy-tree-call" succ_code 1 1 []);
       "ecdsa" >:::(build_contract_tests env "ecdsa" succ_code 1 4 []);
       "empty_contract" >::: (build_contract_tests env "empty" succ_code 1 1 []);
       "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8 []);
@@ -240,12 +242,12 @@ let add_tests env =
       "map_key_test" >::: (build_contract_tests env "map_key_test" succ_code 1 1 []);
       "earmarked-coin" >:::(build_contract_tests env "earmarked-coin" succ_code 1 6 []);
       "map_corners_test" >:::(build_contract_tests env "map_corners_test" succ_code 1 18 []);
+      "multiple_msgs_test" >::: (build_contract_tests env "multiple-msgs" succ_code 1 1 []);
     ];
     "these_tests_must_FAIL" >:::[
-      "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 5 12 []);
+      "helloWorld_f" >:::(build_contract_tests env "helloWorld" fail_code 5 11 []);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 8 8 []);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 12 14 []);
-      "multiple_msgs_test" >::: (build_contract_tests env "multiple-msgs" fail_code 1 1 []);
       "exception-example" >::: (build_contract_tests env "exception-example" fail_code 1 2 []);
       "testlib1_init" >:(build_contract_init_test env fail_code "0x565556789012345678901234567890123456abcd" true);
     ];

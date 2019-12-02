@@ -2,31 +2,33 @@
   "scilla_major_version": "0",
   "gas_remaining": "5969",
   "_accepted": "false",
-  "message": {
-    "_tag": "PlayerAction",
-    "_amount": "0",
-    "_recipient": "0xabfeccdc9012345678901234567890f777567890",
-    "params": [
-      {
-        "vname": "action",
-        "type": "Action",
-        "value": {
-          "constructor": "Move",
-          "argtypes": [],
-          "arguments": [
-            {
-              "constructor": "Square",
-              "argtypes": [],
-              "arguments": [ "1", "1" ]
-            },
-            { "constructor": "North", "argtypes": [], "arguments": [] },
-            "3",
-            { "constructor": "False", "argtypes": [], "arguments": [] }
-          ]
+  "messages": [
+    {
+      "_tag": "PlayerAction",
+      "_amount": "0",
+      "_recipient": "0xabfeccdc9012345678901234567890f777567890",
+      "params": [
+        {
+          "vname": "action",
+          "type": "Action",
+          "value": {
+            "constructor": "Move",
+            "argtypes": [],
+            "arguments": [
+              {
+                "constructor": "Square",
+                "argtypes": [],
+                "arguments": [ "1", "1" ]
+              },
+              { "constructor": "North", "argtypes": [], "arguments": [] },
+              "3",
+              { "constructor": "False", "argtypes": [], "arguments": [] }
+            ]
+          }
         }
-      }
-    ]
-  },
+      ]
+    }
+  ],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {

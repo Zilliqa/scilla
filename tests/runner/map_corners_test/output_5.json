@@ -2,7 +2,7 @@
   "scilla_major_version": "0",
   "gas_remaining": "7728",
   "_accepted": "false",
-  "message": null,
+  "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     { "vname": "f_s1", "type": "String", "value": "421" },
