@@ -853,7 +853,7 @@ module ScillaTypechecker
       | Ok (checked_constraint, remaining_gas) ->
         Ok (checked_constraint, remaining_gas, emsgs)
       | Error (TypeError, e, g) ->
-        Ok (((TypedSyntax.Constr ("True", [], [])), ETR.dummy_rep), g, emsgs @ e)
+        Ok ((TypedSyntax.Literal (BuiltIns.UsefulLiterals.false_lit), ETR.dummy_rep), g, emsgs @ e)
       | Error (GasError, e, g) ->
           Error (GasError, e, g)
     in

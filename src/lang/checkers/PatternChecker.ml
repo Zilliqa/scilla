@@ -287,7 +287,7 @@ module ScillaPatternchecker
       match pm_check_expr cconstraint with
       | Ok ckd_constraint -> Ok (ckd_constraint, emsgs)
       | Error msg ->
-          Ok ((CheckedPatternSyntax.Constr ("False", [], []), ER.dummy_rep), emsgs @ msg)
+          Ok ((CheckedPatternSyntax.Literal (BuiltIns.UsefulLiterals.false_lit), EPR.dummy_rep), emsgs @ msg)
     in
     
     let%bind (checked_fields, emsgs'') =
