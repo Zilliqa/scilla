@@ -1,13 +1,8 @@
 {
-<<<<<<< HEAD
-  "gas_remaining": "7573",
-  "errors": [
-=======
   "scilla_major_version": "0",
-  "gas_remaining": "7574",
+  "gas_remaining": "7573",
   "_accepted": "false",
   "messages": [
->>>>>>> f9f9afb8404bbeca0376cd980971791baa9fa58d
     {
       "_tag": "",
       "_amount": "0",

@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-  "gas_remaining": "7568",
-=======
   "gas_remaining": "7725",
->>>>>>> f9f9afb8404bbeca0376cd980971791baa9fa58d
   "errors": [
     {
       "error_message": "Invalid String value Hello\u0016World in JSON",
