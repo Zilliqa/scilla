@@ -1,5 +1,4 @@
 (library
-  (name testcontracts)
-  (wrapped false)
-  (libraries core oUnit testutil stateIPCTest)
-)
+ (name testcontracts)
+ (wrapped false)
+ (libraries core oUnit testutil stateIPCTest))

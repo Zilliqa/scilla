@@ -1,5 +1,4 @@
 (library
-  (name testparser)
-  (wrapped false)
-  (libraries core oUnit testutil testparserfail)
-)
+ (name testparser)
+ (wrapped false)
+ (libraries core oUnit testutil testparserfail))
