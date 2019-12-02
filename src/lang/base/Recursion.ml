@@ -401,7 +401,7 @@ module ScillaRecursion
       | Ok rec_contr -> Ok (rec_contr, emsgs)
       | Error el -> Ok ({cname = cname;
                          cparams = [] ;
-                         cconstraint = (RecursionSyntax.Constr ("False", [], []), ERecRep.dummy_rep) ;
+                         cconstraint = (RecursionSyntax.Literal (BuiltIns.UsefulLiterals.false_lit), ERecRep.dummy_rep) ;
                          cfields = [] ;
                          ccomps = []},
                         emsgs @ el) in
