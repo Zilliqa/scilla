@@ -48,6 +48,8 @@ module CashflowRep (R : Rep) = struct
     match s with
     | Ident (n, r) -> Ident (n, (tag, r))
 
+  let dummy_rep = (NoInfo, R.dummy_rep)
+
   let mk_id s =
     add_tag_to_id s NoInfo
 
@@ -226,7 +228,7 @@ module ScillaCashflowChecker
         List.map ~f:cf_init_tag_stmt comp_body }
   
   let cf_init_tag_contract contract token_fields =
-    let { cname ; cparams ; cfields ; ccomps } = contract in
+    let { cname ; cparams ; cconstraint; cfields ; ccomps } = contract in
     let token_fields_contains x =
       List.exists ~f:(fun token_field -> get_id x = token_field) token_fields in
     { CFSyntax.cname = cname;
@@ -236,6 +238,7 @@ module ScillaCashflowChecker
              then add_money_or_mapmoney_to_ident x t
              else add_noinfo_to_ident x),
             t) cparams;
+      CFSyntax.cconstraint = cf_init_tag_expr cconstraint;
       CFSyntax.cfields =
         List.map ~f:(fun (x, t, e) ->
             ((if token_fields_contains x
@@ -1582,15 +1585,15 @@ module ScillaCashflowChecker
        new_changes)
 
     let cf_tag_contract c =
-      let { cname ; cparams ; cfields ; ccomps } = c in
+      let { cname ; cparams ; cconstraint; cfields ; ccomps } = c in
       let empty_env = AssocDictionary.make_dict () in
-      let ctr_tag_map = init_ctr_tag_map () in
       let init_param_env =
         List.fold_left cparams ~init:empty_env
           ~f:(fun acc_env (p, _) ->
              AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
-      in
+      in 
       let implicit_field_env = AssocDictionary.insert "_balance" Money empty_env in
+      let ctr_tag_map = init_ctr_tag_map () in
       let init_field_env =
         List.fold_left cfields ~init:implicit_field_env
           ~f:(fun acc_env (f, _, e) ->
@@ -1598,19 +1601,21 @@ module ScillaCashflowChecker
                   cf_tag_expr e (lub_tags (get_id_tag f) NoInfo) (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) ctr_tag_map in
              AssocDictionary.insert (get_id f) e_tag acc_env)
       in
-      let rec tagger components param_env field_env ctr_tag_map =
-        let (new_ts, new_param_env, new_field_env, tmp_ctr_tag_map, ccomps_changes) =
-          List.fold_right components ~init:([], param_env, field_env, ctr_tag_map, false) 
+      let rec tagger cconstraint components param_env field_env ctr_tag_map =
+        let (new_constraint, tmp_param_env, _, tmp_ctr_tag_map, constraint_changes) =
+          cf_tag_expr cconstraint NotMoney param_env (AssocDictionary.make_dict()) ctr_tag_map in
+        let (new_ts, new_param_env, new_field_env, tmp_ctr_tag_map, changes) =
+          List.fold_right components ~init:([], tmp_param_env, field_env, tmp_ctr_tag_map, constraint_changes) 
             ~f:(fun t (acc_ts, acc_param_env, acc_field_env, acc_ctr_tag_map, acc_changes) ->
                let (new_t, new_param_env, new_field_env, new_ctr_tag_map, t_changes) =
                  cf_tag_component t acc_param_env acc_field_env acc_ctr_tag_map in
                (new_t :: acc_ts, new_param_env, new_field_env, new_ctr_tag_map, acc_changes || t_changes))
         in
-        if ccomps_changes
+        if changes
         then
-          tagger new_ts new_param_env new_field_env tmp_ctr_tag_map
-        else (new_ts, new_param_env, new_field_env, tmp_ctr_tag_map) in
-      let (new_ccomps, new_param_env, new_field_env, final_ctr_tag_map) = tagger ccomps init_param_env init_field_env ctr_tag_map in
+          tagger new_constraint new_ts new_param_env new_field_env tmp_ctr_tag_map
+        else (new_constraint, new_ts, new_param_env, new_field_env, tmp_ctr_tag_map) in
+      let (new_constraint, new_ccomps, new_param_env, new_field_env, final_ctr_tag_map) = tagger cconstraint ccomps init_param_env init_field_env ctr_tag_map in
       let new_params =
         List.fold_right cparams ~init:[] 
           ~f:(fun (p, t) acc_params ->
@@ -1625,6 +1630,7 @@ module ScillaCashflowChecker
           in
       ({ cname = cname ;
          cparams = new_params ;
+         cconstraint = new_constraint;
          cfields = new_fields ;
          ccomps = new_ccomps },
        final_ctr_tag_map)

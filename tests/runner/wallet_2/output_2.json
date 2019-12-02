@@ -1,15 +1,10 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7364",
+  "gas_remaining": "7187",
   "_accepted": "true",
   "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "200" },
-    {
-      "vname": "contract_valid",
-      "type": "ContractValidity",
-      "value": { "constructor": "Valid", "argtypes": [], "arguments": [] }
-    },
     {
       "vname": "owners",
       "type": "Map (ByStr20) (Bool)",

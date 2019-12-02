@@ -55,11 +55,6 @@
       ]
     },
     {
-      "vname": "contract_valid",
-      "type": "ContractValidity",
-      "value": { "constructor": "Valid", "argtypes": [], "arguments": [] }
-    },
-    {
       "vname": "owners",
       "type": "Map (ByStr20) (Bool)",
       "value": [

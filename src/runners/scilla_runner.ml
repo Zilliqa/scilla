@@ -256,7 +256,8 @@ let () =
         let init_res = init_module cmod initargs [] Uint128.zero bstate elibs in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
-        let (cstate', remaining_gas', field_vals) = check_extract_cstate cli.input init_res gas_remaining in
+        let (cstate', remaining_gas', field_vals) =
+          check_extract_cstate cli.input init_res gas_remaining in
 
         (* If the data store is not local, we must update the store with the initial field values.
          * Refer to the details comments at [Initialization of StateService]. *)

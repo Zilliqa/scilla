@@ -166,7 +166,6 @@ module ScillaSanityChecker
 
     if e = [] then pure () else fail e
 
-
   (* ************************************** *)
   (* ******** Check name shadowing ******** *)
   (* ************************************** *)
@@ -260,6 +259,10 @@ module ScillaSanityChecker
       in
 
       let cparams = List.map (fun (p, _) -> get_id p) cmod.contr.cparams in
+
+      (* Check for shadowing in contract constraint *)
+      let%bind _ = expr_iter cmod.contr.cconstraint cparams [] [] in
+      
       (* Check if a field shadows any contract parameter. *)
       let%bind _ = iterM ~f:(fun (f, _, finit_expr) ->
           check_warn_redef cparams [] [] f;

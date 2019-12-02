@@ -1,0 +1,52 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract Constraint:\n",
+      "start_location": {
+        "file": "checker/bad/constraint_locals_not_in_scope.scilla",
+        "line": 5,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in field f:\n",
+      "start_location": {
+        "file": "checker/bad/constraint_locals_not_in_scope.scilla",
+        "line": 11,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Couldn't resolve the identifier \"x\".\n",
+      "start_location": {
+        "file": "checker/bad/constraint_locals_not_in_scope.scilla",
+        "line": 11,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition T:\n",
+      "start_location": {
+        "file": "checker/bad/constraint_locals_not_in_scope.scilla",
+        "line": 13,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in the binding to into `y`:\nCouldn't resolve the identifier \"x\".\n",
+      "start_location": {
+        "file": "checker/bad/constraint_locals_not_in_scope.scilla",
+        "line": 14,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

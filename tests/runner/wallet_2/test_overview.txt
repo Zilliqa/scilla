@@ -24,11 +24,7 @@ Current tests:
 8. SubmitTransaction. sender is owner. amount is 0.
    Error. Amount must be non-zero. Transaction not submitted. Previously submitted transactions unaffected.
 
-9. SubmitTransaction. sender is owner. Contract is not initialized.
-   Error. Non-owner cannot submit transactions (owners map not initialized).
-
-10. SubmitTransaction. sender is not owner. Contract is not initialized.
-    Error. Non-owner cannot submit transactions.
+9-10: DELETED
 
 11. SignTransaction. sender is not owner.
     Error. Non-owner cannot sign transactions. All transactions unaffected.
@@ -36,8 +32,7 @@ Current tests:
 12. SignTransaction. sender is recipient but not owner.
     Error. Non-owner cannot sign transactions. All transactions unaffected.
 
-13. SignTransaction. sender is owner. Contract is not initialized.
-    Error. Non-owner cannot submit transactions (owners map not initialized).
+13: DELETED
 
 14. SignTransaction. sender is owner. TransactionId is larger than transactionCount (transaction has never been submitted).
     Error. Unknown transaction id.
@@ -120,18 +115,20 @@ Current tests:
 40. RevokeSignature. sender has signed. Number of signatures is greater than required.
     Signature is removed. Other signatures unaffected.
 
-41: AddFunds. Contract validity is Invalid.
-    Error. Invalid contract. No funds added.
+41: DELETED
 
 42. ExecuteTransaction. Multiple transaction exists with required number of signatures. Sender is owner. Balance is sufficient. 
     Transaction is executed. No other transaction affected. Message should be sent to recipient carrying transaction amount and transaction tag. Balance reduced accordingly.
 
-100. Initialize with empty list of owners, required signatures = 0, then call AddFunds.
-     Error. Invalid contract. No funds added.
 
-200. Initialize with non-empty list of owners, required signatures = 0, Then call AddFunds.
-     Error. Invalid contract. No funds added.
+Bad init files:
 
-300. Initialize with required_signatures > length of list of owners, then call AddFunds.
-     Error. Invalid contract. No funds added.
+init_no_owners.json: Initialize with empty list of owners, required signatures = 0.
+     Error. Contract constraint violation.
+
+init_req_sigs_zero: Initialize with non-empty list of owners, required signatures = 0.
+     Error. Contract constraint violation.
+
+init_not_enough_owners: Initialize with required_signatures > length of list of owners.
+     Error. Contract constraint violation.
 

@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "6630",
+  "gas_remaining": "6445",
   "_accepted": "false",
   "messages": [],
   "states": [
@@ -68,11 +68,6 @@
           }
         }
       ]
-    },
-    {
-      "vname": "contract_valid",
-      "type": "ContractValidity",
-      "value": { "constructor": "Valid", "argtypes": [], "arguments": [] }
     },
     {
       "vname": "owners",

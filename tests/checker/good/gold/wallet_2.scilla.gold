@@ -2,12 +2,11 @@
   "cashflow_tags": {
     "State variables": [
       { "field": "owners_list", "tag": "NoInfo" },
-      { "field": "required_signatures", "tag": "NoInfo" },
-      { "field": "contract_valid", "tag": "NotMoney" },
+      { "field": "required_signatures", "tag": "NotMoney" },
       { "field": "owners", "tag": "(Map NoInfo)" },
       { "field": "transactionCount", "tag": "NotMoney" },
       { "field": "signatures", "tag": "(Map (Map NoInfo))" },
-      { "field": "signature_counts", "tag": "(Map NoInfo)" },
+      { "field": "signature_counts", "tag": "(Map NotMoney)" },
       { "field": "transactions", "tag": "(Map (Transaction ))" }
     ],
     "ADT constructors": [
@@ -29,7 +28,6 @@
       { "vname": "required_signatures", "type": "Uint32" }
     ],
     "fields": [
-      { "vname": "contract_valid", "type": "ContractValidity", "depth": 0 },
       { "vname": "owners", "type": "Map (ByStr20) (Bool)", "depth": 1 },
       { "vname": "transactionCount", "type": "Uint32", "depth": 0 },
       {
@@ -121,15 +119,6 @@
     ],
     "ADTs": [
       {
-        "tname": "ContractValidity",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Valid", "argtypes": [] },
-          { "cname": "Invalid", "argtypes": [] },
-          { "cname": "Unchecked", "argtypes": [] }
-        ]
-      },
-      {
         "tname": "Error",
         "tparams": [],
         "tmap": [
@@ -196,17 +185,6 @@
       }
     ]
   },
-  "warnings": [
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet_2.scilla",
-        "line": 447,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    }
-  ],
+  "warnings": [],
   "gas_remaining": "6848"
 }

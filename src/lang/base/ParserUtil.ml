@@ -27,7 +27,8 @@ open ErrorUtils
 module ParserRep = struct
   type rep = loc
   [@@deriving sexp]
-    
+
+  let dummy_rep = dummy_loc
   let get_loc l = l
   let mk_id_address s = Ident (s, dummy_loc)
   let mk_id_uint128 s = Ident (s, dummy_loc)

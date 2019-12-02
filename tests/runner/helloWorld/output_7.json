@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "7696",
+  "gas_remaining": "7695",
   "errors": [
     {
       "error_message": "Field welcome_msg occurs more than once in input.\n",

@@ -1,0 +1,11 @@
+{
+  "gas_remaining": "7318",
+  "errors": [
+    {
+      "error_message": "Contract constraint violation.\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

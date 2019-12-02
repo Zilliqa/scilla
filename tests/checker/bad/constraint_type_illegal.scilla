@@ -1,0 +1,10 @@
+scilla_version 0
+
+library Constraint
+
+let x = Uint128 0
+
+contract Constraint()
+with
+  x
+=>

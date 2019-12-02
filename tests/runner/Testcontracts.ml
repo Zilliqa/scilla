@@ -136,7 +136,7 @@ let rec build_contract_tests_with_init_file env name exit_code i n additional_li
 let build_contract_tests env name exit_code i n additional_libs =
   build_contract_tests_with_init_file env name exit_code i n additional_libs "init"
 
-let build_contract_init_test env exit_code name is_library =
+let build_contract_init_test env exit_code name init_name is_library =
   name ^ "_init" >::
   (fun test_ctxt ->
     let tests_dir = FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt) in
@@ -147,20 +147,20 @@ let build_contract_init_test env exit_code name is_library =
       if is_library then GlobalConfig.StdlibTracker.file_extn_library
       else GlobalConfig.StdlibTracker.file_extn_contract in
     let tmpdir = bracket_tmpdir test_ctxt in
-    let output_file = tmpdir ^/ name ^ "_init_output" ^. "json" in
-    let args = ["-init"; dir ^/ "init.json";
+    let output_file = tmpdir ^/ name ^ "_" ^ init_name ^ "_output" ^. "json" in
+    let args = ["-init"; dir ^/ init_name ^. "json";
                 (* stdlib is in src/stdlib *)
                 "-libdir"; "src" ^/ "stdlib";
                 "-i"; contract_dir ^/ name ^. extn;
                 "-o"; output_file;
                 "-jsonerrors";
                 "-gaslimit"; testsuit_gas_limit;
-                "-iblockchain"; dir ^/ "blockchain_1.json";]
+                "-iblockchain"; dir ^/ "blockchain_1" ^. "json";]
     in
     let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
     print_cli_usage (env.print_cli test_ctxt) scillabin args;
-    let test_name = name ^ "_init" in
-    let goldoutput_file = dir ^/ "init_output.json" in
+    let test_name = name ^ "_" ^ init_name in
+    let goldoutput_file = dir ^/ init_name ^ "_output" ^. "json" in
     let msg = cli_usage_on_err scillabin args in
     assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
     ~foutput:(fun s ->
@@ -184,7 +184,7 @@ let build_misc_tests env =
   let tests_dir_file testsdir test_ctxt name =
     testsdir test_ctxt ^/ "runner" ^/ "crowdfunding" ^/ name in
   let contracts_dir_file testsdir test_ctxt =
-    testsdir test_ctxt ^/ "contracts" ^/ "crowdfunding.scilla" in
+    testsdir test_ctxt ^/ "contracts" ^/ "crowdfunding" ^. "scilla" in
   (* Tests for exit 1 on bad json *)
   let test num =
     let snum = Int.to_string num in
@@ -207,12 +207,12 @@ let add_tests env =
   "contract_tests" >:::[
     "these_tests_must_SUCCEED" >:::[
       "crowdfunding" >:::(build_contract_tests env "crowdfunding" succ_code 1 6 []);
-      "crowdfunding_init" >:(build_contract_init_test env succ_code "crowdfunding" false);
+      "crowdfunding_init" >:(build_contract_init_test env succ_code "crowdfunding" "init" false);
       "crowdfunding_proc" >:::(build_contract_tests env "crowdfunding_proc" succ_code 1 6 []);
       "zil-game" >:::(build_contract_tests env "zil-game" succ_code 1 9 []);
-      "zil-game_init" >:(build_contract_init_test env succ_code "zil-game" false);
-      "creationtest_init" >:(build_contract_init_test env succ_code "creationtest" false);
-      "testlib2_init" >:(build_contract_init_test env succ_code "TestLib2" true);
+      "zil-game_init" >:(build_contract_init_test env succ_code "zil-game" "init" false);
+      "creationtest_init" >:(build_contract_init_test env succ_code "creationtest" "init" false);
+      "testlib2_init" >:(build_contract_init_test env succ_code "TestLib2" "init" true);
       "cfinvoke" >:::(build_contract_tests env "cfinvoke" succ_code 1 4 []);
       "ping" >:::(build_contract_tests env "ping" succ_code 0 3 []);
       "pong" >:::(build_contract_tests env "pong" succ_code 0 3 []);
@@ -230,10 +230,10 @@ let add_tests env =
       "fungible-token" >:::(build_contract_tests env "fungible-token" succ_code 0 8 []);
       "inplace-map" >:::(build_contract_tests env "inplace-map" succ_code 1 14 []);
       "wallet" >:::(build_contract_tests env "wallet" succ_code 1 11 []);
-      "wallet_2" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 1 42 [] "init");
-      "wallet_2_no_owners" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 100 100 [] "init_no_owners");
-      "wallet_2_req_sigs_zero" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 200 200 [] "init_req_sigs_zero");
-      "wallet_2_not_enough_owners" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 300 300 [] "init_not_enough_owners");
+      "wallet_2" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 1 8 [] "init");
+      "wallet_2" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 11 12 [] "init");
+      "wallet_2" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 14 40 [] "init");
+      "wallet_2" >:::(build_contract_tests_with_init_file env "wallet_2" succ_code 42 42 [] "init");
       "one_msg_test" >::: (build_contract_tests env "one-msg" succ_code 1 1 []);
       "one_msg1_test" >::: (build_contract_tests env "one-msg1" succ_code 1 1 []);
       "simple-dex" >:::(build_contract_tests env "simple-dex" succ_code 1 8 []);
@@ -249,7 +249,11 @@ let add_tests env =
       "mappair" >:::(build_contract_tests env "mappair" fail_code 8 8 []);
       "mappair" >:::(build_contract_tests env "mappair" fail_code 12 14 []);
       "exception-example" >::: (build_contract_tests env "exception-example" fail_code 1 2 []);
-      "testlib1_init" >:(build_contract_init_test env fail_code "0x565556789012345678901234567890123456abcd" true);
+      "testlib1_init" >:(build_contract_init_test env fail_code "0x565556789012345678901234567890123456abcd" "init" true);
+      "constraint_test" >:(build_contract_init_test env fail_code "constraint" "init" false);
+      "wallet_2_no_owners" >:(build_contract_init_test env fail_code "wallet_2" "init_no_owners" false);
+      "wallet_2_req_sigs_zero" >:(build_contract_init_test env fail_code "wallet_2" "init_req_sigs_zero" false);
+      "wallet_2_not_enough_owners" >:(build_contract_init_test env fail_code "wallet_2" "init_not_enough_owners" false);
     ];
     "misc_tests" >::: build_misc_tests env;
   ]
