@@ -2,7 +2,7 @@
   "scilla_major_version": "0",
   "gas_remaining": "7182",
   "_accepted": "false",
-  "message": null,
+  "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     { "vname": "owners", "type": "Map (ByStr20) (Bool)", "value": [] },

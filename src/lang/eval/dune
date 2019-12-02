@@ -11,6 +11,5 @@
                     ppx_let
                     bisect_ppx -conditional
                     ppx_deriving_rpc
-                    ppx_deriving.show
-                    ppx_deriving_protobuf))
+                    ppx_deriving.show))
   (synopsis "Scilla workbench implementation."))

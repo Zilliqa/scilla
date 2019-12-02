@@ -1,0 +1,11 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7782",
+  "_accepted": "true",
+  "messages": [],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "1000000" },
+    { "vname": "employees", "type": "Map (ByStr20) (Uint128)", "value": [] }
+  ],
+  "events": []
+}

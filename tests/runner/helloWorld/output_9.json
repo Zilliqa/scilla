@@ -1,9 +1,18 @@
 {
+<<<<<<< HEAD
   "gas_remaining": "7568",
+=======
+  "gas_remaining": "7725",
+>>>>>>> f9f9afb8404bbeca0376cd980971791baa9fa58d
   "errors": [
     {
+      "error_message": "Invalid String value Hello\u0016World in JSON",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
       "error_message":
-        "Sending more than one message not currently permitted",
+        "Failed to parse json tests/runner/helloWorld/message_9.json:\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
