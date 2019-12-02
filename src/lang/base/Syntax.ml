@@ -26,7 +26,7 @@ open Stdint
 exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
-let scilla_version = (0, 4, 0)
+let scilla_version = (0, 5, 0)
 
 type 'rep ident =
   | Ident of string * 'rep
