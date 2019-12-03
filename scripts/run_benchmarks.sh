@@ -26,7 +26,7 @@ mkdir -p ./bench/results
 make
 dune exe ./bench/bin/scilla_bench_runner.exe
 
-git checkout -q master
+git checkout -q "$TRAVIS_COMMIT"
 
 make
 dune exe ./bench/bin/scilla_bench_runner.exe
