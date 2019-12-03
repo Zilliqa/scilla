@@ -66,4 +66,4 @@ script:
 - eval $(opam env)
 - make test
 - make coveralls
-- if [ ! "$TRAVIS_PULL_REQUEST" = "false" ]; then make bench; fi
+- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then make bench; fi
