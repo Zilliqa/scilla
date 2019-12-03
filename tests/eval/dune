@@ -1,6 +1,6 @@
 (library
-  (name testinteger256)
-  (wrapped false)
-  (libraries core oUnit testutil scilla_base scilla_cpp_deps polynomials)
-  (preprocess (pps ppx_sexp_conv))
-)
+ (name testinteger256)
+ (wrapped false)
+ (libraries core oUnit testutil scilla_base scilla_cpp_deps polynomials)
+ (preprocess
+  (pps ppx_sexp_conv)))

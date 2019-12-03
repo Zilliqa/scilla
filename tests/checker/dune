@@ -1,5 +1,4 @@
 (library
-  (name testchecker)
-  (wrapped false)
-  (libraries core oUnit testutil testcheckersuccess testcheckerfail)
-)
+ (name testchecker)
+ (wrapped false)
+ (libraries core oUnit testutil testcheckersuccess testcheckerfail))

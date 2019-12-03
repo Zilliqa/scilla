@@ -1,5 +1,4 @@
 (library
-  (name testgascontracts)
-  (wrapped false)
-  (libraries core oUnit testutil scilla_base)
-)
+ (name testgascontracts)
+ (wrapped false)
+ (libraries core oUnit testutil scilla_base))
