@@ -24,10 +24,9 @@ rm -rf ./bench/results/*
 mkdir -p ./bench/results
 
 make
-dune exe ./bench/bin/scilla_bench_runner.exe -- -ci
+dune exe ./bench/bin/scilla_bench_runner.exe
 
-# TODO: replace with the master branch before merging
-git checkout -q "$TRAVIS_COMMIT"
+git checkout -q master
 
 make
-dune exe ./bench/bin/scilla_bench_runner.exe -- -ci
+dune exe ./bench/bin/scilla_bench_runner.exe
