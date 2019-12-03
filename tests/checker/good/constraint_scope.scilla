@@ -1,0 +1,32 @@
+scilla_version 0
+
+import BoolUtils
+
+library Constraint
+
+type MyTyp =
+| Val1 of Bool
+| Val2 of Uint128
+
+let lib_val =
+  let t = True in
+  Val1 t
+
+contract Constraint(param_val : Bool)
+with
+  let l =
+    match lib_val with
+    | Val1 v => andb v param_val
+    | Val2 _ => False
+    end
+  in
+  (* Should not cause a warning for shadowing.*)
+  let lib_val = True in
+  (* Should cause a warning for shadowing.*)
+  let param_val = False in
+  (* Should not cause a warning for shadowing.*)
+  let f = Uint128 0 in
+  l
+=>
+
+field f : Bool = False

@@ -176,8 +176,9 @@ module ScillaRecursion
       RecursionSyntax.comp_body = recursion_comp_body }
   
   let recursion_contract is_adt_in_scope is_adt_ctr_in_scope c =
-    let { cname ; cparams ; cfields ; ccomps } = c in
+    let { cname ; cparams ; cconstraint; cfields ; ccomps } = c in
     let%bind _ = forallM ~f:(fun (_, t) -> recursion_typ is_adt_in_scope t) cparams in
+    let%bind recursion_constraint = recursion_exp is_adt_in_scope is_adt_ctr_in_scope cconstraint in
     let%bind recursion_cfields =
       mapM ~f:(fun (x, t, e) ->
           let%bind _ = recursion_typ is_adt_in_scope t in
@@ -198,6 +199,7 @@ module ScillaRecursion
     pure @@
     { RecursionSyntax.cname = cname ;
       RecursionSyntax.cparams = cparams ;
+      RecursionSyntax.cconstraint = recursion_constraint;
       RecursionSyntax.cfields = recursion_cfields ;
       RecursionSyntax.ccomps = List.rev recursion_ccomps_rev }
   
@@ -397,7 +399,12 @@ module ScillaRecursion
               (fun n -> let%bind _ = DataTypeDictionary.lookup_constructor n in pure @@ ())
               contr with
       | Ok rec_contr -> Ok (rec_contr, emsgs)
-      | Error el -> Ok ({cname = cname; cparams = [] ; cfields = [] ; ccomps = []}, emsgs @ el) in
+      | Error el -> Ok ({cname = cname;
+                         cparams = [] ;
+                         cconstraint = (RecursionSyntax.Literal (BuiltIns.UsefulLiterals.false_lit), ERecRep.dummy_rep) ;
+                         cfields = [] ;
+                         ccomps = []},
+                        emsgs @ el) in
 
     if emsgs = [] then
       pure @@ (

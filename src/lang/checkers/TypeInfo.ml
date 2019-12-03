@@ -147,6 +147,8 @@ module ScillaTypeInfo
     (* Contract parameters *)
     (List.map cmod.contr.cparams ~f:(fun (i, _) -> calc_ident_locs i)) @
 
+    type_info_expr cmod.contr.cconstraint @
+    
     (* Contract fields *)
     (List.concat @@ List.map cmod.contr.cfields ~f:(fun (i, _, e) ->
         calc_ident_locs i :: (type_info_expr e)

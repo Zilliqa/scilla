@@ -60,6 +60,9 @@
     match PrimTypes.build_prim_literal t v with
     | Some l -> l
     | None -> raise (SyntaxError (("Invalid " ^ (pp_prim_typ t) ^ " literal " ^ v), loc))
+
+  let build_bool_literal v loc =
+    (Literal (BuiltIns.UsefulLiterals.to_Bool v), loc)
 %}
 
 (* Identifiers *)
@@ -393,13 +396,19 @@ field:
   EQ; rhs = exp
   { asIdL f (toLoc $startpos(f)), t, rhs }
 
+with_constraint:
+| WITH; f = exp; ARROW
+  { f }  
+
 contract:
 | CONTRACT; c = CID;
   LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
+  ct = ioption(with_constraint);
   fs = list(field);
   comps = list(component)
   { { cname   = asIdL c (toLoc $startpos(c));
       cparams = params;
+      cconstraint = BatOption.default (build_bool_literal true dummy_loc) ct;
       cfields = fs;
       ccomps = comps } }
 

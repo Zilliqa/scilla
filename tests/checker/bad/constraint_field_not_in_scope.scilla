@@ -1,0 +1,10 @@
+scilla_version 0
+
+library Constraint
+
+contract Constraint()
+with
+  f
+=>
+
+field f : Bool = True

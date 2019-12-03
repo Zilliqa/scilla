@@ -244,12 +244,14 @@ module ScillaPatternchecker
         pure @@ (i, t, checked_e)) fs
   
   let pm_check_contract c =
-    let { cname; cparams; cfields; ccomps } = c in
+    let { cname; cparams; cconstraint; cfields; ccomps } = c in
     let%bind checked_flds = pm_check_fields cfields in
+    let%bind checked_constraint = pm_check_expr cconstraint in
     let%bind checked_comp = mapM
         ~f:(fun c -> pm_check_component c) ccomps in
     pure @@ { CheckedPatternSyntax.cname = cname;
               CheckedPatternSyntax.cparams = cparams;
+              CheckedPatternSyntax.cconstraint = checked_constraint;
               CheckedPatternSyntax.cfields = checked_flds;
               CheckedPatternSyntax.ccomps = checked_comp }
 
@@ -265,7 +267,7 @@ module ScillaPatternchecker
 
   let pm_check_module md rlibs elibs =
     let { smver = mod_smver; cname = mod_cname; libs; elibs = mod_elibs; contr } = md in
-    let { cname = ctr_cname; cparams; cfields; ccomps} = contr in
+    let { cname = ctr_cname; cparams; cconstraint; cfields; ccomps} = contr in
     let init_msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
     wrap_with_info (init_msg, dummy_loc) @@
 
@@ -281,12 +283,19 @@ module ScillaPatternchecker
       | None -> Ok (None, [])
     in
 
-    let%bind (checked_fields, emsgs') =
-      match pm_check_fields cfields with
-      | Error msg -> Ok ([], emsgs @ msg)
-      | Ok ckd_fields -> Ok (ckd_fields, emsgs) in
+    let%bind (checked_constraint, emsgs') =
+      match pm_check_expr cconstraint with
+      | Ok ckd_constraint -> Ok (ckd_constraint, emsgs)
+      | Error msg ->
+          Ok ((CheckedPatternSyntax.Literal (BuiltIns.UsefulLiterals.false_lit), EPR.dummy_rep), emsgs @ msg)
+    in
     
-    let%bind (c_comps, emsgs'') = foldM ~init:([], emsgs') ccomps 
+    let%bind (checked_fields, emsgs'') =
+      match pm_check_fields cfields with
+      | Error msg -> Ok ([], emsgs' @ msg)
+      | Ok ckd_fields -> Ok (ckd_fields, emsgs') in
+    
+    let%bind (c_comps, emsgs''') = foldM ~init:([], emsgs'') ccomps 
         ~f:(fun (comps_acc, msg_acc) cp -> 
             match pm_check_component cp with
             | Error msg -> Ok (comps_acc, msg_acc @ msg)
@@ -303,10 +312,11 @@ module ScillaPatternchecker
                   CheckedPatternSyntax.contr =
                     {CheckedPatternSyntax.cname = ctr_cname;
                      CheckedPatternSyntax.cparams = cparams;
+                     CheckedPatternSyntax.cconstraint = checked_constraint;
                      CheckedPatternSyntax.cfields = checked_fields;
                      CheckedPatternSyntax.ccomps = checked_comps}}
                 , checked_rlibs, checked_elibs)
     (* Return error messages *)
-    else fail @@ emsgs''
+    else fail @@ emsgs'''
     
 end

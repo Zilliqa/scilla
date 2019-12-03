@@ -2354,18 +2354,19 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION WITH
 
 Transitions must begin with a valid name, this can be a lower case or capital letter ('A' - 'z').
 
-cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN WITH
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN UNDERSCORE
 ##
 ## Ends in an error in state: 204.
 ##
 ## contract -> CONTRACT CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN . list(field) list(component) [ EOF ]
+## contract -> CONTRACT CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN . with_constraint list(field) list(component) [ EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## CONTRACT CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN
 ##
 # see tests/parser/bad/cmodule-version-number-contract-name-lparen-rparen-with.scilla
 
-After the definition of the immutable fields, either the mutable fields definition, a transition or procedure is expected.
+After the definition of the immutable fields, either a contract constraint, the mutable fields definition, a transition or procedure is expected.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN WITH
 ##

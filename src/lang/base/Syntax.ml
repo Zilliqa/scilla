@@ -26,7 +26,7 @@ open Stdint
 exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
-let scilla_version = (0, 4, 0)
+let scilla_version = (0, 5, 0)
 
 type 'rep ident =
   | Ident of string * 'rep
@@ -533,6 +533,8 @@ let component_type_to_string ctp =
 
 module type Rep = sig
   type rep
+
+  val dummy_rep : rep
   val get_loc : rep -> loc
 
   val mk_id_address : string -> rep ident
@@ -679,10 +681,11 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       lentries : lib_entry list }
   
   type contract =
-    { cname   : SR.rep ident;
-      cparams : (ER.rep ident  * typ) list;
-      cfields : (ER.rep ident * typ * expr_annot) list;
-      ccomps  : component list; }
+    { cname       : SR.rep ident;
+      cparams     : (ER.rep ident  * typ) list;
+      cconstraint : expr_annot;
+      cfields     : (ER.rep ident * typ * expr_annot) list;
+      ccomps      : component list; }
 
   (* Contract module: libary + contract definiton *)
   type cmodule =

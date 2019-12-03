@@ -31,6 +31,7 @@ module Tests = TestUtil.DiffBasedTests(
       "chain-call-balance-1.scilla";
       "chain-call-balance-2.scilla";
       "chain-call-balance-3.scilla";
+      "constraint.scilla";
       "crowdfunding.scilla";
       "crowdfunding_proc.scilla";
       "earmarked-coin.scilla";
@@ -100,7 +101,7 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "backward_definition_procedure.scilla";
       "lib_typing.scilla";
       "lib_typing2.scilla";
-
+      "constraint_scope.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 0
   end)

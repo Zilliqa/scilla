@@ -96,17 +96,12 @@ let output_state_json balance field_vals =
     JSON.ContractState.state_to_json concatlist;;
 
 let output_message_json gas_remaining mlist =
-  match mlist with
-  | [one_message] ->
-    (match one_message with
-     | Msg m ->
-        JSON.Message.message_to_json m
-     | _ -> `Null
-    )
-  | [] -> `Null
-  | _ ->
-    fatal_error_gas (mk_error0 "Sending more than one message not currently permitted") gas_remaining
-
+  let ml = List.map mlist ~f:(fun m ->
+    match m with
+    | Msg m -> JSON.Message.message_to_json m
+    | _ -> fatal_error_gas (mk_error0 "Attempt to send non-message construct.") gas_remaining
+  ) in
+  `List ml
 
 let rec output_event_json elist =
   match elist with
@@ -261,7 +256,8 @@ let () =
         let init_res = init_module cmod initargs [] Uint128.zero bstate elibs in
         (* Prints stats after the initialization and returns the initial state *)
         (* Will throw an exception if unsuccessful. *)
-        let (cstate', remaining_gas', field_vals) = check_extract_cstate cli.input init_res gas_remaining in
+        let (cstate', remaining_gas', field_vals) =
+          check_extract_cstate cli.input init_res gas_remaining in
 
         (* If the data store is not local, we must update the store with the initial field values.
          * Refer to the details comments at [Initialization of StateService]. *)
@@ -372,7 +368,7 @@ let () =
         ("scilla_major_version", `String (Int.to_string cmod.smver));
         "gas_remaining", `String (Uint64.to_string gas);
         ContractUtil.accepted_label, `String (Bool.to_string accepted_b);
-        ("message", output_msg_json); 
+        ("messages", output_msg_json); 
         ("states", output_state_json);
         ("events", output_events_json);
         (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)

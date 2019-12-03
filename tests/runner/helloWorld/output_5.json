@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "7816",
+  "gas_remaining": "7815",
   "errors": [
     {
       "error_message": "Field Unknown : Int32 not defined in the contract\n",

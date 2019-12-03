@@ -1,8 +1,8 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7807",
+  "gas_remaining": "7806",
   "_accepted": "false",
-  "message": null,
+  "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
