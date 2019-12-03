@@ -1,5 +1,4 @@
 (library
-  (name testexps)
-  (wrapped false)
-  (libraries core oUnit testutil)
-)
+ (name testexps)
+ (wrapped false)
+ (libraries core oUnit testutil))

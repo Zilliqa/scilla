@@ -1,12 +1,8 @@
 (library
  (name scilla_checkers)
-  (wrapped false)
-  (libraries core
-              angstrom stdint polynomials
-              ppx_sexp_conv ppx_deriving batteries
-              ppx_let yojson cryptokit scilla_base)
-  (preprocess (pps ppx_sexp_conv
-                    ppx_let
-                    bisect_ppx -conditional
-                    ppx_deriving.show))
-  (synopsis "Custom Scilla checkers"))
+ (wrapped false)
+ (libraries core angstrom stdint polynomials ppx_sexp_conv ppx_deriving
+   batteries ppx_let yojson cryptokit scilla_base)
+ (preprocess
+  (pps ppx_sexp_conv ppx_let bisect_ppx -conditional ppx_deriving.show))
+ (synopsis "Custom Scilla checkers"))

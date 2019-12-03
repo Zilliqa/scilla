@@ -1,5 +1,4 @@
 (library
-  (name testgasexpr)
-  (wrapped false)
-  (libraries core oUnit testutil scilla_base)
-)
+ (name testgasexpr)
+ (wrapped false)
+ (libraries core oUnit testutil scilla_base))

@@ -1,19 +1,31 @@
 (library
  (name scilla_cpp_deps)
-  (wrapped false)
-  (libraries ctypes ctypes.foreign cryptokit)
-  (c_names generate_dsa_nonce)
-  (cxx_names
-      c_schnorr DataConversion Schnorr PrivKey PubKey
-      Signature BIGNUMSerialize ECPOINTSerialize Snark c_snark)
-  (c_flags (:include c_flags.sexp))
-  (cxx_flags -std=c++11 -fPIC (:include c_flags.sexp))
+ (wrapped false)
+ (libraries ctypes ctypes.foreign cryptokit)
+ (foreign_stubs
+  (language c)
+  (names generate_dsa_nonce)
+  (flags
+   (:include c_flags.sexp)))
+ (foreign_stubs
+  (language cxx)
+  (names c_schnorr DataConversion Schnorr PrivKey PubKey Signature
+    BIGNUMSerialize ECPOINTSerialize Snark c_snark)
   ;;; -lstdc++ is not portable, it can be e.g. -lc++
-  (c_library_flags -lstdc++ (:include c_library_flags.sexp) -lff)
-  (library_flags (:include library_flags.sexp))
-  )
+  (flags
+   -std=c++11
+   -fPIC
+   (:include c_flags.sexp)))
+ (c_library_flags
+  -lstdc++
+  (:include c_library_flags.sexp)
+  -lff)
+ (library_flags
+  (:include library_flags.sexp)))
 
 (rule
  (targets c_flags.sexp c_library_flags.sexp library_flags.sexp)
- (deps    (:discover config/discover.exe))
- (action  (run %{discover})))
+ (deps
+  (:discover config/discover.exe))
+ (action
+  (run %{discover})))
