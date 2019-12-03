@@ -60,9 +60,9 @@ let mk_param bench =
       let suites = match suites with
         | [] -> Suite.all
         | ss -> ss in
-      let env = Env.mk ~sock_addr:sock_addr in
-      let params = Params.make
-          ~suites ~quota ?regex ~list
+      let env = Env.mk ~sock_addr in
+      let params = Params.mk
+          ~suites ~quota ~regex ~list
           ~save ~display ~compare
           ~threshold ~ci ?timestamp ()
       in
