@@ -29,4 +29,4 @@ dune exec ./bench/bin/scilla_bench_runner.exe
 git checkout -q "$TRAVIS_COMMIT"
 
 make
-dune exe ./bench/bin/scilla_bench_runner.exe
+dune exec ./bench/bin/scilla_bench_runner.exe
