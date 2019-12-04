@@ -59,9 +59,12 @@ let decode_serialized_query query =
   let decoder = Pbrt.Decoder.of_bytes (Bytes.of_string query) in
   Ipcmessage_pb.decode_proto_scilla_query decoder
 
+module M = Idl.IdM
+module IDL = Idl.Make(M)
+
 module MakeServer() = struct
 
-  module IPCTestServer = IPCIdl(Idl.GenServer ())
+  module IPCTestServer = IPCIdl(IDL.GenServer ())
 
   (* Global state of the server thread. *)
   let table = Hashtbl.create 8
@@ -70,7 +73,7 @@ module MakeServer() = struct
     let ic = Unix.in_channel_of_descr conn in
     let oc = Unix.out_channel_of_descr conn in 
     let request = Jsonrpc.call_of_string (Caml.input_line ic) in
-    let response = (Idl.server IPCTestServer.implementation) request in
+    let response = (IDL.server IPCTestServer.implementation) request |> M.run in
     send_delimited oc (Jsonrpc.string_of_response response)
 
   let prepare_server sock_addr =
@@ -166,8 +169,8 @@ let start_server ~sock_addr =
   | Some _ -> () (* There's already a server running. Nothing to do. *)
   | None ->
     let module ServerModule = MakeServer() in
-    ServerModule.IPCTestServer.fetch_state_value ServerModule.fetch_state_value;
-    ServerModule.IPCTestServer.update_state_value ServerModule.update_state_value;
+    ServerModule.IPCTestServer.fetch_state_value (fun q -> IDL.T.return @@ ServerModule.fetch_state_value q);
+    ServerModule.IPCTestServer.update_state_value (fun q v -> IDL.T.return @@ ServerModule.update_state_value q v);
     let server = ServerModule.prepare_server sock_addr in
     let _ = Thread.create server () in
     Hashtbl.replace thread_pool sock_addr ServerModule.table

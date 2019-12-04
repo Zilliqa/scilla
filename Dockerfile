@@ -30,7 +30,7 @@ RUN apt-get update \
     libpcre3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-ENV OCAML_VERSION 4.06.1
+ENV OCAML_VERSION 4.07.1
 
 RUN make opamdep-ci \
     && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \

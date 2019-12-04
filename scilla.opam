@@ -6,11 +6,11 @@ bug-reports: "https://github.com/Zilliqa/scilla/issues"
 dev-repo: "git+https://github.com/Zilliqa/scilla.git"
 license: "GPL-3.0"
 depends: [
-  "ocaml" {>= "4.06.1" & < "4.08~"}
+  "ocaml" {>= "4.07.1" & < "4.10~"}
   "dune" {build & >= "2.0"}
   "menhir"
-  "core" {>= "v0.11" & < "v0.12~"}
-  "batteries" {>= "2.9.0" & < "2.11~"}
+  "core" {>= "v0.12.4" & < "v0.13~"}
+  "batteries" {>= "2.10.0" & < "2.11~"}
   "bitstring" {>= "3.1.0" & < "3.2~"}
   "angstrom" {>= "0.11.0" & < "0.13~"}
   "bisect_ppx" {>= "1.4.0" & < "1.5~"}
@@ -22,12 +22,12 @@ depends: [
   "yojson" {>= "1.7.0" & < "1.8~"}
   "ocaml-protoc" {>= "1.2.0" & < "2.1~"}
   "ppx_deriving" {>= "4.2.1" & < "4.5~"}
-  "ppx_sexp_conv" {>= "v0.11.2" & < "v0.12~"}
-  "ppx_deriving_rpc" {>= "5.9.0" & < "5.10~"}
+  "ppx_sexp_conv" {>= "v0.12.0" & < "v0.13~"}
+  "ppx_deriving_rpc" {>= "6.0.0" & < "7.0~"}
   "secp256k1" {>= "0.4.0" & < "0.5~"}
-  "stdint" {>= "0.5.1" & < "0.6~"}
+  "stdint" {>= "0.5.1" & < "0.7~"}
   "ounit" {with-test & (>= "2.0.8" & < "2.3~")}
-  "patdiff" {with-test & (>= "v0.11" & < "v0.12~")}
+  "patdiff" {with-test & (>= "v0.12.1" & < "v0.13~")}
 ]
 build: [
   [ "dune" "build" "-j" jobs "@install" ]
