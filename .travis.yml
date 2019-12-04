@@ -5,10 +5,13 @@ matrix:
   include:
     - os: linux
       dist: xenial
-      env: OCAML_VERSION=4.07.1
+      env: OCAML_VERSION=4.09.0
     - os: linux
       dist: xenial
-      env: OCAML_VERSION=4.06.1
+      env: OCAML_VERSION=4.08.1
+    - os: linux
+      dist: xenial
+      env: OCAML_VERSION=4.07.1
     # - os: osx
     #  osx_image: xcode10.1
 

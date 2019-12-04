@@ -22,7 +22,9 @@ open TypeUtil
 open StateIPCIdl
 open OUnit2
 
-module IPCClient = IPCIdl(Idl.GenClient ())
+module M = Idl.IdM
+module IDL = Idl.Make(M)
+module IPCClient = IPCIdl(IDL.GenClient ())
 
 (* The purpose of this Test Client is to initialize the test server with data during testing.
  * While ideally we would've liked to reuse StateService, we cannot do so because that deals
@@ -58,7 +60,7 @@ let encode_serialized_query query =
 
 (* Translate JRPC result to our result. *)
 let translate_res res =
-  match res with
+  match res |> IDL.T.get |> M.run with
   | Error (e : RPCError.err_t) ->
     assert_failure (Printf.sprintf "StateIPCTestClient: Error in IPC access: (code:%d, message:%s)." e.code e.message)
   | Ok res' -> res'
@@ -77,7 +79,7 @@ let send_delimited oc msg =
   Caml.output_string oc msg';
   Caml.flush oc
 
-let binary_rpc ~sock_addr (call: Rpc.call) : Rpc.response =
+let binary_rpc ~sock_addr (call: Rpc.call) : Rpc.response M.t =
   let socket = Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol:0 in
   Unix.connect socket ~addr:(Unix.ADDR_UNIX sock_addr);
   let (ic, oc) = Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket in
@@ -91,7 +93,7 @@ let binary_rpc ~sock_addr (call: Rpc.call) : Rpc.response =
   let response = Caml.input_line ic in
   Unix.close socket;
   (* (Printf.printf "StateIPCTestClient: Response: %s\n" response); *)
-  Jsonrpc.response_of_string response
+  M.return @@ Jsonrpc.response_of_string response
 
 (* Fetch full state variable from server (no indexing). *)
 let fetch ~fname =

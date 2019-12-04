@@ -15,6 +15,7 @@ RUN apt-get update \
     && add-apt-repository ppa:avsm/ppa -y \
     && apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    cmake \
     build-essential \
     m4 \
     ocaml \
@@ -29,9 +30,9 @@ RUN apt-get update \
     libpcre3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-ENV OCAML_VERSION 4.06.1
+ENV OCAML_VERSION 4.07.1
 
-RUN cd /scilla/${MAJOR_VERSION} && make opamdep-ci \
+RUN make opamdep-ci \
     && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
     && eval $(opam env) && \
     make slim
