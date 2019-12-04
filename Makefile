@@ -1,6 +1,6 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
-OCAML_VERSION_RECOMMENDED=4.06.1
+OCAML_VERSION_RECOMMENDED=4.07.1
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
 
 .PHONY: default all utop dev clean docker zilliqa-docker

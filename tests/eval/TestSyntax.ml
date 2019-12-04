@@ -11,8 +11,8 @@ let parse_expr_wrapper exprstr =
   | Ok expr -> expr
   | Error _ -> assert_failure ("Error parsing test expression:\n" ^ exprstr ^ "\n")
 
-let ident_list_cmp lsa lsb =
-  List.equal ~equal:(fun a b -> (get_id a) = (get_id b)) lsa lsb
+let ident_list_cmp =
+  List.equal (fun a b -> (get_id a) = (get_id b))
 
 let ident_list_printer =
   (fun ls -> String.concat ~sep:";" (List.map ~f:get_id ls))
