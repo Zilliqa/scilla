@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/Zilliqa/scilla.svg?token=7qzjATfZuxTQvRjMHPVQ&branch=master)](https://travis-ci.com/Zilliqa/scilla)
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/Zilliqa/scilla/blob/master/LICENSE)
-[![Gitter chat](http://img.shields.io/badge/chat-on%20gitter-077a8f.svg)](https://gitter.im/Zilliqa/SmartContract)
+[![Discord chat](https://img.shields.io/discord/370992535725932544.svg)](https://discord.gg/8tpGXrB)
 [![Coverage Status](https://coveralls.io/repos/github/Zilliqa/scilla/badge.svg?branch=master)](https://coveralls.io/github/Zilliqa/scilla?branch=master)
 
 <p align="center">
