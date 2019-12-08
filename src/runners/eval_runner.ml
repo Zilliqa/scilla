@@ -18,6 +18,7 @@
 
 
 open Syntax
+open FrontEndParser
 open ParserUtil
 open RunnerUtil
 open GlobalConfig
@@ -39,7 +40,7 @@ let () =
   let cli = parse_cli() in
   let filename = cli.input_file in
   let gas_limit = if cli.gas_limit = Stdint.Uint64.zero then default_gas_limit else cli.gas_limit in
-  match FrontEndParser.parse_file ScillaParser.Incremental.exp_term filename with
+  match parse_expr_from_file filename with
   | Ok e ->
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib = { TC.UntypedSyntax.lname = asId "dummy";
