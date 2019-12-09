@@ -1,0 +1,6 @@
+(executable
+ (name runner)
+ (public_name scilla-server)
+ (libraries core threads unix rresult rpclib rpclib.json rpclib.cmdliner scilla_server)
+ (preprocess
+  (pps ppx_sexp_conv ppx_let ppx_deriving_rpc ppx_deriving.show)))
