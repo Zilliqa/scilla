@@ -17,7 +17,6 @@
 *)
 
 open Core
-open ErrorUtils
 
 (* Add to list only if unique considering equal *)
 val list_add_unique :
@@ -25,5 +24,3 @@ val list_add_unique :
 
 val int_fold : init:'a -> f:('a -> int -> 'a) -> int -> 'a
 
-exception InternalError of scilla_error list
-val mk_internal_error : string -> exn

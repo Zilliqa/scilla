@@ -31,7 +31,3 @@ let int_fold ~init ~(f : 'a -> int -> 'a) n =
   in
   recurser init 0
 
-open ErrorUtils
-exception InternalError of scilla_error list
-let mk_internal_error msg = InternalError (mk_error0 msg)
-
