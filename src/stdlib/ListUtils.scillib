@@ -1,3 +1,5 @@
+scilla_version 0
+
 library ListUtils
 
 (* list_foldl with early termination. Continues recursing as long as f returns Some _.

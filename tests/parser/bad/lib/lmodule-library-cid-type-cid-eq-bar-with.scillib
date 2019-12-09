@@ -1,3 +1,5 @@
+scilla_version 0
+
 library TestLib
 
 (* 'kind' should start with a capital *)

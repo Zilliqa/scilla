@@ -1,3 +1,5 @@
+scilla_version 0
+
 library IntUtils
 
 let int_neq : forall 'A. ('A -> 'A -> Bool) -> 'A -> 'A -> Bool =

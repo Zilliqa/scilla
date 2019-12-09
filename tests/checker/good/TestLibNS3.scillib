@@ -1,3 +1,5 @@
+scilla_version 0
+
 (* importing the same library into two different namespaces should be fine *)
 import BoolUtils as Foo
        BoolUtils as Bar

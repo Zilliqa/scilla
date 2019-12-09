@@ -1,3 +1,5 @@
+scilla_version 0
+
 (* importing two disjoint libraries into the same namespace is fine *)
 import TestLibNS2 as Foo
        BoolUtils  as Foo

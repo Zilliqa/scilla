@@ -433,7 +433,7 @@ library :
      lentries = ls } }
 
 lmodule :
-| els = imports; l = library; EOF { { elibs = els; libs = l } }
+| SCILLA_VERSION; cver = NUMLIT; els = imports; l = library; EOF { { elibs = els; libs = l } }
 
 importname :
 | c = CID { Ident(c, toLoc $startpos), None }
