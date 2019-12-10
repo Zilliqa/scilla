@@ -18,6 +18,6 @@
 
 open OUnit2
 
-let parser_tests env = "parser_tests" >::: [TestParserFail.Tests.add_tests env;
-                                            TestParserFail.LibTests.add_tests env;
-                                            TestParserFail.ExpTests.add_tests env]
+let all_tests env = "parser_tests" >::: [TestParserFail.Tests.all_tests env;
+                                         TestParserFail.LibTests.all_tests env;
+                                         TestParserFail.ExpTests.all_tests env]

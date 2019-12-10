@@ -18,10 +18,10 @@
 
 open OUnit2
 
-let checker_tests env = "checker_tests" >::: [TestCheckerSuccess.Tests.add_tests env;
-                                              TestCheckerSuccess.CheckerTests.add_tests env;
-                                              TestCheckerSuccess.ShogiTests.add_tests env;
-                                              TestCheckerFail.Tests.add_tests env;
-                                              TestCheckerFail.LibTests.add_tests env;
-                                              TestCheckerSuccess.TypeInfoTests.add_tests env;
-                                              ]
+let all_tests env = "checker_tests" >::: [TestCheckerSuccess.Tests.all_tests env;
+                                          TestCheckerSuccess.CheckerTests.all_tests env;
+                                          TestCheckerSuccess.ShogiTests.all_tests env;
+                                          TestCheckerFail.Tests.all_tests env;
+                                          TestCheckerFail.LibTests.all_tests env;
+                                          TestCheckerSuccess.TypeInfoTests.all_tests env;
+                                          ]

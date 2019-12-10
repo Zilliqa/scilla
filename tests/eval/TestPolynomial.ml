@@ -113,4 +113,4 @@ let t8_pn = test_case (fun _ ->
 
 
 (* The test to be called from Testsuite. *)
-let polynomial_tests = "polynomial_tests" >::: ([t1_pn;t2_pn;t3_pn;t4_pn;t5_pn;t6_pn;t7_pn;t8_pn])
+let all_tests = "polynomial_tests" >::: ([t1_pn;t2_pn;t3_pn;t4_pn;t5_pn;t6_pn;t7_pn;t8_pn])

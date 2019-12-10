@@ -203,7 +203,7 @@ let build_misc_tests env =
       ) in
   [test 1;test 2;test 3]
 
-let add_tests env =
+let contract_tests env =
   "contract_tests" >:::[
     "these_tests_must_SUCCEED" >:::[
       "crowdfunding" >:::(build_contract_tests env "crowdfunding" succ_code 1 6 []);

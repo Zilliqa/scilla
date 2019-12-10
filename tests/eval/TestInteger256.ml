@@ -400,4 +400,4 @@ let int256_tests_list = List.append (t1_int::t2_int::t3_int::[]) list_int256
 let int256_tests = "int256_tests" >::: int256_tests_list
 
 (* The test to be called from Testsuite. *)
-let integer256_tests = "integer256_tests" >::: (uint256_tests::int256_tests::non_arithmetic_tests::[])
+let all_tests = "integer256_tests" >::: (uint256_tests::int256_tests::non_arithmetic_tests::[])

@@ -362,7 +362,7 @@ let test_generate_random_points = test_case (fun _ ->
   );
 )
 
-let snark_tests _ = "snark_tests" >::: [
+let all_tests _ = "snark_tests" >::: [
   test_add_zero;
   test_invalid;
   test_mul_add;
