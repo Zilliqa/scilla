@@ -17,8 +17,9 @@
 *)
 
 
-open Syntax
 open Core
+open Syntax
+open FrontEndParser
 open ErrorUtils
 open Eval
 open DebugMessage
@@ -115,9 +116,7 @@ let rec output_event_json elist =
   | [] -> []
 
 let deploy_library (cli : Cli.ioFiles) gas_remaining =
-  let parse_lmodule =
-    FrontEndParser.parse_file ScillaParser.Incremental.lmodule cli.input in
-  match parse_lmodule with
+  match parse_lmodule cli.input with
   | Error e ->
     (* Error is printed by the parser. *)
     plog (sprintf "%s\n" "Failed to parse input library file.");
@@ -188,9 +187,7 @@ let () =
 
   if is_library then deploy_library cli gas_remaining  else
 
-  let parse_module =
-    FrontEndParser.parse_file ScillaParser.Incremental.cmodule cli.input in
-  match parse_module with
+  match parse_cmodule cli.input with
   | Error e -> 
     (* Error is printed by the parser. *)
     plog (sprintf "%s\n" "Failed to parse input file.");

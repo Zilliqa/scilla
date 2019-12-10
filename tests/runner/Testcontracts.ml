@@ -254,6 +254,7 @@ let add_tests env =
       "wallet_2_no_owners" >:(build_contract_init_test env fail_code "wallet_2" "init_no_owners" false);
       "wallet_2_req_sigs_zero" >:(build_contract_init_test env fail_code "wallet_2" "init_req_sigs_zero" false);
       "wallet_2_not_enough_owners" >:(build_contract_init_test env fail_code "wallet_2" "init_not_enough_owners" false);
+      "crowdfunding_proc" >:(build_contract_init_test env fail_code "crowdfunding_proc""init_goal_is_zero" false);
     ];
     "misc_tests" >::: build_misc_tests env;
   ]

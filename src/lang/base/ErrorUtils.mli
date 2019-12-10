@@ -60,3 +60,6 @@ val get_warnings : unit -> scilla_warning list
 
 exception Invalid_json of scilla_error list
 val mk_invalid_json : string -> exn
+
+exception InternalError of scilla_error list
+val mk_internal_error : string -> exn

@@ -25,7 +25,6 @@ open TypeUtil
 open Datatypes
 open BuiltIns
 open ContractUtil
-open Utils
 open PrimTypes
     
 (*******************************************************)

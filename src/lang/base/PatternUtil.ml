@@ -17,7 +17,7 @@
 *)
 
 open Core
-open Utils
+open ErrorUtils
 
 (****************************************************************)
 (*             Pattern match expression descriptions            *)
