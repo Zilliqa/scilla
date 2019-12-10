@@ -16,11 +16,11 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
+open Core_kernel
 open Syntax
 open MonadUtil
 open Stdint
-open Core.Result.Let_syntax
+open Core_kernel.Result.Let_syntax
 open PrettyPrinters
 
 (*****************************************************)

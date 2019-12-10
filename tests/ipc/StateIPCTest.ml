@@ -20,7 +20,7 @@
  * and initializing it with some initial data. *)
 
 open OUnit2
-open Core
+open Core_kernel
 open Syntax
 open Yojson
 

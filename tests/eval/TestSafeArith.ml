@@ -1,4 +1,4 @@
-open Core
+open Core_kernel
 open Stdint
 open OUnit2
 open SafeArith

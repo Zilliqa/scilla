@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
+open Core_kernel
 
 (* Pattern match expression descriptions *)
 module Exp_descriptions : sig

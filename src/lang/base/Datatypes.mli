@@ -18,7 +18,7 @@
 
 open Syntax
 open ErrorUtils
-open Core
+open Core_kernel
 
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)

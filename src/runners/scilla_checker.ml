@@ -18,7 +18,7 @@
 
 
 open Syntax
-open Core
+open Core_kernel
 open ErrorUtils
 open PrettyPrinters
 open ParserUtil

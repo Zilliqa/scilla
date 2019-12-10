@@ -17,8 +17,8 @@
 *)
 
 open Secp256k1
-open Core.Result
-open Core.Result.Let_syntax
+open Core_kernel.Result
+open Core_kernel.Result.Let_syntax
 open MonadUtil
 
 let ctx = Context.create [ Sign ; Verify ]
