@@ -1,3 +1,16 @@
-
-base/parser/bad/exps/exp_t-match-spid-with-bar-underscore-arrow-with.scilexp:4:4: error: This is an invalid match expression. Following an arrow we expect a valid expression. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid match expression. Following an arrow we expect a valid expression.\n",
+      "start_location": {
+        "file":
+          "base/parser/bad/exps/exp_t-match-spid-with-bar-underscore-arrow-with.scilexp",
+        "line": 4,
+        "column": 4
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

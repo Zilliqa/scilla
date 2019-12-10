@@ -1,3 +1,15 @@
-
-base/parser/bad/exps/exp_t-at-spid-tid-with.scilexp:3:19: error: The type application is wrong. The list of types is problematic. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "The type application is wrong. The list of types is problematic.\n",
+      "start_location": {
+        "file": "base/parser/bad/exps/exp_t-at-spid-tid-with.scilexp",
+        "line": 3,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

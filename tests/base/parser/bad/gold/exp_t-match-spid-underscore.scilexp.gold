@@ -1,3 +1,14 @@
-
-base/parser/bad/exps/exp_t-match-spid-underscore.scilexp:2:13: error: This match expression is missing 'with'. 
-
+{
+  "errors": [
+    {
+      "error_message": "This match expression is missing 'with'.\n",
+      "start_location": {
+        "file": "base/parser/bad/exps/exp_t-match-spid-underscore.scilexp",
+        "line": 2,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

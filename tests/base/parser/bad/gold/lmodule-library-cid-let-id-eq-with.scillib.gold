@@ -1,3 +1,16 @@
-
-base/parser/bad/lib/lmodule-library-cid-let-id-eq-with.scillib:6:12: error: This library let expression is missing a valid expression to assign to the identifier. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "This library let expression is missing a valid expression to assign to the identifier.\n",
+      "start_location": {
+        "file":
+          "base/parser/bad/lib/lmodule-library-cid-let-id-eq-with.scillib",
+        "line": 6,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -1,3 +1,16 @@
-
-base/parser/bad/stmts_t-match-spid-with-bar-underscore-arrow-accept-eof.scilla:13:1: error: When the match statement is finished, the parser expects 'end'. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "When the match statement is finished, the parser expects 'end'.\n",
+      "start_location": {
+        "file":
+          "base/parser/bad/stmts_t-match-spid-with-bar-underscore-arrow-accept-eof.scilla",
+        "line": 13,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

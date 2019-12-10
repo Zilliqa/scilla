@@ -1,3 +1,16 @@
-
-base/parser/bad/exps/exp_t-let-id-colon-tid-eq-string-with.scilexp:1:23: error: This typed let expression does not have a well placed 'in'. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "This typed let expression does not have a well placed 'in'.\n",
+      "start_location": {
+        "file":
+          "base/parser/bad/exps/exp_t-let-id-colon-tid-eq-string-with.scilexp",
+        "line": 1,
+        "column": 23
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

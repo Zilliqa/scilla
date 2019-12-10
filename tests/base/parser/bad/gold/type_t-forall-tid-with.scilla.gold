@@ -1,3 +1,15 @@
-
-base/parser/bad/type_t-forall-tid-with.scilla:6:20: error: This is an invalid forall type, after the type id (following forall) the parser expects a period. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid forall type, after the type id (following forall) the parser expects a period.\n",
+      "start_location": {
+        "file": "base/parser/bad/type_t-forall-tid-with.scilla",
+        "line": 6,
+        "column": 20
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

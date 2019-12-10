@@ -1,3 +1,15 @@
-
-base/parser/bad/stmts_t-delete-id-with.scilla:10:4: error: This is an invalid delete statement, it lacks the keys to delete. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid delete statement, it lacks the keys to delete.\n",
+      "start_location": {
+        "file": "base/parser/bad/stmts_t-delete-id-with.scilla",
+        "line": 10,
+        "column": 4
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

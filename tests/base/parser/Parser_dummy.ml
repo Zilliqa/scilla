@@ -37,6 +37,7 @@ let () =
   if input_file = "" then
     fatal_error_noformat usage
   else
+    set_use_json_errors true;
     let extn = FilePath.get_extension input_file in
     if extn = StdlibTracker.file_extn_library then
       (* Check library modules. *)
@@ -45,7 +46,7 @@ let () =
       (* Check contract modules. *)
       raise_if_error @@ parse_cmodule input_file
     else if extn = StdlibTracker.file_extn_expression then
-      (* Check contract modules. *)
+      (* Check expressions. *)
       raise_if_error @@ parse_expr_from_file input_file
     else
       fatal_error (mk_error0 (sprintf "Unknown file extension %s\n" extn))

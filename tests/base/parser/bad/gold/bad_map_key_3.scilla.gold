@@ -1,3 +1,14 @@
-
-base/parser/bad/bad_map_key_3.scilla:7:13: error: Syntax error: Invalid map key type Event
-
+{
+  "errors": [
+    {
+      "error_message": "Syntax error: Invalid map key type Event",
+      "start_location": {
+        "file": "base/parser/bad/bad_map_key_3.scilla",
+        "line": 7,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

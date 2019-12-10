@@ -1,3 +1,15 @@
-
-base/parser/bad/lmodule-import-cid-as-with.scilla:4:30: error: This is an invalid library module. When importing a library under another name, the parser requires the other name to be given as a capital identifier. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid library module. When importing a library under another name, the parser requires the other name to be given as a capital identifier.\n",
+      "start_location": {
+        "file": "base/parser/bad/lmodule-import-cid-as-with.scilla",
+        "line": 4,
+        "column": 30
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

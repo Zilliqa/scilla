@@ -1,3 +1,14 @@
-
-base/parser/bad/cmodule-procedure-with.scilla:7:16: error: A procedure requires a valid name. 
-
+{
+  "errors": [
+    {
+      "error_message": "A procedure requires a valid name.\n",
+      "start_location": {
+        "file": "base/parser/bad/cmodule-procedure-with.scilla",
+        "line": 7,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

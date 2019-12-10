@@ -1,3 +1,16 @@
-
-base/parser/bad/type_t-map-cid-lparen-map-cid-underscore.scilla:5:40: error: This is an invalid map type, the map value is likely incorrect. The map value being likely a map in brackets with an invalid map value. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid map type, the map value is likely incorrect. The map value being likely a map in brackets with an invalid map value.\n",
+      "start_location": {
+        "file":
+          "base/parser/bad/type_t-map-cid-lparen-map-cid-underscore.scilla",
+        "line": 5,
+        "column": 40
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

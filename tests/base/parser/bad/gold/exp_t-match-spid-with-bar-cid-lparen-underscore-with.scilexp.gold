@@ -1,3 +1,16 @@
-
-base/parser/bad/exps/exp_t-match-spid-with-bar-cid-lparen-underscore-with.scilexp:3:13: error: This is an invalid match expression, possibly unterminated brackets for pattern arguments. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid match expression, possibly unterminated brackets for pattern arguments.\n",
+      "start_location": {
+        "file":
+          "base/parser/bad/exps/exp_t-match-spid-with-bar-cid-lparen-underscore-with.scilexp",
+        "line": 3,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

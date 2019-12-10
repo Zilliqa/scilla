@@ -1,3 +1,16 @@
-
-base/parser/bad/cmodule-procedure-id-lparen-rparen-with.scilla:8:8: error: In the transition body the parser expects a list of semi-colon separated statements. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "In the transition body the parser expects a list of semi-colon separated statements.\n",
+      "start_location": {
+        "file":
+          "base/parser/bad/cmodule-procedure-id-lparen-rparen-with.scilla",
+        "line": 8,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

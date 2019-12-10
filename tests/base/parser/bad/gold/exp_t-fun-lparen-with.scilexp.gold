@@ -1,3 +1,15 @@
-
-base/parser/bad/exps/exp_t-fun-lparen-with.scilexp:1:7: error: This function is missing a valid argument identifier, beginning with a lower case letter. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "This function is missing a valid argument identifier, beginning with a lower case letter.\n",
+      "start_location": {
+        "file": "base/parser/bad/exps/exp_t-fun-lparen-with.scilexp",
+        "line": 1,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

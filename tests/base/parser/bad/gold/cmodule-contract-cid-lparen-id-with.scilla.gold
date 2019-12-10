@@ -1,3 +1,15 @@
-
-base/parser/bad/cmodule-contract-cid-lparen-id-with.scilla:5:10: error: In an immutable field declaration, the parser expects a colon following the name to precede the type. 
-
+{
+  "errors": [
+    {
+      "error_message":
+        "In an immutable field declaration, the parser expects a colon following the name to precede the type.\n",
+      "start_location": {
+        "file": "base/parser/bad/cmodule-contract-cid-lparen-id-with.scilla",
+        "line": 5,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
