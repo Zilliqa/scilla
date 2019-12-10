@@ -95,4 +95,4 @@ let builtin_arith_8bit_tests =
     TestUnsigned.test_all U8_safe.rem Int.rem;
   ]
 
-let arith_builtin_tests = "arith_builtin_tests" >::: [builtin_arith_8bit_tests]
+let all_tests = "arith_builtin_tests" >::: [builtin_arith_8bit_tests]

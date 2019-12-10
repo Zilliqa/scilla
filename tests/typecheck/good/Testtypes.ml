@@ -153,4 +153,4 @@ module Tests = TestUtil.DiffBasedTests(
   end)
 
 let all_tests env = "type_check_success_tests" >:::
-  [type_equiv_tests;Tests.add_tests env;ground_type_tests;map_access_type_tests]
+  [type_equiv_tests;Tests.all_tests env;ground_type_tests;map_access_type_tests]

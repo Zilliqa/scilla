@@ -173,4 +173,4 @@ module Tests = TestUtil.DiffBasedTests(
     let exit_code : Unix.process_status = WEXITED 1
   end)
 
-let all_tests env = "type_check_fail_tests" >::: [lit_typ_tests;Tests.add_tests env]
+let all_tests env = "type_check_fail_tests" >::: [lit_typ_tests;Tests.all_tests env]

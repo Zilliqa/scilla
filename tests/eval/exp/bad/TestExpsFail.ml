@@ -70,4 +70,4 @@ module Tests = TestUtil.DiffBasedTests(
 
   end)
 
-let all_tests env = "eval_exp_fail_tests" >::: [Tests.add_tests env]
+let all_tests env = "eval_exp_fail_tests" >::: [Tests.all_tests env]

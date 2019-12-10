@@ -95,4 +95,4 @@ let random_tests = test_case (fun _ ->
   for i = 0 to 100 do random_test (i+r) done
 )
 
-let bech32_tests = "bech32_tests" >::: [test1;test2;test3;test4;test5;random_tests]
+let all_tests = "bech32_tests" >::: [test1;test2;test3;test4;test5;random_tests]
