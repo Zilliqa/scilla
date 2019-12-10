@@ -7,7 +7,7 @@
       "start_location": {
         "file":
           "parser/bad/lib/lmodule-library-cid-let-id-colon-tid-eq-with.scillib",
-        "line": 4,
+        "line": 6,
         "column": 21
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

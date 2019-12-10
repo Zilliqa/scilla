@@ -6,7 +6,7 @@
         "This is an invalid library module because it lacks a capital identifier for a name.\n",
       "start_location": {
         "file": "parser/bad/lib/lmodule-library-with.scillib",
-        "line": 2,
+        "line": 4,
         "column": 17
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

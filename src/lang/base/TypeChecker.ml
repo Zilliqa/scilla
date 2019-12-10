@@ -795,7 +795,11 @@ module ScillaTypechecker
     (* Type the library of this module. *)
     let%bind ((typed_mlib, _), remaining_gas) = type_library elibs_env md.libs remaining_gas in
       
-    let typed_lmodule = { TypedSyntax.elibs = md.elibs; TypedSyntax.libs = typed_mlib } in
+    let typed_lmodule = { 
+      TypedSyntax.smver = md.smver;
+      TypedSyntax.elibs = md.elibs;
+      TypedSyntax.libs = typed_mlib
+    } in
     pure ((typed_lmodule, typed_rlib, typed_elibs), remaining_gas)
 
   let type_module

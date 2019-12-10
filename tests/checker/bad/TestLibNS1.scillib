@@ -1,3 +1,5 @@
+scilla_version 0
+
 (* importing the a (non-empty) library into same namespace is a name conflict *)
 import TestLibNS1 as Foo
        TestLibNS1 as Foo

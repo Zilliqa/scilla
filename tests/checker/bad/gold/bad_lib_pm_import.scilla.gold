@@ -11,7 +11,7 @@
         "Error during pattern-match checking of library badpm:\n",
       "start_location": {
         "file": "checker/bad/lib/BadPMLib.scillib",
-        "line": 3,
+        "line": 5,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -21,7 +21,7 @@
         "Type error in pattern matching on `b` of type Bool (or one of its branches):\nNon-exhaustive pattern match.",
       "start_location": {
         "file": "checker/bad/lib/BadPMLib.scillib",
-        "line": 5,
+        "line": 7,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

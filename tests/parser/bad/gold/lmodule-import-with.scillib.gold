@@ -6,7 +6,7 @@
         "If import is mentioned there must be one or more imported libraries with capital identifiers.\n",
       "start_location": {
         "file": "parser/bad/lib/lmodule-import-with.scillib",
-        "line": 1,
+        "line": 3,
         "column": 17
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

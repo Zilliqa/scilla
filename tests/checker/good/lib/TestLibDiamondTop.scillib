@@ -1,3 +1,5 @@
+scilla_version 0
+
 import TestLibDiamondLeft as LeftFoo
        TestLibDiamondRight as RightFoo
 
