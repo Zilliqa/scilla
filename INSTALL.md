@@ -209,7 +209,8 @@ make opamdep
 You can try installing the Scilla dependencies using the instructions above, but skipping the initialization step.
 If `opam` reports a dependency conflict, one way out might be creating yet another opam switch and
 managing your switches when doing Scilla- and non-Scilla- related hacking.
-Another way is to use opam's feature called "local switch".
+
+Another way is to use opam's feature called _local switch_.
 This is like a standard opam switch but instead of `$HOME/.opam`, it will reside in the project root directory in `_opam` subdirectory.
 This lets us to avoid dependency conflict and changing our switches back and forth when working on different projects.
 To create a local opam switch and install all the Scilla dependencies, `cd` into project root and execute:
@@ -219,22 +220,14 @@ opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.07.1
 Now, whenever you are inside the project directory, opam will prefer the local switch to any globally installed switches,
 unless being told explicitly which one to use.
 
+We should warn you that using external tools like a text editor with `merlin` support might be tricky in the presence of local switches.
+A common workaround is to have a global opam switch with OCaml developer tools installed and
+have your editor to refer to that switch instead of the local one.
+
 Note: using `git clean`, extra care should be paid so that it won't delete `_opam` directory.
 We suggest using `make clean` command or keeping `_opam` directory like so:
 ```shell
 git clean -dfX --exclude=\!_opam/**
-```
-
-To get rid of Dune warnings like the following one
-```shell
-File "/path/to/scilla/_opam/lib/expect_test_helpers_kernel/expect_test_helpers_kernel.dune", line 1, characters 0-0:
-Warning: .dune files are ignored since 2.0. Reinstall the library with dune
->= 2.0 to get rid of this warning and enable support for the subsystem this
-library provides.
-```
-simply delete all the `.dune` files in the local opam switch:
-```shell
-find ./_opam/ -type f -iname '*.dune' | xargs rm
 ```
 
 ## Using OCaml with Emacs
