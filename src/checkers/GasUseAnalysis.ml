@@ -251,7 +251,7 @@ module ScillaGUA
     match sr with
     | SPol p ->
       (* Find a "analyzable" Container term in the polynomial. *)
-      let (cterms, oterms) = Core.List.partition_tf p ~f:(fun (coef, vplist) ->
+      let (cterms, oterms) = Core_kernel.List.partition_tf p ~f:(fun (coef, vplist) ->
         match vplist with
           (* We can only analyze "Length(accarg) + C" *)
         | [(Container (SPol ([cpol;(1, [(Length (Base lenvar), 1)])]), _), _)]

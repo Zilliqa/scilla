@@ -16,6 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
 open Syntax
 open Yojson
 
@@ -45,7 +46,7 @@ type adt_parser_entry =
   | Parser of (Basic.t -> literal)
 
 (* ADT parsers table *)
-val adt_parsers : (string, adt_parser_entry) Core.Caml.Hashtbl.t
+val adt_parsers : (string, adt_parser_entry) Caml.Hashtbl.t
 
 (* Put an ADT parser to the table *)
 val add_adt_parser : string -> adt_parser_entry -> unit

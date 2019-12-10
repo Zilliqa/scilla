@@ -77,8 +77,8 @@ let validate_main usage =
   let msg6 =
     (* input_message.json and input_state.json / i_ipc_address+balance can either both be there or both absent *)
     if (!f_input_message <> "") &&
-       ((!f_input_state <> "") && ((!i_ipc_address <> "") || (Core.is_some !v_balance)) ||
-        (!f_input_state = "" && (!i_ipc_address = "" || Core.is_none !v_balance)))
+       ((!f_input_state <> "") && ((!i_ipc_address <> "") || (Core_kernel.is_some !v_balance)) ||
+        (!f_input_state = "" && (!i_ipc_address = "" || Core_kernel.is_none !v_balance)))
       then msg5 ^ "Input message provided, but either none or both of input state / (IPC address and balance) provided\n"
       else msg5 in
   if msg6 <> ""
@@ -105,7 +105,7 @@ let parse () =
   let speclist = [
     ("-version", Arg.Unit (fun () -> 
         DebugMessage.pout
-          (Core.Printf.sprintf "Scilla version: %s\n" PrettyPrinters.scilla_version_string);
+          (Core_kernel.sprintf "Scilla version: %s\n" PrettyPrinters.scilla_version_string);
           if true then exit 0; (* if "true" to avoid warning on exit 0 *)
           ()
       ), "Print Scilla version and exit");

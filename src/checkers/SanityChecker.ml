@@ -61,7 +61,7 @@ module ScillaSanityChecker
           let e' =
             if is_mem_id i rem
             then
-              e @ mk_error1 (Core.sprintf "Identifier %s used more than once\n" (get_id i)) (gloc @@ get_rep i)
+              e @ mk_error1 (Core_kernel.sprintf "Identifier %s used more than once\n" (get_id i)) (gloc @@ get_rep i)
             else e
           in
             recurser rem e'
@@ -109,7 +109,7 @@ module ScillaSanityChecker
     let e = List.fold_left (fun e c -> 
       match List.find_opt (fun (s, _) -> get_id s = amount_label || get_id s = sender_label) c.comp_params with
       | Some (s, _) ->
-        e @ mk_error1 (Core.sprintf "Parameter %s in %s %s cannot be explicit.\n" 
+        e @ mk_error1 (Core_kernel.sprintf "Parameter %s in %s %s cannot be explicit.\n" 
                          (get_id s)
                          (component_type_to_string c.comp_type)
                          (get_id c.comp_name)) 
@@ -124,7 +124,7 @@ module ScillaSanityChecker
           || (get_id s = ContractUtil.this_address_label)
         ) contr.cparams) with
       | Some (s, _) ->
-        e @ mk_error1 (Core.sprintf "Contract parameter %s cannot be explicit.\n" (get_id s))
+        e @ mk_error1 (Core_kernel.sprintf "Contract parameter %s cannot be explicit.\n" (get_id s))
             (ER.get_loc @@ get_rep s) 
       | None -> e
     in
@@ -206,7 +206,7 @@ module ScillaSanityChecker
        * https://github.com/Zilliqa/scilla/issues/687. To close this Issue:
        * Make this an error by just using fail1 below instead of warn1. *)
       let bounds = get_pattern_bounds pat in
-      match Core.List.find_a_dup ~compare:compare_id bounds with
+      match Core_kernel.List.find_a_dup ~compare:compare_id bounds with
       | Some v ->
         warn1 (Printf.sprintf "Deprecated: variable %s shadows a previous binding in the same pattern." (get_id v)) 
         warning_level_name_shadowing

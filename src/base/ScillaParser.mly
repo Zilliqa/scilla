@@ -37,7 +37,7 @@
     | "ByStr" -> Bystr_typ
     | _ -> let re = Str.regexp "ByStr\\([0-9]+\\)$" in
            if Str.string_match re d 0 then
-             let open Core in
+             let open Core_kernel in
              let b = Int.of_string (Str.matched_group 1 d) in
              Bystrx_typ b
            else raise (SyntaxError ("Invalid primitive type", loc))

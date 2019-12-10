@@ -146,8 +146,8 @@ module EvalMonad = struct
 
   let fromR r =
     match r with
-    | Core.Error s -> fail s
-    | Core.Ok a -> pure a
+    | Core_kernel.Error s -> fail s
+    | Core_kernel.Ok a -> pure a
 
   let out_of_gas_err = mk_error0 "Ran out of gas"
   

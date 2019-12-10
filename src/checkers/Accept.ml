@@ -106,12 +106,12 @@ module ScillaAcceptChecker
 
       let dup_accept_warning (group : loc list) : unit =
         (warn2
-           (Core.sprintf
+           (Core_kernel.sprintf
               "transition %s had a potential code path with duplicate accept statements:\n"
               (get_id transition.comp_name) ^
               String.concat ""
                 (List.map
-                   (fun loc -> Core.sprintf "  Accept at %s\n" (get_loc_str loc))
+                   (fun loc -> Core_kernel.sprintf "  Accept at %s\n" (get_loc_str loc))
                    group))
            warning_level_duplicate_accepts
            (List.hd group)
@@ -137,7 +137,7 @@ module ScillaAcceptChecker
     (match List.for_all BatList.is_empty all_accept_groups with
      | true ->
         (warn0
-           (Core.sprintf "No transition in contract %s contains an accept statement\n"
+           (Core_kernel.sprintf "No transition in contract %s contains an accept statement\n"
               (get_id contr.cname))
            warning_level_missing_accept)
      | false -> ())

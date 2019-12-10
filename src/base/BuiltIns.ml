@@ -122,7 +122,7 @@ module ScillaBuiltIns
     let substr ls _ = match ls with
       | [StringLit x; UintLit (Uint32L s); UintLit (Uint32L e)] ->
         (try
-          pure @@ StringLit (Core.String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
+          pure @@ StringLit (String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
         with Invalid_argument msg -> builtin_fail ("String.substr: " ^ msg) ls)
       | _ -> builtin_fail "String.substr" ls
 
@@ -629,13 +629,13 @@ module ScillaBuiltIns
             | ByStrX bs -> Bystrx.to_raw_bytes bs
             | Msg entries ->
                 let raw_entries = List.map entries ~f:(fun (s, v) -> s ^ raw_bytes v) in
-                Core.String.concat ~sep:"" raw_entries
+                Core_kernel.String.concat ~sep:"" raw_entries
             | Map (_, tbl) ->
                 let raw_strings = Caml.Hashtbl.fold (fun k v acc -> raw_bytes k :: raw_bytes v :: acc) tbl [] in
-                Core.String.concat ~sep:"" raw_strings
+                Core_kernel.String.concat ~sep:"" raw_strings
             | ADTValue (cons_name, _, params) ->
                 let raw_params = List.map params ~f:raw_bytes in
-                Core.String.concat ~sep:"" (cons_name :: raw_params)
+                Core_kernel.String.concat ~sep:"" (cons_name :: raw_params)
             | Clo _fun -> "(Clo <fun>)"
             | TAbs _fun -> "(Tabs <fun>)"
           in
@@ -689,7 +689,7 @@ module ScillaBuiltIns
       | [ByStrX bs] when Bystrx.width bs <= 32 ->
         (* of_bytes_big_endian functions expect 2^n number of bytes exactly *)
         let rem = 32 - Bystrx.width bs in
-        let pad = Core.String.make rem '\000' in
+        let pad = Core_kernel.String.make rem '\000' in
         let bs_padded = pad ^ (Bystrx.to_raw_bytes bs) in
         let u = Uint256.of_bytes_big_endian (Bytes.of_string bs_padded) 0 in
         pure (UintLit (Uint256L u))
@@ -826,7 +826,7 @@ module ScillaBuiltIns
         (* Hash the public key *)
         let pkh = sha256_hasher pks in
         (* and extract the least significant 20 bytes. *)
-        let addr = Core.String.suffix pkh 20 in
+        let addr = Core_kernel.String.suffix pkh 20 in
         (match Bystrx.of_raw_bytes address_length addr with
         | Some bs -> pure @@ ByStrX bs
         | None -> builtin_fail "schnorr_get_address: Internal error." ls)

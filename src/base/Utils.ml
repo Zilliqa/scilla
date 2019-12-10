@@ -20,7 +20,7 @@ open Core_kernel
 
 (* Add item a to list if it isn't already present. Use ~equal to check presence. *)
 let list_add_unique ~equal ls a =
-  if Core.List.mem ls a ~equal then ls else (a :: ls)
+  if List.mem ls a ~equal then ls else (a :: ls)
 
 (* Fold n times, each time applying 0-(n-1) and accummulator to f. *)
 let int_fold ~init ~(f : 'a -> int -> 'a) n =
