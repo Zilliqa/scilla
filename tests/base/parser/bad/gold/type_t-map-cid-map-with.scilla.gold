@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-map-cid-map-with.scilla:7:31: error: This map type likely has an invalid map value type. The map value type is a map with a malformed map key type. 
+

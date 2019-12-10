@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-throw-with.scilla:7:10: error: This throw does not throw a valid exception or is not properly terminated. 
+

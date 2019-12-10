@@ -1,0 +1,5 @@
+(executable
+ (name testsuite_base)
+ (preprocess
+  (pps ppx_sexp_conv ppx_let ppx_deriving.show))
+ (libraries core oUnit scilla_base testutil testparser))

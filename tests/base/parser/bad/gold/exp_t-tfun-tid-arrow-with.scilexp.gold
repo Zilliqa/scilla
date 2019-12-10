@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-tfun-tid-arrow-with.scilexp:1:13: error: Type functions expect a valid expression after the arrow. 
+

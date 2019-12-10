@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-spid-spid-with.scilexp:3:16: error: If this is an application of a function, it is necessary to supply a list of valid arguments. Alternatively consider ending the expression earlier. 
+

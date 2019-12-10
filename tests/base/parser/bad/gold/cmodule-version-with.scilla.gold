@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-version-with.scilla:3:20: error: The Scilla version must be specified with a numeric literal. 
+

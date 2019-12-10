@@ -1,0 +1,3 @@
+
+base/parser/bad/lib/lmodule-import-with.scillib:3:17: error: If import is mentioned there must be one or more imported libraries with capital identifiers. 
+

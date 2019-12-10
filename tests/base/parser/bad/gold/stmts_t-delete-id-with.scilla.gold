@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-delete-id-with.scilla:10:4: error: This is an invalid delete statement, it lacks the keys to delete. 
+

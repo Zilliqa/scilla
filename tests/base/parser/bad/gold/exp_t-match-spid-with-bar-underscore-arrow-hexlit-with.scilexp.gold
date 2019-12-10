@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-match-spid-with-bar-underscore-arrow-hexlit-with.scilexp:4:1: error: After a pattern matching clause the parser expects another pattern matching clause or the end ('end'). 
+

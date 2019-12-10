@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-lbrace-with.scilexp:3:4: error: This is an invalid message construction. The parser expects a semi-colon separated list of message entries and then a closing bracket. 
+

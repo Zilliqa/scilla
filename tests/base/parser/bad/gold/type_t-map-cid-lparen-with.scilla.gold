@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-map-cid-lparen-with.scilla:5:28: error: In this map type, the map value is likely incorrect. In the brackets only an ADT or map may be placed. 
+

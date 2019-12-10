@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-cid-tid-with.scilla:6:43: error: This is an invalid type term, the ADT constructor arguments are incorrect. 
+

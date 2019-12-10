@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-version-number-library-name.scilla:6:1: error: Following the library definition, a contract is expected. 
+

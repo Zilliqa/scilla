@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-at-spid-with.scilexp:3:16: error: The type application is wrong. The parser expects a non-empty list of type arguments to apply. 
+

@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-id-assign-with.scilla:8:17: error: This is an invalid assign statement, it lacks a separated identifier. 
+

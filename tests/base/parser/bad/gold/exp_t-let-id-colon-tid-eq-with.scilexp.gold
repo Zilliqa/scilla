@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-let-id-colon-tid-eq-with.scilexp:1:19: error: This typed let expression does not have a valid expression to use for the substitute variable. 
+

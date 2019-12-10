@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-cid-period-with.scilla:6:34: error: This is an invalid type term, the ADT constructor is incorrect. Following the period, the parser expects an identifier beginning with a capital letter ('A' - 'Z'). 
+

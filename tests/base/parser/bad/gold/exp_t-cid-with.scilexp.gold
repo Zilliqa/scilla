@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-cid-with.scilexp:1:7: error: This is a malformed expression, it may be an incorrect data constructor usage. 
+

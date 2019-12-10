@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-cid-period-cid-with.scilexp:1:24: error: This is an invalid expression, most likely the data constructor is missing arguments (zero or more separated identifiers). 
+

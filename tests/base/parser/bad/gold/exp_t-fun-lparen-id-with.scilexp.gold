@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-fun-lparen-id-with.scilexp:1:8: error: This function's argument is lacking a colon to associate it with its type. 
+

@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-map-cid-cid-map-with.scilla:6:38: error: This is an invalid map type, the map value type is incorrect. It is likely there there is an ADT constructor with an invalid argument (a map with an invalid map key). 
+

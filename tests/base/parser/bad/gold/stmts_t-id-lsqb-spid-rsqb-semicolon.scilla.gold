@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-id-lsqb-spid-rsqb-semicolon.scilla:9:13: error: This is likely an invalid map assign statement, it lacks the assign. 
+

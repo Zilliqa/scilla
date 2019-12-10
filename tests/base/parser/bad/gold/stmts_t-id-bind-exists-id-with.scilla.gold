@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-id-bind-exists-id-with.scilla:9:4: error: This is an invalid existence bind statement. It lacks a non-empty list of accesses. 
+

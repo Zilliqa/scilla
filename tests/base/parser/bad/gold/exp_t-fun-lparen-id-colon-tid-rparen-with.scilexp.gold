@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-fun-lparen-id-colon-tid-rparen-with.scilexp:1:17: error: This function needs an arrow (e.g. '=>') pointing to an expression. 
+

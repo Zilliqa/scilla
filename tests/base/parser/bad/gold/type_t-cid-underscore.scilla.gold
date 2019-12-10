@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-cid-underscore.scilla:5:26: error: This is an invalid type term, it may be a bad ADT. 
+

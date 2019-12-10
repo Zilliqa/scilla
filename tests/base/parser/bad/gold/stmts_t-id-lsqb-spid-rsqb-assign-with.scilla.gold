@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-id-lsqb-spid-rsqb-assign-with.scilla:15:15: error: The map key must be assigned to some separated identifier. 
+

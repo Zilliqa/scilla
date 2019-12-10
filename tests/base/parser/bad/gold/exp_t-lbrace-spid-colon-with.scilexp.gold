@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-lbrace-spid-colon-with.scilexp:3:87: error: This is an invalid message construction. Following the colon, a literal or separated identifier is expected (value of the message field). 
+

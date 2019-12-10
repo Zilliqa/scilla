@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/builtin-overflow4.scilexp:8:9: error: Syntax error: Invalid Int32 literal -2147483649
+

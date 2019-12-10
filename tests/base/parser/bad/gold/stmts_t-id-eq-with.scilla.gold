@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-id-eq-with.scilla:7:8: error: This is an invalid equal statement, it is lacking a valid expression on the right. 
+

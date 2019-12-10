@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-let-id-colon-tid-with.scilexp:1:22: error: This type-annotated let expression likely has a misplaced equals, '='. 
+

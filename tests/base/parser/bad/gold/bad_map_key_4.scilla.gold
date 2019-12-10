@@ -1,0 +1,3 @@
+
+base/parser/bad/bad_map_key_4.scilla:12:13: error: Syntax error: Invalid map key type TestType
+

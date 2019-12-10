@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-version-number-contract-name-lparen-rparen-with.scilla:5:12: error: After the definition of the immutable fields, either a contract constraint, the mutable fields definition, a transition or procedure is expected. 
+

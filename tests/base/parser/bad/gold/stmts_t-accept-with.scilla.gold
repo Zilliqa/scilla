@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-accept-with.scilla:11:7: error: This is likely an improperly terminated statement (lacking the semicolon). 
+

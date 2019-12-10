@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-fun-lparen-with.scilexp:1:7: error: This function is missing a valid argument identifier, beginning with a lower case letter. 
+

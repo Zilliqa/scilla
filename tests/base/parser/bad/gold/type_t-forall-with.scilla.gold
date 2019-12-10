@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-forall-with.scilla:6:29: error: This is an invalid forall type, after the forall the parser expects a type identifier. 
+

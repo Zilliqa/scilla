@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-procedure-id-lparen-rparen-with.scilla:8:8: error: In the transition body the parser expects a list of semi-colon separated statements. 
+

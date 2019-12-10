@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-contract-cid-lparen-id-colon-comma-with.scilla:5:29: error: Following a comma in the list of immutable fields, the parser expects another immutable field. 
+

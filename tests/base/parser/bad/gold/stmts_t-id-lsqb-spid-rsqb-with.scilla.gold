@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-id-lsqb-spid-rsqb-with.scilla:10:13: error: This is an invalid statements term. A possible continuation may be assigning a map key. 
+

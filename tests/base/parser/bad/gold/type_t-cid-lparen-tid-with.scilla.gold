@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-cid-lparen-tid-with.scilla:7:1: error: This is an invalid type term, likely the ADT argument brackets are not closed properly or the arguments are invalid. 
+

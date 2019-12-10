@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-id-bind-and-with.scilla:7:18: error: This is an invalid bind and statement. The parser expects a capital identifier associated with a block number. 
+

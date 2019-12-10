@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-transition-with.scilla:7:17: error: Transitions must begin with a valid name, this can be a lower case or capital letter ('A' - 'z'). 
+

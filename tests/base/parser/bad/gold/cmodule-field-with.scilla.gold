@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-field-with.scilla:7:12: error: For a mutable field declaration, the parser expects a valid lower case beginning identifier. 
+

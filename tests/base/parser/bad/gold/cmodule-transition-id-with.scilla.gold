@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-transition-id-with.scilla:8:4: error: After a transition has been named, the parameters must be specified in brackets. 
+

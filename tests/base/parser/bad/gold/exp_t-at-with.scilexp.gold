@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-at-with.scilexp:3:16: error: This type application is wrong. A separated identifier is expected to apply types to. 
+

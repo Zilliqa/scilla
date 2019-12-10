@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-let-id-eq-string-in-with.scilexp:2:1: error: This let expression likely does not substitute a variable into a valid expression. 
+

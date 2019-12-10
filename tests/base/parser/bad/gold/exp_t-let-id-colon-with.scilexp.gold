@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-let-id-colon-with.scilexp:1:13: error: This let expression is likely missing a complete type annotation after the colon. 
+

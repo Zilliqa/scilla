@@ -1,0 +1,3 @@
+
+base/parser/bad/lib/lmodule-library-with.scillib:4:17: error: This is an invalid library module because it lacks a capital identifier for a name. 
+

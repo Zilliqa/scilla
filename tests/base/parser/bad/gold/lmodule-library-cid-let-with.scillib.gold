@@ -1,0 +1,3 @@
+
+base/parser/bad/lib/lmodule-library-cid-let-with.scillib:6:6: error: The let expression is missing an identifier to assign an expression to. 
+

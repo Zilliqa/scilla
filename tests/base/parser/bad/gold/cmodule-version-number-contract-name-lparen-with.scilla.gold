@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-version-number-contract-name-lparen-with.scilla:5:8: error: The name of an immutable field should begin with a lower case letter ('a' - 'z'). 
+

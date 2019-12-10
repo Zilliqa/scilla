@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-tid-arrow-with.scilla:7:24: error: This function type lacks a result type. 
+

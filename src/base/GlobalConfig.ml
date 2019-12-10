@@ -141,6 +141,8 @@ let add_stdlib_dirs dirs =
 let file_extn_contract = "scilla"
 (* File extension for Scilla libraries. *)
 let file_extn_library = "scillib"
+(* File extension for Scilla expressions. *)
+let file_extn_expression = "scilexp"
 
 (* Try find library "name" in known locations *)
 let find_lib_dir name =

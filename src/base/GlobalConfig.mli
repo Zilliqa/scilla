@@ -66,5 +66,7 @@ module StdlibTracker : sig
   val file_extn_contract : string
   (* File extension for Scilla libraries. *)
   val file_extn_library : string
+  (* File extension for Scilla expressions. *)
+  val file_extn_expression : string
 
 end

@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-cid-lbrace-with.scilexp:1:11: error: The data constructor, list of type arguments is incorrect. The parser expects a type argument or a closing bracket. 
+

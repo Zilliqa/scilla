@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-field-id-colon-cid-eq-hexlit-with.scilla:8:28: error: Following a field definition, the parser expects another field definition, transition, procedure or end of file. 
+

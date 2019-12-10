@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-tfun-tid-with.scilexp:1:11: error: Type functions following the type id expect an arrow (e.g. '=>'). 
+

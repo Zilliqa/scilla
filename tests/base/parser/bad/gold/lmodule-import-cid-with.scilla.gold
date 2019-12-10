@@ -1,0 +1,3 @@
+
+base/parser/bad/lmodule-import-cid-with.scilla:4:19: error: To import another library mention the new library name directly after the previous one, alternatively following the name of the imported library there can be a library defintion or sometimes a contract. 
+

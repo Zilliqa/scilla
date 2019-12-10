@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-id-bind-with.scilla:8:9: error: This is an invalid bind statement, the bind can be followed by '&', 'exists' or a map. 
+

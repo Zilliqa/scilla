@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-field-id-colon-with.scilla:9:19: error: In a mutable field declaration, following the colon after the naming, a type is expected. 
+

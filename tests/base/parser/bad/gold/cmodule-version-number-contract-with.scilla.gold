@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-version-number-contract-with.scilla:4:15: error: When a contract is being defined a valid identifier is expected. 
+

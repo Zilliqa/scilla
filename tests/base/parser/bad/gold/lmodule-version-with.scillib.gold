@@ -1,0 +1,3 @@
+
+base/parser/bad/lib/lmodule-version-with.scillib:5:5: error: This is an invalid library module, Scilla version must be followed by 'library' or 'import'. 
+

@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-transition-id-lparen-rparen-end-with.scilla:10:12: error: Following a transition definition, the parser expects a transition or a procedure or end of file. 
+

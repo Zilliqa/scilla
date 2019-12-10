@@ -1,0 +1,3 @@
+
+base/parser/bad/lib/lmodule-library-cid-let-id-colon-tid-eq-with.scillib:6:21: error: This (type-annotated) let expression is missing an expression to assign to an identifier. 
+

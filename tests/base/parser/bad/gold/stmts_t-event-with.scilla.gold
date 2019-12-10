@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-event-with.scilla:8:9: error: This is an invalid event statement, it lacks a separated identifier for the event name. 
+

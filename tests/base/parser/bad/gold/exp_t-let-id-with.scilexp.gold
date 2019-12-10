@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-let-id-with.scilexp:1:13: error: This let expression is missing an equals ('=') or type annotation, directly after a valid identifier. 
+

@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-match-with.scilla:12:13: error: In a match statement, the parser expects a separated identifier to match with. 
+

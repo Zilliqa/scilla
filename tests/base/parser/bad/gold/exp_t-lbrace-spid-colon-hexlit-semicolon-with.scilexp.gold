@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-lbrace-spid-colon-hexlit-semicolon-with.scilexp:3:79: error: This is an invalid message construction. The parser after a semicolon expects another message entry. 
+

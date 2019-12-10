@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-id-lsqb-with.scilla:10:8: error: This is an invalid statements term. The map access list is malformed. 
+

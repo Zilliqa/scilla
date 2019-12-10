@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-map-cid-cid-lparen-cid-underscore.scilla:5:42: error: This is an invalid map type, the map value type is incorrect. It is possible that the key type is a nested ADT where the inner constructor arguments are faulty. 
+

@@ -3,5 +3,5 @@
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show))
  (libraries core oUnit testcontracts testexps testexpsfail testtypes
-   testtypefail testpmfail testgasexpr testgascontracts testparser
-   testchecker testinteger256))
+   testtypefail testpmfail testgasexpr testgascontracts
+   testchecker))

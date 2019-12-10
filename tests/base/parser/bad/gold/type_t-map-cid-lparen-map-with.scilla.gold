@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-map-cid-lparen-map-with.scilla:5:32: error: This map type is invalid as the map value is likely incorrect. The map value being a map in brackets with an invalid map key. 
+

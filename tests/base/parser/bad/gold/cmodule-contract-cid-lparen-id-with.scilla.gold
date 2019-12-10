@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-contract-cid-lparen-id-with.scilla:5:10: error: In an immutable field declaration, the parser expects a colon following the name to precede the type. 
+

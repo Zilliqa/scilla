@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-id-bind-exists-with.scilla:8:18: error: This is an invalid existence bind statement. It lacks a map to check existence of keys in. 
+

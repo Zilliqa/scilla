@@ -1,0 +1,3 @@
+
+base/parser/bad/lib/lmodule-library-cid-let-id-with.scillib:6:13: error: This library let expression is missing an equals, '='. 
+

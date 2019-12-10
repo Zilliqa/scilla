@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-builtin-id-lparen-with.scilexp:3:17: error: Builtin functions only take a pair of brackets when of unit input type (e.g. "()" only). 
+

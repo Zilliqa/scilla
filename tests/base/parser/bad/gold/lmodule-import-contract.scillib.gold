@@ -1,0 +1,3 @@
+
+base/parser/bad/lib/lmodule-import-contract.scillib:3:16: error: The parser does not expect contracts when loading imports for libraries. 
+

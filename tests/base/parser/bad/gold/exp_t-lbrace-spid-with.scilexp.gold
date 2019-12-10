@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-lbrace-spid-with.scilexp:3:9: error: This is an invalid message construction. With a message entry, the parser expects a colon preceding the value of the message field. 
+

@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-lparen-tid-with.scilla:4:18: error: This is an invalid type term because the brackets are not closed after the type id. 
+

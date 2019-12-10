@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-cid-lbrace-rbrace-at.scilexp:1:21: error: In a data constructor application, the parser expects valid separated uncapitalised identifiers for arguments. 
+

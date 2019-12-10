@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-tid-arrow-tid-with.scilla:7:20: error: This function is not terminated early enough or malformed. A possible alteration would be brackets. 
+

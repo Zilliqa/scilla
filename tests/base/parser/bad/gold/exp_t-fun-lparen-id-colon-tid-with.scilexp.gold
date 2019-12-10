@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-fun-lparen-id-colon-tid-with.scilexp:1:16: error: This function argument and argument type declaration is not closed properly. 
+

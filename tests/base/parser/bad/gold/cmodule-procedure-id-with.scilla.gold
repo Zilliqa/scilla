@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-procedure-id-with.scilla:9:22: error: After a procedure has been named, the parser expects the arguments to be defined so there should be a left parenthesis. 
+

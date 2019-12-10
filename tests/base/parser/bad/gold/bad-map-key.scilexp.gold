@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/bad-map-key.scilexp:2:14: error: Syntax error: Invalid map key type Bool
+

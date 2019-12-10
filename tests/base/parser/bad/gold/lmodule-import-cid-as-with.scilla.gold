@@ -1,0 +1,3 @@
+
+base/parser/bad/lmodule-import-cid-as-with.scilla:4:30: error: This is an invalid library module. When importing a library under another name, the parser requires the other name to be given as a capital identifier. 
+

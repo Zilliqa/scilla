@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-forall-tid-period-with.scilla:6:27: error: This is an invalid forall type, after the period (following forall and a type id) the parser expects a valid type. 
+

@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-lbrace-spid-colon-cid-with.scilexp:3:11: error: This is likely an invalid message construction. The parser expects another message entry separated by a semicolon or a closing brace. 
+

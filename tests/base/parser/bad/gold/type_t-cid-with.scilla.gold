@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-cid-with.scilla:6:31: error: This is an invalid type term, the ADT constructor arguments are likely incorrect. This necessitates a proper separated capital identifier, type identifier, type in brackets or a map. 
+

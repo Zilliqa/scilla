@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-let-id-colon-tid-eq-string-in-with.scilexp:1:25: error: This let expression (type-annotated) is likely missing an expression to substitute into. 
+

@@ -1,0 +1,3 @@
+
+base/parser/bad/type_t-forall-tid-period-tid-with.scilla:5:23: error: This is an invalid forall type, the type term is finished after the last type id. forall types with multiple variables are expressed by typing forall again (e.g. 'forall 'A. forall 'B.'). 
+

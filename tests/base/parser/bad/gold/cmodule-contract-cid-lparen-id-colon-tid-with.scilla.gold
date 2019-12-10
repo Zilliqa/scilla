@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-contract-cid-lparen-id-colon-tid-with.scilla:5:22: error: Following the declaration of an immutable field, the parser expects another one separated by a comma or the end of the declarations with a right bracket. 
+

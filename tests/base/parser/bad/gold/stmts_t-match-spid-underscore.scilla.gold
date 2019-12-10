@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-match-spid-underscore.scilla:11:15: error: This is an invalid match statement, 'with' is expected after what is specified to match with. 
+

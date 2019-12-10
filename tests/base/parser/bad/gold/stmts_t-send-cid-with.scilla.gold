@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-send-cid-with.scilla:7:18: error: This send statement is either unfinished or not properly terminated. 
+

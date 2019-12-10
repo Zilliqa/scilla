@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-field-id-colon-tid-eq-with.scilla:7:34: error: In a mutable field declaration, it is expected that the field is initialised to be equal to some valid expression. 
+

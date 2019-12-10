@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-contract-cid-lparen-id-colon-with.scilla:5:19: error: In an immutable field declaration the parser expects a valid type name. 
+

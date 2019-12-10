@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-cid-with.scilla:11:18: error: This is an invalid statements term. Scilla expects to do something with the identifier. 
+

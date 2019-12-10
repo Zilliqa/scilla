@@ -469,7 +469,7 @@ type_term: MAP CID UNDERSCORE
 ## In state 22, spurious reduction of production scid -> CID 
 ## In state 44, spurious reduction of production t_map_key -> scid 
 ##
-# see tests/eval/exp/bad/list_to_map.scilexp
+# see tests/eval/bad/list_to_map.scilexp
 
 This map type likely has an invalid map value type.
 

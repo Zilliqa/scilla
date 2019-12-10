@@ -1,0 +1,3 @@
+
+base/parser/bad/exps/exp_t-let-id-colon-tid-eq-string-with.scilexp:1:23: error: This typed let expression does not have a well placed 'in'. 
+

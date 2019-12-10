@@ -1,0 +1,3 @@
+
+base/parser/bad/cmodule-version-number-with.scilla:4:7: error: After specifying a Scilla version number, either imports, a library or contract is expected. 
+

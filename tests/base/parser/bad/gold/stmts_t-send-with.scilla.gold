@@ -1,0 +1,3 @@
+
+base/parser/bad/stmts_t-send-with.scilla:9:9: error: It is expected to send to a separated identifier. 
+
