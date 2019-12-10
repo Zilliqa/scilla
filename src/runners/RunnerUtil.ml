@@ -17,7 +17,7 @@
 *)
 
 
-open Core
+open Core_kernel
 open Printf
 open Syntax
 open GlobalConfig

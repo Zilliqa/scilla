@@ -1,5 +1,5 @@
 open OUnit2
-open Core.Result
+open Core_kernel.Result
 
 let t1 = test_case (fun _ ->
   let open Schnorr in

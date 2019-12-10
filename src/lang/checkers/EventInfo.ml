@@ -2,7 +2,7 @@ open TypeUtil
 open Syntax
 open ContractUtil.MessagePayload
 open MonadUtil
-open Core.Result.Let_syntax
+open Core_kernel.Result.Let_syntax
 
 module ScillaEventInfo
     (SR : Rep)

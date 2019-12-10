@@ -18,7 +18,7 @@
 
 open Syntax
 open ErrorUtils
-open Core
+open Core_kernel
 
 module UsefulLiterals : sig
   val true_lit : literal

@@ -17,7 +17,7 @@
 *)
 
 
-open Core
+open Core_kernel
 open Sexplib.Std
 open MonadUtil
 open ErrorUtils

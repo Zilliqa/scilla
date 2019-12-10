@@ -17,7 +17,7 @@
 *)
 
 
-open Core
+open Core_kernel
 open Lexing
 open ErrorUtils
 open MonadUtil

@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
+open Core_kernel
 open ScillaUtil.FilePathInfix
 
 (* Available debug levels for functions in DbgMsg *)
@@ -50,7 +50,7 @@ let create_log_filename dir =
   if not (Caml.Sys.file_exists dir) ||
      not (Caml.Sys.is_directory dir)
   then
-    Caml.Unix.mkdir dir 0o766; (* Arbitrary *)
+    Unix.mkdir dir 0o766; (* Arbitrary *)
   let files = Sys.readdir dir in
   let num = get_highest_numbered_log (Array.to_list files) in
   dir ^/ "scilla-runner-" ^ Int.to_string (num+1) ^. "log"

@@ -17,7 +17,7 @@
 *)
 
 
-open Core
+open Core_kernel
 open Syntax
 open Stdint
 open Integer256

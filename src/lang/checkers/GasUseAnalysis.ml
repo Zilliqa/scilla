@@ -22,7 +22,7 @@ open Syntax
 open ErrorUtils
 open MonadUtil
 open Polynomial
-open Core.Result.Let_syntax
+open Core_kernel.Result.Let_syntax
 
 module ScillaGUA
     (SR : Rep)

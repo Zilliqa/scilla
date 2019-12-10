@@ -18,7 +18,7 @@
 
 (* Library to create and operate on multivariate polynomials *)
 
-open Core
+open Core_kernel
 
 exception Polynomial_error of string
 

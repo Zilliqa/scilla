@@ -21,7 +21,7 @@ open ErrorUtils
 open MonadUtil
 
 open ContractUtil.MessagePayload
-open Core.Result.Let_syntax
+open Core_kernel.Result.Let_syntax
 
 module ScillaSanityChecker
     (SR : Rep)
