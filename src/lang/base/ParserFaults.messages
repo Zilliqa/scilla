@@ -1347,6 +1347,19 @@ lmodule: SCILLA_VERSION NUMLIT WITH
 
 This is an invalid library module, Scilla version must be followed by 'library' or 'import'.
 
+lmodule: WITH
+##
+## Ends in an error in state: 299.
+##
+## lmodule' -> . lmodule [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+# see tests/parser/bad/lmodule-with.scillib
+
+Scilla version number unspecified.
+
 exp_term: AT SPID TID WITH
 ##
 ## Ends in an error in state: 73.
