@@ -5,7 +5,7 @@
         "Cyclic dependence found when importing TestLibDiamondTopCycle.",
       "start_location": {
         "file": "checker/bad/lib/TestLibDiamondBottomCycle.scillib",
-        "line": 1,
+        "line": 3,
         "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

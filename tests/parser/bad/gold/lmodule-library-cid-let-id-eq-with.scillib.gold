@@ -6,7 +6,7 @@
         "This library let expression is missing a valid expression to assign to the identifier.\n",
       "start_location": {
         "file": "parser/bad/lib/lmodule-library-cid-let-id-eq-with.scillib",
-        "line": 4,
+        "line": 6,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

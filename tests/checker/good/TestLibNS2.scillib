@@ -1,3 +1,5 @@
+scilla_version 0
+
 import TestLibNS1 as Foo
 
 library TestLibNS2

@@ -150,6 +150,7 @@ module LibTests = TestUtil.DiffBasedTests(
         "lmodule-library-cid-type-with.scillib";
         "lmodule-library-cid-with.scillib";
         "lmodule-library-with.scillib";
+        "lmodule-version-with.scillib";
         "lmodule-with.scillib";
     ]
     let exit_code : Unix.process_status = WEXITED 1

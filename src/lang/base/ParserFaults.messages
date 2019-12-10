@@ -547,7 +547,7 @@ This function type lacks a result type.
 
 type_term: TID WITH
 ##
-## Ends in an error in state: 310.
+## Ends in an error in state: 312.
 ##
 ## typ -> typ . TARROW typ [ TARROW EOF ]
 ## type_term -> typ . EOF [ # ]
@@ -561,7 +561,7 @@ This is an invalid type term, following the type it is complete and may only be 
 
 type_term: WITH
 ##
-## Ends in an error in state: 308.
+## Ends in an error in state: 310.
 ##
 ## type_term' -> . type_term [ # ]
 ##
@@ -979,7 +979,7 @@ It is expected to send to a separated identifier.
 
 stmts_term: THROW END
 ##
-## Ends in an error in state: 306.
+## Ends in an error in state: 308.
 ##
 ## stmts_term -> stmts . EOF [ # ]
 ##
@@ -1032,7 +1032,7 @@ This throw does not throw a valid exception or is not properly terminated.
 
 stmts_term: WITH
 ##
-## Ends in an error in state: 304.
+## Ends in an error in state: 306.
 ##
 ## stmts_term' -> . stmts_term [ # ]
 ##
@@ -1043,7 +1043,7 @@ stmts_term: WITH
 
 This is not a statement.
 
-lmodule: IMPORT CID AS CID WITH
+lmodule: SCILLA_VERSION NUMLIT IMPORT CID AS CID WITH
 ##
 ## Ends in an error in state: 8.
 ##
@@ -1056,7 +1056,7 @@ lmodule: IMPORT CID AS CID WITH
 
 This is an invalid library module. Following an import, the parser expects another import or the library definition.
 
-lmodule: IMPORT CID AS WITH
+lmodule: SCILLA_VERSION NUMLIT IMPORT CID AS WITH
 ##
 ## Ends in an error in state: 5.
 ##
@@ -1069,7 +1069,7 @@ lmodule: IMPORT CID AS WITH
 
 This is an invalid library module. When importing a library under another name, the parser requires the other name to be given as a capital identifier.
 
-lmodule: IMPORT CID WITH
+lmodule: SCILLA_VERSION NUMLIT IMPORT CID WITH
 ##
 ## Ends in an error in state: 4.
 ##
@@ -1083,14 +1083,14 @@ lmodule: IMPORT CID WITH
 
 To import another library mention the new library name directly after the previous one, alternatively following the name of the imported library there can be a library defintion or sometimes a contract.
 
-lmodule: IMPORT CONTRACT
+lmodule: SCILLA_VERSION NUMLIT IMPORT CONTRACT
 ##
-## Ends in an error in state: 301.
+## Ends in an error in state: 302.
 ##
-## lmodule -> imports . library EOF [ # ]
+## lmodule -> SCILLA_VERSION NUMLIT imports . library EOF [ # ]
 ##
 ## The known suffix of the stack is as follows:
-## imports
+## SCILLA_VERSION NUMLIT imports
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -1103,7 +1103,7 @@ lmodule: IMPORT CONTRACT
 
 The parser does not expect contracts when loading imports for libraries.
 
-lmodule: IMPORT WITH
+lmodule: SCILLA_VERSION NUMLIT IMPORT WITH
 ##
 ## Ends in an error in state: 3.
 ##
@@ -1116,14 +1116,14 @@ lmodule: IMPORT WITH
 
 If import is mentioned there must be one or more imported libraries with capital identifiers.
 
-lmodule: LIBRARY CID CONTRACT
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID CONTRACT
 ##
-## Ends in an error in state: 302.
+## Ends in an error in state: 303.
 ##
-## lmodule -> imports library . EOF [ # ]
+## lmodule -> SCILLA_VERSION NUMLIT imports library . EOF [ # ]
 ##
 ## The known suffix of the stack is as follows:
-## imports library
+## SCILLA_VERSION NUMLIT imports library
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -1136,7 +1136,7 @@ lmodule: LIBRARY CID CONTRACT
 
 When writing solely Scilla libraries, there is no need for a contract.
 
-lmodule: LIBRARY CID LET ID COLON TID EQ WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID COLON TID EQ WITH
 ##
 ## Ends in an error in state: 187.
 ##
@@ -1149,7 +1149,7 @@ lmodule: LIBRARY CID LET ID COLON TID EQ WITH
 
 This (type-annotated) let expression is missing an expression to assign to an identifier.
 
-lmodule: LIBRARY CID LET ID EQ HEXLIT WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID EQ HEXLIT WITH
 ##
 ## Ends in an error in state: 190.
 ##
@@ -1162,7 +1162,7 @@ lmodule: LIBRARY CID LET ID EQ HEXLIT WITH
 
 This is an invalid library module, a possible continuation would be another valid library entry.
 
-lmodule: LIBRARY CID LET ID EQ WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID EQ WITH
 ##
 ## Ends in an error in state: 81.
 ##
@@ -1175,7 +1175,7 @@ lmodule: LIBRARY CID LET ID EQ WITH
 
 This library let expression is missing a valid expression to assign to the identifier.
 
-lmodule: LIBRARY CID LET ID WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID WITH
 ##
 ## Ends in an error in state: 80.
 ##
@@ -1189,7 +1189,7 @@ lmodule: LIBRARY CID LET ID WITH
 
 This library let expression is missing an equals, '='.
 
-lmodule: LIBRARY CID LET WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET WITH
 ##
 ## Ends in an error in state: 79.
 ##
@@ -1203,7 +1203,7 @@ lmodule: LIBRARY CID LET WITH
 
 The let expression is missing an identifier to assign an expression to.
 
-lmodule: LIBRARY CID TYPE CID EQ BAR CID OF CID TRANSITION
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ BAR CID OF CID TRANSITION
 ##
 ## Ends in an error in state: 76.
 ##
@@ -1226,7 +1226,7 @@ lmodule: LIBRARY CID TYPE CID EQ BAR CID OF CID TRANSITION
 
 The type definition has a type constructor containing malformed type arguments. Do note that there are no transitions or procedures in libraries.
 
-lmodule: LIBRARY CID TYPE CID EQ BAR CID OF WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ BAR CID OF WITH
 ##
 ## Ends in an error in state: 18.
 ##
@@ -1239,7 +1239,7 @@ lmodule: LIBRARY CID TYPE CID EQ BAR CID OF WITH
 
 This library type entry expects a non-empty list of type arguments.
 
-lmodule: LIBRARY CID TYPE CID EQ BAR CID WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ BAR CID WITH
 ##
 ## Ends in an error in state: 17.
 ##
@@ -1253,7 +1253,7 @@ lmodule: LIBRARY CID TYPE CID EQ BAR CID WITH
 
 This type constructor is missing the word 'of'.
 
-lmodule: LIBRARY CID TYPE CID EQ BAR WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ BAR WITH
 ##
 ## Ends in an error in state: 16.
 ##
@@ -1267,7 +1267,7 @@ lmodule: LIBRARY CID TYPE CID EQ BAR WITH
 
 This library type entry has an invalid type constructor name.
 
-lmodule: LIBRARY CID TYPE CID EQ WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ WITH
 ##
 ## Ends in an error in state: 15.
 ##
@@ -1280,7 +1280,7 @@ lmodule: LIBRARY CID TYPE CID EQ WITH
 
 This library type entry is lacking a valid non-empty list of type constructors. Possibly the bar is missing.
 
-lmodule: LIBRARY CID TYPE CID WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID WITH
 ##
 ## Ends in an error in state: 14.
 ##
@@ -1294,7 +1294,7 @@ lmodule: LIBRARY CID TYPE CID WITH
 
 This library type entry is likely missing an equals, '='.
 
-lmodule: LIBRARY CID TYPE WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE WITH
 ##
 ## Ends in an error in state: 13.
 ##
@@ -1308,7 +1308,7 @@ lmodule: LIBRARY CID TYPE WITH
 
 This library type entry is missing a name (should begin with a capital letter).
 
-lmodule: LIBRARY CID WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID WITH
 ##
 ## Ends in an error in state: 12.
 ##
@@ -1321,7 +1321,7 @@ lmodule: LIBRARY CID WITH
 
 This is an invalid library entry.
 
-lmodule: LIBRARY WITH
+lmodule: SCILLA_VERSION NUMLIT LIBRARY WITH
 ##
 ## Ends in an error in state: 11.
 ##
@@ -1334,6 +1334,19 @@ lmodule: LIBRARY WITH
 
 This is an invalid library module because it lacks a capital identifier for a name.
 
+lmodule: SCILLA_VERSION NUMLIT WITH
+##
+## Ends in an error in state: 301.
+##
+## lmodule -> SCILLA_VERSION NUMLIT . imports library EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## SCILLA_VERSION NUMLIT
+##
+# see tests/parser/bad/lmodule-version-with.scillib
+
+This is an invalid library module, Scilla version must be followed by 'library' or 'import'.
+
 lmodule: WITH
 ##
 ## Ends in an error in state: 299.
@@ -1345,7 +1358,7 @@ lmodule: WITH
 ##
 # see tests/parser/bad/lmodule-with.scillib
 
-This is an invalid library module, libraries start with 'library' or 'import'.
+Scilla version number unspecified.
 
 exp_term: AT SPID TID WITH
 ##

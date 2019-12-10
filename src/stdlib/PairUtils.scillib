@@ -1,3 +1,5 @@
+scilla_version 0
+
 library PairUtils
 
 let fst : forall 'A. forall 'B. Pair 'A 'B -> 'A =

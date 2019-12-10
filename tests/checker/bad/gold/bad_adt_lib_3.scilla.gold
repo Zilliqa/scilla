@@ -14,7 +14,7 @@
       "error_message": "Multiple declarations of type TestType1",
       "start_location": {
         "file": "checker/bad/lib/BadADTLib3b.scillib",
-        "line": 3,
+        "line": 5,
         "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

@@ -7,7 +7,7 @@
       "start_location": {
         "file":
           "parser/bad/lib/lmodule-library-cid-type-cid-eq-bar-cid-of-cid-transition.scillib",
-        "line": 8,
+        "line": 10,
         "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

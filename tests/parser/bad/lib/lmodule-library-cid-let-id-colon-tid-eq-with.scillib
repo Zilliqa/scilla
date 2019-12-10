@@ -1,3 +1,5 @@
+scilla_version 0
+
 library TestLib
 
 (* field is always an incorrect expression *)

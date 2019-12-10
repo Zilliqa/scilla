@@ -1,3 +1,5 @@
+scilla_version 0
+
 library BoolUtils
 
 let andb : Bool -> Bool -> Bool = 

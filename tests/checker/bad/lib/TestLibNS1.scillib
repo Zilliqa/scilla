@@ -1,3 +1,5 @@
+scilla_version 0
+
 library TestLibNS1
 
 let foo = Uint32 57

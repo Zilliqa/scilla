@@ -374,7 +374,8 @@ module ScillaRecursion
 
     if emsgs = [] then
       pure @@ (
-        { RecursionSyntax.libs = recursion_md_libs';
+        { RecursionSyntax.smver = md.smver;
+          RecursionSyntax.libs = recursion_md_libs';
           RecursionSyntax.elibs = md.elibs },
         recursion_rprins,
         recursion_elibs)
