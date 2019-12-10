@@ -20,7 +20,6 @@ open Sexplib.Std
 open Syntax
 open Datatypes
 open TypeUtil
-open Utils
 
 module CashflowRep (R : Rep) = struct
   type money_tag =

@@ -26,7 +26,6 @@ open Core
 open PrimTypes
 open TypeUtil
 open Datatypes
-open Utils
 
 module JSONTypeUtilities = TypeUtilities
 open JSONTypeUtilities

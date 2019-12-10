@@ -21,7 +21,6 @@ open MonadUtil
 open Result.Let_syntax
 open TypeUtil
 open Datatypes
-open Utils
 open PatternUtil
 
 open Exp_descriptions
