@@ -20,7 +20,7 @@
 open Syntax
 open ErrorUtils
 open ParserUtil
-open Core
+open Core_kernel
 open Yojson
 open ContractUtil.MessagePayload
 open Datatypes

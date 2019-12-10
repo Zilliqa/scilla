@@ -17,7 +17,7 @@
 *)
 
 
-open Core
+open Core_kernel
 open OUnit2
 open ScillaUtil.FilePathInfix
 open TestUtil
@@ -26,8 +26,8 @@ open OUnitTest
 let testsuit_gas_limit = "8000"
 let ipc_socket_addr = Filename.temp_dir_name ^/ "scillaipcsocket"
 
-let succ_code : Caml.Unix.process_status = WEXITED 0
-let fail_code : Caml.Unix.process_status = WEXITED 1
+let succ_code : Unix.process_status = WEXITED 0
+let fail_code : Unix.process_status = WEXITED 1
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for

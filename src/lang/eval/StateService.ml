@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
+open Core_kernel
 open Result.Let_syntax
 open MonadUtil
 open TypeUtil

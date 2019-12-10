@@ -18,7 +18,7 @@
 
 
 open GlobalConfig
-open Core
+open Core_kernel
 
 (* Prints to log file *)
 let plog msg =

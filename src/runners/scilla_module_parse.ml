@@ -21,7 +21,7 @@
 open Printf
 open Sexplib.Std
 open Syntax
-open Core
+open Core_kernel
 
 let () =
   let filename = Sys.argv.(1) in

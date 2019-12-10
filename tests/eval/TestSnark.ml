@@ -19,7 +19,7 @@
 (* The tests in this file are modelled after Ethereum's unit tests for zkSNARKs.
    https://github.com/ethereum/aleth/blob/master/test/unittests/libdevcrypto/LibSnark.cpp *)
 
-open Core
+open Core_kernel
 open OUnit2
 open Snark
 open Integer256

@@ -23,7 +23,7 @@ open ParserUtil
 open RunnerUtil
 open GlobalConfig
 open PrettyPrinters
-open Core
+open Core_kernel
 
 module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
