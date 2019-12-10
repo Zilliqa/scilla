@@ -20,6 +20,7 @@ open Sexplib.Std
 open Syntax
 open Datatypes
 open TypeUtil
+open ContractUtil
 
 module CashflowRep (R : Rep) = struct
   type money_tag =
@@ -1292,9 +1293,13 @@ module ScillaCashflowChecker
                  | MVar x ->
                      let usage_tag =
                        match s with
-                       | "_amount" -> Money
-                       | "_tag"
-                       | "_recipient" -> NotMoney
+                       | x
+                         when x = MessagePayload.amount_label -> Money
+                       | x
+                         when x = MessagePayload.tag_label ||
+                              x = MessagePayload.recipient_label ||
+                              x = MessagePayload.eventname_label ||
+                              x = MessagePayload.exception_label -> NotMoney
                        | _ -> NoInfo in
                      let old_env_tag = lookup_var_tag2 x acc_local_env acc_param_env in
                      let new_x_tag = lub_tags usage_tag old_env_tag in
@@ -1560,9 +1565,8 @@ module ScillaCashflowChecker
       let { comp_type; comp_name ; comp_params ; comp_body } = t in
       let empty_local_env = AssocDictionary.make_dict() in
       let implicit_local_env =
-        AssocDictionary.insert "_amount" Money 
-          (AssocDictionary.insert "_sender" NotMoney
-             (AssocDictionary.insert "_tag" NotMoney empty_local_env)) in
+        AssocDictionary.insert MessagePayload.amount_label Money 
+          (AssocDictionary.insert MessagePayload.sender_label NotMoney empty_local_env) in
       let init_local_env =
         List.fold_left comp_params ~init:implicit_local_env
           ~f:(fun acc_env (p, _) ->
@@ -1591,7 +1595,7 @@ module ScillaCashflowChecker
           ~f:(fun acc_env (p, _) ->
              AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
       in 
-      let implicit_field_env = AssocDictionary.insert "_balance" Money empty_env in
+      let implicit_field_env = AssocDictionary.insert balance_label Money empty_env in
       let ctr_tag_map = init_ctr_tag_map () in
       let init_field_env =
         List.fold_left cfields ~init:implicit_field_env
