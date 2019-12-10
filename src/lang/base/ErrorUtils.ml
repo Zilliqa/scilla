@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
+open Core_kernel
 
 (* Location info, slightly more usable than Lexing.position *)
 type loc = {
@@ -84,3 +84,6 @@ let get_warnings () =
 
 exception Invalid_json of scilla_error list
 let mk_invalid_json msg = Invalid_json (mk_error0 msg)
+
+exception InternalError of scilla_error list
+let mk_internal_error msg = InternalError (mk_error0 msg)

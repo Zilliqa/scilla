@@ -94,11 +94,6 @@ let build_prim_lit_exn t v =
       | None -> raise (exn ()))
   | _ -> raise (exn ())
 
-let constr_pattern_arg_types_exn dt cname =
-  match constr_pattern_arg_types dt cname with
-  | Error emsg -> raise (Invalid_json (emsg))
-  | Ok s ->s
-
 (****************************************************************)
 (*                    JSON parsing                              *)
 (****************************************************************)
@@ -129,7 +124,7 @@ let rec json_to_adtargs cname tlist ajs =
   ) in
   (* For each component literal of our ADT, calculate it's type.
    * This is essentially using DataTypes.constr_tmap and substituting safely. *)
-  let tmap = constr_pattern_arg_types_exn (ADT(dt.tname, tlist)) cname in
+  let tmap = JSONParser.constr_pattern_arg_types_exn (ADT(dt.tname, tlist)) cname in
   verify_args_exn cname (List.length ajs) (List.length tmap);
   let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t j) in
     ADTValue(cname, tlist, llist)

@@ -31,7 +31,7 @@ open Stdint
 let lookup_constructor_exn cn =
   let t = Datatypes.DataTypeDictionary.lookup_constructor cn in
   match t with
-  | Error emsg -> raise (Utils.InternalError (emsg))
+  | Error emsg -> raise (InternalError (emsg))
   | Ok s-> s
 
 (****************************************************************)
@@ -80,7 +80,7 @@ and literal_to_json lit =
       | Ok ls' -> 
         let ls'' = List.rev_map ls' ~f:(fun a -> literal_to_json a) in
         `List ls''
-      | Error emsg -> raise (Utils.InternalError emsg))
+      | Error emsg -> raise (InternalError emsg))
     else
       let argtl = adttyps_to_json t in
       let argl = adtargs_to_json v in

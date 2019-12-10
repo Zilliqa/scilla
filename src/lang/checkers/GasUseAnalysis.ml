@@ -150,7 +150,7 @@ module ScillaGUA
     (args ^ "Gas use polynomial:\n" ^ sprint_gup pn ^ "\nResult size: " ^ (sprint_sizeref sr))
 
   module GUAEnv = struct
-    open Utils.AssocDictionary
+    open AssocDictionary
     (* A map from identifier strings to their signatures. *)
     type t = signature dict
 
