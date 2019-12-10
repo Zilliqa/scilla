@@ -1,6 +1,7 @@
-scilla_version 0
+(* Typo *)
+scilla_verrsion 0
 
-(* missing library declaration *)
+library Mylib
 
 type House =
 | Kind of String

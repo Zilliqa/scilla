@@ -7,7 +7,7 @@
       "start_location": {
         "file":
           "parser/bad/lib/lmodule-library-cid-let-id-eq-hexlit-with.scillib",
-        "line": 5,
+        "line": 7,
         "column": 2
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

@@ -15,7 +15,7 @@
         "Entry sort_uint32 in library TestLib3 conflicts with entry in library TestLib1",
       "start_location": {
         "file": "checker/bad/lib/TestLib3.scillib",
-        "line": 5,
+        "line": 7,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
