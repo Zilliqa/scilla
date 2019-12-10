@@ -11,7 +11,7 @@ type_term: CID LPAREN TID WITH
 ##
 ## Ends in an error in state: 71.
 ##
-## targ -> LPAREN typ . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## targ -> LPAREN typ . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ## typ -> typ . TARROW typ [ TARROW RPAREN ]
 ##
 ## The known suffix of the stack is as follows:
@@ -25,7 +25,7 @@ type_term: CID LPAREN WITH
 ##
 ## Ends in an error in state: 52.
 ##
-## targ -> LPAREN . typ RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## targ -> LPAREN . typ RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -38,7 +38,7 @@ type_term: CID MAP CID UNDERSCORE
 ##
 ## Ends in an error in state: 27.
 ##
-## targ -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## targ -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP t_map_key
@@ -58,7 +58,7 @@ type_term: CID MAP WITH
 ##
 ## Ends in an error in state: 20.
 ##
-## targ -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## targ -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP
@@ -210,7 +210,7 @@ type_term: MAP CID CID CID UNDERSCORE
 ##
 ## Ends in an error in state: 41.
 ##
-## list(t_map_value_args) -> t_map_value_args . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## list(t_map_value_args) -> t_map_value_args . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## t_map_value_args
@@ -230,7 +230,7 @@ type_term: MAP CID CID LPAREN CID UNDERSCORE
 ##
 ## Ends in an error in state: 38.
 ##
-## t_map_value_args -> LPAREN t_map_value_args . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value_args -> LPAREN t_map_value_args . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN t_map_value_args
@@ -250,7 +250,7 @@ type_term: MAP CID CID LPAREN WITH
 ##
 ## Ends in an error in state: 37.
 ##
-## t_map_value_args -> LPAREN . t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value_args -> LPAREN . t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -263,7 +263,7 @@ type_term: MAP CID CID MAP CID UNDERSCORE
 ##
 ## Ends in an error in state: 34.
 ##
-## t_map_value_args -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value_args -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP t_map_key
@@ -283,7 +283,7 @@ type_term: MAP CID CID MAP WITH
 ##
 ## Ends in an error in state: 33.
 ##
-## t_map_value_args -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value_args -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP
@@ -296,7 +296,7 @@ type_term: MAP CID CID UNDERSCORE
 ##
 ## Ends in an error in state: 36.
 ##
-## t_map_value -> scid . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value -> scid . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## scid
@@ -315,7 +315,7 @@ type_term: MAP CID LPAREN CID CID TYPE
 ##
 ## Ends in an error in state: 48.
 ##
-## t_map_value -> LPAREN scid list(t_map_value_args) . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value -> LPAREN scid list(t_map_value_args) . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN scid list(t_map_value_args)
@@ -337,7 +337,7 @@ type_term: MAP CID LPAREN CID UNDERSCORE
 ##
 ## Ends in an error in state: 47.
 ##
-## t_map_value -> LPAREN scid . list(t_map_value_args) RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value -> LPAREN scid . list(t_map_value_args) RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN scid
@@ -357,7 +357,7 @@ type_term: MAP CID LPAREN MAP CID CID UNDERSCORE
 ##
 ## Ends in an error in state: 45.
 ##
-## t_map_value -> LPAREN MAP t_map_key t_map_value_args . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value -> LPAREN MAP t_map_key t_map_value_args . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN MAP t_map_key t_map_value_args
@@ -377,7 +377,7 @@ type_term: MAP CID LPAREN MAP CID UNDERSCORE
 ##
 ## Ends in an error in state: 32.
 ##
-## t_map_value -> LPAREN MAP t_map_key . t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value -> LPAREN MAP t_map_key . t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN MAP t_map_key
@@ -397,7 +397,7 @@ type_term: MAP CID LPAREN MAP WITH
 ##
 ## Ends in an error in state: 31.
 ##
-## t_map_value -> LPAREN MAP . t_map_key t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value -> LPAREN MAP . t_map_key t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN MAP
@@ -410,8 +410,8 @@ type_term: MAP CID LPAREN WITH
 ##
 ## Ends in an error in state: 30.
 ##
-## t_map_value -> LPAREN . scid list(t_map_value_args) RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
-## t_map_value -> LPAREN . MAP t_map_key t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value -> LPAREN . scid list(t_map_value_args) RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## t_map_value -> LPAREN . MAP t_map_key t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -424,7 +424,7 @@ type_term: MAP CID MAP CID UNDERSCORE
 ##
 ## Ends in an error in state: 29.
 ##
-## t_map_value -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP t_map_key
@@ -444,7 +444,7 @@ type_term: MAP CID MAP WITH
 ##
 ## Ends in an error in state: 28.
 ##
-## t_map_value -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ]
+## t_map_value -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP
@@ -547,7 +547,7 @@ This function type lacks a result type.
 
 type_term: TID WITH
 ##
-## Ends in an error in state: 304.
+## Ends in an error in state: 312.
 ##
 ## typ -> typ . TARROW typ [ TARROW EOF ]
 ## type_term -> typ . EOF [ # ]
@@ -561,7 +561,7 @@ This is an invalid type term, following the type it is complete and may only be 
 
 type_term: WITH
 ##
-## Ends in an error in state: 302.
+## Ends in an error in state: 310.
 ##
 ## type_term' -> . type_term [ # ]
 ##
@@ -574,7 +574,7 @@ This is an invalid type term.
 
 stmts_term: ACCEPT WITH
 ##
-## Ends in an error in state: 259.
+## Ends in an error in state: 263.
 ##
 ## separated_nonempty_list(SEMICOLON,stmt) -> stmt . [ EOF END BAR ]
 ## separated_nonempty_list(SEMICOLON,stmt) -> stmt . SEMICOLON separated_nonempty_list(SEMICOLON,stmt) [ EOF END BAR ]
@@ -589,7 +589,7 @@ This is likely an improperly terminated statement (lacking the semicolon).
 
 stmts_term: CID WITH
 ##
-## Ends in an error in state: 262.
+## Ends in an error in state: 266.
 ##
 ## stmt -> component_id . list(sident) [ SEMICOLON EOF END BAR ]
 ##
@@ -602,7 +602,7 @@ This is an invalid statements term.
 
 stmts_term: DELETE ID WITH
 ##
-## Ends in an error in state: 256.
+## Ends in an error in state: 260.
 ##
 ## stmt -> DELETE ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -615,7 +615,7 @@ This is an invalid delete statement, it lacks the keys to delete.
 
 stmts_term: DELETE WITH
 ##
-## Ends in an error in state: 255.
+## Ends in an error in state: 259.
 ##
 ## stmt -> DELETE . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -628,7 +628,7 @@ This is an invalid delete statement, it lacks a map to delete from.
 
 stmts_term: EVENT WITH
 ##
-## Ends in an error in state: 253.
+## Ends in an error in state: 257.
 ##
 ## stmt -> EVENT . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -641,7 +641,7 @@ This is an invalid event statement, it lacks a separated identifier for the even
 
 stmts_term: ID ASSIGN WITH
 ##
-## Ends in an error in state: 248.
+## Ends in an error in state: 252.
 ##
 ## stmt -> ID ASSIGN . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -654,7 +654,7 @@ This is an invalid assign statement, it lacks a separated identifier.
 
 stmts_term: ID FETCH AND WITH
 ##
-## Ends in an error in state: 245.
+## Ends in an error in state: 247.
 ##
 ## stmt -> ID FETCH AND . CID [ SEMICOLON EOF END BAR ]
 ##
@@ -667,7 +667,7 @@ This is an invalid bind and statement. The parser expects a capital identifier a
 
 stmts_term: ID FETCH EXISTS ID WITH
 ##
-## Ends in an error in state: 243.
+## Ends in an error in state: 245.
 ##
 ## stmt -> ID FETCH EXISTS ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -680,7 +680,7 @@ This is an invalid existence bind statement. It lacks a non-empty list of access
 
 stmts_term: ID FETCH EXISTS WITH
 ##
-## Ends in an error in state: 242.
+## Ends in an error in state: 244.
 ##
 ## stmt -> ID FETCH EXISTS . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -693,7 +693,7 @@ This is an invalid existence bind statement. It lacks a map to check existence o
 
 stmts_term: ID FETCH ID WITH
 ##
-## Ends in an error in state: 238.
+## Ends in an error in state: 240.
 ##
 ## sid -> ID . [ SEMICOLON EOF END BAR ]
 ## stmt -> ID FETCH ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
@@ -707,7 +707,7 @@ This is an invalid bind statement, it is lacking a non empty list of map accesse
 
 stmts_term: ID FETCH WITH
 ##
-## Ends in an error in state: 237.
+## Ends in an error in state: 239.
 ##
 ## stmt -> ID FETCH . sid [ SEMICOLON EOF END BAR ]
 ## stmt -> ID FETCH . AND CID [ SEMICOLON EOF END BAR ]
@@ -723,7 +723,7 @@ This is an invalid bind statement, the bind can be followed by '&', 'exists' or 
 
 stmts_term: ID EQ WITH
 ##
-## Ends in an error in state: 235.
+## Ends in an error in state: 250.
 ##
 ## stmt -> ID EQ . exp [ SEMICOLON EOF END BAR ]
 ##
@@ -736,7 +736,7 @@ This is an invalid equal statement, it is lacking a valid expression on the righ
 
 stmts_term: ID LSQB SPID RSQB ASSIGN WITH
 ##
-## Ends in an error in state: 251.
+## Ends in an error in state: 255.
 ##
 ## stmt -> ID nonempty_list(map_access) ASSIGN . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -749,7 +749,7 @@ The map key must be assigned to some separated identifier.
 
 stmts_term: ID LSQB SPID RSQB SEMICOLON
 ##
-## Ends in an error in state: 250.
+## Ends in an error in state: 254.
 ##
 ## stmt -> ID nonempty_list(map_access) . ASSIGN sid [ SEMICOLON EOF END BAR ]
 ##
@@ -760,7 +760,7 @@ stmts_term: ID LSQB SPID RSQB SEMICOLON
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 240, spurious reduction of production nonempty_list(map_access) -> map_access 
+## In state 242, spurious reduction of production nonempty_list(map_access) -> map_access 
 ##
 # see tests/parser/bad/stmts_t-id-lsqb-spid-rsqb-semicolon.scilla
 
@@ -768,7 +768,7 @@ This is likely an invalid map assign statement, it lacks the assign.
 
 stmts_term: ID LSQB SPID RSQB WITH
 ##
-## Ends in an error in state: 240.
+## Ends in an error in state: 242.
 ##
 ## nonempty_list(map_access) -> map_access . [ SEMICOLON EOF END BAR ASSIGN ]
 ## nonempty_list(map_access) -> map_access . nonempty_list(map_access) [ SEMICOLON EOF END BAR ASSIGN ]
@@ -782,7 +782,7 @@ This is an invalid statements term. A possible continuation may be assigning a m
 
 stmts_term: ID LSQB SPID WITH
 ##
-## Ends in an error in state: 233.
+## Ends in an error in state: 237.
 ##
 ## map_access -> LSQB sident . RSQB [ SEMICOLON LSQB EOF END BAR ASSIGN ]
 ##
@@ -795,7 +795,7 @@ This is an invalid statements term. A possible continuation may be accessing a k
 
 stmts_term: ID LSQB WITH
 ##
-## Ends in an error in state: 232.
+## Ends in an error in state: 236.
 ##
 ## map_access -> LSQB . sident RSQB [ SEMICOLON LSQB EOF END BAR ASSIGN ]
 ##
@@ -810,7 +810,7 @@ stmts_term: ID SPID WITH
 ##
 ## Ends in an error in state: 162.
 ##
-## list(sident) -> sident . list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## list(sident) -> sident . list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## sident
@@ -821,7 +821,7 @@ This is an invalid statements term, likely a bad procedure call with faulty argu
 
 stmts_term: ID WITH
 ##
-## Ends in an error in state: 231.
+## Ends in an error in state: 235.
 ##
 ## component_id -> ID . [ SPID SEMICOLON ID EOF END CID BAR ]
 ## stmt -> ID . FETCH sid [ SEMICOLON EOF END BAR ]
@@ -841,7 +841,7 @@ This is an invalid statements term. Scilla expects to do something with the iden
 
 stmts_term: MATCH SPID UNDERSCORE
 ##
-## Ends in an error in state: 226.
+## Ends in an error in state: 230.
 ##
 ## stmt -> MATCH sid . WITH list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
 ##
@@ -854,7 +854,7 @@ This is an invalid match statement, 'with' is expected after what is specified t
 
 stmts_term: MATCH SPID WITH BAR UNDERSCORE ARROW ACCEPT EOF
 ##
-## Ends in an error in state: 266.
+## Ends in an error in state: 270.
 ##
 ## list(stmt_pm_clause) -> stmt_pm_clause . list(stmt_pm_clause) [ END ]
 ##
@@ -865,9 +865,9 @@ stmts_term: MATCH SPID WITH BAR UNDERSCORE ARROW ACCEPT EOF
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 259, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
-## In state 264, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
-## In state 265, spurious reduction of production stmt_pm_clause -> BAR pattern ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) 
+## In state 263, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
+## In state 268, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
+## In state 269, spurious reduction of production stmt_pm_clause -> BAR pattern ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) 
 ##
 # see tests/parser/bad/stmts_t-match-spid-with-bar-underscore-arrow-accept-eof.scilla
 
@@ -875,7 +875,7 @@ When the match statement is finished, the parser expects 'end'.
 
 stmts_term: MATCH SPID WITH BAR UNDERSCORE ARROW WITH
 ##
-## Ends in an error in state: 230.
+## Ends in an error in state: 234.
 ##
 ## stmt_pm_clause -> BAR pattern ARROW . loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
 ##
@@ -888,7 +888,7 @@ This is an invalid statements term. In the match expression, after an arrow the 
 
 stmts_term: MATCH SPID WITH BAR UNDERSCORE WITH
 ##
-## Ends in an error in state: 229.
+## Ends in an error in state: 233.
 ##
 ## stmt_pm_clause -> BAR pattern . ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
 ##
@@ -901,7 +901,7 @@ This is an invalid statements term. In the match expression, after a pattern is 
 
 stmts_term: MATCH SPID WITH BAR WITH
 ##
-## Ends in an error in state: 228.
+## Ends in an error in state: 232.
 ##
 ## stmt_pm_clause -> BAR . pattern ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
 ##
@@ -914,7 +914,7 @@ In the match statement there is a malformed pattern.
 
 stmts_term: MATCH SPID WITH WITH
 ##
-## Ends in an error in state: 227.
+## Ends in an error in state: 231.
 ##
 ## stmt -> MATCH sid WITH . list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
 ##
@@ -927,7 +927,7 @@ There is a malformed pattern matching clause, the bar is likely missing.
 
 stmts_term: MATCH WITH
 ##
-## Ends in an error in state: 225.
+## Ends in an error in state: 229.
 ##
 ## stmt -> MATCH . sid WITH list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
 ##
@@ -966,7 +966,7 @@ This send statement is either unfinished or not properly terminated.
 
 stmts_term: SEND WITH
 ##
-## Ends in an error in state: 223.
+## Ends in an error in state: 227.
 ##
 ## stmt -> SEND . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -979,7 +979,7 @@ It is expected to send to a separated identifier.
 
 stmts_term: THROW END
 ##
-## Ends in an error in state: 300.
+## Ends in an error in state: 308.
 ##
 ## stmts_term -> stmts . EOF [ # ]
 ##
@@ -990,11 +990,11 @@ stmts_term: THROW END
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 220, spurious reduction of production option(sid) -> 
-## In state 222, spurious reduction of production stmt -> THROW option(sid) 
-## In state 259, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
-## In state 264, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
-## In state 272, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt)) 
+## In state 224, spurious reduction of production option(sid) -> 
+## In state 226, spurious reduction of production stmt -> THROW option(sid) 
+## In state 263, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
+## In state 268, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
+## In state 276, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt)) 
 ##
 # special case, only via stmts_term entry point should never happen
 # throw itself is a valid statement term and a procedure or transition
@@ -1004,7 +1004,7 @@ This is an invalid statements term, bad throw.
 
 stmts_term: THROW SEMICOLON WITH
 ##
-## Ends in an error in state: 260.
+## Ends in an error in state: 264.
 ##
 ## separated_nonempty_list(SEMICOLON,stmt) -> stmt SEMICOLON . separated_nonempty_list(SEMICOLON,stmt) [ EOF END BAR ]
 ##
@@ -1019,7 +1019,7 @@ What follows the statement was unexpected, for example possibly a statement or t
 
 stmts_term: THROW WITH
 ##
-## Ends in an error in state: 220.
+## Ends in an error in state: 224.
 ##
 ## stmt -> THROW . option(sid) [ SEMICOLON EOF END BAR ]
 ##
@@ -1032,7 +1032,7 @@ This throw does not throw a valid exception or is not properly terminated.
 
 stmts_term: WITH
 ##
-## Ends in an error in state: 298.
+## Ends in an error in state: 306.
 ##
 ## stmts_term' -> . stmts_term [ # ]
 ##
@@ -1085,12 +1085,12 @@ To import another library mention the new library name directly after the previo
 
 lmodule: SCILLA_VERSION NUMLIT IMPORT CONTRACT
 ##
-## Ends in an error in state: 295.
+## Ends in an error in state: 302.
 ##
-## lmodule -> imports . library EOF [ # ]
+## lmodule -> SCILLA_VERSION NUMLIT imports . library EOF [ # ]
 ##
 ## The known suffix of the stack is as follows:
-## imports
+## SCILLA_VERSION NUMLIT imports
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -1118,12 +1118,12 @@ If import is mentioned there must be one or more imported libraries with capital
 
 lmodule: SCILLA_VERSION NUMLIT LIBRARY CID CONTRACT
 ##
-## Ends in an error in state: 296.
+## Ends in an error in state: 303.
 ##
-## lmodule -> imports library . EOF [ # ]
+## lmodule -> SCILLA_VERSION NUMLIT imports library . EOF [ # ]
 ##
 ## The known suffix of the stack is as follows:
-## imports library
+## SCILLA_VERSION NUMLIT imports library
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -1336,12 +1336,12 @@ This is an invalid library module because it lacks a capital identifier for a na
 
 lmodule: SCILLA_VERSION NUMLIT WITH
 ##
-## Ends in an error in state: 293.
+## Ends in an error in state: 301.
 ##
-## lmodule' -> . lmodule [ # ]
+## lmodule -> SCILLA_VERSION NUMLIT . imports library EOF [ # ]
 ##
 ## The known suffix of the stack is as follows:
-##
+## SCILLA_VERSION NUMLIT
 ##
 # see tests/parser/bad/lmodule-version-with.scillib
 
@@ -1351,8 +1351,8 @@ exp_term: AT SPID TID WITH
 ##
 ## Ends in an error in state: 73.
 ##
-## nonempty_list(targ) -> targ . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
-## nonempty_list(targ) -> targ . nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## nonempty_list(targ) -> targ . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## nonempty_list(targ) -> targ . nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## targ
@@ -1365,7 +1365,7 @@ exp_term: AT SPID WITH
 ##
 ## Ends in an error in state: 152.
 ##
-## simple_exp -> AT sid . nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> AT sid . nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## AT sid
@@ -1378,7 +1378,7 @@ exp_term: AT WITH
 ##
 ## Ends in an error in state: 151.
 ##
-## simple_exp -> AT . sid nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> AT . sid nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## AT
@@ -1391,7 +1391,7 @@ exp_term: BUILTIN ID LPAREN WITH
 ##
 ## Ends in an error in state: 141.
 ##
-## builtin_args -> LPAREN . RPAREN [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## builtin_args -> LPAREN . RPAREN [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -1404,7 +1404,7 @@ exp_term: BUILTIN ID WITH
 ##
 ## Ends in an error in state: 139.
 ##
-## simple_exp -> BUILTIN ID . builtin_args [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> BUILTIN ID . builtin_args [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## BUILTIN ID
@@ -1417,7 +1417,7 @@ exp_term: BUILTIN WITH
 ##
 ## Ends in an error in state: 138.
 ##
-## simple_exp -> BUILTIN . ID builtin_args [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> BUILTIN . ID builtin_args [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## BUILTIN
@@ -1430,7 +1430,7 @@ exp_term: CID LBRACE TID EQ
 ##
 ## Ends in an error in state: 159.
 ##
-## ctargs -> LBRACE list(targ) . RBRACE [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ]
+## ctargs -> LBRACE list(targ) . RBRACE [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LBRACE list(targ)
@@ -1450,7 +1450,7 @@ exp_term: CID LBRACE WITH
 ##
 ## Ends in an error in state: 158.
 ##
-## ctargs -> LBRACE . list(targ) RBRACE [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ]
+## ctargs -> LBRACE . list(targ) RBRACE [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LBRACE
@@ -1463,7 +1463,7 @@ exp_term: CID PERIOD CID WITH
 ##
 ## Ends in an error in state: 157.
 ##
-## simple_exp -> scid . option(ctargs) list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> scid . option(ctargs) list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## scid
@@ -1476,8 +1476,8 @@ exp_term: CID PERIOD WITH
 ##
 ## Ends in an error in state: 137.
 ##
-## scid -> CID PERIOD . CID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET LBRACE IN ID FIELD EOF END CONTRACT CID BAR ]
-## sid -> CID PERIOD . ID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ]
+## scid -> CID PERIOD . CID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET LBRACE IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+## sid -> CID PERIOD . ID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID PERIOD
@@ -1490,10 +1490,10 @@ exp_term: CID WITH
 ##
 ## Ends in an error in state: 136.
 ##
-## lit -> CID . NUMLIT [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
-## scid -> CID . [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET LBRACE IN ID FIELD EOF END CONTRACT CID BAR ]
-## scid -> CID . PERIOD CID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET LBRACE IN ID FIELD EOF END CONTRACT CID BAR ]
-## sid -> CID . PERIOD ID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ]
+## lit -> CID . NUMLIT [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## scid -> CID . [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET LBRACE IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+## scid -> CID . PERIOD CID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET LBRACE IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+## sid -> CID . PERIOD ID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID
@@ -1506,7 +1506,7 @@ exp_term: EMP CID UNDERSCORE
 ##
 ## Ends in an error in state: 117.
 ##
-## lit -> EMP t_map_key . t_map_value [ TYPE TRANSITION SEMICOLON RBRACE PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## lit -> EMP t_map_key . t_map_value [ TYPE TRANSITION SEMICOLON RBRACE PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## EMP t_map_key
@@ -1526,7 +1526,7 @@ exp_term: EMP WITH
 ##
 ## Ends in an error in state: 116.
 ##
-## lit -> EMP . t_map_key t_map_value [ TYPE TRANSITION SEMICOLON RBRACE PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## lit -> EMP . t_map_key t_map_value [ TYPE TRANSITION SEMICOLON RBRACE PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## EMP
@@ -1539,7 +1539,7 @@ exp_term: FUN LPAREN ID COLON TID RPAREN ARROW WITH
 ##
 ## Ends in an error in state: 135.
 ##
-## simple_exp -> FUN LPAREN ID COLON typ RPAREN ARROW . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> FUN LPAREN ID COLON typ RPAREN ARROW . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUN LPAREN ID COLON typ RPAREN ARROW
@@ -1552,7 +1552,7 @@ exp_term: FUN LPAREN ID COLON TID RPAREN WITH
 ##
 ## Ends in an error in state: 134.
 ##
-## simple_exp -> FUN LPAREN ID COLON typ RPAREN . ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> FUN LPAREN ID COLON typ RPAREN . ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUN LPAREN ID COLON typ RPAREN
@@ -1565,7 +1565,7 @@ exp_term: FUN LPAREN ID COLON TID WITH
 ##
 ## Ends in an error in state: 133.
 ##
-## simple_exp -> FUN LPAREN ID COLON typ . RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> FUN LPAREN ID COLON typ . RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ## typ -> typ . TARROW typ [ TARROW RPAREN ]
 ##
 ## The known suffix of the stack is as follows:
@@ -1579,7 +1579,7 @@ exp_term: FUN LPAREN ID COLON WITH
 ##
 ## Ends in an error in state: 132.
 ##
-## simple_exp -> FUN LPAREN ID COLON . typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> FUN LPAREN ID COLON . typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUN LPAREN ID COLON
@@ -1592,7 +1592,7 @@ exp_term: FUN LPAREN ID WITH
 ##
 ## Ends in an error in state: 131.
 ##
-## simple_exp -> FUN LPAREN ID . COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> FUN LPAREN ID . COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUN LPAREN ID
@@ -1605,7 +1605,7 @@ exp_term: FUN LPAREN WITH
 ##
 ## Ends in an error in state: 130.
 ##
-## simple_exp -> FUN LPAREN . ID COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> FUN LPAREN . ID COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUN LPAREN
@@ -1618,7 +1618,7 @@ exp_term: FUN WITH
 ##
 ## Ends in an error in state: 129.
 ##
-## simple_exp -> FUN . LPAREN ID COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> FUN . LPAREN ID COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUN
@@ -1700,7 +1700,7 @@ exp_term: LBRACE WITH
 ##
 ## Ends in an error in state: 112.
 ##
-## simple_exp -> LBRACE . loption(separated_nonempty_list(SEMICOLON,msg_entry)) RBRACE [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> LBRACE . loption(separated_nonempty_list(SEMICOLON,msg_entry)) RBRACE [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LBRACE
@@ -1714,7 +1714,7 @@ exp_term: LET ID COLON TID EQ STRING IN WITH
 ##
 ## Ends in an error in state: 177.
 ##
-## simple_exp -> LET ID type_annot EQ simple_exp IN . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> LET ID type_annot EQ simple_exp IN . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LET ID type_annot EQ simple_exp IN
@@ -1756,7 +1756,7 @@ exp_term: LET ID EQ STRING IN WITH
 ##
 ## Ends in an error in state: 170.
 ##
-## simple_exp -> LET ID EQ simple_exp IN . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> LET ID EQ simple_exp IN . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LET ID EQ simple_exp IN
@@ -1769,7 +1769,7 @@ exp_term: LET ID EQ STRING WITH
 ##
 ## Ends in an error in state: 169.
 ##
-## simple_exp -> LET ID EQ simple_exp . IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> LET ID EQ simple_exp . IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LET ID EQ simple_exp
@@ -1782,7 +1782,7 @@ exp_term: LET ID EQ WITH
 ##
 ## Ends in an error in state: 111.
 ##
-## simple_exp -> LET ID EQ . simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> LET ID EQ . simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LET ID EQ
@@ -1795,8 +1795,8 @@ exp_term: LET ID WITH
 ##
 ## Ends in an error in state: 110.
 ##
-## simple_exp -> LET ID . EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
-## simple_exp -> LET ID . type_annot EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> LET ID . EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## simple_exp -> LET ID . type_annot EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LET ID
@@ -1809,8 +1809,8 @@ exp_term: LET WITH
 ##
 ## Ends in an error in state: 109.
 ##
-## simple_exp -> LET . ID EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
-## simple_exp -> LET . ID type_annot EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> LET . ID EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## simple_exp -> LET . ID type_annot EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LET
@@ -1824,7 +1824,7 @@ exp_term: MATCH SPID UNDERSCORE
 ##
 ## Ends in an error in state: 92.
 ##
-## simple_exp -> MATCH sid . WITH list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> MATCH sid . WITH list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## MATCH sid
@@ -1948,7 +1948,7 @@ exp_term: MATCH SPID WITH WITH
 ##
 ## Ends in an error in state: 93.
 ##
-## simple_exp -> MATCH sid WITH . list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> MATCH sid WITH . list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## MATCH sid WITH
@@ -1961,7 +1961,7 @@ exp_term: MATCH WITH
 ##
 ## Ends in an error in state: 87.
 ##
-## simple_exp -> MATCH . sid WITH list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> MATCH . sid WITH list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## MATCH
@@ -1974,7 +1974,7 @@ exp_term: SPID CID PERIOD WITH
 ##
 ## Ends in an error in state: 145.
 ##
-## sident -> CID PERIOD . ID [ TYPE TRANSITION SPID SEMICOLON RSQB PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ]
+## sident -> CID PERIOD . ID [ TYPE TRANSITION SPID SEMICOLON RSQB PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID PERIOD
@@ -1987,7 +1987,7 @@ exp_term: SPID CID WITH
 ##
 ## Ends in an error in state: 144.
 ##
-## sident -> CID . PERIOD ID [ TYPE TRANSITION SPID SEMICOLON RSQB PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ]
+## sident -> CID . PERIOD ID [ TYPE TRANSITION SPID SEMICOLON RSQB PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID
@@ -2000,8 +2000,8 @@ exp_term: SPID SPID WITH
 ##
 ## Ends in an error in state: 147.
 ##
-## nonempty_list(sident) -> sident . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
-## nonempty_list(sident) -> sident . nonempty_list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## nonempty_list(sident) -> sident . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## nonempty_list(sident) -> sident . nonempty_list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## sident
@@ -2016,8 +2016,8 @@ exp_term: SPID WITH
 ##
 ## Ends in an error in state: 155.
 ##
-## atomic_exp -> sid . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
-## simple_exp -> sid . nonempty_list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## atomic_exp -> sid . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## simple_exp -> sid . nonempty_list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## sid
@@ -2028,7 +2028,7 @@ This is an invalid expression. If it is an application of a function, it is nece
 
 exp_term: STRING WITH
 ##
-## Ends in an error in state: 291.
+## Ends in an error in state: 297.
 ##
 ## exp_term -> exp . EOF [ # ]
 ##
@@ -2043,7 +2043,7 @@ exp_term: TFUN TID ARROW WITH
 ##
 ## Ends in an error in state: 84.
 ##
-## simple_exp -> TFUN TID ARROW . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> TFUN TID ARROW . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## TFUN TID ARROW
@@ -2056,7 +2056,7 @@ exp_term: TFUN TID WITH
 ##
 ## Ends in an error in state: 83.
 ##
-## simple_exp -> TFUN TID . ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> TFUN TID . ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## TFUN TID
@@ -2069,7 +2069,7 @@ exp_term: TFUN WITH
 ##
 ## Ends in an error in state: 82.
 ##
-## simple_exp -> TFUN . TID ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> TFUN . TID ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## TFUN
@@ -2080,7 +2080,7 @@ Type functions expect a type id (e.g. 'A).
 
 exp_term: WITH
 ##
-## Ends in an error in state: 289.
+## Ends in an error in state: 295.
 ##
 ## exp_term' -> . exp_term [ # ]
 ##
@@ -2147,7 +2147,7 @@ In an immutable field declaration, the parser expects a colon following the name
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON CID EQ HEXLIT WITH
 ##
-## Ends in an error in state: 283.
+## Ends in an error in state: 287.
 ##
 ## list(field) -> field . list(field) [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2160,7 +2160,7 @@ Following a field definition, the parser expects another field definition, trans
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON TID EQ WITH
 ##
-## Ends in an error in state: 209.
+## Ends in an error in state: 212.
 ##
 ## field -> FIELD ID COLON typ EQ . exp [ TRANSITION PROCEDURE FIELD EOF ]
 ##
@@ -2173,7 +2173,7 @@ In a mutable field declaration, it is expected that the field is initialised to 
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON TID WITH
 ##
-## Ends in an error in state: 208.
+## Ends in an error in state: 211.
 ##
 ## field -> FIELD ID COLON typ . EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
 ## typ -> typ . TARROW typ [ TARROW EQ ]
@@ -2187,7 +2187,7 @@ In a mutable field declaration, after the type is specified an equals is expecte
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON WITH
 ##
-## Ends in an error in state: 207.
+## Ends in an error in state: 210.
 ##
 ## field -> FIELD ID COLON . typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
 ##
@@ -2200,7 +2200,7 @@ In a mutable field declaration, following the colon after the naming, a type is 
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID WITH
 ##
-## Ends in an error in state: 206.
+## Ends in an error in state: 209.
 ##
 ## field -> FIELD ID . COLON typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
 ##
@@ -2213,7 +2213,7 @@ In a mutable field declaration, following the naming a colon is expected. This c
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD WITH
 ##
-## Ends in an error in state: 205.
+## Ends in an error in state: 208.
 ##
 ## field -> FIELD . ID COLON typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
 ##
@@ -2227,7 +2227,7 @@ For a mutable field declaration, the parser expects a valid lower case beginning
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE ID LPAREN RPAREN WITH
 ##
-## Ends in an error in state: 276.
+## Ends in an error in state: 280.
 ##
 ## procedure -> PROCEDURE component_id component_params . component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2240,7 +2240,7 @@ In the transition body the parser expects a list of semi-colon separated stateme
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE ID WITH
 ##
-## Ends in an error in state: 275.
+## Ends in an error in state: 279.
 ##
 ## procedure -> PROCEDURE component_id . component_params component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2254,7 +2254,7 @@ be a left parenthesis.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE WITH
 ##
-## Ends in an error in state: 274.
+## Ends in an error in state: 278.
 ##
 ## procedure -> PROCEDURE . component_id component_params component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2267,7 +2267,7 @@ A procedure requires a valid name.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN RPAREN END WITH
 ##
-## Ends in an error in state: 281.
+## Ends in an error in state: 285.
 ##
 ## list(component) -> component . list(component) [ EOF ]
 ##
@@ -2280,7 +2280,7 @@ Following a transition definition, the parser expects a transition or a procedur
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN RPAREN THROW BAR
 ##
-## Ends in an error in state: 270.
+## Ends in an error in state: 274.
 ##
 ## component_body -> stmts . END [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2291,11 +2291,11 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN R
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 220, spurious reduction of production option(sid) -> 
-## In state 222, spurious reduction of production stmt -> THROW option(sid) 
-## In state 259, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
-## In state 264, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
-## In state 272, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt)) 
+## In state 224, spurious reduction of production option(sid) -> 
+## In state 226, spurious reduction of production stmt -> THROW option(sid) 
+## In state 263, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
+## In state 268, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
+## In state 276, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt)) 
 ##
 # see tests/parser/cmodule-transition-id-lparen-rparen-throw-bar.scilla
 
@@ -2303,7 +2303,7 @@ Possible typo.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN RPAREN WITH
 ##
-## Ends in an error in state: 219.
+## Ends in an error in state: 223.
 ##
 ## transition -> TRANSITION component_id component_params . component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2316,7 +2316,7 @@ After a transition has the parameters defined, we expect a semi-colon separated 
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN WITH
 ##
-## Ends in an error in state: 216.
+## Ends in an error in state: 220.
 ##
 ## component_params -> LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN [ THROW SEND MATCH ID EVENT END DELETE CID ACCEPT ]
 ##
@@ -2330,7 +2330,7 @@ The transition parameter name is invalid. This should start with a lower case le
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID WITH
 ##
-## Ends in an error in state: 215.
+## Ends in an error in state: 219.
 ##
 ## transition -> TRANSITION component_id . component_params component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2343,7 +2343,7 @@ After a transition has been named, the parameters must be specified in brackets.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION WITH
 ##
-## Ends in an error in state: 212.
+## Ends in an error in state: 216.
 ##
 ## transition -> TRANSITION . component_id component_params component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2373,6 +2373,7 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN WITH
 ## Ends in an error in state: 195.
 ##
 ## contract -> CONTRACT CID LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN list(field) list(component) [ EOF ]
+## contract -> CONTRACT CID LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN with_constraint list(field) list(component) [ EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## CONTRACT CID LPAREN
@@ -2387,6 +2388,7 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID WITH
 ## Ends in an error in state: 194.
 ##
 ## contract -> CONTRACT CID . LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN list(field) list(component) [ EOF ]
+## contract -> CONTRACT CID . LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN with_constraint list(field) list(component) [ EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## CONTRACT CID
@@ -2400,6 +2402,7 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT WITH
 ## Ends in an error in state: 193.
 ##
 ## contract -> CONTRACT . CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN list(field) list(component) [ EOF ]
+## contract -> CONTRACT . CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN with_constraint list(field) list(component) [ EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## CONTRACT
@@ -2423,7 +2426,7 @@ cmodule: SCILLA_VERSION NUMLIT LIBRARY CID EOF
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 12, spurious reduction of production list(libentry) -> 
 ## In state 189, spurious reduction of production library -> LIBRARY CID list(libentry) 
-## In state 287, spurious reduction of production option(library) -> library 
+## In state 293, spurious reduction of production option(library) -> library 
 ##
 # see tests/parser/bad/cmodule-version-number-library-name
 
@@ -2472,7 +2475,7 @@ exp_term: CID LBRACE RBRACE AT
 ##
 ## Ends in an error in state: 161.
 ##
-## simple_exp -> scid option(ctargs) . list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> scid option(ctargs) . list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## scid option(ctargs)
@@ -2485,7 +2488,7 @@ exp_term: LET ID COLON TID EQ STRING WITH
 ##
 ## Ends in an error in state: 176.
 ##
-## simple_exp -> LET ID type_annot EQ simple_exp . IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> LET ID type_annot EQ simple_exp . IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LET ID type_annot EQ simple_exp
@@ -2498,7 +2501,7 @@ exp_term: LET ID COLON TID EQ WITH
 ##
 ## Ends in an error in state: 175.
 ##
-## simple_exp -> LET ID type_annot EQ . simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ]
+## simple_exp -> LET ID type_annot EQ . simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LET ID type_annot EQ
