@@ -107,6 +107,6 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
           )
         ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt evalbin args))
 
-  let add_tests env =
+  let all_tests env =
     "exptests" >::: build_exp_tests env tests
 end

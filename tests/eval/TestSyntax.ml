@@ -128,4 +128,4 @@ let unannotated_syntax_tests =
 
   ]
 
-let syntax_tests = "syntax_tests" >::: [unannotated_syntax_tests]
+let all_tests = "syntax_tests" >::: [unannotated_syntax_tests]

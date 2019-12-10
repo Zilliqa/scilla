@@ -42,24 +42,6 @@ let main =
     ext_ipc_server = ext_ipc_server;
   } in
   (* Add calls to new tests from here *)
-  let contract_tests = Testcontracts.add_tests env in
-  let parser_tests = TestParser.parser_tests env in
-  let exp_tests_good = TestExps.Tests.add_tests env in
-  let exp_tests_bad = TestExpsFail.Tests.add_tests env in
-  let type_tests_good = Testtypes.all_tests env in
-  let type_tests_bad = TestTypeFail.all_tests env in
-  let pm_tests_bad = TestPMFail.all_tests env in
-  let checker_tests = TestChecker.checker_tests env in
-  let integer256_tests = TestInteger256.integer256_tests in
-  let polynomial_tests = TestPolynomial.polynomial_tests in
-  let signature_tests = TestSignatures.signature_tests env in
-  let snark_tests = TestSnark.snark_tests env in
-  (* let gas_expr_tests = TestGasExpr.Tests.add_tests env in
-  let gas_contract_tests = TestGasContracts.Tests.add_tests env in *)
-  let syntax_tests = TestSyntax.syntax_tests in
-  let arith_builtin_tests = TestSafeArith.arith_builtin_tests in
-  let bech32_tests = TestBech32.bech32_tests in
-
   let all_tests = "all_tests" >:::
     [
       (* contract_tests should always be the first to be run. This is required
@@ -67,13 +49,24 @@ let main =
        * external IPC server tests. If the order changes, then the test_id of
        * these tests will change, resulting in the tests not being run.
        * See the Makefile target "test_extipcserver". *)
-      contract_tests;
-      type_tests_bad; type_tests_good; exp_tests_good; exp_tests_bad;
-      pm_tests_bad; signature_tests; polynomial_tests; bech32_tests;
-      (*gas_expr_tests; gas_contract_tests; *)
-      checker_tests; integer256_tests; syntax_tests; arith_builtin_tests;
-      parser_tests; snark_tests;
+      Testcontracts.contract_tests env;
+      TestParser.all_tests env;
+      TestExps.all_tests env;
+      TestExpsFail.all_tests env;
+      Testtypes.all_tests env;
+      TestTypeFail.all_tests env;
+      TestPMFail.all_tests env;
+      TestChecker.all_tests env;
+      TestInteger256.all_tests;
+      TestPolynomial.all_tests;
+      TestSignatures.all_tests env;
+      TestSnark.all_tests env;
+      (* TestGasExpr.all_tests env;
+         TestGasContracts.all_tests; *)
+      TestSyntax.all_tests;
+      TestSafeArith.all_tests;
+      TestBech32.all_tests;
     ] in
-  
+
   (* Run all tests *)
   run_test_tt_main all_tests
