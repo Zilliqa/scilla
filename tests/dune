@@ -2,6 +2,6 @@
  (name testsuite)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show))
- (libraries core oUnit scilla_util testcontracts testexps testexpsfail
-   testtypes testtypefail testpmfail testgasexpr testgascontracts testparser
+ (libraries core oUnit testcontracts testexps testexpsfail testtypes
+   testtypefail testpmfail testgasexpr testgascontracts testparser
    testchecker testinteger256))

@@ -1,5 +1,0 @@
-(library
- (name scilla_util)
- (wrapped false)
- (synopsis "[Internal] Utility library of Scilla")
- (libraries core_kernel fileutils))
