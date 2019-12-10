@@ -18,7 +18,6 @@
 
 open Syntax
 open Core_kernel
-open ParserUtil
 open FrontEndParser
 
 (***********************************************************)

@@ -19,7 +19,6 @@
 
 open Syntax
 open ErrorUtils
-open ParserUtil
 open Core_kernel
 open Yojson
 open ContractUtil.MessagePayload
@@ -399,7 +398,7 @@ let get_json_data filename  =
 end
 
 module ContractInfo = struct
-  open ParserUtil.ParsedSyntax
+  open Syntax.ParsedSyntax
          
   let get_json cmver (contr : contract) (event_info : (string * (string * typ) list) list) =
     (* 0. contract version *)

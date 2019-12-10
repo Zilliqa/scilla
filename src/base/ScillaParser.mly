@@ -19,8 +19,6 @@
 %{
   open Syntax
   open ErrorUtils
-  open ParserUtil
-
   open ParsedSyntax
 
   let to_prim_type_exn d loc = match d with
@@ -141,11 +139,11 @@
 (* %nonassoc NEG *)
 %right TARROW
 
-%start <ParserUtil.ParsedSyntax.expr_annot> exp_term
+%start <Syntax.ParsedSyntax.expr_annot> exp_term
 %start <Syntax.typ> type_term
-%start <ParserUtil.ParsedSyntax.stmt_annot list> stmts_term
-%start <ParserUtil.ParsedSyntax.cmodule> cmodule
-%start <ParserUtil.ParsedSyntax.lmodule> lmodule
+%start <Syntax.ParsedSyntax.stmt_annot list> stmts_term
+%start <Syntax.ParsedSyntax.cmodule> cmodule
+%start <Syntax.ParsedSyntax.lmodule> lmodule
 
 %%
 

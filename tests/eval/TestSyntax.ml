@@ -2,9 +2,9 @@ open Core_kernel
 open Stdint
 open OUnit2
 open Syntax
+open ParsedSyntax
 open PrimTypes
 open PrettyPrinters
-open ParserUtil.ParsedSyntax
 
 let parse_expr_wrapper exprstr =
   match FrontEndParser.parse_expr exprstr with

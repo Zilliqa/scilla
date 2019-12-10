@@ -20,8 +20,8 @@
  * and update state variables on demand. *)
 
 open Syntax
+open ParsedSyntax
 open ErrorUtils
-open ParserUtil.ParsedSyntax
 
 type ss_field =
   {

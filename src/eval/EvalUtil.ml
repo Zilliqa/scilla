@@ -29,7 +29,6 @@ open TypeUtil
 open BuiltIns
 open Gas
 
-open ParserUtil
 module SR = ParserRep
 module ER = ParserRep
 module EvalSyntax = ScillaSyntax (SR) (ER)

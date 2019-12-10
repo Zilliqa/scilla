@@ -20,7 +20,6 @@ open Core_kernel
 open Result.Let_syntax
 open MonadUtil
 open TypeUtil
-open ParserUtil
 open Syntax
 
 module ER = ParserRep

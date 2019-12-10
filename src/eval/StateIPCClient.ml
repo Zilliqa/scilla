@@ -20,7 +20,6 @@ open Result.Let_syntax
 open MonadUtil
 open Syntax
 open JSON
-open ParserUtil
 open TypeUtil
 open StateIPCIdl
 open ErrorUtils

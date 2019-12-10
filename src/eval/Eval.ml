@@ -31,7 +31,7 @@ open PrettyPrinters
 open EvalTypeUtilities
 open EvalSyntax
 
-module CU = ScillaContractUtil (ParserUtil.ParserRep) (ParserUtil.ParserRep)
+module CU = ScillaContractUtil (ParserRep) (ParserRep)
     
 (***************************************************)
 (*                    Utilities                    *)      

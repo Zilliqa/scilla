@@ -20,11 +20,11 @@
 open Core_kernel
 open Printf
 open Syntax
+open ParsedSyntax
 open GlobalConfig
 open ErrorUtils
 open PrettyPrinters
 open DebugMessage
-open ParserUtil.ParsedSyntax
 open ScillaUtil.FilePathInfix
 
 let get_init_extlibs filename =

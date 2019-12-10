@@ -19,7 +19,6 @@
 open Syntax
 open ErrorUtils
 open Lexing
-open ParserUtil
 
 module MInter = ScillaParser.MenhirInterpreter
 

@@ -19,13 +19,11 @@
 
 open Syntax
 open FrontEndParser
-open ParserUtil
 open RunnerUtil
 open GlobalConfig
 open PrettyPrinters
 open Core_kernel
 
-module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
 module PERep = ParserRep
   
