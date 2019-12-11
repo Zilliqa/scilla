@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "To import another library mention the new library name directly after the previous one, alternatively following the name of the imported library there can be a library defintion or sometimes a contract.\n",
+      "start_location": {
+        "file": "base/parser/bad/lmodule-import-cid-with.scilla",
+        "line": 4,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

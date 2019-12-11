@@ -42,11 +42,11 @@ Once the project is built you can try the following things:
 From the project root, execute
 
 ```
-./bin/eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/exp/good/let.scilexp
+./bin/eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/good/let.scilexp
 ```
 
 Instead of `let.scilla` you might want to try any different file in
-`tests/eval/exp`. The second argument, which is a path to the Scilla
+`tests/eval`. The second argument, which is a path to the Scilla
 standard library can alternatively be specified in the environment
 variable `SCILLA_STDLIB_PATH`. This must be an absolute path (or a
 list of paths separated with `:` (or `;` on Windows).

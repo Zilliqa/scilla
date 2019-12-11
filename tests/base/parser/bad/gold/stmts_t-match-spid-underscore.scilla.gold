@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid match statement, 'with' is expected after what is specified to match with.\n",
+      "start_location": {
+        "file": "base/parser/bad/stmts_t-match-spid-underscore.scilla",
+        "line": 11,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

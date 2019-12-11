@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "In this map type, the map value is likely incorrect. In the brackets only an ADT or map may be placed.\n",
+      "start_location": {
+        "file": "base/parser/bad/type_t-map-cid-lparen-with.scilla",
+        "line": 5,
+        "column": 28
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

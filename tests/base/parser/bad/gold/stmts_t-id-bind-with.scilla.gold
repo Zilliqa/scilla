@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid bind statement, the bind can be followed by '&', 'exists' or a map.\n",
+      "start_location": {
+        "file": "base/parser/bad/stmts_t-id-bind-with.scilla",
+        "line": 8,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

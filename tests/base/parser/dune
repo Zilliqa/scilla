@@ -1,0 +1,11 @@
+(library
+ (name testparser)
+ (modules TestParser)
+ (wrapped false)
+ (libraries core_kernel oUnit testutil testparserfail))
+
+(executable
+ (name parser_dummy)
+ (public_name parser-dummy)
+ (modules Parser_dummy)
+ (libraries core_kernel scilla_base))

@@ -1,0 +1,16 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Following a comma in the list of immutable fields, the parser expects another immutable field.\n",
+      "start_location": {
+        "file":
+          "base/parser/bad/cmodule-contract-cid-lparen-id-colon-comma-with.scilla",
+        "line": 5,
+        "column": 29
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid type term, the ADT constructor has invalid type arguments. The map key is invalid.\n",
+      "start_location": {
+        "file": "base/parser/bad/type_t-cid-map-with.scilla",
+        "line": 5,
+        "column": 33
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

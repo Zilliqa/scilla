@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This type application is wrong. A separated identifier is expected to apply types to.\n",
+      "start_location": {
+        "file": "base/parser/bad/exps/exp_t-at-with.scilexp",
+        "line": 3,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This type-annotated let expression likely has a misplaced equals, '='.\n",
+      "start_location": {
+        "file": "base/parser/bad/exps/exp_t-let-id-colon-tid-with.scilexp",
+        "line": 1,
+        "column": 22
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

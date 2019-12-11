@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid library module, Scilla version must be followed by 'library' or 'import'.\n",
+      "start_location": {
+        "file": "base/parser/bad/lib/lmodule-version-with.scillib",
+        "line": 5,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

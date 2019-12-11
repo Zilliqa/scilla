@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "4001742",
+  "errors": [
+    {
+      "error_message":
+        "Type error: cannot apply \"add\" built-in to argument(s) of type(s) [Int64; Int32].",
+      "start_location": {
+        "file": "eval/bad/builtin4.scilexp",
+        "line": 7,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

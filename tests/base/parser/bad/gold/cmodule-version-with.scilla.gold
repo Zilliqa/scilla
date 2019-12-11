@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "The Scilla version must be specified with a numeric literal.\n",
+      "start_location": {
+        "file": "base/parser/bad/cmodule-version-with.scilla",
+        "line": 3,
+        "column": 20
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

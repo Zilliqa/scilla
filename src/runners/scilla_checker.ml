@@ -21,7 +21,6 @@ open Syntax
 open Core_kernel
 open ErrorUtils
 open PrettyPrinters
-open ParserUtil
 open DebugMessage
 open MonadUtil
 open Result.Let_syntax
@@ -35,7 +34,6 @@ open TypeInfo
 open Cashflow
 open Accept
 
-module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
 module PERep = ParserRep
 

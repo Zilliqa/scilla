@@ -41,6 +41,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gold_path dir f = [dir; "gas_use_analysis"; "expr"; "gold"; f ^ ".gold" ]
     let test_path f = ["gas_use_analysis"; "expr"; f]
     let runner = "type-checker"
+    let ignore_predef_args = true
     let gas_limit = Stdint.Uint64.of_int 4002000
     let custom_args = ["-gua"; "-contractinfo"]
     let additional_libdirs = []

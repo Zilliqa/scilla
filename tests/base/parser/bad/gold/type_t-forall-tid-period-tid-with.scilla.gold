@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid forall type, the type term is finished after the last type id. forall types with multiple variables are expressed by typing forall again (e.g. 'forall 'A. forall 'B.').\n",
+      "start_location": {
+        "file": "base/parser/bad/type_t-forall-tid-period-tid-with.scilla",
+        "line": 5,
+        "column": 23
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

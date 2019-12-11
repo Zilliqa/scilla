@@ -1,0 +1,16 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This function argument and argument type declaration is not closed properly.\n",
+      "start_location": {
+        "file":
+          "base/parser/bad/exps/exp_t-fun-lparen-id-colon-tid-with.scilexp",
+        "line": 1,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is likely an invalid map assign statement, it lacks the assign.\n",
+      "start_location": {
+        "file": "base/parser/bad/stmts_t-id-lsqb-spid-rsqb-semicolon.scilla",
+        "line": 9,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

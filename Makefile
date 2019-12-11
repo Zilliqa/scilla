@@ -25,6 +25,8 @@ slim:
 dev:
 	./scripts/libff.sh
 	dune build --profile dev @install
+	dune build tests/polynomials/testsuite_polynomials.exe
+	dune build tests/base/testsuite_base.exe
 	dune build tests/testsuite.exe
 	@test -L bin || ln -s _build/install/default/bin .
 
@@ -32,15 +34,28 @@ dev:
 utop: all
 	OCAMLPATH=_build/install/default/lib:$(OCAMLPATH) utop
 
+# === TESTS (begin) ===========================================================
 # Build and run tests
 # the make utility increases the maximum stack limit, this allows our tests
 # to pass but analogous programs might break when run on users' machines
 # (e.g. on macOS 10.14.5 make sets the limit to 65532kB, but the standard
 # value is 8192kB)
+
+testbase: dev
+	ulimit -s 128 -n 1024; dune exec tests/base/testsuite_base.exe
+
+goldbase: dev
+	ulimit -s 128 -n 1024; dune exec tests/base/testsuite_base.exe -- -update-gold true
+
+# Run all tests for all packages in the repo: scilla-base, polynomials, scilla
 test: dev
+	ulimit -s 128 -n 1024; dune exec tests/polynomials/testsuite_polynomials.exe
+	ulimit -s 128 -n 1024; dune exec tests/base/testsuite_base.exe -- -print-diff true
 	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -print-diff true
 
 gold: dev
+	ulimit -s 128 -n 1024; dune exec tests/polynomials/testsuite_polynomials.exe
+	ulimit -s 128 -n 1024; dune exec tests/base/testsuite_base.exe -- -update-gold true
 	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -update-gold true
 
 # This must be run only if there is an external IPC server available
@@ -50,6 +65,9 @@ test_extipcserver: dev
 	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
 	-ext-ipc-server $(IPC_SOCK_PATH) \
 	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
+
+# === TESTS (end) =============================================================
+
 
 # Clean up
 clean:

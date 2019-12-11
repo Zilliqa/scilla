@@ -163,7 +163,7 @@ make clean; make
 
 10. Test your installation by running
 ```shell
-./bin/eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/exp/good/let.scilexp
+./bin/eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/good/let.scilexp
 ```
 
 If the output is as below, then you are good to go 👍. No further action will be necessary.

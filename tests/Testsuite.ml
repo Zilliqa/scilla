@@ -16,57 +16,22 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open OUnit2
 open TestUtil
-open ScillaUtil.FilePathInfix
 
-let main =
-  let bin_dir_default = (Sys.getcwd () ^/ "bin") in
-  let tests_dir_default = (Sys.getcwd () ^/ "tests") in
-  let stdlib_dir_default = (Sys.getcwd() ^/ "src" ^/ "stdlib") in
-  let ext_ipc_server_default = "" in
-  let bin_dir = Conf.make_string "bin_dir" bin_dir_default "Directory containing binaries" in
-  let tests_dir = Conf.make_string "tests_dir" tests_dir_default "Directory containing tests" in
-  let stdlib_dir = Conf.make_string "stdlib_dir" stdlib_dir_default "Directory containing stdlib" in
-  let print_cli = Conf.make_bool "print_cli" false "Print command line arguments used for test(s)" in
-  let update_gold = Conf.make_bool "update_gold" false "Ignore compare mismatch and update gold file(s)" in
-  let print_diff = Conf.make_bool "print_diff" false "Print the diff between gold file and actual output" in
-  let ext_ipc_server = Conf.make_string "ext_ipc_server" ext_ipc_server_default
-    "Address of external IPC server for IPC tests. Ensure that \"-runner sequential\" is set" in
-
-  let env : tsuite_env = {
-    bin_dir = bin_dir;
-    tests_dir = tests_dir; stdlib_dir = stdlib_dir;
-    print_cli = print_cli; update_gold = update_gold;
-    print_diff = print_diff;
-    ext_ipc_server = ext_ipc_server;
-  } in
-  (* Add calls to new tests from here *)
-  let all_tests = "all_tests" >:::
-    [
-      (* contract_tests should always be the first to be run. This is required
-       * for us to be able to run _only_ contract_tests from the blockchain for
-       * external IPC server tests. If the order changes, then the test_id of
-       * these tests will change, resulting in the tests not being run.
-       * See the Makefile target "test_extipcserver". *)
-      Testcontracts.contract_tests env;
-      TestParser.all_tests env;
-      TestExps.all_tests env;
-      TestExpsFail.all_tests env;
-      Testtypes.all_tests env;
-      TestTypeFail.all_tests env;
-      TestPMFail.all_tests env;
-      TestChecker.all_tests env;
-      TestInteger256.all_tests;
-      TestPolynomial.all_tests;
-      TestSignatures.all_tests env;
-      TestSnark.all_tests env;
-      (* TestGasExpr.all_tests env;
-         TestGasContracts.all_tests; *)
-      TestSyntax.all_tests;
-      TestSafeArith.all_tests;
-      TestBech32.all_tests;
-    ] in
-
-  (* Run all tests *)
-  run_test_tt_main all_tests
+let () = run_tests
+[
+  (* contract_tests should always be the first to be run. This is required
+    * for us to be able to run _only_ contract_tests from the blockchain for
+    * external IPC server tests. If the order changes, then the test_id of
+    * these tests will change, resulting in the tests not being run.
+    * See the Makefile target "test_extipcserver". *)
+  Testcontracts.contract_tests;
+  TestExps.all_tests;
+  TestExpsFail.all_tests;
+  Testtypes.all_tests;
+  TestTypeFail.all_tests;
+  TestPMFail.all_tests;
+  TestChecker.all_tests;
+  (* TestGasExpr.all_tests;
+      TestGasContracts.all_tests; *)
+]

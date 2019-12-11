@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "In a data constructor application, the parser expects valid separated uncapitalised identifiers for arguments.\n",
+      "start_location": {
+        "file": "base/parser/bad/exps/exp_t-cid-lbrace-rbrace-at.scilexp",
+        "line": 1,
+        "column": 21
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

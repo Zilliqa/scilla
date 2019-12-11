@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid type term because the brackets are not closed after the type id.\n",
+      "start_location": {
+        "file": "base/parser/bad/type_t-lparen-tid-with.scilla",
+        "line": 4,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

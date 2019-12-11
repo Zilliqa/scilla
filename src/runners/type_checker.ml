@@ -19,7 +19,6 @@
 open Core_kernel
 open Printf
 open Syntax
-open ParserUtil
 open TypeUtil
 open RecursionPrinciples
 open RunnerUtil
@@ -31,7 +30,6 @@ open PrettyPrinters
 open GasUseAnalysis
 open TypeInfo
 
-module ParsedSyntax = ParserUtil.ParsedSyntax
 module PSRep = ParserRep
 module PERep = ParserRep
   

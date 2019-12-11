@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid expression term, possibly avoid unnecessary brackets.\n",
+      "start_location": {
+        "file": "base/parser/bad/exps/exp_t-with.scilexp",
+        "line": 1,
+        "column": 2
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

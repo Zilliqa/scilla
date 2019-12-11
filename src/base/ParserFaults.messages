@@ -1,0 +1,2524 @@
+# The .messages file is a list of sentences that lead to parser
+# error states.
+# The 'WITH' token is not special.
+# If creating an error state, any non-valid token would be accepted
+# for leading to that error state.
+# In this case, the --list-errors flag chooses an arbitrary token,
+# that is not valid.
+# To maintain this file, see the Menhir documentation.
+
+type_term: CID LPAREN TID WITH
+##
+## Ends in an error in state: 71.
+##
+## targ -> LPAREN typ . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## typ -> typ . TARROW typ [ TARROW RPAREN ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN typ
+##
+# See tests/parser/bad/type_t-cid-lparen-tid-with.scilla
+
+This is an invalid type term, likely the ADT argument brackets are not closed properly or the arguments are invalid.
+
+type_term: CID LPAREN WITH
+##
+## Ends in an error in state: 52.
+##
+## targ -> LPAREN . typ RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+# see tests/parser/bad/type_t-lparen-with.scilla
+
+This is an invalid type term, it is likely an ADT missing a valid type as an argument in brackets.
+
+type_term: CID MAP CID UNDERSCORE
+##
+## Ends in an error in state: 27.
+##
+## targ -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## MAP t_map_key
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+## In state 44, spurious reduction of production t_map_key -> scid 
+##
+# see tests/parser/bad/type_t-cid-map-cid-underscore.scilla
+
+This is an invalid type term, the ADT constructor has an invalid type argument that is a map with a faulty map value type.
+
+type_term: CID MAP WITH
+##
+## Ends in an error in state: 20.
+##
+## targ -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## MAP
+##
+# see tests/parser/bad/type_t-cid-map-with.scilla
+
+This is an invalid type term, the ADT constructor has invalid type arguments. The map key is invalid.
+
+type_term: CID PERIOD WITH
+##
+## Ends in an error in state: 23.
+##
+## scid -> CID PERIOD . CID [ UNDERSCORE TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN ID FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## CID PERIOD
+##
+# see tests/parser/bad/type_t-cid-period-with.scilla
+
+This is an invalid type term, the ADT constructor is incorrect. Following the period, the parser expects an identifier beginning with a capital letter ('A' - 'Z').
+
+type_term: CID TID WITH
+##
+## Ends in an error in state: 65.
+##
+## list(targ) -> targ . list(targ) [ TARROW RPAREN RBRACE EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## targ
+##
+# see tests/parser/bad/type_t-cid-tid-with.scilla
+
+This is an invalid type term, the ADT constructor arguments are incorrect.
+
+type_term: CID UNDERSCORE
+##
+## Ends in an error in state: 64.
+##
+## typ -> scid . list(targ) [ TARROW RPAREN EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## scid
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+##
+# see tests/parser/bad/type_t-cid-underscore.scilla
+
+This is an invalid type term, it may be a bad ADT.
+
+type_term: CID WITH
+##
+## Ends in an error in state: 22.
+##
+## scid -> CID . [ UNDERSCORE TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN ID FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## scid -> CID . PERIOD CID [ UNDERSCORE TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN ID FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## CID
+##
+# see tests/parser/bad/type_t-cid-with.scilla
+
+This is an invalid type term, the ADT constructor arguments are likely incorrect. This necessitates a proper separated capital identifier, type identifier, type in brackets or a map.
+
+type_term: FORALL TID PERIOD TID WITH
+##
+## Ends in an error in state: 61.
+##
+## typ -> typ . TARROW typ [ TARROW RPAREN EQ EOF COMMA ]
+## typ -> FORALL TID PERIOD typ . [ TARROW RPAREN EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL TID PERIOD typ
+##
+# see tests/parser/bad/type_t-forall-tid-period-tid-with.scilla
+
+This is an invalid forall type, the type term is finished after the last type id. forall types with multiple variables are expressed by typing forall again (e.g. 'forall 'A. forall 'B.').
+
+type_term: FORALL TID PERIOD WITH
+##
+## Ends in an error in state: 60.
+##
+## typ -> FORALL TID PERIOD . typ [ TARROW RPAREN EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL TID PERIOD
+##
+# see tests/parser/bad/type_t-forall-tid-period-with.scilla
+
+This is an invalid forall type, after the period (following forall and a type id) the parser expects a valid type.
+
+type_term: FORALL TID WITH
+##
+## Ends in an error in state: 59.
+##
+## typ -> FORALL TID . PERIOD typ [ TARROW RPAREN EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL TID
+##
+# see tests/parser/bad/type_t-forall-tid-with.scilla
+
+This is an invalid forall type, after the type id (following forall) the parser expects a period.
+
+type_term: FORALL WITH
+##
+## Ends in an error in state: 58.
+##
+## typ -> FORALL . TID PERIOD typ [ TARROW RPAREN EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL
+##
+# see tests/parser/bad/type_t-forall-with.scilla
+
+This is an invalid forall type, after the forall the parser expects a type identifier.
+
+type_term: LPAREN TID WITH
+##
+## Ends in an error in state: 69.
+##
+## typ -> typ . TARROW typ [ TARROW RPAREN ]
+## typ -> LPAREN typ . RPAREN [ TARROW RPAREN EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN typ
+##
+# see tests/parser/bad/type_t-lparen-tid-with.scilla
+
+This is an invalid type term because the brackets are not closed after the type id.
+
+type_term: LPAREN WITH
+##
+## Ends in an error in state: 57.
+##
+## typ -> LPAREN . typ RPAREN [ TARROW RPAREN EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+# see tests/parser/bad/type_t-lparen-tid-with.scilla
+
+This is an invalid type term, please put a valid type term in the brackets.
+
+type_term: MAP CID CID CID UNDERSCORE
+##
+## Ends in an error in state: 41.
+##
+## list(t_map_value_args) -> t_map_value_args . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## t_map_value_args
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+## In state 40, spurious reduction of production t_map_value_args -> scid 
+##
+# see tests/parser/bad/type_t-map-cid-cid-cid-underscore.scilla
+
+This is an invalid map type, the map value is incorrect. The map value is likely an ADT constructor with incorrect constructor arguments.
+
+type_term: MAP CID CID LPAREN CID UNDERSCORE
+##
+## Ends in an error in state: 38.
+##
+## t_map_value_args -> LPAREN t_map_value_args . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN t_map_value_args
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+## In state 40, spurious reduction of production t_map_value_args -> scid 
+##
+# see tests/parser/bad/type_t-map-cid-cid-lparen-cid-underscore.scilla
+
+This is an invalid map type, the map value type is incorrect. It is possible that the key type is a nested ADT where the inner constructor arguments are faulty.
+
+type_term: MAP CID CID LPAREN WITH
+##
+## Ends in an error in state: 37.
+##
+## t_map_value_args -> LPAREN . t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+# see tests/parser/bad/type_t-map-cid-cid-lparen-with.scilla
+
+This is an invalid map type, the map value type is likely incorrect. In the brackets we expect a separated capital identifier.
+
+type_term: MAP CID CID MAP CID UNDERSCORE
+##
+## Ends in an error in state: 34.
+##
+## t_map_value_args -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## MAP t_map_key
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+## In state 44, spurious reduction of production t_map_key -> scid 
+##
+# see tests/parser/bad/type_t-map-cid-cid-map-cid-underscore.scilla
+
+This is invalid map type, the map value is incorrect. It is likely that there is an ADT constructor with an invalid argument (a map with an invalid map value).
+
+type_term: MAP CID CID MAP WITH
+##
+## Ends in an error in state: 33.
+##
+## t_map_value_args -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## MAP
+##
+# see tests/parser/bad/type_t-map-cid-cid-map-with.scilla
+
+This is an invalid map type, the map value type is incorrect. It is likely there there is an ADT constructor with an invalid argument (a map with an invalid map key).
+
+type_term: MAP CID CID UNDERSCORE
+##
+## Ends in an error in state: 36.
+##
+## t_map_value -> scid . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## scid
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+##
+# see tests/parser/bad/type_t-map-cid-cid-underscore.scilla
+
+This is an invalid map type, the map value is incorrect. It is likely that there is an ADT constructor with an invalid argument.
+
+type_term: MAP CID LPAREN CID CID TYPE
+##
+## Ends in an error in state: 48.
+##
+## t_map_value -> LPAREN scid list(t_map_value_args) . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN scid list(t_map_value_args)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+## In state 40, spurious reduction of production t_map_value_args -> scid 
+## In state 41, spurious reduction of production list(t_map_value_args) -> 
+## In state 42, spurious reduction of production list(t_map_value_args) -> t_map_value_args list(t_map_value_args) 
+##
+# see tests/parser/bad/type_t-map-cid-lparen-cid-cid-type.scilla
+
+This is an invalid map type, the map value is likely incorrect. The map value expects a list of valid ADT constructor arguments for the ADT, possibly.
+
+type_term: MAP CID LPAREN CID UNDERSCORE
+##
+## Ends in an error in state: 47.
+##
+## t_map_value -> LPAREN scid . list(t_map_value_args) RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN scid
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+##
+# see tests/checker/bad/bad_fields2.scilla
+# see tests/checker/bad/map_value_function.scilla
+
+This is an invalid map type, the map value is likely incorrect. If the map value is an ADT in brackets, then we expect valid ADT arguments or a closing bracket.
+
+type_term: MAP CID LPAREN MAP CID CID UNDERSCORE
+##
+## Ends in an error in state: 45.
+##
+## t_map_value -> LPAREN MAP t_map_key t_map_value_args . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN MAP t_map_key t_map_value_args
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+## In state 40, spurious reduction of production t_map_value_args -> scid 
+##
+# see tests/parser/bad/type_t-map-cid-lparen-map-cid-cid-underscore.scilla
+
+This is an invalid map type, the map value is likely incorrect. The map value being a map itself with an invalid map value (possible malformed ADT).
+
+type_term: MAP CID LPAREN MAP CID UNDERSCORE
+##
+## Ends in an error in state: 32.
+##
+## t_map_value -> LPAREN MAP t_map_key . t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN MAP t_map_key
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+## In state 44, spurious reduction of production t_map_key -> scid 
+##
+# see tests/parser/bad/type_t-map-cid-lparen-map-cid-underscore.scilla
+
+This is an invalid map type, the map value is likely incorrect. The map value being likely a map in brackets with an invalid map value.
+
+type_term: MAP CID LPAREN MAP WITH
+##
+## Ends in an error in state: 31.
+##
+## t_map_value -> LPAREN MAP . t_map_key t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN MAP
+##
+# see tests/parser/bad/type_t-map-cid-lparen-map-with.scilla
+
+This map type is invalid as the map value is likely incorrect. The map value being a map in brackets with an invalid map key.
+
+type_term: MAP CID LPAREN WITH
+##
+## Ends in an error in state: 30.
+##
+## t_map_value -> LPAREN . scid list(t_map_value_args) RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## t_map_value -> LPAREN . MAP t_map_key t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+# see tests/parser/bad/type_t-map-cid-lparen-with.scilla
+
+In this map type, the map value is likely incorrect. In the brackets only an ADT or map may be placed.
+
+type_term: MAP CID MAP CID UNDERSCORE
+##
+## Ends in an error in state: 29.
+##
+## t_map_value -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## MAP t_map_key
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+## In state 44, spurious reduction of production t_map_key -> scid 
+##
+# see tests/parser/bad/type_t-map-cid-map-cid-underscore.scilla
+
+This map type likely has an incorrect map value type. The map value is a map with a malformed map value.
+
+type_term: MAP CID MAP WITH
+##
+## Ends in an error in state: 28.
+##
+## t_map_value -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## MAP
+##
+# see tests/parser/bad/type_t-map-cid-map-with.scilla
+
+This map type likely has an invalid map value type. The map value type is a map with a malformed map key type.
+
+type_term: MAP CID UNDERSCORE
+##
+## Ends in an error in state: 55.
+##
+## typ -> MAP t_map_key . t_map_value [ TARROW RPAREN EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MAP t_map_key
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+## In state 44, spurious reduction of production t_map_key -> scid 
+##
+# see tests/eval/bad/list_to_map.scilexp
+
+This map type likely has an invalid map value type.
+
+type_term: MAP LPAREN CID UNDERSCORE
+##
+## Ends in an error in state: 25.
+##
+## t_map_key -> LPAREN scid . RPAREN [ MAP LPAREN CID ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN scid
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+##
+# see tests/checker/bad/bad_map_key_1.scilla
+
+This map type has an invalid key type. A closing bracket or proper separated capital identifier is expected.
+
+type_term: MAP LPAREN WITH
+##
+## Ends in an error in state: 21.
+##
+## t_map_key -> LPAREN . scid RPAREN [ MAP LPAREN CID ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+# see tests/checker/bad/bad_map_key_5.scilla
+
+This map type has an invalid key type. In the brackets we expect a separated capital identifier.
+
+type_term: MAP WITH
+##
+## Ends in an error in state: 54.
+##
+## typ -> MAP . t_map_key t_map_value [ TARROW RPAREN EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MAP
+##
+# see tests/parser/bad/type_t-map-with.scilla
+
+This is an invalid type term, the map key type is incorrect.
+
+type_term: TID TARROW TID WITH
+##
+## Ends in an error in state: 63.
+##
+## typ -> typ . TARROW typ [ TARROW RPAREN EQ EOF COMMA ]
+## typ -> typ TARROW typ . [ TARROW RPAREN EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## typ TARROW typ
+##
+# see tests/parser/bad/type_t-tid-arrow-tid-with.scilla
+
+This function is not terminated early enough or malformed. A possible alteration would be brackets.
+
+type_term: TID TARROW WITH
+##
+## Ends in an error in state: 62.
+##
+## typ -> typ TARROW . typ [ TARROW RPAREN EQ EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## typ TARROW
+##
+# see tests/parser/bad/type_t-tid-arrow-with.scilla
+
+This function type lacks a result type.
+
+type_term: TID WITH
+##
+## Ends in an error in state: 312.
+##
+## typ -> typ . TARROW typ [ TARROW EOF ]
+## type_term -> typ . EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## typ
+##
+# special case, only by type_term entry point should never happen
+
+This is an invalid type term, following the type it is complete and may only be extended by an arrow.
+
+type_term: WITH
+##
+## Ends in an error in state: 310.
+##
+## type_term' -> . type_term [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+# special case, only by type_term entry point should never happen
+
+This is an invalid type term.
+
+stmts_term: ACCEPT WITH
+##
+## Ends in an error in state: 263.
+##
+## separated_nonempty_list(SEMICOLON,stmt) -> stmt . [ EOF END BAR ]
+## separated_nonempty_list(SEMICOLON,stmt) -> stmt . SEMICOLON separated_nonempty_list(SEMICOLON,stmt) [ EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## stmt
+##
+# see tests/parser/bad/stmts-t-accept-with.scilla
+# see the stack to notice that we are missing a semicolon most likely
+
+This is likely an improperly terminated statement (lacking the semicolon).
+
+stmts_term: CID WITH
+##
+## Ends in an error in state: 266.
+##
+## stmt -> component_id . list(sident) [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## component_id
+##
+# see tests/parser/bad/stmts_t-cid-with.scilla
+
+This is an invalid statements term.
+
+stmts_term: DELETE ID WITH
+##
+## Ends in an error in state: 260.
+##
+## stmt -> DELETE ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## DELETE ID
+##
+# see tests/parser/bad/stmts_t-delete-id-with.scilla
+
+This is an invalid delete statement, it lacks the keys to delete.
+
+stmts_term: DELETE WITH
+##
+## Ends in an error in state: 259.
+##
+## stmt -> DELETE . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## DELETE
+##
+# see tests/parser/bad/stmts_t-delete-with.scilla
+
+This is an invalid delete statement, it lacks a map to delete from.
+
+stmts_term: EVENT WITH
+##
+## Ends in an error in state: 257.
+##
+## stmt -> EVENT . sid [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## EVENT
+##
+# see tests/parser/bad/stmts_t-event-with.scilla
+
+This is an invalid event statement, it lacks a separated identifier for the event name.
+
+stmts_term: ID ASSIGN WITH
+##
+## Ends in an error in state: 252.
+##
+## stmt -> ID ASSIGN . sid [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## ID ASSIGN
+##
+# see tests/parser/bad/stmts_t-id-assign-with.scilla
+
+This is an invalid assign statement, it lacks a separated identifier.
+
+stmts_term: ID FETCH AND WITH
+##
+## Ends in an error in state: 247.
+##
+## stmt -> ID FETCH AND . CID [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## ID FETCH AND
+##
+# see tests/parser/bad/stmts_t-id-bind-and-with.scilla
+
+This is an invalid bind and statement. The parser expects a capital identifier associated with a block number.
+
+stmts_term: ID FETCH EXISTS ID WITH
+##
+## Ends in an error in state: 245.
+##
+## stmt -> ID FETCH EXISTS ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## ID FETCH EXISTS ID
+##
+# see tests/parser/bad/stmts_t-id-bind-exists-id-with.scilla
+
+This is an invalid existence bind statement. It lacks a non-empty list of accesses.
+
+stmts_term: ID FETCH EXISTS WITH
+##
+## Ends in an error in state: 244.
+##
+## stmt -> ID FETCH EXISTS . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## ID FETCH EXISTS
+##
+# see tests/parser/bad/stmts_t-id-bind-exists-with.scilla
+
+This is an invalid existence bind statement. It lacks a map to check existence of keys in.
+
+stmts_term: ID FETCH ID WITH
+##
+## Ends in an error in state: 240.
+##
+## sid -> ID . [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## ID FETCH ID
+##
+# see tests/parser/bad/stmts_t-id-bind-id-with.scilla 
+
+This is an invalid bind statement, it is lacking a non empty list of map accesses.
+
+stmts_term: ID FETCH WITH
+##
+## Ends in an error in state: 239.
+##
+## stmt -> ID FETCH . sid [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH . AND CID [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+## stmt -> ID FETCH . EXISTS ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## ID FETCH
+##
+# see tests/parser/bad/stmts_t-id-bind-with.scilla
+
+This is an invalid bind statement, the bind can be followed by '&', 'exists' or a map.
+
+stmts_term: ID EQ WITH
+##
+## Ends in an error in state: 250.
+##
+## stmt -> ID EQ . exp [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## ID EQ
+##
+# see tests/parser/bad/stmts_t-id-eq-with.scilla
+
+This is an invalid equal statement, it is lacking a valid expression on the right.
+
+stmts_term: ID LSQB SPID RSQB ASSIGN WITH
+##
+## Ends in an error in state: 255.
+##
+## stmt -> ID nonempty_list(map_access) ASSIGN . sid [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## ID nonempty_list(map_access) ASSIGN
+##
+# see tests/parser/bad/stmts_t-id-lsqb-spid-rsqb-assign-with.scilla
+
+The map key must be assigned to some separated identifier.
+
+stmts_term: ID LSQB SPID RSQB SEMICOLON
+##
+## Ends in an error in state: 254.
+##
+## stmt -> ID nonempty_list(map_access) . ASSIGN sid [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## ID nonempty_list(map_access)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 242, spurious reduction of production nonempty_list(map_access) -> map_access 
+##
+# see tests/parser/bad/stmts_t-id-lsqb-spid-rsqb-semicolon.scilla
+
+This is likely an invalid map assign statement, it lacks the assign.
+
+stmts_term: ID LSQB SPID RSQB WITH
+##
+## Ends in an error in state: 242.
+##
+## nonempty_list(map_access) -> map_access . [ SEMICOLON EOF END BAR ASSIGN ]
+## nonempty_list(map_access) -> map_access . nonempty_list(map_access) [ SEMICOLON EOF END BAR ASSIGN ]
+##
+## The known suffix of the stack is as follows:
+## map_access
+##
+# see tests/parser/bad/stmts_t-id-lsqb-spid-rsqb-with.scilla
+
+This is an invalid statements term. A possible continuation may be assigning a map key.
+
+stmts_term: ID LSQB SPID WITH
+##
+## Ends in an error in state: 237.
+##
+## map_access -> LSQB sident . RSQB [ SEMICOLON LSQB EOF END BAR ASSIGN ]
+##
+## The known suffix of the stack is as follows:
+## LSQB sident
+##
+# see tests/parser/bad/stmts_t-id-lsqb-spid-with.scilla
+
+This is an invalid statements term. A possible continuation may be accessing a key if it is a (nested) map or alternatively an assignment.
+
+stmts_term: ID LSQB WITH
+##
+## Ends in an error in state: 236.
+##
+## map_access -> LSQB . sident RSQB [ SEMICOLON LSQB EOF END BAR ASSIGN ]
+##
+## The known suffix of the stack is as follows:
+## LSQB
+##
+# see tests/parser/bad/stmts_t-id-lsqb-with.scilla
+
+This is an invalid statements term. The map access list is malformed.
+
+stmts_term: ID SPID WITH
+##
+## Ends in an error in state: 162.
+##
+## list(sident) -> sident . list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## sident
+##
+# see tests/parser/bad/stmts_t-id-spid-with.scilla
+
+This is an invalid statements term, likely a bad procedure call with faulty arguments. Alternately it is an improperly terminated..
+
+stmts_term: ID WITH
+##
+## Ends in an error in state: 235.
+##
+## component_id -> ID . [ SPID SEMICOLON ID EOF END CID BAR ]
+## stmt -> ID . FETCH sid [ SEMICOLON EOF END BAR ]
+## stmt -> ID . ASSIGN sid [ SEMICOLON EOF END BAR ]
+## stmt -> ID . EQ exp [ SEMICOLON EOF END BAR ]
+## stmt -> ID . FETCH AND CID [ SEMICOLON EOF END BAR ]
+## stmt -> ID . FETCH ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+## stmt -> ID . FETCH EXISTS ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
+## stmt -> ID . nonempty_list(map_access) ASSIGN sid [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## ID
+##
+# see tests/parser/bad/stmts_t-id-with.scilla
+
+This is an invalid statements term. Scilla expects to do something with the identifier.
+
+stmts_term: MATCH SPID UNDERSCORE
+##
+## Ends in an error in state: 230.
+##
+## stmt -> MATCH sid . WITH list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## MATCH sid
+##
+# see tests/parser/bad/stmts_t-match-spid-underscore.scilla
+
+This is an invalid match statement, 'with' is expected after what is specified to match with.
+
+stmts_term: MATCH SPID WITH BAR UNDERSCORE ARROW ACCEPT EOF
+##
+## Ends in an error in state: 270.
+##
+## list(stmt_pm_clause) -> stmt_pm_clause . list(stmt_pm_clause) [ END ]
+##
+## The known suffix of the stack is as follows:
+## stmt_pm_clause
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 263, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
+## In state 268, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
+## In state 269, spurious reduction of production stmt_pm_clause -> BAR pattern ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) 
+##
+# see tests/parser/bad/stmts_t-match-spid-with-bar-underscore-arrow-accept-eof.scilla
+
+When the match statement is finished, the parser expects 'end'.
+
+stmts_term: MATCH SPID WITH BAR UNDERSCORE ARROW WITH
+##
+## Ends in an error in state: 234.
+##
+## stmt_pm_clause -> BAR pattern ARROW . loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
+##
+## The known suffix of the stack is as follows:
+## BAR pattern ARROW
+##
+# see tests/parser/bad/stmts_t-match-spid-with-bar-underscore-arrow-with.scilla
+
+This is an invalid statements term. In the match expression, after an arrow the parser expects a valid list of semicolon separated statements.
+
+stmts_term: MATCH SPID WITH BAR UNDERSCORE WITH
+##
+## Ends in an error in state: 233.
+##
+## stmt_pm_clause -> BAR pattern . ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
+##
+## The known suffix of the stack is as follows:
+## BAR pattern
+##
+# see tests/parser/bad/stmts_t-match-spid-with-bar-underscore-with.scilla
+
+This is an invalid statements term. In the match expression, after a pattern is specified the parser expects an arrow (e.g. '=>') leading to the list of statements.
+
+stmts_term: MATCH SPID WITH BAR WITH
+##
+## Ends in an error in state: 232.
+##
+## stmt_pm_clause -> BAR . pattern ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
+##
+## The known suffix of the stack is as follows:
+## BAR
+##
+# see tests/parser/bad/stmts_t-match-spid-with-bar-with.scilla
+
+In the match statement there is a malformed pattern.
+
+stmts_term: MATCH SPID WITH WITH
+##
+## Ends in an error in state: 231.
+##
+## stmt -> MATCH sid WITH . list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## MATCH sid WITH
+##
+# see tests/parser/bad/stmts_t-match-spid-with-with.scilla
+
+There is a malformed pattern matching clause, the bar is likely missing.
+
+stmts_term: MATCH WITH
+##
+## Ends in an error in state: 229.
+##
+## stmt -> MATCH . sid WITH list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## MATCH
+##
+# see tests/parser/bad/stmts_t-match-while.scilla
+
+In a match statement, the parser expects a separated identifier to match with.
+
+stmts_term: SEND CID PERIOD WITH
+##
+## Ends in an error in state: 90.
+##
+## sid -> CID PERIOD . ID [ WITH TID SEMICOLON RBRACE MAP LPAREN EOF END COLON CID BAR ]
+##
+## The known suffix of the stack is as follows:
+## CID PERIOD
+##
+# see tests/parser/bad/stmts_t-send-cid-period-with.scilla
+
+This is an invalid send statement, the identifier is incorrect. After the period should be a name beginning with a lower case letter ('a' - 'z').
+
+stmts_term: SEND CID WITH
+##
+## Ends in an error in state: 89.
+##
+## sid -> CID . PERIOD ID [ WITH TID SEMICOLON MAP LPAREN EOF END COLON CID BAR ]
+##
+## The known suffix of the stack is as follows:
+## CID
+##
+# see tests/parser/bad/stmts_t-send-cid-with.scilla
+
+This send statement is either unfinished or not properly terminated.
+
+stmts_term: SEND WITH
+##
+## Ends in an error in state: 227.
+##
+## stmt -> SEND . sid [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## SEND
+##
+# see tests/parser/bad/stmts_t-send-with.scilla
+
+It is expected to send to a separated identifier.
+
+stmts_term: THROW END
+##
+## Ends in an error in state: 308.
+##
+## stmts_term -> stmts . EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## stmts
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 224, spurious reduction of production option(sid) -> 
+## In state 226, spurious reduction of production stmt -> THROW option(sid) 
+## In state 263, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
+## In state 268, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
+## In state 276, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt)) 
+##
+# special case, only via stmts_term entry point should never happen
+# throw itself is a valid statement term and a procedure or transition
+# would just end when it receives 'end'
+
+This is an invalid statements term, bad throw.
+
+stmts_term: THROW SEMICOLON WITH
+##
+## Ends in an error in state: 264.
+##
+## separated_nonempty_list(SEMICOLON,stmt) -> stmt SEMICOLON . separated_nonempty_list(SEMICOLON,stmt) [ EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## stmt SEMICOLON
+##
+# see tests/parser/bad/stmts_t-throw-semicolon-with.scilla
+# to understand this do not look at the tokens 'THROW SEMICOLON WITH'
+# instead look at the stack, these are merely tokens in a way associated
+
+What follows the statement was unexpected, for example possibly a statement or termination is expected.
+
+stmts_term: THROW WITH
+##
+## Ends in an error in state: 224.
+##
+## stmt -> THROW . option(sid) [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## THROW
+##
+# see tests/parser/stmts_t-throw-with.scilla
+
+This throw does not throw a valid exception or is not properly terminated.
+
+stmts_term: WITH
+##
+## Ends in an error in state: 306.
+##
+## stmts_term' -> . stmts_term [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+# special case only via stmts_term entry point, should never happen
+
+This is not a statement.
+
+lmodule: SCILLA_VERSION NUMLIT IMPORT CID AS CID WITH
+##
+## Ends in an error in state: 8.
+##
+## list(importname) -> importname . list(importname) [ LIBRARY CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## importname
+##
+# see tests/parser/bad/lmodule-import-cid-as-cid-with.scilla
+
+This is an invalid library module. Following an import, the parser expects another import or the library definition.
+
+lmodule: SCILLA_VERSION NUMLIT IMPORT CID AS WITH
+##
+## Ends in an error in state: 5.
+##
+## importname -> CID AS . CID [ LIBRARY CONTRACT CID ]
+##
+## The known suffix of the stack is as follows:
+## CID AS
+##
+# see tests/parser/bad/lmodule-import-cid-as-with.scilla
+
+This is an invalid library module. When importing a library under another name, the parser requires the other name to be given as a capital identifier.
+
+lmodule: SCILLA_VERSION NUMLIT IMPORT CID WITH
+##
+## Ends in an error in state: 4.
+##
+## importname -> CID . [ LIBRARY CONTRACT CID ]
+## importname -> CID . AS CID [ LIBRARY CONTRACT CID ]
+##
+## The known suffix of the stack is as follows:
+## CID
+##
+# see tests/parser/bad/lmodule-import-cid-with.scilla
+
+To import another library mention the new library name directly after the previous one, alternatively following the name of the imported library there can be a library defintion or sometimes a contract.
+
+lmodule: SCILLA_VERSION NUMLIT IMPORT CONTRACT
+##
+## Ends in an error in state: 302.
+##
+## lmodule -> SCILLA_VERSION NUMLIT imports . library EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## SCILLA_VERSION NUMLIT imports
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production list(importname) -> 
+## In state 7, spurious reduction of production imports -> IMPORT list(importname) 
+##
+# see tests/parser/bad/lib/lmodule-import-contract.scillib
+
+The parser does not expect contracts when loading imports for libraries.
+
+lmodule: SCILLA_VERSION NUMLIT IMPORT WITH
+##
+## Ends in an error in state: 3.
+##
+## imports -> IMPORT . list(importname) [ LIBRARY CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## IMPORT
+##
+# see tests/parser/bad/lib/lmodule-import-with.scillib
+
+If import is mentioned there must be one or more imported libraries with capital identifiers.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID CONTRACT
+##
+## Ends in an error in state: 303.
+##
+## lmodule -> SCILLA_VERSION NUMLIT imports library . EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## SCILLA_VERSION NUMLIT imports library
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 12, spurious reduction of production list(libentry) -> 
+## In state 189, spurious reduction of production library -> LIBRARY CID list(libentry) 
+##
+# see tests/parser/bad/lib/lmodule-library-cid-contract.scillib
+
+When writing solely Scilla libraries, there is no need for a contract.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID COLON TID EQ WITH
+##
+## Ends in an error in state: 187.
+##
+## libentry -> LET ID type_annot EQ . exp [ TYPE LET EOF CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## LET ID type_annot EQ
+##
+# see tests/parser/bad/lib/lmodule-library-cid-let-id-colon-tid-eq-with.scillib
+
+This (type-annotated) let expression is missing an expression to assign to an identifier.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID EQ HEXLIT WITH
+##
+## Ends in an error in state: 190.
+##
+## list(libentry) -> libentry . list(libentry) [ EOF CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## libentry
+##
+# see tests/parser/bad/lib/lmodule-library-cid-let-id-eq-hexlit-with.scillib
+
+This is an invalid library module, a possible continuation would be another valid library entry.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID EQ WITH
+##
+## Ends in an error in state: 81.
+##
+## libentry -> LET ID EQ . exp [ TYPE LET EOF CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## LET ID EQ
+##
+# see tests/parser/bad/lib/lmodule-library-cid-let-id-eq-with.scillib
+
+This library let expression is missing a valid expression to assign to the identifier.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID WITH
+##
+## Ends in an error in state: 80.
+##
+## libentry -> LET ID . EQ exp [ TYPE LET EOF CONTRACT ]
+## libentry -> LET ID . type_annot EQ exp [ TYPE LET EOF CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## LET ID
+##
+# see tests/parser/bad/lib/lmodule-library-cid-let-id-with.scillib
+
+This library let expression is missing an equals, '='.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET WITH
+##
+## Ends in an error in state: 79.
+##
+## libentry -> LET . ID EQ exp [ TYPE LET EOF CONTRACT ]
+## libentry -> LET . ID type_annot EQ exp [ TYPE LET EOF CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## LET
+##
+# see tests/parser/bad/lib/lmodule-library-cid-let-with.scillib
+
+The let expression is missing an identifier to assign an expression to.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ BAR CID OF CID TRANSITION
+##
+## Ends in an error in state: 76.
+##
+## nonempty_list(tconstr) -> tconstr . [ TYPE LET EOF CONTRACT ]
+## nonempty_list(tconstr) -> tconstr . nonempty_list(tconstr) [ TYPE LET EOF CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## tconstr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+## In state 66, spurious reduction of production targ -> scid 
+## In state 73, spurious reduction of production nonempty_list(targ) -> targ 
+## In state 75, spurious reduction of production tconstr -> BAR CID OF nonempty_list(targ) 
+##
+# see tests/parser/bad/lib/lmodule-library-cid-type-cid-eq-bar-cid-of-cid-transition.scillib
+
+The type definition has a type constructor containing malformed type arguments. Do note that there are no transitions or procedures in libraries.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ BAR CID OF WITH
+##
+## Ends in an error in state: 18.
+##
+## tconstr -> BAR CID OF . nonempty_list(targ) [ TYPE LET EOF CONTRACT BAR ]
+##
+## The known suffix of the stack is as follows:
+## BAR CID OF
+##
+# see tests/parser/bad/lib/lmodule-library-cid-type-cid-eq-bar-cid-of-with.scillib
+
+This library type entry expects a non-empty list of type arguments.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ BAR CID WITH
+##
+## Ends in an error in state: 17.
+##
+## tconstr -> BAR CID . [ TYPE LET EOF CONTRACT BAR ]
+## tconstr -> BAR CID . OF nonempty_list(targ) [ TYPE LET EOF CONTRACT BAR ]
+##
+## The known suffix of the stack is as follows:
+## BAR CID
+##
+# see tests/parser/bad/lib/lmodule-library-cid-type-cid-eq-bar-cid-with.scillib
+
+This type constructor is missing the word 'of'.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ BAR WITH
+##
+## Ends in an error in state: 16.
+##
+## tconstr -> BAR . CID [ TYPE LET EOF CONTRACT BAR ]
+## tconstr -> BAR . CID OF nonempty_list(targ) [ TYPE LET EOF CONTRACT BAR ]
+##
+## The known suffix of the stack is as follows:
+## BAR
+##
+# see tests/parser/bad/lib/lmodule-library-cid-type-cid-eq-bar-with.scillib
+
+This library type entry has an invalid type constructor name.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ WITH
+##
+## Ends in an error in state: 15.
+##
+## libentry -> TYPE CID EQ . nonempty_list(tconstr) [ TYPE LET EOF CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## TYPE CID EQ
+##
+# see tests/parser/bad/lib/lmodule-library-cid-type-cid-eq-with.scillib
+
+This library type entry is lacking a valid non-empty list of type constructors. Possibly the bar is missing.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID WITH
+##
+## Ends in an error in state: 14.
+##
+## libentry -> TYPE CID . [ TYPE LET EOF CONTRACT ]
+## libentry -> TYPE CID . EQ nonempty_list(tconstr) [ TYPE LET EOF CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## TYPE CID
+##
+# see tests/parser/bad/lib/lmodule-library-cid-type-cid-with.scillib
+
+This library type entry is likely missing an equals, '='.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE WITH
+##
+## Ends in an error in state: 13.
+##
+## libentry -> TYPE . CID [ TYPE LET EOF CONTRACT ]
+## libentry -> TYPE . CID EQ nonempty_list(tconstr) [ TYPE LET EOF CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## TYPE
+##
+# see tests/parser/bad/lib/lmodule-library-cid-type-with.scillib
+
+This library type entry is missing a name (should begin with a capital letter).
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY CID WITH
+##
+## Ends in an error in state: 12.
+##
+## library -> LIBRARY CID . list(libentry) [ EOF CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## LIBRARY CID
+##
+# see tests/parser/bad/lib/lmodule-library-cid-with.scillib
+
+This is an invalid library entry.
+
+lmodule: SCILLA_VERSION NUMLIT LIBRARY WITH
+##
+## Ends in an error in state: 11.
+##
+## library -> LIBRARY . CID list(libentry) [ EOF CONTRACT ]
+##
+## The known suffix of the stack is as follows:
+## LIBRARY
+##
+# see tests/parser/bad/lmodule-library-with.scillib
+
+This is an invalid library module because it lacks a capital identifier for a name.
+
+lmodule: SCILLA_VERSION NUMLIT WITH
+##
+## Ends in an error in state: 301.
+##
+## lmodule -> SCILLA_VERSION NUMLIT . imports library EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## SCILLA_VERSION NUMLIT
+##
+# see tests/parser/bad/lmodule-version-with.scillib
+
+This is an invalid library module, Scilla version must be followed by 'library' or 'import'.
+
+lmodule: WITH
+##
+## Ends in an error in state: 299.
+##
+## lmodule' -> . lmodule [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+# see tests/parser/bad/lmodule-with.scillib
+
+Scilla version number unspecified.
+
+exp_term: AT SPID TID WITH
+##
+## Ends in an error in state: 73.
+##
+## nonempty_list(targ) -> targ . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## nonempty_list(targ) -> targ . nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## targ
+##
+# see tests/parser/bad/exps/exp_t-at-spid-tid-with.scilexp
+
+The type application is wrong. The list of types is problematic.
+
+exp_term: AT SPID WITH
+##
+## Ends in an error in state: 152.
+##
+## simple_exp -> AT sid . nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## AT sid
+##
+# see tests/parser/bad/exps/exp_t-at-spid-with.scilexp
+
+The type application is wrong. The parser expects a non-empty list of type arguments to apply.
+
+exp_term: AT WITH
+##
+## Ends in an error in state: 151.
+##
+## simple_exp -> AT . sid nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## AT
+##
+# see tests/parser/bad/exps/exp_t-at-with.scilexp
+
+This type application is wrong. A separated identifier is expected to apply types to.
+
+exp_term: BUILTIN ID LPAREN WITH
+##
+## Ends in an error in state: 141.
+##
+## builtin_args -> LPAREN . RPAREN [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+# see tests/parser/bad/exps/exp_t-builtin-id-lparen-with.scilexp
+
+Builtin functions only take a pair of brackets when of unit input type (e.g. "()" only).
+
+exp_term: BUILTIN ID WITH
+##
+## Ends in an error in state: 139.
+##
+## simple_exp -> BUILTIN ID . builtin_args [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## BUILTIN ID
+##
+# see tests/parser/bad/exps/exp_t-builtin-id-with.scilexp
+
+The usage of the builtin function is incorrect.
+
+exp_term: BUILTIN WITH
+##
+## Ends in an error in state: 138.
+##
+## simple_exp -> BUILTIN . ID builtin_args [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## BUILTIN
+##
+# see tests/parser/bad/exps/exp_t-builtin-with.scilexp
+
+This expression is incorrect because it does not specify a specific builtin function.
+
+exp_term: CID LBRACE TID EQ
+##
+## Ends in an error in state: 159.
+##
+## ctargs -> LBRACE list(targ) . RBRACE [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LBRACE list(targ)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 65, spurious reduction of production list(targ) -> 
+## In state 67, spurious reduction of production list(targ) -> targ list(targ) 
+##
+# see tests/parser/bad/exps/exp_t-cid-lbrace-tid-eq.scilexp
+
+The data constructor, list of type arguments is incorrect. The parser expects another type argument or a closing brace.
+
+exp_term: CID LBRACE WITH
+##
+## Ends in an error in state: 158.
+##
+## ctargs -> LBRACE . list(targ) RBRACE [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LBRACE
+##
+# see tests/parser/bad/exps/exp_t-cid-lbrace-with.scilexp
+
+The data constructor, list of type arguments is incorrect. The parser expects a type argument or a closing bracket.
+
+exp_term: CID PERIOD CID WITH
+##
+## Ends in an error in state: 157.
+##
+## simple_exp -> scid . option(ctargs) list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## scid
+##
+# see tests/parser/bad/exps/exp_t-cid-period-cid-with.scilexp
+
+This is an invalid expression, most likely the data constructor is missing arguments (zero or more separated identifiers).
+
+exp_term: CID PERIOD WITH
+##
+## Ends in an error in state: 137.
+##
+## scid -> CID PERIOD . CID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET LBRACE IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+## sid -> CID PERIOD . ID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## CID PERIOD
+##
+# see tests/parser/bad/exps/exp_t-cid-period-with.scilexp
+
+This is an invalid expression, most likely the data constructor name is unfinished.
+
+exp_term: CID WITH
+##
+## Ends in an error in state: 136.
+##
+## lit -> CID . NUMLIT [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## scid -> CID . [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET LBRACE IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+## scid -> CID . PERIOD CID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET LBRACE IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+## sid -> CID . PERIOD ID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## CID
+##
+# see tests/parser/bad/exps/exp_t-cid-with.scilexp
+
+This is a malformed expression, it may be an incorrect data constructor usage.
+
+exp_term: EMP CID UNDERSCORE
+##
+## Ends in an error in state: 117.
+##
+## lit -> EMP t_map_key . t_map_value [ TYPE TRANSITION SEMICOLON RBRACE PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## EMP t_map_key
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+## In state 44, spurious reduction of production t_map_key -> scid 
+##
+# see tests/parser/bad/exps/exp_t-emp-cid-underscore.scilexp
+
+This empty map has invalid value type.
+
+exp_term: EMP WITH
+##
+## Ends in an error in state: 116.
+##
+## lit -> EMP . t_map_key t_map_value [ TYPE TRANSITION SEMICOLON RBRACE PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## EMP
+##
+# see tests/parser/bad/exps/exp_t-emp-with.scilexp
+
+The empty map has invalid key type (capitalised identifier).
+
+exp_term: FUN LPAREN ID COLON TID RPAREN ARROW WITH
+##
+## Ends in an error in state: 135.
+##
+## simple_exp -> FUN LPAREN ID COLON typ RPAREN ARROW . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN ID COLON typ RPAREN ARROW
+##
+# see tests/parser/bad/exps/exp_t-fun-lparen-id-colon-tid-rparen-arrow-with.scilexp
+
+This function is lacking a valid result expression.
+
+exp_term: FUN LPAREN ID COLON TID RPAREN WITH
+##
+## Ends in an error in state: 134.
+##
+## simple_exp -> FUN LPAREN ID COLON typ RPAREN . ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN ID COLON typ RPAREN
+##
+# see tests/parser/bad/exps/exp_t-fun-lparen-id-colon-tid-rparen-with.scilexp
+
+This function needs an arrow (e.g. '=>') pointing to an expression.
+
+exp_term: FUN LPAREN ID COLON TID WITH
+##
+## Ends in an error in state: 133.
+##
+## simple_exp -> FUN LPAREN ID COLON typ . RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## typ -> typ . TARROW typ [ TARROW RPAREN ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN ID COLON typ
+##
+# see tests/parser/bad/exps/exp_t-fun-lparen-id-colon-tid-with.scilexp
+
+This function argument and argument type declaration is not closed properly.
+
+exp_term: FUN LPAREN ID COLON WITH
+##
+## Ends in an error in state: 132.
+##
+## simple_exp -> FUN LPAREN ID COLON . typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN ID COLON
+##
+# see tests/parser/bad/exps/exp_t-fun-lparen-id-colon-with.scilexp
+
+This function argument lacks a valid type.
+
+exp_term: FUN LPAREN ID WITH
+##
+## Ends in an error in state: 131.
+##
+## simple_exp -> FUN LPAREN ID . COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN ID
+##
+# see tests/parser/bad/exps/exp_t-fun-lparen-id-with.scilexp
+
+This function's argument is lacking a colon to associate it with its type.
+
+exp_term: FUN LPAREN WITH
+##
+## Ends in an error in state: 130.
+##
+## simple_exp -> FUN LPAREN . ID COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FUN LPAREN
+##
+# see tests/parser/bad/exp_t-fun-lparen-with.scilexp
+
+This function is missing a valid argument identifier, beginning with a lower case letter.
+
+exp_term: FUN WITH
+##
+## Ends in an error in state: 129.
+##
+## simple_exp -> FUN . LPAREN ID COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## FUN
+##
+# see tests/parser/bad/exp_t-fun-with.scilexp
+
+This function needs brackets for the argument.
+
+exp_term: LBRACE SPID COLON CID WITH
+##
+## Ends in an error in state: 119.
+##
+## lit -> CID . NUMLIT [ SEMICOLON RBRACE ]
+## sid -> CID . PERIOD ID [ SEMICOLON RBRACE ]
+##
+## The known suffix of the stack is as follows:
+## CID
+##
+# see tests/parser/bad/exp_t-lbrace-spid-colon-cid-with.scilexp
+
+This is an invalid message construction. The parser expects another message entry separated by a semicolon or a closing brace.
+
+exp_term: LBRACE SPID COLON HEXLIT SEMICOLON WITH
+##
+## Ends in an error in state: 125.
+##
+## separated_nonempty_list(SEMICOLON,msg_entry) -> msg_entry SEMICOLON . separated_nonempty_list(SEMICOLON,msg_entry) [ RBRACE ]
+##
+## The known suffix of the stack is as follows:
+## msg_entry SEMICOLON
+##
+# see tests/parser/bad/exps/exp_t-lbrace-spid-colon-hexlit-semicolon-with.scilexp
+
+This is an invalid message construction. The parser after a semicolon expects another message entry.
+
+exp_term: LBRACE SPID COLON HEXLIT WITH
+##
+## Ends in an error in state: 124.
+##
+## separated_nonempty_list(SEMICOLON,msg_entry) -> msg_entry . [ RBRACE ]
+## separated_nonempty_list(SEMICOLON,msg_entry) -> msg_entry . SEMICOLON separated_nonempty_list(SEMICOLON,msg_entry) [ RBRACE ]
+##
+## The known suffix of the stack is as follows:
+## msg_entry
+##
+# see tests/parser/bad/exps/exp_t-lbrace-spid-colon-hexlit-with.scilexp
+
+This is likely an invalid message construction. The parser expects another message entry separated by a semicolon or a closing brace.
+
+exp_term: LBRACE SPID COLON WITH
+##
+## Ends in an error in state: 114.
+##
+## msg_entry -> sid COLON . lit [ SEMICOLON RBRACE ]
+## msg_entry -> sid COLON . sid [ SEMICOLON RBRACE ]
+##
+## The known suffix of the stack is as follows:
+## sid COLON
+##
+# see tests/parser/bad/exps/exp_t-lbrace-spid-colon-with.scilexp
+
+This is an invalid message construction. Following the colon, a literal or separated identifier is expected (value of the message field).
+
+exp_term: LBRACE SPID WITH
+##
+## Ends in an error in state: 113.
+##
+## msg_entry -> sid . COLON lit [ SEMICOLON RBRACE ]
+## msg_entry -> sid . COLON sid [ SEMICOLON RBRACE ]
+##
+## The known suffix of the stack is as follows:
+## sid
+##
+# see tests/parser/bad/exps/exp_t-lbrace-spid-with.scilexp
+
+This is an invalid message construction. With a message entry, the parser expects a colon preceding the value of the message field.
+
+exp_term: LBRACE WITH
+##
+## Ends in an error in state: 112.
+##
+## simple_exp -> LBRACE . loption(separated_nonempty_list(SEMICOLON,msg_entry)) RBRACE [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LBRACE
+##
+# see tests/checker/bad/message_field3.scilla
+# see tests/parser/bad/exps/exp_t-lbrace-with.scilexp
+
+This is an invalid message construction. The parser expects a semi-colon separated list of message entries and then a closing bracket.
+
+exp_term: LET ID COLON TID EQ STRING IN WITH
+##
+## Ends in an error in state: 177.
+##
+## simple_exp -> LET ID type_annot EQ simple_exp IN . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LET ID type_annot EQ simple_exp IN
+##
+# see tests/parser/bad/exps/exp_t-let-id-colon-tid-eq-string-in-with.scilexp
+
+This let expression (type-annotated) is likely missing an expression to substitute into.
+
+exp_term: LET ID COLON TID WITH
+##
+## Ends in an error in state: 173.
+##
+## typ -> typ . TARROW typ [ TARROW EQ ]
+## type_annot -> COLON typ . [ EQ ]
+##
+## The known suffix of the stack is as follows:
+## COLON typ
+##
+# see tests/parser/bad/exps/exp_t-let-id-colon-tid-with.scilexp
+# say misplaced not missing because a reduction may not happen
+# as early as the user wanted in some cases
+
+This type-annotated let expression likely has a misplaced equals, '='.
+
+exp_term: LET ID COLON WITH
+##
+## Ends in an error in state: 172.
+##
+## type_annot -> COLON . typ [ EQ ]
+##
+## The known suffix of the stack is as follows:
+## COLON
+##
+# see tests/parser/bad/exps/exp_t-let-id-colon-with.scilexp
+
+This let expression is likely missing a complete type annotation after the colon.
+
+exp_term: LET ID EQ STRING IN WITH
+##
+## Ends in an error in state: 170.
+##
+## simple_exp -> LET ID EQ simple_exp IN . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LET ID EQ simple_exp IN
+##
+# see tests/parser/bad/exps/exp_t-let-id-eq-string-in-with.scilexp
+
+This let expression likely does not substitute a variable into a valid expression.
+
+exp_term: LET ID EQ STRING WITH
+##
+## Ends in an error in state: 169.
+##
+## simple_exp -> LET ID EQ simple_exp . IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LET ID EQ simple_exp
+##
+# see tests/typecheck/bad/parsing_hex_literals.scilexp
+
+This let expression is likely missing an 'in'.
+
+exp_term: LET ID EQ WITH
+##
+## Ends in an error in state: 111.
+##
+## simple_exp -> LET ID EQ . simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LET ID EQ
+##
+# see tests/parser/bad/exps/exp_t-let-id-eq-with.scilexp
+
+This let expression is missing an expression to substitute a variable in.
+
+exp_term: LET ID WITH
+##
+## Ends in an error in state: 110.
+##
+## simple_exp -> LET ID . EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## simple_exp -> LET ID . type_annot EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LET ID
+##
+# see tests/parser/bad/exps/exp_t-let-id-with.scilexp
+
+This let expression is missing an equals ('=') or type annotation, directly after a valid identifier.
+
+exp_term: LET WITH
+##
+## Ends in an error in state: 109.
+##
+## simple_exp -> LET . ID EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## simple_exp -> LET . ID type_annot EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LET
+##
+# see tests/typecheck/bad/bad_assign.scilexp
+# see tests/typecheck/bad/bad_assign2.scilexp
+
+This let expression is missing an identifier for the variable.
+
+exp_term: MATCH SPID UNDERSCORE
+##
+## Ends in an error in state: 92.
+##
+## simple_exp -> MATCH sid . WITH list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## MATCH sid
+##
+# see tests/parser/bad/exps/exp_t-match-spid-underscore.scilexp
+
+This match expression is missing 'with'.
+
+exp_term: MATCH SPID WITH BAR CID LPAREN UNDERSCORE WITH
+##
+## Ends in an error in state: 100.
+##
+## arg_pattern -> LPAREN pattern . RPAREN [ UNDERSCORE RPAREN LPAREN ID CID ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN pattern
+##
+# see tests/parser/bad/exps/exp_t-match-spid-with-bar-cid-lparen-underscore-with.scilexp
+
+This is an invalid match expression, possibly unterminated brackets for pattern arguments.
+
+exp_term: MATCH SPID WITH BAR CID LPAREN WITH
+##
+## Ends in an error in state: 99.
+##
+## arg_pattern -> LPAREN . pattern RPAREN [ UNDERSCORE RPAREN LPAREN ID CID ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+# see tests/parser/bad/exps/exp_t-match-spid-with-bar-cid-lparen-with.scilexp
+
+This match expression has invalid pattern arguments, in the brackets we expect a pattern.
+
+
+exp_term: MATCH SPID WITH BAR CID TYPE
+##
+## Ends in an error in state: 97.
+##
+## pattern -> scid . list(arg_pattern) [ RPAREN ARROW ]
+##
+## The known suffix of the stack is as follows:
+## scid
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 22, spurious reduction of production scid -> CID 
+##
+# see tests/parser/bad/exps/exp_t-match-spid-with-bar-cid-type.scilexp
+
+In this match expression, the parser expects either a list of pattern arguments or an arrow (e.g. '=>').
+
+exp_term: MATCH SPID WITH BAR CID UNDERSCORE WITH
+##
+## Ends in an error in state: 105.
+##
+## list(arg_pattern) -> arg_pattern . list(arg_pattern) [ RPAREN ARROW ]
+##
+## The known suffix of the stack is as follows:
+## arg_pattern
+##
+# see tests/parser/bad/exps/exp_t-match-spid-with-bar-cid-underscore-with.scilexp
+
+In this match expression, following the pattern the parser expects an arrow (e.g. '=>').
+
+exp_term: MATCH SPID WITH BAR UNDERSCORE ARROW HEXLIT WITH
+##
+## Ends in an error in state: 182.
+##
+## list(exp_pm_clause) -> exp_pm_clause . list(exp_pm_clause) [ END ]
+##
+## The known suffix of the stack is as follows:
+## exp_pm_clause
+##
+# see tests/parser/bad/exps/exp_t-match-spid-with-bar-underscore-arrow-hexlit-with.scilexp
+
+After a pattern matching clause the parser expects another pattern matching clause or the end ('end').
+
+exp_term: MATCH SPID WITH BAR UNDERSCORE ARROW WITH
+##
+## Ends in an error in state: 108.
+##
+## exp_pm_clause -> BAR pattern ARROW . exp [ END BAR ]
+##
+## The known suffix of the stack is as follows:
+## BAR pattern ARROW
+##
+# see tests/parser/bad/exps/exp_t-match-spid-with-bar-underscore-arrow-with.scilexp
+
+This is an invalid match expression. Following an arrow we expect a valid expression.
+
+exp_term: MATCH SPID WITH BAR UNDERSCORE WITH
+##
+## Ends in an error in state: 107.
+##
+## exp_pm_clause -> BAR pattern . ARROW exp [ END BAR ]
+##
+## The known suffix of the stack is as follows:
+## BAR pattern
+##
+# see tests/parser/bad/exps/exp_t-match-spid-with-bar-underscore-with.scilexp
+
+This is in an invalid match expression. Following a pattern, we expect an arrow (e.g. '=>').
+
+exp_term: MATCH SPID WITH BAR WITH
+##
+## Ends in an error in state: 94.
+##
+## exp_pm_clause -> BAR . pattern ARROW exp [ END BAR ]
+##
+## The known suffix of the stack is as follows:
+## BAR
+##
+# see tests/typecheck/bad/bad_match.scilexp
+
+This is an invalid match expression. In a pattern matching clause following the bar the parser expects a pattern. The pattern may be an identifier or an ADT constructor.
+
+exp_term: MATCH SPID WITH WITH
+##
+## Ends in an error in state: 93.
+##
+## simple_exp -> MATCH sid WITH . list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## MATCH sid WITH
+##
+# see tests/parser/bad/exps/exp_t-match-spid-with-with.scilexp
+
+This is an invalid match expression, a pattern matching clause is necessary (possible missing '|').
+
+exp_term: MATCH WITH
+##
+## Ends in an error in state: 87.
+##
+## simple_exp -> MATCH . sid WITH list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## MATCH
+##
+# see tests/parser/bad/exps/exp_t-match-with.scilexp
+
+This is an invalid match expression, it is lacking a valid identifier to match with.
+
+exp_term: SPID CID PERIOD WITH
+##
+## Ends in an error in state: 145.
+##
+## sident -> CID PERIOD . ID [ TYPE TRANSITION SPID SEMICOLON RSQB PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## CID PERIOD
+##
+# see tests/parser/bad/exps/exp_t-match-spid-cid-period-with.scilexp
+
+This is an invalid expression, the identifier is incomplete or erroneous.
+
+exp_term: SPID CID WITH
+##
+## Ends in an error in state: 144.
+##
+## sident -> CID . PERIOD ID [ TYPE TRANSITION SPID SEMICOLON RSQB PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## CID
+##
+# see tests/parser/bad/exps/exp_t-spid-cid-with.scilexp
+
+This may be a type application missing '@' or an incorrect function application or a data constructor given unnecessary types or something else.
+
+exp_term: SPID SPID WITH
+##
+## Ends in an error in state: 147.
+##
+## nonempty_list(sident) -> sident . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## nonempty_list(sident) -> sident . nonempty_list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## sident
+##
+# see tests/parser/bad/exps/exp_t-spid-spid-with.scilexp
+# this occurs in many contexts where the reduction isn't happening as early as the
+# user wants it to happen
+
+If this is an application of a function, it is necessary to supply a list of valid arguments. Alternatively consider ending the expression earlier.
+
+exp_term: SPID WITH
+##
+## Ends in an error in state: 155.
+##
+## atomic_exp -> sid . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## simple_exp -> sid . nonempty_list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## sid
+##
+# see tests/typecheck/bad/foo-expr.scilexp
+
+This is an invalid expression. If it is an application of a function, it is necessary to supply a non-empty list of valid arguments.
+
+exp_term: STRING WITH
+##
+## Ends in an error in state: 297.
+##
+## exp_term -> exp . EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## exp
+##
+# see tests/parser/bad/exps/exp_t-string-with.scilexp
+
+This is not a valid expression, possible bad literal.
+
+exp_term: TFUN TID ARROW WITH
+##
+## Ends in an error in state: 84.
+##
+## simple_exp -> TFUN TID ARROW . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## TFUN TID ARROW
+##
+# see tests/parser/bad/exps/exp_t-tfun-tid-arrow-with.scilexp
+
+Type functions expect a valid expression after the arrow.
+
+exp_term: TFUN TID WITH
+##
+## Ends in an error in state: 83.
+##
+## simple_exp -> TFUN TID . ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## TFUN TID
+##
+# see tests/parser/bad/exp_t-tfun-tid-with.scilexp
+
+Type functions following the type id expect an arrow (e.g. '=>').
+
+exp_term: TFUN WITH
+##
+## Ends in an error in state: 82.
+##
+## simple_exp -> TFUN . TID ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## TFUN
+##
+# see tests/parser/bad/exps/exp_t-tfun-with.scilexp
+
+Type functions expect a type id (e.g. 'A).
+
+exp_term: WITH
+##
+## Ends in an error in state: 295.
+##
+## exp_term' -> . exp_term [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+# see tests/parser/bad/exps/exp_t-with.scilexp
+
+This is an invalid expression term, possibly avoid unnecessary brackets.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON CID COMMA WITH
+##
+## Ends in an error in state: 201.
+##
+## separated_nonempty_list(COMMA,param_pair) -> param_pair COMMA . separated_nonempty_list(COMMA,param_pair) [ RPAREN ]
+##
+## The known suffix of the stack is as follows:
+## param_pair COMMA
+##
+#
+# see tests/parser/bad/cmodule-contract-cid-lparen-id-colon-comma-with.scilla
+
+Following a comma in the list of immutable fields, the parser expects another immutable field.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON TID WITH
+##
+## Ends in an error in state: 198.
+##
+## param_pair -> ID COLON typ . [ RPAREN COMMA ]
+## typ -> typ . TARROW typ [ TARROW RPAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## ID COLON typ
+##
+# see tests/parser/bad/cmodule-contract-cid-lparen-id-colon-tid-with.scilla
+
+Following the declaration of an immutable field, the parser expects another one separated by a comma or the end of the declarations with a right bracket.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON WITH
+##
+## Ends in an error in state: 197.
+##
+## param_pair -> ID COLON . typ [ RPAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## ID COLON
+##
+# see tests/parser/bad/cmodule-contract-cid-lparen-id-colon-with.scilla
+
+In an immutable field declaration the parser expects a valid type name.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID WITH
+##
+## Ends in an error in state: 196.
+##
+## param_pair -> ID . COLON typ [ RPAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## ID
+##
+# see tests/parser/bad/cmodule-contract-cid-lparen-id-with.scilla
+
+In an immutable field declaration, the parser expects a colon following the name to precede the type.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON CID EQ HEXLIT WITH
+##
+## Ends in an error in state: 287.
+##
+## list(field) -> field . list(field) [ TRANSITION PROCEDURE EOF ]
+##
+## The known suffix of the stack is as follows:
+## field
+##
+# see tests/parser/bad/cmodule-field-id-colon-cid-eq-hexlit-with.scilla
+
+Following a field definition, the parser expects another field definition, transition, procedure or end of file.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON TID EQ WITH
+##
+## Ends in an error in state: 212.
+##
+## field -> FIELD ID COLON typ EQ . exp [ TRANSITION PROCEDURE FIELD EOF ]
+##
+## The known suffix of the stack is as follows:
+## FIELD ID COLON typ EQ
+##
+# see tests/parser/bad/cmodule-field-id-colon-tid-eq-with.scilla
+
+In a mutable field declaration, it is expected that the field is initialised to be equal to some valid expression.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON TID WITH
+##
+## Ends in an error in state: 211.
+##
+## field -> FIELD ID COLON typ . EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
+## typ -> typ . TARROW typ [ TARROW EQ ]
+##
+## The known suffix of the stack is as follows:
+## FIELD ID COLON typ
+##
+# see tests/parser/bad/cmodule-field-id-colon-tid-with.scilla
+
+In a mutable field declaration, after the type is specified an equals is expected.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON WITH
+##
+## Ends in an error in state: 210.
+##
+## field -> FIELD ID COLON . typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
+##
+## The known suffix of the stack is as follows:
+## FIELD ID COLON
+##
+# see tests/parser/bad/cmodule-field-id-colon-with.scilla
+
+In a mutable field declaration, following the colon after the naming, a type is expected.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID WITH
+##
+## Ends in an error in state: 209.
+##
+## field -> FIELD ID . COLON typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
+##
+## The known suffix of the stack is as follows:
+## FIELD ID
+##
+# see tests/parser/bad/cmodule-field-id-with.scilla
+
+In a mutable field declaration, following the naming a colon is expected. This colon separates the name and the type.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD WITH
+##
+## Ends in an error in state: 208.
+##
+## field -> FIELD . ID COLON typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
+##
+## The known suffix of the stack is as follows:
+## FIELD
+##
+# tests/checker/bad/balance_field.scilla
+# see tests/parser/bad/cmodule-field-with.scilla
+
+For a mutable field declaration, the parser expects a valid lower case beginning identifier.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE ID LPAREN RPAREN WITH
+##
+## Ends in an error in state: 280.
+##
+## procedure -> PROCEDURE component_id component_params . component_body [ TRANSITION PROCEDURE EOF ]
+##
+## The known suffix of the stack is as follows:
+## PROCEDURE component_id component_params
+##
+# see tests/parser/bad/cmodule-procedure-id-lparen-rparen-with.scilla
+
+In the transition body the parser expects a list of semi-colon separated statements.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE ID WITH
+##
+## Ends in an error in state: 279.
+##
+## procedure -> PROCEDURE component_id . component_params component_body [ TRANSITION PROCEDURE EOF ]
+##
+## The known suffix of the stack is as follows:
+## PROCEDURE component_id
+##
+# see tests/parser/bad/cmodule-procedure-id-with.scilla
+
+After a procedure has been named, the parser expects the arguments to be defined so there should
+be a left parenthesis.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE WITH
+##
+## Ends in an error in state: 278.
+##
+## procedure -> PROCEDURE . component_id component_params component_body [ TRANSITION PROCEDURE EOF ]
+##
+## The known suffix of the stack is as follows:
+## PROCEDURE
+##
+# see tests/parser/bad/cmodule-procedure-with.scilla
+
+A procedure requires a valid name.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN RPAREN END WITH
+##
+## Ends in an error in state: 285.
+##
+## list(component) -> component . list(component) [ EOF ]
+##
+## The known suffix of the stack is as follows:
+## component
+##
+# see tests/parser/bad/cmodule-transition-id-lparen-rparen-end-with.scilla
+
+Following a transition definition, the parser expects a transition or a procedure or end of file.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN RPAREN THROW BAR
+##
+## Ends in an error in state: 274.
+##
+## component_body -> stmts . END [ TRANSITION PROCEDURE EOF ]
+##
+## The known suffix of the stack is as follows:
+## stmts
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 224, spurious reduction of production option(sid) -> 
+## In state 226, spurious reduction of production stmt -> THROW option(sid) 
+## In state 263, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
+## In state 268, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
+## In state 276, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt)) 
+##
+# see tests/parser/cmodule-transition-id-lparen-rparen-throw-bar.scilla
+
+Possible typo.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN RPAREN WITH
+##
+## Ends in an error in state: 223.
+##
+## transition -> TRANSITION component_id component_params . component_body [ TRANSITION PROCEDURE EOF ]
+##
+## The known suffix of the stack is as follows:
+## TRANSITION component_id component_params
+##
+# see tests/parser/bad/cmodule-transition-id-lparen-rparen-with.scilla
+
+After a transition has the parameters defined, we expect a semi-colon separated list of valid statements in the body.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN WITH
+##
+## Ends in an error in state: 220.
+##
+## component_params -> LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN [ THROW SEND MATCH ID EVENT END DELETE CID ACCEPT ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+# see tests/checker/bad/bad_transition_param.scilla
+# see tests/parser/bad/cmodule-transition-id-lparen-with.scilla
+
+The transition parameter name is invalid. This should start with a lower case letter ('a' - 'z') then be followed by a colon and a type.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID WITH
+##
+## Ends in an error in state: 219.
+##
+## transition -> TRANSITION component_id . component_params component_body [ TRANSITION PROCEDURE EOF ]
+##
+## The known suffix of the stack is as follows:
+## TRANSITION component_id
+##
+# see tests/parser/bad/cmodule-transition-id-with.scilla
+
+After a transition has been named, the parameters must be specified in brackets.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION WITH
+##
+## Ends in an error in state: 216.
+##
+## transition -> TRANSITION . component_id component_params component_body [ TRANSITION PROCEDURE EOF ]
+##
+## The known suffix of the stack is as follows:
+## TRANSITION
+##
+# see tests/parser/bad/cmodule-transition-with.scilla
+
+Transitions must begin with a valid name, this can be a lower case or capital letter ('A' - 'z').
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN UNDERSCORE
+##
+## Ends in an error in state: 204.
+##
+## contract -> CONTRACT CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN . list(field) list(component) [ EOF ]
+## contract -> CONTRACT CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN . with_constraint list(field) list(component) [ EOF ]
+##
+## The known suffix of the stack is as follows:
+## CONTRACT CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN
+##
+# see tests/parser/bad/cmodule-version-number-contract-name-lparen-rparen-with.scilla
+
+After the definition of the immutable fields, either a contract constraint, the mutable fields definition, a transition or procedure is expected.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN WITH
+##
+## Ends in an error in state: 195.
+##
+## contract -> CONTRACT CID LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN list(field) list(component) [ EOF ]
+## contract -> CONTRACT CID LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN with_constraint list(field) list(component) [ EOF ]
+##
+## The known suffix of the stack is as follows:
+## CONTRACT CID LPAREN
+##
+# see tests/checker/bad/bad_param.scilla
+# see tests/parser/bad/cmodule-version-number-contract-name-lparen-with.scilla
+
+The name of an immutable field should begin with a lower case letter ('a' - 'z').
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID WITH
+##
+## Ends in an error in state: 194.
+##
+## contract -> CONTRACT CID . LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN list(field) list(component) [ EOF ]
+## contract -> CONTRACT CID . LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN with_constraint list(field) list(component) [ EOF ]
+##
+## The known suffix of the stack is as follows:
+## CONTRACT CID
+##
+# see tests/parser/bad/cmodule-version-number-contract-name-with.scilla
+
+The declaration of zero or more immutable fields in brackets is expected.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT WITH
+##
+## Ends in an error in state: 193.
+##
+## contract -> CONTRACT . CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN list(field) list(component) [ EOF ]
+## contract -> CONTRACT . CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN with_constraint list(field) list(component) [ EOF ]
+##
+## The known suffix of the stack is as follows:
+## CONTRACT
+##
+# see tests/parser/bad/cmodule-version-number-contract-with.scilla
+
+When a contract is being defined a valid identifier is expected.
+
+cmodule: SCILLA_VERSION NUMLIT LIBRARY CID EOF
+##
+## Ends in an error in state: 192.
+##
+## cmodule -> SCILLA_VERSION NUMLIT imports option(library) . contract EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## SCILLA_VERSION NUMLIT imports option(library)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 12, spurious reduction of production list(libentry) -> 
+## In state 189, spurious reduction of production library -> LIBRARY CID list(libentry) 
+## In state 293, spurious reduction of production option(library) -> library 
+##
+# see tests/parser/bad/cmodule-version-number-library-name
+
+Following the library definition, a contract is expected.
+
+cmodule: SCILLA_VERSION NUMLIT WITH
+##
+## Ends in an error in state: 2.
+##
+## cmodule -> SCILLA_VERSION NUMLIT . imports option(library) contract EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## SCILLA_VERSION NUMLIT
+##
+# see tests/parser/bad/cmodule-version-number-with.scilla
+
+After specifying a Scilla version number, either imports, a library or contract is expected.
+
+cmodule: SCILLA_VERSION WITH
+##
+## Ends in an error in state: 1.
+##
+## cmodule -> SCILLA_VERSION . NUMLIT imports option(library) contract EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## SCILLA_VERSION
+##
+# see tests/parser/bad/cmodule-version-with.scilla
+
+The Scilla version must be specified with a numeric literal.
+
+cmodule: WITH
+##
+## Ends in an error in state: 0.
+##
+## cmodule' -> . cmodule [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+# see tests/parser/bad/cmodule-with.scilla
+
+Scilla version number unspecified.
+
+exp_term: CID LBRACE RBRACE AT
+##
+## Ends in an error in state: 161.
+##
+## simple_exp -> scid option(ctargs) . list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## scid option(ctargs)
+##
+# see tests/parser/bad/exps/exp_t-cid-lbrace-rbrace-at.scilexp
+
+In a data constructor application, the parser expects valid separated uncapitalised identifiers for arguments.
+
+exp_term: LET ID COLON TID EQ STRING WITH
+##
+## Ends in an error in state: 176.
+##
+## simple_exp -> LET ID type_annot EQ simple_exp . IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LET ID type_annot EQ simple_exp
+##
+# see tests/parser/bad/exp_t-let-id-colon-tid-eq-string-with.scilexp
+
+This typed let expression does not have a well placed 'in'.
+
+exp_term: LET ID COLON TID EQ WITH
+##
+## Ends in an error in state: 175.
+##
+## simple_exp -> LET ID type_annot EQ . simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LET ID type_annot EQ
+##
+# see tests/parser/bad/exp_t-let-id-colon-tid-eq-with.scilexp
+
+This typed let expression does not have a valid expression to use for the substitute variable.
