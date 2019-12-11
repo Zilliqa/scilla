@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid statements term. A possible continuation may be accessing a key if it is a (nested) map or alternatively an assignment.\n",
+      "start_location": {
+        "file": "base/parser/bad/stmts_t-id-lsqb-spid-with.scilla",
+        "line": 10,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

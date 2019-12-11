@@ -1,0 +1,16 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is likely an invalid message construction. The parser expects another message entry separated by a semicolon or a closing brace.\n",
+      "start_location": {
+        "file":
+          "base/parser/bad/exps/exp_t-lbrace-spid-colon-hexlit-with.scilexp",
+        "line": 3,
+        "column": 83
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid statements term. The map access list is malformed.\n",
+      "start_location": {
+        "file": "base/parser/bad/stmts_t-id-lsqb-with.scilla",
+        "line": 10,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

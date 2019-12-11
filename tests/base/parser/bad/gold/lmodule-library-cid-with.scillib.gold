@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "This is an invalid library entry.\n",
+      "start_location": {
+        "file": "base/parser/bad/lib/lmodule-library-cid-with.scillib",
+        "line": 7,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

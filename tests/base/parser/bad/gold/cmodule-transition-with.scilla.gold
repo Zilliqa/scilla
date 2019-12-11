@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Transitions must begin with a valid name, this can be a lower case or capital letter ('A' - 'z').\n",
+      "start_location": {
+        "file": "base/parser/bad/cmodule-transition-with.scilla",
+        "line": 7,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "The data constructor, list of type arguments is incorrect. The parser expects a type argument or a closing bracket.\n",
+      "start_location": {
+        "file": "base/parser/bad/exps/exp_t-cid-lbrace-with.scilexp",
+        "line": 1,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

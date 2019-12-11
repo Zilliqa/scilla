@@ -31,6 +31,29 @@ type tsuite_env =
     ext_ipc_server : test_ctxt -> string;
   }
 
+let run_tests tests =
+  let bin_dir_default = (Sys.getcwd () ^/ "bin") in
+  let tests_dir_default = (Sys.getcwd () ^/ "tests") in
+  let stdlib_dir_default = (Sys.getcwd() ^/ "src" ^/ "stdlib") in
+  let ext_ipc_server_default = "" in
+  let bin_dir = Conf.make_string "bin_dir" bin_dir_default "Directory containing binaries" in
+  let tests_dir = Conf.make_string "tests_dir" tests_dir_default "Directory containing tests" in
+  let stdlib_dir = Conf.make_string "stdlib_dir" stdlib_dir_default "Directory containing stdlib" in
+  let print_cli = Conf.make_bool "print_cli" false "Print command line arguments used for test(s)" in
+  let update_gold = Conf.make_bool "update_gold" false "Ignore compare mismatch and update gold file(s)" in
+  let print_diff = Conf.make_bool "print_diff" false "Print the diff between gold file and actual output" in
+  let ext_ipc_server = Conf.make_string "ext_ipc_server" ext_ipc_server_default
+    "Address of external IPC server for IPC tests. Ensure that \"-runner sequential\" is set" in
+
+  let env : tsuite_env = {
+    bin_dir = bin_dir;
+    tests_dir = tests_dir; stdlib_dir = stdlib_dir;
+    print_cli = print_cli; update_gold = update_gold;
+    print_diff = print_diff;
+    ext_ipc_server = ext_ipc_server;
+  } in
+  run_test_tt_main  ("all_tests" >::: List.map ~f:((|>) env) tests)
+
 let output_verifier goldoutput_file msg print_diff output =
   (* load all data from file *)
   let gold_output = In_channel.read_all goldoutput_file in
@@ -75,6 +98,7 @@ module type TestSuiteInput = sig
   val gold_path : string -> string -> string list
   val test_path : string -> string list
   val runner : string
+  val ignore_predef_args : bool
   val exit_code : Unix.process_status
   val additional_libdirs : string list list
   val gas_limit : Stdint.uint64
@@ -86,16 +110,21 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
 
   let build_exp_tests env = List.map ~f:(fun fname ->
     fname  >:: (fun test_ctxt ->
+      let open FilePath in
       let evalbin = env.bin_dir test_ctxt ^/ runner in
       let dir = env.tests_dir test_ctxt in
-      let input_file = FilePath.make_filename (test_path fname) in
+      let input_file = make_filename (test_path fname) in
       (* Verify standard output of execution with gold file *)
-      let goldoutput_file = FilePath.make_filename (gold_path dir fname) in
-      let open FilePath in
+      let goldoutput_file = make_filename (gold_path dir fname) in
       let additional_dirs = List.map ~f:make_filename additional_libdirs in
-      let stdlib = FilePath.make_relative dir (env.stdlib_dir test_ctxt) in
+      let stdlib = make_relative dir (env.stdlib_dir test_ctxt) in
       let path = string_of_path @@ stdlib :: additional_dirs in
-      let args = custom_args @ ["-libdir";path;"-jsonerrors";input_file;"-gaslimit";(Stdint.Uint64.to_string gas_limit)] in
+      let args =
+        if ignore_predef_args then custom_args @ [input_file]
+        else
+          custom_args @
+            ["-libdir";path;"-jsonerrors";input_file;"-gaslimit";(Stdint.Uint64.to_string gas_limit)]
+      in
       let msg = cli_usage_on_err evalbin args in
       print_cli_usage (env.print_cli test_ctxt) evalbin args;
       assert_command

@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "Syntax error: Invalid map key type TestType",
+      "start_location": {
+        "file": "base/parser/bad/bad_map_key_4.scilla",
+        "line": 12,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

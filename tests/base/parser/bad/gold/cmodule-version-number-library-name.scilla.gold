@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Following the library definition, a contract is expected.\n",
+      "start_location": {
+        "file": "base/parser/bad/cmodule-version-number-library-name.scilla",
+        "line": 6,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

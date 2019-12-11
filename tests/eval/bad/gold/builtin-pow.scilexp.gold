@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "4001753",
+  "errors": [
+    {
+      "error_message":
+        "Type error: cannot apply \"pow\" built-in to argument(s) of type(s) [Uint32; Int32].",
+      "start_location": {
+        "file": "eval/bad/builtin-pow.scilexp",
+        "line": 4,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

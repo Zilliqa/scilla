@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "This is an invalid type term, it may be a bad ADT.\n",
+      "start_location": {
+        "file": "base/parser/bad/type_t-cid-underscore.scilla",
+        "line": 5,
+        "column": 26
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

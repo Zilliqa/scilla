@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid statements term, likely a bad procedure call with faulty arguments. Alternately it is an improperly terminated..\n",
+      "start_location": {
+        "file": "base/parser/bad/stmts_t-id-with.scilla",
+        "line": 11,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

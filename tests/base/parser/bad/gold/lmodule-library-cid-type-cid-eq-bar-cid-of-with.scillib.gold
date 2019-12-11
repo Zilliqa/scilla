@@ -1,0 +1,16 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This library type entry expects a non-empty list of type arguments.\n",
+      "start_location": {
+        "file":
+          "base/parser/bad/lib/lmodule-library-cid-type-cid-eq-bar-cid-of-with.scillib",
+        "line": 7,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

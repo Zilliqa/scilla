@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is likely an improperly terminated statement (lacking the semicolon).\n",
+      "start_location": {
+        "file": "base/parser/bad/stmts_t-accept-with.scilla",
+        "line": 11,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

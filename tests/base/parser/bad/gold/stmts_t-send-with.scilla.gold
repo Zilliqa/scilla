@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "It is expected to send to a separated identifier.\n",
+      "start_location": {
+        "file": "base/parser/bad/stmts_t-send-with.scilla",
+        "line": 9,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

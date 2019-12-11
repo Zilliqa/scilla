@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "The parser does not expect contracts when loading imports for libraries.\n",
+      "start_location": {
+        "file": "base/parser/bad/lib/lmodule-import-contract.scillib",
+        "line": 3,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

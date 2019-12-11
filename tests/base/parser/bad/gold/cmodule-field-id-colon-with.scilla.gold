@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "In a mutable field declaration, following the colon after the naming, a type is expected.\n",
+      "start_location": {
+        "file": "base/parser/bad/cmodule-field-id-colon-with.scilla",
+        "line": 9,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

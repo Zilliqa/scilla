@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "This is an invalid assign statement, it lacks a separated identifier.\n",
+      "start_location": {
+        "file": "base/parser/bad/stmts_t-id-assign-with.scilla",
+        "line": 8,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
