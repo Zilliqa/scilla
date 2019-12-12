@@ -229,8 +229,10 @@ let rec expr_to_json (e : ParsedSyntax.expr) =
         let vs_json = ("arguments", `List (List.map ~f:ident_to_json vs)) in
         [("node_type", `String "BuiltinExpression"); vs_json; b_json]
     (* Advanced features: to be added in Scilla 0.2 *)
-    | TFun (_,_) -> 
-        [("node_type", `String "TFunExpression")]
+    | TFun (v, e) -> 
+        let lhsj = ("lhs", ident_to_json v) in
+        let rhsj = ("rhs_expr", expr_annot_to_json e) in
+        [("node_type", `String "TFunExpression"); lhsj; rhsj]
     | TApp (_,_) -> 
         [("node_type", `String "TAppExpression")]
     (* Fixpoint combinator: used to implement recursion principles *)
