@@ -16,50 +16,26 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core
 open Api
 open DebugMessage
 
 module M = Idl.IdM
 module IDL = Idl.Make(M)
-
 module Client = API(IDL.GenClient ())
-module Cmds = API(Cmdlinergen.Gen ())
 
-module Cmd = struct
-  open Cmdliner.Term
-
-  let mk_default ~version =
-    let doc = "The Scilla server CLI" in
-    ret (const (fun _ -> `Help (`Pager, None)) $ const ()),
-    info "cli" ~version ~doc
-
-  let mk_server ~sock_path ~num_pending =
-    const @@ Server.start ~sock_path ~num_pending $ const (),
-    info "scilla-server" ~doc:"Start the scilla-server"
-end
-
-let binary_rpc ~sock_path (call: Rpc.call) : Rpc.response M.t =
-  let sockaddr = Unix.ADDR_UNIX sock_path in
-  let socket = Unix.socket Unix.PF_UNIX Unix.SOCK_STREAM 0 in
-  Unix.connect socket sockaddr;
+let rpc ~sock_path (call: Rpc.call) : Rpc.response =
+  let socket = Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol:0 in
+  let addr = Unix.ADDR_UNIX sock_path in
+  Unix.connect socket ~addr;
   let ic = Unix.in_channel_of_descr socket in
   let oc = Unix.out_channel_of_descr socket in
   let msg_buf = Jsonrpc.string_of_call ~version: Jsonrpc.V2 call in
   pout @@ Printf.sprintf "Sending: %s\n" msg_buf;
-  output_string oc msg_buf;
-  flush oc;
+  Out_channel.flush stdout;
+  Out_channel.(output_string oc msg_buf; flush oc);
   let response = Caml.input_line ic in
   Unix.close socket;
   pout @@ Printf.sprintf "Response: %s\n" response;
-  M.return @@ Jsonrpc.response_of_string response
-
-let mk_cli ~sock_path ~num_pending () =
-  let rpc = binary_rpc ~sock_path in
-  let def = Cmd.mk_default ~version:"1.0.0" in
-  let srv = Cmd.mk_server ~sock_path ~num_pending in
-  Cmdliner.Term.eval_choice def (
-    srv
-    :: List.map
-      (fun t -> let (term, info) = t rpc in (Cmdliner.Term.(term $ const ()), info))
-      (Cmds.implementation ())
-    )
+  Out_channel.flush stdout;
+  Jsonrpc.response_of_string response

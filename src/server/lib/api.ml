@@ -36,11 +36,11 @@ module API (R : RPC) = struct
     Query.Runner.t
 
   (* The return value of this JSON-RPC method will be a JSON,
-      identical to today’s output JSON emitted by scilla-runner. *)
+     identical to today’s output JSON emitted by scilla-runner. *)
   let runner_return = Param.mk Rpc.Types.string
 
   let runner_error = Err.rpc_err
 
-  let runner = declare "runner" ["Execute Scilla"]
+  let runner = declare "exec" ["Execute Scilla"]
     (runner_argv @-> returning runner_return runner_error)
 end

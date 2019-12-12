@@ -20,6 +20,7 @@ depends: [
   "fileutils" {>= "0.5.3" & < "0.7~"}
   "hex" {>= "1.3.0" & < "1.5~"}
   "yojson" {>= "1.7.0" & < "1.8~"}
+  "lru" {>= "0.3.0" & < "0.4~"}
   "ocaml-protoc" {>= "1.2.0" & < "2.1~"}
   "ppx_deriving" {>= "4.2.1" & < "4.5~"}
   "ppx_sexp_conv" {>= "v0.12.0" & < "v0.13~"}
@@ -46,4 +47,3 @@ The language is being developed hand-in-hand with formalization of its semantics
 its embedding into the Coq proof assistant — a state-of-the art tool for
 mechanized proofs about properties of programs.
 """
-
