@@ -41,6 +41,6 @@ module API (R : RPC) = struct
 
   let runner_error = Err.rpc_err
 
-  let runner = declare "exec" ["Execute Scilla"]
+  let runner = declare "exec" ["Execute Scilla contract"]
     (runner_argv @-> returning runner_return runner_error)
 end

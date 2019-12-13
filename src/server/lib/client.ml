@@ -25,15 +25,16 @@ module IDL = Idl.Make(M)
 module Client = API(IDL.GenClient ())
 
 let rpc ~sock_path (call: Rpc.call) : Rpc.response =
-  let socket = Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol:0 in
+  let socket = Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 in
   let addr = Unix.ADDR_UNIX sock_path in
   Unix.connect socket ~addr;
   let ic = Unix.in_channel_of_descr socket in
   let oc = Unix.out_channel_of_descr socket in
-  let msg_buf = Jsonrpc.string_of_call ~version: Jsonrpc.V2 call in
+  let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
   pout @@ Printf.sprintf "Sending: %s\n" msg_buf;
   Out_channel.flush stdout;
-  Out_channel.(output_string oc msg_buf; flush oc);
+  (* Send data to the socket. *)
+  Util.send_delimited oc msg_buf;
   let response = Caml.input_line ic in
   Unix.close socket;
   pout @@ Printf.sprintf "Response: %s\n" response;

@@ -23,7 +23,7 @@ module Cmd = struct
   let default ~version =
     let doc = "The Scilla server CLI" in
     ret (const (fun _ -> `Help (`Pager, None)) $ const ()),
-    info "cli" ~version ~doc
+    info "scilla-server" ~version ~doc
 
   let server ~sock_path ~num_pending =
     const @@ Server.start ~sock_path ~num_pending $ const (),
