@@ -29,8 +29,8 @@ let () =
   in
 
   (* This file runs in _build/default/src/base/cpp.
-   * libff is installed in _deps/libff/install. *)
-  let libff_dir = Sys.getcwd() ^ "/../../../../../_deps/libff/install" in
+   * libff is installed in deps/libff/install. *)
+  let libff_dir = Sys.getcwd() ^ "/../../../../../deps/libff/install" in
   let libff_include_dir = libff_dir ^ "/include" in
   let libff_lib_dir = libff_dir ^ "/lib" in
   if not (Sys.file_exists libff_include_dir) || not (Sys.file_exists libff_lib_dir)
