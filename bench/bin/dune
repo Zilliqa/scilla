@@ -3,8 +3,10 @@
  (public_name scilla-bench)
  (modules scilla_bench_runner)
  (libraries core core_bench textutils scilla_bench)
- (preprocess (pps
-   ppx_sexp_conv
-   ppx_inline_test)))
+ (preprocess
+  (pps ppx_sexp_conv ppx_inline_test)))
 
-(env (dev (flags (:standard -warn-error -A))))
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

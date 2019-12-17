@@ -1,10 +1,12 @@
-{ compiler ? "4.06" }:
+{ compiler ? "4.07" }:
 
 with import <nixpkgs> { };
 
 let
   ver = with lib.strings; concatStringsSep "_" (splitString "." compiler);
   opkgs = pkgs.ocaml-ng."ocamlPackages_${ver}";
+  dune = opkgs.callPackage ./scripts/nix/dune.nix { };
+  dune-configurator = opkgs.callPackage ./scripts/nix/dune_configurator.nix { };
   ppx_deriving_protobuf = opkgs.callPackage ./scripts/nix/ppx_deriving_protobuf.nix { };
   ocaml-protoc = opkgs.callPackage ./scripts/nix/ocaml-protoc.nix { inherit ppx_deriving_protobuf; };
   rpclib = opkgs.callPackage ./scripts/nix/rpclib.nix { };
@@ -14,7 +16,7 @@ let
     zlib secp256k1 libffi pkgconfig pcre patdiff
   ];
   ocamlPkgs = with opkgs; [
-    ocaml dune ocamlbuild findlib utop merlin ocp-indent ocp-index
+    ocaml dune dune-configurator ocamlbuild findlib utop merlin ocp-indent ocp-index
     base core core_bench
     textutils ppx_sexp_conv
     ppx_deriving ppx_tools_versioned

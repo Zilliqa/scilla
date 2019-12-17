@@ -1,28 +1,27 @@
 (rule
-  (targets config_j.ml config_j.mli)
-  (deps    config.atd)
-  (mode    fallback)
-  (action  (run atdgen -j %{deps})))
+ (targets config_j.ml config_j.mli)
+ (deps config.atd)
+ (mode fallback)
+ (action
+  (run atdgen -j %{deps})))
 
 (rule
-  (targets config_t.ml config_t.mli)
-  (deps    config.atd)
-  (mode    fallback)
-  (action  (run atdgen -t %{deps})))
+ (targets config_t.ml config_t.mli)
+ (deps config.atd)
+ (mode fallback)
+ (action
+  (run atdgen -t %{deps})))
 
 (library
  (name scilla_bench)
  (library_flags -linkall)
- (libraries
-   core core_bench re2 textutils
-   yojson atdgen
-   scilla_base scilla_eval scilla_util stateIPCTest)
+ (libraries core core_bench re2 textutils yojson atdgen scilla_base
+   scilla_eval scilla_util stateIPCTest)
  (inline_tests)
  (preprocess
-  (pps
-    ppx_let
-    ppx_sexp_conv
-    ppx_compare
-    ppx_inline_test)))
+  (pps ppx_let ppx_sexp_conv ppx_compare ppx_inline_test)))
 
-(env (dev (flags (:standard -warn-error -A))))
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))
