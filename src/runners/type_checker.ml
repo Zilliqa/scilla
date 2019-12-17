@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -32,7 +32,7 @@ open TypeInfo
 
 module PSRep = ParserRep
 module PERep = ParserRep
-  
+
 module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
 module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
@@ -42,7 +42,7 @@ module TI = ScillaTypeInfo (TCSRep) (TCERep)
 module GUA_Checker = ScillaGUA(TCSRep)(TCERep)
 
 (* Check that the expression parses *)
-let check_parsing filename = 
+let check_parsing filename =
     match FrontEndParser.parse_file ScillaParser.Incremental.exp_term filename with
     | Error _ -> fail0 (sprintf "Failed to parse input file %s\n." filename)
     | Ok e ->
@@ -64,11 +64,13 @@ let check_typing e elibs gas =
 
 let check_patterns e = PM_Checker.pm_check_expr e
 let analyze_gas e = GUA_Checker.gua_expr_wrapper e
-    
+
 let () =
     let cli = parse_cli () in
     let open GlobalConfig in
     StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
+    (* Initialize the type environment with the built-in ADTs *)
+    Datatypes.DataTypeDictionary.reinit ();
     set_debug_level Debug_None;
     let filename = cli.input_file in
     let gas_limit = cli.gas_limit in
