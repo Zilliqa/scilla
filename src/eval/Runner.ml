@@ -18,7 +18,7 @@
 
 
 open Syntax
-open Core
+open Core_kernel
 open ErrorUtils
 open Eval
 open DebugMessage
@@ -182,14 +182,14 @@ let run (args : args) : Yojson.Basic.t =
     let open Unix in
     (* Subtract gas based on (contract+init) size / message size. *)
     if is_deployment then
-      let cost' = Unix.((stat cli.input).st_size + (stat cli.input_init).st_size) in
+      let cost' = Unix.((stat args.input).st_size + (stat args.input_init).st_size) in
       let cost = Uint64.of_int cost' in
       if (Uint64.compare args.gas_limit cost) < 0 then
         fatal_error_gas (mk_error0 (sprintf "Ran out of gas when parsing contract/init files.\n")) Uint64.zero
       else
         Uint64.sub args.gas_limit cost
     else
-      let cost = Uint64.of_int (Unix.stat cli.input_message).st_size in
+      let cost = Uint64.of_int (Unix.stat args.input_message).st_size in
       (* libraries can only be deployed, not "run". *)
       if is_deployment then
         fatal_error_gas (mk_error0 (sprintf "Cannot run a library contract. They can only be deployed\n")) Uint64.zero
