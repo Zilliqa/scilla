@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -28,7 +28,7 @@ open Result.Let_syntax
 (* A tagged constructor *)
 type constructor = {
   cname : string; (* constructor name *)
-  arity : int;    (* How many arguments it takes *)  
+  arity : int;    (* How many arguments it takes *)
 }
 
 (* An Algebraic Data Type *)
@@ -66,7 +66,7 @@ module DataTypeDictionary = struct
     tmap = [("Succ", [ADT ("Nat", [])])]
   }
 
-  
+
   (* Option *)
   let c_some = { cname = "Some"; arity = 1 }
   let c_none = { cname = "None"; arity = 0 }
@@ -77,8 +77,8 @@ module DataTypeDictionary = struct
     tmap = [
       ("Some", [TypeVar "'A"])
     ]
-  }             
-  
+  }
+
   (* Lists *)
   let c_cons = { cname = "Cons"; arity = 2 }
   let c_nil  = { cname = "Nil"; arity = 0 }
@@ -104,23 +104,25 @@ module DataTypeDictionary = struct
   }
 
   (* adt.tname -> adt *)
-  let adt_name_dict =
-    let open Caml in
-    let ht : ((string, adt) Hashtbl.t) = Hashtbl.create 5 in
-    let _ = Hashtbl.add ht t_bool.tname t_bool in
-    let _ = Hashtbl.add ht t_nat.tname t_nat in
-    let _ = Hashtbl.add ht t_option.tname t_option in
-    let _ = Hashtbl.add ht t_list.tname t_list in
-    let _ = Hashtbl.add ht t_product.tname t_product in
-      ht
+  let adt_name_dict = Caml.Hashtbl.create 5
 
   (* tconstr -> (adt * constructor) *)
-  let adt_cons_dict =
+  let adt_cons_dict = Caml.Hashtbl.create 10
+
+  (* Re-initialize environment dictionaries *)
+  let reinit () =
     let open Caml in
-    let ht : ((string, (adt * constructor)) Hashtbl.t) = Hashtbl.create 10 in
-    Hashtbl.iter (fun _ a -> List.iter (fun c -> Hashtbl.add ht c.cname (a, c)) a.tconstr)
-      adt_name_dict;
-    ht
+    Hashtbl.(
+      reset adt_name_dict;
+      reset adt_cons_dict;
+      add adt_name_dict t_bool.tname t_bool;
+      add adt_name_dict t_nat.tname t_nat;
+      add adt_name_dict t_option.tname t_option;
+      add adt_name_dict t_list.tname t_list;
+      add adt_name_dict t_product.tname t_product;
+      iter (fun _ a -> List.iter (fun c ->
+        add adt_cons_dict c.cname (a, c)) a.tconstr) adt_name_dict
+    )
 
   let add_adt (new_adt : adt) error_loc =
     let open Caml in
@@ -135,7 +137,7 @@ module DataTypeDictionary = struct
               | Some _ -> fail1 (sprintf "Multiple declarations of type constructor %s" ctr.cname) error_loc
               | None ->
                   pure @@ Hashtbl.add adt_cons_dict ctr.cname (new_adt, ctr))
-  
+
   (*  Get ADT by name *)
   let lookup_name name =
     let open Caml in
@@ -155,7 +157,7 @@ module DataTypeDictionary = struct
       pure dt
 
   (* Get typing map for a constructor *)
-  let constr_tmap adt cn = 
+  let constr_tmap adt cn =
     List.find adt.tmap ~f:(fun (n, _) -> n = cn) |> Option.map ~f:snd
 
   let bool_typ = ADT (t_bool.tname, [])
@@ -218,8 +220,8 @@ module SnarkTypes = struct
 
   let scilla_g1point_to_ocaml g1p =
     match g1p with
-    | ADTValue("Pair", [pxt; pyt], [ByStrX px; ByStrX py]) 
-      when 
+    | ADTValue("Pair", [pxt; pyt], [ByStrX px; ByStrX py])
+      when
         pxt = scalar_type && pyt = scalar_type &&
         Bystrx.width px = scalar_len &&
         Bystrx.width py = scalar_len ->
@@ -228,8 +230,8 @@ module SnarkTypes = struct
 
   let scilla_g2point_to_ocaml g2p =
     match g2p with
-    | ADTValue("Pair", [pxt; pyt], [ByStrX px; ByStrX py]) 
-      when 
+    | ADTValue("Pair", [pxt; pyt], [ByStrX px; ByStrX py])
+      when
         pxt = g2comp_type && pyt = g2comp_type &&
         Bystrx.width px = g2comp_len &&
         Bystrx.width py = g2comp_len ->

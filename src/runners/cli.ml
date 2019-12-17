@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -51,27 +51,27 @@ let process_json_validation () =
   GlobalConfig.set_validate_json !b_validate_json
 
 let validate_main usage =
-  let msg = 
+  let msg =
     (* init.json is mandatory *)
-    (if not (Sys.file_exists !f_input_init) 
+    (if not (Sys.file_exists !f_input_init)
      then "Invalid initialization file\n" else "") in
-  let msg1 = 
+  let msg1 =
     (* input_state.json is not mandatory, but if provided, should be valid *)
-    (if ((!f_input_state <> "") && not (Sys.file_exists !f_input_state)) 
+    (if ((!f_input_state <> "") && not (Sys.file_exists !f_input_state))
      then msg ^ "Invalid input contract state\n" else msg) in
-  let msg2 = 
+  let msg2 =
     (* input_message.json is not mandatory, but if provided, should be valid *)
     (if ((!f_input_message <> "") && not (Sys.file_exists !f_input_message))
      then msg1 ^ "Invalid input message\n" else msg1) in
-  let msg3 = 
+  let msg3 =
     (* input_blockchain.json is mandatory *)
     (if not (Sys.file_exists !f_input_blockchain)
      then msg2 ^ "Invalid input blockchain state\n" else msg2) in
-  let msg4 = 
+  let msg4 =
     (* input file is mandatory *)
     (if not ((Sys.file_exists !f_input))
      then msg3 ^ "Invalid input contract file\n" else msg3) in
-  let msg5 = 
+  let msg5 =
     (* output file is mandatory *)
     (if !f_output = "" then msg4 ^ "Output file not specified\n" else msg4) in
   let msg6 =
@@ -84,26 +84,13 @@ let validate_main usage =
   if msg6 <> ""
   then
     PrettyPrinters.fatal_error_noformat (usage ^ (Printf.sprintf "%s\n" msg6))
-  else 
+  else
     ()
 
-type ioFiles = {
-    input_init : string;
-    input_state : string;
-    input_message : string;
-    input_blockchain : string;
-    output : string;
-    input : string;
-    libdirs : string list;
-    gas_limit : Stdint.uint64;
-    balance : Stdint.uint128;
-    pp_json : bool;
-    ipc_address : string;
-}
-
 let parse () =
+  let open Runner in
   let speclist = [
-    ("-version", Arg.Unit (fun () -> 
+    ("-version", Arg.Unit (fun () ->
         DebugMessage.pout
           (Core_kernel.sprintf "Scilla version: %s\n" PrettyPrinters.scilla_version_string);
           if true then exit 0; (* if "true" to avoid warning on exit 0 *)
@@ -124,7 +111,7 @@ let parse () =
       ), "Path(s) to directory containing libraries separated by ':' (';' on windows)");
     ("-gaslimit", Arg.String
       (fun i ->
-        let g = 
+        let g =
           try
             Stdint.Uint64.of_string i
           with
@@ -134,7 +121,7 @@ let parse () =
       , "Gas limit");
     ("-balance", Arg.String
       (fun i ->
-        let g = 
+        let g =
           try
             Stdint.Uint128.of_string i
           with
@@ -146,7 +133,7 @@ let parse () =
     ("-jsonerrors", Arg.Unit (fun () -> b_json_errors := true), "Print errors in JSON format");
     ("-disable-pp-json", Arg.Unit (fun () -> b_pp_json := false), "Disable pretty printing of JSONs");
     ("-disable-validate-json", Arg.Unit (fun () -> b_validate_json := false), "Disable validation of input JSONs");
-  ] in 
+  ] in
 
   let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^

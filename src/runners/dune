@@ -2,8 +2,7 @@
  (names scilla_runner eval_runner type_checker scilla_checker)
  (public_names scilla-runner eval-runner type-checker scilla-checker)
  (package scilla)
- (modules scilla_runner eval_runner type_checker scilla_checker cli
-   RunnerUtil)
+ (modules scilla_runner eval_runner type_checker scilla_checker cli)
  (libraries core angstrom ppx_sexp_conv ppx_deriving ppx_let yojson cryptokit
    fileutils scilla_base scilla_eval scilla_checkers scilla_cpp_deps)
  (preprocess

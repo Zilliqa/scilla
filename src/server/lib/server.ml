@@ -30,12 +30,26 @@ module M = Idl.IdM
 module IDL = Idl.Make(M)
 module Server = API(IDL.GenServer ())
 
+(* Represent a single item store in LRU cache *)
+module CacheItem = struct
+  type t = string
+  let compare (a: int) b = compare a b
+  let equal (a: int) b = a = b
+  let hash (i: int) = Hashtbl.hash i
+  let weight _ = 1
+end
+
 (** Command handler that runs Scilla with the
     given [argv] and returns the resulting JSON. *)
-let runner _argv =
-  (* TODO: Validate [argv], use [invalid_query]*)
+let runner argv =
+  (* Reset tracked libraries *)
+  GlobalConfig.StdlibTracker.reset ();
+  (* Convert [argv] to the [Runner.args] *)
+  let args = Query.Runner.to_cli_args argv in
+  let output = Runner.run args in
+  let result = Yojson.Basic.to_string output in
   (* TODO: implement AST caching here *)
-  IDL.ErrM.return "it works"
+  IDL.ErrM.return result
 
 (** Request handler. *)
 let handler rpc conn =
@@ -73,10 +87,6 @@ let serve rpc ~sock_path ~num_pending =
 
 (** Start the server. *)
 let start ~sock_path ~num_pending () =
-  GlobalConfig.(
-    set_log_file "./_build/logs/scilla-server.log";
-    set_debug_level Debug_Normal
-  );
   pout "Starting scilla server...\n";
   Out_channel.flush stdout;
 

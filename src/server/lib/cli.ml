@@ -14,6 +14,7 @@
 
 open Core
 open Api
+open ScillaUtil.FilePathInfix
 
 module Cmds = API(Cmdlinergen.Gen ())
 
@@ -32,6 +33,12 @@ end
 
 let run ~sock_path ~num_pending =
   let open Cmdliner in
+  let logs_dir = "_build" ^/ "logs" in
+  Util.mkdir_rec ~dir:logs_dir ~perm:0o0755;
+  GlobalConfig.(
+    set_log_file @@ logs_dir ^/ "scilla-server.log";
+    set_debug_level Debug_Normal
+  );
   let rpc = Client.rpc ~sock_path in
   let def = Cmd.default ~version:"1.0.0" in
   let srv = Cmd.server ~sock_path ~num_pending in
@@ -41,4 +48,4 @@ let run ~sock_path ~num_pending =
   let impl = Cmds.implementation () in
   let calls = List.map impl ~f:mk_cmd  in
   let cmds = srv :: calls in
-  Term.eval_choice def cmds
+  Term.(exit @@ eval_choice def cmds)

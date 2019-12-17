@@ -26,14 +26,27 @@ module Runner = struct
     message : string;
     blockchain : string;
     input : string;
-    output : string;
     libdirs : string list;
     gas_limit : int;
     balance: int;
   } [@@deriving rpcty]
 
-  (** Makes the CLI args that could be passed to the scilla-runner. *)
-  let to_cli _argv = ()
+  (** Makes the [Runner.args] that could be
+      passed to the [Runner.run] function. *)
+  let to_cli_args argv =
+    let open Runner in
+    { input_init = argv.init;
+      input_state = "";
+      input_message = argv.message;
+      input_blockchain = argv.blockchain;
+      output = "";
+      input = argv.input;
+      libdirs = argv.libdirs;
+      gas_limit = Stdint.Uint64.of_int argv.gas_limit;
+      balance = Stdint.Uint128.of_int argv.balance;
+      ipc_address = argv.ipc_address;
+      pp_json = false;
+    }
 end
 
 (* module Checker = ... *)

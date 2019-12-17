@@ -12,4 +12,4 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-val run : sock_path:string -> num_pending:int -> unit Cmdliner.Term.result
+val run : sock_path:string -> num_pending:int -> unit
