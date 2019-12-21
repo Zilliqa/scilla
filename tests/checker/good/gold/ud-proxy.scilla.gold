@@ -1,7 +1,7 @@
 {
   "cashflow_tags": {
     "State variables": [
-      { "field": "initialAdmin", "tag": "NoInfo" },
+      { "field": "initialAdmin", "tag": "NotMoney" },
       { "field": "registry", "tag": "NotMoney" },
       { "field": "admins", "tag": "(Map NotMoney)" }
     ],
