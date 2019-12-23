@@ -39,8 +39,8 @@ module API (R : RPC) = struct
      identical to today’s output JSON emitted by scilla-runner. *)
   let runner_return = Param.mk Rpc.Types.string
 
-  let runner_error = Err.rpc_err
+  let runner_error = Idl.DefaultError.err
 
-  let runner = declare "exec" ["Execute Scilla contract"]
+  let runner = declare "runner" ["Execute Scilla contract"]
     (runner_argv @-> returning runner_return runner_error)
 end
