@@ -18,6 +18,7 @@
 
 open Core
 open DebugMessage
+open ErrorUtils
 open Api
 
 (* You can swap the RPC engine, by using a different monad here,
@@ -30,33 +31,31 @@ module M = Idl.IdM
 module IDL = Idl.Make(M)
 module Server = API(IDL.GenServer ())
 
-(* Represent a single item store in LRU cache *)
-module CacheItem = struct
-  type t = string
-  let compare (a: int) b = compare a b
-  let equal (a: int) b = a = b
-  let hash (i: int) = Hashtbl.hash i
-  let weight _ = 1
-end
-
 (** Command handler that runs Scilla with the
     given [argv] and returns the resulting JSON. *)
 let runner argv =
+  let open IDL.ErrM in
   (* Reset tracked libraries *)
   GlobalConfig.StdlibTracker.reset ();
+  ptrace @@ Printf.sprintf "\nRunner request:\n %s\n" (Query.Runner.show argv);
   (* Convert [argv] to the [Runner.args] *)
   let args = Query.Runner.to_cli_args argv in
-  let output = Runner.run args in
-  let result = Yojson.Basic.to_string output in
-  (* TODO: implement AST caching here *)
-  IDL.ErrM.return result
+  try
+    let output = Runner.run args in
+    let result = Yojson.Basic.to_string output in
+    pout @@ Printf.sprintf "\nRunner response:\n %s\n" (Yojson.Basic.prettify result);
+    (* TODO: implement AST caching here *)
+    return result
+  with
+    FatalError msg ->
+      return_err (Idl.DefaultError.InternalError msg)
 
 (** Request handler. *)
 let handler rpc conn =
   let ic = Unix.in_channel_of_descr conn in
   let oc = Unix.out_channel_of_descr conn in
   let req = Jsonrpc.call_of_string (Caml.input_line ic) in
-  let res = rpc req |> M.run in
+  let res = M.run (rpc req) in
   Util.send_delimited oc (Jsonrpc.string_of_response res)
 
 (** Listen on the given [sock_path] and process requests.
@@ -73,15 +72,15 @@ let serve rpc ~sock_path ~num_pending =
   while true do
     let conn, _ = Unix.accept socket in
     let _ = Thread.create
-      (fun () ->
-        Util.protect_reraise
-          (* Here we're calling [M.run] to make sure that we are running the process,
-             this is not much of a problem with [IdM] or [ExnM], but in general we
-             should ensure that the computation is started by a runner *)
-          ~f:(fun () -> handler rpc conn)
-          (* Close the connection no matter what *)
-          ~finally:(fun () -> Unix.close conn)
-      ) ()
+        (fun () ->
+           Util.protect_reraise
+             (* Here we're calling [M.run] to make sure that we are running the process,
+                this is not much of a problem with [IdM] or [ExnM], but in general we
+                should ensure that the computation is started by a runner *)
+             ~f:(fun () -> handler rpc conn)
+             (* Close the connection no matter what *)
+             ~finally:(fun () -> Unix.close conn)
+        ) ()
     in ()
   done
 
