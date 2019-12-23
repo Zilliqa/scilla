@@ -180,14 +180,19 @@ let located_msg msg loc =
   let open ErrorUtils in
   (sprintf "%s:%d:%d: %s" loc.fname loc.lnum loc.cnum msg)
 
-let fatal_error err =
-  DebugMessage.perr @@ scilla_error_to_string err; exit 1
+let fatal_error errors =
+  let msg = scilla_error_to_string errors in
+  DebugMessage.perr msg;
+  raise (FatalError msg)
 
-let fatal_error_gas err gas_remaining =
-  DebugMessage.perr @@ scilla_error_gas_string gas_remaining err; exit 1
+let fatal_error_gas errors gas_remaining =
+  let msg = scilla_error_gas_string gas_remaining errors in
+  DebugMessage.perr msg;
+  raise (FatalError msg)
 
-let fatal_error_noformat err =
-  DebugMessage.perr err; exit 1
+let fatal_error_noformat msg =
+  DebugMessage.perr msg;
+  raise (FatalError msg)
 
 (*****************************************************)
 (*                Pretty Printers                    *)

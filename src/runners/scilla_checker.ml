@@ -243,7 +243,7 @@ let check_cmodule cli =
       check_version cmod.smver;
       pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string j));)
 
-let () =
+let run () =
     let cli = parse_cli () in
     let open GlobalConfig in
 
@@ -270,3 +270,7 @@ let () =
     else
       (* Check contract modules. *)
       check_cmodule cli
+
+let () =
+  try run ()
+  with FatalError _ -> exit 1

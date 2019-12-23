@@ -28,7 +28,7 @@ let raise_if_error = function
   | Ok _ -> ()
   | Error e -> fatal_error e
 
-let () =
+let run () =
   let r_input_file = ref "" in
   let usage = "Usage:\n" ^ Sys.argv.(0) ^ " input.scilla (or input.scillib)\n" in
   let anon_handler s = r_input_file := s in
@@ -50,3 +50,7 @@ let () =
       raise_if_error @@ parse_expr_from_file input_file
     else
       fatal_error (mk_error0 (sprintf "Unknown file extension %s\n" extn))
+
+let () =
+  try run ()
+  with FatalError _ -> exit 1

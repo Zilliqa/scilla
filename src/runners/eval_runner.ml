@@ -20,6 +20,7 @@
 open Syntax
 open FrontEndParser
 open RunnerUtil
+open ErrorUtils
 open GlobalConfig
 open PrettyPrinters
 open Core_kernel
@@ -34,7 +35,7 @@ module TCERep = TC.OutputERep
 
 let default_gas_limit = Stdint.Uint64.of_int 2000
 
-let () =
+let run () =
   let cli = parse_cli() in
   let filename = cli.input_file in
 
@@ -66,3 +67,7 @@ let () =
           printf "%s\n" (Eval.pp_result res lib_fnames)
       | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining)
   | Error e -> fatal_error e
+
+let () =
+  try run ()
+  with FatalError _ -> exit 1
