@@ -16,35 +16,39 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core
+
 module Runner = struct
   (** Holds all the arguments to be provided for the
       Scilla execution. The query parameters are identical to
       the CLI arguments of the scilla-runner executable. *)
   type t = {
     init : string;
-    ipc_address : string;
+    state : string option;
+    ipc_address : string option;
     message : string;
     blockchain : string;
+    output : string option;
     input : string;
     libdirs : string list;
     gas_limit : int;
     balance: int;
-  } [@@deriving rpcty]
+  } [@@deriving rpcty, show]
 
   (** Makes the [Runner.args] that could be
       passed to the [Runner.run] function. *)
   let to_cli_args argv =
     let open Runner in
     { input_init = argv.init;
-      input_state = "";
+      input_state = Option.value argv.state ~default:"";
       input_message = argv.message;
       input_blockchain = argv.blockchain;
-      output = "";
+      output = Option.value argv.output ~default:"";
       input = argv.input;
       libdirs = argv.libdirs;
       gas_limit = Stdint.Uint64.of_int argv.gas_limit;
       balance = Stdint.Uint128.of_int argv.balance;
-      ipc_address = argv.ipc_address;
+      ipc_address = Option.value argv.ipc_address ~default:"";
       pp_json = false;
     }
 end
