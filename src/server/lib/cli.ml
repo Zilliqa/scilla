@@ -36,6 +36,7 @@ let run ~sock_path ~num_pending =
   let logs_dir = "_build" ^/ "logs" in
   Util.mkdir_rec ~dir:logs_dir ~perm:0o0755;
   GlobalConfig.(
+    set_use_json_errors true;
     set_log_file @@ logs_dir ^/ "scilla-server.log";
     set_debug_level Debug_Normal
   );
