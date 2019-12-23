@@ -31,12 +31,10 @@ let rpc ~sock_path (call: Rpc.call) : Rpc.response =
   let ic = Unix.in_channel_of_descr socket in
   let oc = Unix.out_channel_of_descr socket in
   let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
-  pout @@ Printf.sprintf "Sending: %s\n" msg_buf;
-  Out_channel.flush stdout;
+  ptrace @@ Printf.sprintf "\nSending: %s\n" msg_buf;
   (* Send data to the socket. *)
   Util.send_delimited oc msg_buf;
   let response = Caml.input_line ic in
   Unix.close socket;
-  pout @@ Printf.sprintf "Response: %s\n" response;
-  Out_channel.flush stdout;
+  ptrace @@ Printf.sprintf "\nResponse: %s\n" response;
   Jsonrpc.response_of_string response
