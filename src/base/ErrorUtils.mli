@@ -63,3 +63,5 @@ val mk_invalid_json : string -> exn
 
 exception InternalError of scilla_error list
 val mk_internal_error : string -> exn
+
+exception FatalError of string

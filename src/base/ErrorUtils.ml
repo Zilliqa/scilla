@@ -87,3 +87,5 @@ let mk_invalid_json msg = Invalid_json (mk_error0 msg)
 
 exception InternalError of scilla_error list
 let mk_internal_error msg = InternalError (mk_error0 msg)
+
+exception FatalError of string
