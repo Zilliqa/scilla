@@ -167,7 +167,7 @@ let deploy_library args gas_remaining =
         (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
       ]
 
-let run (args : args) : Yojson.Basic.t =
+let run args =
   let is_deployment = (args.input_message = "") in
   let is_ipc = args.ipc_address <> "" in
   let is_library =
@@ -226,6 +226,7 @@ let run (args : args) : Yojson.Basic.t =
       (* Retrieve initial parameters *)
       let initargs =
         try
+          plog (sprintf "\n[Parsing]:\nContract initialization parameters [%s].\n" args.input_init);
           JSON.ContractState.get_json_data args.input_init
         with
         | Invalid_json s ->
@@ -257,6 +258,7 @@ let run (args : args) : Yojson.Basic.t =
       (* Retrieve block chain state  *)
       let bstate =
       try
+        plog (sprintf "\n[Parsing]:\nContract blockchain state [%s].\n" args.input_blockchain);
         JSON.BlockChainState.get_json_data args.input_blockchain
       with
         | Invalid_json s ->
@@ -307,6 +309,7 @@ let run (args : args) : Yojson.Basic.t =
         (* Not initialization, execute transition specified in the message *)
         (let mmsg =
         try
+          plog (sprintf "\n[Parsing]:\nContract message [%s].\n" args.input_message);
           JSON.Message.get_json_data args.input_message
         with
         | Invalid_json s ->
@@ -329,10 +332,10 @@ let run (args : args) : Yojson.Basic.t =
           let () = StateService.initialize ~sm:(IPC args.ipc_address) ~fields in
           (cstate, gas_remaining')
         else
-
           (* Retrieve state variables *)
           let (curargs, cur_bal) =
           try
+            plog (sprintf "\n[Parsing]:\nContract state [%s].\n" args.input_state);
             input_state_json args.input_state
           with
           | Invalid_json s ->
