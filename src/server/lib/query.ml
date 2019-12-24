@@ -23,29 +23,33 @@ module Runner = struct
       Scilla execution. The query parameters are identical to
       the CLI arguments of the scilla-runner executable. *)
   type t = {
-    init : string;
-    state : string option;
-    ipc_address : string option;
-    message : string;
-    blockchain : string;
-    output : string option;
-    input : string;
-    libdirs : string list;
-    gas_limit : int;
-    balance: int;
+    init : string [@key "-init"];
+    state : string option [@key "-istate"];
+    ipc_address : string option [@key "-ipcaddress"];
+    message : string [@key "-imessage"];
+    blockchain : string [@key "-iblockchain"];
+    output : string option [@key "-o"];
+    input : string [@key "-i"];
+    libdir : string [@key "-libdir"];
+    gas_limit : int [@key "-gaslimit"];
+    balance: int [@key "-balance"];
   } [@@deriving rpcty, show]
 
   (** Makes the [Runner.args] that could be
       passed to the [Runner.run] function. *)
   let to_cli_args argv =
     let open Runner in
+    let libdirs =
+      if argv.libdir = ""
+      then []
+      else Str.split (Str.regexp "[;:]") argv.libdir in
     { input_init = argv.init;
       input_state = Option.value argv.state ~default:"";
       input_message = argv.message;
       input_blockchain = argv.blockchain;
       output = Option.value argv.output ~default:"";
       input = argv.input;
-      libdirs = argv.libdirs;
+      libdirs;
       gas_limit = Stdint.Uint64.of_int argv.gas_limit;
       balance = Stdint.Uint128.of_int argv.balance;
       ipc_address = Option.value argv.ipc_address ~default:"";
