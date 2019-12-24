@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-
+  
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
-
+ 
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
+ 
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -58,7 +58,7 @@ module AC = ScillaAcceptChecker (TCSRep) (TCERep)
 module TI = ScillaTypeInfo (TCSRep) (TCERep)
 
 (* Check that the module parses *)
-let check_parsing ctr syn =
+let check_parsing ctr syn = 
   let cmod = FrontEndParser.parse_file syn ctr in
   if Result.is_ok cmod then
     plog @@ sprintf "\n[Parsing]:\n module [%s] is successfully parsed.\n" ctr;
@@ -153,7 +153,7 @@ let check_cashflow typed_cmod token_fields =
              ~f:(fun (i, ts) ->
                  (i, List.map ts ~f:(fun t_opt -> Option.value_map t_opt ~default:"_" ~f:CF.ECFR.money_tag_to_string))))) in
   (param_field_tags_to_string, ctr_tags_to_string)
-
+      
 let check_version vernum =
   let (mver, _, _) = scilla_version in
   if vernum <> mver
@@ -172,11 +172,11 @@ let check_lmodule cli =
     let%bind (lmod : ParsedSyntax.lmodule) = wrap_error_with_gas initial_gas @@
       check_parsing cli.input_file ScillaParser.Incremental.lmodule in
     let elibs = import_libs lmod.elibs cli.init_file  in
-    let%bind (recursion_lmod, recursion_rec_principles, recursion_elibs) =
+    let%bind (recursion_lmod, recursion_rec_principles, recursion_elibs) = 
       wrap_error_with_gas initial_gas @@ check_recursion_lmod lmod elibs in
-    let%bind ((typed_lmod, typed_rlibs, typed_elibs), remaining_gas) =
+    let%bind ((typed_lmod, typed_rlibs, typed_elibs), remaining_gas) = 
       check_typing_lmod recursion_lmod recursion_rec_principles recursion_elibs initial_gas in
-    let%bind _ = wrap_error_with_gas remaining_gas @@
+    let%bind _ = wrap_error_with_gas remaining_gas @@ 
       check_patterns_lmodule typed_lmod typed_rlibs typed_elibs in
     let%bind _ = wrap_error_with_gas remaining_gas @@ check_sanity_lmod typed_lmod typed_rlibs typed_elibs in
     pure ((typed_lmod, typed_rlibs, typed_elibs), remaining_gas)

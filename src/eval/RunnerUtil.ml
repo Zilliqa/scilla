@@ -2,20 +2,19 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-
+  
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
-
+ 
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
+ 
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-
 
 open Core_kernel
 open Printf
@@ -46,7 +45,7 @@ let import_lib id =
   let sloc = get_rep id in
   let (fname, initf) = match StdlibTracker.find_lib_dir name with
     | None -> fatal_error @@ mk_error1(errmsg ^ "Not found.\n") sloc
-    | Some d ->
+    | Some d -> 
       let libf = d ^/ name ^. StdlibTracker.file_extn_library in
       let initf = d ^/ name ^. "json" in
         (libf, get_init_extlibs initf)
@@ -60,7 +59,7 @@ let import_lib id =
 (* An auxiliary data structure that is homomorphic to libtree, but for namespaces.
    Think of this as a field "namespace" in the "Syntax.libtree". It isn't added
    to the type itself because we want to eliminate the idea of namespaces right here. *)
-type 'a nspace_tree =
+type 'a nspace_tree = 
   {
     nspace : 'a ident option;
     dep_ns : 'a nspace_tree list;
@@ -69,8 +68,8 @@ type 'a nspace_tree =
 (* light-weight namespaces. prefix all entries in lib with their namespace. *)
 let eliminate_namespaces lib_tree ns_tree =
 
-  (* Prefix definitions in lib with namespace (and rewrite their uses).
-     Also, rewrite uses in lib that are in env. This is for names imported by lib.
+  (* Prefix definitions in lib with namespace (and rewrite their uses). 
+     Also, rewrite uses in lib that are in env. This is for names imported by lib. 
      Returns renamed library and a list of names that are defined in this library. *)
   let rename_in_library env lib namespace =
     let (rev_entries, _, def_names) = List.fold lib.lentries ~init:([], env, [])
@@ -152,7 +151,7 @@ let eliminate_namespaces lib_tree ns_tree =
           let pelist' = List.map pelist ~f:(fun (pat, expr) ->
             let pat', binds = rename_in_pattern env pat in
             (* remove all binds from env *)
-            let env' = List.fold_left binds ~init:env
+            let env' = List.fold_left binds ~init:env 
               ~f:(fun accenv b -> List.Assoc.remove accenv ~equal:((=)) b) in
             (pat', rename_in_expr expr env')
           ) in
@@ -200,8 +199,8 @@ let eliminate_namespaces lib_tree ns_tree =
     let this_lib = ltnode.libn in
     let this_namespace = nsnode.nspace in
     let fullns =
-      match this_namespace with
-      | Some i -> if outerns <> "" then outerns ^ "." ^ (get_id i) else (get_id i)
+      match this_namespace with 
+      | Some i -> if outerns <> "" then outerns ^ "." ^ (get_id i) else (get_id i) 
       | None -> outerns
       in
     (* rename deps first *)
@@ -219,7 +218,7 @@ let eliminate_namespaces lib_tree ns_tree =
     in
     ({libn = ltnode'; deps = deps'}, env)
   in
-  List.map2_exn lib_tree ns_tree
+  List.map2_exn lib_tree ns_tree 
     ~f:(fun ltnode nsnode -> fst @@ rename_in_libtree ltnode nsnode "")
 
 (* Import all libraries in "names" (and their dependences). *)
@@ -236,10 +235,10 @@ let import_libs names init_file =
     in
     List.fold_left ~f:(fun (libacc, nacc) (name, mapped_name, namespace) ->
       if List.mem stack (get_id name) ~equal:(=) then
-        let errmsg =
+        let errmsg = 
           if get_id (mapped_name) = (get_id name) then
             sprintf "Cyclic dependence found when importing %s." (get_id name)
-          else
+          else 
             sprintf "Cyclic dependence found when importing %s (mapped to %s)."
               (get_id (mapped_name)) (get_id name)
         in
@@ -317,7 +316,7 @@ let parse_cli () =
   let r_cf = ref false in
   let r_cf_token_fields = ref [] in
   let speclist = [
-    ("-version", Arg.Unit (fun () ->
+    ("-version", Arg.Unit (fun () -> 
         DebugMessage.pout
           (sprintf "Scilla version: %s\n" PrettyPrinters.scilla_version_string);
           if true then exit 0; (* if "true" to avoid warning on exit 0 *)
@@ -343,7 +342,7 @@ let parse_cli () =
     ("-jsonerrors", Arg.Unit (fun () -> r_json_errors := true), "Print errors in JSON format");
     ("-contractinfo", Arg.Unit (fun () -> r_contract_info := true), "Print various contract information");
     ("-typeinfo", Arg.Unit (fun () -> r_type_info := true), "Print types of variables with location");
-  ] in
+  ] in 
 
   let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -gaslimit <limit> -libdir /path/to/stdlib input.scilla\n" in
   let optional_usage = String.concat ~sep:"\n "
@@ -365,3 +364,4 @@ let parse_cli () =
     gua_flag = !r_gua; p_contract_info = !r_contract_info;
     cf_flag = !r_cf; cf_token_fields = !r_cf_token_fields;
     init_file = !r_init_file; p_type_info = !r_type_info}
+
