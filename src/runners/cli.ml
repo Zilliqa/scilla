@@ -16,6 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+
+
 let f_input_init = ref ""
 let f_input_state = ref ""
 let f_input_message = ref ""
@@ -42,7 +45,7 @@ let process_trace () =
   | _ -> ()
 
 let process_pplit () =
-  if !b_pp_lit then GlobalConfig.set_pp_lit true else GlobalConfig.set_pp_lit false
+  GlobalConfig.set_pp_lit !b_pp_lit
 
 let process_json_errors () =
   GlobalConfig.set_use_json_errors !b_json_errors
@@ -51,40 +54,45 @@ let process_json_validation () =
   GlobalConfig.set_validate_json !b_validate_json
 
 let validate_main usage =
-  let msg = 
+  (* not mandatory file name input, but if provided, should be valid *)
+  let invalid_optional_fname fname =
+    not (String.is_empty fname || Sys.file_exists fname)
+  in
+  let msg = "" in
+  let msg =
     (* init.json is mandatory *)
-    (if not (Sys.file_exists !f_input_init) 
-     then "Invalid initialization file\n" else "") in
-  let msg1 = 
+    if not @@ Sys.file_exists !f_input_init
+    then "Invalid initialization file\n" else msg in
+  let msg =
     (* input_state.json is not mandatory, but if provided, should be valid *)
-    (if ((!f_input_state <> "") && not (Sys.file_exists !f_input_state)) 
-     then msg ^ "Invalid input contract state\n" else msg) in
-  let msg2 = 
+    if invalid_optional_fname !f_input_state
+    then msg ^ "Invalid input contract state\n" else msg in
+  let msg =
     (* input_message.json is not mandatory, but if provided, should be valid *)
-    (if ((!f_input_message <> "") && not (Sys.file_exists !f_input_message))
-     then msg1 ^ "Invalid input message\n" else msg1) in
-  let msg3 = 
+    if invalid_optional_fname !f_input_message
+    then msg ^ "Invalid input message\n" else msg in
+  let msg =
     (* input_blockchain.json is mandatory *)
-    (if not (Sys.file_exists !f_input_blockchain)
-     then msg2 ^ "Invalid input blockchain state\n" else msg2) in
-  let msg4 = 
+    if not @@ Sys.file_exists !f_input_blockchain
+    then msg ^ "Invalid input blockchain state\n" else msg in
+  let msg =
     (* input file is mandatory *)
-    (if not ((Sys.file_exists !f_input))
-     then msg3 ^ "Invalid input contract file\n" else msg3) in
-  let msg5 = 
-    (* output file is mandatory *)
-    (if !f_output = "" then msg4 ^ "Output file not specified\n" else msg4) in
-  let msg6 =
+    if not @@ Sys.file_exists !f_input
+    then msg ^ "Invalid input contract file\n" else msg in
+  (* Note: output file is optional, if it's missing we will output to stdout *)
+  let msg =
     (* input_message.json and input_state.json / i_ipc_address+balance can either both be there or both absent *)
-    if (!f_input_message <> "") &&
-       ((!f_input_state <> "") && ((!i_ipc_address <> "") || (Core_kernel.is_some !v_balance)) ||
-        (!f_input_state = "" && (!i_ipc_address = "" || Core_kernel.is_none !v_balance)))
-      then msg5 ^ "Input message provided, but either none or both of input state / (IPC address and balance) provided\n"
-      else msg5 in
-  if msg6 <> ""
+    if String.(
+        !f_input_message <> "" &&
+        ((!f_input_state <> "") && (!i_ipc_address <> "" || Option.is_some !v_balance) ||
+         (!f_input_state = "") && (!i_ipc_address = "" || Option.is_none !v_balance))
+      )
+      then msg ^ "Input message provided, but either none or both of input state / (IPC address and balance) provided\n"
+      else msg in
+  if msg <> ""
   then
-    PrettyPrinters.fatal_error_noformat (usage ^ (Printf.sprintf "%s\n" msg6))
-  else 
+    PrettyPrinters.fatal_error_noformat (usage ^ (Printf.sprintf "%s\n" msg))
+  else
     ()
 
 type ioFiles = {
@@ -150,10 +158,10 @@ let parse () =
 
   let mandatory_usage = "Usage:\n" ^ Sys.argv.(0) ^ " -init init.json [-istate input_state.json]" ^
     " -iblockchain input_blockchain.json [-imessage input_message.json]" ^
-    " -o output.json -i input.scilla -libdir /path/to/stdlib" ^
+    " [-o output.json] -i input.scilla -libdir /path/to/stdlib" ^
     " -gaslimit limit" ^ "\n" in
-  let optional_usage = String.concat "\n  "
-    (List.map (fun (flag, _, desc) -> flag ^ " " ^ desc) speclist) in
+  let optional_usage = String.concat ~sep:"\n  " @@
+    List.map speclist ~f:(fun (flag, _, desc) -> flag ^ " " ^ desc) in
   let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
 
   let ignore_anon _ = () in
