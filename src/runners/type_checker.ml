@@ -64,7 +64,7 @@ let check_typing e elibs gas =
 
 let check_patterns e = PM_Checker.pm_check_expr e
 let analyze_gas e = GUA_Checker.gua_expr_wrapper e
-
+   
 let run () =
     let cli = parse_cli () in
     let open GlobalConfig in

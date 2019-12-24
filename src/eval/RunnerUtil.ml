@@ -16,6 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+
 open Core_kernel
 open Printf
 open Syntax
@@ -364,4 +365,3 @@ let parse_cli () =
     gua_flag = !r_gua; p_contract_info = !r_contract_info;
     cf_flag = !r_cf; cf_token_fields = !r_cf_token_fields;
     init_file = !r_init_file; p_type_info = !r_type_info}
-

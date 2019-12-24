@@ -153,4 +153,3 @@ let parse () =
      input_blockchain = !f_input_blockchain; output = !f_output; input = !f_input;
      balance = (match !v_balance with | Some v -> v | None -> Stdint.Uint128.zero);
      libdirs = !d_libs; gas_limit = !v_gas_limit; pp_json = !b_pp_json; ipc_address = !i_ipc_address}
-
