@@ -46,4 +46,3 @@ let ptrace msg =
       ~f:(fun h -> Out_channel.output_string h msg)
   else
     Out_channel.output_string Out_channel.stdout msg;
-
