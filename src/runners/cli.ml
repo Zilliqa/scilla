@@ -88,6 +88,7 @@ let validate_main usage =
     ()
 
 let parse () =
+  let open Runner in
   let speclist = [
     ("-version", Arg.Unit (fun () -> 
         DebugMessage.pout

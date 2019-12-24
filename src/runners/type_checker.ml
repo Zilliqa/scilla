@@ -29,6 +29,7 @@ open PatternChecker
 open PrettyPrinters
 open GasUseAnalysis
 open TypeInfo
+open ErrorUtils
 
 module PSRep = ParserRep
 module PERep = ParserRep
