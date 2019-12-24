@@ -31,8 +31,8 @@ module Runner = struct
     output : string option [@key "-o"];
     input : string [@key "-i"];
     libdir : string [@key "-libdir"];
-    gas_limit : int [@key "-gaslimit"];
-    balance: int [@key "-balance"];
+    gas_limit : string [@key "-gaslimit"];
+    balance: string [@key "-balance"];
   } [@@deriving rpcty, show]
 
   (** Makes the [Runner.args] that could be
@@ -50,8 +50,8 @@ module Runner = struct
       output = Option.value argv.output ~default:"";
       input = argv.input;
       libdirs;
-      gas_limit = Stdint.Uint64.of_int argv.gas_limit;
-      balance = Stdint.Uint128.of_int argv.balance;
+      gas_limit = Stdint.Uint64.of_string argv.gas_limit;
+      balance = Stdint.Uint128.of_string argv.balance;
       ipc_address = Option.value argv.ipc_address ~default:"";
       pp_json = false;
     }
