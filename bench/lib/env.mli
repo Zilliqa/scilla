@@ -16,6 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+(** Benchmarks environment *)
 type t =
   { bin_dir : string;
     stdlib_dir : string;
@@ -25,4 +26,5 @@ type t =
     state_mode : StateService.service_mode;
   }
 
+(** Prepare a new environment *)
 val mk : sock_addr:string option -> t

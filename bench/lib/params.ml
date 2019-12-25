@@ -12,6 +12,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_bench
+
 type t =
   { suites : Suite.t list;
     quota : Quota.t;
@@ -23,11 +25,4 @@ type t =
     threshold : float;
     ci : bool;
     timestamp : string option;
-  }
-
-let mk ~suites ~quota ~regex ~list
-       ~save ~display ~compare
-       ~threshold ~ci ~timestamp =
-  { suites; quota; regex; list;
-    save; display; compare;
-    threshold; ci; timestamp }
+  } [@@deriving make]

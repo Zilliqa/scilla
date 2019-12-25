@@ -2,7 +2,7 @@
  (name scilla_bench_runner)
  (public_name scilla-bench)
  (modules scilla_bench_runner)
- (libraries core core_bench textutils scilla_bench)
+ (libraries core core_bench scilla_bench)
  (preprocess
   (pps ppx_sexp_conv ppx_inline_test)))
 

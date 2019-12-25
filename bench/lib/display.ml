@@ -13,7 +13,6 @@
 *)
 
 open Core
-open Textutils
 
 let print_tests groups =
   let open Core_bench in

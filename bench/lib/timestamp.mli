@@ -17,12 +17,12 @@ open Core
 (** Make a timestamp that looks like "20191019192411" *)
 val mk : unit -> string
 
-(** Make a timestamp string from the given [Time.t]. *)
+(** Make a timestamp string from the given [Time.t] *)
 val format : Time.t -> string
 
-(** Parse timestamp. *)
+(** Parse timestamp *)
 val parse : string -> Time.t
 
 (** Parse the given list of timestamps and
-    sort them in a descending order. *)
+    sort them in a descending order *)
 val sort_desc : string list -> string list

@@ -12,13 +12,13 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-(** List paths containing benchmark results. *)
+(** List paths containing benchmark results *)
 val ls : env:Env.t -> string list
 
 (** Given the [timestamp] of the benchmark results to
     compare with return a directory named after that timestamp,
     otherwise return the latest one, if it exists and
-    it is not the same as the [current] timestamp. *)
+    it is not the same as the [current] timestamp *)
 val latest
   :  timestamp:string option
   -> current:string option

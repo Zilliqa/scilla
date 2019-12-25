@@ -14,15 +14,15 @@
 
 open Core_bench.Bench
 
-(** Load benchmarks. *)
+(** Load benchmarks *)
 val load
   :  params:Params.t
   -> cfg:Config_t.config
   -> env:Env.t
   -> Test.t list
 
-(** Output benchmark groups along with their tests. *)
+(** Output benchmark groups along with their tests *)
 val list : Test.t list -> unit
 
-(** Run the given benchmarks. *)
+(** Run the given benchmarks *)
 val exec : Test.t list -> params:Params.t -> env:Env.t -> unit

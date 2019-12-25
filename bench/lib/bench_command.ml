@@ -13,6 +13,7 @@
 *)
 
 open Core
+open Core_bench
 
 type callback_bench = params:Params.t -> env:Env.t -> unit
 
@@ -60,10 +61,10 @@ let mk_param bench =
         | [] -> Suite.all
         | ss -> ss in
       let env = Env.mk ~sock_addr:sock_addr in
-      let params = Params.mk
-          ~suites ~quota ~regex ~list
+      let params = Params.make
+          ~suites ~quota ?regex ~list
           ~save ~display ~compare
-          ~threshold ~ci ~timestamp
+          ~threshold ~ci ?timestamp ()
       in
       bench ~params ~env
   ]

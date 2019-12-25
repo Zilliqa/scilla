@@ -13,10 +13,10 @@
 *)
 
 open Core
+open Params
 
 let load ~params ~cfg ~env =
   let open Core_bench in
-  let open Params in
   let include_suite b = List.mem params.suites b ~equal:Suite.equal in
   (* Load benchmarks for standalone closed expressions *)
   let expression_tests =
@@ -40,13 +40,11 @@ let list =
   Display.print_tests
 
 let save results ~params ~env =
-  let open Params in
   if params.save
   then Some (Measurement_results.save results ~env)
   else None
 
 let compare_and_display ~current_dir ~results ~params ~env =
-  let open Params in
   let current_timestamp = Option.value current_dir ~default:"current (not saved)" in
   (* Now, load the benchmark results we want to compare with *)
   let latest = Measurement_results.load_latest
@@ -74,9 +72,7 @@ let compare_and_display ~current_dir ~results ~params ~env =
 
 let exec tests ~params ~env =
   let module B = Core_bench in
-  let open Params in
-  let run_config = B.Run_config.create () in
-  let (quota : Quota.t) = params.quota in
+  let run_config = B.Run_config.create ~quota:params.quota () in
   (* First, run the benchmarks and get back the measurements.
      Note that we can't just use the [B.measure] here because it
      returns the [B.Bench.Measurement.t], but we want to use the
@@ -86,7 +82,7 @@ let exec tests ~params ~env =
   let meas =
     tests
     |> B.Test.expand
-    |> Benchmark.measure_all ~run_config ~quota in
+    |> B.Benchmark.measure_all run_config in
   (* Analyze the measurements, get the results *)
   let analysis_results = Measurements.analyze meas in
   (* Create an intermediate representation for the

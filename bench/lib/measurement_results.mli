@@ -14,15 +14,15 @@
 
 open Core_bench
 
-(** Sorts benchmark results by the [benchmark_name] field. *)
+(** Sorts benchmark results by the [benchmark_name] field *)
 val sort : Measurement_result.t list -> Measurement_result.t list
 
 (** Make a list of regression results given
-    the [Analysis_result.t list]. *)
+    the [Analysis_result.t list] *)
 val mk : Analysis_result.t list -> Measurement_result.t list
 
 (** Save the benchmark results, return
-    the directory where it was saved. *)
+    the directory where it was saved *)
 val save : Measurement_result.t list -> env:Env.t -> string
 
 (** Load the benchmark results from the specified [timestamp] directory.
@@ -30,7 +30,7 @@ val save : Measurement_result.t list -> env:Env.t -> string
     be loaded by finding the directory named after the
     latest timestamp, which is not the same as the [current] directory.
     Return the [t list] along with used timestamp (directory name)
-    represented as a [string]. *)
+    represented as a [string] *)
 val load_latest
   :  timestamp:string option
   -> current:string option
@@ -38,14 +38,14 @@ val load_latest
   -> (Measurement_result.t list * string) option
 
 (** Compare the [previous] and [current], return [t] containing deltas.
-    This function assumes that both lists are already sorted by the [benchmark_name] field.*)
+    This function assumes that both lists are already sorted by the [benchmark_name] field *)
 val calc_deltas
   :  previous:(Measurement_result.t list)
   -> current:(Measurement_result.t list)
   -> Measurement_result.t list
 
 (** Check for significant performance regressions and
-    raise an exception, if any. *)
+    raise an exception, if any *)
 val detect_regressions
   :  previous:(Measurement_result.t list)
   -> deltas:(Measurement_result.t list)

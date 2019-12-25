@@ -17,5 +17,5 @@ open Core
 type callback_bench = params:Params.t -> env:Env.t -> unit
 
 (** Create a [Command.t] that executes a given callback
-    which is passed parameters parsed from the command line. *)
+    which is passed parameters parsed from the command line *)
 val mk : callback_bench -> Command.t

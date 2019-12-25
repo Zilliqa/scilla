@@ -12,7 +12,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-(** Benchmarks execution parameters. *)
+open Core_bench
+
+(** Benchmarks execution parameters *)
 type t =
   { suites : Suite.t list;
     quota : Quota.t;
@@ -24,17 +26,4 @@ type t =
     threshold : float;
     ci : bool;
     timestamp : string option;
-  }
-
-val mk
-  :  suites:Suite.t list
-  -> quota:Quota.t
-  -> regex:Re2.t option
-  -> list:bool
-  -> save:bool
-  -> display:bool
-  -> compare:bool
-  -> threshold:float
-  -> ci:bool
-  -> timestamp:string option
-  -> t
+  } [@@deriving make]

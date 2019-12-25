@@ -13,13 +13,13 @@
 *)
 
 (** Compare the previous and current results,
-    return [t] containing deltas. *)
+    return [t] containing deltas *)
 val calc
     :  Measurement_result.t
     -> Measurement_result.t
     -> Measurement_result.t
 
-(** Check if there is a significant performance drop. *)
+(** Check if there is a significant performance drop *)
 val is_regression
     :  prev:Measurement_result.t
     -> delta:Measurement_result.t

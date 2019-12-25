@@ -37,11 +37,11 @@ type t =
     promoted_words_per_run : float;
   } [@@deriving sexp]
 
-(** Make an actual regression result given the [Analysis_result.t]. *)
+(** Make an actual regression result given the [Analysis_result.t] *)
 val mk : Analysis_result.t -> t
 
-(** Save the benchmark result at the given [path]. *)
+(** Save the benchmark result at the given [path] *)
 val save : t -> path:string -> unit
 
-(** Load the benchmark result from the specified path. *)
+(** Load the benchmark result from the specified path *)
 val load : string -> t

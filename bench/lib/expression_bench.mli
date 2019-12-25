@@ -15,5 +15,5 @@
 open Core_bench
 open Config_t
 
-(** Make a standalone expressions benchmark group. *)
+(** Make a standalone expressions benchmark group *)
 val mk : expression_group -> env:Env.t -> Test.t
