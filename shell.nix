@@ -5,8 +5,6 @@ with import <nixpkgs> { };
 let
   ver = with lib.strings; concatStringsSep "_" (splitString "." compiler);
   opkgs = pkgs.ocaml-ng."ocamlPackages_${ver}";
-  dune = opkgs.callPackage ./scripts/nix/dune.nix { };
-  dune-configurator = opkgs.callPackage ./scripts/nix/dune_configurator.nix { };
   ppx_deriving_protobuf = opkgs.callPackage ./scripts/nix/ppx_deriving_protobuf.nix { };
   ocaml-protoc = opkgs.callPackage ./scripts/nix/ocaml-protoc.nix { inherit ppx_deriving_protobuf; };
   rpclib = opkgs.callPackage ./scripts/nix/rpclib.nix { };
