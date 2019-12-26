@@ -13,14 +13,11 @@
 *)
 
 open Core
-open Measurement_result
 open Float
+open Core_bench.Simplified_benchmark.Result
 
 let calc x y =
-  { benchmark_name = y.benchmark_name;
-    machine_id = y.machine_id;
-    ocaml_version = y.ocaml_version;
-
+  { y with
     time_r_square = y.time_r_square - x.time_r_square;
     time_per_run_nanos = y.time_per_run_nanos - x.time_per_run_nanos;
 

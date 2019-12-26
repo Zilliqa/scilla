@@ -13,6 +13,7 @@
 *)
 
 open Core
+open Core_bench.Simplified_benchmark
 
 let print_tests groups =
   let open Core_bench in
@@ -32,7 +33,7 @@ let to_ms = Util.ns_to_ms_string
 
 let print_results results =
   let open Ascii_table in
-  let open Measurement_result in
+  let open Result in
   let cells = List.map results ~f:(fun res ->
       let ms = to_ms res.time_per_run_nanos in
       [res.benchmark_name; ms])
@@ -43,7 +44,7 @@ let print_results results =
 let print_comparison
     ~previous:(prev, prev_ts) ~current:(curr, curr_ts) ~deltas =
   let open Ascii_table in
-  let open Measurement_result in
+  let open Result in
   let cells = List.map3_exn prev curr deltas ~f:(fun prev curr delta ->
       [ curr.benchmark_name
       ; to_ms prev.time_per_run_nanos

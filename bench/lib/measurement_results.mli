@@ -13,17 +13,18 @@
 *)
 
 open Core_bench
+open Core_bench.Simplified_benchmark
 
 (** Sorts benchmark results by the [benchmark_name] field *)
-val sort : Measurement_result.t list -> Measurement_result.t list
+val sort : Result.t list -> Result.t list
 
 (** Make a list of regression results given
     the [Analysis_result.t list] *)
-val mk : Analysis_result.t list -> Measurement_result.t list
+val mk : Analysis_result.t list -> Result.t list
 
 (** Save the benchmark results, return
     the directory where it was saved *)
-val save : Measurement_result.t list -> env:Env.t -> string
+val save : Result.t list -> env:Env.t -> string
 
 (** Load the benchmark results from the specified [timestamp] directory.
     If the [timestamp] dir is not given then the results will
@@ -35,19 +36,19 @@ val load_latest
   :  timestamp:string option
   -> current:string option
   -> env:Env.t
-  -> (Measurement_result.t list * string) option
+  -> (Result.t list * string) option
 
 (** Compare the [previous] and [current], return [t] containing deltas.
     This function assumes that both lists are already sorted by the [benchmark_name] field *)
 val calc_deltas
-  :  previous:(Measurement_result.t list)
-  -> current:(Measurement_result.t list)
-  -> Measurement_result.t list
+  :  previous:(Result.t list)
+  -> current:(Result.t list)
+  -> Result.t list
 
 (** Check for significant performance regressions and
     raise an exception, if any *)
 val detect_regressions
-  :  previous:(Measurement_result.t list)
-  -> deltas:(Measurement_result.t list)
+  :  previous:(Result.t list)
+  -> deltas:(Result.t list)
   -> threshold:float
   -> unit

@@ -12,16 +12,15 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_bench.Simplified_benchmark
+
 (** Compare the previous and current results,
     return [t] containing deltas *)
-val calc
-    :  Measurement_result.t
-    -> Measurement_result.t
-    -> Measurement_result.t
+val calc : Result.t -> Result.t -> Result.t
 
 (** Check if there is a significant performance drop *)
 val is_regression
-    :  prev:Measurement_result.t
-    -> delta:Measurement_result.t
+    :  prev:Result.t
+    -> delta:Result.t
     -> threshold:float
     -> bool

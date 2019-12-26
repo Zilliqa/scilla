@@ -13,15 +13,18 @@
 *)
 
 open Core
+open Core_bench
+open Core_bench.Simplified_benchmark
 open ScillaUtil.FilePathInfix
 
 let sort =
   List.sort ~compare:(fun x y ->
-      Measurement_result.(String.compare x.benchmark_name y.benchmark_name))
+      Result.(String.compare x.benchmark_name y.benchmark_name))
 
 let mk results =
   results
-  |> List.map ~f:Measurement_result.mk
+  |> to_sexp
+  |> Results.t_of_sexp
   |> sort
 
 let save results ~env =
@@ -52,13 +55,10 @@ let calc_deltas ~previous ~current =
   List.map2_exn previous current ~f:Measurement_result_delta.calc
 
 let detect_regressions ~previous ~deltas ~threshold =
-  let open Util in
-  let open Measurement_result in
-  let open Measurement_result_delta in
+  let open Result in
   let detect prev delta =
-    if is_regression ~prev ~delta ~threshold
+    if Measurement_result_delta.is_regression ~prev ~delta ~threshold
     then raise (Failure (
         sprintf "Detected performance regression in benchmark %s. Time per run delta: %s (> %.2f percent threshold)"
-          prev.benchmark_name
-          (ns_to_ms_string delta.time_per_run_nanos) threshold)) in
+          prev.benchmark_name (Util.ns_to_ms_string delta.time_per_run_nanos) threshold)) in
   List.iter2_exn previous deltas ~f:detect

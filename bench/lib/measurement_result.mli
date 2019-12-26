@@ -13,35 +13,10 @@
 *)
 
 open Core_bench
-
-(* We have to repeat the [Simplified_benchmark] module functionality here.
-   Not all of it, just the parts we need to be able to save/load the regression results. *)
-
-type t =
-  { benchmark_name : string; (** User defined name for the benchmark test. *)
-    machine_id : string; (** Stores the name of the machine used to run the benchmarks. *)
-    ocaml_version : string;
-
-    (* Various stats computed by bench: *)
-    time_r_square : float;
-    time_per_run_nanos : float;
-
-    (* 95% confidence intervals *)
-    (* If not enough data was collected for a good estimate,
-       then one would typically see a wide 95% confidence interval. *)
-    ci95_upper_bound : float;
-    ci95_lower_bound : float;
-
-    minor_words_per_run : float;
-    major_words_per_run : float;
-    promoted_words_per_run : float;
-  } [@@deriving sexp]
-
-(** Make an actual regression result given the [Analysis_result.t] *)
-val mk : Analysis_result.t -> t
+open Core_bench.Simplified_benchmark
 
 (** Save the benchmark result at the given [path] *)
-val save : t -> path:string -> unit
+val save : Result.t -> path:string -> unit
 
 (** Load the benchmark result from the specified path *)
-val load : string -> t
+val load : string -> Result.t

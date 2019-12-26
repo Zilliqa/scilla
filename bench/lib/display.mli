@@ -13,16 +13,18 @@
 *)
 
 open Core_bench
+open Core_bench.Simplified_benchmark
 
 (** Print the benchmark groups along with their tests *)
 val print_tests : Test.t list -> unit
 
 (** Print benchmark results *)
-val print_results : Measurement_result.t list -> unit
+val print_results : Result.t list -> unit
 
-(** Print previous and current benchmark results along with their deltas *)
+(** Print previous and current benchmark
+    results along with their deltas *)
 val print_comparison
-  :  previous:(Measurement_result.t list * string)
-  -> current:(Measurement_result.t list * string)
-  -> deltas:Measurement_result.t list
+  :  previous:(Result.t list * string)
+  -> current:(Result.t list * string)
+  -> deltas:Result.t list
   -> unit
