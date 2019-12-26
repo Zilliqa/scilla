@@ -2,7 +2,7 @@
   "expressions": [
     {
       "name": "eval",
-      "path": "tests/eval/exp/good",
+      "path": "tests/eval/good",
       "tests": [
         "addr",
         "app",

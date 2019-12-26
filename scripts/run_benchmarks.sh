@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-# The -e flag makes sure the script exits as soon as one command returns a non-zero exit code
+# The -e flag makes sure the script exits as soon
+# as one command returns a non-zero exit code
 set -e
 
 # Check that the required arguments are provided
