@@ -45,7 +45,6 @@ let save results ~params ~env =
   else None
 
 let compare_and_display ~current_dir ~results ~params ~env =
-  let current_timestamp = Option.value current_dir ~default:"current (not saved)" in
   (* Now, load the benchmark results we want to compare with *)
   let latest = Measurement_results.load_latest
       ~timestamp:params.timestamp
@@ -60,8 +59,8 @@ let compare_and_display ~current_dir ~results ~params ~env =
           ~previous:previous_results ~current:results in
       (* Print the comparison results (along with the time deltas) *)
       Display.print_comparison
-        ~previous:(previous_results, previous_timestamp)
-        ~current:(results, current_timestamp)
+        ~previous:previous_results
+        ~current:results
         ~deltas;
       (* Detect significant performance regressions when
          running on CI and fail with non-zero exit code, if any *)

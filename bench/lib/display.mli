@@ -24,7 +24,7 @@ val print_results : Result.t list -> unit
 (** Print previous and current benchmark
     results along with their deltas *)
 val print_comparison
-  :  previous:(Result.t list * string)
-  -> current:(Result.t list * string)
+  :  previous:Result.t list
+  -> current:Result.t list
   -> deltas:Result.t list
   -> unit

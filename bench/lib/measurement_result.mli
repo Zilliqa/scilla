@@ -12,7 +12,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_bench
 open Core_bench.Simplified_benchmark
 
 (** Save the benchmark result at the given [path] *)

@@ -41,20 +41,20 @@ let print_results results =
     ~display:Display.column_titles
     ["benchmark name"; "ms"] cells
 
-let print_comparison
-    ~previous:(prev, prev_ts) ~current:(curr, curr_ts) ~deltas =
+let print_comparison ~previous ~current ~deltas =
   let open Ascii_table in
   let open Result in
-  let cells = List.map3_exn prev curr deltas ~f:(fun prev curr delta ->
-      [ curr.benchmark_name
-      ; to_ms prev.time_per_run_nanos
-      ; to_ms curr.time_per_run_nanos
-      ; to_ms delta.time_per_run_nanos
-      ])
+  let cells = List.map3_exn previous current deltas
+      ~f:(fun prev curr delta ->
+          [ curr.benchmark_name
+          ; to_ms prev.time_per_run_nanos
+          ; to_ms curr.time_per_run_nanos
+          ; to_ms delta.time_per_run_nanos
+          ])
   in simple_list_table
     ~display:Display.column_titles
     [ "benchmark name"
     ; "previous (ms)"
     ; "current (ms)"
-    ; sprintf "delta (%s / %s)" prev_ts curr_ts
+    ; "delta"
     ] cells
