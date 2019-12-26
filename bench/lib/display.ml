@@ -54,7 +54,7 @@ let print_comparison ~previous ~current ~deltas =
   in simple_list_table
     ~display:Display.column_titles
     [ "benchmark name"
-    ; "previous (ms)"
-    ; "current (ms)"
+    ; "before"
+    ; "after"
     ; "delta"
     ] cells
