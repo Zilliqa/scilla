@@ -13,7 +13,6 @@
 *)
 
 open Core
-open Core_bench
 open Core_bench.Simplified_benchmark
 open ScillaUtil.FilePathInfix
 
