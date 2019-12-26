@@ -668,6 +668,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       comp_name   : SR.rep ident;
       comp_params : (ER.rep ident * typ) list;
       comp_body   : stmt_annot list }
+
+  type field = (ER.rep ident * typ * expr_annot)
   
   type ctr_def =
     { cname : ER.rep ident; c_arg_types : typ list }
@@ -684,7 +686,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     { cname       : SR.rep ident;
       cparams     : (ER.rep ident  * typ) list;
       cconstraint : expr_annot;
-      cfields     : (ER.rep ident * typ * expr_annot) list;
+      cfields     : field list;
       ccomps      : component list; }
 
   (* Contract module: libary + contract definiton *)
