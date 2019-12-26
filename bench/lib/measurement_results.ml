@@ -18,7 +18,7 @@ open ScillaUtil.FilePathInfix
 
 let sort =
   List.sort ~compare:(fun x y ->
-      Result.(String.compare x.benchmark_name y.benchmark_name))
+      Result.(String.compare x.full_benchmark_name y.full_benchmark_name))
 
 let mk results =
   results
@@ -47,7 +47,7 @@ let load_from path =
 
 let load_latest ~timestamp ~current ~env =
   let path = Storage.latest ~timestamp ~current ~env in
-  Option.map path ~f:(fun s -> load_from (env.Env.results_dir ^/ s), s)
+  Option.map path ~f:(fun s -> load_from (env.Env.results_dir ^/ s))
 
 let calc_deltas ~previous ~current =
   (* We assume that both lists are already sorted *)

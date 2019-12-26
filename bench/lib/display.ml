@@ -36,7 +36,7 @@ let print_results results =
   let open Result in
   let cells = List.map results ~f:(fun res ->
       let ms = to_ms res.time_per_run_nanos in
-      [res.benchmark_name; ms])
+      [res.full_benchmark_name; ms])
   in simple_list_table
     ~display:Display.column_titles
     ["benchmark name"; "ms"] cells
@@ -46,7 +46,7 @@ let print_comparison ~previous ~current ~deltas =
   let open Result in
   let cells = List.map3_exn previous current deltas
       ~f:(fun prev curr delta ->
-          [ curr.benchmark_name
+          [ curr.full_benchmark_name
           ; to_ms prev.time_per_run_nanos
           ; to_ms curr.time_per_run_nanos
           ; to_ms delta.time_per_run_nanos

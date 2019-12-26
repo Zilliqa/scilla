@@ -29,26 +29,24 @@ val save : Result.t list -> env:Env.t -> string
 (** Load the benchmark results from the specified [timestamp] directory.
     If the [timestamp] dir is not given then the results will
     be loaded by finding the directory named after the
-    latest timestamp, which is not the same as the [current] directory.
-    Return the [t list] along with used timestamp (directory name)
-    represented as a [string] *)
+    latest timestamp, which is not the same as the [current] directory *)
 val load_latest
   :  timestamp:string option
   -> current:string option
   -> env:Env.t
-  -> (Result.t list * string) option
+  -> (Result.t list) option
 
 (** Compare the [previous] and [current], return [t] containing deltas.
     This function assumes that both lists are already sorted by the [benchmark_name] field *)
 val calc_deltas
-  :  previous:(Result.t list)
-  -> current:(Result.t list)
+  :  previous:Result.t list
+  -> current:Result.t list
   -> Result.t list
 
 (** Check for significant performance regressions and
     raise an exception, if any *)
 val detect_regressions
-  :  previous:(Result.t list)
-  -> deltas:(Result.t list)
+  :  previous:Result.t list
+  -> deltas:Result.t list
   -> threshold:float
   -> unit

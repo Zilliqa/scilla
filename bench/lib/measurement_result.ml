@@ -17,7 +17,7 @@ open Core_bench.Simplified_benchmark
 open ScillaUtil.FilePathInfix
 
 let save res ~path =
-  let name = Util.sanitize res.Result.benchmark_name in
+  let name = Util.sanitize res.Result.full_benchmark_name in
   let filename = path ^/ name ^. "sexp" in
   let data = res |> Result.sexp_of_t |> Sexp.to_string in
   Out_channel.write_all filename ~data
