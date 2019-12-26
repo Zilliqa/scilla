@@ -2,7 +2,7 @@
   "cashflow_tags": {
     "State variables": [
       { "field": "initialOwner", "tag": "NoInfo" },
-      { "field": "rootNode", "tag": "NoInfo" },
+      { "field": "rootNode", "tag": "NotMoney" },
       { "field": "records", "tag": "(Map (Record ))" },
       { "field": "registrar", "tag": "NotMoney" },
       { "field": "approvals", "tag": "(Map NoInfo)" },

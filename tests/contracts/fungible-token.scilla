@@ -56,7 +56,7 @@ contract FungibleToken
 field balances : Map ByStr20 Uint128 =
   let m = Emp ByStr20 Uint128 in
     builtin put m owner total_tokens
-field allowed : Map ByStr20 (Map ByStr20 Uint128) = Emp ByStr20 (Map ByStr20 Uint128)
+field allowed : Map ByStr20 (Map ByStr20 Uint128) = Emp ByStr20 (Map ByStr20 Uint128) 
 
 transition BalanceOf (tokenOwner : ByStr20)
   bal <- balances[tokenOwner];
