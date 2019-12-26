@@ -14,13 +14,11 @@
 
 open Core_bench.Simplified_benchmark
 
-(** Compare the previous and current results,
-    return [t] containing deltas *)
-val calc : Result.t -> Result.t -> Result.t
+type t = {
+  result: Result.t;
+  percentage: float;
+}
 
-(** Check if there is a significant performance drop *)
-val is_regression
-    :  prev:Result.t
-    -> delta:Result.t
-    -> threshold:float
-    -> bool
+(** Compare the previous and current results,
+    return [t] containing deltas and percentage *)
+val calc : Result.t -> Result.t -> t

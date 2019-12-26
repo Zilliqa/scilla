@@ -26,5 +26,5 @@ val print_results : Result.t list -> unit
 val print_comparison
   :  previous:Result.t list
   -> current:Result.t list
-  -> deltas:Result.t list
+  -> deltas:Measurement_result_delta.t list
   -> unit

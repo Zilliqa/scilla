@@ -55,9 +55,11 @@ let calc_deltas ~previous ~current =
 
 let detect_regressions ~previous ~deltas ~threshold =
   let open Result in
+  let open Measurement_result_delta in
   let detect prev delta =
-    if Measurement_result_delta.is_regression ~prev ~delta ~threshold
+    (* Check if there is a significant performance drop *)
+    if delta.percentage > threshold
     then raise (Failure (
         sprintf "Detected performance regression in benchmark %s. Time per run delta: %s (> %.2f percent threshold)"
-          prev.benchmark_name (Util.ns_to_ms_string delta.time_per_run_nanos) threshold)) in
+          prev.full_benchmark_name (Util.ns_to_ms_string delta.result.time_per_run_nanos) threshold)) in
   List.iter2_exn previous deltas ~f:detect

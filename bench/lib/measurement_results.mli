@@ -37,16 +37,17 @@ val load_latest
   -> (Result.t list) option
 
 (** Compare the [previous] and [current], return [t] containing deltas.
-    This function assumes that both lists are already sorted by the [benchmark_name] field *)
+    This function assumes that both lists are
+    already sorted by the [benchmark_name] field *)
 val calc_deltas
   :  previous:Result.t list
   -> current:Result.t list
-  -> Result.t list
+  -> Measurement_result_delta.t list
 
 (** Check for significant performance regressions and
     raise an exception, if any *)
 val detect_regressions
   :  previous:Result.t list
-  -> deltas:Result.t list
+  -> deltas:Measurement_result_delta.t list
   -> threshold:float
   -> unit

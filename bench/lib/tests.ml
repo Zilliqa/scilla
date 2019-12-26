@@ -55,19 +55,14 @@ let compare_and_display ~current_dir ~results ~params ~env =
       print_endline "Nothing to compare with, the comparison is skipped"
   | Some previous ->
       (* Calculate benchmark results deltas *)
-      let deltas = Measurement_results.calc_deltas
-          ~previous ~current:results in
+      let deltas = Measurement_results.calc_deltas ~previous ~current:results in
       (* Print the comparison results (along with the time deltas) *)
-      Display.print_comparison
-        ~previous
-        ~current:results
-        ~deltas;
+      Display.print_comparison ~previous ~current:results ~deltas;
       (* Detect significant performance regressions when
          running on CI and fail with non-zero exit code, if any *)
       if params.ci then
         Measurement_results.detect_regressions
-          ~previous ~deltas
-          ~threshold:params.threshold
+          ~previous ~deltas ~threshold:params.threshold
 
 let exec tests ~params ~env =
   let module B = Core_bench in
