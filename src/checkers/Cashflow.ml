@@ -1561,6 +1561,27 @@ module ScillaCashflowChecker
             new_ctr_tag_map,
             new_changes || acc_changes))
         
+  let cf_tag_field field param_env field_env ctr_tag_map =
+    let (x,ftype,e) = field in
+    (* Bind should have same functionality except that the environment should be field_env and not local_env *)
+    (* problem: the tokens1 in field env is never known to the cf_tag_expr and so it cannot add it's new tag  *)
+    let local_env = field_env in
+
+    let x_tag = lookup_var_tag x local_env in (* expected tag is the tag in the current env  *)
+    let e_local_env = AssocDictionary.remove (get_id x) local_env in
+    let ((_, (new_e_tag, _)) as new_e, new_param_env, new_local_env, new_ctr_tag_map, e_changes) =
+      cf_tag_expr e x_tag param_env e_local_env ctr_tag_map in
+    let new_x_tag = lub_tags x_tag new_e_tag in (* new field tag based on LUB *)
+    let new_x = update_id_tag x new_x_tag in (* new field = tokens1 *)
+
+    let new_field_env = AssocDictionary.insert (get_id new_x) (get_id_tag new_x) new_local_env in
+
+    ((new_x,ftype,new_e), 
+     new_param_env,
+     new_field_env,
+     new_ctr_tag_map,
+     e_changes || (get_id_tag x) <> new_x_tag)
+
     let cf_tag_component t param_env field_env ctr_tag_map =
       let { comp_type; comp_name ; comp_params ; comp_body } = t in
       let empty_local_env = AssocDictionary.make_dict() in
@@ -1574,12 +1595,14 @@ module ScillaCashflowChecker
       in
       let (new_comp_body, new_param_env, new_field_env, new_local_env, new_ctr_tag_map, body_changes) =
         cf_tag_stmts comp_body param_env field_env init_local_env ctr_tag_map in
+
+    (* update params and check if changes happened *)
       let (new_params, new_changes) =
         List.fold_right comp_params ~init:([], body_changes)
           ~f:(fun (p, typ) (acc_ps, acc_changes) ->
               let new_tag = lookup_var_tag p new_local_env in
-             ((update_id_tag p new_tag, typ) :: acc_ps,
-              acc_changes || (get_id_tag p) <> new_tag))
+            ((update_id_tag p new_tag, typ) :: acc_ps, (* add new tag to list*)
+             acc_changes || (get_id_tag p) <> new_tag)) (* did it change something? if so schedule another round *)
       in
       ({ comp_type = comp_type; comp_name = comp_name ; comp_params = new_params ; comp_body = new_comp_body },
        new_param_env,
@@ -1595,7 +1618,10 @@ module ScillaCashflowChecker
           ~f:(fun acc_env (p, _) ->
              AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
       in 
-      let implicit_field_env = AssocDictionary.insert balance_label Money empty_env in
+    let implicit_field_env = 
+      AssocDictionary.insert balance_label Money 
+        (AssocDictionary.insert this_address_label NotMoney empty_env ) 
+    in
       let ctr_tag_map = init_ctr_tag_map () in
       let init_field_env =
         List.fold_left cfields ~init:implicit_field_env
@@ -1604,21 +1630,38 @@ module ScillaCashflowChecker
                   cf_tag_expr e (lub_tags (get_id_tag f) NoInfo) (AssocDictionary.make_dict ()) (AssocDictionary.make_dict ()) ctr_tag_map in
              AssocDictionary.insert (get_id f) e_tag acc_env)
       in
-      let rec tagger cconstraint components param_env field_env ctr_tag_map =
+    let rec tagger cconstraint (fields:(field list)) components param_env field_env ctr_tag_map =
         let (new_constraint, tmp_param_env, _, tmp_ctr_tag_map, constraint_changes) =
           cf_tag_expr cconstraint NotMoney param_env (AssocDictionary.make_dict()) ctr_tag_map in
-        let (new_ts, new_param_env, new_field_env, tmp_ctr_tag_map, changes) =
-          List.fold_right components ~init:([], tmp_param_env, field_env, tmp_ctr_tag_map, constraint_changes) 
+
+      (* adding field tagging *)
+      let (new_fs, new_param_env1, new_field_env1, tmp_ctr_tag_map, field_changes) =
+        (* fold right for backwards analysis *)
+        List.fold_right fields ~init:([], tmp_param_env, field_env, tmp_ctr_tag_map, constraint_changes) 
+          ~f:(fun f (acc_fs, acc_param_env, acc_field_env, acc_ctr_tag_map, acc_changes) ->
+              let (new_f, new_param_env, new_field_env, new_ctr_tag_map, changes) =
+                cf_tag_field f acc_param_env acc_field_env acc_ctr_tag_map in
+              (new_f :: acc_fs, new_param_env, new_field_env, new_ctr_tag_map, acc_changes || changes))
+      in
+
+
+      (* for all components traverse their stmts until no change *)
+      let (new_ts, new_param_env2, new_field_env2, tmp_ctr_tag_map, acc_components_changes) =
+        List.fold_right components ~init:([], new_param_env1, new_field_env1, tmp_ctr_tag_map, field_changes) 
             ~f:(fun t (acc_ts, acc_param_env, acc_field_env, acc_ctr_tag_map, acc_changes) ->
+
                let (new_t, new_param_env, new_field_env, new_ctr_tag_map, t_changes) =
                  cf_tag_component t acc_param_env acc_field_env acc_ctr_tag_map in
                (new_t :: acc_ts, new_param_env, new_field_env, new_ctr_tag_map, acc_changes || t_changes))
         in
-        if changes
+
+      if acc_components_changes
         then
-          tagger new_constraint new_ts new_param_env new_field_env tmp_ctr_tag_map
-        else (new_constraint, new_ts, new_param_env, new_field_env, tmp_ctr_tag_map) in
-      let (new_constraint, new_ccomps, new_param_env, new_field_env, final_ctr_tag_map) = tagger cconstraint ccomps init_param_env init_field_env ctr_tag_map in
+        tagger new_constraint new_fs new_ts new_param_env2 new_field_env2 tmp_ctr_tag_map
+      else (new_constraint, new_ts, new_param_env2, new_field_env2, tmp_ctr_tag_map) in
+    let (new_constraint, new_ccomps, new_param_env, new_field_env, final_ctr_tag_map) = tagger cconstraint cfields ccomps init_param_env init_field_env ctr_tag_map in
+
+    (* extract tags from new env *)
       let new_params =
         List.fold_right cparams ~init:[] 
           ~f:(fun (p, t) acc_params ->
@@ -1653,9 +1696,14 @@ module ScillaCashflowChecker
   (*******************************************************)
 
   let main cmod token_fields =
+
+    (* collect all variables and gives their initial value *)
     let init_mod = cf_init_tag_module cmod token_fields in
+
+    (* tag the module iterating the statements as given by the strategy *)
     let (new_mod, ctr_tag_map) = cf_tag_module init_mod in
-    let param_field_tags = 
+
+    let param_field_tags = (*collects already made tags in one list *)
       (List.map ~f:(fun (p, _) -> (get_id p, get_id_tag p)) new_mod.contr.cparams)
       @
       (List.map ~f:(fun (f, _, _) -> (get_id f, get_id_tag f)) new_mod.contr.cfields) in

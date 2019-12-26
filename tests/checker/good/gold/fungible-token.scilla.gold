@@ -1,7 +1,7 @@
 {
   "cashflow_tags": {
     "State variables": [
-      { "field": "owner", "tag": "NoInfo" },
+      { "field": "owner", "tag": "NotMoney" },
       { "field": "total_tokens", "tag": "NoInfo" },
       { "field": "decimals", "tag": "NoInfo" },
       { "field": "name", "tag": "NoInfo" },
