@@ -36,7 +36,6 @@ module Server = API(IDL.GenServer ())
 let runner argv =
   let open IDL.ErrM in
   (* Reset tracked libraries *)
-  GlobalConfig.StdlibTracker.reset ();
   ptrace @@ Printf.sprintf "\nRunner request:\n %s\n" (Query.Runner.show argv);
   (* Convert [argv] to the [Runner.args] *)
   let args = Query.Runner.to_cli_args argv in
