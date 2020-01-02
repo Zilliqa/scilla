@@ -247,6 +247,7 @@ let run () =
     let cli = parse_cli () in
     let open GlobalConfig in
 
+    GlobalConfig.StdlibTracker.reset ();
     StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
     (* Initialize the type environment with the built-in ADTs *)
     Datatypes.DataTypeDictionary.reinit ();
