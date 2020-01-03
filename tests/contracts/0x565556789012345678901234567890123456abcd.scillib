@@ -1,6 +1,7 @@
 scilla_version 0
 
-(* The filename of this file is the address specified in runner/TestLib2/init.json for TestLib1 *)
+(* The filename of this file is the address specified in runner/0x5655..abcd/init.json. *)
+(* This is a test to error out cyclic dependence. *)
 import TestLib1
 
 library TestLib1
