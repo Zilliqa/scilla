@@ -1,0 +1,20 @@
+[
+    {
+        "vname" : "_extlibs",
+        "type" : "List(Pair String ByStr20)",
+        "value" : [
+            {
+                "constructor" : "Pair",
+                "argtypes" : ["String", "ByStr20"],
+                "arguments" : ["BlockchainLib", "0x887756789012345678901234567890123456efab"]
+                
+            },
+            {
+                "constructor" : "Pair",
+                "argtypes" : ["String", "ByStr20"],
+                "arguments" : ["BlockchainLib", "0x000000000000000000000034567890123456efab"]
+                
+            }
+        ]
+    }
+]

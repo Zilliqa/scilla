@@ -32,7 +32,13 @@ let get_init_extlibs filename =
   then
     (plog (sprintf "Invalid init json %s file" filename); [])
   else
-    try JSON.ContractState.get_init_extlibs filename with
+    try 
+      let name_addr_pairs = JSON.ContractState.get_init_extlibs filename in
+      if List.contains_dup ~compare:(fun a b -> String.compare (fst a) (fst b)) name_addr_pairs
+      then fatal_error @@
+        mk_error0 (sprintf "Duplicate extlib map entries in init JSON file %s." filename)
+      else name_addr_pairs
+    with
     | Invalid_json s ->
       (* Inability to fetch extlibs info from init json shouldn't be fatal error. *)
       plog (scilla_error_to_string s);
