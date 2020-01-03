@@ -118,3 +118,21 @@ module LibTests = TestUtil.DiffBasedTests(
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
+
+(* The test here require the `-init` argument. This is required for
+ * importing libraries whose addresses are specified in the init JSON *)
+module InitArgTests = TestUtil.DiffBasedTests(
+  struct
+    let gold_path dir f = [dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
+    let test_path f = ["checker"; "bad"; f]
+    let runner = "scilla-checker"
+    let ignore_predef_args = false
+    let gas_limit = Stdint.Uint64.of_int 8000
+    let custom_args = []
+    let provide_init_arg = true
+    let additional_libdirs = [["checker"; "bad"; "lib"]]
+    let tests = [
+      "extlib_dup_entry.scilla";
+    ]
+    let exit_code : Unix.process_status = WEXITED 1
+  end)
