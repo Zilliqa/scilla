@@ -125,6 +125,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.of_int 4002000
     let custom_args = ["-typeinfo"]
     let additional_libdirs = []
+    let provide_init_arg = false
     let tests = [
       "branch-match.scilexp";
       "builtin-strings.scilexp";

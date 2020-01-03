@@ -28,6 +28,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.of_int 8000
     let custom_args = ["-cf"; "-contractinfo"]
     let additional_libdirs = []
+    let provide_init_arg = false
     let tests = [
       "bad_fields1.scilla";
       "bad_fields2.scilla";
@@ -95,6 +96,7 @@ module LibTests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.of_int 8000
     let custom_args = ["-cf"]
     let additional_libdirs = [["checker"; "bad"; "lib"]]
+    let provide_init_arg = false
     let tests = [
       "bad_adt_lib_1.scilla";
       "bad_adt_lib_2.scilla";

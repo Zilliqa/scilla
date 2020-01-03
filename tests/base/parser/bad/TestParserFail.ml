@@ -27,6 +27,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.zero
     let custom_args = []
     let additional_libdirs = []
+    let provide_init_arg = false
     let tests = [
         "bad_map_key_2.scilla";
         "bad_map_key_3.scilla";
@@ -134,6 +135,7 @@ module LibTests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.zero
     let custom_args = []
     let additional_libdirs = [["parser"; "bad"; "lib"]]
+    let provide_init_arg = false
     let tests = [
         "lmodule-import-contract.scillib";
         "lmodule-import-with.scillib";
@@ -167,6 +169,7 @@ module ExpTests = TestUtil.DiffBasedTests(
       let gas_limit = Stdint.Uint64.zero
       let custom_args = []
       let additional_libdirs = []
+      let provide_init_arg = false
       let tests = [
           "bad-map-key.scilexp";
           "bad-map-key2.scilexp";
