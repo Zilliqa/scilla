@@ -17,6 +17,7 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 ## OS-specific setup for building Scilla
 
 <details><summary>openSUSE</summary>
+
 ### openSUSE
 
 - Install `libsecp256k1-devel` from
@@ -36,9 +37,11 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 ```shell
 sudo zypper install -y curl m4 opam2 pkg-config zlib-devel gmp-devel libffi-devel libopenssl-devel boost-devel
 ```
+
 </details>
 
 <details><summary>Ubuntu</summary>
+
 ### Ubuntu
 
 On machines with Ubuntu strictly older than 18.04, run these additional commands first:
@@ -55,9 +58,11 @@ sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
 sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev
 ```
+
 </details>
 
 <details><summary>macOS</summary>
+
 ### macOS
 
 The dependencies (listed in [Brewfile](Brewfile)) can be installed via [Homebrew](https://brew.sh/) as follows.
@@ -80,17 +85,21 @@ the maximum number of open file descriptors as `Makefile`'s `test` target does:
 ```shell
 ulimit -n 1024
 ```
+
 </details>
 
 <details><summary>Nix and NixOS</summary>
+
 ### Nix and NixOS
 
 There is a `shell.nix` for Nix users, so running the `nix-shell`
 should drop you into and isolated environment with all the
 necessary dependencies available.
+
 </details>
 
 <details><summary>Windows</summary>
+
 ### Windows 10 Pro/Home Edition (Creators Update & later) via WSL
 
 1. Enable [Windows Subsystem for Linux](https://youtu.be/epZOKY83t8g) (Choose Ubuntu 18.04 LTS)
@@ -184,6 +193,7 @@ The binaries (`eval-runner`, `scilla-checker`, `scilla-runner` & `type-checker`)
   [f -> <closure>],
   [x -> (Int32 42)] }
 ```
+
 </details>
 
 
@@ -192,6 +202,7 @@ The binaries (`eval-runner`, `scilla-checker`, `scilla-runner` & `type-checker`)
 ## Installing opam packages
 
 <details><summary>Fresh opam installation (recommended for novice opam users)</summary>
+
 ### If you just installed opam package manager
 
 #### Initialize opam
@@ -215,10 +226,12 @@ The above commands can, alternatively, be run using the make target `opamdep`:
 ```shell
 make opamdep
 ```
+
 </details>
 
 
 <details><summary>Local opam switch to avoid conflicts with already installed global opam switches</summary>
+
 ### If you have opam package manager already installed
 You can try installing the Scilla dependencies using the instructions above, but skipping the initialization step.
 If `opam` reports a dependency conflict, one way out might be creating yet another opam switch and
@@ -243,6 +256,7 @@ We suggest using `make clean` command or keeping `_opam` directory like so:
 ```shell
 git clean -dfX --exclude=\!_opam/**
 ```
+
 </details>
 
 ## Using OCaml with Emacs
@@ -250,6 +264,7 @@ git clean -dfX --exclude=\!_opam/**
 Please, read the instructions below if you intend to hack on Scilla implementation.
 
 <details><summary>Instructions</summary>
+
 Scilla is written in [OCaml](https://ocaml.org/).
 You can read about how to setup your OCaml development environment [here](https://dev.realworldocaml.org/install.html).
 The following extensions would be useful for working on this codebase:
@@ -267,4 +282,5 @@ Additionally, you might want to install a nice OCaml REPL called [utop](https://
 
 To enable flycheck mode (integration of `scilla-checker` with Emacs for editing Scilla files), install
 flycheck for Emacs. See installation instructions [here](http://www.flycheck.org/en/latest/user/installation.html).
+
 </details>
