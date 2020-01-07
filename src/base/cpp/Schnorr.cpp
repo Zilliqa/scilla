@@ -196,7 +196,7 @@ bool Schnorr::Sign(const bytes& message, unsigned int offset, unsigned int size,
       }
 
       err = (BN_nnmod(result.m_r.get(), result.m_r.get(), m_curve.m_order.get(),
-                      NULL) == 0);
+                      ctx.get()) == 0);
       if (err) {
         LOG_GENERAL(WARNING, "BIGNUM NNmod failed");
         return false;
@@ -370,7 +370,7 @@ bool Schnorr::Verify(const bytes& message, unsigned int offset,
       }
 
       err2 = (BN_nnmod(challenge_built.get(), challenge_built.get(),
-                       m_curve.m_order.get(), NULL) == 0);
+                       m_curve.m_order.get(), ctx.get()) == 0);
       err = err || err2;
       if (err2) {
         LOG_GENERAL(WARNING, "Challenge rebuild mod failed");
