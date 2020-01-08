@@ -130,16 +130,19 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
       (* Contract library. *)
       let clibs = Some (lmod.libs) in
 
+      (* Checking initialized libraries! *)
+      let gas_remaining' = check_libs clibs elibs cli.input gas_remaining in
+
       let initargs =
         try
           JSON.ContractState.get_json_data cli.input_init
         with
         | Invalid_json s ->
-          fatal_error_gas (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init))) gas_remaining
+          fatal_error_gas (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init))) gas_remaining'
       in
       (* Check for version mismatch. Subtract penalty for mismatch. *)
       let emsg, rgas = (mk_error0 ("Scilla version mismatch\n")),
-        (Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty))
+        (Uint64.sub gas_remaining' (Uint64.of_int Gas.version_mismatch_penalty))
       in
       let init_json_scilla_version = List.fold_left initargs ~init:None ~f:(fun found (name, lit) ->
         if is_some found then found else
@@ -157,8 +160,6 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
         | None -> fatal_error_gas emsg rgas
       in
 
-      (* Checking initialized libraries! *)
-      let gas_remaining' = check_libs clibs elibs cli.input gas_remaining in
       let output_json = `Assoc [
         "gas_remaining", `String (Uint64.to_string gas_remaining');
         (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
