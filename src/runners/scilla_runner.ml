@@ -132,21 +132,6 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
 
       (* Checking initialized libraries! *)
       let gas_remaining' = check_libs clibs elibs cli.input gas_remaining in
-
-      (* Retrieve initial parameters *)
-      let initargs =
-        try
-          JSON.ContractState.get_json_data cli.input_init
-        with
-        | Invalid_json s ->
-            fatal_error_gas (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init))) gas_remaining'
-      in
-      (* init.json for libraries can only have _extlibs field. *)
-      (match initargs with
-      | [(label, _)] when label = extlibs_label -> ()
-      | _ -> perr @@ scilla_error_gas_string gas_remaining'
-            (mk_error0 (sprintf "Invalid initialization file %s for library\n" cli.input_init))
-      );
       let output_json = `Assoc [
         "gas_remaining", `String (Uint64.to_string gas_remaining');
         (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
