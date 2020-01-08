@@ -127,7 +127,6 @@ let validate_get_init_json init_file gas_remaining sourcever =
   (* Check for version mismatch. Subtract penalty for mismatch. *)
   let emsg = mk_error0 ("Scilla version mismatch\n") in
     let rgas = Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty) in
-  in
   let init_json_scilla_version = List.fold_left initargs ~init:None ~f:(fun found (name, lit) ->
     if is_some found then found else
     if name = ContractUtil.scilla_version_label
