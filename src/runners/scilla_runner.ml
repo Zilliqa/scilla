@@ -125,7 +125,7 @@ let validate_get_init_json init_file gas_remaining sourcever =
         fatal_error_gas (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" init_file))) gas_remaining
   in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
-  let emsg, rgas = (mk_error0 ("Scilla version mismatch\n")),
+  let emsg = mk_error0 ("Scilla version mismatch\n") in
     (Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty))
   in
   let init_json_scilla_version = List.fold_left initargs ~init:None ~f:(fun found (name, lit) ->
