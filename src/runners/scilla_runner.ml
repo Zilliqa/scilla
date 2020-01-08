@@ -156,7 +156,7 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
 
       (* Checking initialized libraries! *)
       let gas_remaining' = check_libs clibs elibs cli.input gas_remaining in
-      let _ = validate_get_init_json cli.input_init gas_remaining' lmod.smver in
+      let () = validate_get_init_json cli.input_init gas_remaining' lmod.smver in
 
       let output_json = `Assoc [
         "gas_remaining", `String (Uint64.to_string gas_remaining');
