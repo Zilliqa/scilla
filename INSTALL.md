@@ -6,7 +6,7 @@ The recommended installation process is comprised of two separate steps:
 
 Please make sure you install opam v2.0 or greater (this can be checked by running `opam --version`).
 
-Scilla requires OpenSSL 1.0.2 and if your platform does not have packages for this, you may need to build OpenSSL
+Scilla requires OpenSSL 1.1.1 and if your platform does not have packages for this, you may need to build OpenSSL
 yourself and set `PKG_CONFIG_PATH` environment variable accordingly
 (if you install OpenSSL in a non-default path):
 ```shell
