@@ -133,12 +133,13 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
       (* Checking initialized libraries! *)
       let gas_remaining' = check_libs clibs elibs cli.input gas_remaining in
 
+      (* Retrieve initial parameters *)
       let initargs =
         try
           JSON.ContractState.get_json_data cli.input_init
         with
         | Invalid_json s ->
-          fatal_error_gas (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init))) gas_remaining'
+            fatal_error_gas (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init))) gas_remaining'
       in
       (* Check for version mismatch. Subtract penalty for mismatch. *)
       let emsg, rgas = (mk_error0 ("Scilla version mismatch\n")),
