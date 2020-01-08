@@ -103,6 +103,7 @@ module type TestSuiteInput = sig
   val additional_libdirs : string list list
   val gas_limit : Stdint.uint64
   val custom_args : string list
+  val provide_init_arg : bool
 end
 
 module DiffBasedTests(Input : TestSuiteInput) = struct
@@ -114,17 +115,19 @@ module DiffBasedTests(Input : TestSuiteInput) = struct
       let evalbin = env.bin_dir test_ctxt ^/ runner in
       let dir = env.tests_dir test_ctxt in
       let input_file = make_filename (test_path fname) in
+      let init_file = make_filename (test_path ((chop_extension fname) ^ ".json")) in
       (* Verify standard output of execution with gold file *)
       let goldoutput_file = make_filename (gold_path dir fname) in
       let additional_dirs = List.map ~f:make_filename additional_libdirs in
       let stdlib = make_relative dir (env.stdlib_dir test_ctxt) in
       let path = string_of_path @@ stdlib :: additional_dirs in
-      let args =
+      let args' =
         if ignore_predef_args then custom_args @ [input_file]
         else
           custom_args @
             ["-libdir";path;"-jsonerrors";input_file;"-gaslimit";(Stdint.Uint64.to_string gas_limit)]
       in
+      let args = if provide_init_arg then (args' @ ["-init"; init_file]) else args' in
       let msg = cli_usage_on_err evalbin args in
       print_cli_usage (env.print_cli test_ctxt) evalbin args;
       assert_command

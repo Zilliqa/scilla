@@ -28,6 +28,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.of_int 4002000
     let custom_args = []
     let additional_libdirs = []
+    let provide_init_arg = false
     let tests = [
       "pm1.scilla";
       "pm2.scilla";

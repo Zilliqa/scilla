@@ -25,6 +25,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.of_int 8000
     let custom_args = ["-cf"; "-contractinfo"]
     let additional_libdirs = []
+    let provide_init_arg = false
     let tests = [
       "auction.scilla";
       "bookstore.scilla";
@@ -71,6 +72,7 @@ module CheckerTests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.of_int 8000
     let custom_args = ["-cf"; "-contractinfo";]
     let additional_libdirs = [["checker"; "good"; "lib"]]
+    let provide_init_arg = false
     let tests = [
       "adt_test.scilla";
       "nested-comments.scilla";
@@ -108,6 +110,25 @@ module CheckerTests = TestUtil.DiffBasedTests(
     let exit_code : Unix.process_status = WEXITED 0
   end)
 
+(* The test here require the `-init` argument. This is required for
+ * importing libraries whose addresses are specified in the init JSON *)
+module InitArgTests = TestUtil.DiffBasedTests(
+  struct
+    let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
+    let test_path f = ["checker"; "good"; f]
+    let runner = "scilla-checker"
+    let ignore_predef_args = false
+    let gas_limit = Stdint.Uint64.of_int 8000
+    let custom_args = []
+    let provide_init_arg = true
+    let additional_libdirs = [["checker"; "good"; "lib"]]
+    let tests = [
+      "blockchain_import.scilla";
+    ]
+    let exit_code : Unix.process_status = WEXITED 0
+  end)
+
+
 module ShogiTests = TestUtil.DiffBasedTests(
   struct
     let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
@@ -117,6 +138,7 @@ module ShogiTests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.of_int 8000
     let custom_args = ["-cf"; "-contractinfo"]
     let additional_libdirs = [[ "contracts"; "shogi_lib"]]
+    let provide_init_arg = false
     let tests = [
       "shogi.scilla";
       "shogi_proc.scilla"; 
@@ -135,6 +157,7 @@ module TypeInfoTests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.of_int 8000
     let custom_args = ["-cf"; "-typeinfo"]
     let additional_libdirs = []
+    let provide_init_arg = false
     let tests = [
       "map_corners_test.scilla";
       "auction.scilla";
