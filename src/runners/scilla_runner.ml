@@ -126,21 +126,16 @@ let validate_get_init_json init_file gas_remaining sourcever =
   in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
   let emsg = mk_error0 ("Scilla version mismatch\n") in
-    let rgas = Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty) in
-  let init_json_scilla_version = List.fold_left initargs ~init:None ~f:(fun found (name, lit) ->
-    if is_some found then found else
-    if name = ContractUtil.scilla_version_label
-    then match lit with | UintLit(Uint32L v) -> Some v | _ -> None
-    else None
-  ) in
+  let rgas = Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty) in
+  let init_json_scilla_version = List.Assoc.find initargs ~equal:(=) ContractUtil.scilla_version_label in
   let _ =
     match init_json_scilla_version with
-    | Some ijv ->
+    | Some (UintLit (Uint32L v)) ->
       let (mver, _, _) = scilla_version in
-      let ijv' = Uint32.to_int ijv in
-      if ijv' <> mver || mver <> sourcever
+      let v' = Uint32.to_int v in
+      if v' <> mver || mver <> sourcever
       then fatal_error_gas emsg rgas
-    | None -> fatal_error_gas emsg rgas
+    | _ -> fatal_error_gas emsg rgas
   in
   initargs
 
