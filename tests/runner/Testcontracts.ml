@@ -250,6 +250,7 @@ let contract_tests env =
       "mappair" >:::(build_contract_tests env "mappair" fail_code 12 14 []);
       "exception-example" >::: (build_contract_tests env "exception-example" fail_code 1 2 []);
       "testlib1_init" >:(build_contract_init_test env fail_code "0x565556789012345678901234567890123456abcd" "init" true);
+      "testlib2_bad_init" >:(build_contract_init_test env fail_code "TestLib2" "init_wrong_version" true);
       "constraint_test" >:(build_contract_init_test env fail_code "constraint" "init" false);
       "wallet_2_no_owners" >:(build_contract_init_test env fail_code "wallet_2" "init_no_owners" false);
       "wallet_2_req_sigs_zero" >:(build_contract_init_test env fail_code "wallet_2" "init_req_sigs_zero" false);

@@ -115,6 +115,30 @@ let rec output_event_json elist =
     | _ -> `Null :: j)
   | [] -> []
 
+let validate_get_init_json init_file gas_remaining source_ver =
+  (* Retrieve initial parameters *)
+  let initargs =
+    try
+      JSON.ContractState.get_json_data init_file
+    with
+    | Invalid_json s ->
+        fatal_error_gas (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" init_file))) gas_remaining
+  in
+  (* Check for version mismatch. Subtract penalty for mismatch. *)
+  let emsg = mk_error0 ("Scilla version mismatch\n") in
+  let rgas = Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty) in
+  let init_json_scilla_version = List.Assoc.find initargs ~equal:String.equal ContractUtil.scilla_version_label in
+  let () =
+    match init_json_scilla_version with
+    | Some (UintLit (Uint32L v)) ->
+      let (mver, _, _) = scilla_version in
+      let v' = Uint32.to_int v in
+      if v' <> mver || mver <> source_ver
+      then fatal_error_gas emsg rgas
+    | _ -> fatal_error_gas emsg rgas
+  in
+  initargs
+
 let deploy_library (cli : Cli.ioFiles) gas_remaining =
   match parse_lmodule cli.input with
   | Error e ->
@@ -132,21 +156,8 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
 
       (* Checking initialized libraries! *)
       let gas_remaining' = check_libs clibs elibs cli.input gas_remaining in
+      let _ = validate_get_init_json cli.input_init gas_remaining' lmod.smver in
 
-      (* Retrieve initial parameters *)
-      let initargs =
-        try
-          JSON.ContractState.get_json_data cli.input_init
-        with
-        | Invalid_json s ->
-            fatal_error_gas (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init))) gas_remaining'
-      in
-      (* init.json for libraries can only have _extlibs field. *)
-      (match initargs with
-      | [(label, _)] when label = extlibs_label -> ()
-      | _ -> perr @@ scilla_error_gas_string gas_remaining'
-            (mk_error0 (sprintf "Invalid initialization file %s for library\n" cli.input_init))
-      );
       let output_json = `Assoc [
         "gas_remaining", `String (Uint64.to_string gas_remaining');
         (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
@@ -203,37 +214,7 @@ let () =
   
       (* Checking initialized libraries! *)
       let gas_remaining = check_libs clibs elibs cli.input gas_remaining in
- 
-      (* Retrieve initial parameters *)
-      let initargs = 
-        try 
-          JSON.ContractState.get_json_data cli.input_init
-        with
-        | Invalid_json s -> 
-            fatal_error_gas
-              (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init)))
-            gas_remaining
-      in
-
-      (* Check for version mismatch. Subtract penalty for mist-match. *)
-      let emsg, rgas = (mk_error0 ("Scilla version mismatch\n")),
-        (Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty))
-      in
-      let init_json_scilla_version = List.fold_left initargs ~init:None ~f:(fun found (name, lit) ->
-        if is_some found then found else
-        if name = ContractUtil.scilla_version_label
-        then match lit with | UintLit(Uint32L v) -> Some v | _ -> None
-        else None
-      ) in
-      let _ =
-        match init_json_scilla_version with
-        | Some ijv ->
-          let (mver, _, _) = scilla_version in
-          let ijv' = Uint32.to_int ijv in
-          if ijv' <> mver || mver <> cmod.smver
-          then fatal_error_gas emsg rgas
-        | None -> fatal_error_gas emsg rgas
-      in
+       let initargs = validate_get_init_json cli.input_init gas_remaining cmod.smver in
 
       (* Retrieve block chain state  *)
       let bstate = 
