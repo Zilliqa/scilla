@@ -176,7 +176,7 @@ let () =
     else
       let cost = Uint64.of_int (Unix.stat cli.input_message).st_size in
       (* libraries can only be deployed, not "run". *)
-      if is_deployment then
+      if is_library then
         fatal_error_gas (mk_error0 (sprintf "Cannot run a library contract. They can only be deployed\n")) Uint64.zero
       else if (Uint64.compare cli.gas_limit cost) < 0 then
         fatal_error_gas (mk_error0 (sprintf "Ran out of gas when parsing message.\n")) Uint64.zero
