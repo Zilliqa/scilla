@@ -7,17 +7,12 @@
     {
         "vname" : "_this_address",
         "type" : "ByStr20",
-        "value" : "0x786556789012345678901234567890123456abcd"
+        "value" : "0xabfeccdc9012345678901234567890f777567890"
     },
     {
         "vname" : "_creation_block",
         "type" : "BNum",
         "value" : "1"
-    },
-    {
-        "vname" : "_library",
-        "type" : "Bool",
-        "value": { "constructor": "True", "argtypes": [], "arguments": [] }
     },
     {
         "vname" : "_extlibs",
@@ -26,7 +21,7 @@
             {
                 "constructor" : "Pair",
                 "argtypes" : ["String", "ByStr20"],
-                "arguments" : ["TestLib1", "0x986556789012345678901234567890123456abcd"]
+                "arguments" : ["TestLib2", "0x786556789012345678901234567890123456abcd"]
             }
         ]
     }
