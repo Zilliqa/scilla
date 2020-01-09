@@ -19,15 +19,4 @@
         "type" : "BNum",
         "value" : "1"
     }
-    {
-        "vname" : "_extlibs",
-        "type" : "List(Pair String ByStr20)",
-        "value" : [
-            {
-                "constructor" : "Pair",
-                "argtypes" : ["String", "ByStr20"],
-                "arguments" : ["TestLib2", "0x686556789012345678901234567890123456dcba"]
-            }
-        ]
-    }
 ]
