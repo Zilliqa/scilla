@@ -1,6 +1,6 @@
 scilla_version 0
 
-import TestLib1 IntUtils
+import TestLib3 IntUtils
 
 contract Hello()
 
@@ -15,7 +15,7 @@ transition Hi ()
   e = { _eventname : "sorted"; unsorted : double };
   event e;
 
-  sorted = sort_uint32 uint32_lt double;
+  sorted = foo_uint32 uint32_lt double;
   e = { _eventname : "sorted"; sorted : sorted };
   event e
 end

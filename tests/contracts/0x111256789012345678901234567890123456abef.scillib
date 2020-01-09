@@ -1,0 +1,9 @@
+scilla_version 0
+
+import TestLib1
+
+(* This library isn't directly a part of the testsuite. *)
+(* It is imported in import-test-lib.scilla and used. *)
+library TestLib3
+
+let foo_uint32 = sort_uint32
