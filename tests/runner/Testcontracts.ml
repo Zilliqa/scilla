@@ -213,6 +213,7 @@ let contract_tests env =
       "zil-game_init" >:(build_contract_init_test env succ_code "zil-game" "init" false);
       "creationtest_init" >:(build_contract_init_test env succ_code "creationtest" "init" false);
       "testlib2_init" >:(build_contract_init_test env succ_code "TestLib2" "init" true);
+      "import-test-lib" >:::(build_contract_tests env "import-test-lib" succ_code 1 1 []);
       "cfinvoke" >:::(build_contract_tests env "cfinvoke" succ_code 1 4 []);
       "ping" >:::(build_contract_tests env "ping" succ_code 0 3 []);
       "pong" >:::(build_contract_tests env "pong" succ_code 0 3 []);
