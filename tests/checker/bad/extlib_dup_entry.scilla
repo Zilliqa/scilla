@@ -1,0 +1,12 @@
+scilla_version 0
+
+(* This test is to simulate an import when checking contracts / libraries in *)
+(* the blockchain. The difference from offline development is that, there will *)
+(* be an init JSON even when checking. This file has an accompanied .json file. *)
+(* The init JSON accompanying this contract has duplicate entries for BlockChainLib *)
+(* and hence triggers a failure. *)
+import BlockchainLib
+
+library TestBlockchainImport
+
+contract TestBlockchainImport ()

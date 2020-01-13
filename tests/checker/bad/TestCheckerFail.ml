@@ -28,6 +28,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.of_int 8000
     let custom_args = ["-cf"; "-contractinfo"]
     let additional_libdirs = []
+    let provide_init_arg = false
     let tests = [
       "bad_fields1.scilla";
       "bad_fields2.scilla";
@@ -82,6 +83,7 @@ module Tests = TestUtil.DiffBasedTests(
       "constraint_field_not_in_scope.scilla";
       "constraint_locals_not_in_scope.scilla";
       "constraint_type_illegal.scilla";
+      "match-in-transition.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)
@@ -95,6 +97,7 @@ module LibTests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.of_int 8000
     let custom_args = ["-cf"]
     let additional_libdirs = [["checker"; "bad"; "lib"]]
+    let provide_init_arg = false
     let tests = [
       "bad_adt_lib_1.scilla";
       "bad_adt_lib_2.scilla";
@@ -113,6 +116,24 @@ module LibTests = TestUtil.DiffBasedTests(
       "bad_lib_type2.scilla";
       "bad_lib_type3.scilla";
       "bad_lib_pm_import.scilla";
+    ]
+    let exit_code : Unix.process_status = WEXITED 1
+  end)
+
+(* The test here require the `-init` argument. This is required for
+ * importing libraries whose addresses are specified in the init JSON *)
+module InitArgTests = TestUtil.DiffBasedTests(
+  struct
+    let gold_path dir f = [dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
+    let test_path f = ["checker"; "bad"; f]
+    let runner = "scilla-checker"
+    let ignore_predef_args = false
+    let gas_limit = Stdint.Uint64.of_int 8000
+    let custom_args = []
+    let provide_init_arg = true
+    let additional_libdirs = [["checker"; "bad"; "lib"]]
+    let tests = [
+      "extlib_dup_entry.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

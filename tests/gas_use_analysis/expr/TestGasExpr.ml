@@ -45,6 +45,7 @@ module Tests = TestUtil.DiffBasedTests(
     let gas_limit = Stdint.Uint64.of_int 4002000
     let custom_args = ["-gua"; "-contractinfo"]
     let additional_libdirs = []
+    let provide_init_arg = false
     let tests = explist
     let exit_code : Unix.process_status = WEXITED 0
 

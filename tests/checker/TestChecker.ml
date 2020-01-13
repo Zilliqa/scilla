@@ -24,4 +24,6 @@ let all_tests env = "checker_tests" >::: [TestCheckerSuccess.Tests.all_tests env
                                           TestCheckerFail.Tests.all_tests env;
                                           TestCheckerFail.LibTests.all_tests env;
                                           TestCheckerSuccess.TypeInfoTests.all_tests env;
+                                          TestCheckerSuccess.InitArgTests.all_tests env;
+                                          TestCheckerFail.InitArgTests.all_tests env;
                                           ]

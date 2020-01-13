@@ -41,7 +41,7 @@ let check_libs clibs elibs name gas_limit =
        plog (sprintf
          "\n[Initializing libraries]:\n%s\n\nLibraries for [%s] are on. All seems fine so far!\n\n"
          (* (Env.pp res) *)
-         (String.concat ~sep:", " (List.map (List.rev res) ~f:fst))
+         (String.concat ~sep:", " (List.rev_map res ~f:fst))
          name);
       gas_remaining
    | Error (err, gas_remaining) ->
@@ -60,7 +60,7 @@ let check_extract_cstate name res gas_limit =
       cstate, remaining_gas, field_vals
 
 (*****************************************************)
-(*   Running the simularion and printing results     *)
+(*   Running the simulation and printing results     *)
 (*****************************************************)
 
 let check_after_step res gas_limit  =
@@ -70,50 +70,71 @@ let check_after_step res gas_limit  =
       plog (sprintf "Success! Here's what we got:\n" ^
             (* sprintf "%s" (ContractState.pp cstate) ^ *)
             sprintf "Emitted messages:\n%s\n\n" (pp_literal_list outs) ^
-            sprintf"Gas remaining:%s\n" (Uint64.to_string remaining_gas) ^
+            sprintf "Gas remaining:%s\n" (Uint64.to_string remaining_gas) ^
             sprintf "Emitted events:\n%s\n\n" (pp_literal_list events));
        (cstate, outs, events, accepted_b), remaining_gas
 
 (* Parse the input state json and extract out _balance separately *)
-let input_state_json filename = 
+let input_state_json filename =
   let open JSON.ContractState in
   let states = get_json_data filename in
-  let match_balance ((vname : string), _) : bool = vname = balance_label in
-  let bal_lit = match List.find states ~f:match_balance with
-    | Some (_, lit) -> lit
-    | None -> raise (mk_invalid_json (balance_label ^ " field missing"))
-  in
+  let bal_lit =
+    match List.Assoc.find states balance_label ~equal:String.(=) with
+    | Some v -> v
+    | None -> raise @@ mk_invalid_json (balance_label ^ " field missing") in
   let bal_int = match bal_lit with
     | UintLit (Uint128L x) -> x
-    | _ -> raise (mk_invalid_json (balance_label ^ " invalid"))
-  in
-  let no_bal_states = List.filter  states ~f:(fun c -> not @@ match_balance c) in
-     no_bal_states, bal_int
+    | _ -> raise (mk_invalid_json (balance_label ^ " invalid")) in
+  let no_bal_states = List.Assoc.remove states balance_label ~equal:String.(=) in
+  no_bal_states, bal_int
 
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
-  let ballit = (balance_label, UintLit (Uint128L balance)) in
-  let concatlist = List.cons ballit field_vals in
-    JSON.ContractState.state_to_json concatlist;;
+  let bal_lit = (balance_label, UintLit (Uint128L balance)) in
+  JSON.ContractState.state_to_json (bal_lit :: field_vals)
 
 let output_message_json gas_remaining mlist =
-  let ml = List.map mlist ~f:(fun m ->
-    match m with
+  `List (List.map mlist ~f:(function
     | Msg m -> JSON.Message.message_to_json m
-    | _ -> fatal_error_gas (mk_error0 "Attempt to send non-message construct.") gas_remaining
-  ) in
-  `List ml
+    | _ -> fatal_error_gas (mk_error0 "Attempt to send non-message construct.") gas_remaining))
 
-let rec output_event_json elist =
-  match elist with
-  | e :: rest ->
-    let j = output_event_json rest in
-    (match e with
-    | Msg m' ->
-      let ej = JSON.Event.event_to_json m' in
-      ej :: j
-    | _ -> `Null :: j)
-  | [] -> []
+let output_event_json elist =
+  List.map elist ~f:(function
+    | Msg m -> JSON.Event.event_to_json m
+    | _ -> `Null)
+
+let write_output_json (cli : Cli.ioFiles) output_json =
+  let json_str =
+    if cli.pp_json then Yojson.Basic.pretty_to_string output_json
+    else Yojson.Basic.to_string output_json in
+  if String.is_empty cli.output then
+    Out_channel.(output_string stdout json_str)
+  else
+    Out_channel.(with_file cli.output ~f:(fun ch -> output_string ch json_str))
+
+let validate_get_init_json init_file gas_remaining source_ver =
+  (* Retrieve initial parameters *)
+  let initargs =
+    try
+      JSON.ContractState.get_json_data init_file
+    with
+    | Invalid_json s ->
+        fatal_error_gas (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" init_file))) gas_remaining
+  in
+  (* Check for version mismatch. Subtract penalty for mismatch. *)
+  let emsg = mk_error0 ("Scilla version mismatch\n") in
+  let rgas = Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty) in
+  let init_json_scilla_version = List.Assoc.find initargs ~equal:String.equal ContractUtil.scilla_version_label in
+  let () =
+    match init_json_scilla_version with
+    | Some (UintLit (Uint32L v)) ->
+      let (mver, _, _) = scilla_version in
+      let v' = Uint32.to_int v in
+      if v' <> mver || mver <> source_ver
+      then fatal_error_gas emsg rgas
+    | _ -> fatal_error_gas emsg rgas
+  in
+  initargs
 
 let deploy_library (cli : Cli.ioFiles) gas_remaining =
   match parse_lmodule cli.input with
@@ -128,40 +149,19 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
       StdlibTracker.add_stdlib_dirs lib_dirs;
       let elibs = import_libs lmod.elibs (Some cli.input_init) in
       (* Contract library. *)
-      let clibs = Some (lmod.libs) in
+      let clibs = Some lmod.libs in
 
       (* Checking initialized libraries! *)
       let gas_remaining' = check_libs clibs elibs cli.input gas_remaining in
+      let _ = validate_get_init_json cli.input_init gas_remaining' lmod.smver in
 
-      (* Retrieve initial parameters *)
-      let initargs =
-        try
-          JSON.ContractState.get_json_data cli.input_init
-        with
-        | Invalid_json s ->
-            fatal_error_gas (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init))) gas_remaining'
-      in
-      (* init.json for libraries can only have _extlibs field. *)
-      (match initargs with
-      | [(label, _)] when label = extlibs_label -> ()
-      | _ -> perr @@ scilla_error_gas_string gas_remaining'
-            (mk_error0 (sprintf "Invalid initialization file %s for library\n" cli.input_init))
-      );
-      let output_json = `Assoc [
-        "gas_remaining", `String (Uint64.to_string gas_remaining');
-        (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
-      ] in
-        Out_channel.with_file cli.output ~f:(fun channel ->
-          if cli.pp_json then
-            Yojson.pretty_to_string output_json |> Out_channel.output_string channel
-          else
-            Yojson.to_string output_json |> Out_channel.output_string channel
-          )
+      `Assoc ["gas_remaining", `String (Uint64.to_string gas_remaining')]
+      |> write_output_json cli
 
 let () =
   let cli = Cli.parse () in
-  let is_deployment = (cli.input_message = "") in
-  let is_ipc = cli.ipc_address <> "" in
+  let is_deployment = String.is_empty cli.input_message in
+  let is_ipc = not @@ String.is_empty cli.ipc_address in
   let is_library =
     (FilePath.get_extension cli.input = GlobalConfig.StdlibTracker.file_extn_library) in
   let gas_remaining =
@@ -176,7 +176,7 @@ let () =
     else
       let cost = Uint64.of_int (Unix.stat cli.input_message).st_size in
       (* libraries can only be deployed, not "run". *)
-      if is_deployment then
+      if is_library then
         fatal_error_gas (mk_error0 (sprintf "Cannot run a library contract. They can only be deployed\n")) Uint64.zero
       else if (Uint64.compare cli.gas_limit cost) < 0 then
         fatal_error_gas (mk_error0 (sprintf "Ran out of gas when parsing message.\n")) Uint64.zero
@@ -203,37 +203,7 @@ let () =
   
       (* Checking initialized libraries! *)
       let gas_remaining = check_libs clibs elibs cli.input gas_remaining in
- 
-      (* Retrieve initial parameters *)
-      let initargs = 
-        try 
-          JSON.ContractState.get_json_data cli.input_init
-        with
-        | Invalid_json s -> 
-            fatal_error_gas
-              (s @ (mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_init)))
-            gas_remaining
-      in
-
-      (* Check for version mismatch. Subtract penalty for mist-match. *)
-      let emsg, rgas = (mk_error0 ("Scilla version mismatch\n")),
-        (Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty))
-      in
-      let init_json_scilla_version = List.fold_left initargs ~init:None ~f:(fun found (name, lit) ->
-        if is_some found then found else
-        if name = ContractUtil.scilla_version_label
-        then match lit with | UintLit(Uint32L v) -> Some v | _ -> None
-        else None
-      ) in
-      let _ =
-        match init_json_scilla_version with
-        | Some ijv ->
-          let (mver, _, _) = scilla_version in
-          let ijv' = Uint32.to_int ijv in
-          if ijv' <> mver || mver <> cmod.smver
-          then fatal_error_gas emsg rgas
-        | None -> fatal_error_gas emsg rgas
-      in
+       let initargs = validate_get_init_json cli.input_init gas_remaining cmod.smver in
 
       (* Retrieve block chain state  *)
       let bstate = 
@@ -360,18 +330,11 @@ let () =
         let oej = `List (output_event_json elist) in
           (omj, osj, oej, accepted_b), gas)
       in
-      let output_json = `Assoc [
-        ("scilla_major_version", `String (Int.to_string cmod.smver));
+      `Assoc [
+        "scilla_major_version", `String (Int.to_string cmod.smver);
         "gas_remaining", `String (Uint64.to_string gas);
         ContractUtil.accepted_label, `String (Bool.to_string accepted_b);
-        ("messages", output_msg_json); 
-        ("states", output_state_json);
-        ("events", output_events_json);
-        (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
-      ] in
-        Out_channel.with_file cli.output ~f:(fun channel -> 
-          if cli.pp_json then
-            Yojson.Basic.pretty_to_string output_json |> Out_channel.output_string channel
-          else
-            Yojson.Basic.to_string output_json |> Out_channel.output_string channel
-          )
+        "messages", output_msg_json;
+        "states", output_state_json;
+        "events", output_events_json]
+      |> write_output_json cli

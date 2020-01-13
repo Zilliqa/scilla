@@ -303,7 +303,7 @@ module ScillaPatternchecker
           ) in
     let checked_comps = List.rev c_comps in
     
-    if emsgs'' = []
+    if emsgs''' = []
     (* Return pure environment *)  
     then pure (  {CheckedPatternSyntax.smver = mod_smver;
                   CheckedPatternSyntax.cname = mod_cname;
