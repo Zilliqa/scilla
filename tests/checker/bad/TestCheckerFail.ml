@@ -83,6 +83,7 @@ module Tests = TestUtil.DiffBasedTests(
       "constraint_field_not_in_scope.scilla";
       "constraint_locals_not_in_scope.scilla";
       "constraint_type_illegal.scilla";
+      "match-in-transition.scilla";
     ]
     let exit_code : Unix.process_status = WEXITED 1
   end)

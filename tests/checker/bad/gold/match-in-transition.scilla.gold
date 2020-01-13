@@ -1,0 +1,31 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract Matcher:\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Error during pattern-match checking of transition foo:\n",
+      "start_location": {
+        "file": "checker/bad/match-in-transition.scilla",
+        "line": 7,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error in pattern matching on `x` (or one of its branches):\nNon-exhaustive pattern match.",
+      "start_location": {
+        "file": "checker/bad/match-in-transition.scilla",
+        "line": 10,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,15 @@
+scilla_version 0
+
+contract Matcher()
+
+field mymap : Map Uint32 Uint32 = Emp Uint32 Uint32
+
+transition foo ()
+  zero = Uint32 0;
+  x <- mymap[zero];
+  match x with
+  | Some ui =>
+    e = { _eventname : "Test" };
+    event e
+  end
+end
