@@ -19,7 +19,6 @@ open Core_bench
 type t =
   | Expressions (** Benchmarks for standalone expressions *)
   | Contracts (** Contract (and transition) benchmarks *)
-  | Modules (** Internal benchmarks for performance-critical modules *)
 [@@deriving compare]
 
 val equal : t -> t -> bool
