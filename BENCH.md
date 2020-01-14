@@ -120,7 +120,7 @@ Here is list of all possible options:
   there is no previous results at all just the current timings
   (and percentage) will be displayed.
 - `-threshold` – Time per run delta threshold value (in percentage).
-- `-ci` – Exit with non-zero code if any time per run delta
+- `-ci` – Exit with non-zero code if any *time per run delta*
   exceeds the threshold.
 - `-ipcaddress` – Address for IPC communication with blockchain
   for state access.

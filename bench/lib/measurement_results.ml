@@ -101,7 +101,6 @@ let save results ~env =
 let load_from path =
   path
   |> Sys.ls_dir
-  |> List.filter ~f:(fun s -> Sys.is_directory_exn (path ^/ s))
   |> List.map ~f:(fun fn -> Measurement_result.load @@ path ^/ fn)
   |> sort
 
