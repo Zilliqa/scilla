@@ -4,21 +4,23 @@
 # as one command returns a non-zero exit code
 set -e
 
-# Check that the required arguments are provided
-check_variable () {
-  if [ -z "${1+x}" ]; then
-      echo "Variable $1 should be set"
-      exit 1
-  fi
-}
+# Base branch or commit (defaults to master)
+BASE=${1:-master}
+# Branch or commit to compare with.
+# Try the second argument and default to the $TRAVIS_COMMIT on CI.
+# If none is set it defaults to comparing with the current state of the repository.
+COMPARE=${2:-$TRAVIS_COMMIT}
 
-if [ -n "$BENCH_DEBUG" ]
-then
-   echo "DEBUG: ocaml -version = $(ocaml -version)"
-   echo "DEBUG: TRAVIS_COMMIT = $TRAVIS_COMMIT"
+if [ -n "$BENCH_DEBUG" ]; then
+  echo "DEBUG: ocaml -version = $(ocaml -version)"
+  echo "DEBUG: TRAVIS_COMMIT = $TRAVIS_COMMIT"
+  echo "DEBUG: BASE = $BASE"
+  echo "DEBUG: COMPARE = $COMPARE"
 fi
 
-git checkout -q "$TRAVIS_COMMIT"
+if [ -n "$COMPARE" ]; then
+  git checkout -q "$COMPARE"
+fi
 
 # Clean up previous benchmark results
 rm -rf ./bench/results/*
@@ -27,7 +29,7 @@ mkdir -p ./bench/results
 make
 dune exec ./bench/bin/scilla_bench_runner.exe
 
-git checkout -q "$TRAVIS_COMMIT"
+git checkout -q "$BASE"
 
 make
 dune exec ./bench/bin/scilla_bench_runner.exe

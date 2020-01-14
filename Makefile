@@ -140,4 +140,4 @@ verbose-j1:
 
 .PHONY : bench
 bench:
-	./scripts/run_benchmarks.sh
+	./scripts/run_benchmarks.sh $(base) $(compare)
