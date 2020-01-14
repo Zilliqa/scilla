@@ -62,7 +62,7 @@ From the project root, execute
 Instead of `auction.scilla` you might want to try any different file in
 `tests/contracts` with a complete implementation of a contract, or your
 own contract code. The second argument, which is a path to the Scilla
-standard library can alternatively be specified in the environment 
+standard library can alternatively be specified in the environment
 variable `SCILLA_STDLIB_PATH`. As above, this must be an absolute
 path(s).
 
@@ -147,11 +147,43 @@ To run an individual test(s), for example
 (one of the tests from the list obtained via `./bin/testsuite -list-test`):
 
 ```shell
-dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -print-cli true 
+dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -print-cli true
 ```
 
 The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
+
+### Running the benchmarks
+
+The `make bench` has two **optional** parameters:
+
+- `base` – Base branch or commit hash (defaults to `master` branch)
+- `compare` – Branch or commit hash to compare with the `base`
+
+Running the `make bench` locally without giving it the `compare`
+parameters means that we want to compare `base` with the current
+state of the repository.
+
+When running on CI the `compare` parameter defaults to the
+`TRAVIS_COMMIT** environment variable which points to the commit
+that the current build is testing.
+
+**Examples**:
+
+Compare `1b4f594b` with the `master` branch:
+
+```sh
+make bench base=master compare=1b4f594b
+```
+
+Compare the current state of the repo with the `master` branch:
+
+```sh
+make bench
+```
+
+For more info about the benchmark framework design please refer
+to the [BENCH.md](./BENCH.md).
 
 ## Developer Tools
 ### Emacs mode
