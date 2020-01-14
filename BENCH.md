@@ -48,6 +48,10 @@ Running the `make bench` locally without giving it the `compare`
 parameters means that we want to compare `base` with the current
 state of the repository.
 
+Note that you should commit your changes or stash them before
+running the benchmark suite because it need to checkout the
+`base` commit/branch.
+
 When running on CI the `compare` parameter defaults to the
 `TRAVIS_COMMIT** environment variable which points to the commit
 that the current build is testing.
@@ -172,7 +176,6 @@ the file system), the comparison is skipped and only the current
 results are displayed. Otherwise the following columns are
 printed: first one containing the previous results, next one
 with the current results and deltas with percentage.
-
 
 ## References
 
