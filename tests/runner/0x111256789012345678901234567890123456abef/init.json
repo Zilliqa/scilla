@@ -7,7 +7,7 @@
     {
         "vname" : "_this_address",
         "type" : "ByStr20",
-        "value" : "0x786556789012345678901234567890123456abcd"
+        "value" : "0x111256789012345678901234567890123456abef"
     },
     {
         "vname" : "_creation_block",
