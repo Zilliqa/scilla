@@ -8,17 +8,13 @@ their underlying libraries do not add significant performance
 penalty. Performance regression testing is an effective way to
 reveal such issues in early stages. Usually, when performance
 regression issue is spotted at a certain point, multiple commits
-might have been merged already.
-
-When performance regression is exposed, developers have to spend
-extra efforts bisecting which commit among the recently
-committed changes causes the problem.
-
+might have been merged already. When performance regression is
+exposed, developers have to spend extra efforts bisecting which
+commit among the recently committed changes causes the problem.
 An effective way to combat performance regression is to employ
-systematic, continuous performance regression testing.
-
-Ideally, the testing should be carried out as comprehensively
-and intensively as possible, i.e., on every source commit basis.
+systematic, continuous performance regression testing. Ideally,
+the testing should be carried out as comprehensively and
+intensively as possible, i.e., on every source commit basis.
 This can eliminate the “last-minute surprise” wherein
 performance issues are exposed too late. More importantly, this
 would avoid the tedious and lengthy diagnosis process to figure
@@ -32,7 +28,7 @@ framework and it’s design.
 
 There two ways to use the benchmark suite:
 
-- Run the `make bench` command execute the `run_benchmark.sh`
+- Run the `make bench` command that executes the `run_benchmark.sh`
   shell script which implements the comparison workflow.
 - Use the benchmark suite executable (`./bin/scilla_bench`)
   directly.
