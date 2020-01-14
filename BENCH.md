@@ -49,7 +49,7 @@ parameters means that we want to compare `base` with the current
 state of the repository.
 
 Note that you should commit your changes or stash them before
-running the benchmark suite because it need to checkout the
+running the benchmark suite because it needs to checkout the
 `base` commit/branch.
 
 When running on CI the `compare` parameter defaults to the
