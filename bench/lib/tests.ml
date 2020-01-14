@@ -13,8 +13,21 @@
 *)
 
 open Core
-open Params
 
+type params =
+  { suites : Suite.t list;
+    quota : Core_bench.Quota.t;
+    regex : Re2.t option;
+    list : bool;
+    save : bool;
+    display : bool;
+    compare : bool;
+    threshold : float;
+    ci : bool;
+    timestamp : string option;
+  } [@@deriving make]
+
+(** Load benchmarks *)
 let load ~params ~cfg ~env =
   let open Core_bench in
   let include_suite b = List.mem params.suites b ~equal:Suite.equal in
@@ -36,6 +49,7 @@ let load ~params ~cfg ~env =
   | Some re -> List.filter tests ~f:(fun t -> Re2.matches re (Test.name t))
   | None -> tests
 
+(** Output benchmark groups along with their tests *)
 let list =
   Display.print_tests
 
@@ -64,6 +78,7 @@ let compare_and_display ~current_dir ~results ~params ~env =
         Measurement_results.detect_regressions
           ~previous ~deltas ~threshold:params.threshold
 
+(** Run the given benchmarks *)
 let exec tests ~params ~env =
   let module B = Core_bench in
   let run_config = B.Run_config.create ~quota:params.quota () in

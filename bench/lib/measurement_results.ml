@@ -16,6 +16,65 @@ open Core
 open Core_bench.Simplified_benchmark
 open ScillaUtil.FilePathInfix
 
+module Timestamp = struct
+  (* see [man strptime] *)
+
+  let fmt = "%Y%m%d%H%M%S"
+  let zone = force Time.Zone.local
+
+  (** Make a timestamp string from the given [Time.t] *)
+  let format time = Time.format time fmt ~zone
+
+  (** Parse timestamp *)
+  let parse = Time.parse ~fmt ~zone
+
+  (** Make a timestamp that looks like "20191019192411" *)
+  let mk () = format @@ Time.now ()
+
+  (** Parse the given list of timestamps and
+      sort them in a descending order *)
+  let sort_desc ts =
+    ts
+    |> List.map ~f:parse
+    |> List.sort ~compare:Time.compare
+    |> List.rev_map ~f:format
+
+  let%test "roundtrip" =
+    let ts = Time.now () in
+    format ts = format (parse (format ts))
+end
+
+let mk_path dir ~env =
+  env.Env.results_dir ^/ dir
+
+let only_dirs ~env =
+  List.filter ~f:(fun dir -> Sys.is_directory_exn @@ mk_path dir ~env)
+
+(** List paths containing benchmark results *)
+let ls_results ~env =
+  env.Env.results_dir
+  |> Sys.ls_dir
+  |> only_dirs ~env
+  |> Timestamp.sort_desc
+
+(** Given the [timestamp] of the benchmark results to
+    compare with return a directory named after that timestamp,
+    otherwise return the latest one, if it exists and
+    it is not the same as the [current] timestamp *)
+let latest_result_path ~timestamp ~current ~env =
+  (* List paths containing benchmark results *)
+  let paths = ls_results ~env in
+  (* Helper function to find a dir with
+     the latest (previous) benchmark results *)
+  let find_latest () =
+    let paths = match current with
+    | None -> paths
+    | Some s -> List.filter paths ~f:(fun dir -> dir <> s)
+    in List.hd paths
+  in match timestamp with
+  | None -> find_latest ()
+  | Some s -> List.find paths ~f:(fun p -> p = s)
+
 let sort =
   List.sort ~compare:(fun x y ->
       Result.(String.compare x.full_benchmark_name y.full_benchmark_name))
@@ -42,11 +101,12 @@ let save results ~env =
 let load_from path =
   path
   |> Sys.ls_dir
+  |> List.filter ~f:(fun s -> Sys.is_directory_exn (path ^/ s))
   |> List.map ~f:(fun fn -> Measurement_result.load @@ path ^/ fn)
   |> sort
 
 let load_latest ~timestamp ~current ~env =
-  let path = Storage.latest ~timestamp ~current ~env in
+  let path = latest_result_path ~timestamp ~current ~env in
   Option.map path ~f:(fun s -> load_from (env.Env.results_dir ^/ s))
 
 let calc_deltas ~previous ~current =

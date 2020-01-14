@@ -19,6 +19,7 @@ if [ -n "$BENCH_DEBUG" ]; then
 fi
 
 if [ -n "$COMPARE" ]; then
+  # Checkout the branch/commit to compare with
   git checkout -q "$COMPARE"
 fi
 

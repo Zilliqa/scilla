@@ -63,12 +63,6 @@ make bench base=master compare=1b4f594b
 Compare the current state of the repo with the `master` branch:
 
 ```sh
-make bench base=master
-```
-
-Does the same thing as the command above:
-
-```sh
 make bench
 ```
 
