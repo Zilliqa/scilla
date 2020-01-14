@@ -12,7 +12,7 @@ transition Hi ()
   double = Cons {Uint32} two single;
 
   unsorted = double;
-  e = { _eventname : "sorted"; unsorted : double };
+  e = { _eventname : "unsorted"; unsorted : double };
   event e;
 
   sorted = foo_uint32 uint32_lt double;
