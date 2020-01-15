@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -ev
+set -e
 
 # This script is expected to be executed from Scilla root
 # $./scripts/libff.sh
