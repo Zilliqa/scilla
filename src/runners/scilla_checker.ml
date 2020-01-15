@@ -184,9 +184,9 @@ let check_lmodule cli =
   (match r with
   | Error (s, g) -> fatal_error_gas s g
   | Ok (_, g) ->
-    if not (GlobalConfig.use_json_errors())
+    if not (GlobalConfig.use_json_errors ())
     then
-      pout @@ (scilla_warning_to_sstring (get_warnings())) 
+      pout @@ (scilla_warning_to_sstring (get_warnings ())) 
         ^ "\ngas_remaining: " ^ (Stdint.Uint64.to_string g) ^ "\n"
     else
       let warnings_and_gas_output =
@@ -195,7 +195,7 @@ let check_lmodule cli =
         ]
       in
       let j = `Assoc warnings_and_gas_output in
-      pout (sprintf "%s\n" (Yojson.pretty_to_string j))
+      pout @@ sprintf "%s\n" (Yojson.pretty_to_string j)
   )
 
 (* Check a contract module. *)
@@ -226,19 +226,19 @@ let check_cmodule cli =
       check_version cmod.smver;
       let output =
         if GlobalConfig.use_json_errors () then
-          [ ("warnings", scilla_warning_to_json (get_warnings()));
+          [ ("warnings", scilla_warning_to_json (get_warnings ()));
             ("gas_remaining", `String (Stdint.Uint64.to_string g));
           ]
         else []
       in
       let output =
         if cli.p_contract_info then
-          ("contract_info", (JSON.ContractInfo.get_json cmod.smver cmod.contr event_info)) :: output
+          ("contract_info", JSON.ContractInfo.get_json cmod.smver cmod.contr event_info) :: output
         else output
       in
       let output =
         if cli.p_type_info then
-          ("type_info", (JSON.TypeInfo.type_info_to_json type_info)) :: output
+          ("type_info", JSON.TypeInfo.type_info_to_json type_info) :: output
         else output
       in
       let output =
@@ -247,9 +247,9 @@ let check_cmodule cli =
         | Some cf_info -> ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: output
       in
       (* If we have auxiliary output which necessitates JSON, we force JSON output. *)
-      if not (GlobalConfig.use_json_errors()) && (List.is_empty output)
+      if not (GlobalConfig.use_json_errors ()) && (List.is_empty output)
       then
-        pout @@ (scilla_warning_to_sstring (get_warnings())) 
+        pout @@ scilla_warning_to_sstring (get_warnings ())
           ^ "\ngas_remaining: " ^ (Stdint.Uint64.to_string g) ^ "\n";
       let j = `Assoc output in
       pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string j));)
