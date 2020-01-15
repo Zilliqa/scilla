@@ -2,11 +2,11 @@ scilla_version 0
 
 import ListUtils
 
-(* Simple DEX : P2P Token Trades    *)
+(* Registered DEX : P2P Token Trades with pre-approval of token contracts    *)
 (* Disclaimer: This contract is experimental and meant for testing purposes only *)
 (* DO NOT USE THIS CONTRACT IN PRODUCTION *)
 
-library SimpleDex
+library RegisteredDex
 
 (* Event for errors *)
 let make_error_event =
@@ -66,6 +66,12 @@ let transaction_msg_as_list =
 contract SimpleDex
 (contractOwner: ByStr20)
 
+(* Valid tokens : mapping ByStr20 => Token *)
+(* Users supply the token address. The Token version of the addres is stored in this map. *)
+(* REMOTE READ: Entries in the map are checked for validity upon deployment. *)
+(* REMOTE READ: No further dynamic checks necessary, since every access is checked statically. *)
+field valid_tokens : Map ByStr20 Token = Emp ByStr20 Token
+
 (* Orderbook: mapping (orderIds => ( (tokenA, valueA) (tokenB, valueB) )) *)
 (* @param: tokenA: Contract of token A *)
 (* @param: valueA: total units of token A offered by maker *)
@@ -85,41 +91,57 @@ field orderInfo : Map ByStr32 OrderInfo = Emp ByStr32 OrderInfo
 field pendingReturns : Map ByStr20 (Map Token Uint128) = Emp ByStr20 (Map Token Uint128)
 
 (* Maker creates an order to exchange valueA of tokenA for valueB of tokenB *)
-(* REMOTE READ: tokenA and tokenB are checked for existence of balances_map before makeOrder is executed. *)
-transition makeOrder(tokenA: Token, valueA: Uint128, tokenB: Token, valueB: Uint128, expirationBlock: BNum)
+(* REMOTE READ: tokenA and tokenB are not checked for existence of balances_map, *)
+(* because we pull the Token version from valid_tokens, which have already been checked. *)
+transition makeOrder(tokenA: ByStr20, valueA: Uint128, tokenB: ByStr20, valueB: Uint128, expirationBlock: BNum)
   currentBlock <- & BLOCKNUMBER;
   validExpirationBlock =  let minBlocksFromCreation = Uint128 50 in
                           let minExpiration = builtin badd currentBlock minBlocksFromCreation in
                           builtin blt minExpiration expirationBlock;
   match validExpirationBlock with
   | True =>
-    (* REMOTE READ: do not create order unless balance is sufficient *)
-    token_balance_opt <- tokenA.balances_map[_sender];
-    token_balance = match token_balance_opt with | Some v => v | None => Uint128 0;
-    sufficient_balance = uint128_le valueA token_balance;
-    match sufficient_balance with
-    | True =>
-      (* Creates a new order *)
-      newOrder = Order tokenA valueA tokenB valueB;
-      orderId = createOrderId newOrder;
-      orderbook[orderId] := newOrder;
+    (* REMOTE READ: Fetch Token versions of ByStr20 contracts. The contents of *)
+    (* valid_tokens have already been checked, so no need to re-check. *)
+    valid_token_a_opt <- valid_tokens[tokenA];
+    valid_token_b_opt <- valid_tokens[tokenB];
+    valid_tokens = Pair {(Option Token) (Option Token)} valid_token_a_opt valid_token_b_opt;
+    match valid_tokens with
+    | Pair (Some valid_token_a) (Some valid_token_b) =>
 
-      (* Updates orderInfo with maker's address and expiration blocknumber *)
-      p = OrderInfo _sender expirationBlock; 
-      orderInfo[orderId] := p;
+      (* REMOTE READ: do not create order unless balance is sufficient *)
+      token_balance_opt <- valid_token_a.balances_map[_sender];
+      token_balance = match token_balance_opt with | Some v => v | None => Uint128 0;
+      sufficient_balance = uint128_le valueA token_balance;
+      match sufficient_balance with
+      | True =>
+        (* Creates a new order *)
+        newOrder = Order valid_token_a valueA valid_token_b valueB;
+        orderId = createOrderId newOrder;
+        orderbook[orderId] := newOrder;
 
-      e = {_eventname: "Order Created"; hash: orderId };
-      event e;
+        (* Updates orderInfo with maker's address and expiration blocknumber *)
+        p = OrderInfo _sender expirationBlock; 
+        orderInfo[orderId] := p;
 
-      (* Transfer tokens from _sender to the contract address  *)
-      msgs = let tag = "TransferFrom" in 
-             transaction_msg_as_list tokenA tag _sender _this_address valueA;
-      send msgs
-    | False =>
+        e = {_eventname: "Order Created"; hash: orderId };
+        event e;
+
+        (* Transfer tokens from _sender to the contract address  *)
+        msgs = let tag = "TransferFrom" in 
+               transaction_msg_as_list tokenA tag _sender _this_address valueA;
+        send msgs
+      | False =>
+        e = let func = "makeOrder" in
+            let error_msg = "Insufficient token balance to make order" in 
+            make_error_event func error_msg;
+        event e
+      end
+    | _ 
       e = let func = "makeOrder" in
-          let error_msg = "Insufficient token balance to make order" in 
+          let error_msg = "Unsupported token" in 
           make_error_event func error_msg;
       event e
+    end    
   | False =>
     e = let func = "makeOrder" in
         let error_msg = "Expiration block must be at least 50 blocks more than current block" in 
@@ -234,3 +256,19 @@ transition cancelOrder(orderId: ByStr32)
   end
 end
 
+(* REMOTE READ: new_token is checked for existence of balances_map. *)
+transition registerToken ( new_token : Token)
+  sender_is_owner = builtin eq contractOwner _sender;
+  match sender_is_owner with
+  | True =>
+    (* REMOTE READ: Get pure ByStr20 from address type. *)
+    address = builtin address_to_bystr20 Token;
+    (* REMOTE READ: new_token is validated, so can just be added. *)
+    valid_tokens[address] := new_token
+  | False =>
+    e = let func = "registerToken" in
+        let error_msg = "Unauthorized registration of token" in 
+        make_error_event func error_msg;
+    event e
+  end
+end
