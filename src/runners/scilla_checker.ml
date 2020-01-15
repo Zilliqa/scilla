@@ -252,7 +252,7 @@ let check_cmodule cli =
         pout @@ scilla_warning_to_sstring (get_warnings ())
           ^ "\ngas_remaining: " ^ (Stdint.Uint64.to_string g) ^ "\n";
       let j = `Assoc output in
-      pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string j));)
+      pout @@ sprintf "%s\n" (Yojson.Basic.pretty_to_string j))
 
 let () =
     let cli = parse_cli () in
