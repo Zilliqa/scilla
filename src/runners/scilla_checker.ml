@@ -184,13 +184,19 @@ let check_lmodule cli =
   (match r with
   | Error (s, g) -> fatal_error_gas s g
   | Ok (_, g) ->
+    if not (GlobalConfig.use_json_errors ())
+    then
+      pout @@ (scilla_warning_to_sstring (get_warnings ())) 
+        ^ "\ngas_remaining: " ^ (Stdint.Uint64.to_string g) ^ "\n"
+    else
       let warnings_and_gas_output =
         [ ("warnings", scilla_warning_to_json (get_warnings()));
           ("gas_remaining", `String (Stdint.Uint64.to_string g));
         ]
       in
       let j = `Assoc warnings_and_gas_output in
-      pout (sprintf "%s\n" (Yojson.pretty_to_string j));)
+      pout @@ sprintf "%s\n" (Yojson.pretty_to_string j)
+  )
 
 (* Check a contract module. *)
 let check_cmodule cli =
@@ -217,31 +223,36 @@ let check_cmodule cli =
   (match r with
   | Error (s, g) -> fatal_error_gas s g
   | Ok (cmod, _, event_info, type_info, cf_info_opt, g) ->
-      let base_output =
-        let warnings_and_gas_output =
-          [ ("warnings", scilla_warning_to_json (get_warnings()));
+      check_version cmod.smver;
+      let output =
+        if GlobalConfig.use_json_errors () then
+          [ ("warnings", scilla_warning_to_json (get_warnings ()));
             ("gas_remaining", `String (Stdint.Uint64.to_string g));
           ]
-        in
-        let ci_output =
-          if cli.p_contract_info then
-            ("contract_info", (JSON.ContractInfo.get_json cmod.smver cmod.contr event_info)) :: warnings_and_gas_output
-          else warnings_and_gas_output
-        in
-        let ti_output =
-          if cli.p_type_info then
-            ("type_info", (JSON.TypeInfo.type_info_to_json type_info)) :: ci_output
-          else ci_output
-        in
-        ti_output
+        else []
       in
-      let output_with_cf =
+      let output =
+        if cli.p_contract_info then
+          ("contract_info", JSON.ContractInfo.get_json cmod.smver cmod.contr event_info) :: output
+        else output
+      in
+      let output =
+        if cli.p_type_info then
+          ("type_info", JSON.TypeInfo.type_info_to_json type_info) :: output
+        else output
+      in
+      let output =
         match cf_info_opt with
-        | None -> base_output
-        | Some cf_info -> ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: base_output in
-      let j = `Assoc output_with_cf in
-      check_version cmod.smver;
-      pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string j));)
+        | None -> output
+        | Some cf_info -> ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: output
+      in
+      (* If we have auxiliary output which necessitates JSON, we force JSON output. *)
+      if not (GlobalConfig.use_json_errors ()) && (List.is_empty output)
+      then
+        pout @@ scilla_warning_to_sstring (get_warnings ())
+          ^ "\ngas_remaining: " ^ (Stdint.Uint64.to_string g) ^ "\n";
+      let j = `Assoc output in
+      pout @@ sprintf "%s\n" (Yojson.Basic.pretty_to_string j))
 
 let () =
     let cli = parse_cli () in
