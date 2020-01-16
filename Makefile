@@ -34,6 +34,9 @@ dev:
 utop: all
 	OCAMLPATH=_build/install/default/lib:$(OCAMLPATH) utop
 
+ocamlformat:
+	dune build @fmt
+
 # === TESTS (begin) ===========================================================
 # Build and run tests
 # the make utility increases the maximum stack limit, this allows our tests
