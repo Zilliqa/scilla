@@ -106,37 +106,33 @@ struct
     | MaxB srlist ->
         "Max ("
         ^ List.fold_left
-            (fun acc sr ->
-              acc ^ (if acc = "" then "" else ",") ^ sprint_sizeref sr)
+            (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ sprint_sizeref sr)
             "" srlist
         ^ ")"
     | MFun (s, srlist) ->
         s ^ " ("
         ^ List.fold_left
-            (fun acc sr ->
-              acc ^ (if acc = "" then "" else ",") ^ sprint_sizeref sr)
+            (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ sprint_sizeref sr)
             "" srlist
         ^ ")"
     | BApp (b, srlist) ->
         "Result of builtin " ^ pp_builtin b ^ "("
         ^ List.fold_left
-            (fun acc sr ->
-              acc ^ (if acc = "" then "" else ",") ^ sprint_sizeref sr)
+            (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ sprint_sizeref sr)
             "" srlist
         ^ ")"
     | SApp (id, srlist) ->
         "SApp " ^ get_id id ^ "( "
         ^ List.fold_left
-            (fun acc sr ->
-              acc ^ (if acc = "" then "" else ",") ^ sprint_sizeref sr)
+            (fun acc sr -> acc ^ (if acc = "" then "" else ",") ^ sprint_sizeref sr)
             "" srlist
         ^ ")"
     | RFoldAcc (id, lel, acc) ->
-        "RFoldAcc " ^ get_id id ^ " (" ^ sprint_sizeref lel ^ ", "
-        ^ sprint_sizeref acc ^ ")"
+        "RFoldAcc " ^ get_id id ^ " (" ^ sprint_sizeref lel ^ ", " ^ sprint_sizeref acc
+        ^ ")"
     | LFoldAcc (id, lel, acc) ->
-        "LFoldAcc " ^ get_id id ^ " (" ^ sprint_sizeref lel ^ ", "
-        ^ sprint_sizeref acc ^ ")"
+        "LFoldAcc " ^ get_id id ^ " (" ^ sprint_sizeref lel ^ ", " ^ sprint_sizeref acc
+        ^ ")"
     | Intractable s -> "Cannot determine size: " ^ s
 
   (* Given a gas use reference, print a description for it. *)
@@ -145,8 +141,7 @@ struct
     | GApp (id, gurlist) ->
         "Cost of calling " ^ get_id id ^ "("
         ^ List.fold_left
-            (fun acc gur ->
-              acc ^ (if acc = "" then "" else ", ") ^ sprint_sizeref gur)
+            (fun acc gur -> acc ^ (if acc = "" then "" else ", ") ^ sprint_sizeref gur)
             "" gurlist
         ^ ")"
     | GPol pn -> "GPol(" ^ sprint_gup pn ^ ")"
@@ -170,9 +165,7 @@ struct
       if Hashtbl.length sym_map = 0 then ""
       else
         "\nLegend:\n"
-        ^ Hashtbl.fold
-            (fun k v acc -> acc ^ "\n" ^ v ^ ": " ^ sprint_guref k)
-            sym_map ""
+        ^ Hashtbl.fold (fun k v acc -> acc ^ "\n" ^ v ^ ": " ^ sprint_guref k) sym_map ""
     in
     pols ^ legs
 
@@ -184,8 +177,7 @@ struct
         ^ List.fold_left (fun acc p -> acc ^ get_id p ^ " ") "( " params
         ^ ")\n"
     in
-    args ^ "Gas use polynomial:\n" ^ sprint_gup pn ^ "\nResult size: "
-    ^ sprint_sizeref sr
+    args ^ "Gas use polynomial:\n" ^ sprint_gup pn ^ "\nResult size: " ^ sprint_sizeref sr
 
   module GUAEnv = struct
     open AssocDictionary
@@ -204,21 +196,17 @@ struct
       match lookup id env with
       | Some s -> pure s
       | None ->
-          let sloc =
-            match lopt with Some l -> ER.get_loc l | None -> dummy_loc
-          in
+          let sloc = match lopt with Some l -> ER.get_loc l | None -> dummy_loc in
           fail1
             (Printf.sprintf
-               "Couldn't resolve the identifier in gas use analysis: \"%s\".\n"
-               id)
+               "Couldn't resolve the identifier in gas use analysis: \"%s\".\n" id)
             sloc
 
     (* retain only those entries "k" for which "f k" is true. *)
     let filterS env ~f = filter ~f env
 
     (* is "id" in the environment. *)
-    let existsS env id =
-      match lookup id env with Some _ -> true | None -> false
+    let existsS env id = match lookup id env with Some _ -> true | None -> false
 
     (* add entries from env' into env. *)
     let appendS env env' =
@@ -278,14 +266,12 @@ struct
     let rec deps_on_accarg = function
       | Base a -> get_id accarg = get_id a
       | Length sr | Element sr -> deps_on_accarg sr
-      | Container (sr1, sr2) | RFoldAcc (_, sr1, sr2) | LFoldAcc (_, sr1, sr2)
-        ->
+      | Container (sr1, sr2) | RFoldAcc (_, sr1, sr2) | LFoldAcc (_, sr1, sr2) ->
           deps_on_accarg sr1 || deps_on_accarg sr2
       | SPol pol ->
           let in_pol p =
             List.exists
-              (fun (_, vplist) ->
-                List.exists (fun (v, _) -> deps_on_accarg v) vplist)
+              (fun (_, vplist) -> List.exists (fun (v, _) -> deps_on_accarg v) vplist)
               p
           in
           in_pol pol
@@ -303,30 +289,17 @@ struct
                 match vplist with
                 (* We can only analyze "Length(accarg) + C" *)
                 | [
-                 ( Container
-                     (SPol [ cpol; (1, [ (Length (Base lenvar), 1) ]) ], _),
-                   _ );
+                 (Container (SPol [ cpol; (1, [ (Length (Base lenvar), 1) ]) ], _), _);
                 ]
-                  when is_const_term cpol
-                       && get_id lenvar = get_id accarg
-                       && coef = 1 ->
+                  when is_const_term cpol && get_id lenvar = get_id accarg && coef = 1 ->
                     true
                 | _ -> false)
           in
           match cterms with
           | [] -> sr (* No Container terms, and hence doesn't grow. *)
-          | [
-              ( _,
-                [
-                  (Container (SPol [ cpol; (1, [ (Length _, 1) ]) ], elmsize), _);
-                ] );
-            ]
-          | [
-              ( _,
-                [
-                  (Container (SPol [ (1, [ (Length _, 1) ]); cpol ], elmsize), _);
-                ] );
-            ] ->
+          | [ (_, [ (Container (SPol [ cpol; (1, [ (Length _, 1) ]) ], elmsize), _) ]) ]
+          | [ (_, [ (Container (SPol [ (1, [ (Length _, 1) ]); cpol ], elmsize), _) ]) ]
+            ->
               (* We can analyze only when there's just one Container term in the polynomial. *)
               (* The result size is "Length(accarg) + Length(ls) * C" *)
               let pol = mul_pn [ cpol ] (single_simple_pn @@ Length ls) in
@@ -334,8 +307,7 @@ struct
               SPol (cterm' :: oterms)
           | _ -> Intractable "Unable to solve recurrence." )
       | Container (SPol [ cpol; (1, [ (Length (Base lenvar), 1) ]) ], elmsize)
-      | Container (SPol [ (1, [ (Length (Base lenvar), 1) ]); cpol ], elmsize)
-        ->
+      | Container (SPol [ (1, [ (Length (Base lenvar), 1) ]); cpol ], elmsize) ->
           if is_const_term cpol && get_id lenvar = get_id accarg then
             let pol = mul_pn [ cpol ] (single_simple_pn @@ Length ls) in
             Container (SPol pol, elmsize)
@@ -351,9 +323,7 @@ struct
         when elm1 = elm2 && pow1 = pow2 ->
           (* If we have two identical containers, pick the max possible container size. *)
           (* TODO: For nested containers, should we have a recursive call? *)
-          Some
-            ( max coef1 coef2,
-              [ (Container (SPol (max_combine_pn l1 l2), elm1), pow1) ] )
+          Some (max coef1 coef2, [ (Container (SPol (max_combine_pn l1 l2), elm1), pow1) ])
       | (coef1, _), (coef2, _) when eq_term ~coef:false t1 t2 ->
           (* We have two identical terms with only different co-efficients. *)
           Some (if coef1 > coef2 then t1 else t2)
@@ -407,9 +377,7 @@ struct
               let id' = lookup_actual id in
               LFoldAcc (id', replacer accbase, replacer ls)
           | Intractable s -> Intractable s
-        and polynomial_replacer pol =
-          var_replace_pn pol ~f:(fun sr -> replacer sr)
-        in
+        and polynomial_replacer pol = var_replace_pn pol ~f:(fun sr -> replacer sr) in
         replacer s'
       in
 
@@ -451,9 +419,7 @@ struct
           match act with
           | Base id'' -> pure id''
           (* See TODO in definition of sizeref where SApp should have sizeref instead of ident. *)
-          | _ ->
-              fail1 "Functions cannot be wrapped in ADTs"
-                (ER.get_loc (get_rep id)) )
+          | _ -> fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id)) )
       | None -> pure id
     in
     let rec replacer s =
@@ -499,8 +465,7 @@ struct
           let%bind accbase' = replacer accbase in
           pure @@ LFoldAcc (id', accbase', ls')
       | Intractable s -> pure @@ Intractable s
-    and
-        (* replace param with actual in a sizeref polynomial. *)
+    and (* replace param with actual in a sizeref polynomial. *)
         polynomial_replacer pol =
       let exception Resolv_error of scilla_error list in
       let pol' =
@@ -534,16 +499,13 @@ struct
               match act with
               | Base id'' -> pure id''
               (* See TODO in definition of sizeref where SApp should have guref instead of ident. *)
-              | _ ->
-                  fail1 "Functions cannot be wrapped in ADTs"
-                    (ER.get_loc (get_rep id)) )
+              | _ -> fail1 "Functions cannot be wrapped in ADTs" (ER.get_loc (get_rep id))
+              )
           | None -> pure id
         in
         (* We don't do anything with id as that will be expanded (not just resolved). *)
         let%bind gurlist' =
-          mapM
-            ~f:(fun v -> substitute_resolved_actual_sizeref param_actual_map v)
-            gurlist
+          mapM ~f:(fun v -> substitute_resolved_actual_sizeref param_actual_map v) gurlist
         in
         pure @@ GApp (id', gurlist')
     | GPol p ->
@@ -573,14 +535,12 @@ struct
       fail0
         "Number of actual arguments and formal parameters mismatch in sizeref \
          substitution."
-    else
-      substitute_resolved_actual_sizeref (List.combine params actuals) ressize
+    else substitute_resolved_actual_sizeref (List.combine params actuals) ressize
 
   let substitute_resolved_actuals_guref_list gup params actuals =
     if List.length params != List.length actuals then
       fail0
-        "Number of actual arguments and formal parameters mismatch in guref \
-         substitution."
+        "Number of actual arguments and formal parameters mismatch in guref substitution."
     else polynomial_replacer (List.combine params actuals) gup
 
   (* Resolve and expand variables and lambdas (whenever possible) in sr and pol. *)
@@ -626,9 +586,7 @@ struct
               pure @@ SApp (id, srlist')
             else
               let args' = List.map (fun i -> get_id i) args in
-              let%bind sr' =
-                substitute_resolved_actuals_sizeref_list sr args' srlist
-              in
+              let%bind sr' = substitute_resolved_actuals_sizeref_list sr args' srlist in
               resolver sr'
         | RFoldAcc (id, ls, accbase) | LFoldAcc (id, accbase, ls) ->
             let rfold = match s with RFoldAcc _ -> true | _ -> false in
@@ -639,14 +597,11 @@ struct
               (* No known expansion  *)
               let%bind ls' = resolver ls in
               let%bind acc' = resolver accbase in
-              pure
-                ( if rfold then RFoldAcc (id, ls', acc')
-                else LFoldAcc (id, acc', ls') )
+              pure (if rfold then RFoldAcc (id, ls', acc') else LFoldAcc (id, acc', ls'))
             else
               let args' = List.map (fun i -> get_id i) args in
               let srlist =
-                if rfold then [ Element ls; accbase ]
-                else [ accbase; Element ls ]
+                if rfold then [ Element ls; accbase ] else [ accbase; Element ls ]
               in
               (* Solve for "Length()" applications of the fold iterator. *)
               let%bind sr' =
@@ -654,14 +609,10 @@ struct
                   fail0 "Incorrect number of arguments to fold iterator"
                 else
                   (* We want the accumulator argument to the fold iterator. *)
-                  let accarg =
-                    if rfold then List.nth args 1 else List.nth args 0
-                  in
+                  let accarg = if rfold then List.nth args 1 else List.nth args 0 in
                   pure @@ solve_sizeref_rec sr accarg ls
               in
-              let%bind sr'' =
-                substitute_resolved_actuals_sizeref_list sr' args' srlist
-              in
+              let%bind sr'' = substitute_resolved_actuals_sizeref_list sr' args' srlist in
               resolver sr''
         | Intractable s -> pure @@ Intractable s
       (* replace param with actual in a signature. *)
@@ -700,9 +651,7 @@ struct
             pure @@ GApp (id, gurlist')
           else
             let args' = List.map (fun i -> get_id i) args in
-            let%bind sr' =
-              substitute_resolved_actuals_guref_list gup args' gurlist
-            in
+            let%bind sr' = substitute_resolved_actuals_guref_list gup args' gurlist in
             let%bind p = polynomial_resolver sr' in
             pure @@ GPol p
       | GPol p ->
@@ -757,10 +706,8 @@ struct
             let%bind genv' = bind_pattern genv msref arg0 in
             let%bind genv'' = bind_pattern genv' msref arg1 in
             pure genv''
-        | _ ->
-            fail0
-              (Printf.sprintf "Unsupported constructor %s in gas analysis."
-                 cname) )
+        | _ -> fail0 (Printf.sprintf "Unsupported constructor %s in gas analysis." cname)
+        )
 
   (* built-in op costs are propotional to size of data they operate on. *)
   (* TODO: Have all numbers in one place. Integrate with Gas.ml *)
@@ -808,8 +755,7 @@ struct
     | Builtin_concat ->
         (* concat(a, b) = a + b *)
         if List.length params <> 2 then fail1 (arg_err ops) opl
-        else
-          pure ([ si "a"; si "b" ], ressize ops params, add_pn (sp "a") (sp "b"))
+        else pure ([ si "a"; si "b" ], ressize ops params, add_pn (sp "a") (sp "b"))
     | Builtin_substr ->
         (* substr(a, o, l) = a *)
         if List.length params <> 3 then fail1 (arg_err ops) opl
@@ -853,41 +799,32 @@ struct
         else
           let pol = single_simple_pn (SizeOf (Length (Base (si "m")))) in
           pure
-            ( [ si "m"; si "key"; si "val" ],
-              ressize ops params,
-              add_pn pol (const_pn 1) )
+            ([ si "m"; si "key"; si "val" ], ressize ops params, add_pn pol (const_pn 1))
     | Builtin_remove ->
         (* remove(m, key) = 1 + Length (m) *)
         if List.length params <> 2 then fail1 (arg_err ops) opl
         else
           let pol = single_simple_pn (SizeOf (Length (Base (si "m")))) in
-          pure
-            ([ si "m"; si "key" ], ressize ops params, add_pn pol (const_pn 1))
+          pure ([ si "m"; si "key" ], ressize ops params, add_pn pol (const_pn 1))
     | Builtin_to_list | Builtin_size ->
         (* 1 + length (m) *)
         if List.length params <> 1 then fail1 (arg_err ops) opl
         else
           let pol = single_simple_pn (SizeOf (Length (Base (si "m")))) in
           pure ([ si "m" ], ressize ops params, add_pn pol (const_pn 1))
-    | Builtin_add | Builtin_sub | Builtin_mul | Builtin_div | Builtin_rem
-    | Builtin_lt | Builtin_to_int32 | Builtin_to_int64 | Builtin_to_int128
-    | Builtin_to_int256 | Builtin_to_uint32 | Builtin_to_uint64
-    | Builtin_to_uint128 | Builtin_to_uint256 ->
-        if List.length params <> 2 && List.length params <> 1 then
-          fail1 (arg_err ops) opl
+    | Builtin_add | Builtin_sub | Builtin_mul | Builtin_div | Builtin_rem | Builtin_lt
+    | Builtin_to_int32 | Builtin_to_int64 | Builtin_to_int128 | Builtin_to_int256
+    | Builtin_to_uint32 | Builtin_to_uint64 | Builtin_to_uint128 | Builtin_to_uint256 ->
+        if List.length params <> 2 && List.length params <> 1 then fail1 (arg_err ops) opl
         else
           let base =
-            match ops with
-            | Builtin_mul | Builtin_div | Builtin_rem -> 20
-            | _ -> 4
+            match ops with Builtin_mul | Builtin_div | Builtin_rem -> 20 | _ -> 4
           in
           let%bind c =
             let arg0 = List.nth tparams 0 in
             (* Check if this is ByStrX -> Uint256 when X <= 32. *)
             if
-              ( match bystrx_width arg0 with
-              | Some w when w <= 32 -> true
-              | _ -> false )
+              (match bystrx_width arg0 with Some w when w <= 32 -> true | _ -> false)
               && ops = Builtin_to_uint256
             then pure (base * 4)
             else
@@ -899,8 +836,8 @@ struct
           in
           let sig_args =
             match ops with
-            | Builtin_add | Builtin_sub | Builtin_mul | Builtin_div
-            | Builtin_rem | Builtin_lt ->
+            | Builtin_add | Builtin_sub | Builtin_mul | Builtin_div | Builtin_rem
+            | Builtin_lt ->
                 [ si "a"; si "b" ]
             | _ -> [ si "a" ]
           in
@@ -1002,10 +939,7 @@ struct
                   (* Cons a b : Container((Length(b)+1), Element(b)) *)
                   let el = Element compsize1 in
                   let len =
-                    SPol
-                      (add_pn
-                         (single_simple_pn @@ Length compsize1)
-                         (const_pn 1))
+                    SPol (add_pn (single_simple_pn @@ Length compsize1) (const_pn 1))
                   in
                   pure @@ Container (len, el)
               | Container (SPol len, elm) ->
@@ -1014,20 +948,15 @@ struct
               | _ ->
                   (* what to do? *)
                   pure
-                  @@ SPol
-                       (add_pn (sizeref_to_pol compsize0)
-                          (sizeref_to_pol compsize1)) )
+                  @@ SPol (add_pn (sizeref_to_pol compsize0) (sizeref_to_pol compsize1)) )
           | _ ->
               fail1
-                (Printf.sprintf "Unsupported constructor %s in gas analysis."
-                   cname)
+                (Printf.sprintf "Unsupported constructor %s in gas analysis." cname)
                 (ER.get_loc rep)
         in
         pure ([], ressize, cc)
     | MatchExpr (x, clauses) ->
-        let%bind _, xsize, _ =
-          GUAEnv.resolvS genv (get_id x) ~lopt:(Some (get_rep x))
-        in
+        let%bind _, xsize, _ = GUAEnv.resolvS genv (get_id x) ~lopt:(Some (get_rep x)) in
         (*   TODO: If the return type of the MatchExpr is a function then
          *     the arguments (first Element of the signature) cannot be
          *     ignored as we're doing now. 
@@ -1153,9 +1082,7 @@ struct
             let nindices = const_pn (List.length klist) in
             let sign, pol =
               if fetchval then
-                let ressize =
-                  List.fold_left (fun acc _ -> Element acc) (Base m) klist
-                in
+                let ressize = List.fold_left (fun acc _ -> Element acc) (Base m) klist in
                 ( ([], ressize, empty_pn),
                   add_pn nindices (single_simple_pn (SizeOf ressize)) )
               else
@@ -1191,9 +1118,7 @@ struct
             gua_stmt genv (add_pn gupol (const_pn 1)) sts
         | SendMsgs i | CreateEvnt i ->
             (* We can at best convey the size of i *)
-            let%bind _, s, _ =
-              GUAEnv.resolvS genv (get_id i) ~lopt:(Some (get_rep i))
-            in
+            let%bind _, s, _ = GUAEnv.resolvS genv (get_id i) ~lopt:(Some (get_rep i)) in
             let gupol' = add_pn gupol (single_simple_pn (SizeOf s)) in
             gua_stmt genv gupol' sts
         | _ -> fail1 "Unsupported statement" (SR.get_loc sloc) )
@@ -1211,16 +1136,13 @@ struct
     let si a t = ER.mk_id (mk_ident a) t in
     let all_params =
       [
-        ( si ContractUtil.MessagePayload.sender_label (bystrx_typ 20),
-          bystrx_typ 20 );
+        (si ContractUtil.MessagePayload.sender_label (bystrx_typ 20), bystrx_typ 20);
         (si ContractUtil.MessagePayload.amount_label uint128_typ, uint128_typ);
       ]
       @ comp.comp_params
     in
     (* Add params to the environment. *)
-    let genv' =
-      identity_bind_ident_list genv (List.map (fun (i, _) -> i) all_params)
-    in
+    let genv' = identity_bind_ident_list genv (List.map (fun (i, _) -> i) all_params) in
     (* TODO: Add bytesize of message.json. *)
     gua_stmt genv' empty_pn comp.comp_body
 
@@ -1250,8 +1172,7 @@ struct
             let genv_lib' =
               GUAEnv.filterS genv_lib ~f:(fun name ->
                   List.exists
-                    (function
-                      | LibTyp _ -> false | LibVar (i, _, _) -> get_id i = name)
+                    (function LibTyp _ -> false | LibVar (i, _, _) -> get_id i = name)
                     lib.libn.lentries
                   || GUAEnv.existsS genv_folds name)
             in
@@ -1271,10 +1192,7 @@ struct
     (* Bind contract parameters. *)
     let si a t = ER.mk_id (mk_ident a) t in
     let all_cparams =
-      [
-        ( si ContractUtil.creation_block_label PrimTypes.bnum_typ,
-          PrimTypes.bnum_typ );
-      ]
+      [ (si ContractUtil.creation_block_label PrimTypes.bnum_typ, PrimTypes.bnum_typ) ]
       @ cmod.contr.cparams
     in
     let genv_cparams =
@@ -1307,7 +1225,6 @@ struct
     let%bind params, sr, pol = gua_expr genv' erep in
     (* Expand all parameters (GPol) in the polynomial. *)
     let pol' = expand_guref_pol pol in
-    Printf.printf "Gas usage signature:\n%s\n\n"
-      (sprint_signature (params, sr, pol'));
+    Printf.printf "Gas usage signature:\n%s\n\n" (sprint_signature (params, sr, pol'));
     pure (params, sr, pol')
 end

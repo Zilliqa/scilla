@@ -94,10 +94,7 @@ let literal_to_jstring ?(pp = false) lit =
   if pp then Basic.pretty_to_string j else Basic.to_string j
 
 let loc_to_json (l : loc) =
-  `Assoc
-    [
-      ("file", `String l.fname); ("line", `Int l.lnum); ("column", `Int l.cnum);
-    ]
+  `Assoc [ ("file", `String l.fname); ("line", `Int l.lnum); ("column", `Int l.cnum) ]
 
 let scilla_error_to_json elist =
   let err_to_json (e : scilla_error) =
@@ -108,9 +105,7 @@ let scilla_error_to_json elist =
         ("end_location", loc_to_json e.endl);
       ]
   in
-  let ejl =
-    List.fold_right elist ~init:[] ~f:(fun e acc -> err_to_json e :: acc)
-  in
+  let ejl = List.fold_right elist ~init:[] ~f:(fun e acc -> err_to_json e :: acc) in
   `List ejl
 
 let scilla_warning_to_json wlist =
@@ -123,9 +118,7 @@ let scilla_warning_to_json wlist =
         ("warning_id", `Int w.wid);
       ]
   in
-  let ejl =
-    List.fold_right wlist ~init:[] ~f:(fun e acc -> warning_to_json e :: acc)
-  in
+  let ejl = List.fold_right wlist ~init:[] ~f:(fun e acc -> warning_to_json e :: acc) in
   `List ejl
 
 let scilla_error_to_jstring ?(pp = true) elist =
@@ -146,15 +139,14 @@ let scilla_warning_to_sstring wlist =
   let strip_nl s = Str.global_replace (Str.regexp "[\n]") " " s in
   let pp w =
     let msg = strip_nl w.wmsg in
-    sprintf "%s:%d:%d: warning: [%d] %s" w.wstartl.fname w.wstartl.lnum
-      w.wstartl.cnum w.wid msg
+    sprintf "%s:%d:%d: warning: [%d] %s" w.wstartl.fname w.wstartl.lnum w.wstartl.cnum
+      w.wid msg
   in
   List.fold wlist ~init:"" ~f:(fun acc e -> acc ^ "\n" ^ pp e) ^ "\n"
 
 let scilla_error_to_string elist =
   if GlobalConfig.use_json_errors () then scilla_error_to_jstring elist
-  else
-    scilla_error_to_sstring elist ^ scilla_warning_to_sstring (get_warnings ())
+  else scilla_error_to_sstring elist ^ scilla_warning_to_sstring (get_warnings ())
 
 let scilla_error_gas_jstring ?(pp = true) gas_remaining elist =
   let j' = scilla_error_to_json elist in
@@ -170,8 +162,7 @@ let scilla_error_gas_jstring ?(pp = true) gas_remaining elist =
   if pp then Basic.pretty_to_string j else Basic.to_string j
 
 let scilla_error_gas_string gas_remaining elist =
-  if GlobalConfig.use_json_errors () then
-    scilla_error_gas_jstring gas_remaining elist
+  if GlobalConfig.use_json_errors () then scilla_error_gas_jstring gas_remaining elist
   else
     scilla_error_to_sstring elist
     ^ scilla_warning_to_sstring (get_warnings ())
@@ -206,19 +197,14 @@ let rec pp_literal_simplified l =
   match l with
   | StringLit s -> "(String " ^ "\"" ^ s ^ "\"" ^ ")"
   (* (bit-width, value) *)
-  | IntLit i ->
-      "(Int" ^ Int.to_string (int_lit_width i) ^ " " ^ string_of_int_lit i ^ ")"
+  | IntLit i -> "(Int" ^ Int.to_string (int_lit_width i) ^ " " ^ string_of_int_lit i ^ ")"
   (* (bit-width, value) *)
   | UintLit i ->
-      "(Uint"
-      ^ Int.to_string (uint_lit_width i)
-      ^ " " ^ string_of_uint_lit i ^ ")"
+      "(Uint" ^ Int.to_string (uint_lit_width i) ^ " " ^ string_of_uint_lit i ^ ")"
   | BNum b -> "(BNum " ^ b ^ ")"
   | ByStr bs -> "(ByStr " ^ Bystr.hex_encoding bs ^ ")"
   | ByStrX bsx ->
-      "(ByStr"
-      ^ Int.to_string (Bystrx.width bsx)
-      ^ " " ^ Bystrx.hex_encoding bsx ^ ")"
+      "(ByStr" ^ Int.to_string (Bystrx.width bsx) ^ " " ^ Bystrx.hex_encoding bsx ^ ")"
   | Msg m ->
       let items =
         "["
@@ -234,8 +220,7 @@ let rec pp_literal_simplified l =
         ^ Caml.Hashtbl.fold
             (fun k v a ->
               let t =
-                "(" ^ pp_literal_simplified k ^ " => " ^ pp_literal_simplified v
-                ^ ")"
+                "(" ^ pp_literal_simplified k ^ " => " ^ pp_literal_simplified v ^ ")"
               in
               if String.is_empty a then t else a ^ "; " ^ t)
             kv ""
@@ -271,8 +256,7 @@ let rec pp_literal_simplified l =
       | _ ->
           (* Generic printing for other ADTs. *)
           "(" ^ cn
-          ^ List.fold_left al ~init:"" ~f:(fun a l' ->
-                a ^ " " ^ pp_literal_simplified l')
+          ^ List.fold_left al ~init:"" ~f:(fun a l' -> a ^ " " ^ pp_literal_simplified l')
           ^ ")" )
   | Clo _ -> "<closure>"
   | TAbs _ -> "<type_closure>"
@@ -280,13 +264,10 @@ let rec pp_literal_simplified l =
 let pp_literal_json l = literal_to_jstring l
 
 let pp_literal l =
-  if GlobalConfig.get_pp_lit () then pp_literal_simplified l
-  else pp_literal_json l
+  if GlobalConfig.get_pp_lit () then pp_literal_simplified l else pp_literal_json l
 
 let pp_literal_map s =
-  let ps =
-    List.map s ~f:(fun (k, v) -> sprintf " [%s -> %s]" k (pp_literal v))
-  in
+  let ps = List.map s ~f:(fun (k, v) -> sprintf " [%s -> %s]" k (pp_literal v)) in
   let cs = String.concat ~sep:",\n " ps in
   sprintf "{%s }" cs
 

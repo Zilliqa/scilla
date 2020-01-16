@@ -33,17 +33,14 @@ let rec match_with_pattern v p =
       (* Check that the pattern is well-formed *)
       if ctr.arity <> List.length ps then
         fail0
-        @@ sprintf "Constructor %s requires %d parameters, but %d are provided."
-             ctr.cname ctr.arity (List.length ps)
-        (* Pattern is well-formed, processing the value *)
+        @@ sprintf "Constructor %s requires %d parameters, but %d are provided." ctr.cname
+             ctr.arity (List.length ps) (* Pattern is well-formed, processing the value *)
       else
         match v with
-        | ADTValue (cn', _, ls')
-          when cn' = ctr.cname && List.length ls' = ctr.arity -> (
+        | ADTValue (cn', _, ls') when cn' = ctr.cname && List.length ls' = ctr.arity -> (
             (* The value structure matches the pattern *)
             match List.zip ls' ps with
-            | Unequal_lengths ->
-                fail0 "Pattern and value lists have different length"
+            | Unequal_lengths -> fail0 "Pattern and value lists have different length"
             | Ok sub_matches ->
                 let%bind res_list =
                   mapM sub_matches ~f:(fun (w, q) -> match_with_pattern w q)
@@ -53,6 +50,5 @@ let rec match_with_pattern v p =
                 pure @@ ListLabels.flatten res_list )
         | _ ->
             fail0
-            @@ sprintf "Cannot match value %s againts pattern %s."
-                 (Env.pp_value v)
+            @@ sprintf "Cannot match value %s againts pattern %s." (Env.pp_value v)
                  (sexp_of_pattern p |> Sexplib.Sexp.to_string) )

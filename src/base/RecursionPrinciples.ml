@@ -27,14 +27,10 @@ open FrontEndParser
 open ParsedSyntax
 
 let parse_expr_wrapper expr =
-  match parse_expr expr with
-  | Error s -> PrettyPrinters.fatal_error s
-  | Ok e -> e
+  match parse_expr expr with Error s -> PrettyPrinters.fatal_error s | Ok e -> e
 
 let parse_type_wrapper expr =
-  match parse_type expr with
-  | Error s -> PrettyPrinters.fatal_error s
-  | Ok e -> e
+  match parse_type expr with Error s -> PrettyPrinters.fatal_error s | Ok e -> e
 
 (* Folding over natural numbers *)
 module NatRec = struct
@@ -128,11 +124,9 @@ module ListRec = struct
   module Foldl = struct
     let f_type = parse_type_wrapper "'B -> 'A -> 'B"
 
-    let fold_type =
-      parse_type_wrapper "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
+    let fold_type = parse_type_wrapper "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
 
-    let fold_type_opt =
-      Some (PolyFun (get_id avar, PolyFun (get_id bvar, fold_type)))
+    let fold_type_opt = Some (PolyFun (get_id avar, PolyFun (get_id bvar, fold_type)))
 
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
@@ -163,11 +157,9 @@ module ListRec = struct
   module Foldr = struct
     let f_type = parse_type_wrapper "'A -> 'B -> 'B"
 
-    let fold_type =
-      parse_type_wrapper "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
+    let fold_type = parse_type_wrapper "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
 
-    let fold_type_opt =
-      Some (PolyFun (get_id avar, PolyFun (get_id bvar, fold_type)))
+    let fold_type_opt = Some (PolyFun (get_id avar, PolyFun (get_id bvar, fold_type)))
 
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
@@ -199,11 +191,9 @@ module ListRec = struct
     let comb_type = parse_type_wrapper "'B -> 'A -> ('B -> 'B) -> 'B"
 
     let fold_type =
-      parse_type_wrapper
-        "('B -> 'A -> ('B -> 'B) -> 'B) -> 'B -> (List 'A) -> 'B"
+      parse_type_wrapper "('B -> 'A -> ('B -> 'B) -> 'B) -> 'B -> (List 'A) -> 'B"
 
-    let fold_type_opt =
-      Some (PolyFun (get_id avar, PolyFun (get_id bvar, fold_type)))
+    let fold_type_opt = Some (PolyFun (get_id avar, PolyFun (get_id bvar, fold_type)))
 
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"

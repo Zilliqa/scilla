@@ -44,8 +44,7 @@ let parse_lexbuf checkpoint_starter lexbuf filename =
     let state_number = MInter.current_state_number env in
     let error_message =
       try message state_number
-      with Caml.Not_found ->
-        Printf.sprintf "Syntax error, state number %d" state_number
+      with Caml.Not_found -> Printf.sprintf "Syntax error, state number %d" state_number
     in
     fail_err error_message lexbuf
   in
@@ -67,11 +66,8 @@ let parse_type s = parse_string ScillaParser.Incremental.type_term s
 
 let parse_expr s = parse_string ScillaParser.Incremental.exp_term s
 
-let parse_expr_from_file filename =
-  parse_file ScillaParser.Incremental.exp_term filename
+let parse_expr_from_file filename = parse_file ScillaParser.Incremental.exp_term filename
 
-let parse_lmodule filename =
-  parse_file ScillaParser.Incremental.lmodule filename
+let parse_lmodule filename = parse_file ScillaParser.Incremental.lmodule filename
 
-let parse_cmodule filename =
-  parse_file ScillaParser.Incremental.cmodule filename
+let parse_cmodule filename = parse_file ScillaParser.Incremental.cmodule filename

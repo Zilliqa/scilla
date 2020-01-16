@@ -36,8 +36,7 @@ let make_bad_lit_test l =
     match v with Error _ -> true | Ok _ -> false
   in
   let err_msg l =
-    Printf.sprintf "Malformed literal %s did not fail consistency check"
-      (pp_literal l)
+    Printf.sprintf "Malformed literal %s did not fail consistency check" (pp_literal l)
   in
   test_case (fun _ -> assert_bool (err_msg l) (is_invalid_literal l))
 
@@ -51,9 +50,7 @@ let t1 =
   let mt = (int32_typ, int32_typ) in
   (* value type = (Int32, Int64) *)
   let kv = Caml.Hashtbl.create 1 in
-  let _ =
-    Caml.Hashtbl.replace kv (int_builder Bits32 "1") (int_builder Bits64 "2")
-  in
+  let _ = Caml.Hashtbl.replace kv (int_builder Bits32 "1") (int_builder Bits64 "2") in
   let l = Map (mt, kv) in
   make_bad_lit_test l
 
@@ -63,9 +60,7 @@ let t2 =
   let mt = (map_typ int32_typ int32_typ, int32_typ) in
   let mt' = (int32_typ, int32_typ) in
   let m1 = Caml.Hashtbl.create 1 in
-  let _ =
-    Caml.Hashtbl.replace m1 (int_builder Bits32 "1") (int_builder Bits32 "2")
-  in
+  let _ = Caml.Hashtbl.replace m1 (int_builder Bits32 "1") (int_builder Bits32 "2") in
   let l' = Map (mt', m1) in
   let m2 = Caml.Hashtbl.create 1 in
   (* The key for m2 is being set to another Map, non-primitive. *)
@@ -90,9 +85,7 @@ let t5 =
 
 (* Malformed Option ADT. *)
 let t6 =
-  let bado =
-    ADTValue ("Some", [ int32_typ; int32_typ ], [ int_builder Bits32 "1" ])
-  in
+  let bado = ADTValue ("Some", [ int32_typ; int32_typ ], [ int_builder Bits32 "1" ]) in
   make_bad_lit_test bado
 
 (* Malformed List *)
@@ -186,5 +179,4 @@ module Tests = TestUtil.DiffBasedTests (struct
   let exit_code : Unix.process_status = WEXITED 1
 end)
 
-let all_tests env =
-  "type_check_fail_tests" >::: [ lit_typ_tests; Tests.all_tests env ]
+let all_tests env = "type_check_fail_tests" >::: [ lit_typ_tests; Tests.all_tests env ]

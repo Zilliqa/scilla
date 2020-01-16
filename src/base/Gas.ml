@@ -93,12 +93,11 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   let expr_static_cost erep =
     let e, _ = erep in
     match e with
-    | Literal _ | Var _ | Let _ | Message _ | Fun _ | App _ | Constr _
-    | TFun _ | TApp _ ->
+    | Literal _ | Var _ | Let _ | Message _ | Fun _ | App _ | Constr _ | TFun _ | TApp _
+      ->
         pure 1
     | MatchExpr (_, clauses) -> pure @@ List.length clauses
-    | Fixpoint _ ->
-        pure 1 (* more cost accounted during recursive evaluation. *)
+    | Fixpoint _ -> pure 1 (* more cost accounted during recursive evaluation. *)
     | Builtin _ -> pure 0
 
   (* this is a dynamic cost. *)
@@ -107,9 +106,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     match scon with
     | G_Load l | G_Store l -> literal_cost l
     | G_MapUpdate (n, lopt) | G_MapGet (n, lopt) ->
-        let%bind l_cost =
-          match lopt with Some l -> literal_cost l | None -> pure 0
-        in
+        let%bind l_cost = match lopt with Some l -> literal_cost l | None -> pure 0 in
         pure @@ (n + l_cost)
     | G_Bind -> pure 1
     | G_MatchStmt num_clauses -> pure num_clauses
@@ -126,8 +123,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
 
   (* A signature for functions that determine dynamic cost of built-in ops. *)
   (* op -> arguments -> base cost -> total cost *)
-  type coster =
-    builtin -> literal list -> int -> (int, scilla_error list) result
+  type coster = builtin -> literal list -> int -> (int, scilla_error list) result
 
   (* op, arg types, coster, base cost. *)
   type builtin_record = builtin * typ list * coster * int
@@ -141,11 +137,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         pure @@ (Int.min (String.length s1) (String.length s2) * base)
     | Builtin_concat, [ StringLit s1; StringLit s2 ] ->
         pure @@ ((String.length s1 + String.length s2) * base)
-    | ( Builtin_substr,
-        [ StringLit s; UintLit (Uint32L i1); UintLit (Uint32L i2) ] ) ->
+    | Builtin_substr, [ StringLit s; UintLit (Uint32L i1); UintLit (Uint32L i2) ] ->
         pure
-        @@ Int.min (String.length s)
-             (Stdint.Uint32.to_int i1 + Stdint.Uint32.to_int i2)
+        @@ Int.min (String.length s) (Stdint.Uint32.to_int i1 + Stdint.Uint32.to_int i2)
            * base
     | Builtin_strlen, [ StringLit s ] -> pure @@ (String.length s * base)
     | Builtin_to_string, [ l ] ->
@@ -162,8 +156,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       when is_bystrx_type a1 && is_bystrx_type a2
            && get (bystrx_width a1) = get (bystrx_width a2) ->
         pure @@ (get (bystrx_width a1) * base)
-    | Builtin_to_uint256, [ a ], _
-      when is_bystrx_type a && get (bystrx_width a) <= 32 ->
+    | Builtin_to_uint256, [ a ], _ when is_bystrx_type a && get (bystrx_width a) <= 32 ->
         pure (32 * base)
     | Builtin_sha256hash, _, [ a ] | Builtin_schnorr_get_address, _, [ a ] ->
         (* Block size of sha256hash is 512 *)
@@ -183,10 +176,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_bech32_to_bystr20, _, [ prefix; addr ]
     | Builtin_bystr20_to_bech32, _, [ prefix; addr ] ->
         pure
-        @@ (String.length (pp_literal prefix) + String.length (pp_literal addr))
-           * base
-    | Builtin_concat, [ a1; a2 ], _ when is_bystrx_type a1 && is_bystrx_type a2
-      ->
+        @@ ((String.length (pp_literal prefix) + String.length (pp_literal addr)) * base)
+    | Builtin_concat, [ a1; a2 ], _ when is_bystrx_type a1 && is_bystrx_type a2 ->
         pure @@ ((get (bystrx_width a1) + get (bystrx_width a2)) * base)
     | Builtin_alt_bn128_G1_add, _, _ -> pure @@ (20 * base)
     | Builtin_alt_bn128_G1_mul, _, [ _; s ] ->
@@ -230,8 +221,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       | Builtin_mul | Builtin_div | Builtin_rem -> pure (base * 5)
       | Builtin_pow -> (
           match args with
-          | [ _; UintLit (Uint32L p) ] ->
-              pure (base * 5 * Stdint.Uint32.to_int p)
+          | [ _; UintLit (Uint32L p) ] -> pure (base * 5 * Stdint.Uint32.to_int p)
           | _ -> fail0 @@ "Gas cost error for built-in pow" )
       | _ -> pure base
     in
@@ -342,14 +332,10 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       then fcoster op arg_literals base (* this can fail too *)
       else fail0 @@ "Name or arity doesn't match"
     in
-    let msg =
-      sprintf "Unable to determine gas cost for \"%s\"" (pp_builtin op)
-    in
+    let msg = sprintf "Unable to determine gas cost for \"%s\"" (pp_builtin op) in
     let open Caml in
     let dict =
-      match Hashtbl.find_opt builtin_hashtbl op with
-      | Some rows -> rows
-      | None -> []
+      match Hashtbl.find_opt builtin_hashtbl op with Some rows -> rows | None -> []
     in
     let%bind _, cost = tryM dict ~f:matcher ~msg:(fun () -> mk_error0 msg) in
     pure cost

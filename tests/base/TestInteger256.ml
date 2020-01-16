@@ -158,9 +158,7 @@ let t3_uint =
       let do_conv ui = Printf.sprintf "%f" (Uint256.to_float ui) in
       let uint256_two = Uint256.add Uint256.one Uint256.one in
       let uint256_max_minus_one = Uint256.sub Uint256.max_int Uint256.one in
-      let uint256_max_minus_two =
-        Uint256.sub uint256_max_minus_one Uint256.one
-      in
+      let uint256_max_minus_two = Uint256.sub uint256_max_minus_one Uint256.one in
       let max_float =
         "115792089237316195423570985008687907853269984665640564039457584007913129639936.000000"
       in
@@ -173,11 +171,9 @@ let t3_uint =
       let max_minus_two_float =
         "115792089237316195423570985008687907853269984665640564039457584007913129639936.000000"
       in
-      assert_bool "Uint256.to_float failed max_int"
-        (max_float = do_conv Uint256.max_int);
+      assert_bool "Uint256.to_float failed max_int" (max_float = do_conv Uint256.max_int);
       assert_bool "Uint256.to_float failed one" (one_float = do_conv Uint256.one);
-      assert_bool "Uint256.to_float failed zero"
-        (zero_float = do_conv Uint256.zero);
+      assert_bool "Uint256.to_float failed zero" (zero_float = do_conv Uint256.zero);
       assert_bool "Uint256.to_float failed two" (two_float = do_conv uint256_two);
       assert_bool "Uint256.to_float failed max_minus_one"
         (max_minus_one_float = do_conv uint256_max_minus_one);
@@ -241,11 +237,9 @@ let binary_inputs_uint =
     (* (max_int, max_int) *)
     (Uint256.to_string Uint256.max_int, uint256_max_str);
     (* (max_int/2, "2") *)
-    ( "57896044618658097711785492504343953926634992332820282019728792003956564819967",
-      "2" );
+    ("57896044618658097711785492504343953926634992332820282019728792003956564819967", "2");
     (* (max_int/4, "5") *)
-    ( "28948022309329048855892746252171976963317496166410141009864396001978282409983",
-      "5" );
+    ("28948022309329048855892746252171976963317496166410141009864396001978282409983", "5");
     (* (max_int, 1) *)
     (uint256_max_str, "1");
     (* (max_int, 0) *)
@@ -282,8 +276,7 @@ let binary_inputs_int =
     ( Int256.to_string
         (Int256.div Int256.min_int (Int256.of_string "411112256444332224444")),
       Int256.to_string
-        (Int256.div Int256.max_int
-           (Int256.of_string "566633221114444777777777777")) );
+        (Int256.div Int256.max_int (Int256.of_string "566633221114444777777777777")) );
   ]
 
 module IntTester (IR1 : IntRep) (IR2 : IntRep) = struct
@@ -330,8 +323,7 @@ module IntTester (IR1 : IntRep) (IR2 : IntRep) = struct
         let str2 = IR2.to_string cuiemu in
         let fail_str =
           "IntTester: (" ^ ops ^ " " ^ a ^ " " ^ b ^ ") fail: (" ^ str1 ^ ","
-          ^ string_of_bool !fail1 ^ ") vs (" ^ str2 ^ ","
-          ^ string_of_bool !fail2 ^ ")\n"
+          ^ string_of_bool !fail1 ^ ") vs (" ^ str2 ^ "," ^ string_of_bool !fail2 ^ ")\n"
         in
         let res = str1 = str2 && !fail1 = !fail2 in
         assert_bool fail_str res)
@@ -353,8 +345,8 @@ module IntTester (IR1 : IntRep) (IR2 : IntRep) = struct
         let div_rev = binary_test_create rhs lhs "div" in
         let rem_rev = binary_test_create rhs lhs "rem" in
         let compare_rev = binary_test_create rhs lhs "compare" in
-        add :: sub :: mul :: div :: rem :: compare :: add_rev :: sub_rev
-        :: mul_rev :: div_rev :: rem_rev :: compare_rev :: tl)
+        add :: sub :: mul :: div :: rem :: compare :: add_rev :: sub_rev :: mul_rev
+        :: div_rev :: rem_rev :: compare_rev :: tl)
       [] inputs
 end
 
@@ -373,14 +365,12 @@ let non_arithmetic_tests =
       assert_bool err (Int256.shift_left (ofs "1") 0 = ofs "1");
       assert_bool err (Int256.shift_left (ofs "1") 1 = ofs "2");
       assert_bool err
-        ( Int256.shift_left (ofs "1") 129
-        = ofs "680564733841876926926749214863536422912" );
+        (Int256.shift_left (ofs "1") 129 = ofs "680564733841876926926749214863536422912");
       (* 2 ^ 129 *)
       assert_bool err (Int256.shift_left (ofs "1") 255 = ofs int256_min_str);
       assert_bool err (Int256.shift_left (ofs "1") 256 = ofs "0");
       assert_bool err (Int256.shift_right_logical (ofs "1") 1 = ofs "0");
-      assert_bool err
-        (Int256.shift_right_logical (ofs "-1") 1 = ofs int256_max_str);
+      assert_bool err (Int256.shift_right_logical (ofs "-1") 1 = ofs int256_max_str);
 
       assert_bool err (Int256.setbit (ofs "0") 0 = ofs "1");
       assert_bool err (Int256.setbit (ofs "0") 255 = ofs int256_min_str);
@@ -390,9 +380,7 @@ let non_arithmetic_tests =
       let buf = Bytes.create 32 in
       let _ = Int256.to_bytes_little_endian (ofs "1") buf 0 in
       let s1 = Bytes.to_string buf in
-      let _ =
-        Int256.to_bytes_big_endian (Int256.shift_left (ofs "1") 248) buf 0
-      in
+      let _ = Int256.to_bytes_big_endian (Int256.shift_left (ofs "1") 248) buf 0 in
       let s2 = Bytes.to_string buf in
       assert_bool err (s1 = s2);
       assert_bool err (Int256.abs (ofs "-1") = ofs "1");
@@ -414,23 +402,18 @@ let non_arithmetic_tests =
       assert_bool err (Uint256.shift_left (ofs "1") 0 = ofs "1");
       assert_bool err (Uint256.shift_left (ofs "1") 1 = ofs "2");
       assert_bool err
-        ( Uint256.shift_left (ofs "1") 129
-        = ofs "680564733841876926926749214863536422912" );
+        (Uint256.shift_left (ofs "1") 129 = ofs "680564733841876926926749214863536422912");
       (* 2 ^ 129 *)
       assert_bool err
-        ( Uint256.shift_left (ofs "1") 255
-        = Uint256.add (ofs "1") (ofs int256_max_str) );
+        (Uint256.shift_left (ofs "1") 255 = Uint256.add (ofs "1") (ofs int256_max_str));
       assert_bool err (Uint256.shift_left (ofs "1") 256 = ofs "0");
       assert_bool err (Uint256.shift_right_logical (ofs "1") 1 = ofs "0");
-      assert_bool err
-        (Uint256.shift_right_logical (ofs uint256_max_str) 255 = ofs "1");
-      assert_bool err
-        (Uint256.shift_right_logical (ofs uint256_max_str) 256 = ofs "0");
+      assert_bool err (Uint256.shift_right_logical (ofs uint256_max_str) 255 = ofs "1");
+      assert_bool err (Uint256.shift_right_logical (ofs uint256_max_str) 256 = ofs "0");
       assert_bool err
         ( Uint256.shift_right_logical (ofs uint256_max_str) 128
         = ofs (Uint128.to_string Uint128.max_int) );
-      assert_bool err
-        (Uint256.shift_right_logical (ofs uint256_max_str) 255 = ofs "1");
+      assert_bool err (Uint256.shift_right_logical (ofs uint256_max_str) 255 = ofs "1");
       (* both the "shift_right"s are same for unsigned integers *)
       assert_bool err (Uint256.shift_right (ofs "1") 1 = ofs "0");
       assert_bool err (Uint256.shift_right (ofs uint256_max_str) 255 = ofs "1");
@@ -441,9 +424,7 @@ let non_arithmetic_tests =
       assert_bool err (Uint256.clearbit (ofs "1") 0 = ofs "0");
       assert_bool err
         ( Uint256.clearbit
-            (Uint256.add
-               (Uint256.div (ofs uint256_max_str) (ofs "2"))
-               (ofs "1"))
+            (Uint256.add (Uint256.div (ofs uint256_max_str) (ofs "2")) (ofs "1"))
             255
         = ofs "0" );
       assert_bool err (Uint256.abs (ofs "1") = ofs "1"))

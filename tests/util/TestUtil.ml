@@ -42,37 +42,25 @@ let run_tests tests =
     Conf.make_string "tests_dir" tests_dir_default "Directory containing tests"
   in
   let stdlib_dir =
-    Conf.make_string "stdlib_dir" stdlib_dir_default
-      "Directory containing stdlib"
+    Conf.make_string "stdlib_dir" stdlib_dir_default "Directory containing stdlib"
   in
   let print_cli =
-    Conf.make_bool "print_cli" false
-      "Print command line arguments used for test(s)"
+    Conf.make_bool "print_cli" false "Print command line arguments used for test(s)"
   in
   let update_gold =
-    Conf.make_bool "update_gold" false
-      "Ignore compare mismatch and update gold file(s)"
+    Conf.make_bool "update_gold" false "Ignore compare mismatch and update gold file(s)"
   in
   let print_diff =
-    Conf.make_bool "print_diff" false
-      "Print the diff between gold file and actual output"
+    Conf.make_bool "print_diff" false "Print the diff between gold file and actual output"
   in
   let ext_ipc_server =
     Conf.make_string "ext_ipc_server" ext_ipc_server_default
-      "Address of external IPC server for IPC tests. Ensure that \"-runner \
-       sequential\" is set"
+      "Address of external IPC server for IPC tests. Ensure that \"-runner sequential\" \
+       is set"
   in
 
   let env : tsuite_env =
-    {
-      bin_dir;
-      tests_dir;
-      stdlib_dir;
-      print_cli;
-      update_gold;
-      print_diff;
-      ext_ipc_server;
-    }
+    { bin_dir; tests_dir; stdlib_dir; print_cli; update_gold; print_diff; ext_ipc_server }
   in
   run_test_tt_main ("all_tests" >::: List.map ~f:(( |> ) env) tests)
 
@@ -112,8 +100,7 @@ let output_updater goldoutput_file test_name data =
 
 let prepare_cli_usage bin args = bin ^ " " ^ String.concat ~sep:" " args
 
-let cli_usage_on_err bin args =
-  "Command " ^ prepare_cli_usage bin args ^ " failed.\n"
+let cli_usage_on_err bin args = "Command " ^ prepare_cli_usage bin args ^ " failed.\n"
 
 let print_cli_usage flag bin args =
   if flag then Printf.printf "\nUsing CLI: %s\n" (prepare_cli_usage bin args)
@@ -150,9 +137,7 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
         let evalbin = env.bin_dir test_ctxt ^/ runner in
         let dir = env.tests_dir test_ctxt in
         let input_file = make_filename (test_path fname) in
-        let init_file =
-          make_filename (test_path (chop_extension fname ^ ".json"))
-        in
+        let init_file = make_filename (test_path (chop_extension fname ^ ".json")) in
         (* Verify standard output of execution with gold file *)
         let goldoutput_file = make_filename (gold_path dir fname) in
         let additional_dirs = List.map ~f:make_filename additional_libdirs in
@@ -171,9 +156,7 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
                 Stdint.Uint64.to_string gas_limit;
               ]
         in
-        let args =
-          if provide_init_arg then args' @ [ "-init"; init_file ] else args'
-        in
+        let args = if provide_init_arg then args' @ [ "-init"; init_file ] else args' in
         let msg = cli_usage_on_err evalbin args in
         print_cli_usage (env.print_cli test_ctxt) evalbin args;
         assert_command
@@ -181,8 +164,7 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
             let out = BatStream.to_string s in
             if env.update_gold test_ctxt then
               output_updater goldoutput_file input_file out
-            else
-              output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
+            else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
           ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt evalbin args)
 
   let all_tests env = "exptests" >::: build_exp_tests env tests

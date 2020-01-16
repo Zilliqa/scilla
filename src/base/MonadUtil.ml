@@ -117,8 +117,7 @@ let rec forallM ~f ls =
 (* Try all variants in the list, pick the first successful one *)
 let rec tryM ~f ls ~msg =
   match ls with
-  | x :: ls' -> (
-      match f x with Ok z -> Ok (x, z) | Error _ -> tryM ~f ls' ~msg )
+  | x :: ls' -> ( match f x with Ok z -> Ok (x, z) | Error _ -> tryM ~f ls' ~msg )
   | [] -> Error (msg ())
 
 (****************************************************************)
@@ -142,8 +141,7 @@ module EvalMonad = struct
   (* fail with a message and both start and end locations. *)
   let fail2 msg sloc eloc = fail @@ mk_error2 msg sloc eloc
 
-  let fromR r =
-    match r with Core_kernel.Error s -> fail s | Core_kernel.Ok a -> pure a
+  let fromR r = match r with Core_kernel.Error s -> fail s | Core_kernel.Ok a -> pure a
 
   let out_of_gas_err = mk_error0 "Ran out of gas"
 

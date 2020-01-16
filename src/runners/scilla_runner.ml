@@ -89,9 +89,7 @@ let input_state_json filename =
     | UintLit (Uint128L x) -> x
     | _ -> raise (mk_invalid_json (balance_label ^ " invalid"))
   in
-  let no_bal_states =
-    List.Assoc.remove states balance_label ~equal:String.( = )
-  in
+  let no_bal_states = List.Assoc.remove states balance_label ~equal:String.( = ) in
   (no_bal_states, bal_int)
 
 (* Add balance to output json and print it out *)
@@ -109,9 +107,7 @@ let output_message_json gas_remaining mlist =
             gas_remaining))
 
 let output_event_json elist =
-  List.map elist ~f:(function
-    | Msg m -> JSON.Event.event_to_json m
-    | _ -> `Null)
+  List.map elist ~f:(function Msg m -> JSON.Event.event_to_json m | _ -> `Null)
 
 let write_output_json (cli : Cli.ioFiles) output_json =
   let json_str =
@@ -119,8 +115,7 @@ let write_output_json (cli : Cli.ioFiles) output_json =
     else Yojson.Basic.to_string output_json
   in
   if String.is_empty cli.output then Out_channel.(output_string stdout json_str)
-  else
-    Out_channel.(with_file cli.output ~f:(fun ch -> output_string ch json_str))
+  else Out_channel.(with_file cli.output ~f:(fun ch -> output_string ch json_str))
 
 let validate_get_init_json init_file gas_remaining source_ver =
   (* Retrieve initial parameters *)
@@ -133,12 +128,9 @@ let validate_get_init_json init_file gas_remaining source_ver =
   in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
   let emsg = mk_error0 "Scilla version mismatch\n" in
-  let rgas =
-    Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty)
-  in
+  let rgas = Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty) in
   let init_json_scilla_version =
-    List.Assoc.find initargs ~equal:String.equal
-      ContractUtil.scilla_version_label
+    List.Assoc.find initargs ~equal:String.equal ContractUtil.scilla_version_label
   in
   let () =
     match init_json_scilla_version with
@@ -158,8 +150,7 @@ let deploy_library (cli : Cli.ioFiles) gas_remaining =
       fatal_error_gas e gas_remaining
   | Ok lmod ->
       plog
-        (sprintf "\n[Parsing]:\nLibrary module [%s] is successfully parsed.\n"
-           cli.input);
+        (sprintf "\n[Parsing]:\nLibrary module [%s] is successfully parsed.\n" cli.input);
       (* Parse external libraries. *)
       let lib_dirs = FilePath.dirname cli.input :: cli.libdirs in
       StdlibTracker.add_stdlib_dirs lib_dirs;
@@ -179,20 +170,16 @@ let () =
   let is_deployment = String.is_empty cli.input_message in
   let is_ipc = not @@ String.is_empty cli.ipc_address in
   let is_library =
-    FilePath.get_extension cli.input
-    = GlobalConfig.StdlibTracker.file_extn_library
+    FilePath.get_extension cli.input = GlobalConfig.StdlibTracker.file_extn_library
   in
   let gas_remaining =
     (* Subtract gas based on (contract+init) size / message size. *)
     if is_deployment then
-      let cost' =
-        Unix.((stat cli.input).st_size + (stat cli.input_init).st_size)
-      in
+      let cost' = Unix.((stat cli.input).st_size + (stat cli.input_init).st_size) in
       let cost = Uint64.of_int cost' in
       if Uint64.compare cli.gas_limit cost < 0 then
         fatal_error_gas
-          (mk_error0
-             (sprintf "Ran out of gas when parsing contract/init files.\n"))
+          (mk_error0 (sprintf "Ran out of gas when parsing contract/init files.\n"))
           Uint64.zero
       else Uint64.sub cli.gas_limit cost
     else
@@ -201,8 +188,7 @@ let () =
       if is_library then
         fatal_error_gas
           (mk_error0
-             (sprintf
-                "Cannot run a library contract. They can only be deployed\n"))
+             (sprintf "Cannot run a library contract. They can only be deployed\n"))
           Uint64.zero
       else if Uint64.compare cli.gas_limit cost < 0 then
         fatal_error_gas
@@ -220,8 +206,7 @@ let () =
         fatal_error_gas e gas_remaining
     | Ok cmod ->
         plog
-          (sprintf
-             "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
+          (sprintf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
              cli.input);
 
         (* Parse external libraries. *)
@@ -233,30 +218,20 @@ let () =
 
         (* Checking initialized libraries! *)
         let gas_remaining = check_libs clibs elibs cli.input gas_remaining in
-        let initargs =
-          validate_get_init_json cli.input_init gas_remaining cmod.smver
-        in
+        let initargs = validate_get_init_json cli.input_init gas_remaining cmod.smver in
 
         (* Retrieve block chain state  *)
         let bstate =
           try JSON.BlockChainState.get_json_data cli.input_blockchain
           with Invalid_json s ->
             fatal_error_gas
-              ( s
-              @ mk_error0
-                  (sprintf "Failed to parse json %s:\n" cli.input_blockchain) )
+              (s @ mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_blockchain))
               gas_remaining
         in
-        let ( ( output_msg_json,
-                output_state_json,
-                output_events_json,
-                accepted_b ),
-              gas ) =
+        let (output_msg_json, output_state_json, output_events_json, accepted_b), gas =
           if is_deployment then (
             (* Initializing the contract's state, just for checking things. *)
-            let init_res =
-              init_module cmod initargs [] Uint128.zero bstate elibs
-            in
+            let init_res = init_module cmod initargs [] Uint128.zero bstate elibs in
             (* Prints stats after the initialization and returns the initial state *)
             (* Will throw an exception if unsuccessful. *)
             let cstate', remaining_gas', field_vals =
@@ -292,10 +267,7 @@ let () =
             let field_vals' = if is_ipc then [] else field_vals in
 
             plog (sprintf "\nContract initialized successfully\n");
-            ( ( `Null,
-                output_state_json cstate'.balance field_vals',
-                `List [],
-                false ),
+            ( (`Null, output_state_json cstate'.balance field_vals', `List [], false),
               remaining_gas' ) )
           else
             (* Not initialization, execute transition specified in the message *)
@@ -303,10 +275,7 @@ let () =
               try JSON.Message.get_json_data cli.input_message
               with Invalid_json s ->
                 fatal_error_gas
-                  ( s
-                  @ mk_error0
-                      (sprintf "Failed to parse json %s:\n" cli.input_message)
-                  )
+                  (s @ mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_message))
                   gas_remaining
             in
             let m = Msg mmsg in
@@ -314,9 +283,7 @@ let () =
             let cstate, gas_remaining' =
               if is_ipc then
                 let cur_bal = cli.balance in
-                let init_res =
-                  init_module cmod initargs [] cur_bal bstate elibs
-                in
+                let init_res = init_module cmod initargs [] cur_bal bstate elibs in
                 let cstate, gas_remaining', _ =
                   check_extract_cstate cli.input init_res gas_remaining
                 in
@@ -327,9 +294,7 @@ let () =
                       if s = balance_label then None
                       else Some { fname = s; ftyp = t; fval = None })
                 in
-                let () =
-                  StateService.initialize ~sm:(IPC cli.ipc_address) ~fields
-                in
+                let () = StateService.initialize ~sm:(IPC cli.ipc_address) ~fields in
                 (cstate, gas_remaining')
               else
                 (* Retrieve state variables *)
@@ -338,16 +303,13 @@ let () =
                   with Invalid_json s ->
                     fatal_error_gas
                       ( s
-                      @ mk_error0
-                          (sprintf "Failed to parse json %s:\n" cli.input_state)
+                      @ mk_error0 (sprintf "Failed to parse json %s:\n" cli.input_state)
                       )
                       gas_remaining
                 in
 
                 (* Initializing the contract's state *)
-                let init_res =
-                  init_module cmod initargs curargs cur_bal bstate elibs
-                in
+                let init_res = init_module cmod initargs curargs cur_bal bstate elibs in
                 (* Prints stats after the initialization and returns the initial state *)
                 (* Will throw an exception if unsuccessful. *)
                 let cstate, gas_remaining', field_vals =
@@ -358,9 +320,7 @@ let () =
                 let fields =
                   List.map field_vals ~f:(fun (s, l) ->
                       let open StateService in
-                      let t =
-                        List.Assoc.find_exn cstate.fields ~equal:( = ) s
-                      in
+                      let t = List.Assoc.find_exn cstate.fields ~equal:( = ) s in
                       { fname = s; ftyp = t; fval = Some l })
                 in
                 let () = StateService.initialize ~sm:Local ~fields in
@@ -371,10 +331,8 @@ let () =
             let ctr = cmod.contr in
 
             plog
-              (sprintf "Executing message:\n%s\n"
-                 (JSON.Message.message_to_jstring mmsg));
-            plog
-              (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
+              (sprintf "Executing message:\n%s\n" (JSON.Message.message_to_jstring mmsg));
+            plog (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
             let step_result = handle_message ctr cstate bstate m in
             let (cstate', mlist, elist, accepted_b), gas =
               check_after_step step_result gas_remaining'
@@ -384,9 +342,7 @@ let () =
             let field_vals =
               if is_ipc then []
               else
-                match
-                  (StateService.get_full_state (), StateService.finalize ())
-                with
+                match (StateService.get_full_state (), StateService.finalize ()) with
                 | Ok fv, Ok () -> fv
                 | _ ->
                     fatal_error_gas

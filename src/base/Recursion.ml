@@ -59,9 +59,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     walk t
 
   let recursion_payload p =
-    match p with
-    | MLit l -> RecursionSyntax.MLit l
-    | MVar x -> RecursionSyntax.MVar x
+    match p with MLit l -> RecursionSyntax.MLit l | MVar x -> RecursionSyntax.MVar x
 
   let recursion_pattern is_adt_ctr_in_scope p =
     let rec walk p =
@@ -101,9 +99,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             pure @@ RecursionSyntax.Fun (f, t, new_body)
         | App (f, args) -> pure @@ RecursionSyntax.App (f, args)
         | Constr (s, ts, args) ->
-            let%bind _ =
-              forallM ~f:(fun t -> recursion_typ is_adt_in_scope t) ts
-            in
+            let%bind _ = forallM ~f:(fun t -> recursion_typ is_adt_in_scope t) ts in
             let%bind _ = is_adt_ctr_in_scope s in
             pure @@ RecursionSyntax.Constr (s, ts, args)
         | MatchExpr (x, pes) ->
@@ -121,9 +117,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             let%bind new_e = walk e in
             pure @@ RecursionSyntax.TFun (s, new_e)
         | TApp (f, ts) ->
-            let%bind _ =
-              forallM ~f:(fun t -> recursion_typ is_adt_in_scope t) ts
-            in
+            let%bind _ = forallM ~f:(fun t -> recursion_typ is_adt_in_scope t) ts in
             pure @@ RecursionSyntax.TApp (f, ts)
         | Fixpoint (x, t, e) ->
             let%bind _ = recursion_typ is_adt_in_scope t in
@@ -145,10 +139,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         | Bind (x, e) ->
             let%bind new_e = rec_exp e in
             pure @@ RecursionSyntax.Bind (x, new_e)
-        | MapUpdate (m, is, vopt) ->
-            pure @@ RecursionSyntax.MapUpdate (m, is, vopt)
-        | MapGet (x, m, is, del) ->
-            pure @@ RecursionSyntax.MapGet (x, m, is, del)
+        | MapUpdate (m, is, vopt) -> pure @@ RecursionSyntax.MapUpdate (m, is, vopt)
+        | MapGet (x, m, is, del) -> pure @@ RecursionSyntax.MapGet (x, m, is, del)
         | MatchStmt (x, pss) ->
             let%bind new_pss =
               mapM
@@ -164,24 +156,18 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         | SendMsgs msg -> pure @@ RecursionSyntax.SendMsgs msg
         | CreateEvnt evnt -> pure @@ RecursionSyntax.CreateEvnt evnt
         | CallProc (p, args) ->
-            if is_proc_in_scope (get_id p) then
-              pure @@ RecursionSyntax.CallProc (p, args)
+            if is_proc_in_scope (get_id p) then pure @@ RecursionSyntax.CallProc (p, args)
             else
-              fail1
-                (sprintf "Procedure %s is not in scope." (get_id p))
-                (SR.get_loc rep)
+              fail1 (sprintf "Procedure %s is not in scope." (get_id p)) (SR.get_loc rep)
         | Throw ex -> pure @@ RecursionSyntax.Throw ex
       in
       pure @@ (new_s, rep)
     in
     walk srep
 
-  let recursion_component is_adt_in_scope is_adt_ctr_in_scope is_proc_in_scope
-      comp =
+  let recursion_component is_adt_in_scope is_adt_ctr_in_scope is_proc_in_scope comp =
     let { comp_type; comp_name; comp_params; comp_body } = comp in
-    let%bind _ =
-      forallM ~f:(fun (_, t) -> recursion_typ is_adt_in_scope t) comp_params
-    in
+    let%bind _ = forallM ~f:(fun (_, t) -> recursion_typ is_adt_in_scope t) comp_params in
     let%bind recursion_comp_body =
       mapM
         ~f:(fun s ->
@@ -198,9 +184,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
 
   let recursion_contract is_adt_in_scope is_adt_ctr_in_scope c =
     let { cname; cparams; cconstraint; cfields; ccomps } = c in
-    let%bind _ =
-      forallM ~f:(fun (_, t) -> recursion_typ is_adt_in_scope t) cparams
-    in
+    let%bind _ = forallM ~f:(fun (_, t) -> recursion_typ is_adt_in_scope t) cparams in
     let%bind recursion_constraint =
       recursion_exp is_adt_in_scope is_adt_ctr_in_scope cconstraint
     in
@@ -208,9 +192,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       mapM
         ~f:(fun (x, t, e) ->
           let%bind _ = recursion_typ is_adt_in_scope t in
-          let%bind new_e =
-            recursion_exp is_adt_in_scope is_adt_ctr_in_scope e
-          in
+          let%bind new_e = recursion_exp is_adt_in_scope is_adt_ctr_in_scope e in
           pure @@ (x, t, new_e))
         cfields
     in
@@ -218,8 +200,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       foldM ccomps ~init:([], []) ~f:(fun (acc_comps, acc_procs) comp ->
           let is_proc_in_scope p = List.exists acc_procs ~f:(fun x -> p = x) in
           let%bind checked_component =
-            recursion_component is_adt_in_scope is_adt_ctr_in_scope
-              is_proc_in_scope comp
+            recursion_component is_adt_in_scope is_adt_ctr_in_scope is_proc_in_scope comp
           in
           let new_acc_procs =
             match comp.comp_type with
@@ -270,9 +251,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         wrap_with_info
           ( sprintf "Type error in library variable %s:\n" (get_id n),
             ER.get_loc (get_rep n) )
-        @@ let%bind new_e =
-             recursion_exp is_adt_in_scope is_adt_ctr_in_scope e
-           in
+        @@ let%bind new_e = recursion_exp is_adt_in_scope is_adt_ctr_in_scope e in
            let%bind _ =
              match t with
              | Some t' -> recursion_typ is_adt_in_scope t'
@@ -290,8 +269,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                  let%bind recursion_c_arg_types =
                    mapM
                      ~f:(fun c_arg ->
-                       recursion_adt_constructor_arg is_adt_in_scope c_arg
-                         error_loc)
+                       recursion_adt_constructor_arg is_adt_in_scope c_arg error_loc)
                      c_arg_types
                  in
                  pure
@@ -302,8 +280,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                ctr_defs
            in
            let datatype_ctrs, datatype_tmap =
-             List.fold_right ctr_defs ~init:([], [])
-               ~f:(fun ctr_def (ctrs, maps) ->
+             List.fold_right ctr_defs ~init:([], []) ~f:(fun ctr_def (ctrs, maps) ->
                  let { cname; c_arg_types } = ctr_def in
                  let ctr =
                    {
@@ -348,13 +325,10 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           pure @@ ()
     in
     wrap_with_info
-      ( sprintf "Type error in library %s:\n" (get_id lname),
-        SR.get_loc (get_rep lname) )
+      (sprintf "Type error in library %s:\n" (get_id lname), SR.get_loc (get_rep lname))
     @@ let%bind recursion_entries, adts, _, _ =
          foldM
-           ~f:
-             (fun (rec_entries, datatypes, adts_in_scope, adt_ctrs_in_scope)
-                  entry ->
+           ~f:(fun (rec_entries, datatypes, adts_in_scope, adt_ctrs_in_scope) entry ->
              let%bind new_entry, adt_opt =
                recursion_lib_entry
                  (is_adt_in_scope adts_in_scope)
@@ -365,18 +339,15 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
              (* LibVar *)
              | None ->
                  pure
-                 @@ ( new_entry :: rec_entries,
-                      datatypes,
-                      adts_in_scope,
-                      adt_ctrs_in_scope )
+                 @@ (new_entry :: rec_entries, datatypes, adts_in_scope, adt_ctrs_in_scope)
              (* LibTyp *)
              | Some (adt, loc) ->
                  pure
                  @@ ( new_entry :: rec_entries,
                       (adt, loc) :: datatypes,
                       adt.tname :: adts_in_scope,
-                      List.map adt.tconstr ~f:(fun ctr -> ctr.cname)
-                      @ adt_ctrs_in_scope ))
+                      List.map adt.tconstr ~f:(fun ctr -> ctr.cname) @ adt_ctrs_in_scope
+                    ))
            ~init:([], [], [], []) lentries
        in
        pure
@@ -420,8 +391,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           match recursion_library l with
           | Ok (recursion_l, recursion_adts) ->
               let new_emsgs =
-                List.fold_left recursion_adts ~init:emsgs
-                  ~f:(fun emsgs_acc (adt, loc) ->
+                List.fold_left recursion_adts ~init:emsgs ~f:(fun emsgs_acc (adt, loc) ->
                     match DataTypeDictionary.add_adt adt loc with
                     | Ok _ -> emsgs
                     | Error e -> emsgs_acc @ e)
@@ -434,12 +404,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     let%bind recursion_rprins_rev, emsgs =
       foldM recursion_principles ~init:([], emsgs)
         ~f:(fun (rec_rprins_acc, emsgs_acc) rprin ->
-          match
-            recursion_lib_entry
-              (fun _ -> pure @@ ())
-              (fun _ -> pure @@ ())
-              rprin
-          with
+          match recursion_lib_entry (fun _ -> pure @@ ()) (fun _ -> pure @@ ()) rprin with
           | Ok (rec_rprin, _) -> Ok (rec_rprin :: rec_rprins_acc, emsgs_acc)
           | Error el -> Ok (rec_rprins_acc, emsgs_acc @ el))
     in

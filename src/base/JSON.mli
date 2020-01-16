@@ -132,14 +132,10 @@ module ContractInfo : sig
           ]
         }
   *)
-  val get_string :
-    int -> contract -> (string * (string * Syntax.typ) list) list -> string
+  val get_string : int -> contract -> (string * (string * Syntax.typ) list) list -> string
 
   val get_json :
-    int ->
-    contract ->
-    (string * (string * Syntax.typ) list) list ->
-    Yojson.Basic.t
+    int -> contract -> (string * (string * Syntax.typ) list) list -> Yojson.Basic.t
 end
 
 module Event : sig
@@ -155,13 +151,10 @@ end
 
 module TypeInfo : sig
   val type_info_to_json :
-    (string * Syntax.typ * ErrorUtils.loc * ErrorUtils.loc) list ->
-    Yojson.Basic.t
+    (string * Syntax.typ * ErrorUtils.loc * ErrorUtils.loc) list -> Yojson.Basic.t
 
   val type_info_to_jstring :
-    ?pp:bool ->
-    (string * Syntax.typ * ErrorUtils.loc * ErrorUtils.loc) list ->
-    string
+    ?pp:bool -> (string * Syntax.typ * ErrorUtils.loc * ErrorUtils.loc) list -> string
 end
 
 module CashflowInfo : sig
@@ -195,6 +188,5 @@ module CashflowInfo : sig
   *)
 
   val get_json :
-    (string * string) list * (string * (string * string list) list) list ->
-    Yojson.Basic.t
+    (string * string) list * (string * (string * string list) list) list -> Yojson.Basic.t
 end

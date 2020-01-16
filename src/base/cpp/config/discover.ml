@@ -18,8 +18,7 @@ let () =
           let uname = input_line ic in
           let () = close_in ic in
           (* macOS requires -keep_dwarf_unwind for exceptions to work. *)
-          if uname = "Darwin" then [ "-cclib"; "-Wl,-keep_dwarf_unwind" ]
-          else []
+          if uname = "Darwin" then [ "-cclib"; "-Wl,-keep_dwarf_unwind" ] else []
         else []
       in
 
@@ -28,9 +27,7 @@ let () =
       let libff_dir = Sys.getcwd () ^ "/../../../../../deps/libff/install" in
       let libff_include_dir = libff_dir ^ "/include" in
       let libff_lib_dir = libff_dir ^ "/lib" in
-      if
-        (not (Sys.file_exists libff_include_dir))
-        || not (Sys.file_exists libff_lib_dir)
+      if (not (Sys.file_exists libff_include_dir)) || not (Sys.file_exists libff_lib_dir)
       then (
         Printf.eprintf "Not found: libff. Please run scripts/libff.sh";
         exit 1 )

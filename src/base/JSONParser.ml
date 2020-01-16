@@ -90,33 +90,24 @@ let gen_parser (t' : typ) : Basic.t -> literal =
         match t with
         | x when x = string_typ -> fun j -> StringLit (Util.to_string j)
         | x when x = bnum_typ -> fun j -> BNum (Util.to_string j)
-        | x when x = bystr_typ ->
-            fun j -> ByStr (Bystr.parse_hex (Util.to_string j))
-        | x when is_bystrx_type x ->
-            fun j -> ByStrX (Bystrx.parse_hex (Util.to_string j))
+        | x when x = bystr_typ -> fun j -> ByStr (Bystr.parse_hex (Util.to_string j))
+        | x when is_bystrx_type x -> fun j -> ByStrX (Bystrx.parse_hex (Util.to_string j))
         | x when x = int32_typ ->
             fun j -> IntLit (Int32L (Int32.of_string (Util.to_string j)))
         | x when x = int64_typ ->
             fun j -> IntLit (Int64L (Int64.of_string (Util.to_string j)))
         | x when x = int128_typ ->
-            fun j ->
-              IntLit (Int128L (Stdint.Int128.of_string (Util.to_string j)))
+            fun j -> IntLit (Int128L (Stdint.Int128.of_string (Util.to_string j)))
         | x when x = int256_typ ->
-            fun j ->
-              IntLit (Int256L (Integer256.Int256.of_string (Util.to_string j)))
+            fun j -> IntLit (Int256L (Integer256.Int256.of_string (Util.to_string j)))
         | x when x = uint32_typ ->
-            fun j ->
-              UintLit (Uint32L (Stdint.Uint32.of_string (Util.to_string j)))
+            fun j -> UintLit (Uint32L (Stdint.Uint32.of_string (Util.to_string j)))
         | x when x = uint64_typ ->
-            fun j ->
-              UintLit (Uint64L (Stdint.Uint64.of_string (Util.to_string j)))
+            fun j -> UintLit (Uint64L (Stdint.Uint64.of_string (Util.to_string j)))
         | x when x = uint128_typ ->
-            fun j ->
-              UintLit (Uint128L (Stdint.Uint128.of_string (Util.to_string j)))
+            fun j -> UintLit (Uint128L (Stdint.Uint128.of_string (Util.to_string j)))
         | x when x = uint256_typ ->
-            fun j ->
-              UintLit
-                (Uint256L (Integer256.Uint256.of_string (Util.to_string j)))
+            fun j -> UintLit (Uint256L (Integer256.Uint256.of_string (Util.to_string j)))
         | _ -> raise (mk_invalid_json "Invalid primitive type") )
     | MapType (kt, vt) -> (
         let kp = recurser kt in
@@ -140,8 +131,7 @@ let gen_parser (t' : typ) : Basic.t -> literal =
         let a = lookup_adt_name_exn name in
         (* Build a parser for each constructor of this ADT. *)
         let cn_parsers =
-          List.fold a.tconstr ~init:(AssocDictionary.make_dict ())
-            ~f:(fun maps cn ->
+          List.fold a.tconstr ~init:(AssocDictionary.make_dict ()) ~f:(fun maps cn ->
               let tmap = constr_pattern_arg_types_exn t cn.cname in
               let arg_parsers =
                 List.map tmap ~f:(fun t ->
@@ -201,15 +191,12 @@ let gen_parser (t' : typ) : Basic.t -> literal =
           let cn =
             match j with
             | `Assoc _ -> member_exn "constructor" j |> Util.to_string
-            | `List _ ->
-                "Cons" (* for efficiency, Lists can be stored flatly. *)
+            | `List _ -> "Cons" (* for efficiency, Lists can be stored flatly. *)
             | _ -> raise (mk_invalid_json "Invalid construct in ADT JSON")
           in
           match AssocDictionary.lookup cn cn_parsers with
           | Some parser -> parser j
-          | None ->
-              raise
-                (mk_invalid_json ("Unknown constructor " ^ cn ^ " in ADT JSON"))
+          | None -> raise (mk_invalid_json ("Unknown constructor " ^ cn ^ " in ADT JSON"))
         in
         (* Create parser *)
         let p = adt_parser cn_parsers in

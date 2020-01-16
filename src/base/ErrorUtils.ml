@@ -45,8 +45,8 @@ type scilla_error = { emsg : string; startl : loc; endl : loc }
 
 let sprint_scilla_error_list elist =
   List.fold elist ~init:"" ~f:(fun acc e ->
-      acc ^ "\n\n" ^ e.emsg ^ "[" ^ get_loc_str e.startl ^ "]["
-      ^ get_loc_str e.endl ^ "]" ^ "\n")
+      acc ^ "\n\n" ^ e.emsg ^ "[" ^ get_loc_str e.startl ^ "][" ^ get_loc_str e.endl ^ "]"
+      ^ "\n")
 
 let mk_error0 msg = [ { emsg = msg; startl = dummy_loc; endl = dummy_loc } ]
 
@@ -62,9 +62,7 @@ let warnings_list = ref []
    The "id" can be used to enable or disable specific warnings.
  *)
 let warn0 msg id =
-  let warning =
-    { wmsg = msg; wstartl = dummy_loc; wendl = dummy_loc; wid = id }
-  in
+  let warning = { wmsg = msg; wstartl = dummy_loc; wendl = dummy_loc; wid = id } in
   warnings_list := warning :: !warnings_list
 
 let warn1 msg id sloc =

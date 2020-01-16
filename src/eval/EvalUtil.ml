@@ -69,8 +69,7 @@ module Env = struct
     (* FIXME: Do not print folds *)
     let e_filtered = List.filter e ~f in
     let ps =
-      List.map e_filtered ~f:(fun (k, v) ->
-          " [" ^ k ^ " -> " ^ pp_value v ^ "]")
+      List.map e_filtered ~f:(fun (k, v) -> " [" ^ k ^ " -> " ^ pp_value v ^ "]")
     in
     let cs = String.concat ~sep:",\n " ps in
     "{" ^ cs ^ " }"
@@ -79,8 +78,7 @@ module Env = struct
 
   let bind e k v = (k, v) :: List.filter ~f:(fun z -> fst z <> k) e
 
-  let bind_all e kvs =
-    List.fold_left ~init:e ~f:(fun z (k, v) -> bind z k v) kvs
+  let bind_all e kvs = List.fold_left ~init:e ~f:(fun z (k, v) -> bind z k v) kvs
 
   (* Unbind those identifiers "id" from "e" which have "f id" false. *)
   let filter e ~f = List.filter e ~f:(fun (id, _) -> f id)
@@ -90,9 +88,7 @@ module Env = struct
     match List.find ~f:(fun z -> fst z = i) e with
     | Some x -> pure @@ snd x
     | None ->
-        fail1
-          (sprintf "Identifier \"%s\" is not bound in environment:\n" i)
-          (get_rep k)
+        fail1 (sprintf "Identifier \"%s\" is not bound in environment:\n" i) (get_rep k)
 end
 
 (**************************************************)
@@ -169,8 +165,7 @@ module Configuration = struct
        %s\n\
        Emitted events =\n\
        %s\n"
-      pp_env pp_fields pp_balance pp_accepted pp_bc_conf pp_in_funds pp_emitted
-      pp_events
+      pp_env pp_fields pp_balance pp_accepted pp_bc_conf pp_in_funds pp_emitted pp_events
 
   (*  Manipulations with configuration *)
 
@@ -186,10 +181,7 @@ module Configuration = struct
       let%bind fval = fromR @@ StateService.fetch ~fname:k ~keys:[] in
       match fval with
       | Some v, g -> pure (v, g)
-      | _ ->
-          fail1
-            (Printf.sprintf "Error loading field %s" i)
-            (ER.get_loc (get_rep k))
+      | _ -> fail1 (Printf.sprintf "Error loading field %s" i) (ER.get_loc (get_rep k))
 
   (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
   let map_update m klist vopt =
@@ -220,8 +212,7 @@ module Configuration = struct
           | _ ->
               fail1
                 (sprintf
-                   "Inconsistency in fetching map value form StateService for \
-                    field %s"
+                   "Inconsistency in fetching map value form StateService for field %s"
                    (get_id m))
                 (ER.get_loc (get_rep m)) )
       | None ->
@@ -229,9 +220,7 @@ module Configuration = struct
             (sprintf "Unable to fetch from map field %s" (get_id m))
             (ER.get_loc (get_rep m))
     else
-      let%bind is_member, g =
-        fromR @@ StateService.is_member ~fname:m ~keys:klist
-      in
+      let%bind is_member, g = fromR @@ StateService.is_member ~fname:m ~keys:klist in
       match g with
       | G_MapGet (i, _) ->
           let is_member_lit = to_Bool is_member in
@@ -250,13 +239,10 @@ module Configuration = struct
     let e = st.env in
     match List.zip ks vs with
     | Unequal_lengths ->
-        fail0
-          "Attempting to bind different number of keys and values in \
-           environment"
+        fail0 "Attempting to bind different number of keys and values in environment"
     | Ok kvs ->
         let filtered_env =
-          List.filter e ~f:(fun z ->
-              not (List.exists ks ~f:(fun x -> fst z = x)))
+          List.filter e ~f:(fun z -> not (List.exists ks ~f:(fun x -> fst z = x)))
         in
         pure { st with env = kvs @ filtered_env }
 
@@ -298,8 +284,7 @@ module Configuration = struct
       if has_tag then pure true
       else
         fail0
-        @@ sprintf "Message contents have no \"tag\" field:\n[%s]"
-             (pp_literal_map pl)
+        @@ sprintf "Message contents have no \"tag\" field:\n[%s]" (pp_literal_map pl)
     in
     match ls with
     | Msg pl :: tl ->
@@ -315,25 +300,16 @@ module Configuration = struct
         (* All outgoing messages must have certain mandatory fields *)
         let tag_found = List.exists ~f:(fun (s, _) -> s = tag_label) m in
         let amount_found = List.exists ~f:(fun (s, _) -> s = amount_label) m in
-        let recipient_found =
-          List.exists ~f:(fun (s, _) -> s = recipient_label) m
-        in
+        let recipient_found = List.exists ~f:(fun (s, _) -> s = recipient_label) m in
         let uniq_entries =
-          List.for_all m ~f:(fun e ->
-              List.count m ~f:(fun e' -> fst e = fst e') = 1)
+          List.for_all m ~f:(fun e -> List.count m ~f:(fun e' -> fst e = fst e') = 1)
         in
-        if tag_found && amount_found && recipient_found && uniq_entries then
-          pure m'
+        if tag_found && amount_found && recipient_found && uniq_entries then pure m'
         else
           fail0
-          @@ sprintf
-               "Message %s is missing a mandatory field or has duplicate \
-                fields."
+          @@ sprintf "Message %s is missing a mandatory field or has duplicate fields."
                (pp_literal (Msg m))
-    | _ ->
-        fail0
-        @@ sprintf "Literal %s is not a message, cannot be sent."
-             (pp_literal m')
+    | _ -> fail0 @@ sprintf "Literal %s is not a message, cannot be sent." (pp_literal m')
 
   let send_messages conf ms =
     let%bind ls' = fromR @@ Datatypes.scilla_list_to_ocaml ms in
@@ -347,29 +323,22 @@ module Configuration = struct
     match m' with
     | Msg m ->
         (* All events must have certain mandatory fields *)
-        let eventname_found =
-          List.exists ~f:(fun (s, _) -> s = eventname_label) m
-        in
+        let eventname_found = List.exists ~f:(fun (s, _) -> s = eventname_label) m in
         let uniq_entries =
-          List.for_all m ~f:(fun e ->
-              List.count m ~f:(fun e' -> fst e = fst e') = 1)
+          List.for_all m ~f:(fun e -> List.count m ~f:(fun e' -> fst e = fst e') = 1)
         in
         if eventname_found && uniq_entries then pure m'
         else
           fail0
-          @@ sprintf
-               "Event %s is missing a mandatory field or has duplicate fields."
+          @@ sprintf "Event %s is missing a mandatory field or has duplicate fields."
                (pp_literal (Msg m))
-    | _ ->
-        fail0
-        @@ sprintf "Literal %s is not a valid event argument." (pp_literal m')
+    | _ -> fail0 @@ sprintf "Literal %s is not a valid event argument." (pp_literal m')
 
   let create_event conf l =
     let%bind event =
       match l with
       | Msg _ -> pure @@ l
-      | _ ->
-          fail0 @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l)
+      | _ -> fail0 @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l)
     in
     let%bind event' = validate_event event in
     let old_events = conf.events in

@@ -50,8 +50,7 @@ module SafeInt (Unsafe : IntRep) = struct
     (* if a >= 0 && b < 0 && r < 0 then we have an overflow *)
     (* the corner case here is a = 0, b = min_int *)
     if compare a zero >= 0 && compare b zero < 0 && compare r zero < 0 then
-      raise IntOverflow
-      (* if a < 0 && b > 0 && r > 0 then we have an underflow *)
+      raise IntOverflow (* if a < 0 && b > 0 && r > 0 then we have an underflow *)
     else if compare a zero < 0 && compare b zero > 0 && compare r zero > 0 then
       raise IntUnderflow
     else r
@@ -64,18 +63,15 @@ module SafeInt (Unsafe : IntRep) = struct
     if compare b zero < 0 && compare a min_int = 0 then raise IntOverflow
     else if compare b zero <> 0 && compare (div r b) a <> 0 then
       (* sign a = sign b ? *)
-      if compare a zero = compare b zero then raise IntOverflow
-      else raise IntUnderflow
+      if compare a zero = compare b zero then raise IntOverflow else raise IntUnderflow
     else r
 
   let div a b =
     let open Unsafe in
     (* Integer overflow during division occurs in a very specific case. *)
     (* https://stackoverflow.com/a/30400252/2128804 *)
-    if compare a min_int = 0 && compare b (sub zero one) = 0 then
-      raise IntOverflow
-    else
-      (* Division_by_zero is taken care of by underlying implementation. *)
+    if compare a min_int = 0 && compare b (sub zero one) = 0 then raise IntOverflow
+    else (* Division_by_zero is taken care of by underlying implementation. *)
       div a b
 
   (* Division_by_zero is taken care of by underlying implementation. *)
@@ -108,8 +104,7 @@ module SafeUint (Unsafe : IntRep) = struct
     let open Unsafe in
     let r = mul a b in
     (* if b != 0 && r / b != a *)
-    if compare b zero <> 0 && compare (div r b) a <> 0 then raise IntOverflow
-    else r
+    if compare b zero <> 0 && compare (div r b) a <> 0 then raise IntOverflow else r
 
   (* Division_by_zero is taken care of by underlying implementation. *)
   let div = Unsafe.div

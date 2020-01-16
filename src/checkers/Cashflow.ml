@@ -35,9 +35,7 @@ module CashflowRep (R : Rep) = struct
   let rec money_tag_to_string tag =
     match tag with
     | Adt (n, ts) ->
-        "(" ^ n ^ " "
-        ^ String.concat ~sep:" " (List.map ~f:money_tag_to_string ts)
-        ^ ")"
+        "(" ^ n ^ " " ^ String.concat ~sep:" " (List.map ~f:money_tag_to_string ts) ^ ")"
     | Map t -> "(Map " ^ money_tag_to_string t ^ ")"
     | _ -> sexp_of_money_tag tag |> Sexplib.Sexp.to_string
 
@@ -101,8 +99,7 @@ struct
     match p with
     | Wildcard -> CFSyntax.Wildcard
     | Binder x -> CFSyntax.Binder (add_noinfo_to_ident x)
-    | Constructor (cn, ps) ->
-        CFSyntax.Constructor (cn, List.map ~f:cf_init_tag_pattern ps)
+    | Constructor (cn, ps) -> CFSyntax.Constructor (cn, List.map ~f:cf_init_tag_pattern ps)
 
   let cf_init_tag_payload p =
     match p with
@@ -118,17 +115,13 @@ struct
       | Fun (arg, t, body) ->
           CFSyntax.Fun (add_noinfo_to_ident arg, t, cf_init_tag_expr body)
       | App (f, actuals) ->
-          CFSyntax.App
-            (add_noinfo_to_ident f, List.map ~f:add_noinfo_to_ident actuals)
+          CFSyntax.App (add_noinfo_to_ident f, List.map ~f:add_noinfo_to_ident actuals)
       | Builtin (op, actuals) ->
           CFSyntax.Builtin
             (add_noinfo_to_builtin op, List.map ~f:add_noinfo_to_ident actuals)
       | Let (i, topt, lhs, rhs) ->
           CFSyntax.Let
-            ( add_noinfo_to_ident i,
-              topt,
-              cf_init_tag_expr lhs,
-              cf_init_tag_expr rhs )
+            (add_noinfo_to_ident i, topt, cf_init_tag_expr lhs, cf_init_tag_expr rhs)
       | Constr (cname, ts, actuals) ->
           CFSyntax.Constr (cname, ts, List.map ~f:add_noinfo_to_ident actuals)
       | MatchExpr (x, clauses) ->
@@ -143,8 +136,7 @@ struct
           CFSyntax.TFun (add_noinfo_to_ident tvar, cf_init_tag_expr body)
       | TApp (tf, arg_types) -> CFSyntax.TApp (add_noinfo_to_ident tf, arg_types)
       | Message bs ->
-          CFSyntax.Message
-            (List.map ~f:(fun (s, p) -> (s, cf_init_tag_payload p)) bs)
+          CFSyntax.Message (List.map ~f:(fun (s, p) -> (s, cf_init_tag_payload p)) bs)
     in
     (res_e, (ECFR.NoInfo, rep))
 
@@ -152,18 +144,14 @@ struct
     let s, rep = srep in
     let res_s =
       match s with
-      | Load (x, y) ->
-          CFSyntax.Load (add_noinfo_to_ident x, add_noinfo_to_ident y)
-      | Store (x, y) ->
-          CFSyntax.Store (add_noinfo_to_ident x, add_noinfo_to_ident y)
+      | Load (x, y) -> CFSyntax.Load (add_noinfo_to_ident x, add_noinfo_to_ident y)
+      | Store (x, y) -> CFSyntax.Store (add_noinfo_to_ident x, add_noinfo_to_ident y)
       | Bind (x, e) -> CFSyntax.Bind (add_noinfo_to_ident x, cf_init_tag_expr e)
       | MapUpdate (m, ks, v) ->
           CFSyntax.MapUpdate
             ( add_noinfo_to_ident m,
               List.map ~f:add_noinfo_to_ident ks,
-              match v with
-              | None -> None
-              | Some v' -> Some (add_noinfo_to_ident v') )
+              match v with None -> None | Some v' -> Some (add_noinfo_to_ident v') )
       | MapGet (x, m, ks, retrieve) ->
           CFSyntax.MapGet
             ( add_noinfo_to_ident x,
@@ -181,8 +169,7 @@ struct
       | AcceptPayment -> CFSyntax.AcceptPayment
       | SendMsgs x -> CFSyntax.SendMsgs (add_noinfo_to_ident x)
       | CreateEvnt x -> CFSyntax.CreateEvnt (add_noinfo_to_ident x)
-      | CallProc (p, args) ->
-          CFSyntax.CallProc (p, List.map args ~f:add_noinfo_to_ident)
+      | CallProc (p, args) -> CFSyntax.CallProc (p, List.map args ~f:add_noinfo_to_ident)
       | Throw xopt -> (
           match xopt with
           | Some x -> CFSyntax.Throw (Some (add_noinfo_to_ident x))
@@ -210,8 +197,7 @@ struct
       CFSyntax.cparams =
         List.map
           ~f:(fun (x, t) ->
-            ( ( if token_fields_contains x then
-                add_money_or_mapmoney_to_ident x t
+            ( ( if token_fields_contains x then add_money_or_mapmoney_to_ident x t
               else add_noinfo_to_ident x ),
               t ))
           cparams;
@@ -219,8 +205,7 @@ struct
       CFSyntax.cfields =
         List.map
           ~f:(fun (x, t, e) ->
-            ( ( if token_fields_contains x then
-                add_money_or_mapmoney_to_ident x t
+            ( ( if token_fields_contains x then add_money_or_mapmoney_to_ident x t
               else add_noinfo_to_ident x ),
               t,
               cf_init_tag_expr e ))
@@ -237,12 +222,10 @@ struct
     let init_tag_entry entry =
       match entry with
       | LibVar (lname, ltype, lexp) ->
-          CFSyntax.LibVar
-            (add_noinfo_to_ident lname, ltype, cf_init_tag_expr lexp)
+          CFSyntax.LibVar (add_noinfo_to_ident lname, ltype, cf_init_tag_expr lexp)
       | LibTyp (lname, type_defs) ->
           CFSyntax.LibTyp
-            ( add_noinfo_to_ident lname,
-              List.map ~f:cf_init_tag_type_def type_defs )
+            (add_noinfo_to_ident lname, List.map ~f:cf_init_tag_type_def type_defs)
     in
     { CFSyntax.lname; CFSyntax.lentries = List.map ~f:init_tag_entry lentries }
 
@@ -359,8 +342,7 @@ struct
                     | None -> Inconsistent
                     | Some t -> t
                   in
-                  List.Assoc.add map ~equal:( = ) targ
-                    (lub_tags current_tag new_tag)
+                  List.Assoc.add map ~equal:( = ) targ (lub_tags current_tag new_tag)
                 in
                 let rec match_arg_tag_with_typ arg_typ arg_tag targ_tag_map =
                   match arg_typ with
@@ -374,13 +356,11 @@ struct
                       match arg_tag with
                       | Adt (_, adt_param_tags) ->
                           let new_map, _ =
-                            List.fold_left adt_params
-                              ~init:(targ_tag_map, adt_param_tags)
+                            List.fold_left adt_params ~init:(targ_tag_map, adt_param_tags)
                               ~f:(fun (map, adt_param_tags) adt_param ->
                                 match adt_param_tags with
                                 | [] -> (map, [])
-                                | t :: ts ->
-                                    (match_arg_tag_with_typ adt_param t map, ts))
+                                | t :: ts -> (match_arg_tag_with_typ adt_param t map, ts))
                           in
                           new_map
                       | _ -> targ_tag_map )
@@ -395,9 +375,7 @@ struct
                 in
                 let final_adt_arg_tags =
                   List.map adt.tparams ~f:(fun tparam ->
-                      match
-                        List.Assoc.find tvar_tag_map ~equal:( = ) tparam
-                      with
+                      match List.Assoc.find tvar_tag_map ~equal:( = ) tparam with
                       | None -> Inconsistent
                       | Some t -> t)
                 in
@@ -422,13 +400,10 @@ struct
                     List.zip adt.tparams arg_tags
                 | NoInfo (* Nothing known *) | Money (* Nat case *) | NotMoney
                 (* Nat case *) ->
-                    Ok
-                      (List.map adt.tparams ~f:(fun tparam ->
-                           (tparam, expected_tag)))
+                    Ok (List.map adt.tparams ~f:(fun tparam -> (tparam, expected_tag)))
                 | _ ->
                     (* Don't let inconsistent tags infect subpatterns *)
-                    Ok
-                      (List.map adt.tparams ~f:(fun tparam -> (tparam, NoInfo)))
+                    Ok (List.map adt.tparams ~f:(fun tparam -> (tparam, NoInfo)))
               in
               match zipped_tvar_tags with
               | Unequal_lengths ->
@@ -443,8 +418,7 @@ struct
                            should be analysed *)
                   NoInfo
               | MapType (_, vt) | FunType (_, vt) -> Map (tag_tmap vt)
-              | ADT (adt_name, arg_typs) ->
-                  Adt (adt_name, List.map arg_typs ~f:tag_tmap)
+              | ADT (adt_name, arg_typs) -> Adt (adt_name, List.map arg_typs ~f:tag_tmap)
               | TypeVar tvar -> (
                   match List.Assoc.find tvar_tag_map ~equal:( = ) tvar with
                   | Some tag -> tag
@@ -457,8 +431,8 @@ struct
     match targ with
     | PrimType _ | MapType _ | FunType _ -> true
     | ADT _ (* TODO: Detect induction, and ignore only when inductive *)
-    | TypeVar _ (* TypeVars tagged at type level *) | PolyFun _ (* Ignore *)
-    | Unit ->
+    | TypeVar _
+    (* TypeVars tagged at type level *)  | PolyFun _ (* Ignore *) | Unit ->
         (* Ignore *)
         false
 
@@ -472,11 +446,9 @@ struct
             acc
         | Some targs ->
             let tag_list =
-              List.map targs ~f:(fun t ->
-                  if ctr_arg_filter t then Some NoInfo else None)
+              List.map targs ~f:(fun t -> if ctr_arg_filter t then Some NoInfo else None)
             in
-            if List.exists tag_list ~f:Option.is_some then
-              (ctr.cname, tag_list) :: acc
+            if List.exists tag_list ~f:Option.is_some then (ctr.cname, tag_list) :: acc
             else acc)
 
   let update_ctr_tag_map ctr_tag_map ctr_name arg_tags =
@@ -503,9 +475,7 @@ struct
     match id with Ident (v, (_, rep)) -> Ident (v, (new_tag, rep))
 
   let lookup_var_tag i env =
-    match AssocDictionary.lookup (get_id i) env with
-    | Some t -> t
-    | None -> get_id_tag i
+    match AssocDictionary.lookup (get_id i) env with Some t -> t | None -> get_id_tag i
 
   let lookup_var_tag2 i env1 env2 =
     match AssocDictionary.lookup (get_id i) env1 with
@@ -1019,8 +989,7 @@ struct
     | Binder x -> x :: acc
     | Constructor (_, ps) -> List.fold_right ps ~init:acc ~f:get_pattern_vars
 
-  let update_pattern_vars_tags_from_usage_and_remove_from_env p local_env
-      ctr_tag_map =
+  let update_pattern_vars_tags_from_usage_and_remove_from_env p local_env ctr_tag_map =
     let rec walk p local_env ctr_tag_map =
       match p with
       | Wildcard -> (Wildcard, NoInfo, local_env, ctr_tag_map, false)
@@ -1037,11 +1006,7 @@ struct
           let new_ps, new_ps_tags, new_local_env, ps_ctr_tag_map, ps_changes =
             List.fold_right ps ~init:([], [], local_env, ctr_tag_map, false)
               ~f:(fun p
-                      ( acc_ps,
-                        acc_ps_tags,
-                        acc_local_env,
-                        acc_ctr_tag_map,
-                        acc_changes )
+                      (acc_ps, acc_ps_tags, acc_local_env, acc_ctr_tag_map, acc_changes)
                       ->
                 let new_p, new_p_tag, p_local_env, p_ctr_tag_map, p_changes =
                   walk p acc_local_env acc_ctr_tag_map
@@ -1136,18 +1101,12 @@ struct
           | None -> Inconsistent (* Should not happen *)
           | Some t -> t
         in
-        match v with
-        | Ident (name, (_, rep)) -> CFSyntax.MVar (Ident (name, (tag, rep))) )
+        match v with Ident (name, (_, rep)) -> CFSyntax.MVar (Ident (name, (tag, rep))) )
 
   let rec cf_tag_expr erep expected_tag param_env local_env ctr_tag_map =
     let lub t = lub_tags expected_tag t in
     let e, (tag, rep) = erep in
-    let ( new_e,
-          new_e_tag,
-          new_param_env,
-          new_local_env,
-          new_ctr_tag_map,
-          new_changes ) =
+    let new_e, new_e_tag, new_param_env, new_local_env, new_ctr_tag_map, new_changes =
       match e with
       | Literal _ ->
           (* No need to deduce tag from type. 
@@ -1170,10 +1129,7 @@ struct
       | Fun (arg, t, body) ->
           (* Using Map tag to represent functions as well as maps *)
           let body_expected_tag =
-            match expected_tag with
-            | Map x -> x
-            | NoInfo -> NoInfo
-            | _ -> Inconsistent
+            match expected_tag with Map x -> x | NoInfo -> NoInfo | _ -> Inconsistent
           in
           let body_local_env =
             AssocDictionary.insert (get_id arg) (get_id_tag arg) local_env
@@ -1183,13 +1139,10 @@ struct
                 res_body_local_env,
                 res_ctr_tag_map,
                 body_changes ) =
-            cf_tag_expr body body_expected_tag param_env body_local_env
-              ctr_tag_map
+            cf_tag_expr body body_expected_tag param_env body_local_env ctr_tag_map
           in
           let res_arg_tag = lookup_var_tag arg res_body_local_env in
-          let new_local_env =
-            AssocDictionary.remove (get_id arg) res_body_local_env
-          in
+          let new_local_env = AssocDictionary.remove (get_id arg) res_body_local_env in
           ( Fun (update_id_tag arg res_arg_tag, t, new_body),
             Map new_body_tag,
             res_param_env,
@@ -1199,8 +1152,7 @@ struct
       | App (f, args) ->
           let new_args =
             List.map
-              ~f:(fun arg ->
-                update_id_tag arg (lookup_var_tag2 arg local_env param_env))
+              ~f:(fun arg -> update_id_tag arg (lookup_var_tag2 arg local_env param_env))
               args
           in
           let args_changes =
@@ -1212,9 +1164,7 @@ struct
             | Ok res -> res
             | Unequal_lengths -> false
           in
-          let f_tag =
-            lub_tags (lookup_var_tag f local_env) (Map expected_tag)
-          in
+          let f_tag = lub_tags (lookup_var_tag f local_env) (Map expected_tag) in
           let new_f = update_id_tag f f_tag in
           let new_local_env = update_var_tag f f_tag local_env in
           let new_e_tag =
@@ -1228,13 +1178,9 @@ struct
             args_changes || f_tag <> get_id_tag f )
       | Builtin (f, args) ->
           let args_tags =
-            List.map
-              ~f:(fun arg -> lookup_var_tag2 arg local_env param_env)
-              args
+            List.map ~f:(fun arg -> lookup_var_tag2 arg local_env param_env) args
           in
-          let res_tag, args_tags_usage =
-            builtin_signature f expected_tag args_tags
-          in
+          let res_tag, args_tags_usage = builtin_signature f expected_tag args_tags in
           let final_args, final_param_env, final_local_env, changes =
             let tags_list =
               match List.zip args args_tags_usage with
@@ -1295,8 +1241,7 @@ struct
       | Constr (cname, ts, args) ->
           let new_args =
             List.map
-              ~f:(fun arg ->
-                update_id_tag arg (lookup_var_tag2 arg local_env param_env))
+              ~f:(fun arg -> update_id_tag arg (lookup_var_tag2 arg local_env param_env))
               args
           in
           let args_changes =
@@ -1309,10 +1254,8 @@ struct
             | Unequal_lengths -> false
           in
           let new_ctr_tag_map, ctr_tag_map_changes =
-            update_ctr_tag_map ctr_tag_map cname
-              (List.map new_args ~f:get_id_tag)
-            |> Option.value_map ~default:(ctr_tag_map, false) ~f:(fun map ->
-                   (map, true))
+            update_ctr_tag_map ctr_tag_map cname (List.map new_args ~f:get_id_tag)
+            |> Option.value_map ~default:(ctr_tag_map, false) ~f:(fun map -> (map, true))
           in
           let tag = ctr_to_adt_tag cname (List.map new_args ~f:get_id_tag) in
           ( Constr (cname, ts, new_args),
@@ -1338,20 +1281,17 @@ struct
                         acc_ctr_tag_map,
                         acc_changes )
                       ->
-                let sub_local_env =
-                  insert_pattern_vars_into_env p acc_local_env
-                in
+                let sub_local_env = insert_pattern_vars_into_env p acc_local_env in
                 let ( ((_, (new_e_tag, _)) as new_e),
                       new_param_env,
                       new_local_env,
                       e_ctr_tag_map,
                       new_changes ) =
-                  cf_tag_expr ep expected_tag acc_param_env sub_local_env
-                    acc_ctr_tag_map
+                  cf_tag_expr ep expected_tag acc_param_env sub_local_env acc_ctr_tag_map
                 in
                 let new_p, new_local_env, new_ctr_tag_map, p_changes =
-                  update_pattern_vars_tags_from_usage_and_remove_from_env p
-                    new_local_env e_ctr_tag_map
+                  update_pattern_vars_tags_from_usage_and_remove_from_env p new_local_env
+                    e_ctr_tag_map
                 in
                 ( (new_p, new_e) :: acc_clauses,
                   lub_tags acc_res_tag new_e_tag,
@@ -1405,22 +1345,14 @@ struct
       | TApp (tf, arg_types) ->
           let new_tf_tag = lookup_var_tag2 tf local_env param_env in
           let new_tf = update_id_tag tf new_tf_tag in
-          ( TApp (new_tf, arg_types),
-            new_tf_tag,
-            param_env,
-            local_env,
-            ctr_tag_map,
-            false )
+          (TApp (new_tf, arg_types), new_tf_tag, param_env, local_env, ctr_tag_map, false)
       | Message bs ->
           (* Find initializers and update env as appropriate *)
           let new_bs, new_param_env, new_local_env, changes =
             List.fold_right bs ~init:([], param_env, local_env, false)
-              ~f:(fun (s, p)
-                      (acc_bs, acc_param_env, acc_local_env, acc_changes)
-                      ->
+              ~f:(fun (s, p) (acc_bs, acc_param_env, acc_local_env, acc_changes) ->
                 match p with
-                | MLit _ ->
-                    ((s, p) :: acc_bs, acc_param_env, acc_local_env, acc_changes)
+                | MLit _ -> ((s, p) :: acc_bs, acc_param_env, acc_local_env, acc_changes)
                 | MVar x ->
                     let usage_tag =
                       match s with
@@ -1433,9 +1365,7 @@ struct
                           NotMoney
                       | _ -> NoInfo
                     in
-                    let old_env_tag =
-                      lookup_var_tag2 x acc_local_env acc_param_env
-                    in
+                    let old_env_tag = lookup_var_tag2 x acc_local_env acc_param_env in
                     let new_x_tag = lub_tags usage_tag old_env_tag in
                     let new_x = update_id_tag x new_x_tag in
                     let new_local_env, new_param_env =
@@ -1446,12 +1376,7 @@ struct
                       new_local_env,
                       acc_changes || get_id_tag x <> new_x_tag ))
           in
-          ( Message new_bs,
-            NotMoney,
-            new_param_env,
-            new_local_env,
-            ctr_tag_map,
-            changes )
+          (Message new_bs, NotMoney, new_param_env, new_local_env, ctr_tag_map, changes)
     in
     let e_tag = lub new_e_tag in
     ( (new_e, (e_tag, rep)),
@@ -1468,20 +1393,13 @@ struct
     let new_x = update_id_tag x new_tag in
     let new_f = update_id_tag f new_tag in
     let new_field_env = update_var_tag f new_tag field_env in
-    let new_local_env, new_param_env =
-      update_var_tag2 x new_tag local_env param_env
-    in
+    let new_local_env, new_param_env = update_var_tag2 x new_tag local_env param_env in
     (new_f, new_x, new_param_env, new_field_env, new_local_env)
 
   let rec cf_tag_stmt (srep : CFSyntax.stmt_annot) param_env field_env local_env
       ctr_tag_map =
     let s, rep = srep in
-    let ( new_s,
-          new_param_env,
-          new_field_env,
-          new_local_env,
-          new_ctr_tag_map,
-          changes ) =
+    let new_s, new_param_env, new_field_env, new_local_env, new_ctr_tag_map, changes =
       match s with
       | Load (x, f) ->
           let new_f, new_x, new_param_env, new_field_env, tmp_local_env =
@@ -1494,8 +1412,7 @@ struct
             new_field_env,
             new_local_env,
             ctr_tag_map,
-            get_id_tag new_x <> get_id_tag x || get_id_tag new_f <> get_id_tag f
-          )
+            get_id_tag new_x <> get_id_tag x || get_id_tag new_f <> get_id_tag f )
       | Store (f, x) ->
           let new_f, new_x, new_param_env, new_field_env, new_local_env =
             cf_update_tag_for_field_assignment f x param_env field_env local_env
@@ -1505,8 +1422,7 @@ struct
             new_field_env,
             new_local_env,
             ctr_tag_map,
-            get_id_tag new_x <> get_id_tag x || get_id_tag new_f <> get_id_tag f
-          )
+            get_id_tag new_x <> get_id_tag x || get_id_tag new_f <> get_id_tag f )
       | Bind (x, e) ->
           let x_tag = lookup_var_tag x local_env in
           let e_local_env = AssocDictionary.remove (get_id x) local_env in
@@ -1531,9 +1447,7 @@ struct
             | None -> NoInfo
             | Some v -> lookup_var_tag2 v local_env param_env
           in
-          let m_tag_usage =
-            List.fold_left ks ~init:v_tag ~f:(fun acc _ -> Map acc)
-          in
+          let m_tag_usage = List.fold_left ks ~init:v_tag ~f:(fun acc _ -> Map acc) in
           let m_tag = lub_tags m_tag_usage (lookup_var_tag m field_env) in
           let new_m = update_id_tag m m_tag in
           let new_field_env = update_var_tag m m_tag field_env in
@@ -1544,9 +1458,7 @@ struct
                 in
                 update_id_tag k new_k_tag)
           in
-          let ks_local_env, ks_param_env =
-            update_vars_tags2 new_ks local_env param_env
-          in
+          let ks_local_env, ks_param_env = update_vars_tags2 new_ks local_env param_env in
           let new_v_opt, new_param_env, new_local_env =
             match v_opt with
             | None -> (None, ks_param_env, ks_local_env)
@@ -1578,9 +1490,7 @@ struct
               | _ -> Inconsistent
             else NoInfo
           in
-          let m_tag_usage =
-            List.fold_left ks ~init:val_tag ~f:(fun acc _ -> Map acc)
-          in
+          let m_tag_usage = List.fold_left ks ~init:val_tag ~f:(fun acc _ -> Map acc) in
           let m_tag = lub_tags m_tag_usage (lookup_var_tag m field_env) in
           let new_m = update_id_tag m m_tag in
           let new_field_env = update_var_tag m m_tag field_env in
@@ -1601,8 +1511,7 @@ struct
           in
           let new_val_tag = lub_tags val_tag v_tag_usage in
           let new_x_tag =
-            if fetch then lub_tags x_tag (Adt ("Option", [ new_val_tag ]))
-            else NotMoney
+            if fetch then lub_tags x_tag (Adt ("Option", [ new_val_tag ])) else NotMoney
             (* Bool *)
           in
           let new_x = update_id_tag x new_x_tag in
@@ -1611,8 +1520,7 @@ struct
             new_field_env,
             ks_local_env,
             ctr_tag_map,
-            get_id_tag x <> new_x_tag || get_id_tag m <> m_tag || new_ks <> ks
-          )
+            get_id_tag x <> new_x_tag || get_id_tag m <> m_tag || new_ks <> ks )
       | MatchStmt (x, clauses) ->
           let ( res_clauses,
                 new_param_env,
@@ -1630,9 +1538,7 @@ struct
                         acc_ctr_tag_map,
                         acc_changes )
                       ->
-                let sub_local_env =
-                  insert_pattern_vars_into_env p acc_local_env
-                in
+                let sub_local_env = insert_pattern_vars_into_env p acc_local_env in
                 let ( new_stmts,
                       new_param_env,
                       new_field_env,
@@ -1643,8 +1549,8 @@ struct
                     acc_ctr_tag_map
                 in
                 let new_p, new_local_env, new_ctr_tag_map, p_changes =
-                  update_pattern_vars_tags_from_usage_and_remove_from_env p
-                    s_local_env s_ctr_tag_map
+                  update_pattern_vars_tags_from_usage_and_remove_from_env p s_local_env
+                    s_ctr_tag_map
                 in
                 ( (new_p, new_stmts) :: acc_clauses,
                   new_param_env,
@@ -1690,9 +1596,7 @@ struct
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
       | SendMsgs m ->
-          let m_tag =
-            lub_tags NotMoney (lookup_var_tag2 m local_env param_env)
-          in
+          let m_tag = lub_tags NotMoney (lookup_var_tag2 m local_env param_env) in
           let new_m = update_id_tag m m_tag in
           let new_local_env, new_param_env =
             update_var_tag2 m m_tag local_env param_env
@@ -1745,24 +1649,16 @@ struct
                 new_local_env,
                 ctr_tag_map,
                 get_id_tag x <> x_tag )
-          | None ->
-              (Throw None, param_env, field_env, local_env, ctr_tag_map, false)
-          )
+          | None -> (Throw None, param_env, field_env, local_env, ctr_tag_map, false) )
     in
-    ( (new_s, rep),
-      new_param_env,
-      new_field_env,
-      new_local_env,
-      new_ctr_tag_map,
-      changes )
+    ((new_s, rep), new_param_env, new_field_env, new_local_env, new_ctr_tag_map, changes)
 
   and cf_tag_stmts ss param_env field_env local_env ctr_tag_map =
     let init_local_env =
       List.fold_left ss ~init:local_env ~f:(fun acc_env srep ->
           let s, _ = srep in
           match s with
-          | Load (x, _) | Bind (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _)
-            ->
+          | Load (x, _) | Bind (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
               AssocDictionary.insert (get_id x) (get_id_tag x) acc_env
           | _ -> acc_env)
     in
@@ -1782,8 +1678,7 @@ struct
               new_local_env,
               new_ctr_tag_map,
               new_changes ) =
-          cf_tag_stmt s acc_param_env acc_field_env acc_local_env
-            acc_ctr_tag_map
+          cf_tag_stmt s acc_param_env acc_field_env acc_local_env acc_ctr_tag_map
         in
         ( new_s :: acc_ss,
           new_param_env,
@@ -1797,12 +1692,10 @@ struct
     let empty_local_env = AssocDictionary.make_dict () in
     let implicit_local_env =
       AssocDictionary.insert MessagePayload.amount_label Money
-        (AssocDictionary.insert MessagePayload.sender_label NotMoney
-           empty_local_env)
+        (AssocDictionary.insert MessagePayload.sender_label NotMoney empty_local_env)
     in
     let init_local_env =
-      List.fold_left comp_params ~init:implicit_local_env
-        ~f:(fun acc_env (p, _) ->
+      List.fold_left comp_params ~init:implicit_local_env ~f:(fun acc_env (p, _) ->
           AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
     in
     let ( new_comp_body,
@@ -1820,12 +1713,7 @@ struct
           ( (update_id_tag p new_tag, typ) :: acc_ps,
             acc_changes || get_id_tag p <> new_tag ))
     in
-    ( {
-        comp_type;
-        comp_name;
-        comp_params = new_params;
-        comp_body = new_comp_body;
-      },
+    ( { comp_type; comp_name; comp_params = new_params; comp_body = new_comp_body },
       new_param_env,
       new_field_env,
       new_ctr_tag_map,
@@ -1838,13 +1726,10 @@ struct
       List.fold_left cparams ~init:empty_env ~f:(fun acc_env (p, _) ->
           AssocDictionary.insert (get_id p) (get_id_tag p) acc_env)
     in
-    let implicit_field_env =
-      AssocDictionary.insert balance_label Money empty_env
-    in
+    let implicit_field_env = AssocDictionary.insert balance_label Money empty_env in
     let ctr_tag_map = init_ctr_tag_map () in
     let init_field_env =
-      List.fold_left cfields ~init:implicit_field_env
-        ~f:(fun acc_env (f, _, e) ->
+      List.fold_left cfields ~init:implicit_field_env ~f:(fun acc_env (f, _, e) ->
           let (_, (e_tag, _)), _, _, _, _ =
             cf_tag_expr e
               (lub_tags (get_id_tag f) NoInfo)
@@ -1855,25 +1740,18 @@ struct
           AssocDictionary.insert (get_id f) e_tag acc_env)
     in
     let rec tagger cconstraint components param_env field_env ctr_tag_map =
-      let new_constraint, tmp_param_env, _, tmp_ctr_tag_map, constraint_changes
-          =
+      let new_constraint, tmp_param_env, _, tmp_ctr_tag_map, constraint_changes =
         cf_tag_expr cconstraint NotMoney param_env
           (AssocDictionary.make_dict ())
           ctr_tag_map
       in
       let new_ts, new_param_env, new_field_env, tmp_ctr_tag_map, changes =
         List.fold_right components
-          ~init:
-            ([], tmp_param_env, field_env, tmp_ctr_tag_map, constraint_changes)
+          ~init:([], tmp_param_env, field_env, tmp_ctr_tag_map, constraint_changes)
           ~f:(fun t
-                  ( acc_ts,
-                    acc_param_env,
-                    acc_field_env,
-                    acc_ctr_tag_map,
-                    acc_changes )
+                  (acc_ts, acc_param_env, acc_field_env, acc_ctr_tag_map, acc_changes)
                   ->
-            let new_t, new_param_env, new_field_env, new_ctr_tag_map, t_changes
-                =
+            let new_t, new_param_env, new_field_env, new_ctr_tag_map, t_changes =
               cf_tag_component t acc_param_env acc_field_env acc_ctr_tag_map
             in
             ( new_t :: acc_ts,
@@ -1884,14 +1762,9 @@ struct
       in
       if changes then
         tagger new_constraint new_ts new_param_env new_field_env tmp_ctr_tag_map
-      else
-        (new_constraint, new_ts, new_param_env, new_field_env, tmp_ctr_tag_map)
+      else (new_constraint, new_ts, new_param_env, new_field_env, tmp_ctr_tag_map)
     in
-    let ( new_constraint,
-          new_ccomps,
-          new_param_env,
-          new_field_env,
-          final_ctr_tag_map ) =
+    let new_constraint, new_ccomps, new_param_env, new_field_env, final_ctr_tag_map =
       tagger cconstraint ccomps init_param_env init_field_env ctr_tag_map
     in
     let new_params =
@@ -1927,9 +1800,7 @@ struct
     let new_mod, ctr_tag_map = cf_tag_module init_mod in
     let param_field_tags =
       List.map ~f:(fun (p, _) -> (get_id p, get_id_tag p)) new_mod.contr.cparams
-      @ List.map
-          ~f:(fun (f, _, _) -> (get_id f, get_id_tag f))
-          new_mod.contr.cfields
+      @ List.map ~f:(fun (f, _, _) -> (get_id f, get_id_tag f)) new_mod.contr.cfields
     in
     let ctr_tags =
       let all_adts = DataTypeDictionary.get_all_adts () in

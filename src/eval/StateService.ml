@@ -76,9 +76,7 @@ module MakeStateService () = struct
               (* Just an assert. *)
               if vt' <> ret_val_type then
                 fail1
-                  (sprintf
-                     "StateService: Failed indexing into map %s. Internal \
-                      error."
+                  (sprintf "StateService: Failed indexing into map %s. Internal error."
                      (get_id fname))
                   (ER.get_loc (get_rep fname))
               else
@@ -96,15 +94,13 @@ module MakeStateService () = struct
               | _ ->
                   fail1
                     (sprintf
-                       "StateService: Cannot index into map %s. Too many index \
-                        keys."
+                       "StateService: Cannot index into map %s. Too many index keys."
                        (get_id fname))
                     (ER.get_loc (get_rep fname)) )
           (* this cannot occur. *)
           | [] ->
               fail1
-                (sprintf
-                   "StateService: Internal error in retriving from map %s."
+                (sprintf "StateService: Internal error in retriving from map %s."
                    (get_id fname))
                 (ER.get_loc (get_rep fname))
         in
@@ -126,8 +122,7 @@ module MakeStateService () = struct
           match res with
           | None ->
               fail1
-                (sprintf "StateService: Field %s not found on IPC server."
-                   (get_id fname))
+                (sprintf "StateService: Field %s not found on IPC server." (get_id fname))
                 (ER.get_loc (get_rep fname))
           | Some res' -> pure @@ (res, G_Load res') )
     | Local -> fetch_local ~fname ~keys fields
@@ -135,8 +130,7 @@ module MakeStateService () = struct
   let update_local ~fname ~keys vopt fields =
     let s = fields in
     match List.find s ~f:(fun z -> z.fname = get_id fname) with
-    | Some { fname = _; ftyp = _; fval = Some (Map ((_, vt), mlit)) }
-      when keys <> [] ->
+    | Some { fname = _; ftyp = _; fval = Some (Map ((_, vt), mlit)) } when keys <> [] ->
         let rec recurser mlit' klist' vt' =
           match klist' with
           (* we're at the last key, update literal. *)
@@ -164,8 +158,8 @@ module MakeStateService () = struct
                       | _ ->
                           fail1
                             (sprintf
-                               "StateService: Cannot index into map %s due to \
-                                non-map type"
+                               "StateService: Cannot index into map %s due to non-map \
+                                type"
                                (get_id fname))
                             (ER.get_loc (get_rep fname))
                     in
@@ -179,8 +173,7 @@ module MakeStateService () = struct
               | _ ->
                   fail1
                     (sprintf
-                       "StateService: Cannot index into map %s. Too many index \
-                        keys."
+                       "StateService: Cannot index into map %s. Too many index keys."
                        (get_id fname))
                     (ER.get_loc (get_rep fname)) )
           (* this cannot occur. *)
@@ -194,12 +187,8 @@ module MakeStateService () = struct
     | Some { fname = f; ftyp = t; fval = Some _ } -> (
         match vopt with
         | Some fval' ->
-            let fields' =
-              List.filter fields ~f:(fun f -> f.fname <> get_id fname)
-            in
-            pure
-              ( { fname = f; ftyp = t; fval = Some fval' } :: fields',
-                G_Store fval' )
+            let fields' = List.filter fields ~f:(fun f -> f.fname <> get_id fname) in
+            pure ({ fname = f; ftyp = t; fval = Some fval' } :: fields', G_Store fval')
         | None ->
             fail1
               (sprintf "StateService: Cannot remove non-map value %s from state"
@@ -215,9 +204,7 @@ module MakeStateService () = struct
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
-        let%bind _ =
-          StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp
-        in
+        let%bind _ = StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp in
         if keys <> [] then pure @@ G_MapUpdate (List.length keys, Some value)
         else pure @@ G_Store value
     | Local ->
@@ -258,9 +245,7 @@ module MakeStateService () = struct
         mapM fl ~f:(fun f ->
             match f.fval with
             | None ->
-                fail0
-                  (sprintf "StateService: Field %s's value is not known"
-                     f.fname)
+                fail0 (sprintf "StateService: Field %s's value is not known" f.fname)
             | Some l -> pure (f.fname, l))
     | SS (IPC _, fl) ->
         let%bind sl =
@@ -270,9 +255,7 @@ module MakeStateService () = struct
               | Some v -> pure (f.fname, v)
               | None ->
                   fail0
-                    (sprintf
-                       "StateService: Field %s's value not found on server"
-                       f.fname))
+                    (sprintf "StateService: Field %s's value not found on server" f.fname))
         in
         pure sl
 end

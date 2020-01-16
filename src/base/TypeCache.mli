@@ -23,11 +23,7 @@
 open Syntax
 open TypeUtil
 
-module StdlibTypeCacher
-    (Q : MakeTEnvFunctor)
-    (R : QualifiedTypes)
-    (SR : Rep)
-    (ER : Rep) : sig
+module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) (SR : Rep) (ER : Rep) : sig
   module L : sig
     type expr_annot
 

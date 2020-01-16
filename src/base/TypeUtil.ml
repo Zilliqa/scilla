@@ -81,10 +81,7 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
 
     (* Resolve the identifier *)
     val resolveT :
-      ?lopt:R.rep option ->
-      t ->
-      string ->
-      (resolve_result, scilla_error list) result
+      ?lopt:R.rep option -> t -> string -> (resolve_result, scilla_error list) result
 
     (* Is bound in environment? *)
     val existsT : t -> string -> bool
@@ -144,8 +141,7 @@ functor
         in
         env
 
-      let addTs env kvs =
-        List.fold_left ~init:env ~f:(fun z (k, v) -> addT z k v) kvs
+      let addTs env kvs = List.fold_left ~init:env ~f:(fun z (k, v) -> addT z k v) kvs
 
       let addV env id =
         let _ = Hashtbl.add env.tvars (get_id id) (get_rep id) in
@@ -159,17 +155,13 @@ functor
       (* Retain only those keys for which (fb k) is true. *)
       let filterTs env ~f =
         let _ =
-          Hashtbl.filter_map_inplace
-            (fun k v -> if f k then Some v else None)
-            env.tenv
+          Hashtbl.filter_map_inplace (fun k v -> if f k then Some v else None) env.tenv
         in
         env
 
-      let tvars env =
-        Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []
+      let tvars env = Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []
 
-      let to_list env =
-        Hashtbl.fold (fun key data z -> (key, data) :: z) env.tenv []
+      let to_list env = Hashtbl.fold (fun key data z -> (key, data) :: z) env.tenv []
 
       (* Check type for well-formedness in the type environment *)
       let is_wf_type tenv t =
@@ -191,26 +183,21 @@ functor
               else foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:() ts
           | PrimType _ | Unit -> pure ()
           | TypeVar a -> (
-              if
-                (* Check if bound locally. *)
-                List.mem tb a ~equal:(fun a b -> a = b)
-              then pure () (* Check if bound in environment. *)
+              if (* Check if bound locally. *)
+                 List.mem tb a ~equal:(fun a b -> a = b) then pure ()
+                (* Check if bound in environment. *)
               else
                 match List.findi (tvars tenv) ~f:(fun _ (x, _) -> x = a) with
                 | Some _ -> pure ()
                 | None ->
-                    fail0
-                    @@ sprintf "Unbound type variable %s in type %s" a
-                         (pp_typ t) )
+                    fail0 @@ sprintf "Unbound type variable %s in type %s" a (pp_typ t) )
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
         in
         is_wf_typ' t []
 
       let pp ?(f = fun _ -> true) env =
         let lst = List.filter (to_list env) ~f in
-        let ps =
-          List.map lst ~f:(fun (k, v) -> " [" ^ k ^ " : " ^ rr_pp v ^ "]")
-        in
+        let ps = List.map lst ~f:(fun (k, v) -> " [" ^ k ^ " : " ^ rr_pp v ^ "]") in
         let cs = String.concat ~sep:",\n " ps in
         "{" ^ cs ^ " }"
 
@@ -218,9 +205,7 @@ functor
         match Hashtbl.find_opt env.tenv id with
         | Some r -> pure r
         | None ->
-            let sloc =
-              match lopt with Some l -> R.get_loc l | None -> dummy_loc
-            in
+            let sloc = match lopt with Some l -> R.get_loc l | None -> dummy_loc in
             fail1 (sprintf "Couldn't resolve the identifier \"%s\".\n" id) sloc
 
       let existsT env id = Hashtbl.mem env.tenv id
@@ -254,11 +239,9 @@ module TypeUtilities = struct
 
   type typeCheckerErrorType = TypeError | GasError
 
-  let mk_type_error0 msg remaining_gas =
-    (TypeError, mk_error0 msg, remaining_gas)
+  let mk_type_error0 msg remaining_gas = (TypeError, mk_error0 msg, remaining_gas)
 
-  let mk_type_error1 msg loc remaining_gas =
-    (TypeError, mk_error1 msg loc, remaining_gas)
+  let mk_type_error1 msg loc remaining_gas = (TypeError, mk_error1 msg loc, remaining_gas)
 
   let wrap_error_with_errortype_and_gas errorType gas res =
     match res with Ok r -> Ok r | Error e -> Error (errorType, e, gas)
@@ -287,16 +270,14 @@ module TypeUtilities = struct
      False otherwise, or if unequal lengths. *)
   let type_equiv_list tlist1 tlist2 =
     List.length tlist1 = List.length tlist2
-    && not
-         (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
-              not (type_equiv t1 t2)))
+    && not (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 -> not (type_equiv t1 t2)))
 
   let assert_type_equiv expected given =
     if type_equiv expected given then pure ()
     else
       fail0
-      @@ sprintf "Type mismatch: %s expected, but %s provided."
-           (pp_typ expected) (pp_typ given)
+      @@ sprintf "Type mismatch: %s expected, but %s provided." (pp_typ expected)
+           (pp_typ given)
 
   (* TODO: make this charge gas *)
   let assert_type_equiv_with_gas expected given remaining_gas =
@@ -305,8 +286,8 @@ module TypeUtilities = struct
       Error
         ( TypeError,
           mk_error0
-            (sprintf "Type mismatch: %s expected, but %s provided."
-               (pp_typ expected) (pp_typ given)),
+            (sprintf "Type mismatch: %s expected, but %s provided." (pp_typ expected)
+               (pp_typ given)),
           remaining_gas )
 
   let rec is_ground_type t =
@@ -362,8 +343,7 @@ module TypeUtilities = struct
                 in
                 adt_serializable
                 && List.for_all
-                     ~f:(fun t ->
-                       is_serializable_storable_helper accept_maps t seen_adts)
+                     ~f:(fun t -> is_serializable_storable_helper accept_maps t seen_adts)
                      ts ) )
 
   let is_serializable_type t = is_serializable_storable_helper false t []
@@ -371,18 +351,13 @@ module TypeUtilities = struct
   let is_storable_type t = is_serializable_storable_helper true t []
 
   let get_msgevnt_type m =
-    if
-      List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.tag_label) m
-    then pure PrimTypes.msg_typ
+    if List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.tag_label) m then
+      pure PrimTypes.msg_typ
     else if
-      List.exists
-        ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.eventname_label)
-        m
+      List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.eventname_label) m
     then pure PrimTypes.event_typ
     else if
-      List.exists
-        ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.exception_label)
-        m
+      List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.exception_label) m
     then pure PrimTypes.exception_typ
     else fail0 "Invalid message construct. Not any of send, event or exception."
 
@@ -391,13 +366,11 @@ module TypeUtilities = struct
     match (mt, nindices) with
     | _, 0 -> pure mt
     | MapType (_, vt'), 1 -> pure vt'
-    | MapType (_, vt'), nkeys' when nkeys' > 1 ->
-        map_access_type vt' (nindices - 1)
+    | MapType (_, vt'), nkeys' when nkeys' > 1 -> map_access_type vt' (nindices - 1)
     | _, _ -> fail0 "Cannot index into map: Too many index keys."
 
   (* The depth of a nested map. *)
-  let rec map_depth mt =
-    match mt with MapType (_, vt) -> 1 + map_depth vt | _ -> 0
+  let rec map_depth mt = match mt with MapType (_, vt) -> 1 + map_depth vt | _ -> 0
 
   let pp_typ_list ts =
     let tss = List.map ~f:(fun t -> pp_typ t) ts in
@@ -418,17 +391,13 @@ module TypeUtilities = struct
     | _ ->
         fail0
         @@ sprintf
-             "The type\n\
-              %s\n\
-              doesn't apply, as a function, to the arguments of types\n\
-              %s."
+             "The type\n%s\ndoesn't apply, as a function, to the arguments of types\n%s."
              (pp_typ ft) (pp_typ_list argtypes)
 
   let proc_type_applies formals actuals =
     match List.zip formals actuals with
     | Ok arg_pairs ->
-        mapM arg_pairs ~f:(fun (formal, actual) ->
-            assert_type_equiv formal actual)
+        mapM arg_pairs ~f:(fun (formal, actual) -> assert_type_equiv formal actual)
     | Unequal_lengths -> fail0 "Incorrect number of arguments to procedure"
 
   let rec elab_tfun_with_args_no_gas tf args =
@@ -457,11 +426,7 @@ module TypeUtilities = struct
 
   let subst_type_cost tvar tm tp_size =
     match tm with
-    | PrimType _ | Unit
-    | MapType (_, _)
-    | FunType (_, _)
-    | ADT (_, _)
-    | PolyFun (_, _) ->
+    | PrimType _ | Unit | MapType (_, _) | FunType (_, _) | ADT (_, _) | PolyFun (_, _) ->
         1
     | TypeVar n -> if n = tvar then tp_size else 1
 
@@ -471,8 +436,7 @@ module TypeUtilities = struct
     | PrimType _ | Unit | TypeVar _ -> 1
     | PolyFun (_, t) -> 1 + type_size t
     | MapType (t1, t2) | FunType (t1, t2) -> 1 + type_size t1 + type_size t2
-    | ADT (_, ts) ->
-        List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
+    | ADT (_, ts) -> List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
 
   (* tm[tvar := tp]
      Parallel implementation to the one in Syntax.ml to allow gas accounting.
@@ -549,8 +513,7 @@ module TypeUtilities = struct
   let validate_param_length cn plen alen =
     if plen <> alen then
       fail0
-      @@ sprintf "Constructor %s expects %d type arguments, but got %d." cn plen
-           alen
+      @@ sprintf "Constructor %s expects %d type arguments, but got %d." cn plen alen
     else pure ()
 
   (* Avoid variable clashes *)
@@ -559,9 +522,7 @@ module TypeUtilities = struct
     let tkn = tparams @ taken in
     let subst = List.map tparams ~f:(fun tp -> (tp, mk_fresh_var tkn tp)) in
     let tparams' = List.unzip subst |> snd in
-    let subst =
-      List.zip_exn tparams @@ List.map tparams' ~f:(fun s -> TypeVar s)
-    in
+    let subst = List.zip_exn tparams @@ List.map tparams' ~f:(fun s -> TypeVar s) in
     let tmap' =
       List.map tmap ~f:(fun (cn, tls) ->
           let tls' = List.map tls ~f:(subst_types_in_type subst) in
@@ -575,9 +536,7 @@ module TypeUtilities = struct
     let%bind adt', _ = lookup_constructor cn in
     let seq a b = if a = b then 0 else 1 in
     let taken =
-      List.map targs ~f:free_tvars
-      |> List.concat
-      |> List.dedup_and_sort ~compare:seq
+      List.map targs ~f:free_tvars |> List.concat |> List.dedup_and_sort ~compare:seq
     in
     let adt = refresh_adt adt' taken in
     let plen = List.length adt.tparams in
@@ -590,8 +549,7 @@ module TypeUtilities = struct
         let tmap = List.zip_exn adt.tparams targs in
         let ctparams_elab = List.map ctparams ~f:(apply_type_subst tmap) in
         let ctyp =
-          List.fold_right ctparams_elab ~init:res_typ ~f:(fun ctp acc ->
-              fun_typ ctp acc)
+          List.fold_right ctparams_elab ~init:res_typ ~f:(fun ctp acc -> fun_typ ctp acc)
         in
         pure ctyp
 
@@ -606,8 +564,8 @@ module TypeUtilities = struct
         else
           fail0
           @@ sprintf
-               "Types don't match: pattern uses a constructor of type %s, but \
-                value of type %s is given."
+               "Types don't match: pattern uses a constructor of type %s, but value of \
+                type %s is given."
                adt.tname name
     | _ -> fail0 @@ sprintf "Not an algebraic data type: %s" (pp_typ atyp)
 
@@ -631,8 +589,8 @@ module TypeUtilities = struct
         | None -> pure ()
         | Some _ ->
             fail0
-            @@ sprintf "Not all types of the branches %s are equivalent."
-                 (pp_typ_list ts) )
+            @@ sprintf "Not all types of the branches %s are equivalent." (pp_typ_list ts)
+        )
 
   (****************************************************************)
   (*                     Typing literals                          *)
@@ -705,8 +663,7 @@ module TypeUtilities = struct
                   pure @@ (type_equiv kt kt' && type_equiv vt vt'))
               kv (pure true)
           in
-          if not valid then
-            fail0 @@ sprintf "Malformed literal %s" (pp_literal l)
+          if not valid then fail0 @@ sprintf "Malformed literal %s" (pp_literal l)
             (* We have a valid Map literal. *)
           else pure (MapType (kt, vt))
         else fail0 @@ sprintf "Not a primitive map key type: %s." (pp_typ kt)
@@ -716,15 +673,12 @@ module TypeUtilities = struct
         let tname = adt.tname in
         if not (List.length tparams = List.length ts) then
           fail0
-          @@ sprintf
-               "Wrong number of type parameters for ADT %s (%i) in constructor \
-                %s."
+          @@ sprintf "Wrong number of type parameters for ADT %s (%i) in constructor %s."
                tname (List.length ts) cname
         else if not (List.length args = constr.arity) then
           fail0
-          @@ sprintf
-               "Wrong number of arguments to ADT %s (%i) in constructor %s."
-               tname (List.length args) cname
+          @@ sprintf "Wrong number of arguments to ADT %s (%i) in constructor %s." tname
+               (List.length args) cname
           (* Verify that the types of args match that declared. *)
         else
           let res = ADT (tname, ts) in

@@ -78,9 +78,7 @@ module MakeServer () = struct
 
   let prepare_server sock_addr =
     (try Unix.unlink sock_addr with Unix.Unix_error (Unix.ENOENT, _, _) -> ());
-    let socket =
-      Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
-    in
+    let socket = Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 in
     Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_addr);
     Unix.listen socket ~backlog:num_pending_requests;
     let server () =
@@ -152,8 +150,7 @@ module MakeServer () = struct
               recurser_update ~new_val m tail
           | Some v -> (
               match v with
-              | NonMapVal _ ->
-                  fail RPCError.{ code = 0; message = update_message }
+              | NonMapVal _ -> fail RPCError.{ code = 0; message = update_message }
               | MapVal m -> recurser_update ~new_val m tail ) )
     in
     let query = decode_serialized_query query in
@@ -164,8 +161,7 @@ module MakeServer () = struct
         | true -> recurser_update table (name :: string_indices_list)
         | false ->
             let new_val = deserialize_value (decode_serialized_value value) in
-            recurser_update ~new_val:(Some new_val) table
-              (name :: string_indices_list) )
+            recurser_update ~new_val:(Some new_val) table (name :: string_indices_list) )
 end
 
 let start_server ~sock_addr =

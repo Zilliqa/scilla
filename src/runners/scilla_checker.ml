@@ -125,8 +125,7 @@ let check_patterns e rlibs elibs =
 let check_patterns_lmodule e rlibs elibs =
   let res = PMC.pm_check_lmodule e rlibs elibs in
   if Result.is_ok res then
-    plog
-    @@ sprintf "\n[Pattern Check]:\n library module is successfully checked.\n";
+    plog @@ sprintf "\n[Pattern Check]:\n library module is successfully checked.\n";
   res
 
 let check_sanity m rlibs elibs =
@@ -155,15 +154,14 @@ let analyze_print_gas cmod typed_elibs =
       res
   | Ok cpol ->
       plog
-      @@ sprintf
-           "\n[Gas Use Analysis]:\n module [%s] is successfully analyzed.\n"
+      @@ sprintf "\n[Gas Use Analysis]:\n module [%s] is successfully analyzed.\n"
            (get_id cmod.contr.cname);
       let _ =
         List.iter
           ~f:(fun (i, pol) ->
             pout
-            @@ sprintf "Gas use polynomial for transition %s:\n%s\n\n"
-                 (get_id i) (GUA.sprint_gup pol))
+            @@ sprintf "Gas use polynomial for transition %s:\n%s\n\n" (get_id i)
+                 (GUA.sprint_gup pol))
           cpol
       in
       res
@@ -171,8 +169,7 @@ let analyze_print_gas cmod typed_elibs =
 let check_cashflow typed_cmod token_fields =
   let param_field_tags, ctr_tags = CF.main typed_cmod token_fields in
   let param_field_tags_to_string =
-    List.map param_field_tags ~f:(fun (i, t) ->
-        (i, CF.ECFR.money_tag_to_string t))
+    List.map param_field_tags ~f:(fun (i, t) -> (i, CF.ECFR.money_tag_to_string t))
   in
   let ctr_tags_to_string =
     List.map ctr_tags ~f:(fun (adt, ctrs) ->
@@ -180,8 +177,8 @@ let check_cashflow typed_cmod token_fields =
           List.map ctrs ~f:(fun (i, ts) ->
               ( i,
                 List.map ts ~f:(fun t_opt ->
-                    Option.value_map t_opt ~default:"_"
-                      ~f:CF.ECFR.money_tag_to_string) )) ))
+                    Option.value_map t_opt ~default:"_" ~f:CF.ECFR.money_tag_to_string) ))
+        ))
   in
   (param_field_tags_to_string, ctr_tags_to_string)
 
@@ -189,13 +186,11 @@ let check_version vernum =
   let mver, _, _ = scilla_version in
   if vernum <> mver then
     let emsg =
-      sprintf "Scilla version mismatch. Expected %d vs Contract %d\n" mver
-        vernum
+      sprintf "Scilla version mismatch. Expected %d vs Contract %d\n" mver vernum
     in
     fatal_error (mk_error0 emsg)
 
-let wrap_error_with_gas gas res =
-  match res with Ok r -> Ok r | Error e -> Error (e, gas)
+let wrap_error_with_gas gas res = match res with Ok r -> Ok r | Error e -> Error (e, gas)
 
 (* Check a library module. *)
 let check_lmodule cli =
@@ -254,33 +249,27 @@ let check_cmodule cli =
       wrap_error_with_gas initial_gas @@ check_recursion cmod elibs
     in
     let%bind (typed_cmod, tenv, typed_elibs, typed_rlibs), remaining_gas =
-      check_typing recursion_cmod recursion_rec_principles recursion_elibs
-        initial_gas
+      check_typing recursion_cmod recursion_rec_principles recursion_elibs initial_gas
     in
     let%bind pm_checked_cmod, _pm_checked_rlibs, _pm_checked_elibs =
       wrap_error_with_gas remaining_gas
       @@ check_patterns typed_cmod typed_rlibs typed_elibs
     in
     let _ = if cli.cf_flag then check_accepts typed_cmod else () in
-    let type_info =
-      if cli.p_type_info then TI.type_info_cmod typed_cmod else []
-    in
+    let type_info = if cli.p_type_info then TI.type_info_cmod typed_cmod else [] in
     let%bind _ =
-      wrap_error_with_gas remaining_gas
-      @@ check_sanity typed_cmod typed_rlibs typed_elibs
+      wrap_error_with_gas remaining_gas @@ check_sanity typed_cmod typed_rlibs typed_elibs
     in
     let%bind event_info =
       wrap_error_with_gas remaining_gas @@ EI.event_info pm_checked_cmod
     in
     let%bind _ =
       if cli.gua_flag then
-        wrap_error_with_gas remaining_gas
-        @@ analyze_print_gas typed_cmod typed_elibs
+        wrap_error_with_gas remaining_gas @@ analyze_print_gas typed_cmod typed_elibs
       else pure []
     in
     let cf_info_opt =
-      if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields)
-      else None
+      if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields) else None
     in
     pure @@ (cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas)
   in
@@ -298,8 +287,7 @@ let check_cmodule cli =
       in
       let output =
         if cli.p_contract_info then
-          ( "contract_info",
-            JSON.ContractInfo.get_json cmod.smver cmod.contr event_info )
+          ("contract_info", JSON.ContractInfo.get_json cmod.smver cmod.contr event_info)
           :: output
         else output
       in
@@ -311,8 +299,7 @@ let check_cmodule cli =
       let output =
         match cf_info_opt with
         | None -> output
-        | Some cf_info ->
-            ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: output
+        | Some cf_info -> ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: output
       in
       (* If we have auxiliary output which necessitates JSON, we force JSON output. *)
       if (not (GlobalConfig.use_json_errors ())) && List.is_empty output then

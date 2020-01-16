@@ -122,8 +122,7 @@ let decode_bech32_addr ~prefix ~addr:str =
       (* Create a buffer of bits for the result (20-byte raw address). *)
       let bitacc = Buffer.create () in
       let chk, err, (have_lower, have_upper), _ =
-        List.fold
-          (String.to_list addr_chk_str)
+        List.fold (String.to_list addr_chk_str)
           ~init:(chk, false, (false, false), 0)
           ~f:(fun (chk, err, (have_lower, have_upper), index) c ->
             (* do nothing if we've already seen an error. *)
@@ -144,17 +143,11 @@ let decode_bech32_addr ~prefix ~addr:str =
 
                 (* Accumulate the lower 5 bits of c' into our bit buffer *)
                 ( if index < bech32_payload_len then
-                  let shifted_5_bits =
-                    Bytes.make 1 (char_of_ascii (c' lsl (8 - 5)))
-                  in
+                  let shifted_5_bits = Bytes.make 1 (char_of_ascii (c' lsl (8 - 5))) in
                   Buffer.add_bits bitacc shifted_5_bits 5 );
 
-                let have_lower' =
-                  c' >= ascii_of_char 'a' && c' <= ascii_of_char 'z'
-                in
-                let have_upper' =
-                  c' >= ascii_of_char 'A' && c' <= ascii_of_char 'Z'
-                in
+                let have_lower' = c' >= ascii_of_char 'a' && c' <= ascii_of_char 'z' in
+                let have_upper' = c' >= ascii_of_char 'A' && c' <= ascii_of_char 'Z' in
                 (chk', err, (have_lower', have_upper'), index + 1))
       in
       if err || (have_lower && have_upper) then None
@@ -163,8 +156,7 @@ let decode_bech32_addr ~prefix ~addr:str =
 
 (* Check if a bech32 address string is valid, based on the specification in
  * https://github.com/Zilliqa/Zilliqa/wiki/Address-Standard#specification *)
-let is_valid_bech32 ~prefix ~addr =
-  Option.is_some (decode_bech32_addr ~prefix ~addr)
+let is_valid_bech32 ~prefix ~addr = Option.is_some (decode_bech32_addr ~prefix ~addr)
 
 (* Encodes a 20-byte string into the bech32 address format.
  * Signature: prefix -> bystr20 address -> bech32_addr. *)
@@ -174,8 +166,7 @@ let encode_bech32_addr ~prefix ~addr:bys =
   else
     (* 2. Scan the prefix for errors. *)
     let chk, err =
-      List.fold (String.to_list prefix) ~init:(1, false)
-        ~f:(fun (chk, err) ch ->
+      List.fold (String.to_list prefix) ~init:(1, false) ~f:(fun (chk, err) ch ->
           if
             err
             || ascii_of_char ch < 33
@@ -225,9 +216,7 @@ let encode_bech32_addr ~prefix ~addr:bys =
       if err then None
       else
         (* 7. We are left with building up the last 6 / checksum characters. *)
-        let chk =
-          int_fold ~init:chk ~f:(fun chkacc _ -> bech32_polymod_step chkacc) 6
-        in
+        let chk = int_fold ~init:chk ~f:(fun chkacc _ -> bech32_polymod_step chkacc) 6 in
         let chk = chk lxor 1 in
         let chkstr =
           int_fold 6 ~init:"" ~f:(fun acc i ->

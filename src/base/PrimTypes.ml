@@ -100,18 +100,13 @@ let build_int pt v =
     match pt with
     | Int_typ Bits32 -> validator_wrapper (IntLit (Int32L (Int32.of_string v)))
     | Int_typ Bits64 -> validator_wrapper (IntLit (Int64L (Int64.of_string v)))
-    | Int_typ Bits128 ->
-        validator_wrapper (IntLit (Int128L (Stdint.Int128.of_string v)))
-    | Int_typ Bits256 ->
-        validator_wrapper (IntLit (Int256L (Int256.of_string v)))
-    | Uint_typ Bits32 ->
-        validator_wrapper (UintLit (Uint32L (Stdint.Uint32.of_string v)))
-    | Uint_typ Bits64 ->
-        validator_wrapper (UintLit (Uint64L (Stdint.Uint64.of_string v)))
+    | Int_typ Bits128 -> validator_wrapper (IntLit (Int128L (Stdint.Int128.of_string v)))
+    | Int_typ Bits256 -> validator_wrapper (IntLit (Int256L (Int256.of_string v)))
+    | Uint_typ Bits32 -> validator_wrapper (UintLit (Uint32L (Stdint.Uint32.of_string v)))
+    | Uint_typ Bits64 -> validator_wrapper (UintLit (Uint64L (Stdint.Uint64.of_string v)))
     | Uint_typ Bits128 ->
         validator_wrapper (UintLit (Uint128L (Stdint.Uint128.of_string v)))
-    | Uint_typ Bits256 ->
-        validator_wrapper (UintLit (Uint256L (Uint256.of_string v)))
+    | Uint_typ Bits256 -> validator_wrapper (UintLit (Uint256L (Uint256.of_string v)))
     | _ -> None
   with _ -> None
 

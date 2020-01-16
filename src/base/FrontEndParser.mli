@@ -23,10 +23,7 @@ module MInter = ScillaParser.MenhirInterpreter
 
 (* Main parser *)
 val parse_lexbuf :
-  (position -> 'a MInter.checkpoint) ->
-  lexbuf ->
-  string ->
-  ('a, scilla_error list) result
+  (position -> 'a MInter.checkpoint) -> lexbuf -> string -> ('a, scilla_error list) result
 
 (* Parse a string using an entry point checkpoint starter *)
 val parse_string :
@@ -43,8 +40,7 @@ val parse_type : string -> (typ, scilla_error list) result
 val parse_expr : string -> (ParsedSyntax.expr_annot, scilla_error list) result
 
 (* Read and expression from a file and parse it *)
-val parse_expr_from_file :
-  string -> (ParsedSyntax.expr_annot, scilla_error list) result
+val parse_expr_from_file : string -> (ParsedSyntax.expr_annot, scilla_error list) result
 
 (* Parse a library module *)
 val parse_lmodule : string -> (ParsedSyntax.lmodule, scilla_error list) result

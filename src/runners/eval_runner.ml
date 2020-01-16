@@ -34,17 +34,13 @@ let () =
   let cli = parse_cli () in
   let filename = cli.input_file in
   let gas_limit =
-    if cli.gas_limit = Stdint.Uint64.zero then default_gas_limit
-    else cli.gas_limit
+    if cli.gas_limit = Stdint.Uint64.zero then default_gas_limit else cli.gas_limit
   in
   match parse_expr_from_file filename with
   | Ok e -> (
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib =
-        {
-          TC.UntypedSyntax.lname = asId "dummy";
-          TC.UntypedSyntax.lentries = [];
-        }
+        { TC.UntypedSyntax.lname = asId "dummy"; TC.UntypedSyntax.lentries = [] }
       in
       StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
       let lib_dirs = StdlibTracker.get_stdlib_dirs () in

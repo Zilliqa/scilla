@@ -34,15 +34,13 @@ let translate_res res =
   match res |> IDL.T.get |> M.run with
   | Error (e : RPCError.err_t) ->
       fail0
-        (Printf.sprintf
-           "StateIPCClient: Error in IPC access: (code:%d, message:%s)." e.code
-           e.message)
+        (Printf.sprintf "StateIPCClient: Error in IPC access: (code:%d, message:%s)."
+           e.code e.message)
   | Ok res' -> pure res'
 
 let ipcclient_exn_wrapper thunk =
   try thunk () with
-  | Unix.Unix_error (_, s1, s2) ->
-      fail0 ("StateIPCClient: Unix error: " ^ s1 ^ s2)
+  | Unix.Unix_error (_, s1, s2) -> fail0 ("StateIPCClient: Unix error: " ^ s1 ^ s2)
   | _ -> fail0 "StateIPCClient: Unexpected error making JSON-RPC call"
 
 (* Send msg via socket s with a delimiting character "0xA". *)
@@ -52,13 +50,9 @@ let send_delimited oc msg =
   Out_channel.flush oc
 
 let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
-  let socket =
-    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
-  in
+  let socket = Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 in
   Unix.connect socket ~addr:(Unix.ADDR_UNIX socket_addr);
-  let ic, oc =
-    (Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket)
-  in
+  let ic, oc = (Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket) in
   let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
   DebugMessage.plog (Printf.sprintf "Sending: %s\n" msg_buf);
   (* Send data to the socket. *)
@@ -76,9 +70,7 @@ let deserialize_literal s tp =
   try pure @@ ContractState.jstring_to_literal s tp
   with Invalid_json s ->
     fail
-      ( s
-      @ mk_error0
-          "StateIPCClient: Error deserializing literal fetched from IPC call" )
+      (s @ mk_error0 "StateIPCClient: Error deserializing literal fetched from IPC call")
 
 (* Map fields are serialized into Ipcmessage_types.MVal
    Other fields are serialized using serialize_literal into bytes/string. *)
@@ -117,8 +109,8 @@ let rec deserialize_value value tp =
           pure (Map ((kt, vt), mlit))
       | _ ->
           fail0
-            "StateIPCClient: Type mismatch deserializing value. Unexpected \
-             protobuf map." )
+            "StateIPCClient: Type mismatch deserializing value. Unexpected protobuf map."
+      )
 
 let encode_serialized_value value =
   try
@@ -182,8 +174,7 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
   let%bind value' = encode_serialized_value (serialize_field value) in
   let%bind _ =
     let thunk () =
-      translate_res
-      @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' value'
+      translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' value'
     in
     ipcclient_exn_wrapper thunk
   in
@@ -225,8 +216,7 @@ let remove ~socket_addr ~fname ~keys ~tp =
   (* This will be ignored by the blockchain. *)
   let%bind _ =
     let thunk () =
-      translate_res
-      @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' dummy_val
+      translate_res @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' dummy_val
     in
     ipcclient_exn_wrapper thunk
   in

@@ -48,16 +48,11 @@ let encode_g1point_bytes g1 = g1.g1x ^ g1.g1y
 let decode_g1point_bytes g1b =
   if String.length g1b <> g1point_len then None
   else
-    Some
-      {
-        g1x = String.sub g1b 0 scalar_len;
-        g1y = String.sub g1b scalar_len scalar_len;
-      }
+    Some { g1x = String.sub g1b 0 scalar_len; g1y = String.sub g1b scalar_len scalar_len }
 
 let encode_g2point_bytes g2 = g2.g2x ^ g2.g2y
 
-let encode_g1g2pair_bytes g1p g2p =
-  encode_g1point_bytes g1p ^ encode_g2point_bytes g2p
+let encode_g1g2pair_bytes g1p g2p = encode_g1point_bytes g1p ^ encode_g2point_bytes g2p
 
 let alt_bn128_G1_add p1 p2 =
   (* This check can be removed once we have a strong type for scalar. *)
@@ -181,8 +176,7 @@ let alt_bn128_pairing_product pairs =
     let _ = setf presS rawBytes_len scalar_len in
     (* Copy input data to input structs. *)
     let pairs' =
-      String.concat ""
-        (List.map (fun (g1p, g2p) -> encode_g1g2pair_bytes g1p g2p) pairs)
+      String.concat "" (List.map (fun (g1p, g2p) -> encode_g1g2pair_bytes g1p g2p) pairs)
     in
     let _ = copy_to_cptr pD pairs' in
     (* Call the C function. *)
@@ -190,9 +184,7 @@ let alt_bn128_pairing_product pairs =
     let pres =
       if succ then
         (* Copy back the result. *)
-        let res =
-          copy_from_tstring @@ string_from_ptr presD ~length:scalar_len
-        in
+        let res = copy_from_tstring @@ string_from_ptr presD ~length:scalar_len in
         let zero_string =
           let b = Bytes.init scalar_len (fun _ -> '\000') in
           Bytes.to_string b
