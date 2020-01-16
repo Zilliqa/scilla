@@ -248,81 +248,69 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
 
   let tvar s = TypeVar s
 
+  [@@@ocamlformat "disable"]
+
   (* built-in op costs are propotional to size of data they operate on. *)
-  let builtin_records : builtin_record list =
-    [
-      (* Strings *)
-      (Builtin_eq, [ string_typ; string_typ ], string_coster, 1);
-      (Builtin_concat, [ string_typ; string_typ ], string_coster, 1);
-      (Builtin_substr, [ string_typ; tvar "'A"; tvar "'A" ], string_coster, 1);
-      (Builtin_strlen, [ string_typ ], string_coster, 1);
-      (Builtin_to_string, [ tvar "'A" ], string_coster, 1);
-      (* Block numbers *)
-      (Builtin_eq, [ bnum_typ; bnum_typ ], base_coster, 32);
-      (Builtin_blt, [ bnum_typ; bnum_typ ], base_coster, 32);
-      (Builtin_badd, [ bnum_typ; tvar "'A" ], base_coster, 32);
-      (Builtin_bsub, [ bnum_typ; bnum_typ ], base_coster, 32);
-      (* Crypto *)
-      (Builtin_eq, [ tvar "'A"; tvar "'A" ], crypto_coster, 1);
-      (Builtin_to_bystr, [ tvar "'A" ], crypto_coster, 1);
-      (Builtin_bech32_to_bystr20, [ string_typ; string_typ ], crypto_coster, 4);
-      ( Builtin_bystr20_to_bech32,
-        [ string_typ; bystrx_typ address_length ],
-        crypto_coster,
-        4 );
-      (Builtin_to_uint256, [ tvar "'A" ], crypto_coster, 1);
-      (Builtin_sha256hash, [ tvar "'A" ], crypto_coster, 1);
-      (Builtin_keccak256hash, [ tvar "'A" ], crypto_coster, 1);
-      (Builtin_ripemd160hash, [ tvar "'A" ], crypto_coster, 1);
-      ( Builtin_schnorr_verify,
-        [ bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len ],
-        crypto_coster,
-        1 );
-      ( Builtin_ecdsa_verify,
-        [
-          bystrx_typ Secp256k1Wrapper.pubkey_len;
-          bystr_typ;
-          bystrx_typ Secp256k1Wrapper.signature_len;
-        ],
-        crypto_coster,
-        1 );
-      (Builtin_concat, [ tvar "'A"; tvar "'A" ], crypto_coster, 1);
-      (Builtin_schnorr_get_address, [ bystrx_typ pubkey_len ], crypto_coster, 1);
-      ( Builtin_alt_bn128_G1_add,
-        [ g1point_type; g1point_type ],
-        crypto_coster,
-        1 );
-      (Builtin_alt_bn128_G1_mul, [ g1point_type; scalar_type ], crypto_coster, 1);
-      ( Builtin_alt_bn128_pairing_product,
-        [ g1g2pair_list_type ],
-        crypto_coster,
-        1 );
-      (* Maps *)
-      (Builtin_contains, [ tvar "'A"; tvar "'A" ], map_coster, 1);
-      (Builtin_put, [ tvar "'A"; tvar "'A"; tvar "'A" ], map_coster, 1);
-      (Builtin_get, [ tvar "'A"; tvar "'A" ], map_coster, 1);
-      (Builtin_remove, [ tvar "'A"; tvar "'A" ], map_coster, 1);
-      (Builtin_to_list, [ tvar "'A" ], map_coster, 1);
-      (Builtin_size, [ tvar "'A" ], map_coster, 1);
-      (* Integers *)
-      (Builtin_eq, [ tvar "'A"; tvar "'A" ], int_coster, 4);
-      (Builtin_lt, [ tvar "'A"; tvar "'A" ], int_coster, 4);
-      (Builtin_add, [ tvar "'A"; tvar "'A" ], int_coster, 4);
-      (Builtin_sub, [ tvar "'A"; tvar "'A" ], int_coster, 4);
-      (Builtin_mul, [ tvar "'A"; tvar "'A" ], int_coster, 4);
-      (Builtin_div, [ tvar "'A"; tvar "'A" ], int_coster, 4);
-      (Builtin_rem, [ tvar "'A"; tvar "'A" ], int_coster, 4);
-      (Builtin_pow, [ tvar "'A"; uint32_typ ], int_coster, 4);
-      (Builtin_to_int32, [ tvar "'A" ], int_conversion_coster 32, 4);
-      (Builtin_to_int64, [ tvar "'A" ], int_conversion_coster 64, 4);
-      (Builtin_to_int128, [ tvar "'A" ], int_conversion_coster 128, 4);
-      (Builtin_to_int256, [ tvar "'A" ], int_conversion_coster 256, 4);
-      (Builtin_to_uint32, [ tvar "'A" ], int_conversion_coster 32, 4);
-      (Builtin_to_uint64, [ tvar "'A" ], int_conversion_coster 64, 4);
-      (Builtin_to_uint128, [ tvar "'A" ], int_conversion_coster 128, 4);
-      (Builtin_to_uint256, [ tvar "'A" ], int_conversion_coster 256, 4);
-      (Builtin_to_nat, [ tvar "'A" ], to_nat_coster, 1);
-    ]
+  let builtin_records : builtin_record list = [
+    (* Strings *)
+    (Builtin_eq, [string_typ;string_typ], string_coster, 1);
+    (Builtin_concat, [string_typ;string_typ], string_coster, 1);
+    (Builtin_substr, [string_typ; tvar "'A"; tvar "'A"], string_coster, 1);
+    (Builtin_strlen, [string_typ], string_coster, 1);
+    (Builtin_to_string, [tvar "'A"], string_coster, 1);
+  
+    (* Block numbers *)
+    (Builtin_eq, [bnum_typ;bnum_typ], base_coster, 32);
+    (Builtin_blt, [bnum_typ;bnum_typ], base_coster, 32);
+    (Builtin_badd, [bnum_typ;tvar "'A"], base_coster, 32);
+    (Builtin_bsub, [bnum_typ;bnum_typ], base_coster, 32);
+  
+    (* Crypto *)
+    (Builtin_eq, [tvar "'A"; tvar "'A"], crypto_coster, 1);
+    (Builtin_to_bystr, [tvar "'A"], crypto_coster, 1);
+    (Builtin_bech32_to_bystr20, [string_typ;string_typ], crypto_coster, 4);
+    (Builtin_bystr20_to_bech32, [string_typ;bystrx_typ address_length], crypto_coster, 4);
+    (Builtin_to_uint256, [tvar "'A"], crypto_coster, 1);
+    (Builtin_sha256hash, [tvar "'A"], crypto_coster, 1);
+    (Builtin_keccak256hash, [tvar "'A"], crypto_coster, 1);
+    (Builtin_ripemd160hash, [tvar "'A"], crypto_coster, 1);
+    (Builtin_schnorr_verify, [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster, 1);
+    (Builtin_ecdsa_verify, [bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster, 1);
+    (Builtin_concat, [tvar "'A"; tvar "'A"], crypto_coster, 1);
+    (Builtin_schnorr_get_address, [bystrx_typ pubkey_len], crypto_coster, 1);
+    (Builtin_alt_bn128_G1_add, [g1point_type; g1point_type], crypto_coster, 1);
+    (Builtin_alt_bn128_G1_mul, [g1point_type; scalar_type], crypto_coster, 1);
+    (Builtin_alt_bn128_pairing_product, [g1g2pair_list_type], crypto_coster, 1);
+  
+    (* Maps *)
+    (Builtin_contains, [tvar "'A"; tvar "'A"], map_coster, 1);
+    (Builtin_put, [tvar "'A"; tvar "'A"; tvar "'A"], map_coster, 1);
+    (Builtin_get, [tvar "'A"; tvar "'A"], map_coster, 1);
+    (Builtin_remove, [tvar "'A"; tvar "'A"], map_coster, 1);
+    (Builtin_to_list, [tvar "'A"], map_coster, 1);
+    (Builtin_size, [tvar "'A"], map_coster, 1);
+  
+    (* Integers *)
+    (Builtin_eq, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_lt, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_add, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_sub, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_mul, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_div, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_rem, [tvar "'A"; tvar "'A"], int_coster, 4);
+    (Builtin_pow, [tvar "'A"; uint32_typ], int_coster, 4);
+    (Builtin_to_int32, [tvar "'A"], int_conversion_coster 32, 4);
+    (Builtin_to_int64, [tvar "'A"], int_conversion_coster 64, 4);
+    (Builtin_to_int128, [tvar "'A"], int_conversion_coster 128, 4);
+    (Builtin_to_int256, [tvar "'A"], int_conversion_coster 256, 4);
+    (Builtin_to_uint32, [tvar "'A"], int_conversion_coster 32, 4);
+    (Builtin_to_uint64, [tvar "'A"], int_conversion_coster 64, 4);
+    (Builtin_to_uint128, [tvar "'A"], int_conversion_coster 128, 4);
+    (Builtin_to_uint256, [tvar "'A"], int_conversion_coster 256, 4);
+    (Builtin_to_nat, [tvar "'A"], to_nat_coster, 1);
+  ]
+
+  [@@@ocamlformat "enable"]
 
   let builtin_hashtbl =
     let open Caml in

@@ -271,33 +271,43 @@ struct
   (*******************************************************)
   open CFSyntax
 
+  [@@@ocamlformat "disable"]
+
   (* Least upper bound in the money_tag lattice. *)
   let rec lub_tags t1 t2 =
-    match (t1, t2) with
-    | Inconsistent, _ | _, Inconsistent -> Inconsistent
-    | NoInfo, x | x, NoInfo -> x
-    | Map x, Map y -> Map (lub_tags x y)
-    | Adt (n1, ts1), Adt (n2, ts2) when n1 = n2 -> (
-        match List.map2 ts1 ts2 ~f:lub_tags with
-        | Ok res -> Adt (n1, res)
-        | Unequal_lengths -> Inconsistent )
-    | Money, Money -> Money
-    | NotMoney, NotMoney -> NotMoney
-    | _, _ -> Inconsistent
+    match t1, t2 with
+    | Inconsistent , _
+    | _            , Inconsistent  -> Inconsistent
+    | NoInfo       , x
+    | x            , NoInfo        -> x
+    | Map x        , Map y         -> Map (lub_tags x y)
+    | Adt (n1, ts1), Adt (n2, ts2)
+      when n1 = n2                 ->
+        (match List.map2 ts1 ts2 ~f:lub_tags with
+         | Ok res -> Adt (n1, res)
+         | Unequal_lengths -> Inconsistent)
+    | Money        , Money         -> Money
+    | NotMoney     , NotMoney      -> NotMoney
+    | _            , _             -> Inconsistent
 
   (* Greatest lower bound in the money_tag lattice. *)
   let rec glb_tags t1 t2 =
-    match (t1, t2) with
-    | Inconsistent, x | x, Inconsistent -> x
-    | NoInfo, _ | _, NoInfo -> NoInfo
-    | Map x, Map y -> Map (glb_tags x y)
-    | Adt (n1, ts1), Adt (n2, ts2) when n1 = n2 -> (
-        match List.map2 ts1 ts2 ~f:glb_tags with
-        | Ok res -> Adt (n1, res)
-        | Unequal_lengths -> Inconsistent )
-    | Money, Money -> Money
-    | NotMoney, NotMoney -> NotMoney
-    | _, _ -> NoInfo
+    match t1, t2 with
+    | Inconsistent , x
+    | x            , Inconsistent  -> x
+    | NoInfo       , _
+    | _            , NoInfo        -> NoInfo
+    | Map x        , Map y         -> Map (glb_tags x y)
+    | Adt (n1, ts1), Adt (n2, ts2)
+      when n1 = n2                 ->
+        (match List.map2 ts1 ts2 ~f:glb_tags with
+         | Ok res -> Adt (n1, res)
+         | Unequal_lengths -> Inconsistent)
+    | Money        , Money         -> Money
+    | NotMoney     , NotMoney      -> NotMoney
+    | _            , _             -> NoInfo
+
+  [@@@ocamlformat "enable"]
 
   (*******************************************************)
   (*           Helper functions for ADTs                 *)
@@ -550,630 +560,458 @@ struct
      resulting set of candidate signatures C.
 
      Step 3: Calculate the greatest lower bound of C. *)
+  [@@@ocamlformat "disable"]
+
   let builtin_signature f res_tag args_tags =
     let lub_sigs c_rs c_ass =
       let c =
-        List.fold_left c_ass ~init:c_rs ~f:(fun partial_c c_t ->
-            List.fold_left partial_c ~init:[]
-              ~f:(fun acc_partial_c (partial_c_res_tag, partial_c_args_tags) ->
-                List.fold_left c_t ~init:acc_partial_c
-                  ~f:(fun acc_lub_sigs (c_t_res_tag, c_t_args_tags) ->
-                    let res_sigs =
-                      match
-                        List.map2 ~f:lub_tags partial_c_args_tags c_t_args_tags
-                      with
-                      | Ok res -> (lub_tags partial_c_res_tag c_t_res_tag, res)
-                      | Unequal_lengths -> (Inconsistent, [ NoInfo ])
-                    in
-
-                    res_sigs :: acc_lub_sigs)))
-      in
-      List.fold_left c
-        ~init:(Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags)
+        List.fold_left c_ass ~init:c_rs 
+          ~f:(fun partial_c c_t ->
+             List.fold_left partial_c ~init:[]
+               ~f:(fun acc_partial_c (partial_c_res_tag, partial_c_args_tags) ->
+                  List.fold_left c_t ~init:acc_partial_c
+                    ~f:(fun acc_lub_sigs (c_t_res_tag, c_t_args_tags) ->
+                        let res_sigs =
+                          match List.map2 ~f:lub_tags partial_c_args_tags c_t_args_tags with
+                          | Ok res          -> (lub_tags partial_c_res_tag c_t_res_tag, res)
+                          | Unequal_lengths -> (Inconsistent, [NoInfo]) in
+                        
+                        res_sigs :: acc_lub_sigs))) in
+      List.fold_left c ~init:( Inconsistent , List.map ~f:(fun _ -> Inconsistent ) args_tags )
         ~f:(fun (glb_res_tag, glb_args_tags) (c_res_tag, c_args_tags) ->
-          ( glb_tags glb_res_tag c_res_tag,
-            match List.map2 ~f:glb_tags glb_args_tags c_args_tags with
-            | Ok res -> res
-            | Unequal_lengths -> [ Inconsistent ] ))
-    in
-    let c_r, c_as =
+            ( glb_tags glb_res_tag c_res_tag,
+              match List.map2 ~f:glb_tags glb_args_tags c_args_tags with
+              | Ok res -> res
+              | Unequal_lengths -> [Inconsistent]))
+        in
+    let (c_r, c_as) =
       match fst f with
       | Builtin_put ->
           let c_r_sigs =
             match res_tag with
-            | Map t -> [ (Map t, [ Map t; NotMoney; t ]) ]
-            | NoInfo -> [ (Map NoInfo, [ Map NoInfo; NotMoney; NoInfo ]) ]
-            | _ -> [ (Inconsistent, [ Map NoInfo; NotMoney; NoInfo ]) ]
-          in
+            | Map t  -> [ ( Map t        , [ Map t      ; NotMoney ; t      ] ) ]
+            | NoInfo -> [ ( Map NoInfo   , [ Map NoInfo ; NotMoney ; NoInfo ] ) ]
+            | _      -> [ ( Inconsistent , [ Map NoInfo ; NotMoney ; NoInfo ] ) ] in
           let c_as_sigs =
             match args_tags with
-            | [ m; k; v ] ->
+            | [ m ; k ; v ] ->
                 let m_sig =
                   match m with
-                  | Map t -> [ (Map t, [ Map t; NotMoney; t ]) ]
-                  | NoInfo -> [ (Map NoInfo, [ Map NoInfo; NotMoney; NoInfo ]) ]
-                  | _ -> [ (Map NoInfo, [ Inconsistent; NotMoney; NoInfo ]) ]
-                in
+                  | Map t  -> [ ( Map t      , [ Map t        ; NotMoney ; t      ] ) ] 
+                  | NoInfo -> [ ( Map NoInfo , [ Map NoInfo   ; NotMoney ; NoInfo ] ) ] 
+                  | _      -> [ ( Map NoInfo , [ Inconsistent ; NotMoney ; NoInfo ] ) ] in
                 let k_sig =
                   match k with
-                  | NotMoney | NoInfo ->
-                      [ (Map NoInfo, [ Map NoInfo; NotMoney; NoInfo ]) ]
-                  | _ -> [ (Map NoInfo, [ Map NoInfo; Inconsistent; NoInfo ]) ]
-                in
+                  | NotMoney
+                  | NoInfo   -> [ ( Map NoInfo , [ Map NoInfo ; NotMoney     ; NoInfo ] ) ]
+                  | _        -> [ ( Map NoInfo , [ Map NoInfo ; Inconsistent ; NoInfo ] ) ] in
                 let v_sig =
-                  match v with _ -> [ (Map v, [ Map v; NotMoney; v ]) ]
-                in
-                [ m_sig; k_sig; v_sig ]
-            | _ ->
+                  match v with
+                  | _        -> [ ( Map v , [ Map v ; NotMoney ; v ] ) ] in
+                [ m_sig ; k_sig ; v_sig ]
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | Builtin_remove ->
           let c_r_sigs =
             match res_tag with
-            | Map t -> [ (Map t, [ Map t; NotMoney ]) ]
-            | NoInfo -> [ (Map NoInfo, [ Map NoInfo; NotMoney ]) ]
-            | _ -> [ (Inconsistent, [ Map NoInfo; NotMoney ]) ]
-          in
+            | Map t  -> [ ( Map t        , [ Map t      ; NotMoney ] ) ]
+            | NoInfo -> [ ( Map NoInfo   , [ Map NoInfo ; NotMoney ] ) ]
+            | _      -> [ ( Inconsistent , [ Map NoInfo ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
-            | [ m; k ] ->
+            | [ m ; k ] ->
                 let m_sig =
                   match m with
-                  | Map t -> [ (Map t, [ Map t; NotMoney ]) ]
-                  | NoInfo -> [ (Map NoInfo, [ Map NoInfo; NotMoney ]) ]
-                  | _ -> [ (Map NoInfo, [ Inconsistent; NotMoney ]) ]
-                in
+                  | Map t  -> [ ( Map t      , [ Map t        ; NotMoney ] ) ] 
+                  | NoInfo -> [ ( Map NoInfo , [ Map NoInfo   ; NotMoney ] ) ] 
+                  | _      -> [ ( Map NoInfo , [ Inconsistent ; NotMoney ] ) ] in
                 let k_sig =
                   match k with
-                  | NotMoney | NoInfo ->
-                      [ (Map NoInfo, [ Map NoInfo; NotMoney ]) ]
-                  | _ -> [ (Map NoInfo, [ Map NoInfo; Inconsistent ]) ]
-                in
-                [ m_sig; k_sig ]
-            | _ ->
+                  | NotMoney
+                  | NoInfo   -> [ ( Map NoInfo , [ Map NoInfo ; NotMoney     ] ) ]
+                  | _        -> [ ( Map NoInfo , [ Map NoInfo ; Inconsistent ] ) ] in
+                [ m_sig ; k_sig ]
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | Builtin_get ->
           let c_r_sigs =
             match res_tag with
-            | Adt ("Option", [ t ]) ->
-                [ (Adt ("Option", [ t ]), [ Map t; NotMoney ]) ]
-            | NoInfo ->
-                [ (Adt ("Option", [ NoInfo ]), [ Map NoInfo; NotMoney ]) ]
-            | _ -> [ (Inconsistent, [ Map NoInfo; NotMoney ]) ]
-          in
+            | Adt ("Option", [t]) -> [ ( Adt ("Option", [t]      ) , [ Map t      ; NotMoney ] ) ]
+            | NoInfo              -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; NotMoney ] ) ]
+            | _                   -> [ ( Inconsistent  , [ Map NoInfo ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
-            | [ m; k ] ->
+            | [ m ; k ] ->
                 let m_sig =
                   match m with
-                  | Map t -> [ (Adt ("Option", [ t ]), [ Map t; NotMoney ]) ]
-                  | NoInfo ->
-                      [ (Adt ("Option", [ NoInfo ]), [ Map NoInfo; NotMoney ]) ]
-                  | _ ->
-                      [
-                        (Adt ("Option", [ NoInfo ]), [ Inconsistent; NotMoney ]);
-                      ]
-                in
+                  | Map t  -> [ ( Adt ("Option", [t     ] ) , [ Map t        ; NotMoney ] ) ] 
+                  | NoInfo -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo   ; NotMoney ] ) ] 
+                  | _      -> [ ( Adt ("Option", [NoInfo] ) , [ Inconsistent ; NotMoney ] ) ] in
                 let k_sig =
                   match k with
-                  | NotMoney | NoInfo ->
-                      [ (Adt ("Option", [ NoInfo ]), [ Map NoInfo; NotMoney ]) ]
-                  | _ ->
-                      [
-                        ( Adt ("Option", [ NoInfo ]),
-                          [ Map NoInfo; Inconsistent ] );
-                      ]
-                in
-                [ m_sig; k_sig ]
-            | _ ->
+                  | NotMoney
+                  | NoInfo   -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; NotMoney     ] ) ]
+                  | _        -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; Inconsistent ] ) ] in
+                [ m_sig ; k_sig ]
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | Builtin_contains ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney | NoInfo -> [ (NotMoney, [ Map NoInfo; NotMoney ]) ]
-            | _ -> [ (Inconsistent, [ Map NoInfo; NotMoney ]) ]
-          in
+            | NotMoney
+            | NoInfo   -> [ ( NotMoney     , [ Map NoInfo ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ Map NoInfo ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
-            | [ m; k ] ->
+            | [ m ; k ] ->
                 let m_sig =
                   match m with
-                  | Map t -> [ (NotMoney, [ Map t; NotMoney ]) ]
-                  | NoInfo -> [ (NotMoney, [ Map NoInfo; NotMoney ]) ]
-                  | _ -> [ (NotMoney, [ Inconsistent; NotMoney ]) ]
-                in
+                  | Map t  -> [ ( NotMoney , [ Map t        ; NotMoney ] ) ] 
+                  | NoInfo -> [ ( NotMoney , [ Map NoInfo   ; NotMoney ] ) ] 
+                  | _      -> [ ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
                 let k_sig =
                   match k with
-                  | NotMoney | NoInfo ->
-                      [ (NotMoney, [ Map NoInfo; NotMoney ]) ]
-                  | _ -> [ (NotMoney, [ Map NoInfo; Inconsistent ]) ]
-                in
-                [ m_sig; k_sig ]
-            | _ ->
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ Map NoInfo ; NotMoney     ] ) ]
+                  | _        -> [ ( NotMoney , [ Map NoInfo ; Inconsistent ] ) ] in
+                [ m_sig ; k_sig ]
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | Builtin_to_list ->
           (* Lists not supported, so use Inconsistent *)
-          let c_r_sigs = [ (Inconsistent, [ Map NoInfo ]) ] in
+          let c_r_sigs =
+            [ ( Inconsistent , [ Map NoInfo ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ m ] ->
                 let m_sig =
                   match m with
-                  | Map t -> [ (Inconsistent, [ Map t ]) ]
-                  | NoInfo -> [ (Inconsistent, [ Map NoInfo ]) ]
-                  | _ -> [ (Inconsistent, [ Inconsistent ]) ]
-                in
+                  | Map t  -> [ ( Inconsistent , [ Map t        ] ) ] 
+                  | NoInfo -> [ ( Inconsistent , [ Map NoInfo   ] ) ] 
+                  | _      -> [ ( Inconsistent , [ Inconsistent ] ) ] in
                 [ m_sig ]
-            | _ ->
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | Builtin_size ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney | NoInfo -> [ (NotMoney, [ Map NoInfo ]) ]
-            | _ -> [ (Inconsistent, [ Map NoInfo ]) ]
-          in
+            | NotMoney
+            | NoInfo   -> [ ( NotMoney     , [ Map NoInfo ] ) ]
+            | _        -> [ ( Inconsistent , [ Map NoInfo ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ m ] ->
                 let m_sig =
                   match m with
-                  | Map t -> [ (NotMoney, [ Map t ]) ]
-                  | NoInfo -> [ (NotMoney, [ Map NoInfo ]) ]
-                  | _ -> [ (NotMoney, [ Inconsistent ]) ]
-                in
+                  | Map t  -> [ ( NotMoney , [ Map t        ] ) ] 
+                  | NoInfo -> [ ( NotMoney , [ Map NoInfo   ] ) ] 
+                  | _      -> [ ( NotMoney , [ Inconsistent ] ) ] in
                 [ m_sig ]
-            | _ ->
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | Builtin_eq | Builtin_lt ->
+      | Builtin_eq
+      | Builtin_lt ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney | NoInfo ->
-                [
-                  (NotMoney, [ NotMoney; NotMoney ]);
-                  (NotMoney, [ Money; Money ]);
-                ]
-            | _ ->
-                [
-                  (Inconsistent, [ NotMoney; NotMoney ]);
-                  (Inconsistent, [ Money; Money ]);
-                ]
-          in
+            | NotMoney
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ;
+                            ( NotMoney     , [ Money    ; Money    ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ;
+                            ( Inconsistent , [ Money    ; Money    ] ) ] in
           let c_as_sigs =
             match args_tags with
-            | [ v1; v2 ] ->
+            | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
-                  | Money -> [ (NotMoney, [ Money; Money ]) ]
-                  | NotMoney -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-                  | NoInfo ->
-                      [
-                        (NotMoney, [ NotMoney; NotMoney ]);
-                        (NotMoney, [ Money; Money ]);
-                      ]
-                  | _ -> [ (NotMoney, [ Inconsistent; NoInfo ]) ]
-                in
+                  | Money    -> [ ( NotMoney , [ Money        ; Money    ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ;
+                                  ( NotMoney , [ Money        ; Money    ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ; NoInfo   ] ) ] in
                 let v2_sig =
                   match v2 with
-                  | Money -> [ (NotMoney, [ Money; Money ]) ]
-                  | NotMoney -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-                  | NoInfo ->
-                      [
-                        (NotMoney, [ NotMoney; NotMoney ]);
-                        (NotMoney, [ Money; Money ]);
-                      ]
-                  | _ -> [ (NotMoney, [ NoInfo; Inconsistent ]) ]
-                in
-                [ v1_sig; v2_sig ]
-            | _ ->
+                  | Money    -> [ ( NotMoney , [ Money    ; Money        ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
+                                  ( NotMoney , [ Money    ; Money        ] ) ]
+                  | _        -> [ ( NotMoney , [ NoInfo   ; Inconsistent ] ) ] in
+                [ v1_sig ; v2_sig ]
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | Builtin_add | Builtin_sub ->
+      | Builtin_add
+      | Builtin_sub ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-            | Money -> [ (Money, [ Money; Money ]) ]
-            | NoInfo ->
-                [
-                  (NotMoney, [ NotMoney; NotMoney ]); (Money, [ Money; Money ]);
-                ]
-            | _ ->
-                [
-                  (Inconsistent, [ NotMoney; NotMoney ]);
-                  (Inconsistent, [ Money; Money ]);
-                ]
-          in
+            | NotMoney -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
+            | Money    -> [ ( Money        , [ Money    ; Money    ] ) ]
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ;
+                            ( Money        , [ Money    ; Money    ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ;
+                            ( Inconsistent , [ Money    ; Money    ] ) ] in
           let c_as_sigs =
             match args_tags with
-            | [ v1; v2 ] ->
+            | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
-                  | Money -> [ (Money, [ Money; Money ]) ]
-                  | NotMoney -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-                  | NoInfo ->
-                      [
-                        (NotMoney, [ NotMoney; NotMoney ]);
-                        (Money, [ Money; Money ]);
-                      ]
-                  | _ ->
-                      [
-                        (NotMoney, [ Inconsistent; NotMoney ]);
-                        (Money, [ Inconsistent; Money ]);
-                      ]
-                in
+                  | Money    -> [ ( Money    , [ Money        ; Money    ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ;
+                                  ( Money    , [ Money        ; Money    ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ; NotMoney ] ) ;
+                                  ( Money    , [ Inconsistent ; Money    ] ) ] in
                 let v2_sig =
                   match v2 with
-                  | Money -> [ (Money, [ Money; Money ]) ]
-                  | NotMoney -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-                  | NoInfo ->
-                      [
-                        (NotMoney, [ NotMoney; NotMoney ]);
-                        (Money, [ Money; Money ]);
-                      ]
-                  | _ ->
-                      [
-                        (NotMoney, [ NotMoney; Inconsistent ]);
-                        (Money, [ Money; Inconsistent ]);
-                      ]
-                in
-                [ v1_sig; v2_sig ]
-            | _ ->
+                  | Money    -> [ ( Money    , [ Money    ; Money        ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
+                                  ( Money    , [ Money    ; Money        ] ) ]
+                  | _        -> [ ( NotMoney , [ NotMoney ; Inconsistent ] ) ;
+                                  ( Money    , [ Money    ; Inconsistent ] ) ] in
+                [ v1_sig ; v2_sig ]
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | Builtin_mul ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-            | Money ->
-                [ (Money, [ NotMoney; Money ]); (Money, [ Money; NotMoney ]) ]
-            | NoInfo ->
-                [
-                  (NotMoney, [ NotMoney; NotMoney ]);
-                  (Money, [ NotMoney; Money ]);
-                  (Money, [ Money; NotMoney ]);
-                ]
-            | _ ->
-                [
-                  (Inconsistent, [ NotMoney; NotMoney ]);
-                  (Inconsistent, [ NotMoney; Money ]);
-                  (Inconsistent, [ Money; NotMoney ]);
-                ]
-          in
+            | NotMoney -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
+            | Money    -> [ ( Money        , [ NotMoney ; Money    ] ) ;
+                            ( Money        , [ Money    ; NotMoney ] ) ]
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ;
+                            ( Money        , [ NotMoney ; Money    ] ) ;
+                            ( Money        , [ Money    ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ;
+                            ( Inconsistent , [ NotMoney ; Money    ] ) ;
+                            ( Inconsistent , [ Money    ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
-            | [ v1; v2 ] ->
+            | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
-                  | Money -> [ (Money, [ Money; NotMoney ]) ]
-                  | NotMoney ->
-                      [
-                        (NotMoney, [ NotMoney; NotMoney ]);
-                        (Money, [ NotMoney; Money ]);
-                      ]
-                  | NoInfo ->
-                      [
-                        (NotMoney, [ NotMoney; NotMoney ]);
-                        (Money, [ NotMoney; Money ]);
-                        (Money, [ Money; NotMoney ]);
-                      ]
-                  | _ ->
-                      [
-                        (Money, [ Inconsistent; Money ]);
-                        (Money, [ Inconsistent; NotMoney ]);
-                        (NotMoney, [ Inconsistent; NotMoney ]);
-                      ]
-                in
+                  | Money    -> [ ( Money    , [ Money        ; NotMoney ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ;
+                                  ( Money    , [ NotMoney     ; Money    ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ;
+                                  ( Money    , [ NotMoney     ; Money    ] ) ;
+                                  ( Money    , [ Money        ; NotMoney ] ) ]
+                  | _        -> [ ( Money    , [ Inconsistent ; Money    ] ) ;
+                                  ( Money    , [ Inconsistent ; NotMoney ] ) ;
+                                  ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
                 let v2_sig =
                   match v2 with
-                  | Money -> [ (Money, [ NotMoney; Money ]) ]
-                  | NotMoney ->
-                      [
-                        (NotMoney, [ NotMoney; NotMoney ]);
-                        (Money, [ Money; NotMoney ]);
-                      ]
-                  | NoInfo ->
-                      [
-                        (NotMoney, [ NotMoney; NotMoney ]);
-                        (Money, [ NotMoney; Money ]);
-                        (Money, [ Money; NotMoney ]);
-                      ]
-                  | _ ->
-                      [
-                        (Money, [ Money; Inconsistent ]);
-                        (Money, [ NotMoney; Inconsistent ]);
-                        (NotMoney, [ NotMoney; Inconsistent ]);
-                      ]
-                in
-                [ v1_sig; v2_sig ]
-            | _ ->
+                  | Money    -> [ ( Money    , [ NotMoney ; Money        ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
+                                  ( Money    , [ Money    ; NotMoney     ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
+                                  ( Money    , [ NotMoney ; Money        ] ) ;
+                                  ( Money    , [ Money    ; NotMoney     ] ) ]
+                  | _        -> [ ( Money    , [ Money    ; Inconsistent ] ) ;
+                                  ( Money    , [ NotMoney ; Inconsistent ] ) ;
+                                  ( NotMoney , [ NotMoney ; Inconsistent ] ) ] in
+                [ v1_sig ; v2_sig ]
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
       | Builtin_pow ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney | NoInfo -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-            | _ -> [ (Inconsistent, [ NotMoney; NotMoney ]) ]
-          in
+            | NotMoney
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
-            | [ v1; v2 ] ->
+            | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
-                  | NotMoney | NoInfo -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-                  | _ -> [ (NotMoney, [ Inconsistent; NotMoney ]) ]
-                in
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
                 let v2_sig =
                   match v2 with
-                  | NotMoney | NoInfo -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-                  | _ -> [ (NotMoney, [ NotMoney; Inconsistent ]) ]
-                in
-                [ v1_sig; v2_sig ]
-            | _ ->
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ]
+                  | _        -> [ ( NotMoney , [ NotMoney ; Inconsistent ] ) ] in
+                [ v1_sig ; v2_sig ]
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
-          (c_r_sigs, c_as_sigs)
-      | Builtin_div | Builtin_rem ->
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
+          (c_r_sigs, c_as_sigs)          
+      | Builtin_div
+      | Builtin_rem ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-            | Money -> [ (Money, [ Money; NotMoney ]) ]
-            | NoInfo ->
-                [
-                  (NotMoney, [ NotMoney; NotMoney ]);
-                  (Money, [ Money; NotMoney ]);
-                ]
-            | _ ->
-                [
-                  (Inconsistent, [ NotMoney; NotMoney ]);
-                  (Inconsistent, [ Money; NotMoney ]);
-                ]
-          in
+            | NotMoney -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
+            | Money    -> [ ( Money        , [ Money    ; NotMoney ] ) ]
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ;
+                            ( Money        , [ Money    ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ;
+                            ( Inconsistent , [ Money    ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
-            | [ v1; v2 ] ->
+            | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
-                  | Money -> [ (Money, [ Money; NotMoney ]) ]
-                  | NotMoney -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-                  | NoInfo ->
-                      [
-                        (NotMoney, [ NotMoney; NotMoney ]);
-                        (Money, [ Money; NotMoney ]);
-                      ]
-                  | _ ->
-                      [
-                        (Money, [ Inconsistent; NotMoney ]);
-                        (NotMoney, [ Inconsistent; NotMoney ]);
-                      ]
-                in
+                  | Money    -> [ ( Money    , [ Money        ; NotMoney ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ;
+                                  ( Money    , [ Money        ; NotMoney ] ) ]
+                  | _        -> [ ( Money    , [ Inconsistent ; NotMoney ] ) ;
+                                  ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
                 let v2_sig =
                   match v2 with
-                  | NotMoney | NoInfo ->
-                      [
-                        (NotMoney, [ NotMoney; NotMoney ]);
-                        (Money, [ Money; NotMoney ]);
-                      ]
-                  | _ ->
-                      [
-                        (Money, [ Money; Inconsistent ]);
-                        (NotMoney, [ NotMoney; Inconsistent ]);
-                      ]
-                in
-                [ v1_sig; v2_sig ]
-            | _ ->
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ;
+                                  ( Money    , [ Money    ; NotMoney     ] ) ]
+                  | _        -> [ ( Money    , [ Money    ; Inconsistent ] ) ;
+                                  ( NotMoney , [ NotMoney ; Inconsistent ] ) ] in
+                [ v1_sig ; v2_sig ]
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | Builtin_to_int32 | Builtin_to_int64 | Builtin_to_int128
-      | Builtin_to_int256 | Builtin_to_string | Builtin_to_nat ->
+      | Builtin_to_int32
+      | Builtin_to_int64
+      | Builtin_to_int128
+      | Builtin_to_int256
+      | Builtin_to_string
+      | Builtin_to_nat    ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney -> [ (NotMoney, [ NotMoney ]) ]
-            | Money -> [ (Money, [ Money ]) ]
-            | NoInfo -> [ (NotMoney, [ NotMoney ]); (Money, [ Money ]) ]
-            | _ -> [ (Inconsistent, [ NotMoney ]); (Inconsistent, [ Money ]) ]
-          in
+            | NotMoney -> [ ( NotMoney     , [ NotMoney ] ) ]
+            | Money    -> [ ( Money        , [ Money    ] ) ]
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ] ) ;
+                            ( Money        , [ Money    ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ] ) ;
+                            ( Inconsistent , [ Money    ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ v1 ] ->
                 let v1_sig =
                   match v1 with
-                  | Money -> [ (Money, [ Money ]) ]
-                  | NotMoney -> [ (NotMoney, [ NotMoney ]) ]
-                  | NoInfo -> [ (NotMoney, [ NotMoney ]); (Money, [ Money ]) ]
-                  | _ ->
-                      [
-                        (Money, [ Inconsistent ]); (NotMoney, [ Inconsistent ]);
-                      ]
-                in
+                  | Money    -> [ ( Money    , [ Money        ] ) ] 
+                  | NotMoney -> [ ( NotMoney , [ NotMoney     ] ) ]
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ] ) ;
+                                  ( Money    , [ Money        ] ) ]
+                  | _        -> [ ( Money    , [ Inconsistent ] ) ;
+                                  ( NotMoney , [ Inconsistent ] ) ] in
                 [ v1_sig ]
-            | _ ->
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | Builtin_sha256hash | Builtin_keccak256hash | Builtin_ripemd160hash
-      | Builtin_schnorr_get_address | Builtin_strlen | Builtin_to_bystr ->
+      | Builtin_sha256hash
+      | Builtin_keccak256hash
+      | Builtin_ripemd160hash
+      | Builtin_schnorr_get_address
+      | Builtin_strlen
+      | Builtin_to_bystr ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney | NoInfo -> [ (NotMoney, [ NotMoney ]) ]
-            | _ -> [ (Inconsistent, [ NotMoney ]) ]
-          in
-          let c_as_sigs =
+            | NotMoney
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ] ) ] in
+          let c_as_sigs = 
             match args_tags with
             | [ v1 ] ->
                 let v1_sig =
                   match v1 with
-                  | NotMoney | NoInfo -> [ (NotMoney, [ NotMoney ]) ]
-                  | _ -> [ (NotMoney, [ Inconsistent ]) ]
-                in
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ] ) ] in
                 [ v1_sig ]
-            | _ ->
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | Builtin_concat | Builtin_bech32_to_bystr20 | Builtin_bystr20_to_bech32
-      | Builtin_blt | Builtin_badd | Builtin_bsub ->
+      | Builtin_concat
+      | Builtin_bech32_to_bystr20
+      | Builtin_bystr20_to_bech32
+      | Builtin_blt
+      | Builtin_badd
+      | Builtin_bsub ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney | NoInfo -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-            | _ -> [ (Inconsistent, [ NotMoney; NotMoney ]) ]
-          in
+            | NotMoney
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
-            | [ v1; v2 ] ->
+            | [ v1 ; v2 ] ->
                 let v1_sig =
                   match v1 with
-                  | NotMoney | NoInfo -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-                  | _ -> [ (NotMoney, [ Inconsistent; NotMoney ]) ]
-                in
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ; NotMoney ] ) ] in
                 let v2_sig =
                   match v2 with
-                  | NotMoney | NoInfo -> [ (NotMoney, [ NotMoney; NotMoney ]) ]
-                  | _ -> [ (NotMoney, [ NotMoney; Inconsistent ]) ]
-                in
-                [ v1_sig; v2_sig ]
-            | _ ->
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ] ) ]
+                  | _        -> [ ( NotMoney , [ NotMoney ; Inconsistent ] ) ] in
+                [ v1_sig ; v2_sig ]
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | Builtin_substr | Builtin_schnorr_verify ->
+      | Builtin_substr
+      | Builtin_schnorr_verify ->
           let c_r_sigs =
             match res_tag with
-            | NotMoney | NoInfo ->
-                [ (NotMoney, [ NotMoney; NotMoney; NotMoney ]) ]
-            | _ -> [ (Inconsistent, [ NotMoney; NotMoney; NotMoney ]) ]
-          in
+            | NotMoney
+            | NoInfo   -> [ ( NotMoney     , [ NotMoney ; NotMoney ; NotMoney ] ) ]
+            | _        -> [ ( Inconsistent , [ NotMoney ; NotMoney ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
-            | [ v1; v2; v3 ] ->
+            | [ v1 ; v2 ; v3 ] ->
                 let v1_sig =
                   match v1 with
-                  | NotMoney | NoInfo ->
-                      [ (NotMoney, [ NotMoney; NotMoney; NotMoney ]) ]
-                  | _ -> [ (NotMoney, [ Inconsistent; NotMoney; NotMoney ]) ]
-                in
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney     ; NotMoney ; NotMoney ] ) ]
+                  | _        -> [ ( NotMoney , [ Inconsistent ; NotMoney ; NotMoney ] ) ] in
                 let v2_sig =
                   match v2 with
-                  | NotMoney | NoInfo ->
-                      [ (NotMoney, [ NotMoney; NotMoney; NotMoney ]) ]
-                  | _ -> [ (NotMoney, [ NotMoney; Inconsistent; NotMoney ]) ]
-                in
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney     ; NotMoney ] ) ]
+                  | _        -> [ ( NotMoney , [ NotMoney ; Inconsistent ; NotMoney ] ) ] in
                 let v3_sig =
                   match v3 with
-                  | NotMoney | NoInfo ->
-                      [ (NotMoney, [ NotMoney; NotMoney; NotMoney ]) ]
-                  | _ -> [ (NotMoney, [ NotMoney; NotMoney; Inconsistent ]) ]
-                in
-                [ v1_sig; v2_sig; v3_sig ]
-            | _ ->
+                  | NotMoney
+                  | NoInfo   -> [ ( NotMoney , [ NotMoney ; NotMoney ; NotMoney     ] ) ]
+                  | _        -> [ ( NotMoney , [ NotMoney ; NotMoney ; Inconsistent ] ) ] in
+                [ v1_sig ; v2_sig ; v3_sig ]
+            | _             ->
                 (* Error *)
-                [
-                  [
-                    (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags);
-                  ];
-                ]
-          in
+                [[ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ]] in
           (c_r_sigs, c_as_sigs)
-      | _ ->
+      | _ -> 
           (* Error *)
           let c_r_sigs =
-            [ (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags) ]
-          in
+            [ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ] in
           let c_as_sigs =
-            [
-              [ (Inconsistent, List.map ~f:(fun _ -> Inconsistent) args_tags) ];
-            ]
-          in
-          (c_r_sigs, c_as_sigs)
-    in
+            [ [ ( Inconsistent , List.map ~f:(fun _ -> Inconsistent) args_tags ) ] ] in
+          (c_r_sigs, c_as_sigs) in
     lub_sigs c_r c_as
 
   (*******************************************************)
   (*            Helper functions for patterns            *)
   (*******************************************************)
+
+  [@@@ocamlformat "enable"]
 
   let rec get_pattern_vars p acc =
     match p with

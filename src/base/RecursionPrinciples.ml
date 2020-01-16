@@ -56,11 +56,18 @@ module NatRec = struct
 
     let fold_type_opt = Some (PolyFun (get_id tvar, fold_type))
 
-    let ((_, loc) as fix_arg) =
-      parse_expr_wrapper
-        ( "fun (f0 : 'T) => fun (n: Nat) => " ^ "match n with "
-        ^ " | Succ n1 => let res = fn f0 n1 in " ^ "   g res n1 "
-        ^ " | Zero => f0 " ^ "end" )
+    [@@@ocamlformat "disable"]
+
+    let (_, loc) as fix_arg = parse_expr_wrapper ( 
+        "fun (f0 : 'T) => fun (n: Nat) => " ^
+        "match n with " ^
+        " | Succ n1 => let res = fn f0 n1 in " ^
+        "   g res n1 " ^
+        " | Zero => f0 " ^
+        "end"
+      )
+
+    [@@@ocamlformat "enable"]
 
     let id = mk_ident "nat_fold"
 
@@ -84,11 +91,17 @@ module NatRec = struct
 
     let fold_type_opt = Some (PolyFun (get_id tvar, fold_type))
 
-    let ((_, loc) as fix_arg) =
-      parse_expr_wrapper
-        ( "fun (f0 : 'T) => fun (n: Nat) => " ^ "match n with "
-        ^ " | Succ n1 => let partial = fun (k : 'T) => g k n1 in "
-        ^ " fn f0 n partial " ^ " | Zero => f0 " ^ "end" )
+    [@@@ocamlformat "disable"]
+
+    let (_, loc) as fix_arg = parse_expr_wrapper (
+        "fun (f0 : 'T) => fun (n: Nat) => " ^
+        "match n with " ^
+        " | Succ n1 => let partial = fun (k : 'T) => g k n1 in " ^
+        " fn f0 n partial " ^
+        " | Zero => f0 " ^
+        "end" )
+
+    [@@@ocamlformat "enable"]
 
     let id = mk_ident "nat_foldk"
 
@@ -124,10 +137,17 @@ module ListRec = struct
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
 
-    let ((_, loc) as fix_arg) =
-      parse_expr_wrapper
-        ( "fun (z : 'B) => fun (l: List 'A) => " ^ "match l with "
-        ^ "| Cons h t => let res = f z h in g res t " ^ "| Nil => z " ^ "end" )
+    [@@@ocamlformat "disable"]
+
+    let (_, loc) as fix_arg = parse_expr_wrapper (
+        "fun (z : 'B) => fun (l: List 'A) => " ^
+        "match l with " ^
+        "| Cons h t => let res = f z h in g res t " ^
+        "| Nil => z " ^
+        "end"
+    )
+
+    [@@@ocamlformat "enable"]
 
     let id = mk_ident "list_foldl"
 
@@ -152,10 +172,17 @@ module ListRec = struct
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
 
-    let ((_, loc) as fix_arg) =
-      parse_expr_wrapper
-        ( "fun (z : 'B) => fun (l: List 'A) => " ^ "match l with "
-        ^ "| Cons h t => let res = g z t in f h res " ^ "| Nil => z " ^ "end" )
+    [@@@ocamlformat "disable"]
+
+    let (_, loc) as fix_arg = parse_expr_wrapper (
+        "fun (z : 'B) => fun (l: List 'A) => " ^
+        "match l with " ^
+        "| Cons h t => let res = g z t in f h res " ^
+        "| Nil => z " ^
+        "end"
+    )
+
+    [@@@ocamlformat "enable"]
 
     let id = mk_ident "list_foldr"
 
@@ -181,11 +208,18 @@ module ListRec = struct
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
 
-    let ((_, loc) as fix_arg) =
-      parse_expr_wrapper
-        ( "fun (z : 'B) => fun (l: List 'A) => " ^ "match l with "
-        ^ "| Cons h t => let partial = fun (k : 'B) => g k t in "
-        ^ "   f z h partial " ^ "| Nil => z " ^ "end" )
+    [@@@ocamlformat "disable"]
+
+    let (_, loc) as fix_arg = parse_expr_wrapper (
+        "fun (z : 'B) => fun (l: List 'A) => " ^
+        "match l with " ^
+        "| Cons h t => let partial = fun (k : 'B) => g k t in " ^
+        "   f z h partial " ^
+        "| Nil => z " ^
+        "end"
+      )
+
+    [@@@ocamlformat "enable"]
 
     let id = mk_ident "list_foldk"
 
