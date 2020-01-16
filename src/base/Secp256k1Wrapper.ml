@@ -45,7 +45,9 @@ let raw_of_buffer b =
 let resconv r = match r with Ok o -> Ok o | Error s -> fail0 s
 
 let resopt m =
-  match m with Some m' -> pure m' | None -> fail0 "ECDSA: Failed to handle message"
+  match m with
+  | Some m' -> pure m'
+  | None -> fail0 "ECDSA: Failed to handle message"
 
 let pk_from_sk sk =
   let sk' = buffer_of_raw sk in

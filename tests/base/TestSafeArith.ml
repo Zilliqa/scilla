@@ -42,7 +42,9 @@ module TestArith (SmallInt : Int) = struct
     in
     assert_equal expected actual ~pp_diff ~printer:(fun v ->
         v
-        |> Result.sexp_of_t (Fn.compose Int.sexp_of_t SmallInt.to_int) sexp_of_arith_error
+        |> Result.sexp_of_t
+             (Fn.compose Int.sexp_of_t SmallInt.to_int)
+             sexp_of_arith_error
         |> Sexp.to_string)
 
   let test_all binop big_binop =
@@ -69,11 +71,16 @@ let builtin_arith_8bit_tests =
            ("signed 8-bit: safe mul", TestSigned.test_all I8_safe.mul Int.( * ));
            ("signed 8-bit: safe div", TestSigned.test_all I8_safe.div Int.( / ));
            ("signed 8-bit: safe rem", TestSigned.test_all I8_safe.rem Int.rem);
-           ("unsigned 8-bit: safe add", TestUnsigned.test_all U8_safe.add Int.( + ));
-           ("unsigned 8-bit: safe sub", TestUnsigned.test_all U8_safe.sub Int.( - ));
-           ("unsigned 8-bit: safe mul", TestUnsigned.test_all U8_safe.mul Int.( * ));
-           ("unsigned 8-bit: safe div", TestUnsigned.test_all U8_safe.div Int.( / ));
-           ("unsigned 8-bit: safe rem", TestUnsigned.test_all U8_safe.rem Int.rem);
+           ( "unsigned 8-bit: safe add",
+             TestUnsigned.test_all U8_safe.add Int.( + ) );
+           ( "unsigned 8-bit: safe sub",
+             TestUnsigned.test_all U8_safe.sub Int.( - ) );
+           ( "unsigned 8-bit: safe mul",
+             TestUnsigned.test_all U8_safe.mul Int.( * ) );
+           ( "unsigned 8-bit: safe div",
+             TestUnsigned.test_all U8_safe.div Int.( / ) );
+           ( "unsigned 8-bit: safe rem",
+             TestUnsigned.test_all U8_safe.rem Int.rem );
          ]
 
 let all_tests _ = "arith_builtin_tests" >::: [ builtin_arith_8bit_tests ]

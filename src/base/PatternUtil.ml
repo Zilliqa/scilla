@@ -37,7 +37,8 @@ module Exp_descriptions = struct
         raise
           (mk_internal_error
              (sprintf
-                "Internal error: Can only add negative constructor %s to Neg description"
+                "Internal error: Can only add negative constructor %s to Neg \
+                 description"
                 c_name))
     | Neg cs -> Neg (c_name :: cs)
 
@@ -49,18 +50,24 @@ module Exp_descriptions = struct
         | [] ->
             raise
               (mk_internal_error
-                 "Internal error: Cannot build expression description from pattern match \
-                  context")
+                 "Internal error: Cannot build expression description from \
+                  pattern match context")
         | (_, _, dargs) :: spss ->
-            build_dsc ctx_rest (Pos (c_name, List.rev args @ (dsc :: dargs))) spss )
+            build_dsc ctx_rest
+              (Pos (c_name, List.rev args @ (dsc :: dargs)))
+              spss )
 
   let augment_ctx ctx dsc =
-    match ctx with [] -> [] | (c_name, args) :: rest -> (c_name, dsc :: args) :: rest
+    match ctx with
+    | [] -> []
+    | (c_name, args) :: rest -> (c_name, dsc :: args) :: rest
 
   let pos_ctx ctx =
     match ctx with
     | (c_name, args) :: rest -> augment_ctx rest (Pos (c_name, List.rev args))
-    | [] -> raise (mk_internal_error "Internal error: pattern match context is empty")
+    | [] ->
+        raise
+          (mk_internal_error "Internal error: pattern match context is empty")
 end
 
 (****************************************************************)
@@ -70,5 +77,6 @@ module Decision_Tree = struct
   type ('v, 'tv, 'cv) decision_tree =
     | Success of 'v
     | Fail
-    | IfEq of 'tv * 'cv * ('v, 'tv, 'cv) decision_tree * ('v, 'tv, 'cv) decision_tree
+    | IfEq of
+        'tv * 'cv * ('v, 'tv, 'cv) decision_tree * ('v, 'tv, 'cv) decision_tree
 end

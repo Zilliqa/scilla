@@ -34,19 +34,23 @@ let fail_code : Unix.process_status = WEXITED 1
  * Build tests to invoke scilla-runner with the right arguments, for
  * multiple test cases, each suffixed with _i up to _n (both inclusive)
  *)
-let rec build_contract_tests_with_init_file env name exit_code i n additional_libs
-    init_name =
+let rec build_contract_tests_with_init_file env name exit_code i n
+    additional_libs init_name =
   if i > n then []
   else
     (* Create a contract test with an option to disable JSON validation (fast parsing). *)
     let test ~disable_validate_json ~ipc_mode =
       let istr = Int.to_string i in
       let testname =
-        name ^ "_" ^ istr ^ if disable_validate_json then "_disable_validate_json" else ""
+        name ^ "_" ^ istr
+        ^ if disable_validate_json then "_disable_validate_json" else ""
       in
-      testname >:: (* function to run scilla-runner and check exit code *)
-               fun test_ctxt ->
-      let tests_dir = FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt) in
+      testname
+      >:: (* function to run scilla-runner and check exit code *)
+      fun test_ctxt ->
+      let tests_dir =
+        FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt)
+      in
       let contract_dir = tests_dir ^/ "contracts" in
       let dir = tests_dir ^/ "runner" ^/ name in
       let tmpdir = bracket_tmpdir test_ctxt in
@@ -92,11 +96,13 @@ let rec build_contract_tests_with_init_file env name exit_code i n additional_li
       in
 
       let args' =
-        List.fold_right additional_libs ~init:args_state ~f:(fun lib_name cur_args ->
+        List.fold_right additional_libs ~init:args_state
+          ~f:(fun lib_name cur_args ->
             "-libdir" :: (contract_dir ^/ lib_name) :: cur_args)
       in
       let args =
-        if disable_validate_json then "-disable-validate-json" :: args' else args'
+        if disable_validate_json then "-disable-validate-json" :: args'
+        else args'
       in
       let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
       print_cli_usage (env.print_cli test_ctxt) scillabin args;
@@ -116,12 +122,14 @@ let rec build_contract_tests_with_init_file env name exit_code i n additional_li
               (* The output of the interpreter in IPC mode will only contain "_balance" as
                * the state. The remaining have to be gotten from the server and appended. *)
               StateIPCTest.get_final_finish ~sock_addr:ipc_addr_thread
-              |> StateIPCTest.append_full_state ~goldoutput_file ~interpreter_output
+              |> StateIPCTest.append_full_state ~goldoutput_file
+                   ~interpreter_output
             else interpreter_output
           in
           if env.update_gold test_ctxt && not ipc_mode then
             output_updater goldoutput_file test_name out
-          else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
+          else
+            output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
     in
     (* If this test is expected to succeed, we know that the JSONs are all "good".
      * So test both the JSON parsers, one that does validation, one that doesn't.
@@ -131,12 +139,12 @@ let rec build_contract_tests_with_init_file env name exit_code i n additional_li
       :: test ~disable_validate_json:false ~ipc_mode:true
       :: test ~disable_validate_json:true ~ipc_mode:false
       :: test ~disable_validate_json:false ~ipc_mode:false
-      :: build_contract_tests_with_init_file env name exit_code (i + 1) n additional_libs
-           init_name
+      :: build_contract_tests_with_init_file env name exit_code (i + 1) n
+           additional_libs init_name
     else
       test ~disable_validate_json:false ~ipc_mode:false
-      :: build_contract_tests_with_init_file env name exit_code (i + 1) n additional_libs
-           init_name
+      :: build_contract_tests_with_init_file env name exit_code (i + 1) n
+           additional_libs init_name
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for
@@ -144,11 +152,14 @@ let rec build_contract_tests_with_init_file env name exit_code i n additional_li
  * The init.json file is fixed as "init.json"
  *)
 let build_contract_tests env name exit_code i n additional_libs =
-  build_contract_tests_with_init_file env name exit_code i n additional_libs "init"
+  build_contract_tests_with_init_file env name exit_code i n additional_libs
+    "init"
 
 let build_contract_init_test env exit_code name init_name is_library =
   name ^ "_init" >:: fun test_ctxt ->
-  let tests_dir = FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt) in
+  let tests_dir =
+    FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt)
+  in
   (* Files for the contract are in contract/(crowdfunding|zil-game|etc). *)
   let contract_dir = tests_dir ^/ "contracts" in
   let dir = tests_dir ^/ "runner" ^/ name in
@@ -189,7 +200,8 @@ let build_contract_init_test env exit_code name init_name is_library =
         if exit_code = succ_code then In_channel.read_all output_file
         else BatStream.to_string s
       in
-      if env.update_gold test_ctxt then output_updater goldoutput_file test_name out
+      if env.update_gold test_ctxt then
+        output_updater goldoutput_file test_name out
       else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
 
 let build_misc_tests env =
@@ -234,14 +246,19 @@ let contract_tests env =
                 "crowdfunding"
                 >::: build_contract_tests env "crowdfunding" succ_code 1 6 [];
                 "crowdfunding_init"
-                >: build_contract_init_test env succ_code "crowdfunding" "init" false;
+                >: build_contract_init_test env succ_code "crowdfunding" "init"
+                     false;
                 "crowdfunding_proc"
-                >::: build_contract_tests env "crowdfunding_proc" succ_code 1 6 [];
-                "zil-game" >::: build_contract_tests env "zil-game" succ_code 1 9 [];
+                >::: build_contract_tests env "crowdfunding_proc" succ_code 1 6
+                       [];
+                "zil-game"
+                >::: build_contract_tests env "zil-game" succ_code 1 9 [];
                 "zil-game_init"
-                >: build_contract_init_test env succ_code "zil-game" "init" false;
+                >: build_contract_init_test env succ_code "zil-game" "init"
+                     false;
                 "creationtest_init"
-                >: build_contract_init_test env succ_code "creationtest" "init" false;
+                >: build_contract_init_test env succ_code "creationtest" "init"
+                     false;
                 "testlib2_init"
                 >: build_contract_init_test env succ_code "TestLib2" "init" true;
                 "testlib3_init"
@@ -249,53 +266,70 @@ let contract_tests env =
                      "0x111256789012345678901234567890123456abef" "init" true;
                 "import-test-lib"
                 >::: build_contract_tests env "import-test-lib" succ_code 1 1 [];
-                "cfinvoke" >::: build_contract_tests env "cfinvoke" succ_code 1 4 [];
+                "cfinvoke"
+                >::: build_contract_tests env "cfinvoke" succ_code 1 4 [];
                 "ping" >::: build_contract_tests env "ping" succ_code 0 3 [];
                 "pong" >::: build_contract_tests env "pong" succ_code 0 3 [];
-                "helloWorld" >::: build_contract_tests env "helloWorld" succ_code 1 4 [];
-                "auction" >::: build_contract_tests env "auction" succ_code 1 8 [];
-                "mappair" >::: build_contract_tests env "mappair" succ_code 1 7 [];
-                "bookstore" >::: build_contract_tests env "bookstore" succ_code 1 12 [];
+                "helloWorld"
+                >::: build_contract_tests env "helloWorld" succ_code 1 4 [];
+                "auction"
+                >::: build_contract_tests env "auction" succ_code 1 8 [];
+                "mappair"
+                >::: build_contract_tests env "mappair" succ_code 1 7 [];
+                "bookstore"
+                >::: build_contract_tests env "bookstore" succ_code 1 12 [];
                 "nonfungible-token"
-                >::: build_contract_tests env "nonfungible-token" succ_code 1 12 [];
+                >::: build_contract_tests env "nonfungible-token" succ_code 1 12
+                       [];
                 "nonfungible-token"
-                >::: build_contract_tests env "nonfungible-token" succ_code 21 27 [];
-                "schnorr" >::: build_contract_tests env "schnorr" succ_code 1 3 [];
-                "salarybot" >::: build_contract_tests env "salarybot" succ_code 0 5 [];
+                >::: build_contract_tests env "nonfungible-token" succ_code 21
+                       27 [];
+                "schnorr"
+                >::: build_contract_tests env "schnorr" succ_code 1 3 [];
+                "salarybot"
+                >::: build_contract_tests env "salarybot" succ_code 0 5 [];
                 "loopy-tree-call"
                 >::: build_contract_tests env "loopy-tree-call" succ_code 1 1 [];
                 "ecdsa" >::: build_contract_tests env "ecdsa" succ_code 1 4 [];
-                "empty_contract" >::: build_contract_tests env "empty" succ_code 1 1 [];
+                "empty_contract"
+                >::: build_contract_tests env "empty" succ_code 1 1 [];
                 "fungible-token"
                 >::: build_contract_tests env "fungible-token" succ_code 0 8 [];
                 "inplace-map"
                 >::: build_contract_tests env "inplace-map" succ_code 1 14 [];
-                "wallet" >::: build_contract_tests env "wallet" succ_code 1 11 [];
+                "wallet"
+                >::: build_contract_tests env "wallet" succ_code 1 11 [];
                 "wallet_2"
-                >::: build_contract_tests_with_init_file env "wallet_2" succ_code 1 8 []
-                       "init";
+                >::: build_contract_tests_with_init_file env "wallet_2"
+                       succ_code 1 8 [] "init";
                 "wallet_2"
-                >::: build_contract_tests_with_init_file env "wallet_2" succ_code 11 12 []
-                       "init";
+                >::: build_contract_tests_with_init_file env "wallet_2"
+                       succ_code 11 12 [] "init";
                 "wallet_2"
-                >::: build_contract_tests_with_init_file env "wallet_2" succ_code 14 40 []
-                       "init";
+                >::: build_contract_tests_with_init_file env "wallet_2"
+                       succ_code 14 40 [] "init";
                 "wallet_2"
-                >::: build_contract_tests_with_init_file env "wallet_2" succ_code 42 42 []
-                       "init";
-                "one_msg_test" >::: build_contract_tests env "one-msg" succ_code 1 1 [];
-                "one_msg1_test" >::: build_contract_tests env "one-msg1" succ_code 1 1 [];
-                "simple-dex" >::: build_contract_tests env "simple-dex" succ_code 1 8 [];
+                >::: build_contract_tests_with_init_file env "wallet_2"
+                       succ_code 42 42 [] "init";
+                "one_msg_test"
+                >::: build_contract_tests env "one-msg" succ_code 1 1 [];
+                "one_msg1_test"
+                >::: build_contract_tests env "one-msg1" succ_code 1 1 [];
+                "simple-dex"
+                >::: build_contract_tests env "simple-dex" succ_code 1 8 [];
                 "shogi"
-                >::: build_contract_tests env "shogi" succ_code 1 4 [ "shogi_lib" ];
+                >::: build_contract_tests env "shogi" succ_code 1 4
+                       [ "shogi_lib" ];
                 "shogi_proc"
-                >::: build_contract_tests env "shogi_proc" succ_code 1 4 [ "shogi_lib" ];
+                >::: build_contract_tests env "shogi_proc" succ_code 1 4
+                       [ "shogi_lib" ];
                 "map_key_test"
                 >::: build_contract_tests env "map_key_test" succ_code 1 1 [];
                 "earmarked-coin"
                 >::: build_contract_tests env "earmarked-coin" succ_code 1 6 [];
                 "map_corners_test"
-                >::: build_contract_tests env "map_corners_test" succ_code 1 18 [];
+                >::: build_contract_tests env "map_corners_test" succ_code 1 18
+                       [];
                 "multiple_msgs_test"
                 >::: build_contract_tests env "multiple-msgs" succ_code 1 1 [];
               ];
@@ -303,24 +337,28 @@ let contract_tests env =
          >::: [
                 "helloWorld_f"
                 >::: build_contract_tests env "helloWorld" fail_code 5 11 [];
-                "mappair" >::: build_contract_tests env "mappair" fail_code 8 8 [];
-                "mappair" >::: build_contract_tests env "mappair" fail_code 12 14 [];
+                "mappair"
+                >::: build_contract_tests env "mappair" fail_code 8 8 [];
+                "mappair"
+                >::: build_contract_tests env "mappair" fail_code 12 14 [];
                 "exception-example"
-                >::: build_contract_tests env "exception-example" fail_code 1 2 [];
+                >::: build_contract_tests env "exception-example" fail_code 1 2
+                       [];
                 "testlib1_init"
                 >: build_contract_init_test env fail_code
                      "0x565556789012345678901234567890123456abcd" "init" true;
                 "testlib2_bad_init"
-                >: build_contract_init_test env fail_code "TestLib2" "init_wrong_version"
-                     true;
+                >: build_contract_init_test env fail_code "TestLib2"
+                     "init_wrong_version" true;
                 "constraint_test"
-                >: build_contract_init_test env fail_code "constraint" "init" false;
+                >: build_contract_init_test env fail_code "constraint" "init"
+                     false;
                 "wallet_2_no_owners"
-                >: build_contract_init_test env fail_code "wallet_2" "init_no_owners"
-                     false;
+                >: build_contract_init_test env fail_code "wallet_2"
+                     "init_no_owners" false;
                 "wallet_2_req_sigs_zero"
-                >: build_contract_init_test env fail_code "wallet_2" "init_req_sigs_zero"
-                     false;
+                >: build_contract_init_test env fail_code "wallet_2"
+                     "init_req_sigs_zero" false;
                 "wallet_2_not_enough_owners"
                 >: build_contract_init_test env fail_code "wallet_2"
                      "init_not_enough_owners" false;

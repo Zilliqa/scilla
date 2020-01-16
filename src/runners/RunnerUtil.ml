@@ -40,7 +40,8 @@ let get_init_extlibs filename =
       then
         fatal_error
         @@ mk_error0
-             (sprintf "Duplicate extlib map entries in init JSON file %s." filename)
+             (sprintf "Duplicate extlib map entries in init JSON file %s."
+                filename)
       else name_addr_pairs
     with Invalid_json s ->
       (* Inability to fetch extlibs info from init json shouldn't be fatal error. *)
@@ -128,7 +129,9 @@ let eliminate_namespaces lib_tree ns_tree =
                   | MLit _ -> pl
                   | MVar v -> MVar (check_and_prefix_id env v)
                 in
-                let spl' = List.map spl ~f:(fun (s, pl) -> (s, rename_in_payload pl)) in
+                let spl' =
+                  List.map spl ~f:(fun (s, pl) -> (s, rename_in_payload pl))
+                in
                 (Message spl', eloc)
             | Fun (i, t, exp) ->
                 let env' = List.Assoc.remove env ~equal:( = ) (get_id i) in
@@ -196,12 +199,15 @@ let eliminate_namespaces lib_tree ns_tree =
                 List.map ctrs ~f:(fun ctr ->
                     let cname' = check_and_prefix_id env'' ctr.cname in
                     let c_arg_types' =
-                      List.map ctr.c_arg_types ~f:(fun t -> rename_in_type t env'')
+                      List.map ctr.c_arg_types ~f:(fun t ->
+                          rename_in_type t env'')
                     in
                     { cname = cname'; c_arg_types = c_arg_types' })
               in
               let entry' = LibTyp (check_and_prefix_id env'' i, ctrs') in
-              let names = get_id i :: List.map ctrs' ~f:(fun ctr -> get_id ctr.cname) in
+              let names =
+                get_id i :: List.map ctrs' ~f:(fun ctr -> get_id ctr.cname)
+              in
               (entry' :: accentries, env'', accnames @ names)
           | LibVar (i, t, exp) ->
               (* from this point, env has "i", to be renamed. *)
@@ -264,19 +270,24 @@ let import_libs names init_file =
             if get_id mapped_name = get_id name then
               sprintf "Cyclic dependence found when importing %s." (get_id name)
             else
-              sprintf "Cyclic dependence found when importing %s (mapped to %s)."
+              sprintf
+                "Cyclic dependence found when importing %s (mapped to %s)."
                 (get_id mapped_name) (get_id name)
           in
           fatal_error @@ mk_error1 errmsg (get_rep name)
         else
           let ilib, ilib_import_map = import_lib name in
-          let ilibs', nst = importer ilib.elibs ilib_import_map (get_id name :: stack) in
+          let ilibs', nst =
+            importer ilib.elibs ilib_import_map (get_id name :: stack)
+          in
           let nsnode = { nspace = namespace; dep_ns = nst } in
           let libnode = { libn = ilib.libs; deps = ilibs' } in
           (libacc @ [ libnode ], nacc @ [ nsnode ]))
       ~init:([], []) mapped_names
   in
-  let name_map = match init_file with Some f -> get_init_extlibs f | None -> [] in
+  let name_map =
+    match init_file with Some f -> get_init_extlibs f | None -> []
+  in
   let ltree, nstree = importer names name_map [] in
   eliminate_namespaces ltree nstree
 
@@ -285,8 +296,9 @@ let stdlib_not_found_err () =
     (mk_error0
        ( "A path to Scilla stdlib not found. Please set "
        ^ StdlibTracker.scilla_stdlib_env
-       ^ " environment variable, or pass through command-line argument for this script.\n"
-       ^ "Example:\n" ^ Sys.argv.(0) ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
+       ^ " environment variable, or pass through command-line argument for \
+          this script.\n" ^ "Example:\n" ^ Sys.argv.(0)
+       ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
 
 (* Parse all libraries that can be found in ldirs. *)
 let import_all_libs ldirs =
@@ -346,13 +358,15 @@ let parse_cli () =
         Arg.Unit
           (fun () ->
             DebugMessage.pout
-              (sprintf "Scilla version: %s\n" PrettyPrinters.scilla_version_string);
+              (sprintf "Scilla version: %s\n"
+                 PrettyPrinters.scilla_version_string);
             if true then exit 0;
             (* if "true" to avoid warning on exit 0 *)
             ()),
         "Print Scilla version and exit" );
       ( "-libdir",
-        Arg.String (fun s -> r_stdlib_dir := !r_stdlib_dir @ FilePath.path_of_string s),
+        Arg.String
+          (fun s -> r_stdlib_dir := !r_stdlib_dir @ FilePath.path_of_string s),
         "Path(s) to libraries separated with ':' (';' on windows)" );
       ( "-gaslimit",
         Arg.String
@@ -361,18 +375,24 @@ let parse_cli () =
               try Stdint.Uint64.of_string i
               with _ ->
                 PrettyPrinters.fatal_error
-                  (ErrorUtils.mk_error0 (Printf.sprintf "Invalid gaslimit %s\n" i))
+                  (ErrorUtils.mk_error0
+                     (Printf.sprintf "Invalid gaslimit %s\n" i))
             in
             r_gas_limit := Some g),
         "Gas limit" );
       ( "-gua",
         Arg.Unit (fun () -> r_gua := true),
         "Run gas use analysis and print use polynomial." );
-      ("-init", Arg.String (fun x -> r_init_file := Some x), "Path to initialization json");
-      ("-cf", Arg.Unit (fun () -> r_cf := true), "Run cashflow checker and print results");
+      ( "-init",
+        Arg.String (fun x -> r_init_file := Some x),
+        "Path to initialization json" );
+      ( "-cf",
+        Arg.Unit (fun () -> r_cf := true),
+        "Run cashflow checker and print results" );
       ( "-cf-token-field",
         Arg.String (fun s -> r_cf_token_fields := s :: !r_cf_token_fields),
-        "Make the cashflow checker consider a field to be money (implicitly sets -cf)" );
+        "Make the cashflow checker consider a field to be money (implicitly \
+         sets -cf)" );
       ( "-jsonerrors",
         Arg.Unit (fun () -> r_json_errors := true),
         "Print errors in JSON format" );

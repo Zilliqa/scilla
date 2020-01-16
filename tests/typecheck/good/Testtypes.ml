@@ -30,11 +30,16 @@ let make_type_equiv_test st1 st2 eq =
     | _ ->
         raise
           (SyntaxError
-             ( "Error parsing types " ^ st1 ^ " and " ^ st2 ^ " in type_equiv tests",
+             ( "Error parsing types " ^ st1 ^ " and " ^ st2
+               ^ " in type_equiv tests",
                dummy_loc ))
   in
-  let b, bs = if eq then (type_equiv t1 t2, "=") else (not (type_equiv t1 t2), "<>") in
-  let err_msg = "Assert " ^ pp_typ t1 ^ " " ^ bs ^ " " ^ pp_typ t2 ^ " test failed" in
+  let b, bs =
+    if eq then (type_equiv t1 t2, "=") else (not (type_equiv t1 t2), "<>")
+  in
+  let err_msg =
+    "Assert " ^ pp_typ t1 ^ " " ^ bs ^ " " ^ pp_typ t2 ^ " test failed"
+  in
   test_case (fun _ -> assert_bool err_msg b)
 
 let make_type_equiv_tests tlist =
@@ -44,7 +49,9 @@ let type_equiv_tests =
   [
     ("Uint32", "Uint32", true);
     ("Int32", "Uint32", false);
-    ("forall 'A. List ('A) -> List ('A)", "forall 'B. List ('B) -> List ('B)", true);
+    ( "forall 'A. List ('A) -> List ('A)",
+      "forall 'B. List ('B) -> List ('B)",
+      true );
     ( "forall 'A. List ('A) -> List ('A)",
       "forall 'A. List ('A) -> List ('A) -> List ('A)",
       false );
@@ -76,7 +83,8 @@ let make_ground_type_test ts exp_bool =
     | Ok t -> t
     | _ ->
         raise
-          (SyntaxError ("Error parsing type " ^ ts ^ " in type_equiv tests", dummy_loc))
+          (SyntaxError
+             ("Error parsing type " ^ ts ^ " in type_equiv tests", dummy_loc))
   in
   test_case (fun _ ->
       let b = is_ground_type t in
@@ -102,19 +110,22 @@ let make_map_access_type_test t at nindices =
   let t', at' =
     match (parse_type t, parse_type at) with
     | Ok t', Ok at' -> (t', at')
-    | _ -> raise (SyntaxError ("Error parsing type in map_access_type tests", dummy_loc))
+    | _ ->
+        raise
+          (SyntaxError ("Error parsing type in map_access_type tests", dummy_loc))
   in
   let at_computed = map_access_type t' nindices in
   test_case (fun _ ->
       match at_computed with
       | Error _ ->
-          assert_failure "Failed map_access_type test. map_access_type returned failure."
+          assert_failure
+            "Failed map_access_type test. map_access_type returned failure."
       | Ok at_computed' ->
           let b = type_equiv at' at_computed' in
           assert_bool
             (Printf.sprintf
-               "Failed map_access_type test for %s[%d]. Expected %s, but got %s.\n" t
-               nindices at (pp_typ at_computed'))
+               "Failed map_access_type test for %s[%d]. Expected %s, but got %s.\n"
+               t nindices at (pp_typ at_computed'))
             b)
 
 let map_access_type_tests =
@@ -122,18 +133,24 @@ let map_access_type_tests =
     (* (Test type, expected access type, number of indices) *)
     ("Map (Uint32) (Uint32)", "Map (Uint32) (Uint32)", 0);
     ("Map (Uint32) (Uint32)", "Uint32", 1);
-    ("Map (Uint32) (Map (Uint32) (Int32))", "Map (Uint32) (Map (Uint32) (Int32))", 0);
+    ( "Map (Uint32) (Map (Uint32) (Int32))",
+      "Map (Uint32) (Map (Uint32) (Int32))",
+      0 );
     ("Map (Uint32) (Map (Uint32) (Int32))", "Map (Uint32) (Int32)", 1);
     ("Map (Uint32) (Map (Uint32) (Int32))", "Int32", 2);
     ("Int32", "Int32", 0);
   ]
 
 let make_map_access_type_tests tlist =
-  List.map (fun (t, at, nindices) -> make_map_access_type_test t at nindices) tlist
+  List.map
+    (fun (t, at, nindices) -> make_map_access_type_test t at nindices)
+    tlist
 
-let type_equiv_tests = "type_equiv_tests" >::: make_type_equiv_tests type_equiv_tests
+let type_equiv_tests =
+  "type_equiv_tests" >::: make_type_equiv_tests type_equiv_tests
 
-let ground_type_tests = "ground_type_tests" >::: make_ground_type_tests ground_type_tests
+let ground_type_tests =
+  "ground_type_tests" >::: make_ground_type_tests ground_type_tests
 
 let map_access_type_tests =
   "map_access_type_tests" >::: make_map_access_type_tests map_access_type_tests
@@ -187,4 +204,9 @@ end)
 
 let all_tests env =
   "type_check_success_tests"
-  >::: [ type_equiv_tests; Tests.all_tests env; ground_type_tests; map_access_type_tests ]
+  >::: [
+         type_equiv_tests;
+         Tests.all_tests env;
+         ground_type_tests;
+         map_access_type_tests;
+       ]

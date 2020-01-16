@@ -27,8 +27,8 @@ module IPCIdl (R : RPC) = struct
         namespace = None;
         description =
           [
-            "This is a functor used to generate Clients and Servers that follow the json \
-             rpc protocol";
+            "This is a functor used to generate Clients and Servers that \
+             follow the json rpc protocol";
           ];
         version = (1, 0, 0);
       }
@@ -47,7 +47,8 @@ module IPCIdl (R : RPC) = struct
   (* defines `typ_of__fetch_ret_t` *)
 
   let return_fetch =
-    Param.mk { name = ""; description = [ "(found,value)" ]; ty = typ_of__fetch_ret_t }
+    Param.mk
+      { name = ""; description = [ "(found,value)" ]; ty = typ_of__fetch_ret_t }
 
   let return_update = Param.mk Rpc.Types.unit
 

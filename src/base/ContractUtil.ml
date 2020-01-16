@@ -42,15 +42,21 @@ module MessagePayload = struct
 
   let get_value_for_entry lab f es =
     match List.find es ~f:(fun (l, _) -> l = lab) with
-    | None -> fail0 @@ sprintf "No field \"%s\" in message [%s]." lab (pp_literal_map es)
+    | None ->
+        fail0
+        @@ sprintf "No field \"%s\" in message [%s]." lab (pp_literal_map es)
     | Some (_, p) -> (
         match f p with
         | Some x -> x
         | None ->
-            fail0 @@ sprintf "Wrong value of the entry \"%s\": %s." lab (pp_literal p) )
+            fail0
+            @@ sprintf "Wrong value of the entry \"%s\": %s." lab (pp_literal p)
+        )
 
   let get_tag =
-    get_value_for_entry tag_label (function StringLit s -> Some (pure s) | _ -> None)
+    get_value_for_entry tag_label (function
+      | StringLit s -> Some (pure s)
+      | _ -> None)
 
   let get_sender =
     get_value_for_entry sender_label (function
@@ -65,7 +71,8 @@ module MessagePayload = struct
             else
               Some
                 ( fail0
-                @@ sprintf "Amount should be non-negative: %s" (Uint128.to_string i) )
+                @@ sprintf "Amount should be non-negative: %s"
+                     (Uint128.to_string i) )
           with Failure _ ->
             Some
               ( fail0
@@ -101,14 +108,19 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   let append_implict_contract_params tparams =
     let open PrimTypes in
     let creation_block = (ER.mk_id_bnum creation_block_label, bnum_typ) in
-    let this_address = (ER.mk_id_address this_address_label, bystrx_typ address_length) in
-    let scilla_version_init = (ER.mk_id_uint32 scilla_version_label, uint32_typ) in
+    let this_address =
+      (ER.mk_id_address this_address_label, bystrx_typ address_length)
+    in
+    let scilla_version_init =
+      (ER.mk_id_uint32 scilla_version_label, uint32_typ)
+    in
     creation_block :: scilla_version_init :: this_address :: tparams
 
   (* Remove init arguments that the evaluator doesn't (need to) understand. *)
   let remove_noneval_args args =
     let nonevalargs = [ extlibs_label ] in
-    List.filter args ~f:(fun a -> not (List.mem nonevalargs (fst a) ~equal:( = )))
+    List.filter args ~f:(fun a ->
+        not (List.mem nonevalargs (fst a) ~equal:( = )))
 
   let append_implict_comp_params cparams =
     let open PrimTypes in
@@ -143,17 +155,21 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
       | Fun (_, _, (e', _)) | TFun (_, (e', _)) -> expr_folder loc e' acc
       | MatchExpr (p, pl) ->
           foldM
-            ~f:(fun acc (_, (e', _)) -> expr_folder (ER.get_loc @@ get_rep p) e' acc)
+            ~f:(fun acc (_, (e', _)) ->
+              expr_folder (ER.get_loc @@ get_rep p) e' acc)
             ~init:acc pl
     in
 
     (* Loop over each library entry. *)
     let%bind acc =
-      let lentries = match cmod.libs with None -> [] | Some lib -> lib.lentries in
+      let lentries =
+        match cmod.libs with None -> [] | Some lib -> lib.lentries
+      in
       foldM
         ~f:(fun acc le ->
           match le with
-          | LibVar (b, _, (ex, _)) -> expr_folder (ER.get_loc @@ get_rep b) ex acc
+          | LibVar (b, _, (ex, _)) ->
+              expr_folder (ER.get_loc @@ get_rep b) ex acc
           | LibTyp _ -> pure acc)
         ~init lentries
     in
@@ -170,10 +186,12 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
                 | MatchStmt (_, clauses) ->
                     (* Recurse through all clauses. *)
                     foldM
-                      ~f:(fun acc'' (_, stmt_list'') -> stmt_iter stmt_list'' acc'')
+                      ~f:(fun acc'' (_, stmt_list'') ->
+                        stmt_iter stmt_list'' acc'')
                       ~init:acc clauses
                 (* Every message created gets bound to some variable. *)
-                | Bind (b, (e, _)) -> expr_folder (ER.get_loc @@ get_rep b) e acc
+                | Bind (b, (e, _)) ->
+                    expr_folder (ER.get_loc @@ get_rep b) e acc
                 | _ -> (* Uninteresting statement. *) pure acc
               in
               stmt_iter stmt_list' acc'

@@ -47,9 +47,13 @@ let canonicalize_term (t : 'a term) : 'a term =
       match vplist with
       | (cur_v, cur_p) :: rem ->
           (* Split the remaining into those equal to cur and not equal to cur. *)
-          let cureq, curneq = List.partition_tf rem ~f:(fun (v, _) -> v = cur_v) in
+          let cureq, curneq =
+            List.partition_tf rem ~f:(fun (v, _) -> v = cur_v)
+          in
           (* Add the powers of cur_v and those in cureq. *)
-          let p = List.fold cureq ~init:cur_p ~f:(fun acc (_, t_p) -> acc + t_p) in
+          let p =
+            List.fold cureq ~init:cur_p ~f:(fun acc (_, t_p) -> acc + t_p)
+          in
           (* Recursively eliminate duplicates in the remaining part of the list. *)
           let merged_rem' = merger curneq in
           if p = 0 then merged_rem' else (cur_v, p) :: merged_rem'
@@ -66,7 +70,8 @@ let eq_term ?(coef = true) (t1' : 'a term) (t2' : 'a term) =
   ((not coef) || c1 = c2)
   && List.length vplist1 = List.length vplist2
   && List.for_all vplist1 ~f:(fun (cur_v, cur_p) ->
-         List.exists vplist2 ~f:(fun (cur_v', cur_p') -> cur_v = cur_v' && cur_p = cur_p'))
+         List.exists vplist2 ~f:(fun (cur_v', cur_p') ->
+             cur_v = cur_v' && cur_p = cur_p'))
 
 let mul_term (t1 : 'a term) (t2 : 'a term) : 'a term =
   let (c1, vplist1), (c2, vplist2) = (t1, t2) in
@@ -86,7 +91,9 @@ let canonicalize_pn (tlist' : 'a polynomial) : 'a polynomial =
         if c_h = 0 then merger rem
         else
           (* Split the remaining terms into those equal to and not equal to h. *)
-          let heq, hneq = List.partition_tf rem ~f:(fun t -> eq_term ~coef:false h t) in
+          let heq, hneq =
+            List.partition_tf rem ~f:(fun t -> eq_term ~coef:false h t)
+          in
           let h' =
             let coef' =
               List.fold heq ~init:c_h ~f:(fun acc t ->
@@ -119,8 +126,8 @@ let mul_pn (p1 : 'a polynomial) (p2 : 'a polynomial) =
 
 (* Combine two polynomials (pairing each term in the first with those in the second)
  * using a custom function f, which returns (Some term) if two terms are to be combined *)
-let combine_pn ~(cf : 'a term -> 'a term -> 'a term option) (p1' : 'a polynomial)
-    (p2' : 'a polynomial) =
+let combine_pn ~(cf : 'a term -> 'a term -> 'a term option)
+    (p1' : 'a polynomial) (p2' : 'a polynomial) =
   let p1 = canonicalize_pn p1' in
   let p2 = canonicalize_pn p2' in
   (* Fold over p1 terms, building them up, while removing terms from p2. *)
@@ -169,19 +176,23 @@ let var_replace_pn (pn : 'a polynomial) ~(f : 'a -> 'a) =
 
 (* Expand parameters in a polynomial into full polynomials. 
  * TODO: Make this efficient. *)
-let expand_parameters_pn (pn' : 'a polynomial) ~(f : 'a -> 'a polynomial option) =
+let expand_parameters_pn (pn' : 'a polynomial) ~(f : 'a -> 'a polynomial option)
+    =
   let pn = canonicalize_pn pn' in
   (* Expand at-most one variable in term. *)
   let expand_parameters_term ((coef, vplist) : 'a term) : 'a polynomial =
     (* Partition vplist based on whether a variable should be substituted. *)
-    let nosubl, subl = List.partition_tf vplist ~f:(fun (v, _) -> is_none (f v)) in
+    let nosubl, subl =
+      List.partition_tf vplist ~f:(fun (v, _) -> is_none (f v))
+    in
     match subl with
     | (svar, spow) :: restsub ->
         (* Substitute svar only (one substitution at-most to keep things simple). *)
         let rest_pol = [ (coef, nosubl @ restsub) ] in
         let subst_pol = BatOption.get (f svar) in
         if spow < 0 then
-          raise (Polynomial_error "Cannot expand paramter with non-positive power")
+          raise
+            (Polynomial_error "Cannot expand paramter with non-positive power")
         else
           let subst_pols = List.init spow ~f:(fun _ -> subst_pol) in
           List.fold subst_pols ~init:rest_pol ~f:(fun acc p -> mul_pn acc p)

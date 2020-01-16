@@ -32,7 +32,8 @@ struct
           let emsg = "Error determining event name\n" in
           let%bind eventname =
             match epld with
-            | MLit l -> ( match l with StringLit s -> pure s | _ -> fail1 emsg bloc )
+            | MLit l -> (
+                match l with StringLit s -> pure s | _ -> fail1 emsg bloc )
             (* Variables are not allowed for eventname_label to ensure that
              * all possible events can be determined statically. *)
             | MVar _ -> fail1 emsg bloc
@@ -61,14 +62,15 @@ struct
               (* verify types match *)
               let printer tplist =
                 List.fold_left
-                  (fun acc (n, t) -> acc ^ Printf.sprintf "(%s : %s); " n (pp_typ t))
+                  (fun acc (n, t) ->
+                    acc ^ Printf.sprintf "(%s : %s); " n (pp_typ t))
                   "[" tplist
                 ^ "]"
               in
               if m_types <> tlist then
                 fail1
-                  (Printf.sprintf "Parameter mismatch for event %s. %s vs %s\n" eventname
-                     (printer tlist) (printer m_types))
+                  (Printf.sprintf "Parameter mismatch for event %s. %s vs %s\n"
+                     eventname (printer tlist) (printer m_types))
                   bloc
               else pure @@ acc
           | None ->

@@ -74,7 +74,10 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
 
     (* Resolve the identifier *)
     val resolveT :
-      ?lopt:R.rep option -> t -> string -> (resolve_result, scilla_error list) result
+      ?lopt:R.rep option ->
+      t ->
+      string ->
+      (resolve_result, scilla_error list) result
 
     (* Is bound in environment? *)
     val existsT : t -> string -> bool
@@ -125,7 +128,8 @@ module TypeUtilities : sig
 
   val is_non_map_ground_type : typ -> bool
 
-  val get_msgevnt_type : (string * 'a) sexp_list -> (typ, scilla_error sexp_list) result
+  val get_msgevnt_type :
+    (string * 'a) sexp_list -> (typ, scilla_error sexp_list) result
 
   val map_access_type : typ -> int -> (typ, scilla_error list) result
 
@@ -142,7 +146,9 @@ module TypeUtilities : sig
   type typeCheckerErrorType = TypeError | GasError
 
   val mk_type_error0 :
-    string -> Stdint.uint64 -> typeCheckerErrorType * scilla_error list * Stdint.uint64
+    string ->
+    Stdint.uint64 ->
+    typeCheckerErrorType * scilla_error list * Stdint.uint64
 
   val mk_type_error1 :
     string ->
@@ -167,23 +173,29 @@ module TypeUtilities : sig
     typ ->
     typ ->
     Stdint.uint64 ->
-    (Stdint.uint64, typeCheckerErrorType * scilla_error list * Stdint.uint64) result
+    ( Stdint.uint64,
+      typeCheckerErrorType * scilla_error list * Stdint.uint64 )
+    result
 
   (* Applying a function type *)
   val fun_type_applies : typ -> typ list -> (typ, scilla_error list) result
 
   (* Applying a procedure "type" *)
-  val proc_type_applies : typ list -> typ list -> (unit list, scilla_error list) result
+  val proc_type_applies :
+    typ list -> typ list -> (unit list, scilla_error list) result
 
   (* Applying a type function without gas charge (for builtins) *)
-  val elab_tfun_with_args_no_gas : typ -> typ list -> (typ, scilla_error list) result
+  val elab_tfun_with_args_no_gas :
+    typ -> typ list -> (typ, scilla_error list) result
 
   (* Applying a type function *)
   val elab_tfun_with_args :
     typ ->
     typ list ->
     Stdint.uint64 ->
-    (typ * Stdint.uint64, typeCheckerErrorType * scilla_error list * Stdint.uint64) result
+    ( typ * Stdint.uint64,
+      typeCheckerErrorType * scilla_error list * Stdint.uint64 )
+    result
 
   val pp_typ_list : typ list -> string
 
@@ -200,9 +212,11 @@ module TypeUtilities : sig
   (* For a given instantiated ADT and a construtor name, get type *
      assignments. This is the main working horse of type-checking
      pattern-matching. *)
-  val constr_pattern_arg_types : typ -> string -> (typ list, scilla_error list) result
+  val constr_pattern_arg_types :
+    typ -> string -> (typ list, scilla_error list) result
 
-  val validate_param_length : string -> int -> int -> (unit, scilla_error list) result
+  val validate_param_length :
+    string -> int -> int -> (unit, scilla_error list) result
 
   val assert_all_same_type : typ list -> (unit, scilla_error list) result
 end

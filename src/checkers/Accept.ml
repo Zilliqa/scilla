@@ -48,7 +48,8 @@ struct
   let warning_level_duplicate_accepts = 1
 
   let find_accept_groups (stmts : stmt_annot list) : loc list list =
-    let rec walk (seen : loc list list) (stmts : stmt_annot list) : loc list list =
+    let rec walk (seen : loc list list) (stmts : stmt_annot list) :
+        loc list list =
       (* Walk the syntax tree looking for code paths containing zero or
          more accept statements.
 
@@ -81,7 +82,9 @@ struct
               *)
               List.fold_left
                 (fun seen3 (_pattern, branchstmts) ->
-                  match walk seen2 branchstmts with [] -> seen3 | seen4 -> seen3 @ seen4)
+                  match walk seen2 branchstmts with
+                  | [] -> seen3
+                  | seen4 -> seen3 @ seen4)
                 [] branches
           | _ -> seen2)
         seen stmts
@@ -101,11 +104,13 @@ struct
       let dup_accept_warning (group : loc list) : unit =
         warn2
           ( Core_kernel.sprintf
-              "transition %s had a potential code path with duplicate accept statements:\n"
+              "transition %s had a potential code path with duplicate accept \
+               statements:\n"
               (get_id transition.comp_name)
           ^ String.concat ""
               (List.map
-                 (fun loc -> Core_kernel.sprintf "  Accept at %s\n" (get_loc_str loc))
+                 (fun loc ->
+                   Core_kernel.sprintf "  Accept at %s\n" (get_loc_str loc))
                  group) )
           warning_level_duplicate_accepts (List.hd group)
           (accept_loc_end @@ BatList.last group)
@@ -120,7 +125,9 @@ struct
     in
 
     let all_accept_groups =
-      List.fold_left (fun acc t -> acc @ check_transition_accepts t) [] contr.ccomps
+      List.fold_left
+        (fun acc t -> acc @ check_transition_accepts t)
+        [] contr.ccomps
     in
 
     match List.for_all BatList.is_empty all_accept_groups with

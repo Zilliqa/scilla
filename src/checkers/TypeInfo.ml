@@ -70,7 +70,8 @@ struct
     | Message spl ->
         List.fold_right spl ~init:[] ~f:(fun (_, pl) acc ->
             match pl with MLit _ -> acc | MVar v -> calc_ident_locs v :: acc)
-    | Fun (f, _, body) | Fixpoint (f, _, body) -> calc_ident_locs f :: type_info_expr body
+    | Fun (f, _, body) | Fixpoint (f, _, body) ->
+        calc_ident_locs f :: type_info_expr body
     | App (i, il) -> List.map (i :: il) ~f:calc_ident_locs
     | Constr (_, _, il) ->
         (* Issue #456 prevents us form having a location for the constructor name. *)
@@ -100,7 +101,8 @@ struct
             @ match vopt with Some v -> [ calc_ident_locs v ] | None -> [] )
         (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
         | MapGet (x, m, il, _) ->
-            [ calc_ident_locs x; calc_ident_locs m ] @ List.map il ~f:calc_ident_locs
+            [ calc_ident_locs x; calc_ident_locs m ]
+            @ List.map il ~f:calc_ident_locs
         | MatchStmt (o, clauses) ->
             let ots = calc_ident_locs o in
             let clausets =
@@ -114,8 +116,8 @@ struct
         | ReadFromBC (v, _) | SendMsgs v | CreateEvnt v -> [ calc_ident_locs v ]
         | AcceptPayment -> []
         | CallProc (_, il) -> List.map il ~f:calc_ident_locs
-        | Throw iopt -> ( match iopt with Some i -> [ calc_ident_locs i ] | None -> [] )
-        )
+        | Throw iopt -> (
+            match iopt with Some i -> [ calc_ident_locs i ] | None -> [] ) )
         @ acc)
 
   let type_info_libentries lentries =
@@ -123,7 +125,8 @@ struct
         ( match lentry with
         | LibVar (i, _, e) -> calc_ident_locs i :: type_info_expr e
         | LibTyp (i, cdl) ->
-            calc_ident_locs i :: List.map cdl ~f:(fun cd -> calc_ident_locs cd.cname) )
+            calc_ident_locs i
+            :: List.map cdl ~f:(fun cd -> calc_ident_locs cd.cname) )
         @ acc)
 
   let type_info_library l = type_info_libentries l.lentries

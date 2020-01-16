@@ -30,7 +30,8 @@ let explist =
   ]
 
 module Tests = TestUtil.DiffBasedTests (struct
-  let gold_path dir f = [ dir; "gas_use_analysis"; "contracts"; "gold"; f ^ ".gold" ]
+  let gold_path dir f =
+    [ dir; "gas_use_analysis"; "contracts"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "gas_use_analysis"; "contracts"; f ]
 

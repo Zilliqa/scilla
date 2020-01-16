@@ -33,13 +33,15 @@ let t1' =
   test_case (fun _ ->
       let open Secp256k1Wrapper in
       match Schnorr.genKeyPair () with
-      | None -> assert_failure "Schnorr function errored when called from testsuite"
+      | None ->
+          assert_failure "Schnorr function errored when called from testsuite"
       | Some (privK, pubK) ->
           let msg = "Hello world\n" in
           (* Verify public key's match b/w implementations. *)
           let pubK' = pk_from_sk privK in
           let pubK'' = match pubK' with Ok pubK'' -> pubK'' | Error _ -> "" in
-          assert_bool "Public key mis-match b/w Schnorr and ECDSA" (pubK = pubK'');
+          assert_bool "Public key mis-match b/w Schnorr and ECDSA"
+            (pubK = pubK'');
           let succ =
             match sign privK msg with
             | Ok signature -> (
@@ -60,13 +62,15 @@ let t2' =
   test_case (fun _ ->
       let open Secp256k1Wrapper in
       match Schnorr.genKeyPair () with
-      | None -> assert_failure "Schnorr function errored when called from testsuite"
+      | None ->
+          assert_failure "Schnorr function errored when called from testsuite"
       | Some (privK, pubK) ->
           let msg = "Hello world\n" in
           (* Verify public key's match b/w implementations. *)
           let pubK' = pk_from_sk privK in
           let pubK'' = match pubK' with Ok pubK'' -> pubK'' | Error _ -> "" in
-          assert_bool "Public key mis-match b/w Schnorr and ECDSA" (pubK = pubK'');
+          assert_bool "Public key mis-match b/w Schnorr and ECDSA"
+            (pubK = pubK'');
           let succ =
             match sign privK msg with
             | Ok signature -> (

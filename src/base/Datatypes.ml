@@ -53,7 +53,8 @@ module DataTypeDictionary = struct
 
   let c_false = { cname = "False"; arity = 0 }
 
-  let t_bool = { tname = "Bool"; tparams = []; tconstr = [ c_true; c_false ]; tmap = [] }
+  let t_bool =
+    { tname = "Bool"; tparams = []; tconstr = [ c_true; c_false ]; tmap = [] }
 
   (* Natural numbers *)
   let c_zero = { cname = "Zero"; arity = 0 }
@@ -128,14 +129,18 @@ module DataTypeDictionary = struct
   let add_adt (new_adt : adt) error_loc =
     let open Caml in
     match Hashtbl.find_opt adt_name_dict new_adt.tname with
-    | Some _ -> fail1 (sprintf "Multiple declarations of type %s" new_adt.tname) error_loc
+    | Some _ ->
+        fail1
+          (sprintf "Multiple declarations of type %s" new_adt.tname)
+          error_loc
     | None ->
         let _ = Hashtbl.add adt_name_dict new_adt.tname new_adt in
         foldM new_adt.tconstr ~init:() ~f:(fun () ctr ->
             match Hashtbl.find_opt adt_cons_dict ctr.cname with
             | Some _ ->
                 fail1
-                  (sprintf "Multiple declarations of type constructor %s" ctr.cname)
+                  (sprintf "Multiple declarations of type constructor %s"
+                     ctr.cname)
                   error_loc
             | None -> pure @@ Hashtbl.add adt_cons_dict ctr.cname (new_adt, ctr))
 
@@ -168,10 +173,12 @@ module DataTypeDictionary = struct
   let pair_typ t s = ADT (t_product.tname, [ t; s ])
 
   (* Get all known ADTs *)
-  let get_all_adts () = Caml.Hashtbl.fold (fun _ a acc -> a :: acc) adt_name_dict []
+  let get_all_adts () =
+    Caml.Hashtbl.fold (fun _ a acc -> a :: acc) adt_name_dict []
 
   (* Get all known ADT constructors *)
-  let get_all_ctrs () = Caml.Hashtbl.fold (fun _ c acc -> c :: acc) adt_cons_dict []
+  let get_all_ctrs () =
+    Caml.Hashtbl.fold (fun _ c acc -> c :: acc) adt_cons_dict []
 end
 
 (* Convert Scilla list to OCaml list.
@@ -194,7 +201,8 @@ let scilla_list_to_ocaml_rev v =
     match l with
     | ADTValue ("Nil", _, []) -> pure acc
     | ADTValue ("Cons", _, [ h; t ]) -> convert_to_list t (h :: acc)
-    | _ -> fail0 @@ sprintf "Cannot convert scilla list to reverse ocaml list:\n"
+    | _ ->
+        fail0 @@ sprintf "Cannot convert scilla list to reverse ocaml list:\n"
   in
   convert_to_list v []
 
@@ -217,7 +225,8 @@ module SnarkTypes = struct
 
   let scilla_scalar_to_ocaml s =
     match s with
-    | ByStrX s' when Bystrx.width s' = scalar_len -> pure @@ Bystrx.to_raw_bytes s'
+    | ByStrX s' when Bystrx.width s' = scalar_len ->
+        pure @@ Bystrx.to_raw_bytes s'
     | _ -> fail0 @@ sprintf "Cannot convert scilla G1 point to ocaml G1 point."
 
   let scilla_g1point_to_ocaml g1p =
@@ -240,10 +249,13 @@ module SnarkTypes = struct
 
   let ocaml_g1point_to_scilla_lit g1p =
     match
-      (Bystrx.of_raw_bytes scalar_len g1p.g1x, Bystrx.of_raw_bytes scalar_len g1p.g1y)
+      ( Bystrx.of_raw_bytes scalar_len g1p.g1x,
+        Bystrx.of_raw_bytes scalar_len g1p.g1y )
     with
     | Some x, Some y ->
-        pure @@ ADTValue ("Pair", [ g1point_type; g1point_type ], [ ByStrX x; ByStrX y ])
+        pure
+        @@ ADTValue
+             ("Pair", [ g1point_type; g1point_type ], [ ByStrX x; ByStrX y ])
     | _ -> fail0 @@ sprintf "Cannot convert OCaml G1 point to Scilla literal."
 
   let scilla_g1g2pairlist_to_ocaml g1g2pl =
@@ -256,7 +268,8 @@ module SnarkTypes = struct
               let%bind g1p' = scilla_g1point_to_ocaml g1p in
               let%bind g2p' = scilla_g2point_to_ocaml g2p in
               pure (g1p', g2p')
-          | _ -> fail0 @@ sprintf "Cannot convert scilla G1-G2 pair list to ocaml.")
+          | _ ->
+              fail0 @@ sprintf "Cannot convert scilla G1-G2 pair list to ocaml.")
     in
     pure g1g2ol'
 end

@@ -128,5 +128,7 @@ module StdlibTracker = struct
   (* Try find library "name" in known locations *)
   let find_lib_dir name =
     let dirs = get_stdlib_dirs () in
-    BatList.find_opt (fun d -> Caml.Sys.file_exists (d ^/ name ^. file_extn_library)) dirs
+    BatList.find_opt
+      (fun d -> Caml.Sys.file_exists (d ^/ name ^. file_extn_library))
+      dirs
 end

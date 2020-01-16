@@ -117,7 +117,9 @@ let rec pp_typ = function
   | PrimType t -> pp_prim_typ t
   | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
   | ADT (name, targs) ->
-      let elems = name :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t)) in
+      let elems =
+        name :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
+      in
       String.concat ~sep:" " elems
   | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
   | TypeVar tv -> tv
@@ -125,7 +127,9 @@ let rec pp_typ = function
   | Unit -> sprintf "()"
 
 and with_paren t =
-  match t with FunType _ | PolyFun _ -> sprintf "(%s)" (pp_typ t) | _ -> pp_typ t
+  match t with
+  | FunType _ | PolyFun _ -> sprintf "(%s)" (pp_typ t)
+  | _ -> pp_typ t
 
 (*******************************************************)
 (*                      Literals                       *)
@@ -276,8 +280,9 @@ type literal =
       ( literal,
         scilla_error list,
         uint64 ->
-        ((literal * (string * literal) list) * uint64, scilla_error list * uint64) result
-      )
+        ( (literal * (string * literal) list) * uint64,
+          scilla_error list * uint64 )
+        result )
       CPSMonad.t)
   (* A type abstraction *)
   | TAbs of
@@ -285,8 +290,9 @@ type literal =
       ( literal,
         scilla_error list,
         uint64 ->
-        ((literal * (string * literal) list) * uint64, scilla_error list * uint64) result
-      )
+        ( (literal * (string * literal) list) * uint64,
+          scilla_error list * uint64 )
+        result )
       CPSMonad.t)
 [@@deriving sexp]
 
@@ -490,7 +496,8 @@ let rec subst_type_in_type tvar tp tm =
 (* note: this is sequential substitution of multiple variables,
           _not_ simultaneous substitution *)
 let subst_types_in_type sbst tm =
-  List.fold_left sbst ~init:tm ~f:(fun acc (tvar, tp) -> subst_type_in_type tvar tp acc)
+  List.fold_left sbst ~init:tm ~f:(fun acc (tvar, tp) ->
+      subst_type_in_type tvar tp acc)
 
 let rename_bound_vars mk_new_name update_taken =
   let rec recursor t taken =
@@ -767,13 +774,17 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | App _ as app -> (app, rep)
     | Builtin _ as bi -> (bi, rep)
     | Let (i, tann, lhs, rhs) ->
-        let tann' = Option.map tann ~f:(fun t -> subst_type_in_type' tvar tp t) in
+        let tann' =
+          Option.map tann ~f:(fun t -> subst_type_in_type' tvar tp t)
+        in
         let lhs' = subst_type_in_expr tvar tp lhs in
         let rhs' = subst_type_in_expr tvar tp rhs in
         (Let (i, tann', lhs', rhs'), rep)
     | Message _ as m -> (m, rep)
     | MatchExpr (e, cs) ->
-        let cs' = List.map cs ~f:(fun (p, b) -> (p, subst_type_in_expr tvar tp b)) in
+        let cs' =
+          List.map cs ~f:(fun (p, b) -> (p, subst_type_in_expr tvar tp b))
+        in
         (MatchExpr (e, cs'), rep)
     | TApp (tf, tl) ->
         let tl' = List.map tl ~f:(fun t -> subst_type_in_type' tvar tp t) in
@@ -807,7 +818,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       match e with
       | Literal _ -> acc
       | Var v | TApp (v, _) -> if is_mem_id v bound_vars then acc else v :: acc
-      | Fun (f, _, body) | Fixpoint (f, _, body) -> recurser body (f :: bound_vars) acc
+      | Fun (f, _, body) | Fixpoint (f, _, body) ->
+          recurser body (f :: bound_vars) acc
       | TFun (_, body) -> recurser body bound_vars acc
       | Constr (_, _, es) -> get_free es bound_vars @ acc
       | App (f, args) -> get_free (f :: args) bound_vars @ acc
@@ -850,21 +862,25 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     ( ( match e with
       | Literal _ -> sprintf "Type error in literal. %s\n" phase
       | Var i -> sprintf "Type error in variable `%s`:\n" (get_id i)
-      | Let (i, _, _, _) -> sprintf "Type error in the initialiser of `%s`:\n" (get_id i)
+      | Let (i, _, _, _) ->
+          sprintf "Type error in the initialiser of `%s`:\n" (get_id i)
       | Message _ -> sprintf "Type error in message.\n"
       | Fun _ -> sprintf "Type error in function:\n"
       | App (f, _) -> sprintf "Type error in application of `%s`:\n" (get_id f)
       | Constr (s, _, _) -> sprintf "Type error in constructor `%s`:\n" s
       | MatchExpr (x, _) ->
-          sprintf "Type error in pattern matching on `%s`%s (or one of its branches):\n"
+          sprintf
+            "Type error in pattern matching on `%s`%s (or one of its branches):\n"
             (get_id x) opt
       | Builtin ((i, _), _) ->
           sprintf "Type error in built-in application of `%s`:\n" (pp_builtin i)
-      | TApp (tf, _) -> sprintf "Type error in type application of `%s`:\n" (get_id tf)
-      | TFun (tf, _) -> sprintf "Type error in type function `%s`:\n" (get_id tf)
+      | TApp (tf, _) ->
+          sprintf "Type error in type application of `%s`:\n" (get_id tf)
+      | TFun (tf, _) ->
+          sprintf "Type error in type function `%s`:\n" (get_id tf)
       | Fixpoint (f, _, _) ->
-          sprintf "Type error in fixpoint application with an argument `%s`:\n" (get_id f)
-      ),
+          sprintf "Type error in fixpoint application with an argument `%s`:\n"
+            (get_id f) ),
       sloc )
 
   let get_failure_msg_stmt srep phase opt =
@@ -872,12 +888,13 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     let sloc = SR.get_loc rep in
     ( ( match s with
       | Load (x, f) ->
-          sprintf "Type error in reading value of `%s` into `%s`:\n %s" (get_id f)
-            (get_id x) phase
+          sprintf "Type error in reading value of `%s` into `%s`:\n %s"
+            (get_id f) (get_id x) phase
       | Store (f, r) ->
-          sprintf "Type error in storing value of `%s` into the field `%s`:\n" (get_id r)
-            (get_id f)
-      | Bind (x, _) -> sprintf "Type error in the binding to into `%s`:\n" (get_id x)
+          sprintf "Type error in storing value of `%s` into the field `%s`:\n"
+            (get_id r) (get_id f)
+      | Bind (x, _) ->
+          sprintf "Type error in the binding to into `%s`:\n" (get_id x)
       | MapGet (_, m, keys, _) ->
           sprintf "Type error in getting map value %s" (get_id m)
           ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ get_id k ^ "]")
@@ -887,16 +904,21 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
           ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ get_id k ^ "]")
           ^ "\n"
       | MatchStmt (x, _) ->
-          sprintf "Type error in pattern matching on `%s`%s (or one of its branches):\n"
+          sprintf
+            "Type error in pattern matching on `%s`%s (or one of its branches):\n"
             (get_id x) opt
       | ReadFromBC (x, _) ->
-          sprintf "Error in reading from blockchain state into `%s`:\n" (get_id x)
+          sprintf "Error in reading from blockchain state into `%s`:\n"
+            (get_id x)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
       | SendMsgs i -> sprintf "Error in sending messages `%s`:\n" (get_id i)
       | CreateEvnt i -> sprintf "Error in create event `%s`:\n" (get_id i)
-      | CallProc (p, _) -> sprintf "Error in call of procedure '%s':\n" (get_id p)
+      | CallProc (p, _) ->
+          sprintf "Error in call of procedure '%s':\n" (get_id p)
       | Throw i ->
-          let is = match i with Some id -> "of '" ^ get_id id ^ "'" | None -> "" in
+          let is =
+            match i with Some id -> "of '" ^ get_id id ^ "'" | None -> ""
+          in
           sprintf "Error in throw %s:\n" is ),
       sloc )
 

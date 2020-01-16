@@ -31,12 +31,14 @@ module UsefulLiterals : sig
 
   val none_lit : typ -> literal
 
-  val pair_lit : literal -> literal -> (literal, ErrorUtils.scilla_error list) result
+  val pair_lit :
+    literal -> literal -> (literal, ErrorUtils.scilla_error list) result
 end
 
 module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
   module BuiltInDictionary : sig
-    type built_in_executor = literal list -> typ -> (literal, scilla_error list) result
+    type built_in_executor =
+      literal list -> typ -> (literal, scilla_error list) result
 
     (* The return result is a triple:
      * The full elaborated type of the operation, e.g., string -> Bool

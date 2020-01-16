@@ -131,8 +131,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match ls with
       | [ StringLit x; UintLit (Uint32L s); UintLit (Uint32L e) ] -> (
           try
-            pure @@ StringLit (String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
-          with Invalid_argument msg -> builtin_fail ("String.substr: " ^ msg) ls )
+            pure
+            @@ StringLit
+                 (String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
+          with Invalid_argument msg ->
+            builtin_fail ("String.substr: " ^ msg) ls )
       | _ -> builtin_fail "String.substr" ls
 
     let strlen_arity = 1
@@ -141,7 +144,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let strlen ls _ =
       match ls with
-      | [ StringLit x ] -> pure @@ UintLit (Uint32L (Uint32.of_int (String.length x)))
+      | [ StringLit x ] ->
+          pure @@ UintLit (Uint32L (Uint32.of_int (String.length x)))
       | _ -> builtin_fail "String.strlen" ls
 
     let to_string_arity = 1
@@ -150,7 +154,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let to_string_elab _ ts =
       match ts with
-      | [ t ] when is_int_type t || is_uint_type t || is_bystrx_type t || t = bystr_typ ->
+      | [ t ]
+        when is_int_type t || is_uint_type t || is_bystrx_type t
+             || t = bystr_typ ->
           elab_tfun_with_args_no_gas to_string_type ts
       | _ -> fail0 "Failed to elaborate"
 
@@ -188,20 +194,24 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq_arity = 2
 
-    let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
+    let eq_type =
+      tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
 
     let eq_elab t ts =
       match ts with
-      | [ i1; i2 ] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args_no_gas t [ i1 ]
+      | [ i1; i2 ] when i1 = i2 && is_int_type i1 ->
+          elab_tfun_with_args_no_gas t [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
     let binop_arity = 2
 
-    let binop_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
+    let binop_type =
+      tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
 
     let binop_elab t ts =
       match ts with
-      | [ i1; i2 ] when i1 = i2 && is_int_type i1 -> elab_tfun_with_args_no_gas t [ i1 ]
+      | [ i1; i2 ] when i1 = i2 && is_int_type i1 ->
+          elab_tfun_with_args_no_gas t [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
     let eq ls _ =
@@ -305,7 +315,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let pow_arity = 2
 
-    let pow_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ uint32_typ (tvar "'A"))
+    let pow_type =
+      tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ uint32_typ (tvar "'A"))
 
     let pow_elab t ts =
       match ts with
@@ -334,8 +345,10 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let lt ls _ =
       try
         match ls with
-        | [ IntLit (Int32L x); IntLit (Int32L y) ] -> pure @@ to_Bool (Int32_safe.lt x y)
-        | [ IntLit (Int64L x); IntLit (Int64L y) ] -> pure @@ to_Bool (Int64_safe.lt x y)
+        | [ IntLit (Int32L x); IntLit (Int32L y) ] ->
+            pure @@ to_Bool (Int32_safe.lt x y)
+        | [ IntLit (Int64L x); IntLit (Int64L y) ] ->
+            pure @@ to_Bool (Int64_safe.lt x y)
         | [ IntLit (Int128L x); IntLit (Int128L y) ] ->
             pure @@ to_Bool (Int128_safe.lt x y)
         | [ IntLit (Int256L x); IntLit (Int256L y) ] ->
@@ -347,7 +360,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let to_int_arity = 1
 
     let to_int_type =
-      tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
+      tfun_typ "'A"
+      @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
 
     let to_int_elab w sc ts =
       match ts with
@@ -388,20 +402,24 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq_arity = 2
 
-    let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
+    let eq_type =
+      tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
 
     let eq_elab sc ts =
       match ts with
-      | [ i1; i2 ] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args_no_gas sc [ i1 ]
+      | [ i1; i2 ] when i1 = i2 && is_uint_type i1 ->
+          elab_tfun_with_args_no_gas sc [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
     let binop_arity = 2
 
-    let binop_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
+    let binop_type =
+      tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
 
     let binop_elab sc ts =
       match ts with
-      | [ i1; i2 ] when i1 = i2 && is_uint_type i1 -> elab_tfun_with_args_no_gas sc [ i1 ]
+      | [ i1; i2 ] when i1 = i2 && is_uint_type i1 ->
+          elab_tfun_with_args_no_gas sc [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
     let eq ls _ =
@@ -483,7 +501,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         in
         pure @@ UintLit l
       with Division_by_zero ->
-        builtin_fail "Uint.div: Division by zero / UintOverflow error occurred" ls
+        builtin_fail "Uint.div: Division by zero / UintOverflow error occurred"
+          ls
 
     let rem ls _ =
       try
@@ -505,7 +524,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let pow_arity = 2
 
-    let pow_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ uint32_typ (tvar "'A"))
+    let pow_type =
+      tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ uint32_typ (tvar "'A"))
 
     let pow_elab t ts =
       match ts with
@@ -549,7 +569,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let to_uint_arity = 1
 
     let to_uint_type =
-      tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
+      tfun_typ "'A"
+      @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
 
     let to_uint_elab w sc ts =
       match ts with
@@ -644,7 +665,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     (* Elaborator to run with arbitrary uints *)
     let badd_elab sc ts =
       match ts with
-      | [ s; u ] when s = bnum_typ && is_uint_type u -> elab_tfun_with_args_no_gas sc ts
+      | [ s; u ] when s = bnum_typ && is_uint_type u ->
+          elab_tfun_with_args_no_gas sc ts
       | _ -> fail0 "Failed to elaborate"
 
     let badd ls _ =
@@ -670,7 +692,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     (* Elaborator to run with arbitrary uints *)
     let bsub_elab sc ts =
       match ts with
-      | [ b1; b2 ] when b1 = bnum_typ && b2 = bnum_typ -> elab_tfun_with_args_no_gas sc ts
+      | [ b1; b2 ] when b1 = bnum_typ && b2 = bnum_typ ->
+          elab_tfun_with_args_no_gas sc ts
       | _ -> fail0 "Failed to elaborate"
 
     let bsub ls _ =
@@ -679,10 +702,14 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           let i1 = big_int_of_string x in
           let i2 = big_int_of_string y in
           let d = Big_int.sub_big_int i1 i2 in
-          match build_prim_literal (Int_typ Bits256) (Big_int.string_of_big_int d) with
+          match
+            build_prim_literal (Int_typ Bits256) (Big_int.string_of_big_int d)
+          with
           | Some l -> pure l
           | None ->
-              fail0 @@ sprintf "Unable to express result of BNum subtraction in Int256" )
+              fail0
+              @@ sprintf
+                   "Unable to express result of BNum subtraction in Int256" )
       | _ -> builtin_fail "BNum.bsub" ls
   end
 
@@ -718,7 +745,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
             | ByStr bs -> Bystr.to_raw_bytes bs
             | ByStrX bs -> Bystrx.to_raw_bytes bs
             | Msg entries ->
-                let raw_entries = List.map entries ~f:(fun (s, v) -> s ^ raw_bytes v) in
+                let raw_entries =
+                  List.map entries ~f:(fun (s, v) -> s ^ raw_bytes v)
+                in
                 Core_kernel.String.concat ~sep:"" raw_entries
             | Map (_, tbl) ->
                 let raw_strings =
@@ -736,11 +765,14 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           let lhash = hasher (raw_bytes l) in
           match Bystrx.of_raw_bytes len lhash with
           | Some bs -> pure @@ ByStrX bs
-          | None -> builtin_fail ("Crypto." ^ name ^ ": internal error, invalid hash") ls
-          )
+          | None ->
+              builtin_fail
+                ("Crypto." ^ name ^ ": internal error, invalid hash")
+                ls )
       | _ -> builtin_fail ("Crypto." ^ name) ls
 
-    let eq_type = tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
+    let eq_type =
+      tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
 
     let eq_arity = 2
 
@@ -757,7 +789,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [ ByStrX bs1; ByStrX bs2 ] -> pure @@ to_Bool (Bystrx.equal bs1 bs2)
       | _ -> builtin_fail "Crypto.eq" ls
 
-    let hash_type = tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ hash_length)
+    let hash_type =
+      tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ hash_length)
 
     let hash_arity = 1
 
@@ -768,7 +801,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let sha256hash ls _ = hash_helper sha256_hasher "sha256hash" hash_length ls
 
-    let keccak256hash ls _ = hash_helper keccak256_hasher "keccak256hash" hash_length ls
+    let keccak256hash ls _ =
+      hash_helper keccak256_hasher "keccak256hash" hash_length ls
 
     (* RIPEMD-160 is a 160 bit hash, so define a separate type for it. *)
     let ripemd160hash_type =
@@ -798,7 +832,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let to_uint256_elab sc ts =
       match ts with
-      | [ PrimType (Bystrx_typ w) ] when w <= 32 -> elab_tfun_with_args_no_gas sc ts
+      | [ PrimType (Bystrx_typ w) ] when w <= 32 ->
+          elab_tfun_with_args_no_gas sc ts
       | _ -> fail0 "Failed to elaborate"
 
     let to_uint256 ls _ =
@@ -813,7 +848,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _ -> builtin_fail "Crypto.to_uint256" ls
 
     let bech32_to_bystr20_type =
-      fun_typ string_typ (fun_typ string_typ (option_typ (bystrx_typ address_length)))
+      fun_typ string_typ
+        (fun_typ string_typ (option_typ (bystrx_typ address_length)))
 
     let bech32_to_bystr20_arity = 2
 
@@ -832,7 +868,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _ -> builtin_fail "Crypto.bech32_to_bystr20" ls
 
     let bystr20_to_bech32_type =
-      fun_typ string_typ (fun_typ (bystrx_typ address_length) (option_typ string_typ))
+      fun_typ string_typ
+        (fun_typ (bystrx_typ address_length) (option_typ string_typ))
 
     let bystr20_to_bech32_arity = 2
 
@@ -842,7 +879,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           if prefix <> "zil" && prefix <> "tzil" then
             fail0 "Only zil and tzil bech32 addresses are supported"
           else
-            match Bech32.encode_bech32_addr ~prefix ~addr:(Bystrx.to_raw_bytes addr) with
+            match
+              Bech32.encode_bech32_addr ~prefix ~addr:(Bystrx.to_raw_bytes addr)
+            with
             | Some bech32 -> some_lit @@ StringLit bech32
             | None -> fail0 "bech32 encoding failed" )
       | _ -> builtin_fail "Crypto.bystr20_to_bech32" ls
@@ -866,7 +905,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _ -> builtin_fail "Crypto.concat" ls
 
     let[@warning "-32"] ec_gen_key_pair_type =
-      fun_typ unit_typ (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
+      fun_typ unit_typ
+        (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
 
     let[@warning "-32"] ec_gen_key_pair_arity = 0
 
@@ -878,10 +918,13 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
               let privK_lit_o = Bystrx.of_raw_bytes privkey_len privK in
               let pubK_lit_o = Bystrx.of_raw_bytes pubkey_len pubK in
               match (privK_lit_o, pubK_lit_o) with
-              | Some privK', Some pubK' -> pair_lit (ByStrX privK') (ByStrX pubK')
+              | Some privK', Some pubK' ->
+                  pair_lit (ByStrX privK') (ByStrX pubK')
               | _ ->
                   builtin_fail
-                    "ec_gen_key_pair: internal error, invalid private/public key(s)." ls )
+                    "ec_gen_key_pair: internal error, invalid private/public \
+                     key(s)."
+                    ls )
           | None -> builtin_fail "ec_gen_key_pair: internal error." ls )
       | _ -> builtin_fail "ec_gen_key_pair" ls
 
@@ -901,16 +944,20 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let[@warning "-32"] schnorr_sign ls _ =
       match ls with
       | [ ByStrX privkey; ByStrX pubkey; ByStr msg ]
-        when Bystrx.width privkey = privkey_len && Bystrx.width pubkey = pubkey_len -> (
+        when Bystrx.width privkey = privkey_len
+             && Bystrx.width pubkey = pubkey_len -> (
           match
-            sign (Bystrx.to_raw_bytes privkey) (Bystrx.to_raw_bytes pubkey)
+            sign
+              (Bystrx.to_raw_bytes privkey)
+              (Bystrx.to_raw_bytes pubkey)
               (Bystr.to_raw_bytes msg)
           with
           | Some s -> (
               match Bystrx.of_raw_bytes signature_len s with
               | Some bs -> pure @@ ByStrX bs
-              | None -> builtin_fail "schnorr_sign: internal error, invalid signature." ls
-              )
+              | None ->
+                  builtin_fail
+                    "schnorr_sign: internal error, invalid signature." ls )
           | None -> builtin_fail "schnorr_sign: internal error." ls )
       | _ -> builtin_fail "schnorr_sign" ls
 
@@ -928,10 +975,12 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let schnorr_verify ls _ =
       match ls with
       | [ ByStrX pubkey; ByStr msg; ByStrX signature ]
-        when Bystrx.width pubkey = pubkey_len && Bystrx.width signature = signature_len
-        -> (
+        when Bystrx.width pubkey = pubkey_len
+             && Bystrx.width signature = signature_len -> (
           match
-            verify (Bystrx.to_raw_bytes pubkey) (Bystr.to_raw_bytes msg)
+            verify
+              (Bystrx.to_raw_bytes pubkey)
+              (Bystr.to_raw_bytes msg)
               (Bystrx.to_raw_bytes signature)
           with
           | Some v -> pure @@ to_Bool v
@@ -952,11 +1001,15 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let[@warning "-32"] ecdsa_sign ls _ =
       let open Secp256k1Wrapper in
       match ls with
-      | [ ByStrX privkey; ByStr msg ] when Bystrx.width privkey = privkey_len -> (
-          let%bind s = sign (Bystrx.to_raw_bytes privkey) (Bystr.to_raw_bytes msg) in
+      | [ ByStrX privkey; ByStr msg ] when Bystrx.width privkey = privkey_len
+        -> (
+          let%bind s =
+            sign (Bystrx.to_raw_bytes privkey) (Bystr.to_raw_bytes msg)
+          in
           match Bystrx.of_raw_bytes signature_len s with
           | Some bs -> pure @@ ByStrX bs
-          | None -> builtin_fail "ecdsa_sign: internal error, invalid signature." ls )
+          | None ->
+              builtin_fail "ecdsa_sign: internal error, invalid signature." ls )
       | _ -> builtin_fail "ecdsa_sign" ls
 
     let ecdsa_verify_type =
@@ -974,9 +1027,12 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       let open Secp256k1Wrapper in
       match ls with
       | [ ByStrX pubkey; ByStr msg; ByStrX signature ]
-        when Bystrx.width signature = signature_len && Bystrx.width pubkey = pubkey_len ->
+        when Bystrx.width signature = signature_len
+             && Bystrx.width pubkey = pubkey_len ->
           let%bind v =
-            verify (Bystrx.to_raw_bytes pubkey) (Bystr.to_raw_bytes msg)
+            verify
+              (Bystrx.to_raw_bytes pubkey)
+              (Bystr.to_raw_bytes msg)
               (Bystrx.to_raw_bytes signature)
           in
           pure @@ to_Bool v
@@ -1041,7 +1097,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
 
     (* alt_bn128_pairing_roduct : List (g1g2pair_type) -> Option {Bool} *)
-    let alt_bn128_pairing_product_type = fun_typ g1g2pair_list_type (option_typ bool_typ)
+    let alt_bn128_pairing_product_type =
+      fun_typ g1g2pair_list_type (option_typ bool_typ)
 
     let alt_bn128_pairing_product_arity = 1
 
@@ -1072,7 +1129,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let contains_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); u ] when kt = u -> elab_tfun_with_args_no_gas sc [ kt; vt ]
+      | [ MapType (kt, vt); u ] when kt = u ->
+          elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
     let contains ls _ =
@@ -1136,7 +1194,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let remove_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); u ] when kt = u -> elab_tfun_with_args_no_gas sc [ kt; vt ]
+      | [ MapType (kt, vt); u ] when kt = u ->
+          elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
     let remove ls _ =
@@ -1210,7 +1269,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     type elaborator = typ -> typ list -> (typ, scilla_error list) result
 
     (* Takes the expected type as an argument to elaborate the result *)
-    type built_in_executor = literal list -> typ -> (literal, scilla_error list) result
+    type built_in_executor =
+      literal list -> typ -> (literal, scilla_error list) result
 
     (* A built-in record type:
        * arity
@@ -1314,7 +1374,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         tryM dict ~f:finder ~msg:(fun () ->
             mk_error1
               (sprintf
-                 "Type error: cannot apply \"%s\" built-in to argument(s) of type(s) %s."
+                 "Type error: cannot apply \"%s\" built-in to argument(s) of \
+                  type(s) %s."
                  (pp_builtin op) (pp_typ_list argtypes))
               (ER.get_loc rep))
       in

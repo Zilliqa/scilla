@@ -74,16 +74,19 @@ let validate_main usage =
   let msg = "" in
   let msg =
     (* init.json is mandatory *)
-    if not @@ Sys.file_exists !f_input_init then "Invalid initialization file\n" else msg
+    if not @@ Sys.file_exists !f_input_init then "Invalid initialization file\n"
+    else msg
   in
   let msg =
     (* input_state.json is not mandatory, but if provided, should be valid *)
-    if invalid_optional_fname !f_input_state then msg ^ "Invalid input contract state\n"
+    if invalid_optional_fname !f_input_state then
+      msg ^ "Invalid input contract state\n"
     else msg
   in
   let msg =
     (* input_message.json is not mandatory, but if provided, should be valid *)
-    if invalid_optional_fname !f_input_message then msg ^ "Invalid input message\n"
+    if invalid_optional_fname !f_input_message then
+      msg ^ "Invalid input message\n"
     else msg
   in
   let msg =
@@ -94,7 +97,9 @@ let validate_main usage =
   in
   let msg =
     (* input file is mandatory *)
-    if not @@ Sys.file_exists !f_input then msg ^ "Invalid input contract file\n" else msg
+    if not @@ Sys.file_exists !f_input then
+      msg ^ "Invalid input contract file\n"
+    else msg
   in
   (* Note: output file is optional, if it's missing we will output to stdout *)
   let msg =
@@ -102,16 +107,18 @@ let validate_main usage =
     if
       String.(
         !f_input_message <> ""
-        && ( (!f_input_state <> "" && (!i_ipc_address <> "" || Option.is_some !v_balance))
-           || (!f_input_state = "" && (!i_ipc_address = "" || Option.is_none !v_balance))
-           ))
+        && ( !f_input_state <> ""
+             && (!i_ipc_address <> "" || Option.is_some !v_balance)
+           || !f_input_state = ""
+              && (!i_ipc_address = "" || Option.is_none !v_balance) ))
     then
       msg
-      ^ "Input message provided, but either none or both of input state / (IPC address \
-         and balance) provided\n"
+      ^ "Input message provided, but either none or both of input state / (IPC \
+         address and balance) provided\n"
     else msg
   in
-  if msg <> "" then PrettyPrinters.fatal_error_noformat (usage ^ Printf.sprintf "%s\n" msg)
+  if msg <> "" then
+    PrettyPrinters.fatal_error_noformat (usage ^ Printf.sprintf "%s\n" msg)
   else ()
 
 type ioFiles = {
@@ -141,14 +148,19 @@ let parse () =
             (* if "true" to avoid warning on exit 0 *)
             ()),
         "Print Scilla version and exit" );
-      ("-init", Arg.String (fun x -> f_input_init := x), "Path to initialization json");
-      ("-istate", Arg.String (fun x -> f_input_state := x), "Path to state input json");
+      ( "-init",
+        Arg.String (fun x -> f_input_init := x),
+        "Path to initialization json" );
+      ( "-istate",
+        Arg.String (fun x -> f_input_state := x),
+        "Path to state input json" );
       ( "-imessage",
         Arg.String (fun x -> f_input_message := x),
         "Path to message input json" );
       ( "-ipcaddress",
         Arg.String (fun x -> i_ipc_address := x),
-        "Socket address for IPC communication with blockchain for state access" );
+        "Socket address for IPC communication with blockchain for state access"
+      );
       ( "-iblockchain",
         Arg.String (fun x -> f_input_blockchain := x),
         "Path to blockchain input json" );
@@ -165,7 +177,8 @@ let parse () =
           (fun x ->
             let xl = if x = "" then [] else Str.split (Str.regexp "[;:]") x in
             d_libs := !d_libs @ xl),
-        "Path(s) to directory containing libraries separated by ':' (';' on windows)" );
+        "Path(s) to directory containing libraries separated by ':' (';' on \
+         windows)" );
       ( "-gaslimit",
         Arg.String
           (fun i ->
@@ -173,7 +186,8 @@ let parse () =
               try Stdint.Uint64.of_string i
               with _ ->
                 PrettyPrinters.fatal_error
-                  (ErrorUtils.mk_error0 (Printf.sprintf "Invalid gaslimit %s\n" i))
+                  (ErrorUtils.mk_error0
+                     (Printf.sprintf "Invalid gaslimit %s\n" i))
             in
             v_gas_limit := g),
         "Gas limit" );
@@ -184,7 +198,8 @@ let parse () =
               try Stdint.Uint128.of_string i
               with _ ->
                 PrettyPrinters.fatal_error
-                  (ErrorUtils.mk_error0 (Printf.sprintf "Invalid balance %s\n" i))
+                  (ErrorUtils.mk_error0
+                     (Printf.sprintf "Invalid balance %s\n" i))
             in
             v_balance := Some g),
         "Account balance" );
@@ -204,8 +219,8 @@ let parse () =
   let mandatory_usage =
     "Usage:\n" ^ Sys.argv.(0) ^ " -init init.json [-istate input_state.json]"
     ^ " -iblockchain input_blockchain.json [-imessage input_message.json]"
-    ^ " [-o output.json] -i input.scilla -libdir /path/to/stdlib" ^ " -gaslimit limit"
-    ^ "\n"
+    ^ " [-o output.json] -i input.scilla -libdir /path/to/stdlib"
+    ^ " -gaslimit limit" ^ "\n"
   in
   let optional_usage =
     String.concat ~sep:"\n  "

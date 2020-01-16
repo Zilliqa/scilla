@@ -49,7 +49,9 @@ let pp_result r exclude_names =
   match r with
   | Error (s, _) -> sprint_scilla_error_list s
   | Ok ((e, env), _) ->
-      let filter_prelude (k, _) = not (List.mem enames k ~equal:(fun s1 s2 -> s1 = s2)) in
+      let filter_prelude (k, _) =
+        not (List.mem enames k ~equal:(fun s1 s2 -> s1 = s2))
+      in
       sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
 
 (* Makes sure that the literal has no closures in it *)
@@ -132,8 +134,8 @@ let rec exp_eval erep env =
       let alen = List.length actuals in
       if constr.arity <> alen then
         fail0
-        @@ sprintf "Constructor %s expects %d arguments, but got %d." cname constr.arity
-             alen
+        @@ sprintf "Constructor %s expects %d arguments, but got %d." cname
+             constr.arity alen
       else
         (* Resolve the actuals *)
         let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
@@ -146,12 +148,15 @@ let rec exp_eval erep env =
       let%bind (_, e_branch), bnds =
         tryM clauses
           ~msg:(fun () ->
-            mk_error1 (sprintf "Match expression failed. No clause matched.") loc)
+            mk_error1
+              (sprintf "Match expression failed. No clause matched.")
+              loc)
           ~f:(fun (p, _) -> fromR @@ match_with_pattern v p)
       in
       (* Update the environment for the branch *)
       let env' =
-        List.fold_left bnds ~init:env ~f:(fun z (i, w) -> Env.bind z (get_id i) w)
+        List.fold_left bnds ~init:env ~f:(fun z (i, w) ->
+            Env.bind z (get_id i) w)
       in
       exp_eval_wrapper e_branch env'
   | Builtin (i, actuals) ->
@@ -258,7 +263,9 @@ let rec stmt_eval conf stmts =
           let%bind _ = stmt_gas_wrap G_Bind sloc in
           stmt_eval conf' sts
       | MapUpdate (m, klist, ropt) ->
-          let%bind klist' = mapM ~f:(fun k -> Configuration.lookup conf k) klist in
+          let%bind klist' =
+            mapM ~f:(fun k -> Configuration.lookup conf k) klist
+          in
           let%bind v =
             match ropt with
             | Some r ->
@@ -270,7 +277,9 @@ let rec stmt_eval conf stmts =
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf sts
       | MapGet (x, m, klist, fetchval) ->
-          let%bind klist' = mapM ~f:(fun k -> Configuration.lookup conf k) klist in
+          let%bind klist' =
+            mapM ~f:(fun k -> Configuration.lookup conf k) klist
+          in
           let%bind l, scon = Configuration.map_get conf m klist' fetchval in
           let conf' = Configuration.bind conf (get_id x) l in
           let%bind _ = stmt_gas_wrap scon sloc in
@@ -286,8 +295,8 @@ let rec stmt_eval conf stmts =
             tryM clauses
               ~msg:(fun () ->
                 mk_error0
-                  (sprintf "Value %s\ndoes not match any clause of\n%s." (Env.pp_value v)
-                     (pp_stmt s)))
+                  (sprintf "Value %s\ndoes not match any clause of\n%s."
+                     (Env.pp_value v) (pp_stmt s)))
               ~f:(fun (p, _) -> fromR @@ match_with_pattern v p)
           in
           (* Update the environment for the branch *)
@@ -312,13 +321,19 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       | CreateEvnt params ->
           let%bind eparams_resolved = Configuration.lookup conf params in
-          let%bind conf', scon = Configuration.create_event conf eparams_resolved in
+          let%bind conf', scon =
+            Configuration.create_event conf eparams_resolved
+          in
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | CallProc (p, actuals) ->
           (* Resolve the actuals *)
-          let%bind args = mapM actuals ~f:(fun arg -> Env.lookup conf.env arg) in
-          let%bind proc, p_rest = Configuration.lookup_procedure conf (get_id p) in
+          let%bind args =
+            mapM actuals ~f:(fun arg -> Env.lookup conf.env arg)
+          in
+          let%bind proc, p_rest =
+            Configuration.lookup_procedure conf (get_id p)
+          in
           (* Apply procedure. No gas charged for the application *)
           let%bind conf' = try_apply_as_procedure conf proc p_rest args in
           let%bind _ = stmt_gas_wrap G_CallProc sloc in
@@ -371,16 +386,23 @@ let check_blockchain_entries entries =
   let expected = [ (TypeUtil.blocknum_name, BNum "0") ] in
   (* every entry must be expected *)
   let c1 =
-    List.for_all entries ~f:(fun (s, _) -> List.exists expected ~f:(fun (t, _) -> s = t))
+    List.for_all entries ~f:(fun (s, _) ->
+        List.exists expected ~f:(fun (t, _) -> s = t))
   in
   (* everything expected must be entered *)
   let c2 =
-    List.for_all expected ~f:(fun (s, _) -> List.exists entries ~f:(fun (t, _) -> s = t))
+    List.for_all expected ~f:(fun (s, _) ->
+        List.exists entries ~f:(fun (t, _) -> s = t))
   in
   if c1 && c2 then pure entries
   else
     fail0
-    @@ sprintf "Mismatch in input blockchain variables:\nexpected:\n%s\nprovided:\n%s\n"
+    @@ sprintf
+         "Mismatch in input blockchain variables:\n\
+          expected:\n\
+          %s\n\
+          provided:\n\
+          %s\n"
          (pp_literal_map expected) (pp_literal_map entries)
 
 (*******************************************************)
@@ -489,8 +511,8 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
         let%bind atyp = fromR @@ literal_type (snd a) in
         let emsg () =
           mk_error0
-            (sprintf "Parameter %s : %s is not specified in the contract.\n" (fst a)
-               (pp_typ atyp))
+            (sprintf "Parameter %s : %s is not specified in the contract.\n"
+               (fst a) (pp_typ atyp))
         in
         (* For each argument there should be a parameter *)
         let%bind _, mp =
@@ -508,12 +530,16 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
       ~f:(fun (p, _) ->
         (* For each parameter there should be exactly one argument. *)
         if List.count args ~f:(fun a -> get_id p = fst a) <> 1 then
-          fail0 (sprintf "Parameter %s must occur exactly once in input.\n" (get_id p))
+          fail0
+            (sprintf "Parameter %s must occur exactly once in input.\n"
+               (get_id p))
         else pure true)
       cparams
   in
   (* Fold params into already initialized libraries, possibly shadowing *)
-  let env = List.fold_left ~init:libenv args ~f:(fun e (p, v) -> Env.bind e p v) in
+  let env =
+    List.fold_left ~init:libenv args ~f:(fun e (p, v) -> Env.bind e p v)
+  in
   (* Evaluate constraint, and abort if false *)
   let%bind _ = eval_constraint cconstraint' env in
   let%bind field_values = init_fields env cfields in
@@ -533,7 +559,8 @@ let create_cur_state_fields initcstate curcstate =
         let%bind t_lc = fromR @@ literal_type lc in
         let emsg () =
           mk_error0
-            (sprintf "Field %s : %s not defined in the contract\n" s (pp_typ t_lc))
+            (sprintf "Field %s : %s not defined in the contract\n" s
+               (pp_typ t_lc))
         in
         let%bind _, ex =
           tryM
@@ -664,13 +691,17 @@ let post_process_msgs cstate outs =
         | _ -> fail0 @@ sprintf "Not a message literal: %s." (pp_literal l))
   in
   let open Uint128 in
-  let to_be_transferred = List.fold_left amounts ~init:zero ~f:(fun z a -> add z a) in
+  let to_be_transferred =
+    List.fold_left amounts ~init:zero ~f:(fun z a -> add z a)
+  in
   let open ContractState in
   if compare cstate.balance to_be_transferred < 0 then
     fail0
     @@ sprintf
-         "The balance is too low (%s) to transfer all the funds in the messages (%s)"
-         (to_string cstate.balance) (to_string to_be_transferred)
+         "The balance is too low (%s) to transfer all the funds in the \
+          messages (%s)"
+         (to_string cstate.balance)
+         (to_string to_be_transferred)
   else
     let balance = sub cstate.balance to_be_transferred in
     pure { cstate with balance }
@@ -683,11 +714,15 @@ Handle message:
 * m : Syntax.literal - incoming message 
 *)
 let handle_message contr cstate bstate m =
-  let%bind tenv, incoming_funds, procedures, stmts, tname = prepare_for_message contr m in
+  let%bind tenv, incoming_funds, procedures, stmts, tname =
+    prepare_for_message contr m
+  in
   let open ContractState in
   let { env; fields; balance } = cstate in
   (* Add all values to the contract environment *)
-  let actual_env = List.fold_left tenv ~init:env ~f:(fun e (n, l) -> Env.bind e n l) in
+  let actual_env =
+    List.fold_left tenv ~init:env ~f:(fun e (n, l) -> Env.bind e n l)
+  in
   let open Configuration in
   (* Create configuration *)
   let conf =
@@ -708,7 +743,9 @@ let handle_message contr cstate bstate m =
 
   (* Finally, run the evaluator for statements *)
   let%bind conf' = stmt_eval conf stmts in
-  let cstate' = { env = cstate.env; fields = conf'.fields; balance = conf'.balance } in
+  let cstate' =
+    { env = cstate.env; fields = conf'.fields; balance = conf'.balance }
+  in
   let new_msgs = conf'.emitted in
   let new_events = conf'.events in
   (* Make sure that we aren't too generous and subract funds *)

@@ -50,8 +50,12 @@ let genKeyPair () =
   if not (genKeyPair_Z (addr privK) (addr pubK)) then None
   else
     (* Read the keys into OCaml strings. *)
-    let privK' = copy_from_tstring @@ string_from_ptr dataPrivKey ~length:privkey_len in
-    let pubK' = copy_from_tstring @@ string_from_ptr dataPubKey ~length:pubkey_len in
+    let privK' =
+      copy_from_tstring @@ string_from_ptr dataPrivKey ~length:privkey_len
+    in
+    let pubK' =
+      copy_from_tstring @@ string_from_ptr dataPubKey ~length:pubkey_len
+    in
     (* Dummy use to avoid GC of memory. *)
     let _ = (dataPrivKey, dataPubKey, privK, pubK) in
     Some (privK', pubK')
@@ -94,7 +98,9 @@ let sign privKey pubKey msg =
   if not (sign_Z (addr privKS) (addr pubKS) (addr msgS) (addr signS)) then None
   else
     (* Copy back the signature. *)
-    let signS' = copy_from_tstring @@ string_from_ptr signD ~length:signature_len in
+    let signS' =
+      copy_from_tstring @@ string_from_ptr signD ~length:signature_len
+    in
     (* Dummy use to avoid GC of memory. *)
     let _ = (privKS, privKD, pubKS, pubKD, msgS, msgD, signS, signD) in
     Some signS'
@@ -106,7 +112,8 @@ let verify pubKey msg signature =
    *)
   let verify_Z =
     foreign "verify_Z"
-      (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr int @-> returning bool)
+      ( ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr int
+      @-> returning bool )
   in
 
   (* Create container for Schnorr inputs *)

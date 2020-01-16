@@ -80,13 +80,16 @@ val is_member :
 
 (* Remove a key from a map. keys must be non-empty. *)
 val remove :
-  fname:loc ident -> keys:literal list -> (stmt_eval_context, scilla_error list) result
+  fname:loc ident ->
+  keys:literal list ->
+  (stmt_eval_context, scilla_error list) result
 
 (* Should rarely be used, and is useful only when multiple StateService objects are required *)
 module MakeStateService () : sig
   val initialize : sm:service_mode -> fields:ss_field list -> unit
 
-  val get_full_state : unit -> ((string * literal) list, scilla_error list) result
+  val get_full_state :
+    unit -> ((string * literal) list, scilla_error list) result
 
   val finalize : unit -> (unit, scilla_error list) result
 
@@ -107,5 +110,7 @@ module MakeStateService () : sig
     (bool * stmt_eval_context, scilla_error list) result
 
   val remove :
-    fname:loc ident -> keys:literal list -> (stmt_eval_context, scilla_error list) result
+    fname:loc ident ->
+    keys:literal list ->
+    (stmt_eval_context, scilla_error list) result
 end

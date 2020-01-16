@@ -26,7 +26,11 @@ open ScillaUtil.FilePathInfix
 (*                    Library type caching                       *)
 (*****************************************************************)
 
-module StdlibTypeCacher (Q : MakeTEnvFunctor) (R : QualifiedTypes) (SR : Rep) (ER : Rep) =
+module StdlibTypeCacher
+    (Q : MakeTEnvFunctor)
+    (R : QualifiedTypes)
+    (SR : Rep)
+    (ER : Rep) =
 struct
   module L = ScillaSyntax (SR) (ER)
   module MakeTEnv = Q (R) (ER)
@@ -70,13 +74,19 @@ struct
           let loc_s = get_loc_str (rr_loc t) in
           let type_s = rr_pp t in
           `Assoc
-            [ ("name", `String name_s); ("type", `String type_s); ("loc", `String loc_s) ])
+            [
+              ("name", `String name_s);
+              ("type", `String type_s);
+              ("loc", `String loc_s);
+            ])
         lib_entries
     in
     (* Compose final result. *)
     `Assoc
       [
-        ("name", `String lib_name); ("hash", `String lib_hash); ("entries", `List entries);
+        ("name", `String lib_name);
+        ("hash", `String lib_hash);
+        ("entries", `List entries);
       ]
 
   let parse_json j =
@@ -109,7 +119,9 @@ struct
                     None
               in
               (* Accummulate None or the list of entries. *)
-              match (e_o, acc) with Some e, Some l -> Some (e :: l) | _ -> None)
+              match (e_o, acc) with
+              | Some e, Some l -> Some (e :: l)
+              | _ -> None)
             ~init:(Some []) elj
         in
         match el with Some el' -> Some (n, h, el') | None -> None )

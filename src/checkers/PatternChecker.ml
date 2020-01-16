@@ -69,12 +69,17 @@ struct
             match List.nth clauses i with
             | Some (_, e) -> e
             | None ->
-                raise (mk_internal_error (sprintf "Pattern index %d too high (or low)" i))
+                raise
+                  (mk_internal_error
+                     (sprintf "Pattern index %d too high (or low)" i))
           in
           pure @@ Success e
-      | ([], [], []) :: sps_rest -> traverse_pattern (pos_ctx ctx) sps_rest i rest_clauses
+      | ([], [], []) :: sps_rest ->
+          traverse_pattern (pos_ctx ctx) sps_rest i rest_clauses
       | (p1 :: ps, t1 :: ts, dsc1 :: dscs) :: sps_rest ->
-          match_pattern p1 t1 dsc1 ctx ((ps, ts, dscs) :: sps_rest) i rest_clauses
+          match_pattern p1 t1 dsc1 ctx
+            ((ps, ts, dscs) :: sps_rest)
+            i rest_clauses
       | _ -> fail0 @@ "Internal error - pattern match uses incorrect arity"
     and match_pattern p t dsc ctx sps_rest i rest_clauses =
       match p with
@@ -95,7 +100,9 @@ struct
               i rest_clauses
           in
           let failure new_dsc =
-            traverse_clauses (build_dsc ctx new_dsc sps_rest) (i + 1) rest_clauses
+            traverse_clauses
+              (build_dsc ctx new_dsc sps_rest)
+              (i + 1) rest_clauses
           in
           let%bind adt, _ = DataTypeDictionary.lookup_constructor c_name in
           let span = List.length adt.tconstr in
@@ -128,7 +135,8 @@ struct
     | Wildcard -> CheckedPatternSyntax.Wildcard
     | Binder (Ident (s, r)) -> CheckedPatternSyntax.Binder (Ident (s, r))
     | Constructor (s, sps) ->
-        CheckedPatternSyntax.Constructor (s, List.map sps ~f:(fun sp -> lift_pattern sp))
+        CheckedPatternSyntax.Constructor
+          (s, List.map sps ~f:(fun sp -> lift_pattern sp))
 
   let rec pm_check_expr erep =
     let e, rep = erep in
@@ -139,12 +147,14 @@ struct
         let%bind checked_b = wrap_pmcheck_err erep @@ pm_check_expr b in
         let%bind checked_body = pm_check_expr body in
         pure @@ (CheckedPatternSyntax.Let (i, t, checked_b, checked_body), rep)
-    | Message msgs -> pure @@ (CheckedPatternSyntax.Message (lift_msg_payloads msgs), rep)
+    | Message msgs ->
+        pure @@ (CheckedPatternSyntax.Message (lift_msg_payloads msgs), rep)
     | Fun (i, t, body) ->
         let%bind checked_body = pm_check_expr body in
         pure @@ (CheckedPatternSyntax.Fun (i, t, checked_body), rep)
     | App (f, args) -> pure @@ (CheckedPatternSyntax.App (f, args), rep)
-    | Constr (c, t, args) -> pure @@ (CheckedPatternSyntax.Constr (c, t, args), rep)
+    | Constr (c, t, args) ->
+        pure @@ (CheckedPatternSyntax.Constr (c, t, args), rep)
     | MatchExpr ((Ident (_, r) as x), clauses) ->
         let t = ER.get_type r in
         let msg = sprintf " of type %s" (pp_typ t.tp) in
@@ -199,11 +209,13 @@ struct
                   clauses
               in
               pure @@ (CheckedPatternSyntax.MatchStmt (x, checked_clauses), rep)
-          | ReadFromBC (i, s) -> pure @@ (CheckedPatternSyntax.ReadFromBC (i, s), rep)
+          | ReadFromBC (i, s) ->
+              pure @@ (CheckedPatternSyntax.ReadFromBC (i, s), rep)
           | AcceptPayment -> pure @@ (CheckedPatternSyntax.AcceptPayment, rep)
           | SendMsgs i -> pure @@ (CheckedPatternSyntax.SendMsgs i, rep)
           | CreateEvnt i -> pure @@ (CheckedPatternSyntax.CreateEvnt i, rep)
-          | CallProc (p, args) -> pure @@ (CheckedPatternSyntax.CallProc (p, args), rep)
+          | CallProc (p, args) ->
+              pure @@ (CheckedPatternSyntax.CallProc (p, args), rep)
           | Throw i -> pure @@ (CheckedPatternSyntax.Throw i, rep)
         in
         let%bind checked_stmts = pm_check_stmts sts in
@@ -217,7 +229,8 @@ struct
         (get_id comp_name)
     in
     let%bind checked_body =
-      wrap_with_info (msg, SR.get_loc (get_rep comp_name)) @@ pm_check_stmts comp_body
+      wrap_with_info (msg, SR.get_loc (get_rep comp_name))
+      @@ pm_check_stmts comp_body
     in
     pure
     @@ {
@@ -235,7 +248,10 @@ struct
           | LibTyp (tname, typs) ->
               let lifted_typs =
                 List.map typs ~f:(fun { cname; c_arg_types } ->
-                    { CheckedPatternSyntax.cname; CheckedPatternSyntax.c_arg_types })
+                    {
+                      CheckedPatternSyntax.cname;
+                      CheckedPatternSyntax.c_arg_types;
+                    })
               in
               pure @@ CheckedPatternSyntax.LibTyp (tname, lifted_typs)
           | LibVar (entryname, t, lexp) ->
@@ -244,7 +260,8 @@ struct
                   (get_id entryname)
               in
               let%bind checked_lexp =
-                wrap_with_info (msg, ER.get_loc (get_rep entryname)) @@ pm_check_expr lexp
+                wrap_with_info (msg, ER.get_loc (get_rep entryname))
+                @@ pm_check_expr lexp
               in
               pure @@ CheckedPatternSyntax.LibVar (entryname, t, checked_lexp))
         lentries
@@ -269,7 +286,8 @@ struct
     mapM
       ~f:(fun (i, t, e) ->
         let msg =
-          sprintf "Error during pattern-match checking of field %s:\n" (get_id i)
+          sprintf "Error during pattern-match checking of field %s:\n"
+            (get_id i)
         in
         let%bind checked_e =
           wrap_with_info (msg, ER.get_loc (get_rep i)) @@ pm_check_expr e
@@ -307,9 +325,14 @@ struct
         checked_elibs )
 
   let pm_check_module md rlibs elibs =
-    let { smver = mod_smver; cname = mod_cname; libs; elibs = mod_elibs; contr } = md in
+    let { smver = mod_smver; cname = mod_cname; libs; elibs = mod_elibs; contr }
+        =
+      md
+    in
     let { cname = ctr_cname; cparams; cconstraint; cfields; ccomps } = contr in
-    let init_msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
+    let init_msg =
+      sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname)
+    in
     wrap_with_info (init_msg, dummy_loc)
     @@ let%bind checked_rlibs = pm_check_libentries rlibs in
        let%bind checked_elibs = mapM elibs ~f:pm_check_libtree in

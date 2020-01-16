@@ -60,7 +60,8 @@ struct
               if is_mem_id i rem then
                 e
                 @ mk_error1
-                    (Core_kernel.sprintf "Identifier %s used more than once\n" (get_id i))
+                    (Core_kernel.sprintf "Identifier %s used more than once\n"
+                       (get_id i))
                     (gloc @@ get_rep i)
               else e
             in
@@ -71,20 +72,29 @@ struct
     in
 
     (* No repeating names for params. *)
-    let e = check_duplicate_ident ER.get_loc (List.map (fun (i, _) -> i) contr.cparams) in
+    let e =
+      check_duplicate_ident ER.get_loc
+        (List.map (fun (i, _) -> i) contr.cparams)
+    in
     (* No repeating field names. *)
     let e =
-      e @ check_duplicate_ident ER.get_loc (List.map (fun (i, _, _) -> i) contr.cfields)
+      e
+      @ check_duplicate_ident ER.get_loc
+          (List.map (fun (i, _, _) -> i) contr.cfields)
     in
     (* No repeating component names. *)
     let e =
-      e @ check_duplicate_ident SR.get_loc (List.map (fun c -> c.comp_name) contr.ccomps)
+      e
+      @ check_duplicate_ident SR.get_loc
+          (List.map (fun c -> c.comp_name) contr.ccomps)
     in
     (* No repeating component parameter names. *)
     let e =
       List.fold_left
         (fun e t ->
-          e @ check_duplicate_ident ER.get_loc (List.map (fun (i, _) -> i) t.comp_params))
+          e
+          @ check_duplicate_ident ER.get_loc
+              (List.map (fun (i, _) -> i) t.comp_params))
         e contr.ccomps
     in
 
@@ -109,11 +119,14 @@ struct
           else
             e
             @ mk_error1
-                ("Missing " ^ amount_label ^ " or " ^ recipient_label ^ " in Message\n")
+                ( "Missing " ^ amount_label ^ " or " ^ recipient_label
+                ^ " in Message\n" )
                 eloc
         else if
           (* It must be an event or an exception. *)
-          List.exists (fun (s, _) -> s = eventname_label || s = exception_label) msg
+          List.exists
+            (fun (s, _) -> s = eventname_label || s = exception_label)
+            msg
         then e
         else e @ mk_error1 "Invalid message construct." eloc
       in
@@ -134,8 +147,8 @@ struct
           | Some (s, _) ->
               e
               @ mk_error1
-                  (Core_kernel.sprintf "Parameter %s in %s %s cannot be explicit.\n"
-                     (get_id s)
+                  (Core_kernel.sprintf
+                     "Parameter %s in %s %s cannot be explicit.\n" (get_id s)
                      (component_type_to_string c.comp_type)
                      (get_id c.comp_name))
                   (SR.get_loc @@ get_rep c.comp_name)
@@ -170,7 +183,8 @@ struct
       | MapType _
       (* The result of a <- a[][], i.e., "a" is an Option type. *)
       | ADT ("Option", [ MapType _ ]) ->
-          warn1 "Consider using in-place Map access" warning_level_map_load_store lc
+          warn1 "Consider using in-place Map access"
+            warning_level_map_load_store lc
       | _ -> ()
     in
     List.iter
@@ -180,7 +194,8 @@ struct
             (fun (stmt, _) ->
               match stmt with
               (* Recursion basis. *)
-              | Load (_, s) | Store (s, _) | MapGet (s, _, _, _) -> check_typ_warn s
+              | Load (_, s) | Store (s, _) | MapGet (s, _, _, _) ->
+                  check_typ_warn s
               | MapUpdate (_, _, vopt) -> (
                   match vopt with Some s -> check_typ_warn s | None -> () )
               (* Recurse through match statements. *)
@@ -223,7 +238,8 @@ struct
       let rec outer_scope_iter = function
         | Wildcard -> ()
         | Binder i -> check_warn_redef cparams cfields pnames i
-        | Constructor (_, plist) -> List.iter (fun pat -> outer_scope_iter pat) plist
+        | Constructor (_, plist) ->
+            List.iter (fun pat -> outer_scope_iter pat) plist
       in
       outer_scope_iter pat;
       (* Check for shadowing of names within this pattern and warn that it is
@@ -235,7 +251,8 @@ struct
       | Some v ->
           warn1
             (Printf.sprintf
-               "Deprecated: variable %s shadows a previous binding in the same pattern."
+               "Deprecated: variable %s shadows a previous binding in the same \
+                pattern."
                (get_id v))
             warning_level_name_shadowing
             (ER.get_loc (get_rep v));
@@ -245,7 +262,8 @@ struct
     (* Check for shadowing in expressions. *)
     let rec expr_iter (e, _) cparams cfields pnames =
       match e with
-      | Literal _ | Builtin _ | Constr _ | App _ | Message _ | Var _ | TApp _ -> pure ()
+      | Literal _ | Builtin _ | Constr _ | App _ | Message _ | Var _ | TApp _ ->
+          pure ()
       | Let (i, _, e_lhs, e_rhs) ->
           check_warn_redef cparams cfields pnames i;
           let%bind _ = expr_iter e_lhs cparams cfields pnames in
@@ -302,7 +320,9 @@ struct
       iterM
         ~f:(fun c ->
           (* 1. If a parameter name shadows one of cparams or cfields, warn. *)
-          List.iter (fun (p, _) -> check_warn_redef cparams cfields [] p) c.comp_params;
+          List.iter
+            (fun (p, _) -> check_warn_redef cparams cfields [] p)
+            c.comp_params;
           let pnames = List.map (fun (p, _) -> get_id p) c.comp_params in
 
           (* Check for shadowing in statements. *)
@@ -313,8 +333,8 @@ struct
                 | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
                     check_warn_redef cparams cfields pnames x;
                     pure ()
-                | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment | CreateEvnt _
-                | Throw _ | CallProc _ ->
+                | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment
+                | CreateEvnt _ | Throw _ | CallProc _ ->
                     pure ()
                 | Bind (x, e) ->
                     check_warn_redef cparams cfields pnames x;
@@ -340,14 +360,16 @@ struct
   (* ******** Interface to Checker ******** *)
   (* ************************************** *)
 
-  let contr_sanity (cmod : cmodule) (rlibs : lib_entry list) (elibs : libtree list) =
+  let contr_sanity (cmod : cmodule) (rlibs : lib_entry list)
+      (elibs : libtree list) =
     let%bind _ = basic_sanity cmod in
     let%bind _ = CheckShadowing.shadowing_libentries rlibs in
     let%bind _ = iterM ~f:CheckShadowing.shadowing_libtree elibs in
     let%bind _ = CheckShadowing.shadowing_cmod cmod in
     pure ()
 
-  let lmod_sanity (lmod : lmodule) (rlibs : lib_entry list) (elibs : libtree list) =
+  let lmod_sanity (lmod : lmodule) (rlibs : lib_entry list)
+      (elibs : libtree list) =
     let%bind _ = CheckShadowing.shadowing_libentries rlibs in
     let%bind _ = iterM ~f:CheckShadowing.shadowing_libtree elibs in
     let%bind _ = CheckShadowing.shadowing_lmod lmod in

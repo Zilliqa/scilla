@@ -21,7 +21,8 @@ open Stdint
 type uint256 = { high : uint128; low : uint128 }
 
 (* Get the lower 64b of a 128b value. *)
-let getlow (x : uint128) : uint128 = Uint128.shift_right (Uint128.shift_left x 64) 64
+let getlow (x : uint128) : uint128 =
+  Uint128.shift_right (Uint128.shift_left x 64) 64
 
 (* Get the higher 64b of a 128b value. *)
 let gethigh (x : uint128) : uint128 = Uint128.shift_right x 64
@@ -46,7 +47,8 @@ module Uint256 = struct
   let add a b =
     let low = Uint128.add a.low b.low in
     let carry =
-      if Uint128.compare low a.low < 0 || Uint128.compare low b.low < 0 then Uint128.one
+      if Uint128.compare low a.low < 0 || Uint128.compare low b.low < 0 then
+        Uint128.one
       else Uint128.zero
     in
     let high = Uint128.add (Uint128.add a.high b.high) carry in
@@ -54,7 +56,9 @@ module Uint256 = struct
 
   let sub a b =
     let low = Uint128.sub a.low b.low in
-    let borrow = if Uint128.compare a.low b.low < 0 then Uint128.one else Uint128.zero in
+    let borrow =
+      if Uint128.compare a.low b.low < 0 then Uint128.one else Uint128.zero
+    in
     let high = Uint128.sub (Uint128.sub a.high b.high) borrow in
     { high; low }
 
@@ -96,7 +100,8 @@ module Uint256 = struct
   let logand a b =
     { high = Uint128.logand a.high b.high; low = Uint128.logand a.low b.low }
 
-  let logor a b = { high = Uint128.logor a.high b.high; low = Uint128.logor a.low b.low }
+  let logor a b =
+    { high = Uint128.logor a.high b.high; low = Uint128.logor a.low b.low }
 
   let logxor a b =
     { high = Uint128.logxor a.high b.high; low = Uint128.logxor a.low b.low }
@@ -158,10 +163,14 @@ module Uint256 = struct
     let r0 = t00 in
     let s_r1 = Uint128.add t01 t10 in
     let r1 = getlow s_r1 in
-    let s_r2 = Uint128.add (Uint128.add (Uint128.add t02 t11) t20) (gethigh s_r1) in
+    let s_r2 =
+      Uint128.add (Uint128.add (Uint128.add t02 t11) t20) (gethigh s_r1)
+    in
     let r2 = getlow s_r2 in
     let s_r3 =
-      Uint128.add (Uint128.add (Uint128.add (Uint128.add t03 t12) t21) t30) (gethigh s_r2)
+      Uint128.add
+        (Uint128.add (Uint128.add (Uint128.add t03 t12) t21) t30)
+        (gethigh s_r2)
     in
     let r3 = getlow s_r3 in
     { high = highlow r3 r2; low = highlow r1 r0 }
@@ -391,7 +400,8 @@ module Int256 = struct
       else (s, false)
     in
     let i =
-      try Uint256.of_string s' with _ -> raise (Failure ("Invalid Int256 string: " ^ s))
+      try Uint256.of_string s'
+      with _ -> raise (Failure ("Invalid Int256 string: " ^ s))
     in
     if isneg i && i <> min_int then
       (* if i is negative, then the number is too big.
@@ -407,7 +417,8 @@ module Int256 = struct
 
   let to_bytes_big_endian i buf off = Uint256.to_bytes_big_endian i buf off
 
-  let to_bytes_little_endian i buf off = Uint256.to_bytes_little_endian i buf off
+  let to_bytes_little_endian i buf off =
+    Uint256.to_bytes_little_endian i buf off
 
   let of_bytes_big_endian buf off = Uint256.of_bytes_big_endian buf off
 

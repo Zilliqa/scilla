@@ -26,7 +26,8 @@ open Yojson
 
 let parse_typ_wrapper t =
   match FrontEndParser.parse_type t with
-  | Error _ -> assert_failure (sprintf "StateIPCTest: Invalid type in json: %s\n" t)
+  | Error _ ->
+      assert_failure (sprintf "StateIPCTest: Invalid type in json: %s\n" t)
   | Ok s -> s
 
 let json_exn_wrapper thunk =
@@ -90,7 +91,9 @@ let json_file_to_state path =
   let svars =
     List.map (json_to_list j) ~f:(fun sv ->
         let fname = json_member "vname" sv |> json_to_string in
-        let ftyp = json_member "type" sv |> json_to_string |> parse_typ_wrapper in
+        let ftyp =
+          json_member "type" sv |> json_to_string |> parse_typ_wrapper
+        in
         let fval = json_to_pb ftyp (json_member "value" sv) in
         (fname, ftyp, fval))
   in
@@ -143,15 +146,24 @@ let sort_mapkeys goldj outj =
     `List
       (List.map2_exn goldstates outstates ~f:(fun goldstate outstate ->
            let vname = json_member "vname" goldstate in
-           let t = json_member "type" goldstate |> json_to_string |> parse_typ_wrapper in
-           assert_bool "sort_mapkeys: order of gold states and out states mismatch"
-             (vname |> json_to_string = (json_member "vname" outstate |> json_to_string));
+           let t =
+             json_member "type" goldstate |> json_to_string |> parse_typ_wrapper
+           in
+           assert_bool
+             "sort_mapkeys: order of gold states and out states mismatch"
+             ( vname |> json_to_string
+             = (json_member "vname" outstate |> json_to_string) );
            let outval =
-             map_sorter (json_member "value" goldstate) (json_member "value" outstate) t
+             map_sorter
+               (json_member "value" goldstate)
+               (json_member "value" outstate)
+               t
            in
            `Assoc
              [
-               ("vname", vname); ("type", json_member "type" goldstate); ("value", outval);
+               ("vname", vname);
+               ("type", json_member "type" goldstate);
+               ("value", outval);
              ]))
   in
   (* Replace outstates with outstates' in outj. *)
@@ -176,19 +188,24 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
   let () = StateIPCTestClient.initialize ~fields ~sock_addr in
   (* Update the server (via the test client) with the state values we want. *)
   List.iter state ~f:(fun (fname, _, value) ->
-      if fname <> ContractUtil.balance_label then StateIPCTestClient.update ~fname ~value
+      if fname <> ContractUtil.balance_label then
+        StateIPCTestClient.update ~fname ~value
       else ());
   (* Find the balance from state and return it. *)
-  match List.find state ~f:(fun (fname, _, _) -> fname = ContractUtil.balance_label) with
+  match
+    List.find state ~f:(fun (fname, _, _) -> fname = ContractUtil.balance_label)
+  with
   | Some (_, _, balpb) -> (
       match balpb with
       | Ipcmessage_types.Bval bal ->
           json_from_string (Bytes.to_string bal) |> json_to_string
       | _ ->
           assert_failure
-            ("Incorrect type of " ^ ContractUtil.balance_label ^ " in state.json") )
+            ( "Incorrect type of " ^ ContractUtil.balance_label
+            ^ " in state.json" ) )
   | None ->
-      assert_failure ("Unable to find " ^ ContractUtil.balance_label ^ " in state.json")
+      assert_failure
+        ("Unable to find " ^ ContractUtil.balance_label ^ " in state.json")
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
 let get_final_finish ~sock_addr =
@@ -207,7 +224,9 @@ let append_full_state ~goldoutput_file ~interpreter_output svars =
         let golds = json_member "vname" goldv |> json_to_string in
         if golds = ContractUtil.balance_label then acc
         else
-          let s', rest = List.partition_tf acc ~f:(fun (s, _, _) -> s = golds) in
+          let s', rest =
+            List.partition_tf acc ~f:(fun (s, _, _) -> s = golds)
+          in
           s' @ rest)
   in
   (* Now we go about generating an appended output JSON. *)

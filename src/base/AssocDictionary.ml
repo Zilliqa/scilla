@@ -50,13 +50,15 @@ let lookup k d =
 let rec update k v d =
   match d with
   | [] -> []
-  | (kd, vd) :: rest -> if k = kd then (k, v) :: rest else (kd, vd) :: update k v rest
+  | (kd, vd) :: rest ->
+      if k = kd then (k, v) :: rest else (kd, vd) :: update k v rest
 
 let rec update_all k v d =
   match d with
   | [] -> []
   | (kd, vd) :: rest ->
-      if k = kd then (k, v) :: update_all k v rest else (kd, vd) :: update_all k v rest
+      if k = kd then (k, v) :: update_all k v rest
+      else (kd, vd) :: update_all k v rest
 
 let insert_unique k v d =
   let d' = remove_all k d in
