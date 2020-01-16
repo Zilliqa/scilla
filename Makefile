@@ -34,8 +34,8 @@ dev:
 utop: all
 	OCAMLPATH=_build/install/default/lib:$(OCAMLPATH) utop
 
-ocamlformat:
-	dune build @fmt
+fmt:
+	dune build @fmt --auto-promote
 
 # === TESTS (begin) ===========================================================
 # Build and run tests
@@ -139,4 +139,3 @@ verbose:
 # sequential build
 verbose-j1:
 	dune build -j1 --profile dev @install --verbose
-
