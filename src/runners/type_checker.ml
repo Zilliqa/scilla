@@ -29,74 +29,84 @@ open PatternChecker
 open PrettyPrinters
 open GasUseAnalysis
 open TypeInfo
-
 module PSRep = ParserRep
 module PERep = ParserRep
-  
 module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
 module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
-
 module PM_Checker = ScillaPatternchecker (TCSRep) (TCERep)
 module TI = ScillaTypeInfo (TCSRep) (TCERep)
-module GUA_Checker = ScillaGUA(TCSRep)(TCERep)
+module GUA_Checker = ScillaGUA (TCSRep) (TCERep)
 
 (* Check that the expression parses *)
-let check_parsing filename = 
-    match FrontEndParser.parse_file ScillaParser.Incremental.exp_term filename with
-    | Error _ -> fail0 (sprintf "Failed to parse input file %s\n." filename)
-    | Ok e ->
-        plog @@ sprintf
-          "\n[Parsing]:\nExpression in [%s] is successfully parsed.\n" filename;
-        pure e
+let check_parsing filename =
+  match
+    FrontEndParser.parse_file ScillaParser.Incremental.exp_term filename
+  with
+  | Error _ -> fail0 (sprintf "Failed to parse input file %s\n." filename)
+  | Ok e ->
+      plog
+      @@ sprintf "\n[Parsing]:\nExpression in [%s] is successfully parsed.\n"
+           filename;
+      pure e
 
 (* Type check the expression with external libraries *)
 let check_typing e elibs gas =
   let open TC in
   let open TC.TypeEnv in
-  let rec_lib = { ParsedSyntax.lname = asId "rec_lib" ;
-                  ParsedSyntax.lentries = recursion_principles } in
-  let%bind ((_typed_rec_libs, tenv0), remaining_gas) = type_library TEnv.mk rec_lib gas in
+  let rec_lib =
+    {
+      ParsedSyntax.lname = asId "rec_lib";
+      ParsedSyntax.lentries = recursion_principles;
+    }
+  in
+  let%bind (_typed_rec_libs, tenv0), remaining_gas =
+    type_library TEnv.mk rec_lib gas
+  in
   (* Step 1: Type check external libraries *)
-  let%bind (_, tenv1, remaining_gas) = type_libraries elibs tenv0 remaining_gas in
-  let%bind (typed_e, remaining_gas) = type_expr tenv1 e remaining_gas in
+  let%bind _, tenv1, remaining_gas = type_libraries elibs tenv0 remaining_gas in
+  let%bind typed_e, remaining_gas = type_expr tenv1 e remaining_gas in
   pure @@ (typed_e, remaining_gas)
 
 let check_patterns e = PM_Checker.pm_check_expr e
+
 let analyze_gas e = GUA_Checker.gua_expr_wrapper e
-    
+
 let () =
-    let cli = parse_cli () in
-    let open GlobalConfig in
-    StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
-    set_debug_level Debug_None;
-    let filename = cli.input_file in
-    let gas_limit = cli.gas_limit in
-    match FrontEndParser.parse_file ScillaParser.Incremental.exp_term filename  with
-    | Ok e ->
-        (* Get list of stdlib dirs. *)
-        let lib_dirs = StdlibTracker.get_stdlib_dirs() in
-        if lib_dirs = [] then stdlib_not_found_err ();
-        (* Import all libs. *)
-        let std_lib = import_all_libs lib_dirs  in
-        (match check_typing e std_lib gas_limit with
-         | Ok ((_, (e_typ, _)) as typed_erep, _remaining_gas) ->
-             (match check_patterns typed_erep with
-              | Ok _ ->
-                let tj = [("type", `String (pp_typ e_typ.tp))] in
-                let output_j = `Assoc (
-                  if cli.p_type_info
-                  then
-                    ("type_info", (JSON.TypeInfo.type_info_to_json (TI.type_info_expr typed_erep))) :: tj
-                  else
-                    tj
-                )
-                in
-                pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string output_j));
-                if cli.gua_flag then
-                (match analyze_gas typed_erep with
-                 | Ok _ -> ()
-                 | Error el -> fatal_error el)
-              | Error el -> fatal_error el)
-         | Error (_, el, _remaining_gas) -> fatal_error el)
-    | Error e -> fatal_error e
+  let cli = parse_cli () in
+  let open GlobalConfig in
+  StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
+  set_debug_level Debug_None;
+  let filename = cli.input_file in
+  let gas_limit = cli.gas_limit in
+  match
+    FrontEndParser.parse_file ScillaParser.Incremental.exp_term filename
+  with
+  | Ok e -> (
+      (* Get list of stdlib dirs. *)
+      let lib_dirs = StdlibTracker.get_stdlib_dirs () in
+      if lib_dirs = [] then stdlib_not_found_err ();
+      (* Import all libs. *)
+      let std_lib = import_all_libs lib_dirs in
+      match check_typing e std_lib gas_limit with
+      | Ok (((_, (e_typ, _)) as typed_erep), _remaining_gas) -> (
+          match check_patterns typed_erep with
+          | Ok _ -> (
+              let tj = [ ("type", `String (pp_typ e_typ.tp)) ] in
+              let output_j =
+                `Assoc
+                  ( if cli.p_type_info then
+                    ( "type_info",
+                      JSON.TypeInfo.type_info_to_json
+                        (TI.type_info_expr typed_erep) )
+                    :: tj
+                  else tj )
+              in
+              pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string output_j));
+              if cli.gua_flag then
+                match analyze_gas typed_erep with
+                | Ok _ -> ()
+                | Error el -> fatal_error el )
+          | Error el -> fatal_error el )
+      | Error (_, el, _remaining_gas) -> fatal_error el )
+  | Error e -> fatal_error e

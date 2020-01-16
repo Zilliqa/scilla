@@ -39,128 +39,115 @@ open ErrorUtils
  *)
 
 module ScillaTypeInfo
-    (SR : Rep)
-    (ER : sig
-       include Rep
-       val get_type : rep -> PlainTypes.t inferred_type
-     end) = struct
+    (SR : Rep) (ER : sig
+      include Rep
 
+      val get_type : rep -> PlainTypes.t inferred_type
+    end) =
+struct
   module SER = SR
   module EER = ER
   module EISyntax = ScillaSyntax (SR) (ER)
-  
   open EISyntax
-  
+
   (* Given an identifier, compute its type info. *)
   let calc_ident_locs i =
     let name = get_id i in
     let sloc = ER.get_loc (get_rep i) in
-    (* Once Issue #134 is solved, this calculation can be avoided. *) 
-    let eloc = { sloc with cnum = sloc.cnum + (String.length name) } in
+    (* Once Issue #134 is solved, this calculation can be avoided. *)
+    let eloc = { sloc with cnum = sloc.cnum + String.length name } in
     let t = (ER.get_type (get_rep i)).tp in
     (name, t, sloc, eloc)
 
-  let rec type_info_expr (e, _erep) = match e with
+  let rec type_info_expr (e, _erep) =
+    match e with
     | Literal _ -> []
-    | Var a | TApp (a, _) -> [calc_ident_locs a]
+    | Var a | TApp (a, _) -> [ calc_ident_locs a ]
     | Let (x, _, lhs, rhs) ->
-      let lhs_l = type_info_expr lhs in
-      let rhs_l = type_info_expr rhs in
-      (calc_ident_locs x) :: (lhs_l @ rhs_l)
-     | Message spl ->
-      List.fold_right spl ~init:[] ~f:(fun (_, pl) acc ->
-        match pl with
-        | MLit _ -> acc
-        | MVar v -> calc_ident_locs v :: acc
-      )
-    | Fun (f, _, body) | Fixpoint (f, _, body) -> (calc_ident_locs f) :: (type_info_expr body)
-    | App (i, il) -> List.map (i::il) ~f:calc_ident_locs
+        let lhs_l = type_info_expr lhs in
+        let rhs_l = type_info_expr rhs in
+        calc_ident_locs x :: (lhs_l @ rhs_l)
+    | Message spl ->
+        List.fold_right spl ~init:[] ~f:(fun (_, pl) acc ->
+            match pl with MLit _ -> acc | MVar v -> calc_ident_locs v :: acc)
+    | Fun (f, _, body) | Fixpoint (f, _, body) ->
+        calc_ident_locs f :: type_info_expr body
+    | App (i, il) -> List.map (i :: il) ~f:calc_ident_locs
     | Constr (_, _, il) ->
-      (* Issue #456 prevents us form having a location for the constructor name. *)
-      List.map il ~f:calc_ident_locs
+        (* Issue #456 prevents us form having a location for the constructor name. *)
+        List.map il ~f:calc_ident_locs
     | MatchExpr (o, clauses) ->
-      let ots = calc_ident_locs o in
-      let clausets = List.map clauses ~f:(fun (p, branch) ->
-        let patternvars = get_pattern_bounds p in
-        let patternsts = List.map patternvars ~f:calc_ident_locs in
-        let branchts = type_info_expr branch in
-        patternsts @ branchts
-      ) in
-      ots :: (List.concat clausets)
+        let ots = calc_ident_locs o in
+        let clausets =
+          List.map clauses ~f:(fun (p, branch) ->
+              let patternvars = get_pattern_bounds p in
+              let patternsts = List.map patternvars ~f:calc_ident_locs in
+              let branchts = type_info_expr branch in
+              patternsts @ branchts)
+        in
+        ots :: List.concat clausets
     | Builtin (_, il) -> List.map il ~f:calc_ident_locs
-    | TFun (i, e) -> (calc_ident_locs i) :: type_info_expr e
+    | TFun (i, e) -> calc_ident_locs i :: type_info_expr e
 
   let rec type_info_stmts stmts =
     List.fold_right stmts ~init:[] ~f:(fun (stmt, _srep) acc ->
-      (match stmt with
-      | Load (x, f) | Store (f, x) ->
-        [(calc_ident_locs x); (calc_ident_locs f)]
-      | Bind (x, e) ->
-        (calc_ident_locs x) :: (type_info_expr e)
-      (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
-      | MapUpdate (m, il, vopt) ->
-        [calc_ident_locs m] @ (List.map il ~f:calc_ident_locs) @
-        (match vopt with | Some v -> [calc_ident_locs v] | None -> [])
-      (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
-      | MapGet (x, m, il, _) ->
-        [calc_ident_locs x; calc_ident_locs m] @
-        List.map il ~f:calc_ident_locs
-      | MatchStmt (o, clauses) ->
-        let ots = calc_ident_locs o in
-        let clausets = List.map clauses ~f:(fun (p, branch) ->
-          let patternvars = get_pattern_bounds p in
-          let patternsts = List.map patternvars ~f:calc_ident_locs in
-          let branchts = type_info_stmts branch in
-          patternsts @ branchts
-        ) in
-        ots :: (List.concat clausets)
-      | ReadFromBC (v, _) | SendMsgs v | CreateEvnt v -> [calc_ident_locs v]
-      | AcceptPayment -> []
-      | CallProc (_, il) -> (List.map il ~f:calc_ident_locs)
-      | Throw iopt -> match iopt with | Some i -> [calc_ident_locs i] | None -> []
-      ) @ acc
-    )
+        ( match stmt with
+        | Load (x, f) | Store (f, x) -> [ calc_ident_locs x; calc_ident_locs f ]
+        | Bind (x, e) -> calc_ident_locs x :: type_info_expr e
+        (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
+        | MapUpdate (m, il, vopt) -> (
+            [ calc_ident_locs m ]
+            @ List.map il ~f:calc_ident_locs
+            @ match vopt with Some v -> [ calc_ident_locs v ] | None -> [] )
+        (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
+        | MapGet (x, m, il, _) ->
+            [ calc_ident_locs x; calc_ident_locs m ]
+            @ List.map il ~f:calc_ident_locs
+        | MatchStmt (o, clauses) ->
+            let ots = calc_ident_locs o in
+            let clausets =
+              List.map clauses ~f:(fun (p, branch) ->
+                  let patternvars = get_pattern_bounds p in
+                  let patternsts = List.map patternvars ~f:calc_ident_locs in
+                  let branchts = type_info_stmts branch in
+                  patternsts @ branchts)
+            in
+            ots :: List.concat clausets
+        | ReadFromBC (v, _) | SendMsgs v | CreateEvnt v -> [ calc_ident_locs v ]
+        | AcceptPayment -> []
+        | CallProc (_, il) -> List.map il ~f:calc_ident_locs
+        | Throw iopt -> (
+            match iopt with Some i -> [ calc_ident_locs i ] | None -> [] ) )
+        @ acc)
 
   let type_info_libentries lentries =
     List.fold_right lentries ~init:[] ~f:(fun lentry acc ->
-      (match lentry with
-      | LibVar (i, _, e) -> (calc_ident_locs i) :: (type_info_expr e)
-      | LibTyp (i, cdl) -> (calc_ident_locs i) ::
-        (List.map cdl ~f:(fun cd -> calc_ident_locs cd.cname))
-      ) @ acc
-    )
+        ( match lentry with
+        | LibVar (i, _, e) -> calc_ident_locs i :: type_info_expr e
+        | LibTyp (i, cdl) ->
+            calc_ident_locs i
+            :: List.map cdl ~f:(fun cd -> calc_ident_locs cd.cname) )
+        @ acc)
 
   let type_info_library l = type_info_libentries l.lentries
 
   (* Given a library module, return a list of variables, their locations and types *)
-  let type_info_lmod (lmod : lmodule) =
-    type_info_library lmod.libs
+  let type_info_lmod (lmod : lmodule) = type_info_library lmod.libs
 
   (* Given a contract, return a list of variables, their locations and types *)
   let type_info_cmod (cmod : cmodule) =
     (* If there's an internal library, provide info for it. *)
-    (match cmod.libs with
-    | Some l -> type_info_library l
-    | None -> []
-    ) @
-
+    (match cmod.libs with Some l -> type_info_library l | None -> [])
     (* Contract parameters *)
-    (List.map cmod.contr.cparams ~f:(fun (i, _) -> calc_ident_locs i)) @
-
-    type_info_expr cmod.contr.cconstraint @
-    
+    @ List.map cmod.contr.cparams ~f:(fun (i, _) -> calc_ident_locs i)
+    @ type_info_expr cmod.contr.cconstraint
     (* Contract fields *)
-    (List.concat @@ List.map cmod.contr.cfields ~f:(fun (i, _, e) ->
-        calc_ident_locs i :: (type_info_expr e)
-      )
-    ) @
-
+    @ ( List.concat
+      @@ List.map cmod.contr.cfields ~f:(fun (i, _, e) ->
+             calc_ident_locs i :: type_info_expr e) )
     (* Components *)
-    (List.concat @@
-      List.map cmod.contr.ccomps ~f:(fun comp ->
-        (List.map comp.comp_params ~f:(fun (i, _) -> calc_ident_locs i)) @
-        type_info_stmts comp.comp_body
-      )
-    )
-
+    @ List.concat
+    @@ List.map cmod.contr.ccomps ~f:(fun comp ->
+           List.map comp.comp_params ~f:(fun (i, _) -> calc_ident_locs i)
+           @ type_info_stmts comp.comp_body)
 end

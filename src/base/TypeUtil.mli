@@ -21,78 +21,99 @@ open ErrorUtils
 open Syntax
 
 (* An inferred type with possible qualifiers *)
-type 'rep inferred_type = {
-  tp   : typ;
-  qual : 'rep
-} [@@deriving sexp]
+type 'rep inferred_type = { tp : typ; qual : 'rep } [@@deriving sexp]
 
 (* Qualifiers to type inference with additional information *)
 module type QualifiedTypes = sig
   type t
+
   val t_of_sexp : Sexp.t -> t
+
   val sexp_of_t : t -> Sexp.t
-  val mk_qualified_type : typ -> t inferred_type      
+
+  val mk_qualified_type : typ -> t inferred_type
 end
 
-module type MakeTEnvFunctor = functor
-  (Q: QualifiedTypes)
-  (R : Rep)
-  -> sig
+module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
+  (* Resolving results *)
+  type resolve_result
 
-    (* Resolving results *)
-    type resolve_result
-    val rr_loc : resolve_result -> loc
-    val rr_rep : resolve_result -> R.rep
-    val rr_typ : resolve_result -> Q.t inferred_type
-    val rr_pp  : resolve_result -> string
-    val mk_qual_tp : typ -> Q.t inferred_type
+  val rr_loc : resolve_result -> loc
 
-    module TEnv : sig
-      type t
-      (* Make new type environment *)
-      val mk : t
-      (* Add to type environment *)
-      val addT : t -> R.rep ident -> typ -> t
-      (* Add to many type bindings *)
-      val addTs : t -> (R.rep ident * typ) list -> t
-      (* Add type variable to the environment *)
-      val addV : t -> R.rep ident -> t
-      (* Append env' to env in place. *)
-      val append : t -> t -> t
-      (* Retain only those keys for which (fb k) is true. *)
-      val filterTs : t -> f:(string -> bool) -> t
-      (* Check type for well-formedness in the type environment *)
-      val is_wf_type : t -> typ -> (unit, scilla_error list) result
-      (* Resolve the identifier *)    
-      val resolveT : ?lopt:(R.rep option) -> t -> string -> 
-        (resolve_result, scilla_error list) result
-      (* Is bound in environment? *)
-      val existsT : t -> string -> bool
-      (* Copy the environment *)
-      val copy : t -> t
-      (* Convert to list *)
-      val to_list : t -> (string * resolve_result) list
-      (* Get type variables *)
-      val tvars : t -> (string * R.rep) list
-      (* Print the type environment *)
-      val pp : ?f:(string * resolve_result -> bool) -> t -> string        
-    end
+  val rr_rep : resolve_result -> R.rep
+
+  val rr_typ : resolve_result -> Q.t inferred_type
+
+  val rr_pp : resolve_result -> string
+
+  val mk_qual_tp : typ -> Q.t inferred_type
+
+  module TEnv : sig
+    type t
+
+    (* Make new type environment *)
+    val mk : t
+
+    (* Add to type environment *)
+    val addT : t -> R.rep ident -> typ -> t
+
+    (* Add to many type bindings *)
+    val addTs : t -> (R.rep ident * typ) list -> t
+
+    (* Add type variable to the environment *)
+    val addV : t -> R.rep ident -> t
+
+    (* Append env' to env in place. *)
+    val append : t -> t -> t
+
+    (* Retain only those keys for which (fb k) is true. *)
+    val filterTs : t -> f:(string -> bool) -> t
+
+    (* Check type for well-formedness in the type environment *)
+    val is_wf_type : t -> typ -> (unit, scilla_error list) result
+
+    (* Resolve the identifier *)
+    val resolveT :
+      ?lopt:R.rep option ->
+      t ->
+      string ->
+      (resolve_result, scilla_error list) result
+
+    (* Is bound in environment? *)
+    val existsT : t -> string -> bool
+
+    (* Copy the environment *)
+    val copy : t -> t
+
+    (* Convert to list *)
+    val to_list : t -> (string * resolve_result) list
+
+    (* Get type variables *)
+    val tvars : t -> (string * R.rep) list
+
+    (* Print the type environment *)
+    val pp : ?f:(string * resolve_result -> bool) -> t -> string
   end
+end
 
 module PlainTypes : QualifiedTypes
 
 module TypeUtilities : sig
-
   module MakeTEnv : MakeTEnvFunctor
-    
+
   val literal_type : literal -> (typ, scilla_error list) result
+
   val is_wellformed_lit : literal -> (typ, scilla_error list) result
 
   (* Useful generic types *)
   val fun_typ : typ -> typ -> typ
+
   val tvar : string -> typ
+
   val tfun_typ : string -> typ -> typ
+
   val map_typ : typ -> typ -> typ
+
   val unit_typ : typ
 
   (****************************************************************)
@@ -100,11 +121,18 @@ module TypeUtilities : sig
   (****************************************************************)
 
   val is_storable_type : typ -> bool
+
   val is_serializable_type : typ -> bool
+
   val is_ground_type : typ -> bool
+
   val is_non_map_ground_type : typ -> bool
-  val get_msgevnt_type : (string * 'a) sexp_list -> (typ, scilla_error sexp_list) result
+
+  val get_msgevnt_type :
+    (string * 'a) sexp_list -> (typ, scilla_error sexp_list) result
+
   val map_access_type : typ -> int -> (typ, scilla_error list) result
+
   val map_depth : typ -> int
 
   (****************************************************************)
@@ -112,31 +140,64 @@ module TypeUtilities : sig
   (****************************************************************)
 
   val type_equiv : typ -> typ -> bool
+
   val type_equiv_list : typ list -> typ list -> bool
 
-  type typeCheckerErrorType =
-    | TypeError
-    | GasError
+  type typeCheckerErrorType = TypeError | GasError
 
-  val mk_type_error0 : string -> Stdint.uint64 -> (typeCheckerErrorType * scilla_error list * Stdint.uint64) 
-  val mk_type_error1 : string -> loc -> Stdint.uint64 -> (typeCheckerErrorType * scilla_error list * Stdint.uint64)
-  val wrap_error_with_errortype_and_gas : typeCheckerErrorType -> Stdint.uint64 -> ('a, 'b) result -> ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
-  val mark_error_as_type_error : Stdint.uint64 -> ('a, 'b) result -> ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
-  
+  val mk_type_error0 :
+    string ->
+    Stdint.uint64 ->
+    typeCheckerErrorType * scilla_error list * Stdint.uint64
+
+  val mk_type_error1 :
+    string ->
+    loc ->
+    Stdint.uint64 ->
+    typeCheckerErrorType * scilla_error list * Stdint.uint64
+
+  val wrap_error_with_errortype_and_gas :
+    typeCheckerErrorType ->
+    Stdint.uint64 ->
+    ('a, 'b) result ->
+    ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
+
+  val mark_error_as_type_error :
+    Stdint.uint64 ->
+    ('a, 'b) result ->
+    ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
+
   val assert_type_equiv : typ -> typ -> (unit, scilla_error list) result
-  val assert_type_equiv_with_gas : typ -> typ -> Stdint.uint64 -> ((Stdint.uint64, typeCheckerErrorType * scilla_error list * Stdint.uint64) result)
+
+  val assert_type_equiv_with_gas :
+    typ ->
+    typ ->
+    Stdint.uint64 ->
+    ( Stdint.uint64,
+      typeCheckerErrorType * scilla_error list * Stdint.uint64 )
+    result
 
   (* Applying a function type *)
   val fun_type_applies : typ -> typ list -> (typ, scilla_error list) result
+
   (* Applying a procedure "type" *)
-  val proc_type_applies : typ list -> typ list -> (unit list, scilla_error list) result
+  val proc_type_applies :
+    typ list -> typ list -> (unit list, scilla_error list) result
 
   (* Applying a type function without gas charge (for builtins) *)
-  val elab_tfun_with_args_no_gas : typ -> typ list -> (typ, scilla_error list) result
-  (* Applying a type function *)
-  val elab_tfun_with_args : typ -> typ list -> Stdint.uint64 -> (typ * Stdint.uint64, typeCheckerErrorType * scilla_error list * Stdint.uint64) result
+  val elab_tfun_with_args_no_gas :
+    typ -> typ list -> (typ, scilla_error list) result
 
-  val pp_typ_list : typ list -> string  
+  (* Applying a type function *)
+  val elab_tfun_with_args :
+    typ ->
+    typ list ->
+    Stdint.uint64 ->
+    ( typ * Stdint.uint64,
+      typeCheckerErrorType * scilla_error list * Stdint.uint64 )
+    result
+
+  val pp_typ_list : typ list -> string
 
   (****************************************************************)
   (*                        Working with ADTs                     *)
@@ -145,18 +206,19 @@ module TypeUtilities : sig
   (*  Apply type substitution  *)
   val apply_type_subst : (string * typ) list -> typ -> typ
 
-  (*  Get elaborated type for a constructor and list of type arguments *)    
-  val elab_constr_type : string -> typ list -> (typ, scilla_error list) result  
+  (*  Get elaborated type for a constructor and list of type arguments *)
+  val elab_constr_type : string -> typ list -> (typ, scilla_error list) result
 
   (* For a given instantiated ADT and a construtor name, get type *
      assignments. This is the main working horse of type-checking
-     pattern-matching. *)    
-  val constr_pattern_arg_types : typ -> string -> (typ list, scilla_error list) result  
+     pattern-matching. *)
+  val constr_pattern_arg_types :
+    typ -> string -> (typ list, scilla_error list) result
 
-  val validate_param_length : string -> int -> int -> (unit, scilla_error list) result
+  val validate_param_length :
+    string -> int -> int -> (unit, scilla_error list) result
 
   val assert_all_same_type : typ list -> (unit, scilla_error list) result
-
 end
 
 (****************************************************************)
@@ -164,4 +226,3 @@ end
 (****************************************************************)
 
 val blocknum_name : string
-

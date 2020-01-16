@@ -19,14 +19,19 @@
 (* This file aids Testcontracts.ml in setting up a state server
  * and initializing it with some initial data. *)
 
-
 (* Start a mock server (if set) at ~sock_addr and initialize its
  * state with ~state_json_path. *)
-val setup_and_initialize : start_mock_server:bool -> sock_addr:string -> state_json_path:string -> string
+val setup_and_initialize :
+  start_mock_server:bool -> sock_addr:string -> state_json_path:string -> string
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
-val get_final_finish : sock_addr:string -> (string * Syntax.typ * Ipcmessage_types.proto_scilla_val) list
+val get_final_finish :
+  sock_addr:string ->
+  (string * Syntax.typ * Ipcmessage_types.proto_scilla_val) list
 
 (* Given the interpreter's output, parse the JSON, append svars to it and print out new JSON. *)
-val append_full_state : goldoutput_file:string -> interpreter_output:string ->
-                        (string * Syntax.typ * Ipcmessage_types.proto_scilla_val) list -> string
+val append_full_state :
+  goldoutput_file:string ->
+  interpreter_output:string ->
+  (string * Syntax.typ * Ipcmessage_types.proto_scilla_val) list ->
+  string

@@ -21,15 +21,16 @@ open Core_kernel.Result
 open Core_kernel.Result.Let_syntax
 open MonadUtil
 
-let ctx = Context.create [ Sign ; Verify ]
+let ctx = Context.create [ Sign; Verify ]
 
 let privkey_len = 32
+
 let pubkey_len = 33
+
 let signature_len = 64
 
 (* Hash the message and return result raw string *)
-let prepare_message m =
-  Cryptokit.(hash_string (Hash.sha2 256) m)
+let prepare_message m = Cryptokit.(hash_string (Hash.sha2 256) m)
 
 (* raw byte string -> buffer *)
 let buffer_of_raw s =
@@ -41,10 +42,7 @@ let raw_of_buffer b =
   let cs = Cstruct.of_bigarray b in
   Hex.to_string (Hex.of_cstruct cs)
 
-let resconv r =
-  match r with
-  | Ok o -> Ok o
-  | Error s -> fail0 s
+let resconv r = match r with Ok o -> Ok o | Error s -> fail0 s
 
 let resopt m =
   match m with
