@@ -18,9 +18,11 @@
 
 (* Location info, slightly more usable than Lexing.position *)
 type loc = {
-  fname : string; (* file name *)
-  lnum : int;     (* line number *)
-  cnum : int;     (* column number *)
+  fname : string;
+  (* file name *)
+  lnum : int;
+  (* line number *)
+  cnum : int; (* column number *)
 }
 [@@deriving sexp]
 
@@ -30,36 +32,33 @@ val dummy_loc : loc
 
 val get_loc_str : loc -> string
 
-type scilla_error = {
-  emsg : string;
-  startl : loc;
-  endl : loc;
-}
+type scilla_error = { emsg : string; startl : loc; endl : loc }
 
 val sprint_scilla_error_list : scilla_error list -> string
 
 val mk_error0 : string -> scilla_error list
+
 val mk_error1 : string -> loc -> scilla_error list
+
 val mk_error2 : string -> loc -> loc -> scilla_error list
 
-type scilla_warning = {
-  wmsg : string;
-  wstartl : loc;
-  wendl : loc;
-  wid : int;
-}
+type scilla_warning = { wmsg : string; wstartl : loc; wendl : loc; wid : int }
 
 (* flag a warning, specifying a message and a warning "id". 
    The "id" can be used to enable or disable specific warnings.
  *)
 val warn0 : string -> int -> unit
+
 val warn1 : string -> int -> loc -> unit
+
 val warn2 : string -> int -> loc -> loc -> unit
 
 val get_warnings : unit -> scilla_warning list
 
 exception Invalid_json of scilla_error list
+
 val mk_invalid_json : string -> exn
 
 exception InternalError of scilla_error list
+
 val mk_internal_error : string -> exn

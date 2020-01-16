@@ -16,7 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-
 open Syntax
 open Core_kernel
 open ErrorUtils
@@ -33,207 +32,275 @@ open EventInfo
 open TypeInfo
 open Cashflow
 open Accept
-
 module PSRep = ParserRep
 module PERep = ParserRep
-
 module Rec = Recursion.ScillaRecursion (PSRep) (PERep)
 module RecSRep = Rec.OutputSRep
 module RecERep = Rec.OutputERep
-
 module TC = TypeChecker.ScillaTypechecker (RecSRep) (RecERep)
 module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
-
 module PMC = ScillaPatternchecker (TCSRep) (TCERep)
 module PMCSRep = PMC.SPR
 module PMCERep = PMC.EPR
-
 module SC = ScillaSanityChecker (TCSRep) (TCERep)
 module EI = ScillaEventInfo (PMCSRep) (PMCERep)
-
 module GUA = ScillaGUA (TCSRep) (TCERep)
 module CF = ScillaCashflowChecker (TCSRep) (TCERep)
 module AC = ScillaAcceptChecker (TCSRep) (TCERep)
 module TI = ScillaTypeInfo (TCSRep) (TCERep)
 
 (* Check that the module parses *)
-let check_parsing ctr syn = 
+let check_parsing ctr syn =
   let cmod = FrontEndParser.parse_file syn ctr in
   if Result.is_ok cmod then
     plog @@ sprintf "\n[Parsing]:\n module [%s] is successfully parsed.\n" ctr;
   cmod
 
 (* Check restrictions on inductive datatypes, and on associated recursion principles *)
-let check_recursion cmod elibs  =
+let check_recursion cmod elibs =
   let open Rec in
   let res = recursion_module cmod recursion_principles elibs in
   if Result.is_ok res then
-    plog @@ sprintf "\n[Recursion Check]:\n module [%s] is successfully checked.\n" (get_id cmod.contr.cname);
+    plog
+    @@ sprintf "\n[Recursion Check]:\n module [%s] is successfully checked.\n"
+         (get_id cmod.contr.cname);
   res
 
-let check_recursion_lmod lmod elibs  =
+let check_recursion_lmod lmod elibs =
   let open Rec in
   let res = recursion_lmodule lmod recursion_principles elibs in
   if Result.is_ok res then
-    plog @@ sprintf "\n[Recursion Check]:\n lmodule [%s] is successfully checked.\n" (get_id lmod.libs.lname);
+    plog
+    @@ sprintf "\n[Recursion Check]:\n lmodule [%s] is successfully checked.\n"
+         (get_id lmod.libs.lname);
   res
 
 (* Type check the contract with external libraries *)
 let check_typing cmod rprin elibs gas =
   let open TC in
   let res = type_module cmod rprin elibs gas in
-  let _ = match res with
+  let _ =
+    match res with
     | Ok (_, remaining_gas) ->
-        plog @@ sprintf "\n[Type Check]:\n module [%s] is successfully checked.\n" (get_id cmod.contr.cname);
+        plog
+        @@ sprintf "\n[Type Check]:\n module [%s] is successfully checked.\n"
+             (get_id cmod.contr.cname);
         let open Stdint.Uint64 in
-        plog @@ sprintf "Gas remaining after typechecking: %s units.\n" (to_string remaining_gas)
-    | _ -> () in
-    res
+        plog
+        @@ sprintf "Gas remaining after typechecking: %s units.\n"
+             (to_string remaining_gas)
+    | _ -> ()
+  in
+  res
 
 (* Type check the contract with external libraries *)
 let check_typing_lmod lmod rprin elibs gas =
   let open TC in
-  strip_error_type @@
+  strip_error_type
+  @@
   let res = type_lmodule lmod rprin elibs gas in
-  let _ = match res with
+  let _ =
+    match res with
     | Ok (_, remaining_gas) ->
-        plog @@ sprintf "\n[Type Check]:\n lmodule [%s] is successfully checked.\n" (get_id lmod.libs.lname);
+        plog
+        @@ sprintf "\n[Type Check]:\n lmodule [%s] is successfully checked.\n"
+             (get_id lmod.libs.lname);
         let open Stdint.Uint64 in
-        plog @@ sprintf "Gas remaining after typechecking: %s units.\n" (to_string remaining_gas)
-    | _ -> () in
+        plog
+        @@ sprintf "Gas remaining after typechecking: %s units.\n"
+             (to_string remaining_gas)
+    | _ -> ()
+  in
   res
 
 let check_patterns e rlibs elibs =
   let res = PMC.pm_check_module e rlibs elibs in
   if Result.is_ok res then
-    plog @@ sprintf "\n[Pattern Check]:\n module [%s] is successfully checked.\n" (get_id e.contr.cname);
+    plog
+    @@ sprintf "\n[Pattern Check]:\n module [%s] is successfully checked.\n"
+         (get_id e.contr.cname);
   res
 
 let check_patterns_lmodule e rlibs elibs =
   let res = PMC.pm_check_lmodule e rlibs elibs in
   if Result.is_ok res then
-    plog @@ sprintf "\n[Pattern Check]:\n library module is successfully checked.\n";
+    plog
+    @@ sprintf "\n[Pattern Check]:\n library module is successfully checked.\n";
   res
 
 let check_sanity m rlibs elibs =
   let res = SC.contr_sanity m rlibs elibs in
   if Result.is_ok res then
-    plog @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n" (get_id m.contr.cname);
+    plog
+    @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n"
+         (get_id m.contr.cname);
   res
 
 let check_sanity_lmod m rlibs elibs =
   let res = SC.lmod_sanity m rlibs elibs in
   if Result.is_ok res then
-    plog @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n" (get_id m.libs.lname);
+    plog
+    @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n"
+         (get_id m.libs.lname);
   res
 
-let check_accepts m =AC.contr_sanity m
+let check_accepts m = AC.contr_sanity m
 
 let analyze_print_gas cmod typed_elibs =
   let res = GUA.gua_module cmod typed_elibs in
   match res with
-  | Error msg -> pout @@ scilla_error_to_string msg ; res
+  | Error msg ->
+      pout @@ scilla_error_to_string msg;
+      res
   | Ok cpol ->
-    plog @@ sprintf "\n[Gas Use Analysis]:\n module [%s] is successfully analyzed.\n" (get_id cmod.contr.cname);
-    let _ = List.iter ~f:(fun (i, pol) ->
-        pout @@ sprintf "Gas use polynomial for transition %s:\n%s\n\n" (get_id i)
-          (GUA.sprint_gup pol)
-      ) cpol;
-    in res
+      plog
+      @@ sprintf
+           "\n[Gas Use Analysis]:\n module [%s] is successfully analyzed.\n"
+           (get_id cmod.contr.cname);
+      let _ =
+        List.iter
+          ~f:(fun (i, pol) ->
+            pout
+            @@ sprintf "Gas use polynomial for transition %s:\n%s\n\n"
+                 (get_id i) (GUA.sprint_gup pol))
+          cpol
+      in
+      res
 
 let check_cashflow typed_cmod token_fields =
-  let (param_field_tags, ctr_tags) = CF.main typed_cmod token_fields in
-  let param_field_tags_to_string = List.map param_field_tags
-      ~f:(fun (i, t) ->
-          (i, CF.ECFR.money_tag_to_string t)) in
-  let ctr_tags_to_string = List.map ctr_tags
-      ~f:(fun (adt, ctrs) ->
-          (adt, List.map ctrs
-             ~f:(fun (i, ts) ->
-                 (i, List.map ts ~f:(fun t_opt -> Option.value_map t_opt ~default:"_" ~f:CF.ECFR.money_tag_to_string))))) in
+  let param_field_tags, ctr_tags = CF.main typed_cmod token_fields in
+  let param_field_tags_to_string =
+    List.map param_field_tags ~f:(fun (i, t) ->
+        (i, CF.ECFR.money_tag_to_string t))
+  in
+  let ctr_tags_to_string =
+    List.map ctr_tags ~f:(fun (adt, ctrs) ->
+        ( adt,
+          List.map ctrs ~f:(fun (i, ts) ->
+              ( i,
+                List.map ts ~f:(fun t_opt ->
+                    Option.value_map t_opt ~default:"_"
+                      ~f:CF.ECFR.money_tag_to_string) )) ))
+  in
   (param_field_tags_to_string, ctr_tags_to_string)
-      
+
 let check_version vernum =
-  let (mver, _, _) = scilla_version in
-  if vernum <> mver
-  then
-    let emsg =  sprintf "Scilla version mismatch. Expected %d vs Contract %d\n" mver vernum in
+  let mver, _, _ = scilla_version in
+  if vernum <> mver then
+    let emsg =
+      sprintf "Scilla version mismatch. Expected %d vs Contract %d\n" mver
+        vernum
+    in
     fatal_error (mk_error0 emsg)
 
-let wrap_error_with_gas gas res = match res with
-  | Ok r -> Ok r
-  | Error e -> Error (e, gas)
+let wrap_error_with_gas gas res =
+  match res with Ok r -> Ok r | Error e -> Error (e, gas)
 
 (* Check a library module. *)
 let check_lmodule cli =
-  let r = (
+  let r =
     let initial_gas = cli.gas_limit in
-    let%bind (lmod : ParsedSyntax.lmodule) = wrap_error_with_gas initial_gas @@
-      check_parsing cli.input_file ScillaParser.Incremental.lmodule in
-    let elibs = import_libs lmod.elibs cli.init_file  in
-    let%bind (recursion_lmod, recursion_rec_principles, recursion_elibs) = 
-      wrap_error_with_gas initial_gas @@ check_recursion_lmod lmod elibs in
-    let%bind ((typed_lmod, typed_rlibs, typed_elibs), remaining_gas) = 
-      check_typing_lmod recursion_lmod recursion_rec_principles recursion_elibs initial_gas in
-    let%bind _ = wrap_error_with_gas remaining_gas @@ 
-      check_patterns_lmodule typed_lmod typed_rlibs typed_elibs in
-    let%bind _ = wrap_error_with_gas remaining_gas @@ check_sanity_lmod typed_lmod typed_rlibs typed_elibs in
+    let%bind (lmod : ParsedSyntax.lmodule) =
+      wrap_error_with_gas initial_gas
+      @@ check_parsing cli.input_file ScillaParser.Incremental.lmodule
+    in
+    let elibs = import_libs lmod.elibs cli.init_file in
+    let%bind recursion_lmod, recursion_rec_principles, recursion_elibs =
+      wrap_error_with_gas initial_gas @@ check_recursion_lmod lmod elibs
+    in
+    let%bind (typed_lmod, typed_rlibs, typed_elibs), remaining_gas =
+      check_typing_lmod recursion_lmod recursion_rec_principles recursion_elibs
+        initial_gas
+    in
+    let%bind _ =
+      wrap_error_with_gas remaining_gas
+      @@ check_patterns_lmodule typed_lmod typed_rlibs typed_elibs
+    in
+    let%bind _ =
+      wrap_error_with_gas remaining_gas
+      @@ check_sanity_lmod typed_lmod typed_rlibs typed_elibs
+    in
     pure ((typed_lmod, typed_rlibs, typed_elibs), remaining_gas)
-  ) in
-  (match r with
+  in
+  match r with
   | Error (s, g) -> fatal_error_gas s g
   | Ok (_, g) ->
-    if not (GlobalConfig.use_json_errors ())
-    then
-      pout @@ (scilla_warning_to_sstring (get_warnings ())) 
-        ^ "\ngas_remaining: " ^ (Stdint.Uint64.to_string g) ^ "\n"
-    else
-      let warnings_and_gas_output =
-        [ ("warnings", scilla_warning_to_json (get_warnings()));
-          ("gas_remaining", `String (Stdint.Uint64.to_string g));
-        ]
-      in
-      let j = `Assoc warnings_and_gas_output in
-      pout @@ sprintf "%s\n" (Yojson.pretty_to_string j)
-  )
+      if not (GlobalConfig.use_json_errors ()) then
+        pout
+        @@ scilla_warning_to_sstring (get_warnings ())
+        ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
+      else
+        let warnings_and_gas_output =
+          [
+            ("warnings", scilla_warning_to_json (get_warnings ()));
+            ("gas_remaining", `String (Stdint.Uint64.to_string g));
+          ]
+        in
+        let j = `Assoc warnings_and_gas_output in
+        pout @@ sprintf "%s\n" (Yojson.pretty_to_string j)
 
 (* Check a contract module. *)
 let check_cmodule cli =
-  let r = (
+  let r =
     let initial_gas = cli.gas_limit in
-    let%bind (cmod : ParsedSyntax.cmodule) = wrap_error_with_gas initial_gas @@
-      check_parsing cli.input_file ScillaParser.Incremental.cmodule  in
+    let%bind (cmod : ParsedSyntax.cmodule) =
+      wrap_error_with_gas initial_gas
+      @@ check_parsing cli.input_file ScillaParser.Incremental.cmodule
+    in
     (* Import whatever libs we want. *)
     let elibs = import_libs cmod.elibs cli.init_file in
-    let%bind (recursion_cmod, recursion_rec_principles, recursion_elibs) =
-      wrap_error_with_gas initial_gas @@ check_recursion cmod elibs in
-    let%bind ((typed_cmod, tenv, typed_elibs, typed_rlibs), remaining_gas) =
-      check_typing recursion_cmod recursion_rec_principles recursion_elibs initial_gas in
-    let%bind (pm_checked_cmod, _pm_checked_rlibs, _pm_checked_elibs) =
-      wrap_error_with_gas remaining_gas @@ check_patterns typed_cmod typed_rlibs typed_elibs in
+    let%bind recursion_cmod, recursion_rec_principles, recursion_elibs =
+      wrap_error_with_gas initial_gas @@ check_recursion cmod elibs
+    in
+    let%bind (typed_cmod, tenv, typed_elibs, typed_rlibs), remaining_gas =
+      check_typing recursion_cmod recursion_rec_principles recursion_elibs
+        initial_gas
+    in
+    let%bind pm_checked_cmod, _pm_checked_rlibs, _pm_checked_elibs =
+      wrap_error_with_gas remaining_gas
+      @@ check_patterns typed_cmod typed_rlibs typed_elibs
+    in
     let _ = if cli.cf_flag then check_accepts typed_cmod else () in
-    let type_info = if cli.p_type_info then TI.type_info_cmod typed_cmod else [] in
-    let%bind _ = wrap_error_with_gas remaining_gas @@ check_sanity typed_cmod typed_rlibs typed_elibs in
-    let%bind event_info = wrap_error_with_gas remaining_gas @@ EI.event_info pm_checked_cmod in
-    let%bind _ = if cli.gua_flag then wrap_error_with_gas remaining_gas @@ analyze_print_gas typed_cmod typed_elibs else pure [] in
-    let cf_info_opt = if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields) else None in
+    let type_info =
+      if cli.p_type_info then TI.type_info_cmod typed_cmod else []
+    in
+    let%bind _ =
+      wrap_error_with_gas remaining_gas
+      @@ check_sanity typed_cmod typed_rlibs typed_elibs
+    in
+    let%bind event_info =
+      wrap_error_with_gas remaining_gas @@ EI.event_info pm_checked_cmod
+    in
+    let%bind _ =
+      if cli.gua_flag then
+        wrap_error_with_gas remaining_gas
+        @@ analyze_print_gas typed_cmod typed_elibs
+      else pure []
+    in
+    let cf_info_opt =
+      if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields)
+      else None
+    in
     pure @@ (cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas)
-  ) in
-  (match r with
+  in
+  match r with
   | Error (s, g) -> fatal_error_gas s g
   | Ok (cmod, _, event_info, type_info, cf_info_opt, g) ->
       check_version cmod.smver;
       let output =
         if GlobalConfig.use_json_errors () then
-          [ ("warnings", scilla_warning_to_json (get_warnings ()));
+          [
+            ("warnings", scilla_warning_to_json (get_warnings ()));
             ("gas_remaining", `String (Stdint.Uint64.to_string g));
           ]
         else []
       in
       let output =
         if cli.p_contract_info then
-          ("contract_info", JSON.ContractInfo.get_json cmod.smver cmod.contr event_info) :: output
+          ( "contract_info",
+            JSON.ContractInfo.get_json cmod.smver cmod.contr event_info )
+          :: output
         else output
       in
       let output =
@@ -244,38 +311,34 @@ let check_cmodule cli =
       let output =
         match cf_info_opt with
         | None -> output
-        | Some cf_info -> ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: output
+        | Some cf_info ->
+            ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: output
       in
       (* If we have auxiliary output which necessitates JSON, we force JSON output. *)
-      if not (GlobalConfig.use_json_errors ()) && (List.is_empty output)
-      then
-        pout @@ scilla_warning_to_sstring (get_warnings ())
-          ^ "\ngas_remaining: " ^ (Stdint.Uint64.to_string g) ^ "\n";
+      if (not (GlobalConfig.use_json_errors ())) && List.is_empty output then
+        pout
+        @@ scilla_warning_to_sstring (get_warnings ())
+        ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n";
       let j = `Assoc output in
-      pout @@ sprintf "%s\n" (Yojson.Basic.pretty_to_string j))
+      pout @@ sprintf "%s\n" (Yojson.Basic.pretty_to_string j)
 
 let () =
-    let cli = parse_cli () in
-    let open GlobalConfig in
+  let cli = parse_cli () in
+  let open GlobalConfig in
+  StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
+  let file_extn = FilePath.get_extension cli.input_file in
+  (* Get list of stdlib dirs. *)
+  let lib_dirs = StdlibTracker.get_stdlib_dirs () in
+  if lib_dirs = [] then stdlib_not_found_err ();
 
-    StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
-    let file_extn = FilePath.get_extension cli.input_file in
-    (* Get list of stdlib dirs. *)
-    let lib_dirs = StdlibTracker.get_stdlib_dirs() in
-    if lib_dirs = [] then stdlib_not_found_err ();
-
-    (* Testsuite runs this executable with cwd=tests and ends
+  (* Testsuite runs this executable with cwd=tests and ends
        up complaining about missing _build directory for logger.
        So disable the logger. *)
-    set_debug_level Debug_None;
+  set_debug_level Debug_None;
 
-    (* Check library modules. *)
-    if file_extn = StdlibTracker.file_extn_library
-    then
-      check_lmodule cli
-    else if file_extn <> StdlibTracker.file_extn_contract
-    then
-      fatal_error (mk_error0(sprintf "Unknown file extension %s\n" file_extn))
-    else
-      (* Check contract modules. *)
-      check_cmodule cli
+  (* Check library modules. *)
+  if file_extn = StdlibTracker.file_extn_library then check_lmodule cli
+  else if file_extn <> StdlibTracker.file_extn_contract then
+    fatal_error (mk_error0 (sprintf "Unknown file extension %s\n" file_extn))
+  else (* Check contract modules. *)
+    check_cmodule cli

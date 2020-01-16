@@ -21,11 +21,9 @@ open Ctypes
 (* Copy the contents of string s to pointer p.
  * This does the opposite of `string_from_ptr`.
  *)
- let copy_to_cptr p s =
-  let f i c =
-    (p +@ i) <-@ c
-  in
-    String.iteri f s
+let copy_to_cptr p s =
+  let f i c = p +@ i <-@ c in
+  String.iteri f s
 
 (* Copy the contents of "temporary" string s
  * to a new string. "temporary" strings are those
@@ -33,9 +31,7 @@ open Ctypes
  * This arises when the string is created from `string_from_ptr`.
  *)
 let copy_from_tstring s =
-  let f i =
-    s.[i]
-  in
+  let f i = s.[i] in
   String.init (String.length s) f
 
 (*
@@ -46,7 +42,11 @@ let copy_from_tstring s =
  *  } RawBytes_Z;
  *)
 type rawBytes_Z
+
 let rawBytes_Z : rawBytes_Z structure typ = structure "rawBytes_Z"
-let rawBytes_data  = field rawBytes_Z "data" (ptr char)
-let rawBytes_len = field rawBytes_Z "len" (int)
+
+let rawBytes_data = field rawBytes_Z "data" (ptr char)
+
+let rawBytes_len = field rawBytes_Z "len" int
+
 let () = seal rawBytes_Z

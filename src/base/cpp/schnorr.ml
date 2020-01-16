@@ -24,13 +24,16 @@ open Foreign
 open CFFICommon
 
 let privkey_len = 32
+
 let pubkey_len = 33
+
 let signature_len = 64
 
 let genKeyPair () =
-
   (* bool genKeyPair_Z(RawBytes_Z* privKey, RawBytes_Z* pubKey); *)
-  let genKeyPair_Z = foreign "genKeyPair_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning bool) in
+  let genKeyPair_Z =
+    foreign "genKeyPair_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning bool)
+  in
 
   (* Allocate buffers *)
   let dataPrivKey = allocate_n char ~count:privkey_len in
@@ -44,22 +47,29 @@ let genKeyPair () =
   let _ = setf privK rawBytes_len privkey_len in
   let _ = setf pubK rawBytes_len pubkey_len in
   (* Call the C function to generate a key pair. *)
-  if not (genKeyPair_Z (addr privK) (addr pubK)) then None else
-  (* Read the keys into OCaml strings. *)
-  let privK' = copy_from_tstring @@ string_from_ptr dataPrivKey ~length:privkey_len in
-  let pubK' = copy_from_tstring @@ string_from_ptr dataPubKey ~length:pubkey_len in
-  (* Dummy use to avoid GC of memory. *)
-  let _ = dataPrivKey, dataPubKey, privK, pubK in
-  Some (privK', pubK')
+  if not (genKeyPair_Z (addr privK) (addr pubK)) then None
+  else
+    (* Read the keys into OCaml strings. *)
+    let privK' =
+      copy_from_tstring @@ string_from_ptr dataPrivKey ~length:privkey_len
+    in
+    let pubK' =
+      copy_from_tstring @@ string_from_ptr dataPubKey ~length:pubkey_len
+    in
+    (* Dummy use to avoid GC of memory. *)
+    let _ = (dataPrivKey, dataPubKey, privK, pubK) in
+    Some (privK', pubK')
 
 (* privKey, pubKey and msg are raw bytes. *)
 let sign privKey pubKey msg =
-
   (* bool sign_Z(const RawBytes_Z* privKey, const RawBytes_Z* pubKey,
    *             const RawBytes_Z* message, RawBytes_Z* signature)
    *)
-  let sign_Z = foreign "sign_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning bool) in
-
+  let sign_Z =
+    foreign "sign_Z"
+      ( ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z
+      @-> returning bool )
+  in
 
   (* Create container for Schnorr inputs *)
   let privKS = make rawBytes_Z in
@@ -85,20 +95,26 @@ let sign privKey pubKey msg =
   let _ = copy_to_cptr pubKD pubKey in
   let _ = copy_to_cptr msgD msg in
   (* Call the signing C function. *)
-  if not (sign_Z (addr privKS) (addr pubKS) (addr msgS) (addr signS)) then None else 
-  (* Copy back the signature. *)
-  let signS' = copy_from_tstring @@ string_from_ptr signD ~length:signature_len in
-  (* Dummy use to avoid GC of memory. *)
-  let _ = privKS, privKD, pubKS, pubKD, msgS, msgD, signS, signD in
-  Some signS'
+  if not (sign_Z (addr privKS) (addr pubKS) (addr msgS) (addr signS)) then None
+  else
+    (* Copy back the signature. *)
+    let signS' =
+      copy_from_tstring @@ string_from_ptr signD ~length:signature_len
+    in
+    (* Dummy use to avoid GC of memory. *)
+    let _ = (privKS, privKD, pubKS, pubKD, msgS, msgD, signS, signD) in
+    Some signS'
 
 (* pubKey, signature and msg are raw bytes. *)
 let verify pubKey msg signature =
-
   (* bool verify_Z(const RawBytes_Z* pubKey, const RawBytes_Z* message,
    *            RawBytes_Z* signature, int *result);
    *)
-  let verify_Z = foreign "verify_Z" (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr int @-> returning bool) in
+  let verify_Z =
+    foreign "verify_Z"
+      ( ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr int
+      @-> returning bool )
+  in
 
   (* Create container for Schnorr inputs *)
   let pubKS = make rawBytes_Z in
@@ -121,7 +137,8 @@ let verify pubKey msg signature =
   let _ = copy_to_cptr msgD msg in
   let _ = copy_to_cptr signD signature in
   (* Call the signing C function. *)
-  if not (verify_Z (addr pubKS) (addr msgS) (addr signS) resD) then None else
-  (* Dummy use to avoid GC of memory. *)
-  let _ = pubKD, msgD, signD, pubKS, msgS, signS, resD in
-  Some ((!@resD) = 1)
+  if not (verify_Z (addr pubKS) (addr msgS) (addr signS) resD) then None
+  else
+    (* Dummy use to avoid GC of memory. *)
+    let _ = (pubKD, msgD, signD, pubKS, msgS, signS, resD) in
+    Some (!@resD = 1)
