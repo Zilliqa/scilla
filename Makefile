@@ -34,6 +34,9 @@ dev:
 utop: all
 	OCAMLPATH=_build/install/default/lib:$(OCAMLPATH) utop
 
+fmt:
+	dune build @fmt --auto-promote
+
 # === TESTS (begin) ===========================================================
 # Build and run tests
 # the make utility increases the maximum stack limit, this allows our tests
@@ -136,4 +139,3 @@ verbose:
 # sequential build
 verbose-j1:
 	dune build -j1 --profile dev @install --verbose
-
