@@ -66,4 +66,5 @@ script:
 - eval $(opam env)
 - make test
 - make coveralls
+- dune build @fmt
 - if [ $TRAVIS_PULL_REQUEST != "false" ]; then make bench; fi

@@ -18,58 +18,67 @@
 
 open OUnit2
 
-let explist = [
-  "app_error1.scilexp";
-  "app_error2.scilexp";
-  "builtin4.scilexp";
-  "blowup.scilexp";             (* Should fail with out-of-gas. *)
-  "builtin-divzero.scilexp";
-  "builtin-divzero2.scilexp";
-  "builtin-divzero3.scilexp";
-  "builtin-divzero4.scilexp";
-  "builtin-remzero.scilexp";
-  "builtin-overflow10.scilexp";
-  "builtin-overflow11.scilexp";
-  "builtin-overflow12.scilexp";
-  "builtin-overflow13.scilexp";
-  "builtin-overflow14.scilexp";
-  "builtin-overflow1.scilexp";
-  "builtin-overflow2.scilexp";
-  "builtin-overflow3.scilexp";
-  "builtin-overflow5.scilexp";
-  "builtin-overflow6.scilexp";
-  "builtin-overflow7.scilexp";
-  "builtin-overflow8.scilexp";
-  "builtin-overflow9.scilexp";
-  "builtin-pow.scilexp";
-  "builtin-pow2.scilexp";
-  "builtin-bech32-1.scilexp";
-  "builtin-bech32-2.scilexp";
-  "builtin-bech32-3.scilexp";
-  "builtin-alt-bn128-add.scilexp";
-  "builtin-alt-bn128-mul.scilexp";
-  "msg_error2.scilexp";
-  "msg_error3.scilexp";
-  "msg_error.scilexp";
-  "let-error.scilexp";
-  "list_to_map.scilexp";
-  "string_error1.scilexp";
-  "substr_err1.scilexp";
-]
+let explist =
+  [
+    "app_error1.scilexp";
+    "app_error2.scilexp";
+    "builtin4.scilexp";
+    "blowup.scilexp";
+    (* Should fail with out-of-gas. *)
+    "builtin-divzero.scilexp";
+    "builtin-divzero2.scilexp";
+    "builtin-divzero3.scilexp";
+    "builtin-divzero4.scilexp";
+    "builtin-remzero.scilexp";
+    "builtin-overflow10.scilexp";
+    "builtin-overflow11.scilexp";
+    "builtin-overflow12.scilexp";
+    "builtin-overflow13.scilexp";
+    "builtin-overflow14.scilexp";
+    "builtin-overflow1.scilexp";
+    "builtin-overflow2.scilexp";
+    "builtin-overflow3.scilexp";
+    "builtin-overflow5.scilexp";
+    "builtin-overflow6.scilexp";
+    "builtin-overflow7.scilexp";
+    "builtin-overflow8.scilexp";
+    "builtin-overflow9.scilexp";
+    "builtin-pow.scilexp";
+    "builtin-pow2.scilexp";
+    "builtin-bech32-1.scilexp";
+    "builtin-bech32-2.scilexp";
+    "builtin-bech32-3.scilexp";
+    "builtin-alt-bn128-add.scilexp";
+    "builtin-alt-bn128-mul.scilexp";
+    "msg_error2.scilexp";
+    "msg_error3.scilexp";
+    "msg_error.scilexp";
+    "let-error.scilexp";
+    "list_to_map.scilexp";
+    "string_error1.scilexp";
+    "substr_err1.scilexp";
+  ]
 
-module Tests = TestUtil.DiffBasedTests(
-  struct
-    let gold_path dir f = [dir; "eval"; "bad"; "gold"; f ^ ".gold" ]
-    let test_path f = ["eval"; "bad"; f]
-    let runner = "eval-runner"
-    let ignore_predef_args = false
-    let gas_limit = Stdint.Uint64.of_int 4002000
-    let custom_args = []
-    let additional_libdirs = []
-    let provide_init_arg = false
-    let tests = explist
-    let exit_code : Unix.process_status = WEXITED 1
+module Tests = TestUtil.DiffBasedTests (struct
+  let gold_path dir f = [ dir; "eval"; "bad"; "gold"; f ^ ".gold" ]
 
-  end)
+  let test_path f = [ "eval"; "bad"; f ]
 
-let all_tests env = "eval_exp_fail_tests" >::: [Tests.all_tests env]
+  let runner = "eval-runner"
+
+  let ignore_predef_args = false
+
+  let gas_limit = Stdint.Uint64.of_int 4002000
+
+  let custom_args = []
+
+  let additional_libdirs = []
+
+  let provide_init_arg = false
+
+  let tests = explist
+
+  let exit_code : Unix.process_status = WEXITED 1
+end)
+
+let all_tests env = "eval_exp_fail_tests" >::: [ Tests.all_tests env ]

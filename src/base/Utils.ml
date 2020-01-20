@@ -19,15 +19,14 @@
 open Core_kernel
 
 (* Add item a to list if it isn't already present. Use ~equal to check presence. *)
-let list_add_unique ~equal ls a =
-  if List.mem ls a ~equal then ls else (a :: ls)
+let list_add_unique ~equal ls a = if List.mem ls a ~equal then ls else a :: ls
 
 (* Fold n times, each time applying 0-(n-1) and accummulator to f. *)
 let int_fold ~init ~(f : 'a -> int -> 'a) n =
   let rec recurser acc i =
-    if i = n then acc else
-    let acc' = f acc i in
-    recurser acc' (i+1)
+    if i = n then acc
+    else
+      let acc' = f acc i in
+      recurser acc' (i + 1)
   in
   recurser init 0
-

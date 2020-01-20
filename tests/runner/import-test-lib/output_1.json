@@ -1,0 +1,25 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7180",
+  "_accepted": "false",
+  "messages": [],
+  "states": [ { "vname": "_balance", "type": "Uint128", "value": "0" } ],
+  "events": [
+    {
+      "_eventname": "sorted",
+      "params": [
+        { "vname": "sorted", "type": "List (Uint32)", "value": [ "1", "2" ] }
+      ]
+    },
+    {
+      "_eventname": "unsorted",
+      "params": [
+        {
+          "vname": "unsorted",
+          "type": "List (Uint32)",
+          "value": [ "2", "1" ]
+        }
+      ]
+    }
+  ]
+}

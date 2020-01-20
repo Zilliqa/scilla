@@ -16,16 +16,15 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-
 open GlobalConfig
 open Core_kernel
 
 (* Prints to log file *)
 let plog msg =
   if get_debug_level () <> Debug_None then
-  let fname = get_log_file () in
-  Out_channel.with_file fname ~append:true
-    ~f:(fun h -> Out_channel.output_string h msg)
+    let fname = get_log_file () in
+    Out_channel.with_file fname ~append:true ~f:(fun h ->
+        Out_channel.output_string h msg)
 
 (* Prints to stdout and log file *)
 let pout msg =
@@ -39,10 +38,8 @@ let perr msg =
 
 (* Prints to trace file, if set, else to stdout. *)
 let ptrace msg =
-  let fname = GlobalConfig.get_trace_file() in
-  if fname <> ""
-  then
-    Out_channel.with_file fname ~append:true
-      ~f:(fun h -> Out_channel.output_string h msg)
-  else
-    Out_channel.output_string Out_channel.stdout msg;
+  let fname = GlobalConfig.get_trace_file () in
+  if fname <> "" then
+    Out_channel.with_file fname ~append:true ~f:(fun h ->
+        Out_channel.output_string h msg)
+  else Out_channel.output_string Out_channel.stdout msg

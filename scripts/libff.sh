@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
+
 # This script is expected to be executed from Scilla root
 # $./scripts/libff.sh
-# The script fetches, builds and installs libff in the
+# The script builds and installs libff in the
 # _build directory of Scilla root.
 
-libffurl="https://github.com/scipr-lab/libff.git"
-libffdir="_deps/libff"
+libffdir="deps/libff"
 
 # Check if CWD has `scilla.opam`, assuring us that it's the root.
 if [[ ! -f scilla.opam ]]
@@ -21,15 +21,9 @@ then
     exit 0
 fi
 
-mkdir -p $libffdir
 cd $libffdir
 mkdir -p build install
-echo "Cloning libff into ${libffdir}/src"
-git clone $libffurl src
 cd src
-echo "Fetching submodules for libff"
-git submodule init && git submodule update
-git checkout f2067162520f91438b44e71a2cab2362f1c3cab4
 echo "Installing libff into ${libffdir}/install"
 cd ../build
 cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DWITH_PROCPS=OFF

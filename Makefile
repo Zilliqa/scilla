@@ -34,6 +34,9 @@ dev:
 utop: all
 	OCAMLPATH=_build/install/default/lib:$(OCAMLPATH) utop
 
+fmt:
+	dune build @fmt --auto-promote
+
 # === TESTS (begin) ===========================================================
 # Build and run tests
 # the make utility increases the maximum stack limit, this allows our tests
@@ -75,7 +78,7 @@ clean:
 	dune clean
 # Remove remaining files/folders ignored by git as defined in .gitignore (-X)
 # but keeping a local opam switch and other dependencies built.
-	git clean -dfXq --exclude=\!_deps/** --exclude=\!_opam/**
+	git clean -dfXq --exclude=\!deps/** --exclude=\!_opam/**
 
 # Build a standalone scilla docker
 docker:

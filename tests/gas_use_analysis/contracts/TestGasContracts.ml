@@ -16,30 +16,40 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-let explist = [
-  "auction.scilla";
-  "bookstore.scilla";
-  "crowdfunding.scilla";
-  "zil-game.scilla";
-  "fungible-token.scilla";
-  "nonfungible-token.scilla";
-  "schnorr.scilla";
-  "helloworld.scilla";
-  "wallet.scilla";
-]
+let explist =
+  [
+    "auction.scilla";
+    "bookstore.scilla";
+    "crowdfunding.scilla";
+    "zil-game.scilla";
+    "fungible-token.scilla";
+    "nonfungible-token.scilla";
+    "schnorr.scilla";
+    "helloworld.scilla";
+    "wallet.scilla";
+  ]
 
-module Tests = TestUtil.DiffBasedTests(
-  struct
-    let gold_path dir f = [dir; "gas_use_analysis"; "contracts"; "gold"; f ^ ".gold" ]
-    let test_path f = ["gas_use_analysis"; "contracts"; f]
-    let runner = "scilla-checker"
-    let ignore_predef_args = false
-    let gas_limit = Stdint.Uint64.of_int 4002000
-    let custom_args = ["-gua"; "-contractinfo"]
-    let additional_libdirs = []
-    let provide_init_arg = false
-    let tests = explist
-    let exit_code : Unix.process_status = WEXITED 0
+module Tests = TestUtil.DiffBasedTests (struct
+  let gold_path dir f =
+    [ dir; "gas_use_analysis"; "contracts"; "gold"; f ^ ".gold" ]
 
-  end)
+  let test_path f = [ "gas_use_analysis"; "contracts"; f ]
+
+  let runner = "scilla-checker"
+
+  let ignore_predef_args = false
+
+  let gas_limit = Stdint.Uint64.of_int 4002000
+
+  let custom_args = [ "-gua"; "-contractinfo" ]
+
+  let additional_libdirs = []
+
+  let provide_init_arg = false
+
+  let tests = explist
+
+  let exit_code : Unix.process_status = WEXITED 0
+end)
+
 let all_tests = Tests.all_tests

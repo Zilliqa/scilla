@@ -26,6 +26,11 @@ A comprehensive documentation on Scilla, its features and constructs can be foun
 
 We suggest users to use the latest release of Scilla available [here](https://github.com/Zilliqa/scilla/releases).
 
+If you'd like to hack on Scilla, clone it with all of its submodules:
+```shell
+git clone --jobs 4 --recurse-submodules https://github.com/Zilliqa/scilla/
+```
+
 ### Build requirements
 
 Platform specific instructions for setting up your system for building Scilla can be

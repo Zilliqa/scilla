@@ -16,17 +16,25 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-module Tests = TestUtil.DiffBasedTests(
-  struct
-    let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
-    let test_path f = ["contracts"; f]
-    let runner = "scilla-checker"
-    let ignore_predef_args = false
-    let gas_limit = Stdint.Uint64.of_int 8000
-    let custom_args = ["-cf"; "-contractinfo"]
-    let additional_libdirs = []
-    let provide_init_arg = false
-    let tests = [
+module Tests = TestUtil.DiffBasedTests (struct
+  let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
+
+  let test_path f = [ "contracts"; f ]
+
+  let runner = "scilla-checker"
+
+  let ignore_predef_args = false
+
+  let gas_limit = Stdint.Uint64.of_int 8000
+
+  let custom_args = [ "-cf"; "-contractinfo" ]
+
+  let additional_libdirs = []
+
+  let provide_init_arg = false
+
+  let tests =
+    [
       "auction.scilla";
       "bookstore.scilla";
       "cfinvoke.scilla";
@@ -59,27 +67,36 @@ module Tests = TestUtil.DiffBasedTests(
       "ud-registry.scilla";
       "ud-proxy.scilla";
     ]
-    let exit_code : Unix.process_status = WEXITED 0
-  end)
+
+  let exit_code : Unix.process_status = WEXITED 0
+end)
 
 (* These differ from "Tests" because of an additional libdir argument. *)
-module CheckerTests = TestUtil.DiffBasedTests(
-  struct
-    let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
-    let test_path f = ["checker"; "good"; f]
-    let runner = "scilla-checker"
-    let ignore_predef_args = false
-    let gas_limit = Stdint.Uint64.of_int 8000
-    let custom_args = ["-cf"; "-contractinfo";]
-    let additional_libdirs = [["checker"; "good"; "lib"]]
-    let provide_init_arg = false
-    let tests = [
+module CheckerTests = TestUtil.DiffBasedTests (struct
+  let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
+
+  let test_path f = [ "checker"; "good"; f ]
+
+  let runner = "scilla-checker"
+
+  let ignore_predef_args = false
+
+  let gas_limit = Stdint.Uint64.of_int 8000
+
+  let custom_args = [ "-cf"; "-contractinfo" ]
+
+  let additional_libdirs = [ [ "checker"; "good"; "lib" ] ]
+
+  let provide_init_arg = false
+
+  let tests =
+    [
       "adt_test.scilla";
       "nested-comments.scilla";
       "cashflow_test.scilla";
       "missing-accepts.scilla";
       "multiple-accepts.scilla";
-      "one-accept.scilla"; 
+      "one-accept.scilla";
       "one-transition-accepts.scilla";
       "one-transition-might-accept.scilla";
       "one-msg2.scilla";
@@ -107,60 +124,76 @@ module CheckerTests = TestUtil.DiffBasedTests(
       "lib_typing2.scilla";
       "constraint_scope.scilla";
     ]
-    let exit_code : Unix.process_status = WEXITED 0
-  end)
+
+  let exit_code : Unix.process_status = WEXITED 0
+end)
 
 (* The test here require the `-init` argument. This is required for
  * importing libraries whose addresses are specified in the init JSON *)
-module InitArgTests = TestUtil.DiffBasedTests(
-  struct
-    let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
-    let test_path f = ["checker"; "good"; f]
-    let runner = "scilla-checker"
-    let ignore_predef_args = false
-    let gas_limit = Stdint.Uint64.of_int 8000
-    let custom_args = []
-    let provide_init_arg = true
-    let additional_libdirs = [["checker"; "good"; "lib"]]
-    let tests = [
-      "blockchain_import.scilla";
-    ]
-    let exit_code : Unix.process_status = WEXITED 0
-  end)
+module InitArgTests = TestUtil.DiffBasedTests (struct
+  let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
 
+  let test_path f = [ "checker"; "good"; f ]
 
-module ShogiTests = TestUtil.DiffBasedTests(
-  struct
-    let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".gold" ]
-    let test_path f = ["contracts"; f]
-    let runner = "scilla-checker"
-    let ignore_predef_args = false
-    let gas_limit = Stdint.Uint64.of_int 8000
-    let custom_args = ["-cf"; "-contractinfo"]
-    let additional_libdirs = [[ "contracts"; "shogi_lib"]]
-    let provide_init_arg = false
-    let tests = [
-      "shogi.scilla";
-      "shogi_proc.scilla"; 
-    ]
-    let exit_code : Unix.process_status = WEXITED 0
-  end)
+  let runner = "scilla-checker"
+
+  let ignore_predef_args = false
+
+  let gas_limit = Stdint.Uint64.of_int 8000
+
+  let custom_args = []
+
+  let provide_init_arg = true
+
+  let additional_libdirs = [ [ "checker"; "good"; "lib" ] ]
+
+  let tests = [ "blockchain_import.scilla" ]
+
+  let exit_code : Unix.process_status = WEXITED 0
+end)
+
+module ShogiTests = TestUtil.DiffBasedTests (struct
+  let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
+
+  let test_path f = [ "contracts"; f ]
+
+  let runner = "scilla-checker"
+
+  let ignore_predef_args = false
+
+  let gas_limit = Stdint.Uint64.of_int 8000
+
+  let custom_args = [ "-cf"; "-contractinfo" ]
+
+  let additional_libdirs = [ [ "contracts"; "shogi_lib" ] ]
+
+  let provide_init_arg = false
+
+  let tests = [ "shogi.scilla"; "shogi_proc.scilla" ]
+
+  let exit_code : Unix.process_status = WEXITED 0
+end)
 
 (* We don't add the "-typeinfo" argument to the main set of "Tests"
  * because that adds a lot of diff noise when things change. *)
-module TypeInfoTests = TestUtil.DiffBasedTests(
-  struct
-    let gold_path dir f = [dir; "checker"; "good"; "gold"; f ^ ".typeinfo.gold" ]
-    let test_path f = ["contracts"; f]
-    let runner = "scilla-checker"
-    let ignore_predef_args = false
-    let gas_limit = Stdint.Uint64.of_int 8000
-    let custom_args = ["-cf"; "-typeinfo"]
-    let additional_libdirs = []
-    let provide_init_arg = false
-    let tests = [
-      "map_corners_test.scilla";
-      "auction.scilla";
-    ]
-    let exit_code : Unix.process_status = WEXITED 0
-  end)
+module TypeInfoTests = TestUtil.DiffBasedTests (struct
+  let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".typeinfo.gold" ]
+
+  let test_path f = [ "contracts"; f ]
+
+  let runner = "scilla-checker"
+
+  let ignore_predef_args = false
+
+  let gas_limit = Stdint.Uint64.of_int 8000
+
+  let custom_args = [ "-cf"; "-typeinfo" ]
+
+  let additional_libdirs = []
+
+  let provide_init_arg = false
+
+  let tests = [ "map_corners_test.scilla"; "auction.scilla" ]
+
+  let exit_code : Unix.process_status = WEXITED 0
+end)

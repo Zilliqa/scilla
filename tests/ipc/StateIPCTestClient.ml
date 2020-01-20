@@ -21,10 +21,10 @@ open Syntax
 open TypeUtil
 open StateIPCIdl
 open OUnit2
-
 module M = Idl.IdM
-module IDL = Idl.Make(M)
-module IPCClient = IPCIdl(IDL.GenClient ())
+module IDL = Idl.Make (M)
+
+module IPCClient = IPCIdl (IDL.GenClient ())
 
 (* The purpose of this Test Client is to initialize the test server with data during testing.
  * While ideally we would've liked to reuse StateService, we cannot do so because that deals
@@ -32,6 +32,7 @@ module IPCClient = IPCIdl(IDL.GenClient ())
  * definitions of custom ADTs that are only available in the source file. *)
 
 type state_info = (string * typ) list
+
 (* For persistance b/w multiple queries. *)
 let stateref = ref None
 
@@ -39,7 +40,7 @@ let stateref = ref None
 let initialize ~sock_addr ~(fields : state_info) =
   stateref := Some (sock_addr, fields)
 
-let assert_init () = 
+let assert_init () =
   match !stateref with
   | None -> assert_failure "StateIPCTestClient: Uninitialized"
   | Some (sock_addr, fields) -> (sock_addr, fields)
@@ -62,16 +63,18 @@ let encode_serialized_query query =
 let translate_res res =
   match res |> IDL.T.get |> M.run with
   | Error (e : RPCError.err_t) ->
-    assert_failure (Printf.sprintf "StateIPCTestClient: Error in IPC access: (code:%d, message:%s)." e.code e.message)
+      assert_failure
+        (Printf.sprintf
+           "StateIPCTestClient: Error in IPC access: (code:%d, message:%s)."
+           e.code e.message)
   | Ok res' -> res'
 
 let ipcclient_exn_wrapper thunk =
-  try
-    thunk()
-  with
+  try thunk () with
   | Unix.Unix_error (_, s1, s2) ->
-    assert_failure ("StateIPCTestClient: Unix error: " ^ s1 ^ s2)
-  | _ -> assert_failure "StateIPCTestClient: Unexpected error making JSON-RPC call"
+      assert_failure ("StateIPCTestClient: Unix error: " ^ s1 ^ s2)
+  | _ ->
+      assert_failure "StateIPCTestClient: Unexpected error making JSON-RPC call"
 
 (* Send msg via socket s with a delimiting character "0xA". *)
 let send_delimited oc msg =
@@ -79,11 +82,15 @@ let send_delimited oc msg =
   Caml.output_string oc msg';
   Caml.flush oc
 
-let binary_rpc ~sock_addr (call: Rpc.call) : Rpc.response M.t =
-  let socket = Unix.socket ~domain: Unix.PF_UNIX ~kind: Unix.SOCK_STREAM ~protocol:0 in
+let binary_rpc ~sock_addr (call : Rpc.call) : Rpc.response M.t =
+  let socket =
+    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
+  in
   Unix.connect socket ~addr:(Unix.ADDR_UNIX sock_addr);
-  let (ic, oc) = Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket in
-  let msg_buf = Jsonrpc.string_of_call ~version: Jsonrpc.V2 call in
+  let ic, oc =
+    (Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket)
+  in
+  let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
   (* Cannot use DebugMessage here as we're part of testsuite, and don't want to 
    * have races with the main executable that also (may) logs to the same files. *)
   (* (Printf.printf "StateIPCTestClient: Sending: %s\n" msg_buf); *)
@@ -97,40 +104,55 @@ let binary_rpc ~sock_addr (call: Rpc.call) : Rpc.response M.t =
 
 (* Fetch full state variable from server (no indexing). *)
 let fetch ~fname =
-  let (sock_addr, fields) = assert_init () in
-  let tp = match List.Assoc.find fields ~equal:(=) fname with
-    | Some tp -> tp | None -> assert_failure ("StateIPCTestClient: Unable to find field " ^ fname)
+  let sock_addr, fields = assert_init () in
+  let tp =
+    match List.Assoc.find fields ~equal:( = ) fname with
+    | Some tp -> tp
+    | None ->
+        assert_failure ("StateIPCTestClient: Unable to find field " ^ fname)
   in
   let open Ipcmessage_types in
-  let q = {
-    name = fname;
-    mapdepth = TypeUtilities.map_depth tp;
-    indices = [];
-    ignoreval = false;
-  } in
+  let q =
+    {
+      name = fname;
+      mapdepth = TypeUtilities.map_depth tp;
+      indices = [];
+      ignoreval = false;
+    }
+  in
   let q' = encode_serialized_query q in
-  let res = translate_res @@ IPCClient.fetch_state_value (binary_rpc ~sock_addr) q' in
+  let res =
+    translate_res @@ IPCClient.fetch_state_value (binary_rpc ~sock_addr) q'
+  in
   match res with
-  | (true, res') -> decode_serialized_value (Bytes.of_string res')
-  | (false, _) -> assert_failure ("StateIPCTestClient: Field " ^ fname ^ " not found on server")
+  | true, res' -> decode_serialized_value (Bytes.of_string res')
+  | false, _ ->
+      assert_failure
+        ("StateIPCTestClient: Field " ^ fname ^ " not found on server")
 
 (* Update full state variable to server (no indexing). *)
 let update ~fname ~value =
   let open Ipcmessage_types in
-  let (sock_addr, fields) = assert_init () in
-  let tp = match List.Assoc.find fields ~equal:(=) fname with
-    | Some tp -> tp | None -> assert_failure ("StateIPCTestClient: Unable to find field " ^ fname)
+  let sock_addr, fields = assert_init () in
+  let tp =
+    match List.Assoc.find fields ~equal:( = ) fname with
+    | Some tp -> tp
+    | None ->
+        assert_failure ("StateIPCTestClient: Unable to find field " ^ fname)
   in
-  let q = {
-    name = fname;
-    mapdepth = TypeUtilities.map_depth tp;
-    indices = [];
-    ignoreval = false;
-  } in
+  let q =
+    {
+      name = fname;
+      mapdepth = TypeUtilities.map_depth tp;
+      indices = [];
+      ignoreval = false;
+    }
+  in
   let q' = encode_serialized_query q in
-  let value' =  encode_serialized_value value in
-  translate_res @@ IPCClient.update_state_value (binary_rpc ~sock_addr) q' value'
+  let value' = encode_serialized_value value in
+  translate_res
+  @@ IPCClient.update_state_value (binary_rpc ~sock_addr) q' value'
 
 let fetch_all () =
-  let (_, fields) = assert_init () in
+  let _, fields = assert_init () in
   List.map fields ~f:(fun (fname, tp) -> (fname, tp, fetch ~fname))

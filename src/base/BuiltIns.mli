@@ -22,19 +22,20 @@ open Core_kernel
 
 module UsefulLiterals : sig
   val true_lit : literal
+
   val false_lit : literal
+
   val to_Bool : bool -> literal
 
   val some_lit : literal -> (literal, ErrorUtils.scilla_error list) result
+
   val none_lit : typ -> literal
 
-  val pair_lit : literal -> literal -> (literal, ErrorUtils.scilla_error list) result
+  val pair_lit :
+    literal -> literal -> (literal, ErrorUtils.scilla_error list) result
 end
 
-module ScillaBuiltIns
-    (SR : Rep)
-    (ER : Rep) : sig
-
+module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
   module BuiltInDictionary : sig
     type built_in_executor =
       literal list -> typ -> (literal, scilla_error list) result
@@ -43,12 +44,13 @@ module ScillaBuiltIns
      * The full elaborated type of the operation, e.g., string -> Bool
      * Its result type for given argument types, e.g., Bool
      * Executor for evaluating the operation      
-    *)
+     *)
     val find_builtin_op :
-      ER.rep builtin_annot -> typ list -> ((typ * typ * built_in_executor), scilla_error list) result
+      ER.rep builtin_annot ->
+      typ list ->
+      (typ * typ * built_in_executor, scilla_error list) result
   end
 
   (* Elaborator for the built-in typ *)
   val elab_id : typ -> typ list -> (typ, scilla_error list) result
-
 end

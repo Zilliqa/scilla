@@ -21,74 +21,120 @@ module Uint256 : sig
   type t
 
   val zero : t
+
   val one : t
+
   val max_int : t
+
   val min_int : t
 
   val add : t -> t -> t
+
   val sub : t -> t -> t
+
   val mul : t -> t -> t
-  val div: t -> t -> t
-  val rem: t -> t -> t
+
+  val div : t -> t -> t
+
+  val rem : t -> t -> t
+
   val compare : t -> t -> int
+
   val shift_left : t -> int -> t
+
   val shift_right : t -> int -> t
+
   val shift_right_logical : t -> int -> t
+
   val setbit : t -> int -> t
+
   val clearbit : t -> int -> t
+
   val logand : t -> t -> t
+
   val logor : t -> t -> t
+
   val logxor : t -> t -> t
+
   val lognot : t -> t
 
-  val abs: t -> t
-  val neg: t -> t
+  val abs : t -> t
+
+  val neg : t -> t
 
   val of_string : string -> t
-  val to_string : t -> string
-  val to_float : t -> float
-  val to_bytes_big_endian : t -> Bytes.t -> int -> unit
-  val to_bytes_little_endian : t -> Bytes.t -> int -> unit
-  val of_bytes_big_endian : Bytes.t -> int -> t
-  val of_bytes_little_endian : Bytes.t -> int -> t
 
+  val to_string : t -> string
+
+  val to_float : t -> float
+
+  val to_bytes_big_endian : t -> Bytes.t -> int -> unit
+
+  val to_bytes_little_endian : t -> Bytes.t -> int -> unit
+
+  val of_bytes_big_endian : Bytes.t -> int -> t
+
+  val of_bytes_little_endian : Bytes.t -> int -> t
 end
 
 module Int256 : sig
   type t
 
   val zero : t
+
   val one : t
+
   val max_int : t
+
   val min_int : t
 
   val add : t -> t -> t
+
   val sub : t -> t -> t
+
   val mul : t -> t -> t
-  val div: t -> t -> t
-  val rem: t -> t -> t
+
+  val div : t -> t -> t
+
+  val rem : t -> t -> t
+
   val compare : t -> t -> int
+
   val shift_left : t -> int -> t
+
   val shift_right : t -> int -> t
+
   val shift_right_logical : t -> int -> t
+
   val setbit : t -> int -> t
+
   val clearbit : t -> int -> t
+
   val logand : t -> t -> t
+
   val logor : t -> t -> t
+
   val logxor : t -> t -> t
+
   val lognot : t -> t
 
-  val abs: t -> t
-  val neg: t -> t
+  val abs : t -> t
+
+  val neg : t -> t
 
   val of_string : string -> t
-  val to_string : t -> string
-  val to_bytes_big_endian : t -> Bytes.t -> int -> unit
-  val to_bytes_little_endian : t -> Bytes.t -> int -> unit
-  val of_bytes_big_endian : Bytes.t -> int -> t
-  val of_bytes_little_endian : Bytes.t -> int -> t
 
+  val to_string : t -> string
+
+  val to_bytes_big_endian : t -> Bytes.t -> int -> unit
+
+  val to_bytes_little_endian : t -> Bytes.t -> int -> unit
+
+  val of_bytes_big_endian : Bytes.t -> int -> t
+
+  val of_bytes_little_endian : Bytes.t -> int -> t
 end
 
 type int256 = Int256.t
+
 type uint256 = Uint256.t
