@@ -1,0 +1,21 @@
+scilla_version 0
+
+import TestLib3 IntUtils
+
+contract Hello()
+
+transition Hi ()
+  one = Uint32 1;
+  two = Uint32 2;
+  nil = Nil {Uint32};
+  single = Cons {Uint32} one nil;
+  double = Cons {Uint32} two single;
+
+  unsorted = double;
+  e = { _eventname : "unsorted"; unsorted : double };
+  event e;
+
+  sorted = foo_uint32 uint32_lt double;
+  e = { _eventname : "sorted"; sorted : sorted };
+  event e
+end

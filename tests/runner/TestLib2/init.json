@@ -1,4 +1,24 @@
 [
+    { 
+        "vname" : "_scilla_version",
+        "type" : "Uint32",
+        "value" : "0"
+    },
+    {
+        "vname" : "_this_address",
+        "type" : "ByStr20",
+        "value" : "0x786556789012345678901234567890123456abcd"
+    },
+    {
+        "vname" : "_creation_block",
+        "type" : "BNum",
+        "value" : "1"
+    },
+    {
+        "vname" : "_library",
+        "type" : "Bool",
+        "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
     {
         "vname" : "_extlibs",
         "type" : "List(Pair String ByStr20)",

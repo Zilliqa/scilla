@@ -21,7 +21,7 @@ open Ctypes
 (* Copy the contents of string s to pointer p.
  * This does the opposite of `string_from_ptr`.
  *)
-val copy_to_cptr : (char, [`C]) pointer -> string -> unit
+val copy_to_cptr : (char, [ `C ]) pointer -> string -> unit
 
 (* Copy the contents of "temporary" string s
  * to a new string. "temporary" strings are those
@@ -38,6 +38,9 @@ val copy_from_tstring : string -> string
  *  } RawBytes_Z;
  *)
 type rawBytes_Z
+
 val rawBytes_Z : rawBytes_Z structure typ
+
 val rawBytes_data : (char Ctypes_static.ptr, rawBytes_Z structure) field
+
 val rawBytes_len : (int, rawBytes_Z structure) field

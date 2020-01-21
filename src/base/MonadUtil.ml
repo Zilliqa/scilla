@@ -32,30 +32,20 @@ open Stdint
 *)
 
 module CPSMonad = struct
-  
   type nonrec ('a, 'b, 'c) t = (('a, 'b) result -> 'c) -> 'c
-    
-  let return x = (fun k -> k @@ Ok x)
-                 
-  let bind x ~f =
-    fun k ->
-      let k' r = (match r with
-          | Ok z -> (f z) k
-          | Error _ as x'  -> k x'
-            ) in
-      x k'
-          
-  let map x ~f = 
-    fun k->
-      let k' r = (match r with
-          | Error _ as x' -> k x'
-          | Ok z -> k @@ Ok (f z)
-        ) in
-      x  k'
-        
+
+  let return x k = k @@ Ok x
+
+  let bind x ~f k =
+    let k' r = match r with Ok z -> (f z) k | Error _ as x' -> k x' in
+    x k'
+
+  let map x ~f k =
+    let k' r = match r with Error _ as x' -> k x' | Ok z -> k @@ Ok (f z) in
+    x k'
+
   let map = `Custom map
-      
-end             
+end
 
 (****************************************************************)
 (*               Result monad and its utilitis                  *)
@@ -63,65 +53,72 @@ end
 
 (* Monadic evaluation results *)
 let fail (s : scilla_error list) = Error s
+
 let pure e = return e
 
 (* fail with just a message, no location info. *)
 let fail0 (msg : string) = fail @@ mk_error0 msg
+
 (* fail with a message and start location. *)
 let fail1 msg sloc = fail @@ mk_error1 msg sloc
+
 (* fail with a message and both start and end locations. *)
 let fail2 msg sloc eloc = fail @@ mk_error2 msg sloc eloc
 
 (* Monadic fold-left for error *)
-let rec foldM ~f ~init ls = match ls with
+let rec foldM ~f ~init ls =
+  match ls with
   | x :: ls' ->
       let%bind res = f init x in
-      foldM ~f:f ~init:res ls'
+      foldM ~f ~init:res ls'
   | [] -> pure init
 
 (* Monadic fold-right for error *)
-let rec foldrM ~f ~init ls = match ls with
+let rec foldrM ~f ~init ls =
+  match ls with
   | x :: ls' ->
-      let%bind rest = foldrM ~f:f ~init:init ls' in
+      let%bind rest = foldrM ~f ~init ls' in
       f rest x
   | [] -> pure init
 
 (* Monadic map for error *)
-let rec mapM ~f ls = match ls with
+let rec mapM ~f ls =
+  match ls with
   | x :: ls' ->
       let%bind z = f x in
-      let%bind zs = mapM ~f:f ls' in
+      let%bind zs = mapM ~f ls' in
       pure (z :: zs)
   | [] -> pure []
 
-let rec iterM ~f ls = match ls with
+let rec iterM ~f ls =
+  match ls with
   | x :: ls' ->
-    let%bind _ = f x in
-    iterM ~f ls'
+      let%bind _ = f x in
+      iterM ~f ls'
   | [] -> pure ()
 
-let liftPair1 m x = 
+let liftPair1 m x =
   let%bind z = m in
   pure (z, x)
 
-let liftPair2 x m = 
+let liftPair2 x m =
   let%bind z = m in
   pure (x, z)
 
 (* Return the first error applying f to elements of ls.
  * Returns true if all elements satisfy f. *)
-let rec forallM ~f ls = match ls with
+let rec forallM ~f ls =
+  match ls with
   | x :: ls' ->
-      let%bind _ = f x in 
-      forallM ~f:f ls'
+      let%bind _ = f x in
+      forallM ~f ls'
   | [] -> pure true
 
 (* Try all variants in the list, pick the first successful one *)
-let rec tryM ~f ls ~msg = match ls with
-  | x :: ls' ->
-      (match f x  with
-       | Ok z -> Ok (x, z)
-       | Error _ -> tryM ~f:f ls' ~msg)
+let rec tryM ~f ls ~msg =
+  match ls with
+  | x :: ls' -> (
+      match f x with Ok z -> Ok (x, z) | Error _ -> tryM ~f ls' ~msg )
   | [] -> Error (msg ())
 
 (****************************************************************)
@@ -129,83 +126,81 @@ let rec tryM ~f ls ~msg = match ls with
 (****************************************************************)
 
 module EvalMonad = struct
-
   include Monad.Make3 (CPSMonad)
 
   (* Monadic evaluation results *)
-  let fail (s : scilla_error list) = 
-    (fun k remaining_gas -> k (Error s) remaining_gas)
+  let fail (s : scilla_error list) k remaining_gas = k (Error s) remaining_gas
+
   let pure e = return e
 
   (* fail with just a message, no location info. *)
   let fail0 (msg : string) = fail @@ mk_error0 msg
+
   (* fail with a message and start location. *)
   let fail1 msg sloc = fail @@ mk_error1 msg sloc
+
   (* fail with a message and both start and end locations. *)
   let fail2 msg sloc eloc = fail @@ mk_error2 msg sloc eloc
 
   let fromR r =
-    match r with
-    | Core_kernel.Error s -> fail s
-    | Core_kernel.Ok a -> pure a
+    match r with Core_kernel.Error s -> fail s | Core_kernel.Ok a -> pure a
 
   let out_of_gas_err = mk_error0 "Ran out of gas"
-  
-  (* [Wrappers for Gas Accounting]  *)
-  let checkwrap_opR op_thunk cost =
-    (fun k remaining_gas ->
-       if (Uint64.compare remaining_gas cost) >= 0
-       then 
-         let res = op_thunk () in
-         k res (Uint64.sub remaining_gas cost)
-       else 
-         k (Error out_of_gas_err) remaining_gas)
 
-  let checkwrap_op op_thunk cost emsg =
-    (fun k remaining_gas ->
-       if (Uint64.compare remaining_gas cost) >= 0 then
-          op_thunk () k (Uint64.sub remaining_gas cost)
-       else
-         k (Error emsg) remaining_gas)
+  (* [Wrappers for Gas Accounting]  *)
+  let checkwrap_opR op_thunk cost k remaining_gas =
+    if Uint64.compare remaining_gas cost >= 0 then
+      let res = op_thunk () in
+      k res (Uint64.sub remaining_gas cost)
+    else k (Error out_of_gas_err) remaining_gas
+
+  let checkwrap_op op_thunk cost emsg k remaining_gas =
+    if Uint64.compare remaining_gas cost >= 0 then
+      op_thunk () k (Uint64.sub remaining_gas cost)
+    else k (Error emsg) remaining_gas
 
   open Let_syntax
 
   (* Monadic fold-left for error *)
-  let rec foldM ~f ~init ls = match ls with
+  let rec foldM ~f ~init ls =
+    match ls with
     | x :: ls' ->
         let%bind res = f init x in
-        foldM ~f:f ~init:res ls'
+        foldM ~f ~init:res ls'
     | [] -> pure init
-              
+
   (* Monadic fold-right for error *)
-  let rec foldrM ~f ~init ls = match ls with
+  let rec foldrM ~f ~init ls =
+    match ls with
     | x :: ls' ->
-      let%bind rest = foldrM ~f:f ~init:init ls' in
-      f rest x
+        let%bind rest = foldrM ~f ~init ls' in
+        f rest x
     | [] -> pure init
-              
+
   (* Monadic map for error *)
-  let rec mapM ~f ls = match ls with
+  let rec mapM ~f ls =
+    match ls with
     | x :: ls' ->
         let%bind z = f x in
-        let%bind zs = mapM ~f:f ls' in
+        let%bind zs = mapM ~f ls' in
         pure (z :: zs)
     | [] -> pure []
 
-  let liftPair1 m x = 
+  let liftPair1 m x =
     let%bind z = m in
     pure (z, x)
-      
-  let liftPair2 x m = 
+
+  let liftPair2 x m =
     let%bind z = m in
     pure (x, z)
 
-(* Return the first error applying f to elements of ls.
- * Returns true if all elements satisfy f. *)
-  let rec forallM ~f ls = match ls with
+  (* Return the first error applying f to elements of ls.
+   * Returns true if all elements satisfy f. *)
+  let rec forallM ~f ls =
+    match ls with
     | x :: ls' ->
-        let%bind _ = f x in 
-        forallM ~f:f ls'
+        let%bind _ = f x in
+        forallM ~f ls'
     | [] -> pure true
 
   (* Try all variants in the list, pick the first successful one *)
@@ -213,13 +208,15 @@ module EvalMonad = struct
     let rec doTry ls k remaining_cost =
       match ls with
       | x :: ls' ->
-          let k' r remaining_cost' = (
+          let k' r remaining_cost' =
             match r with
             | Ok z -> k (Ok (x, z)) remaining_cost'
-            | Error _ -> doTry ls' k remaining_cost') in
+            | Error _ -> doTry ls' k remaining_cost'
+          in
           (f x) k' remaining_cost
       | _ -> k (Error (msg ())) remaining_cost
     in
-    (fun k remaining_cost -> doTry ls k remaining_cost)
+    fun k remaining_cost -> doTry ls k remaining_cost
+end
 
-end (* module EvalMonad *)
+(* module EvalMonad *)

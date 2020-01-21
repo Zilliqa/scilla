@@ -59,5 +59,6 @@ src/stdlib/*.json
 .DS_Store
 
 # external dependencies
-_deps/*
+deps/libff/build/
+deps/libff/install/
 

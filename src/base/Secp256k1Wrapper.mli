@@ -19,7 +19,9 @@
 open ErrorUtils
 
 val privkey_len : int
+
 val pubkey_len : int
+
 val signature_len : int
 
 (* Given a private key, return it's public key. *)

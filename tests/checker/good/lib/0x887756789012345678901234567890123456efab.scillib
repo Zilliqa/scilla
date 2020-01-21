@@ -1,0 +1,6 @@
+scilla_version 0
+
+(* This library is imported from blockchain_import.scilla. *)
+library BlockchainLib
+
+let a = Int32 1
