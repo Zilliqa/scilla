@@ -58,7 +58,7 @@ type scilla_warning = { wmsg : string; wstartl : loc; wendl : loc; wid : int }
 
 let warnings_list = ref []
 
-(* flag a warning, specifying a message and a warning "id". 
+(* flag a warning, specifying a message and a warning "id".
    The "id" can be used to enable or disable specific warnings.
  *)
 let warn0 msg id =
@@ -86,3 +86,5 @@ exception InternalError of scilla_error list
 let mk_internal_error msg = InternalError (mk_error0 msg)
 
 exception FatalError of string
+
+let exit_with_error _ = exit 1

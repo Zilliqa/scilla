@@ -107,27 +107,24 @@ module DataTypeDictionary = struct
     }
 
   (* adt.tname -> adt *)
-  let adt_name_dict =
-    let open Caml in
-    let ht : (string, adt) Hashtbl.t = Hashtbl.create 5 in
-    let _ = Hashtbl.add ht t_bool.tname t_bool in
-    let _ = Hashtbl.add ht t_nat.tname t_nat in
-    let _ = Hashtbl.add ht t_option.tname t_option in
-    let _ = Hashtbl.add ht t_list.tname t_list in
-    let _ = Hashtbl.add ht t_product.tname t_product in
-    ht
+  let adt_name_dict = Caml.Hashtbl.create 5
 
   (* tconstr -> (adt * constructor) *)
   let adt_cons_dict = Caml.Hashtbl.create 10
 
   (* Re-initialize environment dictionaries *)
   let reinit () =
-    let open Caml in
-    let ht : (string, adt * constructor) Hashtbl.t = Hashtbl.create 10 in
-    Hashtbl.iter
-      (fun _ a -> List.iter (fun c -> Hashtbl.add ht c.cname (a, c)) a.tconstr)
-      adt_name_dict;
-    ht
+    Caml.Hashtbl.(
+      reset adt_name_dict;
+      reset adt_cons_dict;
+      add adt_name_dict t_bool.tname t_bool;
+      add adt_name_dict t_nat.tname t_nat;
+      add adt_name_dict t_option.tname t_option;
+      add adt_name_dict t_list.tname t_list;
+      add adt_name_dict t_product.tname t_product;
+      iter (fun _ a -> Caml.List.iter (fun c ->
+        add adt_cons_dict c.cname (a, c)) a.tconstr) adt_name_dict
+    )
 
   let add_adt (new_adt : adt) error_loc =
     let open Caml in

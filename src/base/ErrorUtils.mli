@@ -44,7 +44,7 @@ val mk_error2 : string -> loc -> loc -> scilla_error list
 
 type scilla_warning = { wmsg : string; wstartl : loc; wendl : loc; wid : int }
 
-(* flag a warning, specifying a message and a warning "id". 
+(* flag a warning, specifying a message and a warning "id".
    The "id" can be used to enable or disable specific warnings.
  *)
 val warn0 : string -> int -> unit
@@ -64,3 +64,5 @@ exception InternalError of scilla_error list
 val mk_internal_error : string -> exn
 
 exception FatalError of string
+
+val exit_with_error : string -> unit

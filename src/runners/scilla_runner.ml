@@ -35,4 +35,4 @@ let () =
   try
     let args = Cli.parse () in
     run args
-  with FatalError _ -> exit 1
+  with FatalError msg -> exit_with_error msg
