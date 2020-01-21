@@ -28,11 +28,11 @@ rm -rf ./bench/results/*
 mkdir -p ./bench/results
 
 make
-./bin/scilla-bench
+dune exec ./bench/bin/scilla_bench_runner.exe
 
 git checkout -q "$BASE"
 
 make
-./bin/scilla-bench
+dune exec ./bench/bin/scilla_bench_runner.exe
 
 git checkout -

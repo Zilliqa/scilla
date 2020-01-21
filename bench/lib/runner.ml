@@ -19,4 +19,4 @@ let exec ~prog ~args =
   let exit_or_signal = Unix.waitpid pi.pid in
   if Result.is_error exit_or_signal then
     let cmd = prog ^ " " ^ String.concat ~sep:" " args in
-    failwith @@ "Benchmark failed: " ^ cmd
+    failwith @@ "Benchmark failed: \n" ^ cmd
