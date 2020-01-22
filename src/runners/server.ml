@@ -16,8 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Scilla_server
-
-let _ = Cli.run
+let _ = Scilla_server.Cli.run
   ~sock_path:"./scilla-server.sock"
   ~num_pending:5
