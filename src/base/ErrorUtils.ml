@@ -87,4 +87,6 @@ let mk_internal_error msg = InternalError (mk_error0 msg)
 
 exception FatalError of string
 
-let exit_with_error _ = exit 1
+let exit_with_error msg =
+  DebugMessage.perr msg;
+  exit 1

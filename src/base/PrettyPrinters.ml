@@ -184,16 +184,13 @@ let located_msg msg loc =
 
 let fatal_error err =
   let msg = scilla_error_to_string err in
-  DebugMessage.perr msg;
   raise (FatalError msg)
 
 let fatal_error_gas err gas_remaining =
   let msg = scilla_error_gas_string gas_remaining err in
-  DebugMessage.perr msg;
   raise (FatalError msg)
 
 let fatal_error_noformat msg =
-  DebugMessage.perr msg;
   raise (FatalError msg)
 
 (*****************************************************)
