@@ -20,16 +20,14 @@ open Core
 open ErrorUtils
 
 let output_to_string output ~args =
-  if args.Runner.pp_json then
-    Yojson.Basic.pretty_to_string output
-  else
-    Yojson.Basic.to_string output
+  if args.Runner.pp_json then Yojson.Basic.pretty_to_string output
+  else Yojson.Basic.to_string output
 
 let run args =
   let output = Runner.run args in
   let str = output_to_string ~args output in
-  Out_channel.with_file args.Runner.output
-    ~f:(fun ch -> Out_channel.output_string ch str)
+  Out_channel.with_file args.Runner.output ~f:(fun ch ->
+      Out_channel.output_string ch str)
 
 let () =
   try

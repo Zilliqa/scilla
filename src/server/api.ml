@@ -21,19 +21,25 @@ open Idl
 module API (R : RPC) = struct
   open R
 
-  let description = Interface.{
-    name = "API";
-    namespace = None;
-    description = ["This is a functor used to generate clients and servers that follow the JSON RPC protocol"];
-    version=(1,0,0);
-  }
+  let description =
+    Interface.
+      {
+        name = "API";
+        namespace = None;
+        description =
+          [
+            "This is a functor used to generate clients and servers that \
+             follow the JSON RPC protocol";
+          ];
+        version = (1, 0, 0);
+      }
 
   let implementation = implement description
 
-  let runner_argv = Param.mk
-    ~name:"argv"
-    ~description:["Scilla execution parameters"]
-    Query.Runner.t
+  let runner_argv =
+    Param.mk ~name:"argv"
+      ~description:[ "Scilla execution parameters" ]
+      Query.Runner.t
 
   (* The return value of this JSON-RPC method will be a JSON,
      identical to today’s output JSON emitted by scilla-runner. *)
@@ -41,6 +47,8 @@ module API (R : RPC) = struct
 
   let runner_error = Idl.DefaultError.err
 
-  let runner = declare "runner" ["Execute Scilla contract"]
-    (runner_argv @-> returning runner_return runner_error)
+  let runner =
+    declare "runner"
+      [ "Execute Scilla contract" ]
+      (runner_argv @-> returning runner_return runner_error)
 end

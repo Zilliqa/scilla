@@ -114,6 +114,4 @@ let run () =
       | Error (_, el, _remaining_gas) -> fatal_error el )
   | Error e -> fatal_error e
 
-let () =
-  try run ()
-  with FatalError msg -> exit_with_error msg
+let () = try run () with FatalError msg -> exit_with_error msg

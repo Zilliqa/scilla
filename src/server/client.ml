@@ -19,13 +19,15 @@
 open Core
 open Api
 open DebugMessage
-
 module M = Idl.IdM
-module IDL = Idl.Make(M)
-module Client = API(IDL.GenClient ())
+module IDL = Idl.Make (M)
 
-let rpc ~sock_path (call: Rpc.call) : Rpc.response =
-  let socket = Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 in
+module Client = API (IDL.GenClient ())
+
+let rpc ~sock_path (call : Rpc.call) : Rpc.response =
+  let socket =
+    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
+  in
   let addr = Unix.ADDR_UNIX sock_path in
   Unix.connect socket ~addr;
   let ic = Unix.in_channel_of_descr socket in

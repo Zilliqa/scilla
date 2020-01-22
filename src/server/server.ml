@@ -28,8 +28,9 @@ open Api
 
    You can easily put [ExnM] here and the code would stay unchanged.*)
 module M = Idl.IdM
-module IDL = Idl.Make(M)
-module Server = API(IDL.GenServer ())
+module IDL = Idl.Make (M)
+
+module Server = API (IDL.GenServer ())
 
 (** Command handler that runs Scilla with the
     given [argv] and returns the resulting JSON. *)
@@ -42,12 +43,12 @@ let runner argv =
   try
     let output = Runner.run args in
     let result = Yojson.Basic.to_string output in
-    pout @@ Printf.sprintf "\nRunner response:\n %s\n" (Yojson.Basic.prettify result);
+    pout
+    @@ Printf.sprintf "\nRunner response:\n %s\n"
+         (Yojson.Basic.prettify result);
     (* TODO: implement AST caching here *)
     return result
-  with
-    FatalError msg ->
-      return_err (Idl.DefaultError.InternalError msg)
+  with FatalError msg -> return_err (Idl.DefaultError.InternalError msg)
 
 (** Request handler. *)
 let handler rpc conn =
@@ -60,27 +61,31 @@ let handler rpc conn =
 (** Listen on the given [sock_path] and process requests.
     The [num_pending] is the maximal number of pending requests. *)
 let serve rpc ~sock_path ~num_pending =
-  (try Unix.unlink sock_path with Unix.Unix_error(Unix.ENOENT, _, _) -> ());
+  (try Unix.unlink sock_path with Unix.Unix_error (Unix.ENOENT, _, _) -> ());
   (* Ensure that socket directory exists *)
   Unix.mkdir_p ~perm:0o0755 (Filename.dirname sock_path);
-  let socket = Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 in
+  let socket =
+    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
+  in
   Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_path);
   Unix.listen socket ~backlog:num_pending;
   pout @@ Printf.sprintf "Listening on %s\n" sock_path;
   Out_channel.flush stdout;
   while true do
     let conn, _ = Unix.accept socket in
-    let _ = Thread.create
+    let _ =
+      Thread.create
         (fun () ->
-           Util.protect_reraise
-             (* Here we're calling [M.run] to make sure that we are running the process,
+          Util.protect_reraise
+          (* Here we're calling [M.run] to make sure that we are running the process,
                 this is not much of a problem with [IdM] or [ExnM], but in general we
                 should ensure that the computation is started by a runner *)
-             ~f:(fun () -> handler rpc conn)
-             (* Close the connection no matter what *)
-             ~finally:(fun () -> Unix.close conn)
-        ) ()
-    in ()
+            ~f:(fun () -> handler rpc conn)
+              (* Close the connection no matter what *)
+            ~finally:(fun () -> Unix.close conn))
+        ()
+    in
+    ()
   done
 
 (** Start the server. *)
@@ -90,6 +95,7 @@ let start ~sock_path ~num_pending () =
 
   (* Handlers: *)
   Server.runner runner;
+
   (* Add more handlers here, for example:
      Server.checker checker; *)
 

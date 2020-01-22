@@ -18,22 +18,19 @@
 
 open Idl
 
-type t = {
-  code : int;
-  message : string;
-} [@@deriving rpcty]
+type t = { code : int; message : string } [@@deriving rpcty]
 
 exception ServerError of t
 
-let rpc_err = Error.{
-  def = t;
-  raiser = (function | e -> raise (ServerError e));
-  matcher = function | ServerError e -> Some e | _ -> None
-}
+let rpc_err =
+  Error.
+    {
+      def = t;
+      raiser = (function e -> raise (ServerError e));
+      matcher = (function ServerError e -> Some e | _ -> None);
+    }
 
-type reason =
-  | InvalidQuery of string
-  [@@deriving show]
+type reason = InvalidQuery of string [@@deriving show]
 
 let mk = function
   | InvalidQuery msg -> { code = 1; message = "Invalid query: " ^ msg }

@@ -18,27 +18,22 @@
 
 open Idl
 
+type t = { code : int; message : string }
 (** Server error *)
-type t = {
-  code : int;
-  message : string;
-}
 
-(** Server exception *)
 exception ServerError of t
+(** Server exception *)
 
+val rpc_err : t Error.t
 (** Type of the RPC error,
     needed by the ocaml-rpc lib *)
-val rpc_err : t Error.t
 
 (** Error reason *)
-type reason =
-  | InvalidQuery of string
-  [@@deriving show]
+type reason = InvalidQuery of string [@@deriving show]
 
-(** Makes an error out of [reason] *)
 val mk : reason -> t
+(** Makes an error out of [reason] *)
 
+val invalid_query : string -> t
 (** Makes an "invalid query" error out
     of the given descrption [string] *)
-val invalid_query : string -> t

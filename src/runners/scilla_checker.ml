@@ -345,6 +345,4 @@ let run () =
   else (* Check contract modules. *)
     check_cmodule cli
 
-let () =
-  try run ()
-  with FatalError msg -> exit_with_error msg
+let () = try run () with FatalError msg -> exit_with_error msg

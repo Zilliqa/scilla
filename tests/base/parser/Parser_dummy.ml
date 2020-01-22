@@ -46,6 +46,4 @@ let run () =
     raise_if_error @@ parse_expr_from_file input_file
   else fatal_error (mk_error0 (sprintf "Unknown file extension %s\n" extn))
 
-let () =
-  try run ()
-  with FatalError msg -> exit_with_error msg
+let () = try run () with FatalError msg -> exit_with_error msg

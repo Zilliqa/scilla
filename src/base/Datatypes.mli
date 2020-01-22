@@ -42,6 +42,7 @@ module DataTypeDictionary : sig
 
   (* Re-initialize environment with the built-in ADTs *)
   val reinit : unit -> unit
+
   (*  Get ADT by name  *)
   val lookup_name : string -> (adt, scilla_error list) result
 

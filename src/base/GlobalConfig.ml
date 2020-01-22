@@ -123,8 +123,7 @@ module StdlibTracker = struct
   let file_extn_library = "scillib"
 
   (* Reset internal state. *)
-  let reset () =
-    stdlib_dirs := []
+  let reset () = stdlib_dirs := []
 
   (* File extension for Scilla expressions. *)
   let file_extn_expression = "scilexp"

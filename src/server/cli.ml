@@ -16,37 +16,31 @@ open Core
 open Api
 open ScillaUtil.FilePathInfix
 
-module Cmds = API(Cmdlinergen.Gen ())
+module Cmds = API (Cmdlinergen.Gen ())
 
 module Cmd = struct
   open Cmdliner.Term
 
   let default ~version =
     let doc = "The Scilla server CLI" in
-    ret (const (fun _ -> `Help (`Pager, None)) $ const ()),
-    info "scilla-server" ~version ~doc
+    ( ret (const (fun _ -> `Help (`Pager, None)) $ const ()),
+      info "scilla-server" ~version ~doc )
 
   let server ~sock_path ~num_pending =
-    const @@ Server.start ~sock_path ~num_pending $ const (),
-    info "start" ~doc:"Start Scilla server"
+    ( const @@ Server.start ~sock_path ~num_pending $ const (),
+      info "start" ~doc:"Start Scilla server" )
 end
 
 let run ~sock_path ~num_pending =
   let open Cmdliner in
-  let logs_dir = "_build" ^/ "logs" in
-  Unix.mkdir_p ~perm:0o0755 logs_dir;
-  GlobalConfig.(
-    set_use_json_errors true;
-    set_log_file @@ logs_dir ^/ "scilla-server.log";
-    set_debug_level Debug_Normal
-  );
   let rpc = Client.rpc ~sock_path in
   let def = Cmd.default ~version:"1.0.0" in
   let srv = Cmd.server ~sock_path ~num_pending in
   let mk_cmd fn =
-    let (term, info) = fn rpc in
-    Term.(term $ const ()), info in
+    let term, info = fn rpc in
+    (Term.(term $ const ()), info)
+  in
   let impl = Cmds.implementation () in
-  let calls = List.map impl ~f:mk_cmd  in
+  let calls = List.map impl ~f:mk_cmd in
   let cmds = srv :: calls in
   Term.(exit @@ eval_choice def cmds)

@@ -122,9 +122,10 @@ module DataTypeDictionary = struct
       add adt_name_dict t_option.tname t_option;
       add adt_name_dict t_list.tname t_list;
       add adt_name_dict t_product.tname t_product;
-      iter (fun _ a -> Caml.List.iter (fun c ->
-        add adt_cons_dict c.cname (a, c)) a.tconstr) adt_name_dict
-    )
+      iter
+        (fun _ a ->
+          Caml.List.iter (fun c -> add adt_cons_dict c.cname (a, c)) a.tconstr)
+        adt_name_dict)
 
   let add_adt (new_adt : adt) error_loc =
     let open Caml in

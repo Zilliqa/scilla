@@ -19,31 +19,32 @@
 open Core
 
 module Runner = struct
+  type t = {
+    init : string; [@key "-init"]
+    state : string option; [@key "-istate"]
+    ipc_address : string option; [@key "-ipcaddress"]
+    message : string; [@key "-imessage"]
+    blockchain : string; [@key "-iblockchain"]
+    output : string option; [@key "-o"]
+    input : string; [@key "-i"]
+    libdir : string; [@key "-libdir"]
+    gas_limit : string; [@key "-gaslimit"]
+    balance : string; [@key "-balance"]
+  }
+  [@@deriving rpcty, show]
   (** Holds all the arguments to be provided for the
       Scilla execution. The query parameters are identical to
       the CLI arguments of the scilla-runner executable. *)
-  type t = {
-    init : string [@key "-init"];
-    state : string option [@key "-istate"];
-    ipc_address : string option [@key "-ipcaddress"];
-    message : string [@key "-imessage"];
-    blockchain : string [@key "-iblockchain"];
-    output : string option [@key "-o"];
-    input : string [@key "-i"];
-    libdir : string [@key "-libdir"];
-    gas_limit : string [@key "-gaslimit"];
-    balance: string [@key "-balance"];
-  } [@@deriving rpcty, show]
 
   (** Makes the [Runner.args] that could be
       passed to the [Runner.run] function. *)
   let to_cli_args argv =
     let open Runner in
     let libdirs =
-      if argv.libdir = ""
-      then []
-      else Str.split (Str.regexp "[;:]") argv.libdir in
-    { input_init = argv.init;
+      if argv.libdir = "" then [] else Str.split (Str.regexp "[;:]") argv.libdir
+    in
+    {
+      input_init = argv.init;
       input_state = Option.value argv.state ~default:"";
       input_message = argv.message;
       input_blockchain = argv.blockchain;

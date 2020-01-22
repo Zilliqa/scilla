@@ -12,6 +12,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+val protect_reraise : f:(unit -> 'a) -> finally:(unit -> unit) -> 'a
 (** Helper function similar to [Exn.protect],
     except that it re-raises exceptions. *)
-val protect_reraise : f:(unit -> 'a) -> finally:(unit -> unit) -> 'a

@@ -190,8 +190,7 @@ let fatal_error_gas err gas_remaining =
   let msg = scilla_error_gas_string gas_remaining err in
   raise (FatalError msg)
 
-let fatal_error_noformat msg =
-  raise (FatalError msg)
+let fatal_error_noformat msg = raise (FatalError msg)
 
 (*****************************************************)
 (*                Pretty Printers                    *)

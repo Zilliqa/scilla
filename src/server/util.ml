@@ -16,6 +16,9 @@ open Core
 
 let protect_reraise ~f ~finally =
   try
-    let r = f () in finally (); r
+    let r = f () in
+    finally ();
+    r
   with e ->
-    finally (); raise e
+    finally ();
+    raise e
