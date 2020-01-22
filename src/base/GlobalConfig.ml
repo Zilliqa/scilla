@@ -136,3 +136,13 @@ module StdlibTracker = struct
       (fun d -> Caml.Sys.file_exists (d ^/ name ^. file_extn_library))
       dirs
 end
+
+let reset () =
+  StdlibTracker.reset ();
+  debug_level := Debug_None;
+  log_file := "";
+  trace_level := Trace_None;
+  trace_file := "";
+  pp_lit := true;
+  json_errors := false;
+  validate_json_b := false
