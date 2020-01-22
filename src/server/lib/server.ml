@@ -62,7 +62,7 @@ let handler rpc conn =
 let serve rpc ~sock_path ~num_pending =
   (try Unix.unlink sock_path with Unix.Unix_error(Unix.ENOENT, _, _) -> ());
   (* Ensure that socket directory exists *)
-  Util.mkdir_rec ~dir:(Filename.dirname sock_path) ~perm:0o0755;
+  Unix.mkdir_p ~perm:0o0755 (Filename.dirname sock_path);
   let socket = Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 in
   Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_path);
   Unix.listen socket ~backlog:num_pending;

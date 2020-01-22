@@ -16,9 +16,5 @@
     except that it re-raises exceptions. *)
 val protect_reraise : f:(unit -> 'a) -> finally:(unit -> unit) -> 'a
 
-(** Helper function to create a directory with
-    the given permissions if it doesn't already exist. *)
-val mkdir_rec : dir:string -> perm:int -> unit
-
 (** Send msg with delimiting character "0xA". **)
 val send_delimited : out_channel -> string -> unit
