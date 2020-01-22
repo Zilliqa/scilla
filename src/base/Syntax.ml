@@ -85,7 +85,7 @@ let sexp_of_prim_typ = function
   | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
 
 let prim_typ_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
-
+ 
 type typ =
   | PrimType of prim_typ
   | MapType of typ * typ
