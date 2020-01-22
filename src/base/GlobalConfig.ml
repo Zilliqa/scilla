@@ -138,7 +138,9 @@ module StdlibTracker = struct
 end
 
 let reset () =
+  (* Reset the list of directories to look for stdlib *)
   StdlibTracker.reset ();
+  (* Reset other configuration parameters to their default values *)
   debug_level := Debug_None;
   log_file := "";
   trace_level := Trace_None;

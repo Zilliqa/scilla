@@ -323,12 +323,11 @@ let check_cmodule cli =
       pout @@ sprintf "%s\n" (Yojson.Basic.pretty_to_string j)
 
 let run () =
+  GlobalConfig.reset ();
+  Datatypes.DataTypeDictionary.reinit ();
   let cli = parse_cli () in
   let open GlobalConfig in
-  GlobalConfig.StdlibTracker.reset ();
   StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
-  (* Initialize the type environment with the built-in ADTs *)
-  Datatypes.DataTypeDictionary.reinit ();
   let file_extn = FilePath.get_extension cli.input_file in
   (* Get list of stdlib dirs. *)
   let lib_dirs = StdlibTracker.get_stdlib_dirs () in

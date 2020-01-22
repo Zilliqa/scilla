@@ -32,10 +32,10 @@ module TCERep = TC.OutputERep
 let default_gas_limit = Stdint.Uint64.of_int 2000
 
 let run () =
+  GlobalConfig.reset ();
+  Datatypes.DataTypeDictionary.reinit ();
   let cli = parse_cli () in
   let filename = cli.input_file in
-  (* Initialize the type environment with the built-in ADTs *)
-  Datatypes.DataTypeDictionary.reinit ();
   let gas_limit =
     if cli.gas_limit = Stdint.Uint64.zero then default_gas_limit
     else cli.gas_limit

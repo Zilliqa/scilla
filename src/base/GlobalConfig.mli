@@ -52,6 +52,8 @@ val set_validate_json : bool -> unit
 
 val validate_json : unit -> bool
 
+val reset : unit -> unit
+
 module StdlibTracker : sig
   (* Environment variable: where to look for stdlib.
    * Multiple entries can be specified, separated by ':' or ';'.

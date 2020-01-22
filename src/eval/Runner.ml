@@ -168,15 +168,12 @@ let deploy_library args gas_remaining =
       ]
 
 let run args =
+  GlobalConfig.reset ();
+  Datatypes.DataTypeDictionary.reinit ();
   let is_deployment = (args.input_message = "") in
   let is_ipc = args.ipc_address <> "" in
   let is_library =
     (FilePath.get_extension args.input = GlobalConfig.StdlibTracker.file_extn_library) in
-
-  (* Reset tracked libraries *)
-  GlobalConfig.StdlibTracker.reset ();
-  (* Initialize the type environment with the built-in ADTs *)
-  Datatypes.DataTypeDictionary.reinit ();
 
   let gas_remaining =
     let open Unix in
