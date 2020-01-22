@@ -55,7 +55,7 @@ let handler rpc conn =
   let oc = Unix.out_channel_of_descr conn in
   let req = Jsonrpc.call_of_string (Caml.input_line ic) in
   let res = M.run (rpc req) in
-  Util.send_delimited oc (Jsonrpc.string_of_response res)
+  IPCUtil.send_delimited oc (Jsonrpc.string_of_response res)
 
 (** Listen on the given [sock_path] and process requests.
     The [num_pending] is the maximal number of pending requests. *)

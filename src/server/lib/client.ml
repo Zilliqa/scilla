@@ -33,7 +33,7 @@ let rpc ~sock_path (call: Rpc.call) : Rpc.response =
   let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
   ptrace @@ Printf.sprintf "\nSending: %s\n" msg_buf;
   (* Send data to the socket. *)
-  Util.send_delimited oc msg_buf;
+  IPCUtil.send_delimited oc msg_buf;
   let response = Caml.input_line ic in
   Unix.close socket;
   ptrace @@ Printf.sprintf "\nResponse: %s\n" response;

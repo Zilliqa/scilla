@@ -19,8 +19,3 @@ let protect_reraise ~f ~finally =
     let r = f () in finally (); r
   with e ->
     finally (); raise e
-
-let send_delimited oc msg =
-  let msg' = msg ^ "\n" in
-  Out_channel.output_string oc msg';
-  Out_channel.flush oc

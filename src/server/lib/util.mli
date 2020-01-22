@@ -15,6 +15,3 @@
 (** Helper function similar to [Exn.protect],
     except that it re-raises exceptions. *)
 val protect_reraise : f:(unit -> 'a) -> finally:(unit -> unit) -> 'a
-
-(** Send msg with delimiting character "0xA". **)
-val send_delimited : out_channel -> string -> unit

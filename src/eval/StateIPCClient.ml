@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -45,12 +45,6 @@ let ipcclient_exn_wrapper thunk =
       fail0 ("StateIPCClient: Unix error: " ^ s1 ^ s2)
   | _ -> fail0 "StateIPCClient: Unexpected error making JSON-RPC call"
 
-(* Send msg via socket s with a delimiting character "0xA". *)
-let send_delimited oc msg =
-  let msg' = msg ^ "\n" in
-  Out_channel.output_string oc msg';
-  Out_channel.flush oc
-
 let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
     Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
@@ -62,7 +56,7 @@ let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
   DebugMessage.plog (Printf.sprintf "Sending: %s\n" msg_buf);
   (* Send data to the socket. *)
-  let _ = send_delimited oc msg_buf in
+  let _ = IPCUtil.send_delimited oc msg_buf in
   (* Get response. *)
   let response = Caml.input_line ic in
   Unix.close socket;
