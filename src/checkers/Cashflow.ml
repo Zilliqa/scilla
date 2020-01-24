@@ -385,6 +385,7 @@ struct
                           new_map
                       | _ -> targ_tag_map )
                   | PrimType _ | PolyFun (_, _) | Unit -> targ_tag_map
+                  | Address _ -> targ_tag_map
                 in
                 let tvar_tag_map, _ =
                   List.fold_left arg_typs ~init:(init_targ_to_tag_map, arg_tags)
@@ -461,6 +462,7 @@ struct
     | Unit ->
         (* Ignore *)
         false
+    | Address _ -> (* TODO *) false
 
   let init_ctr_tag_map () =
     let open DataTypeDictionary in

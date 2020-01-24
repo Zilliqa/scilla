@@ -120,9 +120,11 @@ module TypeUtilities : sig
   (*                       Type sanitization                      *)
   (****************************************************************)
 
-  val is_storable_type : typ -> bool
+  val is_legal_message_field_type : typ -> bool
 
-  val is_serializable_type : typ -> bool
+  val is_legal_parameter_type : typ -> bool
+  
+  val is_legal_field_type : typ -> bool
 
   val is_ground_type : typ -> bool
 
