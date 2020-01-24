@@ -17,17 +17,17 @@
 *)
 
 type ioFiles = {
-    input_init : string;
-    input_state : string;
-    input_message : string;
-    input_blockchain : string;
-    output : string;
-    input : string;
-    libdirs : string list;
-    gas_limit : Stdint.uint64;
-    balance : Stdint.uint128;
-    pp_json : bool;
-    ipc_address : string;
+  input_init : string;
+  input_state : string;
+  input_message : string;
+  input_blockchain : string;
+  output : string;
+  input : string;
+  libdirs : string list;
+  gas_limit : Stdint.uint64;
+  balance : Stdint.uint128;
+  pp_json : bool;
+  ipc_address : string;
 }
 
 val parse : unit -> ioFiles

@@ -19,7 +19,6 @@
 open Core_kernel
 open Syntax
 open Yojson
-
 module JSONTypeUtilities = TypeUtil.TypeUtilities
 
 (*************************************)
@@ -36,14 +35,11 @@ val constr_pattern_arg_types_exn : typ -> string -> typ list
 (*  Wrapper for DataTypeDictionary.lookup_name  *)
 val lookup_adt_name_exn : string -> Datatypes.adt
 
-
 (*************************************)
 (*********** ADT parsers *************)
 (*************************************)
 
-type adt_parser_entry =
-    Incomplete
-  | Parser of (Basic.t -> literal)
+type adt_parser_entry = Incomplete | Parser of (Basic.t -> literal)
 
 (* ADT parsers table *)
 val adt_parsers : (string, adt_parser_entry) Caml.Hashtbl.t

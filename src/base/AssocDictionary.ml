@@ -29,19 +29,18 @@ let make_dict () = []
 
 let rec remove k d =
   match d with
-  | []              -> []
-  | (kd, vd) :: rest -> if k = kd then rest else (kd, vd) :: (remove k rest)
+  | [] -> []
+  | (kd, vd) :: rest -> if k = kd then rest else (kd, vd) :: remove k rest
 
 let rec remove_all k d =
   match d with
-  | []              -> []
-  | (kd, vd) :: rest -> if k = kd then (remove_all k rest) else (kd, vd) :: (remove_all k rest)
+  | [] -> []
+  | (kd, vd) :: rest ->
+      if k = kd then remove_all k rest else (kd, vd) :: remove_all k rest
 
-let insert k v d =
-  (k, v) :: d
+let insert k v d = (k, v) :: d
 
-let insert_all other_d this_d =
-  other_d @ this_d
+let insert_all other_d this_d = other_d @ this_d
 
 let lookup k d =
   match List.find_opt (fun (kd, _) -> k = kd) d with
@@ -50,27 +49,25 @@ let lookup k d =
 
 let rec update k v d =
   match d with
-  | []               -> []
-  | (kd, vd) :: rest -> if k = kd then (k, v) :: rest else (kd, vd) :: (update k v rest)
+  | [] -> []
+  | (kd, vd) :: rest ->
+      if k = kd then (k, v) :: rest else (kd, vd) :: update k v rest
 
 let rec update_all k v d =
   match d with
-  | []               -> []
-  | (kd, vd) :: rest -> if k = kd then (k, v) :: (update_all k v rest) else (kd, vd) :: (update_all k v rest)
+  | [] -> []
+  | (kd, vd) :: rest ->
+      if k = kd then (k, v) :: update_all k v rest
+      else (kd, vd) :: update_all k v rest
 
 let insert_unique k v d =
   let d' = remove_all k d in
   insert k v d'
 
-let filter ~f d =
-  List.filter (fun (k, _) -> f k) d
+let filter ~f d = List.filter (fun (k, _) -> f k) d
 
-let is_empty d =
-  match d with
-  | [] -> true
-  | _ -> false
+let is_empty d = match d with [] -> true | _ -> false
 
 let to_list d = d
 
 let size d = List.length d
-

@@ -18,14 +18,15 @@
 
 open TestUtil
 
-let () = run_tests
-[
-  TestBech32.all_tests;
-  TestInteger256.all_tests;
-  TestParser.all_tests;
-  TestSafeArith.all_tests;
-  TestSignatures.all_tests;
-  TestSnark.all_tests;
-  TestSyntax.all_tests;
-  (* TestPolynomial.all_tests; *)
-]
+let () =
+  run_tests
+    [
+      TestBech32.all_tests;
+      TestInteger256.all_tests;
+      TestParser.all_tests;
+      TestSafeArith.all_tests;
+      TestSignatures.all_tests;
+      TestSnark.all_tests;
+      TestSyntax.all_tests;
+      (* TestPolynomial.all_tests; *)
+    ]
