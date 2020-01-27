@@ -525,8 +525,7 @@ let rename_bound_vars mk_new_name update_taken =
         let bt2 = recursor bt1 (update_taken arg' taken) in
         PolyFun (arg', bt2)
     | Address fts ->
-        let fts' = List.map fts ~f:(fun (f, t) -> (f, recursor t taken)) in
-        Address fts'
+        Address (List.map fts ~f:(fun (f, t) -> (f, recursor t taken)))
   in
   recursor
 
