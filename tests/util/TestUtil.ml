@@ -22,7 +22,6 @@ open OUnit2
 open ScillaUtil.FilePathInfix
 
 type tsuite_env = {
-  bin_dir : test_ctxt -> string;
   tests_dir : test_ctxt -> string;
   stdlib_dir : test_ctxt -> string;
   print_cli : test_ctxt -> bool;
@@ -32,13 +31,9 @@ type tsuite_env = {
 }
 
 let run_tests tests =
-  let bin_dir_default = Sys.getcwd () ^/ "bin" in
   let tests_dir_default = Sys.getcwd () ^/ "tests" in
   let stdlib_dir_default = Sys.getcwd () ^/ "src" ^/ "stdlib" in
   let ext_ipc_server_default = "" in
-  let bin_dir =
-    Conf.make_string "bin_dir" bin_dir_default "Directory containing binaries"
-  in
   let tests_dir =
     Conf.make_string "tests_dir" tests_dir_default "Directory containing tests"
   in
@@ -66,7 +61,6 @@ let run_tests tests =
 
   let env : tsuite_env =
     {
-      bin_dir;
       tests_dir;
       stdlib_dir;
       print_cli;
@@ -148,7 +142,6 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
     List.map ~f:(fun fname ->
         fname >:: fun test_ctxt ->
         let open FilePath in
-        let evalbin = env.bin_dir test_ctxt ^/ runner in
         let dir = env.tests_dir test_ctxt in
         let input_file = make_filename (test_path fname) in
         let init_file =
@@ -175,8 +168,8 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
         let args =
           if provide_init_arg then args' @ [ "-init"; init_file ] else args'
         in
-        let msg = cli_usage_on_err evalbin args in
-        print_cli_usage (env.print_cli test_ctxt) evalbin args;
+        let msg = cli_usage_on_err runner args in
+        print_cli_usage (env.print_cli test_ctxt) runner args;
         assert_command
           ~foutput:(fun s ->
             let out = BatStream.to_string s in
@@ -184,7 +177,7 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
               output_updater goldoutput_file input_file out
             else
               output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
-          ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt evalbin args)
+          ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt runner args)
 
   let all_tests env = "exptests" >::: build_exp_tests env tests
 end

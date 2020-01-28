@@ -47,7 +47,7 @@ Once the project is built you can try the following things:
 From the project root, execute
 
 ```
-./bin/eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/good/let.scilexp
+eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/good/let.scilexp
 ```
 
 Instead of `let.scilla` you might want to try any different file in
@@ -61,7 +61,7 @@ list of paths separated with `:` (or `;` on Windows).
 From the project root, execute
 
 ```
-./bin/scilla-checker -gaslimit 10000 -libdir src/stdlib tests/contracts/auction.scilla
+scilla-checker -gaslimit 10000 -libdir src/stdlib tests/contracts/auction.scilla
 ```
 
 Instead of `auction.scilla` you might want to try any different file in
@@ -85,17 +85,17 @@ The checker can be run with the following optional flags:
 From the project root, execute
 
 ```
-./bin/scilla-runner -init tests/runner/crowdfunding/init.json -istate tests/runner/crowdfunding/state_4.json -iblockchain tests/runner/crowdfunding/blockchain_4.json -imessage tests/runner/crowdfunding/message_4.json -o tests/runner/crowdfunding/output_4.json -i tests/contracts/crowdfunding.scilla -libdir src/stdlib -gaslimit 8000
+scilla-runner -init tests/runner/crowdfunding/init.json -istate tests/runner/crowdfunding/state_4.json -iblockchain tests/runner/crowdfunding/blockchain_4.json -imessage tests/runner/crowdfunding/message_4.json -o tests/runner/crowdfunding/output_4.json -i tests/contracts/crowdfunding.scilla -libdir src/stdlib -gaslimit 8000
 ```
   or
 ```
-./bin/scilla-runner -init tests/runner/zil-game/init.json -istate tests/runner/zil-game/state_5.json -iblockchain tests/runner/zil-game/blockchain_5.json -imessage tests/runner/zil-game/message_5.json -o tests/runner/zil-game/output_5.json -i tests/contracts/zil-game.scilla -libdir src/stdlib -gaslimit 8000
+scilla-runner -init tests/runner/zil-game/init.json -istate tests/runner/zil-game/state_5.json -iblockchain tests/runner/zil-game/blockchain_5.json -imessage tests/runner/zil-game/message_5.json -o tests/runner/zil-game/output_5.json -i tests/contracts/zil-game.scilla -libdir src/stdlib -gaslimit 8000
 ```
 
 If you'd like to see the output produced by the aforementioned commands,
 check the file specified by `-o path/to/file.json` argument.
 
-Alternatively, use the easyrun script as below:
+Alternatively, use the `easyrun.sh` script as below:
 
 ```
 ./easyrun.sh crowdfunding 1
@@ -149,7 +149,7 @@ dune exec tests/testsuite.exe -- -list-test
 
 To run an individual test(s), for example
 `all_tests:1:exptests:14:let.scilla`
-(one of the tests from the list obtained via `./bin/testsuite -list-test`):
+(one of the tests from the list obtained via `dune exec -- tests/testsuite -list-test`):
 
 ```shell
 dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -print-cli true 

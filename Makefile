@@ -13,22 +13,20 @@ default: all
 all:
 	./scripts/libff.sh
 	dune build --profile release @install
-	@test -L bin || ln -s _build/install/default/bin .
+	dune install
 
 # Build only scilla-checker and scilla-runner
 slim:
 	./scripts/libff.sh
 	dune build --profile release src/runners/scilla_runner.exe
 	dune build --profile release src/runners/scilla_checker.exe
-	@test -L bin || mkdir bin; ln -s _build/default/src/runners/*.exe bin/
+	dune install
 
 dev:
 	./scripts/libff.sh
 	dune build --profile dev @install
-	dune build tests/polynomials/testsuite_polynomials.exe
-	dune build tests/base/testsuite_base.exe
-	dune build tests/testsuite.exe
-	@test -L bin || ln -s _build/install/default/bin .
+  # This effectively adds all the runners into PATH variable
+	dune install
 
 # Launch utop such that it finds the libraroes.
 utop: all
@@ -39,33 +37,28 @@ fmt:
 
 # === TESTS (begin) ===========================================================
 # Build and run tests
-# the make utility increases the maximum stack limit, this allows our tests
-# to pass but analogous programs might break when run on users' machines
-# (e.g. on macOS 10.14.5 make sets the limit to 65532kB, but the standard
-# value is 8192kB)
 
 testbase: dev
-	ulimit -s 128 -n 1024; dune exec tests/base/testsuite_base.exe
+	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
 
 goldbase: dev
-	ulimit -s 128 -n 1024; dune exec tests/base/testsuite_base.exe -- -update-gold true
+	ulimit -n 1024; dune exec tests/base/testsuite_base.exe -- -update-gold true
 
 # Run all tests for all packages in the repo: scilla-base, polynomials, scilla
 test: dev
-	ulimit -s 128 -n 1024; dune exec tests/polynomials/testsuite_polynomials.exe
-	ulimit -s 128 -n 1024; dune exec tests/base/testsuite_base.exe -- -print-diff true
-	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -print-diff true
+	ulimit -n 1024; dune exec -- tests/polynomials/testsuite_polynomials.exe
+	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
+	ulimit -n 1024; dune exec -- tests/testsuite.exe -print-diff true
 
 gold: dev
-	ulimit -s 128 -n 1024; dune exec tests/polynomials/testsuite_polynomials.exe
-	ulimit -s 128 -n 1024; dune exec tests/base/testsuite_base.exe -- -update-gold true
-	ulimit -s 128 -n 1024; dune exec tests/testsuite.exe -- -update-gold true
+	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -update-gold true
+	ulimit -n 1024; dune exec -- tests/testsuite.exe -update-gold true
 
 # This must be run only if there is an external IPC server available
 # that can handle access requests. It is important to use the sequential runner here as we
 # don't want multiple threads of the testsuite connecting to the same server concurrently.
 test_extipcserver: dev
-	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
+	dune exec -- tests/testsuite.exe -print-diff true -runner sequential \
 	-ext-ipc-server $(IPC_SOCK_PATH) \
 	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
 
@@ -113,7 +106,8 @@ coverage :
 	mkdir -p _build/coverage
 	./scripts/libff.sh
 	BISECT_ENABLE=YES make
-	dune exec tests/testsuite.exe
+	dune build @install
+	dune exec -- tests/testsuite.exe
 	bisect-ppx-report -I _build/default/ -html _coverage/ `find . -name 'bisect*.out'`
 	make clean
 	-find . -name 'bisect*.out' | xargs rm
@@ -124,7 +118,8 @@ coveralls:
 	mkdir -p _build/coverage
 	./scripts/libff.sh
 	BISECT_ENABLE=YES make
-	dune exec tests/testsuite.exe
+	dune build @install
+	dune exec -- tests/testsuite.exe
 	bisect-ppx-report -ignore-missing-files -I _build/ -coveralls coverage.json -service-name travis-ci -service-job-id ${TRAVIS_JOB_ID} `find . -name 'bisect*.out'`
 	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs
 	make clean
