@@ -196,6 +196,10 @@ typ :
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
 | LPAREN; t = typ; RPAREN; { t }
+| d = ID; WITH; fs = separated_list(COMMA, address_field_type); END;
+    { if d = "ByStr20"
+      then Address fs
+      else raise (SyntaxError ("Invalid primitive type", toLoc $startpos(d))) }
 | FORALL; tv = TID; PERIOD; t = typ; {PolyFun (tv, t)}
 %prec TARROW
 | t = TID; { TypeVar t }
@@ -205,6 +209,10 @@ targ:
 | d = scid; { to_type d }
 | t = TID; { TypeVar t }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
+
+address_field_type:
+| f = ID; COLON; t = typ; { (f, t) }
+
 
 (***********************************************)
 (*                 Expressions                 *)
