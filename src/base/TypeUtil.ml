@@ -203,6 +203,8 @@ functor
                     @@ sprintf "Unbound type variable %s in type %s" a
                          (pp_typ t) )
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
+          | Address fts ->
+              foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb)
         in
         is_wf_typ' t []
 
@@ -325,13 +327,13 @@ module TypeUtilities = struct
     | PolyFun _ | TypeVar _ -> false
     | _ -> true
 
-  let rec is_serializable_storable_helper accept_maps t seen_adts =
+  let rec is_serializable_storable_helper accept_maps check_addresses t seen_adts =
     match t with
     | FunType _ | PolyFun _ | Unit -> false
     | MapType (kt, vt) ->
         if accept_maps then
-          is_serializable_storable_helper accept_maps kt seen_adts
-          && is_serializable_storable_helper accept_maps vt seen_adts
+          is_serializable_storable_helper accept_maps check_addresses kt seen_adts
+          && is_serializable_storable_helper accept_maps check_addresses vt seen_adts
         else false
     | TypeVar _ -> (
         (* If we are inside an ADT, then type variable
@@ -355,7 +357,7 @@ module TypeUtilities = struct
                     ~f:(fun (_, carg_list) ->
                       List.for_all
                         ~f:(fun carg ->
-                          is_serializable_storable_helper accept_maps carg
+                          is_serializable_storable_helper accept_maps check_addresses carg
                             (tname :: seen_adts))
                         carg_list)
                     adt.tmap
@@ -363,12 +365,27 @@ module TypeUtilities = struct
                 adt_serializable
                 && List.for_all
                      ~f:(fun t ->
-                       is_serializable_storable_helper accept_maps t seen_adts)
+                       is_serializable_storable_helper accept_maps check_addresses t seen_adts)
                      ts ) )
+    | Address fts
+      when check_addresses ->
+        (* If check_addresses is true, then all field types in the address type should be legal field types. *)
+        List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t)
+    | Address _ ->
+        (* If check_addresses is false, then consider Address = ByStr20. *)
+        true
 
-  let is_serializable_type t = is_serializable_storable_helper false t []
+  and is_legal_message_field_type t =
+    (* Maps are not allowed. Address values are considered ByStr20 when used as message field value. *)
+    is_serializable_storable_helper false false t []
 
-  let is_storable_type t = is_serializable_storable_helper true t []
+  and is_legal_parameter_type t =
+    (* Maps are not allowed. Address values should be checked for storable field types. *)
+    is_serializable_storable_helper false true t []
+
+  and is_legal_field_type t =
+    (* Maps are allowed. Address values should be checked for storable field types. *)
+    is_serializable_storable_helper true true t []
 
   let get_msgevnt_type m =
     if
@@ -461,7 +478,8 @@ module TypeUtilities = struct
     | MapType (_, _)
     | FunType (_, _)
     | ADT (_, _)
-    | PolyFun (_, _) ->
+    | PolyFun (_, _)
+    | Address _ ->
         1
     | TypeVar n -> if n = tvar then tp_size else 1
 
@@ -473,6 +491,8 @@ module TypeUtilities = struct
     | MapType (t1, t2) | FunType (t1, t2) -> 1 + type_size t1 + type_size t2
     | ADT (_, ts) ->
         List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
+    | Address fts ->
+        List.fold_left fts ~init:1 ~f:(fun acc (_, t) -> acc + type_size t)
 
   (* tm[tvar := tp]
      Parallel implementation to the one in Syntax.ml to allow gas accounting.
@@ -511,6 +531,14 @@ module TypeUtilities = struct
             else
               let%bind res, remaining_gas = recurser t' remaining_gas' in
               pure (PolyFun (arg, res), remaining_gas)
+        | Address fts ->
+            let%bind ftss, remaining_gas =
+              foldM fts ~init:([], remaining_gas')
+                ~f:(fun (fts'_rev_acc, remaining_gas) (f, t) ->
+                    let%bind res, remaining_gas = recurser t remaining_gas in
+                    pure ((f, res) :: fts'_rev_acc, remaining_gas))
+            in
+            pure (Address ftss, remaining_gas)
       else Error (GasError, EvalMonad.out_of_gas_err, remaining_gas)
     in
     recurser tm gas
@@ -678,17 +706,17 @@ module TypeUtilities = struct
     | BNum _ -> pure bnum_typ
     | ByStr _ -> pure bystr_typ
     | ByStrX bsx -> pure (bystrx_typ (Bystrx.width bsx))
-    (* Check that messages and events have storable parameters. *)
+    (* Check that messages and events have legal parameters. *)
     | Msg m ->
         let%bind msg_typ = get_msgevnt_type m in
-        let%bind all_storable =
+        let%bind all_legal =
           foldM
             ~f:(fun acc (_, l) ->
               let%bind t = is_wellformed_lit l in
-              if acc then pure (is_storable_type t) else pure false)
+              if acc then pure (is_legal_message_field_type t) else pure false)
             ~init:true m
         in
-        if not all_storable then
+        if not all_legal then
           fail0 @@ sprintf "Message/Event has invalid / non-storable parameters"
         else pure msg_typ
     | Map ((kt, vt), kv) ->

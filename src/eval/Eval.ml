@@ -70,7 +70,7 @@ let rec is_pure_literal l =
 (* Sanitize before storing into a message *)
 let sanitize_literal l =
   let%bind t = fromR @@ literal_type l in
-  if is_serializable_type t then pure l
+  if is_legal_message_field_type t then pure l
   else fail0 @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
 (*******************************************************)

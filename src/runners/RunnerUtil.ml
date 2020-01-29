@@ -109,6 +109,8 @@ let eliminate_namespaces lib_tree ns_tree =
                   let tname' = check_and_prefix_string env tname in
                   let tlist' = List.map tlist ~f:(fun t -> recurser t) in
                   ADT (tname', tlist')
+              | Address fts ->
+                  Address (List.map fts ~f:(fun (f, t) -> (f, recurser t)))
             in
             recurser t
           in

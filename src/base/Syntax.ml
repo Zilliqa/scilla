@@ -94,6 +94,7 @@ type typ =
   | TypeVar of string
   | PolyFun of string * typ
   | Unit
+  | Address of (string * typ) list
 [@@deriving sexp]
 
 let int_bit_width_to_string = function
@@ -125,6 +126,11 @@ let rec pp_typ = function
   | TypeVar tv -> tv
   | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (pp_typ bt)
   | Unit -> sprintf "()"
+  | Address fts ->
+      let elems = List.map fts ~f:(fun (f, t) -> sprintf "%s : %s" f (pp_typ t)) |>
+                  String.concat ~sep:", "
+      in
+      sprintf "ByStr20 with %s end" elems
 
 and with_paren t =
   match t with
@@ -461,6 +467,8 @@ let free_tvars tp =
     | PolyFun (arg, bt) ->
         let acc' = go bt acc in
         rem acc' arg
+    | Address fts ->
+        List.fold_left fts ~init:acc ~f:(fun acc (_, t) -> go t acc)
   in
   go tp []
 
@@ -492,6 +500,8 @@ let rec subst_type_in_type tvar tp tm =
       ADT (s, ts')
   | PolyFun (arg, t) ->
       if tvar = arg then tm else PolyFun (arg, subst_type_in_type tvar tp t)
+  | Address fts ->
+      Address (List.map fts ~f:(fun (f, t) -> (f, subst_type_in_type tvar tp t)))
 
 (* note: this is sequential substitution of multiple variables,
           _not_ simultaneous substitution *)
@@ -514,6 +524,8 @@ let rename_bound_vars mk_new_name update_taken =
         let bt1 = subst_type_in_type arg tv_new bt in
         let bt2 = recursor bt1 (update_taken arg' taken) in
         PolyFun (arg', bt2)
+    | Address fts ->
+        Address (List.map fts ~f:(fun (f, t) -> (f, recursor t taken)))
   in
   recursor
 

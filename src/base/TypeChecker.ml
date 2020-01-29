@@ -390,7 +390,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               let%bind _ =
                 mark_error_as_type_error remaining_gas @@ check_field_type rtp
               in
-              if is_serializable_type rtp then
+              if is_legal_message_field_type rtp then
                 pure @@ (TypedSyntax.MVar (add_type_to_ident i t), remaining_gas)
               else
                 Error
@@ -838,7 +838,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     @@
     let param_checker =
       match comp_type with
-      | CompTrans -> is_serializable_type
+      | CompTrans -> is_legal_parameter_type
       | CompProc -> is_non_map_ground_type
     in
     let%bind typed_cparams =
@@ -896,7 +896,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                @@ assert_type_equiv ft actual
              in
              let typed_fs = add_type_to_ident fn ar in
-             if is_storable_type ft then
+             if is_legal_field_type ft then
                pure
                @@ ( ( (typed_fs, ft, typed_expr) :: acc,
                       TEnv.addT (TEnv.copy fenv) fn actual ),
