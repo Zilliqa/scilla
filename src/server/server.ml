@@ -32,34 +32,14 @@ module IDL = Idl.Make (M)
 
 module Server = API (IDL.GenServer ())
 
-(* TODO: Refactor and extact the common parts into a separate function *)
-
-(* Command handler that executes scilla-runner with the
-   given [argv] and returns the resulting JSON. *)
-let runner argv =
+(* Makes a handler that executes the given [callback] with [args],
+   caches the result using the LRU cache and returns it. **)
+let mk_handler ~name ~callback args =
   let open IDL.ErrM in
-  ptrace @@ Printf.sprintf "\nRunner request:\n %s\n" argv;
-  let args = String.split ~on:' ' argv in
-  print_endline argv;
+  ptrace @@ Printf.sprintf "\n%s request:\n %s\n" name (String.concat ~sep:" " args);
   try
-    let output, args = Runner.run (Some args) in
-    let result = Yojson.Basic.to_string output in
-    pout
-    @@ Printf.sprintf "\nRunner response:\n %s\n"
-         (Yojson.Basic.prettify result);
-    (* TODO: implement AST caching here *)
-    return result
-  with FatalError msg -> return_err (Idl.DefaultError.InternalError msg)
-
-(* Command handler that executes scilla-runner with the
-   given [argv] and returns the resulting JSON. *)
-let checker argv =
-  let open IDL.ErrM in
-  ptrace @@ Printf.sprintf "\nChecker request:\n %s\n" argv;
-  let args = String.split ~on:' ' argv in
-  try
-    let result = Checker.run (Some args) in
-    pout @@ Printf.sprintf "\nChecker response:\n %s\n" result;
+    let result = callback @@ Some args in
+    pout @@ Printf.sprintf "\n%s response:\n %s\n" name result;
     (* TODO: implement AST caching here *)
     return result
   with FatalError msg -> return_err (Idl.DefaultError.InternalError msg)
@@ -104,9 +84,12 @@ let serve rpc ~sock_path ~num_pending =
 let start ~sock_path ~num_pending () =
   pout "Starting scilla server...\n";
   Out_channel.flush stdout;
+  let runner args =
+    let (output, _) = Runner.run args in
+    Yojson.Basic.to_string output in
   (* Handlers *)
-  Server.runner runner;
-  Server.checker checker;
+  Server.runner (mk_handler ~name:"Runner" ~callback:runner);
+  Server.checker (mk_handler ~name:"Checker" ~callback:Checker.run);
   (* Generate the "rpc" function from the implementation,
      that given an [Rpc.call], calls the implementation of that RPC method and
      performs the marshalling and unmarshalling. We need to connect this

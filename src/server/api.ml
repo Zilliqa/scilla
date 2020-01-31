@@ -18,6 +18,10 @@
 
 open Idl
 
+(** A type alias representing a list of arguments to
+    be provided to the scilla-runner or scilla-checker *)
+type args_t = string list [@@deriving rpcty, show]
+
 module API (R : RPC) = struct
   open R
 
@@ -39,7 +43,7 @@ module API (R : RPC) = struct
   let runner_argv =
     Param.mk ~name:"argv"
       ~description:[ "scilla-runner execution parameters" ]
-      Rpc.Types.string
+      args_t
 
   (* The return value of this JSON-RPC method will be a JSON,
      identical to today’s output JSON emitted by scilla-runner. *)
@@ -55,7 +59,7 @@ module API (R : RPC) = struct
   let checker_argv =
     Param.mk ~name:"argv"
       ~description:[ "scilla-checker execution parameters" ]
-      Rpc.Types.string
+      args_t
 
   let checker_return = Param.mk Rpc.Types.string
 
