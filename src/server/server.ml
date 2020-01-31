@@ -36,7 +36,8 @@ module Server = API (IDL.GenServer ())
    caches the result using the LRU cache and returns it. **)
 let mk_handler ~name ~callback args =
   let open IDL.ErrM in
-  ptrace @@ Printf.sprintf "\n%s request:\n %s\n" name (String.concat ~sep:" " args);
+  ptrace
+  @@ Printf.sprintf "\n%s request:\n %s\n" name (String.concat ~sep:" " args);
   try
     let result = callback @@ Some args in
     pout @@ Printf.sprintf "\n%s response:\n %s\n" name result;
@@ -85,8 +86,9 @@ let start ~sock_path ~num_pending () =
   pout "Starting scilla server...\n";
   Out_channel.flush stdout;
   let runner args =
-    let (output, _) = Runner.run args in
-    Yojson.Basic.to_string output in
+    let output, _ = Runner.run args in
+    Yojson.Basic.to_string output
+  in
   (* Handlers *)
   Server.runner @@ mk_handler ~name:"Runner" ~callback:runner;
   Server.checker @@ mk_handler ~name:"Checker" ~callback:Checker.run;
