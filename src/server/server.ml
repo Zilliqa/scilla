@@ -88,8 +88,8 @@ let start ~sock_path ~num_pending () =
     let (output, _) = Runner.run args in
     Yojson.Basic.to_string output in
   (* Handlers *)
-  Server.runner (mk_handler ~name:"Runner" ~callback:runner);
-  Server.checker (mk_handler ~name:"Checker" ~callback:Checker.run);
+  Server.runner @@ mk_handler ~name:"Runner" ~callback:runner;
+  Server.checker @@ mk_handler ~name:"Checker" ~callback:Checker.run;
   (* Generate the "rpc" function from the implementation,
      that given an [Rpc.call], calls the implementation of that RPC method and
      performs the marshalling and unmarshalling. We need to connect this
