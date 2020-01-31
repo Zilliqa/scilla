@@ -61,6 +61,11 @@
 
   let build_bool_literal v loc =
     (Literal (BuiltIns.UsefulLiterals.to_Bool v), loc)
+
+  let id_with_typ_to_idl_with_typ iwt loc =
+    match iwt with
+    | (i, t) -> (asIdL i loc, t)
+    
 %}
 
 (* Identifiers *)
@@ -161,6 +166,13 @@ scid :
 | name = CID { name }
 | ns = CID; PERIOD; name = CID { ns ^ "." ^ name }
 
+type_annot:
+| COLON; t = typ { t }
+
+id_with_typ :
+| n = ID; t = type_annot { n, t }
+
+
 (***********************************************)
 (*                  Types                      *)
 (***********************************************)
@@ -211,7 +223,7 @@ targ:
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 address_field_type:
-| f = ID; COLON; t = typ; { (f, t) }
+| ft = id_with_typ { ft }
 
 
 (***********************************************)
@@ -227,8 +239,9 @@ simple_exp :
   EQ; f = simple_exp; IN; e = exp
   {(Let ((Ident (x, toLoc $startpos(x))), t, f, e), toLoc $startpos(f)) }
 (* Function *)
-| FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
-  { (Fun (Ident (i, toLoc $startpos(i)), t, e), toLoc $startpos(e) ) }
+| FUN; LPAREN; iwt = id_with_typ; RPAREN; ARROW; e = exp
+    { match id_with_typ_to_idl_with_typ iwt (toLoc $startpos(iwt)) with
+      | (i, t) -> (Fun (i, t, e), toLoc $startpos(e) ) }
 (* Application *)
 | f = sid;
   args = nonempty_list(sident)
@@ -308,9 +321,6 @@ builtin_args :
 | args = nonempty_list(sident) { args }
 | LPAREN; RPAREN { [] }
 
-type_annot:
-| COLON; t = typ { t }
-
 exp_term :
 | e = exp; EOF { e }
 
@@ -359,7 +369,7 @@ stmts_term:
 (***********************************************)
 
 param_pair:
-| n = ID; COLON; t = typ { asIdL n (toLoc $startpos(n)), t }
+| iwt = id_with_typ { id_with_typ_to_idl_with_typ iwt (toLoc $startpos(iwt)) }
 
 component:
 | t = transition
@@ -398,9 +408,10 @@ component_body:
   { ss }
 
 field:
-| FIELD; f = ID; COLON; t=typ;
+| FIELD; iwt = id_with_typ
   EQ; rhs = exp
-  { asIdL f (toLoc $startpos(f)), t, rhs }
+    { match id_with_typ_to_idl_with_typ iwt (toLoc $startpos(iwt)) with
+      | (f, t) -> (f, t, rhs) }
 
 with_constraint:
 | WITH; f = exp; ARROW
