@@ -104,13 +104,44 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   (* this is a dynamic cost. *)
 
   let stmt_cost scon =
+    let rec map_sort_cost l =
+      match l with
+      | Map (_, kvlist) ->
+          let sub_cost =
+            Caml.Hashtbl.fold
+              (fun _ vlit acc -> acc + map_sort_cost vlit)
+              kvlist 0
+          in
+          let this_cost =
+            let len = Caml.Hashtbl.length kvlist in
+            if len > 0 then
+              let log_len = Int.of_float (Float.log (Int.to_float len)) in
+              len * log_len
+            else 0
+          in
+          sub_cost + this_cost
+      | _ -> 0
+    in
     match scon with
-    | G_Load l | G_Store l -> literal_cost l
-    | G_MapUpdate (n, lopt) | G_MapGet (n, lopt) ->
+    | G_Load l ->
+        let%bind l_cost = literal_cost l in
+        let sort_cost = map_sort_cost l in
+        pure (l_cost + sort_cost)
+    | G_Store l -> literal_cost l
+    | G_MapUpdate (n, lopt) ->
         let%bind l_cost =
           match lopt with Some l -> literal_cost l | None -> pure 0
         in
         pure @@ (n + l_cost)
+    | G_MapGet (n, lopt) ->
+        let%bind l_cost, sort_cost =
+          match lopt with
+          | Some l ->
+              let%bind l_cost = literal_cost l in
+              pure (l_cost, map_sort_cost l)
+          | None -> pure (0, 0)
+        in
+        pure (n + l_cost + sort_cost)
     | G_Bind -> pure 1
     | G_MatchStmt num_clauses -> pure num_clauses
     | G_ReadFromBC -> pure 1
