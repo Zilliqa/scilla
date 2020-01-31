@@ -24,5 +24,4 @@ let () =
   try
     let result = Checker.run None in
     pout @@ sprintf "%s\n" result
-  with
-    FatalError msg -> exit_with_error msg
+  with FatalError msg -> exit_with_error msg

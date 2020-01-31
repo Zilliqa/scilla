@@ -417,9 +417,13 @@ let parse_cli args =
 
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
-  let () = match args with
-  | None -> Arg.parse speclist anon_handler mandatory_usage
-  | Some argv -> Arg.parse_argv (List.to_array argv) speclist anon_handler mandatory_usage in
+  let () =
+    match args with
+    | None -> Arg.parse speclist anon_handler mandatory_usage
+    | Some argv ->
+        Arg.parse_argv (List.to_array argv) speclist anon_handler
+          mandatory_usage
+  in
   if !r_input_file = "" then fatal_error_noformat usage;
   let gas_limit =
     match !r_gas_limit with Some g -> g | None -> fatal_error_noformat usage

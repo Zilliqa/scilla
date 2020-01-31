@@ -449,7 +449,8 @@ let run_with_args args =
             ((omj, osj, oej, accepted_b), gas)
         in
         `Assoc
-          [ ("scilla_major_version", `String (Int.to_string cmod.smver));
+          [
+            ("scilla_major_version", `String (Int.to_string cmod.smver));
             ("gas_remaining", `String (Uint64.to_string gas));
             (ContractUtil.accepted_label, `String (Bool.to_string accepted_b));
             ("messages", output_msg_json);
@@ -463,4 +464,4 @@ let run args_list =
   Datatypes.DataTypeDictionary.reinit ();
   let args = RunnerCLI.parse args_list in
   let result = run_with_args args in
-  result, args
+  (result, args)

@@ -32,7 +32,6 @@ open EventInfo
 open TypeInfo
 open Cashflow
 open Accept
-
 module PSRep = ParserRep
 module PERep = ParserRep
 module Rec = Recursion.ScillaRecursion (PSRep) (PERep)
@@ -318,8 +317,7 @@ let check_cmodule cli =
       if (not (GlobalConfig.use_json_errors ())) && List.is_empty output then
         scilla_warning_to_sstring (get_warnings ())
         ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
-      else
-        sprintf "%s\n" (Yojson.Basic.pretty_to_string (`Assoc output))
+      else sprintf "%s\n" (Yojson.Basic.pretty_to_string (`Assoc output))
 
 let run args =
   GlobalConfig.reset ();
@@ -338,8 +336,7 @@ let run args =
   set_debug_level Debug_None;
 
   (* Check library modules. *)
-  if file_extn = StdlibTracker.file_extn_library
-  then check_lmodule cli
+  if file_extn = StdlibTracker.file_extn_library then check_lmodule cli
   else if file_extn <> StdlibTracker.file_extn_contract then
     fatal_error (mk_error0 (sprintf "Unknown file extension %s\n" file_extn))
   else (* Check contract modules. *)

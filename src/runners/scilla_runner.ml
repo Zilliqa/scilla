@@ -25,7 +25,7 @@ let output_to_string output ~args =
   else Yojson.Basic.to_string output
 
 let run args_list =
-  let (output, args) = Runner.run args_list in
+  let output, args = Runner.run args_list in
   let str = output_to_string output ~args in
   Out_channel.with_file args.output ~f:(fun ch ->
       Out_channel.output_string ch str)

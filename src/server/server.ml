@@ -42,7 +42,7 @@ let runner argv =
   let args = String.split ~on:' ' argv in
   print_endline argv;
   try
-    let (output, args) = Runner.run (Some args) in
+    let output, args = Runner.run (Some args) in
     let result = Yojson.Basic.to_string output in
     pout
     @@ Printf.sprintf "\nRunner response:\n %s\n"
@@ -90,14 +90,14 @@ let serve rpc ~sock_path ~num_pending =
   Out_channel.flush stdout;
   while true do
     let conn, _ = U.accept socket in
-    ignore @@
-      Thread.create
-        (fun () ->
-          (* Always close the connection no matter what *)
-          Util.protect_reraise
-            ~f:(fun () -> handler rpc conn)
-            ~finally:(fun () -> U.close conn))
-        ();
+    ignore
+    @@ Thread.create
+         (fun () ->
+           (* Always close the connection no matter what *)
+           Util.protect_reraise
+             ~f:(fun () -> handler rpc conn)
+             ~finally:(fun () -> U.close conn))
+         ();
     ()
   done
 

@@ -228,9 +228,12 @@ let parse args =
   in
   let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
   let ignore_anon _ = () in
-  let () = match args with
-  | None -> Arg.parse speclist ignore_anon mandatory_usage
-  | Some argv -> Arg.parse_argv (List.to_array argv) speclist ignore_anon mandatory_usage in
+  let () =
+    match args with
+    | None -> Arg.parse speclist ignore_anon mandatory_usage
+    | Some argv ->
+        Arg.parse_argv (List.to_array argv) speclist ignore_anon mandatory_usage
+  in
   let () = process_trace () in
   let () = process_pplit () in
   let () = process_json_errors () in
