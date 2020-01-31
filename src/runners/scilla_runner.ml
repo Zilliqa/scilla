@@ -18,19 +18,16 @@
 
 open Core
 open ErrorUtils
+open RunnerCLI
 
 let output_to_string output ~args =
-  if args.Runner.pp_json then Yojson.Basic.pretty_to_string output
+  if args.pp_json then Yojson.Basic.pretty_to_string output
   else Yojson.Basic.to_string output
 
-let run args =
-  let output = Runner.run args in
-  let str = output_to_string ~args output in
-  Out_channel.with_file args.Runner.output ~f:(fun ch ->
+let run args_list =
+  let (output, args) = Runner.run args_list in
+  let str = output_to_string output ~args in
+  Out_channel.with_file args.output ~f:(fun ch ->
       Out_channel.output_string ch str)
 
-let () =
-  try
-    let args = Cli.parse () in
-    run args
-  with FatalError msg -> exit_with_error msg
+let () = try run None with FatalError msg -> exit_with_error msg

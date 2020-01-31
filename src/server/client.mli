@@ -16,4 +16,5 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-val parse : unit -> Runner.args
+(** Connects to a given [socket_path] and makes an RPC call *)
+val rpc : sock_path:string -> Rpc.call -> Rpc.response

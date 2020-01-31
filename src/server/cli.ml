@@ -14,7 +14,6 @@
 
 open Core
 open Api
-open ScillaUtil.FilePathInfix
 
 module Cmds = API (Cmdlinergen.Gen ())
 
@@ -24,7 +23,7 @@ module Cmd = struct
   let default ~version =
     let doc = "The Scilla server CLI" in
     ( ret (const (fun _ -> `Help (`Pager, None)) $ const ()),
-      info "scilla-server" ~version ~doc )
+      info "server" ~version ~doc )
 
   let server ~sock_path ~num_pending =
     ( const @@ Server.start ~sock_path ~num_pending $ const (),

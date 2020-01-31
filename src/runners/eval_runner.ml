@@ -34,7 +34,7 @@ let default_gas_limit = Stdint.Uint64.of_int 2000
 let run () =
   GlobalConfig.reset ();
   Datatypes.DataTypeDictionary.reinit ();
-  let cli = parse_cli () in
+  let cli = parse_cli None in
   let filename = cli.input_file in
   let gas_limit =
     if cli.gas_limit = Stdint.Uint64.zero then default_gas_limit

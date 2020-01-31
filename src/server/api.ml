@@ -38,17 +38,25 @@ module API (R : RPC) = struct
 
   let runner_argv =
     Param.mk ~name:"argv"
-      ~description:[ "Scilla execution parameters" ]
-      Query.Runner.t
-
+      ~description:[ "scilla-runner execution parameters" ]
+      Rpc.Types.string
   (* The return value of this JSON-RPC method will be a JSON,
      identical to today’s output JSON emitted by scilla-runner. *)
   let runner_return = Param.mk Rpc.Types.string
-
   let runner_error = Idl.DefaultError.err
-
   let runner =
-    declare "runner"
+    declare "scilla-runner"
       [ "Execute Scilla contract" ]
       (runner_argv @-> returning runner_return runner_error)
+
+  let checker_argv =
+    Param.mk ~name:"argv"
+      ~description:[ "scilla-checker execution parameters" ]
+      Rpc.Types.string
+  let checker_return = Param.mk Rpc.Types.string
+  let checker_error = Idl.DefaultError.err
+  let checker =
+    declare "scilla-checker"
+    [ "Parse Scilla contract and perform a number of static checks including typechecking" ]
+    (checker_argv @-> returning checker_return checker_error)
 end

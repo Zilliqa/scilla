@@ -25,21 +25,8 @@ open ContractUtil
 open PrettyPrinters
 open Stdint
 open RunnerUtil
+open RunnerCLI
 open GlobalConfig
-
-type args = {
-  input_init : string;
-  input_state : string;
-  input_message : string;
-  input_blockchain : string;
-  output : string;
-  input : string;
-  libdirs : string list;
-  gas_limit : Stdint.uint64;
-  balance : Stdint.uint128;
-  pp_json : bool;
-  ipc_address : string;
-}
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -183,9 +170,7 @@ let deploy_library args gas_remaining =
           (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
         ]
 
-let run args =
-  GlobalConfig.reset ();
-  Datatypes.DataTypeDictionary.reinit ();
+let run_with_args args =
   let is_deployment = args.input_message = "" in
   let is_ipc = args.ipc_address <> "" in
   let is_library =
@@ -464,8 +449,7 @@ let run args =
             ((omj, osj, oej, accepted_b), gas)
         in
         `Assoc
-          [
-            ("scilla_major_version", `String (Int.to_string cmod.smver));
+          [ ("scilla_major_version", `String (Int.to_string cmod.smver));
             ("gas_remaining", `String (Uint64.to_string gas));
             (ContractUtil.accepted_label, `String (Bool.to_string accepted_b));
             ("messages", output_msg_json);
@@ -473,3 +457,10 @@ let run args =
             ("events", output_events_json);
             (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
           ]
+
+let run args_list =
+  GlobalConfig.reset ();
+  Datatypes.DataTypeDictionary.reinit ();
+  let args = RunnerCLI.parse args_list in
+  let result = run_with_args args in
+  result, args

@@ -16,24 +16,21 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Idl
+type args = {
+  input_init : string;
+  input_state : string;
+  input_message : string;
+  input_blockchain : string;
+  output : string;
+  input : string;
+  libdirs : string list;
+  gas_limit : Stdint.uint64;
+  balance : Stdint.uint128;
+  pp_json : bool;
+  ipc_address : string;
+}
 
-type t = { code : int; message : string }
-(** Server error *)
-
-exception ServerError of t
-(** Server exception *)
-
-val rpc_err : t Error.t
-(** Type of the RPC error,
-    needed by the ocaml-rpc lib *)
-
-(** Error reason *)
-type reason = InvalidQuery of string [@@deriving show]
-
-val mk : reason -> t
-(** Makes an error out of [reason] *)
-
-val invalid_query : string -> t
-(** Makes an "invalid query" error out
-    of the given descrption [string] *)
+(** Parses the command line arguments. If [string array] is given
+    then it parses this array as if it were the command line
+    (this feature is used in the scilla-server implementation). *)
+val parse : (string list) option -> args

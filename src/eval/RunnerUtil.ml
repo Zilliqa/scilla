@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -75,8 +75,8 @@ type 'a nspace_tree = { nspace : 'a ident option; dep_ns : 'a nspace_tree list }
 
 (* light-weight namespaces. prefix all entries in lib with their namespace. *)
 let eliminate_namespaces lib_tree ns_tree =
-  (* Prefix definitions in lib with namespace (and rewrite their uses). 
-     Also, rewrite uses in lib that are in env. This is for names imported by lib. 
+  (* Prefix definitions in lib with namespace (and rewrite their uses).
+     Also, rewrite uses in lib that are in env. This is for names imported by lib.
      Returns renamed library and a list of names that are defined in this library. *)
   let rename_in_library env lib namespace =
     let rev_entries, _, def_names =
@@ -341,7 +341,7 @@ type runner_cli = {
   p_type_info : bool;
 }
 
-let parse_cli () =
+let parse_cli args =
   let r_stdlib_dir = ref [] in
   let r_gas_limit = ref None in
   let r_input_file = ref "" in
@@ -417,7 +417,9 @@ let parse_cli () =
 
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
-  let () = Arg.parse speclist anon_handler mandatory_usage in
+  let () = match args with
+  | None -> Arg.parse speclist anon_handler mandatory_usage
+  | Some argv -> Arg.parse_argv (List.to_array argv) speclist anon_handler mandatory_usage in
   if !r_input_file = "" then fatal_error_noformat usage;
   let gas_limit =
     match !r_gas_limit with Some g -> g | None -> fatal_error_noformat usage

@@ -18,6 +18,20 @@
 
 open Core_kernel
 
+type args = {
+  input_init : string;
+  input_state : string;
+  input_message : string;
+  input_blockchain : string;
+  output : string;
+  input : string;
+  libdirs : string list;
+  gas_limit : Stdint.uint64;
+  balance : Stdint.uint128;
+  pp_json : bool;
+  ipc_address : string;
+}
+
 let f_input_init = ref ""
 
 let f_input_state = ref ""
@@ -121,8 +135,7 @@ let validate_main usage =
     PrettyPrinters.fatal_error_noformat (usage ^ Printf.sprintf "%s\n" msg)
   else ()
 
-let parse () =
-  let open Runner in
+let parse args =
   let speclist =
     [
       ( "-version",
@@ -214,9 +227,10 @@ let parse () =
     @@ List.map speclist ~f:(fun (flag, _, desc) -> flag ^ " " ^ desc)
   in
   let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
-
   let ignore_anon _ = () in
-  let () = Arg.parse speclist ignore_anon mandatory_usage in
+  let () = match args with
+  | None -> Arg.parse speclist ignore_anon mandatory_usage
+  | Some argv -> Arg.parse_argv (List.to_array argv) speclist ignore_anon mandatory_usage in
   let () = process_trace () in
   let () = process_pplit () in
   let () = process_json_errors () in

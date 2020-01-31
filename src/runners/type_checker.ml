@@ -76,7 +76,7 @@ let analyze_gas e = GUA_Checker.gua_expr_wrapper e
 let run () =
   GlobalConfig.reset ();
   Datatypes.DataTypeDictionary.reinit ();
-  let cli = parse_cli () in
+  let cli = parse_cli None in
   let open GlobalConfig in
   StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
   set_debug_level Debug_None;
