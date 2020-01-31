@@ -232,7 +232,7 @@ let parse args =
     match args with
     | None -> Arg.parse speclist ignore_anon mandatory_usage
     | Some argv ->
-        Arg.parse_argv (List.to_array argv) speclist ignore_anon mandatory_usage
+        Arg.parse_argv ~current:(ref 0) (List.to_array argv) speclist ignore_anon mandatory_usage
   in
   let () = process_trace () in
   let () = process_pplit () in
