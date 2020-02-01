@@ -1,13 +1,12 @@
 {
   "errors": [
     {
-      "error_message":
-        "In an immutable field declaration the parser expects a valid type name.\n",
+      "error_message": "Invalid type in type annotation.\n",
       "start_location": {
         "file":
           "base/parser/bad/cmodule-contract-cid-lparen-id-colon-with.scilla",
         "line": 5,
-        "column": 19
+        "column": 20
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

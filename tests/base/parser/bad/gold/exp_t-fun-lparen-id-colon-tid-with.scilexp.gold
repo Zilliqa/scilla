@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This function argument and argument type declaration is not closed properly.\n",
+        "This type annotation is not closed properly, or has a missing or misplaced '='.\n",
       "start_location": {
         "file":
           "base/parser/bad/exps/exp_t-fun-lparen-id-colon-tid-with.scilexp",

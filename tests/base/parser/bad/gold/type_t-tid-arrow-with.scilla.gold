@@ -1,11 +1,11 @@
 {
   "errors": [
     {
-      "error_message": "This function type lacks a result type.\n",
+      "error_message": "Invalid type in type annotation.\n",
       "start_location": {
         "file": "base/parser/bad/type_t-tid-arrow-with.scilla",
-        "line": 7,
-        "column": 24
+        "line": 8,
+        "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
