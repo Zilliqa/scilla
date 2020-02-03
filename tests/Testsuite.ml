@@ -22,10 +22,10 @@ let () =
   run_tests
     [
       (* contract_tests should always be the first to be run. This is required
-    * for us to be able to run _only_ contract_tests from the blockchain for
-    * external IPC server tests. If the order changes, then the test_id of
-    * these tests will change, resulting in the tests not being run.
-    * See the Makefile target "test_extipcserver". *)
+         * for us to be able to run _only_ contract_tests from the blockchain for
+         * external IPC server tests. If the order changes, then the test_id of
+         * these tests will change, resulting in the tests not being run.
+         * See the Makefile target "test_extipcserver". *)
       Testcontracts.contract_tests;
       TestExps.all_tests;
       TestExpsFail.all_tests;
@@ -34,5 +34,5 @@ let () =
       TestPMFail.all_tests;
       TestChecker.all_tests;
       (* TestGasExpr.all_tests;
-      TestGasContracts.all_tests; *)
+         TestGasContracts.all_tests; *)
     ]

@@ -1058,7 +1058,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     open Datatypes.SnarkTypes
 
-    (* alt_bn128_G1_add : zksnark_g1point_typ -> zksnark_g1point_type -> 
+    (* alt_bn128_G1_add : zksnark_g1point_typ -> zksnark_g1point_type ->
                           Option {zksnark_g1point_type} *)
     let alt_bn128_G1_add_type =
       fun_typ g1point_type (fun_typ g1point_type (option_typ g1point_type))
@@ -1077,7 +1077,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
               some_lit pr' )
       | _ -> builtin_fail "Crypto.alt_bn128_G1_add" ls
 
-    (* alt_bn128_G1_mul : zksnark_g1point_typ -> zksnark_g1point_type -> 
+    (* alt_bn128_G1_mul : zksnark_g1point_typ -> zksnark_g1point_type ->
                       Option {zksnark_g1point_type} *)
     let alt_bn128_G1_mul_type =
       fun_typ g1point_type (fun_typ scalar_type (option_typ g1point_type))
@@ -1275,7 +1275,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     (* A built-in record type:
        * arity
        * full, unelaborated type
-       * elaborator, refining the type based on argument 
+       * elaborator, refining the type based on argument
          to support polymorphism -- e.g., for ints and maps
        * executor - operational semantics of the built-in
     *)

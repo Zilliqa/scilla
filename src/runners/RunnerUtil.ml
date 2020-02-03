@@ -75,8 +75,8 @@ type 'a nspace_tree = { nspace : 'a ident option; dep_ns : 'a nspace_tree list }
 
 (* light-weight namespaces. prefix all entries in lib with their namespace. *)
 let eliminate_namespaces lib_tree ns_tree =
-  (* Prefix definitions in lib with namespace (and rewrite their uses). 
-     Also, rewrite uses in lib that are in env. This is for names imported by lib. 
+  (* Prefix definitions in lib with namespace (and rewrite their uses).
+     Also, rewrite uses in lib that are in env. This is for names imported by lib.
      Returns renamed library and a list of names that are defined in this library. *)
   let rename_in_library env lib namespace =
     let rev_entries, _, def_names =
