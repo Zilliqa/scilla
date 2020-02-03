@@ -1084,7 +1084,7 @@ struct
   (* Hardcode signature for folds. *)
   let analyze_folds genv =
     (*  list_foldr: forall 'A . forall 'B . g:('A -> 'B -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
-    let a = ER.mk_id (mk_ident "a") (ADT ("List", [ TypeVar "'A" ])) in
+    let a = ER.mk_id (mk_ident "a") (ADT (asId "List", [ TypeVar "'A" ])) in
     let g =
       ER.mk_id (mk_ident "g")
         (FunType (TypeVar "'A", FunType (TypeVar "'B", TypeVar "'B")))

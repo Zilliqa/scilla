@@ -33,7 +33,7 @@ val member_exn : string -> Basic.t -> Basic.t
 val constr_pattern_arg_types_exn : typ -> string -> typ list
 
 (*  Wrapper for DataTypeDictionary.lookup_name  *)
-val lookup_adt_name_exn : string -> Datatypes.adt
+val lookup_adt_name_exn : 'a Syntax.ident -> Datatypes.adt
 
 (*************************************)
 (*********** ADT parsers *************)

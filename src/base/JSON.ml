@@ -120,7 +120,7 @@ let rec json_to_adtargs cname tlist ajs =
   (* For each component literal of our ADT, calculate it's type.
    * This is essentially using DataTypes.constr_tmap and substituting safely. *)
   let tmap =
-    JSONParser.constr_pattern_arg_types_exn (ADT (dt.tname, tlist)) cname
+    JSONParser.constr_pattern_arg_types_exn (ADT (asId dt.tname, tlist)) cname
   in
   verify_args_exn cname (List.length ajs) (List.length tmap);
   let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t j) in
@@ -211,7 +211,7 @@ and json_to_lit t v =
       let vl = read_map_json kt vt v in
       vl
   | ADT (name, tlist) ->
-      let vl = read_adt_json name v tlist in
+      let vl = read_adt_json (get_id name) v tlist in
       vl
   | _ ->
       let tv = build_prim_lit_exn t (to_string_exn v) in

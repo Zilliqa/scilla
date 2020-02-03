@@ -2,38 +2,38 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract Crowdfunding:\n",
+      "error_message": "Type error(s) in contract Test:\n",
       "start_location": {
-        "file": "checker/bad/unbound.scilla",
-        "line": 48,
+        "file": "checker/bad/bad_adt_8.scilla",
+        "line": 8,
         "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type error in library Crowdfunding:\n",
+      "error_message": "Type error in library Test:\n",
       "start_location": {
-        "file": "checker/bad/unbound.scilla",
-        "line": 9,
+        "file": "checker/bad/bad_adt_8.scilla",
+        "line": 3,
         "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type error in library variable check_update:\n",
+      "error_message": "Type error in library variable i32:\n",
       "start_location": {
-        "file": "checker/bad/unbound.scilla",
-        "line": 16,
+        "file": "checker/bad/bad_adt_8.scilla",
+        "line": 6,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "ADT Uint12 not found",
+      "error_message": "No data type with constructor MyInt32 found",
       "start_location": {
-        "file": "checker/bad/unbound.scilla",
-        "line": 19,
-        "column": 17
+        "file": "checker/bad/bad_adt_8.scilla",
+        "line": 6,
+        "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

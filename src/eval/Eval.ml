@@ -130,7 +130,10 @@ let rec exp_eval erep env =
       pure (fully_applied, env)
   | Constr (cname, ts, actuals) ->
       let open Datatypes.DataTypeDictionary in
-      let%bind _, constr = fromR @@ lookup_constructor (get_id cname) in
+      let%bind _, constr =
+        fromR
+        @@ lookup_constructor ~sloc:(SR.get_loc (get_rep cname)) (get_id cname)
+      in
       let alen = List.length actuals in
       if constr.arity <> alen then
         fail1
@@ -520,7 +523,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
           tryM
             ~f:(fun (ps, pt) ->
               let%bind at = fromR @@ literal_type (snd a) in
-              if get_id ps = fst a && pt = at then pure true else fail0 "")
+              if get_id ps = fst a && type_equiv pt at then pure true else fail0 "")
             cparams ~msg:emsg
         in
         pure mp)

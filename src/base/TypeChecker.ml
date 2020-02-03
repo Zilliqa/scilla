@@ -253,7 +253,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         let open Datatypes.DataTypeDictionary in
         let%bind _, constr =
           mark_error_as_type_error remaining_gas
-          @@ lookup_constructor (get_id cname)
+          @@ lookup_constructor
+               ~sloc:(SR.get_loc (get_rep cname))
+               (get_id cname)
         in
         let alen = List.length actuals in
         if constr.arity <> alen then
@@ -633,7 +635,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
             (* The return type of MapGet would be (Option v_type) or Bool. *)
             let v_type' =
-              if valfetch then ADT ("Option", [ v_type ]) else ADT ("Bool", [])
+              if valfetch then ADT (asId "Option", [ v_type ]) else ADT (asId "Bool", [])
             in
             (* Update environment. *)
             let pure' = TEnv.addT (TEnv.copy env.pure) v v_type' in
@@ -1246,7 +1248,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               in
               let%bind _ =
                 mark_error_as_type_error remaining_gas
-                @@ assert_type_equiv (ADT ("Bool", [])) ityp.tp
+                @@ assert_type_equiv (ADT (asId "Bool", [])) ityp.tp
               in
               pure (checked_constraint, remaining_gas)
          in

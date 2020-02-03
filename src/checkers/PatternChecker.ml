@@ -106,7 +106,9 @@ struct
               (i + 1) rest_clauses
           in
           let%bind adt, _ =
-            DataTypeDictionary.lookup_constructor (get_id c_name)
+            DataTypeDictionary.lookup_constructor
+              ~sloc:(SR.get_loc (get_rep c_name))
+              (get_id c_name)
           in
           let span = List.length adt.tconstr in
           match static_match (get_id c_name) span dsc with

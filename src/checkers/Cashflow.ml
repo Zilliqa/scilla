@@ -337,7 +337,7 @@ struct
                      match arg_typs with [] -> true | _ -> false)
               && List.exists adt.tmap ~f:(fun (_, arg_typs) ->
                      match arg_typs with
-                     | [ ADT (arg_typ_name, _) ] -> arg_typ_name = adt.tname
+                     | [ ADT (arg_typ_name, _) ] -> (get_id arg_typ_name) = adt.tname
                      | _ -> false)
             then NoInfo
             else Adt (adt.tname, [])
@@ -444,7 +444,7 @@ struct
                   NoInfo
               | MapType (_, vt) | FunType (_, vt) -> Map (tag_tmap vt)
               | ADT (adt_name, arg_typs) ->
-                  Adt (adt_name, List.map arg_typs ~f:tag_tmap)
+                  Adt (get_id adt_name, List.map arg_typs ~f:tag_tmap)
               | TypeVar tvar -> (
                   match List.Assoc.find tvar_tag_map ~equal:( = ) tvar with
                   | Some tag -> tag
