@@ -55,7 +55,7 @@ struct
                 pure (fname, t))
               filtered_m
           in
-          (* If we already have an entry for "eventname" in "acc", 
+          (* If we already have an entry for "eventname" in "acc",
              * check that the type matches. Add entry otherwise. *)
           match List.find_opt (fun (n, _) -> n = eventname) acc with
           | Some (_, tlist) ->

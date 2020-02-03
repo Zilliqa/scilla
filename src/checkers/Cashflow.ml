@@ -328,9 +328,9 @@ struct
               List.for_all adt.tmap ~f:(fun (_, arg_typs) ->
                   match arg_typs with [] -> true | _ -> false)
             then NotMoney
-              (* Case 2 (Nat case): 2 constructors. One constructor takes 
-               1 argument of same type, other constructor
-               takes no argument : NoInfo *)
+              (* Case 2 (Nat case): 2 constructors. One constructor takes
+                 1 argument of same type, other constructor
+                 takes no argument : NoInfo *)
             else if
               List.length adt.tconstr = 2
               && List.exists adt.tmap ~f:(fun (_, arg_typs) ->
@@ -538,25 +538,25 @@ struct
 
   (* Calculate the signature of a builtin function.
 
-     Step 1: Calculate candidate signatures based on the 
+     Step 1: Calculate candidate signatures based on the
      desired result tag and each argument tag.
 
-     - For each tag t, pick every least upper bound of that 
-     tag that makes sense for that result/argument. 
+     - For each tag t, pick every least upper bound of that
+     tag that makes sense for that result/argument.
      Call these bounds b_t.
 
-     - For each b_t, find all sets of tags satisfying that 
-     the use of those tags in the other argument/result positions 
-     is the greatest lower bound of a consistent use of tags 
-     satisfying b_t. These sets along with b_t are considered 
+     - For each b_t, find all sets of tags satisfying that
+     the use of those tags in the other argument/result positions
+     is the greatest lower bound of a consistent use of tags
+     satisfying b_t. These sets along with b_t are considered
      the candidate sigantures for t, called C_t.
 
-     Step 2: Consider the elements of C_t1 x C_t2 x ..., i.e., 
-     the cartesian product of the candidate signature sets for 
+     Step 2: Consider the elements of C_t1 x C_t2 x ..., i.e.,
+     the cartesian product of the candidate signature sets for
      each t.
 
-     For each element, calculate the least upper bound of all 
-     the tags in the signatures of the element. Call the 
+     For each element, calculate the least upper bound of all
+     the tags in the signatures of the element. Call the
      resulting set of candidate signatures C.
 
      Step 3: Calculate the greatest lower bound of C. *)
@@ -1150,9 +1150,9 @@ struct
           new_changes ) =
       match e with
       | Literal _ ->
-          (* No need to deduce tag from type. 
-             If the literal is a number, then nothing can be deduced, 
-             and if it is not a number, the tag of relevant variables 
+          (* No need to deduce tag from type.
+             If the literal is a number, then nothing can be deduced,
+             and if it is not a number, the tag of relevant variables
              will be deduced from their usage. *)
           (e, tag, param_env, local_env, ctr_tag_map, false)
       | Var i ->

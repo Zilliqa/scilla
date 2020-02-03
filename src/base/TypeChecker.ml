@@ -133,7 +133,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     match i with Ident (name, rep) -> Ident (name, ETR.mk_rep rep typ)
 
   (* Given a scrutinee type and a pattern,
-     produce a list of ident -> type mappings for 
+     produce a list of ident -> type mappings for
      all variables bound by the pattern *)
   let assign_types_for_pattern sctyp pattern =
     let rec go atyp tlist p =
@@ -956,9 +956,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
            pure @@ ((new_entries, new_env), remaining_gas))
 
   (* Check that ADT constructors are well-formed.
-     Declared ADTs and constructors are added to stored datatypes 
+     Declared ADTs and constructors are added to stored datatypes
      by ADTChecker.
-     Checking for ADT types in scope and multiple usages of the 
+     Checking for ADT types in scope and multiple usages of the
      same constructor name takes place in ADTChecker. *)
   let type_lib_typ_ctrs env (ctr_defs : ctr_def list) =
     forallM
@@ -1039,26 +1039,26 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
        else Error (TypeError, errs, remaining_gas)
 
   (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
-  (* type library, handling cache as necessary. *)
-  let type_library_cache (tenv : TEnv.t) (elib : UntypedSyntax.library)  =
-    (* We are caching TypeEnv = MakeTEnv(PlainTypes)(ER) *)
-    let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) (STR) (ER) in
-    let open STC in
-    (* Check if we have the type info in cache. *)
-    match get_lib_tenv_cache tenv elib with
-    | Some tenv' ->
-        (* Use cached entries. *)
-    pure (tenv', "")
-    | None ->
-        (* Couldn't find in cache. Actually type the library. *)
-        let res = type_library tenv elib in
-        (match res with
-    | Error (msg, es) -> Ok((tenv, msg), es)
-    | Ok ((_, tenv'), es) as lib_res -> 
-             (* Since we don't have this in cache, cache it now. *)
-             cache_lib_tenv tenv' elib;
-        Ok((lib_res, ""), es)
-        )
+     (* type library, handling cache as necessary. *)
+     let type_library_cache (tenv : TEnv.t) (elib : UntypedSyntax.library)  =
+       (* We are caching TypeEnv = MakeTEnv(PlainTypes)(ER) *)
+       let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) (STR) (ER) in
+       let open STC in
+       (* Check if we have the type info in cache. *)
+       match get_lib_tenv_cache tenv elib with
+       | Some tenv' ->
+           (* Use cached entries. *)
+       pure (tenv', "")
+       | None ->
+           (* Couldn't find in cache. Actually type the library. *)
+           let res = type_library tenv elib in
+           (match res with
+       | Error (msg, es) -> Ok((tenv, msg), es)
+       | Ok ((_, tenv'), es) as lib_res ->
+                (* Since we don't have this in cache, cache it now. *)
+                cache_lib_tenv tenv' elib;
+           Ok((lib_res, ""), es)
+           )
   *)
 
   (* Type a list of libtrees, with tenv0 as the base environment. *)
@@ -1109,7 +1109,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           ~init:(([], tenv0), err_dups, remaining_gas)
           ~f:(fun ((lib_acc, tenv_acc), emsgs_acc, remaining_gas) elib ->
             (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
-            let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
+               let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
             let%bind (dep_libs, dep_env), dep_emsgs, remaining_gas =
               recurser elib.deps remaining_gas
             in

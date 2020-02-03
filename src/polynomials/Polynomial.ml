@@ -41,8 +41,8 @@ let canonicalize_term (t : 'a term) : 'a term =
   let c, vplist = t in
   if c = 0 then (0, [])
   else
-    (* check if the first element of the list occurs again later, 
-    * and recursively, the rest of the list. *)
+    (* check if the first element of the list occurs again later,
+       * and recursively, the rest of the list. *)
     let rec merger vplist =
       match vplist with
       | (cur_v, cur_p) :: rem ->
