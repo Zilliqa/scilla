@@ -1150,7 +1150,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let put_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); kt'; vt' ] when type_equiv kt kt' && type_equiv vt vt' ->
+      | [ MapType (kt, vt); kt'; vt' ]
+        when type_equiv kt kt' && type_equiv vt vt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 

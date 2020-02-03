@@ -337,7 +337,8 @@ struct
                      match arg_typs with [] -> true | _ -> false)
               && List.exists adt.tmap ~f:(fun (_, arg_typs) ->
                      match arg_typs with
-                     | [ ADT (arg_typ_name, _) ] -> (get_id arg_typ_name) = adt.tname
+                     | [ ADT (arg_typ_name, _) ] ->
+                         get_id arg_typ_name = adt.tname
                      | _ -> false)
             then NoInfo
             else Adt (adt.tname, [])

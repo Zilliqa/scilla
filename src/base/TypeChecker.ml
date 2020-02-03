@@ -635,7 +635,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
             (* The return type of MapGet would be (Option v_type) or Bool. *)
             let v_type' =
-              if valfetch then ADT (asId "Option", [ v_type ]) else ADT (asId "Bool", [])
+              if valfetch then ADT (asId "Option", [ v_type ])
+              else ADT (asId "Bool", [])
             in
             (* Update environment. *)
             let pure' = TEnv.addT (TEnv.copy env.pure) v v_type' in
