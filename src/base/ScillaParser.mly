@@ -240,7 +240,7 @@ simple_exp :
       (match ts with
        | None -> []
        | Some ls -> ls) in
-    (Constr (c, targs, args), toLoc $startpos)
+    (Constr (Ident(c, toLoc $startpos), targs, args), toLoc $startpos)
   }
 (* Match expression *)
 | MATCH; x = sid; WITH; cs=list(exp_pm_clause); END
@@ -282,12 +282,12 @@ map_access:
 pattern:
 | UNDERSCORE { Wildcard }
 | x = ID { Binder (Ident (x, toLoc $startpos(x))) }
-| c = scid; ps = list(arg_pattern) { Constructor (c, ps) }
+| c = scid; ps = list(arg_pattern) { Constructor (asIdL c (toLoc $startpos(c)), ps) }
 
 arg_pattern:
 | UNDERSCORE { Wildcard }
 | x = ID { Binder (Ident (x, toLoc $startpos(x))) }
-| c = scid;  { Constructor (c, []) }
+| c = scid;  { Constructor (asIdL c (toLoc $startpos(c)), []) }
 | LPAREN; p = pattern RPAREN; { p }
 
 exp_pm_clause:

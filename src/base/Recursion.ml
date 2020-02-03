@@ -69,7 +69,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       | Wildcard -> pure @@ RecursionSyntax.Wildcard
       | Binder x -> pure @@ RecursionSyntax.Binder x
       | Constructor (s, ps) ->
-          let%bind _ = is_adt_ctr_in_scope s in
+          let%bind _ = is_adt_ctr_in_scope (get_id s) in
           let%bind new_ps = mapM ps ~f:walk in
           pure @@ RecursionSyntax.Constructor (s, new_ps)
     in
@@ -104,7 +104,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             let%bind _ =
               forallM ~f:(fun t -> recursion_typ is_adt_in_scope t) ts
             in
-            let%bind _ = is_adt_ctr_in_scope s in
+            let%bind _ = is_adt_ctr_in_scope (get_id s) in
             pure @@ RecursionSyntax.Constr (s, ts, args)
         | MatchExpr (x, pes) ->
             let%bind new_pes =

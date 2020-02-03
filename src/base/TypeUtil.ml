@@ -570,7 +570,7 @@ module TypeUtilities = struct
     { adt with tparams = tparams'; tmap = tmap' }
 
   (*  Get elaborated constructor type *)
-  let elab_constr_type cn targs =
+  let elab_constr_type ?(_sloc = dummy_loc) cn targs =
     let open Datatypes.DataTypeDictionary in
     let%bind adt', _ = lookup_constructor cn in
     let seq a b = if a = b then 0 else 1 in

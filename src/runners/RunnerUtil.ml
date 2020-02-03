@@ -143,7 +143,7 @@ let eliminate_namespaces lib_tree ns_tree =
                 let ils' = List.map ils ~f:(check_and_prefix_id env) in
                 (App (i', ils'), eloc)
             | Constr (cname, tl, idl) ->
-                let cname' = check_and_prefix_string env cname in
+                let cname' = check_and_prefix_id env cname in
                 let tl' = List.map tl ~f:(fun t -> rename_in_type t env) in
                 let idl' = List.map idl ~f:(check_and_prefix_id env) in
                 (Constr (cname', tl', idl'), eloc)
@@ -154,7 +154,7 @@ let eliminate_namespaces lib_tree ns_tree =
                   | Wildcard -> (pat, [])
                   | Binder i -> (pat, [ get_id i ])
                   | Constructor (c, plist) ->
-                      let c' = check_and_prefix_string env c in
+                      let c' = check_and_prefix_id env c in
                       let plist', blist =
                         List.unzip @@ List.map plist ~f:(rename_in_pattern env)
                       in
