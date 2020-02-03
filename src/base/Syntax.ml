@@ -603,7 +603,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   type pattern =
     | Wildcard
     | Binder of ER.rep ident
-    | Constructor of SR.rep ident * (pattern list)
+    | Constructor of SR.rep ident * pattern list
   [@@deriving sexp]
 
   type expr_annot = expr * ER.rep
@@ -615,7 +615,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Message of (string * payload) list
     | Fun of ER.rep ident * typ * expr_annot
     | App of ER.rep ident * ER.rep ident list
-    | Constr of (SR.rep ident) * typ list * ER.rep ident list
+    | Constr of SR.rep ident * typ list * ER.rep ident list
     | MatchExpr of ER.rep ident * (pattern * expr_annot) list
     | Builtin of ER.rep builtin_annot * ER.rep ident list
     (* Advanced features: to be added in Scilla 0.2 *)
@@ -867,7 +867,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       | Message _ -> sprintf "Type error in message.\n"
       | Fun _ -> sprintf "Type error in function:\n"
       | App (f, _) -> sprintf "Type error in application of `%s`:\n" (get_id f)
-      | Constr (s, _, _) -> sprintf "Type error in constructor `%s`:\n" (get_id s)
+      | Constr (s, _, _) ->
+          sprintf "Type error in constructor `%s`:\n" (get_id s)
       | MatchExpr (x, _) ->
           sprintf
             "Type error in pattern matching on `%s`%s (or one of its branches):\n"

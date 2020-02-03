@@ -1314,7 +1314,9 @@ struct
             |> Option.value_map ~default:(ctr_tag_map, false) ~f:(fun map ->
                    (map, true))
           in
-          let tag = ctr_to_adt_tag (get_id cname) (List.map new_args ~f:get_id_tag) in
+          let tag =
+            ctr_to_adt_tag (get_id cname) (List.map new_args ~f:get_id_tag)
+          in
           ( Constr (cname, ts, new_args),
             tag,
             param_env,

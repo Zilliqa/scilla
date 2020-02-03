@@ -252,18 +252,20 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         in
         let open Datatypes.DataTypeDictionary in
         let%bind _, constr =
-          mark_error_as_type_error remaining_gas @@ lookup_constructor (get_id cname)
+          mark_error_as_type_error remaining_gas
+          @@ lookup_constructor (get_id cname)
         in
         let alen = List.length actuals in
         if constr.arity <> alen then
           Error
             (mk_type_error0
-               (sprintf "Constructor %s expects %d arguments, but got %d." (get_id cname)
-                  constr.arity alen)
+               (sprintf "Constructor %s expects %d arguments, but got %d."
+                  (get_id cname) constr.arity alen)
                remaining_gas)
         else
           let%bind ftyp =
-            mark_error_as_type_error remaining_gas @@ elab_constr_type (get_id cname) ts
+            mark_error_as_type_error remaining_gas
+            @@ elab_constr_type (get_id cname) ts
           in
           (* Now type-check as a function application *)
           let%bind typed_actuals, apptyp, remaining_gas =

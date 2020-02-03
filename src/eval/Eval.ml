@@ -134,8 +134,8 @@ let rec exp_eval erep env =
       let alen = List.length actuals in
       if constr.arity <> alen then
         fail1
-        ((sprintf "Constructor %s expects %d arguments, but got %d." (get_id cname)
-             constr.arity alen))
+          (sprintf "Constructor %s expects %d arguments, but got %d."
+             (get_id cname) constr.arity alen)
           (SR.get_loc (get_rep cname))
       else
         (* Resolve the actuals *)

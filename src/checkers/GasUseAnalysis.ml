@@ -736,7 +736,7 @@ struct
     | Wildcard -> pure genv
     | Binder i -> pure @@ GUAEnv.addS genv (get_id i) ([], msref, empty_pn)
     | Constructor (cname, plist) -> (
-        match (get_id cname) with
+        match get_id cname with
         | "True" | "False" | "Nil" | "None" -> pure @@ genv
         | "Some" ->
             (* TypeChecker will ensure that plist has unit length. *)
@@ -760,7 +760,7 @@ struct
         | _ ->
             fail0
               (Printf.sprintf "Unsupported constructor %s in gas analysis."
-                 (get_id cname) ))
+                 (get_id cname)) )
 
   (* built-in op costs are propotional to size of data they operate on. *)
   (* TODO: Have all numbers in one place. Integrate with Gas.ml *)
@@ -963,7 +963,7 @@ struct
         pure (args, ressize, add_pn p cc)
     | Constr (cname, _, actuals) ->
         let%bind ressize =
-          match (get_id cname) with
+          match get_id cname with
           | "True" | "False" -> pure @@ SPol (const_pn 1)
           | "Nil" -> pure @@ Container (SPol (const_pn 0), SPol (const_pn 1))
           | "None" -> pure @@ SPol (const_pn 1)

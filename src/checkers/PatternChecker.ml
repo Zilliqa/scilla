@@ -95,7 +95,8 @@ struct
           in
           let success () =
             let%bind t_args = get_t_args () in
-            traverse_pattern (((get_id c_name), []) :: ctx)
+            traverse_pattern
+              ((get_id c_name, []) :: ctx)
               ((sps_cons, t_args, get_dsc_args dsc) :: sps_rest)
               i rest_clauses
           in
@@ -104,7 +105,9 @@ struct
               (build_dsc ctx new_dsc sps_rest)
               (i + 1) rest_clauses
           in
-          let%bind adt, _ = DataTypeDictionary.lookup_constructor (get_id c_name) in
+          let%bind adt, _ =
+            DataTypeDictionary.lookup_constructor (get_id c_name)
+          in
           let span = List.length adt.tconstr in
           match static_match (get_id c_name) span dsc with
           | Yes -> success ()

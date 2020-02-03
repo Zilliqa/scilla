@@ -207,7 +207,8 @@ module TypeUtilities : sig
   val apply_type_subst : (string * typ) list -> typ -> typ
 
   (*  Get elaborated type for a constructor and list of type arguments *)
-  val elab_constr_type : ?_sloc:loc -> string -> typ list -> (typ, scilla_error list) result
+  val elab_constr_type :
+    ?_sloc:loc -> string -> typ list -> (typ, scilla_error list) result
 
   (* For a given instantiated ADT and a construtor name, get type *
      assignments. This is the main working horse of type-checking
