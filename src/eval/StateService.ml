@@ -33,7 +33,10 @@ type ss_field = {
   fval : literal option; (* We may or may not have the value in memory. *)
 }
 
-type service_mode = IPC of string (* Socket address for IPC *) | Local
+type service_mode =
+  | IPC of string
+  (* Socket address for IPC *)
+  | Local
 
 type ss_state = Uninitialized | SS of service_mode * ss_field list
 
@@ -92,7 +95,7 @@ module MakeStateService () = struct
                   (* No element found. Return none. *)
                   pure @@ (None, G_MapGet (List.length keys, None))
               (* The remaining keys cannot be used for indexing as
-                we ran out of nested maps. *)
+                 we ran out of nested maps. *)
               | _ ->
                   fail1
                     (sprintf
@@ -156,7 +159,7 @@ module MakeStateService () = struct
                   if is_some vopt then (
                     (* not a delete operation. *)
                     (* We have more keys remaining, but no entry for "k".
-                  So create an empty map for "k" and then proceed. *)
+                       So create an empty map for "k" and then proceed. *)
                     let mlit'' = Caml.Hashtbl.create 4 in
                     let%bind kt'', vt'' =
                       match vt' with
@@ -175,7 +178,7 @@ module MakeStateService () = struct
                     (* No point removing a key that doesn't exist. *)
                     pure @@ (s, G_MapUpdate (List.length keys, None))
               (* The remaining keys cannot be used for indexing as
-                we ran out of nested maps. *)
+                 we ran out of nested maps. *)
               | _ ->
                   fail1
                     (sprintf

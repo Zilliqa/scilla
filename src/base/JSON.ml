@@ -403,7 +403,7 @@ module BlockChainState = struct
     List.map jlist ~f:jobj_to_statevar
 
   (* Validation against pre-defined block state variables
-     is done in `Eval.check_blockchain_entries`  *)
+     is done in `Eval.check_blockchain_entries` *)
 end
 
 module ContractInfo = struct

@@ -25,7 +25,7 @@ open Stdint
 exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
-let scilla_version = (0, 5, 1)
+let scilla_version = (0, 5, 2)
 
 type 'rep ident = Ident of string * 'rep [@@deriving sexp]
 
@@ -604,7 +604,7 @@ module type Rep = sig
 
   val sexp_of_rep : rep -> Sexp.t
 
-  (* TODO, Issue #179: These functions are only used in TypeCache.ml. 
+  (* TODO, Issue #179: These functions are only used in TypeCache.ml.
      See if they can be eliminated somehow *)
   val parse_rep : string -> rep
 
@@ -671,7 +671,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
     | MapUpdate of ER.rep ident * ER.rep ident list * ER.rep ident option
     (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
-    (* If the bool is set, then we interpret this as value retrieve, 
+    (* If the bool is set, then we interpret this as value retrieve,
        otherwise as an "exists" query. *)
     | MapGet of ER.rep ident * ER.rep ident * ER.rep ident list * bool
     | MatchStmt of ER.rep ident * (pattern * stmt_annot list) list

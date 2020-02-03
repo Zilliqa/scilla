@@ -100,9 +100,9 @@ module ContractInfo : sig
   open Syntax.ParsedSyntax
 
   (* Given a parsed contract, give a string JSON with these details:
-       { 
+       {
          "name" : "foo",
-         "params" : [ 
+         "params" : [
            { "name" : "param1",
              "type" : "Int32" },
            { "name" : "param2",
@@ -120,14 +120,14 @@ module ContractInfo : sig
               "params" : [
                 {"name" : "barparam1", "type" : "Uint128"},
                 {"name" : "barparam2", "type" : "Uint128"},
-              ] 
+              ]
             },
             {
               "name" : "bar2",
               "params" : [
                 {"name" : "bar1param1", "type" : "Uint128"},
                 {"name" : "bar1param2", "type" : "Uint128"},
-              ] 
+              ]
             }
           ]
         }
@@ -187,11 +187,10 @@ module CashflowInfo : sig
                        { "constructor" : "Test1", "tags" : [ "NoInfo", "_", "NotMoney" ] },
                        { "constructor" : "Test2", "tags" : [ ] }
                    ]
-               }               
+               }
            ]
         }
      }
-
   *)
 
   val get_json :
