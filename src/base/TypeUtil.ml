@@ -403,11 +403,11 @@ module TypeUtilities = struct
     let tss = List.map ~f:(fun t -> pp_typ t) ts in
     sprintf "[%s]" (String.concat ~sep:"; " tss)
 
-  (* 
-   Check that function type applies for a given arity n 
-   to a list of argument types. 
-   Returns the resul type of application or failure 
-*)
+  (*
+     Check that function type applies for a given arity n
+     to a list of argument types.
+     Returns the resul type of application or failure
+  *)
   let rec fun_type_applies ft argtypes =
     match (ft, argtypes) with
     | FunType (argt, rest), a :: ats ->

@@ -93,8 +93,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   let expr_static_cost erep =
     let e, _ = erep in
     match e with
-    | Literal _ | Var _ | Let _ | Message _ | Fun _ | App _ | Constr _
-    | TFun _ | TApp _ ->
+    | Literal _ | Var _ | Let _ | Message _ | Fun _ | App _ | Constr _ | TFun _
+    | TApp _ ->
         pure 1
     | MatchExpr (_, clauses) -> pure @@ List.length clauses
     | Fixpoint _ ->
