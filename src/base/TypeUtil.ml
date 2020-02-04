@@ -183,11 +183,12 @@ functor
               is_wf_typ' rt tb
           | ADT (n, ts) ->
               let open Datatypes.DataTypeDictionary in
-              let%bind adt = lookup_name n in
+              let%bind adt = lookup_name ~sloc:(get_rep n) (get_id n) in
               if List.length ts <> List.length adt.tparams then
-                fail0
-                @@ sprintf "ADT type %s expects %d arguments but got %d.\n" n
-                     (List.length adt.tparams) (List.length ts)
+                fail1
+                  (sprintf "ADT type %s expects %d arguments but got %d.\n"
+                     (get_id n) (List.length adt.tparams) (List.length ts))
+                  (get_rep n)
               else foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:() ts
           | PrimType _ | Unit -> pure ()
           | TypeVar a -> (
@@ -277,12 +278,6 @@ module TypeUtilities = struct
 
   let unit_typ = Unit
 
-  (* Type equivalence *)
-  let type_equiv t1 t2 =
-    let t1' = canonicalize_tfun t1 in
-    let t2' = canonicalize_tfun t2 in
-    t1' = t2'
-
   (* Return True if corresponding elements are `type_equiv`,
      False otherwise, or if unequal lengths. *)
   let type_equiv_list tlist1 tlist2 =
@@ -347,7 +342,10 @@ module TypeUtilities = struct
         | Some _ -> true (* Inductive ADT - ignore this branch *)
         | None -> (
             (* Check that ADT is serializable *)
-            match DataTypeDictionary.lookup_name tname with
+            match
+              DataTypeDictionary.lookup_name ~sloc:(get_rep tname)
+                (get_id tname)
+            with
             | Error _ -> false (* Handle errors outside *)
             | Ok adt ->
                 let adt_serializable =
@@ -583,7 +581,7 @@ module TypeUtilities = struct
     let plen = List.length adt.tparams in
     let alen = List.length targs in
     let%bind _ = validate_param_length cn plen alen in
-    let res_typ = ADT (adt.tname, targs) in
+    let res_typ = ADT (asId adt.tname, targs) in
     match List.find adt.tmap ~f:(fun (n, _) -> n = cn) with
     | None -> pure res_typ
     | Some (_, ctparams) ->
@@ -598,7 +596,7 @@ module TypeUtilities = struct
   let extract_targs cn (adt : Datatypes.adt) atyp =
     match atyp with
     | ADT (name, targs) ->
-        if adt.tname = name then
+        if adt.tname = get_id name then
           let plen = List.length adt.tparams in
           let alen = List.length targs in
           let%bind _ = validate_param_length cn plen alen in
@@ -608,7 +606,7 @@ module TypeUtilities = struct
           @@ sprintf
                "Types don't match: pattern uses a constructor of type %s, but \
                 value of type %s is given."
-               adt.tname name
+               adt.tname (get_id name)
     | _ -> fail0 @@ sprintf "Not an algebraic data type: %s" (pp_typ atyp)
 
   let constr_pattern_arg_types atyp cn =
@@ -658,7 +656,7 @@ module TypeUtilities = struct
     | Map ((kt, vt), _) -> pure (MapType (kt, vt))
     | ADTValue (cname, ts, _) ->
         let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
-        pure @@ ADT (adt.tname, ts)
+        pure @@ ADT (asId adt.tname, ts)
     | Clo _ -> fail0 @@ "Cannot type runtime closure."
     | TAbs _ -> fail0 @@ "Cannot type runtime type function."
 
@@ -727,7 +725,7 @@ module TypeUtilities = struct
                tname (List.length args) cname
           (* Verify that the types of args match that declared. *)
         else
-          let res = ADT (tname, ts) in
+          let res = ADT (asId tname, ts) in
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
           let args_valid =

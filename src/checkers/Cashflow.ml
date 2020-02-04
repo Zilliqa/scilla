@@ -337,7 +337,8 @@ struct
                      match arg_typs with [] -> true | _ -> false)
               && List.exists adt.tmap ~f:(fun (_, arg_typs) ->
                      match arg_typs with
-                     | [ ADT (arg_typ_name, _) ] -> arg_typ_name = adt.tname
+                     | [ ADT (arg_typ_name, _) ] ->
+                         get_id arg_typ_name = adt.tname
                      | _ -> false)
             then NoInfo
             else Adt (adt.tname, [])
@@ -444,7 +445,7 @@ struct
                   NoInfo
               | MapType (_, vt) | FunType (_, vt) -> Map (tag_tmap vt)
               | ADT (adt_name, arg_typs) ->
-                  Adt (adt_name, List.map arg_typs ~f:tag_tmap)
+                  Adt (get_id adt_name, List.map arg_typs ~f:tag_tmap)
               | TypeVar tvar -> (
                   match List.Assoc.find tvar_tag_map ~equal:( = ) tvar with
                   | Some tag -> tag
@@ -1053,11 +1054,11 @@ struct
                   acc_changes || p_changes ))
           in
           let new_ctr_tag_map, ctr_tag_map_changes =
-            update_ctr_tag_map ps_ctr_tag_map s new_ps_tags
+            update_ctr_tag_map ps_ctr_tag_map (get_id s) new_ps_tags
             |> Option.value_map ~default:(ps_ctr_tag_map, false) ~f:(fun map ->
                    (map, true))
           in
-          let ctr_tag = ctr_to_adt_tag s new_ps_tags in
+          let ctr_tag = ctr_to_adt_tag (get_id s) new_ps_tags in
           ( Constructor (s, new_ps),
             ctr_tag,
             new_local_env,
@@ -1079,7 +1080,7 @@ struct
           (Binder new_x, new_x_tag <> get_id_tag x)
       | Constructor (s, ps) ->
           let expected_subtags =
-            match ctr_pattern_to_subtags s expected_tag with
+            match ctr_pattern_to_subtags (get_id s) expected_tag with
             | Some ts -> ts
             | None -> List.map ps ~f:(fun _ -> NoInfo)
           in
@@ -1109,7 +1110,7 @@ struct
       | Binder x -> lub_tags (get_id_tag x) acc_tag
       | Constructor (s, ps) ->
           let expected_subtags =
-            match ctr_pattern_to_subtags s acc_tag with
+            match ctr_pattern_to_subtags (get_id s) acc_tag with
             | Some ts -> ts
             | None -> List.map ps ~f:(fun _ -> NoInfo)
           in
@@ -1118,7 +1119,7 @@ struct
             | Ok tps -> tps
             | Unequal_lengths -> []
           in
-          let new_tag = ctr_to_adt_tag s subpattern_tags in
+          let new_tag = ctr_to_adt_tag (get_id s) subpattern_tags in
           lub_tags new_tag acc_tag
     in
     List.fold_left ps ~init:NoInfo ~f:walk
@@ -1309,12 +1310,14 @@ struct
             | Unequal_lengths -> false
           in
           let new_ctr_tag_map, ctr_tag_map_changes =
-            update_ctr_tag_map ctr_tag_map cname
+            update_ctr_tag_map ctr_tag_map (get_id cname)
               (List.map new_args ~f:get_id_tag)
             |> Option.value_map ~default:(ctr_tag_map, false) ~f:(fun map ->
                    (map, true))
           in
-          let tag = ctr_to_adt_tag cname (List.map new_args ~f:get_id_tag) in
+          let tag =
+            ctr_to_adt_tag (get_id cname) (List.map new_args ~f:get_id_tag)
+          in
           ( Constr (cname, ts, new_args),
             tag,
             param_env,

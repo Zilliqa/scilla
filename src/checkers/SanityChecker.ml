@@ -182,7 +182,7 @@ struct
       match t with
       | MapType _
       (* The result of a <- a[][], i.e., "a" is an Option type. *)
-      | ADT ("Option", [ MapType _ ]) ->
+      | ADT (Ident ("Option", _), [ MapType _ ]) ->
           warn1 "Consider using in-place Map access"
             warning_level_map_load_store lc
       | _ -> ()

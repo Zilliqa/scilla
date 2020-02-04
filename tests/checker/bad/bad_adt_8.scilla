@@ -1,0 +1,9 @@
+scilla_version 0
+
+library Test
+
+let bn = BNum 100
+let i32 = MyInt32
+
+contract Test ()
+

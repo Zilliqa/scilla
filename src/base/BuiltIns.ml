@@ -1129,7 +1129,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let contains_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); u ] when kt = u ->
+      | [ MapType (kt, vt); u ] when type_equiv kt u ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -1150,7 +1150,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let put_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); kt'; vt' ] when kt = kt' && vt = vt' ->
+      | [ MapType (kt, vt); kt'; vt' ]
+        when type_equiv kt kt' && type_equiv vt vt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -1173,14 +1174,15 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let get_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); kt' ] when kt = kt' ->
+      | [ MapType (kt, vt); kt' ] when type_equiv kt kt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
     (* Notice that get passes return type *)
     let get ls rt =
       match (ls, rt) with
-      | [ Map (_, entries); key ], ADT ("Option", [ targ ]) -> (
+      | [ Map (_, entries); key ], ADT (tname, [ targ ])
+        when get_id tname = "Option" -> (
           let res = Caml.Hashtbl.find_opt entries key in
           match res with None -> pure @@ none_lit targ | Some v -> some_lit v )
       | _ -> builtin_fail "Map.get" ls
@@ -1194,7 +1196,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let remove_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); u ] when kt = u ->
+      | [ MapType (kt, vt); u ] when type_equiv kt u ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 

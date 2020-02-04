@@ -23,7 +23,6 @@ module TestTypeUtils = TypeUtil.TypeUtilities
 
 let make_type_equiv_test st1 st2 eq =
   let open FrontEndParser in
-  let open TestTypeUtils in
   let t1, t2 =
     match (parse_type st1, parse_type st2) with
     | Ok t1, Ok t2 -> (t1, t2)
