@@ -19,23 +19,28 @@
 open Core
 open Api
 open DebugMessage
+
 module U = Unix
 module M = Idl.IdM
 module IDL = Idl.Make (M)
-
 module Client = API (IDL.GenClient ())
+
+(* Send data to the socket. *)
+let send socket msg =
+  let ic = U.in_channel_of_descr socket in
+  let oc = U.out_channel_of_descr socket in
+  IPCUtil.send_delimited oc msg;
+  Caml.input_line ic
 
 let rpc ~sock_path call =
   let socket = U.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0) in
-  let addr = U.ADDR_UNIX sock_path in
-  U.connect socket ~addr;
-  let ic = U.in_channel_of_descr socket in
-  let oc = U.out_channel_of_descr socket in
-  let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
-  ptrace @@ Printf.sprintf "\nSending: %s\n" msg_buf;
-  (* Send data to the socket. *)
-  IPCUtil.send_delimited oc msg_buf;
-  let response = Caml.input_line ic in
-  U.close socket;
+  U.connect socket ~addr:(U.ADDR_UNIX sock_path);
+  let msg = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
+  ptrace @@ Printf.sprintf "\nSending: %s\n" msg;
+  let response =
+    Util.protect_reraise
+      ~f:(fun () -> send socket msg)
+      ~finally:(fun () -> U.close socket)
+  in
   ptrace @@ Printf.sprintf "\nResponse: %s\n" response;
   Jsonrpc.response_of_string response

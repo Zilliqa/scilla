@@ -46,7 +46,7 @@ let mk_handler ~name ~callback args =
   with FatalError msg -> return_err (Idl.DefaultError.InternalError msg)
 
 (* Request handler. *)
-let handler rpc conn () =
+let handler rpc conn =
   let ic = Unix.in_channel_of_descr conn in
   let oc = Unix.out_channel_of_descr conn in
   let req = Jsonrpc.call_of_string (Caml.input_line ic) in
@@ -76,12 +76,12 @@ let serve rpc ~sock_path ~num_pending =
          (fun () ->
            (* Always close the connection no matter what *)
            Util.protect_reraise
-             ~f:(handler rpc conn)
+             ~f:(fun () -> handler rpc conn)
              ~finally:(fun () -> U.close conn))
          ()
   done
 
-let start ~sock_path ~num_pending () =
+let start ~sock_path ~num_pending =
   pout "Starting scilla server...\n";
   Out_channel.flush stdout;
   let runner args =
