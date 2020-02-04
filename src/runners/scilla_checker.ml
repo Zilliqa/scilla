@@ -289,19 +289,12 @@ let check_cmodule cli =
   | Ok (cmod, _, event_info, type_info, cf_info_opt, g) ->
       check_version cmod.smver;
       let output =
-        if GlobalConfig.use_json_errors () then
+        if cli.p_contract_info then
           [
-            ("warnings", scilla_warning_to_json (get_warnings ()));
-            ("gas_remaining", `String (Stdint.Uint64.to_string g));
+            ( "contract_info",
+              JSON.ContractInfo.get_json cmod.smver cmod.contr event_info );
           ]
         else []
-      in
-      let output =
-        if cli.p_contract_info then
-          ( "contract_info",
-            JSON.ContractInfo.get_json cmod.smver cmod.contr event_info )
-          :: output
-        else output
       in
       let output =
         if cli.p_type_info then
@@ -314,13 +307,25 @@ let check_cmodule cli =
         | Some cf_info ->
             ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: output
       in
-      (* If we have auxiliary output which necessitates JSON, we force JSON output. *)
-      if (not (GlobalConfig.use_json_errors ())) && List.is_empty output then
+      let output =
+        (* This part only has warnings and gas_remaining, which we output as JSON
+         * if either `-jsonerrors` OR if there is other JSON output. *)
+        if GlobalConfig.use_json_errors () || not (List.is_empty output) then
+          output
+          @ [
+              ("warnings", scilla_warning_to_json (get_warnings ()));
+              ("gas_remaining", `String (Stdint.Uint64.to_string g));
+            ]
+        else output
+      in
+      (* We print as a JSON if `-jsonerrors` OR if there is some JSON data to display. *)
+      if GlobalConfig.use_json_errors () || not (List.is_empty output) then
+        let j = `Assoc output in
+        pout @@ sprintf "%s\n" (Yojson.Basic.pretty_to_string j)
+      else
         pout
         @@ scilla_warning_to_sstring (get_warnings ())
-        ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n";
-      let j = `Assoc output in
-      pout @@ sprintf "%s\n" (Yojson.Basic.pretty_to_string j)
+        ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
 
 let () =
   let cli = parse_cli () in

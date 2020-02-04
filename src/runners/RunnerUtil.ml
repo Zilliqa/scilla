@@ -75,8 +75,8 @@ type 'a nspace_tree = { nspace : 'a ident option; dep_ns : 'a nspace_tree list }
 
 (* light-weight namespaces. prefix all entries in lib with their namespace. *)
 let eliminate_namespaces lib_tree ns_tree =
-  (* Prefix definitions in lib with namespace (and rewrite their uses). 
-     Also, rewrite uses in lib that are in env. This is for names imported by lib. 
+  (* Prefix definitions in lib with namespace (and rewrite their uses).
+     Also, rewrite uses in lib that are in env. This is for names imported by lib.
      Returns renamed library and a list of names that are defined in this library. *)
   let rename_in_library env lib namespace =
     let rev_entries, _, def_names =
@@ -93,11 +93,6 @@ let eliminate_namespaces lib_tree ns_tree =
                 asIdL nname (get_rep id)
             | _ -> id
           in
-          let check_and_prefix_string env cname =
-            match List.Assoc.find env ~equal:( = ) cname with
-            | Some ns when ns <> "" -> ns ^ "." ^ cname
-            | _ -> cname
-          in
           let rename_in_type t env =
             let rec recurser t =
               match t with
@@ -106,7 +101,7 @@ let eliminate_namespaces lib_tree ns_tree =
               | FunType (t1, t2) -> FunType (recurser t1, recurser t2)
               | PolyFun (tvar, t) -> PolyFun (tvar, recurser t)
               | ADT (tname, tlist) ->
-                  let tname' = check_and_prefix_string env tname in
+                  let tname' = check_and_prefix_id env tname in
                   let tlist' = List.map tlist ~f:(fun t -> recurser t) in
                   ADT (tname', tlist')
               | Address fts ->
@@ -145,7 +140,7 @@ let eliminate_namespaces lib_tree ns_tree =
                 let ils' = List.map ils ~f:(check_and_prefix_id env) in
                 (App (i', ils'), eloc)
             | Constr (cname, tl, idl) ->
-                let cname' = check_and_prefix_string env cname in
+                let cname' = check_and_prefix_id env cname in
                 let tl' = List.map tl ~f:(fun t -> rename_in_type t env) in
                 let idl' = List.map idl ~f:(check_and_prefix_id env) in
                 (Constr (cname', tl', idl'), eloc)
@@ -156,7 +151,7 @@ let eliminate_namespaces lib_tree ns_tree =
                   | Wildcard -> (pat, [])
                   | Binder i -> (pat, [ get_id i ])
                   | Constructor (c, plist) ->
-                      let c' = check_and_prefix_string env c in
+                      let c' = check_and_prefix_id env c in
                       let plist', blist =
                         List.unzip @@ List.map plist ~f:(rename_in_pattern env)
                       in

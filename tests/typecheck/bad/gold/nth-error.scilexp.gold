@@ -6,7 +6,7 @@
       "start_location": {
         "file": "typecheck/bad/nth-error.scilexp",
         "line": 14,
-        "column": 11
+        "column": 20
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

@@ -29,7 +29,10 @@ type ss_field = {
   fval : literal option; (* Value may not be available (in IPC mode) *)
 }
 
-type service_mode = IPC of string (* port number for IPC *) | Local
+type service_mode =
+  | IPC of string
+  (* port number for IPC *)
+  | Local
 
 (* [ Initialization of StateService ]
 

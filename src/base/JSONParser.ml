@@ -45,7 +45,7 @@ let constr_pattern_arg_types_exn dt cname =
   | Ok s -> s
 
 let lookup_adt_name_exn name =
-  match DataTypeDictionary.lookup_name name with
+  match DataTypeDictionary.lookup_name (get_id name) with
   | Error emsg -> raise (Invalid_json emsg)
   | Ok s -> s
 
@@ -173,7 +173,7 @@ let gen_parser (t' : typ) : Basic.t -> literal =
                       ADTValue (cn.cname, tlist, arg_lits)
                 | `List vli ->
                     (* We make an exception for Lists, allowing them to be stored flatly. *)
-                    if name <> "List" then
+                    if get_id name <> "List" then
                       raise
                         (mk_invalid_json
                            "ADT value is a JSON array, but type is not List")

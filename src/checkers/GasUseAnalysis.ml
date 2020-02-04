@@ -736,7 +736,7 @@ struct
     | Wildcard -> pure genv
     | Binder i -> pure @@ GUAEnv.addS genv (get_id i) ([], msref, empty_pn)
     | Constructor (cname, plist) -> (
-        match cname with
+        match get_id cname with
         | "True" | "False" | "Nil" | "None" -> pure @@ genv
         | "Some" ->
             (* TypeChecker will ensure that plist has unit length. *)
@@ -760,7 +760,7 @@ struct
         | _ ->
             fail0
               (Printf.sprintf "Unsupported constructor %s in gas analysis."
-                 cname) )
+                 (get_id cname)) )
 
   (* built-in op costs are propotional to size of data they operate on. *)
   (* TODO: Have all numbers in one place. Integrate with Gas.ml *)
@@ -963,7 +963,7 @@ struct
         pure (args, ressize, add_pn p cc)
     | Constr (cname, _, actuals) ->
         let%bind ressize =
-          match cname with
+          match get_id cname with
           | "True" | "False" -> pure @@ SPol (const_pn 1)
           | "Nil" -> pure @@ Container (SPol (const_pn 0), SPol (const_pn 1))
           | "None" -> pure @@ SPol (const_pn 1)
@@ -1020,7 +1020,7 @@ struct
           | _ ->
               fail1
                 (Printf.sprintf "Unsupported constructor %s in gas analysis."
-                   cname)
+                   (get_id cname))
                 (ER.get_loc rep)
         in
         pure ([], ressize, cc)
@@ -1084,7 +1084,7 @@ struct
   (* Hardcode signature for folds. *)
   let analyze_folds genv =
     (*  list_foldr: forall 'A . forall 'B . g:('A -> 'B -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
-    let a = ER.mk_id (mk_ident "a") (ADT ("List", [ TypeVar "'A" ])) in
+    let a = ER.mk_id (mk_ident "a") (ADT (asId "List", [ TypeVar "'A" ])) in
     let g =
       ER.mk_id (mk_ident "g")
         (FunType (TypeVar "'A", FunType (TypeVar "'B", TypeVar "'B")))

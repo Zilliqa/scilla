@@ -66,7 +66,7 @@ module DataTypeDictionary = struct
       tname = "Nat";
       tparams = [];
       tconstr = [ c_zero; c_succ ];
-      tmap = [ ("Succ", [ ADT ("Nat", []) ]) ];
+      tmap = [ ("Succ", [ ADT (asId "Nat", []) ]) ];
     }
 
   (* Option *)
@@ -92,7 +92,7 @@ module DataTypeDictionary = struct
       tname = "List";
       tparams = [ "'A" ];
       tconstr = [ c_cons; c_nil ];
-      tmap = [ ("Cons", [ TypeVar "'A"; ADT ("List", [ TypeVar "'A" ]) ]) ];
+      tmap = [ ("Cons", [ TypeVar "'A"; ADT (asId "List", [ TypeVar "'A" ]) ]) ];
     }
 
   (* Products (Pairs) *)
@@ -145,32 +145,32 @@ module DataTypeDictionary = struct
             | None -> pure @@ Hashtbl.add adt_cons_dict ctr.cname (new_adt, ctr))
 
   (*  Get ADT by name *)
-  let lookup_name name =
+  let lookup_name ?(sloc = ErrorUtils.dummy_loc) name =
     let open Caml in
     match Hashtbl.find_opt adt_name_dict name with
-    | None -> fail0 @@ sprintf "ADT %s not found" name
+    | None -> fail1 (sprintf "ADT %s not found" name) sloc
     | Some a -> pure a
 
   (*  Get ADT by the constructor *)
-  let lookup_constructor cn =
+  let lookup_constructor ?(sloc = ErrorUtils.dummy_loc) cn =
     let open Caml in
     match Hashtbl.find_opt adt_cons_dict cn with
-    | None -> fail0 @@ sprintf "No data type with constructor %s found" cn
+    | None -> fail1 (sprintf "No data type with constructor %s found" cn) sloc
     | Some dt -> pure dt
 
   (* Get typing map for a constructor *)
   let constr_tmap adt cn =
     List.find adt.tmap ~f:(fun (n, _) -> n = cn) |> Option.map ~f:snd
 
-  let bool_typ = ADT (t_bool.tname, [])
+  let bool_typ = ADT (asId t_bool.tname, [])
 
-  let nat_typ = ADT (t_nat.tname, [])
+  let nat_typ = ADT (asId t_nat.tname, [])
 
-  let option_typ t = ADT (t_option.tname, [ t ])
+  let option_typ t = ADT (asId t_option.tname, [ t ])
 
-  let list_typ t = ADT (t_list.tname, [ t ])
+  let list_typ t = ADT (asId t_list.tname, [ t ])
 
-  let pair_typ t s = ADT (t_product.tname, [ t; s ])
+  let pair_typ t s = ADT (asId t_product.tname, [ t; s ])
 
   (* Get all known ADTs *)
   let get_all_adts () =
@@ -232,7 +232,7 @@ module SnarkTypes = struct
   let scilla_g1point_to_ocaml g1p =
     match g1p with
     | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when pxt = scalar_type && pyt = scalar_type
+      when type_equiv pxt scalar_type && type_equiv pyt scalar_type
            && Bystrx.width px = scalar_len
            && Bystrx.width py = scalar_len ->
         pure { g1x = Bystrx.to_raw_bytes px; g1y = Bystrx.to_raw_bytes py }
@@ -241,7 +241,7 @@ module SnarkTypes = struct
   let scilla_g2point_to_ocaml g2p =
     match g2p with
     | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when pxt = g2comp_type && pyt = g2comp_type
+      when type_equiv pxt g2comp_type && type_equiv pyt g2comp_type
            && Bystrx.width px = g2comp_len
            && Bystrx.width py = g2comp_len ->
         pure { g2x = Bystrx.to_raw_bytes px; g2y = Bystrx.to_raw_bytes py }
@@ -264,7 +264,7 @@ module SnarkTypes = struct
       mapM g1g2ol ~f:(fun g1g2p_lit ->
           match g1g2p_lit with
           | ADTValue ("Pair", [ g1pt; g2pt ], [ g1p; g2p ])
-            when g1pt = g1point_type && g2pt = g2point_type ->
+            when type_equiv g1pt g1point_type && type_equiv g2pt g2point_type ->
               let%bind g1p' = scilla_g1point_to_ocaml g1p in
               let%bind g2p' = scilla_g2point_to_ocaml g2p in
               pure (g1p', g2p')

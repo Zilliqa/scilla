@@ -133,7 +133,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     match i with Ident (name, rep) -> Ident (name, ETR.mk_rep rep typ)
 
   (* Given a scrutinee type and a pattern,
-     produce a list of ident -> type mappings for 
+     produce a list of ident -> type mappings for
      all variables bound by the pattern *)
   let assign_types_for_pattern sctyp pattern =
     let rec go atyp tlist p =
@@ -144,10 +144,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           @@ ( TypedSyntax.Binder (add_type_to_ident x (mk_qual_tp atyp)),
                (x, atyp) :: tlist )
       | Constructor (cn, ps) ->
-          let%bind arg_types = constr_pattern_arg_types atyp cn in
+          let%bind arg_types = constr_pattern_arg_types atyp (get_id cn) in
           let plen = List.length arg_types in
           let alen = List.length ps in
-          let%bind _ = validate_param_length cn plen alen in
+          let%bind _ = validate_param_length (get_id cn) plen alen in
           let tps_pts = List.zip_exn arg_types ps in
           let%bind typed_ps, tps =
             foldrM ~init:([], tlist) tps_pts ~f:(fun (ps, ts) (t, pt) ->
@@ -252,18 +252,22 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         in
         let open Datatypes.DataTypeDictionary in
         let%bind _, constr =
-          mark_error_as_type_error remaining_gas @@ lookup_constructor cname
+          mark_error_as_type_error remaining_gas
+          @@ lookup_constructor
+               ~sloc:(SR.get_loc (get_rep cname))
+               (get_id cname)
         in
         let alen = List.length actuals in
         if constr.arity <> alen then
           Error
             (mk_type_error0
-               (sprintf "Constructor %s expects %d arguments, but got %d." cname
-                  constr.arity alen)
+               (sprintf "Constructor %s expects %d arguments, but got %d."
+                  (get_id cname) constr.arity alen)
                remaining_gas)
         else
           let%bind ftyp =
-            mark_error_as_type_error remaining_gas @@ elab_constr_type cname ts
+            mark_error_as_type_error remaining_gas
+            @@ elab_constr_type (get_id cname) ts
           in
           (* Now type-check as a function application *)
           let%bind typed_actuals, apptyp, remaining_gas =
@@ -631,7 +635,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
             (* The return type of MapGet would be (Option v_type) or Bool. *)
             let v_type' =
-              if valfetch then ADT ("Option", [ v_type ]) else ADT ("Bool", [])
+              if valfetch then ADT (asId "Option", [ v_type ])
+              else ADT (asId "Bool", [])
             in
             (* Update environment. *)
             let pure' = TEnv.addT (TEnv.copy env.pure) v v_type' in
@@ -956,9 +961,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
            pure @@ ((new_entries, new_env), remaining_gas))
 
   (* Check that ADT constructors are well-formed.
-     Declared ADTs and constructors are added to stored datatypes 
+     Declared ADTs and constructors are added to stored datatypes
      by ADTChecker.
-     Checking for ADT types in scope and multiple usages of the 
+     Checking for ADT types in scope and multiple usages of the
      same constructor name takes place in ADTChecker. *)
   let type_lib_typ_ctrs env (ctr_defs : ctr_def list) =
     forallM
@@ -1039,26 +1044,26 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
        else Error (TypeError, errs, remaining_gas)
 
   (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
-  (* type library, handling cache as necessary. *)
-  let type_library_cache (tenv : TEnv.t) (elib : UntypedSyntax.library)  =
-    (* We are caching TypeEnv = MakeTEnv(PlainTypes)(ER) *)
-    let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) (STR) (ER) in
-    let open STC in
-    (* Check if we have the type info in cache. *)
-    match get_lib_tenv_cache tenv elib with
-    | Some tenv' ->
-        (* Use cached entries. *)
-    pure (tenv', "")
-    | None ->
-        (* Couldn't find in cache. Actually type the library. *)
-        let res = type_library tenv elib in
-        (match res with
-    | Error (msg, es) -> Ok((tenv, msg), es)
-    | Ok ((_, tenv'), es) as lib_res -> 
-             (* Since we don't have this in cache, cache it now. *)
-             cache_lib_tenv tenv' elib;
-        Ok((lib_res, ""), es)
-        )
+     (* type library, handling cache as necessary. *)
+     let type_library_cache (tenv : TEnv.t) (elib : UntypedSyntax.library)  =
+       (* We are caching TypeEnv = MakeTEnv(PlainTypes)(ER) *)
+       let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) (STR) (ER) in
+       let open STC in
+       (* Check if we have the type info in cache. *)
+       match get_lib_tenv_cache tenv elib with
+       | Some tenv' ->
+           (* Use cached entries. *)
+       pure (tenv', "")
+       | None ->
+           (* Couldn't find in cache. Actually type the library. *)
+           let res = type_library tenv elib in
+           (match res with
+       | Error (msg, es) -> Ok((tenv, msg), es)
+       | Ok ((_, tenv'), es) as lib_res ->
+                (* Since we don't have this in cache, cache it now. *)
+                cache_lib_tenv tenv' elib;
+           Ok((lib_res, ""), es)
+           )
   *)
 
   (* Type a list of libtrees, with tenv0 as the base environment. *)
@@ -1109,7 +1114,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           ~init:(([], tenv0), err_dups, remaining_gas)
           ~f:(fun ((lib_acc, tenv_acc), emsgs_acc, remaining_gas) elib ->
             (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
-            let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
+               let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
             let%bind (dep_libs, dep_env), dep_emsgs, remaining_gas =
               recurser elib.deps remaining_gas
             in
@@ -1244,7 +1249,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               in
               let%bind _ =
                 mark_error_as_type_error remaining_gas
-                @@ assert_type_equiv (ADT ("Bool", [])) ityp.tp
+                @@ assert_type_equiv (ADT (asId "Bool", [])) ityp.tp
               in
               pure (checked_constraint, remaining_gas)
          in
