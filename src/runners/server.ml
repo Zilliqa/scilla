@@ -20,9 +20,7 @@ open Core
 open DebugMessage
 open Scilla_server
 
-let sock_path = "/tmp/scilla-server.sock"
-
 let () =
   pout "Starting scilla server...\n";
   Out_channel.flush stdout;
-  Cli.run ~sock_path ~num_pending:5
+  Cli.run ()

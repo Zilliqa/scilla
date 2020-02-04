@@ -67,7 +67,7 @@ let serve rpc ~sock_path ~num_pending =
   let socket = U.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0) in
   U.bind socket ~addr:(U.ADDR_UNIX sock_path);
   U.listen socket ~backlog:num_pending;
-  pout @@ Printf.sprintf "Listening on %s\n" sock_path;
+  pout @@ Printf.sprintf "Server is listening on %s\n" sock_path;
   Out_channel.flush stdout;
   while true do
     let conn, _ = U.accept socket in
@@ -81,7 +81,10 @@ let serve rpc ~sock_path ~num_pending =
          ()
   done
 
-let start ~sock_path ~num_pending =
+let sock_path = "/tmp/scilla-server.sock"
+let num_pending = 5
+
+let start ?(sock_path = sock_path) ?(num_pending = num_pending) () =
   let runner args =
     let output, _ = Runner.run args in
     Yojson.Basic.to_string output

@@ -26,11 +26,11 @@ module Cmd = struct
       info "server" ~version ~doc )
 
   let server ~sock_path ~num_pending =
-    ( const @@ (fun () -> Server.start ~sock_path ~num_pending) $ const (),
+    ( const @@ (Server.start ~sock_path ~num_pending) $ const (),
       info "start" ~doc:"Start Scilla server" )
 end
 
-let run ~sock_path ~num_pending =
+let run ?(sock_path = Server.sock_path) ?(num_pending = Server.num_pending) () =
   let open Cmdliner in
   let rpc = Client.rpc ~sock_path in
   let def = Cmd.default ~version:"1.0.0" in
