@@ -62,10 +62,6 @@
   let build_bool_literal v loc =
     (Literal (BuiltIns.UsefulLiterals.to_Bool v), loc)
 
-  let id_with_typ_to_idl_with_typ iwt loc =
-    match iwt with
-    | (i, t) -> (asIdL i loc, t)
-    
 %}
 
 (* Identifiers *)
@@ -170,7 +166,7 @@ type_annot:
 | COLON; t = typ { t }
 
 id_with_typ :
-| n = ID; t = type_annot { n, t }
+| n = ID; t = type_annot { (asIdL n (toLoc $startpos(n)), t) }
 
 
 (***********************************************)
@@ -240,7 +236,7 @@ simple_exp :
   {(Let ((Ident (x, toLoc $startpos(x))), t, f, e), toLoc $startpos(f)) }
 (* Function *)
 | FUN; LPAREN; iwt = id_with_typ; RPAREN; ARROW; e = exp
-    { match id_with_typ_to_idl_with_typ iwt (toLoc $startpos(iwt)) with
+    { match iwt with
       | (i, t) -> (Fun (i, t, e), toLoc $startpos(e) ) }
 (* Application *)
 | f = sid;
@@ -369,7 +365,7 @@ stmts_term:
 (***********************************************)
 
 param_pair:
-| iwt = id_with_typ { id_with_typ_to_idl_with_typ iwt (toLoc $startpos(iwt)) }
+| iwt = id_with_typ { iwt }
 
 component:
 | t = transition
@@ -410,7 +406,7 @@ component_body:
 field:
 | FIELD; iwt = id_with_typ
   EQ; rhs = exp
-    { match id_with_typ_to_idl_with_typ iwt (toLoc $startpos(iwt)) with
+    { match iwt with
       | (f, t) -> (f, t, rhs) }
 
 with_constraint:
