@@ -541,7 +541,8 @@ let type_equiv t1 t2 =
     | MapType (t1_1, t1_2), MapType (t2_1, t2_2)
     | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
         equiv t1_1 t2_1 && equiv t1_2 t2_2
-    | PolyFun (v1, t1''), PolyFun (v2, t2'') -> String.equal v1 v2 && equiv t1'' t2''
+    | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
+        String.equal v1 v2 && equiv t1'' t2''
     | _ -> false
   in
   equiv t1' t2'
