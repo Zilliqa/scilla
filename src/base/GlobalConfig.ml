@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open Int.Replace_polymorphic_compare
 open ScillaUtil.FilePathInfix
 
 (* Available debug levels for functions in DbgMsg *)

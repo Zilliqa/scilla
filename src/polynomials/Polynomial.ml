@@ -19,6 +19,7 @@
 (* Library to create and operate on multivariate polynomials *)
 
 open Core_kernel
+open Int.Replace_polymorphic_compare
 
 exception Polynomial_error of string
 

@@ -21,6 +21,7 @@ open Bech32
 open Syntax
 open Utils
 open Core_kernel
+open Int.Replace_polymorphic_compare
 
 let hex_to_raw_bytes h = Bystr.parse_hex h |> Bystr.to_raw_bytes
 

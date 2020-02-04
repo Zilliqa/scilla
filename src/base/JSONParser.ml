@@ -22,6 +22,7 @@ open Yojson
 open Syntax
 open ErrorUtils
 open Core_kernel
+open Int.Replace_polymorphic_compare
 open PrimTypes
 open TypeUtil
 open Datatypes
