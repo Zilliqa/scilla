@@ -530,8 +530,8 @@ let type_equiv t1 t2 =
   let t2' = canonicalize_tfun t2 in
   let rec equiv t1 t2 =
     match (t1, t2) with
-    | PrimType p1, PrimType p2 when p1 = p2 -> true
-    | TypeVar v1, TypeVar v2 when v1 = v2 -> true
+    | PrimType p1, PrimType p2 -> p1 = p2
+    | TypeVar v1, TypeVar v2 -> String.equal v1 v2
     | Unit, Unit -> true
     | ADT (tname1, tl1), ADT (tname2, tl2) ->
         equal_id tname1 tname2
@@ -541,7 +541,7 @@ let type_equiv t1 t2 =
     | MapType (t1_1, t1_2), MapType (t2_1, t2_2)
     | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
         equiv t1_1 t2_1 && equiv t1_2 t2_2
-    | PolyFun (v1, t1''), PolyFun (v2, t2'') -> v1 = v2 && equiv t1'' t2''
+    | PolyFun (v1, t1''), PolyFun (v2, t2'') -> String.equal v1 v2 && equiv t1'' t2''
     | _ -> false
   in
   equiv t1' t2'
