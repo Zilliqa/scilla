@@ -26,7 +26,7 @@ module Cmd = struct
       info "server" ~version ~doc )
 
   let server ~sock_path ~num_pending =
-    ( const @@ Server.start ~sock_path ~num_pending,
+    ( const @@ (fun () -> Server.start ~sock_path ~num_pending) $ const (),
       info "start" ~doc:"Start Scilla server" )
 end
 
