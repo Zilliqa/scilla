@@ -82,8 +82,6 @@ let serve rpc ~sock_path ~num_pending =
   done
 
 let start ~sock_path ~num_pending =
-  pout "Starting scilla server...\n";
-  Out_channel.flush stdout;
   let runner args =
     let output, _ = Runner.run args in
     Yojson.Basic.to_string output
