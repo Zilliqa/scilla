@@ -168,7 +168,7 @@ This is an invalid forall type, after the type id (following forall) the parser 
 
 type_term: FORALL WITH
 ##
-## Ends in an error in state: 58.
+## Ends in an error in state: 58 (this isn't true anymore).
 ##
 ## typ -> FORALL . TID PERIOD typ [ TARROW RPAREN EQ EOF COMMA ]
 ##
@@ -1576,43 +1576,72 @@ This function needs an arrow (e.g. '=>') pointing to an expression.
 
 exp_term: FUN LPAREN ID COLON TID WITH
 ##
-## Ends in an error in state: 133.
+## Ends in an error in state: 73.
 ##
-## simple_exp -> FUN LPAREN ID COLON typ . RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
-## typ -> typ . TARROW typ [ TARROW RPAREN ]
-##
+## simple_exp -> FUN LPAREN id_with_typ . RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
+## typ -> typ . TARROW typ [ TARROW RPAREN EQ COMMA ]
+## type_annot -> COLON typ . [ EQ ]
+## param_pair -> ID COLON typ . [ RPAREN COMMA ]
+## field -> FIELD ID COLON typ . EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
+## 
 ## The known suffix of the stack is as follows:
 ## FUN LPAREN ID COLON typ
+## LET ID COLON typ
+## SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON TID WITH
+## SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON TID WITH
 ##
 # see tests/parser/bad/exps/exp_t-fun-lparen-id-colon-tid-with.scilexp
 
-This function argument and argument type declaration is not closed properly.
+This type annotation is not closed properly, or has a missing or misplaced '='.
 
 exp_term: FUN LPAREN ID COLON WITH
 ##
-## Ends in an error in state: 132.
+## Ends in an error in state: 61.
 ##
 ## simple_exp -> FUN LPAREN ID COLON . typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
-##
+## type_annot -> COLON . typ [ EQ ]
+## param_pair -> ID COLON . typ [ RPAREN COMMA ]
+## field -> FIELD ID COLON . typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
+## 
 ## The known suffix of the stack is as follows:
 ## FUN LPAREN ID COLON
+## LET ID COLON WITH
+## SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON WITH
+## SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON WITH
 ##
 # see tests/parser/bad/exps/exp_t-fun-lparen-id-colon-with.scilexp
 
-This function argument lacks a valid type.
+Missing or invalid type in type annotation.
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON ID RPAREN
+##
+## Ends in an error in state: 58.
+##
+## type_annot -> COLON . typ [ EQ ]
+## 
+## The known suffix of the stack is as follows:
+## SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON WITH
+##
+# see tests/parser/bad/exps/exp_t-fun-lparen-id-colon-with.scilexp
+
+Invalid type in type annotation.
 
 exp_term: FUN LPAREN ID WITH
 ##
 ## Ends in an error in state: 131.
 ##
 ## simple_exp -> FUN LPAREN ID . COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
-##
+## param_pair -> ID . COLON typ [ RPAREN COMMA ]
+## field -> FIELD ID . COLON typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
+## 
 ## The known suffix of the stack is as follows:
 ## FUN LPAREN ID
+## SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID WITH
+## SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID WITH
 ##
 # see tests/parser/bad/exps/exp_t-fun-lparen-id-with.scilexp
 
-This function's argument is lacking a colon to associate it with its type.
+Missing type annotation (a colon followed by a legal type).
 
 exp_term: FUN LPAREN WITH
 ##
@@ -1735,35 +1764,6 @@ exp_term: LET ID COLON TID EQ STRING IN WITH
 # see tests/parser/bad/exps/exp_t-let-id-colon-tid-eq-string-in-with.scilexp
 
 This let expression (type-annotated) is likely missing an expression to substitute into.
-
-exp_term: LET ID COLON TID WITH
-##
-## Ends in an error in state: 173.
-##
-## typ -> typ . TARROW typ [ TARROW EQ ]
-## type_annot -> COLON typ . [ EQ ]
-##
-## The known suffix of the stack is as follows:
-## COLON typ
-##
-# see tests/parser/bad/exps/exp_t-let-id-colon-tid-with.scilexp
-# say misplaced not missing because a reduction may not happen
-# as early as the user wanted in some cases
-
-This type-annotated let expression likely has a misplaced equals, '='.
-
-exp_term: LET ID COLON WITH
-##
-## Ends in an error in state: 172.
-##
-## type_annot -> COLON . typ [ EQ ]
-##
-## The known suffix of the stack is as follows:
-## COLON
-##
-# see tests/parser/bad/exps/exp_t-let-id-colon-with.scilexp
-
-This let expression is likely missing a complete type annotation after the colon.
 
 exp_term: LET ID EQ STRING IN WITH
 ##
@@ -2118,46 +2118,6 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON CID COMMA WITH
 
 Following a comma in the list of immutable fields, the parser expects another immutable field.
 
-cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON TID WITH
-##
-## Ends in an error in state: 198.
-##
-## param_pair -> ID COLON typ . [ RPAREN COMMA ]
-## typ -> typ . TARROW typ [ TARROW RPAREN COMMA ]
-##
-## The known suffix of the stack is as follows:
-## ID COLON typ
-##
-# see tests/parser/bad/cmodule-contract-cid-lparen-id-colon-tid-with.scilla
-
-Following the declaration of an immutable field, the parser expects another one separated by a comma or the end of the declarations with a right bracket.
-
-cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON WITH
-##
-## Ends in an error in state: 197.
-##
-## param_pair -> ID COLON . typ [ RPAREN COMMA ]
-##
-## The known suffix of the stack is as follows:
-## ID COLON
-##
-# see tests/parser/bad/cmodule-contract-cid-lparen-id-colon-with.scilla
-
-In an immutable field declaration the parser expects a valid type name.
-
-cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID WITH
-##
-## Ends in an error in state: 196.
-##
-## param_pair -> ID . COLON typ [ RPAREN COMMA ]
-##
-## The known suffix of the stack is as follows:
-## ID
-##
-# see tests/parser/bad/cmodule-contract-cid-lparen-id-with.scilla
-
-In an immutable field declaration, the parser expects a colon following the name to precede the type.
-
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON CID EQ HEXLIT WITH
 ##
 ## Ends in an error in state: 287.
@@ -2183,46 +2143,6 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON TID EQ 
 # see tests/parser/bad/cmodule-field-id-colon-tid-eq-with.scilla
 
 In a mutable field declaration, it is expected that the field is initialised to be equal to some valid expression.
-
-cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON TID WITH
-##
-## Ends in an error in state: 211.
-##
-## field -> FIELD ID COLON typ . EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
-## typ -> typ . TARROW typ [ TARROW EQ ]
-##
-## The known suffix of the stack is as follows:
-## FIELD ID COLON typ
-##
-# see tests/parser/bad/cmodule-field-id-colon-tid-with.scilla
-
-In a mutable field declaration, after the type is specified an equals is expected.
-
-cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON WITH
-##
-## Ends in an error in state: 210.
-##
-## field -> FIELD ID COLON . typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
-##
-## The known suffix of the stack is as follows:
-## FIELD ID COLON
-##
-# see tests/parser/bad/cmodule-field-id-colon-with.scilla
-
-In a mutable field declaration, following the colon after the naming, a type is expected.
-
-cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID WITH
-##
-## Ends in an error in state: 209.
-##
-## field -> FIELD ID . COLON typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
-##
-## The known suffix of the stack is as follows:
-## FIELD ID
-##
-# see tests/parser/bad/cmodule-field-id-with.scilla
-
-In a mutable field declaration, following the naming a colon is expected. This colon separates the name and the type.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD WITH
 ##

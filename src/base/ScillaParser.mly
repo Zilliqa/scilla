@@ -61,6 +61,7 @@
 
   let build_bool_literal v loc =
     (Literal (BuiltIns.UsefulLiterals.to_Bool v), loc)
+
 %}
 
 (* Identifiers *)
@@ -161,6 +162,13 @@ scid :
 | name = CID { name }
 | ns = CID; PERIOD; name = CID { ns ^ "." ^ name }
 
+type_annot:
+| COLON; t = typ { t }
+
+id_with_typ :
+| n = ID; t = type_annot { (asIdL n (toLoc $startpos(n)), t) }
+
+
 (***********************************************)
 (*                  Types                      *)
 (***********************************************)
@@ -196,6 +204,10 @@ typ :
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
 | LPAREN; t = typ; RPAREN; { t }
+| d = ID; WITH; fs = separated_list(COMMA, address_field_type); END;
+    { if d = "ByStr20"
+      then Address fs
+      else raise (SyntaxError ("Invalid primitive type", toLoc $startpos(d))) }
 | FORALL; tv = TID; PERIOD; t = typ; {PolyFun (tv, t)}
 %prec TARROW
 | t = TID; { TypeVar t }
@@ -205,6 +217,10 @@ targ:
 | d = scid; { to_type d }
 | t = TID; { TypeVar t }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
+
+address_field_type:
+| ft = id_with_typ { ft }
+
 
 (***********************************************)
 (*                 Expressions                 *)
@@ -219,8 +235,9 @@ simple_exp :
   EQ; f = simple_exp; IN; e = exp
   {(Let ((Ident (x, toLoc $startpos(x))), t, f, e), toLoc $startpos(f)) }
 (* Function *)
-| FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
-  { (Fun (Ident (i, toLoc $startpos(i)), t, e), toLoc $startpos(e) ) }
+| FUN; LPAREN; iwt = id_with_typ; RPAREN; ARROW; e = exp
+    { match iwt with
+      | (i, t) -> (Fun (i, t, e), toLoc $startpos(e) ) }
 (* Application *)
 | f = sid;
   args = nonempty_list(sident)
@@ -300,9 +317,6 @@ builtin_args :
 | args = nonempty_list(sident) { args }
 | LPAREN; RPAREN { [] }
 
-type_annot:
-| COLON; t = typ { t }
-
 exp_term :
 | e = exp; EOF { e }
 
@@ -351,7 +365,7 @@ stmts_term:
 (***********************************************)
 
 param_pair:
-| n = ID; COLON; t = typ { asIdL n (toLoc $startpos(n)), t }
+| iwt = id_with_typ { iwt }
 
 component:
 | t = transition
@@ -390,9 +404,10 @@ component_body:
   { ss }
 
 field:
-| FIELD; f = ID; COLON; t=typ;
+| FIELD; iwt = id_with_typ
   EQ; rhs = exp
-  { asIdL f (toLoc $startpos(f)), t, rhs }
+    { match iwt with
+      | (f, t) -> (f, t, rhs) }
 
 with_constraint:
 | WITH; f = exp; ARROW

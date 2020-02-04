@@ -94,7 +94,7 @@ type typ =
   | TypeVar of string
   | PolyFun of string * typ
   | Unit
-  | Address of (string * typ) list
+  | Address of (loc ident * typ) list
 [@@deriving sexp]
 
 let int_bit_width_to_string = function
@@ -127,7 +127,7 @@ let rec pp_typ = function
   | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (pp_typ bt)
   | Unit -> sprintf "()"
   | Address fts ->
-      let elems = List.map fts ~f:(fun (f, t) -> sprintf "%s : %s" f (pp_typ t)) |>
+      let elems = List.map fts ~f:(fun (f, t) -> sprintf "%s : %s" (get_id f) (pp_typ t)) |>
                   String.concat ~sep:", "
       in
       sprintf "ByStr20 with %s end" elems
