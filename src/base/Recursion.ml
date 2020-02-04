@@ -18,7 +18,7 @@
 
 open Syntax
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
@@ -479,7 +479,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                (SR.get_loc (get_rep md.libs.lname))
        in
 
-       if emsgs = [] then
+       if List.is_empty emsgs then
          pure
          @@ ( {
                 RecursionSyntax.smver = md.smver;
@@ -537,7 +537,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                  emsgs @ el )
        in
 
-       if emsgs = [] then
+       if List.is_empty emsgs then
          pure
          @@ ( {
                 RecursionSyntax.smver;

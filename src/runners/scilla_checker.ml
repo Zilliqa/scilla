@@ -18,7 +18,7 @@
 
 open Syntax
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open PrettyPrinters
 open DebugMessage
@@ -332,10 +332,9 @@ let () =
   let cli = parse_cli () in
   let open GlobalConfig in
   StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
-  let file_extn = FilePath.get_extension cli.input_file in
   (* Get list of stdlib dirs. *)
   let lib_dirs = StdlibTracker.get_stdlib_dirs () in
-  if lib_dirs = [] then stdlib_not_found_err ();
+  if List.is_empty lib_dirs then stdlib_not_found_err ();
 
   (* Testsuite runs this executable with cwd=tests and ends
        up complaining about missing _build directory for logger.

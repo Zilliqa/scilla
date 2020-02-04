@@ -21,7 +21,7 @@
 
 open OUnit2
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open Syntax
 open Yojson
 
@@ -128,7 +128,7 @@ let sort_mapkeys goldj outj =
               let corresponding_out =
                 List.find outlist ~f:(fun outelm ->
                     let outkey = json_member "key" outelm |> json_to_string in
-                    goldkey = outkey)
+                    String.(goldkey = outkey))
               in
               match corresponding_out with
               | Some out ->
@@ -152,7 +152,7 @@ let sort_mapkeys goldj outj =
            in
            assert_bool
              "sort_mapkeys: order of gold states and out states mismatch"
-             ( vname |> json_to_string
+             String.( vname |> json_to_string
              = (json_member "vname" outstate |> json_to_string) );
            let outval =
              map_sorter
@@ -171,7 +171,7 @@ let sort_mapkeys goldj outj =
   `Assoc
     (List.fold_right (json_to_assoc outj)
        ~f:(fun (s, j) acc ->
-         if s = "states" then (s, outstates') :: acc else (s, j) :: acc)
+         if String.(s = "states") then (s, outstates') :: acc else (s, j) :: acc)
        ~init:[])
 
 (* Start a mock server (if set) at ~sock_addr and initialize server
@@ -184,17 +184,16 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
 
   let fields =
     List.filter_map state ~f:(fun (s, t, _) ->
-        if s = ContractUtil.balance_label then None else Some (s, t))
+        if String.(s = ContractUtil.balance_label) then None else Some (s, t))
   in
   let () = StateIPCTestClient.initialize ~fields ~sock_addr in
   (* Update the server (via the test client) with the state values we want. *)
   List.iter state ~f:(fun (fname, _, value) ->
-      if fname <> ContractUtil.balance_label then
-        StateIPCTestClient.update ~fname ~value
-      else ());
+      if String.(fname <> ContractUtil.balance_label) then
+        StateIPCTestClient.update ~fname ~value);
   (* Find the balance from state and return it. *)
   match
-    List.find state ~f:(fun (fname, _, _) -> fname = ContractUtil.balance_label)
+    List.find state ~f:(fun (fname, _, _) -> String.(fname = ContractUtil.balance_label))
   with
   | Some (_, _, balpb) -> (
       match balpb with
@@ -223,10 +222,10 @@ let append_full_state ~goldoutput_file ~interpreter_output svars =
   let svars' =
     List.fold_right goldjs ~init:svars ~f:(fun goldv acc ->
         let golds = json_member "vname" goldv |> json_to_string in
-        if golds = ContractUtil.balance_label then acc
+        if String.(golds = ContractUtil.balance_label) then acc
         else
           let s', rest =
-            List.partition_tf acc ~f:(fun (s, _, _) -> s = golds)
+            List.partition_tf acc ~f:(fun (s, _, _) -> String.(s = golds))
           in
           s' @ rest)
   in
@@ -236,7 +235,7 @@ let append_full_state ~goldoutput_file ~interpreter_output svars =
   let unsorted_output_j =
     `Assoc
       (List.map items ~f:(fun (s, j) ->
-           if s <> "states" then (s, j)
+           if String.(s <> "states") then (s, j)
            else
              (* Just add our states to "_balance" that's in the output JSON. *)
              let svars_j = state_to_json svars' in

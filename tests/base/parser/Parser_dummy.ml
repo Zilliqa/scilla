@@ -17,7 +17,7 @@
 *)
 
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open FrontEndParser
 open GlobalConfig
 open ErrorUtils
@@ -27,22 +27,21 @@ let raise_if_error = function Ok _ -> () | Error e -> fatal_error e
 
 let () =
   let r_input_file = ref "" in
-  let usage =
-    "Usage:\n" ^ Sys.argv.(0) ^ " input.scilla (or input.scillib)\n"
-  in
+  let usage = "Usage:\n" ^ Sys.argv.(0) ^ " input.scilla (or input.scillib)\n" in
   let anon_handler s = r_input_file := s in
   let () = Arg.parse [] anon_handler usage in
   let input_file = !r_input_file in
-  if input_file = "" then fatal_error_noformat usage
+  if String.is_empty input_file then fatal_error_noformat usage
   else set_use_json_errors true;
-  let extn = FilePath.get_extension input_file in
-  if extn = StdlibTracker.file_extn_library then
+  let open FilePath in
+  let open StdlibTracker in
+  if check_extension input_file file_extn_library then
     (* Check library modules. *)
     raise_if_error @@ parse_lmodule input_file
-  else if extn = StdlibTracker.file_extn_contract then
+  else if check_extension input_file file_extn_contract then
     (* Check contract modules. *)
     raise_if_error @@ parse_cmodule input_file
-  else if extn = StdlibTracker.file_extn_expression then
+  else if check_extension input_file file_extn_expression then
     (* Check expressions. *)
     raise_if_error @@ parse_expr_from_file input_file
-  else fatal_error (mk_error0 (sprintf "Unknown file extension %s\n" extn))
+  else fatal_error (mk_error0 (sprintf "Unknown file extension\n"))

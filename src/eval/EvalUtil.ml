@@ -18,7 +18,7 @@
 
 open Syntax
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open MonadUtil
 open EvalMonad
@@ -179,7 +179,7 @@ module Configuration = struct
 
   let load st k =
     let i = get_id k in
-    if i = balance_label then
+    if String.(i = balance_label) then
       (* Balance is a special case *)
       let l = UintLit (Uint128L st.balance) in
       pure (l, G_Load l)
@@ -257,7 +257,7 @@ module Configuration = struct
     | Ok kvs ->
         let filtered_env =
           List.filter e ~f:(fun z ->
-              not (List.exists ks ~f:(fun x -> fst z = x)))
+              not (List.mem ks (fst z) ~equal:String.( = )))
         in
         pure { st with env = kvs @ filtered_env }
 
@@ -285,7 +285,7 @@ module Configuration = struct
   let lookup_procedure st proc_name =
     let rec finder procs =
       match procs with
-      | p :: p_rest when get_id p.comp_name = proc_name -> pure (p, p_rest)
+      | p :: p_rest when String.(get_id p.comp_name = proc_name) -> pure (p, p_rest)
       | _ :: p_rest -> finder p_rest
       | [] -> fail0 @@ sprintf "Procedure %s not found." proc_name
     in

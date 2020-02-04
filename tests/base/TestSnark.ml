@@ -20,7 +20,6 @@
    https://github.com/ethereum/aleth/blob/master/test/unittests/libdevcrypto/LibSnark.cpp *)
 
 open Core_kernel
-open Int.Replace_polymorphic_compare
 open OUnit2
 open Snark
 open Integer256

@@ -18,7 +18,7 @@
 
 open Syntax
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
@@ -540,7 +540,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  (TypedSyntax.Load (typed_x, typed_f), rep)
                  checked_stmts remaining_gas
         | Store (f, r) ->
-            if List.mem ~equal:(fun s1 s2 -> s1 = s2) no_store_fields (get_id f)
+            if List.mem ~equal:String.( = ) no_store_fields (get_id f)
             then
               wrap_type_serr stmt
                 (Error
@@ -767,7 +767,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                    type_actuals env.pure args remaining_gas
                  in
                  match
-                   List.Assoc.find env.procedures ~equal:( = ) (get_id p)
+                   List.Assoc.find env.procedures ~equal:String.( = ) (get_id p)
                  with
                  | Some arg_typs ->
                      let%bind _ =
@@ -871,7 +871,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | CompTrans -> procedures
       | CompProc ->
           let proc_sig = List.map comp_params ~f:snd in
-          List.Assoc.add procedures ~equal:( = ) (get_id comp_name) proc_sig
+          List.Assoc.add procedures ~equal:String.( = ) (get_id comp_name) proc_sig
     in
     pure
     @@ ( ( {
@@ -1034,7 +1034,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                        Error (GasError, e, remaining_gas) ))
        in
        (* If there has been no errors at all, we're good to go. *)
-       if errs = [] then
+       if List.is_empty errs then
          pure
          @@ ( ( {
                   TypedSyntax.lname;
@@ -1088,7 +1088,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                           match entry' with
                           | LibTyp (i, _) | LibVar (i, _, _) -> i
                         in
-                        if get_id ename = get_id ename' then
+                        if equal_id ename ename' then
                           err_acc
                           @ mk_error1
                               (sprintf
@@ -1130,7 +1130,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                     TEnv.filterTs (TEnv.copy t_env) ~f:(fun name ->
                         List.exists t_lib.lentries ~f:(function
                           | LibTyp _ -> false
-                          | LibVar (i, _, _) -> get_id i = name)
+                          | LibVar (i, _, _) -> String.(get_id i = name))
                         || TEnv.existsT tenv0 name)
                   in
                   pure
@@ -1153,8 +1153,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       in
       recurser elibs remaining_gas
     in
-    if emsgs <> [] then Error (TypeError, emsgs, remaining_gas)
-    else pure (typed_elibs, elibs_env, remaining_gas)
+    if List.is_empty emsgs then pure (typed_elibs, elibs_env, remaining_gas)
+    else Error (TypeError, emsgs, remaining_gas)
 
   let type_lmodule (md : UntypedSyntax.lmodule)
       (rec_libs : UntypedSyntax.lib_entry list)
@@ -1307,7 +1307,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              (add_type_to_ident id (mk_qual_tp t), t))
        in
 
-       if emsgs' = [] (* Return pure environment *) then
+       if List.is_empty emsgs' (* Return pure environment *) then
          pure
            ( ( {
                  TypedSyntax.smver = mod_smver;

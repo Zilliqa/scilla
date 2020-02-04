@@ -87,7 +87,7 @@ let make_ground_type_test ts exp_bool =
   in
   test_case (fun _ ->
       let b = is_ground_type t in
-      assert_bool "TypeUtil: is_ground_type test failed on type" (b = exp_bool))
+      assert_bool "TypeUtil: is_ground_type test failed on type" Bool.(b = exp_bool))
 
 let ground_type_tests =
   [

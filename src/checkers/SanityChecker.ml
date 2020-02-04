@@ -124,9 +124,8 @@ struct
                 eloc
         else if
           (* It must be an event or an exception. *)
-          List.exists
-            (fun (s, _) -> s = eventname_label || s = exception_label)
-            msg
+          List.exists msg ~f:(fun (s, _) ->
+              String.(s = eventname_label || s = exception_label))
         then e
         else e @ mk_error1 "Invalid message construct." eloc
       in
@@ -216,17 +215,17 @@ struct
   module CheckShadowing = struct
     (* A utility function that checks if "id" is shadowing cparams, cfields or pnames. *)
     let check_warn_redef cparams cfields pnames id =
-      if List.mem (get_id id) cparams then
+      if List.mem cparams (get_id id) ~equal:String.( = ) then
         warn1
           (Printf.sprintf "Name %s shadows a contract parameter." (get_id id))
           warning_level_name_shadowing
           (ER.get_loc (get_rep id))
-      else if List.mem (get_id id) cfields then
+      else if List.mem cfields (get_id id) ~equal:String.( = ) then
         warn1
           (Printf.sprintf "Name %s shadows a field declaration." (get_id id))
           warning_level_name_shadowing
           (ER.get_loc (get_rep id))
-      else if List.mem (get_id id) pnames then
+      else if List.mem pnames (get_id id) ~equal:String.( = ) then
         warn1
           (Printf.sprintf "Name %s shadows a transition parameter." (get_id id))
           warning_level_name_shadowing

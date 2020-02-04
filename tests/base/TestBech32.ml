@@ -21,7 +21,7 @@ open Bech32
 open Syntax
 open Utils
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 
 let hex_to_raw_bytes h = Bystr.parse_hex h |> Bystr.to_raw_bytes
 
@@ -35,7 +35,7 @@ let test1 =
       match decode_bech32_addr ~prefix:"zil" ~addr:bech32_addr with
       | Some b ->
           assert_bool "Bech32 address decode failed"
-            (b = decoded_gold && is_valid_bech32 ~prefix:"zil" ~addr:bech32_addr)
+            (String.(b = decoded_gold) && is_valid_bech32 ~prefix:"zil" ~addr:bech32_addr)
       | None -> assert_failure "Bech32 address validity check failed")
 
 let test2 =
@@ -47,7 +47,7 @@ let test2 =
       match decode_bech32_addr ~prefix:"zil" ~addr:bech32_addr with
       | Some b ->
           assert_bool "Bech32 address decode failed"
-            (b = decoded_gold && is_valid_bech32 ~prefix:"zil" ~addr:bech32_addr)
+            (String.(b = decoded_gold) && is_valid_bech32 ~prefix:"zil" ~addr:bech32_addr)
       | None -> assert_failure "Bech32 address validity check failed")
 
 let test3 =
@@ -68,7 +68,7 @@ let test4 =
       let gold_output = "zil102n74869xnvdwq3yh8p0k9jjgtejruft268tg8" in
       match encode_bech32_addr ~prefix:"zil" ~addr:input with
       | Some output ->
-          assert_bool "Bech32 encode mismatch" (output = gold_output)
+          assert_bool "Bech32 encode mismatch" String.(output = gold_output)
       | None -> assert_failure "Bech32 encoding failed")
 
 let test5 =
@@ -79,7 +79,7 @@ let test5 =
       let gold_output = "zil148fy8yjxn6jf5w36kqc7x73qd3ufuu24a4u8t9" in
       match encode_bech32_addr ~prefix:"zil" ~addr:input with
       | Some output ->
-          assert_bool "Bech32 encode mismatch" (output = gold_output)
+          assert_bool "Bech32 encode mismatch" String.(output = gold_output)
       | None -> assert_failure "Bech32 encoding failed")
 
 (* Takes in a random number and uses that to run a random test of bech32 encoding/decoding.
@@ -100,7 +100,7 @@ let random_test seed =
   match encode_bech32_addr ~prefix:"zil" ~addr:bystr20_r with
   | Some encoded_str -> (
       match decode_bech32_addr ~prefix:"zil" ~addr:encoded_str with
-      | Some decoded_str -> assert_bool errmsg (bystr20_r = decoded_str)
+      | Some decoded_str -> assert_bool errmsg String.(bystr20_r = decoded_str)
       | None -> assert_failure errmsg )
   | None -> assert_failure errmsg
 

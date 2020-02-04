@@ -22,8 +22,7 @@ open Yojson
 open Syntax
 open ErrorUtils
 open Core_kernel
-open Int.Replace_polymorphic_compare
-open PrimTypes
+open! Int.Replace_polymorphic_compare
 open TypeUtil
 open Datatypes
 module JSONTypeUtilities = TypeUtilities
@@ -174,7 +173,7 @@ let gen_parser (t' : typ) : Basic.t -> literal =
                       ADTValue (cn.cname, tlist, arg_lits)
                 | `List vli ->
                     (* We make an exception for Lists, allowing them to be stored flatly. *)
-                    if get_id name <> "List" then
+                    if String.(get_id name <> "List") then
                       raise
                         (mk_invalid_json
                            "ADT value is a JSON array, but type is not List")

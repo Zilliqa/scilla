@@ -17,7 +17,7 @@
 *)
 
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open Result.Let_syntax
 open MonadUtil
@@ -70,7 +70,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     (* A constructor in HNF *)
     | ADTValue (cn, _, ll) as als ->
         (* Make a special case for Lists, to avoid overflowing recursion. *)
-        if cn = "Cons" then
+        if String.(cn = "Cons") then
           let rec walk elm acc_cost =
             match elm with
             | ADTValue ("Cons", _, [ l; ll ]) ->

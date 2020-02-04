@@ -17,7 +17,7 @@
 *)
 
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open Bitstring
 open Utils
 
@@ -73,11 +73,14 @@ let decode_bech32_addr ~prefix ~addr:str =
   if String.length str <> bech32_addr_len ~prefix then None
   else if
     (* 2. Must begin with prefix. *)
-    String.sub str ~pos:0 ~len:(String.length prefix) <> prefix
+    let len = String.length prefix in
+    let prfx = prefix in
+    String.(sub str ~pos:0 ~len <> prfx)
   then None
   else if
     (* 3. Must have separator "1" after prefix. *)
-    String.sub str ~pos:(String.length prefix) ~len:1 <> "1"
+    let len = String.length prefix in
+    String.(sub str ~pos:len ~len:1 <> "1")
   then None
   else
     (* 4. Scan the prefix for errors. *)

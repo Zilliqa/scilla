@@ -18,7 +18,7 @@
 
 open Syntax
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open MonadUtil
 open Result.Let_syntax
 
@@ -161,7 +161,7 @@ module DataTypeDictionary = struct
 
   (* Get typing map for a constructor *)
   let constr_tmap adt cn =
-    List.find adt.tmap ~f:(fun (n, _) -> n = cn) |> Option.map ~f:snd
+    List.find adt.tmap ~f:(fun (n, _) -> String.(n = cn)) |> Option.map ~f:snd
 
   let bool_typ = ADT (asId t_bool.tname, [])
 

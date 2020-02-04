@@ -40,7 +40,7 @@ struct
           in
           (* Get the type of the event parameters. *)
           let filtered_m =
-            List.filter (fun (label, _) -> not (label = eventname_label)) m
+            List.filter m ~f:(fun (label, _) -> not String.(label = eventname_label))
           in
           let%bind m_types =
             mapM

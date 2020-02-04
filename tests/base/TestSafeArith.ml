@@ -1,5 +1,5 @@
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open Stdint
 open OUnit2
 open SafeArith

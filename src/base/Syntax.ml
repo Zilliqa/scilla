@@ -17,7 +17,7 @@
 *)
 
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open Sexplib.Std
 open MonadUtil
 open ErrorUtils
@@ -43,9 +43,9 @@ type bigint = Big_int.big_int
 let mk_ident s = Ident (s, dummy_loc)
 
 (* A few utilities on id. *)
-let equal_id a b = get_id a = get_id b
+let equal_id a b = String.(get_id a = get_id b)
 
-let compare_id a b = compare (get_id a) (get_id b)
+let compare_id a b = String.(compare (get_id a) (get_id b))
 
 let dedup_id_list l = List.dedup_and_sort ~compare:compare_id l
 
@@ -450,8 +450,8 @@ let parse_builtin s loc =
 (* Return free tvars in tp
     The return list doesn't contain duplicates *)
 let free_tvars tp =
-  let add vs tv = tv :: List.filter ~f:(( <> ) tv) vs in
-  let rem vs tv = List.filter ~f:(( <> ) tv) vs in
+  let add vs tv = tv :: List.filter ~f:(String.( <> ) tv) vs in
+  let rem vs tv = List.filter ~f:(String.( <> ) tv) vs in
   let rec go t acc =
     match t with
     | PrimType _ | Unit -> acc
@@ -468,7 +468,7 @@ let free_tvars tp =
 let mk_fresh_var taken init =
   let tmp = ref init in
   let counter = ref 1 in
-  while List.mem taken !tmp ~equal:( = ) do
+  while List.mem taken !tmp ~equal:String.( = ) do
     tmp := init ^ Int.to_string !counter;
     Int.incr counter
   done;
@@ -487,12 +487,13 @@ let rec subst_type_in_type tvar tp tm =
       let ats = subst_type_in_type tvar tp at in
       let rts = subst_type_in_type tvar tp rt in
       FunType (ats, rts)
-  | TypeVar n -> if tvar = n then tp else tm
+  | TypeVar n -> if String.(tvar = n) then tp else tm
   | ADT (s, ts) ->
       let ts' = List.map ts ~f:(subst_type_in_type tvar tp) in
       ADT (s, ts')
   | PolyFun (arg, t) ->
-      if tvar = arg then tm else PolyFun (arg, subst_type_in_type tvar tp t)
+      if String.(tvar = arg) then tm
+      else PolyFun (arg, subst_type_in_type tvar tp t)
 
 (* note: this is sequential substitution of multiple variables,
           _not_ simultaneous substitution *)
@@ -788,7 +789,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         let body_subst = subst_type_in_expr tvar tp body in
         (Fun (f, t_subst, body_subst), rep)
     | TFun (tv, body) as tf ->
-        if get_id tv = get_id tvar then (tf, rep)
+        if equal_id tv tvar then (tf, rep)
         else
           let body_subst = subst_type_in_expr tvar tp body in
           (TFun (tv, body_subst), rep)

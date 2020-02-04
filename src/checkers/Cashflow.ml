@@ -16,7 +16,7 @@
 *)
 
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open Sexplib.Std
 open Syntax
 open Datatypes
@@ -283,7 +283,7 @@ struct
     | x            , NoInfo        -> x
     | Map x        , Map y         -> Map (lub_tags x y)
     | Adt (n1, ts1), Adt (n2, ts2)
-      when n1 = n2                 ->
+      when String.(n1 = n2)        ->
         (match List.map2 ts1 ts2 ~f:lub_tags with
          | Ok res -> Adt (n1, res)
          | Unequal_lengths -> Inconsistent)
@@ -300,7 +300,7 @@ struct
     | _            , NoInfo        -> NoInfo
     | Map x        , Map y         -> Map (glb_tags x y)
     | Adt (n1, ts1), Adt (n2, ts2)
-      when n1 = n2                 ->
+      when String.(n1 = n2)        ->
         (match List.map2 ts1 ts2 ~f:glb_tags with
          | Ok res -> Adt (n1, res)
          | Unequal_lengths -> Inconsistent)
@@ -339,7 +339,7 @@ struct
               && List.exists adt.tmap ~f:(fun (_, arg_typs) ->
                      match arg_typs with
                      | [ ADT (arg_typ_name, _) ] ->
-                         get_id arg_typ_name = adt.tname
+                         String.(get_id arg_typ_name = adt.tname)
                      | _ -> false)
             then NoInfo
             else Adt (adt.tname, [])
@@ -357,11 +357,11 @@ struct
                 in
                 let update_targ_tag targ new_tag map =
                   let current_tag =
-                    match List.Assoc.find map ~equal:( = ) targ with
+                    match List.Assoc.find map ~equal:String.( = ) targ with
                     | None -> Inconsistent
                     | Some t -> t
                   in
-                  List.Assoc.add map ~equal:( = ) targ
+                  List.Assoc.add map ~equal:String.( = ) targ
                     (lub_tags current_tag new_tag)
                 in
                 let rec match_arg_tag_with_typ arg_typ arg_tag targ_tag_map =
@@ -398,7 +398,7 @@ struct
                 let final_adt_arg_tags =
                   List.map adt.tparams ~f:(fun tparam ->
                       match
-                        List.Assoc.find tvar_tag_map ~equal:( = ) tparam
+                        List.Assoc.find tvar_tag_map ~equal:String.( = ) tparam
                       with
                       | None -> Inconsistent
                       | Some t -> t)
@@ -420,7 +420,7 @@ struct
             let tvar_tag_map =
               let zipped_tvar_tags =
                 match expected_tag with
-                | Adt (exp_typ_name, arg_tags) when exp_typ_name = adt.tname ->
+                | Adt (exp_typ_name, arg_tags) when String.(exp_typ_name = adt.tname) ->
                     List.zip adt.tparams arg_tags
                 | NoInfo (* Nothing known *) | Money (* Nat case *) | NotMoney
                 (* Nat case *) ->
@@ -448,7 +448,7 @@ struct
               | ADT (adt_name, arg_typs) ->
                   Adt (get_id adt_name, List.map arg_typs ~f:tag_tmap)
               | TypeVar tvar -> (
-                  match List.Assoc.find tvar_tag_map ~equal:( = ) tvar with
+                  match List.Assoc.find tvar_tag_map ~equal:String.( = ) tvar with
                   | Some tag -> tag
                   | None -> Inconsistent )
               | _ -> Inconsistent
@@ -482,7 +482,7 @@ struct
             else acc)
 
   let update_ctr_tag_map ctr_tag_map ctr_name arg_tags =
-    match List.Assoc.find ctr_tag_map ~equal:( = ) ctr_name with
+    match List.Assoc.find ctr_tag_map ~equal:String.( = ) ctr_name with
     | None ->
         (* Ignored constructor *)
         None
@@ -1428,12 +1428,12 @@ struct
                 | MVar x ->
                     let usage_tag =
                       match s with
-                      | x when x = MessagePayload.amount_label -> Money
+                      | x when String.(x = MessagePayload.amount_label) -> Money
                       | x
-                        when x = MessagePayload.tag_label
+                        when String.(x = MessagePayload.tag_label
                              || x = MessagePayload.recipient_label
                              || x = MessagePayload.eventname_label
-                             || x = MessagePayload.exception_label ->
+                             || x = MessagePayload.exception_label) ->
                           NotMoney
                       | _ -> NoInfo
                     in
@@ -1940,7 +1940,7 @@ struct
       List.filter_map all_adts ~f:(fun adt ->
           match
             List.filter_map adt.tconstr ~f:(fun ctr ->
-                match List.Assoc.find ctr_tag_map ~equal:( = ) ctr.cname with
+                match List.Assoc.find ctr_tag_map ~equal:String.( = ) ctr.cname with
                 | Some arg_tag_opts -> Some (ctr.cname, arg_tag_opts)
                 | None -> None)
           with

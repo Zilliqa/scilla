@@ -17,7 +17,7 @@
 *)
 
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open Syntax
 open ErrorUtils
 open TypeUtil
@@ -143,7 +143,7 @@ struct
           match entries_opt with
           | Some (n, h, entries) ->
               (* Verify name and hash. *)
-              if n = lib_name && h = hash_lib lib then
+              if String.(n = lib_name && h = hash_lib lib) then
                 Some (TEnv.addTs (TEnv.copy tenv) entries)
               else (* name/hash does not match. TODO: print to logger. *)
                 None

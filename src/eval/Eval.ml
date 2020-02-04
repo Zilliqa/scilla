@@ -18,7 +18,7 @@
 
 open Syntax
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open EvalUtil
 open MonadUtil
@@ -50,9 +50,7 @@ let pp_result r exclude_names =
   match r with
   | Error (s, _) -> sprint_scilla_error_list s
   | Ok ((e, env), _) ->
-      let filter_prelude (k, _) =
-        not (List.mem enames k ~equal:(fun s1 s2 -> s1 = s2))
-      in
+      let filter_prelude (k, _) = not @@ List.mem enames k ~equal:String.( = ) in
       sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
 
 (* Makes sure that the literal has no closures in it *)
@@ -464,7 +462,7 @@ let init_libraries clibs elibs =
     init_lib_entries (pure Env.empty) RecursionPrinciples.recursion_principles
   in
   let rec recurser libnl =
-    if libnl = [] then pure rec_env
+    if List.is_empty libnl then pure rec_env
     else
       (* Walk through library dependence tree. *)
       foldM libnl ~init:[] ~f:(fun acc_env libnode ->
@@ -479,8 +477,8 @@ let init_libraries clibs elibs =
                 List.exists entries ~f:(fun entry ->
                     match entry with
                     | LibTyp _ -> false (* Types are not part of Env. *)
-                    | LibVar (i, _, _) -> get_id i = name)
-                || List.exists rec_env ~f:(fun (name', _) -> name' = name))
+                    | LibVar (i, _, _) -> String.(get_id i = name))
+                || List.Assoc.mem rec_env name ~equal:String.( = ))
           in
           pure @@ Env.bind_all acc_env env)
   in
@@ -524,7 +522,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
           tryM
             ~f:(fun (ps, pt) ->
               let%bind at = fromR @@ literal_type (snd a) in
-              if get_id ps = fst a && type_equiv pt at then pure true
+              if String.(get_id ps = fst a) && [%equal: typ] pt at then pure true
               else fail0 "")
             cparams ~msg:emsg
         in
@@ -535,7 +533,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
     forallM
       ~f:(fun (p, _) ->
         (* For each parameter there should be exactly one argument. *)
-        if List.count args ~f:(fun a -> get_id p = fst a) <> 1 then
+        if List.count args ~f:(fun a -> String.(get_id p = fst a)) <> 1 then
           fail0
             (sprintf "Parameter %s must occur exactly once in input.\n"
                (get_id p))
@@ -583,7 +581,7 @@ let create_cur_state_fields initcstate curcstate =
   let%bind _ =
     forallM
       ~f:(fun (e, _) ->
-        if List.count curcstate ~f:(fun (e', _) -> e = e') > 1 then
+        if List.count curcstate ~f:(fun (e', _) -> String.(e = e')) > 1 then
           fail0 (sprintf "Field %s occurs more than once in input.\n" e)
         else pure true)
       initcstate
@@ -632,7 +630,7 @@ let get_transition_and_procedures ctr tag =
         | CompProc ->
             (* Procedure is in scope - continue searching *)
             procedure_and_transition_finder (c :: procs_acc) c_rest
-        | CompTrans when tag = get_id c.comp_name ->
+        | CompTrans when String.(tag = get_id c.comp_name) ->
             (* Transition found - return *)
             (procs_acc, Some c)
         | CompTrans ->

@@ -41,7 +41,7 @@ let t1' =
           let pubK' = pk_from_sk privK in
           let pubK'' = match pubK' with Ok pubK'' -> pubK'' | Error _ -> "" in
           assert_bool "Public key mis-match b/w Schnorr and ECDSA"
-            (pubK = pubK'');
+            String.(pubK = pubK'');
           let succ =
             match sign privK msg with
             | Ok signature -> (
@@ -70,7 +70,7 @@ let t2' =
           let pubK' = pk_from_sk privK in
           let pubK'' = match pubK' with Ok pubK'' -> pubK'' | Error _ -> "" in
           assert_bool "Public key mis-match b/w Schnorr and ECDSA"
-            (pubK = pubK'');
+            String.(pubK = pubK'');
           let succ =
             match sign privK msg with
             | Ok signature -> (

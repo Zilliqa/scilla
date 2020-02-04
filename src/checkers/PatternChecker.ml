@@ -16,7 +16,7 @@
 
 open Syntax
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
@@ -376,7 +376,7 @@ struct
        in
        let checked_comps = List.rev c_comps in
 
-       if emsgs''' = [] (* Return pure environment *) then
+       if List.is_empty emsgs''' (* Return pure environment *) then
          pure
            ( {
                CheckedPatternSyntax.smver = mod_smver;

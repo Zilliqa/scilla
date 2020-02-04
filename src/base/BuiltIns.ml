@@ -18,7 +18,7 @@
 
 open Syntax
 open Core_kernel
-open Int.Replace_polymorphic_compare
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
@@ -111,7 +111,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq ls _ =
       match ls with
-      | [ StringLit x; StringLit y ] -> pure @@ to_Bool (x = y)
+      | [ StringLit x; StringLit y ] -> pure @@ to_Bool String.(x = y)
       | _ -> builtin_fail "String.eq" ls
 
     let concat_arity = 2
@@ -640,7 +640,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq ls _ =
       match ls with
-      | [ BNum x; BNum y ] -> pure @@ to_Bool (x = y)
+      | [ BNum x; BNum y ] -> pure @@ to_Bool Core_kernel.String.(x = y)
       | _ -> builtin_fail "BNum.eq" ls
 
     let blt_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ
@@ -666,7 +666,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     (* Elaborator to run with arbitrary uints *)
     let badd_elab sc ts =
       match ts with
-      | [ s; u ] when s = bnum_typ && is_uint_type u ->
+      | [ PrimType Bnum_typ; PrimType (Uint_typ _) ] ->
           elab_tfun_with_args_no_gas sc ts
       | _ -> fail0 "Failed to elaborate"
 
@@ -693,7 +693,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     (* Elaborator to run with arbitrary uints *)
     let bsub_elab sc ts =
       match ts with
-      | [ b1; b2 ] when b1 = bnum_typ && b2 = bnum_typ ->
+      | [ PrimType Bnum_typ; PrimType Bnum_typ ] ->
           elab_tfun_with_args_no_gas sc ts
       | _ -> fail0 "Failed to elaborate"
 
@@ -856,11 +856,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let bech32_to_bystr20 ls _ =
       match ls with
-      | [ StringLit prefix; StringLit addr ] -> (
-          if prefix <> "zil" && prefix <> "tzil" then
+      | [ StringLit prfx; StringLit addr ] -> (
+          if Core_kernel.String.(prfx <> "zil" && prfx <> "tzil") then
             fail0 "Only zil and tzil bech32 addresses are supported"
           else
-            match Bech32.decode_bech32_addr ~prefix ~addr with
+            match Bech32.decode_bech32_addr ~prefix:prfx ~addr with
             | Some bys20 -> (
                 match Bystrx.of_raw_bytes 20 bys20 with
                 | Some b -> some_lit @@ ByStrX b
@@ -876,12 +876,12 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let bystr20_to_bech32 ls _ =
       match ls with
-      | [ StringLit prefix; ByStrX addr ] -> (
-          if prefix <> "zil" && prefix <> "tzil" then
+      | [ StringLit prfx; ByStrX addr ] -> (
+          if Core_kernel.String.(prfx <> "zil" && prfx <> "tzil") then
             fail0 "Only zil and tzil bech32 addresses are supported"
           else
             match
-              Bech32.encode_bech32_addr ~prefix ~addr:(Bystrx.to_raw_bytes addr)
+              Bech32.encode_bech32_addr ~prefix:prfx ~addr:(Bystrx.to_raw_bytes addr)
             with
             | Some bech32 -> some_lit @@ StringLit bech32
             | None -> fail0 "bech32 encoding failed" )
@@ -1183,7 +1183,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let get ls rt =
       match (ls, rt) with
       | [ Map (_, entries); key ], ADT (tname, [ targ ])
-        when get_id tname = "Option" -> (
+        when Core_kernel.String.(get_id tname = "Option") -> (
           let res = Caml.Hashtbl.find_opt entries key in
           match res with None -> pure @@ none_lit targ | Some v -> some_lit v )
       | _ -> builtin_fail "Map.get" ls
