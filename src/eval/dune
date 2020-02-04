@@ -5,5 +5,5 @@
    yojson cryptokit scilla_base rpclib unix rpclib.json rresult ocaml-protoc)
  (preprocess
   (pps ppx_sexp_conv ppx_let bisect_ppx -conditional ppx_deriving_rpc
-    ppx_deriving.show))
+    ppx_deriving.show ppx_compare))
  (synopsis "Scilla workbench implementation."))

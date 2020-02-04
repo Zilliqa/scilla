@@ -366,8 +366,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         in
         let payload_type fld pld remaining_gas =
           let check_field_type seen_type =
-            match Caml.List.assoc_opt fld CU.msg_mandatory_field_types with
-            | Some fld_t when fld_t <> seen_type ->
+            match List.Assoc.find CU.msg_mandatory_field_types fld ~equal:String.( = ) with
+            | Some fld_t when not ([%equal: typ] fld_t seen_type) ->
                 fail1
                   (sprintf
                      "Type mismatch for Message field %s. Expected %s but got \

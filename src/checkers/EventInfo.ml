@@ -67,7 +67,7 @@ struct
                   "[" tplist
                 ^ "]"
               in
-              if m_types <> tlist then
+              if not @@ [%equal: (string * typ) list] m_types tlist then
                 fail1
                   (Printf.sprintf "Parameter mismatch for event %s. %s vs %s\n"
                      eventname (printer tlist) (printer m_types))

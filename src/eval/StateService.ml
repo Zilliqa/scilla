@@ -78,7 +78,7 @@ module MakeStateService () = struct
           match klist' with
           | [ k ] ->
               (* Just an assert. *)
-              if vt' <> ret_val_type then
+              if not @@ [%equal: typ] vt' ret_val_type then
                 fail1
                   (sprintf
                      "StateService: Failed indexing into map %s. Internal \

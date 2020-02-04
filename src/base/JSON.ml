@@ -154,7 +154,7 @@ and read_adt_json name j tlist_verify =
           | Error emsg -> raise (Invalid_json emsg)
           | Ok (r, _) -> r
         in
-        if dt <> dt' then
+        if not @@ [%equal: Datatypes.adt] dt dt' then
           raise
             (mk_invalid_json
                ("ADT type " ^ dt.tname ^ " does not match constructor " ^ constr));
@@ -306,8 +306,8 @@ module ContractState = struct
             List.map lit' ~f:(fun sp ->
                 match sp with
                 | ADTValue ("Pair", [ t1; t2 ], [ StringLit name; ByStrX bs ])
-                  when t1 = PrimTypes.string_typ
-                       && t2 = PrimTypes.bystrx_typ address_length
+                  when [%equal: typ] t1 PrimTypes.string_typ
+                       && [%equal: typ] t2 (PrimTypes.bystrx_typ address_length)
                        && Bystrx.width bs = address_length ->
                     (name, Bystrx.hex_encoding bs)
                 | _ ->

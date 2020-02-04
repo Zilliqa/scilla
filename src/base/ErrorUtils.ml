@@ -27,7 +27,7 @@ type loc = {
   (* line number *)
   cnum : int; (* column number *)
 }
-[@@deriving sexp]
+[@@deriving sexp, equal]
 
 let toLoc (p : Lexing.position) : loc =
   {

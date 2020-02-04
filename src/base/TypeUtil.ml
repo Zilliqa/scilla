@@ -285,10 +285,10 @@ module TypeUtilities = struct
     List.length tlist1 = List.length tlist2
     && not
          (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
-              not (type_equiv t1 t2)))
+              not ([%equal: typ] t1 t2)))
 
   let assert_type_equiv expected given =
-    if type_equiv expected given then pure ()
+    if [%equal: typ] expected given then pure ()
     else
       fail0
       @@ sprintf "Type mismatch: %s expected, but %s provided."
@@ -296,7 +296,7 @@ module TypeUtilities = struct
 
   (* TODO: make this charge gas *)
   let assert_type_equiv_with_gas expected given remaining_gas =
-    if type_equiv expected given then pure remaining_gas
+    if [%equal: typ] expected given then pure remaining_gas
     else
       Error
         ( TypeError,
@@ -337,7 +337,7 @@ module TypeUtilities = struct
         | _ -> true )
     | PrimType _ ->
         (* Messages and Events are not serialisable in terms of contract parameters *)
-        not (t = PrimTypes.msg_typ || t = PrimTypes.event_typ)
+        PrimTypes.(not @@ [%equal: typ] t msg_typ || [%equal: typ] t event_typ)
     | ADT (tname, ts) -> (
         match List.findi ~f:(fun _ seen -> seen = tname) seen_adts with
         | Some _ -> true (* Inductive ADT - ignore this branch *)
@@ -701,7 +701,7 @@ module TypeUtilities = struct
                 else
                   let%bind kt' = is_wellformed_lit k in
                   let%bind vt' = is_wellformed_lit v in
-                  pure @@ (type_equiv kt kt' && type_equiv vt vt'))
+                  pure @@ ([%equal: typ] kt kt' && [%equal: typ] vt vt'))
               kv (pure true)
           in
           if not valid then
@@ -730,7 +730,7 @@ module TypeUtilities = struct
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
           let args_valid =
-            List.for_all2_exn tmap arg_typs ~f:(fun t1 t2 -> type_equiv t1 t2)
+            List.for_all2_exn tmap arg_typs ~f:[%equal: typ]
           in
           if not args_valid then
             fail0

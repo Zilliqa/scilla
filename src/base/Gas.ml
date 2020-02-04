@@ -361,12 +361,12 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let matcher (name, types, fcoster, base) =
       (* The names and type list lengths must match and *)
       if
-        name = op
+        [%equal: Syntax.builtin] name op
         && List.length types = List.length arg_types
         && List.for_all2_exn
              ~f:(fun t1 t2 ->
                (* the types should match *)
-               type_equiv t1 t2
+               [%equal: typ] t1 t2
                ||
                (* or the built-in record is generic *)
                match t2 with TypeVar _ -> true | _ -> false)

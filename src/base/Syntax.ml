@@ -55,7 +55,8 @@ let is_mem_id i l = List.exists l ~f:(equal_id i)
 (*                         Types                       *)
 (*******************************************************)
 
-type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256 [@@deriving sexp]
+type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
+[@@deriving sexp, equal]
 
 type prim_typ =
   | Int_typ of int_bit_width
@@ -67,6 +68,7 @@ type prim_typ =
   | Exception_typ
   | Bystr_typ
   | Bystrx_typ of int
+[@@deriving equal]
 
 let sexp_of_prim_typ = function
   | Int_typ Bits32 -> Sexp.Atom "Int32"
@@ -145,25 +147,35 @@ let address_length = 20
 
 let hash_length = 32
 
+open Integer256
+
+let equal_int128 x y = Int128.compare x y = 0
+let equal_int256 x y = Int256.compare x y = 0
+
 type int_lit =
   | Int32L of int32
   | Int64L of int64
   | Int128L of int128
-  | Int256L of Integer256.int256
+  | Int256L of int256 [@@deriving equal]
 
 let sexp_of_int_lit = function
   | Int32L i' -> Sexp.Atom ("Int32 " ^ Int32.to_string i')
   | Int64L i' -> Sexp.Atom ("Int64 " ^ Int64.to_string i')
   | Int128L i' -> Sexp.Atom ("Int128 " ^ Int128.to_string i')
-  | Int256L i' -> Sexp.Atom ("Int256 " ^ Integer256.Int256.to_string i')
+  | Int256L i' -> Sexp.Atom ("Int256 " ^ Int256.to_string i')
 
 let int_lit_of_sexp _ = failwith "int_lit_of_sexp is not implemented"
+
+let equal_uint32 x y = Uint32.compare x y = 0
+let equal_uint64 x y = Uint64.compare x y = 0
+let equal_uint128 x y = Uint128.compare x y = 0
+let equal_uint256 x y = Uint256.compare x y = 0
 
 type uint_lit =
   | Uint32L of uint32
   | Uint64L of uint64
   | Uint128L of uint128
-  | Uint256L of Integer256.uint256
+  | Uint256L of uint256 [@@deriving equal]
 
 let sexp_of_uint_lit = function
   | Uint32L i' -> Sexp.Atom ("Uint32 " ^ Uint32.to_string i')
@@ -348,7 +360,7 @@ type builtin =
   | Builtin_to_uint128
   | Builtin_to_nat
   | Builtin_schnorr_get_address
-[@@deriving sexp]
+[@@deriving sexp, equal]
 
 type 'rep builtin_annot = builtin * 'rep [@@deriving sexp]
 
@@ -527,12 +539,12 @@ let canonicalize_tfun t =
   rename_bound_vars mk_new_name (const @@ Int.succ) t 1
 
 (* Type equivalence *)
-let type_equiv t1 t2 =
+let equal_typ t1 t2 =
   let t1' = canonicalize_tfun t1 in
   let t2' = canonicalize_tfun t2 in
   let rec equiv t1 t2 =
     match (t1, t2) with
-    | PrimType p1, PrimType p2 -> p1 = p2
+    | PrimType p1, PrimType p2 -> [%equal: prim_typ] p1 p2
     | TypeVar v1, TypeVar v2 -> String.equal v1 v2
     | Unit, Unit -> true
     | ADT (tname1, tl1), ADT (tname2, tl2) ->
@@ -959,7 +971,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     (* Handle a special case where we're dealing with the most precise error. *)
     | Error [ e' ] ->
         let m, l = get_failure_msg e phase opt in
-        if e'.startl = dummy_loc then Error (mk_error1 (m ^ e'.emsg) l)
+        if [%equal: loc] e'.startl dummy_loc then
+          Error (mk_error1 (m ^ e'.emsg) l)
         else Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
     | _ -> wrap_with_info (get_failure_msg e phase opt) res
 
@@ -969,7 +982,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     (* Handle a special case where we're dealing with the most precise error. *)
     | Error [ e' ] ->
         let m, l = get_failure_msg_stmt s phase opt in
-        if e'.startl = dummy_loc then Error (mk_error1 (m ^ e'.emsg) l)
+        if [%equal: loc] e'.startl dummy_loc then
+          Error (mk_error1 (m ^ e'.emsg) l)
         else Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
     | _ -> wrap_with_info (get_failure_msg_stmt s phase opt) res
 end

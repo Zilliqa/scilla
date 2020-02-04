@@ -200,7 +200,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq_elab t ts =
       match ts with
-      | [ i1; i2 ] when i1 = i2 && is_int_type i1 ->
+      | [ i1; i2 ] when [%equal: typ] i1 i2 && is_int_type i1 ->
           elab_tfun_with_args_no_gas t [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -321,7 +321,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let pow_elab t ts =
       match ts with
-      | [ i1; i2 ] when is_int_type i1 && i2 = uint32_typ ->
+      | [ i1; i2 ] when is_int_type i1 && [%equal: typ] i2 uint32_typ ->
           elab_tfun_with_args_no_gas t [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -408,7 +408,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq_elab sc ts =
       match ts with
-      | [ i1; i2 ] when i1 = i2 && is_uint_type i1 ->
+      | [ i1; i2 ] when [%equal: typ] i1 i2 && is_uint_type i1 ->
           elab_tfun_with_args_no_gas sc [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -530,7 +530,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let pow_elab t ts =
       match ts with
-      | [ i1; i2 ] when is_uint_type i1 && i2 = uint32_typ ->
+      | [ i1; i2 ] when is_uint_type i1 && [%equal: typ] i2 uint32_typ ->
           elab_tfun_with_args_no_gas t [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -617,7 +617,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match ls with
       | [ UintLit (Uint32L n) ] ->
           let rec nat_builder (i : Uint32.t) (acc : Syntax.literal) =
-            if i = Uint32.zero then acc
+            if [%equal: uint32] i Uint32.zero then acc
             else nat_builder (Uint32.pred i) (ADTValue ("Succ", [], [ acc ]))
           in
           let zero = ADTValue ("Zero", [], []) in
@@ -781,7 +781,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match ts with
       | [ bstyp1; bstyp2 ]
         when (* We want both types to be ByStr with equal width. *)
-             is_bystrx_type bstyp1 && bstyp1 = bstyp2 ->
+             is_bystrx_type bstyp1 && [%equal: typ] bstyp1 bstyp2 ->
           elab_tfun_with_args_no_gas sc [ bstyp1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -1130,7 +1130,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let contains_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); u ] when type_equiv kt u ->
+      | [ MapType (kt, vt); u ] when [%equal: typ] kt u ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -1152,7 +1152,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let put_elab sc ts =
       match ts with
       | [ MapType (kt, vt); kt'; vt' ]
-        when type_equiv kt kt' && type_equiv vt vt' ->
+        when [%equal: typ] kt kt' && [%equal: typ] vt vt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -1175,7 +1175,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let get_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); kt' ] when type_equiv kt kt' ->
+      | [ MapType (kt, vt); kt' ] when [%equal: typ] kt kt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -1197,7 +1197,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let remove_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); u ] when type_equiv kt u ->
+      | [ MapType (kt, vt); u ] when [%equal: typ] kt u ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
