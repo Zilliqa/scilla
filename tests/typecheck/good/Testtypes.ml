@@ -44,7 +44,7 @@ let make_type_equiv_test st1 st2 eq =
   test_case (fun _ -> assert_bool err_msg b)
 
 let make_type_equiv_tests tlist =
-  List.map (fun (st1, st2, eq) -> make_type_equiv_test st1 st2 eq) tlist
+  List.map tlist ~f:(fun (st1, st2, eq) -> make_type_equiv_test st1 st2 eq)
 
 let type_equiv_tests =
   [
@@ -103,7 +103,7 @@ let ground_type_tests =
   ]
 
 let make_ground_type_tests tlist =
-  List.map (fun (st, eq) -> make_ground_type_test st eq) tlist
+  List.map tlist ~f:(fun (st, eq) -> make_ground_type_test st eq)
 
 let make_map_access_type_test t at nindices =
   let open FrontEndParser in
@@ -143,9 +143,7 @@ let map_access_type_tests =
   ]
 
 let make_map_access_type_tests tlist =
-  List.map
-    (fun (t, at, nindices) -> make_map_access_type_test t at nindices)
-    tlist
+  List.map tlist ~f:(fun (t, at, nindices) -> make_map_access_type_test t at nindices)
 
 let type_equiv_tests =
   "type_equiv_tests" >::: make_type_equiv_tests type_equiv_tests

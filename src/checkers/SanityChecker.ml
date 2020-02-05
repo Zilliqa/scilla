@@ -62,8 +62,7 @@ struct
               if is_mem_id i rem then
                 e
                 @ mk_error1
-                    (Core_kernel.sprintf "Identifier %s used more than once\n"
-                       (get_id i))
+                    (sprintf "Identifier %s used more than once\n" (get_id i))
                     (gloc @@ get_rep i)
               else e
             in
@@ -76,28 +75,26 @@ struct
     (* No repeating names for params. *)
     let e =
       check_duplicate_ident ER.get_loc
-        (List.map (fun (i, _) -> i) contr.cparams)
+        (List.map contr.cparams ~f:(fun (i, _) -> i))
     in
     (* No repeating field names. *)
     let e =
       e
       @ check_duplicate_ident ER.get_loc
-          (List.map (fun (i, _, _) -> i) contr.cfields)
+        (List.map contr.cfields ~f:(fun (i, _, _) -> i))
     in
     (* No repeating component names. *)
     let e =
       e
       @ check_duplicate_ident SR.get_loc
-          (List.map (fun c -> c.comp_name) contr.ccomps)
+        (List.map contr.ccomps ~f:(fun c -> c.comp_name))
     in
     (* No repeating component parameter names. *)
     let e =
-      List.fold_left
-        (fun e t ->
+      List.fold_left contr.ccomps ~init:e ~f:(fun e t ->
           e
           @ check_duplicate_ident ER.get_loc
-              (List.map (fun (i, _) -> i) t.comp_params))
-        e contr.ccomps
+            (List.map t.comp_params ~f:(fun (i, _) -> i)))
     in
 
     (* Message literals must either be for "send" or "event" and well formed. *)
@@ -107,7 +104,7 @@ struct
         e
         @ check_duplicate_ident
             (fun _ -> eloc)
-            (List.map (fun (s, _) -> SR.mk_id_string s) msg)
+            (List.map msg ~f:(fun (s, _) -> SR.mk_id_string s))
       in
 
       (* Either "_tag" or "_eventname" must be present. *)
@@ -138,8 +135,7 @@ struct
 
     (* Component parameters cannot have names as that of implicit ones. *)
     let e =
-      List.fold_left
-        (fun e c ->
+      List.fold_left contr.ccomps ~init:e ~f:(fun e c ->
           match
             List.find c.comp_params ~f:(fun (s, _) ->
                 String.(get_id s = amount_label || get_id s = sender_label))
@@ -147,13 +143,12 @@ struct
           | Some (s, _) ->
               e
               @ mk_error1
-                  (Core_kernel.sprintf
+                  (sprintf
                      "Parameter %s in %s %s cannot be explicit.\n" (get_id s)
                      (component_type_to_string c.comp_type)
                      (get_id c.comp_name))
                   (SR.get_loc @@ get_rep c.comp_name)
           | None -> e)
-        e contr.ccomps
     in
 
     (* Contract parameters cannot have names of implicit ones. *)
@@ -169,7 +164,7 @@ struct
       | Some (s, _) ->
           e
           @ mk_error1
-              (Core_kernel.sprintf "Contract parameter %s cannot be explicit.\n"
+              (sprintf "Contract parameter %s cannot be explicit.\n"
                  (get_id s))
               (ER.get_loc @@ get_rep s)
       | None -> e
@@ -187,11 +182,9 @@ struct
             warning_level_map_load_store lc
       | _ -> ()
     in
-    List.iter
-      (fun comp ->
+    List.iter cmod.contr.ccomps ~f:(fun comp ->
         let rec stmt_iter stmts =
-          List.iter
-            (fun (stmt, _) ->
+          List.iter stmts ~f:(fun (stmt, _) ->
               match stmt with
               (* Recursion basis. *)
               | Load (_, s) | Store (s, _) | MapGet (s, _, _, _) ->
@@ -200,14 +193,11 @@ struct
                   match vopt with Some s -> check_typ_warn s | None -> () )
               (* Recurse through match statements. *)
               | MatchStmt (_, pat_stmts) ->
-                  List.iter (fun (_, stmts) -> stmt_iter stmts) pat_stmts
+                  List.iter pat_stmts ~f:(fun (_, stmts) -> stmt_iter stmts)
               | _ -> ())
-            stmts
         in
-        stmt_iter comp.comp_body)
-      cmod.contr.ccomps;
-
-    if e = [] then pure () else fail e
+        stmt_iter comp.comp_body);
+    if List.is_empty e then pure () else fail e
 
   (* ************************************** *)
   (* ******** Check name shadowing ******** *)
@@ -239,7 +229,7 @@ struct
         | Wildcard -> ()
         | Binder i -> check_warn_redef cparams cfields pnames i
         | Constructor (_, plist) ->
-            List.iter (fun pat -> outer_scope_iter pat) plist
+            List.iter plist ~f:outer_scope_iter
       in
       outer_scope_iter pat;
       (* Check for shadowing of names within this pattern and warn that it is
@@ -247,7 +237,7 @@ struct
        * https://github.com/Zilliqa/scilla/issues/687. To close this Issue:
        * Make this an error by just using fail1 below instead of warn1. *)
       let bounds = get_pattern_bounds pat in
-      match Core_kernel.List.find_a_dup ~compare:compare_id bounds with
+      match List.find_a_dup ~compare:compare_id bounds with
       | Some v ->
           warn1
             (Printf.sprintf
@@ -300,7 +290,7 @@ struct
         | None -> pure ()
       in
 
-      let cparams = List.map (fun (p, _) -> get_id p) cmod.contr.cparams in
+      let cparams = List.map cmod.contr.cparams ~f:(fun (p, _) -> get_id p) in
 
       (* Check for shadowing in contract constraint *)
       let%bind _ = expr_iter cmod.contr.cconstraint cparams [] [] in
@@ -314,17 +304,14 @@ struct
           cmod.contr.cfields
       in
 
-      let cfields = List.map (fun (f, _, _) -> get_id f) cmod.contr.cfields in
+      let cfields = List.map cmod.contr.cfields ~f:(fun (f, _, _) -> get_id f) in
 
       (* Go through each component. *)
       iterM
         ~f:(fun c ->
           (* 1. If a parameter name shadows one of cparams or cfields, warn. *)
-          List.iter
-            (fun (p, _) -> check_warn_redef cparams cfields [] p)
-            c.comp_params;
-          let pnames = List.map (fun (p, _) -> get_id p) c.comp_params in
-
+          List.iter c.comp_params ~f:(fun (p, _) -> check_warn_redef cparams cfields [] p);
+          let pnames = List.map c.comp_params ~f:(fun (p, _) -> get_id p) in
           (* Check for shadowing in statements. *)
           let rec stmt_iter stmts =
             iterM
