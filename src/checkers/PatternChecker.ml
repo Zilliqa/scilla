@@ -49,11 +49,12 @@ struct
     let reachable = Array.create ~len:(List.length clauses) false in
     let static_match c_name span dsc =
       match dsc with
-      | Pos (dsc_c_name, _) -> if c_name = dsc_c_name then Yes else No
-      | Neg c_names -> (
-          match List.findi c_names ~f:(fun _ c -> c = c_name) with
-          | None -> if List.length c_names = span - 1 then Yes else Maybe
-          | Some _ -> No )
+      | Pos (dsc_c_name, _) -> if String.(c_name = dsc_c_name) then Yes else No
+      | Neg c_names ->
+          if List.mem c_names c_name ~equal:String.( = ) then
+            No
+          else
+            if List.length c_names = span - 1 then Yes else Maybe
     in
     let rec traverse_clauses dsc i rest_clauses =
       match rest_clauses with

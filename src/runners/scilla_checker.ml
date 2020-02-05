@@ -341,9 +341,13 @@ let () =
        So disable the logger. *)
   set_debug_level Debug_None;
 
-  (* Check library modules. *)
-  if file_extn = StdlibTracker.file_extn_library then check_lmodule cli
-  else if file_extn <> StdlibTracker.file_extn_contract then
-    fatal_error (mk_error0 (sprintf "Unknown file extension %s\n" file_extn))
-  else (* Check contract modules. *)
+  let open FilePath in
+  let open StdlibTracker in
+  if check_extension cli.input_file file_extn_library then
+    (* Check library modules. *)
+    check_lmodule cli
+  else if check_extension cli.input_file file_extn_contract then
+    (* Check contract modules. *)
     check_cmodule cli
+  else
+    fatal_error (mk_error0 (sprintf "Unknown file extension\n"))

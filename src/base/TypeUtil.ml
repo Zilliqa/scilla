@@ -192,18 +192,16 @@ functor
                   (get_rep n)
               else foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:() ts
           | PrimType _ | Unit -> pure ()
-          | TypeVar a -> (
-              if
-                (* Check if bound locally. *)
-                List.mem tb a ~equal:String.( = )
-              then pure () (* Check if bound in environment. *)
+          | TypeVar a ->
+              (* Check if bound locally. *)
+              if List.mem tb a ~equal:String.( = )
+              then pure ()
+              (* Check if bound in environment. *)
+              else if List.Assoc.mem (tvars tenv) a ~equal:String.( = ) then
+                pure ()
               else
-                match List.findi (tvars tenv) ~f:(fun _ (x, _) -> x = a) with
-                | Some _ -> pure ()
-                | None ->
-                    fail0
-                    @@ sprintf "Unbound type variable %s in type %s" a
-                         (pp_typ t) )
+                fail0 @@ sprintf "Unbound type variable %s in type %s" a
+                  (pp_typ t)
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
         in
         is_wf_typ' t []
@@ -370,18 +368,12 @@ module TypeUtilities = struct
   let is_storable_type t = is_serializable_storable_helper true t []
 
   let get_msgevnt_type m =
-    if
-      List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.tag_label) m
+    let open ContractUtil.MessagePayload in
+    if List.Assoc.mem m tag_label ~equal:String.( = )
     then pure PrimTypes.msg_typ
-    else if
-      List.exists
-        ~f:(fun (s, _) -> String.(s = eventname_label))
-        m
+    else if List.Assoc.mem m eventname_label ~equal:String.( = )
     then pure PrimTypes.event_typ
-    else if
-      List.exists
-        ~f:(fun (s, _) -> String.(s = exception_label))
-        m
+    else if List.Assoc.mem m exception_label ~equal:String.( = )
     then pure PrimTypes.exception_typ
     else fail0 "Invalid message construct. Not any of send, event or exception."
 

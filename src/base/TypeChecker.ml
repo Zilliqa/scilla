@@ -121,8 +121,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     [ (TypeUtil.blocknum_name, bnum_typ) ]
 
   let lookup_bc_type x =
-    match List.findi bc_types ~f:(fun _ (f, _) -> f = x) with
-    | Some (_, (_, t)) -> pure @@ t
+    match List.Assoc.find bc_types x ~equal:String.( = ) with
+    | Some t -> pure t
     | None -> fail0 @@ sprintf "Unknown blockchain field %s." x
 
   (**************************************************************)

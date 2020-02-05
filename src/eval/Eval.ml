@@ -390,12 +390,12 @@ let check_blockchain_entries entries =
   (* every entry must be expected *)
   let c1 =
     List.for_all entries ~f:(fun (s, _) ->
-        List.exists expected ~f:(fun (t, _) -> s = t))
+        List.Assoc.mem expected s ~equal:String.( = ))
   in
   (* everything expected must be entered *)
   let c2 =
     List.for_all expected ~f:(fun (s, _) ->
-        List.exists entries ~f:(fun (t, _) -> s = t))
+        List.Assoc.mem entries s ~equal:String.( = ))
   in
   if c1 && c2 then pure entries
   else
@@ -589,7 +589,7 @@ let create_cur_state_fields initcstate curcstate =
   (* Get only those fields from initcstate that are not in curcstate *)
   let filtered_init =
     List.filter initcstate ~f:(fun (s, _) ->
-        not (List.exists curcstate ~f:(fun (s1, _) -> s = s1)))
+        not (List.Assoc.mem curcstate s ~equal:String.( = )))
   in
   (* Combine filtered list and curcstate *)
   pure (filtered_init @ curcstate)
@@ -651,19 +651,16 @@ let check_message_entries cparams_o entries =
   let tparams = CU.append_implict_comp_params cparams_o in
   (* There as an entry for each parameter *)
   let valid_entries =
-    List.for_all tparams ~f:(fun p ->
-        List.exists entries ~f:(fun e -> fst e = get_id (fst p)))
+    List.for_all tparams ~f:(fun (s, _) ->
+        List.Assoc.mem entries (get_id s) ~equal:String.( = ))
   in
   (* There is a parameter for each entry *)
   let valid_params =
     List.for_all entries ~f:(fun (s, _) ->
-        List.exists tparams ~f:(fun (i, _) -> s = get_id i))
+        List.exists tparams ~f:(fun (i, _) -> String.(s = get_id i)))
   in
   (* Each entry name is unique *)
-  let uniq_entries =
-    List.for_all entries ~f:(fun e ->
-        List.count entries ~f:(fun e' -> fst e = fst e') = 1)
-  in
+  let uniq_entries = not @@ List.contains_dup entries ~compare:(fun (s, _) (t, _) -> String.compare s t) in
   if not (valid_entries && uniq_entries && valid_params) then
     fail0
     @@ sprintf

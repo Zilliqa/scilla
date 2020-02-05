@@ -155,10 +155,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let to_string_elab _ ts =
       match ts with
-      | [ t ]
-        when is_int_type t || is_uint_type t || is_bystrx_type t
-             || t = bystr_typ ->
-          elab_tfun_with_args_no_gas to_string_type ts
+      | [ PrimType pt ] ->
+          (match pt with
+           | Int_typ _ | Uint_typ _ | Bystrx_typ _ | Bystr_typ ->
+               elab_tfun_with_args_no_gas to_string_type ts
+           | _ -> fail0 "Failed to elaborate")
       | _ -> fail0 "Failed to elaborate"
 
     let to_string ls _ =
@@ -211,17 +212,13 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let binop_elab t ts =
       match ts with
-      | [ i1; i2 ] when i1 = i2 && is_int_type i1 ->
+      | [ i1; i2 ] when [%equal: typ] i1 i2 && is_int_type i1 ->
           elab_tfun_with_args_no_gas t [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
     let eq ls _ =
       match ls with
-      | [ (IntLit (Int32L _) as x); (IntLit (Int32L _) as y) ]
-      | [ (IntLit (Int64L _) as x); (IntLit (Int64L _) as y) ]
-      | [ (IntLit (Int128L _) as x); (IntLit (Int128L _) as y) ]
-      | [ (IntLit (Int256L _) as x); (IntLit (Int256L _) as y) ] ->
-          pure @@ to_Bool (x = y)
+      | [ IntLit x; IntLit y ] -> pure @@ to_Bool ([%equal: int_lit] x y)
       | _ -> builtin_fail "Int.eq: unsupported types" ls
 
     let add ls _ =
@@ -419,17 +416,13 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let binop_elab sc ts =
       match ts with
-      | [ i1; i2 ] when i1 = i2 && is_uint_type i1 ->
+      | [ i1; i2 ] when [%equal: typ] i1 i2 && is_uint_type i1 ->
           elab_tfun_with_args_no_gas sc [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
     let eq ls _ =
       match ls with
-      | [ (UintLit (Uint32L _) as x); (UintLit (Uint32L _) as y) ]
-      | [ (UintLit (Uint64L _) as x); (UintLit (Uint64L _) as y) ]
-      | [ (UintLit (Uint128L _) as x); (UintLit (Uint128L _) as y) ]
-      | [ (UintLit (Uint256L _) as x); (UintLit (Uint256L _) as y) ] ->
-          pure @@ to_Bool (x = y)
+      | [ UintLit x; UintLit y ] -> pure @@ to_Bool ([%equal: uint_lit] x y)
       | _ -> builtin_fail "Uint.eq: unsupported types" ls
 
     let add ls _ =

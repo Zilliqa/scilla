@@ -15,12 +15,14 @@
   You should have received a copy of the GNU General Public License along with
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
+open Result.Let_syntax
 open TypeUtil
 open Syntax
 open ErrorUtils
 open MonadUtil
 open ContractUtil.MessagePayload
-open Core_kernel.Result.Let_syntax
 
 module ScillaSanityChecker
     (SR : Rep) (ER : sig
@@ -110,11 +112,11 @@ struct
 
       (* Either "_tag" or "_eventname" must be present. *)
       let e =
-        if List.exists (fun (s, _) -> s = tag_label) msg then
+        if List.Assoc.mem msg tag_label ~equal:String.( = ) then
           (* This is a "send" Message. Ensure "_amount" and "_recipient" provided. *)
           if
-            List.exists (fun (s, _) -> s = amount_label) msg
-            && List.exists (fun (s, _) -> s = recipient_label) msg
+            List.Assoc.mem msg amount_label ~equal:String.( = )
+            && List.Assoc.mem msg recipient_label ~equal:String.( = )
           then e
           else
             e
@@ -139,9 +141,8 @@ struct
       List.fold_left
         (fun e c ->
           match
-            List.find_opt
-              (fun (s, _) -> get_id s = amount_label || get_id s = sender_label)
-              c.comp_params
+            List.find c.comp_params ~f:(fun (s, _) ->
+                String.(get_id s = amount_label || get_id s = sender_label))
           with
           | Some (s, _) ->
               e
@@ -158,12 +159,12 @@ struct
     (* Contract parameters cannot have names of implicit ones. *)
     let e =
       match
-        List.find_opt
-          (fun (s, _) ->
-            get_id s = ContractUtil.creation_block_label
-            || get_id s = ContractUtil.scilla_version_label
-            || get_id s = ContractUtil.this_address_label)
-          contr.cparams
+        List.find contr.cparams ~f:(fun (s, _) ->
+            let open ContractUtil in
+            let open String in
+            get_id s = creation_block_label
+            || get_id s = scilla_version_label
+            || get_id s = this_address_label)
       with
       | Some (s, _) ->
           e

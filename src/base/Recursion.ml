@@ -217,7 +217,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     in
     let%bind recursion_ccomps_rev, _ =
       foldM ccomps ~init:([], []) ~f:(fun (acc_comps, acc_procs) comp ->
-          let is_proc_in_scope p = List.exists acc_procs ~f:(fun x -> p = x) in
+          let is_proc_in_scope p = List.mem acc_procs p ~equal:String.( = ) in
           let%bind checked_component =
             recursion_component is_adt_in_scope is_adt_ctr_in_scope
               is_proc_in_scope comp

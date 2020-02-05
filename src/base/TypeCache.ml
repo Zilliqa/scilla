@@ -162,10 +162,8 @@ struct
           | LibVar (lname, _, _) -> `Fst (get_id lname)
           | LibTyp (tname, _) -> `Snd (get_id tname))
     in
-    (* OCaml's List.mem is not according to online docs. Why? *)
-    let list_mem l a = List.exists l ~f:(fun b -> b = a) in
     let lib_entries =
-      List.filter ~f:(fun e -> list_mem entry_names (fst e)) (TEnv.to_list tenv)
+      List.filter ~f:(fun e -> List.mem entry_names (fst e) ~equal:String.( = )) (TEnv.to_list tenv)
     in
 
     (* TODO: Handle typ_names *)
