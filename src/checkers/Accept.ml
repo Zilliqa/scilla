@@ -25,6 +25,8 @@
    statements.  There might be valid reasons for writing such contracts,
    so again we only generate warnings not errors. *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open TypeUtil
 open ErrorUtils
 open Syntax

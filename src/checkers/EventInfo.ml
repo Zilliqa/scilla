@@ -1,8 +1,10 @@
+open Core_kernel
+open! Int.Replace_polymorphic_compare
+open Result.Let_syntax
 open TypeUtil
 open Syntax
 open ContractUtil.MessagePayload
 open MonadUtil
-open Core_kernel.Result.Let_syntax
 
 module ScillaEventInfo
     (SR : Rep) (ER : sig

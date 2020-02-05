@@ -16,10 +16,10 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
-open ErrorUtils
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+open Syntax
+open ErrorUtils
 open Yojson
 open ContractUtil.MessagePayload
 open Datatypes

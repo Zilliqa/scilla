@@ -22,6 +22,7 @@
  * before the contract is executed. *)
 
 open Core
+open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open MonadUtil
 open StateIPCIdl

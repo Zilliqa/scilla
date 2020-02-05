@@ -16,13 +16,13 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Syntax
 open FrontEndParser
 open RunnerUtil
 open GlobalConfig
 open PrettyPrinters
-open Core_kernel
-open! Int.Replace_polymorphic_compare
 module PSRep = ParserRep
 module PERep = ParserRep
 module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)

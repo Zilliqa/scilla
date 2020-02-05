@@ -16,6 +16,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open OUnit2
 
 (* PART A: Test literal type checks. The only way to have malformed

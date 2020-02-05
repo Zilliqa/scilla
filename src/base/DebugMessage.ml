@@ -16,9 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open GlobalConfig
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+open GlobalConfig
 
 (* Prints to log file *)
 let plog msg =

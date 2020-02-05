@@ -1,5 +1,7 @@
+open Core_kernel
+open! Int.Replace_polymorphic_compare
+open Result
 open OUnit2
-open Core_kernel.Result
 
 let t1 =
   test_case (fun _ ->

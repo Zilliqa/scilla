@@ -1,3 +1,5 @@
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Idl
 
 (* This error matches for the error returned by jsonrpccpp *)

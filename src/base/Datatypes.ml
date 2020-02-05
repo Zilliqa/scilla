@@ -16,9 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+open Syntax
 open MonadUtil
 open Result.Let_syntax
 

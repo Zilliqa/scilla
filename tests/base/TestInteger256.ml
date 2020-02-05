@@ -16,6 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
+
 let uint256_max_str =
   "115792089237316195423570985008687907853269984665640564039457584007913129639935"
 
