@@ -150,13 +150,15 @@ let hash_length = 32
 open Integer256
 
 let equal_int128 x y = Int128.compare x y = 0
+
 let equal_int256 x y = Int256.compare x y = 0
 
 type int_lit =
   | Int32L of int32
   | Int64L of int64
   | Int128L of int128
-  | Int256L of int256 [@@deriving equal]
+  | Int256L of int256
+[@@deriving equal]
 
 let sexp_of_int_lit = function
   | Int32L i' -> Sexp.Atom ("Int32 " ^ Int32.to_string i')
@@ -167,15 +169,19 @@ let sexp_of_int_lit = function
 let int_lit_of_sexp _ = failwith "int_lit_of_sexp is not implemented"
 
 let equal_uint32 x y = Uint32.compare x y = 0
+
 let equal_uint64 x y = Uint64.compare x y = 0
+
 let equal_uint128 x y = Uint128.compare x y = 0
+
 let equal_uint256 x y = Uint256.compare x y = 0
 
 type uint_lit =
   | Uint32L of uint32
   | Uint64L of uint64
   | Uint128L of uint128
-  | Uint256L of uint256 [@@deriving equal]
+  | Uint256L of uint256
+[@@deriving equal]
 
 let sexp_of_uint_lit = function
   | Uint32L i' -> Sexp.Atom ("Uint32 " ^ Uint32.to_string i')

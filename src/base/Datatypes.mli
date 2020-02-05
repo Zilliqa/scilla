@@ -28,14 +28,16 @@ type constructor = {
   cname : string;
   (* constructor name *)
   arity : int; (* How many arguments it takes *)
-} [@@deriving equal]
+}
+[@@deriving equal]
 
 type adt = {
   tname : string;
   tparams : string list;
   tconstr : constructor list;
   tmap : (string * typ list) list;
-} [@@deriving equal]
+}
+[@@deriving equal]
 
 module DataTypeDictionary : sig
   (* Hiding the actual data type dicionary *)

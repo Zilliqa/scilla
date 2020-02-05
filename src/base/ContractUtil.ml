@@ -47,7 +47,12 @@ module MessagePayload = struct
         fail0
         @@ sprintf "No field \"%s\" in message [%s]." lab (pp_literal_map es)
     | Some p ->
-        (f p) |> Option.value ~default:(fail0 @@ sprintf "Wrong value of the entry \"%s\": %s." lab (pp_literal p))
+        f p
+        |> Option.value
+             ~default:
+               ( fail0
+               @@ sprintf "Wrong value of the entry \"%s\": %s." lab
+                    (pp_literal p) )
 
   let get_tag =
     get_value_for_entry tag_label (function

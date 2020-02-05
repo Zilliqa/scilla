@@ -92,14 +92,29 @@ let gen_parser (t' : typ) : Basic.t -> literal =
         | Bnum_typ -> fun j -> BNum (Util.to_string j)
         | Bystr_typ -> fun j -> ByStr (Bystr.parse_hex (Util.to_string j))
         | Bystrx_typ _ -> fun j -> ByStrX (Bystrx.parse_hex (Util.to_string j))
-        | Int_typ Bits32 -> fun j -> IntLit (Int32L (Int32.of_string (Util.to_string j)))
-        | Int_typ Bits64 -> fun j -> IntLit (Int64L (Int64.of_string (Util.to_string j)))
-        | Int_typ Bits128 -> fun j -> IntLit (Int128L (Stdint.Int128.of_string (Util.to_string j)))
-        | Int_typ Bits256 -> fun j -> IntLit (Int256L (Integer256.Int256.of_string (Util.to_string j)))
-        | Uint_typ Bits32 -> fun j -> UintLit (Uint32L (Stdint.Uint32.of_string (Util.to_string j)))
-        | Uint_typ Bits64 -> fun j -> UintLit (Uint64L (Stdint.Uint64.of_string (Util.to_string j)))
-        | Uint_typ Bits128 -> fun j -> UintLit (Uint128L (Stdint.Uint128.of_string (Util.to_string j)))
-        | Uint_typ Bits256 -> fun j -> UintLit (Uint256L (Integer256.Uint256.of_string (Util.to_string j)))
+        | Int_typ Bits32 ->
+            fun j -> IntLit (Int32L (Int32.of_string (Util.to_string j)))
+        | Int_typ Bits64 ->
+            fun j -> IntLit (Int64L (Int64.of_string (Util.to_string j)))
+        | Int_typ Bits128 ->
+            fun j ->
+              IntLit (Int128L (Stdint.Int128.of_string (Util.to_string j)))
+        | Int_typ Bits256 ->
+            fun j ->
+              IntLit (Int256L (Integer256.Int256.of_string (Util.to_string j)))
+        | Uint_typ Bits32 ->
+            fun j ->
+              UintLit (Uint32L (Stdint.Uint32.of_string (Util.to_string j)))
+        | Uint_typ Bits64 ->
+            fun j ->
+              UintLit (Uint64L (Stdint.Uint64.of_string (Util.to_string j)))
+        | Uint_typ Bits128 ->
+            fun j ->
+              UintLit (Uint128L (Stdint.Uint128.of_string (Util.to_string j)))
+        | Uint_typ Bits256 ->
+            fun j ->
+              UintLit
+                (Uint256L (Integer256.Uint256.of_string (Util.to_string j)))
         | _ -> raise (mk_invalid_json "Invalid primitive type") )
     | MapType (kt, vt) -> (
         let kp = recurser kt in

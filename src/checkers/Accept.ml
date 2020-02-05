@@ -68,7 +68,8 @@ struct
          maybe some but not all of the branches will include accepts.
          So we need an entry on the seen list for each path, because
          we don't know what will happen on each in advance. *)
-      List.fold_left stmts ~init:seen ~f:(fun (seen2 : loc list list) (stmt : stmt_annot) ->
+      List.fold_left stmts ~init:seen
+        ~f:(fun (seen2 : loc list list) (stmt : stmt_annot) ->
           let loc = stmt_loc stmt in
           match fst stmt with
           | AcceptPayment ->
@@ -81,7 +82,8 @@ struct
                   which already reached this point, so walk each
                   branch and build all the results into a new list.
               *)
-              List.concat_map branches ~f:(fun (_pattern, branchstmts) -> walk seen2 branchstmts)
+              List.concat_map branches ~f:(fun (_pattern, branchstmts) ->
+                  walk seen2 branchstmts)
           | _ -> seen2)
     in
     walk [ [] ] stmts
@@ -102,7 +104,7 @@ struct
               "transition %s had a potential code path with duplicate accept \
                statements:\n"
               (get_id transition.comp_name)
-            ^ String.concat ~sep:""
+          ^ String.concat ~sep:""
               (List.map group ~f:(fun loc ->
                    sprintf "  Accept at %s\n" (get_loc_str loc))) )
           warning_level_duplicate_accepts (List.hd_exn group)
@@ -121,8 +123,7 @@ struct
 
     if List.for_all all_accept_groups ~f:List.is_empty then
       warn0
-        (sprintf
-           "No transition in contract %s contains an accept statement\n"
+        (sprintf "No transition in contract %s contains an accept statement\n"
            (get_id contr.cname))
         warning_level_missing_accept
 

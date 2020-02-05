@@ -290,7 +290,8 @@ module ContractState = struct
   let get_init_extlibs filename =
     let allf = get_json_data filename in
     let extlibs =
-      List.filter allf ~f:(fun (name, _) -> String.(name = ContractUtil.extlibs_label))
+      List.filter allf ~f:(fun (name, _) ->
+          String.(name = ContractUtil.extlibs_label))
     in
     match extlibs with
     | [] -> []
@@ -354,14 +355,17 @@ module Message = struct
   let message_to_json message =
     (* extract out "_tag", "_amount", "_accepted" and "_recipient" parts of the message *)
     let taglit = List.Assoc.find_exn message tag_label ~equal:String.( = ) in
-    let amountlit = List.Assoc.find_exn message amount_label ~equal:String.( = ) in
+    let amountlit =
+      List.Assoc.find_exn message amount_label ~equal:String.( = )
+    in
     (* message_to_json may be used to print both output and input message. Choose label accordingly. *)
     let toORfrom, tofromlit =
       List.find_exn message ~f:(fun (x, _) ->
           String.(x = recipient_label || x = sender_label))
     in
     let tofrom_label =
-      if String.(toORfrom = recipient_label) then recipient_label else sender_label
+      if String.(toORfrom = recipient_label) then recipient_label
+      else sender_label
     in
     let tags = get_string_literal taglit in
     let amounts = get_uint_literal amountlit in
@@ -369,7 +373,8 @@ module Message = struct
     (* Get a list without any of these components *)
     let filtered_list =
       List.filter message ~f:(fun (x, _) ->
-          String.(not (x = tag_label || x = amount_label || x = recipient_label)))
+          String.(
+            not (x = tag_label || x = amount_label || x = recipient_label)))
     in
     `Assoc
       [

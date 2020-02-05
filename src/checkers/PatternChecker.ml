@@ -51,10 +51,9 @@ struct
       match dsc with
       | Pos (dsc_c_name, _) -> if String.(c_name = dsc_c_name) then Yes else No
       | Neg c_names ->
-          if List.mem c_names c_name ~equal:String.( = ) then
-            No
-          else
-            if List.length c_names = span - 1 then Yes else Maybe
+          if List.mem c_names c_name ~equal:String.( = ) then No
+          else if List.length c_names = span - 1 then Yes
+          else Maybe
     in
     let rec traverse_clauses dsc i rest_clauses =
       match rest_clauses with

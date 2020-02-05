@@ -366,7 +366,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         in
         let payload_type fld pld remaining_gas =
           let check_field_type seen_type =
-            match List.Assoc.find CU.msg_mandatory_field_types fld ~equal:String.( = ) with
+            match
+              List.Assoc.find CU.msg_mandatory_field_types fld
+                ~equal:String.( = )
+            with
             | Some fld_t when not ([%equal: typ] fld_t seen_type) ->
                 fail1
                   (sprintf
@@ -540,8 +543,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  (TypedSyntax.Load (typed_x, typed_f), rep)
                  checked_stmts remaining_gas
         | Store (f, r) ->
-            if List.mem ~equal:String.( = ) no_store_fields (get_id f)
-            then
+            if List.mem ~equal:String.( = ) no_store_fields (get_id f) then
               wrap_type_serr stmt
                 (Error
                    (mk_type_error0
@@ -871,7 +873,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | CompTrans -> procedures
       | CompProc ->
           let proc_sig = List.map comp_params ~f:snd in
-          List.Assoc.add procedures ~equal:String.( = ) (get_id comp_name) proc_sig
+          List.Assoc.add procedures ~equal:String.( = ) (get_id comp_name)
+            proc_sig
     in
     pure
     @@ ( ( {

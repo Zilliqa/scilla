@@ -349,5 +349,4 @@ let () =
   else if check_extension cli.input_file file_extn_contract then
     (* Check contract modules. *)
     check_cmodule cli
-  else
-    fatal_error (mk_error0 (sprintf "Unknown file extension\n"))
+  else fatal_error (mk_error0 (sprintf "Unknown file extension\n"))

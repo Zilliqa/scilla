@@ -337,7 +337,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       else
         (* Check if the name is a builtin ADT *)
         let%bind _ =
-          DataTypeDictionary.lookup_name ~sloc:(get_rep adt_name) (get_id adt_name)
+          DataTypeDictionary.lookup_name ~sloc:(get_rep adt_name)
+            (get_id adt_name)
         in
         pure ()
     in

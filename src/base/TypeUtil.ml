@@ -194,14 +194,13 @@ functor
           | PrimType _ | Unit -> pure ()
           | TypeVar a ->
               (* Check if bound locally. *)
-              if List.mem tb a ~equal:String.( = )
-              then pure ()
-              (* Check if bound in environment. *)
+              if List.mem tb a ~equal:String.( = ) then pure ()
+                (* Check if bound in environment. *)
               else if List.Assoc.mem (tvars tenv) a ~equal:String.( = ) then
                 pure ()
               else
-                fail0 @@ sprintf "Unbound type variable %s in type %s" a
-                  (pp_typ t)
+                fail0
+                @@ sprintf "Unbound type variable %s in type %s" a (pp_typ t)
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
         in
         is_wf_typ' t []
@@ -332,13 +331,14 @@ module TypeUtilities = struct
         not @@ List.is_empty seen_adts
     | PrimType _ ->
         (* Messages and Events are not serialisable in terms of contract parameters *)
-        PrimTypes.(not @@ [%equal: typ] t msg_typ || [%equal: typ] t event_typ)
-    | ADT (tname, ts) ->
-       if List.mem seen_adts tname ~equal:equal_id then
-         true (* Inductive ADT - ignore this branch *)
-       else
-         (* Check that ADT is serializable *)
-         (match
+        PrimTypes.(
+          (not @@ [%equal: typ] t msg_typ) || [%equal: typ] t event_typ)
+    | ADT (tname, ts) -> (
+        if List.mem seen_adts tname ~equal:equal_id then true
+          (* Inductive ADT - ignore this branch *)
+        else
+          (* Check that ADT is serializable *)
+          match
             DataTypeDictionary.lookup_name ~sloc:(get_rep tname) (get_id tname)
           with
           | Error _ -> false (* Handle errors outside *)
@@ -346,12 +346,12 @@ module TypeUtilities = struct
               let adt_serializable =
                 List.for_all adt.tmap ~f:(fun (_, carg_list) ->
                     List.for_all carg_list ~f:(fun carg ->
-                            is_serializable_storable_helper accept_maps carg
-                              (tname :: seen_adts)))
+                        is_serializable_storable_helper accept_maps carg
+                          (tname :: seen_adts)))
               in
               adt_serializable
               && List.for_all ts ~f:(fun t ->
-                  is_serializable_storable_helper accept_maps t seen_adts))
+                     is_serializable_storable_helper accept_maps t seen_adts) )
 
   let is_serializable_type t = is_serializable_storable_helper false t []
 
@@ -359,12 +359,12 @@ module TypeUtilities = struct
 
   let get_msgevnt_type m =
     let open ContractUtil.MessagePayload in
-    if List.Assoc.mem m tag_label ~equal:String.( = )
-    then pure PrimTypes.msg_typ
-    else if List.Assoc.mem m eventname_label ~equal:String.( = )
-    then pure PrimTypes.event_typ
-    else if List.Assoc.mem m exception_label ~equal:String.( = )
-    then pure PrimTypes.exception_typ
+    if List.Assoc.mem m tag_label ~equal:String.( = ) then
+      pure PrimTypes.msg_typ
+    else if List.Assoc.mem m eventname_label ~equal:String.( = ) then
+      pure PrimTypes.event_typ
+    else if List.Assoc.mem m exception_label ~equal:String.( = ) then
+      pure PrimTypes.exception_typ
     else fail0 "Invalid message construct. Not any of send, event or exception."
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
@@ -556,8 +556,7 @@ module TypeUtilities = struct
     let%bind adt', _ = lookup_constructor cn in
     let seq a b = if String.(a = b) then 0 else 1 in
     let taken =
-      List.concat_map targs ~f:free_tvars
-      |> List.dedup_and_sort ~compare:seq
+      List.concat_map targs ~f:free_tvars |> List.dedup_and_sort ~compare:seq
     in
     let adt = refresh_adt adt' taken in
     let plen = List.length adt.tparams in
@@ -710,9 +709,7 @@ module TypeUtilities = struct
           let res = ADT (asId tname, ts) in
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
-          let args_valid =
-            List.for_all2_exn tmap arg_typs ~f:[%equal: typ]
-          in
+          let args_valid = List.for_all2_exn tmap arg_typs ~f:[%equal: typ] in
           if not args_valid then
             fail0
             @@ sprintf "Malformed ADT %s. Arguments do not match expected types"

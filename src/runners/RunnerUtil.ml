@@ -115,7 +115,9 @@ let eliminate_namespaces lib_tree ns_tree =
             | Let (i, t, elhs, erhs) ->
                 let elhs' = rename_in_expr elhs env in
                 (* "i" get's a local binding now, don't rename it in rhs. *)
-                let env' = List.Assoc.remove env (get_id i) ~equal:String.( = ) in
+                let env' =
+                  List.Assoc.remove env (get_id i) ~equal:String.( = )
+                in
                 let t' = Option.map t ~f:(fun t -> rename_in_type t env) in
                 let erhs' = rename_in_expr erhs env' in
                 (Let (i, t', elhs', erhs'), eloc)
@@ -130,7 +132,9 @@ let eliminate_namespaces lib_tree ns_tree =
                 in
                 (Message spl', eloc)
             | Fun (i, t, exp) ->
-                let env' = List.Assoc.remove env (get_id i) ~equal:String.( = ) in
+                let env' =
+                  List.Assoc.remove env (get_id i) ~equal:String.( = )
+                in
                 let t' = rename_in_type t env' in
                 let exp' = rename_in_expr exp env' in
                 (Fun (i, t', exp'), eloc)
@@ -179,7 +183,9 @@ let eliminate_namespaces lib_tree ns_tree =
                 let tl' = List.map tl ~f:(fun t -> rename_in_type t env) in
                 (TApp (check_and_prefix_id env i, tl'), eloc)
             | Fixpoint (i, t, e) ->
-                let env' = List.Assoc.remove env (get_id i) ~equal:String.( = ) in
+                let env' =
+                  List.Assoc.remove env (get_id i) ~equal:String.( = )
+                in
                 let exp' = rename_in_expr e env' in
                 (Fixpoint (i, t, exp'), eloc)
           in
@@ -224,7 +230,8 @@ let eliminate_namespaces lib_tree ns_tree =
     let this_namespace = nsnode.nspace in
     let fullns =
       match this_namespace with
-      | Some i -> if String.is_empty outerns then get_id i else outerns ^ "." ^ get_id i
+      | Some i ->
+          if String.is_empty outerns then get_id i else outerns ^ "." ^ get_id i
       | None -> outerns
     in
     (* rename deps first *)

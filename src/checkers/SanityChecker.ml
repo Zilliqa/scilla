@@ -81,20 +81,20 @@ struct
     let e =
       e
       @ check_duplicate_ident ER.get_loc
-        (List.map contr.cfields ~f:(fun (i, _, _) -> i))
+          (List.map contr.cfields ~f:(fun (i, _, _) -> i))
     in
     (* No repeating component names. *)
     let e =
       e
       @ check_duplicate_ident SR.get_loc
-        (List.map contr.ccomps ~f:(fun c -> c.comp_name))
+          (List.map contr.ccomps ~f:(fun c -> c.comp_name))
     in
     (* No repeating component parameter names. *)
     let e =
       List.fold_left contr.ccomps ~init:e ~f:(fun e t ->
           e
           @ check_duplicate_ident ER.get_loc
-            (List.map t.comp_params ~f:(fun (i, _) -> i)))
+              (List.map t.comp_params ~f:(fun (i, _) -> i)))
     in
 
     (* Message literals must either be for "send" or "event" and well formed. *)
@@ -143,8 +143,8 @@ struct
           | Some (s, _) ->
               e
               @ mk_error1
-                  (sprintf
-                     "Parameter %s in %s %s cannot be explicit.\n" (get_id s)
+                  (sprintf "Parameter %s in %s %s cannot be explicit.\n"
+                     (get_id s)
                      (component_type_to_string c.comp_type)
                      (get_id c.comp_name))
                   (SR.get_loc @@ get_rep c.comp_name)
@@ -164,8 +164,7 @@ struct
       | Some (s, _) ->
           e
           @ mk_error1
-              (sprintf "Contract parameter %s cannot be explicit.\n"
-                 (get_id s))
+              (sprintf "Contract parameter %s cannot be explicit.\n" (get_id s))
               (ER.get_loc @@ get_rep s)
       | None -> e
     in
@@ -228,8 +227,7 @@ struct
       let rec outer_scope_iter = function
         | Wildcard -> ()
         | Binder i -> check_warn_redef cparams cfields pnames i
-        | Constructor (_, plist) ->
-            List.iter plist ~f:outer_scope_iter
+        | Constructor (_, plist) -> List.iter plist ~f:outer_scope_iter
       in
       outer_scope_iter pat;
       (* Check for shadowing of names within this pattern and warn that it is
@@ -304,13 +302,16 @@ struct
           cmod.contr.cfields
       in
 
-      let cfields = List.map cmod.contr.cfields ~f:(fun (f, _, _) -> get_id f) in
+      let cfields =
+        List.map cmod.contr.cfields ~f:(fun (f, _, _) -> get_id f)
+      in
 
       (* Go through each component. *)
       iterM
         ~f:(fun c ->
           (* 1. If a parameter name shadows one of cparams or cfields, warn. *)
-          List.iter c.comp_params ~f:(fun (p, _) -> check_warn_redef cparams cfields [] p);
+          List.iter c.comp_params ~f:(fun (p, _) ->
+              check_warn_redef cparams cfields [] p);
           let pnames = List.map c.comp_params ~f:(fun (p, _) -> get_id p) in
           (* Check for shadowing in statements. *)
           let rec stmt_iter stmts =

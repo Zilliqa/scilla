@@ -125,7 +125,8 @@ module MakeStateService () = struct
     | IPC socket_addr -> (
         let%bind tp = field_type fields fname in
         let%bind res = StateIPCClient.fetch ~socket_addr ~fname ~keys ~tp in
-        if not @@ List.is_empty keys then pure @@ (res, G_MapGet (List.length keys, res))
+        if not @@ List.is_empty keys then
+          pure @@ (res, G_MapGet (List.length keys, res))
         else
           match res with
           | None ->
@@ -222,7 +223,8 @@ module MakeStateService () = struct
         let%bind _ =
           StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp
         in
-        if not @@ List.is_empty keys then pure @@ G_MapUpdate (List.length keys, Some value)
+        if not @@ List.is_empty keys then
+          pure @@ G_MapUpdate (List.length keys, Some value)
         else pure @@ G_Store value
     | Local ->
         let%bind fields', g = update_local ~fname ~keys (Some value) fields in

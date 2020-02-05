@@ -180,7 +180,8 @@ let () =
   let is_deployment = String.is_empty cli.input_message in
   let is_ipc = not @@ String.is_empty cli.ipc_address in
   let is_library =
-    FilePath.check_extension cli.input GlobalConfig.StdlibTracker.file_extn_library
+    FilePath.check_extension cli.input
+      GlobalConfig.StdlibTracker.file_extn_library
   in
   let gas_remaining =
     (* Subtract gas based on (contract+init) size / message size. *)

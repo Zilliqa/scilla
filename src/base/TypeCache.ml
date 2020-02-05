@@ -163,7 +163,9 @@ struct
           | LibTyp (tname, _) -> `Snd (get_id tname))
     in
     let lib_entries =
-      List.filter ~f:(fun e -> List.mem entry_names (fst e) ~equal:String.( = )) (TEnv.to_list tenv)
+      List.filter
+        ~f:(fun e -> List.mem entry_names (fst e) ~equal:String.( = ))
+        (TEnv.to_list tenv)
     in
 
     (* TODO: Handle typ_names *)

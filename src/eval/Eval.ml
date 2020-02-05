@@ -50,7 +50,9 @@ let pp_result r exclude_names =
   match r with
   | Error (s, _) -> sprint_scilla_error_list s
   | Ok ((e, env), _) ->
-      let filter_prelude (k, _) = not @@ List.mem enames k ~equal:String.( = ) in
+      let filter_prelude (k, _) =
+        not @@ List.mem enames k ~equal:String.( = )
+      in
       sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
 
 (* Makes sure that the literal has no closures in it *)
@@ -522,7 +524,8 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
           tryM
             ~f:(fun (ps, pt) ->
               let%bind at = fromR @@ literal_type (snd a) in
-              if String.(get_id ps = fst a) && [%equal: typ] pt at then pure true
+              if String.(get_id ps = fst a) && [%equal: typ] pt at then
+                pure true
               else fail0 "")
             cparams ~msg:emsg
         in
@@ -571,7 +574,8 @@ let create_cur_state_fields initcstate curcstate =
             ~f:(fun (t, li) ->
               let%bind t1 = fromR @@ literal_type lc in
               let%bind t2 = fromR @@ literal_type li in
-              if String.(s = t) && [%equal: typ] t1 t2 then pure true else fail0 "")
+              if String.(s = t) && [%equal: typ] t1 t2 then pure true
+              else fail0 "")
             initcstate ~msg:emsg
         in
         pure ex)
@@ -660,7 +664,11 @@ let check_message_entries cparams_o entries =
         List.exists tparams ~f:(fun (i, _) -> String.(s = get_id i)))
   in
   (* Each entry name is unique *)
-  let uniq_entries = not @@ List.contains_dup entries ~compare:(fun (s, _) (t, _) -> String.compare s t) in
+  let uniq_entries =
+    not
+    @@ List.contains_dup entries ~compare:(fun (s, _) (t, _) ->
+           String.compare s t)
+  in
   if not (valid_entries && uniq_entries && valid_params) then
     fail0
     @@ sprintf

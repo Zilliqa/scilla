@@ -152,8 +152,9 @@ let sort_mapkeys goldj outj =
            in
            assert_bool
              "sort_mapkeys: order of gold states and out states mismatch"
-             String.( vname |> json_to_string
-             = (json_member "vname" outstate |> json_to_string) );
+             String.(
+               vname |> json_to_string
+               = (json_member "vname" outstate |> json_to_string));
            let outval =
              map_sorter
                (json_member "value" goldstate)
@@ -193,7 +194,8 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
         StateIPCTestClient.update ~fname ~value);
   (* Find the balance from state and return it. *)
   match
-    List.find state ~f:(fun (fname, _, _) -> String.(fname = ContractUtil.balance_label))
+    List.find state ~f:(fun (fname, _, _) ->
+        String.(fname = ContractUtil.balance_label))
   with
   | Some (_, _, balpb) -> (
       match balpb with

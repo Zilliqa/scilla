@@ -286,7 +286,8 @@ module Configuration = struct
   let lookup_procedure st proc_name =
     let rec finder procs =
       match procs with
-      | p :: p_rest when String.(get_id p.comp_name = proc_name) -> pure (p, p_rest)
+      | p :: p_rest when String.(get_id p.comp_name = proc_name) ->
+          pure (p, p_rest)
       | _ :: p_rest -> finder p_rest
       | [] -> fail0 @@ sprintf "Procedure %s not found." proc_name
     in
@@ -317,8 +318,14 @@ module Configuration = struct
         (* All outgoing messages must have certain mandatory fields *)
         let tag_found = List.Assoc.mem m tag_label ~equal:String.( = ) in
         let amount_found = List.Assoc.mem m amount_label ~equal:String.( = ) in
-        let recipient_found = List.Assoc.mem m recipient_label ~equal:String.( = ) in
-        let uniq_entries = not @@ List.contains_dup m ~compare:(fun (s, _) (t, _) -> String.compare s t) in
+        let recipient_found =
+          List.Assoc.mem m recipient_label ~equal:String.( = )
+        in
+        let uniq_entries =
+          not
+          @@ List.contains_dup m ~compare:(fun (s, _) (t, _) ->
+                 String.compare s t)
+        in
         if tag_found && amount_found && recipient_found && uniq_entries then
           pure m'
         else
@@ -347,7 +354,11 @@ module Configuration = struct
         let eventname_found =
           List.Assoc.mem m eventname_label ~equal:String.( = )
         in
-        let uniq_entries = not @@ List.contains_dup m ~compare:(fun (s, _) (t, _) -> String.compare s t) in
+        let uniq_entries =
+          not
+          @@ List.contains_dup m ~compare:(fun (s, _) (t, _) ->
+                 String.compare s t)
+        in
         if eventname_found && uniq_entries then pure m'
         else
           fail0

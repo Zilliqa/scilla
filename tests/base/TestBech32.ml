@@ -35,7 +35,8 @@ let test1 =
       match decode_bech32_addr ~prefix:"zil" ~addr:bech32_addr with
       | Some b ->
           assert_bool "Bech32 address decode failed"
-            (String.(b = decoded_gold) && is_valid_bech32 ~prefix:"zil" ~addr:bech32_addr)
+            ( String.(b = decoded_gold)
+            && is_valid_bech32 ~prefix:"zil" ~addr:bech32_addr )
       | None -> assert_failure "Bech32 address validity check failed")
 
 let test2 =
@@ -47,7 +48,8 @@ let test2 =
       match decode_bech32_addr ~prefix:"zil" ~addr:bech32_addr with
       | Some b ->
           assert_bool "Bech32 address decode failed"
-            (String.(b = decoded_gold) && is_valid_bech32 ~prefix:"zil" ~addr:bech32_addr)
+            ( String.(b = decoded_gold)
+            && is_valid_bech32 ~prefix:"zil" ~addr:bech32_addr )
       | None -> assert_failure "Bech32 address validity check failed")
 
 let test3 =

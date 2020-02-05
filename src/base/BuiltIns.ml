@@ -155,11 +155,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let to_string_elab _ ts =
       match ts with
-      | [ PrimType pt ] ->
-          (match pt with
-           | Int_typ _ | Uint_typ _ | Bystrx_typ _ | Bystr_typ ->
-               elab_tfun_with_args_no_gas to_string_type ts
-           | _ -> fail0 "Failed to elaborate")
+      | [ PrimType pt ] -> (
+          match pt with
+          | Int_typ _ | Uint_typ _ | Bystrx_typ _ | Bystr_typ ->
+              elab_tfun_with_args_no_gas to_string_type ts
+          | _ -> fail0 "Failed to elaborate" )
       | _ -> fail0 "Failed to elaborate"
 
     let to_string ls _ =
@@ -874,7 +874,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
             fail0 "Only zil and tzil bech32 addresses are supported"
           else
             match
-              Bech32.encode_bech32_addr ~prefix:prfx ~addr:(Bystrx.to_raw_bytes addr)
+              Bech32.encode_bech32_addr ~prefix:prfx
+                ~addr:(Bystrx.to_raw_bytes addr)
             with
             | Some bech32 -> some_lit @@ StringLit bech32
             | None -> fail0 "bech32 encoding failed" )

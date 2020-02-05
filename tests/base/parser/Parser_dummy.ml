@@ -27,7 +27,9 @@ let raise_if_error = function Ok _ -> () | Error e -> fatal_error e
 
 let () =
   let r_input_file = ref "" in
-  let usage = "Usage:\n" ^ Sys.argv.(0) ^ " input.scilla (or input.scillib)\n" in
+  let usage =
+    "Usage:\n" ^ Sys.argv.(0) ^ " input.scilla (or input.scillib)\n"
+  in
   let anon_handler s = r_input_file := s in
   let () = Arg.parse [] anon_handler usage in
   let input_file = !r_input_file in

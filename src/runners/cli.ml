@@ -175,7 +175,9 @@ let parse () =
       ( "-libdir",
         Arg.String
           (fun x ->
-            let xl = if String.is_empty x then [] else Str.split (Str.regexp "[;:]") x in
+            let xl =
+              if String.is_empty x then [] else Str.split (Str.regexp "[;:]") x
+            in
             d_libs := !d_libs @ xl),
         "Path(s) to directory containing libraries separated by ':' (';' on \
          windows)" );
