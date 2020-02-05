@@ -323,45 +323,35 @@ module TypeUtilities = struct
     match t with
     | FunType _ | PolyFun _ | Unit -> false
     | MapType (kt, vt) ->
-        if accept_maps then
-          is_serializable_storable_helper accept_maps kt seen_adts
-          && is_serializable_storable_helper accept_maps vt seen_adts
-        else false
-    | TypeVar _ -> (
+        accept_maps
+        && is_serializable_storable_helper accept_maps kt seen_adts
+        && is_serializable_storable_helper accept_maps vt seen_adts
+    | TypeVar _ ->
         (* If we are inside an ADT, then type variable
            instantiations are handled outside *)
-        match seen_adts with
-        | [] -> false
-        | _ -> true )
+        not @@ List.is_empty seen_adts
     | PrimType _ ->
         (* Messages and Events are not serialisable in terms of contract parameters *)
         PrimTypes.(not @@ [%equal: typ] t msg_typ || [%equal: typ] t event_typ)
-    | ADT (tname, ts) -> (
-        match List.findi ~f:(fun _ seen -> seen = tname) seen_adts with
-        | Some _ -> true (* Inductive ADT - ignore this branch *)
-        | None -> (
-            (* Check that ADT is serializable *)
-            match
-              DataTypeDictionary.lookup_name ~sloc:(get_rep tname)
-                (get_id tname)
-            with
-            | Error _ -> false (* Handle errors outside *)
-            | Ok adt ->
-                let adt_serializable =
-                  List.for_all
-                    ~f:(fun (_, carg_list) ->
-                      List.for_all
-                        ~f:(fun carg ->
-                          is_serializable_storable_helper accept_maps carg
-                            (tname :: seen_adts))
-                        carg_list)
-                    adt.tmap
-                in
-                adt_serializable
-                && List.for_all
-                     ~f:(fun t ->
-                       is_serializable_storable_helper accept_maps t seen_adts)
-                     ts ) )
+    | ADT (tname, ts) ->
+       if List.mem seen_adts tname ~equal:equal_id then
+         true (* Inductive ADT - ignore this branch *)
+       else
+         (* Check that ADT is serializable *)
+         (match
+            DataTypeDictionary.lookup_name ~sloc:(get_rep tname) (get_id tname)
+          with
+          | Error _ -> false (* Handle errors outside *)
+          | Ok adt ->
+              let adt_serializable =
+                List.for_all adt.tmap ~f:(fun (_, carg_list) ->
+                    List.for_all carg_list ~f:(fun carg ->
+                            is_serializable_storable_helper accept_maps carg
+                              (tname :: seen_adts)))
+              in
+              adt_serializable
+              && List.for_all ts ~f:(fun t ->
+                  is_serializable_storable_helper accept_maps t seen_adts))
 
   let is_serializable_type t = is_serializable_storable_helper false t []
 
@@ -574,9 +564,9 @@ module TypeUtilities = struct
     let alen = List.length targs in
     let%bind _ = validate_param_length cn plen alen in
     let res_typ = ADT (asId adt.tname, targs) in
-    match List.find adt.tmap ~f:(fun (n, _) -> n = cn) with
+    match List.Assoc.find adt.tmap cn ~equal:String.( = ) with
     | None -> pure res_typ
-    | Some (_, ctparams) ->
+    | Some ctparams ->
         let tmap = List.zip_exn adt.tparams targs in
         let ctparams_elab = List.map ctparams ~f:(apply_type_subst tmap) in
         let ctyp =
@@ -617,7 +607,7 @@ module TypeUtilities = struct
     match ts with
     | [] -> fail0 "Checking an empty type list."
     | t :: ts' -> (
-        match List.find ts' ~f:(fun t' -> not (type_equiv t t')) with
+        match List.find ts' ~f:(fun t' -> not ([%equal: typ] t t')) with
         | None -> pure ()
         | Some _ ->
             fail0

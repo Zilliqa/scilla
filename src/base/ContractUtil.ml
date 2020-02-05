@@ -42,17 +42,12 @@ module MessagePayload = struct
   let exception_label = "_exception"
 
   let get_value_for_entry lab f es =
-    match List.find es ~f:(fun (l, _) -> String.(l = lab)) with
+    match List.Assoc.find es lab ~equal:String.( = ) with
     | None ->
         fail0
         @@ sprintf "No field \"%s\" in message [%s]." lab (pp_literal_map es)
-    | Some (_, p) -> (
-        match f p with
-        | Some x -> x
-        | None ->
-            fail0
-            @@ sprintf "Wrong value of the entry \"%s\": %s." lab (pp_literal p)
-        )
+    | Some p ->
+        (f p) |> Option.value ~default:(fail0 @@ sprintf "Wrong value of the entry \"%s\": %s." lab (pp_literal p))
 
   let get_tag =
     get_value_for_entry tag_label (function

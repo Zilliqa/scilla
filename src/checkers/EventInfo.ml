@@ -29,8 +29,8 @@ struct
      * info from message and append to the list. *)
     let extract_from_message bloc m acc =
       (* Check if this is for an event. *)
-      match List.find_opt (fun (label, _) -> label = eventname_label) m with
-      | Some (_, epld) -> (
+      match List.Assoc.find m eventname_label ~equal:String.( = ) with
+      | Some epld ->
           let emsg = "Error determining event name\n" in
           let%bind eventname =
             match epld with
@@ -59,8 +59,8 @@ struct
           in
           (* If we already have an entry for "eventname" in "acc",
              * check that the type matches. Add entry otherwise. *)
-          match List.find_opt (fun (n, _) -> n = eventname) acc with
-          | Some (_, tlist) ->
+          (match List.Assoc.find acc eventname ~equal:String.( = ) with
+           | Some tlist ->
               (* verify types match *)
               let printer tplist =
                 List.fold_left

@@ -332,30 +332,27 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     let { lname; lentries } = lib in
     let is_adt_in_scope adts_in_scope adt_name =
       (* Check if type has already been declared *)
-      match List.findi adts_in_scope ~f:(fun _ n -> n = get_id adt_name) with
-      | Some _ -> pure @@ ()
-      | None ->
-          (* Check if the name is a builtin ADT *)
-          let%bind _ =
-            DataTypeDictionary.lookup_name ~sloc:(get_rep adt_name)
-              (get_id adt_name)
-          in
-          pure @@ ()
+      if List.mem adts_in_scope (get_id adt_name) ~equal:String.( = ) then
+        pure ()
+      else
+        (* Check if the name is a builtin ADT *)
+        let%bind _ =
+          DataTypeDictionary.lookup_name ~sloc:(get_rep adt_name) (get_id adt_name)
+        in
+        pure ()
     in
     let is_adt_ctr_in_scope adt_ctrs_in_scope ctr_name =
       (* Check if type has already been declared *)
-      match
-        List.findi adt_ctrs_in_scope ~f:(fun _ n -> n = get_id ctr_name)
-      with
-      | Some _ -> pure @@ ()
-      | None ->
-          (* Check if the name is a builtin ADT *)
-          let%bind _ =
-            DataTypeDictionary.lookup_constructor
-              ~sloc:(SR.get_loc (get_rep ctr_name))
-              (get_id ctr_name)
-          in
-          pure @@ ()
+      if List.mem adt_ctrs_in_scope (get_id ctr_name) ~equal:String.( = ) then
+        pure ()
+      else
+        (* Check if the name is a builtin ADT *)
+        let%bind _ =
+          DataTypeDictionary.lookup_constructor
+            ~sloc:(SR.get_loc (get_rep ctr_name))
+            (get_id ctr_name)
+        in
+        pure ()
     in
     wrap_with_info
       ( sprintf "Type error in library %s:\n" (get_id lname),

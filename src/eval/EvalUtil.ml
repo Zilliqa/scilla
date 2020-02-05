@@ -246,7 +246,7 @@ module Configuration = struct
 
   let bind st k v =
     let e = st.env in
-    { st with env = (k, v) :: List.filter ~f:(fun z -> fst z <> k) e }
+    { st with env = List.Assoc.add e k v ~equal:String.( = ) }
 
   let bind_all st ks vs =
     let e = st.env in

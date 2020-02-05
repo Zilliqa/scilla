@@ -161,7 +161,7 @@ module DataTypeDictionary = struct
 
   (* Get typing map for a constructor *)
   let constr_tmap adt cn =
-    List.find adt.tmap ~f:(fun (n, _) -> String.(n = cn)) |> Option.map ~f:snd
+    List.Assoc.find adt.tmap cn ~equal:String.( = )
 
   let bool_typ = ADT (asId t_bool.tname, [])
 

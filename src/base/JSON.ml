@@ -353,10 +353,8 @@ module Message = struct
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
   let message_to_json message =
     (* extract out "_tag", "_amount", "_accepted" and "_recipient" parts of the message *)
-    let _, taglit = List.find_exn message ~f:(fun (x, _) -> String.(x = tag_label)) in
-    let _, amountlit =
-      List.find_exn message ~f:(fun (x, _) -> String.(x = amount_label))
-    in
+    let taglit = List.Assoc.find_exn message tag_label ~equal:String.( = ) in
+    let amountlit = List.Assoc.find_exn message amount_label ~equal:String.( = ) in
     (* message_to_json may be used to print both output and input message. Choose label accordingly. *)
     let toORfrom, tofromlit =
       List.find_exn message ~f:(fun (x, _) ->
@@ -506,8 +504,8 @@ module Event = struct
   (* Same as Event_to_jstring, but instead gives out raw json, not it's string *)
   let event_to_json e =
     (* extract out "_eventname" from the message *)
-    let _, eventnamelit =
-      List.find_exn e ~f:(fun (x, _) -> String.(x = eventname_label))
+    let eventnamelit =
+      List.Assoc.find_exn e eventname_label ~equal:String.( = )
     in
     let eventnames = get_string_literal eventnamelit in
     (* Get a list without the extracted components *)
