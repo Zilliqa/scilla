@@ -377,9 +377,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let msg =
       sprintf "Unable to determine gas cost for \"%s\"" (pp_builtin op)
     in
-    let open Caml in
     let dict =
-      match Hashtbl.find_opt builtin_hashtbl op with
+      match Caml.Hashtbl.find_opt builtin_hashtbl op with
       | Some rows -> rows
       | None -> []
     in

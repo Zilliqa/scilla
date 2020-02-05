@@ -334,8 +334,7 @@ struct
                  takes no argument : NoInfo *)
             else if
               List.length adt.tconstr = 2
-              && List.exists adt.tmap ~f:(fun (_, arg_typs) ->
-                     match arg_typs with [] -> true | _ -> false)
+              && List.exists adt.tmap ~f:(fun (_, arg_typs) -> List.is_empty arg_typs)
               && List.exists adt.tmap ~f:(fun (_, arg_typs) ->
                      match arg_typs with
                      | [ ADT (arg_typ_name, _) ] ->

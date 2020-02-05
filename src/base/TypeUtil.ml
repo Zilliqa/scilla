@@ -566,8 +566,7 @@ module TypeUtilities = struct
     let%bind adt', _ = lookup_constructor cn in
     let seq a b = if String.(a = b) then 0 else 1 in
     let taken =
-      List.map targs ~f:free_tvars
-      |> List.concat
+      List.concat_map targs ~f:free_tvars
       |> List.dedup_and_sort ~compare:seq
     in
     let adt = refresh_adt adt' taken in
