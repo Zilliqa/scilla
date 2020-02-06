@@ -46,37 +46,34 @@ let mk_handler callback args =
 let handler rpc conn =
   let ic = Unix.in_channel_of_descr conn in
   let oc = Unix.out_channel_of_descr conn in
-  let req = Jsonrpc.call_of_string (Caml.input_line ic) in
+  let msg = Caml.input_line ic in
+  let req = Jsonrpc.call_of_string msg in
   (* Here we're calling [M.run] to make sure that we are running the process,
      this is not much of a problem with [IdM] or [ExnM], but in general we
      should ensure that the computation is started by a runner *)
   let res = M.run (rpc req) in
-  IPCUtil.send_delimited oc (Jsonrpc.string_of_response res)
+  let str = Jsonrpc.string_of_response res in
+  IPCUtil.send_delimited oc str
 
 (* Listen on the given [sock_path] and process requests.
    The [num_pending] is the maximal number of pending requests. *)
-let serve rpc ~sock_path ~num_pending =
-  let module U = Unix in
+let setup ~sock_path ~num_pending =
   (* Remove any existing socket file *)
-  U.(try unlink sock_path with Unix_error (ENOENT, _, _) -> ());
+  Unix.(try unlink sock_path with Unix_error (ENOENT, _, _) -> ());
   (* Ensure that socket directory exists *)
-  U.mkdir_p ~perm:0o0755 (Filename.dirname sock_path);
-  let socket = U.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0) in
-  U.bind socket ~addr:(U.ADDR_UNIX sock_path);
-  U.listen socket ~backlog:num_pending;
+  Unix.mkdir_p ~perm:0o0755 (Filename.dirname sock_path);
+  let socket = Unix.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0) in
+  Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_path);
+  Unix.listen socket ~backlog:num_pending;
   pout @@ Printf.sprintf "Scilla Server is listening on %s\n" sock_path;
   Out_channel.flush stdout;
-  while true do
-    let conn, _ = U.accept socket in
-    ignore
-    @@ Thread.create
-         (fun () ->
-           (* Always close the connection no matter what *)
-           Util.protect_reraise
-             ~f:(fun () -> handler rpc conn)
-             ~finally:(fun () -> U.close conn))
-         ()
-  done
+  socket
+
+let rec serve rpc ~socket =
+  let conn, _ = Unix.accept socket in
+  handler rpc conn;
+  Unix.close conn;
+  serve rpc ~socket
 
 let sock_path = "/tmp/scilla-server.sock"
 
@@ -97,5 +94,7 @@ let start ?(sock_path = sock_path) ?(num_pending = num_pending) () =
      performs the marshalling and unmarshalling. We need to connect this
      function to a real server that responds to client requests *)
   let rpc = IDL.server Server.implementation in
-  (* Listen the socket, accept connections and handle requests *)
-  serve rpc ~sock_path ~num_pending
+  (* Setup and listen the socket *)
+  let socket = setup ~sock_path ~num_pending in
+  (* Accept connections and handle requests *)
+  serve rpc ~socket

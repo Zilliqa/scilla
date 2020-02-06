@@ -64,6 +64,24 @@ let b_validate_json = ref true
 
 let i_ipc_address = ref ""
 
+let reset () =
+  f_input_init := "";
+  f_input_state := "";
+  f_input_message := "";
+  f_input_blockchain := "";
+  f_output := "";
+  f_input := "";
+  f_trace_file := "";
+  f_trace_level := "";
+  d_libs := [];
+  v_gas_limit := Stdint.Uint64.zero;
+  v_balance := None;
+  b_pp_lit := true;
+  b_json_errors := false;
+  b_pp_json := true;
+  b_validate_json := true;
+  i_ipc_address := ""
+
 let process_trace () =
   match !f_trace_level with
   | "stmt" ->
@@ -136,6 +154,7 @@ let validate_main usage =
   else ()
 
 let parse args =
+  reset ();
   let speclist =
     [
       ( "-version",

@@ -75,6 +75,7 @@ let analyze_gas e = GUA_Checker.gua_expr_wrapper e
 
 let run () =
   GlobalConfig.reset ();
+  ErrorUtils.reset_warnings ();
   Datatypes.DataTypeDictionary.reinit ();
   let cli = parse_cli None in
   let open GlobalConfig in

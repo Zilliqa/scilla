@@ -326,6 +326,7 @@ let check_cmodule cli =
 
 let run args =
   GlobalConfig.reset ();
+  ErrorUtils.reset_warnings ();
   Datatypes.DataTypeDictionary.reinit ();
   let cli = parse_cli args in
   let open GlobalConfig in

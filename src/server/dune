@@ -1,5 +1,5 @@
 (library
- (name scilla_server)
+ (name scilla_server_lib)
  (libraries core threads unix rresult rpclib rpclib.json rpclib.cmdliner
    scilla_base scilla_eval)
  (preprocess

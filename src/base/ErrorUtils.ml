@@ -77,6 +77,9 @@ let warn2 msg id sloc eloc =
 
 let get_warnings () = !warnings_list
 
+let reset_warnings () =
+  warnings_list := []
+
 exception Invalid_json of scilla_error list
 
 let mk_invalid_json msg = Invalid_json (mk_error0 msg)

@@ -35,18 +35,15 @@ let rpc ~sock_path call =
   let socket = U.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0) in
   U.connect socket ~addr:(U.ADDR_UNIX sock_path);
   let msg = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
-  let response =
-    Util.protect_reraise
-      ~f:(fun () -> send socket msg)
-      ~finally:(fun () -> U.close socket)
-  in
-  Jsonrpc.response_of_string response
+  Util.protect_reraise
+    ~f:(fun () -> send socket msg)
+    ~finally:(fun () -> U.close socket)
 
-let mk_params = List.map ~f:(fun s -> Rpc.String s)
+let mk_params args = Rpc.[Dict [("argv", Enum (List.map args ~f:(fun s -> String s)))]]
 
 let mk_call name ~sock_path args =
   rpc ~sock_path @@ Rpc.call name (mk_params args)
 
-let runner = mk_call "scilla-runner"
+let run = mk_call "run"
 
-let checker = mk_call "scilla-checker"
+let check = mk_call "check"

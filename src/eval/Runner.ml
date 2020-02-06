@@ -461,6 +461,7 @@ let run_with_args args =
 
 let run args_list =
   GlobalConfig.reset ();
+  ErrorUtils.reset_warnings ();
   Datatypes.DataTypeDictionary.reinit ();
   let args = RunnerCLI.parse args_list in
   let result = run_with_args args in

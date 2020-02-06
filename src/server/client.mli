@@ -16,9 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-val rpc : sock_path:string -> Rpc.call -> Rpc.response
+val rpc : sock_path:string -> Rpc.call -> string
 (** Connects to a given [socket_path] and makes an RPC call *)
 
-val runner : sock_path:string -> Api.args_t -> Rpc.response
+val run : sock_path:string -> Api.args_t -> string
 
-val checker : sock_path:string -> Api.args_t -> Rpc.response
+val check : sock_path:string -> Api.args_t -> string

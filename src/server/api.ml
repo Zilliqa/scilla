@@ -52,7 +52,7 @@ module API (R : RPC) = struct
   let runner_error = Idl.DefaultError.err
 
   let runner =
-    declare "scilla-runner"
+    declare "run"
       [ "Execute Scilla contract" ]
       (runner_argv @-> returning runner_return runner_error)
 
@@ -66,7 +66,7 @@ module API (R : RPC) = struct
   let checker_error = Idl.DefaultError.err
 
   let checker =
-    declare "scilla-checker"
+    declare "check"
       [
         "Parse Scilla contract and perform a number of static checks including \
          typechecking";
