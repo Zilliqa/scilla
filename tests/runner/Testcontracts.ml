@@ -118,7 +118,7 @@ let rec build_contract_tests_with_init_file env name exit_code i n
       print_cli_usage (env.print_cli test_ctxt) scillabin args;
       let test_name = name ^ "_" ^ istr in
       let goldoutput_file = dir ^/ "output_" ^ istr ^. "json" in
-      (* let msg = cli_usage_on_err scillabin args in *)
+      let msg = cli_usage_on_err scillabin args in
       let args =
         if env.server test_ctxt then
           args
@@ -152,8 +152,8 @@ let rec build_contract_tests_with_init_file env name exit_code i n
           in
           if env.update_gold test_ctxt && not (ipc_mode || env.server test_ctxt)
           then output_updater goldoutput_file test_name out
-          else ())
-      (* output_verifier goldoutput_file msg (env.print_diff test_ctxt) out) *)
+          else
+            output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
     in
     (* If this test is expected to succeed, we know that the JSONs are all "good".
      * So test both the JSON parsers, one that does validation, one that doesn't.
