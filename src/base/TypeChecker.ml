@@ -144,10 +144,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           @@ ( TypedSyntax.Binder (add_type_to_ident x (mk_qual_tp atyp)),
                (x, atyp) :: tlist )
       | Constructor (cn, ps) ->
-          let%bind arg_types = constr_pattern_arg_types atyp cn in
+          let%bind arg_types = constr_pattern_arg_types atyp (get_id cn) in
           let plen = List.length arg_types in
           let alen = List.length ps in
-          let%bind _ = validate_param_length cn plen alen in
+          let%bind _ = validate_param_length (get_id cn) plen alen in
           let tps_pts = List.zip_exn arg_types ps in
           let%bind typed_ps, tps =
             foldrM ~init:([], tlist) tps_pts ~f:(fun (ps, ts) (t, pt) ->
@@ -252,18 +252,22 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         in
         let open Datatypes.DataTypeDictionary in
         let%bind _, constr =
-          mark_error_as_type_error remaining_gas @@ lookup_constructor cname
+          mark_error_as_type_error remaining_gas
+          @@ lookup_constructor
+               ~sloc:(SR.get_loc (get_rep cname))
+               (get_id cname)
         in
         let alen = List.length actuals in
         if constr.arity <> alen then
           Error
             (mk_type_error0
-               (sprintf "Constructor %s expects %d arguments, but got %d." cname
-                  constr.arity alen)
+               (sprintf "Constructor %s expects %d arguments, but got %d."
+                  (get_id cname) constr.arity alen)
                remaining_gas)
         else
           let%bind ftyp =
-            mark_error_as_type_error remaining_gas @@ elab_constr_type cname ts
+            mark_error_as_type_error remaining_gas
+            @@ elab_constr_type (get_id cname) ts
           in
           (* Now type-check as a function application *)
           let%bind typed_actuals, apptyp, remaining_gas =
@@ -631,7 +635,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
             (* The return type of MapGet would be (Option v_type) or Bool. *)
             let v_type' =
-              if valfetch then ADT ("Option", [ v_type ]) else ADT ("Bool", [])
+              if valfetch then ADT (asId "Option", [ v_type ])
+              else ADT (asId "Bool", [])
             in
             (* Update environment. *)
             let pure' = TEnv.addT (TEnv.copy env.pure) v v_type' in
@@ -1244,7 +1249,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               in
               let%bind _ =
                 mark_error_as_type_error remaining_gas
-                @@ assert_type_equiv (ADT ("Bool", [])) ityp.tp
+                @@ assert_type_equiv (ADT (asId "Bool", [])) ityp.tp
               in
               pure (checked_constraint, remaining_gas)
          in

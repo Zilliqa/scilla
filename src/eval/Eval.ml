@@ -130,17 +130,21 @@ let rec exp_eval erep env =
       pure (fully_applied, env)
   | Constr (cname, ts, actuals) ->
       let open Datatypes.DataTypeDictionary in
-      let%bind _, constr = fromR @@ lookup_constructor cname in
+      let%bind _, constr =
+        fromR
+        @@ lookup_constructor ~sloc:(SR.get_loc (get_rep cname)) (get_id cname)
+      in
       let alen = List.length actuals in
       if constr.arity <> alen then
-        fail0
-        @@ sprintf "Constructor %s expects %d arguments, but got %d." cname
-             constr.arity alen
+        fail1
+          (sprintf "Constructor %s expects %d arguments, but got %d."
+             (get_id cname) constr.arity alen)
+          (SR.get_loc (get_rep cname))
       else
         (* Resolve the actuals *)
         let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
         (* Make sure we only pass "pure" literals, not closures *)
-        let lit = ADTValue (cname, ts, args) in
+        let lit = ADTValue (get_id cname, ts, args) in
         pure (lit, env)
   | MatchExpr (x, clauses) ->
       let%bind v = Env.lookup env x in
@@ -519,7 +523,8 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
           tryM
             ~f:(fun (ps, pt) ->
               let%bind at = fromR @@ literal_type (snd a) in
-              if get_id ps = fst a && pt = at then pure true else fail0 "")
+              if get_id ps = fst a && type_equiv pt at then pure true
+              else fail0 "")
             cparams ~msg:emsg
         in
         pure mp)

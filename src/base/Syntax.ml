@@ -90,7 +90,7 @@ type typ =
   | PrimType of prim_typ
   | MapType of typ * typ
   | FunType of typ * typ
-  | ADT of string * typ list
+  | ADT of loc ident * typ list
   | TypeVar of string
   | PolyFun of string * typ
   | Unit
@@ -118,7 +118,7 @@ let rec pp_typ = function
   | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
   | ADT (name, targs) ->
       let elems =
-        name :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
+        get_id name :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
       in
       String.concat ~sep:" " elems
   | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
@@ -524,6 +524,29 @@ let canonicalize_tfun t =
   let mk_new_name counter _ = "'_A" ^ Int.to_string counter in
   rename_bound_vars mk_new_name (const @@ Int.succ) t 1
 
+(* Type equivalence *)
+let type_equiv t1 t2 =
+  let t1' = canonicalize_tfun t1 in
+  let t2' = canonicalize_tfun t2 in
+  let rec equiv t1 t2 =
+    match (t1, t2) with
+    | PrimType p1, PrimType p2 -> p1 = p2
+    | TypeVar v1, TypeVar v2 -> String.equal v1 v2
+    | Unit, Unit -> true
+    | ADT (tname1, tl1), ADT (tname2, tl2) ->
+        equal_id tname1 tname2
+        (* Cannot call type_equiv_list because we don't want to canonicalize_tfun again. *)
+        && List.length tl1 = List.length tl2
+        && List.for_all2_exn ~f:equiv tl1 tl2
+    | MapType (t1_1, t1_2), MapType (t2_1, t2_2)
+    | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
+        equiv t1_1 t2_1 && equiv t1_2 t2_2
+    | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
+        String.equal v1 v2 && equiv t1'' t2''
+    | _ -> false
+  in
+  equiv t1' t2'
+
 (* The same as above, but for a variable with locations *)
 let subst_type_in_type' tv = subst_type_in_type (get_id tv)
 
@@ -603,7 +626,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   type pattern =
     | Wildcard
     | Binder of ER.rep ident
-    | Constructor of string * pattern list
+    | Constructor of SR.rep ident * pattern list
   [@@deriving sexp]
 
   type expr_annot = expr * ER.rep
@@ -615,7 +638,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Message of (string * payload) list
     | Fun of ER.rep ident * typ * expr_annot
     | App of ER.rep ident * ER.rep ident list
-    | Constr of string * typ list * ER.rep ident list
+    | Constr of SR.rep ident * typ list * ER.rep ident list
     | MatchExpr of ER.rep ident * (pattern * expr_annot) list
     | Builtin of ER.rep builtin_annot * ER.rep ident list
     (* Advanced features: to be added in Scilla 0.2 *)
@@ -867,7 +890,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       | Message _ -> sprintf "Type error in message.\n"
       | Fun _ -> sprintf "Type error in function:\n"
       | App (f, _) -> sprintf "Type error in application of `%s`:\n" (get_id f)
-      | Constr (s, _, _) -> sprintf "Type error in constructor `%s`:\n" s
+      | Constr (s, _, _) ->
+          sprintf "Type error in constructor `%s`:\n" (get_id s)
       | MatchExpr (x, _) ->
           sprintf
             "Type error in pattern matching on `%s`%s (or one of its branches):\n"
