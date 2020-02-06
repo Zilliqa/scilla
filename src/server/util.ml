@@ -12,8 +12,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
-
 let protect_reraise ~f ~finally =
   try
     let r = f () in

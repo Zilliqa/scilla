@@ -18,12 +18,11 @@
 
 open Core
 open Api
-open DebugMessage
 
 module U = Unix
 module M = Idl.IdM
 module IDL = Idl.Make (M)
-module Client = API (IDL.GenClient ())
+module IDLClient = API (IDL.GenClient ())
 
 (* Send data to the socket. *)
 let send socket msg =
@@ -36,13 +35,11 @@ let rpc ~sock_path call =
   let socket = U.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0) in
   U.connect socket ~addr:(U.ADDR_UNIX sock_path);
   let msg = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
-  ptrace @@ Printf.sprintf "\nSending: %s\n" msg;
   let response =
     Util.protect_reraise
       ~f:(fun () -> send socket msg)
       ~finally:(fun () -> U.close socket)
   in
-  ptrace @@ Printf.sprintf "\nResponse: %s\n" response;
   Jsonrpc.response_of_string response
 
 let mk_params =

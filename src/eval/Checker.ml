@@ -341,7 +341,8 @@ let run args =
   set_debug_level Debug_None;
 
   (* Check library modules. *)
-  if file_extn = StdlibTracker.file_extn_library then check_lmodule cli
+  if file_extn = StdlibTracker.file_extn_library then
+    check_lmodule cli
   else if file_extn <> StdlibTracker.file_extn_contract then
     fatal_error (mk_error0 (sprintf "Unknown file extension %s\n" file_extn))
   else (* Check contract modules. *)

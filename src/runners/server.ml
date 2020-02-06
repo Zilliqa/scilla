@@ -16,11 +16,4 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
-open DebugMessage
-open Scilla_server
-
-let () =
-  pout "Starting scilla server...\n";
-  Out_channel.flush stdout;
-  Cli.run ()
+let () = Scilla_server.Cli.run ()

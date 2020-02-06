@@ -34,13 +34,10 @@ module Server = API (IDL.GenServer ())
 
 (* Makes a handler that executes the given [callback] with [args],
    caches the result using the LRU cache and returns it. **)
-let mk_handler ~name ~callback args =
+let mk_handler callback args =
   let open IDL.ErrM in
-  ptrace
-  @@ Printf.sprintf "\n%s request:\n %s\n" name (String.concat ~sep:" " args);
   try
     let result = callback @@ Some args in
-    pout @@ Printf.sprintf "\n%s response:\n %s\n" name result;
     (* TODO: implement AST caching here *)
     return result
   with FatalError msg -> return_err (Idl.DefaultError.InternalError msg)
@@ -67,7 +64,7 @@ let serve rpc ~sock_path ~num_pending =
   let socket = U.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0) in
   U.bind socket ~addr:(U.ADDR_UNIX sock_path);
   U.listen socket ~backlog:num_pending;
-  pout @@ Printf.sprintf "Server is listening on %s\n" sock_path;
+  pout @@ Printf.sprintf "Scilla Server is listening on %s\n" sock_path;
   Out_channel.flush stdout;
   while true do
     let conn, _ = U.accept socket in
@@ -85,13 +82,15 @@ let sock_path = "/tmp/scilla-server.sock"
 let num_pending = 5
 
 let start ?(sock_path = sock_path) ?(num_pending = num_pending) () =
+  pout "Starting Scilla server...\n";
+  Out_channel.flush stdout;
   let runner args =
     let output, _ = Runner.run args in
     Yojson.Basic.to_string output
   in
   (* Handlers *)
-  Server.runner @@ mk_handler ~name:"Runner" ~callback:runner;
-  Server.checker @@ mk_handler ~name:"Checker" ~callback:Checker.run;
+  Server.runner @@ mk_handler runner;
+  Server.checker @@ mk_handler Checker.run;
   (* Generate the "rpc" function from the implementation,
      that given an [Rpc.call], calls the implementation of that RPC method and
      performs the marshalling and unmarshalling. We need to connect this
