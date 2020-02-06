@@ -169,6 +169,8 @@ module TypeUtilities : sig
 
   val assert_type_equiv : typ -> typ -> (unit, scilla_error list) result
 
+  val assert_type_assignable : typ -> typ -> (unit, scilla_error list) result
+  
   val assert_type_equiv_with_gas :
     typ ->
     typ ->

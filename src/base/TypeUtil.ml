@@ -205,7 +205,19 @@ functor
                          (pp_typ t) )
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
           | Address fts ->
-              foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb)
+              match List.find_a_dup fts
+                      ~compare:(fun (f1, _) (f2, _) ->
+                          Bytes.compare
+                            (Bytes.of_string (get_id f1))
+                            (Bytes.of_string (get_id f2))) with
+              | Some (dup_f, _) ->
+                  (* No duplicate fields allowed *)
+                  fail1
+                    (sprintf "Duplicate field %s in address type" (get_id dup_f))
+                    (get_rep dup_f)
+              | None ->
+                  (* Check all types of address fields *)
+                  foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb)
         in
         is_wf_typ' t []
 
@@ -295,6 +307,32 @@ module TypeUtilities = struct
       @@ sprintf "Type mismatch: %s expected, but %s provided."
            (pp_typ expected) (pp_typ given)
 
+  let rec assert_type_assignable expected given =
+    match expected, given with
+    | Address efts, Address gfts ->
+        (* Check that efts is a subset of gfts, and that types are assignable/equivalent. *)
+        (* Errors are collected and reported at the end. *)
+        let%bind emsgs = foldrM efts ~init:[] ~f:(fun acc_errors (ef, eft) ->
+            let ef_name = get_id ef in
+            match List.find gfts ~f:(fun (gf, _) ->
+                String.(ef_name = get_id gf)) with
+            | None ->
+                (* Field not declared in given. *)
+                Ok ((mk_error0 @@ sprintf "Field %s is not declared in remote address type." ef_name) @ acc_errors)
+            | Some (_, gft) ->
+                (* Found matching field name. Types must be assignable. *)
+                match assert_type_assignable eft gft with
+                | Ok _ -> Ok acc_errors
+                | Error msgs -> Ok (msgs @ acc_errors))
+        in
+        if List.is_empty emsgs
+        then pure ()
+        else Error emsgs
+    | PrimType (Bystrx_typ 20), Address _ ->
+        (* Any address can be viewed as a ByStr20 *)
+        pure ()
+    | _, _ -> assert_type_equiv expected given
+  
   (* TODO: make this charge gas *)
   let assert_type_equiv_with_gas expected given remaining_gas =
     if type_equiv expected given then pure remaining_gas
