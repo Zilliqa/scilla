@@ -16,8 +16,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-(** Start the server. *)
 val start : ?sock_path:string -> ?num_pending:int -> unit -> unit
+(** Start the server. *)
 
 val sock_path : string
 

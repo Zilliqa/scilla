@@ -58,10 +58,7 @@ let run_tests tests =
     Conf.make_bool "print_diff" false
       "Print the diff between gold file and actual output"
   in
-  let server =
-    Conf.make_bool "server" false
-      "Run tests in server-mode"
-  in
+  let server = Conf.make_bool "server" false "Run tests in server-mode" in
   let ext_ipc_server =
     Conf.make_string "ext_ipc_server" ext_ipc_server_default
       "Address of external IPC server for IPC tests. Ensure that \"-runner \

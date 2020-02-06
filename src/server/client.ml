@@ -18,10 +18,10 @@
 
 open Core
 open Api
-
 module U = Unix
 module M = Idl.IdM
 module IDL = Idl.Make (M)
+
 module IDLClient = API (IDL.GenClient ())
 
 (* Send data to the socket. *)
@@ -42,11 +42,11 @@ let rpc ~sock_path call =
   in
   Jsonrpc.response_of_string response
 
-let mk_params =
-  List.map ~f:(fun s -> Rpc.String s)
+let mk_params = List.map ~f:(fun s -> Rpc.String s)
 
 let mk_call name ~sock_path args =
   rpc ~sock_path @@ Rpc.call name (mk_params args)
 
 let runner = mk_call "scilla-runner"
+
 let checker = mk_call "scilla-checker"

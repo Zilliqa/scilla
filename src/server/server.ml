@@ -79,6 +79,7 @@ let serve rpc ~sock_path ~num_pending =
   done
 
 let sock_path = "/tmp/scilla-server.sock"
+
 let num_pending = 5
 
 let start ?(sock_path = sock_path) ?(num_pending = num_pending) () =
