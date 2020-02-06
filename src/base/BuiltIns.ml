@@ -853,7 +853,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           if Core_kernel.String.(prfx <> "zil" && prfx <> "tzil") then
             fail0 "Only zil and tzil bech32 addresses are supported"
           else
-            match Bech32.decode_bech32_addr ~prefix:prfx ~addr with
+            match Bech32.decode_bech32_addr ~prfx ~addr with
             | Some bys20 -> (
                 match Bystrx.of_raw_bytes 20 bys20 with
                 | Some b -> some_lit @@ ByStrX b
@@ -874,7 +874,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
             fail0 "Only zil and tzil bech32 addresses are supported"
           else
             match
-              Bech32.encode_bech32_addr ~prefix:prfx
+              Bech32.encode_bech32_addr ~prfx
                 ~addr:(Bystrx.to_raw_bytes addr)
             with
             | Some bech32 -> some_lit @@ StringLit bech32
