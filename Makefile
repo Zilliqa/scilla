@@ -69,6 +69,12 @@ test_extipcserver: dev
 	-ext-ipc-server $(IPC_SOCK_PATH) \
 	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
 
+# Run tests in server-mode
+test_server: dev
+	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
+  -server true \
+	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
+
 # === TESTS (end) =============================================================
 
 

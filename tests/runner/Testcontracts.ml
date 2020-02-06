@@ -19,6 +19,7 @@
 open Core_kernel
 open OUnit2
 open ScillaUtil.FilePathInfix
+open Scilla_server
 open TestUtil
 open OUnitTest
 
@@ -29,6 +30,8 @@ let ipc_socket_addr = Filename.temp_dir_name ^/ "scillaipcsocket"
 let succ_code : Unix.process_status = WEXITED 0
 
 let fail_code : Unix.process_status = WEXITED 1
+
+let server_running = ref false
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for
@@ -85,6 +88,12 @@ let rec build_contract_tests_with_init_file env name exit_code i n
         else env.ext_ipc_server test_ctxt
       in
       let state_json_path = dir ^/ "state_" ^ istr ^. "json" in
+      (* Start the Scilla server if needed *)
+      if env.server test_ctxt && not !server_running then
+        begin
+          ignore @@ Thread.create Server.start ();
+          server_running := true
+        end;
       let args_state =
         if ipc_mode then
           let balance =
@@ -104,18 +113,43 @@ let rec build_contract_tests_with_init_file env name exit_code i n
         if disable_validate_json then "-disable-validate-json" :: args'
         else args'
       in
-      let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
+      let bin_name =
+        if env.server test_ctxt
+        then "server"
+        else "scilla-runner"
+      in
+      let scillabin = env.bin_dir test_ctxt ^/ bin_name in
       print_cli_usage (env.print_cli test_ctxt) scillabin args;
       let test_name = name ^ "_" ^ istr in
       let goldoutput_file = dir ^/ "output_" ^ istr ^. "json" in
-      let msg = cli_usage_on_err scillabin args in
+      (* let msg = cli_usage_on_err scillabin args in *)
+      let args =
+        if env.server test_ctxt
+        then
+          args
+          |> List.map ~f:(fun s -> "\"" ^ s ^ "\"")
+          |> String.concat ~sep:", "
+          |> List.return
+          |> List.map ~f:(fun s -> "[" ^ s ^ "]")
+          |> List.append ["scilla-runner"]
+        else args
+      in
       assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
         ~foutput:(fun s ->
           (* if the test is supposed to succeed we read the output from a file,
                  otherwise we read from the output stream *)
           let interpreter_output =
-            if exit_code = succ_code then In_channel.read_all output_file
-            else BatStream.to_string s
+            if exit_code = succ_code then
+              let str = BatStream.to_string s in
+              if env.server test_ctxt then
+                begin
+                  let rpc = Jsonrpc.of_string str in
+                  Rpc.string_of_rpc rpc
+                end
+              else
+                In_channel.read_all output_file
+            else
+              BatStream.to_string s
           in
           let out =
             if ipc_mode then
@@ -126,10 +160,11 @@ let rec build_contract_tests_with_init_file env name exit_code i n
                    ~interpreter_output
             else interpreter_output
           in
-          if env.update_gold test_ctxt && not ipc_mode then
+          if env.update_gold test_ctxt && not (ipc_mode || env.server test_ctxt) then
             output_updater goldoutput_file test_name out
           else
-            output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
+            ())
+            (* output_verifier goldoutput_file msg (env.print_diff test_ctxt) out) *)
     in
     (* If this test is expected to succeed, we know that the JSONs are all "good".
      * So test both the JSON parsers, one that does validation, one that doesn't.
@@ -200,9 +235,10 @@ let build_contract_init_test env exit_code name init_name is_library =
         if exit_code = succ_code then In_channel.read_all output_file
         else BatStream.to_string s
       in
-      if env.update_gold test_ctxt then
+      if env.update_gold test_ctxt && not (env.server test_ctxt) then
         output_updater goldoutput_file test_name out
-      else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
+      else
+        output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
 
 let build_misc_tests env =
   let scillabin bin_dir test_ctxt = bin_dir test_ctxt ^/ "scilla-runner" in
