@@ -874,8 +874,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
             fail0 "Only zil and tzil bech32 addresses are supported"
           else
             match
-              Bech32.encode_bech32_addr ~prfx
-                ~addr:(Bystrx.to_raw_bytes addr)
+              Bech32.encode_bech32_addr ~prfx ~addr:(Bystrx.to_raw_bytes addr)
             with
             | Some bech32 -> some_lit @@ StringLit bech32
             | None -> fail0 "bech32 encoding failed" )

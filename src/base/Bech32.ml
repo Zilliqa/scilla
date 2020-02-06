@@ -177,8 +177,7 @@ let encode_bech32_addr ~prfx ~addr:bys =
   else
     (* 2. Scan the prefix for errors. *)
     let chk, err =
-      List.fold (String.to_list prfx) ~init:(1, false)
-        ~f:(fun (chk, err) ch ->
+      List.fold (String.to_list prfx) ~init:(1, false) ~f:(fun (chk, err) ch ->
           if
             err
             || ascii_of_char ch < 33
