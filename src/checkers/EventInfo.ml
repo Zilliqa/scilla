@@ -64,9 +64,10 @@ struct
           | Some tlist ->
               (* verify types match *)
               let printer tplist =
-                List.fold_left tplist ~init:"[" ~f:(fun acc (n, t) ->
-                    acc ^ Printf.sprintf "(%s : %s); " n (pp_typ t))
-                ^ "]"
+                "[" ^
+                (List.map tplist ~f:(fun (n, t) -> Printf.sprintf "(%s : %s); " n (pp_typ t))
+                 |> String.concat ~sep:"") ^
+                "]"
               in
               if not @@ [%equal: (string * typ) list] m_types tlist then
                 fail1
