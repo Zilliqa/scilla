@@ -19,7 +19,6 @@
 open Core_kernel
 open OUnit2
 open ScillaUtil.FilePathInfix
-open Scilla_server
 open TestUtil
 open OUnitTest
 
@@ -30,8 +29,6 @@ let ipc_socket_addr = Filename.temp_dir_name ^/ "scillaipcsocket"
 let succ_code : Unix.process_status = WEXITED 0
 
 let fail_code : Unix.process_status = WEXITED 1
-
-let server_running = ref false
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for
@@ -88,10 +85,6 @@ let rec build_contract_tests_with_init_file env name exit_code i n
         else env.ext_ipc_server test_ctxt
       in
       let state_json_path = dir ^/ "state_" ^ istr ^. "json" in
-      (* Start the Scilla server if needed *)
-      if env.server test_ctxt && not !server_running then (
-        ignore @@ Thread.create Server.start ();
-        server_running := true );
       let args_state =
         if ipc_mode then
           let balance =
@@ -108,11 +101,13 @@ let rec build_contract_tests_with_init_file env name exit_code i n
             "-libdir" :: (contract_dir ^/ lib_name) :: cur_args)
       in
       let args =
-        if disable_validate_json then "-disable-validate-json" :: args'
+        if disable_validate_json || env.server test_ctxt
+        then "-disable-validate-json" :: args'
         else args'
       in
+      (* Use scilla-client instead of scilla-runner when running tests in server-mode *)
       let bin_name =
-        if env.server test_ctxt then "server" else "scilla-runner"
+        if env.server test_ctxt then "scilla-client" else "scilla-runner"
       in
       let scillabin = env.bin_dir test_ctxt ^/ bin_name in
       print_cli_usage (env.print_cli test_ctxt) scillabin args;
@@ -121,11 +116,7 @@ let rec build_contract_tests_with_init_file env name exit_code i n
       let msg = cli_usage_on_err scillabin args in
       let args =
         if env.server test_ctxt then
-          args
-          |> List.map ~f:(fun s -> "\"" ^ s ^ "\"")
-          |> String.concat ~sep:", " |> List.return
-          |> List.map ~f:(fun s -> "[" ^ s ^ "]")
-          |> List.append [ "scilla-runner" ]
+          [ "run"; "-argv"; String.concat args ~sep:" " ]
         else args
       in
       assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
@@ -133,12 +124,7 @@ let rec build_contract_tests_with_init_file env name exit_code i n
           (* if the test is supposed to succeed we read the output from a file,
                  otherwise we read from the output stream *)
           let interpreter_output =
-            if exit_code = succ_code then
-              let str = BatStream.to_string s in
-              if env.server test_ctxt then
-                let rpc = Jsonrpc.of_string str in
-                Rpc.string_of_rpc rpc
-              else In_channel.read_all output_file
+            if exit_code = succ_code then In_channel.read_all output_file
             else BatStream.to_string s
           in
           let out =
@@ -161,8 +147,8 @@ let rec build_contract_tests_with_init_file env name exit_code i n
     if exit_code = succ_code then
       test ~disable_validate_json:true ~ipc_mode:true
       :: test ~disable_validate_json:false ~ipc_mode:true
-      :: test ~disable_validate_json:true ~ipc_mode:false
       :: test ~disable_validate_json:false ~ipc_mode:false
+      :: test ~disable_validate_json:true ~ipc_mode:false
       :: build_contract_tests_with_init_file env name exit_code (i + 1) n
            additional_libs init_name
     else
