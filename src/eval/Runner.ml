@@ -162,7 +162,9 @@ let deploy_library args gas_remaining =
 
       (* Checking initialized libraries! *)
       let gas_remaining' = check_libs clibs elibs args.input gas_remaining in
-      let _ = validate_get_init_json args.input_init gas_remaining' lmod.smver in
+      let _ =
+        validate_get_init_json args.input_init gas_remaining' lmod.smver
+      in
       `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining')) ]
 
 let run_with_args args =
@@ -234,7 +236,8 @@ let run_with_args args =
             fatal_error_gas
               ( s
               @ mk_error0
-                  (sprintf "Failed to parse json %s:\n" args.input_blockchain) )
+                  (sprintf "Failed to parse json %s:\n" args.input_blockchain)
+              )
               gas_remaining
         in
         let ( ( output_msg_json,
@@ -329,8 +332,8 @@ let run_with_args args =
                     fatal_error_gas
                       ( s
                       @ mk_error0
-                          (sprintf "Failed to parse json %s:\n" args.input_state)
-                      )
+                          (sprintf "Failed to parse json %s:\n"
+                             args.input_state) )
                       gas_remaining
                 in
 

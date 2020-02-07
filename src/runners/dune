@@ -6,7 +6,7 @@
  (package scilla)
  (modules scilla_runner eval_runner type_checker scilla_checker scilla_server
    scilla_client)
- (libraries core angstrom yojson cryptokit fileutils scilla_base scilla_eval scilla_server_lib
-   scilla_checkers scilla_cpp_deps)
+ (libraries core angstrom yojson cryptokit fileutils scilla_base scilla_eval
+   scilla_server_lib scilla_checkers scilla_cpp_deps)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show bisect_ppx -conditional)))
