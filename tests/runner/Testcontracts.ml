@@ -101,8 +101,8 @@ let rec build_contract_tests_with_init_file env name exit_code i n
             "-libdir" :: (contract_dir ^/ lib_name) :: cur_args)
       in
       let args =
-        if disable_validate_json || env.server test_ctxt
-        then "-disable-validate-json" :: args'
+        if disable_validate_json || env.server test_ctxt then
+          "-disable-validate-json" :: args'
         else args'
       in
       (* Use scilla-client instead of scilla-runner when running tests in server-mode *)
