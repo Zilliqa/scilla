@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open Syntax
 open ErrorUtils
 open DebugMessage
 
