@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open OUnit2
 open ScillaUtil.FilePathInfix
 
@@ -97,12 +98,12 @@ let output_verifier goldoutput_file msg print_diff output =
   in
   if print_diff then
     assert_equal
-      ~cmp:(fun e o -> String.strip e = String.strip o)
+      ~cmp:(fun e o -> String.(strip e = strip o))
       ~pp_diff:(fun fmt _ -> pp_diff fmt)
       gold_output output ~msg
   else
     assert_equal
-      ~cmp:(fun e o -> String.strip e = String.strip o)
+      ~cmp:(fun e o -> String.(strip e = strip o))
       ~printer:(fun s -> s)
       gold_output output ~msg
 

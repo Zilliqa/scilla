@@ -16,8 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
 open Core_kernel
+open! Int.Replace_polymorphic_compare
+open Syntax
 open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
@@ -120,8 +121,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     [ (TypeUtil.blocknum_name, bnum_typ) ]
 
   let lookup_bc_type x =
-    match List.findi bc_types ~f:(fun _ (f, _) -> f = x) with
-    | Some (_, (_, t)) -> pure @@ t
+    match List.Assoc.find bc_types x ~equal:String.( = ) with
+    | Some t -> pure t
     | None -> fail0 @@ sprintf "Unknown blockchain field %s." x
 
   (**************************************************************)
@@ -365,8 +366,11 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         in
         let payload_type fld pld remaining_gas =
           let check_field_type seen_type =
-            match Caml.List.assoc_opt fld CU.msg_mandatory_field_types with
-            | Some fld_t when fld_t <> seen_type ->
+            match
+              List.Assoc.find CU.msg_mandatory_field_types fld
+                ~equal:String.( = )
+            with
+            | Some fld_t when not ([%equal: typ] fld_t seen_type) ->
                 fail1
                   (sprintf
                      "Type mismatch for Message field %s. Expected %s but got \
@@ -539,8 +543,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  (TypedSyntax.Load (typed_x, typed_f), rep)
                  checked_stmts remaining_gas
         | Store (f, r) ->
-            if List.mem ~equal:(fun s1 s2 -> s1 = s2) no_store_fields (get_id f)
-            then
+            if List.mem ~equal:String.( = ) no_store_fields (get_id f) then
               wrap_type_serr stmt
                 (Error
                    (mk_type_error0
@@ -766,7 +769,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                    type_actuals env.pure args remaining_gas
                  in
                  match
-                   List.Assoc.find env.procedures ~equal:( = ) (get_id p)
+                   List.Assoc.find env.procedures ~equal:String.( = ) (get_id p)
                  with
                  | Some arg_typs ->
                      let%bind _ =
@@ -870,7 +873,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | CompTrans -> procedures
       | CompProc ->
           let proc_sig = List.map comp_params ~f:snd in
-          List.Assoc.add procedures ~equal:( = ) (get_id comp_name) proc_sig
+          List.Assoc.add procedures ~equal:String.( = ) (get_id comp_name)
+            proc_sig
     in
     pure
     @@ ( ( {
@@ -1033,7 +1037,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                        Error (GasError, e, remaining_gas) ))
        in
        (* If there has been no errors at all, we're good to go. *)
-       if errs = [] then
+       if List.is_empty errs then
          pure
          @@ ( ( {
                   TypedSyntax.lname;
@@ -1087,7 +1091,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                           match entry' with
                           | LibTyp (i, _) | LibVar (i, _, _) -> i
                         in
-                        if get_id ename = get_id ename' then
+                        if equal_id ename ename' then
                           err_acc
                           @ mk_error1
                               (sprintf
@@ -1129,7 +1133,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                     TEnv.filterTs (TEnv.copy t_env) ~f:(fun name ->
                         List.exists t_lib.lentries ~f:(function
                           | LibTyp _ -> false
-                          | LibVar (i, _, _) -> get_id i = name)
+                          | LibVar (i, _, _) -> String.(get_id i = name))
                         || TEnv.existsT tenv0 name)
                   in
                   pure
@@ -1152,8 +1156,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       in
       recurser elibs remaining_gas
     in
-    if emsgs <> [] then Error (TypeError, emsgs, remaining_gas)
-    else pure (typed_elibs, elibs_env, remaining_gas)
+    if List.is_empty emsgs then pure (typed_elibs, elibs_env, remaining_gas)
+    else Error (TypeError, emsgs, remaining_gas)
 
   let type_lmodule (md : UntypedSyntax.lmodule)
       (rec_libs : UntypedSyntax.lib_entry list)
@@ -1306,7 +1310,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              (add_type_to_ident id (mk_qual_tp t), t))
        in
 
-       if emsgs' = [] (* Return pure environment *) then
+       if List.is_empty emsgs' (* Return pure environment *) then
          pure
            ( ( {
                  TypedSyntax.smver = mod_smver;

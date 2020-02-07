@@ -1,3 +1,6 @@
+open Core_kernel
+open! Int.Replace_polymorphic_compare
+
 [@@@ocaml.warning "-27-30-39"]
 
 type proto_scilla_val_map = { m : (string * proto_scilla_val) list }

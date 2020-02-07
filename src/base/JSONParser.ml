@@ -18,11 +18,11 @@
 
 (* A fast JSON parser for states that performs no validations. *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Yojson
 open Syntax
 open ErrorUtils
-open Core_kernel
-open PrimTypes
 open TypeUtil
 open Datatypes
 module JSONTypeUtilities = TypeUtilities
@@ -86,34 +86,32 @@ let gen_parser (t' : typ) : Basic.t -> literal =
   let open Basic in
   let rec recurser t =
     match t with
-    | PrimType _ -> (
-        match t with
-        | x when x = string_typ -> fun j -> StringLit (Util.to_string j)
-        | x when x = bnum_typ -> fun j -> BNum (Util.to_string j)
-        | x when x = bystr_typ ->
-            fun j -> ByStr (Bystr.parse_hex (Util.to_string j))
-        | x when is_bystrx_type x ->
-            fun j -> ByStrX (Bystrx.parse_hex (Util.to_string j))
-        | x when x = int32_typ ->
+    | PrimType pt -> (
+        match pt with
+        | String_typ -> fun j -> StringLit (Util.to_string j)
+        | Bnum_typ -> fun j -> BNum (Util.to_string j)
+        | Bystr_typ -> fun j -> ByStr (Bystr.parse_hex (Util.to_string j))
+        | Bystrx_typ _ -> fun j -> ByStrX (Bystrx.parse_hex (Util.to_string j))
+        | Int_typ Bits32 ->
             fun j -> IntLit (Int32L (Int32.of_string (Util.to_string j)))
-        | x when x = int64_typ ->
+        | Int_typ Bits64 ->
             fun j -> IntLit (Int64L (Int64.of_string (Util.to_string j)))
-        | x when x = int128_typ ->
+        | Int_typ Bits128 ->
             fun j ->
               IntLit (Int128L (Stdint.Int128.of_string (Util.to_string j)))
-        | x when x = int256_typ ->
+        | Int_typ Bits256 ->
             fun j ->
               IntLit (Int256L (Integer256.Int256.of_string (Util.to_string j)))
-        | x when x = uint32_typ ->
+        | Uint_typ Bits32 ->
             fun j ->
               UintLit (Uint32L (Stdint.Uint32.of_string (Util.to_string j)))
-        | x when x = uint64_typ ->
+        | Uint_typ Bits64 ->
             fun j ->
               UintLit (Uint64L (Stdint.Uint64.of_string (Util.to_string j)))
-        | x when x = uint128_typ ->
+        | Uint_typ Bits128 ->
             fun j ->
               UintLit (Uint128L (Stdint.Uint128.of_string (Util.to_string j)))
-        | x when x = uint256_typ ->
+        | Uint_typ Bits256 ->
             fun j ->
               UintLit
                 (Uint256L (Integer256.Uint256.of_string (Util.to_string j)))
@@ -173,7 +171,7 @@ let gen_parser (t' : typ) : Basic.t -> literal =
                       ADTValue (cn.cname, tlist, arg_lits)
                 | `List vli ->
                     (* We make an exception for Lists, allowing them to be stored flatly. *)
-                    if get_id name <> "List" then
+                    if String.(get_id name <> "List") then
                       raise
                         (mk_invalid_json
                            "ADT value is a JSON array, but type is not List")

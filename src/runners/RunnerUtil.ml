@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Printf
 open Syntax
 open ParsedSyntax
@@ -84,8 +85,8 @@ let eliminate_namespaces lib_tree ns_tree =
         ~f:(fun (accentries, accenv, accnames) entry ->
           (* check if id is in env and prefix it with a namespace. *)
           let check_and_prefix_id env id =
-            match List.Assoc.find env ~equal:( = ) (get_id id) with
-            | Some ns when ns <> "" ->
+            match List.Assoc.find env (get_id id) ~equal:String.( = ) with
+            | Some ns when not @@ String.is_empty ns ->
                 let nname = ns ^ "." ^ get_id id in
                 plog
                 @@ Printf.sprintf "Prefixing namespace %s to name %s = %s\n" ns
@@ -114,7 +115,9 @@ let eliminate_namespaces lib_tree ns_tree =
             | Let (i, t, elhs, erhs) ->
                 let elhs' = rename_in_expr elhs env in
                 (* "i" get's a local binding now, don't rename it in rhs. *)
-                let env' = List.Assoc.remove env ~equal:( = ) (get_id i) in
+                let env' =
+                  List.Assoc.remove env (get_id i) ~equal:String.( = )
+                in
                 let t' = Option.map t ~f:(fun t -> rename_in_type t env) in
                 let erhs' = rename_in_expr erhs env' in
                 (Let (i, t', elhs', erhs'), eloc)
@@ -129,7 +132,9 @@ let eliminate_namespaces lib_tree ns_tree =
                 in
                 (Message spl', eloc)
             | Fun (i, t, exp) ->
-                let env' = List.Assoc.remove env ~equal:( = ) (get_id i) in
+                let env' =
+                  List.Assoc.remove env (get_id i) ~equal:String.( = )
+                in
                 let t' = rename_in_type t env' in
                 let exp' = rename_in_expr exp env' in
                 (Fun (i, t', exp'), eloc)
@@ -165,7 +170,7 @@ let eliminate_namespaces lib_tree ns_tree =
                       (* remove all binds from env *)
                       let env' =
                         List.fold_left binds ~init:env ~f:(fun accenv b ->
-                            List.Assoc.remove accenv ~equal:( = ) b)
+                            List.Assoc.remove accenv b ~equal:String.( = ))
                       in
                       (pat', rename_in_expr expr env'))
                 in
@@ -178,7 +183,9 @@ let eliminate_namespaces lib_tree ns_tree =
                 let tl' = List.map tl ~f:(fun t -> rename_in_type t env) in
                 (TApp (check_and_prefix_id env i, tl'), eloc)
             | Fixpoint (i, t, e) ->
-                let env' = List.Assoc.remove env ~equal:( = ) (get_id i) in
+                let env' =
+                  List.Assoc.remove env (get_id i) ~equal:String.( = )
+                in
                 let exp' = rename_in_expr e env' in
                 (Fixpoint (i, t, exp'), eloc)
           in
@@ -223,7 +230,8 @@ let eliminate_namespaces lib_tree ns_tree =
     let this_namespace = nsnode.nspace in
     let fullns =
       match this_namespace with
-      | Some i -> if outerns <> "" then outerns ^ "." ^ get_id i else get_id i
+      | Some i ->
+          if String.is_empty outerns then get_id i else outerns ^ "." ^ get_id i
       | None -> outerns
     in
     (* rename deps first *)
@@ -252,7 +260,7 @@ let import_libs names init_file =
   let rec importer names name_map stack =
     let mapped_names =
       List.map names ~f:(fun (n, namespace) ->
-          match List.Assoc.find name_map ~equal:( = ) (get_id n) with
+          match List.Assoc.find name_map (get_id n) ~equal:String.( = ) with
           | Some n' ->
               (* Use a known source location for the mapped id. *)
               (asIdL n' (get_rep n), n, namespace)
@@ -260,9 +268,9 @@ let import_libs names init_file =
     in
     List.fold_left
       ~f:(fun (libacc, nacc) (name, mapped_name, namespace) ->
-        if List.mem stack (get_id name) ~equal:( = ) then
+        if List.mem stack (get_id name) ~equal:String.( = ) then
           let errmsg =
-            if get_id mapped_name = get_id name then
+            if equal_id mapped_name name then
               sprintf "Cyclic dependence found when importing %s." (get_id name)
             else
               sprintf
@@ -307,7 +315,7 @@ let import_all_libs ldirs =
       let files = Array.to_list (Sys.readdir dir) in
       List.fold_right files
         ~f:(fun file names ->
-          if FilePath.get_extension file = StdlibTracker.file_extn_library then
+          if FilePath.check_extension file StdlibTracker.file_extn_library then
             let name = FilePath.chop_extension (FilePath.basename file) in
             (asId name, None (* no import-as *)) :: names
           else names)
@@ -413,11 +421,11 @@ let parse_cli () =
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
   let () = Arg.parse speclist anon_handler mandatory_usage in
-  if !r_input_file = "" then fatal_error_noformat usage;
+  if String.is_empty !r_input_file then fatal_error_noformat usage;
   let gas_limit =
     match !r_gas_limit with Some g -> g | None -> fatal_error_noformat usage
   in
-  if !r_cf_token_fields <> [] then r_cf := true;
+  if not @@ List.is_empty !r_cf_token_fields then r_cf := true;
   GlobalConfig.set_use_json_errors !r_json_errors;
   {
     input_file = !r_input_file;

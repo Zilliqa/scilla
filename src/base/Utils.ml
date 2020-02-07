@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 
 (* Add item a to list if it isn't already present. Use ~equal to check presence. *)
 let list_add_unique ~equal ls a = if List.mem ls a ~equal then ls else a :: ls

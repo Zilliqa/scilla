@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Syntax
 open FrontEndParser
 open ErrorUtils
@@ -179,8 +180,8 @@ let () =
   let is_deployment = String.is_empty cli.input_message in
   let is_ipc = not @@ String.is_empty cli.ipc_address in
   let is_library =
-    FilePath.get_extension cli.input
-    = GlobalConfig.StdlibTracker.file_extn_library
+    FilePath.check_extension cli.input
+      GlobalConfig.StdlibTracker.file_extn_library
   in
   let gas_remaining =
     (* Subtract gas based on (contract+init) size / message size. *)
@@ -272,7 +273,7 @@ let () =
               (* We push all fields except _balance. *)
               let fields =
                 List.filter_map cstate'.fields ~f:(fun (s, t) ->
-                    if s = balance_label then None
+                    if String.(s = balance_label) then None
                     else Some { fname = s; ftyp = t; fval = None })
               in
               let sm = IPC cli.ipc_address in
@@ -324,7 +325,7 @@ let () =
                 let fields =
                   List.filter_map cstate.fields ~f:(fun (s, t) ->
                       let open StateService in
-                      if s = balance_label then None
+                      if String.(s = balance_label) then None
                       else Some { fname = s; ftyp = t; fval = None })
                 in
                 let () =
@@ -359,7 +360,7 @@ let () =
                   List.map field_vals ~f:(fun (s, l) ->
                       let open StateService in
                       let t =
-                        List.Assoc.find_exn cstate.fields ~equal:( = ) s
+                        List.Assoc.find_exn cstate.fields s ~equal:String.( = )
                       in
                       { fname = s; ftyp = t; fval = Some l })
                 in

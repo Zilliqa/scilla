@@ -16,8 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
 open Core_kernel
+open! Int.Replace_polymorphic_compare
+open Syntax
 open ErrorUtils
 open EvalUtil
 open MonadUtil
@@ -50,7 +51,7 @@ let pp_result r exclude_names =
   | Error (s, _) -> sprint_scilla_error_list s
   | Ok ((e, env), _) ->
       let filter_prelude (k, _) =
-        not (List.mem enames k ~equal:(fun s1 s2 -> s1 = s2))
+        not @@ List.mem enames k ~equal:String.( = )
       in
       sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
 
@@ -391,12 +392,12 @@ let check_blockchain_entries entries =
   (* every entry must be expected *)
   let c1 =
     List.for_all entries ~f:(fun (s, _) ->
-        List.exists expected ~f:(fun (t, _) -> s = t))
+        List.Assoc.mem expected s ~equal:String.( = ))
   in
   (* everything expected must be entered *)
   let c2 =
     List.for_all expected ~f:(fun (s, _) ->
-        List.exists entries ~f:(fun (t, _) -> s = t))
+        List.Assoc.mem entries s ~equal:String.( = ))
   in
   if c1 && c2 then pure entries
   else
@@ -463,7 +464,7 @@ let init_libraries clibs elibs =
     init_lib_entries (pure Env.empty) RecursionPrinciples.recursion_principles
   in
   let rec recurser libnl =
-    if libnl = [] then pure rec_env
+    if List.is_empty libnl then pure rec_env
     else
       (* Walk through library dependence tree. *)
       foldM libnl ~init:[] ~f:(fun acc_env libnode ->
@@ -478,8 +479,8 @@ let init_libraries clibs elibs =
                 List.exists entries ~f:(fun entry ->
                     match entry with
                     | LibTyp _ -> false (* Types are not part of Env. *)
-                    | LibVar (i, _, _) -> get_id i = name)
-                || List.exists rec_env ~f:(fun (name', _) -> name' = name))
+                    | LibVar (i, _, _) -> String.(get_id i = name))
+                || List.Assoc.mem rec_env name ~equal:String.( = ))
           in
           pure @@ Env.bind_all acc_env env)
   in
@@ -523,7 +524,8 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
           tryM
             ~f:(fun (ps, pt) ->
               let%bind at = fromR @@ literal_type (snd a) in
-              if get_id ps = fst a && type_equiv pt at then pure true
+              if String.(get_id ps = fst a) && [%equal: typ] pt at then
+                pure true
               else fail0 "")
             cparams ~msg:emsg
         in
@@ -534,7 +536,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
     forallM
       ~f:(fun (p, _) ->
         (* For each parameter there should be exactly one argument. *)
-        if List.count args ~f:(fun a -> get_id p = fst a) <> 1 then
+        if List.count args ~f:(fun a -> String.(get_id p = fst a)) <> 1 then
           fail0
             (sprintf "Parameter %s must occur exactly once in input.\n"
                (get_id p))
@@ -572,7 +574,8 @@ let create_cur_state_fields initcstate curcstate =
             ~f:(fun (t, li) ->
               let%bind t1 = fromR @@ literal_type lc in
               let%bind t2 = fromR @@ literal_type li in
-              if s = t && type_equiv t1 t2 then pure true else fail0 "")
+              if String.(s = t) && [%equal: typ] t1 t2 then pure true
+              else fail0 "")
             initcstate ~msg:emsg
         in
         pure ex)
@@ -582,7 +585,7 @@ let create_cur_state_fields initcstate curcstate =
   let%bind _ =
     forallM
       ~f:(fun (e, _) ->
-        if List.count curcstate ~f:(fun (e', _) -> e = e') > 1 then
+        if List.count curcstate ~f:(fun (e', _) -> String.(e = e')) > 1 then
           fail0 (sprintf "Field %s occurs more than once in input.\n" e)
         else pure true)
       initcstate
@@ -590,7 +593,7 @@ let create_cur_state_fields initcstate curcstate =
   (* Get only those fields from initcstate that are not in curcstate *)
   let filtered_init =
     List.filter initcstate ~f:(fun (s, _) ->
-        not (List.exists curcstate ~f:(fun (s1, _) -> s = s1)))
+        not (List.Assoc.mem curcstate s ~equal:String.( = )))
   in
   (* Combine filtered list and curcstate *)
   pure (filtered_init @ curcstate)
@@ -631,7 +634,7 @@ let get_transition_and_procedures ctr tag =
         | CompProc ->
             (* Procedure is in scope - continue searching *)
             procedure_and_transition_finder (c :: procs_acc) c_rest
-        | CompTrans when tag = get_id c.comp_name ->
+        | CompTrans when String.(tag = get_id c.comp_name) ->
             (* Transition found - return *)
             (procs_acc, Some c)
         | CompTrans ->
@@ -652,18 +655,19 @@ let check_message_entries cparams_o entries =
   let tparams = CU.append_implict_comp_params cparams_o in
   (* There as an entry for each parameter *)
   let valid_entries =
-    List.for_all tparams ~f:(fun p ->
-        List.exists entries ~f:(fun e -> fst e = get_id (fst p)))
+    List.for_all tparams ~f:(fun (s, _) ->
+        List.Assoc.mem entries (get_id s) ~equal:String.( = ))
   in
   (* There is a parameter for each entry *)
   let valid_params =
     List.for_all entries ~f:(fun (s, _) ->
-        List.exists tparams ~f:(fun (i, _) -> s = get_id i))
+        List.exists tparams ~f:(fun (i, _) -> String.(s = get_id i)))
   in
   (* Each entry name is unique *)
   let uniq_entries =
-    List.for_all entries ~f:(fun e ->
-        List.count entries ~f:(fun e' -> fst e = fst e') = 1)
+    not
+    @@ List.contains_dup entries ~compare:(fun (s, _) (t, _) ->
+           String.compare s t)
   in
   if not (valid_entries && uniq_entries && valid_params) then
     fail0

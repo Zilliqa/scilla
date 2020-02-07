@@ -17,6 +17,7 @@
 *)
 
 open Core
+open! Int.Replace_polymorphic_compare
 open Syntax
 open TypeUtil
 open StateIPCIdl
@@ -106,7 +107,7 @@ let binary_rpc ~sock_addr (call : Rpc.call) : Rpc.response M.t =
 let fetch ~fname =
   let sock_addr, fields = assert_init () in
   let tp =
-    match List.Assoc.find fields ~equal:( = ) fname with
+    match List.Assoc.find fields ~equal:String.( = ) fname with
     | Some tp -> tp
     | None ->
         assert_failure ("StateIPCTestClient: Unable to find field " ^ fname)
@@ -135,7 +136,7 @@ let update ~fname ~value =
   let open Ipcmessage_types in
   let sock_addr, fields = assert_init () in
   let tp =
-    match List.Assoc.find fields ~equal:( = ) fname with
+    match List.Assoc.find fields fname ~equal:String.( = ) with
     | Some tp -> tp
     | None ->
         assert_failure ("StateIPCTestClient: Unable to find field " ^ fname)

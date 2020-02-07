@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Syntax
 open Yojson
 open PrimTypes
@@ -71,7 +72,7 @@ and literal_to_json lit =
   | ADTValue (n, t, v) as ls ->
       let open Datatypes in
       let a, _ = lookup_constructor_exn n in
-      if a.tname = "List" then
+      if String.(a.tname = "List") then
         (* We make an exception for Lists and print them as a JSON array. *)
         match Datatypes.scilla_list_to_ocaml_rev ls with
         | Ok ls' ->

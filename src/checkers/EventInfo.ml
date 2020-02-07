@@ -1,8 +1,10 @@
+open Core_kernel
+open! Int.Replace_polymorphic_compare
+open Result.Let_syntax
 open TypeUtil
 open Syntax
 open ContractUtil.MessagePayload
 open MonadUtil
-open Core_kernel.Result.Let_syntax
 
 module ScillaEventInfo
     (SR : Rep) (ER : sig
@@ -27,20 +29,21 @@ struct
      * info from message and append to the list. *)
     let extract_from_message bloc m acc =
       (* Check if this is for an event. *)
-      match List.find_opt (fun (label, _) -> label = eventname_label) m with
-      | Some (_, epld) -> (
+      match List.Assoc.find m eventname_label ~equal:String.( = ) with
+      | Some epld -> (
           let emsg = "Error determining event name\n" in
           let%bind eventname =
             match epld with
             | MLit l -> (
                 match l with StringLit s -> pure s | _ -> fail1 emsg bloc )
             (* Variables are not allowed for eventname_label to ensure that
-             * all possible events can be determined statically. *)
+               all possible events can be determined statically. *)
             | MVar _ -> fail1 emsg bloc
           in
           (* Get the type of the event parameters. *)
           let filtered_m =
-            List.filter (fun (label, _) -> not (label = eventname_label)) m
+            List.filter m ~f:(fun (label, _) ->
+                not String.(label = eventname_label))
           in
           let%bind m_types =
             mapM
@@ -57,22 +60,22 @@ struct
           in
           (* If we already have an entry for "eventname" in "acc",
              * check that the type matches. Add entry otherwise. *)
-          match List.find_opt (fun (n, _) -> n = eventname) acc with
-          | Some (_, tlist) ->
+          match List.Assoc.find acc eventname ~equal:String.( = ) with
+          | Some tlist ->
               (* verify types match *)
               let printer tplist =
-                List.fold_left
-                  (fun acc (n, t) ->
-                    acc ^ Printf.sprintf "(%s : %s); " n (pp_typ t))
-                  "[" tplist
+                "["
+                ^ ( List.map tplist ~f:(fun (n, t) ->
+                        Printf.sprintf "(%s : %s); " n (pp_typ t))
+                  |> String.concat ~sep:"" )
                 ^ "]"
               in
-              if m_types <> tlist then
+              if not @@ [%equal: (string * typ) list] m_types tlist then
                 fail1
                   (Printf.sprintf "Parameter mismatch for event %s. %s vs %s\n"
                      eventname (printer tlist) (printer m_types))
                   bloc
-              else pure @@ acc
+              else pure acc
           | None ->
               (* No entry. *)
               let entry = (eventname, m_types) in

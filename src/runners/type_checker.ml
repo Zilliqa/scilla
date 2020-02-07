@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Printf
 open Syntax
 open TypeUtil
@@ -85,7 +86,7 @@ let () =
   | Ok e -> (
       (* Get list of stdlib dirs. *)
       let lib_dirs = StdlibTracker.get_stdlib_dirs () in
-      if lib_dirs = [] then stdlib_not_found_err ();
+      if List.is_empty lib_dirs then stdlib_not_found_err ();
       (* Import all libs. *)
       let std_lib = import_all_libs lib_dirs in
       match check_typing e std_lib gas_limit with
