@@ -29,7 +29,9 @@ let send socket msg =
   let ic = U.in_channel_of_descr socket in
   let oc = U.out_channel_of_descr socket in
   IPCUtil.send_delimited oc msg;
-  Caml.input_line ic
+  let str = Caml.input_line ic in
+  let res = Jsonrpc.response_of_string str in
+  if res.success then Some str else None
 
 let rpc ~sock_path call =
   let socket = U.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0) in
@@ -39,7 +41,8 @@ let rpc ~sock_path call =
     ~f:(fun () -> send socket msg)
     ~finally:(fun () -> U.close socket)
 
-let mk_params args = Rpc.[Dict [("argv", Enum (List.map args ~f:(fun s -> String s)))]]
+let mk_params args =
+  Rpc.[ Dict [ ("argv", Enum (List.map args ~f:(fun s -> String s))) ] ]
 
 let mk_call name ~sock_path args =
   rpc ~sock_path @@ Rpc.call name (mk_params args)

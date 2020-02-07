@@ -79,12 +79,18 @@ let sock_path = "/tmp/scilla-server.sock"
 
 let num_pending = 5
 
-let start ?(sock_path = sock_path) ?(num_pending = num_pending) () =
-  pout "Starting Scilla server...\n";
+let start ?(sock_path = sock_path) ?(num_pending = num_pending) ~test =
+  pout
+  @@ sprintf "Starting Scilla server%s...\n"
+       (if test then " in test mode" else "");
   Out_channel.flush stdout;
   let runner args =
-    let output, _ = Runner.run args in
-    Yojson.Basic.to_string output
+    let output, params = Runner.run args in
+    let str = Yojson.Basic.pretty_to_string output in
+    if test then
+      Out_channel.with_file params.output ~f:(fun ch ->
+          Out_channel.output_string ch str);
+    str
   in
   (* Handlers *)
   Server.runner @@ mk_handler runner;

@@ -112,7 +112,7 @@ let validate_main usage =
   let msg =
     (* input_state.json is not mandatory, but if provided, should be valid *)
     if invalid_optional_fname !f_input_state then
-      msg ^ "Invalid input contract state\n"
+      msg ^ "Invalid input contract state: " ^ !f_input_state ^ "\n"
     else msg
   in
   let msg =

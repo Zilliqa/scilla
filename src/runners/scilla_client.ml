@@ -28,18 +28,20 @@ let mk_cmd cb ~summary =
           ~doc:"SOCKET Address for communication with the server"
       and argv = flag "-argv" (required string) ~doc:"" in
       let args = String.split argv ~on:' ' in
-      fun () -> print_string @@ cb ~sock_path args)
+      fun () ->
+        match cb ~sock_path args with
+        | Some s -> print_string s
+        | None -> exit 1)
 
-let run =
-  mk_cmd Client.run
-    ~summary:"Execute contract"
+let run = mk_cmd Client.run ~summary:"Execute contract"
 
 let check =
   mk_cmd Client.check
-    ~summary:"Parse a contract and perform a number of static checks including typechecking"
+    ~summary:
+      "Parse a contract and perform a number of static checks including \
+       typechecking"
 
 let cmd_group =
-  Command.group ~summary:"Scilla client"
-    [ ("run", run); ("check", check) ]
+  Command.group ~summary:"Scilla client" [ ("run", run); ("check", check) ]
 
 let () = Command.run cmd_group
