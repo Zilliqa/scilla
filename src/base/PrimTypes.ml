@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Syntax
 open Stdint
 open Integer256
@@ -51,16 +52,12 @@ let bystr_typ = PrimType Bystr_typ
 
 let bystrx_typ b = PrimType (Bystrx_typ b)
 
-let int_width t =
-  if t = int32_typ then Some 32
-  else if t = int64_typ then Some 64
-  else if t = int128_typ then Some 128
-  else if t = int256_typ then Some 256
-  else if t = uint32_typ then Some 32
-  else if t = uint64_typ then Some 64
-  else if t = uint128_typ then Some 128
-  else if t = uint256_typ then Some 256
-  else None
+let int_width = function
+  | PrimType (Int_typ Bits32) | PrimType (Uint_typ Bits32) -> Some 32
+  | PrimType (Int_typ Bits64) | PrimType (Uint_typ Bits64) -> Some 64
+  | PrimType (Int_typ Bits128) | PrimType (Uint_typ Bits128) -> Some 128
+  | PrimType (Int_typ Bits256) | PrimType (Uint_typ Bits256) -> Some 256
+  | _ -> None
 
 (* Given a ByStrX string, return integer X *)
 let bystrx_width = function PrimType (Bystrx_typ w) -> Some w | _ -> None
@@ -79,6 +76,7 @@ let is_bystrx_type = function PrimType (Bystrx_typ _) -> true | _ -> false
 
 (* Is string representation of integer valid for integer typ. *)
 let validate_int_string pt x =
+  let open String in
   try
     match pt with
     | Int_typ Bits32 -> Int32.to_string (Int32.of_string x) = x
@@ -148,7 +146,7 @@ let validate_string_literal s =
       else
         let c_int = Char.to_int c in
         if c_int >= 32 && c_int <= 126 then true
-        else if List.mem specials c ~equal:( = ) then true
+        else if List.mem specials c ~equal:Char.( = ) then true
         else false)
 
 let build_prim_literal pt v =

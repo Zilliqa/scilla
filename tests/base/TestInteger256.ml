@@ -16,6 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
+
 let uint256_max_str =
   "115792089237316195423570985008687907853269984665640564039457584007913129639935"
 
@@ -144,13 +147,13 @@ open Stdint
 (* basic tests *)
 let t1_uint =
   test_case (fun _ ->
-      let b = Uint256.to_string Uint256.max_int = uint256_max_str in
+      let b = String.(Uint256.to_string Uint256.max_int = uint256_max_str) in
       assert_bool "Uint256.max_int invalid" b)
 
 let t2_uint =
   test_case (fun _ ->
       let c = Uint256.of_string (Uint256.to_string Uint256.max_int) in
-      let b = compare Uint256.max_int c = 0 in
+      let b = Uint256.(compare max_int c) = 0 in
       assert_bool "Uint256 string conversion fail" b)
 
 let t3_uint =
@@ -174,31 +177,33 @@ let t3_uint =
         "115792089237316195423570985008687907853269984665640564039457584007913129639936.000000"
       in
       assert_bool "Uint256.to_float failed max_int"
-        (max_float = do_conv Uint256.max_int);
-      assert_bool "Uint256.to_float failed one" (one_float = do_conv Uint256.one);
+        String.(max_float = do_conv Uint256.max_int);
+      assert_bool "Uint256.to_float failed one"
+        String.(one_float = do_conv Uint256.one);
       assert_bool "Uint256.to_float failed zero"
-        (zero_float = do_conv Uint256.zero);
-      assert_bool "Uint256.to_float failed two" (two_float = do_conv uint256_two);
+        String.(zero_float = do_conv Uint256.zero);
+      assert_bool "Uint256.to_float failed two"
+        String.(two_float = do_conv uint256_two);
       assert_bool "Uint256.to_float failed max_minus_one"
-        (max_minus_one_float = do_conv uint256_max_minus_one);
+        String.(max_minus_one_float = do_conv uint256_max_minus_one);
       assert_bool "Uint256.to_float failed max_minus_two"
-        (max_minus_two_float = do_conv uint256_max_minus_two))
+        String.(max_minus_two_float = do_conv uint256_max_minus_two))
 
 let t1_int =
   test_case (fun _ ->
-      let b = Int256.to_string Int256.max_int = int256_max_str in
+      let b = String.(Int256.to_string Int256.max_int = int256_max_str) in
       assert_bool "Int256.max_int invalid" b)
 
 let t2_int =
   test_case (fun _ ->
       let c = Int256.of_string (Int256.to_string Int256.max_int) in
-      let b = compare Int256.max_int c = 0 in
+      let b = Int256.(compare max_int c) = 0 in
       assert_bool "Int256 string conversion fail" b)
 
 let t3_int =
   test_case (fun _ ->
       let c = Int256.of_string (Int256.to_string Int256.min_int) in
-      let b = compare Int256.min_int c = 0 in
+      let b = Int256.(compare min_int c) = 0 in
       assert_bool "Int256 string conversion fail" b)
 
 module type IntRep = sig
@@ -333,12 +338,11 @@ module IntTester (IR1 : IntRep) (IR2 : IntRep) = struct
           ^ string_of_bool !fail1 ^ ") vs (" ^ str2 ^ ","
           ^ string_of_bool !fail2 ^ ")\n"
         in
-        let res = str1 = str2 && !fail1 = !fail2 in
+        let res = String.(str1 = str2) && Bool.(!fail1 = !fail2) in
         assert_bool fail_str res)
 
   let binary_tests inputs =
-    List.fold_left
-      (fun tl (lhs, rhs) ->
+    List.fold_left inputs ~init:[] ~f:(fun tl (lhs, rhs) ->
         (* all operations for all inputs *)
         let add = binary_test_create lhs rhs "add" in
         let sub = binary_test_create lhs rhs "sub" in
@@ -355,7 +359,6 @@ module IntTester (IR1 : IntRep) (IR2 : IntRep) = struct
         let compare_rev = binary_test_create rhs lhs "compare" in
         add :: sub :: mul :: div :: rem :: compare :: add_rev :: sub_rev
         :: mul_rev :: div_rev :: rem_rev :: compare_rev :: tl)
-      [] inputs
 end
 
 let non_arithmetic_tests =
@@ -363,29 +366,50 @@ let non_arithmetic_tests =
       let err = "Error in logical operation test(s)." in
 
       let ofs = Int256.of_string in
-      assert_bool err (Int256.logand (ofs "1") (ofs "1") = ofs "1");
-      assert_bool err (Int256.logand (ofs "1") (ofs "0") = ofs "0");
-      assert_bool err (Int256.logor (ofs "0") (ofs "1") = ofs "1");
-      assert_bool err (Int256.logor (ofs "0") (ofs "0") = ofs "0");
-      assert_bool err (Int256.logxor (ofs "0") (ofs "1") = ofs "1");
-      assert_bool err (Int256.logxor (ofs "0") (ofs "0") = ofs "0");
-      assert_bool err (Int256.logxor (ofs "1") (ofs "1") = ofs "0");
-      assert_bool err (Int256.shift_left (ofs "1") 0 = ofs "1");
-      assert_bool err (Int256.shift_left (ofs "1") 1 = ofs "2");
       assert_bool err
-        ( Int256.shift_left (ofs "1") 129
-        = ofs "680564733841876926926749214863536422912" );
+        (Int256.compare (Int256.logand (ofs "1") (ofs "1")) (ofs "1") = 0);
+      assert_bool err
+        (Int256.compare (Int256.logand (ofs "1") (ofs "0")) (ofs "0") = 0);
+      assert_bool err
+        (Int256.compare (Int256.logor (ofs "0") (ofs "1")) (ofs "1") = 0);
+      assert_bool err
+        (Int256.compare (Int256.logor (ofs "0") (ofs "0")) (ofs "0") = 0);
+      assert_bool err
+        (Int256.compare (Int256.logxor (ofs "0") (ofs "1")) (ofs "1") = 0);
+      assert_bool err
+        (Int256.compare (Int256.logxor (ofs "0") (ofs "0")) (ofs "0") = 0);
+      assert_bool err
+        (Int256.compare (Int256.logxor (ofs "1") (ofs "1")) (ofs "0") = 0);
+      assert_bool err
+        (Int256.compare (Int256.shift_left (ofs "1") 0) (ofs "1") = 0);
+      assert_bool err
+        (Int256.compare (Int256.shift_left (ofs "1") 1) (ofs "2") = 0);
+      assert_bool err
+        ( Int256.compare
+            (Int256.shift_left (ofs "1") 129)
+            (ofs "680564733841876926926749214863536422912")
+        = 0 );
       (* 2 ^ 129 *)
-      assert_bool err (Int256.shift_left (ofs "1") 255 = ofs int256_min_str);
-      assert_bool err (Int256.shift_left (ofs "1") 256 = ofs "0");
-      assert_bool err (Int256.shift_right_logical (ofs "1") 1 = ofs "0");
       assert_bool err
-        (Int256.shift_right_logical (ofs "-1") 1 = ofs int256_max_str);
+        ( Int256.compare (Int256.shift_left (ofs "1") 255) (ofs int256_min_str)
+        = 0 );
+      assert_bool err
+        (Int256.compare (Int256.shift_left (ofs "1") 256) (ofs "0") = 0);
+      assert_bool err
+        (Int256.compare (Int256.shift_right_logical (ofs "1") 1) (ofs "0") = 0);
+      assert_bool err
+        ( Int256.compare
+            (Int256.shift_right_logical (ofs "-1") 1)
+            (ofs int256_max_str)
+        = 0 );
 
-      assert_bool err (Int256.setbit (ofs "0") 0 = ofs "1");
-      assert_bool err (Int256.setbit (ofs "0") 255 = ofs int256_min_str);
-      assert_bool err (Int256.clearbit (ofs "1") 0 = ofs "0");
-      assert_bool err (Int256.clearbit (ofs int256_min_str) 255 = ofs "0");
+      assert_bool err (Int256.compare (Int256.setbit (ofs "0") 0) (ofs "1") = 0);
+      assert_bool err
+        (Int256.compare (Int256.setbit (ofs "0") 255) (ofs int256_min_str) = 0);
+      assert_bool err
+        (Int256.compare (Int256.clearbit (ofs "1") 0) (ofs "0") = 0);
+      assert_bool err
+        (Int256.compare (Int256.clearbit (ofs int256_min_str) 255) (ofs "0") = 0);
       (* Test little-endian. *)
       let buf = Bytes.create 32 in
       let _ = Int256.to_bytes_little_endian (ofs "1") buf 0 in
@@ -394,8 +418,8 @@ let non_arithmetic_tests =
         Int256.to_bytes_big_endian (Int256.shift_left (ofs "1") 248) buf 0
       in
       let s2 = Bytes.to_string buf in
-      assert_bool err (s1 = s2);
-      assert_bool err (Int256.abs (ofs "-1") = ofs "1");
+      assert_bool err String.(s1 = s2);
+      assert_bool err (Int256.compare (Int256.abs (ofs "-1")) (ofs "1") = 0);
       let _ = Int256.to_bytes_big_endian Int256.max_int buf 0 in
       let max_int' = Int256.of_bytes_big_endian buf 0 in
       assert_bool err (Int256.compare Int256.max_int max_int' = 0);
@@ -404,49 +428,88 @@ let non_arithmetic_tests =
       assert_bool err (Int256.compare Int256.max_int max_int' = 0);
 
       let ofs = Uint256.of_string in
-      assert_bool err (Uint256.logand (ofs "1") (ofs "1") = ofs "1");
-      assert_bool err (Uint256.logand (ofs "1") (ofs "0") = ofs "0");
-      assert_bool err (Uint256.logor (ofs "0") (ofs "1") = ofs "1");
-      assert_bool err (Uint256.logor (ofs "0") (ofs "0") = ofs "0");
-      assert_bool err (Uint256.logxor (ofs "0") (ofs "1") = ofs "1");
-      assert_bool err (Uint256.logxor (ofs "0") (ofs "0") = ofs "0");
-      assert_bool err (Uint256.logxor (ofs "1") (ofs "1") = ofs "0");
-      assert_bool err (Uint256.shift_left (ofs "1") 0 = ofs "1");
-      assert_bool err (Uint256.shift_left (ofs "1") 1 = ofs "2");
       assert_bool err
-        ( Uint256.shift_left (ofs "1") 129
-        = ofs "680564733841876926926749214863536422912" );
+        (Uint256.compare (Uint256.logand (ofs "1") (ofs "1")) (ofs "1") = 0);
+      assert_bool err
+        (Uint256.compare (Uint256.logand (ofs "1") (ofs "0")) (ofs "0") = 0);
+      assert_bool err
+        (Uint256.compare (Uint256.logor (ofs "0") (ofs "1")) (ofs "1") = 0);
+      assert_bool err
+        (Uint256.compare (Uint256.logor (ofs "0") (ofs "0")) (ofs "0") = 0);
+      assert_bool err
+        (Uint256.compare (Uint256.logxor (ofs "0") (ofs "1")) (ofs "1") = 0);
+      assert_bool err
+        (Uint256.compare (Uint256.logxor (ofs "0") (ofs "0")) (ofs "0") = 0);
+      assert_bool err
+        (Uint256.compare (Uint256.logxor (ofs "1") (ofs "1")) (ofs "0") = 0);
+      assert_bool err
+        (Uint256.compare (Uint256.shift_left (ofs "1") 0) (ofs "1") = 0);
+      assert_bool err
+        (Uint256.compare (Uint256.shift_left (ofs "1") 1) (ofs "2") = 0);
+      assert_bool err
+        ( Uint256.compare
+            (Uint256.shift_left (ofs "1") 129)
+            (ofs "680564733841876926926749214863536422912")
+        = 0 );
       (* 2 ^ 129 *)
       assert_bool err
-        ( Uint256.shift_left (ofs "1") 255
-        = Uint256.add (ofs "1") (ofs int256_max_str) );
-      assert_bool err (Uint256.shift_left (ofs "1") 256 = ofs "0");
-      assert_bool err (Uint256.shift_right_logical (ofs "1") 1 = ofs "0");
+        ( Uint256.compare
+            (Uint256.shift_left (ofs "1") 255)
+            (Uint256.add (ofs "1") (ofs int256_max_str))
+        = 0 );
       assert_bool err
-        (Uint256.shift_right_logical (ofs uint256_max_str) 255 = ofs "1");
+        (Uint256.compare (Uint256.shift_left (ofs "1") 256) (ofs "0") = 0);
       assert_bool err
-        (Uint256.shift_right_logical (ofs uint256_max_str) 256 = ofs "0");
+        (Uint256.compare (Uint256.shift_right_logical (ofs "1") 1) (ofs "0") = 0);
       assert_bool err
-        ( Uint256.shift_right_logical (ofs uint256_max_str) 128
-        = ofs (Uint128.to_string Uint128.max_int) );
+        ( Uint256.compare
+            (Uint256.shift_right_logical (ofs uint256_max_str) 255)
+            (ofs "1")
+        = 0 );
       assert_bool err
-        (Uint256.shift_right_logical (ofs uint256_max_str) 255 = ofs "1");
+        ( Uint256.compare
+            (Uint256.shift_right_logical (ofs uint256_max_str) 256)
+            (ofs "0")
+        = 0 );
+      assert_bool err
+        ( Uint256.compare
+            (Uint256.shift_right_logical (ofs uint256_max_str) 128)
+            (ofs (Uint128.to_string Uint128.max_int))
+        = 0 );
+      assert_bool err
+        ( Uint256.compare
+            (Uint256.shift_right_logical (ofs uint256_max_str) 255)
+            (ofs "1")
+        = 0 );
       (* both the "shift_right"s are same for unsigned integers *)
-      assert_bool err (Uint256.shift_right (ofs "1") 1 = ofs "0");
-      assert_bool err (Uint256.shift_right (ofs uint256_max_str) 255 = ofs "1");
-      assert_bool err (Uint256.setbit (ofs "0") 0 = ofs "1");
       assert_bool err
-        ( Uint256.setbit (ofs "0") 255
-        = Uint256.add (Uint256.div (ofs uint256_max_str) (ofs "2")) (ofs "1") );
-      assert_bool err (Uint256.clearbit (ofs "1") 0 = ofs "0");
+        (Uint256.compare (Uint256.shift_right (ofs "1") 1) (ofs "0") = 0);
       assert_bool err
-        ( Uint256.clearbit
+        ( Uint256.compare
+            (Uint256.shift_right (ofs uint256_max_str) 255)
+            (ofs "1")
+        = 0 );
+      assert_bool err
+        (Uint256.compare (Uint256.setbit (ofs "0") 0) (ofs "1") = 0);
+      assert_bool err
+        ( Uint256.compare
+            (Uint256.setbit (ofs "0") 255)
             (Uint256.add
                (Uint256.div (ofs uint256_max_str) (ofs "2"))
                (ofs "1"))
-            255
-        = ofs "0" );
-      assert_bool err (Uint256.abs (ofs "1") = ofs "1"))
+        = 0 );
+      assert_bool err
+        (Uint256.compare (Uint256.clearbit (ofs "1") 0) (ofs "0") = 0);
+      assert_bool err
+        ( Uint256.compare
+            (Uint256.clearbit
+               (Uint256.add
+                  (Uint256.div (ofs uint256_max_str) (ofs "2"))
+                  (ofs "1"))
+               255)
+            (ofs "0")
+        = 0 );
+      assert_bool err (Uint256.compare (Uint256.abs (ofs "1")) (ofs "1") = 0))
 
 module Uint256Tester = IntTester (Uint256) (Uint256_Emu)
 

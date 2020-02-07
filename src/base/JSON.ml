@@ -16,9 +16,10 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Syntax
 open ErrorUtils
-open Core_kernel
 open Yojson
 open ContractUtil.MessagePayload
 open Datatypes
@@ -136,7 +137,7 @@ and read_adt_json name j tlist_verify =
     match j with
     | `List vli ->
         (* We make an exception for Lists, allowing them to be stored flatly. *)
-        if dt.tname <> "List" then
+        if String.(dt.tname <> "List") then
           raise
             (Invalid_json
                (mk_error0 "ADT value is a JSON array, but type is not List"))
@@ -153,7 +154,7 @@ and read_adt_json name j tlist_verify =
           | Error emsg -> raise (Invalid_json emsg)
           | Ok (r, _) -> r
         in
-        if dt <> dt' then
+        if not @@ [%equal: Datatypes.adt] dt dt' then
           raise
             (mk_invalid_json
                ("ADT type " ^ dt.tname ^ " does not match constructor " ^ constr));
@@ -289,7 +290,8 @@ module ContractState = struct
   let get_init_extlibs filename =
     let allf = get_json_data filename in
     let extlibs =
-      List.filter allf ~f:(fun (name, _) -> name = ContractUtil.extlibs_label)
+      List.filter allf ~f:(fun (name, _) ->
+          String.(name = ContractUtil.extlibs_label))
     in
     match extlibs with
     | [] -> []
@@ -305,8 +307,8 @@ module ContractState = struct
             List.map lit' ~f:(fun sp ->
                 match sp with
                 | ADTValue ("Pair", [ t1; t2 ], [ StringLit name; ByStrX bs ])
-                  when t1 = PrimTypes.string_typ
-                       && t2 = PrimTypes.bystrx_typ address_length
+                  when [%equal: typ] t1 PrimTypes.string_typ
+                       && [%equal: typ] t2 (PrimTypes.bystrx_typ address_length)
                        && Bystrx.width bs = address_length ->
                     (name, Bystrx.hex_encoding bs)
                 | _ ->
@@ -352,17 +354,18 @@ module Message = struct
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
   let message_to_json message =
     (* extract out "_tag", "_amount", "_accepted" and "_recipient" parts of the message *)
-    let _, taglit = List.find_exn message ~f:(fun (x, _) -> x = tag_label) in
-    let _, amountlit =
-      List.find_exn message ~f:(fun (x, _) -> x = amount_label)
+    let taglit = List.Assoc.find_exn message tag_label ~equal:String.( = ) in
+    let amountlit =
+      List.Assoc.find_exn message amount_label ~equal:String.( = )
     in
     (* message_to_json may be used to print both output and input message. Choose label accordingly. *)
     let toORfrom, tofromlit =
       List.find_exn message ~f:(fun (x, _) ->
-          x = recipient_label || x = sender_label)
+          String.(x = recipient_label || x = sender_label))
     in
     let tofrom_label =
-      if toORfrom = recipient_label then recipient_label else sender_label
+      if String.(toORfrom = recipient_label) then recipient_label
+      else sender_label
     in
     let tags = get_string_literal taglit in
     let amounts = get_uint_literal amountlit in
@@ -370,7 +373,8 @@ module Message = struct
     (* Get a list without any of these components *)
     let filtered_list =
       List.filter message ~f:(fun (x, _) ->
-          not (x = tag_label || x = amount_label || x = recipient_label))
+          String.(
+            not (x = tag_label || x = amount_label || x = recipient_label)))
     in
     `Assoc
       [
@@ -505,13 +509,13 @@ module Event = struct
   (* Same as Event_to_jstring, but instead gives out raw json, not it's string *)
   let event_to_json e =
     (* extract out "_eventname" from the message *)
-    let _, eventnamelit =
-      List.find_exn e ~f:(fun (x, _) -> x = eventname_label)
+    let eventnamelit =
+      List.Assoc.find_exn e eventname_label ~equal:String.( = )
     in
     let eventnames = get_string_literal eventnamelit in
     (* Get a list without the extracted components *)
     let filtered_list =
-      List.filter e ~f:(fun (x, _) -> not (x = eventname_label))
+      List.filter e ~f:(fun (x, _) -> String.(not (x = eventname_label)))
     in
     `Assoc
       [

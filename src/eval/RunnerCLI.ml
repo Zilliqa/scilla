@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 
 type args = {
   input_init : string;
@@ -149,9 +150,8 @@ let validate_main usage =
          address and balance) provided\n"
     else msg
   in
-  if msg <> "" then
+  if not @@ String.is_empty msg then
     PrettyPrinters.fatal_error_noformat (usage ^ Printf.sprintf "%s\n" msg)
-  else ()
 
 let parse args =
   reset ();
@@ -194,7 +194,9 @@ let parse args =
       ( "-libdir",
         Arg.String
           (fun x ->
-            let xl = if x = "" then [] else Str.split (Str.regexp "[;:]") x in
+            let xl =
+              if String.is_empty x then [] else Str.split (Str.regexp "[;:]") x
+            in
             d_libs := !d_libs @ xl),
         "Path(s) to directory containing libraries separated by ':' (';' on \
          windows)" );

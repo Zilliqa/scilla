@@ -16,8 +16,10 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
 open Core_kernel
+open! Int.Replace_polymorphic_compare
+open Syntax
+open FrontEndParser
 open ErrorUtils
 open Eval
 open DebugMessage
@@ -44,7 +46,7 @@ let check_libs clibs elibs name gas_limit =
             %s\n\n\
             Libraries for [%s] are on. All seems fine so far!\n\n"
            (* (Env.pp res) *)
-           (String.concat ~sep:", " (List.map (List.rev res) ~f:fst))
+           (String.concat ~sep:", " (List.rev_map res ~f:fst))
            name);
       gas_remaining
   | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining
@@ -60,7 +62,7 @@ let check_extract_cstate name res gas_limit =
       (cstate, remaining_gas, field_vals)
 
 (*****************************************************)
-(*   Running the simularion and printing results     *)
+(*   Running the simulation and printing results     *)
 (*****************************************************)
 
 let check_after_step res gas_limit =
@@ -79,54 +81,70 @@ let check_after_step res gas_limit =
 let input_state_json filename =
   let open JSON.ContractState in
   let states = get_json_data filename in
-  let match_balance ((vname : string), _) : bool = vname = balance_label in
   let bal_lit =
-    match List.find states ~f:match_balance with
-    | Some (_, lit) -> lit
-    | None -> raise (mk_invalid_json (balance_label ^ " field missing"))
+    match List.Assoc.find states balance_label ~equal:String.( = ) with
+    | Some v -> v
+    | None -> raise @@ mk_invalid_json (balance_label ^ " field missing")
   in
   let bal_int =
     match bal_lit with
     | UintLit (Uint128L x) -> x
     | _ -> raise (mk_invalid_json (balance_label ^ " invalid"))
   in
-  let no_bal_states = List.filter states ~f:(fun c -> not @@ match_balance c) in
+  let no_bal_states =
+    List.Assoc.remove states balance_label ~equal:String.( = )
+  in
   (no_bal_states, bal_int)
 
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
-  let ballit = (balance_label, UintLit (Uint128L balance)) in
-  let concatlist = List.cons ballit field_vals in
-  JSON.ContractState.state_to_json concatlist
+  let bal_lit = (balance_label, UintLit (Uint128L balance)) in
+  JSON.ContractState.state_to_json (bal_lit :: field_vals)
 
 let output_message_json gas_remaining mlist =
-  let ml =
-    List.map mlist ~f:(fun m ->
-        match m with
-        | Msg m -> JSON.Message.message_to_json m
-        | _ ->
-            fatal_error_gas
-              (mk_error0 "Attempt to send non-message construct.")
-              gas_remaining)
-  in
-  `List ml
+  `List
+    (List.map mlist ~f:(function
+      | Msg m -> JSON.Message.message_to_json m
+      | _ ->
+          fatal_error_gas
+            (mk_error0 "Attempt to send non-message construct.")
+            gas_remaining))
 
-let rec output_event_json elist =
-  match elist with
-  | e :: rest -> (
-      let j = output_event_json rest in
-      match e with
-      | Msg m' ->
-          let ej = JSON.Event.event_to_json m' in
-          ej :: j
-      | _ -> `Null :: j )
-  | [] -> []
+let output_event_json elist =
+  List.map elist ~f:(function
+    | Msg m -> JSON.Event.event_to_json m
+    | _ -> `Null)
+
+let validate_get_init_json init_file gas_remaining source_ver =
+  (* Retrieve initial parameters *)
+  let initargs =
+    try JSON.ContractState.get_json_data init_file
+    with Invalid_json s ->
+      fatal_error_gas
+        (s @ mk_error0 (sprintf "Failed to parse json %s:\n" init_file))
+        gas_remaining
+  in
+  (* Check for version mismatch. Subtract penalty for mismatch. *)
+  let emsg = mk_error0 "Scilla version mismatch\n" in
+  let rgas =
+    Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty)
+  in
+  let init_json_scilla_version =
+    List.Assoc.find initargs ~equal:String.equal
+      ContractUtil.scilla_version_label
+  in
+  let () =
+    match init_json_scilla_version with
+    | Some (UintLit (Uint32L v)) ->
+        let mver, _, _ = scilla_version in
+        let v' = Uint32.to_int v in
+        if v' <> mver || mver <> source_ver then fatal_error_gas emsg rgas
+    | _ -> fatal_error_gas emsg rgas
+  in
+  initargs
 
 let deploy_library args gas_remaining =
-  let parse_lmodule =
-    FrontEndParser.parse_file ScillaParser.Incremental.lmodule args.input
-  in
-  match parse_lmodule with
+  match parse_lmodule args.input with
   | Error e ->
       (* Error is printed by the parser. *)
       plog (sprintf "%s\n" "Failed to parse input library file.");
@@ -144,42 +162,17 @@ let deploy_library args gas_remaining =
 
       (* Checking initialized libraries! *)
       let gas_remaining' = check_libs clibs elibs args.input gas_remaining in
-
-      (* Retrieve initial parameters *)
-      let initargs =
-        try JSON.ContractState.get_json_data args.input_init
-        with Invalid_json s ->
-          fatal_error_gas
-            ( s
-            @ mk_error0 (sprintf "Failed to parse json %s:\n" args.input_init)
-            )
-            gas_remaining'
-      in
-      (* init.json for libraries can only have _extlibs field. *)
-      ( match initargs with
-      | [ (label, _) ] when label = extlibs_label -> ()
-      | _ ->
-          perr
-          @@ scilla_error_gas_string gas_remaining'
-               (mk_error0
-                  (sprintf "Invalid initialization file %s for library\n"
-                     args.input_init)) );
-      `Assoc
-        [
-          ("gas_remaining", `String (Uint64.to_string gas_remaining'));
-          (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
-        ]
+      let _ = validate_get_init_json args.input_init gas_remaining' lmod.smver in
+      `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining')) ]
 
 let run_with_args args =
-  let is_deployment = args.input_message = "" in
-  let is_ipc = args.ipc_address <> "" in
+  let is_deployment = String.is_empty args.input_message in
+  let is_ipc = not @@ String.is_empty args.ipc_address in
   let is_library =
-    FilePath.get_extension args.input
-    = GlobalConfig.StdlibTracker.file_extn_library
+    FilePath.check_extension args.input
+      GlobalConfig.StdlibTracker.file_extn_library
   in
-
   let gas_remaining =
-    let open Unix in
     (* Subtract gas based on (contract+init) size / message size. *)
     if is_deployment then
       let cost' =
@@ -195,7 +188,7 @@ let run_with_args args =
     else
       let cost = Uint64.of_int (Unix.stat args.input_message).st_size in
       (* libraries can only be deployed, not "run". *)
-      if is_deployment then
+      if is_library then
         fatal_error_gas
           (mk_error0
              (sprintf
@@ -210,10 +203,7 @@ let run_with_args args =
 
   if is_library then deploy_library args gas_remaining
   else
-    let parse_module =
-      FrontEndParser.parse_file ScillaParser.Incremental.cmodule args.input
-    in
-    match parse_module with
+    match parse_cmodule args.input with
     | Error e ->
         (* Error is printed by the parser. *)
         plog (sprintf "%s\n" "Failed to parse input file.");
@@ -233,59 +223,18 @@ let run_with_args args =
 
         (* Checking initialized libraries! *)
         let gas_remaining = check_libs clibs elibs args.input gas_remaining in
-
-        (* Retrieve initial parameters *)
         let initargs =
-          try
-            plog
-              (sprintf
-                 "\n[Parsing]:\nContract initialization parameters [%s].\n"
-                 args.input_init);
-            JSON.ContractState.get_json_data args.input_init
-          with Invalid_json s ->
-            fatal_error_gas
-              ( s
-              @ mk_error0 (sprintf "Failed to parse json %s:\n" args.input_init)
-              )
-              gas_remaining
-        in
-
-        (* Check for version mismatch. Subtract penalty for mist-match. *)
-        let emsg, rgas =
-          ( mk_error0 "Scilla version mismatch\n",
-            Uint64.sub gas_remaining
-              (Uint64.of_int Gas.version_mismatch_penalty) )
-        in
-        let init_json_scilla_version =
-          List.fold_left initargs ~init:None ~f:(fun found (name, lit) ->
-              if is_some found then found
-              else if name = ContractUtil.scilla_version_label then
-                match lit with UintLit (Uint32L v) -> Some v | _ -> None
-              else None)
-        in
-        let _ =
-          match init_json_scilla_version with
-          | Some ijv ->
-              let mver, _, _ = scilla_version in
-              let ijv' = Uint32.to_int ijv in
-              if ijv' <> mver || mver <> cmod.smver then
-                fatal_error_gas emsg rgas
-          | None -> fatal_error_gas emsg rgas
+          validate_get_init_json args.input_init gas_remaining cmod.smver
         in
 
         (* Retrieve block chain state  *)
         let bstate =
-          try
-            plog
-              (sprintf "\n[Parsing]:\nContract blockchain state [%s].\n"
-                 args.input_blockchain);
-            JSON.BlockChainState.get_json_data args.input_blockchain
+          try JSON.BlockChainState.get_json_data args.input_blockchain
           with Invalid_json s ->
             fatal_error_gas
               ( s
               @ mk_error0
-                  (sprintf "Failed to parse json %s:\n" args.input_blockchain)
-              )
+                  (sprintf "Failed to parse json %s:\n" args.input_blockchain) )
               gas_remaining
         in
         let ( ( output_msg_json,
@@ -313,7 +262,7 @@ let run_with_args args =
               (* We push all fields except _balance. *)
               let fields =
                 List.filter_map cstate'.fields ~f:(fun (s, t) ->
-                    if s = balance_label then None
+                    if String.(s = balance_label) then None
                     else Some { fname = s; ftyp = t; fval = None })
               in
               let sm = IPC args.ipc_address in
@@ -341,11 +290,7 @@ let run_with_args args =
           else
             (* Not initialization, execute transition specified in the message *)
             let mmsg =
-              try
-                plog
-                  (sprintf "\n[Parsing]:\nContract message [%s].\n"
-                     args.input_message);
-                JSON.Message.get_json_data args.input_message
+              try JSON.Message.get_json_data args.input_message
               with Invalid_json s ->
                 fatal_error_gas
                   ( s
@@ -369,7 +314,7 @@ let run_with_args args =
                 let fields =
                   List.filter_map cstate.fields ~f:(fun (s, t) ->
                       let open StateService in
-                      if s = balance_label then None
+                      if String.(s = balance_label) then None
                       else Some { fname = s; ftyp = t; fval = None })
                 in
                 let () =
@@ -379,17 +324,13 @@ let run_with_args args =
               else
                 (* Retrieve state variables *)
                 let curargs, cur_bal =
-                  try
-                    plog
-                      (sprintf "\n[Parsing]:\nContract state [%s].\n"
-                         args.input_state);
-                    input_state_json args.input_state
+                  try input_state_json args.input_state
                   with Invalid_json s ->
                     fatal_error_gas
                       ( s
                       @ mk_error0
-                          (sprintf "Failed to parse json %s:\n"
-                             args.input_state) )
+                          (sprintf "Failed to parse json %s:\n" args.input_state)
+                      )
                       gas_remaining
                 in
 
@@ -408,7 +349,7 @@ let run_with_args args =
                   List.map field_vals ~f:(fun (s, l) ->
                       let open StateService in
                       let t =
-                        List.Assoc.find_exn cstate.fields ~equal:( = ) s
+                        List.Assoc.find_exn cstate.fields s ~equal:String.( = )
                       in
                       { fname = s; ftyp = t; fval = Some l })
                 in
@@ -456,7 +397,6 @@ let run_with_args args =
             ("messages", output_msg_json);
             ("states", output_state_json);
             ("events", output_events_json);
-            (* ("warnings", (scilla_warning_to_json (get_warnings ()))) *)
           ]
 
 let run args_list =

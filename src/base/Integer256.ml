@@ -16,6 +16,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Stdint
 
 type uint256 = { high : uint128; low : uint128 }
@@ -43,6 +45,12 @@ module Uint256 = struct
   let max_int = { high = Uint128.max_int; low = Uint128.max_int }
 
   let min_int = zero
+
+  let compare a b =
+    if Uint128.compare a.high b.high < 0 then -1
+    else if Uint128.compare a.high b.high > 0 then 1
+    else (* compare lower halfs *)
+      Uint128.compare a.low b.low
 
   let add a b =
     let low = Uint128.add a.low b.low in
@@ -204,7 +212,7 @@ module Uint256 = struct
     if compare b zero = 0 then raise Division_by_zero
     else if
       (* If we can do 128b arithmetic, do it, hoping that it may be faster. *)
-      compare a.high Uint128.zero = 0 && compare b.high Uint128.zero = 0
+      Uint128.(compare a.high zero) = 0 && Uint128.(compare b.high zero) = 0
     then
       ( { high = Uint128.zero; low = Uint128.div a.low b.low },
         { high = Uint128.zero; low = Uint128.rem a.low b.low } )
@@ -241,16 +249,9 @@ module Uint256 = struct
 
   let neg _ = raise (Failure "Cannot negate Uint256")
 
-  let compare a b =
-    if Uint128.compare a.high b.high < 0 then -1
-    else if Uint128.compare a.high b.high > 0 then 1
-    else (* compare lower halfs *)
-      Uint128.compare a.low b.low
-
   let of_string s =
     let cl = Extlib.ExtString.String.to_list s in
-    List.fold_left
-      (fun i c ->
+    List.fold_left cl ~init:zero ~f:(fun i c ->
         let ten = { high = Uint128.zero; low = Uint128.of_string "10" } in
         let m = mul i ten in
         match c with
@@ -265,7 +266,6 @@ module Uint256 = struct
         | '8' -> add m { high = Uint128.zero; low = Uint128.of_string "8" }
         | '9' -> add m { high = Uint128.zero; low = Uint128.of_string "9" }
         | _ -> raise (Failure ("Invalid Uint256 string: " ^ s)))
-      zero cl
 
   let to_string ui =
     if compare ui zero = 0 then "0"
@@ -278,7 +278,7 @@ module Uint256 = struct
           let q, r = divrem i ten in
           let s' = app q s in
           let d = Uint128.to_int r.low in
-          s' ^ List.nth c d
+          s' ^ List.nth_exn c d
       in
       app ui ""
 
@@ -395,15 +395,15 @@ module Int256 = struct
 
   let of_string s =
     let s', n =
-      if s.[0] = '-' (* s' = s without the leading '-' *) then
-        (String.sub s 1 (String.length s - 1), true)
+      if Char.(s.[0] = '-') (* s' = s without the leading '-' *) then
+        (String.drop_prefix s 1, true)
       else (s, false)
     in
     let i =
       try Uint256.of_string s'
       with _ -> raise (Failure ("Invalid Int256 string: " ^ s))
     in
-    if isneg i && i <> min_int then
+    if isneg i && compare i min_int <> 0 then
       (* if i is negative, then the number is too big.
        * It can't be represented in 255 bits.
        * Unless it's min_int. 2s complement has one extra 

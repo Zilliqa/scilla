@@ -16,8 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
 open Core_kernel
+open! Int.Replace_polymorphic_compare
+open Syntax
 open ErrorUtils
 open MonadUtil
 open EvalMonad
@@ -77,7 +78,8 @@ module Env = struct
 
   let empty = []
 
-  let bind e k v = (k, v) :: List.filter ~f:(fun z -> fst z <> k) e
+  (* Core's List.Assoc.add function removes duplicate key-value entries to keep lists small *)
+  let bind e k v = List.Assoc.add e k v ~equal:String.( = )
 
   let bind_all e kvs =
     List.fold_left ~init:e ~f:(fun z (k, v) -> bind z k v) kvs
@@ -87,8 +89,8 @@ module Env = struct
 
   let lookup e k =
     let i = get_id k in
-    match List.find ~f:(fun z -> fst z = i) e with
-    | Some x -> pure @@ snd x
+    match List.Assoc.find e i ~equal:String.( = ) with
+    | Some v -> pure v
     | None ->
         fail1
           (sprintf "Identifier \"%s\" is not bound in environment:\n" i)
@@ -102,8 +104,8 @@ module BlockchainState = struct
   type t = (string * literal) list
 
   let lookup e k =
-    match List.find ~f:(fun z -> fst z = k) e with
-    | Some x -> pure @@ snd x
+    match List.Assoc.find e k ~equal:String.( = ) with
+    | Some v -> pure v
     | None ->
         fail0
         @@ sprintf "No value for key \"%s\" at in the blockchain state:\n%s" k
@@ -178,7 +180,7 @@ module Configuration = struct
 
   let load st k =
     let i = get_id k in
-    if i = balance_label then
+    if String.(i = balance_label) then
       (* Balance is a special case *)
       let l = UintLit (Uint128L st.balance) in
       pure (l, G_Load l)
@@ -202,8 +204,8 @@ module Configuration = struct
     let open BuiltIns.UsefulLiterals in
     if fetchval then
       let%bind vopt = fromR @@ StateService.fetch ~fname:m ~keys:klist in
-      match List.find st.fields ~f:(fun (z, _) -> z = get_id m) with
-      | Some (_, mt) -> (
+      match List.Assoc.find st.fields (get_id m) ~equal:String.( = ) with
+      | Some mt -> (
           let%bind vt =
             fromR @@ EvalTypeUtilities.map_access_type mt (List.length klist)
           in
@@ -244,7 +246,7 @@ module Configuration = struct
 
   let bind st k v =
     let e = st.env in
-    { st with env = (k, v) :: List.filter ~f:(fun z -> fst z <> k) e }
+    { st with env = List.Assoc.add e k v ~equal:String.( = ) }
 
   let bind_all st ks vs =
     let e = st.env in
@@ -256,7 +258,7 @@ module Configuration = struct
     | Ok kvs ->
         let filtered_env =
           List.filter e ~f:(fun z ->
-              not (List.exists ks ~f:(fun x -> fst z = x)))
+              not (List.mem ks (fst z) ~equal:String.( = )))
         in
         pure { st with env = kvs @ filtered_env }
 
@@ -284,7 +286,8 @@ module Configuration = struct
   let lookup_procedure st proc_name =
     let rec finder procs =
       match procs with
-      | p :: p_rest when get_id p.comp_name = proc_name -> pure (p, p_rest)
+      | p :: p_rest when String.(get_id p.comp_name = proc_name) ->
+          pure (p, p_rest)
       | _ :: p_rest -> finder p_rest
       | [] -> fail0 @@ sprintf "Procedure %s not found." proc_name
     in
@@ -294,7 +297,7 @@ module Configuration = struct
   let rec validate_messages ls =
     (* Note: We don't need a whole lot of checks as the checker does it. *)
     let validate_msg_payload pl =
-      let has_tag = List.exists pl ~f:(fun (k, _) -> k = "tag") in
+      let has_tag = List.Assoc.mem pl "tag" ~equal:String.( = ) in
       if has_tag then pure true
       else
         fail0
@@ -313,14 +316,15 @@ module Configuration = struct
     match m' with
     | Msg m ->
         (* All outgoing messages must have certain mandatory fields *)
-        let tag_found = List.exists ~f:(fun (s, _) -> s = tag_label) m in
-        let amount_found = List.exists ~f:(fun (s, _) -> s = amount_label) m in
+        let tag_found = List.Assoc.mem m tag_label ~equal:String.( = ) in
+        let amount_found = List.Assoc.mem m amount_label ~equal:String.( = ) in
         let recipient_found =
-          List.exists ~f:(fun (s, _) -> s = recipient_label) m
+          List.Assoc.mem m recipient_label ~equal:String.( = )
         in
         let uniq_entries =
-          List.for_all m ~f:(fun e ->
-              List.count m ~f:(fun e' -> fst e = fst e') = 1)
+          not
+          @@ List.contains_dup m ~compare:(fun (s, _) (t, _) ->
+                 String.compare s t)
         in
         if tag_found && amount_found && recipient_found && uniq_entries then
           pure m'
@@ -348,11 +352,12 @@ module Configuration = struct
     | Msg m ->
         (* All events must have certain mandatory fields *)
         let eventname_found =
-          List.exists ~f:(fun (s, _) -> s = eventname_label) m
+          List.Assoc.mem m eventname_label ~equal:String.( = )
         in
         let uniq_entries =
-          List.for_all m ~f:(fun e ->
-              List.count m ~f:(fun e' -> fst e = fst e') = 1)
+          not
+          @@ List.contains_dup m ~compare:(fun (s, _) (t, _) ->
+                 String.compare s t)
         in
         if eventname_found && uniq_entries then pure m'
         else

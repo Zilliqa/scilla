@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open Result.Let_syntax
 open MonadUtil
@@ -69,7 +70,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     (* A constructor in HNF *)
     | ADTValue (cn, _, ll) as als ->
         (* Make a special case for Lists, to avoid overflowing recursion. *)
-        if cn = "Cons" then
+        if String.(cn = "Cons") then
           let rec walk elm acc_cost =
             match elm with
             | ADTValue ("Cons", _, [ l; ll ]) ->
@@ -360,12 +361,12 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let matcher (name, types, fcoster, base) =
       (* The names and type list lengths must match and *)
       if
-        name = op
+        [%equal: Syntax.builtin] name op
         && List.length types = List.length arg_types
         && List.for_all2_exn
              ~f:(fun t1 t2 ->
                (* the types should match *)
-               type_equiv t1 t2
+               [%equal: typ] t1 t2
                ||
                (* or the built-in record is generic *)
                match t2 with TypeVar _ -> true | _ -> false)
@@ -376,9 +377,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let msg =
       sprintf "Unable to determine gas cost for \"%s\"" (pp_builtin op)
     in
-    let open Caml in
     let dict =
-      match Hashtbl.find_opt builtin_hashtbl op with
+      match Caml.Hashtbl.find_opt builtin_hashtbl op with
       | Some rows -> rows
       | None -> []
     in

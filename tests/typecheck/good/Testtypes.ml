@@ -16,6 +16,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open OUnit2
 open Syntax
 open ErrorUtils
@@ -34,7 +36,7 @@ let make_type_equiv_test st1 st2 eq =
                dummy_loc ))
   in
   let b, bs =
-    if eq then (type_equiv t1 t2, "=") else (not (type_equiv t1 t2), "<>")
+    if eq then ([%equal: typ] t1 t2, "=") else (not ([%equal: typ] t1 t2), "<>")
   in
   let err_msg =
     "Assert " ^ pp_typ t1 ^ " " ^ bs ^ " " ^ pp_typ t2 ^ " test failed"
@@ -42,7 +44,7 @@ let make_type_equiv_test st1 st2 eq =
   test_case (fun _ -> assert_bool err_msg b)
 
 let make_type_equiv_tests tlist =
-  List.map (fun (st1, st2, eq) -> make_type_equiv_test st1 st2 eq) tlist
+  List.map tlist ~f:(fun (st1, st2, eq) -> make_type_equiv_test st1 st2 eq)
 
 let type_equiv_tests =
   [
@@ -87,7 +89,8 @@ let make_ground_type_test ts exp_bool =
   in
   test_case (fun _ ->
       let b = is_ground_type t in
-      assert_bool "TypeUtil: is_ground_type test failed on type" (b = exp_bool))
+      assert_bool "TypeUtil: is_ground_type test failed on type"
+        Bool.(b = exp_bool))
 
 let ground_type_tests =
   [
@@ -101,7 +104,7 @@ let ground_type_tests =
   ]
 
 let make_ground_type_tests tlist =
-  List.map (fun (st, eq) -> make_ground_type_test st eq) tlist
+  List.map tlist ~f:(fun (st, eq) -> make_ground_type_test st eq)
 
 let make_map_access_type_test t at nindices =
   let open FrontEndParser in
@@ -120,7 +123,7 @@ let make_map_access_type_test t at nindices =
           assert_failure
             "Failed map_access_type test. map_access_type returned failure."
       | Ok at_computed' ->
-          let b = type_equiv at' at_computed' in
+          let b = [%equal: typ] at' at_computed' in
           assert_bool
             (Printf.sprintf
                "Failed map_access_type test for %s[%d]. Expected %s, but got %s.\n"
@@ -141,9 +144,8 @@ let map_access_type_tests =
   ]
 
 let make_map_access_type_tests tlist =
-  List.map
-    (fun (t, at, nindices) -> make_map_access_type_test t at nindices)
-    tlist
+  List.map tlist ~f:(fun (t, at, nindices) ->
+      make_map_access_type_test t at nindices)
 
 let type_equiv_tests =
   "type_equiv_tests" >::: make_type_equiv_tests type_equiv_tests
