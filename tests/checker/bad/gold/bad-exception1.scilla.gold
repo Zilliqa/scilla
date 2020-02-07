@@ -59,7 +59,7 @@
     },
     {
       "error_message":
-        "Error in throw of 'e':\nType mismatch: Exception expected, but Event provided.",
+        "Error in throw of 'e':\nTypes not equivalent: Exception expected, but Event provided.",
       "start_location": {
         "file": "checker/bad/bad-exception1.scilla",
         "line": 25,

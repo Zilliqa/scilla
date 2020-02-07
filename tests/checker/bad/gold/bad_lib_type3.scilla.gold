@@ -21,7 +21,7 @@
     },
     {
       "error_message":
-        "Type mismatch: forall 'A. forall 'B. ('A -> 'B) -> List ('A) -> List ('B) expected, but forall 'A. forall 'B. ('A -> Uint128) -> List ('A) -> List (Uint128) provided.",
+        "Types not equivalent: forall 'A. forall 'B. ('A -> 'B) -> List ('A) -> List ('B) expected, but forall 'A. forall 'B. ('A -> Uint128) -> List ('A) -> List (Uint128) provided.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

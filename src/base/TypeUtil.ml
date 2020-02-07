@@ -304,35 +304,16 @@ module TypeUtilities = struct
     if type_equiv expected given then pure ()
     else
       fail0
-      @@ sprintf "Type mismatch: %s expected, but %s provided."
+      @@ sprintf "Types not equivalent: %s expected, but %s provided."
            (pp_typ expected) (pp_typ given)
 
-  let rec assert_type_assignable expected given =
-    match expected, given with
-    | Address efts, Address gfts ->
-        (* Check that efts is a subset of gfts, and that types are assignable/equivalent. *)
-        (* Errors are collected and reported at the end. *)
-        let%bind emsgs = foldrM efts ~init:[] ~f:(fun acc_errors (ef, eft) ->
-            let ef_name = get_id ef in
-            match List.find gfts ~f:(fun (gf, _) ->
-                String.(ef_name = get_id gf)) with
-            | None ->
-                (* Field not declared in given. *)
-                Ok ((mk_error0 @@ sprintf "Field %s is not declared in remote address type." ef_name) @ acc_errors)
-            | Some (_, gft) ->
-                (* Found matching field name. Types must be assignable. *)
-                match assert_type_assignable eft gft with
-                | Ok _ -> Ok acc_errors
-                | Error msgs -> Ok (msgs @ acc_errors))
-        in
-        if List.is_empty emsgs
-        then pure ()
-        else Error emsgs
-    | PrimType (Bystrx_typ 20), Address _ ->
-        (* Any address can be viewed as a ByStr20 *)
-        pure ()
-    | _, _ -> assert_type_equiv expected given
-  
+  let assert_type_assignable expected given =
+    if type_assignable expected given then pure ()
+    else
+      fail0
+      @@ sprintf "Type unassignable: %s expected, but %s provided."
+        (pp_typ expected) (pp_typ given)
+    
   (* TODO: make this charge gas *)
   let assert_type_equiv_with_gas expected given remaining_gas =
     if type_equiv expected given then pure remaining_gas
@@ -464,7 +445,7 @@ module TypeUtilities = struct
   let rec fun_type_applies ft argtypes =
     match (ft, argtypes) with
     | FunType (argt, rest), a :: ats ->
-        let%bind _ = assert_type_equiv argt a in
+        let%bind _ = assert_type_assignable argt a in
         fun_type_applies rest ats
     | FunType (argt, rest), [] when argt = Unit -> pure rest
     | t, [] -> pure t
@@ -481,7 +462,7 @@ module TypeUtilities = struct
     match List.zip formals actuals with
     | Ok arg_pairs ->
         mapM arg_pairs ~f:(fun (formal, actual) ->
-            assert_type_equiv formal actual)
+            assert_type_assignable formal actual)
     | Unequal_lengths -> fail0 "Incorrect number of arguments to procedure"
 
   let rec elab_tfun_with_args_no_gas tf args =
@@ -716,7 +697,9 @@ module TypeUtilities = struct
     | StringLit _ -> pure string_typ
     | BNum _ -> pure bnum_typ
     | ByStr _ -> pure bystr_typ
-    | ByStrX bs -> pure (bystrx_typ (Bystrx.width bs))
+    | ByStrX bs ->
+        (* ByStr20 literals are never considered Address types *)
+        pure (bystrx_typ (Bystrx.width bs))
     (* Check that messages and events have storable parameters. *)
     | Msg bs -> get_msgevnt_type bs
     | Map ((kt, vt), _) -> pure (MapType (kt, vt))
@@ -741,7 +724,11 @@ module TypeUtilities = struct
     | StringLit _ -> pure string_typ
     | BNum _ -> pure bnum_typ
     | ByStr _ -> pure bystr_typ
-    | ByStrX bsx -> pure (bystrx_typ (Bystrx.width bsx))
+    | ByStrX bsx ->
+        (* ByStr20 literals may represent addresses, but only statically.
+           Dynamically, ByStr20 are considered ByStr20, and are checked for
+           correct address contents only at certain points. *)
+        pure (bystrx_typ (Bystrx.width bsx))
     (* Check that messages and events have legal parameters. *)
     | Msg m ->
         let%bind msg_typ = get_msgevnt_type m in
@@ -795,7 +782,7 @@ module TypeUtilities = struct
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
           let args_valid =
-            List.for_all2_exn tmap arg_typs ~f:(fun t1 t2 -> type_equiv t1 t2)
+            List.for_all2_exn tmap arg_typs ~f:(fun t1 t2 -> type_assignable t1 t2)
           in
           if not args_valid then
             fail0

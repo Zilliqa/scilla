@@ -30,7 +30,7 @@
     },
     {
       "error_message":
-        "Type mismatch: Int32 expected, but List (Bool) provided.",
+        "Type unassignable: Int32 expected, but List (Bool) provided.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

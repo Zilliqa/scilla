@@ -30,7 +30,7 @@
     },
     {
       "error_message":
-        "Type mismatch: Message expected, but Uint128 provided.",
+        "Type unassignable: Message expected, but Uint128 provided.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
@@ -45,7 +45,7 @@
     },
     {
       "error_message":
-        "Type mismatch: Message expected, but Uint128 provided.",
+        "Type unassignable: Message expected, but Uint128 provided.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },

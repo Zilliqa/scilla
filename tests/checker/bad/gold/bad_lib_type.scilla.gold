@@ -20,7 +20,8 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type mismatch: Int128 expected, but Uint32 provided.",
+      "error_message":
+        "Types not equivalent: Int128 expected, but Uint32 provided.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
