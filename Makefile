@@ -23,6 +23,7 @@ slim:
 dev:
 	./scripts/libff.sh
 	dune build --profile dev @install
+	@test -L bin || ln -s _build/install/default/bin .
 
 # Launch utop such that it finds the libraroes.
 utop: all
@@ -31,43 +32,46 @@ utop: all
 fmt:
 	dune build @fmt --auto-promote
 
+# Installer, uninstaller and test the installation
+install : all
+	dune install
+
+# This is different from the target "test" which runs on dev builds.
+test_install : all
+	ulimit -n 1024; dune exec -- tests/polynomials/testsuite_polynomials.exe
+	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
+	ulimit -n 1024; dune exec -- tests/testsuite.exe -print-diff true
+
+uninstall : all
+	dune uninstall
+
 # === TESTS (begin) ===========================================================
 # Build and run tests
 
 testbase: dev
   # This effectively adds all the runners into PATH variable
-	dune install
 	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
-	dune uninstall
 
 goldbase: dev
-	dune install
 	ulimit -n 1024; dune exec tests/base/testsuite_base.exe -- -update-gold true
-	dune uninstall
 
 # Run all tests for all packages in the repo: scilla-base, polynomials, scilla
 test: dev
-	dune install
 	ulimit -n 1024; dune exec -- tests/polynomials/testsuite_polynomials.exe
 	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
 	ulimit -n 1024; dune exec -- tests/testsuite.exe -print-diff true
-	dune uninstall
 
 gold: dev
-	dune install
 	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -update-gold true
 	ulimit -n 1024; dune exec -- tests/testsuite.exe -update-gold true
-	dune uninstall
 
 # This must be run only if there is an external IPC server available
 # that can handle access requests. It is important to use the sequential runner here as we
 # don't want multiple threads of the testsuite connecting to the same server concurrently.
 test_extipcserver: dev
-	dune install
 	dune exec -- tests/testsuite.exe -print-diff true -runner sequential \
 	-ext-ipc-server $(IPC_SOCK_PATH) \
 	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
-	dune uninstall
 
 # === TESTS (end) =============================================================
 
