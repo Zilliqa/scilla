@@ -5,7 +5,7 @@
 ;;    (setq scilla-bin-path "/absolute/path/to/scilla-checkers-and-runners/bin")
 ;;    (setq scilla-stdlib-path "/absolute/path/to/scilla/stdlib")
 ;;
-;;    Note that `dune install` command, which executes when you do `make`,
+;;    Note that `dune install` command, which executes when you do `make install`,
 ;;    issues the paths where it installs things. You may use that information
 ;;    to setup some of the paths mentioned above.
 ;;
