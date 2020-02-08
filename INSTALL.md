@@ -173,10 +173,20 @@ then
 opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.07.1
 ```
 
-9. Build the binaries
+9. Build and install
 
 ```shell
 make clean; make
+```
+
+Optionally, you can install Scilla into your opam switch
+```shell
+make install
+```
+
+This installation can be removed with
+```shell
+make uninstall
 ```
 
 10. Test your installation by running
