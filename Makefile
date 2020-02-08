@@ -23,6 +23,7 @@ slim:
 dev:
 	./scripts/libff.sh
 	dune build --profile dev @install
+	@test -L bin || ln -s _build/install/default/bin .
 
 # Launch utop such that it finds the libraroes.
 utop: all
