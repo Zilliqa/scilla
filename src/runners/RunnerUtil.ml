@@ -313,22 +313,15 @@ let import_all_libs ldirs =
     if not (Caml.Sys.file_exists dir) then []
     else
       let files = Array.to_list (Sys.readdir dir) in
-      List.fold_right files
-        ~f:(fun file names ->
-          if FilePath.check_extension file StdlibTracker.file_extn_library then
-            let name = FilePath.chop_extension (FilePath.basename file) in
-            (asId name, None (* no import-as *)) :: names
-          else names)
-        ~init:[]
+      List.filter_map files ~f:(fun file ->
+          let open FilePath in
+          if check_extension file StdlibTracker.file_extn_library then
+            let lib_name = chop_extension (basename file) in
+            Some (asId lib_name, None (* no import-as *))
+          else None)
   in
   (* Make a list of all libraries and parse them through import_lib above. *)
-  let names =
-    List.fold_right ldirs
-      ~f:(fun dir names ->
-        let names' = get_lib_list dir in
-        List.append names names')
-      ~init:[]
-  in
+  let names = List.concat_map ldirs ~f:get_lib_list in
   import_libs names None
 
 type runner_cli = {

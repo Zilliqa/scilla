@@ -1,15 +1,22 @@
 ;; This is an Emacs major mode for the Scilla language.
 ;; Include the below lines (with path set properly) in ~/.emacs
 ;;    ;; For enabling flycheck mode for Scilla.
-;;    (setq scilla-root "/absolute/path/to/scilla")
+;;    (setq scilla-mode-path "/absolute/path/to/scilla-mode.el")
+;;    (setq scilla-bin-path "/absolute/path/to/scilla-checkers-and-runners/bin")
+;;    (setq scilla-stdlib-path "/absolute/path/to/scilla/stdlib")
+;;
+;;    Note that `dune install` command, which executes when you do `make`,
+;;    issues the paths where it installs things. You may use that information
+;;    to setup some of the paths mentioned above.
+;;
 ;;    ;; Load the Scilla major mode.
-;;    (load-file (concat scilla-root "/misc/emacs-mode/scilla-mode.el"))
+;;    (load-file scilla-mode-path)
 ;;
 ;; or via use-package, e.g.:
 ;;
 ;; (use-package scilla
 ;;   :require flycheck
-;;   :load-path (lambda () (concat scilla-root "/misc/emacs-mode")))
+;;   :load-path (lambda () scilla-mode-path))
 
 (defvar scilla-mode-map
   (let ((map (make-sparse-keymap)))
@@ -349,18 +356,20 @@
     )
   )
 
-;; Set scilla-root in your ~/.emacs file as "setq scilla-root /path/to/scilla".
-;;  Note: make sure to set scilla-root *before* loading this file (scilla-mode.el)
-;; If scilla-root has been set and flycheck is available, enable flycheck.
-(if (boundp 'scilla-root)
+;; Set scilla paths (see file header) in your ~/.emacs file.
+;; Note: make sure to set the paths *before* loading this file (scilla-mode.el)
+;; If the paths have been set and flycheck is available, enable flycheck.
+(if (and (boundp 'scilla-mode-path)
+         (boundp 'scilla-bin-path)
+         (boundp 'scilla-stdlib-path))
     (progn
-      ;; derive stdlib and scilla-checker paths from scilla-root.
-      (setq lib-dir (concat scilla-root "/src/stdlib"))
-      (setq scilla-checker-bin (concat scilla-root "/bin/scilla-checker"))
+      (setq lib-dir scilla-stdlib-path)
+      (setq scilla-checker-bin (concat scilla-bin-path "/scilla-checker"))
       ;; See comment later on why we have two flycheck modes.
-      (setq type-checker-bin (concat scilla-root "/bin/type-checker"))
-      (if (and  (file-directory-p scilla-root) (file-directory-p lib-dir)
-                (file-exists-p scilla-checker-bin) (file-exists-p type-checker-bin))
+      (setq type-checker-bin (concat scilla-bin-path "/type-checker"))
+      (if (and (file-directory-p lib-dir)
+               (file-exists-p scilla-checker-bin)
+               (file-exists-p type-checker-bin))
         (progn
           (if (require 'flycheck nil t)
               (progn
@@ -422,10 +431,10 @@
             (message "json package not available")
             )
           )
-        (message "Scilla-Flycheck: scilla-root set incorrectly or one of src/stdlib bin/(scilla/type)-checker missing.")
+        (message "Scilla-Flycheck: scilla paths set incorrectly or one of stdlib or bin/(scilla/type)-checker missing.")
         )
       )
-  (message "Scilla-FlyCheck: scilla-root not set.")
+  (message "Scilla-FlyCheck: scilla paths not set.")
   )
 
  ;;; scilla-mode.el ends here

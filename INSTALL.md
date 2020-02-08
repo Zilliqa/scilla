@@ -181,11 +181,12 @@ make clean; make
 
 10. Test your installation by running
 ```shell
-./bin/eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/good/let.scilexp
+eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/good/let.scilexp
 ```
+from the project root.
 
 If the output is as below, then you are good to go 👍. No further action will be necessary.
-The binaries (`eval-runner`, `scilla-checker`, `scilla-runner` & `type-checker`) are all located in the `bin/` directory
+The binaries (`eval-runner`, `scilla-checker`, `scilla-runner` & `type-checker`) are all installed in your opam switch.
 
 ```
 { [a -> (Int32 42)],

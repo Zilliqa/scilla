@@ -105,12 +105,12 @@ let rec build_contract_tests_with_init_file env name exit_code i n
         if disable_validate_json then "-disable-validate-json" :: args'
         else args'
       in
-      let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
-      print_cli_usage (env.print_cli test_ctxt) scillabin args;
+      let runner = "scilla-runner" in
+      print_cli_usage (env.print_cli test_ctxt) runner args;
       let test_name = name ^ "_" ^ istr in
       let goldoutput_file = dir ^/ "output_" ^ istr ^. "json" in
-      let msg = cli_usage_on_err scillabin args in
-      assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
+      let msg = cli_usage_on_err runner args in
+      assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt runner args
         ~foutput:(fun s ->
           (* if the test is supposed to succeed we read the output from a file,
                  otherwise we read from the output stream *)
@@ -188,7 +188,7 @@ let build_contract_init_test env exit_code name init_name is_library =
       dir ^/ "blockchain_1" ^. "json";
     ]
   in
-  let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
+  let scillabin = "scilla-runner" in
   print_cli_usage (env.print_cli test_ctxt) scillabin args;
   let test_name = name ^ "_" ^ init_name in
   let goldoutput_file = dir ^/ init_name ^ "_output" ^. "json" in
@@ -206,7 +206,7 @@ let build_contract_init_test env exit_code name init_name is_library =
       else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
 
 let build_misc_tests env =
-  let scillabin bin_dir test_ctxt = bin_dir test_ctxt ^/ "scilla-runner" in
+  let scillabin = "scilla-runner" in
   let output_file test_ctxt name = bracket_tmpdir test_ctxt ^/ name in
   let tests_dir_file testsdir test_ctxt name =
     testsdir test_ctxt ^/ "runner" ^/ "crowdfunding" ^/ name
@@ -233,7 +233,6 @@ let build_misc_tests env =
         tests_dir_file env.tests_dir test_ctxt ("blockchain_" ^ snum ^. "json");
       ]
     in
-    let scillabin = scillabin env.bin_dir test_ctxt in
     print_cli_usage (env.print_cli test_ctxt) scillabin args;
     assert_command ~exit_code:fail_code ~ctxt:test_ctxt scillabin args
   in

@@ -1,0 +1,9 @@
+(install
+ (section lib)
+ (package scilla)
+ (files
+  (BoolUtils.scillib as stdlib/BoolUtils.scillib)
+  (IntUtils.scillib as stdlib/IntUtils.scillib)
+  (ListUtils.scillib as stdlib/ListUtils.scillib)
+  (NatUtils.scillib as stdlib/NatUtils.scillib)
+  (PairUtils.scillib as stdlib/PairUtils.scillib)))
