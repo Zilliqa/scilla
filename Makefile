@@ -3,14 +3,14 @@
 OCAML_VERSION_RECOMMENDED=4.07.1
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
 
-.PHONY: default all utop dev clean docker zilliqa-docker
+.PHONY: default release utop dev clean docker zilliqa-docker
 
-default: all
+default: release
 
 # Build one library and one standalone executable that implements
 # multiple subcommands and uses the library.
 # The library can be loaded in utop for interactive testing.
-all:
+release:
 	./scripts/libff.sh
 	dune build --profile release @install
 
@@ -26,23 +26,23 @@ dev:
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Launch utop such that it finds the libraroes.
-utop: all
+utop: release
 	OCAMLPATH=_build/install/default/lib:$(OCAMLPATH) utop
 
 fmt:
 	dune build @fmt --auto-promote
 
 # Installer, uninstaller and test the installation
-install : all
+install : release
 	dune install
 
 # This is different from the target "test" which runs on dev builds.
-test_install : all
+test_install : install
 	ulimit -n 1024; dune exec -- tests/polynomials/testsuite_polynomials.exe
 	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
 	ulimit -n 1024; dune exec -- tests/testsuite.exe -print-diff true
 
-uninstall : all
+uninstall : release
 	dune uninstall
 
 # === TESTS (begin) ===========================================================
