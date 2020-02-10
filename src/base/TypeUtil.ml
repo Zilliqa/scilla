@@ -329,7 +329,8 @@ module TypeUtilities = struct
     match t with
     | FunType (a, r) -> is_ground_type a && is_ground_type r
     | MapType (k, v) -> is_ground_type k && is_ground_type v
-    | ADT (_, ts) -> List.for_all ~f:(fun t -> is_ground_type t) ts
+    | ADT (_, ts) -> List.for_all ts ~f:(fun t -> is_ground_type t)
+    | Address fts -> List.for_all fts ~f:(fun (_, t) -> is_ground_type t)
     | PolyFun _ | TypeVar _ -> false
     | _ -> true
 
@@ -337,8 +338,13 @@ module TypeUtilities = struct
     match t with
     | FunType (a, r) -> is_non_map_ground_type a && is_non_map_ground_type r
     | MapType (_, _) -> false
-    | ADT (_, ts) -> List.for_all ~f:(fun t -> is_non_map_ground_type t) ts
+    | ADT (_, ts) -> List.for_all ts ~f:(fun t -> is_non_map_ground_type t)
     | PolyFun _ | TypeVar _ -> false
+    | Address fts ->
+        (* Addresses are passed as ByStr20, so they do not contain maps,
+           even if they contain a field of map type. However, the fields
+           must still be of ground types.*)
+        List.for_all fts ~f:(fun (_, t) -> is_ground_type t)
     | _ -> true
 
   let rec is_serializable_storable_helper accept_maps check_addresses t seen_adts =

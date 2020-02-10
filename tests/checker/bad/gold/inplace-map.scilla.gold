@@ -30,7 +30,7 @@
     },
     {
       "error_message":
-        "Type error in updating map gmap[k]\nTypes not equivalent: Int32 expected, but String provided.",
+        "Type error in updating map gmap[k]\nType unassignable: Int32 expected, but String provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 19,
@@ -49,7 +49,7 @@
     },
     {
       "error_message":
-        "Type error in updating map gmap3[c][b][c]\nTypes not equivalent: String expected, but Int64 provided.",
+        "Type error in updating map gmap3[c][b][c]\nType unassignable: String expected, but Int64 provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 38,
@@ -68,7 +68,7 @@
     },
     {
       "error_message":
-        "Type error in updating map gmap3[a]\nTypes not equivalent: Map (Int32) (Map (Int64) (String)) expected, but String provided.",
+        "Type error in updating map gmap3[a]\nType unassignable: Map (Int32) (Map (Int64) (String)) expected, but String provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 45,
@@ -116,7 +116,7 @@
     },
     {
       "error_message":
-        "Type error in updating map gmap[dd]\nTypes not equivalent: String expected, but Map (Int64) (String) provided.",
+        "Type error in updating map gmap[dd]\nType unassignable: String expected, but Map (Int64) (String) provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 70,
@@ -154,7 +154,7 @@
     },
     {
       "error_message":
-        "Type error in updating map gmap3[b]\nTypes not equivalent: String expected, but Int32 provided.",
+        "Type error in updating map gmap3[b]\nType unassignable: String expected, but Int32 provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 95,
@@ -173,7 +173,7 @@
     },
     {
       "error_message":
-        "Type error in getting map value gmap3[a][c][c]\nTypes not equivalent: Int32 expected, but Int64 provided.",
+        "Type error in getting map value gmap3[a][c][c]\nType unassignable: Int32 expected, but Int64 provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 102,

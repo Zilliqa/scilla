@@ -577,11 +577,24 @@ let type_assignable to_typ from_typ =
             | Some (_, fft) ->
                 (* Matching field name. Types must be assignable. *)
                 assignable tft fft)
-    | PrimType (Bystrx_typ 20), Address _ ->
+    | PrimType (Bystrx_typ len), Address _
+      when len = address_length ->
         (* Any address is assignable to ByStr20. *)
         true
+    | ADT (tname1, tl1), ADT (tname2, tl2) ->
+        equal_id tname1 tname2
+        && List.length tl1 = List.length tl2
+        (* Instantiation types must be assignable *)
+        && List.for_all2_exn ~f:assignable tl1 tl2
+    | MapType (t1_1, t1_2), MapType (t2_1, t2_2) ->
+        assignable t1_1 t2_1 && assignable t1_2 t2_2
+    | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
+        (* Must be contravariant in the argument type *)
+        assignable t2_1 t1_1 && assignable t1_2 t2_2
+    | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
+        String.equal v1 v2 && assignable t1'' t2''
     | _, _ ->
-        (* All other cases require equivalence. *)
+        (* All other cases require equality up to canonicalisation. *)
         type_equal to_typ from_typ
   in
   assignable to_typ' from_typ'

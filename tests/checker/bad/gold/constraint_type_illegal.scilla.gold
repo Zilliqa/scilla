@@ -21,7 +21,7 @@
     },
     {
       "error_message":
-        "Types not equivalent: Bool expected, but Uint128 provided.",
+        "Type unassignable: Bool expected, but Uint128 provided.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
