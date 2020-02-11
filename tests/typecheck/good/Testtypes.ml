@@ -92,10 +92,17 @@ let all_type_equiv_tests =
     ( "ByStr20 with x : Uint32 end",
       "ByStr20 with x : Uint32, y : Uint32 end",
       false );
+    ( "ByStr20",
+      "ByStr20 with x : Uint32 end",
+      false );
+    ( "ByStr20 with x : Uint32 end",
+      "ByStr20",
+      false );
   ]
 
 let all_type_assignable_tests =
   [
+    (* TODO: These need to be done properly. They are currently a copy of the equiv tests *)
     ("Uint32", "Uint32", true);
     ("Int32", "Uint32", false);
     ( "forall 'A. List ('A) -> List ('A)",
@@ -123,6 +130,8 @@ let all_type_assignable_tests =
       "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B",
       true );
   ]
+  @ List.filter (fun (_, _, eq) -> eq) all_type_equiv_tests  (* Equivalence should imply assignable *)
+(* TODO: Swap all true equiv tests, and run again. Also add swapped version to equiv tests *)
 
 let make_map_access_type_test t at nindices =
   let open FrontEndParser in
@@ -170,7 +179,7 @@ let type_equiv_tests =
   "type_equiv_tests" >::: make_type_equiv_tests all_type_equiv_tests
 
 let type_assignable_tests =
-  "type_assignable_tests" >::: make_type_assignable_tests all_type_equiv_tests
+  "type_assignable_tests" >::: make_type_assignable_tests all_type_assignable_tests
 
 let map_access_type_tests =
   "map_access_type_tests" >::: make_map_access_type_tests map_access_type_tests

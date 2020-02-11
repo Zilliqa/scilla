@@ -122,13 +122,11 @@ module TypeUtilities : sig
 
   val is_legal_message_field_type : typ -> bool
 
-  val is_legal_parameter_type : typ -> bool
+  val is_legal_transition_parameter_type : typ -> bool
   
+  val is_legal_procedure_parameter_type : typ -> bool
+
   val is_legal_field_type : typ -> bool
-
-  val is_ground_type : typ -> bool
-
-  val is_non_map_ground_type : typ -> bool
 
   val get_msgevnt_type :
     (string * 'a) sexp_list -> (typ, scilla_error sexp_list) result
@@ -168,6 +166,8 @@ module TypeUtilities : sig
     ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
 
   val assert_type_equiv : typ -> typ -> (unit, scilla_error list) result
+
+  val type_assignable_list : typ list -> typ list -> bool
 
   val assert_type_assignable : typ -> typ -> (unit, scilla_error list) result
   

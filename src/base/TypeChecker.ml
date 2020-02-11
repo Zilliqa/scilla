@@ -845,6 +845,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     @@
     let param_checker =
       match comp_type with
+      (* TODO: Check for duplicate fields in address types *)
       | CompTrans -> is_legal_transition_parameter_type
       | CompProc -> is_legal_procedure_parameter_type
     in

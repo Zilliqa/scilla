@@ -204,7 +204,7 @@ typ :
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
 | LPAREN; t = typ; RPAREN; { t }
-| d = ID; WITH; fs = separated_list(COMMA, address_field_type); END;
+| d = CID; WITH; fs = separated_list(COMMA, address_field_type); END;
     { if d = "ByStr20"
       then Address fs
       else raise (SyntaxError ("Invalid primitive type", toLoc $startpos(d))) }

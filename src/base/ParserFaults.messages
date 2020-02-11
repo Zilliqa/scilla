@@ -112,20 +112,6 @@ type_term: CID UNDERSCORE
 
 This is an invalid type term, it may be a bad ADT.
 
-type_term: CID WITH
-##
-## Ends in an error in state: 22.
-##
-## scid -> CID . [ UNDERSCORE TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN ID FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## scid -> CID . PERIOD CID [ UNDERSCORE TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN ID FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## CID
-##
-# see tests/parser/bad/type_t-cid-with.scilla
-
-This is an invalid type term, the ADT constructor arguments are likely incorrect. This necessitates a proper separated capital identifier, type identifier, type in brackets or a map.
-
 type_term: FORALL TID PERIOD TID WITH
 ##
 ## Ends in an error in state: 61.
@@ -534,7 +520,7 @@ This function is not terminated early enough or malformed. A possible alteration
 
 type_term: TID TARROW WITH
 ##
-## Ends in an error in state: 62.
+## Ends in an error in state: ?.
 ##
 ## typ -> typ TARROW . typ [ TARROW RPAREN EQ EOF COMMA ]
 ##
@@ -545,19 +531,34 @@ type_term: TID TARROW WITH
 
 This function type lacks a result type.
 
+type_term: CID WITH EOF
+##
+## Ends in an error in state: 62.
+##
+## 
+##
+## The known suffix of the stack is as follows:
+## 
+##
+# see tests/parser/bad/type_t-tid-arrow-with.scilla
+
+Invalid or incomplete type.
+
 type_term: TID WITH
 ##
-## Ends in an error in state: 312.
+## Ends in an error in state: 317.
 ##
 ## typ -> typ . TARROW typ [ TARROW EOF ]
 ## type_term -> typ . EOF [ # ]
-##
+## scid -> CID . [ UNDERSCORE TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN ID FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## scid -> CID . PERIOD CID [ UNDERSCORE TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN ID FIELD EQ EOF END CONTRACT COMMA CID BAR AR##
 ## The known suffix of the stack is as follows:
 ## typ
+## CID
 ##
 # special case, only by type_term entry point should never happen
 
-This is an invalid type term, following the type it is complete and may only be extended by an arrow.
+This is an invalid type term, the ADT constructor arguments are likely incorrect. This necessitates a proper separated capital identifier, type identifier, type in brackets, or a map.
 
 type_term: WITH
 ##
@@ -1596,35 +1597,24 @@ This type annotation is not closed properly, or has a missing or misplaced '='.
 
 exp_term: FUN LPAREN ID COLON WITH
 ##
-## Ends in an error in state: 61.
+## Ends in an error in state: 64.
 ##
 ## simple_exp -> FUN LPAREN ID COLON . typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ## type_annot -> COLON . typ [ EQ ]
 ## param_pair -> ID COLON . typ [ RPAREN COMMA ]
 ## field -> FIELD ID COLON . typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
+## type_annot -> COLON . typ [ EQ ]
 ## 
 ## The known suffix of the stack is as follows:
 ## FUN LPAREN ID COLON
 ## LET ID COLON WITH
 ## SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON WITH
 ## SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON WITH
-##
-# see tests/parser/bad/exps/exp_t-fun-lparen-id-colon-with.scilexp
-
-Missing or invalid type in type annotation.
-
-cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON ID RPAREN
-##
-## Ends in an error in state: 58.
-##
-## type_annot -> COLON . typ [ EQ ]
-## 
-## The known suffix of the stack is as follows:
 ## SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON WITH
 ##
 # see tests/parser/bad/exps/exp_t-fun-lparen-id-colon-with.scilexp
 
-Invalid type in type annotation.
+Missing or invalid type in type annotation.
 
 exp_term: FUN LPAREN ID WITH
 ##

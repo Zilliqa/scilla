@@ -552,6 +552,17 @@ let rec type_equal t1 t2 =
       type_equal t1_1 t2_1 && type_equal t1_2 t2_2
   | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
       String.equal v1 v2 && type_equal t1'' t2''
+  | Address fts1, Address fts2 ->
+      let traverse fts_first fts_second =
+        List.for_all fts_first ~f:(fun (f1, t1) ->
+            let f1_id = get_id f1 in
+            match List.find fts_second ~f:(fun (f2, _) -> String.(f1_id = get_id f2)) with
+            | None -> false
+            | Some (_, t2) -> type_equal t1 t2)
+      in
+      List.length fts1 = List.length fts2
+      && traverse fts1 fts2
+      && traverse fts2 fts1
   | _ -> false
 
 (* Type equivalence *)
