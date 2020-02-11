@@ -845,8 +845,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     @@
     let param_checker =
       match comp_type with
-      | CompTrans -> is_legal_parameter_type
-      | CompProc -> is_non_map_ground_type
+      | CompTrans -> is_legal_transition_parameter_type
+      | CompProc -> is_legal_procedure_parameter_type
     in
     let%bind typed_cparams =
       mark_error_as_type_error remaining_gas

@@ -21,30 +21,80 @@ open Syntax
 open ErrorUtils
 module TestTypeUtils = TypeUtil.TypeUtilities
 
-let make_type_equiv_test st1 st2 eq =
+let make_type_assignable_equiv_tests st1 st2 eq f_name f =
   let open FrontEndParser in
-  let t1, t2 =
-    match (parse_type st1, parse_type st2) with
+  let t1, t2 = match (parse_type st1, parse_type st2) with
     | Ok t1, Ok t2 -> (t1, t2)
     | _ ->
         raise
           (SyntaxError
              ( "Error parsing types " ^ st1 ^ " and " ^ st2
-               ^ " in type_equiv tests",
+               ^ " in " ^ f_name ^ " tests",
                dummy_loc ))
   in
   let b, bs =
-    if eq then (type_equiv t1 t2, "=") else (not (type_equiv t1 t2), "<>")
+    if eq then (f t1 t2, "=") else (not (f t1 t2), "<>")
   in
   let err_msg =
     "Assert " ^ pp_typ t1 ^ " " ^ bs ^ " " ^ pp_typ t2 ^ " test failed"
   in
   test_case (fun _ -> assert_bool err_msg b)
+  
+let make_type_assignable_test st1 st2 eq =
+  make_type_assignable_equiv_tests st1 st2 eq "type_assignable" type_assignable
+
+let make_type_assignable_tests tlist =
+  List.map (fun (st1, st2, eq) -> make_type_assignable_test st1 st2 eq) tlist
+
+let make_type_equiv_test st1 st2 eq =
+  make_type_assignable_equiv_tests st1 st2 eq "type_equiv" type_equiv
 
 let make_type_equiv_tests tlist =
   List.map (fun (st1, st2, eq) -> make_type_equiv_test st1 st2 eq) tlist
 
-let type_equiv_tests =
+let all_type_equiv_tests =
+  [
+    ("Uint32", "Uint32", true);
+    ("Int32", "Uint32", false);
+    ( "forall 'A. List ('A) -> List ('A)",
+      "forall 'B. List ('B) -> List ('B)",
+      true );
+    ( "forall 'A. List ('A) -> List ('A)",
+      "forall 'A. List ('A) -> List ('A) -> List ('A)",
+      false );
+    ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
+      "forall 'B. forall 'A. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
+      false );
+    ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
+      "forall 'B. forall 'A. ('A -> 'B -> 'A) -> 'A -> List ('B) -> 'A",
+      true );
+    ( "forall 'A. 'A -> forall 'B. List ('B)",
+      "forall 'B. 'B -> forall 'A. List ('A)",
+      true );
+    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'A",
+      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B",
+      true );
+    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
+      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B",
+      false );
+    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
+      "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B",
+      true );
+    ( "ByStr20 with x : Uint32 end",
+      "ByStr20 with x : Uint32 end",
+      true );
+    ( "ByStr20 with x : Int32 end",
+      "ByStr20 with x : Uint32 end",
+      false );
+    ( "ByStr20 with x : Uint32, y : Uint32 end",
+      "ByStr20 with x : Uint32 end",
+      false );
+    ( "ByStr20 with x : Uint32 end",
+      "ByStr20 with x : Uint32, y : Uint32 end",
+      false );
+  ]
+
+let all_type_assignable_tests =
   [
     ("Uint32", "Uint32", true);
     ("Int32", "Uint32", false);
@@ -73,35 +123,6 @@ let type_equiv_tests =
       "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B",
       true );
   ]
-
-let make_ground_type_test ts exp_bool =
-  let open FrontEndParser in
-  let open TestTypeUtils in
-  let t =
-    match parse_type ts with
-    | Ok t -> t
-    | _ ->
-        raise
-          (SyntaxError
-             ("Error parsing type " ^ ts ^ " in type_equiv tests", dummy_loc))
-  in
-  test_case (fun _ ->
-      let b = is_ground_type t in
-      assert_bool "TypeUtil: is_ground_type test failed on type" (b = exp_bool))
-
-let ground_type_tests =
-  [
-    ("'A", false);
-    ("Uint32", true);
-    ("Uint32 -> 'A", false);
-    ("forall 'A. List ('A) -> List ('A)", false);
-    ("List ('A)", false);
-    ("forall 'A. Map Int32 Uint32", false);
-    ("forall 'A. Pair Int32 'A", false);
-  ]
-
-let make_ground_type_tests tlist =
-  List.map (fun (st, eq) -> make_ground_type_test st eq) tlist
 
 let make_map_access_type_test t at nindices =
   let open FrontEndParser in
@@ -146,10 +167,10 @@ let make_map_access_type_tests tlist =
     tlist
 
 let type_equiv_tests =
-  "type_equiv_tests" >::: make_type_equiv_tests type_equiv_tests
+  "type_equiv_tests" >::: make_type_equiv_tests all_type_equiv_tests
 
-let ground_type_tests =
-  "ground_type_tests" >::: make_ground_type_tests ground_type_tests
+let type_assignable_tests =
+  "type_assignable_tests" >::: make_type_assignable_tests all_type_equiv_tests
 
 let map_access_type_tests =
   "map_access_type_tests" >::: make_map_access_type_tests map_access_type_tests
@@ -205,7 +226,7 @@ let all_tests env =
   "type_check_success_tests"
   >::: [
          type_equiv_tests;
+         type_assignable_tests;
          Tests.all_tests env;
-         ground_type_tests;
          map_access_type_tests;
        ]

@@ -307,6 +307,12 @@ module TypeUtilities = struct
       @@ sprintf "Types not equivalent: %s expected, but %s provided."
            (pp_typ expected) (pp_typ given)
 
+  let type_assignable_list tlist1 tlist2 =
+    List.length tlist1 = List.length tlist2
+    && not
+      (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
+           not (type_assignable t1 t2)))
+  
   let assert_type_assignable expected given =
     if type_assignable expected given then pure ()
     else
@@ -325,44 +331,29 @@ module TypeUtilities = struct
                (pp_typ expected) (pp_typ given)),
           remaining_gas )
 
-  let rec is_ground_type t =
-    match t with
-    | FunType (a, r) -> is_ground_type a && is_ground_type r
-    | MapType (k, v) -> is_ground_type k && is_ground_type v
-    | ADT (_, ts) -> List.for_all ts ~f:(fun t -> is_ground_type t)
-    | Address fts -> List.for_all fts ~f:(fun (_, t) -> is_ground_type t)
-    | PolyFun _ | TypeVar _ -> false
-    | _ -> true
-
-  let rec is_non_map_ground_type t =
-    match t with
-    | FunType (a, r) -> is_non_map_ground_type a && is_non_map_ground_type r
-    | MapType (_, _) -> false
-    | ADT (_, ts) -> List.for_all ts ~f:(fun t -> is_non_map_ground_type t)
-    | PolyFun _ | TypeVar _ -> false
-    | Address fts ->
-        (* Addresses are passed as ByStr20, so they do not contain maps,
-           even if they contain a field of map type. However, the fields
-           must still be of ground types.*)
-        List.for_all fts ~f:(fun (_, t) -> is_ground_type t)
-    | _ -> true
-
-  let rec is_serializable_storable_helper accept_maps check_addresses t seen_adts =
-    match t with
-    | FunType _ | PolyFun _ | Unit -> false
-    | MapType (kt, vt) ->
-        if accept_maps then
-          is_serializable_storable_helper accept_maps check_addresses kt seen_adts
-          && is_serializable_storable_helper accept_maps check_addresses vt seen_adts
-        else false
-    | TypeVar _ -> (
+  let rec is_serializable_storable_helper accept_maps allow_unserializable check_addresses t seen_adts =
+    let rec recurser t seen_adts =
+      match t with
+      | FunType (a, r) ->
+          allow_unserializable &&
+          recurser a seen_adts &&
+          recurser r seen_adts
+      | PolyFun (_, t) ->
+          allow_unserializable &&
+          recurser t seen_adts
+      | Unit ->
+          allow_unserializable 
+      | MapType (kt, vt) ->
+          accept_maps &&
+          recurser kt seen_adts &&
+          recurser vt seen_adts
+    | TypeVar _ ->
         (* If we are inside an ADT, then type variable
            instantiations are handled outside *)
-        match seen_adts with
-        | [] -> false
-        | _ -> true )
+        not @@ List.is_empty seen_adts
     | PrimType _ ->
         (* Messages and Events are not serialisable in terms of contract parameters *)
+        allow_unserializable ||
         not (t = PrimTypes.msg_typ || t = PrimTypes.event_typ)
     | ADT (tname, ts) -> (
         match List.findi ~f:(fun _ seen -> seen = tname) seen_adts with
@@ -380,36 +371,44 @@ module TypeUtilities = struct
                     ~f:(fun (_, carg_list) ->
                       List.for_all
                         ~f:(fun carg ->
-                          is_serializable_storable_helper accept_maps check_addresses carg
-                            (tname :: seen_adts))
+                          recurser  carg (tname :: seen_adts))
                         carg_list)
                     adt.tmap
                 in
                 adt_serializable
                 && List.for_all
                      ~f:(fun t ->
-                       is_serializable_storable_helper accept_maps check_addresses t seen_adts)
+                       recurser t seen_adts)
                      ts ) )
     | Address fts
       when check_addresses ->
-        (* If check_addresses is true, then all field types in the address type should be legal field types. *)
+        (* If check_addresses is true, then all field types in the address type should be legal field types. 
+           No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
         List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t)
     | Address _ ->
         (* If check_addresses is false, then consider Address = ByStr20. *)
         true
+    in
+    recurser t seen_adts
 
   and is_legal_message_field_type t =
     (* Maps are not allowed. Address values are considered ByStr20 when used as message field value. *)
-    is_serializable_storable_helper false false t []
+    is_serializable_storable_helper false false false t []
 
-  and is_legal_parameter_type t =
+  and is_legal_transition_parameter_type t =
     (* Maps are not allowed. Address values should be checked for storable field types. *)
-    is_serializable_storable_helper false true t []
+    is_serializable_storable_helper false false true t []
+
+  and is_legal_procedure_parameter_type t =
+    (* Like transition parametes, except that polymorphic parameters are allowed,
+       since parameters do not need to be serializable. *)
+    is_serializable_storable_helper false true true t []
 
   and is_legal_field_type t =
     (* Maps are allowed. Address values should be checked for storable field types. *)
-    is_serializable_storable_helper true true t []
+    is_serializable_storable_helper true false true t []
 
+  
   let get_msgevnt_type m =
     if
       List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.tag_label) m

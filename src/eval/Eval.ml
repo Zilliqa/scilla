@@ -523,7 +523,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
           tryM
             ~f:(fun (ps, pt) ->
               let%bind at = fromR @@ literal_type (snd a) in
-              if get_id ps = fst a && type_equiv pt at then pure true
+              if get_id ps = fst a && type_assignable pt at then pure true
               else fail0 "")
             cparams ~msg:emsg
         in
@@ -572,7 +572,7 @@ let create_cur_state_fields initcstate curcstate =
             ~f:(fun (t, li) ->
               let%bind t1 = fromR @@ literal_type lc in
               let%bind t2 = fromR @@ literal_type li in
-              if s = t && type_equiv t1 t2 then pure true else fail0 "")
+              if s = t && type_assignable t1 t2 then pure true else fail0 "")
             initcstate ~msg:emsg
         in
         pure ex)
