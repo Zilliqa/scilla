@@ -16,6 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
 open OUnit2
 open Syntax
 open ErrorUtils
@@ -43,95 +44,83 @@ let make_type_assignable_equiv_tests st1 st2 eq f_name f =
 let make_type_assignable_test st1 st2 eq =
   make_type_assignable_equiv_tests st1 st2 eq "type_assignable" type_assignable
 
-let make_type_assignable_tests tlist =
-  List.map (fun (st1, st2, eq) -> make_type_assignable_test st1 st2 eq) tlist
+let make_all_type_assignable_tests tlist =
+  List.map tlist ~f:(fun (st1, st2, eq) -> make_type_assignable_test st1 st2 eq)
 
 let make_type_equiv_test st1 st2 eq =
   make_type_assignable_equiv_tests st1 st2 eq "type_equiv" type_equiv
 
-let make_type_equiv_tests tlist =
-  List.map (fun (st1, st2, eq) -> make_type_equiv_test st1 st2 eq) tlist
+let make_all_type_equiv_tests tlist =
+  List.map tlist ~f:(fun (st1, st2, eq) -> make_type_equiv_test st1 st2 eq)
+
+let equivalent_types =
+  [
+    ("Uint32", "Uint32");
+    ( "forall 'A. List ('A) -> List ('A)",
+      "forall 'B. List ('B) -> List ('B)");
+    ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
+      "forall 'B. forall 'A. ('A -> 'B -> 'A) -> 'A -> List ('B) -> 'A");
+    ( "forall 'A. 'A -> forall 'B. List ('B)",
+      "forall 'B. 'B -> forall 'A. List ('A)");
+    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'A",
+      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B");
+    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
+      "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B");
+    ( "ByStr20 with x : Uint32 end",
+      "ByStr20 with x : Uint32 end");
+  ]
+  
+let assignable_but_not_equivalent_types =
+  [
+    ( "ByStr20 with x : Uint32 end",
+      "ByStr20 with x : Uint32, y : Uint32 end");
+  ]
+
+let not_assignable_types =
+  [
+    ("Int32", "Uint32");
+    ( "forall 'A. List ('A) -> List ('A)",
+      "forall 'A. List ('A) -> List ('A) -> List ('A)");
+    ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
+      "forall 'B. forall 'A. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B");
+    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
+      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B");
+    ( "ByStr20 with x : Int32 end",
+      "ByStr20 with x : Uint32 end");
+    ( "ByStr20 with x : Uint32, y : Uint32 end",
+      "ByStr20 with x : Uint32 end");
+  ]
+
+let make_test eq (t1, t2) = (t1, t2, eq)
+
+let reverse_test eq (t1, t2) = (t2, t1, eq)
 
 let all_type_equiv_tests =
-  [
-    ("Uint32", "Uint32", true);
-    ("Int32", "Uint32", false);
-    ( "forall 'A. List ('A) -> List ('A)",
-      "forall 'B. List ('B) -> List ('B)",
-      true );
-    ( "forall 'A. List ('A) -> List ('A)",
-      "forall 'A. List ('A) -> List ('A) -> List ('A)",
-      false );
-    ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
-      "forall 'B. forall 'A. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
-      false );
-    ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
-      "forall 'B. forall 'A. ('A -> 'B -> 'A) -> 'A -> List ('B) -> 'A",
-      true );
-    ( "forall 'A. 'A -> forall 'B. List ('B)",
-      "forall 'B. 'B -> forall 'A. List ('A)",
-      true );
-    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'A",
-      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B",
-      true );
-    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
-      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B",
-      false );
-    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
-      "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B",
-      true );
-    ( "ByStr20 with x : Uint32 end",
-      "ByStr20 with x : Uint32 end",
-      true );
-    ( "ByStr20 with x : Int32 end",
-      "ByStr20 with x : Uint32 end",
-      false );
-    ( "ByStr20 with x : Uint32, y : Uint32 end",
-      "ByStr20 with x : Uint32 end",
-      false );
-    ( "ByStr20 with x : Uint32 end",
-      "ByStr20 with x : Uint32, y : Uint32 end",
-      false );
-    ( "ByStr20",
-      "ByStr20 with x : Uint32 end",
-      false );
-    ( "ByStr20 with x : Uint32 end",
-      "ByStr20",
-      false );
-  ]
+  (* Equivalent types *)
+  List.map equivalent_types ~f:(make_test true)
+  (* Equivalence should be reflexive *)
+  @ List.map equivalent_types ~f:(reverse_test true)
+  (* Assignable but not equivalent *)
+  @ List.map assignable_but_not_equivalent_types ~f:(make_test false)
+  (* Non-equivalence is reflexive  *)
+  @ List.map assignable_but_not_equivalent_types ~f:(reverse_test false)
+  (* Non-assignable implies non-equivalence *)
+  @ List.map not_assignable_types ~f:(make_test false)
+  (* Non-equivalence is reflexive *)
+  @ List.map not_assignable_types ~f:(reverse_test false)
 
 let all_type_assignable_tests =
-  [
-    (* TODO: These need to be done properly. They are currently a copy of the equiv tests *)
-    ("Uint32", "Uint32", true);
-    ("Int32", "Uint32", false);
-    ( "forall 'A. List ('A) -> List ('A)",
-      "forall 'B. List ('B) -> List ('B)",
-      true );
-    ( "forall 'A. List ('A) -> List ('A)",
-      "forall 'A. List ('A) -> List ('A) -> List ('A)",
-      false );
-    ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
-      "forall 'B. forall 'A. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
-      false );
-    ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
-      "forall 'B. forall 'A. ('A -> 'B -> 'A) -> 'A -> List ('B) -> 'A",
-      true );
-    ( "forall 'A. 'A -> forall 'B. List ('B)",
-      "forall 'B. 'B -> forall 'A. List ('A)",
-      true );
-    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'A",
-      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B",
-      true );
-    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
-      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B",
-      false );
-    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
-      "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B",
-      true );
-  ]
-  @ List.filter (fun (_, _, eq) -> eq) all_type_equiv_tests  (* Equivalence should imply assignable *)
-(* TODO: Swap all true equiv tests, and run again. Also add swapped version to equiv tests *)
+  (* Equivalence implies assignability *)
+  List.map equivalent_types ~f:(make_test true)
+  (* Equivalence should be reflexive, and implies assignability *)
+  @ List.map equivalent_types ~f:(reverse_test true)
+  (* Assignable but not equivalent *)
+  @ List.map assignable_but_not_equivalent_types ~f:(make_test true)
+  (* Intersection of assignable and non-equivalt is non-reflexive  *)
+  @ List.map assignable_but_not_equivalent_types ~f:(reverse_test false)
+  (* Non-assignable *)
+  @ List.map not_assignable_types ~f:(make_test false)
+  (* Non-assignable and non-equivalent does not imply anything *)
 
 let make_map_access_type_test t at nindices =
   let open FrontEndParser in
@@ -171,15 +160,14 @@ let map_access_type_tests =
   ]
 
 let make_map_access_type_tests tlist =
-  List.map
-    (fun (t, at, nindices) -> make_map_access_type_test t at nindices)
-    tlist
+  List.map tlist
+    ~f:(fun (t, at, nindices) -> make_map_access_type_test t at nindices)
 
 let type_equiv_tests =
-  "type_equiv_tests" >::: make_type_equiv_tests all_type_equiv_tests
+  "type_equiv_tests" >::: make_all_type_equiv_tests all_type_equiv_tests
 
 let type_assignable_tests =
-  "type_assignable_tests" >::: make_type_assignable_tests all_type_assignable_tests
+  "type_assignable_tests" >::: make_all_type_assignable_tests all_type_assignable_tests
 
 let map_access_type_tests =
   "map_access_type_tests" >::: make_map_access_type_tests map_access_type_tests
