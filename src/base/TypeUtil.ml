@@ -347,47 +347,52 @@ module TypeUtilities = struct
           accept_maps &&
           recurser kt seen_adts &&
           recurser vt seen_adts
-    | TypeVar _ ->
-        (* If we are inside an ADT, then type variable
-           instantiations are handled outside *)
-        not @@ List.is_empty seen_adts
-    | PrimType _ ->
-        (* Messages and Events are not serialisable in terms of contract parameters *)
-        allow_unserializable ||
-        not (t = PrimTypes.msg_typ || t = PrimTypes.event_typ)
-    | ADT (tname, ts) -> (
-        match List.findi ~f:(fun _ seen -> seen = tname) seen_adts with
-        | Some _ -> true (* Inductive ADT - ignore this branch *)
-        | None -> (
-            (* Check that ADT is serializable *)
-            match
-              DataTypeDictionary.lookup_name ~sloc:(get_rep tname)
-                (get_id tname)
-            with
-            | Error _ -> false (* Handle errors outside *)
-            | Ok adt ->
-                let adt_serializable =
-                  List.for_all
-                    ~f:(fun (_, carg_list) ->
-                      List.for_all
-                        ~f:(fun carg ->
-                          recurser  carg (tname :: seen_adts))
-                        carg_list)
-                    adt.tmap
-                in
-                adt_serializable
-                && List.for_all
-                     ~f:(fun t ->
-                       recurser t seen_adts)
-                     ts ) )
-    | Address fts
-      when check_addresses ->
-        (* If check_addresses is true, then all field types in the address type should be legal field types. 
-           No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
-        List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t)
-    | Address _ ->
-        (* If check_addresses is false, then consider Address = ByStr20. *)
-        true
+      | TypeVar _ ->
+          (* If we are inside an ADT, then type variable
+             instantiations are handled outside *)
+          not @@ List.is_empty seen_adts
+      | PrimType _ ->
+          (* Messages and Events are not serialisable in terms of contract parameters *)
+          allow_unserializable ||
+          not (t = PrimTypes.msg_typ || t = PrimTypes.event_typ)
+      | ADT (tname, ts) -> (
+          match List.findi ~f:(fun _ seen -> seen = tname) seen_adts with
+          | Some _ -> true (* Inductive ADT - ignore this branch *)
+          | None -> (
+              (* Check that ADT is serializable *)
+              match
+                DataTypeDictionary.lookup_name ~sloc:(get_rep tname)
+                  (get_id tname)
+              with
+              | Error _ -> false (* Handle errors outside *)
+              | Ok adt ->
+                  let adt_serializable =
+                    List.for_all
+                      ~f:(fun (_, carg_list) ->
+                          List.for_all
+                            ~f:(fun carg ->
+                                recurser  carg (tname :: seen_adts))
+                            carg_list)
+                      adt.tmap
+                  in
+                  adt_serializable
+                  && List.for_all
+                    ~f:(fun t ->
+                        recurser t seen_adts)
+                    ts ) )
+      | Address fts ->
+          let duplicate_fields = List.contains_dup fts
+              ~compare:(fun (f1, _) (f2, _) ->
+                  Bytes.compare
+                    (Bytes.of_string (get_id f1))
+                    (Bytes.of_string (get_id f2)))
+          in
+          (* No duplicate fields allowed. *)
+          duplicate_fields &&
+          (not check_addresses || 
+           (* If check_addresses is true, then all field types in the address type should be legal field types. 
+                No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
+           List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t))
     in
     recurser t seen_adts
 
