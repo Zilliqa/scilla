@@ -66,14 +66,37 @@ let equivalent_types =
       "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B");
     ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
       "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B");
+    (* Addresses *)
+    ( "ByStr20", "ByStr20");
+    ( "ByStr20 with end",
+      "ByStr20 with end");
     ( "ByStr20 with x : Uint32 end",
       "ByStr20 with x : Uint32 end");
+    ( "ByStr20 with x : Uint32, y : Bool end",
+      "ByStr20 with x : Uint32, y : Bool end");
+    ( "ByStr20 with y : Bool, x : Uint32 end",
+      "ByStr20 with x : Uint32, y : Bool end");
+    ( "ByStr20 with x : Uint32, y : ByStr20 with end end",
+      "ByStr20 with x : Uint32, y : ByStr20 with end end");
+    ( "ByStr20 with x : Uint32, y : ByStr20 with y2 : ByStr20, y1 : Option Int256 end end",
+      "ByStr20 with x : Uint32, y : ByStr20 with y1 : Option Int256, y2 : ByStr20 end end");
   ]
   
 let assignable_but_not_equivalent_types =
   [
+    (* Addresses *)
+    ( "ByStr20", 
+      "ByStr20 with end");
+    ( "ByStr20 with end",
+      "ByStr20 with x : Uint32 end");
     ( "ByStr20 with x : Uint32 end",
       "ByStr20 with x : Uint32, y : Uint32 end");
+    ( "ByStr20 with x : Uint32 end",
+      "ByStr20 with x : Uint32, y : Uint32, z : ByStr20 with end end");
+    ( "ByStr20 with y : Uint32, x : Uint32 end",
+      "ByStr20 with x : Uint32, y : Uint32, z : ByStr20 with end end");
+    ( "ByStr20 with x : Uint32, y : ByStr20 with y1 : Int32 end end",
+      "ByStr20 with x : Uint32, y : ByStr20 with y2 : Bool, y1 : Int32 end end");
   ]
 
 let not_assignable_types =
@@ -85,10 +108,15 @@ let not_assignable_types =
       "forall 'B. forall 'A. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B");
     ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
       "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B");
+    (* Addresses *)
     ( "ByStr20 with x : Int32 end",
       "ByStr20 with x : Uint32 end");
-    ( "ByStr20 with x : Uint32, y : Uint32 end",
-      "ByStr20 with x : Uint32 end");
+    ( "ByStr20 with x : Int32 end",
+      "ByStr20 with y : Int32 end");
+    ( "ByStr20 with x : ByStr20 with y1 : Int32 end end",
+      "ByStr20 with x : ByStr20 with y1 : Uint32 end end");
+    ( "ByStr20 with x : ByStr20 with y1 : Int32 end end",
+      "ByStr20 with x : ByStr20 with y2 : Int32 end end");
   ]
 
 let make_test eq (t1, t2) = (t1, t2, eq)
@@ -120,7 +148,9 @@ let all_type_assignable_tests =
   @ List.map assignable_but_not_equivalent_types ~f:(reverse_test false)
   (* Non-assignable *)
   @ List.map not_assignable_types ~f:(make_test false)
-  (* Non-assignable and non-equivalent does not imply anything *)
+  (* Non-assignable and non-equivalent is reflexive 
+     - if it becomes assignable, then it should be place in assignable_but_not_equivalent_types. *)
+  @ List.map not_assignable_types ~f:(reverse_test false)
 
 let make_map_access_type_test t at nindices =
   let open FrontEndParser in
