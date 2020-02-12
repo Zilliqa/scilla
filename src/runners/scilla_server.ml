@@ -30,11 +30,7 @@ let cmd =
         flag "-num-pending"
           (optional_with_default Server.num_pending int)
           ~doc:"NUM_PENDING Maximum number of pending requests"
-      and test =
-        flag "-test"
-          (optional_with_default false bool)
-          ~doc:"TEST Run in test-mode (save output files)"
       in
-      fun () -> Server.start ~sock_path ~num_pending ~test)
+      fun () -> Server.start ~sock_path ~num_pending)
 
 let () = Command.run cmd

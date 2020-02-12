@@ -107,12 +107,15 @@ let rec build_contract_tests_with_init_file env name exit_code i n
         else args'
       in
       (* Use scilla-client instead of scilla-runner when running tests in server-mode *)
-      let runner = if env.server test_ctxt then "scilla-client" else "scilla-runner" in
+      let runner =
+        if env.server test_ctxt then "scilla-client" else "scilla-runner"
+      in
       print_cli_usage (env.print_cli test_ctxt) runner args;
       let test_name = name ^ "_" ^ istr in
       let goldoutput_file = dir ^/ "output_" ^ istr ^. "json" in
       let msg = cli_usage_on_err runner args in
-      let args = if env.server test_ctxt then
+      let args =
+        if env.server test_ctxt then
           [ "run"; "-argv"; String.concat args ~sep:" " ]
         else args
       in
@@ -121,8 +124,17 @@ let rec build_contract_tests_with_init_file env name exit_code i n
           (* if the test is supposed to succeed we read the output from a file,
                  otherwise we read from the output stream *)
           let interpreter_output =
-            if Poly.(exit_code = succ_code) then In_channel.read_all output_file
+            if Poly.(exit_code = succ_code) && not (env.server test_ctxt) then
+              In_channel.read_all output_file
             else BatStream.to_string s
+          in
+          (* Extract the "result" field from the output of the scilla-server *)
+          let interpreter_output =
+            if env.server test_ctxt then
+              interpreter_output |> StateIPCTest.json_from_string
+              |> Yojson.Basic.Util.member "result"
+              |> StateIPCTest.json_to_string
+            else interpreter_output
           in
           let out =
             if ipc_mode then

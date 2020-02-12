@@ -16,9 +16,11 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-val start : ?sock_path:string -> ?num_pending:int -> test:bool -> unit
+val start : ?sock_path:string -> ?num_pending:int -> unit
 (** Start the server. *)
 
 val sock_path : string
+(** Default socket path. *)
 
 val num_pending : int
+(** Default number of pending requests. *)
