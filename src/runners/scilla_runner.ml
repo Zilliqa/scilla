@@ -24,10 +24,10 @@ let output_to_string output ~args =
   if args.pp_json then Yojson.Basic.pretty_to_string output
   else Yojson.Basic.to_string output
 
-let run args_list =
-  let output, args = Runner.run args_list in
-  let str = output_to_string output ~args in
-  Out_channel.with_file args.output ~f:(fun ch ->
-      Out_channel.output_string ch str)
-
-let () = try run None with FatalError msg -> exit_with_error msg
+let () =
+  try
+    let output, args = Runner.run None in
+    let str = output_to_string output ~args in
+    Out_channel.with_file args.output ~f:(fun ch ->
+        Out_channel.output_string ch str)
+  with FatalError msg -> exit_with_error msg

@@ -108,7 +108,8 @@ let rec build_contract_tests_with_init_file env name exit_code i n
       in
       (* Use scilla-client instead of scilla-runner when running tests in server-mode *)
       let runner =
-        if env.server test_ctxt then "_build/default/tests/scilla_client.exe" else "scilla-runner"
+        if env.server test_ctxt then "_build/default/tests/scilla_client.exe"
+        else "scilla-runner"
       in
       print_cli_usage (env.print_cli test_ctxt) runner args;
       let test_name = name ^ "_" ^ istr in
