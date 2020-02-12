@@ -75,7 +75,6 @@ test_extipcserver: dev
 
 # Run tests in server-mode
 test_server: dev
-	ln -sr _build/default/tests/scilla_client.exe bin/scilla-client
 	dune exec src/runners/scilla_server.exe &
 	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
   -server true \
