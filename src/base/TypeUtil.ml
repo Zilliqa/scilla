@@ -387,7 +387,6 @@ module TypeUtilities = struct
           List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t)
       | Address _ ->
           true
-
     in
     recurser t seen_adts
 
