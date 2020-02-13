@@ -56,7 +56,17 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           forallM ~f:walk targs
       | PolyFun (_, t) -> walk t
       | Address fts ->
-          forallM fts ~f:(fun (_, t) -> walk t)
+          match List.find_a_dup fts
+                  ~compare:(fun (f1, _) (f2, _) ->
+                      Bytes.compare
+                        (Bytes.of_string (get_id f1))
+                        (Bytes.of_string (get_id f2))) with
+          | Some (dup_field, _) ->
+              fail1
+                (sprintf "Duplicate field %s in address type." (get_id dup_field))
+                (get_rep dup_field)
+          | None ->
+              forallM fts ~f:(fun (_, t) -> walk t)
     in
     walk t
 

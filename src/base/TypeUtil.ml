@@ -380,19 +380,14 @@ module TypeUtilities = struct
                     ~f:(fun t ->
                         recurser t seen_adts)
                     ts ) )
-      | Address fts ->
-          let duplicate_fields = List.contains_dup fts
-              ~compare:(fun (f1, _) (f2, _) ->
-                  Bytes.compare
-                    (Bytes.of_string (get_id f1))
-                    (Bytes.of_string (get_id f2)))
-          in
-          (* No duplicate fields allowed. *)
-          duplicate_fields &&
-          (not check_addresses || 
-           (* If check_addresses is true, then all field types in the address type should be legal field types. 
-                No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
-           List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t))
+      | Address fts
+        when check_addresses -> 
+          (* If check_addresses is true, then all field types in the address type should be legal field types. 
+             No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
+          List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t)
+      | Address _ ->
+          true
+
     in
     recurser t seen_adts
 
