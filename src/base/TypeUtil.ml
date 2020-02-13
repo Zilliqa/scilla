@@ -331,6 +331,17 @@ module TypeUtilities = struct
                (pp_typ expected) (pp_typ given)),
           remaining_gas )
 
+  let rec is_ground_type t =
+    match t with
+    | FunType (a, r) -> is_ground_type a && is_ground_type r
+    | MapType (k, v) -> is_ground_type k && is_ground_type v
+    | ADT (_, ts) -> List.for_all ~f:(fun t -> is_ground_type t) ts
+    | PolyFun _ | TypeVar _ -> false
+    | Address _ ->
+        (* Addresses are represented as ByStr20 *)
+        true 
+    | _ -> true
+  
   let rec is_serializable_storable_helper accept_maps allow_unserializable check_addresses t seen_adts =
     let rec recurser t seen_adts =
       match t with
