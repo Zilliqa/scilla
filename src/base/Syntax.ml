@@ -130,7 +130,7 @@ let rec pp_typ = function
       let elems = List.map fts ~f:(fun (f, t) -> sprintf "%s : %s" (get_id f) (pp_typ t)) |>
                   String.concat ~sep:", "
       in
-      sprintf "ByStr20 with %s end" elems
+      sprintf "ByStr20 with %s%send" elems (if List.is_empty fts then "" else " ")
 
 and with_paren t =
   match t with
