@@ -32,14 +32,10 @@ module IDL = Idl.Make (M)
 
 module Server = API (IDL.GenServer ())
 
-(* Makes a handler that executes the given [callback] with [args],
-   caches the result using the LRU cache and returns it. **)
+(* Makes a handler that executes the given [callback] with [args] and returns it. **)
 let mk_handler callback args =
   let open IDL.ErrM in
-  try
-    let result = callback @@ Some args in
-    (* TODO: implement AST caching here *)
-    return result
+  try return @@ callback (Some args)
   with FatalError msg -> return_err (Idl.DefaultError.InternalError msg)
 
 (* Request handler. *)
@@ -80,11 +76,11 @@ let sock_path = "/tmp/scilla-server.sock"
 let num_pending = 5
 
 let start ?(sock_path = sock_path) ?(num_pending = num_pending) =
-  pout "Starting Scilla server%s...\n";
+  pout "Starting Scilla server...\n";
   Out_channel.flush stdout;
   let runner args =
     let output, _ = Runner.run args in
-    Yojson.Basic.pretty_to_string output
+    Yojson.Basic.to_string output
   in
   (* Handlers *)
   Server.runner @@ mk_handler runner;

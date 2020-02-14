@@ -128,14 +128,8 @@ let rec build_contract_tests_with_init_file env name exit_code i n
               In_channel.read_all output_file
             else BatStream.to_string s
           in
-          (* Extract the "result" field from the output of the scilla-server *)
-          let interpreter_output =
-            if env.server test_ctxt then
-              interpreter_output |> StateIPCTest.json_from_string
-              |> Yojson.Basic.Util.member "result"
-              |> StateIPCTest.json_to_string
-            else interpreter_output
-          in
+          if Poly.(exit_code = fail_code) && env.server test_ctxt then
+            assert_failure interpreter_output;
           let out =
             if ipc_mode then
               (* The output of the interpreter in IPC mode will only contain "_balance" as

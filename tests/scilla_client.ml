@@ -18,6 +18,15 @@
 
 open Core
 open Scilla_server_lib
+module J = Yojson.Basic
+
+let pp_result json =
+  json |> J.Util.member "result" |> J.Util.to_string |> J.from_string
+  |> J.pretty_to_channel stdout
+
+let pp_error json =
+  json |> J.Util.member "error" |> J.Util.index 1 |> J.Util.to_string
+  |> J.from_string |> J.pretty_to_channel stdout
 
 let mk_cmd cb ~summary =
   Command.basic ~summary
@@ -29,9 +38,12 @@ let mk_cmd cb ~summary =
       and argv = flag "-argv" (required string) ~doc:"" in
       let args = String.split argv ~on:' ' in
       fun () ->
-        match cb ~sock_path args with
-        | Some s -> print_string s
-        | None -> exit 1)
+        let r = cb ~sock_path args in
+        let json = r |> Jsonrpc.string_of_response |> J.from_string in
+        if r.Rpc.success then pp_result json
+        else (
+          pp_error json;
+          exit 1 ))
 
 let run = mk_cmd Client.run ~summary:"Execute contract"
 

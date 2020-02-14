@@ -30,8 +30,7 @@ let send socket msg =
   let oc = U.out_channel_of_descr socket in
   IPCUtil.send_delimited oc msg;
   let str = Caml.input_line ic in
-  let res = Jsonrpc.response_of_string str in
-  if res.success then Some str else None
+  Jsonrpc.response_of_string str
 
 let rpc ~sock_path call =
   let socket = U.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0) in
