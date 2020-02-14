@@ -294,13 +294,13 @@ let import_libs names init_file =
   let ltree, nstree = importer names name_map [] in
   eliminate_namespaces ltree nstree
 
-let stdlib_not_found_err () =
+let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
   fatal_error
     (mk_error0
        ( "A path to Scilla stdlib not found. Please set "
        ^ StdlibTracker.scilla_stdlib_env
        ^ " environment variable, or pass through command-line argument for \
-          this script.\n" ^ "Example:\n" ^ Sys.argv.(0)
+          this script.\n" ^ "Example:\n" ^ exe_name
        ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
 
 (* Parse all libraries that can be found in ldirs. *)

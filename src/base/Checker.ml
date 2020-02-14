@@ -334,7 +334,7 @@ let run args =
   StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
   (* Get list of stdlib dirs. *)
   let lib_dirs = StdlibTracker.get_stdlib_dirs () in
-  if List.is_empty lib_dirs then stdlib_not_found_err ();
+  if List.is_empty lib_dirs then stdlib_not_found_err ~exe_name:"scilla-checker" ();
 
   (* Testsuite runs this executable with cwd=tests and ends
        up complaining about missing _build directory for logger.
