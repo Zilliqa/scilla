@@ -105,6 +105,14 @@ where `n` is a number `0-5` for the number of "steps" to execute the
 protocol (the messages and blockchain states are provided for only so
 many steps in the simulation).
 
+#### Using Scilla as a service
+A `scilla-server` is provided that provides the functionality of `scilla-runner`
+and `scilla-checker` as a JSON-RPC server. The `scilla-server` process accepts
+contract execution requests and executes the contract, providing a JSON output
+within the server process itself.
+
+More details on the protocol can be found [here](https://github.com/Zilliqa/scilla/wiki/scilla-server-API).
+
 ### Where to find binaries
 
 * The runnables are put into the folder
@@ -157,19 +165,6 @@ dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -
 
 The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
-
-
-### Running scilla-server
-
-`scilla-server` process accepts contract execution requests and
-executes the contract, providing output within the server
-process itself.
-
-To start the server:
-
-```shell
-./bin/scilla-server start
-```
 
 ## Developer Tools
 ### Emacs mode
