@@ -16,4 +16,5 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-val run : string list option -> exe_name:string -> Yojson.Basic.t * RunnerCLI.args
+val run :
+  string list option -> exe_name:string -> Yojson.Basic.t * RunnerCLI.args

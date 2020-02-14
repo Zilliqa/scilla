@@ -36,7 +36,7 @@ module Server = API (IDL.GenServer ())
 let mk_handler callback args =
   let open IDL.ErrM in
   (* Force the -jsonerrors flag *)
-  let args = ["-jsonerrors"] @ args in
+  let args = [ "-jsonerrors" ] @ args in
   try return @@ callback (Some args)
   with FatalError msg -> return_err (Idl.DefaultError.InternalError msg)
 
