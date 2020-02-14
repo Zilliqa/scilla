@@ -252,9 +252,14 @@ let parse args ~exe_name =
   let () =
     match args with
     | None -> Arg.parse speclist ignore_anon mandatory_usage
-    | Some argv ->
-        Arg.parse_argv ~current:(ref 0) (List.to_array argv) speclist
-          ignore_anon mandatory_usage
+    | Some argv -> (
+        try
+          Arg.parse_argv ~current:(ref 0)
+            (List.to_array @@ (exe_name :: argv))
+            speclist ignore_anon mandatory_usage
+        with Arg.Bad msg ->
+          PrettyPrinters.fatal_error_noformat (usage ^ Printf.sprintf "%s\n" msg)
+        )
   in
   let () = process_trace () in
   let () = process_pplit () in
