@@ -82,12 +82,22 @@ let build_prim_lit_exn t v =
   let exn () =
     mk_invalid_json ("Invalid " ^ pp_typ t ^ " value " ^ v ^ " in JSON")
   in
+  let build_prim_literal_of_type t v =
+    match build_prim_literal t v with
+    | Some v' -> v'
+    | None -> raise (exn ())
+  in
   match t with
-  | PrimType pt -> (
-      match build_prim_literal pt v with
-      | Some v' -> v'
-      | None -> raise (exn ()) )
-  | _ -> raise (exn ())
+  | PrimType pt ->
+      build_prim_literal_of_type pt v
+  | Address _ ->
+      build_prim_literal_of_type (Bystrx_typ 20) v
+  | MapType _
+  | FunType _
+  | ADT _
+  | TypeVar _
+  | PolyFun _
+  | Unit -> raise (exn ())
 
 (****************************************************************)
 (*                    JSON parsing                              *)
@@ -213,10 +223,20 @@ and json_to_lit t v =
   | ADT (name, tlist) ->
       let vl = read_adt_json (get_id name) v tlist in
       vl
-  | _ ->
+  | PrimType _
+  | Address _ ->
       let tv = build_prim_lit_exn t (to_string_exn v) in
       tv
-
+  | FunType _
+  | TypeVar _
+  | PolyFun _
+  | Unit ->
+      let exn () =
+        mk_invalid_json ("Invalid type " ^ pp_typ t ^ " in JSON")
+      in
+      raise (exn ())
+       
+      
 let jobj_to_statevar json =
   let n = member_exn "vname" json |> to_string_exn in
   let tstring = member_exn "type" json |> to_string_exn in
