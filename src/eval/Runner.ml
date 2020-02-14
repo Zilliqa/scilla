@@ -402,10 +402,10 @@ let run_with_args args =
             ("events", output_events_json);
           ]
 
-let run args_list =
+let run args_list ~exe_name =
   GlobalConfig.reset ();
   ErrorUtils.reset_warnings ();
   Datatypes.DataTypeDictionary.reinit ();
-  let args = RunnerCLI.parse args_list in
+  let args = RunnerCLI.parse args_list ~exe_name in
   let result = run_with_args args in
   (result, args)

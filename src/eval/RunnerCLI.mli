@@ -30,7 +30,7 @@ type args = {
   ipc_address : string;
 }
 
-val parse : string list option -> args
+val parse : string list option -> exe_name:string -> args
 (** Parses the command line arguments. If [string array] is given
     then it parses this array as if it were the command line
     (this feature is used in the scilla-server implementation). *)

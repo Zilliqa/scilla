@@ -36,7 +36,7 @@ let run () =
   GlobalConfig.reset ();
   ErrorUtils.reset_warnings ();
   Datatypes.DataTypeDictionary.reinit ();
-  let cli = parse_cli None in
+  let cli = parse_cli None ~exe_name:Sys.argv.(0) in
   let filename = cli.input_file in
   let gas_limit =
     if Stdint.Uint64.(compare cli.gas_limit zero = 0) then default_gas_limit

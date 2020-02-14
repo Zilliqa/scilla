@@ -153,7 +153,7 @@ let validate_main usage =
   if not @@ String.is_empty msg then
     PrettyPrinters.fatal_error_noformat (usage ^ Printf.sprintf "%s\n" msg)
 
-let parse args =
+let parse args ~exe_name =
   reset ();
   let speclist =
     [
@@ -238,7 +238,7 @@ let parse args =
   in
 
   let mandatory_usage =
-    "Usage:\n" ^ Sys.argv.(0) ^ " -init init.json [-istate input_state.json]"
+    "Usage:\n" ^ exe_name ^ " -init init.json [-istate input_state.json]"
     ^ " -iblockchain input_blockchain.json [-imessage input_message.json]"
     ^ " [-o output.json] -i input.scilla -libdir /path/to/stdlib"
     ^ " -gaslimit limit" ^ "\n"

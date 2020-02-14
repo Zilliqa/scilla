@@ -26,7 +26,7 @@ let output_to_string output ~args =
 
 let () =
   try
-    let output, args = Runner.run None in
+    let output, args = Runner.run None ~exe_name:Sys.argv.(0) in
     let str = output_to_string output ~args in
     Out_channel.with_file args.output ~f:(fun ch ->
         Out_channel.output_string ch str)

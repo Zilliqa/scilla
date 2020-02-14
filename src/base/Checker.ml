@@ -325,16 +325,16 @@ let check_cmodule cli =
         scilla_warning_to_sstring (get_warnings ())
         ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
 
-let run args =
+let run args ~exe_name =
   GlobalConfig.reset ();
   ErrorUtils.reset_warnings ();
   Datatypes.DataTypeDictionary.reinit ();
-  let cli = parse_cli args in
+  let cli = parse_cli args ~exe_name in
   let open GlobalConfig in
   StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
   (* Get list of stdlib dirs. *)
   let lib_dirs = StdlibTracker.get_stdlib_dirs () in
-  if List.is_empty lib_dirs then stdlib_not_found_err ~exe_name:"scilla-checker" ();
+  if List.is_empty lib_dirs then stdlib_not_found_err ~exe_name ();
 
   (* Testsuite runs this executable with cwd=tests and ends
        up complaining about missing _build directory for logger.

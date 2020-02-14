@@ -337,7 +337,7 @@ type runner_cli = {
   p_type_info : bool;
 }
 
-let parse_cli args =
+let parse_cli args ~exe_name =
   let r_stdlib_dir = ref [] in
   let r_gas_limit = ref None in
   let r_input_file = ref "" in
@@ -402,7 +402,7 @@ let parse_cli args =
   in
 
   let mandatory_usage =
-    "Usage:\n" ^ Sys.argv.(0)
+    "Usage:\n" ^ exe_name
     ^ " -gaslimit <limit> -libdir /path/to/stdlib input.scilla\n"
   in
   let optional_usage =

@@ -36,7 +36,7 @@ module Server = API (IDL.GenServer ())
 let mk_handler callback args =
   let open IDL.ErrM in
   (* Force the -jsonerrors flag *)
-  let args = args @ ["-jsonerrors"] in
+  let args = ["-jsonerrors"] @ args in
   try return @@ callback (Some args)
   with FatalError msg -> return_err (Idl.DefaultError.InternalError msg)
 
@@ -81,12 +81,12 @@ let start ?(sock_path = sock_path) ?(num_pending = num_pending) =
   pout "Starting Scilla server...\n";
   Out_channel.flush stdout;
   let runner args =
-    let output, _ = Runner.run args in
+    let output, _ = Runner.run args ~exe_name:"scilla-runner" in
     Yojson.Basic.to_string output
   in
   (* Handlers *)
   Server.runner @@ mk_handler runner;
-  Server.checker @@ mk_handler Checker.run;
+  Server.checker @@ mk_handler (Checker.run ~exe_name:"scilla-checker");
   (* Generate the "rpc" function from the implementation,
      that given an [Rpc.call], calls the implementation of that RPC method and
      performs the marshalling and unmarshalling. We need to connect this

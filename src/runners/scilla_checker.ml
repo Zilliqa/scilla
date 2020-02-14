@@ -22,6 +22,6 @@ open DebugMessage
 
 let () =
   try
-    let result = Checker.run None in
+    let result = Checker.run None ~exe_name:Sys.argv.(0) in
     pout @@ sprintf "%s\n" result
   with FatalError msg -> exit_with_error msg
