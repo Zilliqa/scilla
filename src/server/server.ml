@@ -37,8 +37,9 @@ module Server = API (IDL.GenServer ())
 let mk_handler callback args =
   (* Force the -jsonerrors flag *)
   let args = "-jsonerrors" :: args in
-  try IDL.ErrM.return @@ (callback (Some args))
-  with FatalError msg -> IDL.ErrM.return_err (RPCError.{ code = 0; message = msg })
+  try IDL.ErrM.return @@ callback (Some args)
+  with FatalError msg ->
+    IDL.ErrM.return_err RPCError.{ code = 0; message = msg }
 
 (* Request handler. *)
 let handler rpc conn =

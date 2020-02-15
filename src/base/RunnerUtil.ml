@@ -367,10 +367,7 @@ let parse_cli args ~exe_name =
       ( "-gaslimit",
         Arg.String
           (fun i ->
-            let g =
-              try Some (Stdint.Uint64.of_string i)
-              with _ -> None
-            in
+            let g = try Some (Stdint.Uint64.of_string i) with _ -> None in
             r_gas_limit := g),
         "Gas limit" );
       ( "-gua",
