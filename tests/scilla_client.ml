@@ -38,7 +38,7 @@ let mk_cmd cb ~summary =
           ~doc:"SOCKET Address for communication with the server"
       and argv = flag "-argv" (required string) ~doc:"" in
       let args =
-        String.split argv ~on:' ' |> List.filter ~f:(Fun.negate String.is_empty)
+        String.split argv ~on:' ' |> List.filter ~f:(Fn.non String.is_empty)
       in
       fun () ->
         let r = cb ~sock_path args in
