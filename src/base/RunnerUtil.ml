@@ -421,8 +421,7 @@ let parse_cli args ~exe_name =
           Arg.parse_argv ~current:(ref 0)
             (List.to_array @@ (exe_name :: argv))
             speclist anon_handler mandatory_usage
-        with Arg.Bad msg ->
-          fatal_error_noformat (usage ^ Printf.sprintf "%s\n" msg) )
+        with Arg.Bad msg -> fatal_error_noformat (Printf.sprintf "%s\n" msg) )
   in
   if String.is_empty !r_input_file then fatal_error_noformat usage;
   let gas_limit =

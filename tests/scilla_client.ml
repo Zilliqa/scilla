@@ -25,8 +25,10 @@ let pp_result json =
   |> J.pretty_to_channel stdout
 
 let pp_error json =
-  json |> J.Util.member "error" |> J.Util.index 1 |> J.Util.to_string
-  |> J.from_string |> J.pretty_to_channel stdout
+  let () = J.pretty_to_channel stderr json in
+  json |> J.Util.member "error" |> J.Util.index 1 |> function
+  | `String s -> fprintf stderr "%s" s
+  | j -> J.pretty_to_channel stderr j
 
 let mk_cmd cb ~summary =
   Command.basic ~summary
@@ -36,7 +38,9 @@ let mk_cmd cb ~summary =
           (optional_with_default Server.sock_path string)
           ~doc:"SOCKET Address for communication with the server"
       and argv = flag "-argv" (required string) ~doc:"" in
-      let args = String.split argv ~on:' ' in
+      let args =
+        String.split argv ~on:' ' |> List.filter ~f:(Fun.negate String.is_empty)
+      in
       fun () ->
         let r = cb ~sock_path args in
         let json = r |> Jsonrpc.string_of_response |> J.from_string in
