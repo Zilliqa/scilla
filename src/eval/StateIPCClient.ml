@@ -24,6 +24,7 @@ open JSON
 open TypeUtil
 open StateIPCIdl
 open ErrorUtils
+open IPCUtil
 module ER = ParserRep
 module M = Idl.IdM
 module IDL = Idl.Make (M)
@@ -57,7 +58,7 @@ let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
   DebugMessage.plog (Printf.sprintf "Sending: %s\n" msg_buf);
   (* Send data to the socket. *)
-  let _ = IPCUtil.send_delimited oc msg_buf in
+  let _ = send_delimited oc msg_buf in
   (* Get response. *)
   let response = Caml.input_line ic in
   Unix.close socket;

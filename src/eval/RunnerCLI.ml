@@ -206,9 +206,8 @@ let parse args ~exe_name =
             let g =
               try Stdint.Uint64.of_string i
               with _ ->
-                PrettyPrinters.fatal_error
-                  (ErrorUtils.mk_error0
-                     (Printf.sprintf "Invalid gaslimit %s\n" i))
+                PrettyPrinters.fatal_error_noformat
+                     (Printf.sprintf "Invalid gaslimit %s\n" i)
             in
             v_gas_limit := g),
         "Gas limit" );
@@ -258,7 +257,7 @@ let parse args ~exe_name =
             (List.to_array @@ (exe_name :: argv))
             speclist ignore_anon mandatory_usage
         with Arg.Bad msg ->
-          PrettyPrinters.fatal_error_noformat (usage ^ Printf.sprintf "%s\n" msg)
+          PrettyPrinters.fatal_error_noformat (Printf.sprintf "%s\n" msg)
         )
   in
   let () = process_trace () in

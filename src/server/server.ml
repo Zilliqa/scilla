@@ -20,6 +20,7 @@ open Core
 open DebugMessage
 open ErrorUtils
 open Api
+open IPCUtil
 
 (* You can swap the RPC engine, by using a different monad here,
    note however that if you are using an asynchronous one, like
@@ -34,11 +35,10 @@ module Server = API (IDL.GenServer ())
 
 (* Makes a handler that executes the given [callback] with [args] and returns it. **)
 let mk_handler callback args =
-  let open IDL.ErrM in
   (* Force the -jsonerrors flag *)
   let args = "-jsonerrors" :: args in
-  try return @@ callback (Some args)
-  with FatalError msg -> return_err (Idl.DefaultError.InternalError msg)
+  try IDL.ErrM.return @@ (callback (Some args))
+  with FatalError msg -> IDL.ErrM.return_err (RPCError.{ code = 0; message = msg })
 
 (* Request handler. *)
 let handler rpc conn =

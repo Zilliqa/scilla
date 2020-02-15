@@ -22,6 +22,7 @@ open Syntax
 open TypeUtil
 open StateIPCIdl
 open OUnit2
+open IPCUtil
 module M = Idl.IdM
 module IDL = Idl.Make (M)
 

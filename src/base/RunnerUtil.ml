@@ -368,13 +368,10 @@ let parse_cli args ~exe_name =
         Arg.String
           (fun i ->
             let g =
-              try Stdint.Uint64.of_string i
-              with _ ->
-                PrettyPrinters.fatal_error
-                  (ErrorUtils.mk_error0
-                     (Printf.sprintf "Invalid gaslimit %s\n" i))
+              try Some (Stdint.Uint64.of_string i)
+              with _ -> None
             in
-            r_gas_limit := Some g),
+            r_gas_limit := g),
         "Gas limit" );
       ( "-gua",
         Arg.Unit (fun () -> r_gua := true),

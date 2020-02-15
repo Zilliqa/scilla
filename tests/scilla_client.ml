@@ -22,13 +22,12 @@ module J = Yojson.Basic
 
 let pp_result json =
   json |> J.Util.member "result" |> J.Util.to_string |> J.from_string
-  |> J.pretty_to_channel stdout
+  |> J.pretty_to_string |> DebugMessage.pout
 
 let pp_error json =
-  let () = J.pretty_to_channel stderr json in
-  json |> J.Util.member "error" |> J.Util.index 1 |> function
-  | `String s -> fprintf stderr "%s" s
-  | j -> J.pretty_to_channel stderr j
+  json |> J.Util.member "error" |> J.Util.member "message" |> function
+  | `String s -> DebugMessage.perr s
+  | j -> J.pretty_to_string j |> DebugMessage.perr
 
 let mk_cmd cb ~summary =
   Command.basic ~summary

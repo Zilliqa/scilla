@@ -26,6 +26,7 @@ open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open MonadUtil
 open StateIPCIdl
+open IPCUtil
 module Hashtbl = Caml.Hashtbl
 
 type hashtable = (string, value_type) Hashtbl.t

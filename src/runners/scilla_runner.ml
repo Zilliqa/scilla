@@ -28,6 +28,8 @@ let () =
   try
     let output, args = Runner.run None ~exe_name:Sys.argv.(0) in
     let str = output_to_string output ~args in
-    Out_channel.with_file args.output ~f:(fun ch ->
-        Out_channel.output_string ch str)
+    if String.is_empty args.output then DebugMessage.pout str
+    else
+      Out_channel.with_file args.output ~f:(fun ch ->
+          Out_channel.output_string ch str)
   with FatalError msg -> exit_with_error msg

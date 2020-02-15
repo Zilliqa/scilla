@@ -17,6 +17,7 @@
 *)
 
 open Idl
+open IPCUtil
 
 type args_t = string list [@@deriving rpcty, show]
 (** A type alias representing a list of arguments to
@@ -49,7 +50,7 @@ module API (R : RPC) = struct
      identical to today’s output JSON emitted by scilla-runner. *)
   let runner_return = Param.mk Rpc.Types.string
 
-  let runner_error = Idl.DefaultError.err
+  let runner_error = RPCError.err
 
   let runner =
     declare "run"
@@ -63,7 +64,7 @@ module API (R : RPC) = struct
 
   let checker_return = Param.mk Rpc.Types.string
 
-  let checker_error = Idl.DefaultError.err
+  let checker_error = RPCError.err
 
   let checker =
     declare "check"
