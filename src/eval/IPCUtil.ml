@@ -16,6 +16,8 @@ module RPCError = struct
         raiser = (function e -> raise (RPCErrorExn e));
         matcher = (function RPCErrorExn e -> Some e | _ -> None);
       }
+
+  let rpc_of_t t = Rpcmarshal.marshal typ_of_err_t t
 end
 
 (** Send msg via output channel [oc] with a delimiting character "0xA". *)

@@ -37,8 +37,9 @@ module Server = API (IDL.GenServer ())
 let mk_handler callback args =
   (* Force the -jsonerrors flag *)
   let args = "-jsonerrors" :: args in
-  try IDL.ErrM.return @@ (callback (Some args))
-  with FatalError msg -> IDL.ErrM.return_err (RPCError.{ code = 0; message = msg })
+  try IDL.ErrM.return @@ callback (Some args)
+  with FatalError msg ->
+    IDL.ErrM.return_err RPCError.{ code = 0; message = msg }
 
 (* Request handler. *)
 let handler rpc conn =
@@ -49,8 +50,15 @@ let handler rpc conn =
   (* Here we're calling [M.run] to make sure that we are running the process,
      this is not much of a problem with [IdM] or [ExnM], but in general we
      should ensure that the computation is started by a runner *)
-  let res = M.run (rpc req) in
-  let str = Jsonrpc.string_of_response res in
+  let res =
+    try M.run (rpc req)
+    with _ ->
+      Rpc.failure
+        (RPCError.rpc_of_t
+           RPCError.
+             { code = 0; message = "scilla-server: incorrect invocation" })
+  in
+  let str = Jsonrpc.string_of_response ~version:Jsonrpc.V2 res in
   IPCUtil.send_delimited oc str
 
 (* Listen on the given [sock_path] and process requests.
@@ -82,7 +90,7 @@ let start ?(sock_path = sock_path) ?(num_pending = num_pending) =
   Out_channel.flush stdout;
   let runner args =
     let output, _ = Runner.run args ~exe_name:"scilla-runner" in
-    Yojson.Basic.to_string output
+    Yojson.Basic.pretty_to_string output
   in
   (* Handlers *)
   Server.runner @@ mk_handler runner;
