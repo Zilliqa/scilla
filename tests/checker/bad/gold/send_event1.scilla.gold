@@ -39,7 +39,7 @@
     },
     {
       "error_message":
-        "Error in create event `msgs`:\nType mismatch: Event expected, but List (Message) provided.",
+        "Error in create event `msgs`:\nType unassignable: Event expected, but List (Message) provided.",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
         "line": 222,
@@ -68,7 +68,7 @@
     },
     {
       "error_message":
-        "Error in sending messages `e`:\nType mismatch: List (Message) expected, but Event provided.",
+        "Error in sending messages `e`:\nType unassignable: List (Message) expected, but Event provided.",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
         "line": 247,

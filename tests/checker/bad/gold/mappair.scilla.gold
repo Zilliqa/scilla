@@ -30,7 +30,7 @@
     },
     {
       "error_message":
-        "Type error in the binding to into `p`:\nType mismatch: Int32 expected, but Int64 provided.",
+        "Type error in the binding to into `p`:\nType unassignable: Int32 expected, but Int64 provided.",
       "start_location": {
         "file": "checker/bad/mappair.scilla",
         "line": 56,
@@ -49,7 +49,7 @@
     },
     {
       "error_message":
-        "Type error in the binding to into `l2`:\nType mismatch: Int32 expected, but Int64 provided.",
+        "Type error in the binding to into `l2`:\nType unassignable: Int32 expected, but Int64 provided.",
       "start_location": {
         "file": "checker/bad/mappair.scilla",
         "line": 72,

@@ -205,7 +205,19 @@ functor
                          (pp_typ t) )
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
           | Address fts ->
-              foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb)
+              match List.find_a_dup fts
+                      ~compare:(fun (f1, _) (f2, _) ->
+                          Bytes.compare
+                            (Bytes.of_string (get_id f1))
+                            (Bytes.of_string (get_id f2))) with
+              | Some (dup_f, _) ->
+                  (* No duplicate fields allowed *)
+                  fail1
+                    (sprintf "Duplicate field %s in address type" (get_id dup_f))
+                    (get_rep dup_f)
+              | None ->
+                  (* Check all types of address fields *)
+                  foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb)
         in
         is_wf_typ' t []
 
@@ -292,9 +304,22 @@ module TypeUtilities = struct
     if type_equiv expected given then pure ()
     else
       fail0
-      @@ sprintf "Type mismatch: %s expected, but %s provided."
+      @@ sprintf "Types not equivalent: %s expected, but %s provided."
            (pp_typ expected) (pp_typ given)
 
+  let type_assignable_list tlist1 tlist2 =
+    List.length tlist1 = List.length tlist2
+    && not
+      (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
+           not (type_assignable t1 t2)))
+  
+  let assert_type_assignable expected given =
+    if type_assignable expected given then pure ()
+    else
+      fail0
+      @@ sprintf "Type unassignable: %s expected, but %s provided."
+        (pp_typ expected) (pp_typ given)
+    
   (* TODO: make this charge gas *)
   let assert_type_equiv_with_gas expected given remaining_gas =
     if type_equiv expected given then pure remaining_gas
@@ -312,79 +337,88 @@ module TypeUtilities = struct
     | MapType (k, v) -> is_ground_type k && is_ground_type v
     | ADT (_, ts) -> List.for_all ~f:(fun t -> is_ground_type t) ts
     | PolyFun _ | TypeVar _ -> false
-    | _ -> true
-
-  let rec is_non_map_ground_type t =
-    match t with
-    | FunType (a, r) -> is_non_map_ground_type a && is_non_map_ground_type r
-    | MapType (_, _) -> false
-    | ADT (_, ts) -> List.for_all ~f:(fun t -> is_non_map_ground_type t) ts
-    | PolyFun _ | TypeVar _ -> false
-    | _ -> true
-
-  let rec is_serializable_storable_helper accept_maps check_addresses t seen_adts =
-    match t with
-    | FunType _ | PolyFun _ | Unit -> false
-    | MapType (kt, vt) ->
-        if accept_maps then
-          is_serializable_storable_helper accept_maps check_addresses kt seen_adts
-          && is_serializable_storable_helper accept_maps check_addresses vt seen_adts
-        else false
-    | TypeVar _ -> (
-        (* If we are inside an ADT, then type variable
-           instantiations are handled outside *)
-        match seen_adts with
-        | [] -> false
-        | _ -> true )
-    | PrimType _ ->
-        (* Messages and Events are not serialisable in terms of contract parameters *)
-        not (t = PrimTypes.msg_typ || t = PrimTypes.event_typ)
-    | ADT (tname, ts) -> (
-        match List.findi ~f:(fun _ seen -> seen = tname) seen_adts with
-        | Some _ -> true (* Inductive ADT - ignore this branch *)
-        | None -> (
-            (* Check that ADT is serializable *)
-            match
-              DataTypeDictionary.lookup_name ~sloc:(get_rep tname)
-                (get_id tname)
-            with
-            | Error _ -> false (* Handle errors outside *)
-            | Ok adt ->
-                let adt_serializable =
-                  List.for_all
-                    ~f:(fun (_, carg_list) ->
-                      List.for_all
-                        ~f:(fun carg ->
-                          is_serializable_storable_helper accept_maps check_addresses carg
-                            (tname :: seen_adts))
-                        carg_list)
-                    adt.tmap
-                in
-                adt_serializable
-                && List.for_all
-                     ~f:(fun t ->
-                       is_serializable_storable_helper accept_maps check_addresses t seen_adts)
-                     ts ) )
-    | Address fts
-      when check_addresses ->
-        (* If check_addresses is true, then all field types in the address type should be legal field types. *)
-        List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t)
     | Address _ ->
-        (* If check_addresses is false, then consider Address = ByStr20. *)
-        true
+        (* Addresses are represented as ByStr20 *)
+        true 
+    | _ -> true
+  
+  let rec is_serializable_storable_helper accept_maps allow_unserializable check_addresses t seen_adts =
+    let rec recurser t seen_adts =
+      match t with
+      | FunType (a, r) ->
+          allow_unserializable &&
+          recurser a seen_adts &&
+          recurser r seen_adts
+      | PolyFun (_, t) ->
+          allow_unserializable &&
+          recurser t seen_adts
+      | Unit ->
+          allow_unserializable 
+      | MapType (kt, vt) ->
+          accept_maps &&
+          recurser kt seen_adts &&
+          recurser vt seen_adts
+      | TypeVar _ ->
+          (* If we are inside an ADT, then type variable
+             instantiations are handled outside *)
+          not @@ List.is_empty seen_adts
+      | PrimType _ ->
+          (* Messages and Events are not serialisable in terms of contract parameters *)
+          allow_unserializable ||
+          not (t = PrimTypes.msg_typ || t = PrimTypes.event_typ)
+      | ADT (tname, ts) -> (
+          match List.findi ~f:(fun _ seen -> seen = tname) seen_adts with
+          | Some _ -> true (* Inductive ADT - ignore this branch *)
+          | None -> (
+              (* Check that ADT is serializable *)
+              match
+                DataTypeDictionary.lookup_name ~sloc:(get_rep tname)
+                  (get_id tname)
+              with
+              | Error _ -> false (* Handle errors outside *)
+              | Ok adt ->
+                  let adt_serializable =
+                    List.for_all
+                      ~f:(fun (_, carg_list) ->
+                          List.for_all
+                            ~f:(fun carg ->
+                                recurser  carg (tname :: seen_adts))
+                            carg_list)
+                      adt.tmap
+                  in
+                  adt_serializable
+                  && List.for_all
+                    ~f:(fun t ->
+                        recurser t seen_adts)
+                    ts ) )
+      | Address fts
+        when check_addresses -> 
+          (* If check_addresses is true, then all field types in the address type should be legal field types. 
+             No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
+          List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t)
+      | Address _ ->
+          true
+    in
+    recurser t seen_adts
 
   and is_legal_message_field_type t =
     (* Maps are not allowed. Address values are considered ByStr20 when used as message field value. *)
-    is_serializable_storable_helper false false t []
+    is_serializable_storable_helper false false false t []
 
-  and is_legal_parameter_type t =
+  and is_legal_transition_parameter_type t =
     (* Maps are not allowed. Address values should be checked for storable field types. *)
-    is_serializable_storable_helper false true t []
+    is_serializable_storable_helper false false true t []
+
+  and is_legal_procedure_parameter_type t =
+    (* Like transition parametes, except that polymorphic parameters are allowed,
+       since parameters do not need to be serializable. *)
+    is_serializable_storable_helper false true true t []
 
   and is_legal_field_type t =
     (* Maps are allowed. Address values should be checked for storable field types. *)
-    is_serializable_storable_helper true true t []
+    is_serializable_storable_helper true false true t []
 
+  
   let get_msgevnt_type m =
     if
       List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.tag_label) m
@@ -426,7 +460,7 @@ module TypeUtilities = struct
   let rec fun_type_applies ft argtypes =
     match (ft, argtypes) with
     | FunType (argt, rest), a :: ats ->
-        let%bind _ = assert_type_equiv argt a in
+        let%bind _ = assert_type_assignable argt a in
         fun_type_applies rest ats
     | FunType (argt, rest), [] when argt = Unit -> pure rest
     | t, [] -> pure t
@@ -443,7 +477,7 @@ module TypeUtilities = struct
     match List.zip formals actuals with
     | Ok arg_pairs ->
         mapM arg_pairs ~f:(fun (formal, actual) ->
-            assert_type_equiv formal actual)
+            assert_type_assignable formal actual)
     | Unequal_lengths -> fail0 "Incorrect number of arguments to procedure"
 
   let rec elab_tfun_with_args_no_gas tf args =
@@ -678,7 +712,9 @@ module TypeUtilities = struct
     | StringLit _ -> pure string_typ
     | BNum _ -> pure bnum_typ
     | ByStr _ -> pure bystr_typ
-    | ByStrX bs -> pure (bystrx_typ (Bystrx.width bs))
+    | ByStrX bs ->
+        (* ByStr20 literals are never considered Address types *)
+        pure (bystrx_typ (Bystrx.width bs))
     (* Check that messages and events have storable parameters. *)
     | Msg bs -> get_msgevnt_type bs
     | Map ((kt, vt), _) -> pure (MapType (kt, vt))
@@ -703,7 +739,11 @@ module TypeUtilities = struct
     | StringLit _ -> pure string_typ
     | BNum _ -> pure bnum_typ
     | ByStr _ -> pure bystr_typ
-    | ByStrX bsx -> pure (bystrx_typ (Bystrx.width bsx))
+    | ByStrX bsx ->
+        (* ByStr20 literals may represent addresses, but only statically.
+           Dynamically, ByStr20 are considered ByStr20, and are checked for
+           correct address contents only at certain points. *)
+        pure (bystrx_typ (Bystrx.width bsx))
     (* Check that messages and events have legal parameters. *)
     | Msg m ->
         let%bind msg_typ = get_msgevnt_type m in
@@ -757,7 +797,7 @@ module TypeUtilities = struct
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
           let args_valid =
-            List.for_all2_exn tmap arg_typs ~f:(fun t1 t2 -> type_equiv t1 t2)
+            List.for_all2_exn tmap arg_typs ~f:(fun t1 t2 -> type_assignable t1 t2)
           in
           if not args_valid then
             fail0

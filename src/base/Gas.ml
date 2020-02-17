@@ -365,11 +365,11 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         && List.for_all2_exn
              ~f:(fun t1 t2 ->
                (* the types should match *)
-               type_equiv t1 t2
+               type_assignable t1 t2
                ||
                (* or the built-in record is generic *)
-               match t2 with TypeVar _ -> true | _ -> false)
-             arg_types types
+               match t1 with TypeVar _ -> true | _ -> false)
+              types arg_types
       then fcoster op arg_literals base (* this can fail too *)
       else fail0 @@ "Name or arity doesn't match"
     in

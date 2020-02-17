@@ -130,7 +130,7 @@ let rec pp_typ = function
       let elems = List.map fts ~f:(fun (f, t) -> sprintf "%s : %s" (get_id f) (pp_typ t)) |>
                   String.concat ~sep:", "
       in
-      sprintf "ByStr20 with %s end" elems
+      sprintf "ByStr20 with %s%send" elems (if List.is_empty fts then "" else " ")
 
 and with_paren t =
   match t with
@@ -536,29 +536,80 @@ let canonicalize_tfun t =
   let mk_new_name counter _ = "'_A" ^ Int.to_string counter in
   rename_bound_vars mk_new_name (const @@ Int.succ) t 1
 
+(* Type equality - assumes that the types have been canonicalised first. *)
+let rec type_equal t1 t2 =
+  match t1, t2 with
+  | PrimType p1, PrimType p2 -> p1 = p2
+  | TypeVar v1, TypeVar v2 -> String.equal v1 v2
+  | Unit, Unit -> true
+  | ADT (tname1, tl1), ADT (tname2, tl2) ->
+      equal_id tname1 tname2
+      (* Cannot call type_equiv_list because we don't want to canonicalize_tfun again. *)
+      && List.length tl1 = List.length tl2
+      && List.for_all2_exn ~f:type_equal tl1 tl2
+  | MapType (t1_1, t1_2), MapType (t2_1, t2_2)
+  | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
+      type_equal t1_1 t2_1 && type_equal t1_2 t2_2
+  | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
+      String.equal v1 v2 && type_equal t1'' t2''
+  | Address fts1, Address fts2 ->
+      let traverse fts_first fts_second =
+        List.for_all fts_first ~f:(fun (f1, t1) ->
+            let f1_id = get_id f1 in
+            match List.find fts_second ~f:(fun (f2, _) -> String.(f1_id = get_id f2)) with
+            | None -> false
+            | Some (_, t2) -> type_equal t1 t2)
+      in
+      List.length fts1 = List.length fts2
+      && traverse fts1 fts2
+      && traverse fts2 fts1
+  | _ -> false
+
 (* Type equivalence *)
 let type_equiv t1 t2 =
   let t1' = canonicalize_tfun t1 in
   let t2' = canonicalize_tfun t2 in
-  let rec equiv t1 t2 =
-    match (t1, t2) with
-    | PrimType p1, PrimType p2 -> p1 = p2
-    | TypeVar v1, TypeVar v2 -> String.equal v1 v2
-    | Unit, Unit -> true
+  type_equal t1' t2'
+
+let type_assignable to_typ from_typ =
+  let to_typ' = canonicalize_tfun to_typ in
+  let from_typ' = canonicalize_tfun from_typ in
+  let rec assignable to_typ from_typ =
+    match to_typ, from_typ with
+    | Address tfts, Address ffts ->
+        (* Check that tfts is a subset of ffts, and that types are assignable/equivalent. *)
+        List.for_all tfts ~f:(fun (tf, tft) ->
+            let tf_name = get_id tf in
+            match List.find ffts ~f:(fun (ff, _) ->
+                String.(tf_name = get_id ff)) with
+            | None ->
+                (* to field does not appear in from type *)
+                false
+            | Some (_, fft) ->
+                (* Matching field name. Types must be assignable. *)
+                assignable tft fft)
+    | PrimType (Bystrx_typ len), Address _
+      when len = address_length ->
+        (* Any address is assignable to ByStr20. *)
+        true
     | ADT (tname1, tl1), ADT (tname2, tl2) ->
         equal_id tname1 tname2
-        (* Cannot call type_equiv_list because we don't want to canonicalize_tfun again. *)
         && List.length tl1 = List.length tl2
-        && List.for_all2_exn ~f:equiv tl1 tl2
-    | MapType (t1_1, t1_2), MapType (t2_1, t2_2)
+        (* Instantiation types must be assignable *)
+        && List.for_all2_exn ~f:assignable tl1 tl2
+    | MapType (t1_1, t1_2), MapType (t2_1, t2_2) ->
+        assignable t1_1 t2_1 && assignable t1_2 t2_2
     | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
-        equiv t1_1 t2_1 && equiv t1_2 t2_2
+        (* Must be contravariant in the argument type *)
+        assignable t2_1 t1_1 && assignable t1_2 t2_2
     | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
-        String.equal v1 v2 && equiv t1'' t2''
-    | _ -> false
+        String.equal v1 v2 && assignable t1'' t2''
+    | _, _ ->
+        (* All other cases require equality up to canonicalisation. *)
+        type_equal to_typ from_typ
   in
-  equiv t1' t2'
-
+  assignable to_typ' from_typ'
+        
 (* The same as above, but for a variable with locations *)
 let subst_type_in_type' tv = subst_type_in_type (get_id tv)
 

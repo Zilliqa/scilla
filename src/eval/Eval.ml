@@ -523,7 +523,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
           tryM
             ~f:(fun (ps, pt) ->
               let%bind at = fromR @@ literal_type (snd a) in
-              if get_id ps = fst a && type_equiv pt at then pure true
+              if get_id ps = fst a && type_assignable pt at then pure true
               else fail0 "")
             cparams ~msg:emsg
         in

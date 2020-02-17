@@ -39,7 +39,7 @@
     },
     {
       "error_message":
-        "Type error in storing value of `hopt` into the field `player_a_hash`:\nType error in storing value of `tm1` into the field `timer`:\nType error in the binding to into `msgs`:\nType error in application of `one_msg`:\nType mismatch: Message expected, but Event provided.",
+        "Type error in storing value of `hopt` into the field `player_a_hash`:\nType error in storing value of `tm1` into the field `timer`:\nType error in the binding to into `msgs`:\nType error in application of `one_msg`:\nType unassignable: Message expected, but Event provided.",
       "start_location": {
         "file": "checker/bad/send_event2.scilla",
         "line": 178,
@@ -105,7 +105,7 @@
     },
     {
       "error_message":
-        "Error in create event `e`:\nType mismatch: Event expected, but Message provided.",
+        "Error in create event `e`:\nType unassignable: Event expected, but Message provided.",
       "start_location": {
         "file": "checker/bad/send_event2.scilla",
         "line": 247,

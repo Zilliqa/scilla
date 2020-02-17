@@ -229,15 +229,17 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         let%bind ((_, (ityp, _)) as checked_lhs), remaining_gas =
           wrap_type_err erep @@ type_expr tenv lhs remaining_gas
         in
-        let%bind () =
+        let%bind actual_typ =
           match topt with
           | Some tannot ->
               mark_error_as_type_error remaining_gas
-              @@ assert_type_equiv tannot ityp.tp
-          | None -> pure ()
+              @@
+              let%bind _ = assert_type_assignable tannot ityp.tp in
+              pure (mk_qual_tp tannot)
+          | None -> pure ityp
         in
-        let tenv' = TEnv.addT (TEnv.copy tenv) i ityp.tp in
-        let typed_i = add_type_to_ident i ityp in
+        let tenv' = TEnv.addT (TEnv.copy tenv) i actual_typ.tp in
+        let typed_i = add_type_to_ident i actual_typ in
         let%bind ((_, (rhstyp, _)) as checked_rhs), remaining_gas =
           type_expr tenv' rhs remaining_gas
         in
@@ -320,7 +322,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           type_expr tenv' body remaining_gas
         in
         let%bind _ =
-          mark_error_as_type_error remaining_gas @@ assert_type_equiv t bt.tp
+          mark_error_as_type_error remaining_gas @@ assert_type_assignable t bt.tp
         in
         pure
         @@ ( ( TypedSyntax.Fixpoint
@@ -366,7 +368,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         let payload_type fld pld remaining_gas =
           let check_field_type seen_type =
             match Caml.List.assoc_opt fld CU.msg_mandatory_field_types with
-            | Some fld_t when fld_t <> seen_type ->
+            | Some fld_t when not @@ type_assignable fld_t seen_type ->
                 fail1
                   (sprintf
                      "Type mismatch for Message field %s. Expected %s but got \
@@ -489,7 +491,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let%bind k_t =
             TEnv.resolveT env.pure (get_id k) ~lopt:(Some (get_rep k))
           in
-          let%bind _ = assert_type_equiv kt (rr_typ k_t).tp in
+          let%bind _ = assert_type_assignable kt (rr_typ k_t).tp in
           let%bind typed_keys, res = helper vt rest in
           let typed_k = add_type_to_ident k (rr_typ k_t) in
           pure @@ (typed_k :: typed_keys, res)
@@ -562,7 +564,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                    in
                    let%bind _ =
                      mark_error_as_type_error remaining_gas
-                     @@ assert_type_equiv (rr_typ fr).tp (rr_typ r).tp
+                     @@ assert_type_assignable (rr_typ fr).tp (rr_typ r).tp
                    in
                    let%bind checked_stmts, remaining_gas =
                      type_stmts env sts get_loc remaining_gas
@@ -607,7 +609,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                        let typed_v = rr_typ v_resolv in
                        let%bind _ =
                          mark_error_as_type_error remaining_gas
-                         @@ assert_type_equiv v_type typed_v.tp
+                         @@ assert_type_assignable v_type typed_v.tp
                        in
                        let typed_v' = add_type_to_ident v typed_v in
                        pure @@ Some typed_v'
@@ -726,7 +728,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let%bind _ =
               wrap_type_serr stmt
               @@ mark_error_as_type_error remaining_gas
-              @@ assert_type_equiv expected i_type.tp
+              @@ assert_type_assignable expected i_type.tp
             in
             let typed_i = add_type_to_ident i i_type in
             let%bind checked_stmts, remaining_gas =
@@ -746,7 +748,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let%bind _ =
               wrap_type_serr stmt
               @@ mark_error_as_type_error remaining_gas
-              @@ assert_type_equiv event_typ i_type.tp
+              @@ assert_type_assignable event_typ i_type.tp
             in
             let typed_i = add_type_to_ident i i_type in
             let%bind checked_stmts, remaining_gas =
@@ -802,7 +804,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 let%bind _ =
                   wrap_type_serr stmt
                   @@ mark_error_as_type_error remaining_gas
-                  @@ assert_type_equiv exception_typ i_type.tp
+                  @@ assert_type_assignable exception_typ i_type.tp
                 in
                 let typed_i = add_type_to_ident i i_type in
                 pure
@@ -843,8 +845,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     @@
     let param_checker =
       match comp_type with
-      | CompTrans -> is_legal_parameter_type
-      | CompProc -> is_non_map_ground_type
+      | CompTrans -> is_legal_transition_parameter_type
+      | CompProc -> is_legal_procedure_parameter_type
     in
     let%bind typed_cparams =
       mark_error_as_type_error remaining_gas
@@ -898,7 +900,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              let actual = ar.tp in
              let%bind _ =
                mark_error_as_type_error remaining_gas'
-               @@ assert_type_equiv ft actual
+               @@ assert_type_assignable ft actual
              in
              let typed_fs = add_type_to_ident fn ar in
              if is_legal_field_type ft then
@@ -950,7 +952,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              match topt with
              | Some tannot ->
                  mark_error_as_type_error remaining_gas'
-                 @@ assert_type_equiv tannot ar.tp
+                 @@ assert_type_assignable tannot ar.tp
              | None -> pure ()
            in
            let typed_rn = add_type_to_ident rn ar in
@@ -1014,7 +1016,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                          match ltopt with
                          | Some tannot ->
                              mark_error_as_type_error remaining_gas
-                             @@ assert_type_equiv tannot tr.tp
+                             @@ assert_type_assignable tannot tr.tp
                          | None -> pure ()
                        in
                        let typed_ln = add_type_to_ident ln tr in
@@ -1249,7 +1251,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               in
               let%bind _ =
                 mark_error_as_type_error remaining_gas
-                @@ assert_type_equiv (ADT (asId "Bool", [])) ityp.tp
+                @@ assert_type_assignable (ADT (asId "Bool", [])) ityp.tp
               in
               pure (checked_constraint, remaining_gas)
          in
