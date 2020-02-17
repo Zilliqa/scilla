@@ -378,9 +378,9 @@ module Message = struct
     in
     `Assoc
       [
-        (tag_label, `String (BatOption.get tags));
-        (amount_label, `String (BatOption.get amounts));
-        (tofrom_label, `String (BatOption.get tofroms));
+        (tag_label, `String (Option.value_exn tags));
+        (amount_label, `String (Option.value_exn amounts));
+        (tofrom_label, `String (Option.value_exn tofroms));
         ("params", `List (slist_to_json filtered_list));
       ]
 
@@ -519,7 +519,7 @@ module Event = struct
     in
     `Assoc
       [
-        (eventname_label, `String (BatOption.get eventnames));
+        (eventname_label, `String (Option.value_exn eventnames));
         ("params", `List (slist_to_json filtered_list));
       ]
 

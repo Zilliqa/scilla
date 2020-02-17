@@ -329,7 +329,7 @@ stmt:
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
 | SEND; m = sid;          { (SendMsgs (asIdL m (toLoc $startpos(m))), toLoc $startpos) }
 | EVENT; m = sid; { (CreateEvnt (asIdL m (toLoc $startpos(m))), toLoc $startpos) }
-| THROW; mopt = option(sid); { Throw (BatOption.map (fun m -> (asIdL m (toLoc $startpos))) mopt), toLoc $startpos }
+| THROW; mopt = option(sid); { Throw (Option.map (fun m -> (asIdL m (toLoc $startpos))) mopt), toLoc $startpos }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
 | (* procedure call *)
@@ -406,7 +406,7 @@ contract:
   comps = list(component)
   { { cname   = asIdL c (toLoc $startpos(c));
       cparams = params;
-      cconstraint = BatOption.default (build_bool_literal true dummy_loc) ct;
+      cconstraint = Option.value ct ~default:(build_bool_literal true dummy_loc);
       cfields = fs;
       ccomps = comps } }
 

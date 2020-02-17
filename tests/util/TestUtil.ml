@@ -21,6 +21,12 @@ open! Int.Replace_polymorphic_compare
 open OUnit2
 open ScillaUtil.FilePathInfix
 
+(* Helper funcation borrowed from Batteries library *)
+let stream_to_string fl =
+  let buf = Buffer.create 4096 in
+  Stream.iter (Buffer.add_char buf) fl;
+  Buffer.contents buf
+
 type tsuite_env = {
   tests_dir : test_ctxt -> string;
   stdlib_dir : test_ctxt -> string;
@@ -175,7 +181,7 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
         print_cli_usage (env.print_cli test_ctxt) runner args;
         assert_command
           ~foutput:(fun s ->
-            let out = BatStream.to_string s in
+            let out = stream_to_string s in
             if env.update_gold test_ctxt then
               output_updater goldoutput_file input_file out
             else

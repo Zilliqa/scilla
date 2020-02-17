@@ -13,7 +13,7 @@ let
   ];
   ocamlPkgs = with opkgs; [
     base core core_bench core_profiler ppx_deriving ppx_tools_versioned
-    ppx_sexp_conv bisect_ppx fileutils hex stdint batteries zarith cryptokit
+    ppx_sexp_conv bisect_ppx fileutils hex stdint zarith cryptokit
     bitstring ctypes findlib utop angstrom ounit expect_test_helpers patience_diff
     ocaml_pcre merlin ocp-indent ocp-index yojson menhir secp256k1 rpclib
     ppx_deriving_protobuf ocaml-protoc ppx_deriving_rpc result rresult xmlm

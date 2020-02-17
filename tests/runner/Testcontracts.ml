@@ -126,7 +126,7 @@ let rec build_contract_tests_with_init_file env name exit_code i n
           let interpreter_output =
             if Poly.(exit_code = succ_code) && not (env.server test_ctxt) then
               In_channel.read_all output_file
-            else BatStream.to_string s
+            else stream_to_string s
           in
           let out =
             if ipc_mode then
@@ -209,7 +209,7 @@ let build_contract_init_test env exit_code name init_name is_library =
            otherwise we read from the output stream *)
       let out =
         if Poly.(exit_code = succ_code) then In_channel.read_all output_file
-        else BatStream.to_string s
+        else stream_to_string s
       in
       if env.update_gold test_ctxt && not (env.server test_ctxt) then
         output_updater goldoutput_file test_name out

@@ -1,4 +1,4 @@
 (library
  (name testutil)
  (wrapped false)
- (libraries core batteries oUnit fileutils scilla_base patdiff.lib))
+ (libraries core oUnit fileutils scilla_base patdiff.lib))

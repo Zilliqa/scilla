@@ -189,7 +189,7 @@ let expand_parameters_pn (pn' : 'a polynomial) ~(f : 'a -> 'a polynomial option)
     | (svar, spow) :: restsub ->
         (* Substitute svar only (one substitution at-most to keep things simple). *)
         let rest_pol = [ (coef, nosubl @ restsub) ] in
-        let subst_pol = BatOption.get (f svar) in
+        let subst_pol = Option.value_exn (f svar) in
         if spow < 0 then
           raise
             (Polynomial_error "Cannot expand paramter with non-positive power")

@@ -186,16 +186,16 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
   let crypto_coster op args base =
-    let open BatOption in
     let%bind types = mapM args ~f:literal_type in
     let div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 in
     match (op, types, args) with
     | Builtin_eq, [ a1; a2 ], _
       when is_bystrx_type a1 && is_bystrx_type a2
-           && get (bystrx_width a1) = get (bystrx_width a2) ->
-        pure @@ (get (bystrx_width a1) * base)
+           && Option.(value_exn (bystrx_width a1) = value_exn (bystrx_width a2))
+      ->
+        pure @@ (Option.value_exn (bystrx_width a1) * base)
     | Builtin_to_uint256, [ a ], _
-      when is_bystrx_type a && get (bystrx_width a) <= 32 ->
+      when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 32 ->
         pure (32 * base)
     | Builtin_sha256hash, _, [ a ] | Builtin_schnorr_get_address, _, [ a ] ->
         (* Block size of sha256hash is 512 *)
@@ -211,7 +211,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         let x = div_ceil (Bystr.width s + 66) 64 in
         pure @@ ((250 + (15 * x)) * base)
     | Builtin_to_bystr, [ a ], _ when is_bystrx_type a ->
-        pure @@ (get (bystrx_width a) * base)
+        pure @@ (Option.value_exn (bystrx_width a) * base)
     | Builtin_bech32_to_bystr20, _, [ prefix; addr ]
     | Builtin_bystr20_to_bech32, _, [ prefix; addr ] ->
         pure
@@ -219,7 +219,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
            * base
     | Builtin_concat, [ a1; a2 ], _ when is_bystrx_type a1 && is_bystrx_type a2
       ->
-        pure @@ ((get (bystrx_width a1) + get (bystrx_width a2)) * base)
+        pure
+        @@ Option.(
+             (value_exn (bystrx_width a1) + value_exn (bystrx_width a2)) * base)
     | Builtin_alt_bn128_G1_add, _, _ -> pure @@ (20 * base)
     | Builtin_alt_bn128_G1_mul, _, [ _; s ] ->
         let%bind s' = scilla_scalar_to_ocaml s in
