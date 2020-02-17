@@ -16,12 +16,13 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Syntax
 open FrontEndParser
 open RunnerUtil
 open GlobalConfig
 open PrettyPrinters
-open Core_kernel
 module PSRep = ParserRep
 module PERep = ParserRep
 module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
@@ -34,7 +35,7 @@ let () =
   let cli = parse_cli () in
   let filename = cli.input_file in
   let gas_limit =
-    if cli.gas_limit = Stdint.Uint64.zero then default_gas_limit
+    if Stdint.Uint64.(compare cli.gas_limit zero = 0) then default_gas_limit
     else cli.gas_limit
   in
   match parse_expr_from_file filename with
@@ -48,7 +49,7 @@ let () =
       in
       StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
       let lib_dirs = StdlibTracker.get_stdlib_dirs () in
-      if lib_dirs = [] then stdlib_not_found_err ();
+      if List.is_empty lib_dirs then stdlib_not_found_err ();
       (* Import all libraries in known stdlib paths. *)
       let elibs = import_all_libs lib_dirs in
       let envres = Eval.init_libraries (Some clib) elibs in

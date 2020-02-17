@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open OUnit2
 open ScillaUtil.FilePathInfix
 open TestUtil
@@ -78,7 +79,7 @@ let rec build_contract_tests_with_init_file env name exit_code i n
 
       (* If an external IPC server is provided, we'll use that, otherwise
        * we'll have an in-testsuite mock server setup based on the shard-id. *)
-      let start_mock_server = env.ext_ipc_server test_ctxt = "" in
+      let start_mock_server = String.is_empty (env.ext_ipc_server test_ctxt) in
       let ipc_addr_thread =
         if start_mock_server then ipc_socket_addr ^ get_shard_id test_ctxt
           (* TODO: assert that "-runner sequential" CLI is provided to testsuite. *)
@@ -104,17 +105,17 @@ let rec build_contract_tests_with_init_file env name exit_code i n
         if disable_validate_json then "-disable-validate-json" :: args'
         else args'
       in
-      let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
-      print_cli_usage (env.print_cli test_ctxt) scillabin args;
+      let runner = "scilla-runner" in
+      print_cli_usage (env.print_cli test_ctxt) runner args;
       let test_name = name ^ "_" ^ istr in
       let goldoutput_file = dir ^/ "output_" ^ istr ^. "json" in
-      let msg = cli_usage_on_err scillabin args in
-      assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
+      let msg = cli_usage_on_err runner args in
+      assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt runner args
         ~foutput:(fun s ->
           (* if the test is supposed to succeed we read the output from a file,
                  otherwise we read from the output stream *)
           let interpreter_output =
-            if exit_code = succ_code then In_channel.read_all output_file
+            if Poly.(exit_code = succ_code) then In_channel.read_all output_file
             else BatStream.to_string s
           in
           let out =
@@ -134,7 +135,7 @@ let rec build_contract_tests_with_init_file env name exit_code i n
     (* If this test is expected to succeed, we know that the JSONs are all "good".
      * So test both the JSON parsers, one that does validation, one that doesn't.
      * Both should succeed. *)
-    if exit_code = succ_code then
+    if Poly.(exit_code = succ_code) then
       test ~disable_validate_json:true ~ipc_mode:true
       :: test ~disable_validate_json:false ~ipc_mode:true
       :: test ~disable_validate_json:true ~ipc_mode:false
@@ -187,7 +188,7 @@ let build_contract_init_test env exit_code name init_name is_library =
       dir ^/ "blockchain_1" ^. "json";
     ]
   in
-  let scillabin = env.bin_dir test_ctxt ^/ "scilla-runner" in
+  let scillabin = "scilla-runner" in
   print_cli_usage (env.print_cli test_ctxt) scillabin args;
   let test_name = name ^ "_" ^ init_name in
   let goldoutput_file = dir ^/ init_name ^ "_output" ^. "json" in
@@ -197,7 +198,7 @@ let build_contract_init_test env exit_code name init_name is_library =
       (* if the test is supposed to succeed we read the output from a file,
            otherwise we read from the output stream *)
       let out =
-        if exit_code = succ_code then In_channel.read_all output_file
+        if Poly.(exit_code = succ_code) then In_channel.read_all output_file
         else BatStream.to_string s
       in
       if env.update_gold test_ctxt then
@@ -205,7 +206,7 @@ let build_contract_init_test env exit_code name init_name is_library =
       else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
 
 let build_misc_tests env =
-  let scillabin bin_dir test_ctxt = bin_dir test_ctxt ^/ "scilla-runner" in
+  let scillabin = "scilla-runner" in
   let output_file test_ctxt name = bracket_tmpdir test_ctxt ^/ name in
   let tests_dir_file testsdir test_ctxt name =
     testsdir test_ctxt ^/ "runner" ^/ "crowdfunding" ^/ name
@@ -232,7 +233,6 @@ let build_misc_tests env =
         tests_dir_file env.tests_dir test_ctxt ("blockchain_" ^ snum ^. "json");
       ]
     in
-    let scillabin = scillabin env.bin_dir test_ctxt in
     print_cli_usage (env.print_cli test_ctxt) scillabin args;
     assert_command ~exit_code:fail_code ~ctxt:test_ctxt scillabin args
   in

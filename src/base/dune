@@ -18,8 +18,9 @@
 (library
  (name scilla_base)
  (wrapped false)
- (libraries core ppx_sexp_conv num hex stdint batteries ppx_deriving.show
-   cryptokit secp256k1 bitstring yojson fileutils scilla_cpp_deps menhirLib)
+ (libraries core num hex stdint batteries cryptokit secp256k1 bitstring
+   yojson fileutils scilla_cpp_deps menhirLib)
  (preprocess
-  (pps ppx_sexp_conv ppx_let ppx_deriving.show bisect_ppx -conditional))
+  (pps ppx_sexp_conv ppx_let ppx_deriving.show ppx_compare bisect_ppx
+    -conditional))
  (synopsis "Scilla workbench implementation."))

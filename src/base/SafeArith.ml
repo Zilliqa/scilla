@@ -1,4 +1,7 @@
 open Base
+
+(* No need to open! Int.Replace_polymorphic_compare
+   because open Base already disables polymorphic comparisons except for ints *)
 open Stdint
 
 exception IntOverflow

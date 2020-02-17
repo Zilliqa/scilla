@@ -16,9 +16,10 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open Result
+open Result.Let_syntax
 open Secp256k1
-open Core_kernel.Result
-open Core_kernel.Result.Let_syntax
 open MonadUtil
 
 let ctx = Context.create [ Sign; Verify ]

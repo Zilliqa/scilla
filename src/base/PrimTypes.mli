@@ -24,6 +24,8 @@ open Syntax
 
 val is_prim_type : typ -> bool
 
+val is_address_type : typ -> bool
+
 val is_int_type : typ -> bool
 
 val is_uint_type : typ -> bool

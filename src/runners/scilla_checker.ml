@@ -16,8 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
 open Core_kernel
+open! Int.Replace_polymorphic_compare
+open Syntax
 open ErrorUtils
 open PrettyPrinters
 open DebugMessage
@@ -331,19 +332,21 @@ let () =
   let cli = parse_cli () in
   let open GlobalConfig in
   StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
-  let file_extn = FilePath.get_extension cli.input_file in
   (* Get list of stdlib dirs. *)
   let lib_dirs = StdlibTracker.get_stdlib_dirs () in
-  if lib_dirs = [] then stdlib_not_found_err ();
+  if List.is_empty lib_dirs then stdlib_not_found_err ();
 
   (* Testsuite runs this executable with cwd=tests and ends
        up complaining about missing _build directory for logger.
        So disable the logger. *)
   set_debug_level Debug_None;
 
-  (* Check library modules. *)
-  if file_extn = StdlibTracker.file_extn_library then check_lmodule cli
-  else if file_extn <> StdlibTracker.file_extn_contract then
-    fatal_error (mk_error0 (sprintf "Unknown file extension %s\n" file_extn))
-  else (* Check contract modules. *)
+  let open FilePath in
+  let open StdlibTracker in
+  if check_extension cli.input_file file_extn_library then
+    (* Check library modules. *)
+    check_lmodule cli
+  else if check_extension cli.input_file file_extn_contract then
+    (* Check contract modules. *)
     check_cmodule cli
+  else fatal_error (mk_error0 (sprintf "Unknown file extension\n"))

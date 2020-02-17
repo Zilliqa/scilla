@@ -16,11 +16,12 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open OUnit2
 open Bech32
 open Syntax
 open Utils
-open Core_kernel
 
 let hex_to_raw_bytes h = Bystr.parse_hex h |> Bystr.to_raw_bytes
 
@@ -31,10 +32,11 @@ let test1 =
         hex_to_raw_bytes "0x7aa7ea9f4534d8d70224b9c2fb165242f321f12b"
       in
       let bech32_addr = "zil102n74869xnvdwq3yh8p0k9jjgtejruft268tg8" in
-      match decode_bech32_addr ~prefix:"zil" ~addr:bech32_addr with
+      match decode_bech32_addr ~prfx:"zil" ~addr:bech32_addr with
       | Some b ->
           assert_bool "Bech32 address decode failed"
-            (b = decoded_gold && is_valid_bech32 ~prefix:"zil" ~addr:bech32_addr)
+            ( String.(b = decoded_gold)
+            && is_valid_bech32 ~prfx:"zil" ~addr:bech32_addr )
       | None -> assert_failure "Bech32 address validity check failed")
 
 let test2 =
@@ -43,21 +45,22 @@ let test2 =
         hex_to_raw_bytes "0xa9d24392469ea49a3a3ab031e37a206c789e7155"
       in
       let bech32_addr = "zil148fy8yjxn6jf5w36kqc7x73qd3ufuu24a4u8t9" in
-      match decode_bech32_addr ~prefix:"zil" ~addr:bech32_addr with
+      match decode_bech32_addr ~prfx:"zil" ~addr:bech32_addr with
       | Some b ->
           assert_bool "Bech32 address decode failed"
-            (b = decoded_gold && is_valid_bech32 ~prefix:"zil" ~addr:bech32_addr)
+            ( String.(b = decoded_gold)
+            && is_valid_bech32 ~prfx:"zil" ~addr:bech32_addr )
       | None -> assert_failure "Bech32 address validity check failed")
 
 let test3 =
   test_case (fun _ ->
       (* This address below is same as test2's, but with the last checksum character modified. *)
       let bech32_addr = "zil148fy8yjxn6jf5w36kqc7x73qd3ufuu24a4u8t8" in
-      match decode_bech32_addr ~prefix:"zil" ~addr:bech32_addr with
+      match decode_bech32_addr ~prfx:"zil" ~addr:bech32_addr with
       | Some _ -> assert_failure "Bech32 address decode incorrectly validated"
       | None ->
           assert_bool "Bech32 address incorrectly validated"
-            (not (is_valid_bech32 ~prefix:"zil" ~addr:bech32_addr)))
+            (not (is_valid_bech32 ~prfx:"zil" ~addr:bech32_addr)))
 
 let test4 =
   test_case (fun _ ->
@@ -65,9 +68,9 @@ let test4 =
         hex_to_raw_bytes "0x7aa7ea9f4534d8d70224b9c2fb165242f321f12b"
       in
       let gold_output = "zil102n74869xnvdwq3yh8p0k9jjgtejruft268tg8" in
-      match encode_bech32_addr ~prefix:"zil" ~addr:input with
+      match encode_bech32_addr ~prfx:"zil" ~addr:input with
       | Some output ->
-          assert_bool "Bech32 encode mismatch" (output = gold_output)
+          assert_bool "Bech32 encode mismatch" String.(output = gold_output)
       | None -> assert_failure "Bech32 encoding failed")
 
 let test5 =
@@ -76,9 +79,9 @@ let test5 =
         hex_to_raw_bytes "0xa9d24392469ea49a3a3ab031e37a206c789e7155"
       in
       let gold_output = "zil148fy8yjxn6jf5w36kqc7x73qd3ufuu24a4u8t9" in
-      match encode_bech32_addr ~prefix:"zil" ~addr:input with
+      match encode_bech32_addr ~prfx:"zil" ~addr:input with
       | Some output ->
-          assert_bool "Bech32 encode mismatch" (output = gold_output)
+          assert_bool "Bech32 encode mismatch" String.(output = gold_output)
       | None -> assert_failure "Bech32 encoding failed")
 
 (* Takes in a random number and uses that to run a random test of bech32 encoding/decoding.
@@ -96,10 +99,10 @@ let random_test seed =
     Printf.sprintf
       "Failed: Random test for bech32 encoding / decoding with seed %d" seed
   in
-  match encode_bech32_addr ~prefix:"zil" ~addr:bystr20_r with
+  match encode_bech32_addr ~prfx:"zil" ~addr:bystr20_r with
   | Some encoded_str -> (
-      match decode_bech32_addr ~prefix:"zil" ~addr:encoded_str with
-      | Some decoded_str -> assert_bool errmsg (bystr20_r = decoded_str)
+      match decode_bech32_addr ~prfx:"zil" ~addr:encoded_str with
+      | Some decoded_str -> assert_bool errmsg String.(bystr20_r = decoded_str)
       | None -> assert_failure errmsg )
   | None -> assert_failure errmsg
 

@@ -24,7 +24,7 @@ type loc = {
   (* line number *)
   cnum : int; (* column number *)
 }
-[@@deriving sexp]
+[@@deriving sexp, equal]
 
 val toLoc : Lexing.position -> loc
 

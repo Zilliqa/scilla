@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open OUnit2
 open Syntax
 open ErrorUtils
@@ -48,7 +49,7 @@ let make_all_type_assignable_tests tlist =
   List.map tlist ~f:(fun (st1, st2, eq) -> make_type_assignable_test st1 st2 eq)
 
 let make_type_equiv_test st1 st2 eq =
-  make_type_assignable_equiv_tests st1 st2 eq "type_equiv" type_equiv
+  make_type_assignable_equiv_tests st1 st2 eq "type_equiv" type_equivalent
 
 let make_all_type_equiv_tests tlist =
   List.map tlist ~f:(fun (st1, st2, eq) -> make_type_equiv_test st1 st2 eq)
@@ -169,7 +170,7 @@ let make_map_access_type_test t at nindices =
           assert_failure
             "Failed map_access_type test. map_access_type returned failure."
       | Ok at_computed' ->
-          let b = type_equiv at' at_computed' in
+          let b = [%equal: typ] at' at_computed' in
           assert_bool
             (Printf.sprintf
                "Failed map_access_type test for %s[%d]. Expected %s, but got %s.\n"
@@ -190,8 +191,8 @@ let map_access_type_tests =
   ]
 
 let make_map_access_type_tests tlist =
-  List.map tlist
-    ~f:(fun (t, at, nindices) -> make_map_access_type_test t at nindices)
+  List.map tlist ~f:(fun (t, at, nindices) ->
+      make_map_access_type_test t at nindices)
 
 let type_equiv_tests =
   "type_equiv_tests" >::: make_all_type_equiv_tests all_type_equiv_tests

@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Sexplib.Std
 open MonadUtil
 open ErrorUtils
@@ -42,9 +43,9 @@ type bigint = Big_int.big_int
 let mk_ident s = Ident (s, dummy_loc)
 
 (* A few utilities on id. *)
-let equal_id a b = get_id a = get_id b
+let equal_id a b = String.(get_id a = get_id b)
 
-let compare_id a b = compare (get_id a) (get_id b)
+let compare_id a b = String.(compare (get_id a) (get_id b))
 
 let dedup_id_list l = List.dedup_and_sort ~compare:compare_id l
 
@@ -54,7 +55,8 @@ let is_mem_id i l = List.exists l ~f:(equal_id i)
 (*                         Types                       *)
 (*******************************************************)
 
-type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256 [@@deriving sexp]
+type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
+[@@deriving sexp, equal]
 
 type prim_typ =
   | Int_typ of int_bit_width
@@ -66,6 +68,7 @@ type prim_typ =
   | Exception_typ
   | Bystr_typ
   | Bystrx_typ of int
+[@@deriving equal]
 
 let sexp_of_prim_typ = function
   | Int_typ Bits32 -> Sexp.Atom "Int32"
@@ -150,25 +153,41 @@ let address_length = 20
 
 let hash_length = 32
 
+open Integer256
+
+let equal_int128 x y = Int128.compare x y = 0
+
+let equal_int256 x y = Int256.compare x y = 0
+
 type int_lit =
   | Int32L of int32
   | Int64L of int64
   | Int128L of int128
-  | Int256L of Integer256.int256
+  | Int256L of int256
+[@@deriving equal]
 
 let sexp_of_int_lit = function
   | Int32L i' -> Sexp.Atom ("Int32 " ^ Int32.to_string i')
   | Int64L i' -> Sexp.Atom ("Int64 " ^ Int64.to_string i')
   | Int128L i' -> Sexp.Atom ("Int128 " ^ Int128.to_string i')
-  | Int256L i' -> Sexp.Atom ("Int256 " ^ Integer256.Int256.to_string i')
+  | Int256L i' -> Sexp.Atom ("Int256 " ^ Int256.to_string i')
 
 let int_lit_of_sexp _ = failwith "int_lit_of_sexp is not implemented"
+
+let equal_uint32 x y = Uint32.compare x y = 0
+
+let equal_uint64 x y = Uint64.compare x y = 0
+
+let equal_uint128 x y = Uint128.compare x y = 0
+
+let equal_uint256 x y = Uint256.compare x y = 0
 
 type uint_lit =
   | Uint32L of uint32
   | Uint64L of uint64
   | Uint128L of uint128
-  | Uint256L of Integer256.uint256
+  | Uint256L of uint256
+[@@deriving equal]
 
 let sexp_of_uint_lit = function
   | Uint32L i' -> Sexp.Atom ("Uint32 " ^ Uint32.to_string i')
@@ -353,7 +372,7 @@ type builtin =
   | Builtin_to_uint128
   | Builtin_to_nat
   | Builtin_schnorr_get_address
-[@@deriving sexp]
+[@@deriving sexp, equal]
 
 type 'rep builtin_annot = builtin * 'rep [@@deriving sexp]
 
@@ -455,8 +474,8 @@ let parse_builtin s loc =
 (* Return free tvars in tp
     The return list doesn't contain duplicates *)
 let free_tvars tp =
-  let add vs tv = tv :: List.filter ~f:(( <> ) tv) vs in
-  let rem vs tv = List.filter ~f:(( <> ) tv) vs in
+  let add vs tv = tv :: List.filter ~f:(String.( <> ) tv) vs in
+  let rem vs tv = List.filter ~f:(String.( <> ) tv) vs in
   let rec go t acc =
     match t with
     | PrimType _ | Unit -> acc
@@ -475,7 +494,7 @@ let free_tvars tp =
 let mk_fresh_var taken init =
   let tmp = ref init in
   let counter = ref 1 in
-  while List.mem taken !tmp ~equal:( = ) do
+  while List.mem taken !tmp ~equal:String.( = ) do
     tmp := init ^ Int.to_string !counter;
     Int.incr counter
   done;
@@ -494,12 +513,13 @@ let rec subst_type_in_type tvar tp tm =
       let ats = subst_type_in_type tvar tp at in
       let rts = subst_type_in_type tvar tp rt in
       FunType (ats, rts)
-  | TypeVar n -> if tvar = n then tp else tm
+  | TypeVar n -> if String.(tvar = n) then tp else tm
   | ADT (s, ts) ->
       let ts' = List.map ts ~f:(subst_type_in_type tvar tp) in
       ADT (s, ts')
   | PolyFun (arg, t) ->
-      if tvar = arg then tm else PolyFun (arg, subst_type_in_type tvar tp t)
+      if String.(tvar = arg) then tm
+      else PolyFun (arg, subst_type_in_type tvar tp t)
   | Address fts ->
       Address (List.map fts ~f:(fun (f, t) -> (f, subst_type_in_type tvar tp t)))
 
@@ -537,28 +557,28 @@ let canonicalize_tfun t =
   rename_bound_vars mk_new_name (const @@ Int.succ) t 1
 
 (* Type equality - assumes that the types have been canonicalised first. *)
-let rec type_equal t1 t2 =
+let rec equal_typ t1 t2 =
   match t1, t2 with
-  | PrimType p1, PrimType p2 -> p1 = p2
+  | PrimType p1, PrimType p2 -> [%equal: prim_typ] p1 p2
   | TypeVar v1, TypeVar v2 -> String.equal v1 v2
   | Unit, Unit -> true
   | ADT (tname1, tl1), ADT (tname2, tl2) ->
       equal_id tname1 tname2
       (* Cannot call type_equiv_list because we don't want to canonicalize_tfun again. *)
       && List.length tl1 = List.length tl2
-      && List.for_all2_exn ~f:type_equal tl1 tl2
+      && List.for_all2_exn ~f:[%equal: typ] tl1 tl2
   | MapType (t1_1, t1_2), MapType (t2_1, t2_2)
   | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
-      type_equal t1_1 t2_1 && type_equal t1_2 t2_2
+      [%equal: typ] t1_1 t2_1 && [%equal: typ] t1_2 t2_2
   | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
-      String.equal v1 v2 && type_equal t1'' t2''
+      String.equal v1 v2 && [%equal: typ] t1'' t2''
   | Address fts1, Address fts2 ->
       let traverse fts_first fts_second =
         List.for_all fts_first ~f:(fun (f1, t1) ->
             let f1_id = get_id f1 in
             match List.find fts_second ~f:(fun (f2, _) -> String.(f1_id = get_id f2)) with
             | None -> false
-            | Some (_, t2) -> type_equal t1 t2)
+            | Some (_, t2) -> [%equal: typ] t1 t2)
       in
       List.length fts1 = List.length fts2
       && traverse fts1 fts2
@@ -566,10 +586,10 @@ let rec type_equal t1 t2 =
   | _ -> false
 
 (* Type equivalence *)
-let type_equiv t1 t2 =
+let type_equivalent t1 t2 =
   let t1' = canonicalize_tfun t1 in
   let t2' = canonicalize_tfun t2 in
-  type_equal t1' t2'
+  [%equal: typ] t1' t2'
 
 let type_assignable to_typ from_typ =
   let to_typ' = canonicalize_tfun to_typ in
@@ -592,24 +612,12 @@ let type_assignable to_typ from_typ =
       when len = address_length ->
         (* Any address is assignable to ByStr20. *)
         true
-    | ADT (tname1, tl1), ADT (tname2, tl2) ->
-        equal_id tname1 tname2
-        && List.length tl1 = List.length tl2
-        (* Instantiation types must be assignable *)
-        && List.for_all2_exn ~f:assignable tl1 tl2
-    | MapType (t1_1, t1_2), MapType (t2_1, t2_2) ->
-        assignable t1_1 t2_1 && assignable t1_2 t2_2
-    | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
-        (* Must be contravariant in the argument type *)
-        assignable t2_1 t1_1 && assignable t1_2 t2_2
-    | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
-        String.equal v1 v2 && assignable t1'' t2''
     | _, _ ->
         (* All other cases require equality up to canonicalisation. *)
-        type_equal to_typ from_typ
+        [%equal: typ] to_typ from_typ
   in
   assignable to_typ' from_typ'
-        
+
 (* The same as above, but for a variable with locations *)
 let subst_type_in_type' tv = subst_type_in_type (get_id tv)
 
@@ -850,7 +858,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         let body_subst = subst_type_in_expr tvar tp body in
         (Fun (f, t_subst, body_subst), rep)
     | TFun (tv, body) as tf ->
-        if get_id tv = get_id tvar then (tf, rep)
+        if equal_id tv tvar then (tf, rep)
         else
           let body_subst = subst_type_in_expr tvar tp body in
           (TFun (tv, body_subst), rep)
@@ -1020,7 +1028,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     (* Handle a special case where we're dealing with the most precise error. *)
     | Error [ e' ] ->
         let m, l = get_failure_msg e phase opt in
-        if e'.startl = dummy_loc then Error (mk_error1 (m ^ e'.emsg) l)
+        if [%equal: loc] e'.startl dummy_loc then
+          Error (mk_error1 (m ^ e'.emsg) l)
         else Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
     | _ -> wrap_with_info (get_failure_msg e phase opt) res
 
@@ -1030,7 +1039,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     (* Handle a special case where we're dealing with the most precise error. *)
     | Error [ e' ] ->
         let m, l = get_failure_msg_stmt s phase opt in
-        if e'.startl = dummy_loc then Error (mk_error1 (m ^ e'.emsg) l)
+        if [%equal: loc] e'.startl dummy_loc then
+          Error (mk_error1 (m ^ e'.emsg) l)
         else Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
     | _ -> wrap_with_info (get_failure_msg_stmt s phase opt) res
 end

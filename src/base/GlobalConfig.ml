@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open ScillaUtil.FilePathInfix
 
 (* Available debug levels for functions in DbgMsg *)
@@ -56,7 +57,8 @@ let get_debug_level () = !debug_level
 let set_debug_level l = debug_level := l
 
 let get_log_file () =
-  if !log_file = "" then log_file := create_log_filename ("_build" ^/ "logs");
+  if String.is_empty !log_file then
+    log_file := create_log_filename ("_build" ^/ "logs");
   !log_file
 
 let set_log_file s = log_file := s
@@ -128,7 +130,6 @@ module StdlibTracker = struct
   (* Try find library "name" in known locations *)
   let find_lib_dir name =
     let dirs = get_stdlib_dirs () in
-    BatList.find_opt
-      (fun d -> Caml.Sys.file_exists (d ^/ name ^. file_extn_library))
-      dirs
+    List.find dirs ~f:(fun d ->
+        Caml.Sys.file_exists (d ^/ name ^. file_extn_library))
 end

@@ -20,6 +20,9 @@
 (*   Dictionaries, i.e., maps from strings to values      *)
 (**********************************************************)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
+
 (* Simple association list implementation of a dictionary. *)
 type key = string
 
@@ -27,46 +30,35 @@ type 'a dict = (key * 'a) list
 
 let make_dict () = []
 
+(* removes just the first key-value binding, if it exists *)
 let rec remove k d =
   match d with
   | [] -> []
-  | (kd, vd) :: rest -> if k = kd then rest else (kd, vd) :: remove k rest
-
-let rec remove_all k d =
-  match d with
-  | [] -> []
   | (kd, vd) :: rest ->
-      if k = kd then remove_all k rest else (kd, vd) :: remove_all k rest
+      if String.(k = kd) then rest else (kd, vd) :: remove k rest
+
+let remove_all k d = List.Assoc.remove d k ~equal:String.( = )
 
 let insert k v d = (k, v) :: d
 
 let insert_all other_d this_d = other_d @ this_d
 
-let lookup k d =
-  match List.find_opt (fun (kd, _) -> k = kd) d with
-  | None -> None
-  | Some (_, v) -> Some v
+let lookup k d = List.Assoc.find d k ~equal:String.( = )
 
+(* updates just the first key-value binding, if it exists *)
 let rec update k v d =
   match d with
   | [] -> []
   | (kd, vd) :: rest ->
-      if k = kd then (k, v) :: rest else (kd, vd) :: update k v rest
+      if String.(k = kd) then (k, v) :: rest else (kd, vd) :: update k v rest
 
-let rec update_all k v d =
-  match d with
-  | [] -> []
-  | (kd, vd) :: rest ->
-      if k = kd then (k, v) :: update_all k v rest
-      else (kd, vd) :: update_all k v rest
+let update_all k v d = List.Assoc.add d k v ~equal:String.( = )
 
-let insert_unique k v d =
-  let d' = remove_all k d in
-  insert k v d'
+let insert_unique k v d = List.Assoc.add d k v ~equal:String.( = )
 
-let filter ~f d = List.filter (fun (k, _) -> f k) d
+let filter ~f d = List.filter d ~f:(fun (k, _) -> f k)
 
-let is_empty d = match d with [] -> true | _ -> false
+let is_empty d = List.is_empty d
 
 let to_list d = d
 

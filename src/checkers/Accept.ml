@@ -25,6 +25,8 @@
    statements.  There might be valid reasons for writing such contracts,
    so again we only generate warnings not errors. *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open TypeUtil
 open ErrorUtils
 open Syntax
@@ -66,35 +68,30 @@ struct
          maybe some but not all of the branches will include accepts.
          So we need an entry on the seen list for each path, because
          we don't know what will happen on each in advance. *)
-      List.fold_left
-        (fun (seen2 : loc list list) (stmt : stmt_annot) ->
+      List.fold_left stmts ~init:seen
+        ~f:(fun (seen2 : loc list list) (stmt : stmt_annot) ->
           let loc = stmt_loc stmt in
           match fst stmt with
           | AcceptPayment ->
               (* Add this accept statement to the list of accepts
                * already seen on each code path reaching this point. *)
-              List.map (fun accepts -> loc :: accepts) seen2
+              List.map seen2 ~f:(fun accepts -> loc :: accepts)
           | MatchStmt (_ident, branches) ->
               (* For each branch in the match statement we have a
                   new code path to "multiply" with the code paths
                   which already reached this point, so walk each
                   branch and build all the results into a new list.
               *)
-              List.fold_left
-                (fun seen3 (_pattern, branchstmts) ->
-                  match walk seen2 branchstmts with
-                  | [] -> seen3
-                  | seen4 -> seen3 @ seen4)
-                [] branches
+              List.concat_map branches ~f:(fun (_pattern, branchstmts) ->
+                  walk seen2 branchstmts)
           | _ -> seen2)
-        seen stmts
     in
     walk [ [] ] stmts
 
   let check_accepts (contr : contract) =
     let check_transition_accepts (transition : component) =
       let transition_accept_groups =
-        List.map List.rev (find_accept_groups transition.comp_body)
+        List.map (find_accept_groups transition.comp_body) ~f:List.rev
       in
 
       let accept_loc_end (l : loc) =
@@ -103,41 +100,32 @@ struct
 
       let dup_accept_warning (group : loc list) : unit =
         warn2
-          ( Core_kernel.sprintf
+          ( sprintf
               "transition %s had a potential code path with duplicate accept \
                statements:\n"
               (get_id transition.comp_name)
-          ^ String.concat ""
-              (List.map
-                 (fun loc ->
-                   Core_kernel.sprintf "  Accept at %s\n" (get_loc_str loc))
-                 group) )
-          warning_level_duplicate_accepts (List.hd group)
-          (accept_loc_end @@ BatList.last group)
+          ^ String.concat ~sep:""
+              (List.map group ~f:(fun loc ->
+                   sprintf "  Accept at %s\n" (get_loc_str loc))) )
+          warning_level_duplicate_accepts (List.hd_exn group)
+          (accept_loc_end @@ List.last_exn group)
       in
 
-      List.iter
-        (fun group ->
-          match group with _ :: _ :: _ -> dup_accept_warning group | _ -> ())
-        transition_accept_groups;
+      List.iter transition_accept_groups ~f:(fun group ->
+          match group with _ :: _ :: _ -> dup_accept_warning group | _ -> ());
 
       transition_accept_groups
     in
 
     let all_accept_groups =
-      List.fold_left
-        (fun acc t -> acc @ check_transition_accepts t)
-        [] contr.ccomps
+      List.concat_map contr.ccomps ~f:check_transition_accepts
     in
 
-    match List.for_all BatList.is_empty all_accept_groups with
-    | true ->
-        warn0
-          (Core_kernel.sprintf
-             "No transition in contract %s contains an accept statement\n"
-             (get_id contr.cname))
-          warning_level_missing_accept
-    | false -> ()
+    if List.for_all all_accept_groups ~f:List.is_empty then
+      warn0
+        (sprintf "No transition in contract %s contains an accept statement\n"
+           (get_id contr.cname))
+        warning_level_missing_accept
 
   (* ************************************** *)
   (* ******** Interface to Accept ********* *)

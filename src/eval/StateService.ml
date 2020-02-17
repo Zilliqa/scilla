@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open MonadUtil
 open TypeUtil
@@ -56,7 +57,7 @@ module MakeStateService () = struct
     | SS (sm, fields) -> pure (sm, fields)
 
   let field_type fields fname =
-    match List.find fields ~f:(fun z -> z.fname = get_id fname) with
+    match List.find fields ~f:(fun z -> String.(z.fname = get_id fname)) with
     | Some f -> pure @@ f.ftyp
     | None ->
         fail1
@@ -66,9 +67,9 @@ module MakeStateService () = struct
 
   let fetch_local ~fname ~keys fields =
     let s = fields in
-    match List.find s ~f:(fun z -> z.fname = get_id fname) with
+    match List.find s ~f:(fun z -> String.(z.fname = get_id fname)) with
     | Some { fname = _; ftyp = MapType _; fval = Some (Map ((kt, vt), mlit)) }
-      when keys <> [] ->
+      when not @@ List.is_empty keys ->
         let%bind ret_val_type =
           SSTypeUtil.map_access_type (MapType (kt, vt)) (List.length keys)
         in
@@ -77,7 +78,7 @@ module MakeStateService () = struct
           match klist' with
           | [ k ] ->
               (* Just an assert. *)
-              if vt' <> ret_val_type then
+              if not @@ [%equal: typ] vt' ret_val_type then
                 fail1
                   (sprintf
                      "StateService: Failed indexing into map %s. Internal \
@@ -124,7 +125,8 @@ module MakeStateService () = struct
     | IPC socket_addr -> (
         let%bind tp = field_type fields fname in
         let%bind res = StateIPCClient.fetch ~socket_addr ~fname ~keys ~tp in
-        if keys <> [] then pure @@ (res, G_MapGet (List.length keys, res))
+        if not @@ List.is_empty keys then
+          pure @@ (res, G_MapGet (List.length keys, res))
         else
           match res with
           | None ->
@@ -137,9 +139,9 @@ module MakeStateService () = struct
 
   let update_local ~fname ~keys vopt fields =
     let s = fields in
-    match List.find s ~f:(fun z -> z.fname = get_id fname) with
+    match List.find s ~f:(fun z -> String.(z.fname = get_id fname)) with
     | Some { fname = _; ftyp = _; fval = Some (Map ((_, vt), mlit)) }
-      when keys <> [] ->
+      when not @@ List.is_empty keys ->
         let rec recurser mlit' klist' vt' =
           match klist' with
           (* we're at the last key, update literal. *)
@@ -198,7 +200,7 @@ module MakeStateService () = struct
         match vopt with
         | Some fval' ->
             let fields' =
-              List.filter fields ~f:(fun f -> f.fname <> get_id fname)
+              List.filter fields ~f:(fun f -> String.(f.fname <> get_id fname))
             in
             pure
               ( { fname = f; ftyp = t; fval = Some fval' } :: fields',
@@ -221,7 +223,8 @@ module MakeStateService () = struct
         let%bind _ =
           StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp
         in
-        if keys <> [] then pure @@ G_MapUpdate (List.length keys, Some value)
+        if not @@ List.is_empty keys then
+          pure @@ G_MapUpdate (List.length keys, Some value)
         else pure @@ G_Store value
     | Local ->
         let%bind fields', g = update_local ~fname ~keys (Some value) fields in

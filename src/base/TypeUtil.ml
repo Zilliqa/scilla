@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open Sexplib.Std
 open Syntax
@@ -191,18 +192,15 @@ functor
                   (get_rep n)
               else foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:() ts
           | PrimType _ | Unit -> pure ()
-          | TypeVar a -> (
-              if
-                (* Check if bound locally. *)
-                List.mem tb a ~equal:(fun a b -> a = b)
-              then pure () (* Check if bound in environment. *)
+          | TypeVar a ->
+              (* Check if bound locally. *)
+              if List.mem tb a ~equal:String.( = ) then pure ()
+                (* Check if bound in environment. *)
+              else if List.Assoc.mem (tvars tenv) a ~equal:String.( = ) then
+                pure ()
               else
-                match List.findi (tvars tenv) ~f:(fun _ (x, _) -> x = a) with
-                | Some _ -> pure ()
-                | None ->
-                    fail0
-                    @@ sprintf "Unbound type variable %s in type %s" a
-                         (pp_typ t) )
+                fail0
+                @@ sprintf "Unbound type variable %s in type %s" a (pp_typ t)
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
           | Address fts ->
               match List.find_a_dup fts
@@ -298,10 +296,10 @@ module TypeUtilities = struct
     List.length tlist1 = List.length tlist2
     && not
          (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
-              not (type_equiv t1 t2)))
+              not (type_equivalent t1 t2)))
 
   let assert_type_equiv expected given =
-    if type_equiv expected given then pure ()
+    if type_equivalent expected given then pure ()
     else
       fail0
       @@ sprintf "Types not equivalent: %s expected, but %s provided."
@@ -322,7 +320,7 @@ module TypeUtilities = struct
     
   (* TODO: make this charge gas *)
   let assert_type_equiv_with_gas expected given remaining_gas =
-    if type_equiv expected given then pure remaining_gas
+    if type_equivalent expected given then pure remaining_gas
     else
       Error
         ( TypeError,
@@ -365,15 +363,15 @@ module TypeUtilities = struct
       | PrimType _ ->
           (* Messages and Events are not serialisable in terms of contract parameters *)
           allow_unserializable ||
-          not (t = PrimTypes.msg_typ || t = PrimTypes.event_typ)
+          PrimTypes.(
+          (not @@ [%equal: typ] t msg_typ) || [%equal: typ] t event_typ)
       | ADT (tname, ts) -> (
-          match List.findi ~f:(fun _ seen -> seen = tname) seen_adts with
+          match List.findi ~f:(fun _ seen -> String.(seen = get_id tname)) seen_adts with
           | Some _ -> true (* Inductive ADT - ignore this branch *)
           | None -> (
               (* Check that ADT is serializable *)
               match
-                DataTypeDictionary.lookup_name ~sloc:(get_rep tname)
-                  (get_id tname)
+                DataTypeDictionary.lookup_name ~sloc:(get_rep tname) (get_id tname)
               with
               | Error _ -> false (* Handle errors outside *)
               | Ok adt ->
@@ -382,7 +380,7 @@ module TypeUtilities = struct
                       ~f:(fun (_, carg_list) ->
                           List.for_all
                             ~f:(fun carg ->
-                                recurser  carg (tname :: seen_adts))
+                                recurser carg ((get_id tname) :: seen_adts))
                             carg_list)
                       adt.tmap
                   in
@@ -418,21 +416,18 @@ module TypeUtilities = struct
     (* Maps are allowed. Address values should be checked for storable field types. *)
     is_serializable_storable_helper true false true t []
 
+  let is_legal_map_key_type t =
+    let open PrimTypes in
+    is_prim_type t || is_address_type t
   
   let get_msgevnt_type m =
-    if
-      List.exists ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.tag_label) m
-    then pure PrimTypes.msg_typ
-    else if
-      List.exists
-        ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.eventname_label)
-        m
-    then pure PrimTypes.event_typ
-    else if
-      List.exists
-        ~f:(fun (s, _) -> s = ContractUtil.MessagePayload.exception_label)
-        m
-    then pure PrimTypes.exception_typ
+    let open ContractUtil.MessagePayload in
+    if List.Assoc.mem m tag_label ~equal:String.( = ) then
+      pure PrimTypes.msg_typ
+    else if List.Assoc.mem m eventname_label ~equal:String.( = ) then
+      pure PrimTypes.event_typ
+    else if List.Assoc.mem m exception_label ~equal:String.( = ) then
+      pure PrimTypes.exception_typ
     else fail0 "Invalid message construct. Not any of send, event or exception."
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
@@ -462,7 +457,7 @@ module TypeUtilities = struct
     | FunType (argt, rest), a :: ats ->
         let%bind _ = assert_type_assignable argt a in
         fun_type_applies rest ats
-    | FunType (argt, rest), [] when argt = Unit -> pure rest
+    | FunType (Unit, rest), [] -> pure rest
     | t, [] -> pure t
     | _ ->
         fail0
@@ -513,7 +508,7 @@ module TypeUtilities = struct
     | PolyFun (_, _)
     | Address _ ->
         1
-    | TypeVar n -> if n = tvar then tp_size else 1
+    | TypeVar n -> if String.(n = tvar) then tp_size else 1
 
   (* Count the number of AST nodes in a type *)
   let rec type_size t =
@@ -548,7 +543,7 @@ module TypeUtilities = struct
             let%bind rts, remaining_gas = recurser rt remaining_gas in
             pure (FunType (ats, rts), remaining_gas)
         | TypeVar n ->
-            let res = if tvar = n then tp else t in
+            let res = if String.(tvar = n) then tp else t in
             pure (res, remaining_gas')
         | ADT (s, ts) ->
             let%bind ts'_rev, remaining_gas =
@@ -559,7 +554,7 @@ module TypeUtilities = struct
             in
             pure (ADT (s, List.rev ts'_rev), remaining_gas)
         | PolyFun (arg, t') ->
-            if tvar = arg then pure (t, remaining_gas')
+            if String.(tvar = arg) then pure (t, remaining_gas')
             else
               let%bind res, remaining_gas = recurser t' remaining_gas' in
               pure (PolyFun (arg, res), remaining_gas)
@@ -633,20 +628,18 @@ module TypeUtilities = struct
   let elab_constr_type cn targs =
     let open Datatypes.DataTypeDictionary in
     let%bind adt', _ = lookup_constructor cn in
-    let seq a b = if a = b then 0 else 1 in
+    let seq a b = if String.(a = b) then 0 else 1 in
     let taken =
-      List.map targs ~f:free_tvars
-      |> List.concat
-      |> List.dedup_and_sort ~compare:seq
+      List.concat_map targs ~f:free_tvars |> List.dedup_and_sort ~compare:seq
     in
     let adt = refresh_adt adt' taken in
     let plen = List.length adt.tparams in
     let alen = List.length targs in
     let%bind _ = validate_param_length cn plen alen in
     let res_typ = ADT (asId adt.tname, targs) in
-    match List.find adt.tmap ~f:(fun (n, _) -> n = cn) with
+    match List.Assoc.find adt.tmap cn ~equal:String.( = ) with
     | None -> pure res_typ
-    | Some (_, ctparams) ->
+    | Some ctparams ->
         let tmap = List.zip_exn adt.tparams targs in
         let ctparams_elab = List.map ctparams ~f:(apply_type_subst tmap) in
         let ctyp =
@@ -658,7 +651,7 @@ module TypeUtilities = struct
   let extract_targs cn (adt : Datatypes.adt) atyp =
     match atyp with
     | ADT (name, targs) ->
-        if adt.tname = get_id name then
+        if String.(adt.tname = get_id name) then
           let plen = List.length adt.tparams in
           let alen = List.length targs in
           let%bind _ = validate_param_length cn plen alen in
@@ -687,7 +680,7 @@ module TypeUtilities = struct
     match ts with
     | [] -> fail0 "Checking an empty type list."
     | t :: ts' -> (
-        match List.find ts' ~f:(fun t' -> not (type_equiv t t')) with
+        match List.find ts' ~f:(fun t' -> not ([%equal: typ] t t')) with
         | None -> pure ()
         | Some _ ->
             fail0
@@ -758,7 +751,7 @@ module TypeUtilities = struct
           fail0 @@ sprintf "Message/Event has invalid / non-storable parameters"
         else pure msg_typ
     | Map ((kt, vt), kv) ->
-        if PrimTypes.is_prim_type kt then
+        if is_legal_map_key_type kt then
           (* Verify that all key/vals conform to kt,vt, recursively. *)
           let%bind valid =
             Caml.Hashtbl.fold
@@ -768,7 +761,7 @@ module TypeUtilities = struct
                 else
                   let%bind kt' = is_wellformed_lit k in
                   let%bind vt' = is_wellformed_lit v in
-                  pure @@ (type_equiv kt kt' && type_equiv vt vt'))
+                  pure @@ (type_assignable kt kt' && type_assignable vt vt'))
               kv (pure true)
           in
           if not valid then

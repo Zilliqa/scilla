@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Datatypes
 open Syntax
 open EvalUtil
@@ -43,7 +44,7 @@ let rec match_with_pattern v p =
       else
         match v with
         | ADTValue (cn', _, ls')
-          when cn' = ctr.cname && List.length ls' = ctr.arity -> (
+          when String.(cn' = ctr.cname) && List.length ls' = ctr.arity -> (
             (* The value structure matches the pattern *)
             match List.zip ls' ps with
             | Unequal_lengths ->

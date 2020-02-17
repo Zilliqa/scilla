@@ -17,12 +17,12 @@
 
 (* Gas Usage Analysis for Scilla contracts. *)
 
+open Core_kernel.Result.Let_syntax
 open TypeUtil
 open Syntax
 open ErrorUtils
 open MonadUtil
 open Polynomial
-open Core_kernel.Result.Let_syntax
 
 module ScillaGUA
     (SR : Rep) (ER : sig

@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 
 (* Location info, slightly more usable than Lexing.position *)
 type loc = {
@@ -26,7 +27,7 @@ type loc = {
   (* line number *)
   cnum : int; (* column number *)
 }
-[@@deriving sexp]
+[@@deriving sexp, equal]
 
 let toLoc (p : Lexing.position) : loc =
   {
