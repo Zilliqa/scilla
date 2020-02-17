@@ -232,7 +232,7 @@ module SnarkTypes = struct
   let scilla_g1point_to_ocaml g1p =
     match g1p with
     | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when type_assignable pxt scalar_type && type_assignable pyt scalar_type
+      when type_equiv pxt scalar_type && type_equiv pyt scalar_type
            && Bystrx.width px = scalar_len
            && Bystrx.width py = scalar_len ->
         pure { g1x = Bystrx.to_raw_bytes px; g1y = Bystrx.to_raw_bytes py }
@@ -241,7 +241,7 @@ module SnarkTypes = struct
   let scilla_g2point_to_ocaml g2p =
     match g2p with
     | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when type_assignable pxt g2comp_type && type_assignable pyt g2comp_type
+      when type_equiv pxt g2comp_type && type_equiv pyt g2comp_type
            && Bystrx.width px = g2comp_len
            && Bystrx.width py = g2comp_len ->
         pure { g2x = Bystrx.to_raw_bytes px; g2y = Bystrx.to_raw_bytes py }
@@ -264,7 +264,7 @@ module SnarkTypes = struct
       mapM g1g2ol ~f:(fun g1g2p_lit ->
           match g1g2p_lit with
           | ADTValue ("Pair", [ g1pt; g2pt ], [ g1p; g2p ])
-            when type_assignable g1pt g1point_type && type_assignable g2pt g2point_type ->
+            when type_equiv g1pt g1point_type && type_equiv g2pt g2point_type ->
               let%bind g1p' = scilla_g1point_to_ocaml g1p in
               let%bind g2p' = scilla_g2point_to_ocaml g2p in
               pure (g1p', g2p')

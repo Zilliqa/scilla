@@ -133,7 +133,7 @@ let rec json_to_adtargs cname tlist ajs =
     JSONParser.constr_pattern_arg_types_exn (ADT (asId dt.tname, tlist)) cname
   in
   verify_args_exn cname (List.length ajs) (List.length tmap);
-  let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t j) in
+  let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit_exn t j) in
   ADTValue (cname, tlist, llist)
 
 and read_adt_json name j tlist_verify =
@@ -154,7 +154,7 @@ and read_adt_json name j tlist_verify =
           let etyp = List.nth_exn tlist_verify 0 in
           List.fold_right vli
             ~f:(fun vl acc ->
-              ADTValue ("Cons", [ etyp ], [ json_to_lit etyp vl; acc ]))
+              ADTValue ("Cons", [ etyp ], [ json_to_lit_exn etyp vl; acc ]))
             ~init:(ADTValue ("Nil", [ etyp ], []))
     | `Assoc _ ->
         let constr = member_exn "constructor" j |> to_string_exn in
@@ -212,10 +212,10 @@ and mapvalues_from_json m kt vt l =
         | _ -> raise (mk_invalid_json "Key in Map JSON is not a PrimType")
       in
       let vjson = member_exn "val" first in
-      let vallit = json_to_lit vt vjson in
+      let vallit = json_to_lit_exn vt vjson in
       Caml.Hashtbl.replace m keylit vallit)
 
-and json_to_lit t v =
+and json_to_lit_exn t v =
   match t with
   | MapType (kt, vt) ->
       let vl = read_map_json kt vt v in
@@ -243,7 +243,7 @@ let jobj_to_statevar json =
   let t = parse_typ_exn tstring in
   let v = member_exn "value" json in
   if GlobalConfig.validate_json () (* TODO: Add command line flag. *) then
-    (n, json_to_lit t v)
+    (n, json_to_lit_exn t v)
   else (n, JSONParser.parse_json t v)
 
 (****************************************************************)
@@ -344,7 +344,7 @@ module ContractState = struct
   let jstring_to_literal jstring tp =
     let thunk () = Yojson.Basic.from_string jstring in
     let jobj = json_exn_wrapper ~filename:"ipc_fetch" thunk in
-    json_to_lit tp jobj
+    json_to_lit_exn tp jobj
 end
 
 module Message = struct
