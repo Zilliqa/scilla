@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -184,16 +184,14 @@ let located_msg msg loc =
   sprintf "%s:%d:%d: %s" loc.fname loc.lnum loc.cnum msg
 
 let fatal_error err =
-  DebugMessage.perr @@ scilla_error_to_string err;
-  exit 1
+  let msg = scilla_error_to_string err in
+  raise (FatalError msg)
 
 let fatal_error_gas err gas_remaining =
-  DebugMessage.perr @@ scilla_error_gas_string gas_remaining err;
-  exit 1
+  let msg = scilla_error_gas_string gas_remaining err in
+  raise (FatalError msg)
 
-let fatal_error_noformat err =
-  DebugMessage.perr err;
-  exit 1
+let fatal_error_noformat msg = raise (FatalError msg)
 
 (*****************************************************)
 (*                Pretty Printers                    *)

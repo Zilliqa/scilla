@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -22,6 +22,7 @@ open Syntax
 open TypeUtil
 open StateIPCIdl
 open OUnit2
+open IPCUtil
 module M = Idl.IdM
 module IDL = Idl.Make (M)
 
@@ -29,7 +30,7 @@ module IPCClient = IPCIdl (IDL.GenClient ())
 
 (* The purpose of this Test Client is to initialize the test server with data during testing.
  * While ideally we would've liked to reuse StateService, we cannot do so because that deals
- * with Scilla literals, which we cannot always parse from the JSONs. Parsing it requires the 
+ * with Scilla literals, which we cannot always parse from the JSONs. Parsing it requires the
  * definitions of custom ADTs that are only available in the source file. *)
 
 type state_info = (string * typ) list
@@ -77,12 +78,6 @@ let ipcclient_exn_wrapper thunk =
   | _ ->
       assert_failure "StateIPCTestClient: Unexpected error making JSON-RPC call"
 
-(* Send msg via socket s with a delimiting character "0xA". *)
-let send_delimited oc msg =
-  let msg' = msg ^ "\n" in
-  Caml.output_string oc msg';
-  Caml.flush oc
-
 let binary_rpc ~sock_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
     Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
@@ -92,11 +87,11 @@ let binary_rpc ~sock_addr (call : Rpc.call) : Rpc.response M.t =
     (Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket)
   in
   let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
-  (* Cannot use DebugMessage here as we're part of testsuite, and don't want to 
+  (* Cannot use DebugMessage here as we're part of testsuite, and don't want to
    * have races with the main executable that also (may) logs to the same files. *)
   (* (Printf.printf "StateIPCTestClient: Sending: %s\n" msg_buf); *)
   (* Send data to the socket. *)
-  let _ = send_delimited oc msg_buf in
+  let _ = IPCUtil.send_delimited oc msg_buf in
   (* Get response. *)
   let response = Caml.input_line ic in
   Unix.close socket;

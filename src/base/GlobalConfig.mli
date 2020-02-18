@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -52,6 +52,8 @@ val set_validate_json : bool -> unit
 
 val validate_json : unit -> bool
 
+val reset : unit -> unit
+
 module StdlibTracker : sig
   (* Environment variable: where to look for stdlib.
    * Multiple entries can be specified, separated by ':' or ';'.
@@ -76,4 +78,7 @@ module StdlibTracker : sig
 
   (* File extension for Scilla expressions. *)
   val file_extn_expression : string
+
+  (* Reset internal state. *)
+  val reset : unit -> unit
 end

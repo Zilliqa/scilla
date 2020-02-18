@@ -17,19 +17,20 @@
 *)
 
 open Core
-open ErrorUtils
-open RunnerCLI
+open Scilla_server_lib
 
-let output_to_string output ~args =
-  if args.pp_json then Yojson.Basic.pretty_to_string output
-  else Yojson.Basic.to_string output
+let cmd =
+  Command.basic ~summary:"Scilla server"
+    Command.Let_syntax.(
+      let%map_open sock_path =
+        flag "-socket"
+          (optional_with_default Server.sock_path string)
+          ~doc:"SOCKET Address for communication with the server"
+      and num_pending =
+        flag "-num-pending"
+          (optional_with_default Server.num_pending int)
+          ~doc:"NUM_PENDING Maximum number of pending requests"
+      in
+      fun () -> Server.start ~sock_path ~num_pending)
 
-let () =
-  try
-    let output, args = Runner.run None ~exe_name:Sys.argv.(0) in
-    let str = output_to_string output ~args in
-    if String.is_empty args.output then DebugMessage.pout str
-    else
-      Out_channel.with_file args.output ~f:(fun ch ->
-          Out_channel.output_string ch str)
-  with FatalError msg -> exit_with_error msg
+let () = Command.run cmd

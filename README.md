@@ -67,7 +67,7 @@ scilla-checker -gaslimit 10000 -libdir src/stdlib tests/contracts/auction.scilla
 Instead of `auction.scilla` you might want to try any different file in
 `tests/contracts` with a complete implementation of a contract, or your
 own contract code. The second argument, which is a path to the Scilla
-standard library can alternatively be specified in the environment 
+standard library can alternatively be specified in the environment
 variable `SCILLA_STDLIB_PATH`. As above, this must be an absolute
 path(s).
 
@@ -104,6 +104,14 @@ Alternatively, use the `easyrun.sh` script as below:
 where `n` is a number `0-5` for the number of "steps" to execute the
 protocol (the messages and blockchain states are provided for only so
 many steps in the simulation).
+
+#### Using Scilla as a service
+A `scilla-server` is provided that provides the functionality of `scilla-runner`
+and `scilla-checker` as a JSON-RPC server. The `scilla-server` process accepts
+contract execution requests and executes the contract, providing a JSON output
+within the server process itself.
+
+More details on the protocol can be found [here](https://github.com/Zilliqa/scilla/wiki/scilla-server-API).
 
 ### Where to find binaries
 
@@ -152,7 +160,7 @@ To run an individual test(s), for example
 (one of the tests from the list obtained via `dune exec -- tests/testsuite -list-test`):
 
 ```shell
-dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -print-cli true 
+dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -print-cli true
 ```
 
 The optional `-print-cli true` argument is to produce the command line

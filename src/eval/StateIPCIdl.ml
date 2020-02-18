@@ -1,23 +1,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Idl
-
-(* This error matches for the error returned by jsonrpccpp *)
-module RPCError = struct
-  type err_t = { code : int; message : string } [@@deriving rpcty]
-
-  (* defines `typ_of_err_t` *)
-
-  exception RPCErrorExn of err_t
-
-  let err =
-    Error.
-      {
-        def = err_t;
-        raiser = (function e -> raise (RPCErrorExn e));
-        matcher = (function RPCErrorExn e -> Some e | _ -> None);
-      }
-end
+open IPCUtil
 
 module IPCIdl (R : RPC) = struct
   open R

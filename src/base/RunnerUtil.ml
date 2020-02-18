@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -294,13 +294,13 @@ let import_libs names init_file =
   let ltree, nstree = importer names name_map [] in
   eliminate_namespaces ltree nstree
 
-let stdlib_not_found_err () =
+let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
   fatal_error
     (mk_error0
        ( "A path to Scilla stdlib not found. Please set "
        ^ StdlibTracker.scilla_stdlib_env
        ^ " environment variable, or pass through command-line argument for \
-          this script.\n" ^ "Example:\n" ^ Sys.argv.(0)
+          this script.\n" ^ "Example:\n" ^ exe_name
        ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
 
 (* Parse all libraries that can be found in ldirs. *)
@@ -337,7 +337,7 @@ type runner_cli = {
   p_type_info : bool;
 }
 
-let parse_cli () =
+let parse_cli args ~exe_name =
   let r_stdlib_dir = ref [] in
   let r_gas_limit = ref None in
   let r_input_file = ref "" in
@@ -367,14 +367,8 @@ let parse_cli () =
       ( "-gaslimit",
         Arg.String
           (fun i ->
-            let g =
-              try Stdint.Uint64.of_string i
-              with _ ->
-                PrettyPrinters.fatal_error
-                  (ErrorUtils.mk_error0
-                     (Printf.sprintf "Invalid gaslimit %s\n" i))
-            in
-            r_gas_limit := Some g),
+            let g = try Some (Stdint.Uint64.of_string i) with _ -> None in
+            r_gas_limit := g),
         "Gas limit" );
       ( "-gua",
         Arg.Unit (fun () -> r_gua := true),
@@ -402,7 +396,7 @@ let parse_cli () =
   in
 
   let mandatory_usage =
-    "Usage:\n" ^ Sys.argv.(0)
+    "Usage:\n" ^ exe_name
     ^ " -gaslimit <limit> -libdir /path/to/stdlib input.scilla\n"
   in
   let optional_usage =
@@ -413,7 +407,16 @@ let parse_cli () =
 
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
-  let () = Arg.parse speclist anon_handler mandatory_usage in
+  let () =
+    match args with
+    | None -> Arg.parse speclist anon_handler mandatory_usage
+    | Some argv -> (
+        try
+          Arg.parse_argv ~current:(ref 0)
+            (List.to_array @@ (exe_name :: argv))
+            speclist anon_handler mandatory_usage
+        with Arg.Bad msg -> fatal_error_noformat (Printf.sprintf "%s\n" msg) )
+  in
   if String.is_empty !r_input_file then fatal_error_noformat usage;
   let gas_limit =
     match !r_gas_limit with Some g -> g | None -> fatal_error_noformat usage

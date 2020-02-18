@@ -16,20 +16,21 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
-open ErrorUtils
-open RunnerCLI
+type args = {
+  input_init : string;
+  input_state : string;
+  input_message : string;
+  input_blockchain : string;
+  output : string;
+  input : string;
+  libdirs : string list;
+  gas_limit : Stdint.uint64;
+  balance : Stdint.uint128;
+  pp_json : bool;
+  ipc_address : string;
+}
 
-let output_to_string output ~args =
-  if args.pp_json then Yojson.Basic.pretty_to_string output
-  else Yojson.Basic.to_string output
-
-let () =
-  try
-    let output, args = Runner.run None ~exe_name:Sys.argv.(0) in
-    let str = output_to_string output ~args in
-    if String.is_empty args.output then DebugMessage.pout str
-    else
-      Out_channel.with_file args.output ~f:(fun ch ->
-          Out_channel.output_string ch str)
-  with FatalError msg -> exit_with_error msg
+val parse : string list option -> exe_name:string -> args
+(** Parses the command line arguments. If [string array] is given
+    then it parses this array as if it were the command line
+    (this feature is used in the scilla-server implementation). *)

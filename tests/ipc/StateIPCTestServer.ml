@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -26,6 +26,7 @@ open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open MonadUtil
 open StateIPCIdl
+open IPCUtil
 module Hashtbl = Caml.Hashtbl
 
 type hashtable = (string, value_type) Hashtbl.t
@@ -41,12 +42,6 @@ let fetch_message = "Fetching state value failed"
 let update_message = "Updating state value failed"
 
 let fail a = Error a
-
-(* Send msg with delimiting character "0xA". *)
-let send_delimited oc msg =
-  let msg' = msg ^ "\n" in
-  Out_channel.output_string oc msg';
-  Out_channel.flush oc
 
 let decode_serialized_value value =
   let decoder = Pbrt.Decoder.of_bytes (Bytes.of_string value) in
@@ -75,7 +70,7 @@ module MakeServer () = struct
     let oc = Unix.out_channel_of_descr conn in
     let request = Jsonrpc.call_of_string (Caml.input_line ic) in
     let response = (IDL.server IPCTestServer.implementation) request |> M.run in
-    send_delimited oc (Jsonrpc.string_of_response response)
+    IPCUtil.send_delimited oc (Jsonrpc.string_of_response response)
 
   let prepare_server sock_addr =
     (try Unix.unlink sock_addr with Unix.Unix_error (Unix.ENOENT, _, _) -> ());

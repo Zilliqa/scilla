@@ -16,20 +16,5 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
-open ErrorUtils
-open RunnerCLI
-
-let output_to_string output ~args =
-  if args.pp_json then Yojson.Basic.pretty_to_string output
-  else Yojson.Basic.to_string output
-
-let () =
-  try
-    let output, args = Runner.run None ~exe_name:Sys.argv.(0) in
-    let str = output_to_string output ~args in
-    if String.is_empty args.output then DebugMessage.pout str
-    else
-      Out_channel.with_file args.output ~f:(fun ch ->
-          Out_channel.output_string ch str)
-  with FatalError msg -> exit_with_error msg
+val run :
+  string list option -> exe_name:string -> Yojson.Basic.t * RunnerCLI.args

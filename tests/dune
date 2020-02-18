@@ -1,5 +1,5 @@
-(executable
- (name testsuite)
+(executables
+ (names testsuite scilla_client)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show))
  (libraries core oUnit testcontracts testexps testexpsfail testtypes
