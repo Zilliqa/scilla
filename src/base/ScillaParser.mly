@@ -328,14 +328,26 @@ type_term :
 (***********************************************)
 
 stmt:
-| l = ID; FETCH; r = sid   { (Load (asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; FETCH; r = sid
+    { (Load (asIdL l (toLoc $startpos(l)),
+             asIdL r (toLoc $startpos(r))),
+       toLoc $startpos) }
+| l = ID; FETCH; adr = sid; PERIOD; r = sid
+    { (RemoteLoad (asIdL l (toLoc $startpos(l)),
+                   asIdL adr (toLoc $startpos(adr)),
+                   asIdL r (toLoc $startpos(r))),
+       toLoc $startpos) }
 | l = ID; ASSIGN; r = sid { (Store (asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind (asIdL l (toLoc $startpos(l)), r), toLoc $startpos) }
 | l = ID; FETCH; AND; c = CID { (ReadFromBC (asIdL l (toLoc $startpos(l)), c), toLoc $startpos) }
 | l = ID; FETCH; r = ID; keys = nonempty_list(map_access)
   { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, true), toLoc $startpos }
+| l = ID; FETCH; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
+  { RemoteMapGet(asIdL l (toLoc $startpos(l)), asIdL adr (toLoc $startpos(adr)), asIdL r (toLoc $startpos(r)), keys, true), toLoc $startpos }
 | l = ID; FETCH; EXISTS; r = ID; keys = nonempty_list(map_access)
   { MapGet(asIdL l (toLoc $startpos(l)), asIdL r (toLoc $startpos(r)), keys, false), toLoc $startpos }
+| l = ID; FETCH; EXISTS; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
+  { RemoteMapGet(asIdL l (toLoc $startpos(l)), asIdL adr (toLoc $startpos(adr)), asIdL r (toLoc $startpos(r)), keys, false), toLoc $startpos }
 | l = ID; keys = nonempty_list(map_access); ASSIGN; r = sid
   { MapUpdate(asIdL l (toLoc $startpos(l)), keys, Some (asIdL r (toLoc $startpos(r)))), toLoc $startpos }
 | DELETE; l = ID; keys = nonempty_list(map_access)

@@ -443,6 +443,23 @@ module TypeUtilities = struct
   let rec map_depth mt =
     match mt with MapType (_, vt) -> 1 + map_depth vt | _ -> 0
 
+  let address_field_type f t =
+    match t with
+    | Address fts ->
+        let loc_removed = List.map fts ~f:(fun (f, t) -> (get_id f, t)) in
+        (match List.Assoc.find loc_removed (get_id f)
+                 ~equal:String.( = ) with
+        | Some ft ->
+            pure ft
+        | None -> 
+            fail0 @@
+            sprintf "Field %s is not declared in address type %s."
+              (get_id f) (pp_typ t))
+    | _ ->
+        fail0 @@
+        sprintf "Attempting to read field from non-address type %s."
+          (pp_typ t)
+  
   let pp_typ_list ts =
     let tss = List.map ~f:(fun t -> pp_typ t) ts in
     sprintf "[%s]" (String.concat ~sep:"; " tss)

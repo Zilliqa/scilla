@@ -257,6 +257,12 @@ let rec stmt_eval conf stmts =
           let conf' = Configuration.bind conf (get_id x) l in
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
+      | RemoteLoad (x, adr, r) ->
+          let%bind a = Configuration.lookup conf adr in
+          let%bind l, scon = Configuration.remote_load conf a r in 
+          let conf' = Configuration.bind conf (get_id x) l in
+          let%bind _ = stmt_gas_wrap scon sloc in
+          stmt_eval conf' sts
       | Store (x, r) ->
           let%bind v = Configuration.lookup conf r in
           let%bind scon = Configuration.store x v in
@@ -286,6 +292,15 @@ let rec stmt_eval conf stmts =
             mapM ~f:(fun k -> Configuration.lookup conf k) klist
           in
           let%bind l, scon = Configuration.map_get conf m klist' fetchval in
+          let conf' = Configuration.bind conf (get_id x) l in
+          let%bind _ = stmt_gas_wrap scon sloc in
+          stmt_eval conf' sts
+      | RemoteMapGet (x, adr, m, klist, fetchval) ->
+          let%bind a = Configuration.lookup conf adr in
+          let%bind klist' =
+            mapM ~f:(fun k -> Configuration.lookup conf k) klist
+          in
+          let%bind l, scon = Configuration.remote_map_get conf a m klist' fetchval in
           let conf' = Configuration.bind conf (get_id x) l in
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts

@@ -318,7 +318,9 @@ struct
             iterM
               ~f:(fun (s, _) ->
                 match s with
-                | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
+                  | Load (x, _) | RemoteLoad (x, _, _)
+                  | MapGet (x, _, _, _) | RemoteMapGet (x, _, _, _, _)
+                  | ReadFromBC (x, _) ->
                     check_warn_redef cparams cfields pnames x;
                     pure ()
                 | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment
