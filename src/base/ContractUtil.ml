@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Syntax
 open MonadUtil
 open Stdint
@@ -41,17 +42,17 @@ module MessagePayload = struct
   let exception_label = "_exception"
 
   let get_value_for_entry lab f es =
-    match List.find es ~f:(fun (l, _) -> l = lab) with
+    match List.Assoc.find es lab ~equal:String.( = ) with
     | None ->
         fail0
         @@ sprintf "No field \"%s\" in message [%s]." lab (pp_literal_map es)
-    | Some (_, p) -> (
-        match f p with
-        | Some x -> x
-        | None ->
-            fail0
-            @@ sprintf "Wrong value of the entry \"%s\": %s." lab (pp_literal p)
-        )
+    | Some p ->
+        f p
+        |> Option.value
+             ~default:
+               ( fail0
+               @@ sprintf "Wrong value of the entry \"%s\": %s." lab
+                    (pp_literal p) )
 
   let get_tag =
     get_value_for_entry tag_label (function
@@ -67,7 +68,7 @@ module MessagePayload = struct
     get_value_for_entry amount_label (function
       | UintLit (Uint128L i) -> (
           try
-            if compare i Uint128.zero >= 0 then Some (pure i)
+            if Uint128.(compare i zero) >= 0 then Some (pure i)
             else
               Some
                 ( fail0
@@ -80,7 +81,8 @@ module MessagePayload = struct
                    (Uint128.to_string i) ) )
       | _ -> None)
 
-  let get_other_entries es = List.filter es ~f:(fun (l, _) -> l <> tag_label)
+  let get_other_entries es =
+    List.filter es ~f:(fun (l, _) -> String.(l <> tag_label))
 end
 
 let balance_label = "_balance"
@@ -120,7 +122,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   let remove_noneval_args args =
     let nonevalargs = [ extlibs_label ] in
     List.filter args ~f:(fun a ->
-        not (List.mem nonevalargs (fst a) ~equal:( = )))
+        not (List.mem nonevalargs (fst a) ~equal:String.( = )))
 
   let append_implict_comp_params cparams =
     let open PrimTypes in

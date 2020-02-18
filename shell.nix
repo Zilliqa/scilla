@@ -14,13 +14,10 @@ let
     zlib secp256k1 libffi pkgconfig pcre patdiff
   ];
   ocamlPkgs = with opkgs; [
-    ocaml dune dune-configurator ocamlbuild findlib utop merlin ocp-indent ocp-index
-    base core core_bench
-    textutils ppx_sexp_conv
-    ppx_deriving ppx_tools_versioned
-    bisect_ppx fileutils hex stdint batteries zarith cryptokit atdgen
-    bitstring ctypes angstrom ounit expect_test_helpers patience_diff
-    ocaml_pcre yojson menhir secp256k1 rpclib re2 ppx_let
+    base core core_bench core_profiler ppx_deriving ppx_tools_versioned
+    ppx_sexp_conv bisect_ppx fileutils hex stdint zarith cryptokit
+    bitstring ctypes findlib utop angstrom ounit expect_test_helpers patience_diff
+    ocaml_pcre merlin ocp-indent ocp-index yojson menhir secp256k1 rpclib
     ppx_deriving_protobuf ocaml-protoc ppx_deriving_rpc result rresult xmlm
   ];
   packages = systemPkgs ++ ocamlPkgs;

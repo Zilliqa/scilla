@@ -17,11 +17,12 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Bitstring
 open Utils
 
 (* https://github.com/Zilliqa/Zilliqa/wiki/Address-Standard#specification *)
-let bech32_addr_len ~prefix = String.length prefix + 1 + 32 + 6
+let bech32_addr_len ~prfx = String.length prfx + 1 + 32 + 6
 
 let bech32_payload_len = 32
 
@@ -67,21 +68,23 @@ let bytes_of_bitstring bs = Bytes.of_string @@ string_of_bitstring bs
 
 (* Decodes a bech32 address string to a string of 20 bytes.
  * Signature: prefix -> bech32_addr -> bystr20 address option. *)
-let decode_bech32_addr ~prefix ~addr:str =
+let decode_bech32_addr ~prfx ~addr:str =
   (* 1. Must be of the right length. *)
-  if String.length str <> bech32_addr_len ~prefix then None
+  if String.length str <> bech32_addr_len ~prfx then None
   else if
     (* 2. Must begin with prefix. *)
-    String.sub str ~pos:0 ~len:(String.length prefix) <> prefix
+    let len = String.length prfx in
+    String.(sub str ~pos:0 ~len <> prfx)
   then None
   else if
     (* 3. Must have separator "1" after prefix. *)
-    String.sub str ~pos:(String.length prefix) ~len:1 <> "1"
+    let len = String.length prfx in
+    String.(sub str ~pos:len ~len:1 <> "1")
   then None
   else
     (* 4. Scan the prefix for errors. *)
     let chk, err, (have_lower, have_upper) =
-      List.fold (String.to_list prefix)
+      List.fold (String.to_list prfx)
         ~init:(1, false, (false, false))
         ~f:(fun (chk, err, (have_lower, have_upper)) ch ->
           if err || ascii_of_char ch < 33 || ascii_of_char ch > 126 then
@@ -109,14 +112,14 @@ let decode_bech32_addr ~prefix ~addr:str =
       (* 5. Checksum the prefix *)
       let chk = bech32_polymod_step chk in
       let chk =
-        List.fold (String.to_list prefix) ~init:chk ~f:(fun acc_chk c ->
+        List.fold (String.to_list prfx) ~init:chk ~f:(fun acc_chk c ->
             bech32_polymod_step acc_chk lxor (ascii_of_char c land 0x1f))
       in
 
       (* 6. Scan the addr and checksum for errors. *)
       let addr_chk_str =
         String.sub str
-          ~pos:(String.length prefix + 1)
+          ~pos:(String.length prfx + 1)
           ~len:(bech32_payload_len + bech32_chk_len)
       in
       (* Create a buffer of bits for the result (20-byte raw address). *)
@@ -163,19 +166,18 @@ let decode_bech32_addr ~prefix ~addr:str =
 
 (* Check if a bech32 address string is valid, based on the specification in
  * https://github.com/Zilliqa/Zilliqa/wiki/Address-Standard#specification *)
-let is_valid_bech32 ~prefix ~addr =
-  Option.is_some (decode_bech32_addr ~prefix ~addr)
+let is_valid_bech32 ~prfx ~addr =
+  Option.is_some (decode_bech32_addr ~prfx ~addr)
 
 (* Encodes a 20-byte string into the bech32 address format.
  * Signature: prefix -> bystr20 address -> bech32_addr. *)
-let encode_bech32_addr ~prefix ~addr:bys =
+let encode_bech32_addr ~prfx ~addr:bys =
   (* 1. Must be of the right length. *)
   if String.length bys <> 20 then None
   else
     (* 2. Scan the prefix for errors. *)
     let chk, err =
-      List.fold (String.to_list prefix) ~init:(1, false)
-        ~f:(fun (chk, err) ch ->
+      List.fold (String.to_list prfx) ~init:(1, false) ~f:(fun (chk, err) ch ->
           if
             err
             || ascii_of_char ch < 33
@@ -193,7 +195,7 @@ let encode_bech32_addr ~prefix ~addr:bys =
       (* 3. Checksum the prefix. *)
       let chk = bech32_polymod_step chk in
       let chk =
-        List.fold (String.to_list prefix) ~init:chk ~f:(fun acc_chk c ->
+        List.fold (String.to_list prfx) ~init:chk ~f:(fun acc_chk c ->
             bech32_polymod_step acc_chk lxor (ascii_of_char c land 0x1f))
       in
 
@@ -236,4 +238,4 @@ let encode_bech32_addr ~prefix ~addr:bys =
         in
 
         (* 8. Finally build up the bech32 encoded address. *)
-        Some (prefix ^ "1" ^ bech32_str ^ chkstr)
+        Some (prfx ^ "1" ^ bech32_str ^ chkstr)

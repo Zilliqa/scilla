@@ -2,22 +2,23 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
 open Core_kernel
+open! Int.Replace_polymorphic_compare
+open Syntax
 open MonadUtil
 open Result.Let_syntax
 
@@ -31,6 +32,7 @@ type constructor = {
   (* constructor name *)
   arity : int; (* How many arguments it takes *)
 }
+[@@deriving equal]
 
 (* An Algebraic Data Type *)
 type adt = {
@@ -46,6 +48,7 @@ type adt = {
      of the list, so the types are mapped correspondingly. *)
   tmap : (string * typ list) list;
 }
+[@@deriving equal]
 
 module DataTypeDictionary = struct
   (* Booleans *)
@@ -66,7 +69,7 @@ module DataTypeDictionary = struct
       tname = "Nat";
       tparams = [];
       tconstr = [ c_zero; c_succ ];
-      tmap = [ ("Succ", [ ADT ("Nat", []) ]) ];
+      tmap = [ ("Succ", [ ADT (asId "Nat", []) ]) ];
     }
 
   (* Option *)
@@ -92,7 +95,7 @@ module DataTypeDictionary = struct
       tname = "List";
       tparams = [ "'A" ];
       tconstr = [ c_cons; c_nil ];
-      tmap = [ ("Cons", [ TypeVar "'A"; ADT ("List", [ TypeVar "'A" ]) ]) ];
+      tmap = [ ("Cons", [ TypeVar "'A"; ADT (asId "List", [ TypeVar "'A" ]) ]) ];
     }
 
   (* Products (Pairs) *)
@@ -107,24 +110,25 @@ module DataTypeDictionary = struct
     }
 
   (* adt.tname -> adt *)
-  let adt_name_dict =
-    let open Caml in
-    let ht : (string, adt) Hashtbl.t = Hashtbl.create 5 in
-    let _ = Hashtbl.add ht t_bool.tname t_bool in
-    let _ = Hashtbl.add ht t_nat.tname t_nat in
-    let _ = Hashtbl.add ht t_option.tname t_option in
-    let _ = Hashtbl.add ht t_list.tname t_list in
-    let _ = Hashtbl.add ht t_product.tname t_product in
-    ht
+  let adt_name_dict = Caml.Hashtbl.create 5
 
   (* tconstr -> (adt * constructor) *)
-  let adt_cons_dict =
-    let open Caml in
-    let ht : (string, adt * constructor) Hashtbl.t = Hashtbl.create 10 in
-    Hashtbl.iter
-      (fun _ a -> List.iter (fun c -> Hashtbl.add ht c.cname (a, c)) a.tconstr)
-      adt_name_dict;
-    ht
+  let adt_cons_dict = Caml.Hashtbl.create 10
+
+  (* Re-initialize environment dictionaries *)
+  let reinit () =
+    Caml.Hashtbl.(
+      reset adt_name_dict;
+      reset adt_cons_dict;
+      add adt_name_dict t_bool.tname t_bool;
+      add adt_name_dict t_nat.tname t_nat;
+      add adt_name_dict t_option.tname t_option;
+      add adt_name_dict t_list.tname t_list;
+      add adt_name_dict t_product.tname t_product;
+      iter
+        (fun _ a ->
+          Caml.List.iter (fun c -> add adt_cons_dict c.cname (a, c)) a.tconstr)
+        adt_name_dict)
 
   let add_adt (new_adt : adt) error_loc =
     let open Caml in
@@ -145,32 +149,31 @@ module DataTypeDictionary = struct
             | None -> pure @@ Hashtbl.add adt_cons_dict ctr.cname (new_adt, ctr))
 
   (*  Get ADT by name *)
-  let lookup_name name =
+  let lookup_name ?(sloc = ErrorUtils.dummy_loc) name =
     let open Caml in
     match Hashtbl.find_opt adt_name_dict name with
-    | None -> fail0 @@ sprintf "ADT %s not found" name
+    | None -> fail1 (sprintf "ADT %s not found" name) sloc
     | Some a -> pure a
 
   (*  Get ADT by the constructor *)
-  let lookup_constructor cn =
+  let lookup_constructor ?(sloc = ErrorUtils.dummy_loc) cn =
     let open Caml in
     match Hashtbl.find_opt adt_cons_dict cn with
-    | None -> fail0 @@ sprintf "No data type with constructor %s found" cn
+    | None -> fail1 (sprintf "No data type with constructor %s found" cn) sloc
     | Some dt -> pure dt
 
   (* Get typing map for a constructor *)
-  let constr_tmap adt cn =
-    List.find adt.tmap ~f:(fun (n, _) -> n = cn) |> Option.map ~f:snd
+  let constr_tmap adt cn = List.Assoc.find adt.tmap cn ~equal:String.( = )
 
-  let bool_typ = ADT (t_bool.tname, [])
+  let bool_typ = ADT (asId t_bool.tname, [])
 
-  let nat_typ = ADT (t_nat.tname, [])
+  let nat_typ = ADT (asId t_nat.tname, [])
 
-  let option_typ t = ADT (t_option.tname, [ t ])
+  let option_typ t = ADT (asId t_option.tname, [ t ])
 
-  let list_typ t = ADT (t_list.tname, [ t ])
+  let list_typ t = ADT (asId t_list.tname, [ t ])
 
-  let pair_typ t s = ADT (t_product.tname, [ t; s ])
+  let pair_typ t s = ADT (asId t_product.tname, [ t; s ])
 
   (* Get all known ADTs *)
   let get_all_adts () =
@@ -232,7 +235,8 @@ module SnarkTypes = struct
   let scilla_g1point_to_ocaml g1p =
     match g1p with
     | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when pxt = scalar_type && pyt = scalar_type
+      when [%equal: typ] pxt scalar_type
+           && [%equal: typ] pyt scalar_type
            && Bystrx.width px = scalar_len
            && Bystrx.width py = scalar_len ->
         pure { g1x = Bystrx.to_raw_bytes px; g1y = Bystrx.to_raw_bytes py }
@@ -241,7 +245,8 @@ module SnarkTypes = struct
   let scilla_g2point_to_ocaml g2p =
     match g2p with
     | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when pxt = g2comp_type && pyt = g2comp_type
+      when [%equal: typ] pxt g2comp_type
+           && [%equal: typ] pyt g2comp_type
            && Bystrx.width px = g2comp_len
            && Bystrx.width py = g2comp_len ->
         pure { g2x = Bystrx.to_raw_bytes px; g2y = Bystrx.to_raw_bytes py }
@@ -264,7 +269,8 @@ module SnarkTypes = struct
       mapM g1g2ol ~f:(fun g1g2p_lit ->
           match g1g2p_lit with
           | ADTValue ("Pair", [ g1pt; g2pt ], [ g1p; g2p ])
-            when g1pt = g1point_type && g2pt = g2point_type ->
+            when [%equal: typ] g1pt g1point_type
+                 && [%equal: typ] g2pt g2point_type ->
               let%bind g1p' = scilla_g1point_to_ocaml g1p in
               let%bind g2p' = scilla_g2point_to_ocaml g2p in
               pure (g1p', g2p')

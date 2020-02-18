@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -29,6 +29,7 @@ type constructor = {
   (* constructor name *)
   arity : int; (* How many arguments it takes *)
 }
+[@@deriving equal]
 
 type adt = {
   tname : string;
@@ -36,16 +37,23 @@ type adt = {
   tconstr : constructor list;
   tmap : (string * typ list) list;
 }
+[@@deriving equal]
 
 module DataTypeDictionary : sig
   (* Hiding the actual data type dicionary *)
 
+  (* Re-initialize environment with the built-in ADTs *)
+  val reinit : unit -> unit
+
   (*  Get ADT by name  *)
-  val lookup_name : string -> (adt, scilla_error list) result
+  val lookup_name :
+    ?sloc:ErrorUtils.loc -> string -> (adt, scilla_error list) result
 
   (*  Get ADT by the constructor  *)
   val lookup_constructor :
-    string -> (adt * constructor, scilla_error list) result
+    ?sloc:ErrorUtils.loc ->
+    string ->
+    (adt * constructor, scilla_error list) result
 
   (* Get typing map for a constructor *)
   val constr_tmap : adt -> string -> typ list option

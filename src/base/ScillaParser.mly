@@ -37,14 +37,13 @@
     | "ByStr" -> Bystr_typ
     | _ -> let re = Str.regexp "ByStr\\([0-9]+\\)$" in
            if Str.string_match re d 0 then
-             let open Core_kernel in
-             let b = Int.of_string (Str.matched_group 1 d) in
+             let b = Core_kernel.Int.of_string (Str.matched_group 1 d) in
              Bystrx_typ b
            else raise (SyntaxError ("Invalid primitive type", loc))
 
-  let to_type d =
-    try PrimType (to_prim_type_exn d dummy_loc)
-    with | _ -> ADT (d, [])
+  let to_type d sloc =
+    try PrimType (to_prim_type_exn d sloc)
+    with | _ -> ADT (asIdL d sloc, [])
 
   let to_map_key_type_exn d loc =
     let exn () = SyntaxError (("Invalid map key type " ^ d), loc) in
@@ -172,26 +171,26 @@ t_map_key :
 (* TODO: This is a temporary fix of issue #261 *)
 t_map_value_args:
 | LPAREN; t = t_map_value_args; RPAREN; { t }
-| d = scid; { to_type d }
+| d = scid; { to_type d (toLoc $startpos(d))}
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 t_map_value :
 | LPAREN; d = scid; targs=list(t_map_value_args); RPAREN;
     { match targs with
-      | [] -> to_type d
-      | _ -> ADT (d, targs) }
+      | [] -> to_type d (toLoc $startpos(d))
+      | _ -> ADT (asIdL d (toLoc $startpos(d)), targs) }
 | LPAREN; MAP; k=t_map_key; v = t_map_value_args; RPAREN; { MapType (k, v) }
 | d = scid; targs=list(t_map_value_args)
     { match targs with
-      | [] -> to_type d
-      | _ -> ADT (d, targs) }
+      | [] -> to_type d (toLoc $startpos(d))
+      | _ -> ADT (asIdL d (toLoc $startpos(d)), targs) }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 typ :
 | d = scid; targs=list(targ)
   { match targs with
-    | [] -> to_type d
-    | _ -> ADT (d, targs)
+    | [] -> to_type d (toLoc $startpos(d))
+    | _ -> ADT (asIdL d (toLoc $startpos(d)), targs)
   }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
@@ -202,7 +201,7 @@ typ :
 
 targ:
 | LPAREN; t = typ; RPAREN; { t }
-| d = scid; { to_type d }
+| d = scid; { to_type d (toLoc $startpos(d))}
 | t = TID; { TypeVar t }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
@@ -240,7 +239,7 @@ simple_exp :
       (match ts with
        | None -> []
        | Some ls -> ls) in
-    (Constr (c, targs, args), toLoc $startpos)
+    (Constr (Ident(c, toLoc $startpos), targs, args), toLoc $startpos)
   }
 (* Match expression *)
 | MATCH; x = sid; WITH; cs=list(exp_pm_clause); END
@@ -270,7 +269,7 @@ lit :
 | s = STRING   { build_prim_literal_exn String_typ s (toLoc $startpos) }
 | EMP; kt = t_map_key; vt = t_map_value
 {
-  Map ((kt, vt), Hashtbl.create 4) (* 4 is arbitrary here. *)
+  Map ((kt, vt), Caml.Hashtbl.create 4) (* 4 is arbitrary here. *)
 }
 
 ctargs:
@@ -282,12 +281,12 @@ map_access:
 pattern:
 | UNDERSCORE { Wildcard }
 | x = ID { Binder (Ident (x, toLoc $startpos(x))) }
-| c = scid; ps = list(arg_pattern) { Constructor (c, ps) }
+| c = scid; ps = list(arg_pattern) { Constructor (asIdL c (toLoc $startpos(c)), ps) }
 
 arg_pattern:
 | UNDERSCORE { Wildcard }
 | x = ID { Binder (Ident (x, toLoc $startpos(x))) }
-| c = scid;  { Constructor (c, []) }
+| c = scid;  { Constructor (asIdL c (toLoc $startpos(c)), []) }
 | LPAREN; p = pattern RPAREN; { p }
 
 exp_pm_clause:
@@ -329,7 +328,7 @@ stmt:
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
 | SEND; m = sid;          { (SendMsgs (asIdL m (toLoc $startpos(m))), toLoc $startpos) }
 | EVENT; m = sid; { (CreateEvnt (asIdL m (toLoc $startpos(m))), toLoc $startpos) }
-| THROW; mopt = option(sid); { Throw (BatOption.map (fun m -> (asIdL m (toLoc $startpos))) mopt), toLoc $startpos }
+| THROW; mopt = option(sid); { Throw (Core_kernel.Option.map mopt ~f:(fun m -> (asIdL m (toLoc $startpos)))), toLoc $startpos }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
 | (* procedure call *)
@@ -406,7 +405,7 @@ contract:
   comps = list(component)
   { { cname   = asIdL c (toLoc $startpos(c));
       cparams = params;
-      cconstraint = BatOption.default (build_bool_literal true dummy_loc) ct;
+      cconstraint = Core_kernel.Option.value ct ~default:(build_bool_literal true dummy_loc);
       cfields = fs;
       ccomps = comps } }
 

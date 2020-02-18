@@ -16,6 +16,7 @@
 
 open Syntax
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
@@ -48,11 +49,11 @@ struct
     let reachable = Array.create ~len:(List.length clauses) false in
     let static_match c_name span dsc =
       match dsc with
-      | Pos (dsc_c_name, _) -> if c_name = dsc_c_name then Yes else No
-      | Neg c_names -> (
-          match List.findi c_names ~f:(fun _ c -> c = c_name) with
-          | None -> if List.length c_names = span - 1 then Yes else Maybe
-          | Some _ -> No )
+      | Pos (dsc_c_name, _) -> if String.(c_name = dsc_c_name) then Yes else No
+      | Neg c_names ->
+          if List.mem c_names c_name ~equal:String.( = ) then No
+          else if List.length c_names = span - 1 then Yes
+          else Maybe
     in
     let rec traverse_clauses dsc i rest_clauses =
       match rest_clauses with
@@ -87,7 +88,7 @@ struct
           traverse_pattern (augment_ctx ctx dsc) sps_rest i rest_clauses
       | Constructor (c_name, sps_cons) -> (
           let arity () = List.length sps_cons in
-          let get_t_args () = constr_pattern_arg_types t c_name in
+          let get_t_args () = constr_pattern_arg_types t (get_id c_name) in
           let get_dsc_args dsc =
             match dsc with
             | Pos (_, args) -> args
@@ -95,7 +96,8 @@ struct
           in
           let success () =
             let%bind t_args = get_t_args () in
-            traverse_pattern ((c_name, []) :: ctx)
+            traverse_pattern
+              ((get_id c_name, []) :: ctx)
               ((sps_cons, t_args, get_dsc_args dsc) :: sps_rest)
               i rest_clauses
           in
@@ -104,14 +106,18 @@ struct
               (build_dsc ctx new_dsc sps_rest)
               (i + 1) rest_clauses
           in
-          let%bind adt, _ = DataTypeDictionary.lookup_constructor c_name in
+          let%bind adt, _ =
+            DataTypeDictionary.lookup_constructor
+              ~sloc:(SR.get_loc (get_rep c_name))
+              (get_id c_name)
+          in
           let span = List.length adt.tconstr in
-          match static_match c_name span dsc with
+          match static_match (get_id c_name) span dsc with
           | Yes -> success ()
           | No -> failure dsc
           | Maybe ->
               let%bind s_tree = success () in
-              let%bind f_tree = failure (add_neg dsc c_name) in
+              let%bind f_tree = failure (add_neg dsc (get_id c_name)) in
               pure @@ IfEq (t, c_name, s_tree, f_tree) )
     in
     let%bind decision_tree = traverse_clauses (Neg []) 0 clauses in
@@ -370,7 +376,7 @@ struct
        in
        let checked_comps = List.rev c_comps in
 
-       if emsgs''' = [] (* Return pure environment *) then
+       if List.is_empty emsgs''' (* Return pure environment *) then
          pure
            ( {
                CheckedPatternSyntax.smver = mod_smver;

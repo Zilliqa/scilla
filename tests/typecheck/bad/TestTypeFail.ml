@@ -16,6 +16,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
 open OUnit2
 
 (* PART A: Test literal type checks. The only way to have malformed
@@ -43,7 +45,7 @@ let make_bad_lit_test l =
 
 exception IntBuilderInTestsuite of string
 
-let int_builder w s = BatOption.get (build_prim_literal (Int_typ w) s)
+let int_builder w s = Option.value_exn (build_prim_literal (Int_typ w) s)
 
 (* k/v types should match declared map type. *)
 let t1 =

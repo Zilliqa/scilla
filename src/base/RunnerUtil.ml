@@ -2,21 +2,22 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Printf
 open Syntax
 open ParsedSyntax
@@ -75,8 +76,8 @@ type 'a nspace_tree = { nspace : 'a ident option; dep_ns : 'a nspace_tree list }
 
 (* light-weight namespaces. prefix all entries in lib with their namespace. *)
 let eliminate_namespaces lib_tree ns_tree =
-  (* Prefix definitions in lib with namespace (and rewrite their uses). 
-     Also, rewrite uses in lib that are in env. This is for names imported by lib. 
+  (* Prefix definitions in lib with namespace (and rewrite their uses).
+     Also, rewrite uses in lib that are in env. This is for names imported by lib.
      Returns renamed library and a list of names that are defined in this library. *)
   let rename_in_library env lib namespace =
     let rev_entries, _, def_names =
@@ -84,19 +85,14 @@ let eliminate_namespaces lib_tree ns_tree =
         ~f:(fun (accentries, accenv, accnames) entry ->
           (* check if id is in env and prefix it with a namespace. *)
           let check_and_prefix_id env id =
-            match List.Assoc.find env ~equal:( = ) (get_id id) with
-            | Some ns when ns <> "" ->
+            match List.Assoc.find env (get_id id) ~equal:String.( = ) with
+            | Some ns when not @@ String.is_empty ns ->
                 let nname = ns ^ "." ^ get_id id in
                 plog
                 @@ Printf.sprintf "Prefixing namespace %s to name %s = %s\n" ns
                      (get_id id) nname;
                 asIdL nname (get_rep id)
             | _ -> id
-          in
-          let check_and_prefix_string env cname =
-            match List.Assoc.find env ~equal:( = ) cname with
-            | Some ns when ns <> "" -> ns ^ "." ^ cname
-            | _ -> cname
           in
           let rename_in_type t env =
             let rec recurser t =
@@ -106,7 +102,7 @@ let eliminate_namespaces lib_tree ns_tree =
               | FunType (t1, t2) -> FunType (recurser t1, recurser t2)
               | PolyFun (tvar, t) -> PolyFun (tvar, recurser t)
               | ADT (tname, tlist) ->
-                  let tname' = check_and_prefix_string env tname in
+                  let tname' = check_and_prefix_id env tname in
                   let tlist' = List.map tlist ~f:(fun t -> recurser t) in
                   ADT (tname', tlist')
             in
@@ -119,7 +115,9 @@ let eliminate_namespaces lib_tree ns_tree =
             | Let (i, t, elhs, erhs) ->
                 let elhs' = rename_in_expr elhs env in
                 (* "i" get's a local binding now, don't rename it in rhs. *)
-                let env' = List.Assoc.remove env ~equal:( = ) (get_id i) in
+                let env' =
+                  List.Assoc.remove env (get_id i) ~equal:String.( = )
+                in
                 let t' = Option.map t ~f:(fun t -> rename_in_type t env) in
                 let erhs' = rename_in_expr erhs env' in
                 (Let (i, t', elhs', erhs'), eloc)
@@ -134,7 +132,9 @@ let eliminate_namespaces lib_tree ns_tree =
                 in
                 (Message spl', eloc)
             | Fun (i, t, exp) ->
-                let env' = List.Assoc.remove env ~equal:( = ) (get_id i) in
+                let env' =
+                  List.Assoc.remove env (get_id i) ~equal:String.( = )
+                in
                 let t' = rename_in_type t env' in
                 let exp' = rename_in_expr exp env' in
                 (Fun (i, t', exp'), eloc)
@@ -143,7 +143,7 @@ let eliminate_namespaces lib_tree ns_tree =
                 let ils' = List.map ils ~f:(check_and_prefix_id env) in
                 (App (i', ils'), eloc)
             | Constr (cname, tl, idl) ->
-                let cname' = check_and_prefix_string env cname in
+                let cname' = check_and_prefix_id env cname in
                 let tl' = List.map tl ~f:(fun t -> rename_in_type t env) in
                 let idl' = List.map idl ~f:(check_and_prefix_id env) in
                 (Constr (cname', tl', idl'), eloc)
@@ -154,7 +154,7 @@ let eliminate_namespaces lib_tree ns_tree =
                   | Wildcard -> (pat, [])
                   | Binder i -> (pat, [ get_id i ])
                   | Constructor (c, plist) ->
-                      let c' = check_and_prefix_string env c in
+                      let c' = check_and_prefix_id env c in
                       let plist', blist =
                         List.unzip @@ List.map plist ~f:(rename_in_pattern env)
                       in
@@ -170,7 +170,7 @@ let eliminate_namespaces lib_tree ns_tree =
                       (* remove all binds from env *)
                       let env' =
                         List.fold_left binds ~init:env ~f:(fun accenv b ->
-                            List.Assoc.remove accenv ~equal:( = ) b)
+                            List.Assoc.remove accenv b ~equal:String.( = ))
                       in
                       (pat', rename_in_expr expr env'))
                 in
@@ -183,7 +183,9 @@ let eliminate_namespaces lib_tree ns_tree =
                 let tl' = List.map tl ~f:(fun t -> rename_in_type t env) in
                 (TApp (check_and_prefix_id env i, tl'), eloc)
             | Fixpoint (i, t, e) ->
-                let env' = List.Assoc.remove env ~equal:( = ) (get_id i) in
+                let env' =
+                  List.Assoc.remove env (get_id i) ~equal:String.( = )
+                in
                 let exp' = rename_in_expr e env' in
                 (Fixpoint (i, t, exp'), eloc)
           in
@@ -228,7 +230,8 @@ let eliminate_namespaces lib_tree ns_tree =
     let this_namespace = nsnode.nspace in
     let fullns =
       match this_namespace with
-      | Some i -> if outerns <> "" then outerns ^ "." ^ get_id i else get_id i
+      | Some i ->
+          if String.is_empty outerns then get_id i else outerns ^ "." ^ get_id i
       | None -> outerns
     in
     (* rename deps first *)
@@ -257,7 +260,7 @@ let import_libs names init_file =
   let rec importer names name_map stack =
     let mapped_names =
       List.map names ~f:(fun (n, namespace) ->
-          match List.Assoc.find name_map ~equal:( = ) (get_id n) with
+          match List.Assoc.find name_map (get_id n) ~equal:String.( = ) with
           | Some n' ->
               (* Use a known source location for the mapped id. *)
               (asIdL n' (get_rep n), n, namespace)
@@ -265,9 +268,9 @@ let import_libs names init_file =
     in
     List.fold_left
       ~f:(fun (libacc, nacc) (name, mapped_name, namespace) ->
-        if List.mem stack (get_id name) ~equal:( = ) then
+        if List.mem stack (get_id name) ~equal:String.( = ) then
           let errmsg =
-            if get_id mapped_name = get_id name then
+            if equal_id mapped_name name then
               sprintf "Cyclic dependence found when importing %s." (get_id name)
             else
               sprintf
@@ -291,13 +294,13 @@ let import_libs names init_file =
   let ltree, nstree = importer names name_map [] in
   eliminate_namespaces ltree nstree
 
-let stdlib_not_found_err () =
+let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
   fatal_error
     (mk_error0
        ( "A path to Scilla stdlib not found. Please set "
        ^ StdlibTracker.scilla_stdlib_env
        ^ " environment variable, or pass through command-line argument for \
-          this script.\n" ^ "Example:\n" ^ Sys.argv.(0)
+          this script.\n" ^ "Example:\n" ^ exe_name
        ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
 
 (* Parse all libraries that can be found in ldirs. *)
@@ -310,22 +313,15 @@ let import_all_libs ldirs =
     if not (Caml.Sys.file_exists dir) then []
     else
       let files = Array.to_list (Sys.readdir dir) in
-      List.fold_right files
-        ~f:(fun file names ->
-          if FilePath.get_extension file = StdlibTracker.file_extn_library then
-            let name = FilePath.chop_extension (FilePath.basename file) in
-            (asId name, None (* no import-as *)) :: names
-          else names)
-        ~init:[]
+      List.filter_map files ~f:(fun file ->
+          let open FilePath in
+          if check_extension file StdlibTracker.file_extn_library then
+            let lib_name = chop_extension (basename file) in
+            Some (asId lib_name, None (* no import-as *))
+          else None)
   in
   (* Make a list of all libraries and parse them through import_lib above. *)
-  let names =
-    List.fold_right ldirs
-      ~f:(fun dir names ->
-        let names' = get_lib_list dir in
-        List.append names names')
-      ~init:[]
-  in
+  let names = List.concat_map ldirs ~f:get_lib_list in
   import_libs names None
 
 type runner_cli = {
@@ -341,7 +337,7 @@ type runner_cli = {
   p_type_info : bool;
 }
 
-let parse_cli () =
+let parse_cli args ~exe_name =
   let r_stdlib_dir = ref [] in
   let r_gas_limit = ref None in
   let r_input_file = ref "" in
@@ -371,14 +367,8 @@ let parse_cli () =
       ( "-gaslimit",
         Arg.String
           (fun i ->
-            let g =
-              try Stdint.Uint64.of_string i
-              with _ ->
-                PrettyPrinters.fatal_error
-                  (ErrorUtils.mk_error0
-                     (Printf.sprintf "Invalid gaslimit %s\n" i))
-            in
-            r_gas_limit := Some g),
+            let g = try Some (Stdint.Uint64.of_string i) with _ -> None in
+            r_gas_limit := g),
         "Gas limit" );
       ( "-gua",
         Arg.Unit (fun () -> r_gua := true),
@@ -406,7 +396,7 @@ let parse_cli () =
   in
 
   let mandatory_usage =
-    "Usage:\n" ^ Sys.argv.(0)
+    "Usage:\n" ^ exe_name
     ^ " -gaslimit <limit> -libdir /path/to/stdlib input.scilla\n"
   in
   let optional_usage =
@@ -417,12 +407,21 @@ let parse_cli () =
 
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
   let anon_handler s = r_input_file := s in
-  let () = Arg.parse speclist anon_handler mandatory_usage in
-  if !r_input_file = "" then fatal_error_noformat usage;
+  let () =
+    match args with
+    | None -> Arg.parse speclist anon_handler mandatory_usage
+    | Some argv -> (
+        try
+          Arg.parse_argv ~current:(ref 0)
+            (List.to_array @@ (exe_name :: argv))
+            speclist anon_handler mandatory_usage
+        with Arg.Bad msg -> fatal_error_noformat (Printf.sprintf "%s\n" msg) )
+  in
+  if String.is_empty !r_input_file then fatal_error_noformat usage;
   let gas_limit =
     match !r_gas_limit with Some g -> g | None -> fatal_error_noformat usage
   in
-  if !r_cf_token_fields <> [] then r_cf := true;
+  if not @@ List.is_empty !r_cf_token_fields then r_cf := true;
   GlobalConfig.set_use_json_errors !r_json_errors;
   {
     input_file = !r_input_file;

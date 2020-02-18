@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open Result.Let_syntax
 open MonadUtil
@@ -69,7 +70,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     (* A constructor in HNF *)
     | ADTValue (cn, _, ll) as als ->
         (* Make a special case for Lists, to avoid overflowing recursion. *)
-        if cn = "Cons" then
+        if String.(cn = "Cons") then
           let rec walk elm acc_cost =
             match elm with
             | ADTValue ("Cons", _, [ l; ll ]) ->
@@ -93,8 +94,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   let expr_static_cost erep =
     let e, _ = erep in
     match e with
-    | Literal _ | Var _ | Let _ | Message _ | Fun _ | App _ | Constr _
-    | TFun _ | TApp _ ->
+    | Literal _ | Var _ | Let _ | Message _ | Fun _ | App _ | Constr _ | TFun _
+    | TApp _ ->
         pure 1
     | MatchExpr (_, clauses) -> pure @@ List.length clauses
     | Fixpoint _ ->
@@ -104,13 +105,44 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   (* this is a dynamic cost. *)
 
   let stmt_cost scon =
+    let rec map_sort_cost l =
+      match l with
+      | Map (_, kvlist) ->
+          let sub_cost =
+            Caml.Hashtbl.fold
+              (fun _ vlit acc -> acc + map_sort_cost vlit)
+              kvlist 0
+          in
+          let this_cost =
+            let len = Caml.Hashtbl.length kvlist in
+            if len > 0 then
+              let log_len = Int.of_float (Float.log (Int.to_float len)) in
+              len * log_len
+            else 0
+          in
+          sub_cost + this_cost
+      | _ -> 0
+    in
     match scon with
-    | G_Load l | G_Store l -> literal_cost l
-    | G_MapUpdate (n, lopt) | G_MapGet (n, lopt) ->
+    | G_Load l ->
+        let%bind l_cost = literal_cost l in
+        let sort_cost = map_sort_cost l in
+        pure (l_cost + sort_cost)
+    | G_Store l -> literal_cost l
+    | G_MapUpdate (n, lopt) ->
         let%bind l_cost =
           match lopt with Some l -> literal_cost l | None -> pure 0
         in
         pure @@ (n + l_cost)
+    | G_MapGet (n, lopt) ->
+        let%bind l_cost, sort_cost =
+          match lopt with
+          | Some l ->
+              let%bind l_cost = literal_cost l in
+              pure (l_cost, map_sort_cost l)
+          | None -> pure (0, 0)
+        in
+        pure (n + l_cost + sort_cost)
     | G_Bind -> pure 1
     | G_MatchStmt num_clauses -> pure num_clauses
     | G_ReadFromBC -> pure 1
@@ -154,16 +186,16 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
   let crypto_coster op args base =
-    let open BatOption in
     let%bind types = mapM args ~f:literal_type in
     let div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 in
     match (op, types, args) with
     | Builtin_eq, [ a1; a2 ], _
       when is_bystrx_type a1 && is_bystrx_type a2
-           && get (bystrx_width a1) = get (bystrx_width a2) ->
-        pure @@ (get (bystrx_width a1) * base)
+           && Option.(value_exn (bystrx_width a1) = value_exn (bystrx_width a2))
+      ->
+        pure @@ (Option.value_exn (bystrx_width a1) * base)
     | Builtin_to_uint256, [ a ], _
-      when is_bystrx_type a && get (bystrx_width a) <= 32 ->
+      when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 32 ->
         pure (32 * base)
     | Builtin_sha256hash, _, [ a ] | Builtin_schnorr_get_address, _, [ a ] ->
         (* Block size of sha256hash is 512 *)
@@ -179,7 +211,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         let x = div_ceil (Bystr.width s + 66) 64 in
         pure @@ ((250 + (15 * x)) * base)
     | Builtin_to_bystr, [ a ], _ when is_bystrx_type a ->
-        pure @@ (get (bystrx_width a) * base)
+        pure @@ (Option.value_exn (bystrx_width a) * base)
     | Builtin_bech32_to_bystr20, _, [ prefix; addr ]
     | Builtin_bystr20_to_bech32, _, [ prefix; addr ] ->
         pure
@@ -187,7 +219,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
            * base
     | Builtin_concat, [ a1; a2 ], _ when is_bystrx_type a1 && is_bystrx_type a2
       ->
-        pure @@ ((get (bystrx_width a1) + get (bystrx_width a2)) * base)
+        pure
+        @@ Option.(
+             (value_exn (bystrx_width a1) + value_exn (bystrx_width a2)) * base)
     | Builtin_alt_bn128_G1_add, _, _ -> pure @@ (20 * base)
     | Builtin_alt_bn128_G1_mul, _, [ _; s ] ->
         let%bind s' = scilla_scalar_to_ocaml s in
@@ -329,12 +363,12 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let matcher (name, types, fcoster, base) =
       (* The names and type list lengths must match and *)
       if
-        name = op
+        [%equal: Syntax.builtin] name op
         && List.length types = List.length arg_types
         && List.for_all2_exn
              ~f:(fun t1 t2 ->
                (* the types should match *)
-               type_equiv t1 t2
+               [%equal: typ] t1 t2
                ||
                (* or the built-in record is generic *)
                match t2 with TypeVar _ -> true | _ -> false)
@@ -345,9 +379,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let msg =
       sprintf "Unable to determine gas cost for \"%s\"" (pp_builtin op)
     in
-    let open Caml in
     let dict =
-      match Hashtbl.find_opt builtin_hashtbl op with
+      match Caml.Hashtbl.find_opt builtin_hashtbl op with
       | Some rows -> rows
       | None -> []
     in

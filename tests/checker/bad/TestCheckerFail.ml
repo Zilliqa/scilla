@@ -16,6 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
+
 module Tests = TestUtil.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
 
@@ -67,6 +70,7 @@ module Tests = TestUtil.DiffBasedTests (struct
       "bad_adt_3.scilla";
       "bad_adt_4.scilla";
       "bad_adt_7.scilla";
+      "bad_adt_8.scilla";
       "unserializable_param.scilla";
       "unstorable_adt.scilla";
       "bad_version.scilla";

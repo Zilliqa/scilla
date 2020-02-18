@@ -2,21 +2,22 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open ScillaUtil.FilePathInfix
 
 (* Available debug levels for functions in DbgMsg *)
@@ -56,7 +57,8 @@ let get_debug_level () = !debug_level
 let set_debug_level l = debug_level := l
 
 let get_log_file () =
-  if !log_file = "" then log_file := create_log_filename ("_build" ^/ "logs");
+  if String.is_empty !log_file then
+    log_file := create_log_filename ("_build" ^/ "logs");
   !log_file
 
 let set_log_file s = log_file := s
@@ -122,13 +124,27 @@ module StdlibTracker = struct
   (* File extension for Scilla libraries. *)
   let file_extn_library = "scillib"
 
+  (* Reset internal state. *)
+  let reset () = stdlib_dirs := []
+
   (* File extension for Scilla expressions. *)
   let file_extn_expression = "scilexp"
 
   (* Try find library "name" in known locations *)
   let find_lib_dir name =
     let dirs = get_stdlib_dirs () in
-    BatList.find_opt
-      (fun d -> Caml.Sys.file_exists (d ^/ name ^. file_extn_library))
-      dirs
+    List.find dirs ~f:(fun d ->
+        Caml.Sys.file_exists (d ^/ name ^. file_extn_library))
 end
+
+let reset () =
+  (* Reset the list of directories to look for stdlib *)
+  StdlibTracker.reset ();
+  (* Reset other configuration parameters to their default values *)
+  debug_level := Debug_None;
+  log_file := "";
+  trace_level := Trace_None;
+  trace_file := "";
+  pp_lit := true;
+  json_errors := false;
+  validate_json_b := false

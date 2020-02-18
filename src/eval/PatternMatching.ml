@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Datatypes
 open Syntax
 open EvalUtil
@@ -29,7 +30,11 @@ let rec match_with_pattern v p =
   | Wildcard -> pure []
   | Binder x -> pure @@ [ (x, v) ]
   | Constructor (cn, ps) -> (
-      let%bind _, ctr = DataTypeDictionary.lookup_constructor cn in
+      let%bind _, ctr =
+        DataTypeDictionary.lookup_constructor
+          ~sloc:(SR.get_loc (get_rep cn))
+          (get_id cn)
+      in
       (* Check that the pattern is well-formed *)
       if ctr.arity <> List.length ps then
         fail0
@@ -39,7 +44,7 @@ let rec match_with_pattern v p =
       else
         match v with
         | ADTValue (cn', _, ls')
-          when cn' = ctr.cname && List.length ls' = ctr.arity -> (
+          when String.(cn' = ctr.cname) && List.length ls' = ctr.arity -> (
             (* The value structure matches the pattern *)
             match List.zip ls' ps with
             | Unequal_lengths ->

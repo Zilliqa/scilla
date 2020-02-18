@@ -2,42 +2,45 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open OUnit2
 open ScillaUtil.FilePathInfix
 
+(* Helper funcation borrowed from Batteries library *)
+let stream_to_string fl =
+  let buf = Buffer.create 4096 in
+  Stream.iter (Buffer.add_char buf) fl;
+  Buffer.contents buf
+
 type tsuite_env = {
-  bin_dir : test_ctxt -> string;
   tests_dir : test_ctxt -> string;
   stdlib_dir : test_ctxt -> string;
   print_cli : test_ctxt -> bool;
   update_gold : test_ctxt -> bool;
   print_diff : test_ctxt -> bool;
   ext_ipc_server : test_ctxt -> string;
+  server : test_ctxt -> bool;
 }
 
 let run_tests tests =
-  let bin_dir_default = Sys.getcwd () ^/ "bin" in
   let tests_dir_default = Sys.getcwd () ^/ "tests" in
   let stdlib_dir_default = Sys.getcwd () ^/ "src" ^/ "stdlib" in
   let ext_ipc_server_default = "" in
-  let bin_dir =
-    Conf.make_string "bin_dir" bin_dir_default "Directory containing binaries"
-  in
   let tests_dir =
     Conf.make_string "tests_dir" tests_dir_default "Directory containing tests"
   in
@@ -57,6 +60,7 @@ let run_tests tests =
     Conf.make_bool "print_diff" false
       "Print the diff between gold file and actual output"
   in
+  let server = Conf.make_bool "server" false "Run tests in server-mode" in
   let ext_ipc_server =
     Conf.make_string "ext_ipc_server" ext_ipc_server_default
       "Address of external IPC server for IPC tests. Ensure that \"-runner \
@@ -65,12 +69,12 @@ let run_tests tests =
 
   let env : tsuite_env =
     {
-      bin_dir;
       tests_dir;
       stdlib_dir;
       print_cli;
       update_gold;
       print_diff;
+      server;
       ext_ipc_server;
     }
   in
@@ -97,12 +101,12 @@ let output_verifier goldoutput_file msg print_diff output =
   in
   if print_diff then
     assert_equal
-      ~cmp:(fun e o -> String.strip e = String.strip o)
+      ~cmp:(fun e o -> String.(strip e = strip o))
       ~pp_diff:(fun fmt _ -> pp_diff fmt)
       gold_output output ~msg
   else
     assert_equal
-      ~cmp:(fun e o -> String.strip e = String.strip o)
+      ~cmp:(fun e o -> String.(strip e = strip o))
       ~printer:(fun s -> s)
       gold_output output ~msg
 
@@ -147,7 +151,6 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
     List.map ~f:(fun fname ->
         fname >:: fun test_ctxt ->
         let open FilePath in
-        let evalbin = env.bin_dir test_ctxt ^/ runner in
         let dir = env.tests_dir test_ctxt in
         let input_file = make_filename (test_path fname) in
         let init_file =
@@ -174,16 +177,16 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
         let args =
           if provide_init_arg then args' @ [ "-init"; init_file ] else args'
         in
-        let msg = cli_usage_on_err evalbin args in
-        print_cli_usage (env.print_cli test_ctxt) evalbin args;
+        let msg = cli_usage_on_err runner args in
+        print_cli_usage (env.print_cli test_ctxt) runner args;
         assert_command
           ~foutput:(fun s ->
-            let out = BatStream.to_string s in
+            let out = stream_to_string s in
             if env.update_gold test_ctxt then
               output_updater goldoutput_file input_file out
             else
               output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
-          ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt evalbin args)
+          ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt runner args)
 
   let all_tests env = "exptests" >::: build_exp_tests env tests
 end

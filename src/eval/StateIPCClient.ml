@@ -2,20 +2,21 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 open Core
+open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open MonadUtil
 open Syntax
@@ -23,6 +24,7 @@ open JSON
 open TypeUtil
 open StateIPCIdl
 open ErrorUtils
+open IPCUtil
 module ER = ParserRep
 module M = Idl.IdM
 module IDL = Idl.Make (M)
@@ -44,12 +46,6 @@ let ipcclient_exn_wrapper thunk =
   | Unix.Unix_error (_, s1, s2) ->
       fail0 ("StateIPCClient: Unix error: " ^ s1 ^ s2)
   | _ -> fail0 "StateIPCClient: Unexpected error making JSON-RPC call"
-
-(* Send msg via socket s with a delimiting character "0xA". *)
-let send_delimited oc msg =
-  let msg' = msg ^ "\n" in
-  Out_channel.output_string oc msg';
-  Out_channel.flush oc
 
 let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
@@ -108,7 +104,11 @@ let rec deserialize_value value tp =
       | MapType (kt, vt) ->
           let mlit = Caml.Hashtbl.create (List.length m.m) in
           let _ =
-            iterM m.m ~f:(fun (k, v) ->
+            let m =
+              List.sort m.m ~compare:(fun (k1, _) (k2, _) ->
+                  String.compare k1 k2)
+            in
+            iterM m ~f:(fun (k, v) ->
                 let%bind k' = deserialize_literal k kt in
                 let%bind v' = deserialize_value v vt in
                 Caml.Hashtbl.add mlit k' v';

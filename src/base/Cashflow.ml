@@ -16,6 +16,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Sexplib.Std
 open Syntax
 open Datatypes
@@ -30,7 +31,7 @@ module CashflowRep (R : Rep) = struct
     | Map of money_tag
     | Adt of string * money_tag list (* name of adt paired with tags of type params *)
     | Inconsistent
-  [@@deriving sexp]
+  [@@deriving sexp, equal]
 
   let rec money_tag_to_string tag =
     match tag with
@@ -203,7 +204,7 @@ struct
   let cf_init_tag_contract contract token_fields =
     let { cname; cparams; cconstraint; cfields; ccomps } = contract in
     let token_fields_contains x =
-      List.exists ~f:(fun token_field -> get_id x = token_field) token_fields
+      List.mem token_fields (get_id x) ~equal:String.( = )
     in
     {
       CFSyntax.cname;
@@ -282,7 +283,7 @@ struct
     | x            , NoInfo        -> x
     | Map x        , Map y         -> Map (lub_tags x y)
     | Adt (n1, ts1), Adt (n2, ts2)
-      when n1 = n2                 ->
+      when String.(n1 = n2)        ->
         (match List.map2 ts1 ts2 ~f:lub_tags with
          | Ok res -> Adt (n1, res)
          | Unequal_lengths -> Inconsistent)
@@ -299,7 +300,7 @@ struct
     | _            , NoInfo        -> NoInfo
     | Map x        , Map y         -> Map (glb_tags x y)
     | Adt (n1, ts1), Adt (n2, ts2)
-      when n1 = n2                 ->
+      when String.(n1 = n2)        ->
         (match List.map2 ts1 ts2 ~f:glb_tags with
          | Ok res -> Adt (n1, res)
          | Unequal_lengths -> Inconsistent)
@@ -328,16 +329,17 @@ struct
               List.for_all adt.tmap ~f:(fun (_, arg_typs) ->
                   match arg_typs with [] -> true | _ -> false)
             then NotMoney
-              (* Case 2 (Nat case): 2 constructors. One constructor takes 
-               1 argument of same type, other constructor
-               takes no argument : NoInfo *)
+              (* Case 2 (Nat case): 2 constructors. One constructor takes
+                 1 argument of same type, other constructor
+                 takes no argument : NoInfo *)
             else if
               List.length adt.tconstr = 2
               && List.exists adt.tmap ~f:(fun (_, arg_typs) ->
-                     match arg_typs with [] -> true | _ -> false)
+                     List.is_empty arg_typs)
               && List.exists adt.tmap ~f:(fun (_, arg_typs) ->
                      match arg_typs with
-                     | [ ADT (arg_typ_name, _) ] -> arg_typ_name = adt.tname
+                     | [ ADT (arg_typ_name, _) ] ->
+                         String.(get_id arg_typ_name = adt.tname)
                      | _ -> false)
             then NoInfo
             else Adt (adt.tname, [])
@@ -355,11 +357,11 @@ struct
                 in
                 let update_targ_tag targ new_tag map =
                   let current_tag =
-                    match List.Assoc.find map ~equal:( = ) targ with
+                    match List.Assoc.find map ~equal:String.( = ) targ with
                     | None -> Inconsistent
                     | Some t -> t
                   in
-                  List.Assoc.add map ~equal:( = ) targ
+                  List.Assoc.add map ~equal:String.( = ) targ
                     (lub_tags current_tag new_tag)
                 in
                 let rec match_arg_tag_with_typ arg_typ arg_tag targ_tag_map =
@@ -396,7 +398,7 @@ struct
                 let final_adt_arg_tags =
                   List.map adt.tparams ~f:(fun tparam ->
                       match
-                        List.Assoc.find tvar_tag_map ~equal:( = ) tparam
+                        List.Assoc.find tvar_tag_map ~equal:String.( = ) tparam
                       with
                       | None -> Inconsistent
                       | Some t -> t)
@@ -418,7 +420,8 @@ struct
             let tvar_tag_map =
               let zipped_tvar_tags =
                 match expected_tag with
-                | Adt (exp_typ_name, arg_tags) when exp_typ_name = adt.tname ->
+                | Adt (exp_typ_name, arg_tags)
+                  when String.(exp_typ_name = adt.tname) ->
                     List.zip adt.tparams arg_tags
                 | NoInfo (* Nothing known *) | Money (* Nat case *) | NotMoney
                 (* Nat case *) ->
@@ -444,9 +447,11 @@ struct
                   NoInfo
               | MapType (_, vt) | FunType (_, vt) -> Map (tag_tmap vt)
               | ADT (adt_name, arg_typs) ->
-                  Adt (adt_name, List.map arg_typs ~f:tag_tmap)
+                  Adt (get_id adt_name, List.map arg_typs ~f:tag_tmap)
               | TypeVar tvar -> (
-                  match List.Assoc.find tvar_tag_map ~equal:( = ) tvar with
+                  match
+                    List.Assoc.find tvar_tag_map ~equal:String.( = ) tvar
+                  with
                   | Some tag -> tag
                   | None -> Inconsistent )
               | _ -> Inconsistent
@@ -480,7 +485,7 @@ struct
             else acc)
 
   let update_ctr_tag_map ctr_tag_map ctr_name arg_tags =
-    match List.Assoc.find ctr_tag_map ~equal:( = ) ctr_name with
+    match List.Assoc.find ctr_tag_map ~equal:String.( = ) ctr_name with
     | None ->
         (* Ignored constructor *)
         None
@@ -489,8 +494,12 @@ struct
           List.map2 arg_map_tags arg_tags ~f:(fun arg_map_tag arg_tag ->
               Option.map arg_map_tag ~f:(lub_tags arg_tag))
         with
-        | Ok new_tags when new_tags <> arg_map_tags ->
-            Some (List.Assoc.add ctr_tag_map ~equal:( = ) ctr_name new_tags)
+        | Ok new_tags
+          when not
+               @@ [%equal: ECFR.money_tag Option.t list] new_tags arg_map_tags
+          ->
+            Some
+              (List.Assoc.add ctr_tag_map ~equal:String.( = ) ctr_name new_tags)
         | _ -> None )
 
   (*******************************************************)
@@ -538,25 +547,25 @@ struct
 
   (* Calculate the signature of a builtin function.
 
-     Step 1: Calculate candidate signatures based on the 
+     Step 1: Calculate candidate signatures based on the
      desired result tag and each argument tag.
 
-     - For each tag t, pick every least upper bound of that 
-     tag that makes sense for that result/argument. 
+     - For each tag t, pick every least upper bound of that
+     tag that makes sense for that result/argument.
      Call these bounds b_t.
 
-     - For each b_t, find all sets of tags satisfying that 
-     the use of those tags in the other argument/result positions 
-     is the greatest lower bound of a consistent use of tags 
-     satisfying b_t. These sets along with b_t are considered 
+     - For each b_t, find all sets of tags satisfying that
+     the use of those tags in the other argument/result positions
+     is the greatest lower bound of a consistent use of tags
+     satisfying b_t. These sets along with b_t are considered
      the candidate sigantures for t, called C_t.
 
-     Step 2: Consider the elements of C_t1 x C_t2 x ..., i.e., 
-     the cartesian product of the candidate signature sets for 
+     Step 2: Consider the elements of C_t1 x C_t2 x ..., i.e.,
+     the cartesian product of the candidate signature sets for
      each t.
 
-     For each element, calculate the least upper bound of all 
-     the tags in the signatures of the element. Call the 
+     For each element, calculate the least upper bound of all
+     the tags in the signatures of the element. Call the
      resulting set of candidate signatures C.
 
      Step 3: Calculate the greatest lower bound of C. *)
@@ -1032,7 +1041,7 @@ struct
             new_x_tag,
             new_local_env,
             ctr_tag_map,
-            get_id_tag x <> get_id_tag new_x )
+            not @@ [%equal: ECFR.money_tag] (get_id_tag x) (get_id_tag new_x) )
       | Constructor (s, ps) ->
           let new_ps, new_ps_tags, new_local_env, ps_ctr_tag_map, ps_changes =
             List.fold_right ps ~init:([], [], local_env, ctr_tag_map, false)
@@ -1053,11 +1062,11 @@ struct
                   acc_changes || p_changes ))
           in
           let new_ctr_tag_map, ctr_tag_map_changes =
-            update_ctr_tag_map ps_ctr_tag_map s new_ps_tags
+            update_ctr_tag_map ps_ctr_tag_map (get_id s) new_ps_tags
             |> Option.value_map ~default:(ps_ctr_tag_map, false) ~f:(fun map ->
                    (map, true))
           in
-          let ctr_tag = ctr_to_adt_tag s new_ps_tags in
+          let ctr_tag = ctr_to_adt_tag (get_id s) new_ps_tags in
           ( Constructor (s, new_ps),
             ctr_tag,
             new_local_env,
@@ -1076,10 +1085,10 @@ struct
       | Binder x ->
           let new_x_tag = lub_tags expected_tag (get_id_tag x) in
           let new_x = update_id_tag x new_x_tag in
-          (Binder new_x, new_x_tag <> get_id_tag x)
+          (Binder new_x, not ([%equal: ECFR.money_tag] new_x_tag (get_id_tag x)))
       | Constructor (s, ps) ->
           let expected_subtags =
-            match ctr_pattern_to_subtags s expected_tag with
+            match ctr_pattern_to_subtags (get_id s) expected_tag with
             | Some ts -> ts
             | None -> List.map ps ~f:(fun _ -> NoInfo)
           in
@@ -1109,7 +1118,7 @@ struct
       | Binder x -> lub_tags (get_id_tag x) acc_tag
       | Constructor (s, ps) ->
           let expected_subtags =
-            match ctr_pattern_to_subtags s acc_tag with
+            match ctr_pattern_to_subtags (get_id s) acc_tag with
             | Some ts -> ts
             | None -> List.map ps ~f:(fun _ -> NoInfo)
           in
@@ -1118,7 +1127,7 @@ struct
             | Ok tps -> tps
             | Unequal_lengths -> []
           in
-          let new_tag = ctr_to_adt_tag s subpattern_tags in
+          let new_tag = ctr_to_adt_tag (get_id s) subpattern_tags in
           lub_tags new_tag acc_tag
     in
     List.fold_left ps ~init:NoInfo ~f:walk
@@ -1150,9 +1159,9 @@ struct
           new_changes ) =
       match e with
       | Literal _ ->
-          (* No need to deduce tag from type. 
-             If the literal is a number, then nothing can be deduced, 
-             and if it is not a number, the tag of relevant variables 
+          (* No need to deduce tag from type.
+             If the literal is a number, then nothing can be deduced,
+             and if it is not a number, the tag of relevant variables
              will be deduced from their usage. *)
           (e, tag, param_env, local_env, ctr_tag_map, false)
       | Var i ->
@@ -1166,7 +1175,7 @@ struct
             new_param_env,
             new_local_env,
             ctr_tag_map,
-            new_i_tag <> get_id_tag i )
+            not @@ [%equal: ECFR.money_tag] new_i_tag (get_id_tag i) )
       | Fun (arg, t, body) ->
           (* Using Map tag to represent functions as well as maps *)
           let body_expected_tag =
@@ -1195,7 +1204,8 @@ struct
             res_param_env,
             new_local_env,
             res_ctr_tag_map,
-            body_changes || get_id_tag arg <> res_arg_tag )
+            body_changes
+            || (not @@ [%equal: ECFR.money_tag] (get_id_tag arg) res_arg_tag) )
       | App (f, args) ->
           let new_args =
             List.map
@@ -1206,7 +1216,10 @@ struct
           let args_changes =
             match
               List.exists2
-                ~f:(fun arg new_arg -> get_id_tag arg <> get_id_tag new_arg)
+                ~f:(fun arg new_arg ->
+                  not
+                  @@ [%equal: ECFR.money_tag] (get_id_tag arg)
+                       (get_id_tag new_arg))
                 args new_args
             with
             | Ok res -> res
@@ -1225,7 +1238,8 @@ struct
             param_env,
             new_local_env,
             ctr_tag_map,
-            args_changes || f_tag <> get_id_tag f )
+            args_changes
+            || (not @@ [%equal: ECFR.money_tag] f_tag (get_id_tag f)) )
       | Builtin (f, args) ->
           let args_tags =
             List.map
@@ -1251,7 +1265,9 @@ struct
                 ( update_id_tag arg arg_tag :: acc_args,
                   new_param_env,
                   new_local_env,
-                  acc_changes || get_id_tag arg <> arg_tag ))
+                  acc_changes
+                  || (not @@ [%equal: ECFR.money_tag] (get_id_tag arg) arg_tag)
+                ))
           in
           let f_tag = lub_tags (Map res_tag) (Map expected_tag) in
 
@@ -1263,7 +1279,7 @@ struct
             final_param_env,
             final_local_env,
             ctr_tag_map,
-            changes || f_tag <> tag )
+            changes || (not @@ [%equal: ECFR.money_tag] f_tag tag) )
       | Let (i, topt, lhs, rhs) ->
           let ( ((_, (new_lhs_tag, _)) as new_lhs),
                 lhs_param_env,
@@ -1291,7 +1307,8 @@ struct
             rhs_param_env,
             res_local_env,
             rhs_ctr_tag_map,
-            lhs_changes || rhs_changes || new_i_tag <> get_id_tag i )
+            lhs_changes || rhs_changes
+            || (not @@ [%equal: ECFR.money_tag] new_i_tag (get_id_tag i)) )
       | Constr (cname, ts, args) ->
           let new_args =
             List.map
@@ -1302,19 +1319,24 @@ struct
           let args_changes =
             match
               List.exists2
-                ~f:(fun arg new_arg -> get_id_tag arg <> get_id_tag new_arg)
+                ~f:(fun arg new_arg ->
+                  not
+                  @@ [%equal: ECFR.money_tag] (get_id_tag arg)
+                       (get_id_tag new_arg))
                 args new_args
             with
             | Ok res -> res
             | Unequal_lengths -> false
           in
           let new_ctr_tag_map, ctr_tag_map_changes =
-            update_ctr_tag_map ctr_tag_map cname
+            update_ctr_tag_map ctr_tag_map (get_id cname)
               (List.map new_args ~f:get_id_tag)
             |> Option.value_map ~default:(ctr_tag_map, false) ~f:(fun map ->
                    (map, true))
           in
-          let tag = ctr_to_adt_tag cname (List.map new_args ~f:get_id_tag) in
+          let tag =
+            ctr_to_adt_tag (get_id cname) (List.map new_args ~f:get_id_tag)
+          in
           ( Constr (cname, ts, new_args),
             tag,
             param_env,
@@ -1383,7 +1405,8 @@ struct
             res_param_env,
             res_local_env,
             new_ctr_tag_map,
-            clause_changes || get_id_tag x <> new_x_tag )
+            clause_changes
+            || (not @@ [%equal: ECFR.money_tag] (get_id_tag x) new_x_tag) )
       | Fixpoint (_f, _t, _body) ->
           (* Library functions not handled. *)
           (e, Inconsistent, param_env, local_env, ctr_tag_map, false)
@@ -1424,12 +1447,13 @@ struct
                 | MVar x ->
                     let usage_tag =
                       match s with
-                      | x when x = MessagePayload.amount_label -> Money
+                      | x when String.(x = MessagePayload.amount_label) -> Money
                       | x
-                        when x = MessagePayload.tag_label
-                             || x = MessagePayload.recipient_label
-                             || x = MessagePayload.eventname_label
-                             || x = MessagePayload.exception_label ->
+                        when String.(
+                               x = MessagePayload.tag_label
+                               || x = MessagePayload.recipient_label
+                               || x = MessagePayload.eventname_label
+                               || x = MessagePayload.exception_label) ->
                           NotMoney
                       | _ -> NoInfo
                     in
@@ -1444,7 +1468,9 @@ struct
                     ( (s, MVar new_x) :: acc_bs,
                       new_param_env,
                       new_local_env,
-                      acc_changes || get_id_tag x <> new_x_tag ))
+                      acc_changes
+                      || not
+                         @@ [%equal: ECFR.money_tag] (get_id_tag x) new_x_tag ))
           in
           ( Message new_bs,
             NotMoney,
@@ -1458,7 +1484,7 @@ struct
       new_param_env,
       new_local_env,
       new_ctr_tag_map,
-      new_changes || tag <> e_tag )
+      new_changes || (not @@ [%equal: ECFR.money_tag] tag e_tag) )
 
   (* Helper function for Load and Store - ensure field and local have same tag *)
   let cf_update_tag_for_field_assignment f x param_env field_env local_env =
@@ -1494,8 +1520,9 @@ struct
             new_field_env,
             new_local_env,
             ctr_tag_map,
-            get_id_tag new_x <> get_id_tag x || get_id_tag new_f <> get_id_tag f
-          )
+            (not @@ [%equal: ECFR.money_tag] (get_id_tag new_x) (get_id_tag x))
+            || not
+               @@ [%equal: ECFR.money_tag] (get_id_tag new_f) (get_id_tag f) )
       | Store (f, x) ->
           let new_f, new_x, new_param_env, new_field_env, new_local_env =
             cf_update_tag_for_field_assignment f x param_env field_env local_env
@@ -1505,8 +1532,9 @@ struct
             new_field_env,
             new_local_env,
             ctr_tag_map,
-            get_id_tag new_x <> get_id_tag x || get_id_tag new_f <> get_id_tag f
-          )
+            (not @@ [%equal: ECFR.money_tag] (get_id_tag new_x) (get_id_tag x))
+            || not
+               @@ [%equal: ECFR.money_tag] (get_id_tag new_f) (get_id_tag f) )
       | Bind (x, e) ->
           let x_tag = lookup_var_tag x local_env in
           let e_local_env = AssocDictionary.remove (get_id x) local_env in
@@ -1524,7 +1552,8 @@ struct
             field_env,
             new_local_env,
             new_ctr_tag_map,
-            e_changes || get_id_tag x <> new_x_tag )
+            e_changes
+            || (not @@ [%equal: ECFR.money_tag] (get_id_tag x) new_x_tag) )
       | MapUpdate (m, ks, v_opt) ->
           let v_tag =
             match v_opt with
@@ -1567,7 +1596,9 @@ struct
             new_field_env,
             new_local_env,
             ctr_tag_map,
-            get_id_tag m <> m_tag || new_v_opt <> v_opt || new_ks <> ks )
+            (not @@ [%equal: ECFR.money_tag] (get_id_tag m) m_tag)
+            || (not @@ [%equal: _] new_v_opt v_opt)
+            || (not @@ [%equal: _] new_ks ks) )
       | MapGet (x, m, ks, fetch) ->
           let x_tag = lookup_var_tag x local_env in
           let val_tag =
@@ -1611,8 +1642,9 @@ struct
             new_field_env,
             ks_local_env,
             ctr_tag_map,
-            get_id_tag x <> new_x_tag || get_id_tag m <> m_tag || new_ks <> ks
-          )
+            (not @@ [%equal: ECFR.money_tag] (get_id_tag x) new_x_tag)
+            || (not @@ [%equal: ECFR.money_tag] (get_id_tag m) m_tag)
+            || (not @@ [%equal: _] new_ks ks) )
       | MatchStmt (x, clauses) ->
           let ( res_clauses,
                 new_param_env,
@@ -1676,7 +1708,8 @@ struct
             new_field_env,
             res_local_env,
             new_ctr_tag_map,
-            clause_changes || get_id_tag x <> new_x_tag )
+            clause_changes
+            || (not @@ [%equal: ECFR.money_tag] (get_id_tag x) new_x_tag) )
       | ReadFromBC (x, s) ->
           let x_tag = lub_tags NotMoney (lookup_var_tag x local_env) in
           let new_x = update_id_tag x x_tag in
@@ -1686,7 +1719,7 @@ struct
             field_env,
             new_local_env,
             ctr_tag_map,
-            get_id_tag x <> x_tag )
+            not @@ [%equal: ECFR.money_tag] (get_id_tag x) x_tag )
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
       | SendMsgs m ->
@@ -1702,7 +1735,7 @@ struct
             field_env,
             new_local_env,
             ctr_tag_map,
-            get_id_tag m <> m_tag )
+            not @@ [%equal: ECFR.money_tag] (get_id_tag m) m_tag )
       | CreateEvnt e ->
           let e_tag = lub_tags NotMoney (lookup_var_tag e local_env) in
           let new_e = update_id_tag e e_tag in
@@ -1712,7 +1745,7 @@ struct
             field_env,
             new_local_env,
             ctr_tag_map,
-            get_id_tag e <> e_tag )
+            not @@ [%equal: ECFR.money_tag] (get_id_tag e) e_tag )
       | CallProc (p, args) ->
           let new_args =
             List.map args ~f:(fun arg ->
@@ -1721,7 +1754,10 @@ struct
           let args_changes =
             match
               List.exists2
-                ~f:(fun arg new_arg -> get_id_tag arg <> get_id_tag new_arg)
+                ~f:(fun arg new_arg ->
+                  not
+                  @@ [%equal: ECFR.money_tag] (get_id_tag arg)
+                       (get_id_tag new_arg))
                 args new_args
             with
             | Ok res -> res
@@ -1744,7 +1780,7 @@ struct
                 field_env,
                 new_local_env,
                 ctr_tag_map,
-                get_id_tag x <> x_tag )
+                not @@ [%equal: ECFR.money_tag] (get_id_tag x) x_tag )
           | None ->
               (Throw None, param_env, field_env, local_env, ctr_tag_map, false)
           )
@@ -1818,7 +1854,8 @@ struct
         ~f:(fun (p, typ) (acc_ps, acc_changes) ->
           let new_tag = lookup_var_tag p new_local_env in
           ( (update_id_tag p new_tag, typ) :: acc_ps,
-            acc_changes || get_id_tag p <> new_tag ))
+            acc_changes
+            || (not @@ [%equal: ECFR.money_tag] (get_id_tag p) new_tag) ))
     in
     ( {
         comp_type;
@@ -1936,7 +1973,9 @@ struct
       List.filter_map all_adts ~f:(fun adt ->
           match
             List.filter_map adt.tconstr ~f:(fun ctr ->
-                match List.Assoc.find ctr_tag_map ~equal:( = ) ctr.cname with
+                match
+                  List.Assoc.find ctr_tag_map ~equal:String.( = ) ctr.cname
+                with
                 | Some arg_tag_opts -> Some (ctr.cname, arg_tag_opts)
                 | None -> None)
           with

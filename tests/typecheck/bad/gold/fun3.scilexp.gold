@@ -2,7 +2,11 @@
   "errors": [
     {
       "error_message": "ADT Int54 not found",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "typecheck/bad/fun3.scilexp",
+        "line": 2,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

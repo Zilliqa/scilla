@@ -10,9 +10,8 @@ depends: [
   "dune" {build & >= "2.0"}
   "menhir"
   "core" {>= "v0.12.4" & < "v0.13~"}
-  "atdgen" {>= "2.0.0" & < "2.1~"}
   "core_bench" {>= "v0.12" & < "v0.13~"}
-  "batteries" {>= "2.10.0" & < "2.11~"}
+  "atdgen" {>= "2.0.0" & < "2.1~"}
   "bitstring" {>= "3.1.0" & < "3.2~"}
   "angstrom" {>= "0.11.0" & < "0.13~"}
   "bisect_ppx" {>= "1.4.0" & < "1.5~"}
@@ -25,10 +24,11 @@ depends: [
   "ocaml-protoc" {>= "1.2.0" & < "2.1~"}
   "ppx_deriving" {>= "4.2.1" & < "4.5~"}
   "ppx_sexp_conv" {>= "v0.12.0" & < "v0.13~"}
+  "ppx_compare" {>= "v0.12.0" & < "v0.13~"}
   "ppx_deriving_rpc" {>= "6.0.0" & < "7.0~"}
   "secp256k1" {>= "0.4.0" & < "0.5~"}
   "stdint" {>= "0.5.1" & < "0.7~"}
-  "ocamlformat" {>= "0.12" & < "0.13~"}
+  "ocamlformat" {>= "0.13" & < "0.14~"}
   "ounit" {with-test & (>= "2.0.8" & < "2.3~")}
   "patdiff" {with-test & (>= "v0.12.1" & < "v0.13~")}
 ]

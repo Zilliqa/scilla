@@ -2,6 +2,8 @@
  (name scilla_cpp_deps)
  (wrapped false)
  (libraries ctypes ctypes.foreign cryptokit)
+ (preprocess
+  (pps ppx_compare))
  (foreign_stubs
   (language c)
   (names generate_dsa_nonce)

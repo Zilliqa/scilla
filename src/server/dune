@@ -1,0 +1,11 @@
+(library
+ (name scilla_server_lib)
+ (libraries core threads unix rresult rpclib rpclib.json rpclib.cmdliner
+   scilla_base scilla_eval)
+ (preprocess
+  (pps ppx_sexp_conv ppx_deriving_rpc ppx_deriving.show)))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

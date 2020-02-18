@@ -65,6 +65,7 @@ script:
 - if [ $TRAVIS_OS_NAME = osx ]; then ulimit -n 1024; fi
 - eval $(opam env)
 - make test
+- make test_server
 - make coveralls
 - dune build @fmt
 - if [ $TRAVIS_PULL_REQUEST != "false" ]; then make bench; fi

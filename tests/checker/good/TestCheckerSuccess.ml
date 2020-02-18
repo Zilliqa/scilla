@@ -16,6 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
+open! Int.Replace_polymorphic_compare
+
 module Tests = TestUtil.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
 

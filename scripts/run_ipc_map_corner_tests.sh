@@ -4,7 +4,7 @@
 
 num_transitions=18
 ipcaddress=/tmp/zilliqa.sock
-scilla_runner=../bin/scilla-runner
+scilla_runner=scilla-runner
 test_source=../tests/contracts/map_corners_test.scilla
 libdir=../src/stdlib
 init_json_file=/tmp/ipc_map_corner_tests.init.json
