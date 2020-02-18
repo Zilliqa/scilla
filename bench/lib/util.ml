@@ -16,11 +16,7 @@ open Core
 
 let sanitize =
   String.map ~f:(fun c ->
-      if Char.is_alphanum c || String.mem "-_." c
-      then c
-      else '_')
+      if Char.is_alphanum c || String.mem "-_." c then c else '_')
 
 let ns_to_ms_string ns =
-  ns
-  |> Time.Span.of_ns
-  |> Time.Span.to_string_hum ~decimals:2
+  ns |> Time.Span.of_ns |> Time.Span.to_string_hum ~decimals:2

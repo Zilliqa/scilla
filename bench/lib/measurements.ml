@@ -26,8 +26,6 @@ let result_to_option = function
 let analyze meas =
   (* Usually, we only interested in the number of nano secs taken
      and the relative execution time as a percentage *)
-  let analysis_configs = [Analysis_config.nanos_vs_runs] in
+  let analysis_configs = [ Analysis_config.nanos_vs_runs ] in
   let analyze_one m = Analysis.analyze m analysis_configs in
-  meas
-  |> List.map ~f:analyze_one
-  |> List.filter_map ~f:result_to_option
+  meas |> List.map ~f:analyze_one |> List.filter_map ~f:result_to_option

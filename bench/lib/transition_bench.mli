@@ -15,5 +15,11 @@
 open Core_bench
 open Config_t
 
+val mk :
+  int ->
+  transition ->
+  contract:contract ->
+  group:contract_group ->
+  env:Env.t ->
+  Test.t
 (** Make a new transition benchmark *)
-val mk : int -> transition -> contract:contract -> group:contract_group -> env:Env.t -> Test.t

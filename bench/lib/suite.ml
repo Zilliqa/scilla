@@ -14,15 +14,11 @@
 
 open Core
 
-type t =
-  | Expressions
-  | Contracts
-[@@deriving compare]
+type t = Expressions | Contracts [@@deriving compare]
 
 let equal = [%compare.equal: t]
 
-let all =
-  [ Expressions; Contracts ]
+let all = [ Expressions; Contracts ]
 
 let load suite ~cfg ~env =
   let open Config_t in

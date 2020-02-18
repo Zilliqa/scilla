@@ -17,16 +17,16 @@ open Core_bench
 
 (** Types of the benchmark suites *)
 type t =
-  | Expressions (** Benchmarks for standalone expressions *)
-  | Contracts (** Contract (and transition) benchmarks *)
+  | Expressions  (** Benchmarks for standalone expressions *)
+  | Contracts  (** Contract (and transition) benchmarks *)
 [@@deriving compare]
 
 val equal : t -> t -> bool
 
 val all : t list
 
-(** Load benchmark test suite *)
 val load : t -> cfg:Config_t.config -> env:Env.t -> Test.t list
+(** Load benchmark test suite *)
 
 val of_string : string -> t
 

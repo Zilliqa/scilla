@@ -14,8 +14,8 @@
 
 open Core_bench.Simplified_benchmark
 
-(** Save the benchmark result at the given [path] *)
 val save : Result.t -> path:string -> unit
+(** Save the benchmark result at the given [path] *)
 
-(** Load the benchmark result from the specified path *)
 val load : string -> Result.t
+(** Load the benchmark result from the specified path *)

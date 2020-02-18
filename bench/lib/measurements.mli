@@ -14,5 +14,5 @@
 
 open Core_bench
 
-(** Analyze benchmark measurements *)
 val analyze : Measurement.t list -> Analysis_result.t list
+(** Analyze benchmark measurements *)

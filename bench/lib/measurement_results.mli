@@ -15,39 +15,39 @@
 open Core_bench
 open Core_bench.Simplified_benchmark
 
-(** Sorts benchmark results by the [benchmark_name] field *)
 val sort : Result.t list -> Result.t list
+(** Sorts benchmark results by the [benchmark_name] field *)
 
+val mk : Analysis_result.t list -> Result.t list
 (** Make a list of regression results given
     the [Analysis_result.t list] *)
-val mk : Analysis_result.t list -> Result.t list
 
+val save : Result.t list -> env:Env.t -> string
 (** Save the benchmark results, return
     the directory where it was saved *)
-val save : Result.t list -> env:Env.t -> string
 
+val load_latest :
+  timestamp:string option ->
+  current:string option ->
+  env:Env.t ->
+  Result.t list option
 (** Load the benchmark results from the specified [timestamp] directory.
     If the [timestamp] dir is not given then the results will
     be loaded by finding the directory named after the
     latest timestamp, which is not the same as the [current] directory *)
-val load_latest
-  :  timestamp:string option
-  -> current:string option
-  -> env:Env.t
-  -> (Result.t list) option
 
+val calc_deltas :
+  previous:Result.t list ->
+  current:Result.t list ->
+  Measurement_result_delta.t list
 (** Compare the [previous] and [current], return [t] containing deltas.
     This function assumes that both lists are
     already sorted by the [benchmark_name] field *)
-val calc_deltas
-  :  previous:Result.t list
-  -> current:Result.t list
-  -> Measurement_result_delta.t list
 
+val detect_regressions :
+  previous:Result.t list ->
+  deltas:Measurement_result_delta.t list ->
+  threshold:float ->
+  unit
 (** Check for significant performance regressions and
     raise an exception, if any *)
-val detect_regressions
-  :  previous:Result.t list
-  -> deltas:Measurement_result_delta.t list
-  -> threshold:float
-  -> unit

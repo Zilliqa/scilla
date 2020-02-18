@@ -16,14 +16,12 @@ open Core
 open Float
 open Core_bench.Simplified_benchmark
 
-type t = {
-  result: Result.t;
-  percentage: float;
-}
+type t = { result : Result.t; percentage : float }
 
 let calc_result x y =
   let open Result in
-  { y with
+  {
+    y with
     time_r_square = y.time_r_square - x.time_r_square;
     time_per_run_nanos = y.time_per_run_nanos - x.time_per_run_nanos;
     ci95_upper_bound = y.ci95_upper_bound - x.ci95_upper_bound;
@@ -35,5 +33,7 @@ let calc_result x y =
 
 let calc x y =
   let result = calc_result x y in
-  let percentage = Result.(result.time_per_run_nanos / x.time_per_run_nanos * 100.0) in
+  let percentage =
+    Result.(result.time_per_run_nanos / x.time_per_run_nanos * 100.0)
+  in
   { result; percentage }

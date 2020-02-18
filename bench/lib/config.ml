@@ -18,27 +18,23 @@ open ScillaUtil.FilePathInfix
 
 let read env =
   env.benchmarks_dir ^/ "config.json"
-  |> In_channel.read_all
-  |> Config_j.config_of_string
+  |> In_channel.read_all |> Config_j.config_of_string
 
 module Contract = struct
   let from_json_file path =
-    path
-    |> In_channel.read_all
-    |> Config_j.contract_of_string
+    path |> In_channel.read_all |> Config_j.contract_of_string
 
-  let read ~path name =
-    from_json_file @@ path ^/ name ^/ "bench.json"
+  let read ~path name = from_json_file @@ path ^/ name ^/ "bench.json"
 
   let read_group group ~env =
     let open Config_j in
     let path = env.benchmarks_dir ^/ Option.value group.path ~default:"" in
     let keep s =
-      Sys.is_directory_exn (path ^/ s) &&
-      (List.is_empty group.included || List.mem group.included s ~equal:String.equal) &&
-      not (List.mem group.excluded s ~equal:String.equal) in
-    env.benchmarks_dir
-    |> Sys.ls_dir
-    |> List.filter ~f:keep
+      Sys.is_directory_exn (path ^/ s)
+      && ( List.is_empty group.included
+         || List.mem group.included s ~equal:String.equal )
+      && not (List.mem group.excluded s ~equal:String.equal)
+    in
+    env.benchmarks_dir |> Sys.ls_dir |> List.filter ~f:keep
     |> List.map ~f:(read ~path)
 end

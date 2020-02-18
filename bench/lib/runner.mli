@@ -12,5 +12,5 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+val exec : prog:string -> args:string list -> unit
 (** Run the [scilla-runner] as an external process *)
-val exec: prog:string -> args:string list -> unit

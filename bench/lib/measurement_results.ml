@@ -20,6 +20,7 @@ module Timestamp = struct
   (* see [man strptime] *)
 
   let fmt = "%Y%m%d%H%M%S"
+
   let zone = force Time.Zone.local
 
   (** Make a timestamp string from the given [Time.t] *)
@@ -34,8 +35,7 @@ module Timestamp = struct
   (** Parse the given list of timestamps and
       sort them in a descending order *)
   let sort_desc ts =
-    ts
-    |> List.map ~f:parse
+    ts |> List.map ~f:parse
     |> List.sort ~compare:Time.compare
     |> List.rev_map ~f:format
 
@@ -44,18 +44,14 @@ module Timestamp = struct
     format ts = format (parse (format ts))
 end
 
-let mk_path dir ~env =
-  env.Env.results_dir ^/ dir
+let mk_path dir ~env = env.Env.results_dir ^/ dir
 
 let only_dirs ~env =
   List.filter ~f:(fun dir -> Sys.is_directory_exn @@ mk_path dir ~env)
 
 (** List paths containing benchmark results *)
 let ls_results ~env =
-  env.Env.results_dir
-  |> Sys.ls_dir
-  |> only_dirs ~env
-  |> Timestamp.sort_desc
+  env.Env.results_dir |> Sys.ls_dir |> only_dirs ~env |> Timestamp.sort_desc
 
 (** Given the [timestamp] of the benchmark results to
     compare with return a directory named after that timestamp,
@@ -67,11 +63,14 @@ let latest_result_path ~timestamp ~current ~env =
   (* Helper function to find a dir with
      the latest (previous) benchmark results *)
   let find_latest () =
-    let paths = match current with
-    | None -> paths
-    | Some s -> List.filter paths ~f:(fun dir -> dir <> s)
-    in List.hd paths
-  in match timestamp with
+    let paths =
+      match current with
+      | None -> paths
+      | Some s -> List.filter paths ~f:(fun dir -> dir <> s)
+    in
+    List.hd paths
+  in
+  match timestamp with
   | None -> find_latest ()
   | Some s -> List.find paths ~f:(fun p -> p = s)
 
@@ -79,11 +78,7 @@ let sort =
   List.sort ~compare:(fun x y ->
       Result.(String.compare x.full_benchmark_name y.full_benchmark_name))
 
-let mk results =
-  results
-  |> to_sexp
-  |> Results.t_of_sexp
-  |> sort
+let mk results = results |> to_sexp |> Results.t_of_sexp |> sort
 
 let save results ~env =
   (* Save the benchmark results in an
@@ -92,15 +87,14 @@ let save results ~env =
   let path = env.Env.results_dir ^/ dir in
   printf "Results will be saved to %s.\n%!" dir;
   (* Create a directory to place the results into,
-     use the current timestamp as its name  *)
+     use the current timestamp as its name *)
   Unix.mkdir path;
   (* Save each benchmark result as a separate file *)
   List.iter results ~f:(Measurement_result.save ~path);
   dir
 
 let load_from path =
-  path
-  |> Sys.ls_dir
+  path |> Sys.ls_dir
   |> List.map ~f:(fun fn -> Measurement_result.load @@ path ^/ fn)
   |> sort
 
@@ -117,8 +111,14 @@ let detect_regressions ~previous ~deltas ~threshold =
   let open Measurement_result_delta in
   let detect prev delta =
     (* Check if there is a significant performance drop *)
-    if delta.percentage > threshold
-    then raise (Failure (
-        sprintf "Detected performance regression in benchmark %s. Time per run delta: %s (> %.2f percent threshold)"
-          prev.full_benchmark_name (Util.ns_to_ms_string delta.result.time_per_run_nanos) threshold)) in
+    if delta.percentage > threshold then
+      raise
+        (Failure
+           (sprintf
+              "Detected performance regression in benchmark %s. Time per run \
+               delta: %s (> %.2f percent threshold)"
+              prev.full_benchmark_name
+              (Util.ns_to_ms_string delta.result.time_per_run_nanos)
+              threshold))
+  in
   List.iter2_exn previous deltas ~f:detect

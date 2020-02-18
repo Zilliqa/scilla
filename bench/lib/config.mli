@@ -14,10 +14,10 @@
 
 open Config_t
 
-(** Read top-level benchmarking config *)
 val read : Env.t -> config
+(** Read top-level benchmarking config *)
 
 module Contract : sig
-  (** Read contract benchmark configs *)
   val read_group : contract_group -> env:Env.t -> contract list
+  (** Read contract benchmark configs *)
 end

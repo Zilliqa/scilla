@@ -23,7 +23,4 @@ let save res ~path =
   Out_channel.write_all filename ~data
 
 let load path =
-  path
-  |> In_channel.read_all
-  |> Sexp.of_string
-  |> Result.t_of_sexp
+  path |> In_channel.read_all |> Sexp.of_string |> Result.t_of_sexp

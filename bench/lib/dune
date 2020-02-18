@@ -15,11 +15,12 @@
 (library
  (name scilla_bench)
  (library_flags -linkall)
- (libraries core core_bench re2 yojson atdgen scilla_base
-   scilla_eval stateIPCTest)
+ (libraries core core_bench re2 yojson atdgen scilla_base scilla_eval
+   stateIPCTest)
  (inline_tests)
  (preprocess
-  (pps ppx_sexp_conv ppx_compare ppx_deriving.show ppx_deriving.make ppx_inline_test)))
+  (pps ppx_sexp_conv ppx_compare ppx_deriving.show ppx_deriving.make
+    ppx_inline_test)))
 
 (env
  (dev

@@ -12,8 +12,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-(** Replace characters that couldn't be a part of the file name *)
 val sanitize : string -> string
+(** Replace characters that couldn't be a part of the file name *)
 
-(** Convert nanoseconds to a milliseconds and format accordingly *)
 val ns_to_ms_string : float -> string
+(** Convert nanoseconds to a milliseconds and format accordingly *)

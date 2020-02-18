@@ -15,5 +15,5 @@
 open Core_bench
 open Config_t
 
-(** Make contract benchmarks *)
 val mk : contract_group list -> env:Env.t -> Test.t list
+(** Make contract benchmarks *)

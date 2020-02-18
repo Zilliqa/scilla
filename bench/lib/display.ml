@@ -20,44 +20,38 @@ let print_tests groups =
   let open Ascii_table in
   List.iter groups ~f:(fun group ->
       let cells =
-        List.map (Test.tests group)
-          ~f:(fun test ->
-              [ Test.name group
-              ; Test.Basic_test.name test
-              ])
-      in simple_list_table
-        ~display:Display.column_titles
-        ["group"; "test"] cells)
+        List.map (Test.tests group) ~f:(fun test ->
+            [ Test.name group; Test.Basic_test.name test ])
+      in
+      simple_list_table ~display:Display.column_titles [ "group"; "test" ] cells)
 
 let to_ms = Util.ns_to_ms_string
 
 let print_results results =
   let open Ascii_table in
   let open Result in
-  let cells = List.map results ~f:(fun res ->
-      let ms = to_ms res.time_per_run_nanos in
-      [res.full_benchmark_name; ms])
-  in simple_list_table
-    ~display:Display.column_titles
-    ["benchmark name"; "ms"] cells
+  let cells =
+    List.map results ~f:(fun res ->
+        let ms = to_ms res.time_per_run_nanos in
+        [ res.full_benchmark_name; ms ])
+  in
+  simple_list_table ~display:Display.column_titles [ "benchmark name"; "ms" ]
+    cells
 
 let print_comparison ~previous ~current ~deltas =
   let open Ascii_table in
   let open Result in
   let open Measurement_result_delta in
-  let cells = List.map3_exn previous current deltas
-      ~f:(fun prev curr delta ->
-          [ curr.full_benchmark_name
-          ; to_ms prev.time_per_run_nanos
-          ; to_ms curr.time_per_run_nanos
-          ; to_ms delta.result.time_per_run_nanos
-          ; Printf.sprintf "%.2f" delta.percentage ^ "%"
-          ])
-  in simple_list_table
-    ~display:Display.column_titles
-    [ "benchmark name"
-    ; "before"
-    ; "after"
-    ; "delta"
-    ; "%"
-    ] cells
+  let cells =
+    List.map3_exn previous current deltas ~f:(fun prev curr delta ->
+        [
+          curr.full_benchmark_name;
+          to_ms prev.time_per_run_nanos;
+          to_ms curr.time_per_run_nanos;
+          to_ms delta.result.time_per_run_nanos;
+          Printf.sprintf "%.2f" delta.percentage ^ "%";
+        ])
+  in
+  simple_list_table ~display:Display.column_titles
+    [ "benchmark name"; "before"; "after"; "delta"; "%" ]
+    cells

@@ -14,18 +14,19 @@
 
 open Core
 
-type params =
-  { suites : Suite.t list;
-    quota : Core_bench.Quota.t;
-    regex : Re2.t option;
-    list : bool;
-    save : bool;
-    display : bool;
-    compare : bool;
-    threshold : float;
-    ci : bool;
-    timestamp : string option;
-  } [@@deriving make]
+type params = {
+  suites : Suite.t list;
+  quota : Core_bench.Quota.t;
+  regex : Re2.t option;
+  list : bool;
+  save : bool;
+  display : bool;
+  compare : bool;
+  threshold : float;
+  ci : bool;
+  timestamp : string option;
+}
+[@@deriving make]
 
 (** Load benchmarks *)
 let load ~params ~cfg ~env =
@@ -33,14 +34,12 @@ let load ~params ~cfg ~env =
   let include_suite b = List.mem params.suites b ~equal:Suite.equal in
   (* Load benchmarks for standalone closed expressions *)
   let expression_tests =
-    if include_suite Suite.Expressions
-    then Suite.(load Expressions ~cfg ~env)
+    if include_suite Suite.Expressions then Suite.(load Expressions ~cfg ~env)
     else []
   in
   (* Load contract benchmarks *)
   let contract_tests =
-    if include_suite Suite.Contracts
-    then Suite.(load Contracts ~cfg ~env)
+    if include_suite Suite.Contracts then Suite.(load Contracts ~cfg ~env)
     else []
   in
   let tests = expression_tests @ contract_tests in
@@ -50,19 +49,17 @@ let load ~params ~cfg ~env =
   | None -> tests
 
 (** Output benchmark groups along with their tests *)
-let list =
-  Display.print_tests
+let list = Display.print_tests
 
 let save results ~params ~env =
-  if params.save
-  then Some (Measurement_results.save results ~env)
-  else None
+  if params.save then Some (Measurement_results.save results ~env) else None
 
 let compare_and_display ~current_dir ~results ~params ~env =
   (* Now, load the benchmark results we want to compare with *)
-  let latest = Measurement_results.load_latest
-      ~timestamp:params.timestamp
-      ~current:current_dir ~env in
+  let latest =
+    Measurement_results.load_latest ~timestamp:params.timestamp
+      ~current:current_dir ~env
+  in
   match latest with
   | None ->
       Display.print_results results;
@@ -75,8 +72,8 @@ let compare_and_display ~current_dir ~results ~params ~env =
       (* Detect significant performance regressions when
          running on CI and fail with non-zero exit code, if any *)
       if params.ci then
-        Measurement_results.detect_regressions
-          ~previous ~deltas ~threshold:params.threshold
+        Measurement_results.detect_regressions ~previous ~deltas
+          ~threshold:params.threshold
 
 (** Run the given benchmarks *)
 let exec tests ~params ~env =
@@ -88,10 +85,7 @@ let exec tests ~params ~env =
      [B.Measurement.t] to be able to access its fields for
      deltas calculation later. Hence we have to repeat it's
      implementation here ourselves *)
-  let meas =
-    tests
-    |> B.Test.expand
-    |> B.Benchmark.measure_all run_config in
+  let meas = tests |> B.Test.expand |> B.Benchmark.measure_all run_config in
   (* Analyze the measurements, get the results *)
   let analysis_results = Measurements.analyze meas in
   (* Create an intermediate representation for the

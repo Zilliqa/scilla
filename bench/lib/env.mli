@@ -16,15 +16,15 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+type t = {
+  bin_dir : string;
+  stdlib_dir : string;
+  benchmarks_dir : string;
+  results_dir : string;
+  tmp_dir : string;
+  state_mode : StateService.service_mode;
+}
 (** Benchmarks environment *)
-type t =
-  { bin_dir : string;
-    stdlib_dir : string;
-    benchmarks_dir : string;
-    results_dir : string;
-    tmp_dir : string;
-    state_mode : StateService.service_mode;
-  }
 
-(** Prepare a new environment *)
 val mk : sock_addr:string option -> t
+(** Prepare a new environment *)

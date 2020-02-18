@@ -14,11 +14,8 @@
 
 open Core_bench.Simplified_benchmark
 
-type t = {
-  result: Result.t;
-  percentage: float;
-}
+type t = { result : Result.t; percentage : float }
 
+val calc : Result.t -> Result.t -> t
 (** Compare the previous and current results,
     return [t] containing deltas and percentage *)
-val calc : Result.t -> Result.t -> t

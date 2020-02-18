@@ -18,14 +18,14 @@
 
 open ScillaUtil
 
-type t =
-  { bin_dir : string;
-    stdlib_dir : string;
-    benchmarks_dir : string;
-    results_dir : string;
-    tmp_dir : string;
-    state_mode : StateService.service_mode;
-  }
+type t = {
+  bin_dir : string;
+  stdlib_dir : string;
+  benchmarks_dir : string;
+  results_dir : string;
+  tmp_dir : string;
+  state_mode : StateService.service_mode;
+}
 
 let mk ~sock_addr =
   let open FilePathInfix in
@@ -35,10 +35,9 @@ let mk ~sock_addr =
   let results_dir = cwd ^/ "bench" ^/ "results" in
   let tmp_dir = Filename.get_temp_dir_name () in
   let stdlib_dir = cwd ^/ "src" ^/ "stdlib" in
-  let state_mode = match sock_addr with
+  let state_mode =
+    match sock_addr with
     | Some addr -> StateService.IPC addr
     | None -> StateService.Local
-  in { bin_dir; benchmarks_dir;
-       results_dir; tmp_dir;
-       stdlib_dir; state_mode;
-     }
+  in
+  { bin_dir; benchmarks_dir; results_dir; tmp_dir; stdlib_dir; state_mode }

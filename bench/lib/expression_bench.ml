@@ -23,10 +23,7 @@ let to_exp_name path =
   | name, Some "scilexp" -> Some name
   | _ -> None
 
-let ls_exp_names path =
-  path
-  |> Sys.ls_dir
-  |> List.filter_map ~f:to_exp_name
+let ls_exp_names path = path |> Sys.ls_dir |> List.filter_map ~f:to_exp_name
 
 let mk (group : expression_group) ~env =
   let cwd = Sys.getcwd () in
@@ -35,19 +32,22 @@ let mk (group : expression_group) ~env =
        ./bin/eval-runner -libdir src/stdlib tests/eval/exp/good/let.scilexp *)
     let input = cwd ^/ group.path ^/ name ^. "scilexp" in
     let prog = env.bin_dir ^/ "eval-runner" in
-    let args = [
-      "-libdir"; env.stdlib_dir;
-      "-gaslimit"; string_of_int group.gas_limit;
-      input;
-    ] in
+    let args =
+      [
+        "-libdir";
+        env.stdlib_dir;
+        "-gaslimit";
+        string_of_int group.gas_limit;
+        input;
+      ]
+    in
     let run () = Runner.exec ~prog ~args in
-    Bench.Test.create ~name run in
+    Bench.Test.create ~name run
+  in
   let names =
     (* If there no tests listed explicitly then just load all
        files with ".scilexp" extension from the specified path *)
-    match group.tests with
-    | [] -> ls_exp_names group.path
-    | names -> names
+    match group.tests with [] -> ls_exp_names group.path | names -> names
   in
   let tests = List.map names ~f:mk_bench in
   (* All benchmark names for standalone
