@@ -10,7 +10,6 @@ depends: [
   "dune" {build & >= "2.0"}
   "menhir"
   "core" {>= "v0.12.4" & < "v0.13~"}
-  "batteries" {>= "2.10.0" & < "2.11~"}
   "bitstring" {>= "3.1.0" & < "3.2~"}
   "angstrom" {>= "0.11.0" & < "0.13~"}
   "bisect_ppx" {>= "1.4.0" & < "1.5~"}

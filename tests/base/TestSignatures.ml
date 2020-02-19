@@ -7,12 +7,12 @@ let t1 =
   test_case (fun _ ->
       let open Schnorr in
       try
-        let privK, pubK = BatOption.get @@ genKeyPair () in
+        let privK, pubK = Option.value_exn (genKeyPair ()) in
         let msg = "Hello world\n" in
-        let signature = BatOption.get @@ sign privK pubK msg in
-        let succ = BatOption.get @@ verify pubK msg signature in
+        let signature = Option.value_exn (sign privK pubK msg) in
+        let succ = Option.value_exn (verify pubK msg signature) in
         assert_bool "Signature verification failed" succ
-      with (* Check if BatOption.get() failed. *)
+      with (* Check if Option.value_exn() failed. *)
       | Invalid_argument _ ->
         assert_failure "Schnorr function errored when called from testsuite")
 
@@ -20,12 +20,12 @@ let t2 =
   test_case (fun _ ->
       let open Schnorr in
       try
-        let privK, pubK = BatOption.get @@ genKeyPair () in
+        let privK, pubK = Option.value_exn (genKeyPair ()) in
         let msg = "Hello world\n" in
-        let signature = BatOption.get @@ sign privK pubK msg in
-        let succ = BatOption.get @@ verify pubK (msg ^ "\n") signature in
+        let signature = Option.value_exn (sign privK pubK msg) in
+        let succ = Option.value_exn (verify pubK (msg ^ "\n") signature) in
         assert_bool "Signature incorrectly verified" (not succ)
-      with (* Check if BatOption.get() failed. *)
+      with (* Check if Option.value_exn () failed. *)
       | Invalid_argument _ ->
         assert_failure "Schnorr function errored when called from testsuite")
 
