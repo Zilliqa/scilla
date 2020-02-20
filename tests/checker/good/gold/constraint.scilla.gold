@@ -9,6 +9,7 @@
     "params": [ { "vname": "param", "type": "Bool" } ],
     "fields": [],
     "transitions": [],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

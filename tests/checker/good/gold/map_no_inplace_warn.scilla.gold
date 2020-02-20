@@ -32,6 +32,7 @@
         "params": [ { "vname": "k", "type": "Uint128" } ]
       }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

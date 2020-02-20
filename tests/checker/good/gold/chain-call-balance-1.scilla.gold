@@ -15,6 +15,7 @@
       },
       { "vname": "simply_accept", "params": [] }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

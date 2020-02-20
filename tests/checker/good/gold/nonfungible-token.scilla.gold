@@ -80,6 +80,7 @@
         ]
       }
     ],
+    "procedures": [],
     "events": [
       {
         "vname": "setApprovalForAll successful",

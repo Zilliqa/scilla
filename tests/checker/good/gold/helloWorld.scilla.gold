@@ -20,6 +20,7 @@
       { "vname": "multipleMsgs", "params": [] },
       { "vname": "contrAddr", "params": [] }
     ],
+    "procedures": [],
     "events": [
       {
         "vname": "ContractAddress",

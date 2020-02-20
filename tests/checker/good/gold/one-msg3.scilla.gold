@@ -5,12 +5,12 @@
     "vname": "HelloWorld",
     "params": [],
     "fields": [],
-    "transitions": [
+    "transitions": [ { "vname": "onemsg", "params": [] } ],
+    "procedures": [
       {
         "vname": "twomsg",
         "params": [ { "vname": "mlist", "type": "List (Message)" } ]
-      },
-      { "vname": "onemsg", "params": [] }
+      }
     ],
     "events": [],
     "ADTs": [

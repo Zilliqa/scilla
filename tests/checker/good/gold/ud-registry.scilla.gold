@@ -111,6 +111,7 @@
         "params": [ { "vname": "node", "type": "ByStr32" } ]
       }
     ],
+    "procedures": [],
     "events": [
       {
         "vname": "Error",

@@ -24,6 +24,7 @@
         "params": [ { "vname": "bar", "type": "TL.TestType2" } ]
       }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

@@ -11,6 +11,7 @@
     "transitions": [
       { "vname": "Foo", "params": [ { "vname": "p1", "type": "String" } ] }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

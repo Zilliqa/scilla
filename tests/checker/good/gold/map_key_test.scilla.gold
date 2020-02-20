@@ -11,6 +11,7 @@
     "params": [],
     "fields": [],
     "transitions": [ { "vname": "testMapKey5", "params": [] } ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

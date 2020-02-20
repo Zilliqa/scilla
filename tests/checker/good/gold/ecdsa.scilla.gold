@@ -21,6 +21,7 @@
         ]
       }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

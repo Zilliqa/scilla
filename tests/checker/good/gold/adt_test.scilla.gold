@@ -11,6 +11,7 @@
     "params": [],
     "fields": [],
     "transitions": [],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
