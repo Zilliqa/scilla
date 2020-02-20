@@ -22,6 +22,11 @@
       { "vname": "funded", "type": "Bool", "depth": 0 }
     ],
     "transitions": [
+      { "vname": "Donate", "params": [] },
+      { "vname": "GetFunds", "params": [] },
+      { "vname": "ClaimBack", "params": [] }
+    ],
+    "procedures": [
       {
         "vname": "DonationEvent",
         "params": [
@@ -30,13 +35,11 @@
         ]
       },
       { "vname": "PerformDonate", "params": [] },
-      { "vname": "Donate", "params": [] },
       {
         "vname": "GetFundsFailure",
         "params": [ { "vname": "error_code", "type": "Int32" } ]
       },
       { "vname": "PerformGetFunds", "params": [] },
-      { "vname": "GetFunds", "params": [] },
       {
         "vname": "ClaimBackFailure",
         "params": [ { "vname": "error_code", "type": "Int32" } ]
@@ -44,8 +47,7 @@
       {
         "vname": "PerformClaimBack",
         "params": [ { "vname": "amount", "type": "Uint128" } ]
-      },
-      { "vname": "ClaimBack", "params": [] }
+      }
     ],
     "events": [
       {

@@ -12,6 +12,7 @@
       },
       { "vname": "foo", "params": [ { "vname": "cond", "type": "Bool" } ] }
     ],
+    "procedures": [],
     "events": [
       { "vname": "foo", "params": [] },
       { "vname": "Donation rejected", "params": [] }

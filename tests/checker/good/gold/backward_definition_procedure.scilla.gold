@@ -8,7 +8,8 @@
     "vname": "BackwardDefinitionProcedure",
     "params": [],
     "fields": [ { "vname": "tmp", "type": "Int32", "depth": 0 } ],
-    "transitions": [
+    "transitions": [],
+    "procedures": [
       { "vname": "Proc1", "params": [ { "vname": "arg", "type": "Bool" } ] },
       { "vname": "Proc2", "params": [ { "vname": "arg", "type": "Int32" } ] }
     ],

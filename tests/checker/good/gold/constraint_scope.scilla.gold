@@ -14,6 +14,7 @@
     "params": [ { "vname": "param_val", "type": "Bool" } ],
     "fields": [ { "vname": "f", "type": "Bool", "depth": 0 } ],
     "transitions": [],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

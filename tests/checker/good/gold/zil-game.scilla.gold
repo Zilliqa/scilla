@@ -36,6 +36,7 @@
       },
       { "vname": "Withdraw", "params": [] }
     ],
+    "procedures": [],
     "events": [ { "vname": "GameOver", "params": [] } ],
     "ADTs": [
       {

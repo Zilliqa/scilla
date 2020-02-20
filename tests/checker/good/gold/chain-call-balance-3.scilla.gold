@@ -9,6 +9,7 @@
       { "vname": "c_noaccept", "params": [] },
       { "vname": "simply_accept", "params": [] }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

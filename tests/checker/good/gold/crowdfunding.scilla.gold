@@ -26,6 +26,7 @@
       { "vname": "GetFunds", "params": [] },
       { "vname": "ClaimBack", "params": [] }
     ],
+    "procedures": [],
     "events": [
       {
         "vname": "ClaimBackSuccess",

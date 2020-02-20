@@ -21,6 +21,7 @@
         "params": [ { "vname": "trans", "type": "String" } ]
       }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

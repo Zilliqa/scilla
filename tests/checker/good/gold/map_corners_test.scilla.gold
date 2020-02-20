@@ -33,17 +33,6 @@
       }
     ],
     "transitions": [
-      {
-        "vname": "fail",
-        "params": [ { "vname": "tname", "type": "String" } ]
-      },
-      {
-        "vname": "fail_msg",
-        "params": [
-          { "vname": "tname", "type": "String" },
-          { "vname": "msg", "type": "String" }
-        ]
-      },
       { "vname": "t1", "params": [] },
       { "vname": "t2", "params": [] },
       { "vname": "t3", "params": [] },
@@ -62,6 +51,19 @@
       { "vname": "t16", "params": [] },
       { "vname": "t17", "params": [] },
       { "vname": "t18", "params": [] }
+    ],
+    "procedures": [
+      {
+        "vname": "fail",
+        "params": [ { "vname": "tname", "type": "String" } ]
+      },
+      {
+        "vname": "fail_msg",
+        "params": [
+          { "vname": "tname", "type": "String" },
+          { "vname": "msg", "type": "String" }
+        ]
+      }
     ],
     "events": [],
     "ADTs": [

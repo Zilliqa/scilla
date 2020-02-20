@@ -32,6 +32,7 @@
       { "vname": "Test1", "params": [] },
       { "vname": "Test2", "params": [] }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

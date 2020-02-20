@@ -24,6 +24,19 @@
     ],
     "transitions": [
       {
+        "vname": "Earmark",
+        "params": [ { "vname": "recip", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "ClaimForRecipient",
+        "params": [
+          { "vname": "earmarked_coin_address", "type": "ByStr20" }
+        ]
+      },
+      { "vname": "ClaimForCreator", "params": [] }
+    ],
+    "procedures": [
+      {
         "vname": "TransferFunds",
         "params": [
           { "vname": "amount", "type": "Uint128" },
@@ -44,18 +57,7 @@
           { "vname": "to", "type": "ByStr20" },
           { "vname": "error_code", "type": "Int32" }
         ]
-      },
-      {
-        "vname": "Earmark",
-        "params": [ { "vname": "recip", "type": "ByStr20" } ]
-      },
-      {
-        "vname": "ClaimForRecipient",
-        "params": [
-          { "vname": "earmarked_coin_address", "type": "ByStr20" }
-        ]
-      },
-      { "vname": "ClaimForCreator", "params": [] }
+      }
     ],
     "events": [
       {

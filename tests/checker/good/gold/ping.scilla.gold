@@ -21,6 +21,7 @@
         "params": [ { "vname": "pongAddr", "type": "ByStr20" } ]
       }
     ],
+    "procedures": [],
     "events": [
       { "vname": "AddressNotSet", "params": [] },
       { "vname": "CallingPong", "params": [] },

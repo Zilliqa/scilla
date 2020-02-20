@@ -6,6 +6,7 @@
     "params": [],
     "fields": [],
     "transitions": [ { "vname": "onemsg", "params": [] } ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

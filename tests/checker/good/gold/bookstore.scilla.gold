@@ -32,23 +32,6 @@
     ],
     "transitions": [
       {
-        "vname": "EmitMemberEvent",
-        "params": [
-          { "vname": "status", "type": "Bool" },
-          { "vname": "status_code", "type": "Uint32" },
-          { "vname": "msg", "type": "String" }
-        ]
-      },
-      {
-        "vname": "EmitBookEvent",
-        "params": [
-          { "vname": "status", "type": "Bool" },
-          { "vname": "status_code", "type": "Uint32" },
-          { "vname": "event_action", "type": "String" },
-          { "vname": "book_id", "type": "Uint32" }
-        ]
-      },
-      {
         "vname": "OpenStore",
         "params": [ { "vname": "is_open", "type": "Bool" } ]
       },
@@ -78,6 +61,25 @@
           { "vname": "book_id", "type": "Uint32" },
           { "vname": "book_title", "type": "String" },
           { "vname": "author", "type": "String" }
+        ]
+      }
+    ],
+    "procedures": [
+      {
+        "vname": "EmitMemberEvent",
+        "params": [
+          { "vname": "status", "type": "Bool" },
+          { "vname": "status_code", "type": "Uint32" },
+          { "vname": "msg", "type": "String" }
+        ]
+      },
+      {
+        "vname": "EmitBookEvent",
+        "params": [
+          { "vname": "status", "type": "Bool" },
+          { "vname": "status_code", "type": "Uint32" },
+          { "vname": "event_action", "type": "String" },
+          { "vname": "book_id", "type": "Uint32" }
         ]
       }
     ],

@@ -6,6 +6,7 @@
     "params": [],
     "fields": [],
     "transitions": [ { "vname": "dummy", "params": [] } ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

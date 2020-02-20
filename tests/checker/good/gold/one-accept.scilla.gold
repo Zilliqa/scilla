@@ -18,6 +18,7 @@
         "params": [ { "vname": "cond", "type": "Bool" } ]
       }
     ],
+    "procedures": [],
     "events": [
       { "vname": "Donation accepted in branch 2", "params": [] },
       { "vname": "Donation accepted in branch 1", "params": [] },

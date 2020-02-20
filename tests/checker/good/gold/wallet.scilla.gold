@@ -85,6 +85,7 @@
       { "vname": "ClaimOwnership", "params": [] },
       { "vname": "AddFunds", "params": [] }
     ],
+    "procedures": [],
     "events": [
       {
         "vname": "WalletError",

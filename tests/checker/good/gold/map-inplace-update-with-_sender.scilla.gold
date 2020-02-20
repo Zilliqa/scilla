@@ -11,6 +11,7 @@
       { "vname": "map", "type": "Map (Uint32) (ByStr20)", "depth": 1 }
     ],
     "transitions": [ { "vname": "test1", "params": [] } ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

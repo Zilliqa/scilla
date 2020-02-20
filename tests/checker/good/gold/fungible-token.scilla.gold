@@ -65,6 +65,7 @@
         ]
       }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

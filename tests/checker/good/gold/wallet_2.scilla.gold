@@ -48,17 +48,6 @@
     ],
     "transitions": [
       {
-        "vname": "MakeError",
-        "params": [ { "vname": "err", "type": "Error" } ]
-      },
-      {
-        "vname": "AddSignature",
-        "params": [
-          { "vname": "transactionId", "type": "Uint32" },
-          { "vname": "signee", "type": "ByStr20" }
-        ]
-      },
-      {
         "vname": "SubmitTransaction",
         "params": [
           { "vname": "recipient", "type": "ByStr20" },
@@ -71,10 +60,6 @@
         "params": [ { "vname": "transactionId", "type": "Uint32" } ]
       },
       {
-        "vname": "DeleteTransaction",
-        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
-      },
-      {
         "vname": "ExecuteTransaction",
         "params": [ { "vname": "transactionId", "type": "Uint32" } ]
       },
@@ -83,6 +68,23 @@
         "params": [ { "vname": "transactionId", "type": "Uint32" } ]
       },
       { "vname": "AddFunds", "params": [] }
+    ],
+    "procedures": [
+      {
+        "vname": "MakeError",
+        "params": [ { "vname": "err", "type": "Error" } ]
+      },
+      {
+        "vname": "AddSignature",
+        "params": [
+          { "vname": "transactionId", "type": "Uint32" },
+          { "vname": "signee", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "DeleteTransaction",
+        "params": [ { "vname": "transactionId", "type": "Uint32" } ]
+      }
     ],
     "events": [
       {

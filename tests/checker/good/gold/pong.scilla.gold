@@ -21,6 +21,7 @@
         "params": [ { "vname": "pingAddr", "type": "ByStr20" } ]
       }
     ],
+    "procedures": [],
     "events": [
       { "vname": "AddressNotSet", "params": [] },
       { "vname": "CallingPing", "params": [] },

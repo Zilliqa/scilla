@@ -48,6 +48,22 @@
       { "vname": "winner", "type": "Option (ByStr20)", "depth": 0 }
     ],
     "transitions": [
+      {
+        "vname": "MoveAction",
+        "params": [
+          { "vname": "row", "type": "Uint32" },
+          { "vname": "column", "type": "Uint32" },
+          { "vname": "direction", "type": "Direction" },
+          { "vname": "distance", "type": "Uint32" },
+          { "vname": "promote", "type": "Bool" }
+        ]
+      },
+      {
+        "vname": "PlayerAction",
+        "params": [ { "vname": "action", "type": "Action" } ]
+      }
+    ],
+    "procedures": [
       { "vname": "InternalErrorEvent", "params": [] },
       { "vname": "IllegalActionEvent", "params": [] },
       {
@@ -88,20 +104,6 @@
           { "vname": "distance", "type": "Uint32" },
           { "vname": "promote", "type": "Bool" }
         ]
-      },
-      {
-        "vname": "MoveAction",
-        "params": [
-          { "vname": "row", "type": "Uint32" },
-          { "vname": "column", "type": "Uint32" },
-          { "vname": "direction", "type": "Direction" },
-          { "vname": "distance", "type": "Uint32" },
-          { "vname": "promote", "type": "Bool" }
-        ]
-      },
-      {
-        "vname": "PlayerAction",
-        "params": [ { "vname": "action", "type": "Action" } ]
       }
     ],
     "events": [

@@ -39,6 +39,7 @@
       { "vname": "lflatten", "params": [] },
       { "vname": "optlist", "params": [] }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {

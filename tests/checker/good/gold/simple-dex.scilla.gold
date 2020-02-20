@@ -58,6 +58,7 @@
         "params": [ { "vname": "orderId", "type": "ByStr32" } ]
       }
     ],
+    "procedures": [],
     "events": [
       {
         "vname": "Cancel order successful",
