@@ -109,6 +109,7 @@ rule read =
   | "="           { EQ }                  
   | "&"           { AND }                  
   | "<-"          { FETCH }                  
+  | "<--"         { REMOTEFETCH }                  
   | ":="          { ASSIGN }                  
   | "@"           { AT }                  
   | "_"           { UNDERSCORE } 
