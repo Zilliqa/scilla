@@ -111,6 +111,7 @@
         "params": [ { "vname": "node", "type": "ByStr32" } ]
       }
     ],
+    "procedures": [],
     "events": [
       {
         "vname": "Error",
@@ -205,3 +206,4 @@
   "warnings": [],
   "gas_remaining": "7329"
 }
+

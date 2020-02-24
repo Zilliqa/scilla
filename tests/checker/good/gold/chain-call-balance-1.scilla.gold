@@ -15,6 +15,7 @@
       },
       { "vname": "simply_accept", "params": [] }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -59,3 +60,4 @@
   "warnings": [],
   "gas_remaining": "8000"
 }
+

@@ -21,6 +21,7 @@
         "params": [ { "vname": "trans", "type": "String" } ]
       }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -65,3 +66,4 @@
   "warnings": [],
   "gas_remaining": "8000"
 }
+

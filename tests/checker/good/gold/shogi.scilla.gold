@@ -63,6 +63,7 @@
         "params": [ { "vname": "action", "type": "Action" } ]
       }
     ],
+    "procedures": [],
     "events": [
       {
         "vname": "ShogiWinner",
@@ -208,3 +209,4 @@
   ],
   "gas_remaining": "7327"
 }
+

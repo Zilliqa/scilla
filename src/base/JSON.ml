@@ -438,13 +438,16 @@ module ContractInfo = struct
             ])
     in
     let fieldsj = ("fields", `List fieldslj) in
-    (* 4. transitions *)
-    let transl = contr.ccomps in
-    let translj =
-      List.map transl ~f:(fun t ->
-          (* 4a. transition name *)
+    (* 4. transitions and procedures *)
+    let transl, procedl =
+      List.partition_tf contr.ccomps ~f:(fun c ->
+          match c.comp_type with CompTrans -> true | CompProc -> false)
+    in
+    let map_comp_list_to_json cl =
+      List.map cl ~f:(fun t ->
+          (* 4a. component name *)
           let namej = ("vname", `String (get_id t.comp_name)) in
-          (* 4b. transition parameters *)
+          (* 4b. component parameters *)
           let paraml = t.comp_params in
           let paramlj =
             List.map paraml ~f:(fun (i, t) ->
@@ -456,8 +459,13 @@ module ContractInfo = struct
           let paramj = ("params", `List paramlj) in
           `Assoc [ namej; paramj ])
     in
+    let translj, procedlj =
+      (map_comp_list_to_json transl, map_comp_list_to_json procedl)
+    in
 
-    let transj = ("transitions", `List translj) in
+    let transj, procj =
+      (("transitions", `List translj), ("procedures", `List procedlj))
+    in
     (* 5. event info *)
     let eventslj =
       List.map event_info ~f:(fun (eventname, plist) ->
@@ -496,7 +504,7 @@ module ContractInfo = struct
     let adtsj = ("ADTs", adts_to_json (DataTypeDictionary.get_all_adts ())) in
 
     let finalj =
-      `Assoc [ verj; namej; paramj; fieldsj; transj; eventsj; adtsj ]
+      `Assoc [ verj; namej; paramj; fieldsj; transj; procj; eventsj; adtsj ]
     in
     finalj
 

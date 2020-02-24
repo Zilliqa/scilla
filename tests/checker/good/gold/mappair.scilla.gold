@@ -39,6 +39,7 @@
       { "vname": "lflatten", "params": [] },
       { "vname": "optlist", "params": [] }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -91,3 +92,4 @@
   ],
   "gas_remaining": "7259"
 }
+

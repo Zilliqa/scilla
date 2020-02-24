@@ -25,6 +25,7 @@
         "params": [ { "vname": "times", "type": "Uint32" } ]
       }
     ],
+    "procedures": [],
     "events": [ { "vname": "Thanks", "params": [] } ],
     "ADTs": [
       {
@@ -310,3 +311,4 @@
   ],
   "gas_remaining": "7535"
 }
+

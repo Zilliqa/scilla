@@ -6,6 +6,7 @@
     "params": [],
     "fields": [],
     "transitions": [ { "vname": "multipleMsgs", "params": [] } ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -58,3 +59,4 @@
   ],
   "gas_remaining": "7350"
 }
+

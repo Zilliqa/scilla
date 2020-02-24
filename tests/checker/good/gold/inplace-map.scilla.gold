@@ -30,6 +30,7 @@
       { "vname": "test8", "params": [] },
       { "vname": "test9", "params": [] }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -82,3 +83,4 @@
   ],
   "gas_remaining": "7309"
 }
+

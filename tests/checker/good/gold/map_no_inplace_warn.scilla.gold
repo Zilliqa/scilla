@@ -32,6 +32,7 @@
         "params": [ { "vname": "k", "type": "Uint128" } ]
       }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -124,3 +125,4 @@
   ],
   "gas_remaining": "8000"
 }
+

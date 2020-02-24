@@ -21,6 +21,7 @@
         ]
       }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -83,3 +84,4 @@
   ],
   "gas_remaining": "7978"
 }
+

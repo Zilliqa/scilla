@@ -9,6 +9,7 @@
     "params": [ { "vname": "param", "type": "Bool" } ],
     "fields": [],
     "transitions": [],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -61,3 +62,4 @@
   ],
   "gas_remaining": "8000"
 }
+

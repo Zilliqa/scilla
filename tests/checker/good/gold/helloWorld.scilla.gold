@@ -20,6 +20,7 @@
       { "vname": "multipleMsgs", "params": [] },
       { "vname": "contrAddr", "params": [] }
     ],
+    "procedures": [],
     "events": [
       {
         "vname": "ContractAddress",
@@ -85,3 +86,4 @@
   ],
   "gas_remaining": "7350"
 }
+
