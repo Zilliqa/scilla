@@ -29,9 +29,8 @@ let mk (group : expression_group) ~env =
   let cwd = Sys.getcwd () in
   let mk_bench name =
     (* Example:
-       ./bin/eval-runner -libdir src/stdlib tests/eval/exp/good/let.scilexp *)
+       ./bin/eval-runner -gaslimit 10000 -libdir src/stdlib tests/eval/exp/good/let.scilexp *)
     let input = cwd ^/ group.path ^/ name ^. "scilexp" in
-    let prog = env.bin_dir ^/ "eval-runner" in
     let args =
       [
         "-libdir";
@@ -41,7 +40,7 @@ let mk (group : expression_group) ~env =
         input;
       ]
     in
-    let run () = Runner.exec ~prog ~args in
+    let run () = Eval.run (Some args) ~exe_name:"eval-runner" in
     Bench.Test.create ~name run
   in
   let names =

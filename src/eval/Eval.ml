@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -19,9 +19,11 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Syntax
+open FrontEndParser
 open ErrorUtils
 open EvalUtil
 open MonadUtil
+open RunnerUtil
 open EvalMonad
 open EvalMonad.Let_syntax
 open PatternMatching
@@ -31,6 +33,11 @@ open PrettyPrinters
 open EvalTypeUtilities
 open EvalSyntax
 module CU = ScillaContractUtil (ParserRep) (ParserRep)
+module PSRep = ParserRep
+module PERep = ParserRep
+module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
+module TCSRep = TC.OutputSRep
+module TCERep = TC.OutputERep
 
 (***************************************************)
 (*                    Utilities                    *)
@@ -715,12 +722,12 @@ let post_process_msgs cstate outs =
     let balance = sub cstate.balance to_be_transferred in
     pure { cstate with balance }
 
-(* 
+(*
 Handle message:
 * contr : Syntax.contract - code of the contract (containing transitions and procedures)
 * cstate : ContractState.t - current contract state
 * bstate : (string * literal) list - blockchain state
-* m : Syntax.literal - incoming message 
+* m : Syntax.literal - incoming message
 *)
 let handle_message contr cstate bstate m =
   let%bind tenv, incoming_funds, procedures, stmts, tname =
@@ -762,3 +769,46 @@ let handle_message contr cstate bstate m =
 
   (*Return new contract state, messages and events *)
   pure (cstate'', new_msgs, new_events, conf'.accepted)
+
+let run_with_args args =
+  let open GlobalConfig in
+  let default_gas_limit = Stdint.Uint64.of_int 2000 in
+  let filename = args.input_file in
+  let gas_limit =
+    if Stdint.Uint64.(compare args.gas_limit zero = 0) then default_gas_limit
+    else args.gas_limit
+  in
+  match parse_expr_from_file filename with
+  | Ok e -> (
+      (* Since this is not a contract, we have no in-contract lib defined. *)
+      let clib =
+        {
+          TC.UntypedSyntax.lname = asId "dummy";
+          TC.UntypedSyntax.lentries = [];
+        }
+      in
+      StdlibTracker.add_stdlib_dirs args.stdlib_dirs;
+      let lib_dirs = StdlibTracker.get_stdlib_dirs () in
+      if List.is_empty lib_dirs then stdlib_not_found_err ();
+      (* Import all libraries in known stdlib paths. *)
+      let elibs = import_all_libs lib_dirs in
+      let envres = init_libraries (Some clib) elibs in
+      let env, gas_remaining =
+        match envres init_gas_kont gas_limit with
+        | Ok (env', gas_remaining) -> (env', gas_remaining)
+        | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining
+      in
+      let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
+      let res' = exp_eval_wrapper e env in
+      let res = res' init_gas_kont gas_remaining in
+      match res with
+      | Ok _ -> printf "%s\n" (pp_result res lib_fnames)
+      | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining )
+  | Error e -> fatal_error e
+
+let run args_list ~exe_name =
+  GlobalConfig.reset ();
+  ErrorUtils.reset_warnings ();
+  Datatypes.DataTypeDictionary.reinit ();
+  let args = parse_cli args_list ~exe_name in
+  run_with_args args

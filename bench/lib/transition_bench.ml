@@ -107,8 +107,7 @@ let mk index tr ~contract ~group ~env =
         else [ "-istate"; args.state ]
   in
   let run () =
-    Runner.exec
-      ~prog:(env.bin_dir ^/ "scilla-runner")
-      ~args:(base_args @ extra_args)
+    let args = base_args @ extra_args in
+    Runner.run (Some args) ~exe_name:"scilla-runner"
   in
   Bench.Test.create ~name:tr.name run
