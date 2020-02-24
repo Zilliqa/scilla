@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "error_message": "This empty map has invalid value type.\n",
+      "error_message": "This is an invalid type term, it may be a bad ADT.\n",
       "start_location": {
         "file": "base/parser/bad/exps/exp_t-emp-cid-underscore.scilexp",
         "line": 1,

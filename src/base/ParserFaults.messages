@@ -34,26 +34,6 @@ type_term: CID LPAREN WITH
 
 This is an invalid type term, it is likely an ADT missing a valid type as an argument in brackets.
 
-type_term: CID MAP CID UNDERSCORE
-##
-## Ends in an error in state: 27.
-##
-## targ -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## MAP t_map_key
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
-##
-# see tests/parser/bad/type_t-cid-map-cid-underscore.scilla
-
-This is an invalid type term, the ADT constructor has an invalid type argument that is a map with a faulty map value type.
-
 type_term: CID MAP WITH
 ##
 ## Ends in an error in state: 20.
@@ -192,46 +172,6 @@ type_term: LPAREN WITH
 
 This is an invalid type term, please put a valid type term in the brackets.
 
-type_term: MAP CID CID CID UNDERSCORE
-##
-## Ends in an error in state: 41.
-##
-## list(t_map_value_args) -> t_map_value_args . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## t_map_value_args
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 40, spurious reduction of production t_map_value_args -> scid 
-##
-# see tests/parser/bad/type_t-map-cid-cid-cid-underscore.scilla
-
-This is an invalid map type, the map value is incorrect. The map value is likely an ADT constructor with incorrect constructor arguments.
-
-type_term: MAP CID CID LPAREN CID UNDERSCORE
-##
-## Ends in an error in state: 38.
-##
-## t_map_value_args -> LPAREN t_map_value_args . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN t_map_value_args
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 40, spurious reduction of production t_map_value_args -> scid 
-##
-# see tests/parser/bad/type_t-map-cid-cid-lparen-cid-underscore.scilla
-
-This is an invalid map type, the map value type is incorrect. It is possible that the key type is a nested ADT where the inner constructor arguments are faulty.
-
 type_term: MAP CID CID LPAREN WITH
 ##
 ## Ends in an error in state: 37.
@@ -244,26 +184,6 @@ type_term: MAP CID CID LPAREN WITH
 # see tests/parser/bad/type_t-map-cid-cid-lparen-with.scilla
 
 This is an invalid map type, the map value type is likely incorrect. In the brackets we expect a separated capital identifier.
-
-type_term: MAP CID CID MAP CID UNDERSCORE
-##
-## Ends in an error in state: 34.
-##
-## t_map_value_args -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## MAP t_map_key
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
-##
-# see tests/parser/bad/type_t-map-cid-cid-map-cid-underscore.scilla
-
-This is invalid map type, the map value is incorrect. It is likely that there is an ADT constructor with an invalid argument (a map with an invalid map value).
 
 type_term: MAP CID CID MAP WITH
 ##
@@ -339,46 +259,6 @@ type_term: MAP CID LPAREN CID UNDERSCORE
 
 This is an invalid map type, the map value is likely incorrect. If the map value is an ADT in brackets, then we expect valid ADT arguments or a closing bracket.
 
-type_term: MAP CID LPAREN MAP CID CID UNDERSCORE
-##
-## Ends in an error in state: 45.
-##
-## t_map_value -> LPAREN MAP t_map_key t_map_value_args . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN MAP t_map_key t_map_value_args
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 40, spurious reduction of production t_map_value_args -> scid 
-##
-# see tests/parser/bad/type_t-map-cid-lparen-map-cid-cid-underscore.scilla
-
-This is an invalid map type, the map value is likely incorrect. The map value being a map itself with an invalid map value (possible malformed ADT).
-
-type_term: MAP CID LPAREN MAP CID UNDERSCORE
-##
-## Ends in an error in state: 32.
-##
-## t_map_value -> LPAREN MAP t_map_key . t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN MAP t_map_key
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
-##
-# see tests/parser/bad/type_t-map-cid-lparen-map-cid-underscore.scilla
-
-This is an invalid map type, the map value is likely incorrect. The map value being likely a map in brackets with an invalid map value.
-
 type_term: MAP CID LPAREN MAP WITH
 ##
 ## Ends in an error in state: 31.
@@ -406,26 +286,6 @@ type_term: MAP CID LPAREN WITH
 
 In this map type, the map value is likely incorrect. In the brackets only an ADT or map may be placed.
 
-type_term: MAP CID MAP CID UNDERSCORE
-##
-## Ends in an error in state: 29.
-##
-## t_map_value -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## MAP t_map_key
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
-##
-# see tests/parser/bad/type_t-map-cid-map-cid-underscore.scilla
-
-This map type likely has an incorrect map value type. The map value is a map with a malformed map value.
-
 type_term: MAP CID MAP WITH
 ##
 ## Ends in an error in state: 28.
@@ -438,26 +298,6 @@ type_term: MAP CID MAP WITH
 # see tests/parser/bad/type_t-map-cid-map-with.scilla
 
 This map type likely has an invalid map value type. The map value type is a map with a malformed map key type.
-
-type_term: MAP CID UNDERSCORE
-##
-## Ends in an error in state: 55.
-##
-## typ -> MAP t_map_key . t_map_value [ TARROW RPAREN EQ EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## MAP t_map_key
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
-##
-# see tests/eval/bad/list_to_map.scilexp
-
-This map type likely has an invalid map value type.
 
 type_term: MAP LPAREN CID UNDERSCORE
 ##
@@ -1515,26 +1355,6 @@ exp_term: CID WITH
 # see tests/parser/bad/exps/exp_t-cid-with.scilexp
 
 This is a malformed expression, it may be an incorrect data constructor usage.
-
-exp_term: EMP CID UNDERSCORE
-##
-## Ends in an error in state: 117.
-##
-## lit -> EMP t_map_key . t_map_value [ TYPE TRANSITION SEMICOLON RBRACE PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## EMP t_map_key
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
-##
-# see tests/parser/bad/exps/exp_t-emp-cid-underscore.scilexp
-
-This empty map has invalid value type.
 
 exp_term: EMP WITH
 ##

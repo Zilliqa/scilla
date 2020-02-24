@@ -154,6 +154,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       let%bind new_s =
         match s with
         | Load (x, f) -> pure @@ RecursionSyntax.Load (x, f)
+        | RemoteLoad (x, adr, f) ->
+            pure @@ RecursionSyntax.RemoteLoad (x, adr, f)
         | Store (f, x) -> pure @@ RecursionSyntax.Store (f, x)
         | Bind (x, e) ->
             let%bind new_e = rec_exp e in
@@ -162,6 +164,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             pure @@ RecursionSyntax.MapUpdate (m, is, vopt)
         | MapGet (x, m, is, del) ->
             pure @@ RecursionSyntax.MapGet (x, m, is, del)
+        | RemoteMapGet (x, adr, m, is, del) ->
+            pure @@ RecursionSyntax.RemoteMapGet (x, adr, m, is, del)
         | MatchStmt (x, pss) ->
             let%bind new_pss =
               mapM

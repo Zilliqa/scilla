@@ -87,6 +87,8 @@ end
 
 let balance_label = "_balance"
 
+let balance_typ = PrimTypes.uint128_typ
+
 let creation_block_label = "_creation_block"
 
 let this_address_label = "_this_address"
@@ -104,8 +106,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   open ContractUtilSyntax
 
   let balance_field =
-    let open PrimTypes in
-    (ER.mk_id_uint128 balance_label, uint128_typ)
+    (ER.mk_id_uint128 balance_label, balance_typ)
 
   let append_implict_contract_params tparams =
     let open PrimTypes in

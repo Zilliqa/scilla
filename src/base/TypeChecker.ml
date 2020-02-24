@@ -482,15 +482,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     procedures : (string * typ list) list;
   }
 
-  (* Return typed map accesses and the accessed value's type. *)
-  (* (m[k1][k2]... -> (typed_m, typed_k_list, type_of_accessed_value) *)
-  let type_map_access env m' keys' remaining_gas =
-    let%bind t' =
-      mark_error_as_type_error remaining_gas
-      @@ TEnv.resolveT env.fields (get_id m') ~lopt:(Some (get_rep m'))
-    in
-    let rec helper t keys =
-      match (t, keys) with
+  let type_map_access_helper env maptype keys =
+    let rec helper maptype keys =
+      match (maptype, keys) with
       | MapType (kt, vt), k :: rest ->
           let%bind k_t =
             TEnv.resolveT env.pure (get_id k) ~lopt:(Some (get_rep k))
@@ -500,19 +494,47 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let typed_k = add_type_to_ident k (rr_typ k_t) in
           pure @@ (typed_k :: typed_keys, res)
       (* If there are no more keys left, we have the result type. *)
-      | _, [] -> pure @@ ([], t)
+      | _, [] -> pure @@ ([], maptype)
       | _, k :: _ ->
           fail1
             (sprintf "Type failure in map access. Cannot index into key %s"
                (get_id k))
             (ER.get_loc (get_rep k))
     in
-    let%bind typed_keys, res =
-      mark_error_as_type_error remaining_gas @@ helper (rr_typ t').tp keys'
+    helper maptype keys
+
+    (* Return typed map accesses and the accessed value's type. *)
+  (* (m[k1][k2]... -> (typed_m, typed_k_list, type_of_accessed_value) *)
+  let type_map_access env m keys remaining_gas =
+    let%bind maptype =
+      mark_error_as_type_error remaining_gas
+      @@ TEnv.resolveT env.fields (get_id m) ~lopt:(Some (get_rep m))
     in
-    let typed_m = add_type_to_ident m' (rr_typ t') in
+    let%bind typed_keys, res =
+      mark_error_as_type_error remaining_gas
+      @@ type_map_access_helper env (rr_typ maptype).tp keys
+    in
+    let typed_m = add_type_to_ident m (rr_typ maptype) in
     pure (typed_m, typed_keys, res, remaining_gas)
 
+  let type_remote_map_access env adr m keys remaining_gas =
+    let%bind adr_type =
+      mark_error_as_type_error remaining_gas
+      @@ TEnv.resolveT env.pure (get_id adr) ~lopt:(Some (get_rep adr))
+    in
+    let%bind maptype =
+      mark_error_as_type_error remaining_gas
+      @@ address_field_type m (rr_typ adr_type).tp
+    in
+    let%bind typed_keys, res =
+      mark_error_as_type_error remaining_gas
+      @@ type_map_access_helper env maptype keys
+    in
+    let typed_m = add_type_to_ident m (mk_qual_tp maptype) in
+    let typed_adr = add_type_to_ident adr (rr_typ adr_type) in
+    pure (typed_adr, typed_m, typed_keys, res, remaining_gas)
+      
+  
   let add_stmt_to_stmts_env_gas s repstmts remaining_gas =
     match repstmts with stmts, env -> ((s :: stmts, env), remaining_gas)
 
@@ -543,6 +565,30 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             pure
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.Load (typed_x, typed_f), rep)
+                 checked_stmts remaining_gas
+        | RemoteLoad (x, adr, f) ->
+            let%bind next_env, adr_type, ident_type =
+              wrap_type_serr stmt
+                (let%bind adr_typ =
+                   mark_error_as_type_error remaining_gas
+                   @@ TEnv.resolveT env.pure (get_id adr)
+                     ~lopt:(Some (get_rep adr))
+                 in
+                 let%bind fr = mark_error_as_type_error remaining_gas
+                   @@ address_field_type f (rr_typ adr_typ).tp in
+                 let pure' = TEnv.addT (TEnv.copy env.pure) x fr in
+                 let next_env = { env with pure = pure' } in
+                 pure @@ (next_env, rr_typ adr_typ, mk_qual_tp fr))
+            in
+            let%bind checked_stmts, remaining_gas =
+              type_stmts next_env sts get_loc remaining_gas
+            in
+            let typed_x = add_type_to_ident x ident_type in
+            let typed_adr = add_type_to_ident adr adr_type in
+            let typed_f = add_type_to_ident f ident_type in
+            pure
+            @@ add_stmt_to_stmts_env_gas
+                 (TypedSyntax.RemoteLoad (typed_x, typed_adr, typed_f), rep)
                  checked_stmts remaining_gas
         | Store (f, r) ->
             if List.mem ~equal:String.( = ) no_store_fields (get_id f) then
@@ -655,6 +701,34 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             pure
             @@ add_stmt_to_stmts_env_gas
                  ( TypedSyntax.MapGet (typed_v, typed_m, typed_klist, valfetch),
+                   rep )
+                 checked_stmts remaining_gas
+        | RemoteMapGet (v, adr, m, klist, valfetch) ->
+            let%bind typed_adr, typed_m, typed_klist, v_type, remaining_gas =
+              wrap_type_serr stmt
+                (let%bind typed_adr, typed_m, typed_klist, v_type, remaining_gas =
+                   type_remote_map_access env adr m klist remaining_gas
+                 in
+                 pure @@ (typed_adr, typed_m, typed_klist, v_type, remaining_gas))
+            in
+            (* The return type of MapGet would be (Option v_type) or Bool. *)
+            let v_type' =
+              if valfetch then ADT (asId "Option", [ v_type ])
+              else ADT (asId "Bool", [])
+            in
+            (* Update environment. *)
+            let pure' = TEnv.addT (TEnv.copy env.pure) v v_type' in
+            let env' = { env with pure = pure' } in
+            let typed_v = add_type_to_ident v (mk_qual_tp v_type') in
+            (* Check rest of the statements. *)
+            let%bind checked_stmts, remaining_gas =
+              type_stmts env' sts get_loc remaining_gas
+            in
+            (* Update annotations. *)
+            pure
+            @@ add_stmt_to_stmts_env_gas
+              ( TypedSyntax.RemoteMapGet
+                  (typed_v, typed_adr, typed_m, typed_klist, valfetch),
                    rep )
                  checked_stmts remaining_gas
         | ReadFromBC (x, bf) ->

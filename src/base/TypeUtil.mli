@@ -137,6 +137,8 @@ module TypeUtilities : sig
 
   val map_depth : typ -> int
 
+  val address_field_type : 'a ident -> typ -> (typ, scilla_error list) result
+    
   (****************************************************************)
   (*             Utility function for matching types              *)
   (****************************************************************)

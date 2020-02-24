@@ -738,6 +738,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
   and stmt =
     | Load of ER.rep ident * ER.rep ident
+    | RemoteLoad of ER.rep ident * ER.rep ident * ER.rep ident
     | Store of ER.rep ident * ER.rep ident
     | Bind of ER.rep ident * expr_annot
     (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
@@ -746,6 +747,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     (* If the bool is set, then we interpret this as value retrieve,
        otherwise as an "exists" query. *)
     | MapGet of ER.rep ident * ER.rep ident * ER.rep ident list * bool
+    | RemoteMapGet of ER.rep ident * ER.rep ident * ER.rep ident * ER.rep ident list * bool
     | MatchStmt of ER.rep ident * (pattern * stmt_annot list) list
     | ReadFromBC of ER.rep ident * string
     | AcceptPayment
@@ -985,6 +987,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       | Load (x, f) ->
           sprintf "Type error in reading value of `%s` into `%s`:\n %s"
             (get_id f) (get_id x) phase
+      | RemoteLoad (x, adr, f) ->
+          sprintf "Type error in reading value of `%s.%s` into `%s`:\n %s"
+            (get_id adr) (get_id f) (get_id x) phase
       | Store (f, r) ->
           sprintf "Type error in storing value of `%s` into the field `%s`:\n"
             (get_id r) (get_id f)
@@ -992,6 +997,10 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
           sprintf "Type error in the binding to into `%s`:\n" (get_id x)
       | MapGet (_, m, keys, _) ->
           sprintf "Type error in getting map value %s" (get_id m)
+          ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ get_id k ^ "]")
+          ^ "\n"
+      | RemoteMapGet (_, adr, m, keys, _) ->
+          sprintf "Type error in getting map value %s.%s" (get_id adr) (get_id m)
           ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ get_id k ^ "]")
           ^ "\n"
       | MapUpdate (m, keys, _) ->
