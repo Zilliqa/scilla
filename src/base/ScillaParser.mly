@@ -177,12 +177,15 @@ id_with_typ :
 t_map_key :
 | kt = scid { to_map_key_type_exn kt (toLoc $startpos) }
 | LPAREN; kt = scid; RPAREN; { to_map_key_type_exn kt (toLoc $startpos(kt)) }
+| kt = address_typ; { kt }
 
 (* TODO: This is a temporary fix of issue #261 *)
 t_map_value_args:
 | LPAREN; t = t_map_value_args; RPAREN; { t }
 | d = scid; { to_type d (toLoc $startpos(d))}
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
+| LPAREN; kt = address_typ; RPAREN; { kt }
+| vt = address_typ; { vt }
 
 t_map_value :
 | LPAREN; d = scid; targs=list(t_map_value_args); RPAREN;
@@ -196,6 +199,12 @@ t_map_value :
       | _ -> ADT (asIdL d (toLoc $startpos(d)), targs) }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
+address_typ :
+| d = CID; WITH; fs = separated_list(COMMA, address_field_type); END;
+    { if d = "ByStr20"
+      then Address fs
+      else raise (SyntaxError ("Invalid primitive type", toLoc $startpos(d))) }
+
 typ :
 | d = scid; targs=list(targ)
   { match targs with
@@ -205,10 +214,7 @@ typ :
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
 | LPAREN; t = typ; RPAREN; { t }
-| d = CID; WITH; fs = separated_list(COMMA, address_field_type); END;
-    { if d = "ByStr20"
-      then Address fs
-      else raise (SyntaxError ("Invalid primitive type", toLoc $startpos(d))) }
+| t = address_typ { t }
 | FORALL; tv = TID; PERIOD; t = typ; {PolyFun (tv, t)}
 %prec TARROW
 | t = TID; { TypeVar t }
