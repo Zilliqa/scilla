@@ -16,9 +16,12 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Core_kernel
 open RunnerUtil
 open ErrorUtils
 
 let () =
-  try Eval.run None ~exe_name:Sys.argv.(0)
+  try
+    let result = Eval.run None ~exe_name:Sys.argv.(0) in
+    printf "%s\n" result
   with FatalError msg -> exit_with_error msg

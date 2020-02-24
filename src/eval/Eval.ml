@@ -802,7 +802,7 @@ let run_with_args args =
       let res' = exp_eval_wrapper e env in
       let res = res' init_gas_kont gas_remaining in
       match res with
-      | Ok _ -> printf "%s\n" (pp_result res lib_fnames)
+      | Ok _ -> pp_result res lib_fnames
       | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining )
   | Error e -> fatal_error e
 
