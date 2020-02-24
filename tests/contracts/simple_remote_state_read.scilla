@@ -1,0 +1,65 @@
+scilla_version 0
+
+import IntUtils BoolUtils
+
+library SimpleRemoteStateRead
+
+(* *************************************************************************** *)
+(* This is a simple self-referencing contract for testing remote state reads.  *)
+(*                                                                             *)
+(* The idea is to deploy the contract with its own address as the              *)
+(* "self_contract_param" parameter. This should succeed, since the contract    *)
+(* declares a field "f" with the correct type.                                 *)
+(*                                                                             *)
+(* The field "self_field" is initialised with _this_address, which is a        *)
+(* ByStr20, but since the type of "self_field" is an address, this should be   *)
+(* typechecked on deployment as well. The typecheck should succeed for the     *)
+(* same reason as above.                                                       *)
+(*                                                                             *)
+(* Finally, the transition T should be invoked with the contract's own address *)
+(* as the "self_transition_param" parameter. The parameter should be           *)
+(* typechecked when the transition is invoked, and the typecheck should again  *)
+(* succeed.                                                                    *)
+(*                                                                             *)
+(* Finally, the transition is executed. The transition code checks that        *)
+(* accessing the field "f" locally, through the contract parameter, through    *)
+(* self_field, and through the transition parameter, all gives the same value. *)
+(*                                                                             *)
+(* *************************************************************************** *)
+
+(* Typecheck self_contract_param on deployment. *)
+contract SimpleRemoteStateRead ( self_contract_param : ByStr20 with f : Uint128 end )
+
+(* Field typechecked_self initialised with a ByStr20, so it must be typechecked *)
+(* on deployment. *)
+field self_field : ByStr20 with f : Uint128 end = _this_address
+
+(* No typecheck required, since no address types are involved. *)
+field f : Uint128 = Uint128 42
+
+(* Typecheck self_transition_param on invocation. *)
+transition T ( self_transition_param : ByStr20 with f : Uint128 end )
+  (* Read the field locally *)
+  local_f <- f;
+  (* Read the field through the contract parameter. *)
+  contract_param_f <-- self_contract_param.f;
+  (* Read the field through self_field. *)
+  self <- self_field;
+  field_f <-- self.f;
+  (* Read the field through the transition parameter. *)
+  transition_param_f <-- self_transition_param.f;
+  (* Test for equality. *)
+  all_are_equal =
+    let eq1 = uint128_eq local_f contract_param_f in
+    let eq2 = uint128_eq contract_param_f field_f in
+    let eq3 = uint128_eq field_f transition_param_f in
+    let and1 = andb eq1 eq2 in
+    andb and1 eq3;
+  (* Emit success or failure event. *)
+  e = match all_are_equal with
+      | True => { _eventname : "Success" }
+      | False => { _eventname : "Failure" }
+      end;
+  event e
+end  
+    
