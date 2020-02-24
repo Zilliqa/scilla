@@ -338,7 +338,7 @@ stmt:
     { (Load (asIdL l (toLoc $startpos(l)),
              asIdL r (toLoc $startpos(r))),
        toLoc $startpos) }
-| l = ID; REMOTEFETCH; adr = sid; PERIOD; r = sid
+| l = ID; REMOTEFETCH; adr = ID; PERIOD; r = sid
     { (RemoteLoad (asIdL l (toLoc $startpos(l)),
                    asIdL adr (toLoc $startpos(adr)),
                    asIdL r (toLoc $startpos(r))),
