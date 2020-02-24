@@ -80,6 +80,7 @@
         ]
       }
     ],
+    "procedures": [],
     "events": [
       {
         "vname": "setApprovalForAll successful",
@@ -263,3 +264,4 @@
   ],
   "gas_remaining": "8000"
 }
+

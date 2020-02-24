@@ -24,6 +24,7 @@
         "params": [ { "vname": "bar", "type": "TL.TestType2" } ]
       }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -92,3 +93,4 @@
   ],
   "gas_remaining": "7339"
 }
+

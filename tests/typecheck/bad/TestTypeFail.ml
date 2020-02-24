@@ -45,7 +45,7 @@ let make_bad_lit_test l =
 
 exception IntBuilderInTestsuite of string
 
-let int_builder w s = BatOption.get (build_prim_literal (Int_typ w) s)
+let int_builder w s = Option.value_exn (build_prim_literal (Int_typ w) s)
 
 (* k/v types should match declared map type. *)
 let t1 =

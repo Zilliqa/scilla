@@ -2,22 +2,36 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+
+type args = {
+  input_init : string;
+  input_state : string;
+  input_message : string;
+  input_blockchain : string;
+  output : string;
+  input : string;
+  libdirs : string list;
+  gas_limit : Stdint.uint64;
+  balance : Stdint.uint128;
+  pp_json : bool;
+  ipc_address : string;
+}
 
 let f_input_init = ref ""
 
@@ -51,6 +65,24 @@ let b_validate_json = ref true
 
 let i_ipc_address = ref ""
 
+let reset () =
+  f_input_init := "";
+  f_input_state := "";
+  f_input_message := "";
+  f_input_blockchain := "";
+  f_output := "";
+  f_input := "";
+  f_trace_file := "";
+  f_trace_level := "";
+  d_libs := [];
+  v_gas_limit := Stdint.Uint64.zero;
+  v_balance := None;
+  b_pp_lit := true;
+  b_json_errors := false;
+  b_pp_json := true;
+  b_validate_json := true;
+  i_ipc_address := ""
+
 let process_trace () =
   match !f_trace_level with
   | "stmt" ->
@@ -81,7 +113,7 @@ let validate_main usage =
   let msg =
     (* input_state.json is not mandatory, but if provided, should be valid *)
     if invalid_optional_fname !f_input_state then
-      msg ^ "Invalid input contract state\n"
+      msg ^ "Invalid input contract state: " ^ !f_input_state ^ "\n"
     else msg
   in
   let msg =
@@ -121,21 +153,8 @@ let validate_main usage =
   if not @@ String.is_empty msg then
     PrettyPrinters.fatal_error_noformat (usage ^ Printf.sprintf "%s\n" msg)
 
-type ioFiles = {
-  input_init : string;
-  input_state : string;
-  input_message : string;
-  input_blockchain : string;
-  output : string;
-  input : string;
-  libdirs : string list;
-  gas_limit : Stdint.uint64;
-  balance : Stdint.uint128;
-  pp_json : bool;
-  ipc_address : string;
-}
-
-let parse () =
+let parse args ~exe_name =
+  reset ();
   let speclist =
     [
       ( "-version",
@@ -187,9 +206,8 @@ let parse () =
             let g =
               try Stdint.Uint64.of_string i
               with _ ->
-                PrettyPrinters.fatal_error
-                  (ErrorUtils.mk_error0
-                     (Printf.sprintf "Invalid gaslimit %s\n" i))
+                PrettyPrinters.fatal_error_noformat
+                  (Printf.sprintf "Invalid gaslimit %s\n" i)
             in
             v_gas_limit := g),
         "Gas limit" );
@@ -219,7 +237,7 @@ let parse () =
   in
 
   let mandatory_usage =
-    "Usage:\n" ^ Sys.argv.(0) ^ " -init init.json [-istate input_state.json]"
+    "Usage:\n" ^ exe_name ^ " -init init.json [-istate input_state.json]"
     ^ " -iblockchain input_blockchain.json [-imessage input_message.json]"
     ^ " [-o output.json] -i input.scilla -libdir /path/to/stdlib"
     ^ " -gaslimit limit" ^ "\n"
@@ -229,9 +247,18 @@ let parse () =
     @@ List.map speclist ~f:(fun (flag, _, desc) -> flag ^ " " ^ desc)
   in
   let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
-
   let ignore_anon _ = () in
-  let () = Arg.parse speclist ignore_anon mandatory_usage in
+  let () =
+    match args with
+    | None -> Arg.parse speclist ignore_anon mandatory_usage
+    | Some argv -> (
+        try
+          Arg.parse_argv ~current:(ref 0)
+            (List.to_array @@ (exe_name :: argv))
+            speclist ignore_anon mandatory_usage
+        with Arg.Bad msg ->
+          PrettyPrinters.fatal_error_noformat (Printf.sprintf "%s\n" msg) )
+  in
   let () = process_trace () in
   let () = process_pplit () in
   let () = process_json_errors () in

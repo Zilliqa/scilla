@@ -2,16 +2,16 @@
   This file is part of scilla.
 
   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
-  
+
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
   version.
- 
+
   scilla is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
@@ -110,24 +110,25 @@ module DataTypeDictionary = struct
     }
 
   (* adt.tname -> adt *)
-  let adt_name_dict =
-    let open Caml in
-    let ht : (string, adt) Hashtbl.t = Hashtbl.create 5 in
-    let _ = Hashtbl.add ht t_bool.tname t_bool in
-    let _ = Hashtbl.add ht t_nat.tname t_nat in
-    let _ = Hashtbl.add ht t_option.tname t_option in
-    let _ = Hashtbl.add ht t_list.tname t_list in
-    let _ = Hashtbl.add ht t_product.tname t_product in
-    ht
+  let adt_name_dict = Caml.Hashtbl.create 5
 
   (* tconstr -> (adt * constructor) *)
-  let adt_cons_dict =
-    let open Caml in
-    let ht : (string, adt * constructor) Hashtbl.t = Hashtbl.create 10 in
-    Hashtbl.iter
-      (fun _ a -> List.iter (fun c -> Hashtbl.add ht c.cname (a, c)) a.tconstr)
-      adt_name_dict;
-    ht
+  let adt_cons_dict = Caml.Hashtbl.create 10
+
+  (* Re-initialize environment dictionaries *)
+  let reinit () =
+    Caml.Hashtbl.(
+      reset adt_name_dict;
+      reset adt_cons_dict;
+      add adt_name_dict t_bool.tname t_bool;
+      add adt_name_dict t_nat.tname t_nat;
+      add adt_name_dict t_option.tname t_option;
+      add adt_name_dict t_list.tname t_list;
+      add adt_name_dict t_product.tname t_product;
+      iter
+        (fun _ a ->
+          Caml.List.iter (fun c -> add adt_cons_dict c.cname (a, c)) a.tconstr)
+        adt_name_dict)
 
   let add_adt (new_adt : adt) error_loc =
     let open Caml in

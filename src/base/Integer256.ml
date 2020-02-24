@@ -250,7 +250,7 @@ module Uint256 = struct
   let neg _ = raise (Failure "Cannot negate Uint256")
 
   let of_string s =
-    let cl = Extlib.ExtString.String.to_list s in
+    let cl = String.to_list s in
     List.fold_left cl ~init:zero ~f:(fun i c ->
         let ten = { high = Uint128.zero; low = Uint128.of_string "10" } in
         let m = mul i ten in

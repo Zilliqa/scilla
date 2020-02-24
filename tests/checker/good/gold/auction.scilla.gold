@@ -34,6 +34,7 @@
       { "vname": "Withdraw", "params": [] },
       { "vname": "AuctionEnd", "params": [] }
     ],
+    "procedures": [],
     "events": [
       {
         "vname": "Auction ended",
@@ -106,3 +107,4 @@
   ],
   "gas_remaining": "8000"
 }
+

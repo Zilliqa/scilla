@@ -50,7 +50,7 @@ cache:
 before_cache:
   - if [ $TRAVIS_OS_NAME = osx ]; then brew cleanup; fi
 branches:
-  only: 
+  only:
     - master
     - /^release-v.*$/
 before_install:
@@ -61,6 +61,6 @@ script:
 - if [ $TRAVIS_OS_NAME = osx ]; then ulimit -n 1024; fi
 - eval $(opam env)
 - make test
+- make test_server
 - make coveralls
 - dune build @fmt
-

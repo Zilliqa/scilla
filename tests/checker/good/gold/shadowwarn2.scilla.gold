@@ -18,6 +18,7 @@
     "transitions": [
       { "vname": "Foo", "params": [ { "vname": "p2", "type": "String" } ] }
     ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -90,3 +91,4 @@
   ],
   "gas_remaining": "8000"
 }
+

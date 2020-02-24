@@ -11,6 +11,7 @@
     "params": [],
     "fields": [],
     "transitions": [],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -77,3 +78,4 @@
   ],
   "gas_remaining": "8000"
 }
+

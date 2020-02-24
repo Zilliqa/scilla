@@ -6,6 +6,7 @@
     "params": [],
     "fields": [],
     "transitions": [ { "vname": "warn1", "params": [] } ],
+    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -80,3 +81,4 @@
   ],
   "gas_remaining": "8000"
 }
+

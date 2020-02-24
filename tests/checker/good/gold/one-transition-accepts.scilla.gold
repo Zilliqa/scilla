@@ -12,6 +12,7 @@
       },
       { "vname": "foo", "params": [ { "vname": "cond", "type": "Bool" } ] }
     ],
+    "procedures": [],
     "events": [ { "vname": "foo", "params": [] } ],
     "ADTs": [
       {
@@ -56,3 +57,4 @@
   "warnings": [],
   "gas_remaining": "8000"
 }
+
