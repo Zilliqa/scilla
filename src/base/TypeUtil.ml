@@ -456,7 +456,6 @@ module TypeUtilities = struct
           | Some ft ->
               pure ft
           | None ->
-              (* May be the _balance field, which is accessible but cannot be declared *)
               fail0 @@
               sprintf "Field %s is not declared in address type %s."
                 (get_id f) (pp_typ t))
