@@ -18,7 +18,7 @@
     "fields": [
       {
         "vname": "earmarked_coins",
-        "type": "Map (ByStr20) (EarmarkedCoin)",
+        "type": "Map (ByStr20) (earmarked-coin.scilla.EarmarkedCoin)",
         "depth": 1
       }
     ],
@@ -116,7 +116,7 @@
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
       {
-        "tname": "EarmarkedCoin",
+        "tname": "earmarked-coin.scilla.EarmarkedCoin",
         "tparams": [],
         "tmap": [
           { "cname": "EarmarkedCoin", "argtypes": [ "Uint128", "ByStr20" ] }

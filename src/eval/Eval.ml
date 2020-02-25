@@ -259,7 +259,7 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       | RemoteLoad (x, adr, r) ->
           let%bind a = Configuration.lookup conf adr in
-          let%bind l, scon = Configuration.remote_load conf a r in 
+          let%bind l, scon = Configuration.remote_load conf a r in
           let conf' = Configuration.bind conf (get_id x) l in
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
@@ -300,7 +300,9 @@ let rec stmt_eval conf stmts =
           let%bind klist' =
             mapM ~f:(fun k -> Configuration.lookup conf k) klist
           in
-          let%bind l, scon = Configuration.remote_map_get conf a m klist' fetchval in
+          let%bind l, scon =
+            Configuration.remote_map_get conf a m klist' fetchval
+          in
           let conf' = Configuration.bind conf (get_id x) l in
           let%bind _ = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
@@ -467,6 +469,10 @@ let init_lib_entries env libs =
             }
           in
           let _ = add_adt adt (get_rep tname) in
+          let () =
+            GlobalConfig.StdlibTracker.add_deflib_adttyp (get_id tname)
+              (Filename.basename (get_rep tname).fname)
+          in
           eres
       | LibVar (lname, _, lexp) ->
           let%bind env = eres in
@@ -539,8 +545,8 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
           tryM
             ~f:(fun (ps, pt) ->
               let%bind at = fromR @@ literal_type (snd a) in
-              if String.(get_id ps = fst a) && type_assignable pt at
-              then pure true
+              if String.(get_id ps = fst a) && type_assignable pt at then
+                pure true
               else fail0 "")
             cparams ~msg:emsg
         in

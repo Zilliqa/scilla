@@ -26,9 +26,17 @@
       { "vname": "store_name", "type": "String" }
     ],
     "fields": [
-      { "vname": "members", "type": "Map (ByStr20) (Member)", "depth": 1 },
+      {
+        "vname": "members",
+        "type": "Map (ByStr20) (bookstore.scilla.Member)",
+        "depth": 1
+      },
       { "vname": "is_store_open", "type": "Bool", "depth": 0 },
-      { "vname": "bookInventory", "type": "Map (Uint32) (Book)", "depth": 1 }
+      {
+        "vname": "bookInventory",
+        "type": "Map (Uint32) (bookstore.scilla.Book)",
+        "depth": 1
+      }
     ],
     "transitions": [
       {
@@ -121,12 +129,12 @@
     ],
     "ADTs": [
       {
-        "tname": "Member",
+        "tname": "bookstore.scilla.Member",
         "tparams": [],
         "tmap": [ { "cname": "Member", "argtypes": [ "String", "Uint32" ] } ]
       },
       {
-        "tname": "Book",
+        "tname": "bookstore.scilla.Book",
         "tparams": [],
         "tmap": [ { "cname": "Book", "argtypes": [ "String", "String" ] } ]
       },

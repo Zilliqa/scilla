@@ -42,7 +42,7 @@
       },
       {
         "vname": "transactions",
-        "type": "Map (Uint32) (Transaction)",
+        "type": "Map (Uint32) (wallet_2.scilla.Transaction)",
         "depth": 1
       }
     ],
@@ -72,7 +72,7 @@
     "procedures": [
       {
         "vname": "MakeError",
-        "params": [ { "vname": "err", "type": "Error" } ]
+        "params": [ { "vname": "err", "type": "wallet_2.scilla.Error" } ]
       },
       {
         "vname": "AddSignature",
@@ -121,7 +121,7 @@
     ],
     "ADTs": [
       {
-        "tname": "Error",
+        "tname": "wallet_2.scilla.Error",
         "tparams": [],
         "tmap": [
           { "cname": "NonOwnerCannotSign", "argtypes": [] },
@@ -147,7 +147,7 @@
         ]
       },
       {
-        "tname": "Transaction",
+        "tname": "wallet_2.scilla.Transaction",
         "tparams": [],
         "tmap": [
           {

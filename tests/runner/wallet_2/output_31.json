@@ -25,7 +25,7 @@
     },
     {
       "vname": "transactions",
-      "type": "Map (Uint32) (Transaction)",
+      "type": "Map (Uint32) (wallet_2.scilla.Transaction)",
       "value": []
     },
     {

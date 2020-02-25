@@ -20,7 +20,8 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type Test cannot be used as transition parameter",
+      "error_message":
+        "Type unserializable_param.scilla.Test cannot be used as transition parameter",
       "start_location": {
         "file": "checker/bad/unserializable_param.scilla",
         "line": 19,

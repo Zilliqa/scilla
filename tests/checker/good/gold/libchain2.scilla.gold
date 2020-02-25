@@ -27,7 +27,7 @@
         ]
       },
       {
-        "tname": "TestType",
+        "tname": "TestLib1.scillib.TestType",
         "tparams": [],
         "tmap": [
           { "cname": "Constructor1", "argtypes": [] },
@@ -64,10 +64,13 @@
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
       {
-        "tname": "TestType2",
+        "tname": "TestLib1.scillib.TestType2",
         "tparams": [],
         "tmap": [
-          { "cname": "Constructor3", "argtypes": [ "TestType" ] },
+          {
+            "cname": "Constructor3",
+            "argtypes": [ "TestLib1.scillib.TestType" ]
+          },
           { "cname": "Constructor4", "argtypes": [ "Uint32" ] }
         ]
       }

@@ -24,7 +24,11 @@
   ],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    { "vname": "orderbook", "type": "Map (ByStr32) (Order)", "value": [] },
+    {
+      "vname": "orderbook",
+      "type": "Map (ByStr32) (simple-dex.scilla.Order)",
+      "value": []
+    },
     {
       "vname": "orderInfo",
       "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",

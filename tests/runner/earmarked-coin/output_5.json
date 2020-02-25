@@ -14,7 +14,7 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "earmarked_coins",
-      "type": "Map (ByStr20) (EarmarkedCoin)",
+      "type": "Map (ByStr20) (earmarked-coin.scilla.EarmarkedCoin)",
       "value": []
     }
   ],

@@ -10,7 +10,7 @@
       "params": [
         {
           "vname": "action",
-          "type": "Action",
+          "type": "ShogiLib.scillib.Action",
           "value": {
             "constructor": "Move",
             "argtypes": [],
@@ -33,7 +33,7 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "board",
-      "type": "Map (Uint32) (Map (Uint32) (SquareContents))",
+      "type": "Map (Uint32) (Map (Uint32) (ShogiLib.scillib.SquareContents))",
       "value": [
         {
           "key": "1",

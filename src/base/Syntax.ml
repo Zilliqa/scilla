@@ -88,7 +88,7 @@ let sexp_of_prim_typ = function
   | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
 
 let prim_typ_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
- 
+
 type typ =
   | PrimType of prim_typ
   | MapType of typ * typ
@@ -117,12 +117,24 @@ let pp_prim_typ = function
   | Bystr_typ -> "ByStr"
   | Bystrx_typ b -> "ByStr" ^ Int.to_string b
 
+(* Remove namespace qualification and prepend the defining library name to an ADT name. *)
+let adt_tname_deflib tname =
+  let strip_namespace tname =
+    match List.last @@ String.split ~on:'.' tname with
+    | Some n -> n
+    | None -> tname
+  in
+  match GlobalConfig.StdlibTracker.lookup_deflib_adttyp tname with
+  | Some deflib -> deflib ^ "." ^ strip_namespace tname
+  | _ -> tname
+
 let rec pp_typ = function
   | PrimType t -> pp_prim_typ t
   | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
   | ADT (name, targs) ->
+      let name' = adt_tname_deflib (get_id name) in
       let elems =
-        get_id name :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
+        name' :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
       in
       String.concat ~sep:" " elems
   | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
@@ -130,10 +142,12 @@ let rec pp_typ = function
   | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (pp_typ bt)
   | Unit -> sprintf "()"
   | Address fts ->
-      let elems = List.map fts ~f:(fun (f, t) -> sprintf "%s : %s" (get_id f) (pp_typ t)) |>
-                  String.concat ~sep:", "
+      let elems =
+        List.map fts ~f:(fun (f, t) -> sprintf "%s : %s" (get_id f) (pp_typ t))
+        |> String.concat ~sep:", "
       in
-      sprintf "ByStr20 with %s%send" elems (if List.is_empty fts then "" else " ")
+      sprintf "ByStr20 with %s%send" elems
+        (if List.is_empty fts then "" else " ")
 
 and with_paren t =
   match t with
@@ -521,7 +535,8 @@ let rec subst_type_in_type tvar tp tm =
       if String.(tvar = arg) then tm
       else PolyFun (arg, subst_type_in_type tvar tp t)
   | Address fts ->
-      Address (List.map fts ~f:(fun (f, t) -> (f, subst_type_in_type tvar tp t)))
+      Address
+        (List.map fts ~f:(fun (f, t) -> (f, subst_type_in_type tvar tp t)))
 
 (* note: this is sequential substitution of multiple variables,
           _not_ simultaneous substitution *)
@@ -558,7 +573,7 @@ let canonicalize_tfun t =
 
 (* Type equality - assumes that the types have been canonicalised first. *)
 let rec equal_typ t1 t2 =
-  match t1, t2 with
+  match (t1, t2) with
   | PrimType p1, PrimType p2 -> [%equal: prim_typ] p1 p2
   | TypeVar v1, TypeVar v2 -> String.equal v1 v2
   | Unit, Unit -> true
@@ -576,13 +591,15 @@ let rec equal_typ t1 t2 =
       let traverse fts_first fts_second =
         List.for_all fts_first ~f:(fun (f1, t1) ->
             let f1_id = get_id f1 in
-            match List.find fts_second ~f:(fun (f2, _) -> String.(f1_id = get_id f2)) with
+            match
+              List.find fts_second ~f:(fun (f2, _) ->
+                  String.(f1_id = get_id f2))
+            with
             | None -> false
             | Some (_, t2) -> [%equal: typ] t1 t2)
       in
       List.length fts1 = List.length fts2
-      && traverse fts1 fts2
-      && traverse fts2 fts1
+      && traverse fts1 fts2 && traverse fts2 fts1
   | _ -> false
 
 (* Type equivalence *)
@@ -595,21 +612,21 @@ let type_assignable to_typ from_typ =
   let to_typ' = canonicalize_tfun to_typ in
   let from_typ' = canonicalize_tfun from_typ in
   let rec assignable to_typ from_typ =
-    match to_typ, from_typ with
+    match (to_typ, from_typ) with
     | Address tfts, Address ffts ->
         (* Check that tfts is a subset of ffts, and that types are assignable/equivalent. *)
         List.for_all tfts ~f:(fun (tf, tft) ->
             let tf_name = get_id tf in
-            match List.find ffts ~f:(fun (ff, _) ->
-                String.(tf_name = get_id ff)) with
+            match
+              List.find ffts ~f:(fun (ff, _) -> String.(tf_name = get_id ff))
+            with
             | None ->
                 (* to field does not appear in from type *)
                 false
             | Some (_, fft) ->
                 (* Matching field name. Types must be assignable. *)
                 assignable tft fft)
-    | PrimType (Bystrx_typ len), Address _
-      when len = address_length ->
+    | PrimType (Bystrx_typ len), Address _ when len = address_length ->
         (* Any address is assignable to ByStr20. *)
         true
     | _, _ ->
@@ -747,7 +764,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     (* If the bool is set, then we interpret this as value retrieve,
        otherwise as an "exists" query. *)
     | MapGet of ER.rep ident * ER.rep ident * ER.rep ident list * bool
-    | RemoteMapGet of ER.rep ident * ER.rep ident * ER.rep ident * ER.rep ident list * bool
+    | RemoteMapGet of
+        ER.rep ident * ER.rep ident * ER.rep ident * ER.rep ident list * bool
     | MatchStmt of ER.rep ident * (pattern * stmt_annot list) list
     | ReadFromBC of ER.rep ident * string
     | AcceptPayment
@@ -1000,7 +1018,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
           ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ get_id k ^ "]")
           ^ "\n"
       | RemoteMapGet (_, adr, m, keys, _) ->
-          sprintf "Type error in getting map value %s.%s" (get_id adr) (get_id m)
+          sprintf "Type error in getting map value %s.%s" (get_id adr)
+            (get_id m)
           ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ get_id k ^ "]")
           ^ "\n"
       | MapUpdate (m, keys, _) ->

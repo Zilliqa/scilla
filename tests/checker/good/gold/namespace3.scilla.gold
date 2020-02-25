@@ -17,11 +17,13 @@
     "transitions": [
       {
         "vname": "TestTrans",
-        "params": [ { "vname": "bar", "type": "TL.TestType" } ]
+        "params": [ { "vname": "bar", "type": "TestLib1.scillib.TestType" } ]
       },
       {
         "vname": "TestTrans2",
-        "params": [ { "vname": "bar", "type": "TL.TestType2" } ]
+        "params": [
+          { "vname": "bar", "type": "TestLib1.scillib.TestType2" }
+        ]
       }
     ],
     "procedures": [],
@@ -36,10 +38,13 @@
         ]
       },
       {
-        "tname": "TL.TestType2",
+        "tname": "TestLib1.scillib.TestType2",
         "tparams": [],
         "tmap": [
-          { "cname": "TL.Constructor3", "argtypes": [ "TL.TestType" ] },
+          {
+            "cname": "TL.Constructor3",
+            "argtypes": [ "TestLib1.scillib.TestType" ]
+          },
           { "cname": "TL.Constructor4", "argtypes": [ "Uint32" ] }
         ]
       },
@@ -73,7 +78,7 @@
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
       {
-        "tname": "TL.TestType",
+        "tname": "TestLib1.scillib.TestType",
         "tparams": [],
         "tmap": [
           { "cname": "TL.Constructor1", "argtypes": [] },
