@@ -183,6 +183,7 @@ module Tests = TestUtil.DiffBasedTests (struct
       "str-bad-char-1.scilexp";
       "str-bad-char-2.scilexp";
       "str-bad-char-3.scilexp";
+      "type-renaming.scilexp";
     ]
 
   let exit_code : Unix.process_status = WEXITED 1

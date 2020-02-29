@@ -329,7 +329,12 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                (mk_qual_tp t, rep) ),
              remaining_gas )
     | TFun (tvar, body) ->
-        let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
+        let id = get_id tvar in
+        let tenv_del =
+          TEnv.filterTs (TEnv.copy tenv) ~f:(fun _ rr ->
+              String.(pp_typ (rr_typ rr).tp <> id))
+        in
+        let tenv' = TEnv.addV tenv_del tvar in
         let%bind ((_, (bt, _)) as typed_b), remaining_gas =
           type_expr tenv' body remaining_gas
         in
@@ -1130,7 +1135,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                   in
                   (* from t_env, retain only entries from t_lib and tenv0 *)
                   let env' =
-                    TEnv.filterTs (TEnv.copy t_env) ~f:(fun name ->
+                    TEnv.filterTs (TEnv.copy t_env) ~f:(fun name _ ->
                         List.exists t_lib.lentries ~f:(function
                           | LibTyp _ -> false
                           | LibVar (i, _, _) -> String.(get_id i = name))

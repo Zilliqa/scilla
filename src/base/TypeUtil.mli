@@ -66,8 +66,8 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     (* Append env' to env in place. *)
     val append : t -> t -> t
 
-    (* Retain only those keys for which (fb k) is true. *)
-    val filterTs : t -> f:(string -> bool) -> t
+    (* Retain only those keys for which (fb k v) is true. *)
+    val filterTs : t -> f:(string -> resolve_result -> bool) -> t
 
     (* Check type for well-formedness in the type environment *)
     val is_wf_type : t -> typ -> (unit, scilla_error list) result
