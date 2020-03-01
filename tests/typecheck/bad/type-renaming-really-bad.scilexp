@@ -1,0 +1,15 @@
+(* this file must not typecheck even if we allow alpha-renaming *)
+let id : forall 'A. 'A -> 'A =
+  tfun 'A => fun (x : 'A) =>
+    let inconsistency : forall 'A. 'A =
+      tfun 'A =>
+        x    (* type error! *)
+    in
+    let uh_oh = @inconsistency Uint32 in
+    let wow = builtin add uh_oh uh_oh in
+    x
+in
+let str = "baz" in
+let idstring = @id String in
+(* this will attempt to add two strings as uint32 *)
+idstring str

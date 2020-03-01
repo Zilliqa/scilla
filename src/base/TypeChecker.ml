@@ -329,15 +329,23 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                (mk_qual_tp t, rep) ),
              remaining_gas )
     | TFun (tvar, body) ->
-        let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
-        let%bind ((_, (bt, _)) as typed_b), remaining_gas =
-          type_expr tenv' body remaining_gas
-        in
-        let typed_tvar = add_type_to_ident tvar bt in
-        pure
-        @@ ( ( TypedSyntax.TFun (typed_tvar, typed_b),
-               (mk_qual_tp (PolyFun (get_id tvar, bt.tp)), rep) ),
-             remaining_gas )
+        let id = get_id tvar in
+        (* XXX this is a workaround for alpha-renaming *)
+        (* Make it illegal to declare a new type variable inside the scope of another type variable with the same name *)
+        if TEnv.existsV tenv id then
+          mark_error_as_type_error remaining_gas
+          @@ fail0
+          @@ sprintf "Type variable %s is already in use\n" id
+        else
+          let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
+          let%bind ((_, (bt, _)) as typed_b), remaining_gas =
+            type_expr tenv' body remaining_gas
+          in
+          let typed_tvar = add_type_to_ident tvar bt in
+          pure
+          @@ ( ( TypedSyntax.TFun (typed_tvar, typed_b),
+                 (mk_qual_tp (PolyFun (get_id tvar, bt.tp)), rep) ),
+               remaining_gas )
     | TApp (tf, arg_types) ->
         let%bind _ =
           mark_error_as_type_error remaining_gas
@@ -1130,7 +1138,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                   in
                   (* from t_env, retain only entries from t_lib and tenv0 *)
                   let env' =
-                    TEnv.filterTs (TEnv.copy t_env) ~f:(fun name ->
+                    TEnv.filterTs (TEnv.copy t_env) ~f:(fun name _ ->
                         List.exists t_lib.lentries ~f:(function
                           | LibTyp _ -> false
                           | LibVar (i, _, _) -> String.(get_id i = name))

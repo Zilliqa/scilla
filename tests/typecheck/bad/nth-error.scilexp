@@ -3,7 +3,6 @@ let list_nth =
   fun (n_h : Int32) =>
   fun (l_h : List 'A) =>
     let list_nth_helper =
-      tfun 'A =>
       fun (n : Int32) =>
       fun (l : List 'A) =>
         let folder = @list_foldl 'A (Pair Int32 (Option 'A)) in
@@ -29,8 +28,7 @@ let list_nth =
           in
           folder iter init l
     in
-    let nth = @list_nth_helper 'A in
-    let res = nth n_h l_h in
+    let res = list_nth_helper n_h l_h in
     match res with
     | Pair i oe =>
       oe
