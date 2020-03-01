@@ -1,3 +1,4 @@
+(* this file must not typecheck even if we allow alpha-renaming *)
 let id : forall 'A. 'A -> 'A =
   tfun 'A => fun (x : 'A) =>
     let inconsistency : forall 'A. 'A =

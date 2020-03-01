@@ -82,6 +82,9 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     (* Is bound in environment? *)
     val existsT : t -> string -> bool
 
+    (* Is bound in tvars? *)
+    val existsV : t -> string -> bool
+
     (* Copy the environment *)
     val copy : t -> t
 

@@ -90,6 +90,9 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     (* Is bound in environment? *)
     val existsT : t -> string -> bool
 
+    (* Is bound in tvars? *)
+    val existsV : t -> string -> bool
+
     (* Copy the environment *)
     val copy : t -> t
 
@@ -196,8 +199,7 @@ functor
               (* Check if bound locally. *)
               if List.mem tb a ~equal:String.( = ) then pure ()
                 (* Check if bound in environment. *)
-              else if List.Assoc.mem (tvars tenv) a ~equal:String.( = ) then
-                pure ()
+              else if Caml.Hashtbl.mem tenv.tvars a then pure ()
               else
                 fail0
                 @@ sprintf "Unbound type variable %s in type %s" a (pp_typ t)
@@ -223,6 +225,8 @@ functor
             fail1 (sprintf "Couldn't resolve the identifier \"%s\".\n" id) sloc
 
       let existsT env id = Hashtbl.mem env.tenv id
+
+      let existsV env id = Hashtbl.mem env.tvars id
 
       let copy e = { tenv = Hashtbl.copy e.tenv; tvars = Hashtbl.copy e.tvars }
 
