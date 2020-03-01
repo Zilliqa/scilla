@@ -40,9 +40,9 @@ found in [INSTALL.md](./INSTALL.md).
 
 To build the project from the root folder:
 ```
-make install
+make
 ```
-To uninstall, execute `make uninstall`.
+To uninstall, simply delete the repository.
 
 ## Running the binary
 
