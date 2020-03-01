@@ -13,12 +13,14 @@ default: release
 release:
 	./scripts/libff.sh
 	dune build --profile release @install
+	@test -L bin || ln -s _build/install/default/bin .
 
 # Build only scilla-checker and scilla-runner
 slim:
 	./scripts/libff.sh
 	dune build --profile release src/runners/scilla_runner.exe
 	dune build --profile release src/runners/scilla_checker.exe
+	@test -L bin || ln -s _build/install/default/bin .
 
 dev:
 	./scripts/libff.sh
