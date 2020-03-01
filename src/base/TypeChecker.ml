@@ -985,7 +985,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                       Initialiser must be assignable to ByStr20.
                       Dynamic typecheck ensures that the byte string 
                       refers to an address with the correct shape. *)
-                   assert_type_assignable (bystrx_typ 20) actual
+                   assert_type_assignable (bystrx_typ Syntax.address_length) actual
                | _ ->
                    (* Non-address field. 
                       Initialiser must be assignable to field type. *)
