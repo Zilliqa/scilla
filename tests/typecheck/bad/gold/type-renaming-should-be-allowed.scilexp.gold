@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type error in the initialiser of `id`:\nType error in the initialiser of `consistent`:\nNew type variable inside the scope of another type variable with the same name is forbidden\n",
+        "Type error in the initialiser of `id`:\nType error in the initialiser of `consistent`:\nType variable 'A is already in use\n",
       "start_location": {
         "file": "typecheck/bad/type-renaming-should-be-allowed.scilexp",
         "line": 10,

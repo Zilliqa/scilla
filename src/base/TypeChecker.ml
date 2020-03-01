@@ -335,9 +335,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         if TEnv.existsV tenv id then
           mark_error_as_type_error remaining_gas
           @@ fail0
-          @@ sprintf
-               "New type variable inside the scope of another type variable \
-                with the same name is forbidden\n"
+          @@ sprintf "Type variable %s is already in use\n" id
         else
           let tenv' = TEnv.addV (TEnv.copy tenv) tvar in
           let%bind ((_, (bt, _)) as typed_b), remaining_gas =
