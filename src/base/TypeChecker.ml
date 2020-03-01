@@ -978,13 +978,24 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              let actual = ar.tp in
              let%bind _ =
                mark_error_as_type_error remaining_gas'
-               @@ assert_type_assignable ft actual
+               @@
+               match ft with
+               | Address _ ->
+                   (* Address field.
+                      Initialiser must be assignable to ByStr20.
+                      Dynamic typecheck ensures that the byte string 
+                      refers to an address with the correct shape. *)
+                   assert_type_assignable (bystrx_typ Syntax.address_length) actual
+               | _ ->
+                   (* Non-address field. 
+                      Initialiser must be assignable to field type. *)
+                   assert_type_assignable ft actual
              in
              let typed_fs = add_type_to_ident fn ar in
              if is_legal_field_type ft then
                pure
                @@ ( ( (typed_fs, ft, typed_expr) :: acc,
-                      TEnv.addT (TEnv.copy fenv) fn actual ),
+                      TEnv.addT (TEnv.copy fenv) fn ft ),
                     remaining_gas' )
              else
                Error
