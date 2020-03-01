@@ -42,7 +42,6 @@ To build the project from the root folder:
 ```
 make
 ```
-To uninstall, simply delete the repository.
 
 ## Running the binary
 
