@@ -42,8 +42,6 @@ let list_zip =
   fun (m1 : List 'A) =>
   fun (m2 : List 'B) =>
     let list_zip_helper =
-      tfun 'A =>
-      tfun 'B =>
       fun (l1 : List 'A) =>
       fun (l2 : List 'B) =>
         let folder = @list_foldl 'A (Pair (List (Pair 'A 'B)) (List 'B)) in
@@ -80,8 +78,7 @@ let list_zip =
           in
             folder iter init l1
     in
-      let zipper = @list_zip_helper 'A 'B in
-      let res = zipper m1 m2 in
+      let res = list_zip_helper m1 m2 in
       match res with
       | Pair x y =>
         let reverser = @list_reverse (Pair 'A 'B) in

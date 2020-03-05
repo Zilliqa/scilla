@@ -483,7 +483,7 @@
     {
       "vname": "list_zip_helper",
       "type":
-        "forall 'A. forall 'B. List ('A) -> List ('B) -> Pair (List (Pair ('A) ('B))) (List ('B))",
+        "List ('A) -> List ('B) -> Pair (List (Pair ('A) ('B))) (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
         "line": 44,
@@ -496,46 +496,16 @@
       }
     },
     {
-      "vname": "'A",
-      "type":
-        "forall 'B. List ('A) -> List ('B) -> Pair (List (Pair ('A) ('B))) (List ('B))",
-      "start_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 45,
-        "column": 12
-      },
-      "end_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 45,
-        "column": 14
-      }
-    },
-    {
-      "vname": "'B",
-      "type":
-        "List ('A) -> List ('B) -> Pair (List (Pair ('A) ('B))) (List ('B))",
-      "start_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 46,
-        "column": 12
-      },
-      "end_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 46,
-        "column": 14
-      }
-    },
-    {
       "vname": "l1",
       "type": "List ('A)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 47,
+        "line": 45,
         "column": 12
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 47,
+        "line": 45,
         "column": 14
       }
     },
@@ -544,12 +514,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 48,
+        "line": 46,
         "column": 12
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 48,
+        "line": 46,
         "column": 14
       }
     },
@@ -559,12 +529,12 @@
         "(Pair (List (Pair ('A) ('B))) (List ('B)) -> 'A -> Pair (List (Pair ('A) ('B))) (List ('B))) -> Pair (List (Pair ('A) ('B))) (List ('B)) -> List ('A) -> Pair (List (Pair ('A) ('B))) (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 49,
+        "line": 47,
         "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 49,
+        "line": 47,
         "column": 19
       }
     },
@@ -574,12 +544,12 @@
         "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 49,
+        "line": 47,
         "column": 23
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 49,
+        "line": 47,
         "column": 33
       }
     },
@@ -588,12 +558,12 @@
       "type": "List (Pair ('A) ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 50,
+        "line": 48,
         "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 50,
+        "line": 48,
         "column": 16
       }
     },
@@ -602,12 +572,12 @@
       "type": "Pair (List (Pair ('A) ('B))) (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 51,
+        "line": 49,
         "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 51,
+        "line": 49,
         "column": 17
       }
     },
@@ -616,12 +586,12 @@
       "type": "List (Pair ('A) ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 51,
+        "line": 49,
         "column": 57
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 51,
+        "line": 49,
         "column": 60
       }
     },
@@ -630,12 +600,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 51,
+        "line": 49,
         "column": 61
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 51,
+        "line": 49,
         "column": 63
       }
     },
@@ -645,12 +615,12 @@
         "Pair (List (Pair ('A) ('B))) (List ('B)) -> 'A -> Pair (List (Pair ('A) ('B))) (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 52,
+        "line": 50,
         "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 52,
+        "line": 50,
         "column": 17
       }
     },
@@ -659,12 +629,12 @@
       "type": "Pair (List (Pair ('A) ('B))) (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 53,
+        "line": 51,
         "column": 16
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 53,
+        "line": 51,
         "column": 17
       }
     },
@@ -673,12 +643,12 @@
       "type": "'A",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 54,
+        "line": 52,
         "column": 16
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 54,
+        "line": 52,
         "column": 17
       }
     },
@@ -687,12 +657,12 @@
       "type": "Pair (List (Pair ('A) ('B))) (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 55,
+        "line": 53,
         "column": 19
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 55,
+        "line": 53,
         "column": 20
       }
     },
@@ -701,12 +671,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 56,
+        "line": 54,
         "column": 22
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 56,
+        "line": 54,
         "column": 23
       }
     },
@@ -715,12 +685,12 @@
       "type": "List (Pair ('A) ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 56,
+        "line": 54,
         "column": 20
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 56,
+        "line": 54,
         "column": 21
       }
     },
@@ -729,12 +699,12 @@
       "type": "List ('B) -> Option ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 58,
+        "line": 56,
         "column": 19
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 58,
+        "line": 56,
         "column": 25
       }
     },
@@ -743,12 +713,12 @@
       "type": "forall 'A. List ('A) -> Option ('A)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 58,
+        "line": 56,
         "column": 29
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 58,
+        "line": 56,
         "column": 38
       }
     },
@@ -757,12 +727,12 @@
       "type": "List ('B) -> Option (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 59,
+        "line": 57,
         "column": 19
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 59,
+        "line": 57,
         "column": 25
       }
     },
@@ -771,12 +741,12 @@
       "type": "forall 'A. List ('A) -> Option (List ('A))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 59,
+        "line": 57,
         "column": 29
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 59,
+        "line": 57,
         "column": 38
       }
     },
@@ -785,12 +755,12 @@
       "type": "Option ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 60,
+        "line": 58,
         "column": 19
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 60,
+        "line": 58,
         "column": 24
       }
     },
@@ -799,12 +769,12 @@
       "type": "List ('B) -> Option ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 60,
+        "line": 58,
         "column": 27
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 60,
+        "line": 58,
         "column": 33
       }
     },
@@ -813,12 +783,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 60,
+        "line": 58,
         "column": 34
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 60,
+        "line": 58,
         "column": 35
       }
     },
@@ -827,12 +797,12 @@
       "type": "Option ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 61,
+        "line": 59,
         "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 61,
+        "line": 59,
         "column": 26
       }
     },
@@ -841,12 +811,12 @@
       "type": "'B",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 62,
+        "line": 60,
         "column": 22
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 62,
+        "line": 60,
         "column": 25
       }
     },
@@ -855,12 +825,12 @@
       "type": "Pair ('A) ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 63,
+        "line": 61,
         "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 63,
+        "line": 61,
         "column": 25
       }
     },
@@ -869,12 +839,12 @@
       "type": "'A",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 63,
+        "line": 61,
         "column": 41
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 63,
+        "line": 61,
         "column": 42
       }
     },
@@ -883,12 +853,12 @@
       "type": "'B",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 63,
+        "line": 61,
         "column": 43
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 63,
+        "line": 61,
         "column": 46
       }
     },
@@ -897,12 +867,12 @@
       "type": "List (Pair ('A) ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 64,
+        "line": 62,
         "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 64,
+        "line": 62,
         "column": 32
       }
     },
@@ -911,12 +881,12 @@
       "type": "Pair ('A) ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 64,
+        "line": 62,
         "column": 55
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 64,
+        "line": 62,
         "column": 59
       }
     },
@@ -925,12 +895,12 @@
       "type": "List (Pair ('A) ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 64,
+        "line": 62,
         "column": 60
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 64,
+        "line": 62,
         "column": 61
       }
     },
@@ -939,12 +909,12 @@
       "type": "Option (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 65,
+        "line": 63,
         "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 65,
+        "line": 63,
         "column": 26
       }
     },
@@ -953,12 +923,12 @@
       "type": "List ('B) -> Option (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 65,
+        "line": 63,
         "column": 29
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 65,
+        "line": 63,
         "column": 35
       }
     },
@@ -967,12 +937,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 65,
+        "line": 63,
         "column": 36
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 65,
+        "line": 63,
         "column": 37
       }
     },
@@ -981,12 +951,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 66,
+        "line": 64,
         "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 66,
+        "line": 64,
         "column": 25
       }
     },
@@ -995,12 +965,12 @@
       "type": "Option (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 67,
+        "line": 65,
         "column": 25
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 67,
+        "line": 65,
         "column": 30
       }
     },
@@ -1009,12 +979,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 68,
+        "line": 66,
         "column": 26
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 68,
+        "line": 66,
         "column": 27
       }
     },
@@ -1023,12 +993,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 69,
+        "line": 67,
         "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 69,
+        "line": 67,
         "column": 22
       }
     },
@@ -1037,12 +1007,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 71,
+        "line": 69,
         "column": 25
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 71,
+        "line": 69,
         "column": 29
       }
     },
@@ -1051,12 +1021,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 72,
+        "line": 70,
         "column": 21
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 72,
+        "line": 70,
         "column": 25
       }
     },
@@ -1065,12 +1035,12 @@
       "type": "List (Pair ('A) ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 75,
+        "line": 73,
         "column": 54
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 75,
+        "line": 73,
         "column": 65
       }
     },
@@ -1079,12 +1049,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 75,
+        "line": 73,
         "column": 66
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 75,
+        "line": 73,
         "column": 70
       }
     },
@@ -1093,12 +1063,12 @@
       "type": "Pair (List (Pair ('A) ('B))) (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 77,
+        "line": 75,
         "column": 17
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 77,
+        "line": 75,
         "column": 18
       }
     },
@@ -1108,12 +1078,12 @@
         "(Pair (List (Pair ('A) ('B))) (List ('B)) -> 'A -> Pair (List (Pair ('A) ('B))) (List ('B))) -> Pair (List (Pair ('A) ('B))) (List ('B)) -> List ('A) -> Pair (List (Pair ('A) ('B))) (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 81,
+        "line": 79,
         "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 81,
+        "line": 79,
         "column": 19
       }
     },
@@ -1123,12 +1093,12 @@
         "Pair (List (Pair ('A) ('B))) (List ('B)) -> 'A -> Pair (List (Pair ('A) ('B))) (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 81,
+        "line": 79,
         "column": 20
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 81,
+        "line": 79,
         "column": 24
       }
     },
@@ -1137,12 +1107,12 @@
       "type": "Pair (List (Pair ('A) ('B))) (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 81,
+        "line": 79,
         "column": 25
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 81,
+        "line": 79,
         "column": 29
       }
     },
@@ -1151,8 +1121,37 @@
       "type": "List ('A)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 81,
+        "line": 79,
         "column": 30
+      },
+      "end_location": {
+        "file": "typecheck/good/zip.scilexp",
+        "line": 79,
+        "column": 32
+      }
+    },
+    {
+      "vname": "res",
+      "type": "Pair (List (Pair ('A) ('B))) (List ('B))",
+      "start_location": {
+        "file": "typecheck/good/zip.scilexp",
+        "line": 81,
+        "column": 11
+      },
+      "end_location": {
+        "file": "typecheck/good/zip.scilexp",
+        "line": 81,
+        "column": 14
+      }
+    },
+    {
+      "vname": "list_zip_helper",
+      "type":
+        "List ('A) -> List ('B) -> Pair (List (Pair ('A) ('B))) (List ('B))",
+      "start_location": {
+        "file": "typecheck/good/zip.scilexp",
+        "line": 81,
+        "column": 17
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
@@ -1161,76 +1160,17 @@
       }
     },
     {
-      "vname": "zipper",
-      "type":
-        "List ('A) -> List ('B) -> Pair (List (Pair ('A) ('B))) (List ('B))",
-      "start_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 83,
-        "column": 11
-      },
-      "end_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 83,
-        "column": 17
-      }
-    },
-    {
-      "vname": "list_zip_helper",
-      "type":
-        "forall 'A. forall 'B. List ('A) -> List ('B) -> Pair (List (Pair ('A) ('B))) (List ('B))",
-      "start_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 83,
-        "column": 21
-      },
-      "end_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 83,
-        "column": 36
-      }
-    },
-    {
-      "vname": "res",
-      "type": "Pair (List (Pair ('A) ('B))) (List ('B))",
-      "start_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 84,
-        "column": 11
-      },
-      "end_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 84,
-        "column": 14
-      }
-    },
-    {
-      "vname": "zipper",
-      "type":
-        "List ('A) -> List ('B) -> Pair (List (Pair ('A) ('B))) (List ('B))",
-      "start_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 84,
-        "column": 17
-      },
-      "end_location": {
-        "file": "typecheck/good/zip.scilexp",
-        "line": 84,
-        "column": 23
-      }
-    },
-    {
       "vname": "m1",
       "type": "List ('A)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 84,
-        "column": 24
+        "line": 81,
+        "column": 33
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 84,
-        "column": 26
+        "line": 81,
+        "column": 35
       }
     },
     {
@@ -1238,13 +1178,13 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 84,
-        "column": 27
+        "line": 81,
+        "column": 36
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 84,
-        "column": 29
+        "line": 81,
+        "column": 38
       }
     },
     {
@@ -1252,12 +1192,12 @@
       "type": "Pair (List (Pair ('A) ('B))) (List ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 85,
+        "line": 82,
         "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 85,
+        "line": 82,
         "column": 16
       }
     },
@@ -1266,12 +1206,12 @@
       "type": "List ('B)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 86,
+        "line": 83,
         "column": 16
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 86,
+        "line": 83,
         "column": 17
       }
     },
@@ -1280,12 +1220,12 @@
       "type": "List (Pair ('A) ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 86,
+        "line": 83,
         "column": 14
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 86,
+        "line": 83,
         "column": 15
       }
     },
@@ -1294,12 +1234,12 @@
       "type": "List (Pair ('A) ('B)) -> List (Pair ('A) ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 87,
+        "line": 84,
         "column": 13
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 87,
+        "line": 84,
         "column": 21
       }
     },
@@ -1308,12 +1248,12 @@
       "type": "forall 'A. List ('A) -> List ('A)",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 87,
+        "line": 84,
         "column": 25
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 87,
+        "line": 84,
         "column": 37
       }
     },
@@ -1322,12 +1262,12 @@
       "type": "List (Pair ('A) ('B)) -> List (Pair ('A) ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 88,
+        "line": 85,
         "column": 11
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 88,
+        "line": 85,
         "column": 19
       }
     },
@@ -1336,12 +1276,12 @@
       "type": "List (Pair ('A) ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 88,
+        "line": 85,
         "column": 20
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 88,
+        "line": 85,
         "column": 21
       }
     },
@@ -1351,12 +1291,12 @@
         "forall 'A. forall 'B. List ('A) -> List ('B) -> List (Pair ('A) ('B))",
       "start_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 90,
+        "line": 87,
         "column": 4
       },
       "end_location": {
         "file": "typecheck/good/zip.scilexp",
-        "line": 90,
+        "line": 87,
         "column": 12
       }
     }
