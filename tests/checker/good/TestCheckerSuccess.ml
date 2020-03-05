@@ -126,6 +126,7 @@ module CheckerTests = TestUtil.DiffBasedTests (struct
       "lib_typing.scilla";
       "lib_typing2.scilla";
       "constraint_scope.scilla";
+      "event_reordered_fields.scilla";
     ]
 
   let exit_code : Unix.process_status = WEXITED 0
