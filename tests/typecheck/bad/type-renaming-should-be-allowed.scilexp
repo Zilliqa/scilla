@@ -1,0 +1,17 @@
+(* this file should typecheck if we allow reusing type names  *)
+let const : forall 'A. forall 'B. 'A -> 'B -> 'B =
+  tfun 'A => tfun 'B => fun (a : 'A) => fun (b : 'B) => b
+in
+
+let id : forall 'A. 'A -> 'A =
+  tfun 'A => fun (a : 'A) =>  (* this 'A is referred to as 'A1 below *)
+    let partial_const = @const 'A in
+    let consistent : forall 'A. 'A -> 'A  =
+      tfun 'A =>
+        fun (b : 'A) =>
+          let full_const = @partial_const 'A in
+          full_const a b (* not a type error: [(a : 'A1), (b : 'A)] *)
+    in
+    a
+in
+id

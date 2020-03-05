@@ -74,8 +74,8 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     (* Append env' to env in place. *)
     val append : t -> t -> t
 
-    (* Retain only those keys for which (fb k) is true. *)
-    val filterTs : t -> f:(string -> bool) -> t
+    (* Retain only those keys for which (fb k v) is true. *)
+    val filterTs : t -> f:(string -> resolve_result -> bool) -> t
 
     (* Check type for well-formedness in the type environment *)
     val is_wf_type : t -> typ -> (unit, scilla_error list) result
@@ -89,6 +89,9 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
 
     (* Is bound in environment? *)
     val existsT : t -> string -> bool
+
+    (* Is bound in tvars? *)
+    val existsV : t -> string -> bool
 
     (* Copy the environment *)
     val copy : t -> t
@@ -157,11 +160,11 @@ functor
         let _ = Hashtbl.iter (fun k v -> Hashtbl.add env.tenv k v) env'.tenv in
         env
 
-      (* Retain only those keys for which (fb k) is true. *)
+      (* Retain only those keys for which (fb k v) is true. *)
       let filterTs env ~f =
         let _ =
           Hashtbl.filter_map_inplace
-            (fun k v -> if f k then Some v else None)
+            (fun k v -> if f k v then Some v else None)
             env.tenv
         in
         env
@@ -196,8 +199,7 @@ functor
               (* Check if bound locally. *)
               if List.mem tb a ~equal:String.( = ) then pure ()
                 (* Check if bound in environment. *)
-              else if List.Assoc.mem (tvars tenv) a ~equal:String.( = ) then
-                pure ()
+              else if Caml.Hashtbl.mem tenv.tvars a then pure ()
               else
                 fail0
                 @@ sprintf "Unbound type variable %s in type %s" a (pp_typ t)
@@ -223,6 +225,8 @@ functor
             fail1 (sprintf "Couldn't resolve the identifier \"%s\".\n" id) sloc
 
       let existsT env id = Hashtbl.mem env.tenv id
+
+      let existsV env id = Hashtbl.mem env.tvars id
 
       let copy e = { tenv = Hashtbl.copy e.tenv; tvars = Hashtbl.copy e.tvars }
 
