@@ -773,8 +773,12 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let eq_elab sc ts =
       match ts with
       | [ bstyp1; bstyp2 ]
+        when (* Addresses should be compared as ByStr20 *)
+          is_address_type bstyp1 || is_address_type bstyp2 ->
+          elab_tfun_with_args_no_gas sc [bystrx_typ address_length]
+      | [ bstyp1; bstyp2 ]
         when (* We want both types to be ByStr with equal width. *)
-             is_bystrx_type bstyp1 && [%equal: typ] bstyp1 bstyp2 ->
+          is_bystrx_type bstyp1 && [%equal: typ] bstyp1 bstyp2 ->
           elab_tfun_with_args_no_gas sc [ bstyp1 ]
       | _ -> fail0 "Failed to elaborate"
 

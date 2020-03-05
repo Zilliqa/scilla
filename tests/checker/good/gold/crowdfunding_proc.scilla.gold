@@ -53,7 +53,7 @@
       {
         "vname": "ClaimBackSuccess",
         "params": [
-          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "caller", "type": "ByStr20 with end" },
           { "vname": "amount", "type": "Uint128" },
           { "vname": "code", "type": "Int32" }
         ]
@@ -61,7 +61,7 @@
       {
         "vname": "ClaimBackFailure",
         "params": [
-          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "caller", "type": "ByStr20 with end" },
           { "vname": "amount", "type": "Uint128" },
           { "vname": "code", "type": "Int32" }
         ]
@@ -69,7 +69,7 @@
       {
         "vname": "GetFundsFailure",
         "params": [
-          { "vname": "caller", "type": "ByStr20" },
+          { "vname": "caller", "type": "ByStr20 with end" },
           { "vname": "amount", "type": "Uint128" },
           { "vname": "code", "type": "Int32" }
         ]
@@ -77,7 +77,7 @@
       {
         "vname": "DonationFailure",
         "params": [
-          { "vname": "donor", "type": "ByStr20" },
+          { "vname": "donor", "type": "ByStr20 with end" },
           { "vname": "amount", "type": "Uint128" },
           { "vname": "code", "type": "Int32" }
         ]
@@ -85,7 +85,7 @@
       {
         "vname": "DonationSuccess",
         "params": [
-          { "vname": "donor", "type": "ByStr20" },
+          { "vname": "donor", "type": "ByStr20 with end" },
           { "vname": "amount", "type": "Uint128" },
           { "vname": "code", "type": "Int32" }
         ]

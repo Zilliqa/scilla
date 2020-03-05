@@ -812,7 +812,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 69,
@@ -924,7 +924,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 75,
@@ -1106,7 +1106,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 85,
@@ -1428,7 +1428,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 107,
@@ -1526,7 +1526,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 110,
@@ -1582,7 +1582,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 114,
@@ -1680,7 +1680,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 117,
@@ -1778,7 +1778,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 129,
@@ -1820,7 +1820,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 132,
@@ -1932,7 +1932,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 136,
@@ -1960,7 +1960,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 137,
@@ -2002,7 +2002,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 139,
@@ -2366,7 +2366,7 @@
     },
     {
       "vname": "_sender",
-      "type": "ByStr20",
+      "type": "ByStr20 with end",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 156,
