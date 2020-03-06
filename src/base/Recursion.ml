@@ -162,7 +162,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             pure @@ RecursionSyntax.MatchStmt (x, new_pss)
         | ReadFromBC (x, f) -> pure @@ RecursionSyntax.ReadFromBC (x, f)
         | AcceptPayment -> pure @@ RecursionSyntax.AcceptPayment
-        | ListIter (p, l) -> pure @@ RecursionSyntax.ListIter (p, l)
+        | ListIter (l, p) -> pure @@ RecursionSyntax.ListIter (l, p)
         | SendMsgs msg -> pure @@ RecursionSyntax.SendMsgs msg
         | CreateEvnt evnt -> pure @@ RecursionSyntax.CreateEvnt evnt
         | CallProc (p, args) ->

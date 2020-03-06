@@ -798,7 +798,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.CallProc (p, typed_args), rep)
                  checked_stmts remaining_gas
-        | ListIter (p, l) -> (
+        | ListIter (l, p) -> (
             let%bind lt =
               mark_error_as_type_error remaining_gas
               @@ TEnv.resolveT env.pure (get_id l) ~lopt:(Some (get_rep l))
@@ -819,7 +819,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 in
                 pure
                 @@ add_stmt_to_stmts_env_gas
-                     (TypedSyntax.ListIter (p, add_type_to_ident l l_type), rep)
+                     (TypedSyntax.ListIter (add_type_to_ident l l_type, p), rep)
                      checked_stmts remaining_gas
             | _ ->
                 Error
