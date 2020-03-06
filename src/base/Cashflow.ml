@@ -1771,9 +1771,16 @@ struct
             ctr_tag_map,
             args_changes )
       | ListIter (p, l) ->
-        let l' = update_id_tag l (lookup_var_tag2 l local_env param_env) in
-        let l_change = not ([%equal: ECFR.money_tag] (get_id_tag l) (get_id_tag l')) in
-        (ListIter(p, l'), param_env, field_env, local_env, ctr_tag_map, l_change)
+          let l' = update_id_tag l (lookup_var_tag2 l local_env param_env) in
+          let l_change =
+            not ([%equal: ECFR.money_tag] (get_id_tag l) (get_id_tag l'))
+          in
+          ( ListIter (p, l'),
+            param_env,
+            field_env,
+            local_env,
+            ctr_tag_map,
+            l_change )
       | Throw xopt -> (
           match xopt with
           | Some x ->

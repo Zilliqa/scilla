@@ -218,7 +218,8 @@ struct
           | ReadFromBC (i, s) ->
               pure @@ (CheckedPatternSyntax.ReadFromBC (i, s), rep)
           | AcceptPayment -> pure @@ (CheckedPatternSyntax.AcceptPayment, rep)
-          | ListIter (p, l) -> pure @@ (CheckedPatternSyntax.ListIter(p, l), rep)
+          | ListIter (p, l) ->
+              pure @@ (CheckedPatternSyntax.ListIter (p, l), rep)
           | SendMsgs i -> pure @@ (CheckedPatternSyntax.SendMsgs i, rep)
           | CreateEvnt i -> pure @@ (CheckedPatternSyntax.CreateEvnt i, rep)
           | CallProc (p, args) ->
