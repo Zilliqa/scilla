@@ -71,8 +71,8 @@ struct
                 ^ "]"
               in
               let matcher m_types tlist =
-                List.length m_types = List.length tlist &&
-                (* Check that each entry in tlist is equal to the same entry in m_types. *)
+                List.length m_types = List.length tlist
+                && (* Check that each entry in tlist is equal to the same entry in m_types. *)
                 List.for_all tlist ~f:(fun (n1, t1) ->
                     List.exists m_types ~f:(fun (n2, t2) ->
                         String.(n1 = n2) && [%equal: typ] t2 t1))
