@@ -957,7 +957,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
           sprintf "Error in reading from blockchain state into `%s`:\n"
             (get_id x)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
-      | ListIter (l, p) -> sprintf "Error applying %s to elements in list %s:\n" (get_id p) (get_id l)
+      | ListIter (l, p) ->
+          sprintf "Error applying `%s` to elements in list `%s`:\n" (get_id p)
+            (get_id l)
       | SendMsgs i -> sprintf "Error in sending messages `%s`:\n" (get_id i)
       | CreateEvnt i -> sprintf "Error in create event `%s`:\n" (get_id i)
       | CallProc (p, _) ->

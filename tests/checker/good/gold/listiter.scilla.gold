@@ -1,0 +1,88 @@
+{
+  "cashflow_tags": {
+    "State variables": [ { "field": "limap", "tag": "(Map NoInfo)" } ],
+    "ADT constructors": [
+      {
+        "LIAdt": [
+          { "constructor": "LIC", "tags": [ "NotMoney", "NoInfo" ] }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "ListIter",
+    "params": [],
+    "fields": [
+      { "vname": "limap", "type": "Map (ByStr20) (Int32)", "depth": 1 }
+    ],
+    "transitions": [
+      {
+        "vname": "updateEntries",
+        "params": [ { "vname": "entries", "type": "List (LIAdt)" } ]
+      }
+    ],
+    "procedures": [
+      {
+        "vname": "updateEntry",
+        "params": [ { "vname": "entry", "type": "LIAdt" } ]
+      }
+    ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "LIAdt",
+        "tparams": [],
+        "tmap": [ { "cname": "LIC", "argtypes": [ "ByStr20", "Int32" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract ListIter contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "8000"
+}
+
