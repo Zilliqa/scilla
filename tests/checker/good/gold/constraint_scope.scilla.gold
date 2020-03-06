@@ -26,7 +26,7 @@
         ]
       },
       {
-        "tname": "MyTyp",
+        "tname": "constraint_scope.scilla.MyTyp",
         "tparams": [],
         "tmap": [
           { "cname": "Val1", "argtypes": [ "Bool" ] },

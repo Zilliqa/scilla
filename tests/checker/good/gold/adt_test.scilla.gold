@@ -15,14 +15,14 @@
     "events": [],
     "ADTs": [
       {
-        "tname": "TestType1",
+        "tname": "adt_test.scilla.TestType1",
         "tparams": [],
         "tmap": [
           { "cname": "Item1", "argtypes": [ "Uint32" ] },
           { "cname": "Item2", "argtypes": [] }
         ]
       },
-      { "tname": "TestType3", "tparams": [], "tmap": [] },
+      { "tname": "adt_test.scilla.TestType3", "tparams": [], "tmap": [] },
       {
         "tname": "Option",
         "tparams": [ "'A" ],
@@ -61,9 +61,11 @@
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
       {
-        "tname": "TestType2",
+        "tname": "adt_test.scilla.TestType2",
         "tparams": [],
-        "tmap": [ { "cname": "Item3", "argtypes": [ "TestType1" ] } ]
+        "tmap": [
+          { "cname": "Item3", "argtypes": [ "adt_test.scilla.TestType1" ] }
+        ]
       }
     ]
   },

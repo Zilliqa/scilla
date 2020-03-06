@@ -22,7 +22,11 @@
     "vname": "SimpleDex",
     "params": [ { "vname": "contractOwner", "type": "ByStr20" } ],
     "fields": [
-      { "vname": "orderbook", "type": "Map (ByStr32) (Order)", "depth": 1 },
+      {
+        "vname": "orderbook",
+        "type": "Map (ByStr32) (simple-dex.scilla.Order)",
+        "depth": 1
+      },
       {
         "vname": "orderInfo",
         "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
@@ -90,7 +94,7 @@
     ],
     "ADTs": [
       {
-        "tname": "Order",
+        "tname": "simple-dex.scilla.Order",
         "tparams": [],
         "tmap": [
           {

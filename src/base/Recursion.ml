@@ -56,18 +56,19 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           let%bind _ = is_adt_in_scope s in
           forallM ~f:walk targs
       | PolyFun (_, t) -> walk t
-      | Address fts ->
-          match List.find_a_dup fts
-                  ~compare:(fun (f1, _) (f2, _) ->
-                      Bytes.compare
-                        (Bytes.of_string (get_id f1))
-                        (Bytes.of_string (get_id f2))) with
+      | Address fts -> (
+          match
+            List.find_a_dup fts ~compare:(fun (f1, _) (f2, _) ->
+                Bytes.compare
+                  (Bytes.of_string (get_id f1))
+                  (Bytes.of_string (get_id f2)))
+          with
           | Some (dup_field, _) ->
               fail1
-                (sprintf "Duplicate field %s in address type." (get_id dup_field))
+                (sprintf "Duplicate field %s in address type."
+                   (get_id dup_field))
                 (get_rep dup_field)
-          | None ->
-              forallM fts ~f:(fun (_, t) -> walk t)
+          | None -> forallM fts ~f:(fun (_, t) -> walk t) )
     in
     walk t
 
@@ -439,6 +440,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     let (recursion_elibs, elibs_adts), emsgs = recurser ext_libs in
     let emsgs =
       List.fold_left elibs_adts ~init:emsgs ~f:(fun emsgs_acc (adt, loc) ->
+          let () =
+            GlobalConfig.StdlibTracker.add_deflib_adttyp adt.tname (Filename.basename loc.fname)
+          in
           match DataTypeDictionary.add_adt adt loc with
           | Ok _ -> emsgs_acc
           | Error e -> emsgs_acc @ e)
@@ -453,6 +457,10 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
               let new_emsgs =
                 List.fold_left recursion_adts ~init:emsgs
                   ~f:(fun emsgs_acc (adt, loc) ->
+                    let () =
+                      GlobalConfig.StdlibTracker.add_deflib_adttyp adt.tname
+                        (Filename.basename loc.fname)
+                    in
                     match DataTypeDictionary.add_adt adt loc with
                     | Ok _ -> emsgs
                     | Error e -> emsgs_acc @ e)

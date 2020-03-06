@@ -38,7 +38,7 @@
       },
       {
         "vname": "transactions",
-        "type": "Map (Uint32) (Transaction)",
+        "type": "Map (Uint32) (wallet.scilla.Transaction)",
         "depth": 1
       },
       {
@@ -108,7 +108,7 @@
     ],
     "ADTs": [
       {
-        "tname": "Error",
+        "tname": "wallet.scilla.Error",
         "tparams": [],
         "tmap": [
           { "cname": "NonOwnerCannotSign", "argtypes": [] },
@@ -135,7 +135,7 @@
         ]
       },
       {
-        "tname": "Transaction",
+        "tname": "wallet.scilla.Transaction",
         "tparams": [],
         "tmap": [
           { "cname": "Trans", "argtypes": [ "ByStr20", "Uint128" ] }

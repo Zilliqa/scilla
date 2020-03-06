@@ -21,7 +21,7 @@
     },
     {
       "error_message":
-        "Values of the type \"Option (Test)\" cannot be stored.",
+        "Values of the type \"Option (unstorable_adt.scilla.Test)\" cannot be stored.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

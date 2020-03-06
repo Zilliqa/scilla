@@ -16,7 +16,7 @@
     },
     {
       "vname": "board",
-      "type": "Map (Uint32) (Map (Uint32) (SquareContents))",
+      "type": "Map (Uint32) (Map (Uint32) (ShogiLib.scillib.SquareContents))",
       "value": [
         {
           "key": "1",

@@ -36,7 +36,8 @@
     "fields": [
       {
         "vname": "board",
-        "type": "Map (Uint32) (Map (Uint32) (SquareContents))",
+        "type":
+          "Map (Uint32) (Map (Uint32) (ShogiLib.scillib.SquareContents))",
         "depth": 2
       },
       {
@@ -53,14 +54,16 @@
         "params": [
           { "vname": "row", "type": "Uint32" },
           { "vname": "column", "type": "Uint32" },
-          { "vname": "direction", "type": "Direction" },
+          { "vname": "direction", "type": "ShogiLib.scillib.Direction" },
           { "vname": "distance", "type": "Uint32" },
           { "vname": "promote", "type": "Bool" }
         ]
       },
       {
         "vname": "PlayerAction",
-        "params": [ { "vname": "action", "type": "Action" } ]
+        "params": [
+          { "vname": "action", "type": "ShogiLib.scillib.Action" }
+        ]
       }
     ],
     "procedures": [],
@@ -76,7 +79,7 @@
     ],
     "ADTs": [
       {
-        "tname": "Piece",
+        "tname": "ShogiLib.scillib.Piece",
         "tparams": [],
         "tmap": [
           { "cname": "King", "argtypes": [] },
@@ -90,7 +93,7 @@
         ]
       },
       {
-        "tname": "Error",
+        "tname": "shogi.scilla.Error",
         "tparams": [],
         "tmap": [
           { "cname": "GameOver", "argtypes": [] },
@@ -100,12 +103,15 @@
         ]
       },
       {
-        "tname": "SquareContents",
+        "tname": "ShogiLib.scillib.SquareContents",
         "tparams": [],
         "tmap": [
           {
             "cname": "Occupied",
-            "argtypes": [ "Piece", "PromotionStatus", "ByStr20" ]
+            "argtypes": [
+              "ShogiLib.scillib.Piece", "ShogiLib.scillib.PromotionStatus",
+              "ByStr20"
+            ]
           },
           { "cname": "Free", "argtypes": [] }
         ]
@@ -119,19 +125,27 @@
         ]
       },
       {
-        "tname": "Action",
+        "tname": "ShogiLib.scillib.Action",
         "tparams": [],
         "tmap": [
           {
             "cname": "Move",
-            "argtypes": [ "Square", "Direction", "Uint32", "Bool" ]
+            "argtypes": [
+              "ShogiLib.scillib.Square", "ShogiLib.scillib.Direction",
+              "Uint32", "Bool"
+            ]
           },
-          { "cname": "Place", "argtypes": [ "Piece", "Square" ] },
+          {
+            "cname": "Place",
+            "argtypes": [
+              "ShogiLib.scillib.Piece", "ShogiLib.scillib.Square"
+            ]
+          },
           { "cname": "Resign", "argtypes": [] }
         ]
       },
       {
-        "tname": "Direction",
+        "tname": "ShogiLib.scillib.Direction",
         "tparams": [],
         "tmap": [
           { "cname": "East", "argtypes": [] },
@@ -174,7 +188,7 @@
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
       {
-        "tname": "PromotionStatus",
+        "tname": "ShogiLib.scillib.PromotionStatus",
         "tparams": [],
         "tmap": [
           { "cname": "NotPromoted", "argtypes": [] },
@@ -182,7 +196,7 @@
         ]
       },
       {
-        "tname": "Square",
+        "tname": "ShogiLib.scillib.Square",
         "tparams": [],
         "tmap": [ { "cname": "Square", "argtypes": [ "Uint32", "Uint32" ] } ]
       }

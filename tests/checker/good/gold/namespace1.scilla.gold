@@ -19,10 +19,13 @@
     "events": [],
     "ADTs": [
       {
-        "tname": "Bar.TestType2",
+        "tname": "TestLib1.scillib.TestType2",
         "tparams": [],
         "tmap": [
-          { "cname": "Bar.Constructor3", "argtypes": [ "Bar.TestType" ] },
+          {
+            "cname": "Bar.Constructor3",
+            "argtypes": [ "TestLib1.scillib.TestType" ]
+          },
           { "cname": "Bar.Constructor4", "argtypes": [ "Uint32" ] }
         ]
       },
@@ -64,7 +67,7 @@
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
       {
-        "tname": "Bar.TestType",
+        "tname": "TestLib1.scillib.TestType",
         "tparams": [],
         "tmap": [
           { "cname": "Bar.Constructor1", "argtypes": [] },

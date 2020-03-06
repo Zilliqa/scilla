@@ -504,7 +504,7 @@ module ContractInfo = struct
     let adts_to_json (alist : adt list) =
       let jlist =
         List.map alist ~f:(fun a ->
-            let tname = `String a.tname in
+            let tname = `String (Syntax.adt_tname_deflib a.tname) in
             let tparams = `List (List.map a.tparams ~f:(fun t -> `String t)) in
             let tmap =
               `List

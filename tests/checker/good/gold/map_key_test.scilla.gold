@@ -23,7 +23,7 @@
         ]
       },
       {
-        "tname": "TestType",
+        "tname": "map_key_test.scilla.TestType",
         "tparams": [],
         "tmap": [ { "cname": "T", "argtypes": [ "Uint128" ] } ]
       },
