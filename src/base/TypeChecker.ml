@@ -798,6 +798,36 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.CallProc (p, typed_args), rep)
                  checked_stmts remaining_gas
+        | ListIter (p, l) -> (
+            let%bind lt =
+              mark_error_as_type_error remaining_gas
+              @@ TEnv.resolveT env.pure (get_id l) ~lopt:(Some (get_rep l))
+            in
+            let l_type = rr_typ lt in
+            match
+              List.Assoc.find env.procedures ~equal:String.( = ) (get_id p)
+            with
+            | Some [ arg_typ ] ->
+                let%bind _ =
+                  wrap_type_serr stmt
+                  @@ mark_error_as_type_error remaining_gas
+                  (* The procedure accepts an element of l. *)
+                  @@ assert_type_equiv (list_typ arg_typ) l_type.tp
+                in
+                let%bind checked_stmts, remaining_gas =
+                  type_stmts env sts get_loc remaining_gas
+                in
+                pure
+                @@ add_stmt_to_stmts_env_gas
+                     (TypedSyntax.ListIter (p, add_type_to_ident l l_type), rep)
+                     checked_stmts remaining_gas
+            | _ ->
+                Error
+                  (mk_type_error0
+                     (sprintf
+                        "Procedure %s not found or has incorrect argument type."
+                        (get_id p))
+                     remaining_gas) )
         | Throw iopt -> (
             let%bind checked_stmts, remaining_gas =
               type_stmts env sts get_loc remaining_gas

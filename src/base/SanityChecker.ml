@@ -322,7 +322,7 @@ struct
                     check_warn_redef cparams cfields pnames x;
                     pure ()
                 | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment
-                | CreateEvnt _ | Throw _ | CallProc _ ->
+                | CreateEvnt _ | Throw _ | CallProc _ | ListIter _->
                     pure ()
                 | Bind (x, e) ->
                     check_warn_redef cparams cfields pnames x;
