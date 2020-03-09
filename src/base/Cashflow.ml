@@ -184,7 +184,7 @@ struct
       | CreateEvnt x -> CFSyntax.CreateEvnt (add_noinfo_to_ident x)
       | CallProc (p, args) ->
           CFSyntax.CallProc (p, List.map args ~f:add_noinfo_to_ident)
-      | ListIter (l, p) -> CFSyntax.ListIter (add_noinfo_to_ident l, p)
+      | Iterate (l, p) -> CFSyntax.Iterate (add_noinfo_to_ident l, p)
       | Throw xopt -> (
           match xopt with
           | Some x -> CFSyntax.Throw (Some (add_noinfo_to_ident x))
@@ -1770,12 +1770,12 @@ struct
             local_env,
             ctr_tag_map,
             args_changes )
-      | ListIter (l, p) ->
+      | Iterate (l, p) ->
           let l' = update_id_tag l (lookup_var_tag2 l local_env param_env) in
           let l_change =
             not ([%equal: ECFR.money_tag] (get_id_tag l) (get_id_tag l'))
           in
-          ( ListIter (l', p),
+          ( Iterate (l', p),
             param_env,
             field_env,
             local_env,

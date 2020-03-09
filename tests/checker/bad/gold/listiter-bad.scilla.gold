@@ -21,7 +21,7 @@
     },
     {
       "error_message":
-        "Error applying `updateEntry` to elements in list `entries`:\nType mismatch: List (LIAdt) expected, but List (Int32) provided.",
+        "Error iterating `updateEntry` over elements in list `entries`:\nType mismatch: List (LIAdt) expected, but List (Int32) provided.",
       "start_location": {
         "file": "checker/bad/listiter-bad.scilla",
         "line": 20,
