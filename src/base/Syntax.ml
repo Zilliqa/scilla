@@ -958,8 +958,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
             (get_id x)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
       | Iterate (l, p) ->
-          sprintf "Error iterating `%s` over elements in list `%s`:\n" (get_id p)
-            (get_id l)
+          sprintf "Error iterating `%s` over elements in list `%s`:\n"
+            (get_id p) (get_id l)
       | SendMsgs i -> sprintf "Error in sending messages `%s`:\n" (get_id i)
       | CreateEvnt i -> sprintf "Error in create event `%s`:\n" (get_id i)
       | CallProc (p, _) ->
