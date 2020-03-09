@@ -1,0 +1,245 @@
+scilla_version 0
+
+(* Simple DEX : P2P Token Trades    *)
+(* Disclaimer: This contract is experimental and meant for testing purposes only *)
+(* DO NOT USE THIS CONTRACT IN PRODUCTION *)
+(* The purpose of this contract is to illustrate and test the use of remote state reads. *)
+
+import IntUtils BoolUtils
+
+library DexWithRmoteReads
+
+(* Token type *)
+(* ByStr20 with balances : Map (ByStr20 with end) Uint128 end*)
+(* Only addresses are allowed as balance map keys. *)
+(* Using a custom ADT because it's extremely tedious to write the entire signature everywhere. *)
+type Token =
+| T of ByStr20 with balances : Map ByStr20 with end Uint128 end
+
+(* Order = { tokenA, valueA, tokenB, valueB } *)
+type Order =
+| Order of Token Uint128 Token Uint128
+
+(* OrderInfo = { token-owner, expiration-block } *)
+type OrderInfo =
+| OrderInfo of ByStr20 with end BNum
+
+(* Create an orderID based on the hash of the parameters *)
+let createOrderId = 
+  fun (order: Order) =>
+    builtin sha256hash order
+
+(* Event for errors *)
+let make_error_event =
+  fun (location: String) =>
+  fun (msg: String) =>
+    { _eventname : "Error" ; raisedAt: location; message: msg}
+
+(* Create one transaction message *)
+let transaction_msg =
+  fun (recipient : Token) =>
+  fun (tag : String) =>
+  fun (transferFromAddr: ByStr20 with end) =>
+  fun (transferToAddr: ByStr20 with end) =>
+  fun (transferAmt: Uint128) =>
+    match recipient with
+    | T rec =>
+      {_tag : tag; _recipient : rec; _amount : Uint128 0;
+       from: transferFromAddr; to: transferToAddr; tokens: transferAmt }
+    end
+
+(* Wrap one transaction message as singleton list *)
+let transaction_msg_as_list =
+  fun (recipient : Token) =>
+  fun (tag : String) =>
+  fun (transferFromAddr: ByStr20 with end) =>
+  fun (transferToAddr: ByStr20 with end) =>
+  fun (transferAmt: Uint128) =>
+    let one_msg = 
+      fun (msg : Message) => 
+        let nil_msg = Nil {Message} in
+        Cons {Message} msg nil_msg in
+    let msg = transaction_msg recipient tag transferFromAddr transferToAddr transferAmt in
+    one_msg msg
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+
+contract DexWithRmoteReads
+(* contractOwner must be an address in use. *)
+(contractOwner: ByStr20 with end)
+
+(* Orderbook: mapping (orderIds => ( (tokenA, valueA) (tokenB, valueB) )) *)
+(* @param: tokenA: Contract address of token A *)
+(* @param: valueA: total units of token A offered by maker *)
+(* @param: tokenB: Contract address of token B *)
+(* @param: valueB: total units of token B requsted by maker *)
+field orderbook : Map ByStr32 Order
+                  = Emp ByStr32 Order
+(* Order info stores the mapping ( orderId => (tokenOwnerAddress, expirationBlock)) *)
+field orderInfo : Map ByStr32 OrderInfo
+                  = Emp ByStr32 OrderInfo
+
+(* Maker creates an order to exchange valueA of tokenA for valueB of tokenB *)
+transition makeOrder(
+  tokenA: ByStr20 with balances : Map ByStr20 with end Uint128 end,
+  valueA: Uint128,
+  tokenB: ByStr20 with balances : Map ByStr20 with end Uint128 end,
+  valueB: Uint128,
+  expirationBlock: BNum)
+
+  (* Check that the expiration block is valid *)
+  currentBlock <- & BLOCKNUMBER;
+  validExpirationBlock =  let minBlocksFromCreation = Uint128 50 in
+                          let minExpiration = builtin badd currentBlock minBlocksFromCreation in
+                          builtin blt minExpiration expirationBlock;
+
+  match validExpirationBlock with
+  | True =>
+    (* Check that the maker owns enough tokens for the order. *)
+    token_balance_opt <-- tokenA.balances[_sender];
+    sufficient_balance = match token_balance_opt with
+                         | Some bal => uint128_le valueA bal
+                         | None => False
+                         end;
+    legal_order = andb validExpirationBlock sufficient_balance;
+    match legal_order with
+    | True =>
+      (* Creates a new order *)
+      wrapped_tokenA = T tokenA;
+      wrapped_tokenB = T tokenB;
+      newOrder = Order wrapped_tokenA valueA wrapped_tokenB valueB;
+      orderId = createOrderId newOrder;
+      orderbook[orderId] := newOrder;
+      
+      (* Updates orderInfo with maker's address and expiration blocknumber *)
+      order_info = OrderInfo _sender expirationBlock; 
+      orderInfo[orderId] := order_info;
+      
+      e = {_eventname: "Order Created"; hash: orderId };
+      event e;
+      
+      (* Transfer tokens from _sender to the contract address  *)
+      msgs = let tag = "TransferFrom" in 
+             transaction_msg_as_list wrapped_tokenA tag _sender _this_address valueA;
+      send msgs
+    | False =>
+      e = let func = "makeOrder" in
+          let error_msg = "Insufficient token balance for order" in 
+          make_error_event func error_msg;
+      event e
+    end
+  | False =>
+    e = let func = "makeOrder" in
+        let error_msg = "Expiration block must be at least 50 blocks more than current block" in 
+        make_error_event func error_msg;
+    event e
+  end
+end
+
+(* Taker fills an order *)
+transition fillOrder(orderId: ByStr32)
+  getOrder <- orderbook[orderId];
+  match getOrder with
+  | Some (Order tokenA valueA tokenB valueB)=>
+    (* Check the expiration block *)
+    optionOrderInfo <- orderInfo[orderId];
+    match optionOrderInfo with
+    | Some (OrderInfo makerAddr expirationBlock) =>
+      currentBlock <- & BLOCKNUMBER;
+      blockBeforeExpiration = builtin blt currentBlock expirationBlock;
+      match blockBeforeExpiration with
+      | True =>
+        (* Check that the filler owns enough tokens for the order. *)
+        tokenB_addr = match tokenB with | T adr => adr end;
+        token_balance_opt <-- tokenB_addr.balances[_sender];
+        sufficient_balance = match token_balance_opt with
+                            | Some bal => uint128_le valueB bal
+                            | None => False
+                            end;
+        match sufficient_balance with
+        | True =>
+          (* Transfer A tokens from contract to _sender, *)
+          (* and B tokens from _sender to maker.  *)
+          msgs = let tag = "TransferFrom" in
+                 let msg1_list = transaction_msg_as_list tokenA tag _this_address _sender valueA in
+                 let msg2 = transaction_msg tokenB tag _sender makerAddr valueB in
+                 Cons {Message} msg2 msg1_list;
+          send msgs;
+          
+          (* Delete orders from the orderbook and orderinfo *)
+          delete orderInfo[orderId];
+          delete orderbook[orderId];
+          
+          e = {_eventname: "Order Filled"; hash: orderId };
+          event e
+        | False =>
+          e = let func = "fillOrder" in
+              let error_msg = "Insufficent token balance to fill order" in 
+              make_error_event func error_msg;
+          event e
+        end
+      | False =>
+        e = let func = "fillOrder" in
+            let error_msg = "Current block number exceeds the expiration block set" in 
+            make_error_event func error_msg;
+        event e
+      end
+    | None => 
+      e = let func = "fillOrder" in
+          let error_msg = "OrderId not found" in 
+          make_error_event func error_msg;
+      event e
+    end
+  | None =>
+    e = let func = "fillOrder" in
+        let error_msg = "OrderId not found" in 
+        make_error_event func error_msg;
+    event e
+  end
+end
+
+(* Maker can cancel his order *)
+transition cancelOrder(orderId: ByStr32)
+  getOrderInfo <- orderInfo[orderId];
+  match getOrderInfo with
+  | Some (OrderInfo makerAddr _) => 
+      checkSender = builtin eq makerAddr _sender;
+      match checkSender with
+      | True =>
+        (* Sender is the maker, proceed with cancellation *)
+        fetchOrder <- orderbook[orderId];
+        match fetchOrder with
+        | Some (Order tokenA valueA _ _)=>
+          msgs = let tag = "TransferFrom" in 
+                 transaction_msg_as_list tokenA tag _this_address _sender valueA;
+          send msgs;
+        
+          (* Delete orders from the orderbook and orderinfo *)
+          delete orderInfo[orderId];
+          delete orderbook[orderId];
+
+          e = {_eventname: "Cancel order successful"; hash: orderId };
+          event e
+        | None =>
+          e = let func = "cancelOrder" in
+              let error_msg = "OrderID not found" in 
+              make_error_event func error_msg;
+          event e
+        end
+      | False =>
+        (* Unauthorized transaction *)
+        e = let func = "cancelOrder" in
+            let error_msg = "Sender is not maker of the order" in 
+            make_error_event func error_msg;
+        event e
+      end
+  | None =>
+      (* Order ID not found *)
+      e = let func = "cancelOrder" in
+          let error_msg = "OrderID not found" in 
+          make_error_event func error_msg;
+      event e
+  end
+end
+
