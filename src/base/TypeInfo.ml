@@ -117,6 +117,7 @@ struct
         | ReadFromBC (v, _) | SendMsgs v | CreateEvnt v -> [ calc_ident_locs v ]
         | AcceptPayment -> []
         | CallProc (_, il) -> List.map il ~f:calc_ident_locs
+        | Iterate (l, _) -> [ calc_ident_locs l ]
         | Throw iopt -> (
             match iopt with Some i -> [ calc_ident_locs i ] | None -> [] ) )
         @ acc)

@@ -1,0 +1,32 @@
+{
+    "_tag": "updateEntries",
+    "_amount": "0",
+    "_sender" : "0x12345678901234567890123456789012345678ab",
+    "params": [
+        {
+            "vname" : "entries",
+            "type" : "List LIAdt",
+            "value" :
+            [
+                {
+                    "constructor" : "LIC",
+                    "argtypes" : [],
+                    "arguments" : [
+                        "0x56785678901234567890123456789012345678cd",
+                        "666"
+                        
+                    ]
+                },
+                {
+                    "constructor" : "LIC",
+                    "argtypes" : [],
+                    "arguments" : [
+                        "0x98765678901234567890123456789012345678de",
+                        "777"
+                    ]
+                }
+
+            ]
+        }
+    ]
+}
