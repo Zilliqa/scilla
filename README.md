@@ -20,9 +20,9 @@ Zilliqa - the underlying blockchain platform on which Scilla contracts are run, 
 
 A comprehensive documentation on Scilla, its features and constructs can be found [here](https://scilla.readthedocs.io/en/latest/)
 
-## Building and Running
+## Installation
 
-### Source code
+### 1. Cloning source code
 
 We suggest users to use the latest release of Scilla available [here](https://github.com/Zilliqa/scilla/releases).
 
@@ -31,14 +31,19 @@ If you'd like to hack on Scilla, clone it with all of its submodules:
 git clone --jobs 4 --recurse-submodules https://github.com/Zilliqa/scilla/
 ```
 
-### Build requirements
+### 2. Build prerequisites
 
 Platform specific instructions for setting up your system for building Scilla can be
 found in [INSTALL.md](./INSTALL.md).
 
-### Compiling and Running
+### 3. Compiling
 
-To build the project, run `make clean; make` from the root folder.
+To build the project from the root folder:
+```
+make
+```
+
+## Running the binary
 
 Once the project is built you can try the following things:
 
