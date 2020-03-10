@@ -698,6 +698,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | MatchStmt of ER.rep ident * (pattern * stmt_annot list) list
     | ReadFromBC of ER.rep ident * string
     | AcceptPayment
+    (* forall l p *)
+    | Iterate of ER.rep ident * SR.rep ident
     | SendMsgs of ER.rep ident
     | CreateEvnt of ER.rep ident
     | CallProc of SR.rep ident * ER.rep ident list
@@ -955,6 +957,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
           sprintf "Error in reading from blockchain state into `%s`:\n"
             (get_id x)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
+      | Iterate (l, p) ->
+          sprintf "Error iterating `%s` over elements in list `%s`:\n"
+            (get_id p) (get_id l)
       | SendMsgs i -> sprintf "Error in sending messages `%s`:\n" (get_id i)
       | CreateEvnt i -> sprintf "Error in create event `%s`:\n" (get_id i)
       | CallProc (p, _) ->

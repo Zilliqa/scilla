@@ -343,6 +343,21 @@ let rec stmt_eval conf stmts =
           let%bind conf' = try_apply_as_procedure conf proc p_rest args in
           let%bind _ = stmt_gas_wrap G_CallProc sloc in
           stmt_eval conf' sts
+      | Iterate (l, p) ->
+          let%bind l_actual = Env.lookup conf.env l in
+          let%bind l' = fromR @@ Datatypes.scilla_list_to_ocaml l_actual in
+          let%bind proc, p_rest =
+            Configuration.lookup_procedure conf (get_id p)
+          in
+          let%bind conf' =
+            foldM l' ~init:conf ~f:(fun confacc arg ->
+                let%bind conf' =
+                  try_apply_as_procedure confacc proc p_rest [ arg ]
+                in
+                let%bind _ = stmt_gas_wrap G_CallProc sloc in
+                pure conf')
+          in
+          stmt_eval conf' sts
       | Throw eopt ->
           let%bind estr =
             match eopt with

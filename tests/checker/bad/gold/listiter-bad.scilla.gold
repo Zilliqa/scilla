@@ -1,0 +1,34 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message": "Type error(s) in contract ListIter:\n",
+      "start_location": {
+        "file": "checker/bad/listiter-bad.scilla",
+        "line": 8,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error(s) in transition updateEntries:\n",
+      "start_location": {
+        "file": "checker/bad/listiter-bad.scilla",
+        "line": 19,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Error iterating `updateEntry` over elements in list `entries`:\nType mismatch: List (LIAdt) expected, but List (Int32) provided.",
+      "start_location": {
+        "file": "checker/bad/listiter-bad.scilla",
+        "line": 20,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

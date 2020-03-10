@@ -335,6 +335,9 @@ stmt:
   p = component_id;
   args = list(sident)
   { (CallProc (p, args), toLoc $startpos)  }
+| (* list iterator *)
+  FORALL; l = sident; p = component_id
+  { Iterate (l, p), toLoc $startpos }
 
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;

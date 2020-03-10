@@ -488,6 +488,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     procedures : (string * typ list) list;
   }
 
+  let lookup_proc env pname =
+    List.Assoc.find env.procedures ~equal:String.( = ) (get_id pname)
+
   (* Return typed map accesses and the accessed value's type. *)
   (* (m[k1][k2]... -> (typed_m, typed_k_list, type_of_accessed_value) *)
   let type_map_access env m' keys' remaining_gas =
@@ -776,9 +779,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               @@ let%bind targs, typed_actuals, remaining_gas =
                    type_actuals env.pure args remaining_gas
                  in
-                 match
-                   List.Assoc.find env.procedures ~equal:String.( = ) (get_id p)
-                 with
+                 match lookup_proc env p with
                  | Some arg_typs ->
                      let%bind _ =
                        mark_error_as_type_error remaining_gas
@@ -798,6 +799,34 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.CallProc (p, typed_args), rep)
                  checked_stmts remaining_gas
+        | Iterate (l, p) -> (
+            let%bind lt =
+              mark_error_as_type_error remaining_gas
+              @@ TEnv.resolveT env.pure (get_id l) ~lopt:(Some (get_rep l))
+            in
+            let l_type = rr_typ lt in
+            match lookup_proc env p with
+            | Some [ arg_typ ] ->
+                let%bind _ =
+                  wrap_type_serr stmt
+                  @@ mark_error_as_type_error remaining_gas
+                  (* The procedure accepts an element of l. *)
+                  @@ assert_type_equiv (list_typ arg_typ) l_type.tp
+                in
+                let%bind checked_stmts, remaining_gas =
+                  type_stmts env sts get_loc remaining_gas
+                in
+                pure
+                @@ add_stmt_to_stmts_env_gas
+                     (TypedSyntax.Iterate (add_type_to_ident l l_type, p), rep)
+                     checked_stmts remaining_gas
+            | _ ->
+                Error
+                  (mk_type_error0
+                     (sprintf
+                        "Procedure %s not found or has incorrect argument type."
+                        (get_id p))
+                     remaining_gas) )
         | Throw iopt -> (
             let%bind checked_stmts, remaining_gas =
               type_stmts env sts get_loc remaining_gas

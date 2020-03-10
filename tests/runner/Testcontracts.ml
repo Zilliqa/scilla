@@ -342,6 +342,8 @@ let contract_tests env =
                        [];
                 "multiple_msgs_test"
                 >::: build_contract_tests env "multiple-msgs" succ_code 1 1 [];
+                "listiter"
+                >::: build_contract_tests env "listiter" succ_code 1 1 [];
               ];
          "these_tests_must_FAIL"
          >::: [
