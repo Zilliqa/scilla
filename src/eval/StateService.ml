@@ -34,7 +34,10 @@ type ss_field = {
   fval : literal option; (* We may or may not have the value in memory. *)
 }
 
-type service_mode = IPC of string (* Socket address for IPC *) | Local
+type service_mode =
+  | IPC of string
+  (* Socket address for IPC *)
+  | Local
 
 type ss_state = Uninitialized | SS of service_mode * ss_field list
 
