@@ -26,7 +26,7 @@ open Stdint
 exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
-let scilla_version = (0, 5, 2)
+let scilla_version = (0, 6, 0)
 
 type 'rep ident = Ident of string * 'rep [@@deriving sexp]
 
