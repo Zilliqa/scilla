@@ -167,6 +167,34 @@ let fetch ~socket_addr ~fname ~keys ~tp =
       pure @@ Some res''
   | false, _ -> pure None
 
+(* Fetch from another contract's field. "keys" is empty when fetching non-map fields
+ * or an entire Map field. If a map key is not found, then None is returned, otherwise
+ * (Some value) is returned. *)
+let external_fetch ~socket_addr ~caddr ~fname ~keys ~tp =
+  let open Ipcmessage_types in
+  let q =
+    {
+      name = get_id fname;
+      mapdepth = TypeUtilities.map_depth tp;
+      indices = List.map keys ~f:serialize_literal;
+      ignoreval = false;
+    }
+  in
+  let%bind q' = encode_serialized_query q in
+  let%bind res =
+    let thunk () =
+      translate_res @@ IPCClient.fetch_ext_state_value (binary_rpc ~socket_addr) caddr q'
+    in
+    ipcclient_exn_wrapper thunk
+  in
+  match res with
+  | true, res', field_typ ->
+      let%bind tp' = TypeUtilities.map_access_type tp (List.length keys) in
+      let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
+      let%bind res'' = deserialize_value decoded_pb tp' in
+      pure @@ (Some res'', field_typ)
+  | false, _, field_typ -> pure (None, field_typ)
+
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 let update ~socket_addr ~fname ~keys ~value ~tp =
   let open Ipcmessage_types in
@@ -208,6 +236,26 @@ let is_member ~socket_addr ~fname ~keys ~tp =
     ipcclient_exn_wrapper thunk
   in
   pure @@ fst res
+
+(* Does field fname exist in caddr? If yes and it's a map, do keys exist? *)
+let external_is_member ~socket_addr ~caddr ~fname ~keys ~tp =
+  let open Ipcmessage_types in
+  let q =
+    {
+      name = get_id fname;
+      mapdepth = TypeUtilities.map_depth tp;
+      indices = List.map keys ~f:serialize_literal;
+      ignoreval = true;
+    }
+  in
+  let%bind q' = encode_serialized_query q in
+  let%bind (found, _, field_type) =
+    let thunk () =
+      translate_res @@ IPCClient.fetch_ext_state_value (binary_rpc ~socket_addr) caddr q'
+    in
+    ipcclient_exn_wrapper thunk
+  in
+  pure @@ (found, field_type)
 
 (* Remove a key from a map. keys must be non-empty. *)
 let remove ~socket_addr ~fname ~keys ~tp =
