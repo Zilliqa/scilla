@@ -5,7 +5,7 @@ matrix:
   include:
     - os: linux
       dist: xenial
-      env: OCAML_VERSION=4.09.0
+      env: OCAML_VERSION=4.09.1
     - os: linux
       dist: xenial
       env: OCAML_VERSION=4.08.1
