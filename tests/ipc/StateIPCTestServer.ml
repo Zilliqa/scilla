@@ -162,6 +162,10 @@ module MakeServer () = struct
             let new_val = deserialize_value (decode_serialized_value value) in
             recurser_update ~new_val:(Some new_val) table
               (name :: string_indices_list) )
+
+  let fetch_ext_state_value _caddr _query =
+    fail RPCError.{ code = 0; message = "Unimplimented" }
+
 end
 
 let start_server ~sock_addr =
@@ -174,6 +178,8 @@ let start_server ~sock_addr =
           IDL.T.return @@ ServerModule.fetch_state_value q);
       ServerModule.IPCTestServer.update_state_value (fun q v ->
           IDL.T.return @@ ServerModule.update_state_value q v);
+      ServerModule.IPCTestServer.fetch_ext_state_value (fun a q ->
+          IDL.T.return @@ ServerModule.fetch_ext_state_value a q);
       let server = ServerModule.prepare_server sock_addr in
       let _ = Thread.create server () in
       Hashtbl.replace thread_pool sock_addr ServerModule.table
