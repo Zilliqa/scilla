@@ -192,8 +192,11 @@ let external_fetch ~socket_addr ~caddr ~fname ~keys ~tp =
       let%bind tp' = TypeUtilities.map_access_type tp (List.length keys) in
       let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
       let%bind res'' = deserialize_value decoded_pb tp' in
-      pure @@ (Some res'', field_typ)
-  | false, _, field_typ -> pure (None, field_typ)
+      let%bind stored_typ = FrontEndParser.parse_type field_typ in
+      pure @@ (Some res'', stored_typ)
+  | false, _, field_typ ->
+    let%bind stored_typ = FrontEndParser.parse_type field_typ in
+    pure (None, stored_typ)
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 let update ~socket_addr ~fname ~keys ~value ~tp =

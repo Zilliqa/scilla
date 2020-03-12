@@ -34,24 +34,24 @@ type ss_field = {
   fval : literal option; (* We may or may not have the value in memory. *)
 }
 
-type external_state = {
-  caddr : string;
-  cstate : ss_field list;
-}
+type external_state = { caddr : string; cstate : ss_field list }
 
 type service_mode =
   | IPC of string
   (* Socket address for IPC *)
   | Local
 
-type ss_state = Uninitialized | SS of service_mode * ss_field list * external_state list
+type ss_state =
+  | Uninitialized
+  | SS of service_mode * ss_field list * external_state list
 
 module MakeStateService () = struct
   (* Internal state for the state service. *)
   let ss_cur_state = ref Uninitialized
 
   (* Sets up the state service object. Should be called before any queries. *)
-  let initialize ~sm ~fields ~ext_states = ss_cur_state := SS (sm, fields, ext_states)
+  let initialize ~sm ~fields ~ext_states =
+    ss_cur_state := SS (sm, fields, ext_states)
 
   (* Finalize: no more queries. *)
   let finalize () = pure ()
@@ -141,6 +141,50 @@ module MakeStateService () = struct
                 (ER.get_loc (get_rep fname))
           | Some res' -> pure @@ (res, G_Load res') )
     | Local -> fetch_local ~fname ~keys fields
+
+  let external_fetch ~caddr ~fname ~keys ~expected_field_tp =
+    let%bind sm, _fields, estates = assert_init () in
+    match sm with
+    | IPC socket_addr -> (
+        let tp = expected_field_tp in
+        let%bind res, stored_tp =
+          StateIPCClient.external_fetch ~socket_addr ~caddr ~fname ~keys ~tp
+        in
+        if not @@ List.is_empty keys then
+          pure @@ (res, stored_tp, G_MapGet (List.length keys, res))
+        else
+          match res with
+          | None ->
+              fail1
+                (sprintf "StateService: Field %s not found on IPC server."
+                   (get_id fname))
+                (ER.get_loc (get_rep fname))
+          | Some res' -> pure @@ (res, stored_tp, G_Load res') )
+    | Local -> (
+        match
+          List.find_map estates ~f:(fun estate ->
+              if String.equal caddr estate.caddr then Some estate.cstate
+              else None)
+        with
+        | Some fields -> (
+            match
+              List.find_map fields ~f:(fun field ->
+                  if String.equal field.fname (get_id fname) then
+                    Some field.ftyp
+                  else None)
+            with
+            | Some stored_tp ->
+                let%bind res, g = fetch_local ~fname ~keys fields in
+                pure (res, stored_tp, g)
+            | None ->
+                fail1
+                  (sprintf "Unable to fetch %s from contract at address %s"
+                     (get_id fname) caddr)
+                  (ER.get_loc (get_rep fname)) )
+        | None ->
+            fail1
+              (sprintf "Unable to fetch from contract at address %s" caddr)
+              (ER.get_loc (get_rep fname)) )
 
   let update_local ~fname ~keys vopt fields =
     let s = fields in

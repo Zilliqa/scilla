@@ -36,7 +36,7 @@ val external_fetch :
   fname:'a ident ->
   keys:literal list ->
   tp:typ ->
-  (literal option * string, scilla_error list) result
+  (literal option * typ, scilla_error list) result
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :

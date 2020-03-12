@@ -126,4 +126,13 @@ module MakeStateService () : sig
     fname:loc ident ->
     keys:literal list ->
     (stmt_eval_context, scilla_error list) result
+
+  (* Fetch external contract state.
+   * Returns the value (if found) and its type as was stored. *)
+  val external_fetch :
+    caddr:string ->
+    fname:loc ident ->
+    keys:literal list ->
+    expected_field_tp:typ ->
+    (literal option * typ * stmt_eval_context, scilla_error list) result
 end
