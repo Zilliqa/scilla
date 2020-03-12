@@ -244,8 +244,8 @@ let jobj_to_statevar json =
   let t = parse_typ_exn tstring in
   let v = member_exn "value" json in
   if GlobalConfig.validate_json () (* TODO: Add command line flag. *) then
-    (n, json_to_lit_exn t v)
-  else (n, JSONParser.parse_json t v)
+    (n, t, json_to_lit_exn t v)
+  else (n, t, JSONParser.parse_json t v)
 
 (****************************************************************)
 (*                    JSON printing                             *)
@@ -310,12 +310,12 @@ module ContractState = struct
   let get_init_extlibs filename =
     let allf = get_json_data filename in
     let extlibs =
-      List.filter allf ~f:(fun (name, _) ->
+      List.filter allf ~f:(fun (name, _ty, _v) ->
           String.(name = ContractUtil.extlibs_label))
     in
     match extlibs with
     | [] -> []
-    | [ (_, lit) ] -> (
+    | [ (_name, _ty, lit) ] -> (
         match Datatypes.scilla_list_to_ocaml lit with
         | Error _ ->
             raise
@@ -368,7 +368,10 @@ module Message = struct
         build_prim_lit_exn (PrimTypes.bystrx_typ address_length) senders )
     in
     let pjlist = member_exn "params" json |> to_list_exn in
-    let params = List.map pjlist ~f:jobj_to_statevar in
+    let params = List.map pjlist ~f:(fun f ->
+      let (name, _ty, v) = jobj_to_statevar f in
+      (name, v)
+    ) in
     tag :: amount :: sender :: params
 
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)

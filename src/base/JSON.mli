@@ -27,7 +27,7 @@ module ContractState : sig
    *  Returns a list of (vname:string,value:literal) items
    *  from the json in the input filename. Invalid inputs in the json are ignored 
    *)
-  val get_json_data : string -> (string * Syntax.literal) list
+  val get_json_data : string -> (string * Syntax.typ * Syntax.literal) list
 
   (* 
    * Prints a list of state variables (string, literal)
@@ -89,7 +89,7 @@ module Message : sig
 end
 
 module BlockChainState : sig
-  val get_json_data : string -> (string * Syntax.literal) list
+  val get_json_data : string -> (string * Syntax.typ * Syntax.literal) list
   (** 
    **  Returns a list of (vname:string,value:literal) items
    **  from the json in the input filename.
