@@ -335,6 +335,8 @@ type runner_cli = {
   cf_token_fields : string list;
   p_contract_info : bool;
   p_type_info : bool;
+  (* Sharding analysis *)
+  sa_flag : bool;
 }
 
 let parse_cli args ~exe_name =
@@ -348,6 +350,7 @@ let parse_cli args ~exe_name =
   let r_type_info = ref false in
   let r_cf = ref false in
   let r_cf_token_fields = ref [] in
+  let r_sa = ref false in
   let speclist =
     [
       ( "-version",
@@ -383,6 +386,9 @@ let parse_cli args ~exe_name =
         Arg.String (fun s -> r_cf_token_fields := s :: !r_cf_token_fields),
         "Make the cashflow checker consider a field to be money (implicitly \
          sets -cf)" );
+      ( "-sa",
+      Arg.Unit (fun () -> r_sa := true),
+      "Run sharding analysis and print results" );
       ( "-jsonerrors",
         Arg.Unit (fun () -> r_json_errors := true),
         "Print errors in JSON format" );
@@ -433,4 +439,5 @@ let parse_cli args ~exe_name =
     cf_token_fields = !r_cf_token_fields;
     init_file = !r_init_file;
     p_type_info = !r_type_info;
+    sa_flag = !r_sa;
   }

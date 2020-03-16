@@ -33,6 +33,7 @@ open EventInfo
 open TypeInfo
 open Cashflow
 open Accept
+open ShardingAnalysis
 module PSRep = ParserRep
 module PERep = ParserRep
 module Rec = Recursion.ScillaRecursion (PSRep) (PERep)
@@ -50,6 +51,7 @@ module GUA = ScillaGUA (TCSRep) (TCERep)
 module CF = ScillaCashflowChecker (TCSRep) (TCERep)
 module AC = ScillaAcceptChecker (TCSRep) (TCERep)
 module TI = ScillaTypeInfo (TCSRep) (TCERep)
+module SA = ScillaSA (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr syn =
@@ -169,6 +171,27 @@ let analyze_print_gas cmod typed_elibs =
       in
       res
 
+let analyze_print_sharding cmod typed_elibs =
+  let res = SA.sa_module cmod typed_elibs in
+  match res with
+  | Error msg ->
+      pout @@ scilla_error_to_string msg;
+      res
+  | Ok cpol ->
+      plog
+      @@ sprintf
+            "\n[Sharding analysis]:\n module [%s] is successfully analyzed.\n"
+            (get_id cmod.contr.cname);
+      let _ =
+        List.iter
+          ~f:(fun (i, summ) ->
+            pout
+            @@ sprintf "State footprint for component %s:\n%s\n\n"
+                  (get_id i) (SA.sprint_summary summ))
+          cpol
+      in
+      res
+
 let check_cashflow typed_cmod token_fields =
   let param_field_tags, ctr_tags = CF.main typed_cmod token_fields in
   let param_field_tags_to_string =
@@ -281,6 +304,12 @@ let check_cmodule cli =
       if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields)
       else None
     in
+    let%bind _ =
+    if cli.sa_flag then
+      wrap_error_with_gas remaining_gas
+      @@ analyze_print_sharding typed_cmod typed_elibs
+    else pure []
+  in
     pure @@ (cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas)
   in
   match r with
