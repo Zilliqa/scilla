@@ -323,8 +323,7 @@ struct
           let pnames = List.map c.comp_params ~f:(fun (p, _) -> get_id p) in
           (* Check for shadowing in statements. *)
           let rec stmt_iter stmts stmt_defs =
-            foldM stmts ~init:stmt_defs
-              ~f:(fun acc_stmt_defs (s, _) ->
+            foldM stmts ~init:stmt_defs ~f:(fun acc_stmt_defs (s, _) ->
                 match s with
                 | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
                     check_warn_redef cparams cfields pnames stmt_defs x;
@@ -333,16 +332,22 @@ struct
                 | CreateEvnt _ | Throw _ | CallProc _ | Iterate _ ->
                     pure acc_stmt_defs
                 | Bind (x, e) ->
-                    let () = check_warn_redef cparams cfields pnames stmt_defs x in
+                    let () =
+                      check_warn_redef cparams cfields pnames stmt_defs x
+                    in
                     let%bind () = expr_iter e cparams cfields pnames in
-                    pure (get_id x::acc_stmt_defs)
+                    pure (get_id x :: acc_stmt_defs)
                 | MatchStmt (_, clauses) ->
-                    let%bind () = iterM
-                      ~f:(fun (pat, mbody) ->
-                        let%bind _ = pattern_iter pat cparams cfields pnames in
-                        stmt_iter mbody acc_stmt_defs)
-                      clauses in pure acc_stmt_defs
-              )
+                    let%bind () =
+                      iterM
+                        ~f:(fun (pat, mbody) ->
+                          let%bind _ =
+                            pattern_iter pat cparams cfields pnames
+                          in
+                          stmt_iter mbody acc_stmt_defs)
+                        clauses
+                    in
+                    pure acc_stmt_defs)
           in
           (* Go through all statements and see if any of cparams, cfields or pnames are redefined. *)
           stmt_iter c.comp_body [])
