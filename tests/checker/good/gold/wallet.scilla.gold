@@ -174,28 +174,6 @@
   },
   "warnings": [
     {
-      "warning_message":
-        "checked is a new variable. It does not reassign the previously defined variable.",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 537,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 2
-    },
-    {
-      "warning_message":
-        "checked is a new variable. It does not reassign the previously defined variable.",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 407,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 2
-    },
-    {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet.scilla",

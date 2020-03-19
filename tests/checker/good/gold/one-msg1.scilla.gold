@@ -51,6 +51,17 @@
   "warnings": [
     {
       "warning_message":
+        "msgs2 is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 31,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
         "No transition in contract HelloWorld contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },

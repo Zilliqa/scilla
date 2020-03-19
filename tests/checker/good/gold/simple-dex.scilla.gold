@@ -141,17 +141,6 @@
   "warnings": [
     {
       "warning_message":
-        "prevVal is a new variable. It does not reassign the previously defined variable.",
-      "start_location": {
-        "file": "contracts/simple-dex.scilla",
-        "line": 144,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 2
-    },
-    {
-      "warning_message":
         "No transition in contract SimpleDex contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },

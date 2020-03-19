@@ -109,6 +109,28 @@
   "warnings": [
     {
       "warning_message":
+        "is_one is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 496,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "m3 is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 445,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
         "m1 is a new variable. It does not reassign the previously defined variable.",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
@@ -131,6 +153,17 @@
     },
     {
       "warning_message":
+        "key1b is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 272,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
         "c1 is a new variable. It does not reassign the previously defined variable.",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
@@ -142,10 +175,32 @@
     },
     {
       "warning_message":
+        "key1b is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 262,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
         "c1 is a new variable. It does not reassign the previously defined variable.",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 253,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "key1b is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 252,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -168,6 +223,17 @@
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 197,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "key1b is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 196,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },

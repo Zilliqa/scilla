@@ -95,39 +95,6 @@
   },
   "warnings": [
     {
-      "warning_message":
-        "e is a new variable. It does not reassign the previously defined variable.",
-      "start_location": {
-        "file": "contracts/auction.scilla",
-        "line": 163,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 2
-    },
-    {
-      "warning_message":
-        "e is a new variable. It does not reassign the previously defined variable.",
-      "start_location": {
-        "file": "contracts/auction.scilla",
-        "line": 117,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 2
-    },
-    {
-      "warning_message":
-        "e is a new variable. It does not reassign the previously defined variable.",
-      "start_location": {
-        "file": "contracts/auction.scilla",
-        "line": 110,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 2
-    },
-    {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/auction.scilla",
