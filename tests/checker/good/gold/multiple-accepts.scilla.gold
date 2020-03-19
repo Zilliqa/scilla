@@ -70,39 +70,6 @@
   "warnings": [
     {
       "warning_message":
-        "sw is a new variable. It does not reassign the previously defined variable.",
-      "start_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 92,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 2
-    },
-    {
-      "warning_message":
-        "sw is a new variable. It does not reassign the previously defined variable.",
-      "start_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 84,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 2
-    },
-    {
-      "warning_message":
-        "sw is a new variable. It does not reassign the previously defined variable.",
-      "start_location": {
-        "file": "checker/good/multiple-accepts.scilla",
-        "line": 76,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 2
-    },
-    {
-      "warning_message":
         "transition donate_variable had a potential code path with duplicate accept statements:\n  Accept at checker/good/multiple-accepts.scilla:70:13\n  Accept at checker/good/multiple-accepts.scilla:78:13\n",
       "start_location": {
         "file": "checker/good/multiple-accepts.scilla",

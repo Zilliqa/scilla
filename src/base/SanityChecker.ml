@@ -327,13 +327,13 @@ struct
               ~f:(fun acc_stmt_defs (s, _) ->
                 match s with
                 | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
-                    check_warn_redef cparams cfields pnames acc_stmt_defs x;
+                    check_warn_redef cparams cfields pnames stmt_defs x;
                     pure (get_id x :: acc_stmt_defs)
                 | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment
                 | CreateEvnt _ | Throw _ | CallProc _ | Iterate _ ->
                     pure acc_stmt_defs
                 | Bind (x, e) ->
-                    let () = check_warn_redef cparams cfields pnames acc_stmt_defs x in
+                    let () = check_warn_redef cparams cfields pnames stmt_defs x in
                     let%bind () = expr_iter e cparams cfields pnames in
                     pure (get_id x::acc_stmt_defs)
                 | MatchStmt (_, clauses) ->
