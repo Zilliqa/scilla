@@ -8077,6 +8077,83 @@
   ],
   "warnings": [
     {
+      "warning_message":
+        "m1 is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 343,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "c1 is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 303,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "c1 is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 263,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "c1 is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 253,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "c1 is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 243,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "c1 is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 197,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "c1 is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 180,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",

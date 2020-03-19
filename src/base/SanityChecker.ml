@@ -204,7 +204,7 @@ struct
 
   module CheckShadowing = struct
     (* A utility function that checks if "id" is shadowing cparams, cfields or pnames. *)
-    let check_warn_redef cparams cfields pnames id =
+    let check_warn_redef cparams cfields pnames stmts_defs id =
       if List.mem cparams (get_id id) ~equal:String.( = ) then
         warn1
           (Printf.sprintf "Name %s shadows a contract parameter." (get_id id))
@@ -220,13 +220,21 @@ struct
           (Printf.sprintf "Name %s shadows a transition parameter." (get_id id))
           warning_level_name_shadowing
           (ER.get_loc (get_rep id))
+      else if List.mem stmts_defs (get_id id) ~equal:String.( = ) then
+        warn1
+          (Printf.sprintf
+             "%s is a new variable. It does not reassign the previously \
+              defined variable."
+             (get_id id))
+          warning_level_name_shadowing
+          (ER.get_loc (get_rep id))
 
     (* Check for shadowing in patterns. *)
     let pattern_iter pat cparams cfields pnames =
       (* Check if any variable bound in this pattern shadows cparams/cfields/pnames *)
       let rec outer_scope_iter = function
         | Wildcard -> ()
-        | Binder i -> check_warn_redef cparams cfields pnames i
+        | Binder i -> check_warn_redef cparams cfields pnames [] i
         | Constructor (_, plist) -> List.iter plist ~f:outer_scope_iter
       in
       outer_scope_iter pat;
@@ -253,13 +261,13 @@ struct
       | Literal _ | Builtin _ | Constr _ | App _ | Message _ | Var _ | TApp _ ->
           pure ()
       | Let (i, _, e_lhs, e_rhs) ->
-          check_warn_redef cparams cfields pnames i;
+          check_warn_redef cparams cfields pnames [] i;
           let%bind _ = expr_iter e_lhs cparams cfields pnames in
           expr_iter e_rhs cparams cfields pnames
       | Fun (i, _, e_body) | Fixpoint (i, _, e_body) | TFun (i, e_body) ->
           (* "i" being a type variable shouldn't be shadowing contract parameters,
              fields or component parameters. This is just a conservative check. *)
-          check_warn_redef cparams cfields pnames i;
+          check_warn_redef cparams cfields pnames [] i;
           expr_iter e_body cparams cfields pnames
       | MatchExpr (_, clauses) ->
           iterM
@@ -297,7 +305,7 @@ struct
       let%bind _ =
         iterM
           ~f:(fun (f, _, finit_expr) ->
-            check_warn_redef cparams [] [] f;
+            check_warn_redef cparams [] [] [] f;
             expr_iter finit_expr cparams [] [])
           cmod.contr.cfields
       in
@@ -311,32 +319,33 @@ struct
         ~f:(fun c ->
           (* 1. If a parameter name shadows one of cparams or cfields, warn. *)
           List.iter c.comp_params ~f:(fun (p, _) ->
-              check_warn_redef cparams cfields [] p);
+              check_warn_redef cparams cfields [] [] p);
           let pnames = List.map c.comp_params ~f:(fun (p, _) -> get_id p) in
           (* Check for shadowing in statements. *)
-          let rec stmt_iter stmts =
-            iterM
-              ~f:(fun (s, _) ->
+          let rec stmt_iter stmts stmt_defs =
+            foldM stmts ~init:stmt_defs
+              ~f:(fun acc_stmt_defs (s, _) ->
                 match s with
                 | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
-                    check_warn_redef cparams cfields pnames x;
-                    pure ()
+                    check_warn_redef cparams cfields pnames acc_stmt_defs x;
+                    pure (get_id x :: acc_stmt_defs)
                 | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment
                 | CreateEvnt _ | Throw _ | CallProc _ | Iterate _ ->
-                    pure ()
+                    pure acc_stmt_defs
                 | Bind (x, e) ->
-                    check_warn_redef cparams cfields pnames x;
-                    expr_iter e cparams cfields pnames
+                    let () = check_warn_redef cparams cfields pnames acc_stmt_defs x in
+                    let%bind () = expr_iter e cparams cfields pnames in
+                    pure (get_id x::acc_stmt_defs)
                 | MatchStmt (_, clauses) ->
-                    iterM
+                    let%bind () = iterM
                       ~f:(fun (pat, mbody) ->
                         let%bind _ = pattern_iter pat cparams cfields pnames in
-                        stmt_iter mbody)
-                      clauses)
-              stmts
+                        stmt_iter mbody acc_stmt_defs)
+                      clauses in pure acc_stmt_defs
+              )
           in
           (* Go through all statements and see if any of cparams, cfields or pnames are redefined. *)
-          stmt_iter c.comp_body)
+          stmt_iter c.comp_body [])
         cmod.contr.ccomps
 
     let shadowing_lmod (lmod : lmodule) =
