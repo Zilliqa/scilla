@@ -34,19 +34,24 @@ type ss_field = {
   fval : literal option; (* We may or may not have the value in memory. *)
 }
 
+type external_state = { caddr : string; cstate : ss_field list }
+
 type service_mode =
   | IPC of string
   (* Socket address for IPC *)
   | Local
 
-type ss_state = Uninitialized | SS of service_mode * ss_field list
+type ss_state =
+  | Uninitialized
+  | SS of service_mode * ss_field list * external_state list
 
 module MakeStateService () = struct
   (* Internal state for the state service. *)
   let ss_cur_state = ref Uninitialized
 
   (* Sets up the state service object. Should be called before any queries. *)
-  let initialize ~sm ~fields = ss_cur_state := SS (sm, fields)
+  let initialize ~sm ~fields ~ext_states =
+    ss_cur_state := SS (sm, fields, ext_states)
 
   (* Finalize: no more queries. *)
   let finalize () = pure ()
@@ -54,7 +59,7 @@ module MakeStateService () = struct
   let assert_init () =
     match !ss_cur_state with
     | Uninitialized -> fail0 "StateService: Uninitialized"
-    | SS (sm, fields) -> pure (sm, fields)
+    | SS (sm, fields, estates) -> pure (sm, fields, estates)
 
   let field_type fields fname =
     match List.find fields ~f:(fun z -> String.(z.fname = get_id fname)) with
@@ -120,7 +125,7 @@ module MakeStateService () = struct
           (ER.get_loc (get_rep fname))
 
   let fetch ~fname ~keys =
-    let%bind sm, fields = assert_init () in
+    let%bind sm, fields, _estates = assert_init () in
     match sm with
     | IPC socket_addr -> (
         let%bind tp = field_type fields fname in
@@ -136,6 +141,50 @@ module MakeStateService () = struct
                 (ER.get_loc (get_rep fname))
           | Some res' -> pure @@ (res, G_Load res') )
     | Local -> fetch_local ~fname ~keys fields
+
+  let external_fetch ~caddr ~fname ~keys ~expected_field_tp =
+    let%bind sm, _fields, estates = assert_init () in
+    match sm with
+    | IPC socket_addr -> (
+        let tp = expected_field_tp in
+        let%bind res, stored_tp =
+          StateIPCClient.external_fetch ~socket_addr ~caddr ~fname ~keys ~tp
+        in
+        if not @@ List.is_empty keys then
+          pure @@ (res, stored_tp, G_MapGet (List.length keys, res))
+        else
+          match res with
+          | None ->
+              fail1
+                (sprintf "StateService: Field %s not found on IPC server."
+                   (get_id fname))
+                (ER.get_loc (get_rep fname))
+          | Some res' -> pure @@ (res, stored_tp, G_Load res') )
+    | Local -> (
+        match
+          List.find_map estates ~f:(fun estate ->
+              if String.equal caddr estate.caddr then Some estate.cstate
+              else None)
+        with
+        | Some fields -> (
+            match
+              List.find_map fields ~f:(fun field ->
+                  if String.equal field.fname (get_id fname) then
+                    Some field.ftyp
+                  else None)
+            with
+            | Some stored_tp ->
+                let%bind res, g = fetch_local ~fname ~keys fields in
+                pure (res, stored_tp, g)
+            | None ->
+                fail1
+                  (sprintf "Unable to fetch %s from contract at address %s"
+                     (get_id fname) caddr)
+                  (ER.get_loc (get_rep fname)) )
+        | None ->
+            fail1
+              (sprintf "Unable to fetch from contract at address %s" caddr)
+              (ER.get_loc (get_rep fname)) )
 
   let update_local ~fname ~keys vopt fields =
     let s = fields in
@@ -216,7 +265,7 @@ module MakeStateService () = struct
           (ER.get_loc (get_rep fname))
 
   let update ~fname ~keys ~value =
-    let%bind sm, fields = assert_init () in
+    let%bind sm, fields, estates = assert_init () in
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
@@ -228,12 +277,12 @@ module MakeStateService () = struct
         else pure @@ G_Store value
     | Local ->
         let%bind fields', g = update_local ~fname ~keys (Some value) fields in
-        let _ = ss_cur_state := SS (sm, fields') in
+        let _ = ss_cur_state := SS (sm, fields', estates) in
         pure g
 
   (* Is a key in a map. keys must be non-empty. *)
   let is_member ~fname ~keys =
-    let%bind sm, fields = assert_init () in
+    let%bind sm, fields, _estates = assert_init () in
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
@@ -245,7 +294,7 @@ module MakeStateService () = struct
 
   (* Remove a key from a map. keys must be non-empty. *)
   let remove ~fname ~keys =
-    let%bind sm, fields = assert_init () in
+    let%bind sm, fields, _estates = assert_init () in
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
@@ -260,7 +309,7 @@ module MakeStateService () = struct
   let get_full_state () =
     match !ss_cur_state with
     | Uninitialized -> fail0 "StateService: Uninitialized"
-    | SS (Local, fl) ->
+    | SS (Local, fl, _estates) ->
         mapM fl ~f:(fun f ->
             match f.fval with
             | None ->
@@ -268,7 +317,7 @@ module MakeStateService () = struct
                   (sprintf "StateService: Field %s's value is not known"
                      f.fname)
             | Some l -> pure (f.fname, l))
-    | SS (IPC _, fl) ->
+    | SS (IPC _, fl, _estates) ->
         let%bind sl =
           mapM fl ~f:(fun f ->
               let%bind vopt, _ = fetch ~fname:(asId f.fname) ~keys:[] in

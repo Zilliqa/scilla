@@ -27,6 +27,17 @@ val fetch :
   tp:typ ->
   (literal option, scilla_error list) result
 
+(* Fetch from another contract's field. "keys" is empty when fetching non-map fields
+ * or an entire Map field. If a map key is not found, then None is returned, otherwise
+ * (Some value) is returned. *)
+val external_fetch :
+  socket_addr:string ->
+  caddr:string ->
+  fname:'a ident ->
+  keys:literal list ->
+  tp:typ ->
+  (literal option * typ, scilla_error list) result
+
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
   socket_addr:string ->
@@ -43,6 +54,15 @@ val is_member :
   keys:literal list ->
   tp:typ ->
   (bool, scilla_error list) result
+
+(* Does field fname exist in caddr? If yes and it's a map, do keys exist? *)
+val external_is_member :
+  socket_addr:string ->
+  caddr:string ->
+  fname:loc ident ->
+  keys:literal list ->
+  tp:typ ->
+  (bool * string, scilla_error list) result
 
 (* Remove a key from a map. keys must be non-empty. *)
 val remove :

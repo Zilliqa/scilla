@@ -29,6 +29,8 @@ type ss_field = {
   fval : literal option; (* Value may not be available (in IPC mode) *)
 }
 
+type external_state = { caddr : string; cstate : ss_field list }
+
 type service_mode =
   | IPC of string
   (* port number for IPC *)
@@ -53,7 +55,11 @@ type service_mode =
 *)
 
 (* Sets up the state service object. Should be called before any queries. *)
-val initialize : sm:service_mode -> fields:ss_field list -> unit
+val initialize :
+  sm:service_mode ->
+  fields:ss_field list ->
+  ext_states:external_state list ->
+  unit
 
 (* Expensive operation, use with care. *)
 val get_full_state : unit -> ((string * literal) list, scilla_error list) result
@@ -89,7 +95,11 @@ val remove :
 
 (* Should rarely be used, and is useful only when multiple StateService objects are required *)
 module MakeStateService () : sig
-  val initialize : sm:service_mode -> fields:ss_field list -> unit
+  val initialize :
+    sm:service_mode ->
+    fields:ss_field list ->
+    ext_states:external_state list ->
+    unit
 
   val get_full_state :
     unit -> ((string * literal) list, scilla_error list) result
@@ -116,4 +126,13 @@ module MakeStateService () : sig
     fname:loc ident ->
     keys:literal list ->
     (stmt_eval_context, scilla_error list) result
+
+  (* Fetch external contract state.
+   * Returns the value (if found) and its type as was stored. *)
+  val external_fetch :
+    caddr:string ->
+    fname:loc ident ->
+    keys:literal list ->
+    expected_field_tp:typ ->
+    (literal option * typ * stmt_eval_context, scilla_error list) result
 end

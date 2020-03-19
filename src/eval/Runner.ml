@@ -81,18 +81,16 @@ let check_after_step res gas_limit =
 let input_state_json filename =
   let open JSON.ContractState in
   let states = get_json_data filename in
-  let bal_lit =
-    match List.Assoc.find states balance_label ~equal:String.( = ) with
-    | Some v -> v
-    | None -> raise @@ mk_invalid_json (balance_label ^ " field missing")
+  let bal_lit, no_bal_states =
+    List.partition_map states ~f:(fun (name, _ty, v) -> 
+    if String.equal name balance_label
+    then `Fst v else `Snd (name, v)
+    )
   in
   let bal_int =
     match bal_lit with
-    | UintLit (Uint128L x) -> x
-    | _ -> raise (mk_invalid_json (balance_label ^ " invalid"))
-  in
-  let no_bal_states =
-    List.Assoc.remove states balance_label ~equal:String.( = )
+    | [UintLit (Uint128L x)] -> x
+    | _ -> raise (mk_invalid_json (balance_label ^ " missing or invalid"))
   in
   (no_bal_states, bal_int)
 
@@ -130,8 +128,9 @@ let validate_get_init_json init_file gas_remaining source_ver =
     Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty)
   in
   let init_json_scilla_version =
-    List.Assoc.find initargs ~equal:String.equal
-      ContractUtil.scilla_version_label
+    List.find_map initargs ~f:(fun (name, _, v) -> 
+      if String.equal name ContractUtil.scilla_version_label
+      then Some v else None)
   in
   let () =
     match init_json_scilla_version with
@@ -226,12 +225,15 @@ let run_with_args args =
         (* Checking initialized libraries! *)
         let gas_remaining = check_libs clibs elibs args.input gas_remaining in
         let initargs =
-          validate_get_init_json args.input_init gas_remaining cmod.smver
+          List.map (validate_get_init_json args.input_init gas_remaining cmod.smver)
+            ~f:(fun (name, _ty, v) -> (name, v))
         in
 
         (* Retrieve block chain state  *)
         let bstate =
-          try JSON.BlockChainState.get_json_data args.input_blockchain
+          try 
+            List.map (JSON.BlockChainState.get_json_data args.input_blockchain)
+              ~f:(fun (name, _ty, v) -> (name, v))
           with Invalid_json s ->
             fatal_error_gas
               ( s
@@ -269,7 +271,7 @@ let run_with_args args =
                     else Some { fname = s; ftyp = t; fval = None })
               in
               let sm = IPC args.ipc_address in
-              let () = initialize ~sm ~fields in
+              let () = initialize ~sm ~fields ~ext_states:[] in
               match
                 (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
                 let%bind _ =
@@ -322,12 +324,21 @@ let run_with_args args =
                 in
                 let () =
                   StateService.initialize ~sm:(IPC args.ipc_address) ~fields
+                    ~ext_states:[]
                 in
                 (cstate, gas_remaining')
               else
                 (* Retrieve state variables *)
-                let curargs, cur_bal =
-                  try input_state_json args.input_state
+                let curargs, cur_bal, ext_states =
+                  try
+                    let curargs, cur_bal = input_state_json args.input_state in
+                    let extstates = List.map args.ext_states ~f:(fun fname ->
+                      let cstate = JSON.ContractState.get_json_data fname in
+                      let caddr = Caml.Filename.remove_extension (Filename.basename fname) in
+                      StateService.{caddr = caddr; cstate = 
+                        List.map cstate ~f:(fun (name, ty, v) -> { fname = name; ftyp = ty; fval = Some v}) }
+                    ) in
+                    curargs, cur_bal, extstates
                   with Invalid_json s ->
                     fatal_error_gas
                       ( s
@@ -356,7 +367,7 @@ let run_with_args args =
                       in
                       { fname = s; ftyp = t; fval = Some l })
                 in
-                let () = StateService.initialize ~sm:Local ~fields in
+                let () = StateService.initialize ~sm:Local ~fields ~ext_states in
                 (cstate, gas_remaining')
             in
 

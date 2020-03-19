@@ -28,6 +28,7 @@ type args = {
   balance : Stdint.uint128;
   pp_json : bool;
   ipc_address : string;
+  ext_states : string list;
 }
 
 val parse : string list option -> exe_name:string -> args
