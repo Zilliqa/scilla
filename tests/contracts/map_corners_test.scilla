@@ -493,8 +493,8 @@ transition t15()
   match m2o with
   | Some m2 =>
     m2_size = builtin size m2;
-    is_one = builtin eq m2_size one;
-    match is_one with
+    is_one_1 = builtin eq m2_size one;
+    match is_one_1 with
     | True =>
       m1o = builtin get m2 key2a;
       match m1o with

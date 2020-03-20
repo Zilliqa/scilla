@@ -404,8 +404,8 @@ transition AddCandidateOwner (candidate : ByStr20)
     owners := owners_map;
     valid_contract = check_contract_validity owners_map;
     contract_valid := valid_contract;
-    checked = True;
-    validity_checked := checked
+    checked_now = True;
+    validity_checked := checked_now
   | True =>
   end;
   (* Only accept funds if the contract is valid. *)
@@ -534,8 +534,8 @@ transition AddFunds ()
     owners := owners_map;
     valid_contract = check_contract_validity owners_map;
     contract_valid := valid_contract;
-    checked = True;
-    validity_checked := checked
+    checked_now = True;
+    validity_checked := checked_now
   | True =>
   end;
 
