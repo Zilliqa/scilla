@@ -106,3 +106,13 @@ transition optlist ()
   send msgs
  
 end
+
+transition redef_warn(b : Bool)
+  x = Uint32 0;
+  match b with
+  | True => x = Uint32 1
+  | False =>
+  end;
+  e = {_eventname : "Foo"; x : x};
+  event e
+end
