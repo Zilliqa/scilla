@@ -9,7 +9,7 @@
 
 type_term: CID LPAREN TID WITH
 ##
-## Ends in an error in state: 71.
+## Ends in an error in state: 66.
 ##
 ## targ -> LPAREN typ . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ## typ -> typ . TARROW typ [ TARROW RPAREN ]
@@ -23,7 +23,7 @@ This is an invalid type term, likely the ADT argument brackets are not closed pr
 
 type_term: CID LPAREN WITH
 ##
-## Ends in an error in state: 52.
+## Ends in an error in state: 47.
 ##
 ## targ -> LPAREN . typ RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
@@ -48,7 +48,7 @@ type_term: CID MAP CID UNDERSCORE
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
+## In state 37, spurious reduction of production t_map_key -> scid 
 ##
 # see tests/parser/bad/type_t-cid-map-cid-underscore.scilla
 
@@ -82,7 +82,7 @@ This is an invalid type term, the ADT constructor is incorrect. Following the pe
 
 type_term: CID TID WITH
 ##
-## Ends in an error in state: 65.
+## Ends in an error in state: 60.
 ##
 ## list(targ) -> targ . list(targ) [ TARROW RPAREN RBRACE EQ EOF COMMA ]
 ##
@@ -95,7 +95,7 @@ This is an invalid type term, the ADT constructor arguments are incorrect.
 
 type_term: CID UNDERSCORE
 ##
-## Ends in an error in state: 64.
+## Ends in an error in state: 59.
 ##
 ## typ -> scid . list(targ) [ TARROW RPAREN EQ EOF COMMA ]
 ##
@@ -128,7 +128,7 @@ This is an invalid type term, the ADT constructor arguments are likely incorrect
 
 type_term: FORALL TID PERIOD TID WITH
 ##
-## Ends in an error in state: 61.
+## Ends in an error in state: 56.
 ##
 ## typ -> typ . TARROW typ [ TARROW RPAREN EQ EOF COMMA ]
 ## typ -> FORALL TID PERIOD typ . [ TARROW RPAREN EQ EOF COMMA ]
@@ -142,7 +142,7 @@ This is an invalid forall type, the type term is finished after the last type id
 
 type_term: FORALL TID PERIOD WITH
 ##
-## Ends in an error in state: 60.
+## Ends in an error in state: 55.
 ##
 ## typ -> FORALL TID PERIOD . typ [ TARROW RPAREN EQ EOF COMMA ]
 ##
@@ -155,7 +155,7 @@ This is an invalid forall type, after the period (following forall and a type id
 
 type_term: FORALL TID WITH
 ##
-## Ends in an error in state: 59.
+## Ends in an error in state: 54.
 ##
 ## typ -> FORALL TID . PERIOD typ [ TARROW RPAREN EQ EOF COMMA ]
 ##
@@ -168,7 +168,7 @@ This is an invalid forall type, after the type id (following forall) the parser 
 
 type_term: FORALL WITH
 ##
-## Ends in an error in state: 58.
+## Ends in an error in state: 53.
 ##
 ## typ -> FORALL . TID PERIOD typ [ TARROW RPAREN EQ EOF COMMA ]
 ##
@@ -181,7 +181,7 @@ This is an invalid forall type, after the forall the parser expects a type ident
 
 type_term: LPAREN TID WITH
 ##
-## Ends in an error in state: 69.
+## Ends in an error in state: 64.
 ##
 ## typ -> typ . TARROW typ [ TARROW RPAREN ]
 ## typ -> LPAREN typ . RPAREN [ TARROW RPAREN EQ EOF COMMA ]
@@ -195,7 +195,7 @@ This is an invalid type term because the brackets are not closed after the type 
 
 type_term: LPAREN WITH
 ##
-## Ends in an error in state: 57.
+## Ends in an error in state: 52.
 ##
 ## typ -> LPAREN . typ RPAREN [ TARROW RPAREN EQ EOF COMMA ]
 ##
@@ -208,7 +208,7 @@ This is an invalid type term, please put a valid type term in the brackets.
 
 type_term: MAP CID CID CID UNDERSCORE
 ##
-## Ends in an error in state: 41.
+## Ends in an error in state: 42.
 ##
 ## list(t_map_value_args) -> t_map_value_args . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
@@ -220,35 +220,15 @@ type_term: MAP CID CID CID UNDERSCORE
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 22, spurious reduction of production scid -> CID 
-## In state 40, spurious reduction of production t_map_value_args -> scid 
+## In state 41, spurious reduction of production t_map_value_args -> scid 
 ##
 # see tests/parser/bad/type_t-map-cid-cid-cid-underscore.scilla
 
 This is an invalid map type, the map value is incorrect. The map value is likely an ADT constructor with incorrect constructor arguments.
 
-type_term: MAP CID CID LPAREN CID UNDERSCORE
-##
-## Ends in an error in state: 38.
-##
-## t_map_value_args -> LPAREN t_map_value_args . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN t_map_value_args
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 40, spurious reduction of production t_map_value_args -> scid 
-##
-# see tests/parser/bad/type_t-map-cid-cid-lparen-cid-underscore.scilla
-
-This is an invalid map type, the map value type is incorrect. It is possible that the key type is a nested ADT where the inner constructor arguments are faulty.
-
 type_term: MAP CID CID LPAREN WITH
 ##
-## Ends in an error in state: 37.
+## Ends in an error in state: 38.
 ##
 ## t_map_value_args -> LPAREN . t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
@@ -261,7 +241,7 @@ This is an invalid map type, the map value type is likely incorrect. In the brac
 
 type_term: MAP CID CID MAP CID UNDERSCORE
 ##
-## Ends in an error in state: 34.
+## Ends in an error in state: 35.
 ##
 ## t_map_value_args -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
@@ -273,7 +253,7 @@ type_term: MAP CID CID MAP CID UNDERSCORE
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
+## In state 37, spurious reduction of production t_map_key -> scid 
 ##
 # see tests/parser/bad/type_t-map-cid-cid-map-cid-underscore.scilla
 
@@ -281,7 +261,7 @@ This is invalid map type, the map value is incorrect. It is likely that there is
 
 type_term: MAP CID CID MAP WITH
 ##
-## Ends in an error in state: 33.
+## Ends in an error in state: 34.
 ##
 ## t_map_value_args -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
@@ -294,7 +274,7 @@ This is an invalid map type, the map value type is incorrect. It is likely there
 
 type_term: MAP CID CID UNDERSCORE
 ##
-## Ends in an error in state: 36.
+## Ends in an error in state: 33.
 ##
 ## t_map_value -> scid . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
@@ -313,105 +293,32 @@ This is an invalid map type, the map value is incorrect. It is likely that there
 
 type_term: MAP CID LPAREN CID CID TYPE
 ##
-## Ends in an error in state: 48.
+## Ends in an error in state: 31.
 ##
-## t_map_value -> LPAREN scid list(t_map_value_args) . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## t_map_value -> LPAREN t_map_value . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
-## LPAREN scid list(t_map_value_args)
+## LPAREN t_map_value
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 22, spurious reduction of production scid -> CID 
-## In state 40, spurious reduction of production t_map_value_args -> scid 
-## In state 41, spurious reduction of production list(t_map_value_args) -> 
-## In state 42, spurious reduction of production list(t_map_value_args) -> t_map_value_args list(t_map_value_args) 
+## In state 41, spurious reduction of production t_map_value_args -> scid 
+## In state 42, spurious reduction of production list(t_map_value_args) -> 
+## In state 43, spurious reduction of production list(t_map_value_args) -> t_map_value_args list(t_map_value_args) 
+## In state 44, spurious reduction of production t_map_value -> scid list(t_map_value_args) 
 ##
 # see tests/parser/bad/type_t-map-cid-lparen-cid-cid-type.scilla
 
 This is an invalid map type, the map value is likely incorrect. The map value expects a list of valid ADT constructor arguments for the ADT, possibly.
 
-type_term: MAP CID LPAREN CID UNDERSCORE
-##
-## Ends in an error in state: 47.
-##
-## t_map_value -> LPAREN scid . list(t_map_value_args) RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN scid
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-##
-# see tests/checker/bad/bad_fields2.scilla
-# see tests/checker/bad/map_value_function.scilla
-
-This is an invalid map type, the map value is likely incorrect. If the map value is an ADT in brackets, then we expect valid ADT arguments or a closing bracket.
-
-type_term: MAP CID LPAREN MAP CID CID UNDERSCORE
-##
-## Ends in an error in state: 45.
-##
-## t_map_value -> LPAREN MAP t_map_key t_map_value_args . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN MAP t_map_key t_map_value_args
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 40, spurious reduction of production t_map_value_args -> scid 
-##
-# see tests/parser/bad/type_t-map-cid-lparen-map-cid-cid-underscore.scilla
-
-This is an invalid map type, the map value is likely incorrect. The map value being a map itself with an invalid map value (possible malformed ADT).
-
-type_term: MAP CID LPAREN MAP CID UNDERSCORE
-##
-## Ends in an error in state: 32.
-##
-## t_map_value -> LPAREN MAP t_map_key . t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN MAP t_map_key
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
-##
-# see tests/parser/bad/type_t-map-cid-lparen-map-cid-underscore.scilla
-
-This is an invalid map type, the map value is likely incorrect. The map value being likely a map in brackets with an invalid map value.
-
-type_term: MAP CID LPAREN MAP WITH
-##
-## Ends in an error in state: 31.
-##
-## t_map_value -> LPAREN MAP . t_map_key t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN MAP
-##
-# see tests/parser/bad/type_t-map-cid-lparen-map-with.scilla
-
-This map type is invalid as the map value is likely incorrect. The map value being a map in brackets with an invalid map key.
-
 type_term: MAP CID LPAREN WITH
 ##
 ## Ends in an error in state: 30.
 ##
-## t_map_value -> LPAREN . scid list(t_map_value_args) RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## t_map_value -> LPAREN . MAP t_map_key t_map_value_args RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## t_map_value -> LPAREN . t_map_value RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -434,7 +341,7 @@ type_term: MAP CID MAP CID UNDERSCORE
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
+## In state 37, spurious reduction of production t_map_key -> scid 
 ##
 # see tests/parser/bad/type_t-map-cid-map-cid-underscore.scilla
 
@@ -455,7 +362,7 @@ This map type likely has an invalid map value type. The map value type is a map 
 
 type_term: MAP CID UNDERSCORE
 ##
-## Ends in an error in state: 55.
+## Ends in an error in state: 50.
 ##
 ## typ -> MAP t_map_key . t_map_value [ TARROW RPAREN EQ EOF COMMA ]
 ##
@@ -467,7 +374,7 @@ type_term: MAP CID UNDERSCORE
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
+## In state 37, spurious reduction of production t_map_key -> scid 
 ##
 # see tests/eval/bad/list_to_map.scilexp
 
@@ -507,7 +414,7 @@ This map type has an invalid key type. In the brackets we expect a separated cap
 
 type_term: MAP WITH
 ##
-## Ends in an error in state: 54.
+## Ends in an error in state: 49.
 ##
 ## typ -> MAP . t_map_key t_map_value [ TARROW RPAREN EQ EOF COMMA ]
 ##
@@ -520,7 +427,7 @@ This is an invalid type term, the map key type is incorrect.
 
 type_term: TID TARROW TID WITH
 ##
-## Ends in an error in state: 63.
+## Ends in an error in state: 58.
 ##
 ## typ -> typ . TARROW typ [ TARROW RPAREN EQ EOF COMMA ]
 ## typ -> typ TARROW typ . [ TARROW RPAREN EQ EOF COMMA ]
@@ -534,7 +441,7 @@ This function is not terminated early enough or malformed. A possible alteration
 
 type_term: TID TARROW WITH
 ##
-## Ends in an error in state: 62.
+## Ends in an error in state: 57.
 ##
 ## typ -> typ TARROW . typ [ TARROW RPAREN EQ EOF COMMA ]
 ##
@@ -547,7 +454,7 @@ This function type lacks a result type.
 
 type_term: TID WITH
 ##
-## Ends in an error in state: 312.
+## Ends in an error in state: 310.
 ##
 ## typ -> typ . TARROW typ [ TARROW EOF ]
 ## type_term -> typ . EOF [ # ]
@@ -561,7 +468,7 @@ This is an invalid type term, following the type it is complete and may only be 
 
 type_term: WITH
 ##
-## Ends in an error in state: 310.
+## Ends in an error in state: 308.
 ##
 ## type_term' -> . type_term [ # ]
 ##
@@ -574,7 +481,7 @@ This is an invalid type term.
 
 stmts_term: ACCEPT WITH
 ##
-## Ends in an error in state: 263.
+## Ends in an error in state: 261.
 ##
 ## separated_nonempty_list(SEMICOLON,stmt) -> stmt . [ EOF END BAR ]
 ## separated_nonempty_list(SEMICOLON,stmt) -> stmt . SEMICOLON separated_nonempty_list(SEMICOLON,stmt) [ EOF END BAR ]
@@ -589,7 +496,7 @@ This is likely an improperly terminated statement (lacking the semicolon).
 
 stmts_term: CID WITH
 ##
-## Ends in an error in state: 266.
+## Ends in an error in state: 264.
 ##
 ## stmt -> component_id . list(sident) [ SEMICOLON EOF END BAR ]
 ##
@@ -602,7 +509,7 @@ This is an invalid statements term.
 
 stmts_term: DELETE ID WITH
 ##
-## Ends in an error in state: 260.
+## Ends in an error in state: 258.
 ##
 ## stmt -> DELETE ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -615,7 +522,7 @@ This is an invalid delete statement, it lacks the keys to delete.
 
 stmts_term: DELETE WITH
 ##
-## Ends in an error in state: 259.
+## Ends in an error in state: 257.
 ##
 ## stmt -> DELETE . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -628,7 +535,7 @@ This is an invalid delete statement, it lacks a map to delete from.
 
 stmts_term: EVENT WITH
 ##
-## Ends in an error in state: 257.
+## Ends in an error in state: 255.
 ##
 ## stmt -> EVENT . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -641,7 +548,7 @@ This is an invalid event statement, it lacks a separated identifier for the even
 
 stmts_term: ID ASSIGN WITH
 ##
-## Ends in an error in state: 252.
+## Ends in an error in state: 247.
 ##
 ## stmt -> ID ASSIGN . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -654,7 +561,7 @@ This is an invalid assign statement, it lacks a separated identifier.
 
 stmts_term: ID FETCH AND WITH
 ##
-## Ends in an error in state: 247.
+## Ends in an error in state: 242.
 ##
 ## stmt -> ID FETCH AND . CID [ SEMICOLON EOF END BAR ]
 ##
@@ -667,7 +574,7 @@ This is an invalid bind and statement. The parser expects a capital identifier a
 
 stmts_term: ID FETCH EXISTS ID WITH
 ##
-## Ends in an error in state: 245.
+## Ends in an error in state: 240.
 ##
 ## stmt -> ID FETCH EXISTS ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -680,7 +587,7 @@ This is an invalid existence bind statement. It lacks a non-empty list of access
 
 stmts_term: ID FETCH EXISTS WITH
 ##
-## Ends in an error in state: 244.
+## Ends in an error in state: 239.
 ##
 ## stmt -> ID FETCH EXISTS . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -693,7 +600,7 @@ This is an invalid existence bind statement. It lacks a map to check existence o
 
 stmts_term: ID FETCH ID WITH
 ##
-## Ends in an error in state: 240.
+## Ends in an error in state: 235.
 ##
 ## sid -> ID . [ SEMICOLON EOF END BAR ]
 ## stmt -> ID FETCH ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
@@ -707,7 +614,7 @@ This is an invalid bind statement, it is lacking a non empty list of map accesse
 
 stmts_term: ID FETCH WITH
 ##
-## Ends in an error in state: 239.
+## Ends in an error in state: 234.
 ##
 ## stmt -> ID FETCH . sid [ SEMICOLON EOF END BAR ]
 ## stmt -> ID FETCH . AND CID [ SEMICOLON EOF END BAR ]
@@ -723,7 +630,7 @@ This is an invalid bind statement, the bind can be followed by '&', 'exists' or 
 
 stmts_term: ID EQ WITH
 ##
-## Ends in an error in state: 250.
+## Ends in an error in state: 245.
 ##
 ## stmt -> ID EQ . exp [ SEMICOLON EOF END BAR ]
 ##
@@ -736,7 +643,7 @@ This is an invalid equal statement, it is lacking a valid expression on the righ
 
 stmts_term: ID LSQB SPID RSQB ASSIGN WITH
 ##
-## Ends in an error in state: 255.
+## Ends in an error in state: 250.
 ##
 ## stmt -> ID nonempty_list(map_access) ASSIGN . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -749,7 +656,7 @@ The map key must be assigned to some separated identifier.
 
 stmts_term: ID LSQB SPID RSQB SEMICOLON
 ##
-## Ends in an error in state: 254.
+## Ends in an error in state: 249.
 ##
 ## stmt -> ID nonempty_list(map_access) . ASSIGN sid [ SEMICOLON EOF END BAR ]
 ##
@@ -760,7 +667,7 @@ stmts_term: ID LSQB SPID RSQB SEMICOLON
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 242, spurious reduction of production nonempty_list(map_access) -> map_access 
+## In state 237, spurious reduction of production nonempty_list(map_access) -> map_access 
 ##
 # see tests/parser/bad/stmts_t-id-lsqb-spid-rsqb-semicolon.scilla
 
@@ -768,7 +675,7 @@ This is likely an invalid map assign statement, it lacks the assign.
 
 stmts_term: ID LSQB SPID RSQB WITH
 ##
-## Ends in an error in state: 242.
+## Ends in an error in state: 237.
 ##
 ## nonempty_list(map_access) -> map_access . [ SEMICOLON EOF END BAR ASSIGN ]
 ## nonempty_list(map_access) -> map_access . nonempty_list(map_access) [ SEMICOLON EOF END BAR ASSIGN ]
@@ -782,7 +689,7 @@ This is an invalid statements term. A possible continuation may be assigning a m
 
 stmts_term: ID LSQB SPID WITH
 ##
-## Ends in an error in state: 237.
+## Ends in an error in state: 232.
 ##
 ## map_access -> LSQB sident . RSQB [ SEMICOLON LSQB EOF END BAR ASSIGN ]
 ##
@@ -795,7 +702,7 @@ This is an invalid statements term. A possible continuation may be accessing a k
 
 stmts_term: ID LSQB WITH
 ##
-## Ends in an error in state: 236.
+## Ends in an error in state: 231.
 ##
 ## map_access -> LSQB . sident RSQB [ SEMICOLON LSQB EOF END BAR ASSIGN ]
 ##
@@ -808,7 +715,7 @@ This is an invalid statements term. The map access list is malformed.
 
 stmts_term: ID SPID WITH
 ##
-## Ends in an error in state: 162.
+## Ends in an error in state: 157.
 ##
 ## list(sident) -> sident . list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -821,7 +728,7 @@ This is an invalid statements term, likely a bad procedure call with faulty argu
 
 stmts_term: ID WITH
 ##
-## Ends in an error in state: 235.
+## Ends in an error in state: 230.
 ##
 ## component_id -> ID . [ SPID SEMICOLON ID EOF END CID BAR ]
 ## stmt -> ID . FETCH sid [ SEMICOLON EOF END BAR ]
@@ -841,7 +748,7 @@ This is an invalid statements term. Scilla expects to do something with the iden
 
 stmts_term: MATCH SPID UNDERSCORE
 ##
-## Ends in an error in state: 230.
+## Ends in an error in state: 225.
 ##
 ## stmt -> MATCH sid . WITH list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
 ##
@@ -854,7 +761,7 @@ This is an invalid match statement, 'with' is expected after what is specified t
 
 stmts_term: MATCH SPID WITH BAR UNDERSCORE ARROW ACCEPT EOF
 ##
-## Ends in an error in state: 270.
+## Ends in an error in state: 268.
 ##
 ## list(stmt_pm_clause) -> stmt_pm_clause . list(stmt_pm_clause) [ END ]
 ##
@@ -865,9 +772,9 @@ stmts_term: MATCH SPID WITH BAR UNDERSCORE ARROW ACCEPT EOF
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 263, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
-## In state 268, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
-## In state 269, spurious reduction of production stmt_pm_clause -> BAR pattern ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) 
+## In state 261, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
+## In state 266, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
+## In state 267, spurious reduction of production stmt_pm_clause -> BAR pattern ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) 
 ##
 # see tests/parser/bad/stmts_t-match-spid-with-bar-underscore-arrow-accept-eof.scilla
 
@@ -875,7 +782,7 @@ When the match statement is finished, the parser expects 'end'.
 
 stmts_term: MATCH SPID WITH BAR UNDERSCORE ARROW WITH
 ##
-## Ends in an error in state: 234.
+## Ends in an error in state: 229.
 ##
 ## stmt_pm_clause -> BAR pattern ARROW . loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
 ##
@@ -888,7 +795,7 @@ This is an invalid statements term. In the match expression, after an arrow the 
 
 stmts_term: MATCH SPID WITH BAR UNDERSCORE WITH
 ##
-## Ends in an error in state: 233.
+## Ends in an error in state: 228.
 ##
 ## stmt_pm_clause -> BAR pattern . ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
 ##
@@ -901,7 +808,7 @@ This is an invalid statements term. In the match expression, after a pattern is 
 
 stmts_term: MATCH SPID WITH BAR WITH
 ##
-## Ends in an error in state: 232.
+## Ends in an error in state: 227.
 ##
 ## stmt_pm_clause -> BAR . pattern ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
 ##
@@ -914,7 +821,7 @@ In the match statement there is a malformed pattern.
 
 stmts_term: MATCH SPID WITH WITH
 ##
-## Ends in an error in state: 231.
+## Ends in an error in state: 226.
 ##
 ## stmt -> MATCH sid WITH . list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
 ##
@@ -927,7 +834,7 @@ There is a malformed pattern matching clause, the bar is likely missing.
 
 stmts_term: MATCH WITH
 ##
-## Ends in an error in state: 229.
+## Ends in an error in state: 224.
 ##
 ## stmt -> MATCH . sid WITH list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
 ##
@@ -940,7 +847,7 @@ In a match statement, the parser expects a separated identifier to match with.
 
 stmts_term: SEND CID PERIOD WITH
 ##
-## Ends in an error in state: 90.
+## Ends in an error in state: 85.
 ##
 ## sid -> CID PERIOD . ID [ WITH TID SEMICOLON RBRACE MAP LPAREN EOF END COLON CID BAR ]
 ##
@@ -953,7 +860,7 @@ This is an invalid send statement, the identifier is incorrect. After the period
 
 stmts_term: SEND CID WITH
 ##
-## Ends in an error in state: 89.
+## Ends in an error in state: 84.
 ##
 ## sid -> CID . PERIOD ID [ WITH TID SEMICOLON MAP LPAREN EOF END COLON CID BAR ]
 ##
@@ -966,7 +873,7 @@ This send statement is either unfinished or not properly terminated.
 
 stmts_term: SEND WITH
 ##
-## Ends in an error in state: 227.
+## Ends in an error in state: 222.
 ##
 ## stmt -> SEND . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -979,7 +886,7 @@ It is expected to send to a separated identifier.
 
 stmts_term: THROW END
 ##
-## Ends in an error in state: 308.
+## Ends in an error in state: 306.
 ##
 ## stmts_term -> stmts . EOF [ # ]
 ##
@@ -990,11 +897,11 @@ stmts_term: THROW END
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 224, spurious reduction of production option(sid) -> 
-## In state 226, spurious reduction of production stmt -> THROW option(sid) 
-## In state 263, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
-## In state 268, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
-## In state 276, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt)) 
+## In state 219, spurious reduction of production option(sid) -> 
+## In state 221, spurious reduction of production stmt -> THROW option(sid) 
+## In state 261, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
+## In state 266, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
+## In state 274, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt)) 
 ##
 # special case, only via stmts_term entry point should never happen
 # throw itself is a valid statement term and a procedure or transition
@@ -1004,7 +911,7 @@ This is an invalid statements term, bad throw.
 
 stmts_term: THROW SEMICOLON WITH
 ##
-## Ends in an error in state: 264.
+## Ends in an error in state: 262.
 ##
 ## separated_nonempty_list(SEMICOLON,stmt) -> stmt SEMICOLON . separated_nonempty_list(SEMICOLON,stmt) [ EOF END BAR ]
 ##
@@ -1019,7 +926,7 @@ What follows the statement was unexpected, for example possibly a statement or t
 
 stmts_term: THROW WITH
 ##
-## Ends in an error in state: 224.
+## Ends in an error in state: 219.
 ##
 ## stmt -> THROW . option(sid) [ SEMICOLON EOF END BAR ]
 ##
@@ -1032,7 +939,7 @@ This throw does not throw a valid exception or is not properly terminated.
 
 stmts_term: WITH
 ##
-## Ends in an error in state: 306.
+## Ends in an error in state: 304.
 ##
 ## stmts_term' -> . stmts_term [ # ]
 ##
@@ -1085,7 +992,7 @@ To import another library mention the new library name directly after the previo
 
 lmodule: SCILLA_VERSION NUMLIT IMPORT CONTRACT
 ##
-## Ends in an error in state: 302.
+## Ends in an error in state: 300.
 ##
 ## lmodule -> SCILLA_VERSION NUMLIT imports . library EOF [ # ]
 ##
@@ -1118,7 +1025,7 @@ If import is mentioned there must be one or more imported libraries with capital
 
 lmodule: SCILLA_VERSION NUMLIT LIBRARY CID CONTRACT
 ##
-## Ends in an error in state: 303.
+## Ends in an error in state: 301.
 ##
 ## lmodule -> SCILLA_VERSION NUMLIT imports library . EOF [ # ]
 ##
@@ -1130,7 +1037,7 @@ lmodule: SCILLA_VERSION NUMLIT LIBRARY CID CONTRACT
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 12, spurious reduction of production list(libentry) -> 
-## In state 189, spurious reduction of production library -> LIBRARY CID list(libentry) 
+## In state 184, spurious reduction of production library -> LIBRARY CID list(libentry) 
 ##
 # see tests/parser/bad/lib/lmodule-library-cid-contract.scillib
 
@@ -1138,7 +1045,7 @@ When writing solely Scilla libraries, there is no need for a contract.
 
 lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID COLON TID EQ WITH
 ##
-## Ends in an error in state: 187.
+## Ends in an error in state: 182.
 ##
 ## libentry -> LET ID type_annot EQ . exp [ TYPE LET EOF CONTRACT ]
 ##
@@ -1151,7 +1058,7 @@ This (type-annotated) let expression is missing an expression to assign to an id
 
 lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID EQ HEXLIT WITH
 ##
-## Ends in an error in state: 190.
+## Ends in an error in state: 185.
 ##
 ## list(libentry) -> libentry . list(libentry) [ EOF CONTRACT ]
 ##
@@ -1164,7 +1071,7 @@ This is an invalid library module, a possible continuation would be another vali
 
 lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID EQ WITH
 ##
-## Ends in an error in state: 81.
+## Ends in an error in state: 76.
 ##
 ## libentry -> LET ID EQ . exp [ TYPE LET EOF CONTRACT ]
 ##
@@ -1177,7 +1084,7 @@ This library let expression is missing a valid expression to assign to the ident
 
 lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET ID WITH
 ##
-## Ends in an error in state: 80.
+## Ends in an error in state: 75.
 ##
 ## libentry -> LET ID . EQ exp [ TYPE LET EOF CONTRACT ]
 ## libentry -> LET ID . type_annot EQ exp [ TYPE LET EOF CONTRACT ]
@@ -1191,7 +1098,7 @@ This library let expression is missing an equals, '='.
 
 lmodule: SCILLA_VERSION NUMLIT LIBRARY CID LET WITH
 ##
-## Ends in an error in state: 79.
+## Ends in an error in state: 74.
 ##
 ## libentry -> LET . ID EQ exp [ TYPE LET EOF CONTRACT ]
 ## libentry -> LET . ID type_annot EQ exp [ TYPE LET EOF CONTRACT ]
@@ -1205,7 +1112,7 @@ The let expression is missing an identifier to assign an expression to.
 
 lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ BAR CID OF CID TRANSITION
 ##
-## Ends in an error in state: 76.
+## Ends in an error in state: 71.
 ##
 ## nonempty_list(tconstr) -> tconstr . [ TYPE LET EOF CONTRACT ]
 ## nonempty_list(tconstr) -> tconstr . nonempty_list(tconstr) [ TYPE LET EOF CONTRACT ]
@@ -1218,9 +1125,9 @@ lmodule: SCILLA_VERSION NUMLIT LIBRARY CID TYPE CID EQ BAR CID OF CID TRANSITION
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 22, spurious reduction of production scid -> CID 
-## In state 66, spurious reduction of production targ -> scid 
-## In state 73, spurious reduction of production nonempty_list(targ) -> targ 
-## In state 75, spurious reduction of production tconstr -> BAR CID OF nonempty_list(targ) 
+## In state 61, spurious reduction of production targ -> scid 
+## In state 68, spurious reduction of production nonempty_list(targ) -> targ 
+## In state 70, spurious reduction of production tconstr -> BAR CID OF nonempty_list(targ) 
 ##
 # see tests/parser/bad/lib/lmodule-library-cid-type-cid-eq-bar-cid-of-cid-transition.scillib
 
@@ -1336,7 +1243,7 @@ This is an invalid library module because it lacks a capital identifier for a na
 
 lmodule: SCILLA_VERSION NUMLIT WITH
 ##
-## Ends in an error in state: 301.
+## Ends in an error in state: 299.
 ##
 ## lmodule -> SCILLA_VERSION NUMLIT . imports library EOF [ # ]
 ##
@@ -1349,7 +1256,7 @@ This is an invalid library module, Scilla version must be followed by 'library' 
 
 lmodule: WITH
 ##
-## Ends in an error in state: 299.
+## Ends in an error in state: 297.
 ##
 ## lmodule' -> . lmodule [ # ]
 ##
@@ -1362,7 +1269,7 @@ Scilla version number unspecified.
 
 exp_term: AT SPID TID WITH
 ##
-## Ends in an error in state: 73.
+## Ends in an error in state: 68.
 ##
 ## nonempty_list(targ) -> targ . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ## nonempty_list(targ) -> targ . nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
@@ -1376,7 +1283,7 @@ The type application is wrong. The list of types is problematic.
 
 exp_term: AT SPID WITH
 ##
-## Ends in an error in state: 152.
+## Ends in an error in state: 147.
 ##
 ## simple_exp -> AT sid . nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1389,7 +1296,7 @@ The type application is wrong. The parser expects a non-empty list of type argum
 
 exp_term: AT WITH
 ##
-## Ends in an error in state: 151.
+## Ends in an error in state: 146.
 ##
 ## simple_exp -> AT . sid nonempty_list(targ) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1402,7 +1309,7 @@ This type application is wrong. A separated identifier is expected to apply type
 
 exp_term: BUILTIN ID LPAREN WITH
 ##
-## Ends in an error in state: 141.
+## Ends in an error in state: 136.
 ##
 ## builtin_args -> LPAREN . RPAREN [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1415,7 +1322,7 @@ Builtin functions only take a pair of brackets when of unit input type (e.g. "()
 
 exp_term: BUILTIN ID WITH
 ##
-## Ends in an error in state: 139.
+## Ends in an error in state: 134.
 ##
 ## simple_exp -> BUILTIN ID . builtin_args [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1428,7 +1335,7 @@ The usage of the builtin function is incorrect.
 
 exp_term: BUILTIN WITH
 ##
-## Ends in an error in state: 138.
+## Ends in an error in state: 133.
 ##
 ## simple_exp -> BUILTIN . ID builtin_args [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1441,7 +1348,7 @@ This expression is incorrect because it does not specify a specific builtin func
 
 exp_term: CID LBRACE TID EQ
 ##
-## Ends in an error in state: 159.
+## Ends in an error in state: 154.
 ##
 ## ctargs -> LBRACE list(targ) . RBRACE [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
 ##
@@ -1452,8 +1359,8 @@ exp_term: CID LBRACE TID EQ
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 65, spurious reduction of production list(targ) -> 
-## In state 67, spurious reduction of production list(targ) -> targ list(targ) 
+## In state 60, spurious reduction of production list(targ) -> 
+## In state 62, spurious reduction of production list(targ) -> targ list(targ) 
 ##
 # see tests/parser/bad/exps/exp_t-cid-lbrace-tid-eq.scilexp
 
@@ -1461,7 +1368,7 @@ The data constructor, list of type arguments is incorrect. The parser expects an
 
 exp_term: CID LBRACE WITH
 ##
-## Ends in an error in state: 158.
+## Ends in an error in state: 153.
 ##
 ## ctargs -> LBRACE . list(targ) RBRACE [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
 ##
@@ -1474,7 +1381,7 @@ The data constructor, list of type arguments is incorrect. The parser expects a 
 
 exp_term: CID PERIOD CID WITH
 ##
-## Ends in an error in state: 157.
+## Ends in an error in state: 152.
 ##
 ## simple_exp -> scid . option(ctargs) list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1487,7 +1394,7 @@ This is an invalid expression, most likely the data constructor is missing argum
 
 exp_term: CID PERIOD WITH
 ##
-## Ends in an error in state: 137.
+## Ends in an error in state: 132.
 ##
 ## scid -> CID PERIOD . CID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET LBRACE IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
 ## sid -> CID PERIOD . ID [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
@@ -1501,7 +1408,7 @@ This is an invalid expression, most likely the data constructor name is unfinish
 
 exp_term: CID WITH
 ##
-## Ends in an error in state: 136.
+## Ends in an error in state: 131.
 ##
 ## lit -> CID . NUMLIT [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ## scid -> CID . [ TYPE TRANSITION SPID SEMICOLON PROCEDURE LET LBRACE IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
@@ -1517,7 +1424,7 @@ This is a malformed expression, it may be an incorrect data constructor usage.
 
 exp_term: EMP CID UNDERSCORE
 ##
-## Ends in an error in state: 117.
+## Ends in an error in state: 112.
 ##
 ## lit -> EMP t_map_key . t_map_value [ TYPE TRANSITION SEMICOLON RBRACE PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1529,7 +1436,7 @@ exp_term: EMP CID UNDERSCORE
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 22, spurious reduction of production scid -> CID 
-## In state 44, spurious reduction of production t_map_key -> scid 
+## In state 37, spurious reduction of production t_map_key -> scid 
 ##
 # see tests/parser/bad/exps/exp_t-emp-cid-underscore.scilexp
 
@@ -1537,7 +1444,7 @@ This empty map has invalid value type.
 
 exp_term: EMP WITH
 ##
-## Ends in an error in state: 116.
+## Ends in an error in state: 111.
 ##
 ## lit -> EMP . t_map_key t_map_value [ TYPE TRANSITION SEMICOLON RBRACE PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1550,7 +1457,7 @@ The empty map has invalid key type (capitalised identifier).
 
 exp_term: FUN LPAREN ID COLON TID RPAREN ARROW WITH
 ##
-## Ends in an error in state: 135.
+## Ends in an error in state: 130.
 ##
 ## simple_exp -> FUN LPAREN ID COLON typ RPAREN ARROW . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1563,7 +1470,7 @@ This function is lacking a valid result expression.
 
 exp_term: FUN LPAREN ID COLON TID RPAREN WITH
 ##
-## Ends in an error in state: 134.
+## Ends in an error in state: 129.
 ##
 ## simple_exp -> FUN LPAREN ID COLON typ RPAREN . ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1576,7 +1483,7 @@ This function needs an arrow (e.g. '=>') pointing to an expression.
 
 exp_term: FUN LPAREN ID COLON TID WITH
 ##
-## Ends in an error in state: 133.
+## Ends in an error in state: 128.
 ##
 ## simple_exp -> FUN LPAREN ID COLON typ . RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ## typ -> typ . TARROW typ [ TARROW RPAREN ]
@@ -1590,7 +1497,7 @@ This function argument and argument type declaration is not closed properly.
 
 exp_term: FUN LPAREN ID COLON WITH
 ##
-## Ends in an error in state: 132.
+## Ends in an error in state: 127.
 ##
 ## simple_exp -> FUN LPAREN ID COLON . typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1603,7 +1510,7 @@ This function argument lacks a valid type.
 
 exp_term: FUN LPAREN ID WITH
 ##
-## Ends in an error in state: 131.
+## Ends in an error in state: 126.
 ##
 ## simple_exp -> FUN LPAREN ID . COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1616,7 +1523,7 @@ This function's argument is lacking a colon to associate it with its type.
 
 exp_term: FUN LPAREN WITH
 ##
-## Ends in an error in state: 130.
+## Ends in an error in state: 125.
 ##
 ## simple_exp -> FUN LPAREN . ID COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1629,7 +1536,7 @@ This function is missing a valid argument identifier, beginning with a lower cas
 
 exp_term: FUN WITH
 ##
-## Ends in an error in state: 129.
+## Ends in an error in state: 124.
 ##
 ## simple_exp -> FUN . LPAREN ID COLON typ RPAREN ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1642,7 +1549,7 @@ This function needs brackets for the argument.
 
 exp_term: LBRACE SPID COLON CID WITH
 ##
-## Ends in an error in state: 119.
+## Ends in an error in state: 114.
 ##
 ## lit -> CID . NUMLIT [ SEMICOLON RBRACE ]
 ## sid -> CID . PERIOD ID [ SEMICOLON RBRACE ]
@@ -1656,7 +1563,7 @@ This is an invalid message construction. The parser expects another message entr
 
 exp_term: LBRACE SPID COLON HEXLIT SEMICOLON WITH
 ##
-## Ends in an error in state: 125.
+## Ends in an error in state: 120.
 ##
 ## separated_nonempty_list(SEMICOLON,msg_entry) -> msg_entry SEMICOLON . separated_nonempty_list(SEMICOLON,msg_entry) [ RBRACE ]
 ##
@@ -1669,7 +1576,7 @@ This is an invalid message construction. The parser after a semicolon expects an
 
 exp_term: LBRACE SPID COLON HEXLIT WITH
 ##
-## Ends in an error in state: 124.
+## Ends in an error in state: 119.
 ##
 ## separated_nonempty_list(SEMICOLON,msg_entry) -> msg_entry . [ RBRACE ]
 ## separated_nonempty_list(SEMICOLON,msg_entry) -> msg_entry . SEMICOLON separated_nonempty_list(SEMICOLON,msg_entry) [ RBRACE ]
@@ -1683,7 +1590,7 @@ This is likely an invalid message construction. The parser expects another messa
 
 exp_term: LBRACE SPID COLON WITH
 ##
-## Ends in an error in state: 114.
+## Ends in an error in state: 109.
 ##
 ## msg_entry -> sid COLON . lit [ SEMICOLON RBRACE ]
 ## msg_entry -> sid COLON . sid [ SEMICOLON RBRACE ]
@@ -1697,7 +1604,7 @@ This is an invalid message construction. Following the colon, a literal or separ
 
 exp_term: LBRACE SPID WITH
 ##
-## Ends in an error in state: 113.
+## Ends in an error in state: 108.
 ##
 ## msg_entry -> sid . COLON lit [ SEMICOLON RBRACE ]
 ## msg_entry -> sid . COLON sid [ SEMICOLON RBRACE ]
@@ -1711,7 +1618,7 @@ This is an invalid message construction. With a message entry, the parser expect
 
 exp_term: LBRACE WITH
 ##
-## Ends in an error in state: 112.
+## Ends in an error in state: 107.
 ##
 ## simple_exp -> LBRACE . loption(separated_nonempty_list(SEMICOLON,msg_entry)) RBRACE [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1725,7 +1632,7 @@ This is an invalid message construction. The parser expects a semi-colon separat
 
 exp_term: LET ID COLON TID EQ STRING IN WITH
 ##
-## Ends in an error in state: 177.
+## Ends in an error in state: 172.
 ##
 ## simple_exp -> LET ID type_annot EQ simple_exp IN . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1738,7 +1645,7 @@ This let expression (type-annotated) is likely missing an expression to substitu
 
 exp_term: LET ID COLON TID WITH
 ##
-## Ends in an error in state: 173.
+## Ends in an error in state: 168.
 ##
 ## typ -> typ . TARROW typ [ TARROW EQ ]
 ## type_annot -> COLON typ . [ EQ ]
@@ -1754,7 +1661,7 @@ This type-annotated let expression likely has a misplaced equals, '='.
 
 exp_term: LET ID COLON WITH
 ##
-## Ends in an error in state: 172.
+## Ends in an error in state: 167.
 ##
 ## type_annot -> COLON . typ [ EQ ]
 ##
@@ -1767,7 +1674,7 @@ This let expression is likely missing a complete type annotation after the colon
 
 exp_term: LET ID EQ STRING IN WITH
 ##
-## Ends in an error in state: 170.
+## Ends in an error in state: 165.
 ##
 ## simple_exp -> LET ID EQ simple_exp IN . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1780,7 +1687,7 @@ This let expression likely does not substitute a variable into a valid expressio
 
 exp_term: LET ID EQ STRING WITH
 ##
-## Ends in an error in state: 169.
+## Ends in an error in state: 164.
 ##
 ## simple_exp -> LET ID EQ simple_exp . IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1793,7 +1700,7 @@ This let expression is likely missing an 'in'.
 
 exp_term: LET ID EQ WITH
 ##
-## Ends in an error in state: 111.
+## Ends in an error in state: 106.
 ##
 ## simple_exp -> LET ID EQ . simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1806,7 +1713,7 @@ This let expression is missing an expression to substitute a variable in.
 
 exp_term: LET ID WITH
 ##
-## Ends in an error in state: 110.
+## Ends in an error in state: 105.
 ##
 ## simple_exp -> LET ID . EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ## simple_exp -> LET ID . type_annot EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
@@ -1820,7 +1727,7 @@ This let expression is missing an equals ('=') or type annotation, directly afte
 
 exp_term: LET WITH
 ##
-## Ends in an error in state: 109.
+## Ends in an error in state: 104.
 ##
 ## simple_exp -> LET . ID EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ## simple_exp -> LET . ID type_annot EQ simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
@@ -1835,7 +1742,7 @@ This let expression is missing an identifier for the variable.
 
 exp_term: MATCH SPID UNDERSCORE
 ##
-## Ends in an error in state: 92.
+## Ends in an error in state: 87.
 ##
 ## simple_exp -> MATCH sid . WITH list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1848,7 +1755,7 @@ This match expression is missing 'with'.
 
 exp_term: MATCH SPID WITH BAR CID LPAREN UNDERSCORE WITH
 ##
-## Ends in an error in state: 100.
+## Ends in an error in state: 95.
 ##
 ## arg_pattern -> LPAREN pattern . RPAREN [ UNDERSCORE RPAREN LPAREN ID CID ARROW ]
 ##
@@ -1861,7 +1768,7 @@ This is an invalid match expression, possibly unterminated brackets for pattern 
 
 exp_term: MATCH SPID WITH BAR CID LPAREN WITH
 ##
-## Ends in an error in state: 99.
+## Ends in an error in state: 94.
 ##
 ## arg_pattern -> LPAREN . pattern RPAREN [ UNDERSCORE RPAREN LPAREN ID CID ARROW ]
 ##
@@ -1875,7 +1782,7 @@ This match expression has invalid pattern arguments, in the brackets we expect a
 
 exp_term: MATCH SPID WITH BAR CID TYPE
 ##
-## Ends in an error in state: 97.
+## Ends in an error in state: 92.
 ##
 ## pattern -> scid . list(arg_pattern) [ RPAREN ARROW ]
 ##
@@ -1894,7 +1801,7 @@ In this match expression, the parser expects either a list of pattern arguments 
 
 exp_term: MATCH SPID WITH BAR CID UNDERSCORE WITH
 ##
-## Ends in an error in state: 105.
+## Ends in an error in state: 100.
 ##
 ## list(arg_pattern) -> arg_pattern . list(arg_pattern) [ RPAREN ARROW ]
 ##
@@ -1907,7 +1814,7 @@ In this match expression, following the pattern the parser expects an arrow (e.g
 
 exp_term: MATCH SPID WITH BAR UNDERSCORE ARROW HEXLIT WITH
 ##
-## Ends in an error in state: 182.
+## Ends in an error in state: 177.
 ##
 ## list(exp_pm_clause) -> exp_pm_clause . list(exp_pm_clause) [ END ]
 ##
@@ -1920,7 +1827,7 @@ After a pattern matching clause the parser expects another pattern matching clau
 
 exp_term: MATCH SPID WITH BAR UNDERSCORE ARROW WITH
 ##
-## Ends in an error in state: 108.
+## Ends in an error in state: 103.
 ##
 ## exp_pm_clause -> BAR pattern ARROW . exp [ END BAR ]
 ##
@@ -1933,7 +1840,7 @@ This is an invalid match expression. Following an arrow we expect a valid expres
 
 exp_term: MATCH SPID WITH BAR UNDERSCORE WITH
 ##
-## Ends in an error in state: 107.
+## Ends in an error in state: 102.
 ##
 ## exp_pm_clause -> BAR pattern . ARROW exp [ END BAR ]
 ##
@@ -1946,7 +1853,7 @@ This is in an invalid match expression. Following a pattern, we expect an arrow 
 
 exp_term: MATCH SPID WITH BAR WITH
 ##
-## Ends in an error in state: 94.
+## Ends in an error in state: 89.
 ##
 ## exp_pm_clause -> BAR . pattern ARROW exp [ END BAR ]
 ##
@@ -1959,7 +1866,7 @@ This is an invalid match expression. In a pattern matching clause following the 
 
 exp_term: MATCH SPID WITH WITH
 ##
-## Ends in an error in state: 93.
+## Ends in an error in state: 88.
 ##
 ## simple_exp -> MATCH sid WITH . list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1972,7 +1879,7 @@ This is an invalid match expression, a pattern matching clause is necessary (pos
 
 exp_term: MATCH WITH
 ##
-## Ends in an error in state: 87.
+## Ends in an error in state: 82.
 ##
 ## simple_exp -> MATCH . sid WITH list(exp_pm_clause) END [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -1985,7 +1892,7 @@ This is an invalid match expression, it is lacking a valid identifier to match w
 
 exp_term: SPID CID PERIOD WITH
 ##
-## Ends in an error in state: 145.
+## Ends in an error in state: 140.
 ##
 ## sident -> CID PERIOD . ID [ TYPE TRANSITION SPID SEMICOLON RSQB PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
 ##
@@ -1998,7 +1905,7 @@ This is an invalid expression, the identifier is incomplete or erroneous.
 
 exp_term: SPID CID WITH
 ##
-## Ends in an error in state: 144.
+## Ends in an error in state: 139.
 ##
 ## sident -> CID . PERIOD ID [ TYPE TRANSITION SPID SEMICOLON RSQB PROCEDURE LET IN ID FIELD EOF END CONTRACT CID BAR ARROW ]
 ##
@@ -2011,7 +1918,7 @@ This may be a type application missing '@' or an incorrect function application 
 
 exp_term: SPID SPID WITH
 ##
-## Ends in an error in state: 147.
+## Ends in an error in state: 142.
 ##
 ## nonempty_list(sident) -> sident . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ## nonempty_list(sident) -> sident . nonempty_list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
@@ -2027,7 +1934,7 @@ If this is an application of a function, it is necessary to supply a list of val
 
 exp_term: SPID WITH
 ##
-## Ends in an error in state: 155.
+## Ends in an error in state: 150.
 ##
 ## atomic_exp -> sid . [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ## simple_exp -> sid . nonempty_list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
@@ -2041,7 +1948,7 @@ This is an invalid expression. If it is an application of a function, it is nece
 
 exp_term: STRING WITH
 ##
-## Ends in an error in state: 297.
+## Ends in an error in state: 295.
 ##
 ## exp_term -> exp . EOF [ # ]
 ##
@@ -2054,7 +1961,7 @@ This is not a valid expression, possible bad literal.
 
 exp_term: TFUN TID ARROW WITH
 ##
-## Ends in an error in state: 84.
+## Ends in an error in state: 79.
 ##
 ## simple_exp -> TFUN TID ARROW . exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -2067,7 +1974,7 @@ Type functions expect a valid expression after the arrow.
 
 exp_term: TFUN TID WITH
 ##
-## Ends in an error in state: 83.
+## Ends in an error in state: 78.
 ##
 ## simple_exp -> TFUN TID . ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -2080,7 +1987,7 @@ Type functions following the type id expect an arrow (e.g. '=>').
 
 exp_term: TFUN WITH
 ##
-## Ends in an error in state: 82.
+## Ends in an error in state: 77.
 ##
 ## simple_exp -> TFUN . TID ARROW exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -2093,7 +2000,7 @@ Type functions expect a type id (e.g. 'A).
 
 exp_term: WITH
 ##
-## Ends in an error in state: 295.
+## Ends in an error in state: 293.
 ##
 ## exp_term' -> . exp_term [ # ]
 ##
@@ -2106,7 +2013,7 @@ This is an invalid expression term, possibly avoid unnecessary brackets.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON CID COMMA WITH
 ##
-## Ends in an error in state: 201.
+## Ends in an error in state: 196.
 ##
 ## separated_nonempty_list(COMMA,param_pair) -> param_pair COMMA . separated_nonempty_list(COMMA,param_pair) [ RPAREN ]
 ##
@@ -2120,7 +2027,7 @@ Following a comma in the list of immutable fields, the parser expects another im
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON TID WITH
 ##
-## Ends in an error in state: 198.
+## Ends in an error in state: 193.
 ##
 ## param_pair -> ID COLON typ . [ RPAREN COMMA ]
 ## typ -> typ . TARROW typ [ TARROW RPAREN COMMA ]
@@ -2134,7 +2041,7 @@ Following the declaration of an immutable field, the parser expects another one 
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID COLON WITH
 ##
-## Ends in an error in state: 197.
+## Ends in an error in state: 192.
 ##
 ## param_pair -> ID COLON . typ [ RPAREN COMMA ]
 ##
@@ -2147,7 +2054,7 @@ In an immutable field declaration the parser expects a valid type name.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID WITH
 ##
-## Ends in an error in state: 196.
+## Ends in an error in state: 191.
 ##
 ## param_pair -> ID . COLON typ [ RPAREN COMMA ]
 ##
@@ -2160,7 +2067,7 @@ In an immutable field declaration, the parser expects a colon following the name
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON CID EQ HEXLIT WITH
 ##
-## Ends in an error in state: 287.
+## Ends in an error in state: 285.
 ##
 ## list(field) -> field . list(field) [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2173,7 +2080,7 @@ Following a field definition, the parser expects another field definition, trans
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON TID EQ WITH
 ##
-## Ends in an error in state: 212.
+## Ends in an error in state: 207.
 ##
 ## field -> FIELD ID COLON typ EQ . exp [ TRANSITION PROCEDURE FIELD EOF ]
 ##
@@ -2186,7 +2093,7 @@ In a mutable field declaration, it is expected that the field is initialised to 
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON TID WITH
 ##
-## Ends in an error in state: 211.
+## Ends in an error in state: 206.
 ##
 ## field -> FIELD ID COLON typ . EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
 ## typ -> typ . TARROW typ [ TARROW EQ ]
@@ -2200,7 +2107,7 @@ In a mutable field declaration, after the type is specified an equals is expecte
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON WITH
 ##
-## Ends in an error in state: 210.
+## Ends in an error in state: 205.
 ##
 ## field -> FIELD ID COLON . typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
 ##
@@ -2213,7 +2120,7 @@ In a mutable field declaration, following the colon after the naming, a type is 
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID WITH
 ##
-## Ends in an error in state: 209.
+## Ends in an error in state: 204.
 ##
 ## field -> FIELD ID . COLON typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
 ##
@@ -2226,7 +2133,7 @@ In a mutable field declaration, following the naming a colon is expected. This c
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD WITH
 ##
-## Ends in an error in state: 208.
+## Ends in an error in state: 203.
 ##
 ## field -> FIELD . ID COLON typ EQ exp [ TRANSITION PROCEDURE FIELD EOF ]
 ##
@@ -2240,7 +2147,7 @@ For a mutable field declaration, the parser expects a valid lower case beginning
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE ID LPAREN RPAREN WITH
 ##
-## Ends in an error in state: 280.
+## Ends in an error in state: 278.
 ##
 ## procedure -> PROCEDURE component_id component_params . component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2253,7 +2160,7 @@ In the transition body the parser expects a list of semi-colon separated stateme
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE ID WITH
 ##
-## Ends in an error in state: 279.
+## Ends in an error in state: 277.
 ##
 ## procedure -> PROCEDURE component_id . component_params component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2267,7 +2174,7 @@ be a left parenthesis.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE WITH
 ##
-## Ends in an error in state: 278.
+## Ends in an error in state: 276.
 ##
 ## procedure -> PROCEDURE . component_id component_params component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2280,7 +2187,7 @@ A procedure requires a valid name.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN RPAREN END WITH
 ##
-## Ends in an error in state: 285.
+## Ends in an error in state: 283.
 ##
 ## list(component) -> component . list(component) [ EOF ]
 ##
@@ -2293,7 +2200,7 @@ Following a transition definition, the parser expects a transition or a procedur
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN RPAREN THROW BAR
 ##
-## Ends in an error in state: 274.
+## Ends in an error in state: 272.
 ##
 ## component_body -> stmts . END [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2304,11 +2211,11 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN R
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 224, spurious reduction of production option(sid) -> 
-## In state 226, spurious reduction of production stmt -> THROW option(sid) 
-## In state 263, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
-## In state 268, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
-## In state 276, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt)) 
+## In state 219, spurious reduction of production option(sid) -> 
+## In state 221, spurious reduction of production stmt -> THROW option(sid) 
+## In state 261, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt 
+## In state 266, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt) 
+## In state 274, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt)) 
 ##
 # see tests/parser/cmodule-transition-id-lparen-rparen-throw-bar.scilla
 
@@ -2316,7 +2223,7 @@ Possible typo.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN RPAREN WITH
 ##
-## Ends in an error in state: 223.
+## Ends in an error in state: 218.
 ##
 ## transition -> TRANSITION component_id component_params . component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2329,9 +2236,9 @@ After a transition has the parameters defined, we expect a semi-colon separated 
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN WITH
 ##
-## Ends in an error in state: 220.
+## Ends in an error in state: 215.
 ##
-## component_params -> LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN [ THROW SEND MATCH ID EVENT END DELETE CID ACCEPT ]
+## component_params -> LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN [ THROW SEND MATCH ID FORALL EVENT END DELETE CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -2343,7 +2250,7 @@ The transition parameter name is invalid. This should start with a lower case le
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID WITH
 ##
-## Ends in an error in state: 219.
+## Ends in an error in state: 214.
 ##
 ## transition -> TRANSITION component_id . component_params component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2356,7 +2263,7 @@ After a transition has been named, the parameters must be specified in brackets.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION WITH
 ##
-## Ends in an error in state: 216.
+## Ends in an error in state: 211.
 ##
 ## transition -> TRANSITION . component_id component_params component_body [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2369,7 +2276,7 @@ Transitions must begin with a valid name, this can be a lower case or capital le
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN UNDERSCORE
 ##
-## Ends in an error in state: 204.
+## Ends in an error in state: 199.
 ##
 ## contract -> CONTRACT CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN . list(field) list(component) [ EOF ]
 ## contract -> CONTRACT CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN . with_constraint list(field) list(component) [ EOF ]
@@ -2383,7 +2290,7 @@ After the definition of the immutable fields, either a contract constraint, the 
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN WITH
 ##
-## Ends in an error in state: 195.
+## Ends in an error in state: 190.
 ##
 ## contract -> CONTRACT CID LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN list(field) list(component) [ EOF ]
 ## contract -> CONTRACT CID LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN with_constraint list(field) list(component) [ EOF ]
@@ -2398,7 +2305,7 @@ The name of an immutable field should begin with a lower case letter ('a' - 'z')
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID WITH
 ##
-## Ends in an error in state: 194.
+## Ends in an error in state: 189.
 ##
 ## contract -> CONTRACT CID . LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN list(field) list(component) [ EOF ]
 ## contract -> CONTRACT CID . LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN with_constraint list(field) list(component) [ EOF ]
@@ -2412,7 +2319,7 @@ The declaration of zero or more immutable fields in brackets is expected.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT WITH
 ##
-## Ends in an error in state: 193.
+## Ends in an error in state: 188.
 ##
 ## contract -> CONTRACT . CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN list(field) list(component) [ EOF ]
 ## contract -> CONTRACT . CID LPAREN loption(separated_nonempty_list(COMMA,param_pair)) RPAREN with_constraint list(field) list(component) [ EOF ]
@@ -2426,7 +2333,7 @@ When a contract is being defined a valid identifier is expected.
 
 cmodule: SCILLA_VERSION NUMLIT LIBRARY CID EOF
 ##
-## Ends in an error in state: 192.
+## Ends in an error in state: 187.
 ##
 ## cmodule -> SCILLA_VERSION NUMLIT imports option(library) . contract EOF [ # ]
 ##
@@ -2438,8 +2345,8 @@ cmodule: SCILLA_VERSION NUMLIT LIBRARY CID EOF
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 12, spurious reduction of production list(libentry) -> 
-## In state 189, spurious reduction of production library -> LIBRARY CID list(libentry) 
-## In state 293, spurious reduction of production option(library) -> library 
+## In state 184, spurious reduction of production library -> LIBRARY CID list(libentry) 
+## In state 291, spurious reduction of production option(library) -> library 
 ##
 # see tests/parser/bad/cmodule-version-number-library-name
 
@@ -2486,7 +2393,7 @@ Scilla version number unspecified.
 
 exp_term: CID LBRACE RBRACE AT
 ##
-## Ends in an error in state: 161.
+## Ends in an error in state: 156.
 ##
 ## simple_exp -> scid option(ctargs) . list(sident) [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -2499,7 +2406,7 @@ In a data constructor application, the parser expects valid separated uncapitali
 
 exp_term: LET ID COLON TID EQ STRING WITH
 ##
-## Ends in an error in state: 176.
+## Ends in an error in state: 171.
 ##
 ## simple_exp -> LET ID type_annot EQ simple_exp . IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##
@@ -2512,7 +2419,7 @@ This typed let expression does not have a well placed 'in'.
 
 exp_term: LET ID COLON TID EQ WITH
 ##
-## Ends in an error in state: 175.
+## Ends in an error in state: 170.
 ##
 ## simple_exp -> LET ID type_annot EQ . simple_exp IN exp [ TYPE TRANSITION SEMICOLON PROCEDURE LET IN FIELD EOF END CONTRACT BAR ARROW ]
 ##

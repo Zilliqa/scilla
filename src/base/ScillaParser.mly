@@ -170,21 +170,17 @@ t_map_key :
 
 (* TODO: This is a temporary fix of issue #261 *)
 t_map_value_args:
-| LPAREN; t = t_map_value_args; RPAREN; { t }
+| LPAREN; t = t_map_value; RPAREN; { t }
 | d = scid; { to_type d (toLoc $startpos(d))}
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 t_map_value :
-| LPAREN; d = scid; targs=list(t_map_value_args); RPAREN;
-    { match targs with
-      | [] -> to_type d (toLoc $startpos(d))
-      | _ -> ADT (asIdL d (toLoc $startpos(d)), targs) }
-| LPAREN; MAP; k=t_map_key; v = t_map_value_args; RPAREN; { MapType (k, v) }
 | d = scid; targs=list(t_map_value_args)
     { match targs with
       | [] -> to_type d (toLoc $startpos(d))
       | _ -> ADT (asIdL d (toLoc $startpos(d)), targs) }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
+| LPAREN; t = t_map_value; RPAREN; { t }
 
 typ :
 | d = scid; targs=list(targ)
