@@ -332,9 +332,7 @@ struct
                 | CreateEvnt _ | Throw _ | CallProc _ | Iterate _ ->
                     pure acc_stmt_defs
                 | Bind (x, e) ->
-                    let () =
-                      check_warn_redef cparams cfields pnames stmt_defs x
-                    in
+                    check_warn_redef cparams cfields pnames stmt_defs x;
                     let%bind () = expr_iter e cparams cfields pnames in
                     pure (get_id x :: acc_stmt_defs)
                 | MatchStmt (_, clauses) ->
