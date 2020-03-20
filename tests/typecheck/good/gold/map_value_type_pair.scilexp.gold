@@ -1,0 +1,34 @@
+{
+  "type_info": [
+    {
+      "vname": "m",
+      "type": "Map (Int64) (Pair (Int32) (List (Int32)))",
+      "start_location": {
+        "file": "typecheck/good/map_value_type_pair.scilexp",
+        "line": 1,
+        "column": 6
+      },
+      "end_location": {
+        "file": "typecheck/good/map_value_type_pair.scilexp",
+        "line": 1,
+        "column": 7
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Map (Int64) (Pair (Int32) (List (Int32)))",
+      "start_location": {
+        "file": "typecheck/good/map_value_type_pair.scilexp",
+        "line": 1,
+        "column": 50
+      },
+      "end_location": {
+        "file": "typecheck/good/map_value_type_pair.scilexp",
+        "line": 1,
+        "column": 51
+      }
+    }
+  ],
+  "type":
+    "Map (Int64) (Pair (Int32) (List (Int32))) -> Map (Int64) (Pair (Int32) (List (Int32)))"
+}

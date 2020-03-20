@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid map type, the map value is likely incorrect. The map value being a map itself with an invalid map value (possible malformed ADT).\n",
+        "This is an invalid map type, the map value is incorrect. It is likely that there is an ADT constructor with an invalid argument.\n",
       "start_location": {
         "file":
           "base/parser/bad/type_t-map-cid-lparen-map-cid-cid-underscore.scilla",

@@ -198,6 +198,7 @@ module Tests = TestUtil.DiffBasedTests (struct
       "type-subst-avoids-capture-2.scilexp";
       "zip.scilexp";
       "str-nonprint-char-1.scilexp";
+      "map_value_type_pair.scilexp";
     ]
 
   let exit_code : Unix.process_status = WEXITED 0

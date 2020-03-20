@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid map type, the map value type is incorrect. It is possible that the key type is a nested ADT where the inner constructor arguments are faulty.\n",
+        "This is an invalid map type, the map value is incorrect. It is likely that there is an ADT constructor with an invalid argument.\n",
       "start_location": {
         "file":
           "base/parser/bad/type_t-map-cid-cid-lparen-cid-underscore.scilla",

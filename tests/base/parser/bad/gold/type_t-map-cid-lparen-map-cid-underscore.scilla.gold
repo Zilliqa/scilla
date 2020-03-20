@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid map type, the map value is likely incorrect. The map value being likely a map in brackets with an invalid map value.\n",
+        "This map type likely has an incorrect map value type. The map value is a map with a malformed map value.\n",
       "start_location": {
         "file":
           "base/parser/bad/type_t-map-cid-lparen-map-cid-underscore.scilla",
