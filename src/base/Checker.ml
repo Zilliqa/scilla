@@ -187,7 +187,7 @@ let analyze_print_sharding cmod typed_elibs =
           ~f:(fun (i, summ) ->
             pout
             @@ sprintf "State footprint for component %s:\n%s\n\n"
-                  (get_id i) (SA.sprint_summary summ))
+                  (get_id i) (SA.pp_summary summ))
           cpol
       in
       res
