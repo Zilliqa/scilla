@@ -59,10 +59,10 @@ struct
     | ComponentParameter
     | DoesNotShadow
 
-  (* In the expression language, all contribution sources are bindings In
-     the statement language, all contribution sources are pseudofields, i.e.
+  (* In the expression language, all contribution sources are formal parameters.
+     In the statement language, all contribution sources are pseudofields, i.e.
      identifier contributions are reduced after every statement *)
-  type contrib_source = Pseudofield of pseudofield | Binding of ER.rep ident
+  type contrib_source = Pseudofield of pseudofield | FormalParameter of int
 
   type contrib_cardinality = LinearContrib | NonLinearContrib
 
@@ -74,12 +74,18 @@ struct
   let pp_contrib_source cs =
     match cs with
     | Pseudofield (f, opt_keys) -> pp_pseudofield f opt_keys
-    | Binding i -> get_id i
+    | FormalParameter i -> "_" ^ string_of_int i
 
   let pp_contrib_cardinality cc =
     match cc with LinearContrib -> "Linear" | NonLinearContrib -> "NonLinear"
 
   let pp_contrib_op co = match co with BuiltinOp blt -> pp_builtin blt
+
+  let max_contrib_card a b =
+    match (a, b) with
+    | NonLinearContrib, _ -> NonLinearContrib
+    | _, NonLinearContrib -> NonLinearContrib
+    | LinearContrib, LinearContrib -> LinearContrib
 
   module OrderedContribOp = struct
     type t = contrib_op
@@ -109,17 +115,15 @@ struct
   let pp_contrib_summary (cs : contrib_summary) =
     let card, ops_set = cs in
     let ops = ContribOps.elements ops_set in
-    let ops_str =
-      List.fold_left (fun s op -> s ^ pp_contrib_op op ^ " ") "" ops
-    in
+    let ops_str = String.concat " " @@ List.map pp_contrib_op ops in
     let card_str = pp_contrib_cardinality card in
-    card_str ^ ", [" ^ ops_str ^ "]"
+    card_str ^ ", " ^ ops_str
 
   let pp_contribs (contribs : contributions) =
     Contrib.fold
       (fun co_src co_summ str ->
         str ^ "{" ^ pp_contrib_source co_src ^ ", " ^ pp_contrib_summary co_summ
-        ^ "} ")
+        ^ "}")
       contribs ""
 
   (* For each contract component, we keep track of the operations it performs.
@@ -160,7 +164,7 @@ struct
 
   let pp_summary summ =
     let ops = ComponentSummary.elements summ in
-    List.fold_left (fun acc op -> acc ^ pp_operation op ^ "\n") "" ops
+    List.fold_left (fun acc op -> acc ^ "  " ^ pp_operation op ^ "\n") "" ops
 
   type component_summary = ComponentSummary.t
 
@@ -172,6 +176,19 @@ struct
        bindings. This lets us track multiple reads/writes to a field in a
        transition in the same way we track expressions.*)
     | IdentSig of ident_shadow_status * contributions
+
+  let pp_sig k sgn =
+    match sgn with
+    | ComponentSig (comp_params, comp_summ) ->
+        let ns = "State footprint for " ^ k in
+        let ps =
+          String.concat ", " @@ List.map (fun (i, _) -> get_id i) comp_params
+        in
+        let cs = pp_summary comp_summ in
+        ns ^ "(" ^ ps ^ "): \n" ^ cs
+    | IdentSig (_, contribs) ->
+        let ns = "Signature for " ^ k ^ ": " in
+        ns ^ pp_contribs contribs
 
   (* XXX: I copied this from GasUsageAnalysis; why not use a Map? *)
   module SAEnv = struct
@@ -215,11 +232,8 @@ struct
       List.fold_left (fun acc (k, v) -> addS acc k v) env kv
 
     let pp env =
-      let l = to_list env in
-      List.fold_left
-        (fun acc (k, sign) ->
-          acc ^ "Signature for " ^ k ^ ": " ^ sign ^ "----\n")
-        "" l
+      let l = List.rev @@ to_list env in
+      List.fold_left (fun acc (k, sgn) -> acc ^ pp_sig k sgn ^ "\n") "" l
   end
 
   let env_bind_component senv comp (sgn : signature) =
@@ -236,13 +250,27 @@ struct
     let csrc = Pseudofield (f, opt_keys) in
     Contrib.singleton csrc csumm
 
+  (* Combine contributions "in sequence", e.g. builtin add a b *)
   let contrib_union a b =
     (* Any combination of the same ident leads to a NonLinearContrib *)
-    let combine_contrib_summary ident (_, opsa) (_, opsb) =
+    let combine_seq ident (_, opsa) (_, opsb) =
       let ops = ContribOps.union opsa opsb in
       Some (NonLinearContrib, ops)
     in
-    Contrib.union combine_contrib_summary a b
+    Contrib.union combine_seq a b
+
+  (* Combine contributions "in parallel", e.g. match *)
+  let combine_par (carda, opsa) (cardb, opsb) =
+    let card = max_contrib_card carda cardb in
+    let ops = ContribOps.union opsa opsb in
+    (card, ops)
+
+  let contrib_upper_bound a b =
+    Contrib.union (fun k x y -> Some (combine_par x y)) a b
+
+  (* Combine contributions by multiplication, e.g. function application *)
+  let contrib_product (multiple : contributions) (single : contrib_summary) =
+    Contrib.map (fun c -> combine_par c single) multiple
 
   let is_bottom_level_access m klist =
     let mt = (ER.get_type (get_rep m)).tp in
@@ -313,7 +341,25 @@ struct
     (* If this happens, it's a bug *)
     | _ -> fail0 "Sharding analysis: ident does not have a signature"
 
-  let rec sa_expr senv contrib (erep : expr_annot) =
+  (* Add a new identifier to the environment, keeping track of whether it
+     shadows a component parameter *)
+  let env_new_ident i contrib senv =
+    let id = get_id i in
+    let opt_shadowed = SAEnv.lookupS senv id in
+    let new_id_sig =
+      match opt_shadowed with
+      | None -> IdentSig (DoesNotShadow, contrib)
+      | Some shadowed_sig -> (
+          match shadowed_sig with
+          | IdentSig (ComponentParameter, _) ->
+              IdentSig (ShadowsComponentParameter, contrib)
+          | _ -> IdentSig (DoesNotShadow, contrib) )
+    in
+    SAEnv.addS senv id new_id_sig
+
+  (* TODO: define a wrapper for sa_expr *)
+  (* fp_count keeps track of how many function formal parameters we've encountered *)
+  let rec sa_expr senv contrib fp_count (erep : expr_annot) =
     let e, rep = erep in
     match e with
     | Literal l -> pure @@ contrib
@@ -335,27 +381,85 @@ struct
             c
         in
         pure @@ c_wops
+    | Message bs ->
+        let get_payload_contrib pld =
+          match pld with
+          | MLit l -> pure @@ contrib
+          | MVar i ->
+              let%bind ic = get_ident_contrib senv i in
+              pure @@ contrib_union contrib ic
+        in
+        let _, plds = List.split bs in
+        let%bind pld_contribs = mapM get_payload_contrib plds in
+        pure @@ List.fold_left contrib_union Contrib.empty pld_contribs
+    | Constr (cname, _, actuals) ->
+        let%bind arg_contribs =
+          mapM actuals ~f:(fun i -> get_ident_contrib senv i)
+        in
+        pure @@ List.fold_left contrib_union Contrib.empty arg_contribs
+    | MatchExpr (x, clauses) ->
+        let%bind xc = get_ident_contrib senv x in
+        let clause_contrib (pattern, cl_expr) =
+          let binders = get_pattern_bounds pattern in
+          let senv' =
+            List.fold_left
+              (* Each binder in the pattern gets the full contributions of x *)
+                (fun env_acc id -> env_new_ident id xc env_acc)
+              senv binders
+          in
+          sa_expr senv' contrib fp_count cl_expr
+        in
+        let%bind cl_contribs = mapM clause_contrib clauses in
+        (* different clauses combined via LUB, _not_ union *)
+        pure @@ List.fold_left contrib_upper_bound Contrib.empty cl_contribs
+    | Let (i, _, lhs, rhs) ->
+        let%bind lhs_contrib = sa_expr senv contrib fp_count lhs in
+        let senv' = env_new_ident i lhs_contrib senv in
+        sa_expr senv' contrib fp_count rhs
+    | Fun (formal, _, body) ->
+        (* Formal parameters are given a linear contribution when producing
+           function summaries. Arguments (see App) might be nonlinear. *)
+        let fp_contrib =
+          Contrib.singleton (FormalParameter fp_count)
+            (LinearContrib, ContribOps.empty)
+        in
+        let senv' = env_new_ident formal fp_contrib senv in
+        sa_expr senv' contrib (fp_count + 1) body
+    | App (f, actuals) ->
+        let fun_sig f =
+          let%bind fs = SAEnv.resolvS senv (get_id f) in
+          match fs with
+          | IdentSig (_, c) -> pure @@ c
+          | _ ->
+              fail0 "Sharding analysis: applied function does not have IdentSig"
+        in
+        let%bind arg_contribs =
+          mapM actuals ~f:(fun i -> get_ident_contrib senv i)
+        in
+        (* f's summary has arguments named _0, _1, etc. *)
+        (* CAREFUL: don't rely on order of elements in map; Ord.compare may change *)
+        let%bind fp_contribs = fun_sig f in
+        let contribs_pairwise =
+          List.mapi
+            (fun idx argc ->
+              let opt_fpc =
+                Contrib.find_opt (FormalParameter idx) fp_contribs
+              in
+              match opt_fpc with
+              | Some fpc -> contrib_product argc fpc
+              (* If the formal parameter is not used, argument is not used *)
+              | None -> Contrib.empty)
+            arg_contribs
+        in
+        let app_contrib =
+          List.fold_left contrib_union Contrib.empty contribs_pairwise
+        in
+        pure @@ app_contrib
+    (* TODO: be defensive about unsupported instructions *)
     | _ -> pure @@ contrib
 
   (* Precondition: senv contains the component parameters, appropriately marked *)
   let rec sa_stmt senv summary (stmts : stmt_annot list) =
-    (* Add a new identifier to the environment, keeping track of whether it
-       shadows a component parameter *)
-    let env_new_ident i contrib senv =
-      let id = get_id i in
-      let opt_shadowed = SAEnv.lookupS senv id in
-      let new_id_sig =
-        match opt_shadowed with
-        | None -> IdentSig (DoesNotShadow, contrib)
-        | Some shadowed_sig -> (
-            match shadowed_sig with
-            | IdentSig (ComponentParameter, _) ->
-                IdentSig (ShadowsComponentParameter, contrib)
-            | _ -> IdentSig (DoesNotShadow, contrib) )
-      in
-      SAEnv.addS senv id new_id_sig
-    in
-
     (* Helpers to continue after accumulating an operation *)
     let cont senv summary sts = sa_stmt senv summary sts in
     (* Perform an operation *)
@@ -409,10 +513,10 @@ struct
             cont_op op summary sts
         | AcceptPayment -> cont_op AcceptMoney summary sts
         | SendMsgs i -> cont_op SendMessages summary sts
-        (* XXX: Do we want to track blockchain reads? *)
+        (* TODO: Do we want to track blockchain reads? *)
         | ReadFromBC (x, _) -> cont_ident x Contrib.empty summary sts
         | Bind (x, expr) ->
-            let%bind expr_contrib = sa_expr senv Contrib.empty expr in
+            let%bind expr_contrib = sa_expr senv Contrib.empty 0 expr in
             cont_ident x expr_contrib summary sts
         | MatchStmt (x, clauses) ->
             let%bind xc = get_ident_contrib senv x in
@@ -427,6 +531,7 @@ struct
               sa_stmt senv' summary cl_sts
             in
             let%bind cl_summaries = mapM summarise_clause clauses in
+            (* summaries are composed via set union *)
             let%bind summary' =
               foldM
                 (fun acc_summ cl_summ ->
@@ -448,7 +553,7 @@ struct
                 fail1
                   "Sharding analysis: calling procedure that was not analysed"
                   (SR.get_loc (get_rep p)) )
-        (* TODO: be defensive about unsupported instructions *)
+        (* FIXME: be defensive about unsupported instructions *)
         | _ -> cont senv summary sts )
 
   let sa_component_summary senv (comp : component) =
@@ -475,7 +580,7 @@ struct
       ~f:(fun senv le ->
         match le with
         | LibVar (lname, _, lexp) ->
-            let%bind esig = sa_expr senv Contrib.empty lexp in
+            let%bind esig = sa_expr senv Contrib.empty 0 lexp in
             pure
             @@ SAEnv.addS senv (get_id lname) (IdentSig (DoesNotShadow, esig))
         | LibTyp _ -> pure senv)
@@ -492,8 +597,14 @@ struct
       | None -> pure @@ senv
     in
 
+    (* Bind contract parameters *)
+    let senv =
+      let prs, _ = List.split cmod.contr.cparams in
+      env_bind_ident_list senv prs (IdentSig (DoesNotShadow, Contrib.empty))
+    in
+
     (* This is a combined map and fold: fold for senv', map for summaries *)
-    let%bind senv', summaries =
+    let%bind senv, _ =
       foldM
         (fun (senv_acc, summ_acc) comp ->
           let%bind comp_summ = sa_component_summary senv_acc comp in
@@ -505,7 +616,7 @@ struct
           pure @@ (senv', summaries))
         (senv, []) cmod.contr.ccomps
     in
-    let summaries = List.rev summaries in
 
-    pure summaries
+    (* let summaries = List.rev summaries in *)
+    pure senv
 end

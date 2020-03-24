@@ -183,12 +183,12 @@ let analyze_print_sharding cmod typed_elibs =
             "\n[Sharding analysis]:\n module [%s] is successfully analyzed.\n"
             (get_id cmod.contr.cname);
       let _ =
-        List.iter
+        (* List.iter
           ~f:(fun (i, summ) ->
             pout
             @@ sprintf "State footprint for component %s:\n%s\n\n"
-                  (get_id i) (SA.pp_summary summ))
-          cpol
+                  (get_id i) (SA.pp_summary summ)) *)
+          pout @@ (SA.SAEnv.pp cpol)
       in
       res
 
@@ -307,8 +307,8 @@ let check_cmodule cli =
     let%bind _ =
     if cli.sa_flag then
       wrap_error_with_gas remaining_gas
-      @@ analyze_print_sharding typed_cmod typed_elibs
-    else pure []
+      @@ (pure @@ Some (analyze_print_sharding typed_cmod typed_elibs))
+    else pure @@ None
   in
     pure @@ (cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas)
   in
