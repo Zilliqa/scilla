@@ -410,11 +410,8 @@ module TypeUtilities = struct
              (pp_typ ft) (pp_typ_list argtypes)
 
   let proc_type_applies formals actuals =
-    match List.zip formals actuals with
-    | Ok arg_pairs ->
-        mapM arg_pairs ~f:(fun (formal, actual) ->
-            assert_type_equiv formal actual)
-    | Unequal_lengths -> fail0 "Incorrect number of arguments to procedure"
+    map2M formals actuals ~f:assert_type_equiv ~msg:(fun () ->
+        mk_error0 "Incorrect number of arguments to procedure")
 
   let rec elab_tfun_with_args_no_gas tf args =
     match (tf, args) with

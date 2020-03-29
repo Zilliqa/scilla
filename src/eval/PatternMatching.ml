@@ -40,22 +40,21 @@ let rec match_with_pattern v p =
         fail0
         @@ sprintf "Constructor %s requires %d parameters, but %d are provided."
              ctr.cname ctr.arity (List.length ps)
-        (* Pattern is well-formed, processing the value *)
       else
+        (* Pattern is well-formed, processing the value *)
+        (* In this branch ctr.arity = List.length ps *)
         match v with
         | ADTValue (cn', _, ls')
-          when String.(cn' = ctr.cname) && List.length ls' = ctr.arity -> (
+          when String.(cn' = ctr.cname) && List.length ls' = ctr.arity ->
             (* The value structure matches the pattern *)
-            match List.zip ls' ps with
-            | Unequal_lengths ->
-                fail0 "Pattern and value lists have different length"
-            | Ok sub_matches ->
-                let%bind res_list =
-                  mapM sub_matches ~f:(fun (w, q) -> match_with_pattern w q)
-                in
-                (* Careful: there might be duplicate bindings! *)
-                (* We will need to catch this statically. *)
-                pure @@ ListLabels.flatten res_list )
+            (* In this branch ctr.arity = List.length ps = List.length ls', so we can use zip_exn *)
+            let%bind res_list =
+              map2M ls' ps ~f:match_with_pattern ~msg:(fun () -> assert false)
+            in
+
+            (* Careful: there might be duplicate bindings! *)
+            (* We will need to catch this statically. *)
+            pure @@ List.concat res_list
         | _ ->
             fail0
             @@ sprintf "Cannot match value %s againts pattern %s."
