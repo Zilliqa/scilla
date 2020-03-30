@@ -91,6 +91,16 @@ let rec mapM ~f ls =
       pure (z :: zs)
   | [] -> pure []
 
+(* Monadic map2 *)
+let rec map2M ~f ls ms ~msg =
+  match (ls, ms) with
+  | x :: ls', y :: ms' ->
+      let%bind z = f x y in
+      let%bind zs = map2M ~f ls' ms' ~msg in
+      pure (z :: zs)
+  | [], [] -> pure []
+  | _ -> fail @@ msg ()
+
 let rec iterM ~f ls =
   match ls with
   | x :: ls' ->
@@ -186,6 +196,16 @@ module EvalMonad = struct
         let%bind zs = mapM ~f ls' in
         pure (z :: zs)
     | [] -> pure []
+
+  (* Monadic map2 *)
+  let rec map2M ~f ls ms ~msg =
+    match (ls, ms) with
+    | x :: ls', y :: ms' ->
+        let%bind z = f x y in
+        let%bind zs = map2M ~f ls' ms' ~msg in
+        pure (z :: zs)
+    | [], [] -> pure []
+    | _ -> fail @@ msg ()
 
   let liftPair1 m x =
     let%bind z = m in
