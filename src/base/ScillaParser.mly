@@ -21,34 +21,41 @@
   open ErrorUtils
   open ParsedSyntax
 
-  let to_prim_type_exn d loc = match d with
-    | "Int32" -> Int_typ Bits32
-    | "Int64" -> Int_typ Bits64
-    | "Int128" -> Int_typ Bits128
-    | "Int256" -> Int_typ Bits256
-    | "Uint32" -> Uint_typ Bits32
-    | "Uint64" -> Uint_typ Bits64
-    | "Uint128" -> Uint_typ Bits128
-    | "Uint256" -> Uint_typ Bits256
-    | "String" -> String_typ
-    | "BNum" -> Bnum_typ
-    | "Message" -> Msg_typ
-    | "Event" -> Event_typ
-    | "ByStr" -> Bystr_typ
-    | _ -> let re = Str.regexp "ByStr\\([0-9]+\\)$" in
-           if Str.string_match re d 0 then
-             let b = Core_kernel.Int.of_string (Str.matched_group 1 d) in
-             Bystrx_typ b
-           else raise (SyntaxError ("Invalid primitive type", loc))
+  let to_prim_type_exn d =
+    let exn loc = raise (SyntaxError ("Invalid primitive type", loc)) in
+    match d with
+    | NoQualifier id ->
+       (match get_id id with
+        | "Int32" -> Int_typ Bits32
+        | "Int64" -> Int_typ Bits64
+        | "Int128" -> Int_typ Bits128
+        | "Int256" -> Int_typ Bits256
+        | "Uint32" -> Uint_typ Bits32
+        | "Uint64" -> Uint_typ Bits64
+        | "Uint128" -> Uint_typ Bits128
+        | "Uint256" -> Uint_typ Bits256
+        | "String" -> String_typ
+        | "BNum" -> Bnum_typ
+        | "Message" -> Msg_typ
+        | "Event" -> Event_typ
+        | "ByStr" -> Bystr_typ
+        | _ -> let re = Str.regexp "ByStr\\([0-9]+\\)$" in
+               if Str.string_match re (get_id id) 0 then
+                 let b = Core_kernel.Int.of_string (Str.matched_group 1 (get_id id)) in
+                 Bystrx_typ b
+               else exn (get_rep id))
+    | NamespaceQualifier (_, id)
+    | AddressQualifier (_, id) ->
+       exn (get_rep id)
 
-  let to_type d sloc =
-    try PrimType (to_prim_type_exn d sloc)
-    with | _ -> ADT (asIdL d sloc, [])
+  let to_type d =
+    try PrimType (to_prim_type_exn d)
+    with | _ -> ADT (d, [])
 
   let to_map_key_type_exn d loc =
-    let exn () = SyntaxError (("Invalid map key type " ^ d), loc) in
+    let exn () = SyntaxError (("Invalid map key type " ^ (get_qualified_id d)), loc) in
     try
-      match to_prim_type_exn d loc with
+      match to_prim_type_exn d with
       | Msg_typ | Event_typ -> raise (exn ())
       | t -> PrimType t
     with | _ -> raise (exn ())
@@ -159,8 +166,12 @@ sident :
 | ns = CID; PERIOD; name = ID { Ident (ns ^ "." ^ name, toLoc $startpos) }
 
 scid :
-| name = CID { name }
-| ns = CID; PERIOD; name = CID { ns ^ "." ^ name }
+| name = CID
+  { NoQualifier (asIdL name (toLoc $startpos)) }
+| ns = CID; PERIOD; name = CID
+  { NamespaceQualifier (ns, asIdL name (toLoc $startpos)) }
+| adr = HEXLIT; PERIOD; name = CID
+  { AddressQualifier (Bystrx.parse_hex adr, asIdL name (toLoc $startpos)) }
 
 type_annot:
 | COLON; t = typ { t }
@@ -181,7 +192,7 @@ t_map_key :
 (* TODO: This is a temporary fix of issue #261 *)
 t_map_value_args:
 | LPAREN; t = t_map_value_args; RPAREN; { t }
-| d = scid; { to_type d (toLoc $startpos(d))}
+| d = scid; { to_type d }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 | LPAREN; kt = address_typ; RPAREN; { kt }
 | vt = address_typ; { vt }
@@ -189,13 +200,13 @@ t_map_value_args:
 t_map_value :
 | LPAREN; d = scid; targs=list(t_map_value_args); RPAREN;
     { match targs with
-      | [] -> to_type d (toLoc $startpos(d))
-      | _ -> ADT (asIdL d (toLoc $startpos(d)), targs) }
+      | [] -> to_type d
+      | _ -> ADT (d, targs) }
 | LPAREN; MAP; k=t_map_key; v = t_map_value_args; RPAREN; { MapType (k, v) }
 | d = scid; targs=list(t_map_value_args)
     { match targs with
-      | [] -> to_type d (toLoc $startpos(d))
-      | _ -> ADT (asIdL d (toLoc $startpos(d)), targs) }
+      | [] -> to_type d
+      | _ -> ADT (d, targs) }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 address_typ :
@@ -207,8 +218,8 @@ address_typ :
 typ :
 | d = scid; targs=list(targ)
   { match targs with
-    | [] -> to_type d (toLoc $startpos(d))
-    | _ -> ADT (asIdL d (toLoc $startpos(d)), targs)
+    | [] -> to_type d
+    | _ -> ADT (d, targs)
   }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { FunType (t1, t2) }
@@ -220,7 +231,7 @@ typ :
 
 targ:
 | LPAREN; t = typ; RPAREN; { t }
-| d = scid; { to_type d (toLoc $startpos(d))}
+| d = scid; { to_type d }
 | t = TID; { TypeVar t }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
@@ -263,7 +274,7 @@ simple_exp :
       (match ts with
        | None -> []
        | Some ls -> ls) in
-    (Constr (Ident(c, toLoc $startpos), targs, args), toLoc $startpos)
+    (Constr (c, targs, args), toLoc $startpos)
   }
 (* Match expression *)
 | MATCH; x = sid; WITH; cs=list(exp_pm_clause); END
@@ -287,7 +298,8 @@ lit :
     (* XXX: for Int32 -11111111111111111111 we will report error pointing to Int32,
             not the numeral, because the user might have forgotten to switch e.g. Int32 to Int64
      *)
-    build_prim_literal_exn (to_prim_type_exn i iloc) string_of_n (toLoc $startpos)
+    let id = NoQualifier (asIdL i iloc) in
+    build_prim_literal_exn (to_prim_type_exn id) string_of_n (toLoc $startpos)
   }
 | h = HEXLIT   { ByStrX (Bystrx.parse_hex h) }
 | s = STRING   { build_prim_literal_exn String_typ s (toLoc $startpos) }
@@ -305,12 +317,12 @@ map_access:
 pattern:
 | UNDERSCORE { Wildcard }
 | x = ID { Binder (Ident (x, toLoc $startpos(x))) }
-| c = scid; ps = list(arg_pattern) { Constructor (asIdL c (toLoc $startpos(c)), ps) }
+| c = scid; ps = list(arg_pattern) { Constructor (c, ps) }
 
 arg_pattern:
 | UNDERSCORE { Wildcard }
 | x = ID { Binder (Ident (x, toLoc $startpos(x))) }
-| c = scid;  { Constructor (asIdL c (toLoc $startpos(c)), []) }
+| c = scid;  { Constructor (c, []) }
 | LPAREN; p = pattern RPAREN; { p }
 
 exp_pm_clause:

@@ -26,31 +26,31 @@ open Result.Let_syntax
 (*                 Built-in Algebraic Data Types          *)
 (**********************************************************)
 
-(* A tagged constructor *)
-type constructor = {
-  cname : string;
-  (* constructor name *)
-  arity : int; (* How many arguments it takes *)
-}
-[@@deriving equal]
-
-(* An Algebraic Data Type *)
-type adt = {
-  tname : string;
-  (* type name *)
-  tparams : string list;
-  (* type parameters *)
-
-  (* supported constructors *)
-  tconstr : constructor list;
-  (* Mapping for constructors' types
-     The arity of the constructor is the same as the length
-     of the list, so the types are mapped correspondingly. *)
-  tmap : (string * typ list) list;
-}
-[@@deriving equal]
-
 module DataTypeDictionary = struct
+  (* A tagged constructor *)
+  type constructor = {
+    cname : string;
+    (* constructor name *)
+    arity : int; (* How many arguments it takes *)
+  }
+  [@@deriving equal]
+  
+  (* An Algebraic Data Type *)
+  type adt = {
+    tname : string;
+    (* type name *)
+    tparams : string list;
+    (* type parameters *)
+    
+    (* supported constructors *)
+    tconstr : constructor list;
+    (* Mapping for constructors' types
+       The arity of the constructor is the same as the length
+       of the list, so the types are mapped correspondingly. *)
+    tmap : (string * typ list) list;
+  }
+  [@@deriving equal]
+
   (* Booleans *)
   let c_true = { cname = "True"; arity = 0 }
 
@@ -69,7 +69,7 @@ module DataTypeDictionary = struct
       tname = "Nat";
       tparams = [];
       tconstr = [ c_zero; c_succ ];
-      tmap = [ ("Succ", [ ADT (asId "Nat", []) ]) ];
+      tmap = [ ("Succ", [ ADT (NoQualifier (asId "Nat"), []) ]) ];
     }
 
   (* Option *)
@@ -95,7 +95,7 @@ module DataTypeDictionary = struct
       tname = "List";
       tparams = [ "'A" ];
       tconstr = [ c_cons; c_nil ];
-      tmap = [ ("Cons", [ TypeVar "'A"; ADT (asId "List", [ TypeVar "'A" ]) ]) ];
+      tmap = [ ("Cons", [ TypeVar "'A"; ADT (NoQualifier (asId "List"), [ TypeVar "'A" ]) ]) ];
     }
 
   (* Products (Pairs) *)
@@ -130,6 +130,21 @@ module DataTypeDictionary = struct
           Caml.List.iter (fun c -> add adt_cons_dict c.cname (a, c)) a.tconstr)
         adt_name_dict)
 
+  let mk_constructor (ctr_id : 'a qualified_ident) arity =
+    { cname = get_qualified_id ctr_id ; arity = arity }
+
+  let mk_adt
+      (adt_id : 'a qualified_ident)     (* type name *)
+      (tparams : string list)           (* type parameters *)
+      (tconstr : constructor list)      (* supported constructors *)
+      (tmap : (string * typ list) list) (* Mapping for constructors' types
+                                           The arity of the constructor is the same as the length
+                                           of the list, so the types are mapped correspondingly. *) =
+    { tname = get_qualified_id adt_id ;
+      tparams = tparams ;
+      tconstr = tconstr ;
+      tmap = tmap }
+  
   let add_adt (new_adt : adt) error_loc =
     let open Caml in
     match Hashtbl.find_opt adt_name_dict new_adt.tname with
@@ -149,31 +164,35 @@ module DataTypeDictionary = struct
             | None -> pure @@ Hashtbl.add adt_cons_dict ctr.cname (new_adt, ctr))
 
   (*  Get ADT by name *)
-  let lookup_name ?(sloc = ErrorUtils.dummy_loc) name =
+  let lookup_name ?(sloc = ErrorUtils.dummy_loc) id =
+    let name = get_qualified_id id in
     let open Caml in
     match Hashtbl.find_opt adt_name_dict name with
     | None -> fail1 (sprintf "ADT %s not found" name) sloc
     | Some a -> pure a
 
   (*  Get ADT by the constructor *)
-  let lookup_constructor ?(sloc = ErrorUtils.dummy_loc) cn =
+  let lookup_constructor ?(sloc = ErrorUtils.dummy_loc) id =
+    let cn = get_qualified_id id in
     let open Caml in
     match Hashtbl.find_opt adt_cons_dict cn with
     | None -> fail1 (sprintf "No data type with constructor %s found" cn) sloc
     | Some dt -> pure dt
 
   (* Get typing map for a constructor *)
-  let constr_tmap adt cn = List.Assoc.find adt.tmap cn ~equal:String.( = )
+  let constr_tmap adt id =
+    let cn = get_qualified_id id in
+    List.Assoc.find adt.tmap cn ~equal:String.( = )
 
-  let bool_typ = ADT (asId t_bool.tname, [])
+  let bool_typ = ADT (NoQualifier (asId t_bool.tname), [])
 
-  let nat_typ = ADT (asId t_nat.tname, [])
+  let nat_typ = ADT (NoQualifier (asId t_nat.tname), [])
 
-  let option_typ t = ADT (asId t_option.tname, [ t ])
+  let option_typ t = ADT (NoQualifier (asId t_option.tname), [ t ])
 
-  let list_typ t = ADT (asId t_list.tname, [ t ])
+  let list_typ t = ADT (NoQualifier (asId t_list.tname), [ t ])
 
-  let pair_typ t s = ADT (asId t_product.tname, [ t; s ])
+  let pair_typ t s = ADT (NoQualifier (asId t_product.tname), [ t; s ])
 
   (* Get all known ADTs *)
   let get_all_adts () =
@@ -201,9 +220,12 @@ let scilla_list_to_ocaml v =
  * Tail recursive. *)
 let scilla_list_to_ocaml_rev v =
   let rec convert_to_list l acc =
+    let open DataTypeDictionary in
     match l with
-    | ADTValue ("Nil", _, []) -> pure acc
-    | ADTValue ("Cons", _, [ h; t ]) -> convert_to_list t (h :: acc)
+    | ADTValue (cn, _, [])
+      when String.(cn = c_nil.cname) -> pure acc
+    | ADTValue (cn, _, [ h; t ])
+      when String.(cn = c_cons.cname) -> convert_to_list t (h :: acc)
     | _ ->
         fail0 @@ sprintf "Cannot convert scilla list to reverse ocaml list:\n"
   in

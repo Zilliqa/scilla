@@ -354,28 +354,30 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
 
   let recursion_library lib =
     let { lname; lentries } = lib in
-    let is_adt_in_scope adts_in_scope adt_name =
+    let is_adt_in_scope adts_in_scope adt =
       (* Check if type has already been declared *)
-      if List.mem adts_in_scope (get_id adt_name) ~equal:String.( = ) then
+      let adt_name = get_qualified_id adt in
+      if List.mem adts_in_scope adt_name ~equal:String.( = ) then
         pure ()
       else
         (* Check if the name is a builtin ADT *)
         let%bind _ =
-          DataTypeDictionary.lookup_name ~sloc:(get_rep adt_name)
-            (get_id adt_name)
+          DataTypeDictionary.lookup_name ~sloc:(get_qualified_rep adt)
+            adt_name
         in
         pure ()
     in
-    let is_adt_ctr_in_scope adt_ctrs_in_scope ctr_name =
+    let is_adt_ctr_in_scope adt_ctrs_in_scope ctr =
       (* Check if type has already been declared *)
-      if List.mem adt_ctrs_in_scope (get_id ctr_name) ~equal:String.( = ) then
+      let ctr_name = get_qualified_id ctr in
+      if List.mem adt_ctrs_in_scope ctr_name ~equal:String.( = ) then
         pure ()
       else
         (* Check if the name is a builtin ADT *)
         let%bind _ =
           DataTypeDictionary.lookup_constructor
-            ~sloc:(SR.get_loc (get_rep ctr_name))
-            (get_id ctr_name)
+            ~sloc:(SR.get_loc (get_qualified_rep ctr))
+            ctr_name
         in
         pure ()
     in
@@ -539,14 +541,15 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
            recursion_contract
              (fun n ->
                let%bind _ =
-                 DataTypeDictionary.lookup_name ~sloc:(get_rep n) (get_id n)
+                 DataTypeDictionary.lookup_name ~sloc:(get_qualified_rep n)
+                   (get_qualified_id n)
                in
                pure @@ ())
              (fun n ->
                let%bind _ =
                  DataTypeDictionary.lookup_constructor
-                   ~sloc:(SR.get_loc (get_rep n))
-                   (get_id n)
+                   ~sloc:(SR.get_loc (get_qualified_rep n))
+                   (get_qualified_id n)
                in
                pure @@ ())
              contr

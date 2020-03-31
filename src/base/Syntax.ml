@@ -89,11 +89,116 @@ let sexp_of_prim_typ = function
 
 let prim_typ_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
 
+module type BYSTR = sig
+  type t [@@deriving sexp]
+
+  val width : t -> int
+
+  val parse_hex : string -> t
+
+  val hex_encoding : t -> string
+
+  val to_raw_bytes : t -> string
+
+  val of_raw_bytes : int -> string -> t option
+
+  val equal : t -> t -> bool
+
+  val concat : t -> t -> t
+end
+
+module Bystr : BYSTR = struct
+  type t = string [@@deriving sexp]
+
+  let width = String.length
+
+  let parse_hex s =
+    if not (String.equal (String.prefix s 2) "0x") then
+      raise @@ Invalid_argument "hex conversion: 0x prefix is missing"
+    else
+      let s_nopref = String.drop_prefix s 2 in
+      if String.length s_nopref = 0 then
+        raise @@ Invalid_argument "hex conversion: empty byte sequence"
+      else Hex.to_string (`Hex s_nopref)
+
+  let hex_encoding bs = "0x" ^ Hex.show @@ Hex.of_string bs
+
+  let to_raw_bytes = Fn.id
+
+  let of_raw_bytes expected_width raw =
+    Option.some_if (String.length raw = expected_width) raw
+
+  let equal = String.equal
+
+  let concat = ( ^ )
+end
+
+module type BYSTRX = sig
+  type t [@@deriving sexp]
+
+  val width : t -> int
+
+  val parse_hex : string -> t
+
+  val hex_encoding : t -> string
+
+  val to_raw_bytes : t -> string
+
+  val of_raw_bytes : int -> string -> t option
+
+  val equal : t -> t -> bool
+
+  val concat : t -> t -> t
+
+  val to_bystr : t -> Bystr.t
+end
+
+module Bystrx : BYSTRX = struct
+  include Bystr
+
+  let to_bystr = Fn.id
+end
+
+type 'a qualified_ident =
+  | NoQualifier of 'a ident
+  | NamespaceQualifier of string * 'a ident
+  | AddressQualifier of Bystrx.t * 'a ident
+[@@deriving sexp]
+
+let concat_qualifer_and_ident q id = q ^ "." ^ id
+
+let get_qualified_id q = match q with
+  | NoQualifier id ->
+      get_id id
+  | NamespaceQualifier (ns, id) ->
+      concat_qualifer_and_ident ns (get_id id)
+  | AddressQualifier (adr, id) ->
+      concat_qualifer_and_ident (Bystrx.hex_encoding adr) (get_id id)
+
+let get_qualified_rep q =
+  match q with
+  | NoQualifier id
+  | NamespaceQualifier (_, id)
+  | AddressQualifier (_, id) ->
+      get_rep id
+
+(* Assumption: If a name is referred to with a certain qualifier, 
+   then it must always be referred to by that qualifier. *)
+let equal_qualified_name n1 n2 =
+  match n1, n2 with
+  | NoQualifier id1, NoQualifier id2 ->
+      equal_id id1 id2
+  | NamespaceQualifier (ns1, id1), NamespaceQualifier (ns2, id2) ->
+      String.(ns1 = ns2) && equal_id id1 id2
+  | AddressQualifier (adr1, id1), AddressQualifier (adr2, id2) ->
+      Bystrx.equal adr1 adr1 && equal_id id1 id2
+  | _, _ -> false
+      
 type typ =
   | PrimType of prim_typ
   | MapType of typ * typ
   | FunType of typ * typ
-  | ADT of loc ident * typ list
+  | ADT of loc qualified_ident * typ list
   | TypeVar of string
   | PolyFun of string * typ
   | Unit
@@ -119,20 +224,24 @@ let pp_prim_typ = function
 
 (* Remove namespace qualification and prepend the defining library name to an ADT name. *)
 let adt_tname_deflib tname =
-  let strip_namespace tname =
-    match List.last @@ String.split ~on:'.' tname with
-    | Some n -> n
-    | None -> tname
-  in
-  match GlobalConfig.StdlibTracker.lookup_deflib_adttyp tname with
-  | Some deflib -> deflib ^ "." ^ strip_namespace tname
-  | _ -> tname
+  match tname with
+  | NoQualifier id ->
+      (match GlobalConfig.StdlibTracker.lookup_deflib_adttyp (get_id id) with
+       | Some deflib -> concat_qualifer_and_ident deflib (get_id id)
+       | None -> get_id id)
+  | NamespaceQualifier (ns, id) ->
+      let full_name = concat_qualifer_and_ident ns (get_id id) in
+      (match GlobalConfig.StdlibTracker.lookup_deflib_adttyp full_name with
+       | Some deflib -> concat_qualifer_and_ident deflib (get_id id)
+       | None -> full_name)
+  | AddressQualifier (adr, id) ->
+      concat_qualifer_and_ident (Bystrx.hex_encoding adr) (get_id id)
 
 let rec pp_typ = function
   | PrimType t -> pp_prim_typ t
   | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
   | ADT (name, targs) ->
-      let name' = adt_tname_deflib (get_id name) in
+      let name' = adt_tname_deflib name in
       let elems =
         name' :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
       in
@@ -210,76 +319,6 @@ let sexp_of_uint_lit = function
   | Uint256L i' -> Sexp.Atom ("Uint256 " ^ Integer256.Uint256.to_string i')
 
 let uint_lit_of_sexp _ = failwith "uint_lit_of_sexp is not implemented"
-
-module type BYSTR = sig
-  type t [@@deriving sexp]
-
-  val width : t -> int
-
-  val parse_hex : string -> t
-
-  val hex_encoding : t -> string
-
-  val to_raw_bytes : t -> string
-
-  val of_raw_bytes : int -> string -> t option
-
-  val equal : t -> t -> bool
-
-  val concat : t -> t -> t
-end
-
-module Bystr : BYSTR = struct
-  type t = string [@@deriving sexp]
-
-  let width = String.length
-
-  let parse_hex s =
-    if not (String.equal (String.prefix s 2) "0x") then
-      raise @@ Invalid_argument "hex conversion: 0x prefix is missing"
-    else
-      let s_nopref = String.drop_prefix s 2 in
-      if String.length s_nopref = 0 then
-        raise @@ Invalid_argument "hex conversion: empty byte sequence"
-      else Hex.to_string (`Hex s_nopref)
-
-  let hex_encoding bs = "0x" ^ Hex.show @@ Hex.of_string bs
-
-  let to_raw_bytes = Fn.id
-
-  let of_raw_bytes expected_width raw =
-    Option.some_if (String.length raw = expected_width) raw
-
-  let equal = String.equal
-
-  let concat = ( ^ )
-end
-
-module type BYSTRX = sig
-  type t [@@deriving sexp]
-
-  val width : t -> int
-
-  val parse_hex : string -> t
-
-  val hex_encoding : t -> string
-
-  val to_raw_bytes : t -> string
-
-  val of_raw_bytes : int -> string -> t option
-
-  val equal : t -> t -> bool
-
-  val concat : t -> t -> t
-
-  val to_bystr : t -> Bystr.t
-end
-
-module Bystrx : BYSTRX = struct
-  include Bystr
-
-  let to_bystr = Fn.id
-end
 
 (* [Specialising the Return Type of Closures]
 
@@ -578,7 +617,7 @@ let rec equal_typ t1 t2 =
   | TypeVar v1, TypeVar v2 -> String.equal v1 v2
   | Unit, Unit -> true
   | ADT (tname1, tl1), ADT (tname2, tl2) ->
-      equal_id tname1 tname2
+      equal_qualified_name tname1 tname2
       (* Cannot call type_equiv_list because we don't want to canonicalize_tfun again. *)
       && List.length tl1 = List.length tl2
       && List.for_all2_exn ~f:[%equal: typ] tl1 tl2
@@ -714,7 +753,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   type pattern =
     | Wildcard
     | Binder of ER.rep ident
-    | Constructor of SR.rep ident * pattern list
+    | Constructor of SR.rep qualified_ident * pattern list
   [@@deriving sexp]
 
   type expr_annot = expr * ER.rep
@@ -726,7 +765,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Message of (string * payload) list
     | Fun of ER.rep ident * typ * expr_annot
     | App of ER.rep ident * ER.rep ident list
-    | Constr of SR.rep ident * typ list * ER.rep ident list
+    | Constr of SR.rep qualified_ident * typ list * ER.rep ident list
     | MatchExpr of ER.rep ident * (pattern * expr_annot) list
     | Builtin of ER.rep builtin_annot * ER.rep ident list
     (* Advanced features: to be added in Scilla 0.2 *)
@@ -982,7 +1021,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       | Fun _ -> sprintf "Type error in function:\n"
       | App (f, _) -> sprintf "Type error in application of `%s`:\n" (get_id f)
       | Constr (s, _, _) ->
-          sprintf "Type error in constructor `%s`:\n" (get_id s)
+          sprintf "Type error in constructor `%s`:\n" (get_qualified_id s)
       | MatchExpr (x, _) ->
           sprintf
             "Type error in pattern matching on `%s`%s (or one of its branches):\n"

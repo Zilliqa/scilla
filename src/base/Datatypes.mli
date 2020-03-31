@@ -24,22 +24,18 @@ open Core_kernel
 (*                 Built-in Algebraic Data Types          *)
 (**********************************************************)
 
-type constructor = {
-  cname : string;
-  (* constructor name *)
-  arity : int; (* How many arguments it takes *)
-}
-[@@deriving equal]
-
-type adt = {
-  tname : string;
-  tparams : string list;
-  tconstr : constructor list;
-  tmap : (string * typ list) list;
-}
-[@@deriving equal]
-
 module DataTypeDictionary : sig
+  type constructor
+  [@@deriving equal]
+
+  val mk_constructor : 'a qualified_ident -> int -> constructor
+  
+  type adt
+  [@@deriving equal]
+
+  val mk_adt : 'a qualified_ident -> string list ->
+    constructor list -> (string * typ list) list -> adt
+  
   (* Hiding the actual data type dicionary *)
 
   (* Re-initialize environment with the built-in ADTs *)
@@ -47,16 +43,16 @@ module DataTypeDictionary : sig
 
   (*  Get ADT by name  *)
   val lookup_name :
-    ?sloc:ErrorUtils.loc -> string -> (adt, scilla_error list) result
+    ?sloc:ErrorUtils.loc -> 'a qualified_ident -> (adt, scilla_error list) result
 
   (*  Get ADT by the constructor  *)
   val lookup_constructor :
     ?sloc:ErrorUtils.loc ->
-    string ->
+    'a qualified_ident ->
     (adt * constructor, scilla_error list) result
 
   (* Get typing map for a constructor *)
-  val constr_tmap : adt -> string -> typ list option
+  val constr_tmap : adt -> 'a qualified_ident -> typ list option
 
   (* Get all known ADTs *)
   val get_all_adts : unit -> adt list
