@@ -201,6 +201,13 @@ struct
 
   type component_summary = ComponentSummary.t
 
+  module PCMStatus = Set.Make (String)
+
+  (* set of pcm_identifiers for which ident is the unit of the PCM *)
+  type pcm_status = PCMStatus.t
+
+  let pp_pcm_status ps = String.concat " " (PCMStatus.elements ps)
+
   type signature =
     (* ComponentSig: comp_params * component_summary *)
     | ComponentSig of (ER.rep ident * typ) list * component_summary
@@ -208,7 +215,7 @@ struct
        only treat final writes as proper writes, with all others being "global"
        bindings. This lets us track multiple reads/writes to a field in a
        transition in the same way we track expressions.*)
-    | IdentSig of ident_shadow_status * expr_type
+    | IdentSig of ident_shadow_status * pcm_status * expr_type
 
   let pp_sig k sgn =
     match sgn with
@@ -219,9 +226,13 @@ struct
         in
         let cs = pp_summary comp_summ in
         ns ^ "(" ^ ps ^ "): \n" ^ cs
-    | IdentSig (_, et) ->
+    | IdentSig (_, pcm, et) ->
         let ns = "Signature for " ^ k ^ ": " in
-        ns ^ pp_expr_type et
+        let is_unit = PCMStatus.cardinal pcm > 0 in
+        let pcm_str =
+          if is_unit then "PCM unit for: (" ^ pp_pcm_status pcm ^ ")" else ""
+        in
+        ns ^ pp_expr_type et ^ pcm_str
 
   (* XXX: I copied this from GasUsageAnalysis; why not use a Map? *)
   module SAEnv = struct
@@ -268,6 +279,134 @@ struct
       let l = List.rev @@ to_list env in
       List.fold_left (fun acc (k, sgn) -> acc ^ pp_sig k sgn ^ "\n") "" l
   end
+
+  module type PCM = sig
+    val pcm_identifier : string
+
+    val is_applicable_type : typ list -> bool
+
+    val is_unit_literal : expr -> bool
+
+    val is_unit : SAEnv.t -> expr -> bool
+
+    val is_op : expr -> ER.rep ident -> ER.rep ident -> bool
+
+    val is_spurious_conditional' :
+      SAEnv.t -> ER.rep ident -> (pattern * expr_annot) list -> bool
+  end
+
+  (* Given a match expression, determine whether it is "spurious", i.e. would
+     not have to exist if we had monadic operations on option types. This
+     function is PCM-specific. *)
+  let spurious_conditonal_helper pcm_is_applicable_type pcm_is_unit pcm_is_op
+      senv x clauses =
+    let cond_type = (ER.get_type (get_rep x)).tp in
+    let is_integer_option =
+      match cond_type with
+      | ADT (Ident ("Option", dummy_loc), typs) -> pcm_is_applicable_type typs
+      | _ -> false
+    in
+    let have_two_clauses = List.length clauses = 2 in
+    have_two_clauses
+    &&
+    let detect_clause (cls : (pattern * expr_annot) list) ~f =
+      let detected =
+        List.filter
+          (fun (pattern, cl_erep) ->
+            let cl_expr, _ = cl_erep in
+            let binders = get_pattern_bounds pattern in
+            let matches = f binders cl_expr in
+            matches)
+          cls
+      in
+      if List.length detected > 0 then Some (List.hd detected) else None
+    in
+    let some_branch =
+      detect_clause clauses (fun binders _ -> List.length binders = 1)
+    in
+    let none_branch =
+      detect_clause clauses (fun binders _ -> List.length binders = 0)
+    in
+    match (some_branch, none_branch) with
+    | Some some_branch, Some none_branch ->
+        let some_p, (some_expr, _) = some_branch in
+        let _, (none_expr, _) = none_branch in
+        (* e.g. match (option int) with | Some int => int | None => 0 *)
+        let clauses_form_pcm_unit =
+          let some_pcm_unit =
+            let b = List.hd (get_pattern_bounds some_p) in
+            match some_expr with Var q -> equal_id b q | _ -> false
+          in
+          let none_pcm_unit = pcm_is_unit senv none_expr in
+          some_pcm_unit && none_pcm_unit
+        in
+        (* e.g. match (option int) with | Some int => PCM_op int X | None => X *)
+        let clauses_form_pcm_op =
+          let none_ident = match none_expr with Var q -> Some q | _ -> None in
+          match none_ident with
+          | None -> false
+          | Some none_ident ->
+              let some_ident = List.hd (get_pattern_bounds some_p) in
+              pcm_is_op some_expr some_ident none_ident
+        in
+        is_integer_option && (clauses_form_pcm_unit || clauses_form_pcm_op)
+    | _ -> false
+
+  (* Generic addition PCM for all signed and unsigned types *)
+  module Integer_Addition_PCM = struct
+    let pcm_identifier = "integer_add"
+
+    (* Can PCM values have this type? *)
+    let is_applicable_type typs =
+      let is_single = List.compare_length_with typs 1 = 0 in
+      if is_single then
+        let typ = List.hd typs in
+        PrimTypes.is_int_type typ || PrimTypes.is_uint_type typ
+      else false
+
+    let is_unit_literal expr =
+      match expr with
+      | Literal (IntLit l) -> String.equal (PrimTypes.string_of_int_lit l) "0"
+      | Literal (UintLit l) -> String.equal (PrimTypes.string_of_uint_lit l) "0"
+      | _ -> false
+
+    let is_unit (senv : signature AssocDictionary.dict) expr =
+      is_unit_literal expr
+      ||
+      match expr with
+      | Var i -> (
+          let opt_isig = SAEnv.lookupS senv (get_id i) in
+          match opt_isig with
+          | Some (IdentSig (_, pcms, _)) -> PCMStatus.mem pcm_identifier pcms
+          | _ -> false )
+      | _ -> false
+
+    let is_op expr ida idb =
+      match expr with
+      | Builtin ((Builtin_add, _), actuals) ->
+          let a_uses =
+            List.length @@ List.filter (fun k -> equal_id k ida) actuals
+          in
+          let b_uses =
+            List.length @@ List.filter (fun k -> equal_id k idb) actuals
+          in
+          a_uses = 1 && b_uses = 1
+      | _ -> false
+
+    let is_spurious_conditional' =
+      spurious_conditonal_helper is_applicable_type is_unit is_op
+  end
+
+  let int_add_pcm = (module Integer_Addition_PCM : PCM)
+
+  let enabled_pcms = [ int_add_pcm ]
+
+  let pcm_unit senv expr =
+    let unit_of =
+      List.filter (fun (module P : PCM) -> P.is_unit senv expr) enabled_pcms
+    in
+    PCMStatus.of_list
+    @@ List.map (fun (module P : PCM) -> P.pcm_identifier) unit_of
 
   let env_bind_component senv comp (sgn : signature) =
     let i = comp.comp_name in
@@ -323,6 +462,11 @@ struct
   let contrib_product (multiple : contributions) (single : contrib_summary) =
     Contrib.map (fun c -> contrib_combine_par c single) multiple
 
+  let is_spurious_conditional_expr senv x clauses =
+    List.exists
+      (fun (module P : PCM) -> P.is_spurious_conditional' senv x clauses)
+      enabled_pcms
+
   let is_bottom_level_access m klist =
     let mt = (ER.get_type (get_rep m)).tp in
     let nindices = List.length klist in
@@ -336,7 +480,7 @@ struct
       | None -> false
       | Some m_sig -> (
           match m_sig with
-          | IdentSig (ComponentParameter, _) -> true
+          | IdentSig (ComponentParameter, _, _) -> true
           | _ -> false )
     in
     List.for_all (fun k -> is_component_parameter k senv) klist
@@ -396,23 +540,24 @@ struct
   let get_ident_et senv i =
     let%bind isig = SAEnv.resolvS senv (get_id i) in
     match isig with
-    | IdentSig (_, c) -> pure @@ c
+    | IdentSig (_, _, c) -> pure @@ c
     (* If this happens, it's a bug *)
     | _ -> fail0 "Sharding analysis: ident does not have a signature"
 
   (* Add a new identifier to the environment, keeping track of whether it
      shadows a component parameter *)
-  let env_new_ident i et senv =
+  let env_new_ident i ?pcms et senv =
+    let pcms = match pcms with Some ps -> ps | None -> PCMStatus.empty in
     let id = get_id i in
     let opt_shadowed = SAEnv.lookupS senv id in
     let new_id_sig =
       match opt_shadowed with
-      | None -> IdentSig (DoesNotShadow, et)
+      | None -> IdentSig (DoesNotShadow, pcms, et)
       | Some shadowed_sig -> (
           match shadowed_sig with
-          | IdentSig (ComponentParameter, _) ->
-              IdentSig (ShadowsComponentParameter, et)
-          | _ -> IdentSig (DoesNotShadow, et) )
+          | IdentSig (ComponentParameter, pcms, _) ->
+              IdentSig (ShadowsComponentParameter, pcms, et)
+          | _ -> IdentSig (DoesNotShadow, pcms, et) )
     in
     SAEnv.addS senv id new_id_sig
 
@@ -438,6 +583,7 @@ struct
       arg_contribs
 
   (* TODO: define a wrapper for sa_expr *)
+  (* TODO: might want to track pcm_status for expressions *)
   (* fp_count keeps track of how many function formal parameters we've encountered *)
   let rec sa_expr senv (fp_count : int) (erep : expr_annot) =
     let e, rep = erep in
@@ -476,6 +622,7 @@ struct
         pure @@ List.fold_left et_union et_top arg_ets
     | MatchExpr (x, clauses) ->
         let%bind xc = get_ident_et senv x in
+        let spurious = is_spurious_conditional_expr senv x clauses in
         let _, xcontr, xcond = xc in
         let clause_et (pattern, cl_expr) =
           let binders = get_pattern_bounds pattern in
@@ -493,19 +640,22 @@ struct
         let all_equal = List.for_all (fun c -> c = fc) cl_contribs in
         let cl_ps = List.fold_left min_precision Exactly cl_pss in
         (* The precision of the match is: Exactly if all clauses are equal and
-           precise, otherwise SubsetOf *)
+           precise OR the conditional is spurious, otherwise SubsetOf *)
         let match_ps =
-          min_precision (if all_equal then Exactly else SubsetOf) cl_ps
+          min_precision
+            (if all_equal || spurious then Exactly else SubsetOf)
+            cl_ps
         in
         (* The match's contributions is the LUB of the clauses *)
         let match_contribs =
           List.fold_left contrib_upper_bound Contrib.empty cl_contribs
         in
-        (* TODO: add logic for  operations *)
         let match_cond =
           let this_cond =
-            Cond.of_list @@ fst @@ List.split @@ Contrib.bindings xcontr
+            if spurious then Cond.empty
+            else Cond.of_list @@ fst @@ List.split @@ Contrib.bindings xcontr
           in
+
           let this_cond = Cond.union this_cond xcond in
           List.fold_left Cond.union this_cond cl_conds
         in
@@ -528,7 +678,7 @@ struct
         let fun_sig f =
           let%bind fs = SAEnv.resolvS senv (get_id f) in
           match fs with
-          | IdentSig (_, c) -> pure @@ c
+          | IdentSig (_, _, c) -> pure @@ c
           | _ ->
               fail0 "Sharding analysis: applied function does not have IdentSig"
         in
@@ -678,7 +828,7 @@ struct
     let senv' =
       env_bind_ident_list senv
         (List.map (fun (i, _) -> i) all_params)
-        (IdentSig (ComponentParameter, et_top))
+        (IdentSig (ComponentParameter, PCMStatus.empty, et_top))
     in
     sa_stmt senv' ComponentSummary.empty comp.comp_body
 
@@ -688,8 +838,11 @@ struct
         match le with
         | LibVar (lname, _, lexp) ->
             let%bind esig = sa_expr senv 0 lexp in
+            let e, rep = lexp in
+            let pcms = pcm_unit senv e in
             pure
-            @@ SAEnv.addS senv (get_id lname) (IdentSig (DoesNotShadow, esig))
+            @@ SAEnv.addS senv (get_id lname)
+                 (IdentSig (DoesNotShadow, pcms, esig))
         | LibTyp _ -> pure senv)
       ~init:senv lel
 
@@ -707,7 +860,8 @@ struct
     (* Bind contract parameters *)
     let senv =
       let prs, _ = List.split cmod.contr.cparams in
-      env_bind_ident_list senv prs (IdentSig (DoesNotShadow, et_top))
+      env_bind_ident_list senv prs
+        (IdentSig (DoesNotShadow, PCMStatus.empty, et_top))
     in
 
     (* This is a combined map and fold: fold for senv', map for summaries *)
