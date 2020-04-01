@@ -188,7 +188,7 @@ struct
     | EmitEvent of dependencies
     | SendMessages of dependencies
     (* Top element -- in case of ambiguity, be conservative *)
-    | AlwaysExclusive
+    | AlwaysExclusive of ErrorUtils.loc option * string
 
   let pp_operation op =
     match op with
@@ -199,7 +199,14 @@ struct
     | ConditionOn conds -> "ConditionOn " ^ pp_conditionals conds
     | EmitEvent conds -> "EmitEvent " ^ pp_conditionals conds
     | SendMessages conds -> "SendMessages " ^ pp_conditionals conds
-    | AlwaysExclusive -> "AlwaysExclusive"
+    | AlwaysExclusive (opt_loc, msg) ->
+        let loc_str =
+          match opt_loc with
+          | Some loc -> "line " ^ string_of_int loc.lnum
+          | None -> ""
+        in
+        let msg_str = if String.length msg > 0 then ": " ^ msg else "" in
+        "AlwaysExclusive (" ^ loc_str ^ msg_str ^ ")"
 
   module OrderedComponentOperation = struct
     type t = component_operation
@@ -645,7 +652,9 @@ struct
         pure @@ params_in_summ
     | _ -> fail0 "Sharding analysis: procedure summary is not of the right type"
 
-  let procedure_call_summary senv (proc_sig : signature) arglist =
+  let procedure_call_summary senv p (proc_sig : signature) arglist =
+    let loc = SR.get_loc (get_rep p) in
+    let proc_name = get_id p in
     let implicit_params, _ = List.split @@ SCU.append_implict_comp_params [] in
     let arglist = implicit_params @ arglist in
     match proc_sig with
@@ -668,7 +677,10 @@ struct
           @@ ComponentSummary.map
                (fun op -> translate_op op proc_params arglist)
                proc_summ
-        else pure @@ ComponentSummary.singleton AlwaysExclusive
+        else
+          pure
+          @@ ComponentSummary.singleton
+               (AlwaysExclusive (Some loc, "CallProc " ^ proc_name))
     | _ ->
         (* If this occurs, it's a bug. *)
         fail0 "Sharding analysis: procedure summary is not of the right type"
@@ -897,7 +909,10 @@ struct
             let op =
               if map_access_can_be_summarised senv m klist then
                 Read (m, Some klist)
-              else AlwaysExclusive
+              else
+                AlwaysExclusive
+                  ( Some (ER.get_loc (get_rep m)),
+                    pp_operation (Read (m, Some klist)) )
             in
             cont_ident_op x (et_pseudofield (m, Some klist)) op summary sts
         | MapUpdate (m, klist, opt_i) ->
@@ -909,7 +924,10 @@ struct
             let op =
               if map_access_can_be_summarised senv m klist then
                 Write ((m, Some klist), ic)
-              else AlwaysExclusive
+              else
+                AlwaysExclusive
+                  ( Some (ER.get_loc (get_rep m)),
+                    pp_operation (Write ((m, Some klist), ic)) )
             in
             cont_op op summary sts
         | AcceptPayment -> cont_op AcceptMoney summary sts
@@ -984,7 +1002,7 @@ struct
             match opt_proc_sig with
             | Some proc_sig ->
                 let%bind call_summ =
-                  procedure_call_summary senv proc_sig arglist
+                  procedure_call_summary senv p proc_sig arglist
                 in
                 let summary' = ComponentSummary.union summary call_summ in
                 cont senv summary' sts
