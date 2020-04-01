@@ -135,6 +135,18 @@ struct
     let conds = List.map (fun (_, _, a) -> a) etl in
     (ps, cs, conds)
 
+  let et_equal (a : expr_type) (b : expr_type) =
+    let psa, contra, condsa = a in
+    let psb, contrb, condsb = b in
+    let ps_eq = psa = psb in
+    let contr_eq =
+      Contrib.equal
+        (fun (cca, copa) (ccb, copb) -> cca = ccb && ContribOps.equal copa copb)
+        contra contrb
+    in
+    let conds_eq = Cond.equal condsa condsb in
+    ps_eq && contr_eq && conds_eq
+
   let pp_contrib_summary (cs : contrib_summary) =
     let card, ops_set = cs in
     let ops = ContribOps.elements ops_set in
@@ -298,15 +310,14 @@ struct
 
     val is_op : expr -> ER.rep ident -> ER.rep ident -> bool
 
-    val is_spurious_conditional' :
+    val is_spurious_conditional_expr' :
       SAEnv.t -> ER.rep ident -> (pattern * expr_annot) list -> bool
+
+    val is_spurious_conditional_stmt' :
+      expr_type -> ER.rep ident -> (pattern * stmt_annot list) list -> bool
   end
 
-  (* Given a match expression, determine whether it is "spurious", i.e. would
-     not have to exist if we had monadic operations on option types. This
-     function is PCM-specific. *)
-  let spurious_conditonal_helper pcm_is_applicable_type pcm_is_unit pcm_is_op
-      senv x clauses =
+  let sc_option_check pcm_is_applicable_type x clauses =
     let cond_type = (ER.get_type (get_rep x)).tp in
     let is_integer_option =
       match cond_type with
@@ -314,50 +325,123 @@ struct
       | _ -> false
     in
     let have_two_clauses = List.length clauses = 2 in
-    have_two_clauses
-    &&
-    let detect_clause (cls : (pattern * expr_annot) list) ~f =
+    is_integer_option && have_two_clauses
+
+  let sc_get_clauses clauses =
+    let detect_clause cls ~f =
       let detected =
         List.filter
           (fun (pattern, cl_erep) ->
-            let cl_expr, _ = cl_erep in
             let binders = get_pattern_bounds pattern in
-            let matches = f binders cl_expr in
+            let matches = f binders in
             matches)
           cls
       in
       if List.length detected > 0 then Some (List.hd detected) else None
     in
     let some_branch =
-      detect_clause clauses (fun binders _ -> List.length binders = 1)
+      detect_clause clauses (fun binders -> List.length binders = 1)
     in
     let none_branch =
-      detect_clause clauses (fun binders _ -> List.length binders = 0)
+      detect_clause clauses (fun binders -> List.length binders = 0)
     in
-    match (some_branch, none_branch) with
-    | Some some_branch, Some none_branch ->
-        let some_p, (some_expr, _) = some_branch in
-        let _, (none_expr, _) = none_branch in
-        (* e.g. match (option int) with | Some int => int | None => 0 *)
-        let clauses_form_pcm_unit =
-          let some_pcm_unit =
-            let b = List.hd (get_pattern_bounds some_p) in
-            match some_expr with Var q -> equal_id b q | _ -> false
+    (some_branch, none_branch)
+
+  (* Given a match expression, determine whether it is "spurious", i.e. would
+     not have to exist if we had monadic operations on option types. This
+     function is PCM-specific. *)
+  let sc_expr pcm_is_applicable_type pcm_is_unit pcm_is_op senv x clauses =
+    let is_integer_option = sc_option_check pcm_is_applicable_type x clauses in
+    if is_integer_option then
+      let some_branch, none_branch = sc_get_clauses clauses in
+      match (some_branch, none_branch) with
+      | Some some_branch, Some none_branch ->
+          let some_p, (some_expr, _) = some_branch in
+          let _, (none_expr, _) = none_branch in
+          (* e.g. match (option int) with | Some int => int | None => 0 *)
+          let clauses_form_pcm_unit =
+            let some_pcm_unit =
+              let b = List.hd (get_pattern_bounds some_p) in
+              match some_expr with Var q -> equal_id b q | _ -> false
+            in
+            let none_pcm_unit = pcm_is_unit senv none_expr in
+            some_pcm_unit && none_pcm_unit
           in
-          let none_pcm_unit = pcm_is_unit senv none_expr in
-          some_pcm_unit && none_pcm_unit
-        in
-        (* e.g. match (option int) with | Some int => PCM_op int X | None => X *)
-        let clauses_form_pcm_op =
-          let none_ident = match none_expr with Var q -> Some q | _ -> None in
-          match none_ident with
-          | None -> false
-          | Some none_ident ->
-              let some_ident = List.hd (get_pattern_bounds some_p) in
-              pcm_is_op some_expr some_ident none_ident
-        in
-        is_integer_option && (clauses_form_pcm_unit || clauses_form_pcm_op)
-    | _ -> false
+          (* e.g. match (option int) with | Some int => PCM_op int X | None => X *)
+          let clauses_form_pcm_op =
+            let none_ident =
+              match none_expr with Var q -> Some q | _ -> None
+            in
+            match none_ident with
+            | None -> false
+            | Some none_ident ->
+                let some_ident = List.hd (get_pattern_bounds some_p) in
+                pcm_is_op some_expr some_ident none_ident
+          in
+          clauses_form_pcm_unit || clauses_form_pcm_op
+      | _ -> false
+    else false
+
+  let sc_stmt pcm_is_applicable_type pcm_is_unit pcm_is_op xc x
+      (clauses : (pattern * stmt_annot list) list) =
+    let is_integer_option = sc_option_check pcm_is_applicable_type x clauses in
+    if is_integer_option then
+      let some_branch, none_branch = sc_get_clauses clauses in
+      match (some_branch, none_branch) with
+      | Some some_branch, Some none_branch ->
+          let some_p, some_stmts = some_branch in
+          let _, none_stmts = none_branch in
+          (* e.g.
+             opt_x <- map[key1][key2];
+             match opt_x with
+               | Some x => q = PCM_op base diff; map[key1][key2] := q
+               | None => map[key1][key2] := diff
+             Make sure you check it's map[key1][key2] in both branches! *)
+          let ok = List.length none_stmts = 1 && List.length some_stmts = 2 in
+          ok
+          &&
+          let clauses_form_pcm_op =
+            (* What is diff? *)
+            let none_ident, none_ps =
+              let none_stmt, sloc = List.hd none_stmts in
+              match none_stmt with
+              | MapUpdate (m, klist, Some i) ->
+                  (Some i, Pseudofield (m, Some klist))
+              (* XXX: this pseudofield is junk; should probably use an option *)
+              | _ -> (None, Pseudofield (x, None))
+            in
+
+            (* Make sure opt_x is Exactly {map[key1][key2], Linear, }*)
+            let cs =
+              Contrib.singleton none_ps (LinearContrib, ContribOps.empty)
+            in
+            let expected_et : expr_type = (Exactly, cs, Cond.empty) in
+            let good_et = et_equal xc expected_et in
+            good_et
+            &&
+            (* Make sure the some branch is well-formed *)
+            match none_ident with
+            | None -> false
+            | Some none_ident -> (
+                let some_ident = List.hd (get_pattern_bounds some_p) in
+                match some_stmts with
+                | (Bind (q, (expr, _)), _) :: (st, _) :: _ -> (
+                    let is_op = pcm_is_op expr some_ident none_ident in
+                    is_op
+                    &&
+                    match st with
+                    | MapUpdate (m, klist, Some i) ->
+                        equal_id q i
+                        (* f[keys] := q *)
+                        && OrderedContribSource.compare none_ps
+                             (Pseudofield (m, Some klist))
+                           = 0
+                    | _ -> false )
+                | _ -> false )
+          in
+          clauses_form_pcm_op
+      | _ -> false
+    else false
 
   (* Generic addition PCM for all signed and unsigned types *)
   module Integer_Addition_PCM = struct
@@ -400,8 +484,9 @@ struct
           a_uses = 1 && b_uses = 1
       | _ -> false
 
-    let is_spurious_conditional' =
-      spurious_conditonal_helper is_applicable_type is_unit is_op
+    let is_spurious_conditional_expr' = sc_expr is_applicable_type is_unit is_op
+
+    let is_spurious_conditional_stmt' = sc_stmt is_applicable_type is_unit is_op
   end
 
   let int_add_pcm = (module Integer_Addition_PCM : PCM)
@@ -471,7 +556,12 @@ struct
 
   let is_spurious_conditional_expr senv x clauses =
     List.exists
-      (fun (module P : PCM) -> P.is_spurious_conditional' senv x clauses)
+      (fun (module P : PCM) -> P.is_spurious_conditional_expr' senv x clauses)
+      enabled_pcms
+
+  let is_spurious_conditional_stmt xc x clauses =
+    List.exists
+      (fun (module P : PCM) -> P.is_spurious_conditional_stmt' xc x clauses)
       enabled_pcms
 
   let is_bottom_level_access m klist =
@@ -833,7 +923,7 @@ struct
             cont_ident x expr_contrib summary sts
         | MatchStmt (x, clauses) ->
             let%bind xc = get_ident_et senv x in
-            let _, xcontr, xcond = xc in
+            let spurious = is_spurious_conditional_stmt xc x clauses in
             let summarise_clause (pattern, cl_sts) =
               let binders = get_pattern_bounds pattern in
               let senv' =
@@ -844,28 +934,48 @@ struct
               in
               sa_stmt senv' summary cl_sts
             in
-            let match_conds =
-              let this_cond =
-                Cond.of_list @@ fst @@ List.split @@ Contrib.bindings xcontr
+
+            (* Unusual case: match does not express "real" control flow, but
+               monadic operation on option; in this case, the summary is the
+               summary of the Some branch *)
+            if spurious then
+              let is_some (pattern, _) =
+                List.length (get_pattern_bounds pattern) = 1
               in
-              Cond.union this_cond xcond
-            in
-            let conds_op = ConditionOn match_conds in
-            let%bind cl_summaries = mapM summarise_clause clauses in
-            let summary_with_conds =
-              (* Can condition on constants or blockchain reads *)
-              if Cond.cardinal match_conds > 0 then
-                ComponentSummary.add conds_op summary
-              else summary
-            in
-            (* TODO: LUB *)
-            let%bind summary' =
-              foldM
-                (fun acc_summ cl_summ ->
-                  pure @@ ComponentSummary.union acc_summ cl_summ)
-                summary_with_conds cl_summaries
-            in
-            cont senv summary' sts
+              let%bind some_summary =
+                mapM summarise_clause (List.filter is_some clauses)
+              in
+              let%bind summary' =
+                foldM
+                  (fun acc_summ cl_summ ->
+                    pure @@ ComponentSummary.union acc_summ cl_summ)
+                  summary some_summary
+              in
+              cont senv summary' sts (* This is the normal case *)
+            else
+              let _, xcontr, xcond = xc in
+              let match_conds =
+                let this_cond =
+                  Cond.of_list @@ fst @@ List.split @@ Contrib.bindings xcontr
+                in
+                Cond.union this_cond xcond
+              in
+              let conds_op = ConditionOn match_conds in
+              let%bind cl_summaries = mapM summarise_clause clauses in
+              let summary_with_conds =
+                (* It's possible (and fine) to condition on constants or blockchain reads *)
+                if Cond.cardinal match_conds > 0 then
+                  ComponentSummary.add conds_op summary
+                else summary
+              in
+              (* TODO: LUB *)
+              let%bind summary' =
+                foldM
+                  (fun acc_summ cl_summ ->
+                    pure @@ ComponentSummary.union acc_summ cl_summ)
+                  summary_with_conds cl_summaries
+              in
+              cont senv summary' sts
         | CallProc (p, arglist) -> (
             let opt_proc_sig = SAEnv.lookupS senv (get_id p) in
             match opt_proc_sig with
